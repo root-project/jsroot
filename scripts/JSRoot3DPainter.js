@@ -246,7 +246,6 @@
          if (mouse_ctxt.on) {
             mouse_ctxt.on = false;
             control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
-            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
          } else
          if (control_changed) {
             // react on camera change when required
@@ -264,9 +263,6 @@
             block_ctxt = false;
          else
             control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
-
-            // console.log('call context menu');
-            // painter.OrbitContext(mouse_ctxt, GetIntersects(mouse_ctxt));
       };
 
       function control_touchstart(evnt) {
@@ -633,14 +629,17 @@
       }
 
       this.control.ContextMenu = function(pos, intersects) {
-         var kind = "hist";
+         var kind = "hist", p = painter;
          if (intersects)
-            for (var n=0;n<intersects.length;++n)
-               if (intersects[n].object.zoom) {
-                  kind = intersects[n].object.zoom;
-                  break;
+            for (var n=0;n<intersects.length;++n) {
+               var mesh = intersects[n].object;
+               if (mesh.zoom) { kind = mesh.zoom; break; }
+               if (mesh.painter && typeof mesh.painter.ShowContextMenu ==='function') {
+                  p = mesh.painter; break;
                }
-         painter.ShowContextMenu(kind, pos);
+            }
+
+         p.ShowContextMenu(kind, pos);
       }
    }
 
@@ -1673,7 +1672,6 @@
 
          mesh.bins_index = bins_index;
          mesh.painter = this;
-         mesh.main = main;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
          mesh.baseline = (this.options.BaseLine===false) ? axis_zmin : this.options.BaseLine;
@@ -1682,25 +1680,26 @@
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             var p = this.painter,
+                main = p.main_painter(),
                 hist = p.GetObject(),
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-this.main.size_xy3d, this.main.grx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(this.main.size_xy3d, this.main.grx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-main.size_xy3d, main.grx(p.GetBinX(tip.ix-1)));
+            tip.x2 = Math.min(main.size_xy3d, main.grx(p.GetBinX(tip.ix)));
             if (p.Dimension()===1) {
-               tip.y1 = this.main.gry(0);
-               tip.y2 = this.main.gry(1);
+               tip.y1 = main.gry(0);
+               tip.y2 = main.gry(1);
             } else {
-               tip.y1 = Math.max(-this.main.size_xy3d, this.main.gry(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(this.main.size_xy3d, this.main.gry(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-main.size_xy3d, main.gry(p.GetBinY(tip.iy-1)));
+               tip.y2 = Math.min(main.size_xy3d, main.gry(p.GetBinY(tip.iy)));
             }
 
             var binz1 = this.baseline, binz2 = tip.value;
             if (hist['$baseh']) binz1 = hist['$baseh'].getBinContent(tip.ix, tip.iy);
             if (binz2<binz1) { var v = binz1; binz1 = binz2; binz2 = v; }
 
-            tip.z1 = this.main.grz(Math.max(this.zmin,binz1));
-            tip.z2 = this.main.grz(Math.min(this.zmax,binz2));
+            tip.z1 = main.grz(Math.max(this.zmin,binz1));
+            tip.z2 = main.grz(Math.min(this.zmax,binz2));
 
             tip.color = this.tip_color;
 
@@ -1725,7 +1724,6 @@
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
             mesh2.painter = this;
-            mesh2.main = main;
             mesh2.tooltip = mesh.tooltip;
             mesh2.zmin = mesh.zmin;
             mesh2.zmax = mesh.zmax;
@@ -2180,7 +2178,11 @@
             else
                material = new THREE.MeshBasicMaterial( { color: fcolor, side: THREE.DoubleSide  } );
 
-            main.toplevel.add(new THREE.Mesh(geometry, material));
+            var mesh = new THREE.Mesh(geometry, material);
+
+            main.toplevel.add(mesh);
+
+            mesh.painter = this; // to let use it with context menu
          }
 
 
@@ -2195,6 +2197,7 @@
          var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
          if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
          var line = new THREE.LineSegments(geometry, material);
+         line.painter = this;
          main.toplevel.add(line);
       }
 
@@ -2213,6 +2216,7 @@
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
 
          var line = new THREE.LineSegments(geometry, material);
+         line.painter = this;
          main.toplevel.add(line);
       }
 
@@ -2243,9 +2247,6 @@
 
 
                 if (pnts.length < 3) return;
-
-                // console.log('colindx', colindx);
-
 
                 var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
 
@@ -2281,12 +2282,9 @@
                 geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
                 var fcolor = palette[colindx];
-
-                // console.log('fcolor', colindx, fcolor);
-
                 var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide, opacity: 0.5  } );
                 var mesh = new THREE.Mesh(geometry, material);
-
+                mesh.painter = this;
                 main.toplevel.add(mesh);
             }
          );
@@ -2469,7 +2467,7 @@
 
          mesh.tooltip = function(intersects) {
 
-            var p = this. painter, main = p.main_painter(),
+            var p = this.painter, main = p.main_painter(),
                 bin = p.GetObject().fBins.arr[this.bins_index];
 
             var tip = {
