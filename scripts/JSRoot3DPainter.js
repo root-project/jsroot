@@ -2180,7 +2180,7 @@
             else
                material = new THREE.MeshBasicMaterial( { color: fcolor, side: THREE.DoubleSide  } );
 
-            this.toplevel.add(new THREE.Mesh(geometry, material));
+            main.toplevel.add(new THREE.Mesh(geometry, material));
          }
 
 
@@ -2195,7 +2195,7 @@
          var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
          if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
          var line = new THREE.LineSegments(geometry, material);
-         this.toplevel.add(line);
+         main.toplevel.add(line);
       }
 
       if (grid) {
@@ -2213,7 +2213,7 @@
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
 
          var line = new THREE.LineSegments(geometry, material);
-         this.toplevel.add(line);
+         main.toplevel.add(line);
       }
 
       if (this.options.Surf === 17)
@@ -2228,7 +2228,7 @@
          // get levels
          var levels = this.fContour,
              palette = this.GetPalette(),
-             painter = this, lastcolindx = -1, layerz = 2*this.size_z3d;
+             lastcolindx = -1, layerz = 2*main.size_z3d;
 
          this.BuildContour(handle, levels, palette,
             function(colindx,xp,yp,iminus,iplus) {
@@ -2253,7 +2253,7 @@
 
                 if ((lastcolindx < 0) || (lastcolindx !== colindx)) {
                    lastcolindx = colindx;
-                   layerz+=0.0001*painter.size_z3d; // change layers Z
+                   layerz+=0.0001*main.size_z3d; // change layers Z
                 }
 
 
@@ -2287,7 +2287,7 @@
                 var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide, opacity: 0.5  } );
                 var mesh = new THREE.Mesh(geometry, material);
 
-                painter.toplevel.add(mesh);
+                main.toplevel.add(mesh);
             }
          );
       }
@@ -2344,14 +2344,14 @@
                // run two loops - on the first try to compress data, on second - run as is (removing duplication)
 
                var lastx, lasty, currx, curry,
-                   dist2 = this.size_xy3d*this.size_z3d,
+                   dist2 = pmain.size_xy3d*pmain.size_z3d,
                    dist2limit = (ntry>0) ? 0 : dist2/1e6;
 
                pnts = []; faces = null;
 
                for (var vert = 0; vert < npnts; ++vert) {
-                  currx = this.grx(x[vert]);
-                  curry = this.gry(y[vert]);
+                  currx = pmain.grx(x[vert]);
+                  curry = pmain.gry(y[vert]);
                   if (vert>0)
                      dist2 = (currx-lastx)*(currx-lastx) + (curry-lasty)*(curry-lasty);
                   if (dist2 > dist2limit) {
@@ -2459,7 +2459,7 @@
          var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
          var mesh = new THREE.Mesh(geometry, material);
 
-         this.toplevel.add(mesh);
+         pmain.toplevel.add(mesh);
 
          mesh.painter = this;
          mesh.bins_index = i;
@@ -2469,15 +2469,15 @@
 
          mesh.tooltip = function(intersects) {
 
-            var p = this. painter,
+            var p = this. painter, main = p.main_painter(),
                 bin = p.GetObject().fBins.arr[this.bins_index];
 
             var tip = {
               use_itself: true, // indicate that use mesh itself for highlighting
-              x1: p.grx(bin.fXmin),
-              x2: p.grx(bin.fXmax),
-              y1: p.gry(bin.fYmin),
-              y2: p.gry(bin.fYmax),
+              x1: main.grx(bin.fXmin),
+              x2: main.grx(bin.fXmax),
+              y1: main.gry(bin.fYmin),
+              y2: main.gry(bin.fYmax),
               z1: this.draw_z0,
               z2: this.draw_z1,
               bin: this.bins_index,

@@ -6940,18 +6940,18 @@
          evnt = d3.event;
 
          if (kind === undefined) {
-            var ms = d3.mouse(this.svg_frame().node());
-            var tch = d3.touches(this.svg_frame().node());
-            var pnt = null, pp = this.pad_painter(true), fp = this.frame_painter(), sel = null;
+            var ms = d3.mouse(this.svg_frame().node()),
+                tch = d3.touches(this.svg_frame().node()),
+                pp = this.pad_painter(true),
+                fp = this.frame_painter(),
+                pnt = null, sel = null;
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
 
             if ((pnt !== null) && (pp !== null)) {
                pnt.painters = true; // assign painter for every tooltip
-               var hints = pp.GetTooltips(pnt);
-
-               var bestdist = 1000;
+               var hints = pp.GetTooltips(pnt), bestdist = 1000;
                for (var n=0;n<hints.length;++n)
                   if (hints[n] && hints[n].menu) {
                      var dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
