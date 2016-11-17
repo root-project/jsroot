@@ -7953,18 +7953,22 @@
          var msize = 3;
          if (this.markeratt) msize = Math.max(msize, 2+Math.round(this.markeratt.size * 4));
 
-         // show at least 6 pixels as tooltip rect
-         if (grx2 - grx1 < 2*msize) { grx1 = midx-msize; grx2 = midx+msize; }
-
          if (this.options.Error > 0) {
-            var cont = this.histo.getBinContent(findbin+1);
-            var binerr = this.histo.getBinError(findbin+1);
+            var cont = this.histo.getBinContent(findbin+1),
+                binerr = this.histo.getBinError(findbin+1);
 
             gry1 = Math.round(pmain.gry(cont + binerr)); // up
             gry2 = Math.round(pmain.gry(cont - binerr)); // down
 
             if ((cont==0) && this.IsTProfile()) findbin = null;
+
+            var dx = (grx2-grx1)*this.options.errorX;
+            grx1 = Math.round(midx - dx);
+            grx2 = Math.round(midx + dx);
          }
+
+         // show at least 6 pixels as tooltip rect
+         if (grx2 - grx1 < 2*msize) { grx1 = midx-msize; grx2 = midx+msize; }
 
          gry1 = Math.min(gry1, midy - msize);
          gry2 = Math.max(gry2, midy + msize);
