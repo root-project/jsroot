@@ -7971,11 +7971,11 @@
       grx1 = GetBinGrX(findbin);
 
       if (pmain.swap_xy) {
-         while ((l>left) && (GetBinGrX(l-1) < grx1 + 1.0)) --l;
-         while ((r<right) && (GetBinGrX(r+1) > grx1 - 1.0)) ++r;
+         while ((l>left) && (GetBinGrX(l-1) < grx1 + 2)) --l;
+         while ((r<right) && (GetBinGrX(r+1) > grx1 - 2)) ++r;
       } else {
-         while ((l>left) && (GetBinGrX(l-1) > grx1 - 1.0)) --l;
-         while ((r<right) && (GetBinGrX(r+1) < grx1 + 1.0)) ++r;
+         while ((l>left) && (GetBinGrX(l-1) > grx1 - 2)) --l;
+         while ((r<right) && (GetBinGrX(r+1) < grx1 + 2)) ++r;
       }
 
       if (l < r) {
