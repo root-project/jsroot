@@ -12,7 +12,7 @@
    - support fixed-size array of TString, TObject and TNamed 
 2. Many new draw options for different classes are supported:
     - TGraph  - 'z', 'x', '||', '[]', '>', '|>', '5', 'X+', 'Y+'
-    - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E0', 'E3', 'E4', 'X+', 'Y+'
+    - TH1     - '*', 'L', 'B', 'B1', 'TEXT', 'E0', 'E3', 'E4', 'EX0', 'X+', 'Y+'
     - TH2     - 'E', 'col1', 'box', 'box1', 'surf3', 'surf7', 'base0'
     - TH2     - 'same' with 'box', 'col', 'cont', 'lego', 'surf'
     - TH3     - 'scat', use by default

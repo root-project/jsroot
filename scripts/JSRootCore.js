@@ -205,7 +205,7 @@
          fFrameBorderSize : 1,
          fFrameBorderMode : 0,
          fEndErrorSize : 2,   // size in pixels of end error for E1 draw options
-         fErrorX : 0.5,   // size of error bars for the histogram drawings
+         fErrorX : 0.5,   // X size of the error marks for the histogram drawings
          fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
          fTimeOffset : 788918400, // UTC time at 01/01/95
       };

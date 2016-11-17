@@ -5476,9 +5476,9 @@
          if (hdim == 1) {
             option.Error = 1;
             option.Zero = 0; // do not draw empty bins with erros
-            if (!isNaN(parseInt(d.part))) option.Error = 10 + parseInt(d.part);
+            if (!isNaN(parseInt(d.part[0]))) option.Error = 10 + parseInt(d.part[0]);
             if (option.Error === 10) option.Zero = 1; // disable drawing of empty bins
-            if (d.check('X0')) option.errorX = 0;
+            if (d.part.indexOf('X0')>=0) option.errorX = 0;
          } else {
             if (option.Error == 0) {
                option.Error = 100;
@@ -7578,8 +7578,8 @@
           show_markers = (this.options.Mark > 0),
           show_text = (this.options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, mpath = "",
-          text_col, text_angle, text_size;
+          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
+          mpath = "", text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
          show_markers = true;
@@ -7667,6 +7667,7 @@
                   if (!exclude_zero || (bincont!==0)) {
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
                      mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
+                     midx = Math.round((mx1+mx2)/2);
                      my = Math.round(pmain.gry(bincont));
                      yerr1 = yerr2 = 20;
                      if (show_errors) {
@@ -7691,7 +7692,7 @@
                             sizex = Math.round((mx2-mx1)*0.8), sizey = text_size;
 
                         if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
-                           posx = Math.round((mx1+mx2)/2);
+                           posx = midx;
                            posy = Math.round(my - 2- text_size/2);
                            sizex = 0;
                            sizey = text_angle-360;
@@ -7701,20 +7702,23 @@
                      }
 
                      if (draw_markers) {
+                        if (path_line !== null)
+                           path_line += ((path_line.length===0) ? "M" : "L") + midx + "," + my;
+
                         if ((my >= -yerr1) && (my <= height + yerr2)) {
                            if (path_fill !== null)
-                              path_fill +="M" + mx1 +","+(my-yerr1) +
-                              "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                           if (path_err !== null)
-                              path_err +="M" + (mx1+dend) +","+ my + endx + "h" + (mx2-mx1-2*dend) + endx +
-                              "M" + Math.round((mx1+mx2)/2) +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+                              path_fill += "M" + mx1 +","+(my-yerr1) +
+                                           "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
                            if (path_marker !== null)
-                              path_marker += this.markeratt.create((mx1+mx2)/2, my);
-                        }
-
-                        if (path_line !== null) {
-                           path_line += (path_line.length===0) ? "M" : "L";
-                           path_line += Math.round((mx1+mx2)/2) + "," + my;
+                              path_marker += this.markeratt.create(midx, my);
+                           if (path_err !== null) {
+                              if (this.options.errorX > 0) {
+                                 var mmx1 = Math.round(midx - (mx2-mx1)*this.options.errorX),
+                                     mmx2 = Math.round(midx + (mx2-mx1)*this.options.errorX);
+                                 path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
+                              }
+                              path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+                           }
                         }
                      }
                   }
