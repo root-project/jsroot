@@ -7708,9 +7708,9 @@
          dend = Math.floor((this.lineatt.width-1)/2);
       }
 
-      var draw_markers = show_errors || show_markers || show_line;
+      var draw_markers = show_errors || show_markers;
 
-      if (draw_markers || show_text) use_minmax = true;
+      if (draw_markers || show_text || show_line) use_minmax = true;
 
       for (i = left; i <= right; ++i) {
 
@@ -7787,10 +7787,10 @@
                            this.DrawText(talign, posx, posy, sizex, sizey, lbl, text_col, 0);
                      }
 
-                     if (draw_markers) {
-                        if (path_line !== null)
-                           path_line += ((path_line.length===0) ? "M" : "L") + midx + "," + my;
+                     if (show_line && (path_line !== null))
+                        path_line += ((path_line.length===0) ? "M" : "L") + midx + "," + my;
 
+                     if (draw_markers) {
                         if ((my >= -yerr1) && (my <= height + yerr2)) {
                            if (path_fill !== null)
                               path_fill += "M" + mx1 +","+(my-yerr1) +
@@ -7859,7 +7859,7 @@
          if (res.length>0) res += close_path;
       }
 
-      if (draw_markers) {
+      if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))
             this.draw_g.append("svg:path")
                        .attr("d", path_fill)
@@ -7871,16 +7871,16 @@
                    .call(this.lineatt.func);
 
          if ((path_line !== null) && (path_line.length > 0)) {
+            if (!this.fillatt.empty())
+               this.draw_g.append("svg:path")
+                     .attr("d", this.options.Line===2 ? (path_line + close_path) : res)
+                     .attr("stroke", "none")
+                     .call(this.fillatt.func);
+
             this.draw_g.append("svg:path")
                    .attr("d", path_line)
                    .attr("fill", "none")
                    .call(this.lineatt.func);
-
-            if ((this.options.Line === 2) && !this.fillatt.empty())
-                 this.draw_g.append("svg:path")
-                     .attr("d", path_line + close_path)
-                     .attr("stroke", "none")
-                     .call(this.fillatt.func);
          }
 
          if ((path_marker !== null) && (path_marker.length > 0))
