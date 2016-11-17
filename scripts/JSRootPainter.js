@@ -1790,6 +1790,11 @@
       }
       fill.func = fill.Apply.bind(fill);
 
+      fill.empty = function() {
+         // return true if color not specified or fill style not specified
+         return (this.color == 'none');
+      };
+
       fill.Change = function(color, pattern, svg) {
          this.changed = true;
 
@@ -5244,7 +5249,7 @@
       return 1;
    }
 
-   JSROOT.THistPainter.prototype.DecodeOptions = function(opt) {
+   JSROOT.THistPainter.prototype.DecodeOptions = function(opt, interactive) {
 
       /* decode string 'opt' and fill the option structure */
       var hdim = this.Dimension();
@@ -5265,7 +5270,7 @@
 
       // check for graphical cuts
 
-      var pad = this.root_pad();
+      var pad = this.root_pad(), need_fillcol = false;
 
       // if (hdim > 1) option.Scat = 1;  // default was scatter plot
 
@@ -5467,15 +5472,15 @@
       if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
       if ((hdim==3) && d.check('BB')) option.BackBox = 0;
 
+      if (d.check('LF2')) { option.Line = 2; option.Hist = -1; option.Error = 0; }
+      if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
+
       if (d.check('A')) option.Axis = -1;
       if (d.check('B1')) { option.Bar = 2; option.Hist = -1; }
       if (d.check('B')) { option.Bar = 1; option.Hist = -1; }
       if (d.check('C')) { option.Curve = 1; option.Hist = -1; }
-      if (d.check('F')) option.Fill = 1;
       if (d.check('][')) { option.Off = 1; option.Hist = 1; }
-      if (d.check('F2')) option.Fill = 2;
-
-      if (d.check('L')) { option.Line = 1; option.Hist = -1; }
+      if (d.check('F')) option.Fill = 1;
 
       if (d.check('P0')) { option.Mark = 1; option.Hist = -1; option.Zero = 1; }
       if (d.check('P')) { option.Mark = 1; option.Hist = -1; option.Zero = 0; }
@@ -5493,6 +5498,7 @@
             option.Error = 1;
             option.Zero = 0; // do not draw empty bins with erros
             if (!isNaN(parseInt(d.part[0]))) option.Error = 10 + parseInt(d.part[0]);
+            if ((option.Error === 13) || (option.Error === 14)) need_fillcol = true;
             if (option.Error === 10) option.Zero = 1; // disable drawing of empty bins
             if (d.part.indexOf('X0')>=0) option.errorX = 0;
          } else {
@@ -5504,6 +5510,11 @@
       }
       if (d.check('9')) option.HighRes = 1;
       if (d.check('0')) option.Zero = 0;
+
+      if (interactive) {
+         if (need_fillcol && this.fillatt && (this.fillatt.color=='none'))
+            this.fillatt.Change(1,1001);
+      }
 
       //if (option.Surf == 15)
       //   if (option.System == JSROOT.Painter.Coord.kPOLAR || option.System == JSROOT.Painter.Coord.kCARTESIAN)
@@ -7839,10 +7850,13 @@
          }
       }
 
-      if ((this.fillatt.color !== 'none') && (res.length>0)) {
+      var close_path = "";
+
+      if (!this.fillatt.empty()) {
          var h0 = (height+3);
          if ((this.hmin>=0) && (pmain.gry(0) < height)) h0 = Math.round(pmain.gry(0));
-         res += "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
+         close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
+         if (res.length>0) res += close_path;
       }
 
       if (draw_markers) {
@@ -7854,13 +7868,20 @@
          if ((path_err !== null) && (path_err.length > 0))
                this.draw_g.append("svg:path")
                    .attr("d", path_err)
-                   .call(this.lineatt.func)
+                   .call(this.lineatt.func);
 
-         if ((path_line !== null) && (path_line.length > 0))
-               this.draw_g.append("svg:path")
+         if ((path_line !== null) && (path_line.length > 0)) {
+            this.draw_g.append("svg:path")
                    .attr("d", path_line)
                    .attr("fill", "none")
-                   .call(this.lineatt.func)
+                   .call(this.lineatt.func);
+
+            if ((this.options.Line === 2) && !this.fillatt.empty())
+                 this.draw_g.append("svg:path")
+                     .attr("d", path_line + close_path)
+                     .attr("stroke", "none")
+                     .call(this.fillatt.func);
+         }
 
          if ((path_marker !== null) && (path_marker.length > 0))
             this.draw_g.append("svg:path")
@@ -8160,7 +8181,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
 
-         this.options = this.DecodeOptions(arg);
+         this.options = this.DecodeOptions(arg, true);
 
          // redraw all objects
          this.RedrawPad();
