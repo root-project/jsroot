@@ -7608,10 +7608,18 @@
       if (show_text) {
          text_col = JSROOT.Painter.root_colors[this.histo.fMarkerColor];
          text_angle = (this.options.Text>1000) ? this.options.Text % 1000 : 0;
-         text_size = 20;
+         text_size = 15;
 
          if ((this.histo.fMarkerSize!==1) && (text_angle!==0))
             text_size = 0.02*height*this.histo.fMarkerSize;
+
+         if (text_angle === 0) {
+             var space = width / (right - left + 1);
+             if (space < 3 * text_size) {
+                text_angle = 90;
+                text_size = Math.round(space*0.7);
+             }
+         }
 
          this.StartTextDrawing(42, text_size, this.draw_g, text_size);
       }
@@ -7682,18 +7690,19 @@
                              this.IsTProfile() && this.histo.fBinEntries)
                            cont = this.histo.fBinEntries[besti+1];
 
-                        var lbl = Math.round(cont);
+                        var posx = Math.round(mx1 + (mx2-mx1)*0.1),
+                            posy = Math.round(my-2-text_size),
+                            sizex = Math.round((mx2-mx1)*0.8),
+                            sizey = text_size,
+                            lbl = Math.round(cont);
+
                         if (lbl === cont)
                            lbl = cont.toString();
                         else
                            lbl = JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat);
 
-                        var posx = Math.round(mx1 + (mx2-mx1)*0.1), posy = my-2-text_size,
-                            sizex = Math.round((mx2-mx1)*0.8), sizey = text_size;
-
-                        if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
+                        if (text_angle!==0) {
                            posx = midx;
-                           posy = Math.round(my - 2- text_size/2);
                            sizex = 0;
                            sizey = text_angle-360;
                         }
