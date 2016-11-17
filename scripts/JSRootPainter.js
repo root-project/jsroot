@@ -3139,6 +3139,19 @@
       for (var n=0; n < hints.length; ++n) {
          var hint = hints[n];
          if (!hint) continue;
+         if (!hint.lines || (hint.lines.length===0)) {
+            hints[n] = null; continue;
+         }
+
+         // check if fully duplicated hint already exsits
+         for (var k=0;k<n;++k) {
+            var hprev = hints[k];
+            if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
+            for (var l=0, diff = false;l<hint.lines.length && !diff;++l)
+               if (hprev.lines[l] !== hint.lines[l]) diff = true;
+            if (!diff) { hints[n] = null; break; }
+         }
+         if (!hints[n]) continue;
 
          nhints++;
 
