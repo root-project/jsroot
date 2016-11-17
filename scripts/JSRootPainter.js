@@ -5535,14 +5535,45 @@
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
 
+
+      var ndim = this.Dimension(),
+          xaxis = this.histo.fXaxis,
+          yaxis = this.histo.fYaxis,
+          zaxis = this.histo.fXaxis;
+
+      // apply selected user range from histogram itself
+      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((xaxis.fFirst !== xaxis.fLast) && ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
+            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
+            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
+         }
+      }
+
+      if ((ndim>1) &&  yaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((yaxis.fFirst !== yaxis.fLast) && ((yaxis.fFirst > 1) || (yaxis.fLast < yaxis.fNbins))) {
+            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst-1) : yaxis.fXmin;
+            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast) : yaxis.fXmax;
+         }
+      }
+
+      if ((ndim>2) && zaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((zaxis.fFirst !== zaxis.fLast) && ((zaxis.fFirst > 1) || (zaxis.fLast < zaxis.fNbins))) {
+            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst-1) : zaxis.fXmin;
+            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast) : zaxis.fXmax;
+         }
+      }
+
       var pad = this.root_pad();
 
       if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
 
-      var min = pad.fUxmin, max = pad.fUxmax, xaxis = this.histo.fXaxis;
+      var min = pad.fUxmin, max = pad.fUxmax;
 
       // first check that non-default values are there
-      if ((this.Dimension() < 3) && ((min !== 0) || (max !== 1))) {
+      if ((ndim < 3) && ((min !== 0) || (max !== 1))) {
          if (pad.fLogx > 0) {
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
@@ -5556,26 +5587,16 @@
             }
       }
 
-      // apply selected user range if range not selected via pad
-      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
-         if ((this.zoom_xmin === this.zoom_xmax) && (xaxis.fFirst !== xaxis.fLast) &&
-             ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
-               this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
-               this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
-         }
-      }
-
       min = pad.fUymin; max = pad.fUymax;
 
-      if ((this.Dimension() == 2) && ((min !== 0) || (max !== 1))) {
+      if ((ndim == 2) && ((min !== 0) || (max !== 1))) {
          if (pad.fLogy > 0) {
             min = Math.exp(min * Math.log(10));
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== this.histo.fYaxis.fXmin || max !== this.histo.fYaxis.fXmax)
-            if (min >= this.histo.fYaxis.fXmin && max <= this.histo.fYaxis.fXmax) {
+         if (min !== yaxis.fXmin || max !== yaxis.fXmax)
+            if (min >= yaxis.fXmin && max <= yaxis.fXmax) {
                // set zoom values if only inside range
                this.zoom_ymin = min;
                this.zoom_ymax = max;
