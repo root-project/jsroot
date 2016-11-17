@@ -5180,6 +5180,7 @@
       this.keys_handler = null;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
+      this.zoom_changed_interactive = 0;
    }
 
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -5687,6 +5688,8 @@
 
       this.ScanContent();
 
+      this.histogram_updated = true; // indicate that object updated
+
       return true;
    }
 
@@ -5779,7 +5782,6 @@
          this.GetIndexZ = function(z,add) { return Math.floor((z - this.zmin) / this.binwidthz + add); };
       }
    }
-
 
    JSROOT.THistPainter.prototype.CreateXY = function() {
       // here we create x,y objects which maps our physical coordnates into pixels
@@ -6413,11 +6415,20 @@
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
-      if (dox || doy || dox) this.zoom_changed_interactive = true;
+      var last = this.zoom_changed_interactive;
 
-      return this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
-                       doy ? 0 : undefined, doy ? 0 : undefined,
-                       doz ? 0 : undefined, doz ? 0 : undefined);
+      if (dox || doy || dox) this.zoom_changed_interactive = 2;
+
+      var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                              doy ? 0 : undefined, doy ? 0 : undefined,
+                              doz ? 0 : undefined, doz ? 0 : undefined);
+
+      // if unzooming has no effect, decrease counter
+      if ((dox || doy || dox) && !changed)
+         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
+
+      return changed;
+
    }
 
    JSROOT.THistPainter.prototype.clearInteractiveElements = function() {
@@ -6553,7 +6564,7 @@
       this.clearInteractiveElements();
 
       if (isany) {
-         this.zoom_changed_interactive = true;
+         this.zoom_changed_interactive = 2;
          this.Zoom(xmin, xmax, ymin, ymax);
       }
    }
@@ -6728,7 +6739,7 @@
       this.last_touch = new Date(0);
 
       if (isany) {
-         this.zoom_changed_interactive = true;
+         this.zoom_changed_interactive = 2;
          this.Zoom(xmin, xmax, ymin, ymax);
       }
 
@@ -6846,7 +6857,7 @@
 
       this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
-      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = true;
+      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
@@ -6945,7 +6956,7 @@
          if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
          this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
          this.Zoom(zoom.name, zoom.min, zoom.max);
-         if (zoom.changed) this.zoom_changed_interactive = true;
+         if (zoom.changed) this.zoom_changed_interactive = 2;
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
@@ -7181,6 +7192,11 @@
       }
 
       this.FillAttContextMenu(menu);
+
+      if (this.histogram_updated && this.zoom_changed_interactive)
+         menu.add('Let update zoom', function() {
+            this.zoom_changed_interactive = 0;
+         });
 
       return true;
    }

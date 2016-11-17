@@ -2224,8 +2224,9 @@
          var isany = false;
          if (this.firstpainter) {
             var histo = obj.fHistogram;
-            if (this.autorange && (histo == null))
+            if (this.autorange && !histo)
                histo = this.ScanGraphsRange(graphs);
+
             if (this.firstpainter.UpdateObject(histo)) isany = true;
          }
 
