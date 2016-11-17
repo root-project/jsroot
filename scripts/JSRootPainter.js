@@ -7761,7 +7761,7 @@
                         if (lbl === cont)
                            lbl = cont.toString();
                         else
-                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat);
+                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
                         if (text_angle!==0) {
                            posx = midx;

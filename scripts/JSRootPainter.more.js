@@ -3926,7 +3926,7 @@
             if (lbl === binz)
                lbl = binz.toString();
             else
-               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat);
+               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
 
             if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);
