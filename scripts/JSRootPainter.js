@@ -5543,26 +5543,26 @@
 
       // apply selected user range from histogram itself
       if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((xaxis.fFirst !== xaxis.fLast) && ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
-            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst-1) : xaxis.fXmin;
-            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast) : xaxis.fXmax;
+            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst) : xaxis.fXmin;
+            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast+1) : xaxis.fXmax;
          }
       }
 
       if ((ndim>1) &&  yaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         //yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((yaxis.fFirst !== yaxis.fLast) && ((yaxis.fFirst > 1) || (yaxis.fLast < yaxis.fNbins))) {
-            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst-1) : yaxis.fXmin;
-            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast) : yaxis.fXmax;
+            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst) : yaxis.fXmin;
+            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast+1) : yaxis.fXmax;
          }
       }
 
       if ((ndim>2) && zaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         //zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((zaxis.fFirst !== zaxis.fLast) && ((zaxis.fFirst > 1) || (zaxis.fLast < zaxis.fNbins))) {
-            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst-1) : zaxis.fXmin;
-            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast) : zaxis.fXmax;
+            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst) : zaxis.fXmin;
+            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast+1) : zaxis.fXmax;
          }
       }
 
@@ -7612,6 +7612,7 @@
           exclude_zero = !this.options.Zero,
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
+          show_line = (this.options.Line > 0),
           show_text = (this.options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
@@ -7626,7 +7627,7 @@
       } else
       if (this.options.Error > 0) path_err = "";
 
-      if (this.options.Line > 0) { path_line = ""; show_markers = true; }
+      if (show_line) path_line = "";
 
       if (show_markers) {
          // draw markers also when e2 option was specified
@@ -7671,7 +7672,7 @@
          dend = Math.floor((this.lineatt.width-1)/2);
       }
 
-      var draw_markers = show_errors || show_markers;
+      var draw_markers = show_errors || show_markers || show_line;
 
       if (draw_markers || show_text) use_minmax = true;
 
@@ -7706,7 +7707,7 @@
                curry = gry;
             } else {
 
-               if (draw_markers || show_text) {
+               if (draw_markers || show_text || show_line) {
                   bincont = this.histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));

@@ -3200,6 +3200,7 @@
       // used to enable/disable stat box
       this.draw_content = this.gmaxbin > 0;
 
+/*
       // apply selected user X range if no other range selection was done
       if (this.is_main_painter() && (this.zoom_xmin === this.zoom_xmax) &&
           this.histo.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange) &&
@@ -3217,6 +3218,7 @@
          this.zoom_ymin = this.histo.fYaxis.fFirst > 1 ? this.GetBinY(this.histo.fYaxis.fFirst-1) : this.ymin;
          this.zoom_ymax = this.histo.fYaxis.fLast <= this.nbinsy ? this.GetBinY(this.histo.fYaxis.fLast) : this.ymax;
       }
+*/
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
