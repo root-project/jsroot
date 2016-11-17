@@ -5042,7 +5042,6 @@
 
          if (vertical) {
             var xoffset = -side*Math.round(labeloffset + (2-side/10) * axis.fTitleOffset*title_fontsize);
-
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                var rect = axis_g.node().getBoundingClientRect();
@@ -5236,14 +5235,15 @@
       /* decode string 'opt' and fill the option structure */
       var hdim = this.Dimension();
       var option = {
-         Axis: 0, Bar: 0, Curve: 0, Error: 0, Hist: 0, Line: 0,
+         Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
+         Error: 0, errorX: JSROOT.gStyle.fErrorX,
          Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
          Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
          Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
          Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
          System: JSROOT.Painter.Coord.kCARTESIAN,
          AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 0, Palette: 0, BaseLine: false,
+         HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
          Optimize: JSROOT.gStyle.OptimizeDraw
       };
 
@@ -5314,7 +5314,6 @@
       if (d.check('LEGO', true)) {
          option.Scat = 0;
          option.Lego = 1;
-         option.Zero = 1;
          if (d.part.indexOf('0') >= 0) option.Zero = 0;
          if (d.part.indexOf('1') >= 0) option.Lego = 11;
          if (d.part.indexOf('2') >= 0) option.Lego = 12;
@@ -5464,12 +5463,10 @@
 
       if (d.check('L')) { option.Line = 1; option.Hist = -1; }
 
-      if (d.check('P0')) { option.Mark = 10; option.Hist = -1; }
-      if (d.check('P')) { option.Mark = 1; option.Hist = -1; }
+      if (d.check('P0')) { option.Mark = 1; option.Hist = -1; option.Zero = 1; }
+      if (d.check('P')) { option.Mark = 1; option.Hist = -1; option.Zero = 0; }
       if (d.check('Z')) option.Zscale = 1;
-      if (d.check('*')) { option.Mark = 23; option.Hist = -1; }
-      if (d.check('H')) option.Hist = 2;
-      if (d.check('0')) option.Zero = 0;
+      if (d.check('*H') || d.check('*')) { option.Mark = 23; option.Hist = -1; }
 
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
@@ -5478,12 +5475,10 @@
       if (d.check('E', true)) {
          if (hdim == 1) {
             option.Error = 1;
-            if ((d.part.length>0) && !isNaN(parseInt(d.part[0])))
-               option.Error = 10 + parseInt(d.part[0]);
-            if (d.part.indexOf('X0')>=0) {
-               if (option.Error == 1) option.Error += 20;
-               option.Error += 10;
-            }
+            option.Zero = 0; // do not draw empty bins with erros
+            if (!isNaN(parseInt(d.part))) option.Error = 10 + parseInt(d.part);
+            if (option.Error === 10) option.Zero = 1; // disable drawing of empty bins
+            if (d.check('X0')) option.errorX = 0;
          } else {
             if (option.Error == 0) {
                option.Error = 100;
@@ -5492,6 +5487,7 @@
          }
       }
       if (d.check('9')) option.HighRes = 1;
+      if (d.check('0')) option.Zero = 0;
 
       //if (option.Surf == 15)
       //   if (option.System == JSROOT.Painter.Coord.kPOLAR || option.System == JSROOT.Painter.Coord.kCARTESIAN)
@@ -7577,7 +7573,7 @@
           pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
-          exclude_zero = (this.options.Error!==10) && (this.options.Mark!==10),
+          exclude_zero = !this.options.Zero,
           show_errors = (this.options.Error > 0),
           show_markers = (this.options.Mark > 0),
           show_text = (this.options.Text > 0),
@@ -7996,7 +7992,9 @@
          if ((findbin === left) && (grx1 > pnt_x + gapx))  findbin = null; else
          if ((findbin === right-1) && (grx2 < pnt_x - gapx)) findbin = null; else
          // if bars option used check that bar is not match
-         if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null;
+         if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
+         // exclude empty bin if empty bins suppressed
+         if (!this.options.Zero && (this.histo.getBinContent(findbin+1)===0)) findbin = null;
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
