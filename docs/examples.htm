@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	   <!-- As template three.js web site was used -->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+		<title>JavaScript ROOT examples</title>
+		<link rel="shortcut icon" href="img/RootIcon.ico">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			* {
+				 box-sizing: border-box;
+			}
+			body {
+				background-color: #ffffff;
+				margin: 0px;
+				font-family: 'Verdana, Geneva, sans-serif';
+				font-size: 15px;
+				line-height: 18px;
+				color: #555;
+			}
+			h1 {
+				margin-top: 20px;
+				margin-bottom: 20px;
+				margin-left: 20px;
+				font-size: 25px;
+				font-weight: normal;
+			}
+			h2 {
+				color: #999;
+				font-size: 18px;
+				font-weight: normal;
+				margin-top: 10px;
+				margin-bottom: 5px;
+			}
+			hr {
+				border: 0px;
+				height: 1px;
+				background-color: #ccc;
+				margin: 30px 0px;
+			}
+			a {
+				color: #2194CE;
+				text-decoration: none;
+			}
+			a:hover {
+				text-decoration: underline;
+			}
+			#panel {
+				position: fixed;
+				left: 0px;
+				top: 0px;
+				bottom: 0px;
+				width: 240px;
+				background: #ffffff;
+				overflow: auto;
+			}
+				#panel #content {
+					padding: 0px 10px;
+				}
+				#panel img {
+					border: 1px solid #ccc;
+				}
+				#panel #book {
+					text-align: center;
+					margin-top: 15px;
+				}
+			#viewer {
+				position: absolute;
+				border: 0px;
+				left: 240px;
+				width: calc(100% - 240px);
+				height: 100%;
+				overflow: hidden;
+			}
+			
+			#viewer_frame {
+				border: 0px;
+				width: 100%;
+				height: 100%;
+			}
+
+			.link:hover {
+				text-decoration: underline;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div id="panel">
+			<h1 id="version"><a href=".." style="color:green">JSROOT</a></h1>
+			<div id="content"></div>
+			<br/>
+		</div>
+		
+		<div id="viewer">
+		</div>
+		
+		<script>
+			var scripts = "scritps/";
+			var jsroot_path = "./";
+			var filepath = "../files/";
+			var use_requirejs = false;
+			
+			if (window.location.search.indexOf("requirejs")>0) {
+			   jsroot_path = "./indexr.htm";
+			   use_requirejs = true;
+			   document.title += ' (with require.js)';
+			}
+			
+			if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
+			    (window.location.host.indexOf('root.cern.ch') < 0)) {
+			       filepath = "http://jsroot.gsi.de/files/"; 
+			}
+			
+			if (window.location.protocol == "file:") { 
+			  scripts = "../scripts/";
+			  jsroot_path = "../index.htm";
+			  filepath = "http://jsroot.gsi.de/files/";
+			  use_requirejs = false;
+			  //filepath = "https://root.cern.ch/js/files/";
+			}
+			
+			
+			var element = document.createElement("script");
+         element.setAttribute('type', "text/javascript");
+         if (use_requirejs) element.setAttribute('src',"//cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js");
+                       else element.setAttribute('src', scripts + 'JSRootCore.js');
+
+         if (element.readyState) { // Internet Explorer specific
+            element.onreadystatechange = function() {
+               if (element.readyState == "loaded" || element.readyState == "complete") {
+                  element.onreadystatechange = null;
+                  completeLoad();
+               }
+           }
+         } else { // Other browsers
+            element.onload = function() {
+               element.onload = null;
+               completeLoad();
+            }
+         }
+         
+         document.getElementsByTagName("head")[0].appendChild(element);
+         
+         function completeLoad() {
+            if (!use_requirejs) return FillContent(); 
+         
+            require([scripts + 'JSRootCore.js'], function(handle) {
+               JSROOT = handle;
+               FillContent();
+            });
+         }
+         
+         // ===========================================================================
+			
+			
+			var examples = {
+			   TH1 : [
+			     { opt: "", file: "hsimple.root", item: "hpx;1" },
+			     { opt: "P" },
+			     { opt: "PO" },
+			     { name:"star", opt:"*H", title: "draw stars on histogram bins" },
+			     { opt:"L", title: "draw histogram as line" },
+			     { name: "LF2", opt:"LF2,fill_blue", title: "draw histogram as line with filled area" },
+			     { name: "B", opt:"B,fill_red", title: "draw histogram as bar chart" },
+			     { opt: "E" },
+			     { opt: "E0", title: "draw errors, also for empty bins" },
+			     { opt: "E1" },
+			     { opt: "E1X0", title: "draw error markers, without horizontal part" },
+			     { opt: "pE2" },
+			     { name: "E3", opt: "e3,fill_red" },
+			     { name: "E4", opt: "e4,fill_blue" },
+			     { name: "text", opt: "hist,text" },
+			     { name: "lego", opt: "lego2,pal50" },
+			     { opt: "X+Y+" },
+			     { opt: "inspect", title: "universal object inspector, can be used for any class" },
+			     { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[two_axis,draw_e1,draw_e34,draw_bar,draw_text]", title:"several TH1 examples from THistPainter documentation" }
+			   ],
+			   TH2 : [
+			     { opt: "", file: "hsimple.root", item: "hpxpy;1" },
+			     { opt: "col" },
+			     { opt: "colpal77", title: "example how color pallete 77 can be used for drawing" },
+			     { opt: "colz", title: "color draw with palette" },
+			     { opt: "arr", title: "ARR draw option" },
+			     { opt: "cont", title: "Contor plot" },
+			     { opt: "cont1", title: "Contor plot with different line colors" },
+			     { opt: "cont2", title: "Contor plot with different line styles" },
+			     { opt: "cont3", title: "Contor plot with just lines" },
+			     { opt: "cont4", title: "Contor plot with background color" },
+			     { opt: "surf", title: "3D plot with surf option" },
+			     { opt: "surf1", title: "3D SURF plot with colors levels" },
+			     { opt: "surf2", title: "3D colored SURF without lines" },
+			     { opt: "surf3", title: "3D SURF with contour plot on the top" },
+			     { opt: "surf4", title: "3D SURF with Gouraud shading" },
+			     { opt: "surf6", title: "Only contour lines in 3D space" },
+			     { opt: "surf7", title: "3D colored SURF with contours on the top" },
+			     { opt: "e", title: "3D plot with errors" },
+			     { opt: "lego", title: "3D lego plot" },
+			     { opt: "lego0", title: "3D lego plot (without zeros)" },
+			     { opt: "lego1", title: "3D lego plot with red colors on x-sides" },
+			     { opt: "lego2", title: "3D lego plot with color levels" },
+			     { opt: "lego3", title: "lego3 plot - lego1 without border lines" },
+			     { opt: "lego4", title: "lego4 plot - lego2 without border lines" },
+			     { opt: "text", title: "draw bins content as text, can be combined with col, box or scat options" },
+			     { opt: "scat", title: "scatter plot (used as default draw option)" },
+			     { name: "box", url: "?nobrowser&json=" + filepath + "hbox.json.gz&opt=box", title: "boxes, area proportional to bin content" },
+			     { name: "box1", url: "?nobrowser&json=" + filepath + "hbox.json.gz&opt=box1", title: "boxes, area proportional to bin content" }
+			   ],
+			   TH2Poly : [
+			      { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },
+			      { opt: "lego", item: "boxes;1" },
+			      { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
+			      { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
+			   ],
+			   TH3 : [
+			     { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
+			     { name: "box", file: "histpainter6.root", item: "draw_th3_box;1", opt: "" },
+			     { opt: "box1", file: "glbox.root", item: "h31;1" },
+			   ],
+			   TTree : [
+			      { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple;1/px", title: "Histogram data of simple TBranch object" },
+			      { name: "lhcb2", asurl: true, file: "https://root.cern.ch/files/lhcb2.root", item: "E;1/Event_Gen_Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
+               { name: "atlas", asurl: true, file: "https://root.cern.ch/files/atlas30new.root", item: "CollectionTree;220/TileMuContainer_p1_TileMuObj/vector<TileMu_p1>/vector<TileMu_p1>.m_phi", title: "Histogram data of tree from atlas30new.root file" }
+			   ],
+			   TProfile : [
+			     { opt: "", file: "hsimple.root", item: "hprof;1" },
+			     { opt: "E" },
+			     { opt: "E1" },
+			     { opt: "pE2" },
+			     { opt: "hist" },
+			     { name: "text", opt: "hist,text" },
+			     { name: "texte", opt: "hist,texte" }
+			   ],
+			   THStack : [
+			     { opt: "", file: "histpainter6.root", item: "draw_hstack;1", title: "several examples from THistPainter docu" },
+			     { name: "nostackb", item: "draw_nostackb;1", title: "example of bar chart with stacked histograms" },
+			     { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" }
+			   ],
+			   TF1 : [
+			     { name:"hist+func", opt: "", url:  "?nobrowser&file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1" },
+			     { name:"canv", opt: "", file: "danilo6.root", item: "canvas;1" },
+			     { name:"ff2", file: "ff2.root", item: "c1Dia;1" },
+			     { name:"ff3", file:  "ff3.root", item: "c1Dia;1" }
+			   ],
+			   TCanvas : [
+			     { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
+			     { name:"subpad", url:  "?nobrowser&file=" + filepath + "rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
+			     { name:"zdemo", file:  "zdemo.root", item: "zdemo;1" },
+			     { name:"legend", url:  "?nobrowser&file=" + filepath + "legends.root&item=legends;1&mathjax", title: "TCanvas with TLegend, use MathJax.js"  },
+			     { name:"time", file: "ct.root", item: "ct;1" },
+			     { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
+			   ],
+			   TGeo : [
+			     { name:"logo", url: "?nobrowser&file=" + filepath + "geom/rootgeom.root&item=simple1;1", title:"Geometry from rootgeom.C example" },
+			     { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
+			     { name:"prim2", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[cone,coneseg,tube,tubeseg,ctub,eltu,pcon,pgon]&opts=[a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives, group 2" },
+			     { name:"prim3", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x2&items=[sphere,torus,parab,hype,comp]&opts=[a,a,a,a,a]", title:"Basic TGeo primitives, group 3" },
+			     { name:"comp", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[axis,axis,compaaxis,axis]", title:"Components of composite shape" },
+			     { name:"building", url: "?nobrowser&file=" + filepath + "geom/building.root&item=geom;1&opt=allz", title: "Geometry from tutorials/geom/building.C" },
+			     { name:"alice", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C", title: "ALICE geometry" },
+			     { name:"atlas", url: "?nobrowser&file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors", title:"ATLAS geometry" },
+			     { name:"cms", url: "?nobrowser&file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C;clipxyz", title: "CMS geomtery" },
+			     { name:"lhcb", url: "?nobrowser&file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors", title: "LHCb geometry" },
+			     { name:"eve", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
+			     { name:"tracks", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz&file=" + filepath + "geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
+			     { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" }
+			   ],
+			   TGraph : [
+			     { opt:"", file: "graph.root", item: "Graph;1" },
+			     { opt:"L" },
+			     { opt:"AX+Y+L" },
+			     { opt:"P" },
+			     { name:"star", opt:"*" },
+			     { opt:"LP" },
+			     { opt:"B" },
+			     { opt:"B1" },
+			     { name:"docu", url: "?nobrowser&file=" + filepath + "graph.root+&layout=grid3x3&items=[c1,c47,c4,c48,c41,c42,c43,c44,c45]", title:"several canvas from TGraph documentation page" }
+			   ],
+			   TGraphErrors : [
+			     { opt:"", file: "graph.root", item: "GraphErrors;1" },
+			     { opt:"l",  title: 'just line with errors' },
+			     { opt:"lx", title: 'suppress drawing of the errors' },
+			     { opt:"z" , title: "do not draw ends"},
+			     { opt:">" , title: "draw arrows at the ends"},
+			     { opt:"|>" , title: "draw closed arrows at the ends"},
+			     { opt:"||" , title: "do not draw main error lines, only ends"},
+			     { opt:"[]" , title: "do not draw main error lines, only ends as brackets"},
+			     { opt:"0", title: "do not draw errors for points outside range" },
+			     { opt:"2", title: "filled rec" },
+			     { opt:"3" },
+			     { opt:"4" },
+			     { opt:"5", title: "filled rec plus line contour" }
+			   ],
+			   TGraphAsymmErrors : [
+			     { opt:"", file: "graph.root", item: "GraphAsymmErrors;1" },
+			     { opt:"z" , title: "do not draw ends"},
+			     { opt:">" , title: "draw arrows at the ends"},
+			     { opt:"|>" , title: "draw closed arrows at the ends"},
+			     { opt:"||" , title: "do not draw main error lines, only ends"},
+			     { opt:"[]" , title: "do not draw main error lines, only ends as brackets"},
+			     { opt:"2", title: "filled rec"  }
+			   ],
+			   TMultiGraph : [
+			     { name:"exclusion", file: "graph.root", item: "exclusion;1" },
+			     { name:"c1", file: "multigraph.root", item: "c1;1" },
+			     { name:"c2", item: "c2;1" },
+			     { name:"c3", item: "c3;1" },
+			     { name:"c4", item: "c4;1" },
+			     { name:"c5", item: "c5;1" },
+			     { name:"all", url: "?nobrowser&file=" + filepath + "multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
+			   ],
+			   TGraph2D : [ 
+			      { opt:"", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
+			      { name:"pcol", item: "pcol", title: "example of TGraph2D, color options" },
+			      { opt:"err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
+			   ],
+			   TLatex : [
+			     { name:"text", url: "?nobrowser&file=" + filepath + "latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]", title: "Without MathJax.js rendering" },
+			     { name:"latex", url: "?nobrowser&file=" + filepath + "latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]&mathjax", title: "With MathJax.js rendering" },
+			     { name:"math", url: "?nobrowser&file=" + filepath + "latex.root&item=math;1", title: "TMathText drawn always with MathJax.js rendering" }
+			   ],
+			   Misc : [
+			     { name:"ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },
+			     { name:"axis", file: "gaxis.root", item: "c1;1", title: "TGaxis class" },
+			     { name:"arrow", file: "arrow.root", item: "c1;1", title: "TArrow class" },
+			     { name:"sinfo", url: "?nobrowser&file=" + filepath + "hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
+			     { name:"3dmark", url: "?nobrowser&file=" + filepath + "mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
+			     { name:"profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
+			     { name:"polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
+			     { name:"tf2", url: "?nobrowser&json=" + filepath + "tf2.json.gz&opt=nosave", title: "Example of TF2 drawing" }
+			   ]
+			};
+			
+			var extra = {
+			   TH1: [
+			     { name:"docu_zero", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&style=style_zero&items=[draw_zero2,draw_zero1,draw_bar]", title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
+			     { name: "varbins", file: "hbins.root", item: "SpectraPions;1" },
+			     { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
+			     { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
+			     { name: "hbar", file: "hbars.root", item: "c1;1" }
+			   ],
+			   TH2: [
+			     { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },
+			     { name: "atlas", opt: "col", file: "atlas.root", item: "LEDShapeHeightCorr_Gain0;1" },
+			     { name: "logx", opt: "colz", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },
+			     { name: "logz", url: "?nobrowser&file=" + filepath + "sparsehist.root&item=c;1&palette=7", title: "LogZ plus text on several canvas" },
+			     { name: "userz", url: "?nobrowser&json=" + filepath + "th2ul.json.gz&opt=colz", title: "TH2 with set user min/max, drawn with COLZ" },			     
+			     { name: "candle", file: "candleplot.root", item: "c1;1" },
+			     { name: "box_same", url: "?nobrowser&json=" + filepath + "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
+			     { name: "col_same", url: "?nobrowser&json=" + filepath + "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
+			     { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_th2e,draw_scat, draw_arr, draw_box, draw_box1, draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
+			     { name:"docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
+			     { name:"docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
+			     { name:"docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
+			     { name:"docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
+			     { name:"docu_poly", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
+			   ],
+			   TH2Poly : [
+			      { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" }
+			   ],
+			   TH3 : [
+			     { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
+			   ],
+			   THStack : [
+  			     { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
+			     { name: "json", title: "Draw stack from JSON file", url: "?nobrowser&json=" + filepath + "thstack.json.gz", title: "some special stack from JSON file" }
+			   ],
+			   TTree : [
+			      { name: "wjets", asurl: true, file: "http://jsroot.gsi.de/files/tmp/WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
+			      { name: "todo_cms2", asurl: true, file: "https://root.cern.ch/files/cms2.root", item: "Events;1/GenEventInfoProduct_generator__HLT./GenEventInfoProduct_generator__HLT.present", title: "TODO: Most data cannot be decoded" },
+			      { name: "todo_event", asurl: true, file: "https://root.cern.ch/files/event/event_0.root", item: "EventTree;2/event/fNseg", title: "TODO: Some data cannot be decoded" },
+			   ],
+			   TF1 : [
+			     { name:"ip0", file: "ip0.root", item: "c;1" },
+			     { name:"root5", file: "danilo5.root", item: "canvas;1" },
+			     { name:"gaus", file: "macro8.root", item: "c1;1" }
+			   ],
+			   TCanvas : [
+			     { name:"jpsi", file:"JPsi_evolution.root", item: "CutTrees/cut1/C_cut1 < 2.85714;1" },
+			     { name:"noframe", file: "can4.root", item: "c1;1" },
+			     { name:"higgs", file: "higgs_c.root", item: "c;1" },
+			     { name: "amore", file: "VertexXY.root", item: "Amore Canvas;1" },
+			     { name: "dual", file: "myDualCanvas.root", item: "DualCanvas;1", title: "Canvas with two subpads and double-log scale" },
+			     { name: "hsum", file: "hsum.root", item: "c1;1", title: "Canvas with several histos and selected user range (from hsum.C macro)" },
+			     { name: "sub-sub", file: "fitslicesy.root", item: "c1;1", title: "Canvas with sub-sub pads" },
+			     { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
+			     { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" }
+			   ],
+			   TGeo : [
+			     { name:"atlas_cryo", url: "?nobrowser&file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C" },
+			     { name:"atlas_simple", url: "?nobrowser&json=" + filepath + "geom/simple_atlas.json.gz" },
+			     { name:"star", url: "?nobrowser&json=" + filepath + "geom/star_svtt.json.gz" },
+			     { name:"hades", url: "?nobrowser&json=" + filepath + "geom/hades.json.gz" },
+			     { name:"babar", url: "?nobrowser&json=" + filepath + "geom/babar_emca.json.gz" },
+			     { name:"alice_simple", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz", title: "simple alice geomtery" },
+			     { name:"Dipole", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
+			     { name:"count", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=count", title: "Count volume in large geomtery" },
+			     { name:"tank", url: "?nobrowser&file=https://root.cern.ch/files/tank.root&item=geom;1&opt=z;rotate", title: "Just for fun" },
+			     { name:"lego", url: "?nobrowser&file=https://root.cern.ch/files/lego.root&item=geom;1&opt=z;rotate", title: "Just for fun" }
+			   ],
+			   TGraph : [
+			     { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
+			     { name:"macro2", file:"macro2.root", item: "c1;1" },
+			     { name:"split", file: "gr2.root", item: "c1equi;1", title: "split line in legend, ignored " }
+			   ],
+			   Misc : [
+			     { name:"io56", file: "fitLinear56.root", item: "fitLinear6", title: "file with two version from ROOT 5/6 of same object" },
+			     { name:"folder", url: "?file=" + filepath + "folders.root&expand=RsnMgr;1/input/0/2/10", title: "TFolder class" },
+			     { name:"task", url: "?file=" + filepath + "tasks.root&expand=run;1", title: "TTask class" },
+			     { name:"alitask", url: "?file=" + filepath + "alitasks.root&expand=RsnMgr;1/input/1/3/9", title: "AliRoot TTask classes" },
+			     { name:"aliQA", url: "?file=http://jsroot.gsi.de/files/QAresults_barrel.root&expand=TPC_PerformanceQA/TPCQA;1", title: "Alice QA file" }
+			   ]
+			};
+			
+			function ProcessClick(durl, filename, itemname, opt) {
+			
+			   if (typeof JSROOT.cleanup === 'function')
+			      JSROOT.cleanup('viewer');
+			
+			   if (durl.length > 0) {
+			       var viewer = document.getElementById( 'viewer_frame' );
+			       if (viewer == null) {
+			          document.getElementById('viewer').innerHTML = "";
+			          viewer = document.createElement('iframe');
+			          viewer.id = "viewer_frame";
+			          document.getElementById('viewer').appendChild(viewer);
+			       }
+			       viewer.src = jsroot_path + durl + (opt.length>0 ? ("&opt=" + opt) : "");
+			       viewer.focus();
+			    } else {
+			       document.getElementById('viewer').innerHTML = "";
+			       document.getElementById('viewer').style['background-color'] = "";
+			       JSROOT.OpenFile(filename, function(file) {
+			          file.ReadObject(itemname, function(obj) {
+			             JSROOT.draw("viewer", obj, opt);
+			          });
+			       });
+			    }
+			}
+			
+			function SetListener(elem, shortname, durl, filename, itemname, opt) {
+			    elem.addEventListener( 'click', function (event) {
+			       event.preventDefault();
+			       window.location.hash = shortname;
+			       ProcessClick(durl, filename, itemname, opt);
+			   });
+			} 
+
+         function FillContent() {
+         
+            // all painter assigned to viewer element will be automatically informed about resize 
+			   JSROOT.AssertPrerequisites("2d", function() {
+               JSROOT.RegisterForResize('viewer');
+            });
+         
+            document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
+
+				var content = document.getElementById( 'content' );
+				
+				if (window.location.search.indexOf("?more")==0) {
+				   for (var key in extra) {
+				      if (key in examples) {
+				         for (var n in extra[key])
+				           examples[key].push(extra[key][n]);
+				      } else {
+				         examples[key] = extra[key];
+				      }
+				   }
+				}
+				
+				for (var key in examples) {
+				
+				   var opts = examples[key];
+				
+	 			   var div = document.createElement( 'h2' );
+				   div.textContent = key;
+				   content.appendChild( div );
+				
+				   var url = "", filename = "", itemname = ""; 
+				
+				   for (var n=0; n<opts.length;++n) {
+				      var entry = opts[n];
+				
+				      var shortname = key.toLowerCase().replace(" ","_");
+				
+				      if ('url' in entry) {
+				         url = entry.url;
+				      } else {
+				         if ('file' in entry) { 
+				            url = ""; filename = entry.file;
+				            if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
+				         }
+				         if ('item' in entry) { url = ""; itemname = entry.item; } 
+				      }
+				
+				      var opt = ('opt' in entry) ? entry.opt : "";
+				      var aaa = document.createElement( 'a' );
+				
+				      if ('name' in entry)
+				         aaa.textContent = entry.name;
+				      else
+				      if (opt != "")       
+				         aaa.textContent = opt;
+				      else
+				         aaa.textContent = "<dflt>";
+				
+				      if (aaa.textContent != "<dflt>") shortname += "_" + aaa.textContent.toLowerCase().replace(" ","_"); 
+				
+				      if (entry.asurl)
+				         url = "?nobrowser&file=" + filename + "&item=" + itemname;
+				
+				      if (url.length>0) 
+				         aaa.href = jsroot_path + url;
+				      else   
+				         aaa.href = jsroot_path + "?nobrowser&file=" + filename + "&item=" + itemname;   
+				
+				      if (opt != "")
+				         aaa.href += "&opt=" + opt;
+				         
+				      if ('title' in entry)
+				         aaa.title = entry.title; 
+				      
+				      content.appendChild( aaa );
+				      SetListener(aaa, shortname, url, filename, itemname, opt);
+				      
+				      if (n < opts.length-1) {
+				         content.appendChild(document.createTextNode(", "));
+				      } else {
+				         content.appendChild(document.createElement('br'));
+				      }
+				
+				      if (window.location.hash == "#" + shortname) {
+				         ProcessClick(url, filename, itemname, opt);
+				      }
+				   
+				   }
+			   
+			   } // Fill
+			}
+			
+		</script>
+	</body>
+</html>
