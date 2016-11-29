@@ -98,14 +98,14 @@
       </div>
       
       <script>
-         var scripts = "scritps/";
+         var scripts = "scripts/";
          var jsroot_path = "./";
          var filepath = "../files/";
          var use_requirejs = false;
 
          var icon = document.createElement("link");
-         icon.href = "img/RootIcon.ico";
-         icon.rel = "shortcut icon";
+         icon.setAttribute('src', "img/RootIcon.ico");
+         icon.setAttribute('rel', "shortcut icon");
          
          if (window.location.search.indexOf("requirejs")>0) {
             jsroot_path = "./indexr.htm";
@@ -123,14 +123,11 @@
             jsroot_path = "../index.htm";
             filepath = "http://jsroot.gsi.de/files/";
             use_requirejs = false;
-            icon.href = "../img/RootIcon.ico";
+            icon.setAttribute('src', "../img/RootIcon.ico");
             //filepath = "https://root.cern.ch/js/files/";
          }
          
          document.getElementsByTagName("head")[0].appendChild(icon);
-         
-               <!-- link rel="shortcut icon" href="img/RootIcon.ico" -->
-         
          
          var element = document.createElement("script");
          element.setAttribute('type', "text/javascript");
