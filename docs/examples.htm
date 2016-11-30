@@ -455,17 +455,17 @@
             });
          };
          
-         var keyid, optid, testfile, testobj;
+         var keyid, optid, testfile, testobj, testinterval = 200;
          
          function RunBigTest(interval, doinit) {
             if (doinit) {
                 keyid = 'TH1'; optid = -1;
                 testfile = testobj = null;
-                console.log("RUN TEST");
-                return RunBigTest(0);
+                testinterval = interval;
+                JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0,false); });
             }
             
-            if ((interval === undefined) || isNaN(interval) || (typeof interval !== "number")) interval = 100;
+            if ((interval === undefined) || isNaN(interval) || (typeof interval !== "number")) interval = testinterval;
             if (interval > 0) return setTimeout(function() { RunBigTest(0); }, interval);
 
             if (++optid >= examples[keyid].length) {
@@ -612,19 +612,30 @@
                 content.appendChild( div );
                 
                 var aaa = document.createElement( 'a' );
-                
                 aaa.textContent = "run";
                 aaa.title = "Run all examples after each other"; 
                 content.appendChild( aaa );
-
                 aaa.addEventListener( 'click', function (event) {
                     event.preventDefault();
                     window.location.hash = "run";
-                    RunBigTest(0,true);
+                    RunBigTest(100,true);
                 });
+
+                if (window.location.hash == "#run") RunBigTest(100,true); 
+
+                content.appendChild(document.createTextNode(", "));
                 
-                if (window.location.hash == "#run")
-                   JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0,true); });
+                var aaa = document.createElement( 'a' );
+                aaa.textContent = "slow_run";
+                aaa.title = "Run all examples slowly after each other"; 
+                content.appendChild( aaa );
+                aaa.addEventListener( 'click', function (event) {
+                    event.preventDefault();
+                    window.location.hash = "slow_run";
+                    RunBigTest(5000,true);
+                });
+
+                if (window.location.hash == "#slow_run") RunBigTest(5000,true); 
             }
 
          }; // FillContent
