@@ -5265,7 +5265,7 @@
          HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
          Optimize: JSROOT.gStyle.OptimizeDraw
       };
-
+      
       var d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption);
 
       // check for graphical cuts
@@ -5277,7 +5277,7 @@
       // use error plot only when any sumw2 bigger than 0
       if ((hdim===1) && (this.histo.fSumw2.length > 0))
          for (var n=0;n<this.histo.fSumw2.length;++n)
-            if (this.histo.fSumw2[n] > 0) { option.Error = 2; break; }
+            if (this.histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
 
       if (d.check('PAL', true)) option.Palette = parseInt(d.part);
 
@@ -5499,7 +5499,7 @@
             option.Zero = 0; // do not draw empty bins with erros
             if (!isNaN(parseInt(d.part[0]))) option.Error = 10 + parseInt(d.part[0]);
             if ((option.Error === 13) || (option.Error === 14)) need_fillcol = true;
-            if (option.Error === 10) option.Zero = 1; // disable drawing of empty bins
+            if (option.Error === 10) option.Zero = 1; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) option.errorX = 0;
          } else {
             if (option.Error == 0) {
