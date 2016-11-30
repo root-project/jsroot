@@ -1549,8 +1549,10 @@
           painter = this, last = new Date();
 
       function animate() {
+         if (!painter._renderer || !painter.options) return;
+         
          var current = new Date();
-
+         
          if ( painter.options.autoRotate ) requestAnimationFrame( animate );
 
          if (painter._controls) {
@@ -2067,7 +2069,7 @@
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
-      this.set_as_main_painter();
+      this.AccessTopPainter(true);
 
       // set DIVID when first child exists - we use it for painter
 
@@ -2148,6 +2150,11 @@
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {
+      if (!this._renderer) {
+         console.warn('renderer object not exists - check code');
+         return;
+      }
+
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if (tmout <= 0) {
@@ -2369,6 +2376,9 @@
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
+         
+         this.AccessTopPainter(false); // remove as pointer
+         
          this.helpText();
 
          JSROOT.Painter.DisposeThreejsObject(this._scene);
@@ -2377,7 +2387,7 @@
             this._tcontrols.dispose();
 
          if (this._controls)
-            this._controls.dispose();
+            this._controls.Cleanup();
 
          if (this._context_menu)
             this._renderer.domElement.removeEventListener( 'contextmenu', this._context_menu, false );
@@ -2389,6 +2399,10 @@
          if (obj) delete obj._painter;
 
          if (this._worker) this._worker.terminate();
+         
+         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+         
+         delete this.options;
       }
 
       delete this._scene;

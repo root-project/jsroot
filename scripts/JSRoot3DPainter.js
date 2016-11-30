@@ -156,9 +156,8 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
-      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel) {
+      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel) 
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
-      }
 
       if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
          renderer.domElement.addEventListener( 'mousedown', control_mousedown);
@@ -184,6 +183,20 @@
           block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
           tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
 
+      
+      control.Cleanup = function() {
+         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+            this.domElement.removeEventListener( 'wheel', control_mousewheel);
+         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
+            this.domElement.removeEventListener( 'mousedown', control_mousedown);
+            this.domElement.removeEventListener( 'mouseup', control_mouseup);
+         }
+         
+         this.dispose(); // this is from OrbitControl itself
+         
+         console.log('CLEAR ORBIT CONTROL');
+      }
+      
       control.ProcessMouseDblclick = function(evnt) {
          var intersect = DetectZoomMesh(evnt);
          if (intersect && painter) {
@@ -514,7 +527,7 @@
          this.clear_3d_canvas();
 
          JSROOT.Painter.DisposeThreejsObject(this.scene);
-         if (this.control) this.control.dispose();
+         if (this.control) this.control.Cleanup();
 
          delete this.size_xy3d;
          delete this.size_z3d;
@@ -2800,7 +2813,7 @@
              grx = p.grx(this.graph.fX[indx]),
              gry = p.gry(this.graph.fY[indx]),
              grz = p.grz(this.graph.fZ[indx]),
-            tip = { info: this.tip_name + "<br/>" +
+             tip = { info: this.tip_name + "<br/>" +
                    "pnt: " + indx + "<br/>" +
                    "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
                    "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +

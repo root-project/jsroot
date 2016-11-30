@@ -1123,12 +1123,23 @@
       this.divid = null; // either id of element (preferable) or element itself
    }
 
+   JSROOT.TBasePainter.prototype.AccessTopPainter = function(on) {
+      // access painter in the first child element
+      // on === true - set this as painter
+      // on === false - delete painter
+      // on === undefined - return painter
+      var main = this.select_main().node(),
+         chld = main ? main.firstChild : null;   
+      if (!chld) return null;
+      if (on===true) chld.painter = this; else
+      if (on===false) delete chld.painter;
+      return chld.painter;
+   }
+
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
       
-      var main = this.select_main();
-      var chld = main && main.node() ? main.node().firstChild : null;
-      if (chld && chld.painter) { chld.painter = null; delete chld.painter; } // remove pointer
+      this.AccessTopPainter(false);
       this.divid = null;
    }
 
@@ -1208,11 +1219,10 @@
       // it registered in the first child element
       if (arguments.length > 0)
          this.divid = divid;
-      var main = this.select_main();
-      var chld = (main && main.node()) ? main.node().firstChild : null;
-      if (chld) chld.painter = this;
+      
+      this.AccessTopPainter(true);
    }
-
+   
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
       if (typeof name === 'string') this._hitemname = name;
                                else delete this._hitemname;
@@ -1681,9 +1691,7 @@
       if (!res) {
          var svg_p = this.svg_pad();
          if (svg_p.empty()) {
-            var mnode = this.select_main();
-            if (mnode.node() && mnode.node().firstChild)
-               res = mnode.node().firstChild.painter;
+            res = this.AccessTopPainter();
          } else {
             res = svg_p.property('mainpainter');
          }
@@ -1695,12 +1703,6 @@
 
    JSROOT.TObjectPainter.prototype.is_main_painter = function() {
       return this === this.main_painter();
-   }
-
-   JSROOT.TObjectPainter.prototype.set_as_main_painter = function() {
-      var main = this.select_main();
-      if (main.node() && main.node().firstChild)
-         main.node().firstChild.painter = this;
    }
 
    JSROOT.TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
@@ -1734,7 +1736,7 @@
 
       if (svg_c.empty()) {
          if ((is_main < 0) || (is_main===5) || this.iscan) return;
-         this.set_as_main_painter();
+         this.AccessTopPainter(true);
          return;
       }
 
@@ -1923,8 +1925,7 @@
       // Iterate over all known painters
 
       // special case of the painter set as pointer of first child of main element
-      var main = this.select_main();
-      var painter = (main.node() && main.node().firstChild) ? main.node().firstChild['painter'] : null;
+      var painter = this.AccessTopPainter();;
       if (painter) return userfunc(painter);
 
       // iterate over all painters from pad list
