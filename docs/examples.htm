@@ -83,7 +83,6 @@
          .link:hover {
             text-decoration: underline;
          }
-
       </style>
    </head>
    <body>
@@ -96,8 +95,8 @@
       
       <div id="viewer">
       </div>
-      
-      <script>
+
+      <script type="text/javascript" >
          var scripts = "scripts/";
          var jsroot_path = "./";
          var filepath = "../files/";
@@ -420,6 +419,8 @@
             ]
          };
          
+         
+         
          function ProcessClick(durl, filename, itemname, opt) {
          
             if (typeof JSROOT.cleanup === 'function')
@@ -444,7 +445,7 @@
                    });
                 });
              }
-         }
+         };
          
          function SetListener(elem, shortname, durl, filename, itemname, opt) {
              elem.addEventListener( 'click', function (event) {
@@ -452,7 +453,69 @@
                 window.location.hash = shortname;
                 ProcessClick(durl, filename, itemname, opt);
             });
-         } 
+         };
+         
+         var keyid, optid, testfile, testobj;
+         
+         function RunBigTest(interval, doinit) {
+            if (doinit) {
+                keyid = 'TH1'; optid = -1;
+                testfile = testobj = null;
+                console.log("RUN TEST");
+                return RunBigTest(0);
+            }
+            
+            if ((interval === undefined) || isNaN(interval) || (typeof interval !== "number")) interval = 100;
+            if (interval > 0) return setTimeout(function() { RunBigTest(0); }, interval);
+
+            if (++optid >= examples[keyid].length) {
+               var found = false, next = null;
+               for (var key in examples) {
+                   if (found) { next = key; break; }
+                   if (key == keyid) found = true;
+               }
+               if (!next) return; // stop condition
+               keyid = next; optid = -1; testfile = testobj = null;
+               // console.log("Switch key ", keyid);
+               return RunBigTest(0); 
+            }
+            
+            var entry = examples[keyid][optid];
+            if (entry.url || entry.asurl) { testfile = testobj = null; return RunBigTest(0); }  // ignore examples with URL
+
+            var filename = "", itemname = "";
+            
+            if (entry.file) {
+                filename = entry.file;
+                if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
+            }
+            if (entry.item) itemname = entry.item;
+
+            var opt = ('opt' in entry) ? entry.opt : "";
+            
+            JSROOT.cleanup("viewer");
+
+            if (filename.length > 0) {
+                JSROOT.OpenFile(filename, function(file) {
+                   testfile = file;
+                     testfile.ReadObject(itemname, function(obj) {
+                         testobj = obj;
+                       var p = JSROOT.draw("viewer", obj, opt);
+                       if (p) p.WhenReady(RunBigTest);
+                    });
+                 });
+            } else
+            if (itemname.length > 0) {
+                testfile.ReadObject(itemname, function(obj) {
+                    testobj = obj;
+                    var p = JSROOT.draw("viewer", obj, opt);
+                    if (p) p.WhenReady(RunBigTest);
+                 });
+            } else {
+                var p = JSROOT.draw("viewer", testobj, opt);
+                if (p) p.WhenReady(RunBigTest);
+            }
+         }
 
          function FillContent() {
          
@@ -460,7 +523,7 @@
             JSROOT.AssertPrerequisites("2d", function() {
                JSROOT.RegisterForResize('viewer');
             });
-         
+            
             document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
             var content = document.getElementById( 'content' );
@@ -480,7 +543,7 @@
             
                var opts = examples[key];
             
-                var div = document.createElement( 'h2' );
+               var div = document.createElement( 'h2' );
                div.textContent = key;
                content.appendChild( div );
             
@@ -490,7 +553,7 @@
                   var entry = opts[n];
             
                   var shortname = key.toLowerCase().replace(" ","_");
-            
+                  
                   if ('url' in entry) {
                      url = entry.url;
                   } else {
@@ -500,10 +563,10 @@
                      }
                      if ('item' in entry) { url = ""; itemname = entry.item; } 
                   }
-            
+
                   var opt = ('opt' in entry) ? entry.opt : "";
                   var aaa = document.createElement( 'a' );
-            
+
                   if ('name' in entry)
                      aaa.textContent = entry.name;
                   else
@@ -540,11 +603,31 @@
                   if (window.location.hash == "#" + shortname) {
                      ProcessClick(url, filename, itemname, opt);
                   }
-               
                }
+            }
             
-            } // Fill
-         }
+            if (window.location.search.indexOf("?more")==0) {
+                var div = document.createElement( 'h2' );
+                div.textContent = "Testing";
+                content.appendChild( div );
+                
+                var aaa = document.createElement( 'a' );
+                
+                aaa.textContent = "run";
+                aaa.title = "Run all examples after each other"; 
+                content.appendChild( aaa );
+
+                aaa.addEventListener( 'click', function (event) {
+                    event.preventDefault();
+                    window.location.hash = "run";
+                    RunBigTest(0,true);
+                });
+                
+                if (window.location.hash == "#run")
+                   JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0,true); });
+            }
+
+         }; // FillContent
          
       </script>
    </body>
