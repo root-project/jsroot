@@ -932,7 +932,12 @@
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
          var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
-         // need_worker = false;
+         
+         // worker does not work when starting from file system
+         if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
+            console.log('disable worker for jsroot from file system');
+            need_worker = false;
+         }
 
          if (need_worker && !this._worker && (this.options.use_worker >= 0))
             this.startWorker(); // we starting worker, but it may not be ready so fast
