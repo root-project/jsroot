@@ -1125,6 +1125,10 @@
 
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
+      
+      var main = this.select_main();
+      var chld = main && main.node() ? main.node().firstChild : null;
+      if (chld && chld.painter) { chld.painter = null; delete chld.painter; } // remove pointer
       this.divid = null;
    }
 
@@ -1205,7 +1209,7 @@
       if (arguments.length > 0)
          this.divid = divid;
       var main = this.select_main();
-      var chld = main.node() ? main.node().firstChild : null;
+      var chld = (main && main.node()) ? main.node().firstChild : null;
       if (chld) chld.painter = this;
    }
 
@@ -1249,7 +1253,6 @@
    JSROOT.TObjectPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.TObjectPainter.prototype.Cleanup = function() {
-//      console.log('Cleanup ', this.GetObject() ? this.GetObject()._typename : "---");
 
       this.RemoveDrawG();
 
@@ -1261,13 +1264,14 @@
       this.pad_name = "";
       this.main = null;
       this.draw_object = null;
-      this.divid = null;
 
       // remove attributes objects (if any)
       delete this.fillatt;
       delete this.lineatt;
       delete this.markeratt;
       delete this.bins;
+      
+      JSROOT.TBasePainter.prototype.Cleanup.call(this);
    }
 
    JSROOT.TObjectPainter.prototype.GetObject = function() {
@@ -3860,6 +3864,12 @@
    JSROOT.TPadPainter.prototype.Cleanup = function() {
       // cleanup only pad itself, all child elements will be collected and cleanup separately
 
+      var svg_p = this.svg_pad();
+      if (svg_p) {
+         svg_p.property('pad_painter', null);
+         svg_p.property('mainpainter', null);
+      }
+      
       this.painters = [];
       this.pad = null;
       this.this_pad_name = "";
@@ -9046,11 +9056,11 @@
       this.with_icons = true;
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
-      this.nobrowser = frameid === null;
-      if (!this.nobrowser) this.SetDivId(frameid);
+      this.nobrowser = (frameid === null);
+      if (!this.nobrowser) this.SetDivId(frameid); // this is required to be able cleanup painter  
 
       // remember only very first instance
-      if (JSROOT.hpainter == null)
+      if (!JSROOT.hpainter)
          JSROOT.hpainter = this;
    }
 
@@ -9087,6 +9097,11 @@
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
+      
+      JSROOT.TBasePainter.prototype.Cleanup.call(this);
+      
+      if (JSROOT.hpainter === this)
+         JSROOT.hpainter = null;
    }
 
    JSROOT.HierarchyPainter.prototype.FileHierarchy = function(file) {
@@ -10502,18 +10517,18 @@
          this.disp.CheckMDIResize(null, size);
    }
 
-   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back, gui_div) {
+   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back, gui_div, url) {
       var hpainter = this,
           prereq = "",
-          filesdir = JSROOT.GetUrlOption("path"),
-          filesarr = JSROOT.GetUrlOptionAsArray("#file;files"),
-          jsonarr = JSROOT.GetUrlOptionAsArray("#json;jsons"),
-          expanditems = JSROOT.GetUrlOptionAsArray("expand"),
-          itemsarr = JSROOT.GetUrlOptionAsArray("#item;items"),
-          optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts"),
-          monitor = JSROOT.GetUrlOption("monitoring"),
-          layout = JSROOT.GetUrlOption("layout"),
-          style = JSROOT.GetUrlOptionAsArray("#style");
+          filesdir = JSROOT.GetUrlOption("path", url),
+          filesarr = JSROOT.GetUrlOptionAsArray("#file;files", url),
+          jsonarr = JSROOT.GetUrlOptionAsArray("#json;jsons", url),
+          expanditems = JSROOT.GetUrlOptionAsArray("expand", url),
+          itemsarr = JSROOT.GetUrlOptionAsArray("#item;items", url),
+          optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts", url),
+          monitor = JSROOT.GetUrlOption("monitoring", url),
+          layout = JSROOT.GetUrlOption("layout", url),
+          style = JSROOT.GetUrlOptionAsArray("#style", url);
 
       if (gui_div && !gui_div.empty()) {
 
@@ -10557,14 +10572,14 @@
          if (!layout) layout = gui_div.attr("layout");
       }
 
-      if (expanditems.length==0 && (JSROOT.GetUrlOption("expand")=="")) expanditems.push("");
+      if (expanditems.length==0 && (JSROOT.GetUrlOption("expand", url)=="")) expanditems.push("");
 
       if (filesdir!=null) {
          for (var i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
          for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length==0) && JSROOT.GetUrlOption("item")=="") itemsarr.push("");
+      if ((itemsarr.length==0) && JSROOT.GetUrlOption("item", url)=="") itemsarr.push("");
 
       if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
@@ -10582,7 +10597,7 @@
          }
       }
 
-      if (JSROOT.GetUrlOption('files_monitoring')!=null) this.files_monitoring = true;
+      if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
 
       function OpenAllFiles() {
          if (jsonarr.length>0)
