@@ -3131,13 +3131,13 @@
           height = this.frame_height(),
           width = this.frame_width(),
           pad_width = this.pad_width(),
-          frame_x = this.frame_x();
+          frame_x = this.frame_x(),
           pp = this.pad_painter(true),
           maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
           font = JSROOT.Painter.getFontDetails(160, textheight);
 
       // collect tooltips from pad painter - it has list of all drawn objects
-      if (pp!==null) hints = pp.GetTooltips(pnt);
+      if (pp) hints = pp.GetTooltips(pnt);
 
       if (pnt && pnt.touch) textheight = 15;
 
