@@ -419,15 +419,18 @@
             ]
          };
          
-         var keyid = null, optid, testfile, testobj, testinterval = 200;
+         var keyid = null, optid, testfile, testobj, testinterval = 200, hpainter = null;
          
          function ProcessClick(durl, filename, itemname, opt) {
          
             keyid = null; // stop execution of running test loop (if any)
-            
+
+            if (JSROOT.hpainter) 
+               JSROOT.hpainter.Cleanup();
+
             if (typeof JSROOT.cleanup === 'function')
                JSROOT.cleanup('viewer');
-         
+            
             if (durl.length > 0) {
                 var viewer = document.getElementById( 'viewer_frame' );
                 if (viewer == null) {
@@ -489,22 +492,48 @@
             }
             
             var entry = examples[keyid][optid];
-            if (entry.url || entry.asurl) { testfile = testobj = null; return RunBigTest(0); }  // ignore examples with URL
 
-            var filename = "", itemname = "";
+            var filename = "", itemname = "", url = "", opt = "";
             
             if (entry.file) {
                 filename = entry.file;
                 if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
             }
             if (entry.item) itemname = entry.item;
-
-            var opt = ('opt' in entry) ? entry.opt : "";
-
-            // console.log('KEY ', keyid, 'opt', opt);
+            if (entry.opt) opt = entry.opt;
             
+            if (entry.url) url = entry.url; else
+            if (entry.asurl) url = "?file=" + filename + "&item=" + itemname + "&opt=" + opt;
+            
+            // console.log('KEY ', keyid, 'opt', opt);
+            // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
+            
+            if (hpainter) { hpainter.Cleanup(); hpainter = null; }
             JSROOT.cleanup("viewer");
+            
+            if (url.length > 0) {   
+               testfile = testobj = null;
+               // if (keyid == 'TGeo') return RunBigTest(0);  // ignore TGeo URLs - too complex 
+               
+               var layout = JSROOT.GetUrlOption("layout", url, "simple"),
+                   nobrowser = JSROOT.GetUrlOption("nobrowser", url, null);
+               
+               if (nobrowser !== null) {
+                  // return RunBigTest(0);
+                  hpainter = new JSROOT.HierarchyPainter('root', null);
+                  hpainter.SetDisplay(layout, "viewer");
+               } else {
+                  var guiCode = "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>"     
+                              + '<div id="browser"></div></div>'
+                              + '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
+                  d3.select("#viewer").html(guiCode);
 
+                  hpainter = new JSROOT.HierarchyPainter('root', 'browser');
+                  hpainter.SetDisplay(layout,"right-div");
+               }
+               
+               hpainter.StartGUI(null, RunBigTest, null, url); 
+            } else   
             if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
