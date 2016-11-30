@@ -510,20 +510,17 @@
                    testfile = file;
                    testfile.ReadObject(itemname, function(obj) {
                       testobj = obj;
-                      var p = JSROOT.draw("viewer", obj, opt);
-                      if (p) p.WhenReady(RunBigTest);
+                      JSROOT.draw("viewer", obj, opt, RunBigTest);
                    });
                 });
             } else
             if (itemname.length > 0) {
                 testfile.ReadObject(itemname, function(obj) {
                     testobj = obj;
-                    var p = JSROOT.draw("viewer", obj, opt);
-                    if (p) p.WhenReady(RunBigTest);
+                    JSROOT.draw("viewer", obj, opt, RunBigTest);
                  });
             } else {
-                var p = JSROOT.draw("viewer", testobj, opt);
-                if (p) p.WhenReady(RunBigTest);
+                JSROOT.draw("viewer", testobj, opt, RunBigTest);
             }
          }
 
@@ -631,8 +628,6 @@
                     RunBigTest(100,true);
                 });
 
-                if (window.location.hash == "#run") RunBigTest(100,true); 
-
                 content.appendChild(document.createTextNode(", "));
                 
                 aaa = document.createElement( 'a' );
@@ -645,8 +640,6 @@
                     RunBigTest(5000,true);
                 });
 
-                if (window.location.hash == "#slow") RunBigTest(5000,true);
-                
                 content.appendChild(document.createTextNode(", "));
                 aaa = document.createElement( 'a' );
                 aaa.textContent = "stop";
@@ -656,8 +649,9 @@
                     event.preventDefault();
                     keyid = null;
                 });
-
             }
+            if (window.location.hash == "#run") RunBigTest(100,true); 
+            if (window.location.hash == "#slow") RunBigTest(5000,true);
 
          }; // FillContent
          

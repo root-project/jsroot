@@ -27,6 +27,9 @@
 6. Support loading of TStyle object, providing in URL
      ...&style=item_name  or ...&style=json_file_name 
    All values are copied directly to JSROOT.gStyle object.  
+7. Add callback argument into JSROOT.draw() function. 
+   Function will be called after drawing of object is completed.
+   Painter for drawn object will be provided as first argument (or null in case of error). 
      
 
 ## Changes in 4.7.0

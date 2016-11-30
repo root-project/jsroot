@@ -1132,7 +1132,8 @@
       // function should be called by the painter when first drawing is completed
       this._ready_called_ = true;
       if ('_ready_callback_' in this) {
-         JSROOT.CallBack(this._ready_callback_, this);
+         for (var k=0;k<this._ready_callback_.length;++k)
+            JSROOT.CallBack(this._ready_callback_[k], this);
          delete this._ready_callback_;
       }
       return this;
@@ -1140,8 +1141,10 @@
 
    JSROOT.TBasePainter.prototype.WhenReady = function(callback) {
       // call back will be called when painter ready with the drawing
+      if (typeof callback !== 'function') return;
       if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
-      this._ready_callback_ = callback;
+      if (this._ready_callback_ === undefined) this._ready_callback_ = [];
+      this._ready_callback_.push(callback);
    }
 
    JSROOT.TBasePainter.prototype.GetObject = function() {
@@ -10744,13 +10747,13 @@
          painter.h._name = obj.fName;
 
       painter.select_main().style('overflow','auto');
-
+      
       JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
          painter.DrawingReady();
       });
-
+      
       return painter;
    }
 
@@ -11320,30 +11323,42 @@
    /** @fn JSROOT.draw(divid, obj, opt)
     * Draw object in specified HTML element with given draw options  */
 
-   JSROOT.draw = function(divid, obj, opt) {
-      if ((obj===null) || (typeof obj !== 'object')) return null;
+   JSROOT.draw = function(divid, obj, opt, callback) {
+      
+      function completeDraw(painter) {
+         if (painter && callback && (typeof painter.WhenReady == 'function')) 
+            painter.WhenReady(callback);
+         else
+            JSROOT.CallBack(callback, painter);
+         return painter;
+      }
+      
+      if ((obj===null) || (typeof obj !== 'object')) return completeDraw(null); 
 
-      if (opt == 'inspect')
-         return JSROOT.Painter.drawInspector(divid, obj);
+      if (opt == 'inspect') 
+         return completeDraw(JSROOT.Painter.drawInspector(divid, obj));
 
       var handle = null, painter = null;
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
       else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
 
-      if (!handle) return null;
+      if (!handle) return completeDraw(null);
 
       if (handle.draw_field && obj[handle.draw_field])
-         return JSROOT.draw(divid, obj[handle.draw_field], opt);
+         return JSROOT.draw(divid, obj[handle.draw_field], opt, callback);
 
-      if (!handle.func) return null;
+      if (!handle.func) return completeDraw(null);
 
       function performDraw() {
          if ((painter===null) && ('painter_kind' in handle))
             painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
-         if (painter==null) return handle.func(divid, obj, opt);
-
-         return handle.func.bind(painter)(divid, obj, opt, painter);
+         if (painter==null) 
+            painter = handle.func(divid, obj, opt);
+         else
+            painter = handle.func.bind(painter)(divid, obj, opt, painter);
+         
+         return completeDraw(painter);
       }
 
       if (typeof handle.func == 'function') return performDraw();
@@ -11359,7 +11374,7 @@
          if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
       }
 
-      if (funcname.length === 0) return null;
+      if (funcname.length === 0) return completeDraw(null);
 
       // special handling for painters, which should be loaded via extra scripts
       // such painter get extra last argument - pointer on dummy painter object
@@ -11373,7 +11388,7 @@
           return performDraw();
       }
 
-      if (prereq.length === 0) return null;
+      if (prereq.length === 0) return completeDraw(null);
 
       painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
@@ -11389,7 +11404,7 @@
          }
       });
 
-      return painter;
+      return completeDraw(painter);
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
