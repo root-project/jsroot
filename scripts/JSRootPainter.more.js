@@ -1134,18 +1134,27 @@
          // if function calculated, one always could zoom inside
          return true;
       }
+      
+      this.PerformDraw = function() {
+         if (this.main_painter() === null) {
+            var histo = this.CreateDummyHisto();
+            JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
+         }
 
-      this.SetDivId(divid, -1);
-      if (this.main_painter() === null) {
-         var histo = this.CreateDummyHisto();
-         JSROOT.Painter.drawHistogram1D(divid, histo, "AXIS");
+         this.SetDivId(this.divid);
+         this.Redraw();
+         return this.DrawingReady();
       }
 
+      this.SetDivId(divid, -1);
       var d = new JSROOT.DrawOptions(opt);
       this.nosave = d.check('NOSAVE');
-      this.SetDivId(divid);
-      this.Redraw();
-      return this.DrawingReady();
+      
+      if (JSROOT.Math !== undefined) 
+         return this.PerformDraw();
+      
+      JSROOT.AssertPrerequisites("math", this.PerformDraw.bind(this));
+      return this;
    }
 
    // ====================================================================
