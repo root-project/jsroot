@@ -419,10 +419,12 @@
             ]
          };
          
-         
+         var keyid = null, optid, testfile, testobj, testinterval = 200;
          
          function ProcessClick(durl, filename, itemname, opt) {
          
+            keyid = null; // stop execution of running test loop (if any)
+            
             if (typeof JSROOT.cleanup === 'function')
                JSROOT.cleanup('viewer');
          
@@ -455,18 +457,23 @@
             });
          };
          
-         var keyid, optid, testfile, testobj, testinterval = 200;
-         
          function RunBigTest(interval, doinit) {
             if (doinit) {
-                keyid = 'TH1'; optid = -1;
-                testfile = testobj = null;
-                testinterval = interval;
-                JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0,false); });
+               var running = (keyid != null); // indication that test running - no need to relaunch events
+               keyid = 'TH1'; optid = -1;
+               testfile = testobj = null;
+               var ii = JSROOT.GetUrlOption("interval");
+               if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
+                                          else testinterval = interval;
+               if (running) return;
+               return JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0); });
             }
+
+            if (!keyid) return; // this is indication of test break
             
             if ((interval === undefined) || isNaN(interval) || (typeof interval !== "number")) interval = testinterval;
-            if (interval > 0) return setTimeout(function() { RunBigTest(0); }, interval);
+            if (interval > 0)
+               return setTimeout(function() { RunBigTest(0); }, interval);
 
             if (++optid >= examples[keyid].length) {
                var found = false, next = null;
@@ -474,8 +481,9 @@
                    if (found) { next = key; break; }
                    if (key == keyid) found = true;
                }
+               keyid = next;
                if (!next) return; // stop condition
-               keyid = next; optid = -1; testfile = testobj = null;
+               optid = -1; testfile = testobj = null;
                // console.log("Switch key ", keyid);
                return RunBigTest(0); 
             }
@@ -492,18 +500,20 @@
             if (entry.item) itemname = entry.item;
 
             var opt = ('opt' in entry) ? entry.opt : "";
+
+            // console.log('KEY ', keyid, 'opt', opt);
             
             JSROOT.cleanup("viewer");
 
             if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
-                     testfile.ReadObject(itemname, function(obj) {
-                         testobj = obj;
-                       var p = JSROOT.draw("viewer", obj, opt);
-                       if (p) p.WhenReady(RunBigTest);
-                    });
-                 });
+                   testfile.ReadObject(itemname, function(obj) {
+                      testobj = obj;
+                      var p = JSROOT.draw("viewer", obj, opt);
+                      if (p) p.WhenReady(RunBigTest);
+                   });
+                });
             } else
             if (itemname.length > 0) {
                 testfile.ReadObject(itemname, function(obj) {
@@ -625,17 +635,28 @@
 
                 content.appendChild(document.createTextNode(", "));
                 
-                var aaa = document.createElement( 'a' );
-                aaa.textContent = "slow_run";
+                aaa = document.createElement( 'a' );
+                aaa.textContent = "slow";
                 aaa.title = "Run all examples slowly after each other"; 
                 content.appendChild( aaa );
                 aaa.addEventListener( 'click', function (event) {
                     event.preventDefault();
-                    window.location.hash = "slow_run";
+                    window.location.hash = "slow";
                     RunBigTest(5000,true);
                 });
 
-                if (window.location.hash == "#slow_run") RunBigTest(5000,true); 
+                if (window.location.hash == "#slow") RunBigTest(5000,true);
+                
+                content.appendChild(document.createTextNode(", "));
+                aaa = document.createElement( 'a' );
+                aaa.textContent = "stop";
+                aaa.title = "Stop running example"; 
+                content.appendChild( aaa );
+                aaa.addEventListener( 'click', function (event) {
+                    event.preventDefault();
+                    keyid = null;
+                });
+
             }
 
          }; // FillContent
