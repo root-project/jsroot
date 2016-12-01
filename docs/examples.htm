@@ -113,17 +113,16 @@
          }
          
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
-             (window.location.host.indexOf('root.cern.ch') < 0)) {
+             (window.location.host.indexOf('root.cern') < 0)) {
                 filepath = "http://jsroot.gsi.de/files/"; 
          }
          
-         if (window.location.protocol == "file:") { 
+         if ((window.location.protocol == "file:") || (window.location.host.indexOf('rawgit.com') >= 0)) { 
             scripts = "../scripts/";
             jsroot_path = "../index.htm";
             filepath = "http://jsroot.gsi.de/files/";
             use_requirejs = false;
             icon.setAttribute('src', "../img/RootIcon.ico");
-            //filepath = "https://root.cern.ch/js/files/";
          }
          
          document.getElementsByTagName("head")[0].appendChild(icon);
