@@ -183,10 +183,11 @@
       control.renderer = renderer; 
       control.raycaster = new THREE.Raycaster();
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
-
-      var mouse_ctxt = { x:0, y: 0, on: false },
-          control_active = false, control_changed = false, cursor_changed = false,
-          block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+      control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+      control.cursor_changed = false;
+      control.control_changed = false;
+      control.control_active = false;
+      control.mouse_ctxt = { x:0, y: 0, on: false };
       
       control.Cleanup = function() {
          if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
@@ -267,70 +268,70 @@
 
 
       control.addEventListener( 'change', function() {
-         mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         control.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
          control.painter.Render3D(0);
-         control_changed = true;
+         control.control_changed = true;
       });
 
       control.addEventListener( 'start', function() {
-         control_active = true;
-         block_ctxt = false;
-         mouse_ctxt.on = false;
+         control.control_active = true;
+         control.block_ctxt = false;
+         control.mouse_ctxt.on = false;
 
          control.tooltip.hide();
 
          // do not reset here, problem of events sequence in orbitcontrol
          // it issue change/start/stop event when do zooming
-         // control_changed = false;
+         // control.control_changed = false;
       });
 
       control.addEventListener( 'end', function() {
-         control_active = false;
-         if (mouse_ctxt.on) {
-            mouse_ctxt.on = false;
-            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
+         control.control_active = false;
+         if (control.mouse_ctxt.on) {
+            control.mouse_ctxt.on = false;
+            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
          } else
-         if (control_changed) {
+         if (control.control_changed) {
             // react on camera change when required
          }
-         control_changed = false;
+         control.control_changed = false;
       });
 
       function control_contextmenu(evnt) {
          evnt.preventDefault();
-         control.GetMousePos(evnt, mouse_ctxt);
-         if (control_active)
-            mouse_ctxt.on = true;
+         control.GetMousePos(evnt, control.mouse_ctxt);
+         if (control.control_active)
+            control.mouse_ctxt.on = true;
          else
-         if (block_ctxt)
-            block_ctxt = false;
+         if (control.block_ctxt)
+            control.block_ctxt = false;
          else
-            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
+            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
       };
 
       function control_touchstart(evnt) {
          if (!evnt.touches) return;
 
          //  disable context menu if any changes where done by orbit control
-         if (!control_changed && !mouse_ctxt.touchtm) {
-            control.GetMousePos(evnt.touches[0], mouse_ctxt);
-            mouse_ctxt.touchtm = new Date().getTime();
+         if (!control.control_changed && !control.mouse_ctxt.touchtm) {
+            control.GetMousePos(evnt.touches[0], control.mouse_ctxt);
+            control.mouse_ctxt.touchtm = new Date().getTime();
          }
       };
 
       function control_touchend(evnt) {
          if (!evnt.touches) return;
 
-         if (control_changed || !mouse_ctxt.touchtm) return;
+         if (control.control_changed || !control.mouse_ctxt.touchtm) return;
 
-         var diff = new Date().getTime() - mouse_ctxt.touchtm;
-         delete mouse_ctxt.touchtm;
+         var diff = new Date().getTime() - control.mouse_ctxt.touchtm;
+         delete control.mouse_ctxt.touchtm;
          if (diff < 200) return;
 
          var pos = control.GetMousePos(evnt.touches[0], {});
 
-         if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
-            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
+         if ((Math.abs(pos.x - control.mouse_ctxt.x) <= 10) && (Math.abs(pos.y - control.mouse_ctxt.y) <= 10))
+            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
       };
 
       control.ContextMenu = function(pos, intersects) {
@@ -338,11 +339,10 @@
       }
 
       function control_mousemove(evnt) {
-         if (control_active && evnt.buttons && (evnt.buttons & 2)) {
-            block_ctxt = true; // if right button in control was active, block next context menu
-         }
+         if (control.control_active && evnt.buttons && (evnt.buttons & 2)) 
+            control.block_ctxt = true; // if right button in control was active, block next context menu
 
-         if (control_active || !control.ProcessMouseMove) return;
+         if (control.control_active || !control.ProcessMouseMove) return;
 
          if (control.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
@@ -372,7 +372,7 @@
 
          var info = control.ProcessMouseMove(intersects);
 
-         cursor_changed = false;
+         control.cursor_changed = false;
          if (info && (info.length>0)) {
             control.tooltip.show(info, 200);
             control.tooltip.pos(evnt)
@@ -380,18 +380,18 @@
             control.tooltip.hide();
             if (intersects)
                for (var n=0;n<intersects.length;++n)
-                  if (intersects[n].object.zoom) cursor_changed = true;
+                  if (intersects[n].object.zoom) control.cursor_changed = true;
          }
 
-         document.body.style.cursor = cursor_changed ? 'pointer' : 'auto';
+         document.body.style.cursor = control.cursor_changed ? 'pointer' : 'auto';
       };
 
       function control_mouseleave() {
          control.tooltip.hide();
          if (control.ProcessMouseLeave) control.ProcessMouseLeave();
-         if (cursor_changed) {
+         if (control.cursor_changed) {
             document.body.style.cursor = 'auto';
-            cursor_changed = false;
+            control.cursor_changed = false;
          }
       };
 
