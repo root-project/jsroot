@@ -1430,22 +1430,24 @@
       return (value - pad.fX1) / (pad.fX2 - pad.fX1);
    }
 
-   /** Converts x or y coordinate into SVG coordinates,
-    *  which could be used directly for drawing.
-    *  Parameters: axis should be "x" or "y", value to convert, is ndc should be used */
-   JSROOT.TObjectPainter.prototype.AxisToSvg = function(axis, value, pad_coordinates) {
+   /** Converts x or y coordinate into SVG pad coordinates,
+    *  which could be used directly for drawing in the pad.
+    *  Parameters: axis should be "x" or "y", value to convert
+    *  Always return rounded values */
+   JSROOT.TObjectPainter.prototype.AxisToSvg = function(axis, value) {
       var main = this.main_painter();
       if (main) {
          // this is frame coordinates
-         value = (axis=="y") ? main.gry(value) : main.grx(value);
+         value = (axis=="y") ? main.gry(value) + main.frame_y()  
+                             : main.grx(value) + main.frame_x();
          // if used pad coordiantes, we should
-         if (pad_coordinates)
-            value += (axis=="y") ? main.frame_y() : main.frame_x();
+         // if (pad_coordinates)
+         //   value += (axis=="y") ? main.frame_y() : main.frame_x();
       } else {
          value = this.ConvertToNDC(axis, value);
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
-      return value;
+      return Math.round(value);
    }
 
    /** This is SVG element with current frame */
@@ -5129,10 +5131,10 @@
    JSROOT.TAxisPainter.prototype.Redraw = function() {
 
       var gaxis = this.GetObject(),
-          x1 = Math.round(this.AxisToSvg("x", gaxis.fX1, true)),
-          y1 = Math.round(this.AxisToSvg("y", gaxis.fY1, true)),
-          x2 = Math.round(this.AxisToSvg("x", gaxis.fX2, true)),
-          y2 = Math.round(this.AxisToSvg("y", gaxis.fY2, true)),
+          x1 = this.AxisToSvg("x", gaxis.fX1),
+          y1 = this.AxisToSvg("y", gaxis.fY1),
+          x2 = this.AxisToSvg("x", gaxis.fX2),
+          y2 = this.AxisToSvg("y", gaxis.fY2),
           w = x2 - x1, h = y1 - y2;
 
       var vertical = w<5,
