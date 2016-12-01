@@ -165,7 +165,7 @@
       }
 
       var control = new THREE.OrbitControls(camera, renderer.domElement);
-
+      
       control.enableDamping = false;
       control.dampingFactor = 1.0;
       control.enableZoom = true;
@@ -174,15 +174,19 @@
          control.target0.copy(lookat);
          control.update();
       }
+      
+      control.tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
+      
+      control.painter = painter;
+      control.camera = camera;
+      control.scene = scene;
+      control.renderer = renderer; 
+      control.raycaster = new THREE.Raycaster();
+      control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
 
       var mouse_ctxt = { x:0, y: 0, on: false },
-          raycaster = new THREE.Raycaster(),
-          webgl = renderer instanceof THREE.WebGLRenderer,
           control_active = false, control_changed = false, cursor_changed = false,
-          mouse_zoom_mesh = null, // zoom mesh, currently used in the zooming
-          block_ctxt = false, // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
-          tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
-
+          block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
       
       control.Cleanup = function() {
          if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
@@ -191,54 +195,80 @@
             this.domElement.removeEventListener( 'mousedown', control_mousedown);
             this.domElement.removeEventListener( 'mouseup', control_mouseup);
          }
+
+         this.domElement.removeEventListener( 'dblclick', control_mousedblclick);
+         this.domElement.removeEventListener('contextmenu', control_contextmenu);
+         this.domElement.removeEventListener('mousemove', control_mousemove);
+         this.domElement.removeEventListener('mouseleave', control_mouseleave);
          
          this.dispose(); // this is from OrbitControl itself
+         
+         this.tooltip.hide();
+         delete this.tooltip;
+         delete this.painter;
+         delete this.camera;
+         delete this.scene;
+         delete this.renderer;
+         delete this.raycaster;
+         delete this.mouse_zoom_mesh;
          
          console.log('CLEAR ORBIT CONTROL');
       }
       
-      control.ProcessMouseDblclick = function(evnt) {
-         var intersect = DetectZoomMesh(evnt);
-         if (intersect && painter) {
-            painter.Unzoom(intersect.object.zoom);
-         } else {
-            control.reset();
-         }
-         // painter.Render3D();
-      }
-
       control.HideTooltip = function() {
-         tooltip.hide();
+         this.tooltip.hide();
       }
 
-      function GetMousePos(evnt, mouse) {
+      control.GetMousePos = function(evnt, mouse) {
          mouse.x = ('offsetX' in evnt) ? evnt.offsetX : evnt.layerX;
          mouse.y = ('offsetY' in evnt) ? evnt.offsetY : evnt.layerY;
          mouse.clientX = evnt.clientX;
          mouse.clientY = evnt.clientY;
          return mouse;
       }
-
-      function GetIntersects(mouse) {
+      
+      control.GetIntersects = function(mouse) {
          // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
-         var sz = webgl ? renderer.getSize() : renderer.domElement;
+         var sz = (this.renderer instanceof THREE.WebGLRenderer) ? this.renderer.getSize() : this.renderer.domElement;
          var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
-         camera.updateMatrix();
-         camera.updateMatrixWorld();
-         raycaster.setFromCamera( pnt, camera );
-         var intersects = raycaster.intersectObjects(scene.children, true);
+         this.camera.updateMatrix();
+         this.camera.updateMatrixWorld();
+         this.raycaster.setFromCamera( pnt, this.camera );
+         var intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
          // painter may want to filter intersects
-         if (typeof painter.FilterIntersects == 'function')
-            intersects = painter.FilterIntersects(intersects);
+         if (typeof this.painter.FilterIntersects == 'function')
+            intersects = this.painter.FilterIntersects(intersects);
 
          return intersects;
       }
 
+      control.DetectZoomMesh = function(evnt) {
+         var mouse = this.GetMousePos(evnt, {});
+         var intersects = this.GetIntersects(mouse);
+         if (intersects)
+            for (var n=0;n<intersects.length;++n)
+               if (intersects[n].object.zoom)
+                  return intersects[n];
+
+         return null;
+      }
+      
+      control.ProcessMouseDblclick = function(evnt) {
+         var intersect = this.DetectZoomMesh(evnt);
+         if (intersect && this.painter) {
+            this.painter.Unzoom(intersect.object.zoom);
+         } else {
+            this.reset();
+         }
+         // this.painter.Render3D();
+      }
+
+
       control.addEventListener( 'change', function() {
          mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         painter.Render3D(0);
+         control.painter.Render3D(0);
          control_changed = true;
       });
 
@@ -247,7 +277,7 @@
          block_ctxt = false;
          mouse_ctxt.on = false;
 
-         tooltip.hide();
+         control.tooltip.hide();
 
          // do not reset here, problem of events sequence in orbitcontrol
          // it issue change/start/stop event when do zooming
@@ -258,7 +288,7 @@
          control_active = false;
          if (mouse_ctxt.on) {
             mouse_ctxt.on = false;
-            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
          } else
          if (control_changed) {
             // react on camera change when required
@@ -268,22 +298,22 @@
 
       function control_contextmenu(evnt) {
          evnt.preventDefault();
-         GetMousePos(evnt, mouse_ctxt);
+         control.GetMousePos(evnt, mouse_ctxt);
          if (control_active)
             mouse_ctxt.on = true;
          else
          if (block_ctxt)
             block_ctxt = false;
          else
-            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
       };
 
       function control_touchstart(evnt) {
          if (!evnt.touches) return;
 
-      // disable context menu if any changes where done by orbit control
+         //  disable context menu if any changes where done by orbit control
          if (!control_changed && !mouse_ctxt.touchtm) {
-            GetMousePos(evnt.touches[0], mouse_ctxt);
+            control.GetMousePos(evnt.touches[0], mouse_ctxt);
             mouse_ctxt.touchtm = new Date().getTime();
          }
       };
@@ -297,16 +327,15 @@
          delete mouse_ctxt.touchtm;
          if (diff < 200) return;
 
-         var pos = GetMousePos(evnt.touches[0], {});
+         var pos = control.GetMousePos(evnt.touches[0], {});
 
          if ((Math.abs(pos.x - mouse_ctxt.x) <= 10) && (Math.abs(pos.y - mouse_ctxt.y) <= 10))
-            control.ContextMenu(mouse_ctxt, GetIntersects(mouse_ctxt));
+            control.ContextMenu(mouse_ctxt, control.GetIntersects(mouse_ctxt));
       };
 
       control.ContextMenu = function(pos, intersects) {
          // do nothing, function called when context menu want to be activated
       }
-
 
       function control_mousemove(evnt) {
          if (control_active && evnt.buttons && (evnt.buttons & 2)) {
@@ -315,40 +344,40 @@
 
          if (control_active || !control.ProcessMouseMove) return;
 
-         if (mouse_zoom_mesh) {
+         if (control.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
 
-            var zoom2 = DetectZoomMesh(evnt), pnt2 = null;
+            var zoom2 = control.DetectZoomMesh(evnt), pnt2 = null;
 
-            if (zoom2 && (zoom2.object === mouse_zoom_mesh.object)) {
+            if (zoom2 && (zoom2.object === control.mouse_zoom_mesh.object)) {
                pnt2 = zoom2.point;
             } else {
-               pnt2 = mouse_zoom_mesh.object.GlobalIntersect(raycaster);
+               pnt2 = control.mouse_zoom_mesh.object.GlobalIntersect(control.raycaster);
             }
 
-            if (pnt2) mouse_zoom_mesh.point2 = pnt2;
+            if (pnt2) control.mouse_zoom_mesh.point2 = pnt2;
 
-            if (pnt2 && painter.enable_hightlight)
-               if (mouse_zoom_mesh.object.ShowSelection(mouse_zoom_mesh.point, pnt2))
-                  painter.Render3D(0);
+            if (pnt2 && control.painter.enable_hightlight)
+               if (control.mouse_zoom_mesh.object.ShowSelection(control.mouse_zoom_mesh.point, pnt2))
+                  control.painter.Render3D(0);
 
-            tooltip.hide();
+            control.tooltip.hide();
             return;
          }
 
-         var mouse = GetMousePos(evnt, {});
+         var mouse = control.GetMousePos(evnt, {});
          evnt.preventDefault();
 
-         var intersects = GetIntersects(mouse);
+         var intersects = control.GetIntersects(mouse);
 
          var info = control.ProcessMouseMove(intersects);
 
          cursor_changed = false;
          if (info && (info.length>0)) {
-            tooltip.show(info, 200);
-            tooltip.pos(evnt)
+            control.tooltip.show(info, 200);
+            control.tooltip.pos(evnt)
          } else {
-            tooltip.hide();
+            control.tooltip.hide();
             if (intersects)
                for (var n=0;n<intersects.length;++n)
                   if (intersects[n].object.zoom) cursor_changed = true;
@@ -358,7 +387,7 @@
       };
 
       function control_mouseleave() {
-         tooltip.hide();
+         control.tooltip.hide();
          if (control.ProcessMouseLeave) control.ProcessMouseLeave();
          if (cursor_changed) {
             document.body.style.cursor = 'auto';
@@ -366,53 +395,42 @@
          }
       };
 
-      function DetectZoomMesh(evnt) {
-         var mouse = GetMousePos(evnt, {});
-         var intersects = GetIntersects(mouse);
-         if (intersects)
-            for (var n=0;n<intersects.length;++n)
-               if (intersects[n].object.zoom)
-                  return intersects[n];
-
-         return null;
-      }
-
       function control_mousewheel(evnt) {
          // try to handle zoom extra
 
-         if (JSROOT.Painter.IsRender3DFired(painter) || mouse_zoom_mesh) {
+         if (JSROOT.Painter.IsRender3DFired(control.painter) || control.mouse_zoom_mesh) {
             evnt.preventDefault();
             evnt.stopPropagation();
             evnt.stopImmediatePropagation();
             return; // already fired redraw, do not react on the mouse wheel
          }
 
-         var intersect = DetectZoomMesh(evnt);
+         var intersect = control.DetectZoomMesh(evnt);
          if (!intersect) return;
 
          evnt.preventDefault();
          evnt.stopPropagation();
          evnt.stopImmediatePropagation();
 
-         if (painter && (painter.AnalyzeMouseWheelEvent!==undefined)) {
+         if (control.painter && (control.painter.AnalyzeMouseWheelEvent!==undefined)) {
             var kind = intersect.object.zoom,
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
 
             // z changes from 0..2*size_z3d, others -size_xy3d..+size_xy3d
-            if (kind!=="z") position = (position + painter.size_xy3d)/2/painter.size_xy3d;
-                       else position = position/2/painter.size_z3d;
+            if (kind!=="z") position = (position + control.painter.size_xy3d)/2/control.painter.size_xy3d;
+                       else position = position/2/control.painter.size_z3d;
 
-            painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
+            control.painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
 
-            painter.Zoom(kind, item.min, item.max);
+            control.painter.Zoom(kind, item.min, item.max);
          }
       }
 
       function control_mousedown(evnt) {
          // function used to hide some events from orbit control and redirect them to zooming rect
 
-         if (mouse_zoom_mesh) {
+         if (control.mouse_zoom_mesh) {
             evnt.stopImmediatePropagation();
             evnt.stopPropagation();
             return;
@@ -422,9 +440,8 @@
          if ((evnt.button!==undefined) && (evnt.button !==0)) return;
          if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
-         mouse_zoom_mesh = DetectZoomMesh(evnt);
-         if (!mouse_zoom_mesh) return;
-
+         control.mouse_zoom_mesh = control.DetectZoomMesh(evnt);
+         if (!control.mouse_zoom_mesh) return;
 
          // just block orbit control
          evnt.stopImmediatePropagation();
@@ -432,23 +449,23 @@
       }
 
       function control_mouseup(evnt) {
-         if (mouse_zoom_mesh && mouse_zoom_mesh.point2) {
+         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2) {
 
-            var kind = mouse_zoom_mesh.object.zoom,
-                pos1 = mouse_zoom_mesh.point[kind],
-                pos2 = mouse_zoom_mesh.point2[kind];
+            var kind = control.mouse_zoom_mesh.object.zoom,
+                pos1 = control.mouse_zoom_mesh.point[kind],
+                pos2 = control.mouse_zoom_mesh.point2[kind];
 
-            if (kind==="z") { pos1 = pos1/2/painter.size_z3d; pos2 = pos2/2/painter.size_z3d; }
-                       else { pos1 = (pos1 + painter.size_xy3d)/2/painter.size_xy3d; pos2=(pos2 + painter.size_xy3d)/2/painter.size_xy3d; }
+            if (kind==="z") { pos1 = pos1/2/control.painter.size_z3d; pos2 = pos2/2/control.painter.size_z3d; }
+                       else { pos1 = (pos1 + control.painter.size_xy3d)/2/control.painter.size_xy3d; pos2=(pos2 + control.painter.size_xy3d)/2/control.painter.size_xy3d; }
 
             // we recalculate positions ourself,
             // in the future one should use CreateXY in 3D painters
 
             if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
 
-            var min = painter['scale_'+kind+'min'], max = painter['scale_'+kind+'max'];
+            var min = control.painter['scale_'+kind+'min'], max = control.painter['scale_'+kind+'max'];
 
-            if (painter["log"+kind]) {
+            if (control.painter["log"+kind]) {
                pos1 = Math.exp(Math.log(min) + pos1*(Math.log(max)-Math.log(min)));
                pos2 = Math.exp(Math.log(min) + pos2*(Math.log(max)-Math.log(min)));
             } else {
@@ -458,15 +475,15 @@
 
             // try to zoom
             if (pos1 < pos2)
-              if (painter.Zoom(kind, pos1, pos2))
-                 mouse_zoom_mesh = null;
+              if (control.painter.Zoom(kind, pos1, pos2))
+                 control.mouse_zoom_mesh = null;
          }
 
          // if selection was drawn, it should be removed and picture rendered again
-         if (mouse_zoom_mesh && mouse_zoom_mesh.object.ShowSelection())
-            painter.Render3D();
+         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.object.ShowSelection())
+            control.painter.Render3D();
 
-         mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
+         control.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
 
 
@@ -483,7 +500,6 @@
       // do not use touch events, context menu should be activated via button
       //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
       //painter.renderer.domElement.addEventListener('touchend', control_touchend);
-
 
       return control;
    }
