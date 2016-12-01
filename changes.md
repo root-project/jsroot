@@ -30,6 +30,7 @@
 7. Add callback argument into JSROOT.draw() function. 
    Function will be called after drawing of object is completed.
    Painter for drawn object will be provided as first argument (or null in case of error). 
+8. Improve cleanup of JSROOT objects 
      
 
 ## Changes in 4.7.0

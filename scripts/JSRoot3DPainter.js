@@ -213,8 +213,6 @@
          delete this.renderer;
          delete this.raycaster;
          delete this.mouse_zoom_mesh;
-         
-         console.log('CLEAR ORBIT CONTROL');
       }
       
       control.HideTooltip = function() {
@@ -536,6 +534,11 @@
 
          JSROOT.Painter.DisposeThreejsObject(this.scene);
          if (this.control) this.control.Cleanup();
+         
+         if (this.renderer) {
+            if (this.renderer.dispose) this.renderer.dispose(); 
+            if (this.renderer.context) delete this.renderer.context; 
+         }
 
          delete this.size_xy3d;
          delete this.size_z3d;

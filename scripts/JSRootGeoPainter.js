@@ -2404,6 +2404,11 @@
          delete this.options;
       }
       
+      if (this._renderer) {
+         if (this._renderer.dispose) this._renderer.dispose(); 
+         if (this._renderer.context) delete this._renderer.context; 
+      }
+      
       delete this._scene;
       this._scene_width = 0;
       this._scene_height = 0;
