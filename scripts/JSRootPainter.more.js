@@ -686,7 +686,10 @@
              x2 = this.AxisToSvg("x", box.fX2),
              y1 = this.AxisToSvg("y", box.fY1),
              y2 = this.AxisToSvg("y", box.fY2);
-         
+
+         // if box filled, contor line drawn only with "L" draw option:
+         if ((fillatt.color != 'none') && !this.draw_line) lineatt.color = "none";
+
          this.draw_g
              .append("svg:rect")
              .attr("x", Math.min(x1,x2))
@@ -696,6 +699,8 @@
              .call(lineatt.func)
              .call(fillatt.func);
       }
+
+      this.draw_line = (typeof opt=='string') && (opt.toUpperCase().indexOf("L")>=0);
 
       this.Redraw(); // actual drawing
 
