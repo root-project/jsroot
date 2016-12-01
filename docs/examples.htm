@@ -401,9 +401,9 @@
               { name:"babar", url: "?nobrowser&json=" + filepath + "geom/babar_emca.json.gz" },
               { name:"alice_simple", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz", title: "simple alice geomtery" },
               { name:"Dipole", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
-              { name:"count", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=count", title: "Count volume in large geomtery" },
-              { name:"tank", url: "?nobrowser&file=https://root.cern.ch/files/tank.root&item=geom;1&opt=z;rotate", title: "Just for fun" },
-              { name:"lego", url: "?nobrowser&file=https://root.cern.ch/files/lego.root&item=geom;1&opt=z;rotate", title: "Just for fun" }
+              { name:"count", file: "https://root.cern.ch/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
+              { name:"tank", file: "https://root.cern.ch/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name:"lego", file: "https://root.cern.ch/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" }
             ],
             TGraph : [
               { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },

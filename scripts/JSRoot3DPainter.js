@@ -520,6 +520,7 @@
       delete obj.painter;
       delete obj.bins_index;
       delete obj.tooltip;
+      delete obj.stack; // used in geom painter
 
       obj = undefined;
    }

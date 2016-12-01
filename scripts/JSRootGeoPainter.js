@@ -2069,9 +2069,9 @@
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
+      // set top painter only when first child exists
+      
       this.AccessTopPainter(true);
-
-      // set DIVID when first child exists - we use it for painter
 
       this.CreateToolbar();
 
@@ -2328,7 +2328,6 @@
             this.enableZ = this.options.clipz;
             this.updateClipping(true); // only set clip panels, do not render
          }
-
       }
 
       if (this.options.transparancy!==1)
@@ -2404,14 +2403,19 @@
          
          delete this.options;
       }
-
+      
       delete this._scene;
       this._scene_width = 0;
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
-      delete this._clone;
       this._camera = null;
+      
+      if (this._clones) this._clones.Cleanup(this._draw_nodes, this._build_shapes);
+      delete this._clones;
+      delete this._draw_nodes;
+      delete this._build_shapes;
+      delete this._new_draw_nodes;
 
       this.first_render_tm = 0;
       this.last_render_tm = 2000;
