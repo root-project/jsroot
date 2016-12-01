@@ -707,6 +707,35 @@
       return this.DrawingReady();
    }
 
+   // =============================================================================
+
+   JSROOT.Painter.drawMarker = function(divid, obj) {
+
+      this.SetDivId(divid, 2);
+
+      this.Redraw = function() {
+         var marker = this.GetObject(),
+             att = JSROOT.Painter.createAttMarker(marker);
+
+         // create svg:g container for box drawing
+         this.RecreateDrawG(true, "text_layer");
+
+         var x = this.AxisToSvg("x", marker.fX),
+             y = this.AxisToSvg("y", marker.fY);
+
+         var path = att.create(x,y); 
+         
+         if (path && path.length > 0)
+            this.draw_g.append("svg:path")
+                .attr("d", path)
+                .call(att.func);
+      }
+
+      this.Redraw(); // actual drawing
+
+      return this.DrawingReady();
+   }
+
    // ======================================================================================
 
    JSROOT.Painter.drawArrow = function(divid, obj, opt) {

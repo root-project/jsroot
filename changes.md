@@ -19,7 +19,7 @@
     - TF1/TF2 - 'nosave' to ignore saved buffer
     - TCanvas - logx/y/z, gridx/y, tickx/y 
     - THStack - 'lego' and other 3D draw options
-3. Implement drawing of TProfile2D, TF2, TGraph2D and TGraph2DErrors
+3. Implement drawing of TProfile2D, TF2, TGraph2D, TGraph2DErrors and TMarker
 4. Fix - correctly place TGAxis relative to frame (when exists) 
 5. When superimpose items, one can specify individual options
      ...&item=histo1+histo2&opt=hist+e1
