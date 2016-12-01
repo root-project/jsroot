@@ -166,8 +166,8 @@
               { opt: "", file: "hsimple.root", item: "hpx;1" },
               { opt: "P" },
               { opt: "PO" },
-              { name:"star", opt:"*H", title: "draw stars on histogram bins" },
-              { opt:"L", title: "draw histogram as line" },
+              { name: "star", opt:"*H", title: "draw stars on histogram bins" },
+              { opt: "L", title: "draw histogram as line" },
               { name: "LF2", opt:"LF2,fill_blue", title: "draw histogram as line with filled area" },
               { name: "B", opt:"B,fill_red", title: "draw histogram as bar chart" },
               { opt: "E" },
@@ -210,8 +210,8 @@
               { opt: "lego4", title: "lego4 plot - lego2 without border lines" },
               { opt: "text", title: "draw bins content as text, can be combined with col, box or scat options" },
               { opt: "scat", title: "scatter plot (used as default draw option)" },
-              { name: "box", url: "?nobrowser&json=" + filepath + "hbox.json.gz&opt=box", title: "boxes, area proportional to bin content" },
-              { name: "box1", url: "?nobrowser&json=" + filepath + "hbox.json.gz&opt=box1", title: "boxes, area proportional to bin content" }
+              { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
+              { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" }
             ],
             TH2Poly : [
                { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },
@@ -226,8 +226,8 @@
             ],
             TTree : [
                { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple;1/px", title: "Histogram data of simple TBranch object" },
-               { name: "lhcb2", asurl: true, file: "https://root.cern.ch/files/lhcb2.root", item: "E;1/Event_Gen_Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
-               { name: "atlas", asurl: true, file: "https://root.cern.ch/files/atlas30new.root", item: "CollectionTree;220/TileMuContainer_p1_TileMuObj/vector<TileMu_p1>/vector<TileMu_p1>.m_phi", title: "Histogram data of tree from atlas30new.root file" }
+               { name: "lhcb2", asurl: true, file: "https://root.cern/files/lhcb2.root", item: "E;1/Event_Gen_Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
+               { name: "atlas", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree;220/TileMuContainer_p1_TileMuObj/vector<TileMu_p1>/vector<TileMu_p1>.m_phi", title: "Histogram data of tree from atlas30new.root file" }
             ],
             TProfile : [
               { opt: "", file: "hsimple.root", item: "hprof;1" },
@@ -247,28 +247,28 @@
               { name:"hist+func", opt: "", url:  "?nobrowser&file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1" },
               { name:"canv", opt: "", file: "danilo6.root", item: "canvas;1" },
               { name:"ff2", file: "ff2.root", item: "c1Dia;1" },
-              { name:"ff3", file:  "ff3.root", item: "c1Dia;1" }
+              { name:"ff3", file: "ff3.root", item: "c1Dia;1" }
             ],
             TCanvas : [
               { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
-              { name:"subpad", url:  "?nobrowser&file=" + filepath + "rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
-              { name:"zdemo", file:  "zdemo.root", item: "zdemo;1" },
-              { name:"legend", url:  "?nobrowser&file=" + filepath + "legends.root&item=legends;1&mathjax", title: "TCanvas with TLegend, use MathJax.js"  },
+              { name:"subpad", url: "?nobrowser&file=" + filepath + "rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
+              { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
+              { name:"legend", url: "?nobrowser&file=" + filepath + "legends.root&item=legends;1&mathjax", title: "TCanvas with TLegend, use MathJax.js"  },
               { name:"time", file: "ct.root", item: "ct;1" },
               { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
             ],
             TGeo : [
-              { name:"logo", url: "?nobrowser&file=" + filepath + "geom/rootgeom.root&item=simple1;1", title:"Geometry from rootgeom.C example" },
+              { name:"logo", file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
               { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
               { name:"prim2", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[cone,coneseg,tube,tubeseg,ctub,eltu,pcon,pgon]&opts=[a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives, group 2" },
               { name:"prim3", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x2&items=[sphere,torus,parab,hype,comp]&opts=[a,a,a,a,a]", title:"Basic TGeo primitives, group 3" },
               { name:"comp", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[axis,axis,compaaxis,axis]", title:"Components of composite shape" },
-              { name:"building", url: "?nobrowser&file=" + filepath + "geom/building.root&item=geom;1&opt=allz", title: "Geometry from tutorials/geom/building.C" },
-              { name:"alice", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C", title: "ALICE geometry" },
-              { name:"atlas", url: "?nobrowser&file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=dflt_colors", title:"ATLAS geometry" },
-              { name:"cms", url: "?nobrowser&file=https://root.cern.ch/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C;clipxyz", title: "CMS geomtery" },
-              { name:"lhcb", url: "?nobrowser&file=https://root.cern.ch/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors", title: "LHCb geometry" },
-              { name:"eve", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
+              { name:"building", file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
+              { name:"alice", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C", title: "ALICE geometry" },
+              { name:"atlas", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt_colors", title:"ATLAS geometry" },
+              { name:"cms", file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz", title: "CMS geomtery" },
+              { name:"lhcb", file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt_colors", title: "LHCb geometry" },
+              { name:"eve", json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
               { name:"tracks", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz&file=" + filepath + "geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
               { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" }
             ],
@@ -327,14 +327,14 @@
               { name:"math", url: "?nobrowser&file=" + filepath + "latex.root&item=math;1", title: "TMathText drawn always with MathJax.js rendering" }
             ],
             Misc : [
-              { name:"ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },
-              { name:"axis", file: "gaxis.root", item: "c1;1", title: "TGaxis class" },
-              { name:"arrow", file: "arrow.root", item: "c1;1", title: "TArrow class" },
-              { name:"sinfo", url: "?nobrowser&file=" + filepath + "hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
-              { name:"3dmark", url: "?nobrowser&file=" + filepath + "mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
-              { name:"profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
-              { name:"polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-              { name:"tf2", url: "?nobrowser&json=" + filepath + "tf2.json.gz&opt=nosave", title: "Example of TF2 drawing" }
+              { name: "ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },
+              { name: "axis", file: "gaxis.root", item: "c1;1", title: "TGaxis class" },
+              { name: "arrow", file: "arrow.root", item: "c1;1", title: "TArrow class" },
+              { name: "sinfo", url: "?nobrowser&file=" + filepath + "hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
+              { name: "3dmark", url: "?nobrowser&file=" + filepath + "mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
+              { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
+              { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
+              { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" }
             ]
          };
          
@@ -351,41 +351,41 @@
               { name: "atlas", opt: "col", file: "atlas.root", item: "LEDShapeHeightCorr_Gain0;1" },
               { name: "logx", opt: "colz", file: "QAresults.root", item: "PIDqa/PIDqa1/ITS/hNsigmaP_ITS_electron;1" },
               { name: "logz", url: "?nobrowser&file=" + filepath + "sparsehist.root&item=c;1&palette=7", title: "LogZ plus text on several canvas" },
-              { name: "userz", url: "?nobrowser&json=" + filepath + "th2ul.json.gz&opt=colz", title: "TH2 with set user min/max, drawn with COLZ" },              
+              { name: "userz", json: "th2ul.json.gz", opt: "colz", title: "TH2 with set user min/max, drawn with COLZ" },              
               { name: "candle", file: "candleplot.root", item: "c1;1" },
-              { name: "box_same", url: "?nobrowser&json=" + filepath + "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
-              { name: "col_same", url: "?nobrowser&json=" + filepath + "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
-              { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_th2e,draw_scat, draw_arr, draw_box, draw_box1, draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
-              { name:"docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
-              { name:"docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
-              { name:"docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
-              { name:"docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
-              { name:"docu_poly", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
+              { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
+              { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
+              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_th2e,draw_scat, draw_arr, draw_box, draw_box1, draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
+              { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
+              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
+              { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
+              { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
+              { name: "docu_poly", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
             ],
             TH2Poly : [
                { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" }
             ],
             TH3 : [
-              { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
+               { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
             ],
             THStack : [
-                { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
-              { name: "json", title: "Draw stack from JSON file", url: "?nobrowser&json=" + filepath + "thstack.json.gz", title: "some special stack from JSON file" }
+               { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
+               { name: "json", title: "Draw stack from JSON file", json: "thstack.json.gz", title: "some special stack from JSON file" }
             ],
             TTree : [
                { name: "wjets", asurl: true, file: "http://jsroot.gsi.de/files/tmp/WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
-               { name: "todo_cms2", asurl: true, file: "https://root.cern.ch/files/cms2.root", item: "Events;1/GenEventInfoProduct_generator__HLT./GenEventInfoProduct_generator__HLT.present", title: "TODO: Most data cannot be decoded" },
-               { name: "todo_event", asurl: true, file: "https://root.cern.ch/files/event/event_0.root", item: "EventTree;2/event/fNseg", title: "TODO: Some data cannot be decoded" },
+               { name: "todo_cms2", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/GenEventInfoProduct_generator__HLT./GenEventInfoProduct_generator__HLT.present", title: "TODO: Most data cannot be decoded" },
+               { name: "todo_event", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2/event/fNseg", title: "TODO: Some data cannot be decoded" },
             ],
             TF1 : [
-              { name:"ip0", file: "ip0.root", item: "c;1" },
-              { name:"root5", file: "danilo5.root", item: "canvas;1" },
-              { name:"gaus", file: "macro8.root", item: "c1;1" }
+               { name:"ip0", file: "ip0.root", item: "c;1" },
+               { name:"root5", file: "danilo5.root", item: "canvas;1" },
+               { name:"gaus", file: "macro8.root", item: "c1;1" }
             ],
             TCanvas : [
-              { name:"jpsi", file:"JPsi_evolution.root", item: "CutTrees/cut1/C_cut1 < 2.85714;1" },
-              { name:"noframe", file: "can4.root", item: "c1;1" },
-              { name:"higgs", file: "higgs_c.root", item: "c;1" },
+              { name: "jpsi", file:"JPsi_evolution.root", item: "CutTrees/cut1/C_cut1 < 2.85714;1" },
+              { name: "noframe", file: "can4.root", item: "c1;1" },
+              { name: "higgs", file: "higgs_c.root", item: "c;1" },
               { name: "amore", file: "VertexXY.root", item: "Amore Canvas;1" },
               { name: "dual", file: "myDualCanvas.root", item: "DualCanvas;1", title: "Canvas with two subpads and double-log scale" },
               { name: "hsum", file: "hsum.root", item: "c1;1", title: "Canvas with several histos and selected user range (from hsum.C macro)" },
@@ -394,16 +394,16 @@
               { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" }
             ],
             TGeo : [
-              { name:"atlas_cryo", url: "?nobrowser&file=https://root.cern.ch/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C" },
-              { name:"atlas_simple", url: "?nobrowser&json=" + filepath + "geom/simple_atlas.json.gz" },
-              { name:"star", url: "?nobrowser&json=" + filepath + "geom/star_svtt.json.gz" },
-              { name:"hades", url: "?nobrowser&json=" + filepath + "geom/hades.json.gz" },
-              { name:"babar", url: "?nobrowser&json=" + filepath + "geom/babar_emca.json.gz" },
-              { name:"alice_simple", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz", title: "simple alice geomtery" },
-              { name:"Dipole", url: "?nobrowser&file=https://root.cern.ch/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
-              { name:"count", file: "https://root.cern.ch/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
-              { name:"tank", file: "https://root.cern.ch/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name:"lego", file: "https://root.cern.ch/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" }
+              { name: "atlas_cryo", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
+              { name: "atlas_simple", json: "geom/simple_atlas.json.gz" },
+              { name: "star", json: "geom/star_svtt.json.gz" },
+              { name: "hades", json: "geom/hades.json.gz" },
+              { name: "babar", json: "geom/babar_emca.json.gz" },
+              { name: "alice_simple", json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
+              { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
+              { name: "count", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
+              { name: "tank", file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "lego", file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" }
             ],
             TGraph : [
               { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
@@ -421,10 +421,18 @@
          
          var keyid = null, optid, testfile, testobj, testinterval = 200, hpainter = null;
          
-         function ProcessClick(durl, filename, itemname, opt) {
+         function ProcessClick(durl, filename, itemname, opt, jsonname) {
          
             keyid = null; // stop execution of running test loop (if any)
 
+          //  if (viewer && viewer.contentWindow) {
+          //     var jsroot = viewer.contentWindow.JSROOT;
+          //     if (jsroot && jsroot.hpainter) {
+          //        console.log('CLEANUP PAINTER IN IFRAME');
+          //        jsroot.hpainter.Cleanup();
+          //     }
+          //  }
+            
             if (JSROOT.hpainter) 
                JSROOT.hpainter.Cleanup();
 
@@ -432,31 +440,38 @@
                JSROOT.cleanup('viewer');
             
             if (durl.length > 0) {
-                var viewer = document.getElementById( 'viewer_frame' );
-                if (viewer == null) {
-                   document.getElementById('viewer').innerHTML = "";
-                   viewer = document.createElement('iframe');
-                   viewer.id = "viewer_frame";
-                   document.getElementById('viewer').appendChild(viewer);
-                }
-                viewer.src = jsroot_path + durl + (opt.length>0 ? ("&opt=" + opt) : "");
-                viewer.focus();
+               var viewer = document.getElementById( 'viewer_frame' );
+               if (viewer == null) {
+                  document.getElementById('viewer').innerHTML = "";
+                  viewer = document.createElement('iframe');
+                  viewer.id = "viewer_frame";
+                  document.getElementById('viewer').appendChild(viewer);
+               }
+               viewer.src = jsroot_path + durl + (opt.length>0 ? ("&opt=" + opt) : "");
+               viewer.focus();
              } else {
                 document.getElementById('viewer').innerHTML = "";
                 document.getElementById('viewer').style['background-color'] = "";
-                JSROOT.OpenFile(filename, function(file) {
-                   file.ReadObject(itemname, function(obj) {
+                
+                if (jsonname) {
+                   JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
                       JSROOT.draw("viewer", obj, opt);
+                   }).send();
+                } else {
+                   JSROOT.OpenFile(filename, function(file) {
+                      file.ReadObject(itemname, function(obj) {
+                         JSROOT.draw("viewer", obj, opt);
+                      });
                    });
-                });
+                }
              }
          };
          
-         function SetListener(elem, shortname, durl, filename, itemname, opt) {
+         function SetListener(elem, shortname, durl, filename, itemname, opt, jsonname) {
              elem.addEventListener( 'click', function (event) {
                 event.preventDefault();
                 window.location.hash = shortname;
-                ProcessClick(durl, filename, itemname, opt);
+                ProcessClick(durl, filename, itemname, opt, jsonname);
             });
          };
          
@@ -493,7 +508,7 @@
             
             var entry = examples[keyid][optid];
 
-            var filename = "", itemname = "", url = "", opt = "";
+            var filename = "", itemname = "", jsonname = "", url = "", opt = "";
             
             if (entry.file) {
                 filename = entry.file;
@@ -501,6 +516,10 @@
             }
             if (entry.item) itemname = entry.item;
             if (entry.opt) opt = entry.opt;
+            if (entry.json) {
+               jsonname = entry.json;
+               if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
+            }
             
             if (entry.url) url = entry.url; else
             if (entry.asurl) url = "?file=" + filename + "&item=" + itemname + "&opt=" + opt;
@@ -534,6 +553,13 @@
                
                hpainter.StartGUI(null, RunBigTest, null, url); 
             } else   
+            if (jsonname.length > 0) {
+               testfile = testobj = null;
+               JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
+                  testobj = obj;
+                  JSROOT.draw("viewer", obj, opt, RunBigTest);
+               }).send();
+            } else  
             if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
@@ -583,15 +609,21 @@
                div.textContent = key;
                content.appendChild( div );
             
-               var url = "", filename = "", itemname = ""; 
+               var url = "", filename = "", itemname = "", jsonname = ""; 
             
                for (var n=0; n<opts.length;++n) {
                   var entry = opts[n];
             
                   var shortname = key.toLowerCase().replace(" ","_");
                   
+                  jsonname = ""; url = "";
+                  
                   if ('url' in entry) {
                      url = entry.url;
+                  } else 
+                  if ('json' in entry) {
+                     jsonname = entry.json;
+                     if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname; 
                   } else {
                      if ('file' in entry) { 
                         url = ""; filename = entry.file;
@@ -618,7 +650,10 @@
             
                   if (url.length>0) 
                      aaa.href = jsroot_path + url;
-                  else   
+                  else
+                  if (jsonname.length>0)
+                     aaa.href = jsroot_path + "?nobrowser&json=" + jsonname;
+                  else
                      aaa.href = jsroot_path + "?nobrowser&file=" + filename + "&item=" + itemname;   
             
                   if (opt != "")
@@ -628,7 +663,7 @@
                      aaa.title = entry.title; 
                   
                   content.appendChild( aaa );
-                  SetListener(aaa, shortname, url, filename, itemname, opt);
+                  SetListener(aaa, shortname, url, filename, itemname, opt, jsonname);
                   
                   if (n < opts.length-1) {
                      content.appendChild(document.createTextNode(", "));
@@ -637,7 +672,7 @@
                   }
             
                   if (window.location.hash == "#" + shortname) {
-                     ProcessClick(url, filename, itemname, opt);
+                     ProcessClick(url, filename, itemname, opt, jsonname);
                   }
                }
             }
