@@ -1944,6 +1944,9 @@
    JSROOT.TObjectPainter.prototype.SwitchTooltip = function(on) {
       var fp = this.frame_painter();
       if (fp) fp.ProcessTooltipEvent(null, on);
+      // this is 3D control object
+      if (this.control && (typeof this.control.SwitchTooltip == 'function'))
+         this.control.SwitchTooltip(on);
    }
 
    JSROOT.TObjectPainter.prototype.AddDrag = function(callback) {

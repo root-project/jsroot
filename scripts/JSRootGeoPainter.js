@@ -759,7 +759,7 @@
             painter.ActiavteInBrowser([]);
       }
 
-      this._controls.ProcessMouseDblclick = function() {
+      this._controls.ProcessDblClick = function() {
          if (painter._last_manifest) {
             painter._last_manifest.wireframe = !painter._last_manifest.wireframe;
             if (painter._last_hidden)

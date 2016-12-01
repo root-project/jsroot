@@ -184,6 +184,7 @@
       control.raycaster = new THREE.Raycaster();
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
       control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
+      control.block_mousemove = false; // when true, tooltip or cursor will not react on mouse move
       control.cursor_changed = false;
       control.control_changed = false;
       control.control_active = false;
@@ -197,10 +198,10 @@
             this.domElement.removeEventListener( 'mouseup', control_mouseup);
          }
 
-         this.domElement.removeEventListener( 'dblclick', control_mousedblclick);
-         this.domElement.removeEventListener('contextmenu', control_contextmenu);
-         this.domElement.removeEventListener('mousemove', control_mousemove);
-         this.domElement.removeEventListener('mouseleave', control_mouseleave);
+         this.domElement.removeEventListener('dblclick', this.lstn_dblclick);
+         this.domElement.removeEventListener('contextmenu', this.lstn_contextmenu);
+         this.domElement.removeEventListener('mousemove', this.lstn_mousemove);
+         this.domElement.removeEventListener('mouseleave', this.lstn_mouseleave);
          
          this.dispose(); // this is from OrbitControl itself
          
@@ -256,7 +257,7 @@
          return null;
       }
       
-      control.ProcessMouseDblclick = function(evnt) {
+      control.ProcessDblClick = function(evnt) {
          var intersect = this.DetectZoomMesh(evnt);
          if (intersect && this.painter) {
             this.painter.Unzoom(intersect.object.zoom);
@@ -267,131 +268,120 @@
       }
 
 
-      control.addEventListener( 'change', function() {
-         control.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
-         control.painter.Render3D(0);
-         control.control_changed = true;
-      });
+      control.ChangeEvent = function() {
+         this.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
+         this.painter.Render3D(0);
+         this.control_changed = true;
+      }
 
-      control.addEventListener( 'start', function() {
-         control.control_active = true;
-         control.block_ctxt = false;
-         control.mouse_ctxt.on = false;
+      control.StartEvent = function() {
+         this.control_active = true;
+         this.block_ctxt = false;
+         this.mouse_ctxt.on = false;
 
-         control.tooltip.hide();
+         this.tooltip.hide();
 
          // do not reset here, problem of events sequence in orbitcontrol
          // it issue change/start/stop event when do zooming
          // control.control_changed = false;
-      });
+      }
 
-      control.addEventListener( 'end', function() {
-         control.control_active = false;
-         if (control.mouse_ctxt.on) {
-            control.mouse_ctxt.on = false;
-            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
+      control.EndEvent = function() {
+         this.control_active = false;
+         if (this.mouse_ctxt.on) {
+            this.mouse_ctxt.on = false;
+            this.ContextMenu(this.mouse_ctxt, this.GetIntersects(this.mouse_ctxt));
          } else
-         if (control.control_changed) {
+         if (this.control_changed) {
             // react on camera change when required
          }
-         control.control_changed = false;
-      });
+         this.control_changed = false;
+      }
 
-      function control_contextmenu(evnt) {
+      control.MainProcessContextMenu = function(evnt) {
          evnt.preventDefault();
-         control.GetMousePos(evnt, control.mouse_ctxt);
-         if (control.control_active)
-            control.mouse_ctxt.on = true;
+         this.GetMousePos(evnt, this.mouse_ctxt);
+         if (this.control_active)
+            this.mouse_ctxt.on = true;
          else
-         if (control.block_ctxt)
-            control.block_ctxt = false;
+         if (this.block_ctxt)
+            this.block_ctxt = false;
          else
-            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
-      };
-
-      function control_touchstart(evnt) {
-         if (!evnt.touches) return;
-
-         //  disable context menu if any changes where done by orbit control
-         if (!control.control_changed && !control.mouse_ctxt.touchtm) {
-            control.GetMousePos(evnt.touches[0], control.mouse_ctxt);
-            control.mouse_ctxt.touchtm = new Date().getTime();
-         }
-      };
-
-      function control_touchend(evnt) {
-         if (!evnt.touches) return;
-
-         if (control.control_changed || !control.mouse_ctxt.touchtm) return;
-
-         var diff = new Date().getTime() - control.mouse_ctxt.touchtm;
-         delete control.mouse_ctxt.touchtm;
-         if (diff < 200) return;
-
-         var pos = control.GetMousePos(evnt.touches[0], {});
-
-         if ((Math.abs(pos.x - control.mouse_ctxt.x) <= 10) && (Math.abs(pos.y - control.mouse_ctxt.y) <= 10))
-            control.ContextMenu(control.mouse_ctxt, control.GetIntersects(control.mouse_ctxt));
-      };
-
+            this.ContextMenu(this.mouse_ctxt, this.GetIntersects(this.mouse_ctxt));
+      }
+      
       control.ContextMenu = function(pos, intersects) {
          // do nothing, function called when context menu want to be activated
       }
+      
+      control.SwitchTooltip = function(on) {
+         this.block_mousemove = !on;
+         if (on===false) {
+            this.tooltip.hide();
+            this.RemoveZoomMesh();
+         }
+      }
+      
+      control.RemoveZoomMesh = function() {
+         if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.ShowSelection())
+            this.painter.Render3D();
+         this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
+      }
+      
+      control.MainProcessMouseMove = function(evnt) {
+         if (this.control_active && evnt.buttons && (evnt.buttons & 2)) 
+            this.block_ctxt = true; // if right button in control was active, block next context menu
 
-      function control_mousemove(evnt) {
-         if (control.control_active && evnt.buttons && (evnt.buttons & 2)) 
-            control.block_ctxt = true; // if right button in control was active, block next context menu
+         if (this.control_active || this.block_mousemove || !this.ProcessMouseMove) return;
 
-         if (control.control_active || !control.ProcessMouseMove) return;
-
-         if (control.mouse_zoom_mesh) {
+         if (this.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
 
-            var zoom2 = control.DetectZoomMesh(evnt), pnt2 = null;
+            var zoom2 = this.DetectZoomMesh(evnt), pnt2 = null;
 
-            if (zoom2 && (zoom2.object === control.mouse_zoom_mesh.object)) {
+            if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
                pnt2 = zoom2.point;
             } else {
-               pnt2 = control.mouse_zoom_mesh.object.GlobalIntersect(control.raycaster);
+               pnt2 = this.mouse_zoom_mesh.object.GlobalIntersect(this.raycaster);
             }
 
-            if (pnt2) control.mouse_zoom_mesh.point2 = pnt2;
+            if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
-            if (pnt2 && control.painter.enable_hightlight)
-               if (control.mouse_zoom_mesh.object.ShowSelection(control.mouse_zoom_mesh.point, pnt2))
-                  control.painter.Render3D(0);
+            if (pnt2 && this.painter.enable_hightlight)
+               if (this.mouse_zoom_mesh.object.ShowSelection(this.mouse_zoom_mesh.point, pnt2))
+                  this.painter.Render3D(0);
 
-            control.tooltip.hide();
+            this.tooltip.hide();
             return;
          }
 
-         var mouse = control.GetMousePos(evnt, {});
+         var mouse = this.GetMousePos(evnt, {});
          evnt.preventDefault();
 
-         var intersects = control.GetIntersects(mouse);
+         var intersects = this.GetIntersects(mouse);
 
-         var info = control.ProcessMouseMove(intersects);
+         var info = this.ProcessMouseMove(intersects);
 
-         control.cursor_changed = false;
+         this.cursor_changed = false;
          if (info && (info.length>0)) {
-            control.tooltip.show(info, 200);
-            control.tooltip.pos(evnt)
+            this.tooltip.show(info, 200);
+            this.tooltip.pos(evnt)
          } else {
-            control.tooltip.hide();
+            this.tooltip.hide();
             if (intersects)
                for (var n=0;n<intersects.length;++n)
-                  if (intersects[n].object.zoom) control.cursor_changed = true;
+                  if (intersects[n].object.zoom) this.cursor_changed = true;
          }
 
-         document.body.style.cursor = control.cursor_changed ? 'pointer' : 'auto';
+         document.body.style.cursor = this.cursor_changed ? 'pointer' : 'auto';
       };
 
-      function control_mouseleave() {
-         control.tooltip.hide();
-         if (control.ProcessMouseLeave) control.ProcessMouseLeave();
-         if (control.cursor_changed) {
+      control.MainProcessMouseLeave = function() {
+         this.tooltip.hide();
+         if (typeof this.ProcessMouseLeave === 'function') this.ProcessMouseLeave();
+         if (this.cursor_changed) {
             document.body.style.cursor = 'auto';
-            control.cursor_changed = false;
+            this.cursor_changed = false;
          }
       };
 
@@ -480,26 +470,27 @@
          }
 
          // if selection was drawn, it should be removed and picture rendered again
-         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.object.ShowSelection())
-            control.painter.Render3D();
-
-         control.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
+         control.RemoveZoomMesh();
       }
 
-
-      function control_mousedblclick(evnt) {
-         control.ProcessMouseDblclick(evnt);
+      
+      control.MainProcessDblClick = function(evnt) {
+         this.ProcessDblClick(evnt);
       }
 
-      renderer.domElement.addEventListener( 'dblclick', control_mousedblclick);
+      control.addEventListener( 'change', control.ChangeEvent.bind(control));
+      control.addEventListener( 'start', control.StartEvent.bind(control));
+      control.addEventListener( 'end', control.EndEvent.bind(control));
 
-      renderer.domElement.addEventListener('contextmenu', control_contextmenu);
-      renderer.domElement.addEventListener('mousemove', control_mousemove);
-      renderer.domElement.addEventListener('mouseleave', control_mouseleave);
-
-      // do not use touch events, context menu should be activated via button
-      //painter.renderer.domElement.addEventListener('touchstart', control_touchstart);
-      //painter.renderer.domElement.addEventListener('touchend', control_touchend);
+      control.lstn_contextmenu = control.MainProcessContextMenu.bind(control); 
+      control.lstn_dblclick = control.MainProcessDblClick.bind(control);
+      control.lstn_mousemove = control.MainProcessMouseMove.bind(control);
+      control.lstn_mouseleave = control.MainProcessMouseLeave.bind(control);
+      
+      renderer.domElement.addEventListener('dblclick', control.lstn_dblclick);
+      renderer.domElement.addEventListener('contextmenu', control.lstn_contextmenu);
+      renderer.domElement.addEventListener('mousemove', control.lstn_mousemove);
+      renderer.domElement.addEventListener('mouseleave', control.lstn_mouseleave);
 
       return control;
    }
