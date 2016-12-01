@@ -59,12 +59,26 @@ One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __i
 
 List of supported classes and draw options:
 
-- TH1 : [hist](https://root.cern/js/latest/examples.htm#th1), [p](https://root.cern/js/latest/examples.htm#th1_p), [p0](https://root.cern/js/latest/examples.htm#th1_p0), [*](https://root.cern/js/latest/examples.htm#th1_star), [L](https://root.cern/js/latest/examples.htm#th1_l), [e](https://root.cern/js/latest/examples.htm#th1_e), [e1](https://root.cern/js/latest/examples.htm#th1_e1), [lego](https://root.cern/js/latest/examples.htm#th1_lego), [X+Y+](https://root.cern/js/latest/examples.htm#th1_x+y+)
-- TH2 : [scat](https://root.cern/js/latest/examples.htm#th2), [col](https://root.cern/js/latest/examples.htm#th2_col), [colz](https://root.cern/js/latest/examples.htm#th2_colz), [box](https://root.cern/js/latest/examples.htm#th2_box), [text](https://root.cern/js/latest/examples.htm#th2_text), [lego](https://root.cern/js/latest/examples.htm#th2_lego), [arr](https://root.cern/js/latest/examples.htm#th2_arr), [cont](https://root.cern/js/latest/examples.htm#th2_cont), [cont1](https://root.cern/js/latest/examples.htm#th2_cont1), [cont2](https://root.cern/js/latest/examples.htm#th2_cont2), [cont3](https://root.cern/js/latest/examples.htm#th2_cont3), [cont4](https://root.cern/js/latest/examples.htm#th2_cont4), [surf](https://root.cern/js/latest/examples.htm#th2_surf), [surf1](https://root.cern/js/latest/examples.htm#th2_surf1), [surf2](https://root.cern/js/latest/examples.htm#th2_surf2), [surf3](https://root.cern/js/latest/examples.htm#th2_surf3), [surf4](https://root.cern/js/latest/examples.htm#th2_surf4), [surf6](https://root.cern/js/latest/examples.htm#th2_surf6), [surf7](https://root.cern/js/latest/examples.htm#th2_surf7), [lego](https://root.cern/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern/js/latest/examples.htm#th2_lego4)
+- TH1 : [hist](https://root.cern/js/latest/examples.htm#th1), 
+[p](https://root.cern/js/latest/examples.htm#th1_p), 
+[p0](https://root.cern/js/latest/examples.htm#th1_p0), 
+[*](https://root.cern/js/latest/examples.htm#th1_star), 
+[l](https://root.cern/js/latest/examples.htm#th1_l), 
+[lf2](https://root.cern/js/latest/examples.htm#th1_lf2), 
+[e](https://root.cern/js/latest/examples.htm#th1_e), 
+[e0](https://root.cern/js/latest/examples.htm#th1_e0), 
+[e1](https://root.cern/js/latest/examples.htm#th1_e1), 
+[e1x0](https://root.cern/js/latest/examples.htm#th1_e1x0), 
+[e3](https://root.cern/js/latest/examples.htm#th1_e3), 
+[e4](https://root.cern/js/latest/examples.htm#th1_e4), 
+[lego](https://root.cern/js/latest/examples.htm#th1_lego), 
+[text](https://root.cern/js/latest/examples.htm#th1_text),
+[X+Y+](https://root.cern/js/latest/examples.htm#th1_x+y+)
+- TH2 : [scat](https://root.cern/js/latest/examples.htm#th2), [col](https://root.cern/js/latest/examples.htm#th2_col), [colz](https://root.cern/js/latest/examples.htm#th2_colz), [box](https://root.cern/js/latest/examples.htm#th2_box), [box1](https://root.cern/js/latest/examples.htm#th2_box1), [text](https://root.cern/js/latest/examples.htm#th2_text), [lego](https://root.cern/js/latest/examples.htm#th2_lego), [arr](https://root.cern/js/latest/examples.htm#th2_arr), [cont](https://root.cern/js/latest/examples.htm#th2_cont), [cont1](https://root.cern/js/latest/examples.htm#th2_cont1), [cont2](https://root.cern/js/latest/examples.htm#th2_cont2), [cont3](https://root.cern/js/latest/examples.htm#th2_cont3), [cont4](https://root.cern/js/latest/examples.htm#th2_cont4), [surf](https://root.cern/js/latest/examples.htm#th2_surf), [surf1](https://root.cern/js/latest/examples.htm#th2_surf1), [surf2](https://root.cern/js/latest/examples.htm#th2_surf2), [surf3](https://root.cern/js/latest/examples.htm#th2_surf3), [surf4](https://root.cern/js/latest/examples.htm#th2_surf4), [surf6](https://root.cern/js/latest/examples.htm#th2_surf6), [surf7](https://root.cern/js/latest/examples.htm#th2_surf7), [lego](https://root.cern/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern/js/latest/examples.htm#th2_lego4)
 - TH2Poly : [col](https://root.cern/js/latest/examples.htm#th2poly_honeycomb),
 [lego](https://root.cern/js/latest/examples.htm#th2poly_lego), [europe](https://root.cern/js/latest/examples.htm#th2poly_europe), [usa](https://root.cern/js/latest/examples.htm#th2poly_usa)
 - TH3 : [scat](https://root.cern/js/latest/examples.htm#th3), [box](https://root.cern/js/latest/examples.htm#th3_box), [box1](https://root.cern/js/latest/examples.htm#th3_box1)
-- TProfile : [dflt](https://root.cern/js/latest/examples.htm#tprofile), [e](https://root.cern/js/latest/examples.htm#tprofile_e), [E1](https://root.cern/js/latest/examples.htm#tprofile_e1), [pE2](https://root.cern/js/latest/examples.htm#tprofile_pe2), [hist](https://root.cern/js/latest/examples.htm#tprofile_hist)
+- TProfile : [dflt](https://root.cern/js/latest/examples.htm#tprofile), [e](https://root.cern/js/latest/examples.htm#tprofile_e), [e1](https://root.cern/js/latest/examples.htm#tprofile_e1), [pe2](https://root.cern/js/latest/examples.htm#tprofile_pe2), [hist](https://root.cern/js/latest/examples.htm#tprofile_hist), [text](https://root.cern/js/latest/examples.htm#tprofile_text), [texte](https://root.cern/js/latest/examples.htm#tprofile_texte)
 - TProfile2D : [example](https://root.cern/js/latest/examples.htm#misc_profile2d)
 - THStack : [example](https://root.cern/js/latest/examples.htm#thstack)   
 - TF1 : [example](https://root.cern/js/latest/examples.htm#tf1_canv)
@@ -98,6 +112,7 @@ Analogue, one could specify individual draw options for superimposed objects
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=hpx;1+hprof;1&opt=logy+hist>
   
 Here "logy" option will be used for "hpx1" item and "hist" option for "hprof;1" item.
+
 While draw option can include "+" sign itself, for superposition one could specify arrays of items and draw options like:  
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=[hpx;1,hprof;1]&opt=[logy,hist]>
