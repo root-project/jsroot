@@ -74,18 +74,70 @@ List of supported classes and draw options:
 [lego](https://root.cern/js/latest/examples.htm#th1_lego), 
 [text](https://root.cern/js/latest/examples.htm#th1_text),
 [X+Y+](https://root.cern/js/latest/examples.htm#th1_x+y+)
-- TH2 : [scat](https://root.cern/js/latest/examples.htm#th2), [col](https://root.cern/js/latest/examples.htm#th2_col), [colz](https://root.cern/js/latest/examples.htm#th2_colz), [box](https://root.cern/js/latest/examples.htm#th2_box), [box1](https://root.cern/js/latest/examples.htm#th2_box1), [text](https://root.cern/js/latest/examples.htm#th2_text), [lego](https://root.cern/js/latest/examples.htm#th2_lego), [arr](https://root.cern/js/latest/examples.htm#th2_arr), [cont](https://root.cern/js/latest/examples.htm#th2_cont), [cont1](https://root.cern/js/latest/examples.htm#th2_cont1), [cont2](https://root.cern/js/latest/examples.htm#th2_cont2), [cont3](https://root.cern/js/latest/examples.htm#th2_cont3), [cont4](https://root.cern/js/latest/examples.htm#th2_cont4), [surf](https://root.cern/js/latest/examples.htm#th2_surf), [surf1](https://root.cern/js/latest/examples.htm#th2_surf1), [surf2](https://root.cern/js/latest/examples.htm#th2_surf2), [surf3](https://root.cern/js/latest/examples.htm#th2_surf3), [surf4](https://root.cern/js/latest/examples.htm#th2_surf4), [surf6](https://root.cern/js/latest/examples.htm#th2_surf6), [surf7](https://root.cern/js/latest/examples.htm#th2_surf7), [lego](https://root.cern/js/latest/examples.htm#th2_lego),  [lego0](https://root.cern/js/latest/examples.htm#th2_lego0), [lego1](https://root.cern/js/latest/examples.htm#th2_lego1), [lego2](https://root.cern/js/latest/examples.htm#th2_lego2), [lego3](https://root.cern/js/latest/examples.htm#th2_lego3), [lego4](https://root.cern/js/latest/examples.htm#th2_lego4)
+- TH2 : [scat](https://root.cern/js/latest/examples.htm#th2), 
+[col](https://root.cern/js/latest/examples.htm#th2_col), 
+[colz](https://root.cern/js/latest/examples.htm#th2_colz), 
+[box](https://root.cern/js/latest/examples.htm#th2_box), 
+[box1](https://root.cern/js/latest/examples.htm#th2_box1), 
+[text](https://root.cern/js/latest/examples.htm#th2_text), 
+[lego](https://root.cern/js/latest/examples.htm#th2_lego), 
+[arr](https://root.cern/js/latest/examples.htm#th2_arr), 
+[cont](https://root.cern/js/latest/examples.htm#th2_cont), 
+[cont1](https://root.cern/js/latest/examples.htm#th2_cont1), 
+[cont2](https://root.cern/js/latest/examples.htm#th2_cont2), 
+[cont3](https://root.cern/js/latest/examples.htm#th2_cont3), 
+[cont4](https://root.cern/js/latest/examples.htm#th2_cont4), 
+[surf](https://root.cern/js/latest/examples.htm#th2_surf), 
+[surf1](https://root.cern/js/latest/examples.htm#th2_surf1), 
+[surf2](https://root.cern/js/latest/examples.htm#th2_surf2), 
+[surf3](https://root.cern/js/latest/examples.htm#th2_surf3), 
+[surf4](https://root.cern/js/latest/examples.htm#th2_surf4), 
+[surf6](https://root.cern/js/latest/examples.htm#th2_surf6), 
+[surf7](https://root.cern/js/latest/examples.htm#th2_surf7), 
+[lego](https://root.cern/js/latest/examples.htm#th2_lego),
+[lego0](https://root.cern/js/latest/examples.htm#th2_lego0),
+[lego1](https://root.cern/js/latest/examples.htm#th2_lego1), 
+[lego2](https://root.cern/js/latest/examples.htm#th2_lego2), 
+[lego3](https://root.cern/js/latest/examples.htm#th2_lego3), 
+[lego4](https://root.cern/js/latest/examples.htm#th2_lego4)
 - TH2Poly : [col](https://root.cern/js/latest/examples.htm#th2poly_honeycomb),
-[lego](https://root.cern/js/latest/examples.htm#th2poly_lego), [europe](https://root.cern/js/latest/examples.htm#th2poly_europe), [usa](https://root.cern/js/latest/examples.htm#th2poly_usa)
-- TH3 : [scat](https://root.cern/js/latest/examples.htm#th3), [box](https://root.cern/js/latest/examples.htm#th3_box), [box1](https://root.cern/js/latest/examples.htm#th3_box1)
-- TProfile : [dflt](https://root.cern/js/latest/examples.htm#tprofile), [e](https://root.cern/js/latest/examples.htm#tprofile_e), [e1](https://root.cern/js/latest/examples.htm#tprofile_e1), [pe2](https://root.cern/js/latest/examples.htm#tprofile_pe2), [hist](https://root.cern/js/latest/examples.htm#tprofile_hist), [text](https://root.cern/js/latest/examples.htm#tprofile_text), [texte](https://root.cern/js/latest/examples.htm#tprofile_texte)
+[lego](https://root.cern/js/latest/examples.htm#th2poly_lego), 
+[europe](https://root.cern/js/latest/examples.htm#th2poly_europe), 
+[usa](https://root.cern/js/latest/examples.htm#th2poly_usa)
+- TH3 : [scat](https://root.cern/js/latest/examples.htm#th3), 
+[box](https://root.cern/js/latest/examples.htm#th3_box), 
+[box1](https://root.cern/js/latest/examples.htm#th3_box1)
+- TProfile : [dflt](https://root.cern/js/latest/examples.htm#tprofile), 
+[e](https://root.cern/js/latest/examples.htm#tprofile_e), 
+[e1](https://root.cern/js/latest/examples.htm#tprofile_e1), 
+[pe2](https://root.cern/js/latest/examples.htm#tprofile_pe2), 
+[hist](https://root.cern/js/latest/examples.htm#tprofile_hist), 
+[text](https://root.cern/js/latest/examples.htm#tprofile_text), 
+[texte](https://root.cern/js/latest/examples.htm#tprofile_texte)
 - TProfile2D : [example](https://root.cern/js/latest/examples.htm#misc_profile2d)
 - THStack : [example](https://root.cern/js/latest/examples.htm#thstack)   
 - TF1 : [example](https://root.cern/js/latest/examples.htm#tf1_canv)
 - TF2 : [example](https://root.cern/js/latest/examples.htm#misc_tf2)
-- TGraph : [dflt](https://root.cern/js/latest/examples.htm#tgraph), [L](https://root.cern/js/latest/examples.htm#tgraph_l), [P](https://root.cern/js/latest/examples.htm#tgraph_p), [*](https://root.cern/js/latest/examples.htm#tgraph_star), [B](https://root.cern/js/latest/examples.htm#tgraph_b)
-- TGraphErrors : [dflt](https://root.cern/js/latest/examples.htm#tgrapherrors), [l](https://root.cern/js/latest/examples.htm#tgrapherrors_l), [lx](https://root.cern/js/latest/examples.htm#tgrapherrors_lx), [z](https://root.cern/js/latest/examples.htm#tgrapherrors_z), [>](https://root.cern/js/latest/examples.htm#tgrapherrors_>), [|>](https://root.cern/js/latest/examples.htm#tgrapherrors_|>), [||](https://root.cern/js/latest/examples.htm#tgrapherrors_||), [[]](https://root.cern/js/latest/examples.htm#tgrapherrors_[]), [0](https://root.cern/js/latest/examples.htm#tgrapherrors_0), [2](https://root.cern/js/latest/examples.htm#tgrapherrors_2), [3](https://root.cern/js/latest/examples.htm#tgrapherrors_3), [4](https://root.cern/js/latest/examples.htm#tgrapherrors_4), [5](https://root.cern/js/latest/examples.htm#tgrapherrors_5),
-- TGraphAsymmErrors : [dflt](https://root.cern/js/latest/examples.htm#tgraphasymmerrors), [z](https://root.cern/js/latest/examples.htm#tgraphasymmerrors_z) and other from TGraphErrors 
+- TGraph : [dflt](https://root.cern/js/latest/examples.htm#tgraph), 
+[L](https://root.cern/js/latest/examples.htm#tgraph_l), 
+[P](https://root.cern/js/latest/examples.htm#tgraph_p), 
+[*](https://root.cern/js/latest/examples.htm#tgraph_star), 
+[B](https://root.cern/js/latest/examples.htm#tgraph_b)
+- TGraphErrors : [dflt](https://root.cern/js/latest/examples.htm#tgrapherrors), 
+[l](https://root.cern/js/latest/examples.htm#tgrapherrors_l), 
+[lx](https://root.cern/js/latest/examples.htm#tgrapherrors_lx), 
+[z](https://root.cern/js/latest/examples.htm#tgrapherrors_z), 
+[>](https://root.cern/js/latest/examples.htm#tgrapherrors_>), 
+[|>](https://root.cern/js/latest/examples.htm#tgrapherrors_|>), 
+[||](https://root.cern/js/latest/examples.htm#tgrapherrors_||), 
+[[]](https://root.cern/js/latest/examples.htm#tgrapherrors_[]), 
+[0](https://root.cern/js/latest/examples.htm#tgrapherrors_0), 
+[2](https://root.cern/js/latest/examples.htm#tgrapherrors_2), 
+[3](https://root.cern/js/latest/examples.htm#tgrapherrors_3), 
+[4](https://root.cern/js/latest/examples.htm#tgrapherrors_4), 
+[5](https://root.cern/js/latest/examples.htm#tgrapherrors_5),
+- TGraphAsymmErrors : [dflt](https://root.cern/js/latest/examples.htm#tgraphasymmerrors), 
+[z](https://root.cern/js/latest/examples.htm#tgraphasymmerrors_z) and other from TGraphErrors 
 - TMultiGraph : [example](https://root.cern/js/latest/examples.htm#tmultigraph_c3), [exclusion](https://root.cern/js/latest/examples.htm#tmultigraph_exclusion)
 - TGraph2D : [example](https://root.cern/js/latest/examples.htm#tgraph2d)
 - TLatex : [example](https://root.cern/js/latest/examples.htm#tlatex_latex)
@@ -186,15 +238,15 @@ All other will be ignored.
 
   
 Example of major LHC detectors:
- * ALICE: [full](https://root.cern/js/latest/?file=https://root.cern/files/alice2.root&item=Geometry;1&opt=macro:http://jsroot.gsi.de/files/geom/geomAlice.C) 
- * ATLAS: [full](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=clipxyz), [cryo](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_cryo.C), [sctt](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=macro:http://jsroot.gsi.de/files/geom/atlas_sctt.C)
- * CMS: [cmse](https://root.cern/js/latest/?file=https://root.cern/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_cmse.C;clipxyz), [calo](https://root.cern/js/latest/?file=https://root.cern/files/cms.root&item=cms;1&opt=macro:http://jsroot.gsi.de/files/geom/cms_calo.C;clipxyz)
+ * ALICE: [full](https://root.cern/js/latest/?file=https://root.cern/files/alice2.root&item=Geometry;1&opt=macro:https://root.cern/js/files/geomAlice.C) 
+ * ATLAS: [full](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=clipxyz), [cryo](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=macro:https://root.cern/files/atlas_cryo.C), [sctt](https://root.cern/js/latest/?file=https://root.cern/files/atlas.root&item=atlas;1&opt=macro:https://root.cern/files/atlas_sctt.C)
+ * CMS: [cmse](https://root.cern/js/latest/?file=https://root.cern/files/cms.root&item=cms;1&opt=macro:https://root.cern/files/cms_cmse.C;clipxyz), [calo](https://root.cern/js/latest/?file=https://root.cern/files/cms.root&item=cms;1&opt=macro:https://root.cern/files/cms_calo.C;clipxyz)
  * LHCb: [full](https://root.cern/js/latest/?file=https://root.cern/files/lhcbfull.root&item=Geometry;1&opt=all;dflt_colors)
-  
+
 Other detectors examples:
  * HADES: [full](https://root.cern/js/latest/?file=https://root.cern/files/hades2.root&item=CBMGeom;1&opt=all;dflt_colors), [preselected](https://root.cern/js/latest/?json=../files/geom/hades.json.gz)  
- * BABAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_all.C), [emca](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
- * STAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_all.C;clipxyz), [svtt](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:http://jsroot.gsi.de/files/geom/star_svtt.C) 
+ * BABAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:https://root.cern/files/babar_all.C), [emca](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
+ * STAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:https://root.cern/files/star_all.C;clipxyz), [svtt](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:https://root.cern/files/star_svtt.C) 
  * D0: [full](https://root.cern/js/latest/?file=https://root.cern/files/d0.root&item=d0;1&opt=clipxyz)
  * NA47: [full](https://root.cern/js/latest/?file=https://root.cern/files/na47.root&item=na47;1&opt=dflt_colors)
  * BRAHMS: [full](https://root.cern/js/latest/?file=https://root.cern/files/brahms.root&item=brahms;1&opt=dflt_colors)
@@ -243,6 +295,8 @@ In such case one can also specify a custom files list:
        loading scripts ...
      </div>
     ...
+
+In such `<div>` element one could put most parameters which are allowed in the URL string (like item, file, opt and so on)
 
 
 ## JSROOT with THttpServer 
@@ -371,7 +425,7 @@ THttpServer provides a JSON representation for every registered object with an u
 
     http://your_root_server:8080/Canvases/c1/root.json
 
-Such JSON representation generated using the [TBufferJSON](http://root.cern.ch/root/html/TBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
+Such JSON representation generated using the [TBufferJSON](https://root.cern/root/html/TBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
 
     ...
     obj->SaveAs("file.json");
