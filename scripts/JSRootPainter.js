@@ -7009,7 +7009,7 @@
       //   return;
       //}
 
-      var menu_painter = this, frame_corner = false; // object used to show context menu
+      var menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
 
       if (!evnt) {
          d3.event.preventDefault();
@@ -7020,8 +7020,9 @@
             var ms = d3.mouse(this.svg_frame().node()),
                 tch = d3.touches(this.svg_frame().node()),
                 pp = this.pad_painter(true),
-                fp = this.frame_painter(),
                 pnt = null, sel = null;
+
+            fp = this.frame_painter();
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
