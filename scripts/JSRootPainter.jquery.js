@@ -401,7 +401,6 @@
       if ((d3cont===undefined) || d3cont.empty())  {
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
          var name = this.itemFullName(hitem);
-         console.log('Full name ', name);
          if (d3cont.empty())
             d3cont = this.select_main().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
