@@ -9212,9 +9212,9 @@
          var pos = -1, once_again = false,
              check_top = !top._parent && (top._kind !== 'TopFolder');
 
-         function process_child(child) {
+         function process_child(child, ignore_prnt) {
             // set parent pointer when searching child
-            child._parent = top;
+            if (!ignore_prnt) child._parent = top;
             if ((pos + 1 == fullname.length) || (pos < 0)) return child;
 
             return find_in_hierarchy(child, fullname.substr(pos + 1));
@@ -9242,6 +9242,12 @@
                for (var i = 0; i < top._childs.length; ++i)
                   if (top._childs[i]._name == localname)
                      return process_child(top._childs[i]);
+               
+               // if first child online, check its elements 
+               if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined)) 
+                  for (var i = 0; i < top._childs[0]._childs.length; ++i)
+                     if (top._childs[0]._childs[i]._name == localname)
+                        return process_child(top._childs[0]._childs[i], true);
 
                // if allowed, try to found item with key
                if (arg.check_keys)
@@ -9278,35 +9284,34 @@
 
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
-
+      
       var top = this.h, itemname = "";
 
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
       if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
          return null;
 
+      if (itemname === "__top_folder__") return top;
+
       return find_in_hierarchy(top, itemname);
    }
 
    JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
+      
+      if (node && node._kind ==='TopFolder') return "__top_folder__";
+      
       var res = "";
 
       while (node) {
-         if (node._online!==undefined) {
-            if (uptoparent === 'onlineurl') return node._online!=="" ? node._online + res : res;
-            // all online items does not include top-folder names
-            return res;
-         }
+         // online items never includes top-level folder
+         if ((node._online!==undefined) && !uptoparent) return res;
 
-         if (uptoparent && (node === uptoparent)) break;
-         if (node._kind==='TopFolder') break; // name of top folder never included
+         if ((node === uptoparent) || (node._kind==='TopFolder')) break;
          if (compact && !node._parent) break; // in compact form top-parent is not included
          if (res.length > 0) res = "/" + res;
          res = node._name + res;
          node = node._parent;
       }
-
-      if (uptoparent === 'onlineurl') return null;
 
       return res;
    }
@@ -10147,15 +10152,16 @@
    JSROOT.MarkAsStreamerInfo = function(h,item,obj) {
       // this function used on THttpServer to mark streamer infos list
       // as fictional TStreamerInfoList class, which has special draw function
-      if ((obj!=null) && (obj._typename=='TList'))
+      if (obj && (obj._typename=='TList'))
          obj._typename = 'TStreamerInfoList';
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
       if (typeof item == "string") item = this.Find(item);
-
-      return item ? this.itemFullName(item, 'onlineurl') : null;
+      var prnt = item;
+      while (prnt && (prnt._online===undefined)) prnt = prnt._parent;
+      return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
    }
 
    JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {

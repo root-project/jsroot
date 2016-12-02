@@ -180,8 +180,8 @@
 
       if (!hitem || ('_hidden' in hitem)) return;
 
-      var isroot = hitem === this.h,
-          has_childs = '_childs' in hitem,
+      var isroot = (hitem === this.h),
+          has_childs = ('_childs' in hitem),
           handle = JSROOT.getDrawHandle(hitem._kind),
           img1 = "", img2 = "", can_click = false,
           d3cont, itemname = this.itemFullName(hitem);
@@ -222,7 +222,7 @@
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
       d3cont.attr("item", itemname);
-
+      
       // line with all html elements for this item (excluding childs)
       var d3line = d3cont.append("div").attr('class','h_line');
 
@@ -347,25 +347,19 @@
       if ((this.h == null) || d3elem.empty())
          return JSROOT.CallBack(callback);
 
-
       var maindiv =
          d3elem.append("div")
                .attr("class", "jsroot")
                .style("background-color", this.background ? this.background : "")
-//               .style('overflow', 'auto')
-//               .style('width', '100%')
-//               .style('height', '100%')
                .style('font-size', this.with_icons ? "12px" : "15px");
 
       for (var n=0;n<factcmds.length;++n) {
-         var btn =
-             maindiv.append("button")
+         var btn = maindiv.append("button")
                     .text("")
                     .attr("class",'fast_command')
-                    .attr("item", this.itemFullName(factcmds[n], 'online'))
+                    .attr("item", this.itemFullName(factcmds[n]))
                     .attr("title", factcmds[n]._title)
                     .on("click", function() { h.ExecuteCommand(d3.select(this).attr("item"), this); } );
-
 
          if ('_icon' in factcmds[n])
             btn.append('img').attr("src", factcmds[n]._icon);
@@ -394,11 +388,10 @@
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
-      if ((status_item!=null) && (JSROOT.GetUrlOption('nostatus')==null)) {
+      if (status_item && (JSROOT.GetUrlOption('nostatus')===null)) {
          var func = JSROOT.findFunction(status_item._status);
          var hdiv = (typeof func == 'function') ? JSROOT.Painter.ConfigureHSeparator(30) : null;
-         if (hdiv != null)
-            func(hdiv, this.itemFullName(status_item, 'online'));
+         if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
       JSROOT.CallBack(callback);
@@ -408,6 +401,7 @@
       if ((d3cont===undefined) || d3cont.empty())  {
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
          var name = this.itemFullName(hitem);
+         console.log('Full name ', name);
          if (d3cont.empty())
             d3cont = this.select_main().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
@@ -440,7 +434,7 @@
 
       var itemname = d3cont.attr('item');
       if (itemname == null) return;
-
+      
       var hitem = this.Find(itemname);
       if (hitem == null) return;
 
