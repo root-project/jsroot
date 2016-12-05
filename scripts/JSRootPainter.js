@@ -10458,7 +10458,7 @@
 
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
-         plainarr.forEach(function(iii) { delete iii._parent; delete iii._childs; delete iii._obj; });
+         plainarr.forEach(function(d) { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
          delete this.h;
       }
    }
