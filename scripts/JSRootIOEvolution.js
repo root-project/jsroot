@@ -2003,7 +2003,8 @@
 
       if (!s_i) {
          delete this.fStreamers[fullname];
-         console.warn('did not find streamer for ', clname, ver.val, ver.checksum);
+         if (!ver.nowarning)
+            console.warn('did not find streamer for ', clname + ":", ver.val, (ver.checksum === undefined) ? "" : "checksum:" + ver.checksum);
          return null;
       }
 
@@ -2467,9 +2468,9 @@
 
    JSROOT.IO.ReadVectorElement = function(buf) {
       if (this.testsplit) {
-         var ver = { val: buf.ntoi2() };
+         var ver = { val: buf.ntoi2(), nowarning: true };
          if (ver.val<=0) ver.checksum = buf.ntou4();
-
+         
          var streamer = buf.fFile.GetStreamer(this.conttype, ver);
 
          streamer = buf.fFile.GetSplittedStreamer(streamer);
@@ -2494,6 +2495,8 @@
          }
 
          buf.o -= (ver.val<=0) ? 6 : 2; // rallback position of the
+         
+         this.testsplit = false; // fail once, do not try again
          // console.log('RALLBACK reading for type', this.conttype);
       }
 
