@@ -301,6 +301,8 @@
                 s1 = unref_value(value.second);
             if (f1!==undefined) value.first = f1;
             if (s1!==undefined) value.second = s1;
+            value._typename = value['$pair'];
+            delete value['$pair'];
             return; // pair object is not counted in the objects map  
          }
 
