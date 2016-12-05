@@ -281,7 +281,7 @@
          if ((proto.indexOf('[object')==0) && (proto.indexOf('Array]')>0)) {
              for (i = 0; i < value.length; ++i) {
                 res = unref_value(value[i]);
-                if (res) value[i] = res;
+                if (res!==undefined) value[i] = res;
              }
              return;
          }
@@ -293,6 +293,15 @@
             if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = true;
             return map[ref];
+         }
+         
+         if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+            newfmt = true;
+            var f1 = unref_value(value.first),
+                s1 = unref_value(value.second);
+            if (f1!==undefined) value.first = f1;
+            if (s1!==undefined) value.second = s1;
+            return; // pair object is not counted in the objects map  
          }
 
          // debug code, can be commented out later
@@ -310,7 +319,7 @@
          for (k = 0; k < len; ++k) {
             i = ks[k];
             res = unref_value(value[i]);
-            if (res) value[i] = res;
+            if (res!==undefined) value[i] = res;
          }
       }
 
@@ -423,7 +432,8 @@
       return src;
    }
 
-
+   /** @memberOf JSROOT 
+    * Method should be used to parse JSON code, produced with TBufferJSON */
    JSROOT.parse = function(arg) {
       if ((arg==null) || (arg=="")) return null;
       var obj = JSON.parse(arg);
