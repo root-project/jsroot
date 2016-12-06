@@ -42,6 +42,9 @@
          kSTLset : 6, kSTLmultiset : 7, kSTLbitset : 8, kSTLforwardlist : 9,
          kSTLunorderedset : 10, kSTLunorderedmultiset : 11, kSTLunorderedmap : 12,
          kSTLunorderedmultimap : 13, kSTLend : 14,
+         
+         // constants of bits in version
+         kStreamedMemberWise : JSROOT.BIT(14),
 
          IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
                                      (typ===this.kCounter) ||
@@ -2330,8 +2333,8 @@
 
                       member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
 
-                      member.testsplit = !member.isptr && (member.arrkind < 0) &&
-                                          (element.fCtype === JSROOT.IO.kObject);
+                      //member.testsplit = !member.isptr && (member.arrkind < 0) &&
+                      //                    (element.fCtype === JSROOT.IO.kObject);
 
                       member.readelem = JSROOT.IO.ReadVectorElement;
                   }
@@ -2404,6 +2407,7 @@
                if (member.readelem!==undefined) {
                   member.func = function(buf,obj) {
                      var ver = buf.ReadVersion();
+                     this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
                      var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                      if (!buf.CheckBytecount(ver, this.typename)) res = null;
                      obj[this.name] = res;
@@ -2467,8 +2471,9 @@
    }
 
    JSROOT.IO.ReadVectorElement = function(buf) {
-      if (this.testsplit) {
-         var ver = { val: buf.ntoi2(), nowarning: true };
+      if (this.member_wise) {
+         
+         var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
          
          var streamer = buf.fFile.GetStreamer(this.conttype, ver);
@@ -2476,9 +2481,10 @@
          streamer = buf.fFile.GetSplittedStreamer(streamer);
 
          if (streamer) {
+            
             var n = buf.ntoi4(), res = [];
 
-            // console.log('reading splitted vector', this.typename, 'length', n, 'split length', streamer.length)
+            // console.log('Member-wise reading of ', this.typename, 'nelem', n, 'ver', ver);
 
             for (var i=0;i<n;++i)
                res[i] = { _typename: this.conttype }; // create objects
@@ -2496,8 +2502,7 @@
 
          buf.o -= (ver.val<=0) ? 6 : 2; // rallback position of the
          
-         this.testsplit = false; // fail once, do not try again
-         // console.log('RALLBACK reading for type', this.conttype);
+         console.error('FAIL member-wise streaming for type', this.conttype, 'RALL-BACK buffer');
       }
 
       var n = buf.ntoi4(), res = [];
