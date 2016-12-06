@@ -1040,10 +1040,11 @@
 
    // function can be used to draw supported ROOT classes,
    // required functionality will be loaded automatically
-   // if painter pointer required, one should load '2d' functionlity itself
-   JSROOT.draw = function(divid, obj, opt) {
+   // if painter pointer required, one should load '2d' functionlity itself 
+   // or use callback function which provides painter pointer as first argument  
+   JSROOT.draw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.draw(divid, obj, opt);
+         JSROOT.draw(divid, obj, opt, callback);
       });
    }
 
