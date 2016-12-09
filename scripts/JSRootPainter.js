@@ -8660,6 +8660,13 @@
                   arrays.push(arr);
                } else
 */
+               if (item._datakind === JSROOT.IO.kSTL) {
+                  var buf = baskets[n].raw;
+                  
+                  // first N entries is just Nx size of correpondent vector
+                  
+                  arrays.push(buf.ReadFastArray(baskets[n].fNevBuf, JSROOT.IO.kInt));
+               } else
                if (item._isvector) {
                   var buf = baskets[n].raw, nread = 0;
                   while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
@@ -8691,7 +8698,8 @@
                   if (xmin>0) { xmin*=0.9; xmax*=1.1; } else
                               { xmin*=1.1; xmax*=0.9; }
                } else
-               if (JSROOT.IO.IsInteger(item._datakind) && (xmax-xmin >=1) && (xmax-xmin<5000)) {
+               if ((JSROOT.IO.IsInteger(item._datakind) || (item._datakind === JSROOT.IO.kSTL))  
+                     && (xmax-xmin >=1) && (xmax-xmin<5000)) {
                   xmin -= 1;
                   xmax += 2;
                   nbins = xmax - xmin;
@@ -8819,14 +8827,14 @@
                if (JSROOT.IO.IsNumeric(leaf.fType-JSROOT.IO.kOffsetL)) {
                   datakind = leaf.fType - JSROOT.IO.kOffsetL;
                   arrsize = leaf.fLen; // fixed-size array
-               }
+               } 
 
                break;
          }
       }
 
       function ClearName(arg) {
-         if ((arg.length>0) && (arg.charAt(0)=='/')) arg = arg.substr(1);
+         // if ((arg.length>0) && (arg.charAt(0)=='/')) arg = arg.substr(1);
          
          return arg;
          
@@ -8871,17 +8879,28 @@
             // really create all sub-branch items
             if (!bobj) return false;
             
-/*            console.log('expand ', bobj.fName, ' nbr ', bobj.fBranches.arr.length, 'leavs', bobj.fLeaves.arr.length );
-            console.log('branch ', bobj );
-            for ( var i = 0; i < bobj.fLeaves.arr.length; ++i) {
-               var l = bobj.fLeaves.arr[i];
-               console.log('sub leave', l._typename, l.fName, l); 
-            }
-*/            
-            for ( var i = 0; i < bobj.fBranches.arr.length; ++i) {
-//               console.log('sub branch', bobj.fBranches.arr[i].fName, bobj.fBranches.arr[i]);
+            for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], true);
+            
+            if (!bobj.fLeaves || (bobj.fLeaves.arr.length !== 1)) return true;
+            
+            var leaf = bobj.fLeaves.arr[0];
+            if ((leaf._typename === 'TLeafElement') && (leaf.fType === JSROOT.IO.kSTL)) {
+               var szitem = {
+                     _name : "@size",
+                     _kind : "ROOT." + leaf._typename,
+                     _title : leaf.fTitle,
+                     _can_draw : true,
+                     _branch : bobj,
+                     _datakind : JSROOT.IO.kSTL,
+                     _arrsize : 1,
+                     _isvector : false,
+                     _get : JSROOT.Painter.TreeDrawGet
+               };
+               bnode._childs.push(szitem);
+               
             }
+            
             return true;
          }
          return true;
