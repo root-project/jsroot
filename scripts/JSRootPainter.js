@@ -8825,7 +8825,10 @@
 
       function ClearName(arg) {
          if ((arg.length>0) && (arg.charAt(0)=='/')) arg = arg.substr(1);
-         return arg.replace(/\//g,'_').replace(/#/g,'_');
+         
+         return arg;
+         
+         //return arg.replace(/\//g,'_'); //.replace(/#/g,'_');
       }
 
       var subitem = {
@@ -8865,8 +8868,18 @@
          subitem._expand = function(bnode,bobj) {
             // really create all sub-branch items
             if (!bobj) return false;
-            for ( var i = 0; i < bobj.fBranches.arr.length; ++i)
+            
+/*            console.log('expand ', bobj.fName, ' nbr ', bobj.fBranches.arr.length, 'leavs', bobj.fLeaves.arr.length );
+            console.log('branch ', bobj );
+            for ( var i = 0; i < bobj.fLeaves.arr.length; ++i) {
+               var l = bobj.fLeaves.arr[i];
+               console.log('sub leave', l._typename, l.fName, l); 
+            }
+*/            
+            for ( var i = 0; i < bobj.fBranches.arr.length; ++i) {
+//               console.log('sub branch', bobj.fBranches.arr[i].fName, bobj.fBranches.arr[i]);
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], true);
+            }
             return true;
          }
          return true;
@@ -9207,36 +9220,35 @@
       //   top:   element to start search from
 
       function find_in_hierarchy(top, fullname) {
-
+         
          if (!fullname || (fullname.length == 0) || !top) return top;
 
-         var pos = -1, once_again = false,
-             check_top = !top._parent && (top._kind !== 'TopFolder');
+         var pos = fullname.length;
 
+         if (!top._parent && (top._kind !== 'TopFolder') && (fullname.indexOf(top._name)===0)) {
+            // it is allowed to provide item name, which includes top-parent like file.root/folder/item
+            // but one could skip top-item name, if there are no other items
+            if (fullname === top._name) return top;
+            
+            var len = top._name.length;
+            if (fullname[len] == "/") {
+               fullname = fullname.substr(len+1);
+               pos = fullname.length;
+            }
+         }
+         
          function process_child(child, ignore_prnt) {
             // set parent pointer when searching child
             if (!ignore_prnt) child._parent = top;
-            if ((pos + 1 == fullname.length) || (pos < 0)) return child;
+            
+            if ((pos >= fullname.length-1) || (pos < 0)) return child;
 
             return find_in_hierarchy(child, fullname.substr(pos + 1));
          }
 
-         do {
-            // we try to find element with slashes inside
-            pos = fullname.indexOf("/", pos + 1);
-            once_again = false;
-
-            var localname = (pos < 0) ? fullname : fullname.substr(0, pos);
-
-            if (check_top && (localname === top._name)) {
-               // it is allowed to provide item name, which includes top-parent like file.root/folder/item
-               // but one could skip top-item name, if there are no other items
-               check_top = false;
-               if (localname===fullname) return top;
-               fullname = fullname.substr(pos+1);
-               pos = -1; once_again = true;
-               continue;
-            }
+         while (pos > 0) {
+            // we try to find element with slashes inside - start from full name
+            var localname = (pos >= fullname.length) ? fullname : fullname.substr(0, pos);
 
             if (top._childs) {
                // first try to find direct matched item
@@ -9273,15 +9285,17 @@
                }
             }
 
-            if (arg.force) {
-               // if didnot found element with given name we just generate it
-               if (top._childs === undefined) top._childs = [];
-               var child = { _name: localname };
-               top._childs.push(child);
-               return process_child(child);
-            }
-
-         } while ((pos >= 0) || once_again);
+            pos = fullname.lastIndexOf("/", pos - 1);
+         }
+         
+         if (arg.force) {
+             // if didnot found element with given name we just generate it
+             if (top._childs === undefined) top._childs = [];
+             pos = fullname.indexOf("/");
+             var child = { _name: ((pos < 0) ? fullname : fullname.substr(0, pos)) };
+             top._childs.push(child);
+             return process_child(child);
+         }
 
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
