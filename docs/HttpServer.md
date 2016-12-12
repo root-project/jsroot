@@ -407,7 +407,7 @@ For `multi.bin` any kind of requests can be used. It returns binary buffer with 
 While POST data in request used to transfer list of multiple reqeusts, it is not possible to submit
 such kind of requests, which themselvs require data from POST block.
 
-To use 'multi.json' request from the JavaScript, one should create special 'POST' HTTP request and properly parse it. JSROOT provides special method to do this:
+To use `multi.json` request from the JavaScript, one should create special 'POST' HTTP request and properly parse it. JSROOT provides special method to do this:
 
      var xhr = JSROOT.NewHttpRequest("your_server/multi.json?number=3", "multi", function(res) {
         if (!res) return;
