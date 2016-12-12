@@ -501,6 +501,7 @@
    JSROOT.Math.landau_pdf = function(x, xi, x0) {
       // LANDAU pdf : algorithm from CERNLIB G110 denlan
       // same algorithm is used in GSL
+      if (x0===undefined) x0 = 0;
       if (xi <= 0) return 0;
       var v = (x - x0)/xi;
       var u, ue, us, denlan;
@@ -579,17 +580,20 @@
    
    /** @memberOf JSROOT.Math */
    JSROOT.Math.chisquared_cdf_c = function(x,r,x0) {
+      if (x0===undefined) x0 = 0;
       return JSROOT.Math.inc_gamma_c ( 0.5 * r , 0.5*(x-x0) );
    };
    
    /** @memberOf JSROOT.Math */
    JSROOT.Math.chisquared_cdf = function(x,r,x0) {
+      if (x0===undefined) x0 = 0;
       return JSROOT.Math.inc_gamma ( 0.5 * r , 0.5*(x-x0) );
    };
    
    /** @memberOf JSROOT.Math */
    JSROOT.Math.chisquared_pdf = function(x,r,x0) {
-      if ((x-x0) <  0) return 0.0;
+      if (x0===undefined) x0 = 0;
+      if ((x-x0) < 0) return 0.0;
       var a = r/2 -1.;
       // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
       if (x == x0 && a == 0) return 0.5;
