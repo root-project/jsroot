@@ -69,13 +69,30 @@
                case "uint64_t": return JSROOT.IO.kULong64;
             }
             return -1;
+         },
+         
+         GetTypeSize : function(typname) {
+            switch (typname) {
+               case JSROOT.IO.kBool: return 1;
+               case JSROOT.IO.kChar: return 1;
+               case JSROOT.IO.kShort : return 2;
+               case JSROOT.IO.kInt: return 4;
+               case JSROOT.IO.kLong: return 8;
+               case JSROOT.IO.kFloat: return 4;
+               case JSROOT.IO.kDouble: return 8;
+               case JSROOT.IO.kUChar: return 1;
+               case JSROOT.IO.kUShort: return 2;
+               case JSROOT.IO.kUInt: return 4;
+               case JSROOT.IO.kULong: return 8;
+               case JSROOT.IO.kLong64: return 8;
+               case JSROOT.IO.kULong64: return 8;
+            }
+            return -1;
          }
 
    };
 
-
-
-// map of user-streamer function like func(buf,obj)
+   // map of user-streamer function like func(buf,obj)
    JSROOT.fUserStreamers = {};
 
    JSROOT.addUserStreamer = function(type, user_streamer) {
