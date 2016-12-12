@@ -1199,19 +1199,16 @@
    }
 
    JSROOT.TBasePainter.prototype.main_visible_rect = function() {
-      // return rect with width/height which correcpond to the visible area of drawing region
+      // return rect with width/height which correspond to the visible area of drawing region
 
-      var render_to = this.select_main();
-
-      var rect = render_to.node().getBoundingClientRect();
-
-      var res = {};
+      var render_to = this.select_main(),
+          rect = render_to.node().getBoundingClientRect();
 
       // this is size where canvas should be rendered
-      res.width = Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right'));
-      res.height = Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'));
-
-      return res;
+      return {
+         width: Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right')),
+         height: Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'))
+      };
    }
 
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
