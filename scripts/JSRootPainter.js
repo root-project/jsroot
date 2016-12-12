@@ -8641,7 +8641,7 @@
             var arrays = []; // all data from baskets
 
             // first convert raw data
-            for (var n=0;n<baskets.length;++n)
+            for (var n=0;n<baskets.length;++n) {
 /*               if (streamer) {
                   var buf = baskets[n].raw, nread = 0, arr = [];
                   while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
@@ -8660,23 +8660,34 @@
                   arrays.push(arr);
                } else
 */
+               
+               var buf = baskets[n].raw;
                if (item._datakind === JSROOT.IO.kSTL) {
-                  var buf = baskets[n].raw;
-                  
                   // first N entries is just Nx size of correpondent vector
                   
                   arrays.push(buf.ReadFastArray(baskets[n].fNevBuf, JSROOT.IO.kInt));
                } else
                if (item._isvector) {
-                  var buf = baskets[n].raw, nread = 0;
+                  var nread = 0;
                   while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
                      var ver = buf.ReadVersion();
                      arrays.push(buf.ReadFastArray(buf.ntoi4(), item._datakind));
                      buf.CheckBytecount(ver, 'branch_vector_read');
                   }
+               } else 
+               if (item._arrsize < 0) {
+                  // this is just dummy read of complete basket 
+                  
+                  var sz = buf.remain() / JSROOT.IO.GetTypeSize(item._datakind);
+                  
+                  sz = baskets[n].fNevBuf;
+                  
+                  arrays.push(buf.ReadFastArray(Math.floor(sz), item._datakind));
+                  
                } else {
-                  arrays.push(baskets[n].raw.ReadFastArray(baskets[n].fNevBuf * item._arrsize, item._datakind));
+                  arrays.push(buf.ReadFastArray(baskets[n].fNevBuf * item._arrsize, item._datakind));
                }
+            }
 
             // console.log('array', arr.length);
 
@@ -8789,7 +8800,7 @@
    }
 */
 
-   JSROOT.Painter.CreateBranchItem = function(node, branch) {
+   JSROOT.Painter.CreateBranchItem = function(node, branch, prnt) {
       if (!node || !branch) return false;
 
       var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
@@ -8823,6 +8834,8 @@
                } else
                if (JSROOT.IO.IsNumeric(leaf.fType)) {
                    datakind = leaf.fType;
+                   // this is workaround, just when branch is part of splitted STL container, read all elelemnts from basket
+                   if ((branch.fBranchCount === prnt) && (JSROOT.IO.GetTypeSize(datakind) > 0)) arrsize = -1;
                } else
                if (JSROOT.IO.IsNumeric(leaf.fType-JSROOT.IO.kOffsetL)) {
                   datakind = leaf.fType - JSROOT.IO.kOffsetL;
@@ -8880,7 +8893,7 @@
             if (!bobj) return false;
             
             for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
-               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], true);
+               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj);
             
             if (!bobj.fLeaves || (bobj.fLeaves.arr.length !== 1)) return true;
             
@@ -8928,7 +8941,7 @@
       node._childs = [];
 
       for ( var i = 0; i < obj.fBranches.arr.length; ++i)
-         JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i]);
+         JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
 
       return true;
    }
