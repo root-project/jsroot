@@ -8561,6 +8561,71 @@
       }
       return true;
    }
+   
+   JSROOT.Painter.SelectorTreeDrawGet = function(bitem, itemname, get_callback, option) {
+      if (option==='inspect')
+         return JSROOT.CallBack(get_callback, bitem, bitem._branch);
+
+      var fprnt = bitem._parent;
+      while (fprnt && !fprnt._file) fprnt = fprnt._parent;
+      if (!fprnt) return JSROOT.CallBack(get_callback, bitem, null);
+
+      var selector = new JSROOT.TSelector(fprnt._file);
+      
+      selector.AddBranch(bitem._branch);
+      
+      selector.hist = null;
+      selector.arr = [];
+      
+      selector.NextEntry = function() {
+         // do something
+         
+         this.arr.push(this.tgtobj.value);
+      }
+      
+      function CreateHistogram(arr) {
+         
+         if (!arr || arr.length==0) return null;
+         
+         var xmin = Math.min.apply(null, arr),
+             xmax = Math.max.apply(null, arr),
+             nbins = 200;
+
+         if (xmin>=xmax) {
+            xmax = xmin;
+            if (Math.abs(xmin)<100) { xmin-=1; xmax+=1; } else
+               if (xmin>0) { xmin*=0.9; xmax*=1.1; } else
+               { xmin*=1.1; xmax*=0.9; }
+         } else
+         if (selector.IsInteger(0) && (xmax-xmin >=1) && (xmax-xmin<5000)) {
+             xmin -= 1;
+             xmax += 2;
+             nbins = xmax - xmin;
+         } else {
+             xmax += (xmax-xmin)/nbins;
+         }
+
+         var histo = JSROOT.CreateTH1(nbins);
+         histo.fXaxis.fXmin = xmin;
+         histo.fXaxis.fXmax = xmax;
+         histo.fName = "draw_" + bitem._name;
+         histo.fTitle = "drawing '" + bitem._name + "' from " + bitem._parent._name;
+         histo.fCustomStat = 111110;
+
+         for (var n=0;n<arr.length;++n) histo.Fill(arr[n]);
+
+         return histo;
+      }
+      
+      function select_callback() {
+         selector.hist = CreateHistogram(selector.arr);
+         
+         JSROOT.CallBack(get_callback, bitem, selector.hist);
+      }
+      
+      if (!selector.Select(select_callback)) 
+         return JSROOT.CallBack(get_callback, bitem, null);
+   }
 
 
    JSROOT.Painter.TreeDrawGet = function(item, itemname, get_callback, option) {
@@ -8704,7 +8769,7 @@
 
                if (xmin>=xmax) {
                   xmax = xmin;
-                  if (Math.abs(xmin<100)) { xmin-=1; xmax+=1; } else
+                  if (Math.abs(xmin)<100) { xmin-=1; xmax+=1; } else
                   if (xmin>0) { xmin*=0.9; xmax*=1.1; } else
                               { xmin*=1.1; xmax*=0.9; }
                } else
@@ -8806,7 +8871,7 @@
           nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
           leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
           datakind = 0, arrsize = 1,
-          isvector = false,
+          isvector = false, useselect = false,
           fprnt = node._parent;
 
       // check that we have file
@@ -8815,13 +8880,13 @@
       // display branch with the only leaf
       if ((nb_leaves === 1) && fprnt && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) ) {
          switch (leaf._typename) {
-            case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
-            case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
-            case 'TLeafO' : datakind = JSROOT.IO.kBool; break;
-            case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
-            case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
-            case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
-            case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+            case 'TLeafF' : datakind = JSROOT.IO.kFloat; useselect = true; break;
+            case 'TLeafD' : datakind = JSROOT.IO.kDouble; useselect = true; break;
+            case 'TLeafO' : datakind = JSROOT.IO.kBool; useselect = true; break;
+            case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; useselect = true; break;
+            case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; useselect = true; break;
+            case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; useselect = true; break;
+            case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; useselect = true; break;
             case 'TLeafElement' :
                if ((leaf.fType < 0) && (branch._typename==='TBranchElement')) {
                   switch (branch.fClassName) {
@@ -8874,7 +8939,7 @@
          subitem._datakind = datakind;
          subitem._arrsize = arrsize;
          subitem._isvector = isvector;
-         subitem._get = JSROOT.Painter.TreeDrawGet;
+         subitem._get = useselect ? JSROOT.Painter.SelectorTreeDrawGet : JSROOT.Painter.TreeDrawGet;
 
          return true;
       }

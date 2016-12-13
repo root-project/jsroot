@@ -2621,20 +2621,174 @@
       // class to read data from TTree
       this.file = file;
       this.branches = [];
+      this.break_execution = 0;
+      this.is_integer = false;
    }
    
    JSROOT.TSelector.prototype.AddBranch = function(branch) {
       this.branches.push(branch);
    }
    
-   JSROOT.TSelector.prototype.Select = function(callback) {
+   JSROOT.TSelector.prototype.IsInteger = function(nbranch) {
+      return this.is_integer;
+   }
+   
+   JSROOT.TSelector.prototype.ShowProgress = function(value) {
+      // this function should be defined not here
+      
+      if ((document === undefined) || (JSROOT.progress===undefined)) return;
+
+      if (value===undefined) return JSROOT.progress();
+
+      var main_box = document.createElement("p"),
+          text_node = document.createTextNode(value),
+          selector = this;
+      
+      main_box.appendChild(text_node);
+      main_box.title = "Click on element to break drawing";
+
+      main_box.onclick = function() {
+         if (++selector.break_execution<3) {
+            main_box.title = "Tree draw will break after next I/O operation";
+            return text_node.nodeValue = "Breaking ... ";
+         }
+         selector.break_execution = -1111;
+         JSROOT.progress();
+      }
+
+      JSROOT.progress(main_box);
+   }
+   
+   JSROOT.TSelector.prototype.NextEntry = function() {
+      // function called when next entry extracted from the tree
+   }
+   
+   JSROOT.TSelector.prototype.Select = function(read_callback) {
       // function to read all selected branches in selected range
       
-      if (this.branches.length !== 1) {
+      if ((this.branches.length !== 1) || !this.file) {
          console.error('only single branch supported now');
-         return;
+         return false;
       }
+      
+      var branch = this.branches[0];
+      
+      var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+          leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
+          datakind = 0, arrsize = 1,
+          isvector = false;
+      
+       if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) ) {
+          switch (leaf._typename) {
+             case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
+             case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
+             case 'TLeafO' : datakind = JSROOT.IO.kBool; break;
+             case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+             case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
+             case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
+             case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+             case 'TLeafElement' :
+                if ((leaf.fType < 0) && (branch._typename==='TBranchElement')) {
+                   switch (branch.fClassName) {
+                      case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
+                      case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
+                      case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
+                      case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
+                   }
+                } else
+                if (JSROOT.IO.IsNumeric(leaf.fType)) {
+                   datakind = leaf.fType;
+                   // this is workaround, just when branch is part of splitted STL container, read all elelemnts from basket
+                   if ((branch.fBranchCount === prnt) && (JSROOT.IO.GetTypeSize(datakind) > 0)) arrsize = -1;
+                } else
+                if (JSROOT.IO.IsNumeric(leaf.fType-JSROOT.IO.kOffsetL)) {
+                   datakind = leaf.fType;
+                   arrsize = leaf.fLen; // fixed-size array
+                } 
+
+                break;
+          }
+       }
+    
+       if (isvector || (datakind<=0) || (arrsize<0)) {
+          console.log('Not supported branch kinds');
+          return false;
+       }
+       
+       var elem = JSROOT.IO.CreateStreamerElement("value", "int");
+       elem.fType = datakind;
+       // just intermediate solution
+       this.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
+       
+       if (arrsize > 1) {
+          elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
+       }
+       
+       // this element used to read branch value
+       var member = JSROOT.IO.CreateMember(elem, this.file);
+       if (!member || !member.func) {
+          console.log('Not supported branch kinds');
+          return false;
+       }
+       
+       var selector = this;
+       
+       this.break_execution = 0;
+       this.tgtobj = {};
+
+       function ReadNextBaskets(indx) {
+          var places = [], totalsz = 0, indx0 = indx;
+
+          while ((indx>=0) && (indx<branch.fMaxBaskets) && (totalsz < 1e7) && (places.length<200)) {
+             if (branch.fBasketBytes[indx] === 0) break;
+             places.push(branch.fBasketSeek[indx], branch.fBasketBytes[indx]);
+             totalsz += branch.fBasketBytes[indx];
+             indx++;
+          }
+
+          if ((places.length === 0) || (selector.break_execution>0)) {
+             selector.ShowProgress();
+             // break callback
+             return JSROOT.CallBack(read_callback, (places.length === 0));
+          }
+
+          var maxindx = branch.fWriteBasket || branch.fMaxBaskets;
+          if (maxindx<=0) maxindx = 1;
+
+          selector.ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
+
+          selector.file.ReadBaskets(places, function(baskets) {
+
+             if (selector.break_execution !== 0) 
+                return JSROOT.CallBack(read_callback, false);
+
+             if (!baskets) return ReadNextBaskets(-1);
+
+             var arrays = []; // all data from baskets
+
+             // now convert raw data
+             for (var n=0;n<baskets.length;++n) {
+
+                var buf = baskets[n].raw;
+
+                for (var k=0;k<baskets[n].fNevBuf;++k) {
+                   member.func(buf, selector.tgtobj);
+                   
+                   selector.NextEntry();
+                }
+             }
+
+             ReadNextBaskets(indx);
+          });
+       }
+
+       ReadNextBaskets(0);
+       
+       return true; // indicate that reading of tree will be performed
    }
+   
+   
    
    var iomode = JSROOT.GetUrlOption("iomode");
    if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
