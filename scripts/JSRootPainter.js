@@ -8689,7 +8689,7 @@
 
                if (xmin>=xmax) {
                   xmax = xmin;
-                  if (Math.abs(xmin<100)) { xmin-=1; xmax+=1; } else
+                  if (Math.abs(xmin)<100) { xmin-=1; xmax+=1; } else
                   if (xmin>0) { xmin*=0.9; xmax*=1.1; } else
                               { xmin*=1.1; xmax*=0.9; }
                } else
