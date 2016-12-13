@@ -9,6 +9,7 @@
 2. Fix - better selection of Y range for log scale
 3. Provide JSROOT.parse_multi function to corretcly parse response of multi.json request,
    support it in the JSROOT.NewHttpRequest method as well.  
+4. Fix - correctly calculate integral for TH1
 
 
 ## Changes in 4.8.0
