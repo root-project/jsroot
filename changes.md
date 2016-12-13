@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 
-## Changes in 4.8.x
+## Changes in 4.8.1
 1. Support new JSON format, produced with newest TBufferJSON
    - object references stored as {"$ref":12}
    - pair objects for std::map marked with "$pair" : "pair<type1,type2>" data memeber
