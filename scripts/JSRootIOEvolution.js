@@ -2652,14 +2652,18 @@
             main_box.title = "Tree draw will break after next I/O operation";
             return text_node.nodeValue = "Breaking ... ";
          }
-         selector.break_execution = -1111;
+         selector.Abort();
          JSROOT.progress();
       }
 
       JSROOT.progress(main_box);
    }
    
-   JSROOT.TSelector.prototype.NextEntry = function() {
+   JSROOT.TSelector.prototype.Abort = function() {
+      this.break_execution = -1111;
+   }
+   
+   JSROOT.TSelector.prototype.Process = function(entry) {
       // function called when next entry extracted from the tree
    }
    
@@ -2770,12 +2774,17 @@
              // now convert raw data
              for (var n=0;n<baskets.length;++n) {
 
+                var entry = branch.fBasketEntry[indx0 + n];
+                
                 var buf = baskets[n].raw;
 
                 for (var k=0;k<baskets[n].fNevBuf;++k) {
                    member.func(buf, selector.tgtobj);
                    
-                   selector.NextEntry();
+                   selector.Process(entry+k);
+
+                   if (selector.break_execution !== 0) 
+                      return JSROOT.CallBack(read_callback, false);
                 }
              }
 

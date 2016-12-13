@@ -8577,8 +8577,10 @@
       selector.hist = null;
       selector.arr = [];
       
-      selector.NextEntry = function() {
+      selector.Process = function(entry) {
          // do something
+         
+         // if (!isNaN(entry) && entry<1000) console.log('entry', entry, this.tgtobj.value);
          
          this.arr.push(this.tgtobj.value);
       }
