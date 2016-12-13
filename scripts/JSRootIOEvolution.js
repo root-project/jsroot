@@ -476,7 +476,7 @@
 
       if ((flag!==0) && ((flag % 10) != 2)) {
          var sz = this.ntoi4();
-         // obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
+         //obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
          this.shift(sz*4);
 
          if (flag>40) {
@@ -2617,12 +2617,12 @@
    
    // =================================================================
    
-   JSROOT.TSelector = function(file) {
+   JSROOT.TSelector = function() {
       // class to read data from TTree
-      this.file = file;
       this.branches = [];
       this.break_execution = 0;
       this.is_integer = false;
+      this.tgtobj = {};
    }
    
    JSROOT.TSelector.prototype.AddBranch = function(branch) {
@@ -2660,6 +2660,7 @@
    }
    
    JSROOT.TSelector.prototype.Abort = function() {
+      // call this function to abort processing
       this.break_execution = -1111;
    }
    
@@ -2667,15 +2668,29 @@
       // function called when next entry extracted from the tree
    }
    
-   JSROOT.TSelector.prototype.Select = function(read_callback) {
-      // function to read all selected branches in selected range
+   JSROOT.TSelector.prototype.Terminate = function(res) {
+      // function called at the very end of processing
+   }
+   
+   
+   // register methods for TTree
+   
+   var m = {};
+   
+   m.Process = function(selector, option, numentries, firstentry) {
+      if (!selector) return false;
       
-      if ((this.branches.length !== 1) || !this.file) {
+      if (!option) option = "";
+      if (isNaN(numentries)) numentries = 1e10;
+      if (isNaN(firstentry)) firstentry = 0;
+      
+      if (!this.file || !selector.branches || (selector.branches.length !== 1)) {
          console.error('only single branch supported now');
+         selector.Terminate(false);
          return false;
       }
       
-      var branch = this.branches[0];
+      var branch = selector.branches[0];
       
       var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
           nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
@@ -2717,13 +2732,14 @@
     
        if (isvector || (datakind<=0) || (arrsize<0)) {
           console.log('Not supported branch kinds');
+          selector.Terminate(false);
           return false;
        }
        
        var elem = JSROOT.IO.CreateStreamerElement("value", "int");
        elem.fType = datakind;
        // just intermediate solution
-       this.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
+       selector.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
        
        if (arrsize > 1) {
           elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
@@ -2733,14 +2749,12 @@
        var member = JSROOT.IO.CreateMember(elem, this.file);
        if (!member || !member.func) {
           console.log('Not supported branch kinds');
+          selector.Terminate(false);
           return false;
        }
        
-       var selector = this;
+       var tree = this;
        
-       this.break_execution = 0;
-       this.tgtobj = {};
-
        function ReadNextBaskets(indx) {
           var places = [], totalsz = 0, indx0 = indx;
 
@@ -2751,10 +2765,10 @@
              indx++;
           }
 
-          if ((places.length === 0) || (selector.break_execution>0)) {
+          if ((places.length === 0) || (selector.break_execution!==0)) {
              selector.ShowProgress();
              // break callback
-             return JSROOT.CallBack(read_callback, (places.length === 0));
+             return selector.Terminate(places.length===0);
           }
 
           var maxindx = branch.fWriteBasket || branch.fMaxBaskets;
@@ -2762,10 +2776,10 @@
 
           selector.ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
 
-          selector.file.ReadBaskets(places, function(baskets) {
+          tree.file.ReadBaskets(places, function(baskets) {
 
              if (selector.break_execution !== 0) 
-                return JSROOT.CallBack(read_callback, false);
+                return selector.Terminate(false);
 
              if (!baskets) return ReadNextBaskets(-1);
 
@@ -2777,14 +2791,14 @@
                 var entry = branch.fBasketEntry[indx0 + n];
                 
                 var buf = baskets[n].raw;
-
+                
                 for (var k=0;k<baskets[n].fNevBuf;++k) {
                    member.func(buf, selector.tgtobj);
                    
                    selector.Process(entry+k);
 
                    if (selector.break_execution !== 0) 
-                      return JSROOT.CallBack(read_callback, false);
+                      return selector.Terminate(false);
                 }
              }
 
@@ -2797,6 +2811,9 @@
        return true; // indicate that reading of tree will be performed
    }
    
+   JSROOT.methodsCache['TTree'] = JSROOT.methodsCache['TNtuple'] = JSROOT.methodsCache['TNtupleD'] = m; 
+   
+   // =================================
    
    
    var iomode = JSROOT.GetUrlOption("iomode");
