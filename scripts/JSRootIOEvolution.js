@@ -2636,17 +2636,12 @@
          console.error('only single branch supported now');
          return;
       }
-   };
+   }
    
-   
-   
-
-   (function() {
-      var iomode = JSROOT.GetUrlOption("iomode");
-      if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
-      if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
-      JSROOT.IO.NativeArray = ('Float64Array' in window);
-   })();
+   var iomode = JSROOT.GetUrlOption("iomode");
+   if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
+   if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
+   JSROOT.IO.NativeArray = ('Float64Array' in window);
 
    return JSROOT;
 
