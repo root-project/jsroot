@@ -1676,7 +1676,7 @@
       return null;
    }
    
-   JSROOT.TFile.prototype.CreateMember = function(element) {
+   JSROOT.IO.CreateMember = function(element, file) {
       // create member entry for streamer element, which is used for reading of such data
 
       var member = { name: element.fName, type: element.fType,
@@ -1957,114 +1957,112 @@
             //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
 
             if ((element._typename === 'TStreamerSTLstring') ||
-                  (member.typename == "string") || (member.typename == "string*"))
+                (member.typename == "string") || (member.typename == "string*"))
                member.readelem = function(buf) { return buf.ReadTString(); };
-               else
-                  if ((element.fSTLtype === JSROOT.IO.kSTLvector) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLlist) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLdeque + 40) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLset) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLset + 40) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLmultiset) ||
-                        (element.fSTLtype === JSROOT.IO.kSTLmultiset + 40)) {
-                     var p1 = member.typename.indexOf("<"),
-                     p2 = member.typename.lastIndexOf(">");
+            else
+              if ((element.fSTLtype === JSROOT.IO.kSTLvector) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLlist) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLdeque + 40) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLset) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLset + 40) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLmultiset) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLmultiset + 40)) {
+                 var p1 = member.typename.indexOf("<"),
+                 p2 = member.typename.lastIndexOf(">");
 
-                     member.conttype = member.typename.substr(p1+1,p2-p1-1);
+                 member.conttype = member.typename.substr(p1+1,p2-p1-1);
 
-                     member.typeid = JSROOT.IO.GetTypeId(member.conttype);
+                 member.typeid = JSROOT.IO.GetTypeId(member.conttype);
 
-                     // console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
+                 // console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
 
-                     if (member.typeid > 0) {
-                        member.readelem = function(buf) {
-                           return buf.ReadFastArray(buf.ntoi4(), this.typeid);
-                        };
-                     } else {
-                        member.isptr = false;
+                 if (member.typeid > 0) {
+                    member.readelem = function(buf) {
+                       return buf.ReadFastArray(buf.ntoi4(), this.typeid);
+                    };
+                 } else {
+                    member.isptr = false;
 
-                        if (member.conttype.lastIndexOf("*") === member.conttype.length-1) {
-                           member.isptr = true;
-                           member.conttype = member.conttype.substr(0,member.conttype.length-1);
-                        }
+                    if (member.conttype.lastIndexOf("*") === member.conttype.length-1) {
+                       member.isptr = true;
+                       member.conttype = member.conttype.substr(0,member.conttype.length-1);
+                    }
 
-                        if (element.fCtype === JSROOT.IO.kObjectp) member.isptr = true;
+                    if (element.fCtype === JSROOT.IO.kObjectp) member.isptr = true;
 
-                        member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
+                    member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
 
-                        //member.testsplit = !member.isptr && (member.arrkind < 0) &&
-                        //                    (element.fCtype === JSROOT.IO.kObject);
+                    //member.testsplit = !member.isptr && (member.arrkind < 0) &&
+                    //                    (element.fCtype === JSROOT.IO.kObject);
 
-                        member.readelem = JSROOT.IO.ReadVectorElement;
-                     }
+                    member.readelem = JSROOT.IO.ReadVectorElement;
+                 }
 
-                  } else
-                     if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
-                           (element.fSTLtype === JSROOT.IO.kSTLmap + 40) ||
-                           (element.fSTLtype === JSROOT.IO.kSTLmultimap) ||
-                           (element.fSTLtype === JSROOT.IO.kSTLmultimap + 40)) {
+              } else
+              if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLmap + 40) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLmultimap) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLmultimap + 40)) {
 
-                        // console.log('map', member.name, member.typename, element.fCtype, element.fSTLtype);
+                 var p1 = member.typename.indexOf("<"),
+                 p2 = member.typename.lastIndexOf(">");
 
-                        var p1 = member.typename.indexOf("<"),
-                        p2 = member.typename.lastIndexOf(">");
+                 member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
 
-                        member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
+                 if (file.FindStreamerInfo(member.pairtype)) {
+                    member.readversion = true;
+                    // console.log('There is streamer info for ',member.pairtype, 'one should read version');
+                 } else {
 
-                        if (this.FindStreamerInfo(member.pairtype)) {
-                           member.readversion = true;
-                           // console.log('There is streamer info for ',member.pairtype, 'one should read version');
-                        } else {
+                    function GetNextName() {
+                       var res = "", p = p1+1, cnt = 0;
+                       while ((p<p2) && (cnt>=0)) {
+                          switch (member.typename.charAt(p)) {
+                          case "<": cnt++; break;
+                          case ",": if (cnt===0) cnt--; break;
+                          case ">": cnt--; break;
+                          }
+                          if (cnt>=0) res+=member.typename.charAt(p);
+                          p++;
+                       }
+                       p1 = p-1;
+                       return res;
+                    }
 
-                           function GetNextName() {
-                              var res = "", p = p1+1, cnt = 0;
-                              while ((p<p2) && (cnt>=0)) {
-                                 switch (member.typename.charAt(p)) {
-                                 case "<": cnt++; break;
-                                 case ",": if (cnt===0) cnt--; break;
-                                 case ">": cnt--; break;
-                                 }
-                                 if (cnt>=0) res+=member.typename.charAt(p);
-                                 p++;
-                              }
-                              p1 = p-1;
-                              return res;
-                           }
+                    var name1 = GetNextName(), name2 = GetNextName();
 
-                           var name1 = GetNextName(), name2 = GetNextName();
+                    // console.log(member.typename, member.pairtype, name1, name2);
 
-                           // console.log(member.typename, member.pairtype, name1, name2);
+                    var elem1 = JSROOT.IO.CreateStreamerElement("first", name1),
+                        elem2 = JSROOT.IO.CreateStreamerElement("second", name2);
 
-                           var elem1 = JSROOT.IO.CreateStreamerElement("first", name1),
-                           elem2 = JSROOT.IO.CreateStreamerElement("second", name2);
+                    var si = { _typename: 'TStreamerInfo',
+                               fName: member.pairtype,
+                               fElements: JSROOT.Create("TList"),
+                               fVersion: 1 };
+                    si.fElements.Add(elem1);
+                    si.fElements.Add(elem2);
 
-                           var si = { _typename: 'TStreamerInfo',
-                                 fName: member.pairtype,
-                                 fElements: JSROOT.Create("TList"),
-                                 fVersion: 1 };
-                           si.fElements.Add(elem1);
-                           si.fElements.Add(elem2);
+                    member.streamer = file.GetStreamer(member.pairtype, null, si);
 
-                           member.streamer = this.GetStreamer(member.pairtype, null, si);
+                    if (!member.streamer || member.streamer.length!=2) {
+                       JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
+                       delete member.streamer;
+                    }
+                 }
 
-                           if (!member.streamer || member.streamer.length!=2) {
-                              JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
-                              delete member.streamer;
-                           }
-                        }
-
-                        if (member.readversion || member.streamer)
-                           member.readelem = JSROOT.IO.ReadMapElement;
-                     } else
-                        if ((element.fSTLtype === JSROOT.IO.kSTLbitset) ||
-                              (element.fSTLtype === JSROOT.IO.kSTLbitset + 40)) {
-                           member.readelem = function(buf,obj) {
-                              return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
-                           }
-                        }
+                 if (member.readversion || member.streamer)
+                    member.readelem = JSROOT.IO.ReadMapElement;
+              } else
+              if ((element.fSTLtype === JSROOT.IO.kSTLbitset) ||
+                  (element.fSTLtype === JSROOT.IO.kSTLbitset + 40)) {
+                     member.readelem = function(buf,obj) {
+                        return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
+                    }
+                 }
 
             if (member.readelem!==undefined) {
                member.func = function(buf,obj) {
@@ -2454,7 +2452,7 @@
       if (s_i.fElements)
          for (var j=0; j < s_i.fElements.arr.length; ++j) {
             // extract streamer info for each class member
-            var member = this.CreateMember(s_i.fElements.arr[j]);
+            var member = JSROOT.IO.CreateMember(s_i.fElements.arr[j], this);
             streamer.push(member);
          }
 
