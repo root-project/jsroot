@@ -8629,6 +8629,8 @@
       selector.Terminate = function(res) {
          if (res && !this.hist) this.CreateHistogram();
          
+         this.ShowProgress();
+         
          JSROOT.CallBack(get_callback, bitem, this.hist);
       }
       

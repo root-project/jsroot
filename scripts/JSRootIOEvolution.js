@@ -489,7 +489,7 @@
       if ((flag === 1) || (flag > 10)) {
          var sz = obj.fLast;
          if (ver.val <= 1) sz = this.ntoi4();
-         this.o += sz; // fBufferRef
+         this.shift(sz); // obj.fBufferRef
       }
 
       return this.CheckBytecount(ver,"ReadTBasket");
@@ -2619,7 +2619,7 @@
    
    JSROOT.TSelector = function() {
       // class to read data from TTree
-      this.branches = [];
+      this.branches = []; // list of reading structures
       this.break_execution = 0;
       this.is_integer = false;
       this.tgtobj = {};
@@ -2678,36 +2678,52 @@
    var m = {};
    
    m.Process = function(selector, option, numentries, firstentry) {
+      // function similar to the TTree::Process
+      
       if (!selector) return false;
       
-      if (!option) option = "";
-      if (isNaN(numentries)) numentries = 1e10;
-      if (isNaN(firstentry)) firstentry = 0;
-      
-      if (!this.file || !selector.branches || (selector.branches.length !== 1)) {
-         console.error('only single branch supported now');
+      if (!this.file || !selector.branches) {
+         console.error('no branches specified');
          selector.Terminate(false);
          return false;
       }
       
-      var branch = selector.branches[0];
+      // central handle with all information required for reading
+      var handle = {
+          selector: selector, // reference on selector  
+          arr: [], // list of branches 
+          curr: -1,  // current entry ID
+          option: option || "",
+          numentries: isNaN(numentries) ? 1e9 : numentries,
+          firstentry: isNaN(firstentry) ? 0 : firstentry,
+          stage_min: -1, // current entryid limit
+          stage_max: -1,  // current entryid limit
+          staged: [], // list of requested baskets for next I/O operation
+          current_entry: 0 // current processed entry 
+      };
       
-      var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
-          leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-          datakind = 0, arrsize = 1,
-          isvector = false;
+      handle.stage_min = handle.firstentry;
+      handle.stage_max = handle.firstentry + handle.numentries;
       
-       if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) ) {
-          switch (leaf._typename) {
-             case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
-             case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
-             case 'TLeafO' : datakind = JSROOT.IO.kBool; break;
-             case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
-             case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
-             case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
-             case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-             case 'TLeafElement' :
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+      
+         var branch = selector.branches[nn],
+             nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+             nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+             leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
+             datakind = 0, arrsize = 1,
+             isvector = false;
+      
+          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) )
+            switch (leaf._typename) {
+              case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
+              case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
+              case 'TLeafO' : datakind = JSROOT.IO.kBool; break;
+              case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+              case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
+              case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
+              case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+              case 'TLeafElement' :
                 if ((leaf.fType < 0) && (branch._typename==='TBranchElement')) {
                    switch (branch.fClassName) {
                       case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
@@ -2727,89 +2743,170 @@
                 } 
 
                 break;
-          }
-       }
+           }
     
-       if (isvector || (datakind<=0) || (arrsize<0)) {
-          console.log('Not supported branch kinds');
-          selector.Terminate(false);
-          return false;
-       }
-       
-       var elem = JSROOT.IO.CreateStreamerElement("value", "int");
-       elem.fType = datakind;
-       // just intermediate solution
-       selector.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
-       
-       if (arrsize > 1) {
-          elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
-       }
-       
-       // this element used to read branch value
-       var member = JSROOT.IO.CreateMember(elem, this.file);
-       if (!member || !member.func) {
-          console.log('Not supported branch kinds');
-          selector.Terminate(false);
-          return false;
-       }
-       
-       var tree = this;
-       
-       function ReadNextBaskets(indx) {
-          var places = [], totalsz = 0, indx0 = indx;
-
-          while ((indx>=0) && (indx<branch.fMaxBaskets) && (totalsz < 1e7) && (places.length<200)) {
-             if (branch.fBasketBytes[indx] === 0) break;
-             places.push(branch.fBasketSeek[indx], branch.fBasketBytes[indx]);
-             totalsz += branch.fBasketBytes[indx];
-             indx++;
+          if (isvector || (datakind<=0) || (arrsize<0)) {
+             console.log('Not supported branch kinds');
+             selector.Terminate(false);
+             return false;
           }
 
-          if ((places.length === 0) || (selector.break_execution!==0)) {
-             selector.ShowProgress();
-             // break callback
-             return selector.Terminate(places.length===0);
+          var elem = JSROOT.IO.CreateStreamerElement("value", "int");
+          elem.fType = datakind;
+          // just intermediate solution
+          selector.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
+
+          if (arrsize > 1) {
+             elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
           }
 
-          var maxindx = branch.fWriteBasket || branch.fMaxBaskets;
-          if (maxindx<=0) maxindx = 1;
-
-          selector.ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
-
-          tree.file.ReadBaskets(places, function(baskets) {
-
-             if (selector.break_execution !== 0) 
-                return selector.Terminate(false);
-
-             if (!baskets) return ReadNextBaskets(-1);
-
-             var arrays = []; // all data from baskets
-
-             // now convert raw data
-             for (var n=0;n<baskets.length;++n) {
-
-                var entry = branch.fBasketEntry[indx0 + n];
-                
-                var buf = baskets[n].raw;
-                
-                for (var k=0;k<baskets[n].fNevBuf;++k) {
-                   member.func(buf, selector.tgtobj);
-                   
-                   selector.Process(entry+k);
-
-                   if (selector.break_execution !== 0) 
-                      return selector.Terminate(false);
-                }
-             }
-
-             ReadNextBaskets(indx);
+          // this element used to read branch value
+          var member = JSROOT.IO.CreateMember(elem, this.file);
+          if (!member || !member.func) {
+             console.log('Not supported branch kinds');
+             selector.Terminate(false);
+             return false;
+          }
+          
+          handle.arr.push({
+             branch: branch,
+             member: member,
+             curr_entry: -1, // last processed entry
+             raw : null, // raw buffer for reading
+             curr_basket: 0,  // number of basket used for processing
+             read_entry: -1,  // last entry which is already read 
+             staged_entry: -1, // entry which is staged for reading
+             staged_basket: 0,  // last basket staged for reading
+             numbaskets: branch.fWriteBasket || branch.fMaxBaskets,
+             baskets: [] // array for read baskets,
+             
           });
        }
-
-       ReadNextBaskets(0);
+       
+       this.ReadNextBaskets(handle);
        
        return true; // indicate that reading of tree will be performed
    }
+   
+   m.ProcessBaskets = function(handle, baskets) {
+      // this is call-back when next baskets are read
+
+      if ((handle.selector.break_execution !== 0) || !baskets) 
+         return handle.selector.Terminate(false);
+      
+      if (baskets.length !== handle.staged.length) {
+         console.log('Internal TTree reading problem');
+         return handle.selector.Terminate(false);
+      }
+      
+      // redistribute read baskets over branches
+      for(var n=0;n<baskets.length;++n) {
+         var tgt = handle.staged[n];
+         handle.arr[tgt.branch].baskets[tgt.basket] = baskets[n];
+      }
+      
+      
+      handle.staged = [];
+
+      // now process baskets
+      
+      var isanyprocessed = false;
+      
+      while(true) {
+      
+         // firt loop used to check if all required data exists
+         for (var n=0;n<handle.arr.length;++n) {
+
+            var elem = handle.arr[n];
+
+            if (!elem.raw) {
+               if ((elem.curr_basket >= elem.numbaskets)) {
+                  if (n==0) return handle.selector.Terminate(true);
+                  continue; // ignore non-master branch
+               }
+
+               var basket = elem.baskets[elem.curr_basket];
+
+               // basket not read
+               if (!basket) { 
+                  // no data, but no any event processed - problem
+                  if (!isanyprocessed) return handle.selector.Terminate(false);
+
+                  // try to read next portion of tree data
+                  return this.ReadNextBaskets(handle);
+                }
+
+               elem.raw = basket.raw;
+               elem.basket = basket;
+               elem.nev = 0;
+
+               elem.baskets[elem.curr_basket++] = null; // remove reference
+            }
+         }
+         
+         // second loop extracts all required data
+         for (var n=0;n<handle.arr.length;++n) {
+            var elem = handle.arr[n];
+            
+            if (!elem.raw) continue;
+               
+            elem.member.func(elem.raw, handle.selector.tgtobj);
+            elem.nev++;
+            
+            if (elem.nev >= elem.basket.fNevBuf)
+               elem.raw = elem.basket = null;
+         }
+      
+         handle.selector.Process(handle.current_entry++);
+         
+         isanyprocessed = true;
+      }
+   }
+   
+   m.ReadNextBaskets = function(handle) {
+      
+      var totalsz = 0, places = [], isany = true;
+      
+      handle.staged = [];
+      
+      while ((totalsz < 1e7) && isany) {
+         isany = false;
+         for (var n=0; n<handle.arr.length; n++) {
+            var elem = handle.arr[n];
+
+            while (elem.staged_basket < elem.numbaskets) {
+
+               var k = elem.staged_basket++,
+                   entry1 = elem.branch.fBasketEntry[k],
+                   entry2 = elem.branch.fBasketEntry[k+1];
+               
+               if ((entry2 < handle.stage_min) || (entry1 >= handle.stage_max)) continue;
+
+               places.push(elem.branch.fBasketSeek[k], elem.branch.fBasketBytes[k]);
+               
+               totalsz += elem.branch.fBasketBytes[k];
+               isany = true;
+                
+               elem.staged_entry = elem.branch.fBasketEntry[k+1];
+               
+               handle.staged.push({branch:n, basket: k}); // remember basket staged for reading
+               
+               break;
+            }
+         }
+      }
+      
+      if ((totalsz === 0) && (handle.staged.length===0)) 
+         return handle.selector.Terminate(true);
+      
+      var portion = handle.arr[0].staged_basket / (handle.arr[0].numbaskets+1e-7); 
+
+      handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
+      
+      this.file.ReadBaskets(places, this.ProcessBaskets.bind(this, handle)); 
+            
+   }
+
    
    JSROOT.methodsCache['TTree'] = JSROOT.methodsCache['TNtuple'] = JSROOT.methodsCache['TNtupleD'] = m; 
    
