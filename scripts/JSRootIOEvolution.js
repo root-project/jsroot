@@ -2702,7 +2702,8 @@
           stage_min: -1, // current entryid limit
           stage_max: -1,  // current entryid limit
           staged: [], // list of requested baskets for next I/O operation
-          current_entry: 0 // current processed entry 
+          current_entry: 0, // current processed entry
+          simple_read: true // all baskets in all used branches are in sync
       };
       
       handle.stage_min = handle.firstentry;
@@ -2717,7 +2718,7 @@
              datakind = 0, arrsize = 1,
              isvector = false;
       
-          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) )
+         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) )
             switch (leaf._typename) {
               case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
               case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
@@ -2748,47 +2749,74 @@
                 break;
            }
     
-          if (isvector || (datakind<=0) || (arrsize<0)) {
-             console.log('Not supported branch kinds');
-             selector.Terminate(false);
-             return false;
-          }
+         if (isvector || (datakind<=0) || (arrsize<0)) {
+            console.log('Not supported branch kinds');
+            selector.Terminate(false);
+            return false;
+         }
 
-          var elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
-          elem.fType = datakind;
-          // just intermediate solution
-          selector.is_integer[nn] = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
+         var elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
+         elem.fType = datakind;
+         // just intermediate solution
+         selector.is_integer[nn] = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
 
-          if (arrsize > 1) {
-             elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
-          }
+         if (arrsize > 1) {
+            elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
+         }
 
-          // this element used to read branch value
-          var member = JSROOT.IO.CreateMember(elem, this.file);
-          if (!member || !member.func) {
-             console.log('Not supported branch kinds');
-             selector.Terminate(false);
-             return false;
-          }
-          
-          handle.arr.push({
-             branch: branch,
-             member: member,
-             curr_entry: -1, // last processed entry
-             raw : null, // raw buffer for reading
-             curr_basket: 0,  // number of basket used for processing
-             read_entry: -1,  // last entry which is already read 
-             staged_entry: -1, // entry which is staged for reading
-             staged_basket: 0,  // last basket staged for reading
-             numbaskets: branch.fWriteBasket || branch.fMaxBaskets,
-             baskets: [] // array for read baskets,
-             
-          });
-       }
+         // this element used to read branch value
+         var member = JSROOT.IO.CreateMember(elem, this.file);
+         if (!member || !member.func) {
+            console.log('Not supported branch kinds');
+            selector.Terminate(false);
+            return false;
+         }
+
+         handle.arr.push({
+            branch: branch,
+            member: member,
+            type: datakind, // keep identifier
+            curr_entry: -1, // last processed entry
+            raw : null, // raw buffer for reading
+            curr_basket: 0,  // number of basket used for processing
+            read_entry: -1,  // last entry which is already read 
+            staged_entry: -1, // entry which is staged for reading
+            staged_basket: 0,  // last basket staged for reading
+            numbaskets: branch.fWriteBasket || branch.fMaxBaskets,
+            baskets: [] // array for read baskets,
+         });
+         
+         if (handle.arr.length>1) {
+            var elem0 = handle.arr[0], elem = handle.arr[nn];
+
+            if (elem.numbaskets !== elem0.numbaskets) handle.simple_read = false;
+            
+            for (var n=0;n<elem.numbaskets;++n) 
+               if (elem.branch.fBasketEntry[n]!==elem0.branch.fBasketEntry[n]) handle.simple_read = false;
+
+         }
+      }
+      
+      if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
+         // this is indication that selector can process arrays of values
+         // only streactly-matched tree structure can be used for that
+         
+         handle.process_arrays = true;
+         
+         for (var k=0;k<handle.arr.length;++k) {
+            var elem = handle.arr[k];
+            if ((elem.type<=0) || (elem.type >= JSROOT.IO.kOffsetL)) handle.process_arrays = false;
+         }
+         
+         if (handle.process_arrays) {
+            // create other members for fast processings
+            // console.log('ARRAY PROCESS');
+         }
+      }
+      
+      this.ReadNextBaskets(handle);
        
-       this.ReadNextBaskets(handle);
-       
-       return true; // indicate that reading of tree will be performed
+      return true; // indicate that reading of tree will be performed
    }
    
    m.ProcessBaskets = function(handle, baskets) {
@@ -2808,7 +2836,6 @@
          handle.arr[tgt.branch].baskets[tgt.basket] = baskets[n];
       }
       
-      
       handle.staged = [];
 
       // now process baskets
@@ -2817,6 +2844,8 @@
       
       while(true) {
       
+         var numentries = 1;
+         
          // firt loop used to check if all required data exists
          for (var n=0;n<handle.arr.length;++n) {
 
@@ -2842,27 +2871,35 @@
                elem.raw = basket.raw;
                elem.basket = basket;
                elem.nev = 0;
+               
+               if (handle.simple_read) {
+                  if (n==0) numentries = basket.fNevBuf; else
+                  if (numentries != basket.fNevBuf) { console.log('missmatch entries in simple mode', numentries, basket.fNevBuf); numentries = 1;  }   
+               }
 
                elem.baskets[elem.curr_basket++] = null; // remove reference
             }
          }
          
          // second loop extracts all required data
-         for (var n=0;n<handle.arr.length;++n) {
-            var elem = handle.arr[n];
-            
-            if (!elem.raw) continue;
-               
-            elem.member.func(elem.raw, handle.selector.tgtobj);
-            elem.nev++;
-            
-            if (elem.nev >= elem.basket.fNevBuf)
-               elem.raw = elem.basket = null;
-         }
-      
-         handle.selector.Process(handle.current_entry++);
          
-         isanyprocessed = true;
+         for (var e=0;e<numentries;++e) {
+            for (var n=0;n<handle.arr.length;++n) {
+               var elem = handle.arr[n];
+            
+               if (!elem.raw) continue;
+               
+               elem.member.func(elem.raw, handle.selector.tgtobj);
+               elem.nev++;
+            
+               if (elem.nev >= elem.basket.fNevBuf)
+                  elem.raw = elem.basket = null;
+            }
+      
+            handle.selector.Process(handle.current_entry++);
+         
+            isanyprocessed = true;
+         }
       }
    }
    
@@ -2872,18 +2909,22 @@
       
       handle.staged = [];
       
-      while ((totalsz < 1e7) && isany) {
+      while ((totalsz < 1e6) && isany) {
          isany = false;
          for (var n=0; n<handle.arr.length; n++) {
             var elem = handle.arr[n];
 
             while (elem.staged_basket < elem.numbaskets) {
 
-               var k = elem.staged_basket++,
-                   entry1 = elem.branch.fBasketEntry[k],
-                   entry2 = elem.branch.fBasketEntry[k+1];
+               var k = elem.staged_basket++;
                
-               if ((entry2 < handle.stage_min) || (entry1 >= handle.stage_max)) continue;
+               if (!handle.simple_read) {
+               
+                  var entry1 = elem.branch.fBasketEntry[k],
+                      entry2 = elem.branch.fBasketEntry[k+1];
+               
+                  if ((entry2 < handle.stage_min) || (entry1 >= handle.stage_max)) continue;
+               }
 
                places.push(elem.branch.fBasketSeek[k], elem.branch.fBasketBytes[k]);
                
@@ -2907,9 +2948,7 @@
       handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
       
       this.file.ReadBaskets(places, this.ProcessBaskets.bind(this, handle)); 
-            
    }
-
    
    JSROOT.methodsCache['TTree'] = JSROOT.methodsCache['TNtuple'] = JSROOT.methodsCache['TNtupleD'] = m; 
    

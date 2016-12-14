@@ -8656,6 +8656,11 @@
             this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
       }
       
+      selector.ProcessArrays = function(entry) {
+         // process all branches as arrays
+         // works only for very limited number of cases, but much faster
+      }
+      
       selector.Terminate = function(res) {
          if (res && !this.hist) this.CreateHistogram();
          
