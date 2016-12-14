@@ -8579,55 +8579,81 @@
 
       var selector = new JSROOT.TSelector();
       
-      if (bitem._tree) 
-         selector.AddBranch(tree.fBranches.arr[0]);
-      else   
-         selector.AddBranch(bitem._branch);
-      
+      selector.ndim = 1;
       selector.hist = null;
       selector.arr = [];
+      
+      if (bitem._tree) { 
+         selector.AddBranch(tree.fBranches.arr[0], "br0");
+         selector.AddBranch(tree.fBranches.arr[1], "br1");
+         selector.ndim = 2;
+         selector.arr2 = [];
+      } else {   
+         selector.AddBranch(bitem._branch, "br0");
+      }
+      
+      selector.GetMinMaxBins = function(arr, is_int, nbins) {
+         
+         var res = { min: 0, max: 0, nbins: nbins };
+         
+         if (!arr || (arr.length==0)) return res;
+         
+         res.min = Math.min.apply(null, arr);
+         res.max = Math.max.apply(null, arr);
+
+         if (res.min>=res.max) {
+            res.max = res.min;
+            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
+            if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
+         } else
+         if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
+             res.min -= 1;
+             res.max += 2;
+             res.nbins = res.max - res.min;
+         } else {
+            res.max += (res.max-res.min)/res.nbins;
+         }
+
+         return res;
+      }
       
       selector.CreateHistogram = function() {
          
          if (this.hist || !this.arr || this.arr.length==0) return;
          
-         var xmin = Math.min.apply(null, this.arr),
-             xmax = Math.max.apply(null, this.arr),
-             nbins = 200;
-
-         if (xmin>=xmax) {
-            xmax = xmin;
-            if (Math.abs(xmin)<100) { xmin-=1; xmax+=1; } else
-            if (xmin>0) { xmin*=0.9; xmax*=1.1; } else { xmin*=1.1; xmax*=0.9; } 
-         } else
-         if (this.IsInteger(0) && (xmax-xmin >=1) && (xmax-xmin<5000)) {
-             xmin -= 1;
-             xmax += 2;
-             nbins = xmax - xmin;
-         } else {
-             xmax += (xmax-xmin)/nbins;
-         }
-
-         this.hist = JSROOT.CreateTH1(nbins);
-         this.hist.fXaxis.fXmin = xmin;
-         this.hist.fXaxis.fXmax = xmax;
+         var x = this.GetMinMaxBins(this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200),
+             y = this.GetMinMaxBins(this.arr2, this.IsInteger(1), 50);
+         
+         this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(x.nbins, y.nbins) : JSROOT.CreateTH1(x.nbins);
+         this.hist.fXaxis.fXmin = x.min;
+         this.hist.fXaxis.fXmax = x.max;
+         this.hist.fYaxis.fXmin = y.min;
+         this.hist.fYaxis.fXmax = y.max;
          this.hist.fName = "draw_" + bitem._name;
          this.hist.fTitle = "drawing '" + bitem._name + "' from " + bitem._parent._name;
          this.hist.fCustomStat = 111110;
-
-         for (var n=0;n<this.arr.length;++n) this.hist.Fill(this.arr[n]);
+         
+         if (this.ndim==2)
+            for (var n=0;n<this.arr.length;++n) 
+               this.hist.Fill(this.arr[n], this.arr2[n]);
+         else
+            for (var n=0;n<this.arr.length;++n) 
+               this.hist.Fill(this.arr[n]);
+         
          delete this.arr;
+         delete this.arr2;
       }
 
       selector.Process = function(entry) {
          // do something
          
          if (this.arr !== undefined) {
-            this.arr.push(this.tgtobj.value);
+            this.arr.push(this.tgtobj.br0);
+            if (this.ndim==2) this.arr2.push(this.tgtobj.br1);
             if (this.arr.length > 10000) this.CreateHistogram();
          } else
          if (this.hist)
-            this.hist.Fill(this.tgtobj.value);
+            this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
       }
       
       selector.Terminate = function(res) {

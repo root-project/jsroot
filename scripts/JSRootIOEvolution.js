@@ -2620,17 +2620,20 @@
    JSROOT.TSelector = function() {
       // class to read data from TTree
       this.branches = []; // list of reading structures
+      this.names = []; // list of names for each branch
+      this.is_integer = []; // array of 
       this.break_execution = 0;
-      this.is_integer = false;
       this.tgtobj = {};
    }
    
-   JSROOT.TSelector.prototype.AddBranch = function(branch) {
+   JSROOT.TSelector.prototype.AddBranch = function(branch, name) {
+      if (!name) name = "br" + this.branches.length; 
       this.branches.push(branch);
+      this.names.push(name);
    }
    
    JSROOT.TSelector.prototype.IsInteger = function(nbranch) {
-      return this.is_integer;
+      return this.is_integer[nbranch];
    }
    
    JSROOT.TSelector.prototype.ShowProgress = function(value) {
@@ -2751,10 +2754,10 @@
              return false;
           }
 
-          var elem = JSROOT.IO.CreateStreamerElement("value", "int");
+          var elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
           elem.fType = datakind;
           // just intermediate solution
-          selector.is_integer = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
+          selector.is_integer[nn] = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
 
           if (arrsize > 1) {
              elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
