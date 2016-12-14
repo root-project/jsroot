@@ -8564,21 +8564,25 @@
    
    JSROOT.Painter.SelectorTreeDrawGet = function(bitem, itemname, get_callback, option) {
       if (option==='inspect')
-         return JSROOT.CallBack(get_callback, bitem, bitem._branch);
+         return JSROOT.CallBack(get_callback, bitem, bitem._tree || bitem._branch );
 
-      var fprnt = bitem._parent, tree, file;
+      var fprnt = bitem, tree, file;
       while (fprnt) {
          if (fprnt._file) file = fprnt._file;
          if (fprnt._tree) tree = fprnt._tree;
          fprnt = fprnt._parent;
       }
+
       if (!tree || !file) return JSROOT.CallBack(get_callback, bitem, null);
-      
+
       tree.file = file; // make reference
 
       var selector = new JSROOT.TSelector();
       
-      selector.AddBranch(bitem._branch);
+      if (bitem._tree) 
+         selector.AddBranch(tree.fBranches.arr[0]);
+      else   
+         selector.AddBranch(bitem._branch);
       
       selector.hist = null;
       selector.arr = [];
@@ -9014,6 +9018,8 @@
 
       node._childs = [];
       node._tree = obj;  // set reference, will be used later by TTree::Draw
+      node._can_draw = true;
+      node._get = JSROOT.Painter.SelectorTreeDrawGet; // try to use TTree::Draw
 
       for ( var i = 0; i < obj.fBranches.arr.length; ++i)
          JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
