@@ -1581,6 +1581,16 @@
       if (typename.indexOf("TH2") == 0) {
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
          m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
+         m.Fill = function(x, y, weight) {
+            var axis1 = this.fXaxis, axis2 = this.fXaxis,
+                bin1 = 1 + Math.round((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
+                bin2 = 1 + Math.round((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
+            if (bin1 < 0) bin1 = 0; else
+            if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
+            if (bin2 < 0) bin2 = 0; else
+            if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
+            this.fArray[bin1 + (axis1.fNbins+2)*bin2] += ((weight===undefined) ? 1 : weight);
+         }
       }
 
       if (typename.indexOf("TH3") == 0) {
