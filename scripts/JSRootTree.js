@@ -90,7 +90,6 @@
       }
       
       selector.CreateHistogram = function() {
-         
          if (this.hist || !this.arr || this.arr.length==0) return;
          
          var x = this.GetMinMaxBins(this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200),

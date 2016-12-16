@@ -6234,9 +6234,9 @@
 
       stats.AddText(this.histo.fName);
 
-      if (this.histo.fFunctions === null)
+      if (!this.histo.fFunctions)
          this.histo.fFunctions = JSROOT.Create("TList");
-
+      
       this.histo.fFunctions.Add(stats,"");
 
       return stats;
@@ -8947,7 +8947,9 @@
          JSROOT.TTreeDraw(tree, opt, undefined, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
 
-            JSROOT.draw(divid, histo, "hist", painter.DrawingReady.bind(painter));
+            var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
+
+            JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
 
          });
       });
@@ -8972,8 +8974,10 @@
       JSROOT.AssertPrerequisites('tree', function() {
          JSROOT.TTreeDraw(branch.fTree, branch.fFullBranchName, undefined, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
+            
+            var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
 
-            JSROOT.draw(divid, histo, "hist", painter.DrawingReady.bind(painter));
+            JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
 
          });
       });
