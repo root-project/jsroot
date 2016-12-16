@@ -8966,13 +8966,13 @@
       
       var painter = new JSROOT.TObjectPainter(tree);
       
-      // branch must include addition fTree and fFullBranchName fields
+      // branch must include addition $tree and $fullname fields
       // these fields automatically set in the JSROOT.Painter.TreeHierarchy 
-      if (!branch || !branch.fTree || !branch.fFullBranchName) 
+      if (!branch || !branch.$tree || !branch.$fullname) 
          return this.DrawingReady();
       
       JSROOT.AssertPrerequisites('tree', function() {
-         JSROOT.TTreeDraw(branch.fTree, branch.fFullBranchName, undefined, undefined, undefined, undefined, function(histo) {
+         JSROOT.TTreeDraw(branch.$tree, branch.$fullname, undefined, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
             
             var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
