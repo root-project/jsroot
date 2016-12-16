@@ -8944,7 +8944,10 @@
       var painter = new JSROOT.TObjectPainter(tree);
       
       JSROOT.AssertPrerequisites('tree', function() {
-         JSROOT.TTreeDraw(tree, opt, undefined, undefined, undefined, undefined, function(histo) {
+         
+         var t = new JSROOT.TTree(tree); 
+         
+         t.Draw(opt, undefined, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
 
             var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
@@ -8964,7 +8967,7 @@
       // just envelope for real JSROOT.TTreeDraw method which do the main job
       // Tree functionality should be loaded at this place
       
-      var painter = new JSROOT.TObjectPainter(tree);
+      var painter = new JSROOT.TObjectPainter(branch);
       
       // branch must include addition $tree and $fullname fields
       // these fields automatically set in the JSROOT.Painter.TreeHierarchy 
@@ -8972,7 +8975,10 @@
          return this.DrawingReady();
       
       JSROOT.AssertPrerequisites('tree', function() {
-         JSROOT.TTreeDraw(branch.$tree, branch.$fullname, undefined, undefined, undefined, undefined, function(histo) {
+         
+         var t = new JSROOT.TTree(branch.$tree); 
+         
+         t.Draw(branch.$fullname, undefined, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
             
             var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";

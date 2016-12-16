@@ -79,16 +79,22 @@
    // =================================================================
 
    
-   JSROOT.TTreeProcess = function(tree, selector, option, numentries, firstentry) {
+   JSROOT.TTree = function(tree) {
+      JSROOT.extend(this, tree);
+   }
+   
+   
+   JSROOT.TTree.prototype.Process = function(selector, option, numentries, firstentry) {
       // function similar to the TTree::Process
       
-      if (!tree || !selector || !tree.$file || !selector.branches) {
+      if (!selector || !this.$file || !selector.branches) {
          console.error('required parameter missing in for TTree::Select');
          return false;
       }
       
       // central handle with all information required for reading
       var handle = {
+          file: this.$file, // keep file reference
           selector: selector, // reference on selector  
           arr: [], // list of branches 
           curr: -1,  // current entry ID
@@ -161,7 +167,7 @@
          }
 
          // this element used to read branch value
-         var member = JSROOT.IO.CreateMember(elem, tree.$file);
+         var member = JSROOT.IO.CreateMember(elem, this.$file);
          if (!member || !member.func) {
             console.log('Not supported branch kinds');
             selector.Terminate(false);
@@ -217,7 +223,7 @@
                elem.fType = item.type + JSROOT.IO.kOffsetL;
                elem.fArrayLength = 10; elem.fArrayDim = 1, elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
                
-               item.arrmember = JSROOT.IO.CreateMember(elem, tree.$file);
+               item.arrmember = JSROOT.IO.CreateMember(elem, this.$file);
             }
          }
       }
@@ -266,7 +272,7 @@
 
          handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
          
-         tree.$file.ReadBaskets(places, ProcessBaskets); 
+         handle.file.ReadBaskets(places, ProcessBaskets); 
       }
       
       function ProcessBaskets(baskets) {
@@ -380,31 +386,25 @@
    }
    
    
-   // ==========================================================================
-   
-   JSROOT.TTreeFindBranch = function(tree, branchname) {
-      if (!tree) return null;
-      
-      for (var n=0;n<tree.fBranches.arr.length;++n)
-         if (tree.fBranches.arr[n].fName === branchname) return tree.fBranches.arr[n];
+   JSROOT.TTree.prototype.FindBranch = function(branchname) {
+      for (var n=0;n<this.fBranches.arr.length;++n)
+         if (this.fBranches.arr[n].fName === branchname) return this.fBranches.arr[n];
       
       return null;
    }
    
-   JSROOT.TTreeDraw = function(tree, expr, cut, opt, nentries, firstentry, histo_callback) {
+   JSROOT.TTree.prototype.Draw = function(expr, cut, opt, nentries, firstentry, histo_callback) {
       // this is JSROOT implementaion of TTree::Draw
       // in callback returns histogram
       
-      if (!tree || !expr) return JSROOT.CallBack(histo_callback, null);
-      
-      var names = expr.split(":");
+      var names = expr ? expr.split(":") : [];
       if ((names.length < 1) || (names.length > 2))
          return JSROOT.CallBack(histo_callback, null);
       
       var br = [];
       
       for (var n=0;n<names.length;++n) {
-         br[n] = JSROOT.TTreeFindBranch(tree, names[n]);
+         br[n] = this.FindBranch(names[n]);
          if (!br[n]) {
             console.log('Not found branch', names[n]);
             return JSROOT.CallBack(histo_callback, null);
@@ -463,7 +463,7 @@
          this.hist.fYaxis.fXmax = y.max;
          if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fName = "draw_" + names[0];
-         this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
+         this.hist.fTitle = "drawing '" + expr + "' from " + this.fName;
          this.hist.$custom_stat = 111110;
          
          if (this.ndim==2)
@@ -520,7 +520,7 @@
          return JSROOT.CallBack(histo_callback, this.hist);
       }
       
-      return JSROOT.TTreeProcess(tree, selector, opt, nentries, firstentry);
+      return this.Process(selector, opt, nentries, firstentry);
    }
 
    return JSROOT;
