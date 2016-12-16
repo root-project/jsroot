@@ -464,7 +464,7 @@
          if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fName = "draw_" + names[0];
          this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
-         this.hist.fCustomStat = 111110;
+         this.hist.$custom_stat = 111110;
          
          if (this.ndim==2)
             for (var n=0;n<this.arr.length;++n) 

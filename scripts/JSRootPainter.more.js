@@ -4840,7 +4840,7 @@
 
       // check if we need to create statbox
       if (JSROOT.gStyle.AutoStat && this.create_canvas /* && !this.IsTH2Poly()*/)
-         this.CreateStat(histo.fCustomStat);
+         this.CreateStat(histo.$custom_stat);
 
       this.CallDrawFunc(function() {
          this.DrawNextFunction(0, function() {

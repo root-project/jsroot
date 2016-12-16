@@ -8334,7 +8334,7 @@
       painter.ScanContent();
 
       if (JSROOT.gStyle.AutoStat && painter.create_canvas)
-         painter.CreateStat(histo.fCustomStat);
+         painter.CreateStat(histo.$custom_stat);
 
       painter.CallDrawFunc(function() {
          painter.DrawNextFunction(0, function() {
@@ -8722,7 +8722,7 @@
                histo.fXaxis.fXmax = xmax;
                histo.fName = "draw_" + item._name;
                histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
-               histo.fCustomStat = 111110;
+               histo.$custom_stat = 111110;
             }
 
             for (var n=0;n<arrays.length;++n) {
