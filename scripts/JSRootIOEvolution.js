@@ -1623,8 +1623,15 @@
       // create additional entries in the streamer, which sets all methods of the class
 
       if (streamer === null) return streamer;
+      
+      if (clname == "TTree") 
+         streamer.push({
+            name: "fFile",
+            func: function(buf,obj) { obj[this.name] = buf.fFile; }
+          });
 
       var methods = JSROOT.getMethods(clname);
+      
       if (methods !== null)
          for (var key in methods)
             if ((typeof methods[key] === 'function') || (key.indexOf("_")==0))
