@@ -2774,6 +2774,7 @@
 
          handle.arr.push({
             branch: branch,
+            name: selector.names[nn],
             member: member,
             type: datakind, // keep identifier
             curr_entry: -1, // last processed entry
@@ -2810,7 +2811,18 @@
          
          if (handle.process_arrays) {
             // create other members for fast processings
-            // console.log('ARRAY PROCESS');
+            
+            selector.tgtarr = {}; // object with arrays
+            
+            for(var nn=0;nn<handle.arr.length;++nn) {
+               var item = handle.arr[nn];
+               
+               var elem = JSROOT.IO.CreateStreamerElement(item.name, "int");
+               elem.fType = item.type + JSROOT.IO.kOffsetL;
+               elem.fArrayLength = 10; elem.fArrayDim = 1, elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
+               
+               item.arrmember = JSROOT.IO.CreateMember(elem, this.file);
+            }
          }
       }
       
@@ -2883,22 +2895,43 @@
          
          // second loop extracts all required data
          
-         for (var e=0;e<numentries;++e) {
+         if (handle.process_arrays && (numentries>1)) {
+            // special case - read all data from baskets as arrays
+
             for (var n=0;n<handle.arr.length;++n) {
                var elem = handle.arr[n];
-            
-               if (!elem.raw) continue;
+               elem.arrmember.arrlength = numentries;
+
+               elem.arrmember.func(elem.raw, handle.selector.tgtarr);
+
+               elem.nev += numentries;
                
-               elem.member.func(elem.raw, handle.selector.tgtobj);
-               elem.nev++;
-            
-               if (elem.nev >= elem.basket.fNevBuf)
-                  elem.raw = elem.basket = null;
+               elem.raw = elem.basket = null;
             }
-      
-            handle.selector.Process(handle.current_entry++);
-         
+
+            handle.selector.ProcessArrays(handle.current_entry);
+
+            handle.current_entry += numentries; 
+
             isanyprocessed = true;
+         } else {
+            for (var e=0;e<numentries;++e) {
+               for (var n=0;n<handle.arr.length;++n) {
+                  var elem = handle.arr[n];
+
+                  if (!elem.raw) continue;
+
+                  elem.member.func(elem.raw, handle.selector.tgtobj);
+                  elem.nev++;
+
+                  if (elem.nev >= elem.basket.fNevBuf)
+                     elem.raw = elem.basket = null;
+               }
+
+               handle.selector.Process(handle.current_entry++);
+
+               isanyprocessed = true;
+            }
          }
       }
    }

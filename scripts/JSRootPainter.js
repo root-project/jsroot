@@ -8659,6 +8659,24 @@
       selector.ProcessArrays = function(entry) {
          // process all branches as arrays
          // works only for very limited number of cases, but much faster
+    	   
+         if (this.arr !== undefined) {
+            for (var n=0;n<this.tgtarr.br0.length;++n)
+               this.arr.push(this.tgtarr.br0[n]);
+            if (this.ndim==2) 
+               for (var n=0;n<this.tgtarr.br1.length;++n)
+                 this.arr2.push(this.tgtarr.br1[n]);
+            if (this.arr.length > 10000) this.CreateHistogram();
+         } else
+         if (this.hist) {
+            if (this.ndim==1) {
+               for (var n=0;n<this.tgtarr.br0.length;++n)
+                  this.hist.Fill(this.tgtarr.br0[n]);
+            } else {
+               for (var n=0;n<this.tgtarr.br0.length;++n)
+                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
+            }
+         }
       }
       
       selector.Terminate = function(res) {
