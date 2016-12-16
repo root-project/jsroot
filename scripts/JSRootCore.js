@@ -27,6 +27,7 @@
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootInterface'      : dir+'JSRootInterface'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
+            'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
@@ -899,10 +900,15 @@
           extrafiles = "", // scripts for direct loadin
           modules = [];  // modules used for require.js
 
-      if (kind.indexOf('io;')>=0) {
+      if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0)) {
          mainfiles += "$$$scripts/rawinflate.min.js;" +
                       "$$$scripts/JSRootIOEvolution" + ext + ".js;";
          modules.push('JSRootIOEvolution');
+      }
+
+      if (kind.indexOf('tree;')>=0) {
+         mainfiles += "$$$scripts/JSRootTree" + ext + ".js;";
+         modules.push('JSRootTree');
       }
 
       if (kind.indexOf('2d;')>=0) {
@@ -1790,6 +1796,7 @@
 
       var prereq = "";
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
+      if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
       if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
       if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";

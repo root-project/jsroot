@@ -8561,134 +8561,6 @@
       }
       return true;
    }
-   
-   JSROOT.Painter.SelectorTreeDrawGet = function(bitem, itemname, get_callback, option) {
-      if (option==='inspect')
-         return JSROOT.CallBack(get_callback, bitem, bitem._tree || bitem._branch );
-
-      var fprnt = bitem, tree, file;
-      while (fprnt) {
-         if (fprnt._file) file = fprnt._file;
-         if (fprnt._tree) tree = fprnt._tree;
-         fprnt = fprnt._parent;
-      }
-
-      if (!tree || !file) return JSROOT.CallBack(get_callback, bitem, null);
-
-      tree.file = file; // make reference
-
-      var selector = new JSROOT.TSelector();
-      
-      selector.ndim = 1;
-      selector.hist = null;
-      selector.arr = [];
-      
-      if (bitem._tree) { 
-         selector.AddBranch(tree.fBranches.arr[0], "br0");
-         selector.AddBranch(tree.fBranches.arr[1], "br1");
-         selector.ndim = 2;
-         selector.arr2 = [];
-      } else {   
-         selector.AddBranch(bitem._branch, "br0");
-      }
-      
-      selector.GetMinMaxBins = function(arr, is_int, nbins) {
-         
-         var res = { min: 0, max: 0, nbins: nbins };
-         
-         if (!arr || (arr.length==0)) return res;
-         
-         res.min = Math.min.apply(null, arr);
-         res.max = Math.max.apply(null, arr);
-
-         if (res.min>=res.max) {
-            res.max = res.min;
-            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
-            if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
-         } else
-         if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
-             res.min -= 1;
-             res.max += 2;
-             res.nbins = res.max - res.min;
-         } else {
-            res.max += (res.max-res.min)/res.nbins;
-         }
-
-         return res;
-      }
-      
-      selector.CreateHistogram = function() {
-         
-         if (this.hist || !this.arr || this.arr.length==0) return;
-         
-         var x = this.GetMinMaxBins(this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200),
-             y = this.GetMinMaxBins(this.arr2, this.IsInteger(1), 50);
-         
-         this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(x.nbins, y.nbins) : JSROOT.CreateTH1(x.nbins);
-         this.hist.fXaxis.fXmin = x.min;
-         this.hist.fXaxis.fXmax = x.max;
-         this.hist.fYaxis.fXmin = y.min;
-         this.hist.fYaxis.fXmax = y.max;
-         this.hist.fName = "draw_" + bitem._name;
-         this.hist.fTitle = "drawing '" + bitem._name + "' from " + bitem._parent._name;
-         this.hist.fCustomStat = 111110;
-         
-         if (this.ndim==2)
-            for (var n=0;n<this.arr.length;++n) 
-               this.hist.Fill(this.arr[n], this.arr2[n]);
-         else
-            for (var n=0;n<this.arr.length;++n) 
-               this.hist.Fill(this.arr[n]);
-         
-         delete this.arr;
-         delete this.arr2;
-      }
-
-      selector.Process = function(entry) {
-         // do something
-         
-         if (this.arr !== undefined) {
-            this.arr.push(this.tgtobj.br0);
-            if (this.ndim==2) this.arr2.push(this.tgtobj.br1);
-            if (this.arr.length > 10000) this.CreateHistogram();
-         } else
-         if (this.hist)
-            this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
-      }
-      
-      selector.ProcessArrays = function(entry) {
-         // process all branches as arrays
-         // works only for very limited number of cases, but much faster
-    	   
-         if (this.arr !== undefined) {
-            for (var n=0;n<this.tgtarr.br0.length;++n)
-               this.arr.push(this.tgtarr.br0[n]);
-            if (this.ndim==2) 
-               for (var n=0;n<this.tgtarr.br1.length;++n)
-                 this.arr2.push(this.tgtarr.br1[n]);
-            if (this.arr.length > 10000) this.CreateHistogram();
-         } else
-         if (this.hist) {
-            if (this.ndim==1) {
-               for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n]);
-            } else {
-               for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
-            }
-         }
-      }
-      
-      selector.Terminate = function(res) {
-         if (res && !this.hist) this.CreateHistogram();
-         
-         this.ShowProgress();
-         
-         JSROOT.CallBack(get_callback, bitem, this.hist);
-      }
-      
-      return tree.Process(selector);
-   }
 
 
    JSROOT.Painter.TreeDrawGet = function(item, itemname, get_callback, option) {
@@ -9002,7 +8874,7 @@
          subitem._datakind = datakind;
          subitem._arrsize = arrsize;
          subitem._isvector = isvector;
-         subitem._get = useselect ? JSROOT.Painter.SelectorTreeDrawGet : JSROOT.Painter.TreeDrawGet;
+         subitem._get = JSROOT.Painter.TreeDrawGet;
 
          return true;
       }
@@ -9061,14 +8933,61 @@
 
       return true;
    }
+   
+   // ===========================================================================
+   
+   JSROOT.Painter.drawTree = function(divid, tree, opt) {
+      // this is function called from JSROOT.draw()
+      // just envelope for real JSROOT.TTreeDraw method which do the main job
+      // Tree functionality should be loaded at this place
+      
+      var painter = new JSROOT.TObjectPainter(tree);
+      
+      JSROOT.AssertPrerequisites('tree', function() {
+         JSROOT.TTreeDraw(tree, opt, undefined, undefined, undefined, undefined, function(histo) {
+            if (!histo) return painter.DrawingReady();
+
+            JSROOT.draw(divid, histo, "hist", painter.DrawingReady.bind(painter));
+
+         });
+      });
+      
+      return painter;
+   }
+
+   // ===========================================================================
+
+   JSROOT.Painter.drawBranch = function(divid, branch, opt) {
+      // this is function called from JSROOT.draw()
+      // just envelope for real JSROOT.TTreeDraw method which do the main job
+      // Tree functionality should be loaded at this place
+      
+      var painter = new JSROOT.TObjectPainter(tree);
+      
+      // branch must include addition fTree and fFullBranchName fields
+      // these fields automatically set in the JSROOT.Painter.TreeHierarchy 
+      if (!branch || !branch.fTree || !branch.fFullBranchName) 
+         return this.DrawingReady();
+      
+      JSROOT.AssertPrerequisites('tree', function() {
+         JSROOT.TTreeDraw(branch.fTree, branch.fFullBranchName, undefined, undefined, undefined, undefined, function(histo) {
+            if (!histo) return painter.DrawingReady();
+
+            JSROOT.draw(divid, histo, "hist", painter.DrawingReady.bind(painter));
+
+         });
+      });
+      
+      return this;
+   }
+
+   // ===========================================================================
 
    JSROOT.Painter.TreeHierarchy = function(node, obj) {
       if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
 
       node._childs = [];
       node._tree = obj;  // set reference, will be used later by TTree::Draw
-      node._can_draw = true;
-      node._get = JSROOT.Painter.SelectorTreeDrawGet; // try to use TTree::Draw
 
       for ( var i = 0; i < obj.fBranches.arr.length; ++i)
          JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
@@ -11358,9 +11277,9 @@
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
-   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
-   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", noinspect:true, expand: JSROOT.Painter.TreeHierarchy });
+   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree });
+   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree });
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
