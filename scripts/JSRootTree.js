@@ -117,8 +117,7 @@
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datakind = 0, arrsize = 1,
-             isvector = false;
+             datakind = 0, arrsize = 1, elem = null;
       
          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) )
             switch (leaf._typename) {
@@ -129,56 +128,49 @@
               case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
               case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
               case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-              case 'TLeafElement' :
-                if ((leaf.fType < 0) && (branch._typename==='TBranchElement')) {
-                   switch (branch.fClassName) {
-                      case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
-                      case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
-                      case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
-                      case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
-                   }
-                } else
-                if (JSROOT.IO.IsNumeric(leaf.fType)) {
-                   datakind = leaf.fType;
-                   // this is workaround, just when branch is part of splitted STL container, read all elelemnts from basket
-                   if ((branch.fBranchCount === prnt) && (JSROOT.IO.GetTypeSize(datakind) > 0)) arrsize = -1;
-                } else
-                if (JSROOT.IO.IsNumeric(leaf.fType-JSROOT.IO.kOffsetL)) {
-                   datakind = leaf.fType;
-                   arrsize = leaf.fLen; // fixed-size array
-                } 
-
-                break;
-           }
+              case 'TLeafElement' : {
+                 var s_i = this.$file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum);
+                 
+                 if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
+                 if (leaf.fID<0) console.log('Leaf with negative ID'); else
+                 elem = s_i.fElements.arr[leaf.fID];
+                 break;
+              }
+            }
     
-         if (isvector || (datakind<=0) || (arrsize<0)) {
-            console.log('Not supported branch kinds');
+         if (datakind > 0) {
+            elem = JSROOT.IO.CreateStreamerElement("temporary", "int");
+            elem.fType = datakind;
+            if (arrsize > 1) {
+               elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
+            }
+         }
+         
+         if (!elem) {
+            console.log('Not supported branch kinds', branch.fName);
             selector.Terminate(false);
             return false;
          }
 
-         var elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
-         elem.fType = datakind;
          // just intermediate solution
-         selector.is_integer[nn] = JSROOT.IO.IsInteger(datakind) || JSROOT.IO.IsInteger(datakind-JSROOT.IO.kOffsetL);
-
-         if (arrsize > 1) {
-            elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
-         }
+         selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
 
          // this element used to read branch value
          var member = JSROOT.IO.CreateMember(elem, this.$file);
          if (!member || !member.func) {
-            console.log('Not supported branch kinds');
+            console.log('Not supported branch kinds', branch.fName);
             selector.Terminate(false);
             return false;
          }
+         
+         // set name used to store result
+         member.name = selector.names[nn];
 
          handle.arr.push({
             branch: branch,
             name: selector.names[nn],
             member: member,
-            type: datakind, // keep identifier
+            type: elem.fType, // keep type identifier
             curr_entry: -1, // last processed entry
             raw : null, // raw buffer for reading
             curr_basket: 0,  // number of basket used for processing
