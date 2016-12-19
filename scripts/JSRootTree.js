@@ -160,11 +160,42 @@
           stage_max: -1,  // current entryid limit
           staged: [], // list of requested baskets for next I/O operation
           current_entry: 0, // current processed entry
-          simple_read: true // all baskets in all used branches are in sync
+          simple_read: true, // all baskets in all used branches are in sync,
+          process_arrays: false // one can process all branches as arrays
       };
       
       handle.stage_min = handle.firstentry;
       handle.stage_max = handle.firstentry + handle.numentries;
+      
+      // check all branches with counters and add it to list of read branches
+      
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+         var branch = selector.branches[nn],
+             brcnt = branch.fBranchCount;
+         
+         if (!brcnt) continue;
+         
+         var indx = selector.branches.indexOf(brcnt), cntname = "";
+         if (indx > nn) { 
+            console.log('Should not happen - count branch after depend branch');
+            cntname = selector.names[indx];
+            selector.branches.splice(indx, 1);
+            selector.names.splice(indx, 1);
+            indx = -1;
+         }
+         
+         if (indx < 0) {
+            if (cntname.length===0)
+               for (var d=0;d<selector.branches.length*10;++d) {
+                  cntname = "counter" + d;
+                  if (selector.names.indexOf(cntname) < 0) break;
+               }
+            
+            console.log('Add counter branch with name ', cntname);
+            selector.branches.unshift(brcnt);
+            selector.names.unshift(cntname);
+         }
+      }
       
       for (var nn = 0; nn < selector.branches.length; ++nn) {
       
@@ -218,6 +249,22 @@
             return false;
          }
          
+         if (branch.fBranchCount) {
+            
+            var indx = selector.branches.indexOf(branch.fBranchCount);
+            
+            if (indx<0) {
+               console.log('Not found fBranchCount', branch.fBranchCount.fName);
+               selector.Terminate(false);
+               return false;
+            }
+            
+            // we specify that counter read as additional data member of target object 
+            member.cntname = selector.names[indx];
+            
+            selector.process_arrays = false;
+         }
+         
          // set name used to store result
          member.name = selector.names[nn];
 
@@ -251,8 +298,6 @@
          // this is indication that selector can process arrays of values
          // only streactly-matched tree structure can be used for that
          
-         handle.process_arrays = true;
-         
          for (var k=0;k<handle.arr.length;++k) {
             var elem = handle.arr[k];
             if ((elem.type<=0) || (elem.type >= JSROOT.IO.kOffsetL)) handle.process_arrays = false;
@@ -273,6 +318,8 @@
                item.arrmember = JSROOT.IO.CreateMember(elem, this.$file);
             }
          }
+      } else {
+         handle.process_arrays = false;         
       }
       
       function ReadNextBaskets() {
