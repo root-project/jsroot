@@ -128,7 +128,11 @@
       
       return false;
    }
-
+   
+   JSROOT.ArrayIterator.prototype.reset = function() {
+      delete this.arr;
+      this.value = 0;
+   }
 
    // =================================================================
    
@@ -565,7 +569,7 @@
             }
          }
          
-         res.k = (res.max-res.min)/res.nbins;
+         res.k = res.nbins/(res.max-res.min);
          
          res.GetBin = function(value) {
             var bin = this.lbls ? this.lbls.indexOf(value) : Math.round((value-this.min)*this.k);
@@ -583,6 +587,7 @@
          this.y = this.GetMinMaxBins(this.kind[1], this.arr2, this.IsInteger(1), 50);
          
          this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
+         this.hist.fXaxis.fTitle = names[0];
          this.hist.fXaxis.fXmin = this.x.min;
          this.hist.fXaxis.fXmax = this.x.max;
          if (this.x.lbls) {
@@ -596,7 +601,7 @@
             }
          }
          
-         this.hist.fXaxis.fTitle = names[0];
+         if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fYaxis.fXmin = this.y.min;
          this.hist.fYaxis.fXmax = this.y.max;
          if (this.y.lbls) {
@@ -610,14 +615,13 @@
             }
          }
          
-         if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fName = "draw_" + names[0];
          this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
          this.hist.$custom_stat = 111110;
          
          if (this.ndim==2)
             for (var n=0;n<this.arr.length;++n) 
-               this.hist.Fill(this.arr[n], this.arr2[n]);
+               this.Fill2DHistogram(this.arr[n], this.arr2[n]);
          else
             for (var n=0;n<this.arr.length;++n) 
                this.FillHistogram(this.arr[n]);
@@ -631,6 +635,14 @@
          
          this.hist.fArray[bin] += 1;
       }
+
+      selector.Fill2DHistogram = function(xvalue, yvalue) {
+         var xbin = this.x.GetBin(xvalue),
+             ybin = this.y.GetBin(yvalue);
+         
+         this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
+      }
+
       
       selector.CreateIterator = function(value) {
 
@@ -646,11 +658,12 @@
             return {
                value: value, // always used in iterators
                cnt: 1,
-               next: function() { return --this.cnt === 0; } 
+               next: function() { return --this.cnt === 0; },
+               reset: function() { this.cnt = 1; }
             };
          }
          
-         return { next: function() { return false; }}
+         return { value:0, next: function() { return false; }, reset: function() {}}
       }
 
       selector.Process = function(entry) {
@@ -682,16 +695,44 @@
             } else {
                // only elementary branches in 2d for the moment
             
-               this.arr.push(this.tgtobj.br0);
-               this.arr2.push(this.tgtobj.br1);
+               if (this.plain[0] && this.plain[1]) {
+                  this.arr.push(this.tgtobj.br0);
+                  this.arr2.push(this.tgtobj.br1);
+               } else {
+                  var iter0 = this.CreateIterator(this.tgtobj.br0),
+                      iter1 = this.CreateIterator(this.tgtobj.br1);
+                  
+                  while (iter0.next()) {
+                     iter1.reset();
+                     while (iter1.next()) {
+                        this.arr.push(iter0.value);
+                        this.arr2.push(iter1.value);
+                     }
+                  }
+                  
+                  if (firsttime) {
+                     this.kind[0] = typeof iter0.value;
+                     this.kind[1] = typeof iter1.value;
+                  }
+               }
             }
-            
             
             if (this.arr.length > 10000) this.CreateHistogram();
          } else
          if (this.hist) {
             if (this.ndim===2) {
-               this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
+               if (this.plain[0] && this.plain[1]) {
+                  this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
+               } else {
+                  var iter0 = this.CreateIterator(this.tgtobj.br0),
+                      iter1 = this.CreateIterator(this.tgtobj.br1);
+              
+                  while (iter0.next()) {
+                     iter1.reset();
+                     while (iter1.next()) 
+                        this.Fill2DHistogram(iter0.value, iter1.value);
+                  }
+               }
             } else {
                if (this.plain[0]) {
                   this.FillHistogram(this.tgtobj.br0);
