@@ -385,12 +385,23 @@
       return true; // indicate that reading of tree will be performed
    }
    
-   
    JSROOT.TTree.prototype.FindBranch = function(branchname) {
-      for (var n=0;n<this.fBranches.arr.length;++n)
-         if (this.fBranches.arr[n].fName === branchname) return this.fBranches.arr[n];
       
-      return null;
+      function Find(lst, name) {
+         var search = name, dot = name.indexOf("."), br = null;
+         if (dot>0) search = name.substr(0, dot);
+
+         for (var n=0;n<lst.arr.length;++n) {
+            var brname = lst.arr[n].fName;
+            if (brname[brname.length-1] == "]") 
+               brname = brname.substr(0, brname.indexOf("["));
+            if (brname === search) { br = lst.arr[n]; break; }
+         }
+         
+         return (!br || (dot <= 0) || (dot === name.length-1)) ? br : Find(br.fBranches, name.substr(dot+1));
+      }
+      
+      return Find(this.fBranches, branchname);
    }
    
    JSROOT.TTree.prototype.Draw = function(expr, cut, opt, nentries, firstentry, histo_callback) {
