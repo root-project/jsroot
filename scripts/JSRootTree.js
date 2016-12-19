@@ -487,16 +487,35 @@
       
       function Find(lst, name) {
          var search = name, dot = name.indexOf("."), br = null;
-         if (dot>0) search = name.substr(0, dot);
-
-         for (var n=0;n<lst.arr.length;++n) {
-            var brname = lst.arr[n].fName;
-            if (brname[brname.length-1] == "]") 
-               brname = brname.substr(0, brname.indexOf("["));
-            if (brname === search) { br = lst.arr[n]; break; }
+         
+         for (var loop=0;loop<2;++loop) {
+         
+            for (var n=0;n<lst.arr.length;++n) {
+               var brname = lst.arr[n].fName;
+               if (brname[brname.length-1] == "]") 
+                  brname = brname.substr(0, brname.indexOf("["));
+               if (brname === search) { 
+                  br = lst.arr[n];
+                  if (loop===0) return br; // when search full name, return found branchs
+                  break;
+               }
+            }
+            
+            if (br || (dot <= 0)) break; 
+            
+            // first loop search complete name, second loop - only first part
+            search = name.substr(0, dot);
          }
          
-         return (!br || (dot <= 0) || (dot === name.length-1)) ? br : Find(br.fBranches, name.substr(dot+1));
+         if (!br || (dot <= 0) || (dot === name.length-1)) return br;
+         
+         var res = Find(br.fBranches, name.substr(dot+1));
+         
+         // special case if next-level branch has name parent_branch.next_branch 
+         if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
+            res = Find(br.fBranches, br.fName + name.substr(dot));
+         
+         return res;
       }
       
       return Find(this.fBranches, branchname);
