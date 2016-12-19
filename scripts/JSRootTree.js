@@ -543,9 +543,9 @@
             return JSROOT.CallBack(histo_callback, null);
          }
          if (br[n].branch) {
-            expr[n] = br[n].rest;
+            console.log('Found branch ', br[n].branch.fName, ' with expression', br[n].rest);
+            expr[n] = new Function("func_var", "return func_var" + br[n].rest); 
             br[n] = br[n].branch;
-            console.log('Found branch ', br[n].fName, ' with expression', expr[n]);
          }
          
       }
@@ -680,6 +680,8 @@
          if ((value===undefined) || (value===null))
             return { next: function() { return false; }}
          
+         if (expr) value = expr(value);
+         
          var typ = typeof value, iter = null; 
 
          if ((typ === 'object') && !isNaN(value.length) && (value.length>0))
@@ -691,17 +693,6 @@
                 next: function() { return --this.cnt === 0; },
                 reset: function() { this.cnt = 1; }
              };
-         
-         if (expr) {
-            iter.func = new Function("func_var", "return func_var" + expr);
-            iter.next0 = iter.next; // remember normal func
-            
-            iter.next = function() {
-               if (!this.next0()) return false;
-               this.value = this.func(this.value); // calculate function or just extract member
-               return true;
-            }
-         }
          
          return iter;
       }
