@@ -1577,7 +1577,7 @@
          m.getBinContent = function(bin) { return this.fArray[bin]; }
          m.Fill = function(x, weight) {
             var axis = this.fXaxis,
-                bin = 1 + Math.round((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
+                bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
             if (bin < 0) bin = 0; else
             if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
             this.fArray[bin] += ((weight===undefined) ? 1 : weight);
@@ -1589,8 +1589,8 @@
          m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
          m.Fill = function(x, y, weight) {
             var axis1 = this.fXaxis, axis2 = this.fYaxis,
-                bin1 = 1 + Math.round((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
-                bin2 = 1 + Math.round((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
+                bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
+                bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
             if (bin1 < 0) bin1 = 0; else
             if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
             if (bin2 < 0) bin2 = 0; else

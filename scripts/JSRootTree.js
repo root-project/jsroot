@@ -603,7 +603,7 @@
          res.k = res.nbins/(res.max-res.min);
          
          res.GetBin = function(value) {
-            var bin = this.lbls ? this.lbls.indexOf(value) : Math.round((value-this.min)*this.k);
+            var bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value-this.min)*this.k);
             return (bin<0) ? 0 : ((bin>this.nbins) ? this.nbins+1 : bin+1); 
          }
 
