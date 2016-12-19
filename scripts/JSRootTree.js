@@ -483,7 +483,9 @@
       return true; // indicate that reading of tree will be performed
    }
    
-   JSROOT.TTree.prototype.FindBranch = function(branchname) {
+   JSROOT.TTree.prototype.FindBranch = function(branchname, complex) {
+      // search branch with specified name
+      // if complex enabled, search branch and rest part
       
       function Find(lst, name) {
          var search = name, dot = name.indexOf("."), br = null;
@@ -514,6 +516,9 @@
          // special case if next-level branch has name parent_branch.next_branch 
          if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
             res = Find(br.fBranches, br.fName + name.substr(dot));
+
+         // when allowed, return find branch with rest part
+         if (!res && complex) return { branch: br, rest: name.substr(dot) };
          
          return res;
       }
@@ -529,14 +534,20 @@
       if ((names.length < 1) || (names.length > 2))
          return JSROOT.CallBack(histo_callback, null);
       
-      var br = [], tree = this;
+      var br = [], expr = [], tree = this;
       
       for (var n=0;n<names.length;++n) {
-         br[n] = this.FindBranch(names[n]);
+         br[n] = this.FindBranch(names[n], true);
          if (!br[n]) {
             console.log('Not found branch', names[n]);
             return JSROOT.CallBack(histo_callback, null);
          }
+         if (br[n].branch) {
+            expr[n] = br[n].rest;
+            br[n] = br[n].branch;
+            console.log('Found branch ', br[n].fName, ' with expression', expr[n]);
+         }
+         
       }
 
       var selector = new JSROOT.TSelector();
@@ -545,6 +556,7 @@
       selector.hist = null;
       selector.arr = [];
       selector.AddBranch(br[0], "br0");
+      selector.expr = expr;
       selector.plain = []; // is branches values can be used directly or need iterator or any other transformation
       selector.kind = []; // is final value (after all iterators) is float, int or string
       
@@ -663,26 +675,35 @@
       }
 
       
-      selector.CreateIterator = function(value) {
+      selector.CreateIterator = function(value, expr) {
 
          if ((value===undefined) || (value===null))
             return { next: function() { return false; }}
          
-         var typ = typeof value; 
+         var typ = typeof value, iter = null; 
 
          if ((typ === 'object') && !isNaN(value.length) && (value.length>0))
-            return new JSROOT.ArrayIterator(value);
+            iter = new JSROOT.ArrayIterator(value);
+         else
+            iter = {
+                value: value, // always used in iterators
+                cnt: 1,
+                next: function() { return --this.cnt === 0; },
+                reset: function() { this.cnt = 1; }
+             };
          
-         if ((typ === 'number') || (typ === 'boolean') || (typ === 'string')) {
-            return {
-               value: value, // always used in iterators
-               cnt: 1,
-               next: function() { return --this.cnt === 0; },
-               reset: function() { this.cnt = 1; }
-            };
+         if (expr) {
+            iter.func = new Function("func_var", "return func_var" + expr);
+            iter.next0 = iter.next; // remember normal func
+            
+            iter.next = function() {
+               if (!this.next0()) return false;
+               this.value = this.func(this.value); // calculate function or just extract member
+               return true;
+            }
          }
          
-         return { value:0, next: function() { return false; }, reset: function() {}}
+         return iter;
       }
 
       selector.Process = function(entry) {
@@ -693,10 +714,10 @@
             
             if (this.plain.length === 0) {
                this.kind[0] = typeof this.tgtobj.br0;
-               this.plain[0] = (this.kind[0] == 'number') || (this.kind[0] == 'string');
+               this.plain[0] = !this.expr[0] && ((this.kind[0] == 'number') || (this.kind[0] == 'string'));
                if (this.ndim===2) {
                   this.kind[1] = typeof this.tgtobj.br1;
-                  this.plain[1] = (this.kind[1] == 'number') || (this.kind[1] == 'string');
+                  this.plain[1] = !this.expr[1] && ((this.kind[1] == 'number') || (this.kind[1] == 'string'));
                }
                firsttime = true;
             }
@@ -705,7 +726,7 @@
                if (this.plain[0]) {
                   this.arr.push(this.tgtobj.br0);
                } else {
-                  var iter = this.CreateIterator(this.tgtobj.br0);
+                  var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
                   while (iter.next()) 
                      this.arr.push(iter.value);
                   if (firsttime) this.kind[0] = typeof iter.value;
@@ -718,8 +739,8 @@
                   this.arr.push(this.tgtobj.br0);
                   this.arr2.push(this.tgtobj.br1);
                } else {
-                  var iter0 = this.CreateIterator(this.tgtobj.br0),
-                      iter1 = this.CreateIterator(this.tgtobj.br1);
+                  var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                      iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
                   
                   while (iter0.next()) {
                      iter1.reset();
@@ -743,8 +764,8 @@
                if (this.plain[0] && this.plain[1]) {
                   this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
                } else {
-                  var iter0 = this.CreateIterator(this.tgtobj.br0),
-                      iter1 = this.CreateIterator(this.tgtobj.br1);
+                  var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                      iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
               
                   while (iter0.next()) {
                      iter1.reset();
@@ -756,7 +777,7 @@
                if (this.plain[0]) {
                   this.FillHistogram(this.tgtobj.br0);
                } else {
-                  var iter = this.CreateIterator(this.tgtobj.br0);
+                  var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
                   while (iter.next()) 
                      this.FillHistogram(iter.value);
                }
