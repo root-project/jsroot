@@ -77,7 +77,62 @@
    }
 
    // =================================================================
+   
+   JSROOT.ArrayIterator = function(arr) {
+      // class used to iterate over all array indexes until number value
+      this.object = arr;
+      this.value = 0; // value always used in iterator
+   }
+   
+   JSROOT.ArrayIterator.prototype.next = function() {
+      var cnt = 0;
+      
+      if (this.arr == undefined) {
+         this.arr = [ this.object ];
+         this.indx = [ 0 ];
+      } else {
+        
+         if (++this.fastindx < this.fastarr.length) {
+            this.value = this.fastarr[this.fastindx];
+            return true;
+         } 
 
+         cnt = this.arr.length-1;
+
+         while (--cnt >= 0) {
+            if (++this.indx[cnt] < this.arr[cnt].length) break;
+         }
+         if (cnt < 0) return false;
+      }
+      
+      while (true) {
+      
+         var obj = this.arr[cnt][this.indx[cnt]],
+             typ = typeof obj; 
+         
+         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0)) {
+            cnt++;
+            this.arr[cnt] = obj;
+            this.indx[cnt] = 0;
+         } else 
+         if ((typ === "number") || (typ === "boolean")) {
+            this.value = obj;
+            this.fastarr = this.arr[cnt];
+            this.fastindx = this.indx[cnt];
+            return true;
+         } else {
+            console.log('did not found match in array iterator');
+            return false; 
+         }
+      }
+      
+      return false;
+   }
+
+
+   // =================================================================
+   
+   
    
    JSROOT.TTree = function(tree) {
       JSROOT.extend(this, tree);
@@ -132,7 +187,7 @@
                  var s_i = this.$file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum);
                  
                  if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
-                 if (leaf.fID<0) console.log('Leaf with negative ID'); else
+                 if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
                  elem = s_i.fElements.arr[leaf.fID];
                  break;
               }
@@ -404,7 +459,7 @@
       if ((names.length < 1) || (names.length > 2))
          return JSROOT.CallBack(histo_callback, null);
       
-      var br = [];
+      var br = [], tree = this;
       
       for (var n=0;n<names.length;++n) {
          br[n] = this.FindBranch(names[n]);
@@ -420,6 +475,7 @@
       selector.hist = null;
       selector.arr = [];
       selector.AddBranch(br[0], "br0");
+      selector.plain = []; // is branches values can be used directly or need iterator or any other transformation
       
       if (names.length == 2) { 
          selector.AddBranch(br[1], "br1");
@@ -466,7 +522,7 @@
          this.hist.fYaxis.fXmax = y.max;
          if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fName = "draw_" + names[0];
-         this.hist.fTitle = "drawing '" + expr + "' from " + this.fName;
+         this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
          this.hist.$custom_stat = 111110;
          
          if (this.ndim==2)
@@ -479,22 +535,71 @@
          delete this.arr;
          delete this.arr2;
       }
+      
+      selector.CreateIterator = function(value) {
+
+         if ((value===undefined) || (value===null))
+            return { next: function() { return false; }}
+         
+         var typ = typeof value; 
+
+         if ((typ === 'object') && !isNaN(value.length) && (value.length>0))
+            return new JSROOT.ArrayIterator(value);
+         
+         if ((typ === 'number') || (typ === 'boolean')) {
+            return {
+               value: value, // always used in iterators
+               cnt: 1,
+               next: function() { return --this.cnt === 0; } 
+            };
+         }
+         
+         return { next: function() { return false; }}
+      }
 
       selector.Process = function(entry) {
          // do something
          
          if (this.arr !== undefined) {
-            this.arr.push(this.tgtobj.br0);
-            if (this.ndim==2) this.arr2.push(this.tgtobj.br1);
+            var firsttime = false;
+            
+            if (selector.plain.length === 0) {
+               selector.plain[0] = (typeof this.tgtobj.br0 == 'number');
+               if (this.ndim===2) selector.plain[1] = (typeof this.tgtobj.br1 == 'number');
+               firsttime = true;
+            }
+            
+            if (this.ndim==1) {
+               if (selector.plain[0]) {
+                  this.arr.push(this.tgtobj.br0);
+               } else {
+                  var iter = this.CreateIterator(this.tgtobj.br0);
+                  while (iter.next()) {
+                     this.arr.push(iter.value);
+                  }
+               }
+               
+            } else {
+               // only elementary branches in 2d
+            
+               this.arr.push(this.tgtobj.br0);
+               this.arr2.push(this.tgtobj.br1);
+            }
+            
+            
             if (this.arr.length > 10000) this.CreateHistogram();
          } else
-         if (this.hist)
-            this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
+         if (this.hist) {
+            if (this.ndim===2)
+               this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
+            else
+               this.hist.Fill(this.tgtobj.br0);
+         }
       }
       
       selector.ProcessArrays = function(entry) {
          // process all branches as arrays
-         // works only for very limited number of cases, but much faster
+         // works only for very limited number of cases with plain branches, but much faster
          
          if (this.arr !== undefined) {
             for (var n=0;n<this.tgtarr.br0.length;++n)
