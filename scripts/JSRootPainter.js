@@ -10852,9 +10852,11 @@
             else
                for (var dim=0;dim<elem.fArrayDim;++dim)
                   info+="[" + elem.fMaxIndex[dim] + "]";
+            if (elem.fBaseVersion===4294967295) info += ":-1"; else
+            if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
             info += ";";
-            if (elem.fBaseVersion!==undefined) info+= elem.fBaseVersion + ";";
             if (elem.fTitle != '') info += " // " + elem.fTitle;
+                                 
             item._childs.push({ _name : info, _title: elem.fTypeName, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
          if (item._childs.length == 0) delete item._childs;
