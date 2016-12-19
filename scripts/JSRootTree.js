@@ -523,6 +523,7 @@
       selector.arr = [];
       selector.AddBranch(br[0], "br0");
       selector.plain = []; // is branches values can be used directly or need iterator or any other transformation
+      selector.kind = []; // is final value (after all iterators) is float, int or string
       
       if (names.length == 2) { 
          selector.AddBranch(br[1], "br1");
@@ -530,26 +531,45 @@
          selector.arr2 = [];
       } 
       
-      selector.GetMinMaxBins = function(arr, is_int, nbins) {
+      selector.GetMinMaxBins = function(kind, arr, is_int, nbins) {
          
          var res = { min: 0, max: 0, nbins: nbins };
          
-         if (!arr || (arr.length==0)) return res;
+         if (!kind || !arr || (arr.length==0)) return res;
          
-         res.min = Math.min.apply(null, arr);
-         res.max = Math.max.apply(null, arr);
-
-         if (res.min>=res.max) {
-            res.max = res.min;
-            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
-            if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
-         } else
-         if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
-             res.min -= 1;
-             res.max += 2;
-             res.nbins = res.max - res.min;
+         if (kind === "string") {
+            res.lbls = []; // all labels
+            
+            for (var k=0;k<arr.length;++k) 
+               if (res.lbls.indexOf(arr[k])<0) 
+                  res.lbls.push(arr[k]);
+            
+            res.lbls.sort();
+            res.max = res.nbins = res.lbls.length;
          } else {
-            res.max += (res.max-res.min)/res.nbins;
+         
+            res.min = Math.min.apply(null, arr);
+            res.max = Math.max.apply(null, arr);
+
+            if (res.min>=res.max) {
+               res.max = res.min;
+               if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
+                  if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
+            } else
+            if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
+               res.min -= 1;
+               res.max += 2;
+               res.nbins = res.max - res.min;
+            } else {
+               res.max += (res.max-res.min)/res.nbins;
+            }
+         }
+         
+         res.k = (res.max-res.min)/res.nbins;
+         
+         res.GetBin = function(value) {
+            var bin = this.lbls ? this.lbls.indexOf(value) : Math.round((value-this.min)*this.k);
+            return (bin<0) ? 0 : ((bin>this.nbins) ? this.nbins+1 : bin+1); 
          }
 
          return res;
@@ -558,15 +578,38 @@
       selector.CreateHistogram = function() {
          if (this.hist || !this.arr || this.arr.length==0) return;
          
-         var x = this.GetMinMaxBins(this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200),
-             y = this.GetMinMaxBins(this.arr2, this.IsInteger(1), 50);
+         this.x = this.GetMinMaxBins(this.kind[0], this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200);
          
-         this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(x.nbins, y.nbins) : JSROOT.CreateTH1(x.nbins);
-         this.hist.fXaxis.fXmin = x.min;
-         this.hist.fXaxis.fXmax = x.max;
+         this.y = this.GetMinMaxBins(this.kind[1], this.arr2, this.IsInteger(1), 50);
+         
+         this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
+         this.hist.fXaxis.fXmin = this.x.min;
+         this.hist.fXaxis.fXmax = this.x.max;
+         if (this.x.lbls) {
+            this.hist.fXaxis.fLabels = JSROOT.Create("THashList");
+            for (var k=0;k<this.x.lbls.length;++k) {
+               var s = JSROOT.Create("TObjString");
+               s.fString = this.x.lbls[k];
+               s.fUniqueID = k+1;
+               if (s.fString === "") s.fString = "<empty>";
+               this.hist.fXaxis.fLabels.Add(s);
+            }
+         }
+         
          this.hist.fXaxis.fTitle = names[0];
-         this.hist.fYaxis.fXmin = y.min;
-         this.hist.fYaxis.fXmax = y.max;
+         this.hist.fYaxis.fXmin = this.y.min;
+         this.hist.fYaxis.fXmax = this.y.max;
+         if (this.y.lbls) {
+            this.hist.fYaxis.fLabels = JSROOT.Create("THashList");
+            for (var k=0;k<this.y.lbls.length;++k) {
+               var s = JSROOT.Create("TObjString");
+               s.fString = this.y.lbls[k];
+               s.fUniqueID = k+1;
+               if (s.fString === "") s.fString = "<empty>";
+               this.hist.fYaxis.fLabels.Add(s);
+            }
+         }
+         
          if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
          this.hist.fName = "draw_" + names[0];
          this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
@@ -577,10 +620,16 @@
                this.hist.Fill(this.arr[n], this.arr2[n]);
          else
             for (var n=0;n<this.arr.length;++n) 
-               this.hist.Fill(this.arr[n]);
+               this.FillHistogram(this.arr[n]);
          
          delete this.arr;
          delete this.arr2;
+      }
+      
+      selector.FillHistogram = function(xvalue) {
+         var bin = this.x.GetBin(xvalue);
+         
+         this.hist.fArray[bin] += 1;
       }
       
       selector.CreateIterator = function(value) {
@@ -593,7 +642,7 @@
          if ((typ === 'object') && !isNaN(value.length) && (value.length>0))
             return new JSROOT.ArrayIterator(value);
          
-         if ((typ === 'number') || (typ === 'boolean')) {
+         if ((typ === 'number') || (typ === 'boolean') || (typ === 'string')) {
             return {
                value: value, // always used in iterators
                cnt: 1,
@@ -610,24 +659,28 @@
          if (this.arr !== undefined) {
             var firsttime = false;
             
-            if (selector.plain.length === 0) {
-               selector.plain[0] = (typeof this.tgtobj.br0 == 'number');
-               if (this.ndim===2) selector.plain[1] = (typeof this.tgtobj.br1 == 'number');
+            if (this.plain.length === 0) {
+               this.kind[0] = typeof this.tgtobj.br0;
+               this.plain[0] = (this.kind[0] == 'number') || (this.kind[0] == 'string');
+               if (this.ndim===2) {
+                  this.kind[1] = typeof this.tgtobj.br1;
+                  this.plain[1] = (this.kind[1] == 'number') || (this.kind[1] == 'string');
+               }
                firsttime = true;
             }
             
             if (this.ndim==1) {
-               if (selector.plain[0]) {
+               if (this.plain[0]) {
                   this.arr.push(this.tgtobj.br0);
                } else {
                   var iter = this.CreateIterator(this.tgtobj.br0);
-                  while (iter.next()) {
+                  while (iter.next()) 
                      this.arr.push(iter.value);
-                  }
+                  if (firsttime) this.kind[0] = typeof iter.value;
                }
                
             } else {
-               // only elementary branches in 2d
+               // only elementary branches in 2d for the moment
             
                this.arr.push(this.tgtobj.br0);
                this.arr2.push(this.tgtobj.br1);
@@ -637,10 +690,17 @@
             if (this.arr.length > 10000) this.CreateHistogram();
          } else
          if (this.hist) {
-            if (this.ndim===2)
+            if (this.ndim===2) {
                this.hist.Fill(this.tgtobj.br0, this.tgtobj.br1);
-            else
-               this.hist.Fill(this.tgtobj.br0);
+            } else {
+               if (this.plain[0]) {
+                  this.FillHistogram(this.tgtobj.br0);
+               } else {
+                  var iter = this.CreateIterator(this.tgtobj.br0);
+                  while (iter.next()) 
+                     this.FillHistogram(iter.value);
+               }
+            }
          }
       }
       
