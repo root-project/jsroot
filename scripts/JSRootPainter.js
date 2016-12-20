@@ -8563,336 +8563,41 @@
    }
 
 
-   JSROOT.Painter.TreeDrawGet = function(item, itemname, get_callback, option) {
-      // function used to handle get request for branch/subbranch
-
-      var bitem = item;
-//      if (item._usestreamer) bitem = item._parent;
-
-      if (option==='inspect')
-         return JSROOT.CallBack(get_callback, item, bitem._branch);
-
-      var fprnt = item._parent;
-      while (fprnt && !fprnt._file) fprnt = fprnt._parent;
-      if (!fprnt) return JSROOT.CallBack(get_callback, item, null);
-
-      var b = bitem._branch,
-          f = fprnt._file,
-          histo = null, break_execution = 0;
-      // var streamer = null;
-
-//      if (item._usestreamer) {
-//         streamer = f.GetStreamer(b.fClassName, b.fClassVersion);
-//         console.log('Request streamer for', b.fClassName, streamer.length, b.fMaxBaskets);
-//         if (!streamer) return JSROOT.CallBack(get_callback, item, null);
-//      }
-
-      function ShowProgress(value) {
-         var main_box = document.createElement("p");
-         var text_node = document.createTextNode(value);
-         main_box.appendChild(text_node);
-         main_box.title = "Click on element to break drawing";
-
-         main_box.onclick = function() {
-            if (++break_execution<3) {
-               main_box.title = "Tree draw will break after next I/O operation";
-               return text_node.nodeValue = "Breaking ... ";
-            }
-            break_execution = -1111;
-            JSROOT.progress();
-            JSROOT.CallBack(get_callback, item, histo);
-         }
-
-         JSROOT.progress(main_box);
-      }
-
-      function ReadNextBaskets(indx) {
-         var places = [], totalsz = 0, indx0 = indx;
-         while ((indx>=0) && (indx<b.fMaxBaskets) && (totalsz < 1e7) && (places.length<200)) {
-            if (b.fBasketBytes[indx] === 0) break;
-            places.push(b.fBasketSeek[indx], b.fBasketBytes[indx]);
-            totalsz += b.fBasketBytes[indx];
-            indx++;
-            //break; // only single basket
-         }
-
-         // console.log('select ', places, b.fBasketBytes, b.fBasketSeek);
-
-         if ((places.length === 0) || (break_execution>0)) {
-            JSROOT.progress();
-            return JSROOT.CallBack(get_callback, item, histo);
-         }
-
-         var maxindx = b.fWriteBasket || b.fMaxBaskets;
-         if (maxindx<=0) maxindx = 1;
-
-         ShowProgress("TTree draw " + Math.round((indx0/maxindx*100)) + " %  ");
-
-         // setTimeout(ContinueRead, 1000);
-         // function ContinueRead() {
-
-         f.ReadBaskets(places, function(baskets) {
-
-            if (break_execution<0) return; // hard break
-
-            if (!baskets) return ReadNextBaskets(-1);
-
-            var arrays = []; // all data from baskets
-
-            // first convert raw data
-            for (var n=0;n<baskets.length;++n) {
-/*               if (streamer) {
-                  var buf = baskets[n].raw, nread = 0, arr = [];
-                  while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
-                     var obj = {};
-                     buf.ClearObjectMap();
-                     buf.MapObject(1, obj); // tag object itself with id==1
-
-                     var ver = buf.ReadVersion();
-                     for (var n = 0; n < streamer.length; ++n)
-                        streamer[n].func(buf, obj);
-                     buf.CheckBytecount(ver, 'tree_streamer');
-
-                     arr.push(nread); // just fake push
-
-                  }
-                  arrays.push(arr);
-               } else
-*/
-               
-               var buf = baskets[n].raw;
-               if (item._datakind === JSROOT.IO.kSTL) {
-                  // first N entries is just Nx size of correpondent vector
-                  
-                  arrays.push(buf.ReadFastArray(baskets[n].fNevBuf, JSROOT.IO.kInt));
-               } else
-               if (item._isvector) {
-                  var nread = 0;
-                  while ((buf.remain() > 4) && (nread++ < baskets[n].fNevBuf))  {
-                     var ver = buf.ReadVersion();
-                     arrays.push(buf.ReadFastArray(buf.ntoi4(), item._datakind));
-                     buf.CheckBytecount(ver, 'branch_vector_read');
-                  }
-               } else 
-               if (item._arrsize < 0) {
-                  // this is just dummy read of complete basket 
-                  
-                  var sz = buf.remain() / JSROOT.IO.GetTypeSize(item._datakind);
-                  
-                  sz = baskets[n].fNevBuf;
-                  
-                  arrays.push(buf.ReadFastArray(Math.floor(sz), item._datakind));
-                  
-               } else {
-                  arrays.push(buf.ReadFastArray(baskets[n].fNevBuf * item._arrsize, item._datakind));
-               }
-            }
-
-            // console.log('array', arr.length);
-
-            if (histo === null) {
-               var xmin, xmax;
-
-               for (var n=0;n<arrays.length;++n) {
-                  var lmin = Math.min.apply(null, arrays[n]);
-                  var lmax = Math.max.apply(null, arrays[n]);
-                  if ((n===0) || (lmin < xmin)) xmin = lmin;
-                  if ((n===0) || (lmax > xmax)) xmax = lmax;
-               }
-
-               var nbins = 200;
-
-               if (xmin>=xmax) {
-                  xmax = xmin;
-                  if (Math.abs(xmin)<100) { xmin-=1; xmax+=1; } else
-                  if (xmin>0) { xmin*=0.9; xmax*=1.1; } else
-                              { xmin*=1.1; xmax*=0.9; }
-               } else
-               if ((JSROOT.IO.IsInteger(item._datakind) || (item._datakind === JSROOT.IO.kSTL))  
-                     && (xmax-xmin >=1) && (xmax-xmin<5000)) {
-                  xmin -= 1;
-                  xmax += 2;
-                  nbins = xmax - xmin;
-               } else    {
-                  xmax += (xmax-xmin)/nbins;
-               }
-
-               histo = JSROOT.CreateTH1(nbins);
-               histo.fXaxis.fXmin = xmin;
-               histo.fXaxis.fXmax = xmax;
-               histo.fName = "draw_" + item._name;
-               histo.fTitle = "drawing '" + item._name + "' from " + item._parent._name;
-               histo.$custom_stat = 111110;
-            }
-
-            for (var n=0;n<arrays.length;++n) {
-               var arr = arrays[n];
-               for (var k=0;k<arr.length;++k)
-                  histo.Fill(arr[k]);
-            }
-
-            ReadNextBaskets(indx);
-         });
-
-         //} // for debugging with timeout
-      }
-
-      ReadNextBaskets(0);
-   }
-
-/*
-   JSROOT.Painter.CreateBranchLeaves = function(s_i, hitem) {
-      // not yet used, in the feauture one can streamer objects from branch and access its fields
-
-      if (!s_i || !s_i.fElements) return 0;
-
-      var cnt = 0;
-
-      for (var j=0; j<s_i.fElements.arr.length; ++j) {
-         // extract streamer info for each class member
-         var element = s_i.fElements.arr[j];
-
-         // first ignore base types
-         if (element.fTypeName === 'BASE') continue;
-
-         var type = element.fType;
-
-         switch(type) {
-            case JSROOT.IO.kChar:
-            case JSROOT.IO.kShort:
-            case JSROOT.IO.kInt:
-            case JSROOT.IO.kCounter:
-            case JSROOT.IO.kLong:
-            case JSROOT.IO.kLong64:
-            case JSROOT.IO.kDouble:
-            case JSROOT.IO.kFloat:
-            case JSROOT.IO.kDouble32:
-            case JSROOT.IO.kLegacyChar:
-            case JSROOT.IO.kUChar:
-            case JSROOT.IO.kUShort:
-            case JSROOT.IO.kUInt:
-            case JSROOT.IO.kULong64:
-            case JSROOT.IO.kULong:
-            case JSROOT.IO.kBool:
-               cnt++;
-
-               if (hitem && hitem._childs) {
-                  var leafitem = {
-                     _name : element.fName,
-                     _kind : "ROOT.TLeaf",
-                     _title : element.fTypeName,
-                     _usestreamer : true,
-                     _get : JSROOT.Painter.TreeDrawGet
-                  };
-                  if (element.fTitle != '') leafitem._title += " // " + element.fTitle;
-                  hitem._childs.push(leafitem);
-               }
-
-               break;
-            default:
-               // not yet supported types in tree-draw
-               break;
-         }
-      }
-
-      return cnt;
-   }
-*/
-
-   JSROOT.Painter.CreateBranchItem = function(node, branch, prnt) {
+   JSROOT.Painter.CreateBranchItem = function(node, branch, tree) {
       if (!node || !branch) return false;
 
       var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
-          leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-          datakind = 0, arrsize = 1,
-          isvector = false, useselect = false,
-          fprnt = node._parent;
-
-      // check that we have file
-      while (fprnt && !fprnt._file) fprnt = fprnt._parent;
-
-      // display branch with the only leaf
-      if ((nb_leaves === 1) && fprnt && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) ) {
-         switch (leaf._typename) {
-            case 'TLeafF' : datakind = JSROOT.IO.kFloat; useselect = true; break;
-            case 'TLeafD' : datakind = JSROOT.IO.kDouble; useselect = true; break;
-            case 'TLeafO' : datakind = JSROOT.IO.kBool; useselect = true; break;
-            case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; useselect = true; break;
-            case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; useselect = true; break;
-            case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; useselect = true; break;
-            case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; useselect = true; break;
-            case 'TLeafElement' :
-               if ((leaf.fType < 0) && (branch._typename==='TBranchElement')) {
-                  switch (branch.fClassName) {
-                    case "vector<double>": isvector = true; datakind = JSROOT.IO.kDouble; break;
-                    case "vector<int>":  isvector = true; datakind = JSROOT.IO.kInt; break;
-                    case "vector<float>": isvector = true; datakind = JSROOT.IO.kFloat; break;
-                    case "vector<bool>": isvector = true; datakind = JSROOT.IO.kBool; break;
-                  }
-               } else
-               if (JSROOT.IO.IsNumeric(leaf.fType)) {
-                   datakind = leaf.fType;
-                   // this is workaround, just when branch is part of splitted STL container, read all elelemnts from basket
-                   if ((branch.fBranchCount === prnt) && (JSROOT.IO.GetTypeSize(datakind) > 0)) arrsize = -1;
-               } else
-               if (JSROOT.IO.IsNumeric(leaf.fType-JSROOT.IO.kOffsetL)) {
-                  datakind = leaf.fType - JSROOT.IO.kOffsetL;
-                  arrsize = leaf.fLen; // fixed-size array
-               } 
-
-               break;
-         }
-      }
+          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
 
       function ClearName(arg) {
-         // if ((arg.length>0) && (arg.charAt(0)=='/')) arg = arg.substr(1);
-         
-         return arg;
-         
-         //return arg.replace(/\//g,'_'); //.replace(/#/g,'_');
+         var pos = arg.indexOf("[");
+         return pos<0 ? arg : arg.substr(0, pos);
       }
+      
+      branch.$tree = tree; // keep tree pointer, later do it more smart
 
       var subitem = {
             _name : ClearName(branch.fName),
             _kind : "ROOT." + branch._typename,
-            _title : branch.fTitle
-            // _obj: branch // only for debug purposes
+            _title : branch.fTitle,
+            _obj : branch 
       };
 
       if (!node._childs) node._childs = [];
 
       node._childs.push(subitem);
 
-      if (datakind > 0) {
-         // supported elementary branch
-         subitem._kind = "ROOT." + leaf._typename; // mark branch as leaf
-         if (isvector) subitem._title += " " + branch.fClassName; else
-         if (leaf._typename === 'TLeafElement') subitem._title += " type:" + leaf.fType;
-         subitem._can_draw = true;
-         subitem._branch = branch;
-         subitem._datakind = datakind;
-         subitem._arrsize = arrsize;
-         subitem._isvector = isvector;
-         subitem._get = JSROOT.Painter.TreeDrawGet;
-
-         return true;
-      }
-
       if (branch._typename==='TBranchElement')
-         subitem._title += " " + branch.fClassName + ";" + branch.fClassVersion;
-
-      subitem._obj = branch;
+         subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
 
       if (nb_branches > 0) {
          subitem._more = true;
-         subitem._obj = branch;
          subitem._expand = function(bnode,bobj) {
             // really create all sub-branch items
             if (!bobj) return false;
             
             for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
-               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj);
+               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
             
             if (!bobj.fLeaves || (bobj.fLeaves.arr.length !== 1)) return true;
             
@@ -8900,24 +8605,23 @@
             if ((leaf._typename === 'TLeafElement') && (leaf.fType === JSROOT.IO.kSTL)) {
                var szitem = {
                      _name : "@size",
-                     _kind : "ROOT." + leaf._typename,
                      _title : leaf.fTitle,
-                     _can_draw : true,
-                     _branch : bobj,
-                     _datakind : JSROOT.IO.kSTL,
-                     _arrsize : 1,
-                     _isvector : false,
-                     _get : JSROOT.Painter.TreeDrawGet
+                     _kind : "ROOT.TBranch",
+                     _icon : "img_leaf",
+                     _obj : bobj,
+                     _more : false
                };
                bnode._childs.push(szitem);
                
             }
-            
             return true;
          }
          return true;
-      }
-
+      } else
+      if (nb_leaves === 1) {
+         subitem._icon = "img_leaf";
+         subitem._more = false;
+      } else   
       if (nb_leaves > 1) {
          // not yet supported many leafs in one branch
          subitem._childs = [];
@@ -8969,26 +8673,25 @@
       
       var painter = new JSROOT.TObjectPainter(branch);
       
-      // branch must include addition $tree and $fullname fields
-      // these fields automatically set in the JSROOT.Painter.TreeHierarchy 
-      if (!branch || !branch.$tree || !branch.$fullname) 
-         return this.DrawingReady();
+      // branch must include addition $tree field
+      // these field automatically set in the JSROOT.Painter.TreeHierarchy 
+      if (!branch || !branch.$tree) 
+         return painter.DrawingReady();
       
       JSROOT.AssertPrerequisites('tree', function() {
          
          var t = new JSROOT.TTree(branch.$tree); 
          
-         t.Draw(branch.$fullname, undefined, undefined, undefined, undefined, function(histo) {
+         t.DrawBranch(branch, opt, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
             
             var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
 
             JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
-
          });
       });
       
-      return this;
+      return painter;
    }
 
    // ===========================================================================
@@ -11292,7 +10995,7 @@
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch" });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawBranch, dflt: "expand" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });

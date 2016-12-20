@@ -137,6 +137,330 @@
 
    // =================================================================
    
+   JSROOT.TDrawSelector = function(callback) {
+      JSROOT.TSelector.call(this);   
+      
+      this.ndim = 0;
+      this.hist = null;
+      this.expr = [];
+      this.plain = []; // is branches values can be used directly or need iterator or any other transformation
+      this.kind = []; // is final value (after all iterators) is float, int or string
+      this.axislbls = ["", "", ""];
+      this.histo_callback = callback;
+      this.hist_title = "Result of TTree::Draw";
+   }
+
+   JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
+   
+   JSROOT.TDrawSelector.prototype.AddDrawBranch = function(branch, branch_expr, axislbl) {
+      
+      var id = this.ndim++;
+      
+      this.AddBranch(branch, "br" + id);
+      
+      switch(id) {
+         case 0: this.arr = []; break; // array to accumulate first dimension
+         case 1: this.arr2 = []; break; // array to accumulate second dimension
+         default: console.log('more than 2 dimensions not supported'); return false;
+      }
+      
+      this.axislbls[id] = axislbl || "";
+      
+      if (branch_expr) {
+      
+         console.log('Add draw branch ', branch.fName, ' with expression', branch_expr);
+
+         this.expr[id] = { arr: false, func: null, code: branch_expr };
+
+         if (branch_expr.indexOf("[]")==0) { this.expr[id].arr = true; branch_expr = branch_expr.substr(2); }
+
+         // ending [] has no meaning - iterator over all array elements done automatically
+         if (branch_expr.indexOf("[]") === branch_expr.length-2) 
+            branch_expr = branch_expr.substr(0,branch_expr.length-2); 
+
+         if (branch_expr.length>0)
+            this.expr[id].func = new Function("func_var", "return func_var" + branch_expr);
+         else
+            this.expr[id] = undefined; // without func no need to create special handling
+      }
+
+      
+      return true;
+   }
+
+   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(kind, arr, is_int, nbins) {
+      
+      var res = { min: 0, max: 0, nbins: nbins };
+      
+      if (!kind || !arr || (arr.length==0)) return res;
+      
+      if (kind === "string") {
+         res.lbls = []; // all labels
+         
+         for (var k=0;k<arr.length;++k) 
+            if (res.lbls.indexOf(arr[k])<0) 
+               res.lbls.push(arr[k]);
+         
+         res.lbls.sort();
+         res.max = res.nbins = res.lbls.length;
+      } else {
+      
+         res.min = Math.min.apply(null, arr);
+         res.max = Math.max.apply(null, arr);
+
+         if (res.min>=res.max) {
+            res.max = res.min;
+            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
+               if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
+         } else
+         if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
+            res.min -= 1;
+            res.max += 2;
+            res.nbins = res.max - res.min;
+         } else {
+            res.max += (res.max-res.min)/res.nbins;
+         }
+      }
+      
+      res.k = res.nbins/(res.max-res.min);
+      
+      res.GetBin = function(value) {
+         var bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value-this.min)*this.k);
+         return (bin<0) ? 0 : ((bin>this.nbins) ? this.nbins+1 : bin+1); 
+      }
+
+      return res;
+   }
+   
+   JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
+      if (this.hist || !this.arr || this.arr.length==0) return;
+      
+      this.x = this.GetMinMaxBins(this.kind[0], this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200);
+      
+      this.y = this.GetMinMaxBins(this.kind[1], this.arr2, this.IsInteger(1), 50);
+      
+      this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
+      this.hist.fXaxis.fTitle = this.axislbls[0];
+      this.hist.fXaxis.fXmin = this.x.min;
+      this.hist.fXaxis.fXmax = this.x.max;
+      if (this.x.lbls) {
+         this.hist.fXaxis.fLabels = JSROOT.Create("THashList");
+         for (var k=0;k<this.x.lbls.length;++k) {
+            var s = JSROOT.Create("TObjString");
+            s.fString = this.x.lbls[k];
+            s.fUniqueID = k+1;
+            if (s.fString === "") s.fString = "<empty>";
+            this.hist.fXaxis.fLabels.Add(s);
+         }
+      }
+      
+      if (this.ndim == 2) this.hist.fYaxis.fTitle = this.axislbls[1];
+      this.hist.fYaxis.fXmin = this.y.min;
+      this.hist.fYaxis.fXmax = this.y.max;
+      if (this.y.lbls) {
+         this.hist.fYaxis.fLabels = JSROOT.Create("THashList");
+         for (var k=0;k<this.y.lbls.length;++k) {
+            var s = JSROOT.Create("TObjString");
+            s.fString = this.y.lbls[k];
+            s.fUniqueID = k+1;
+            if (s.fString === "") s.fString = "<empty>";
+            this.hist.fYaxis.fLabels.Add(s);
+         }
+      }
+      
+      this.hist.fName = "htemp";
+      this.hist.fTitle = this.hist_title;
+      this.hist.$custom_stat = 111110;
+      
+      if (this.ndim==2)
+         for (var n=0;n<this.arr.length;++n) 
+            this.Fill2DHistogram(this.arr[n], this.arr2[n]);
+      else
+         for (var n=0;n<this.arr.length;++n) 
+            this.FillHistogram(this.arr[n]);
+      
+      delete this.arr;
+      delete this.arr2;
+   }
+   
+   JSROOT.TDrawSelector.prototype.FillHistogram = function(xvalue) {
+      var bin = this.x.GetBin(xvalue);
+      
+      this.hist.fArray[bin] += 1;
+   }
+
+   JSROOT.TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue) {
+      var xbin = this.x.GetBin(xvalue),
+          ybin = this.y.GetBin(yvalue);
+      
+      this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
+   }
+   
+   JSROOT.TDrawSelector.prototype.CreateIterator = function(value, expr) {
+
+      if ((value===undefined) || (value===null))
+         return { next: function() { return false; }}
+
+      var iter = null; 
+      
+      if (expr) {
+         if (expr.arr && expr.func) {
+            // special case of array before func
+            
+            iter = new JSROOT.ArrayIterator(value);
+            
+            iter.next0 = iter.next;
+            iter.func = expr.func;
+            
+            iter.next = function() {
+               if (this.iter2) {
+                  if (this.iter2.next()) {
+                     this.value = this.iter2.value;
+                     return true;
+                  }
+                  delete this.iter2;
+               }
+               if (!this.next0()) return false;
+               
+               this.value = this.func(this.value);
+               
+               if (this.CheckArrayPrototype(this.value)) {
+                  this.iter2 = new JSROOT.ArrayIterator(this.value);
+                  return this.next();
+               }
+               
+               return true;
+            }
+            return iter;
+         } else
+         if (expr.func) 
+            value = expr.func(value);
+      }
+
+      if ((typeof value === 'object') && !isNaN(value.length) && (value.length>0))
+         iter = new JSROOT.ArrayIterator(value);
+      else
+         iter = {
+             value: value, // always used in iterators
+             cnt: 1,
+             next: function() { return --this.cnt === 0; },
+             reset: function() { this.cnt = 1; }
+          };
+      
+      return iter;
+   }
+
+   JSROOT.TDrawSelector.prototype.Process = function(entry) {
+      
+      if (this.arr !== undefined) {
+         var firsttime = false;
+         
+         if (this.plain.length === 0) {
+            this.kind[0] = typeof this.tgtobj.br0;
+            this.plain[0] = !this.expr[0] && ((this.kind[0] == 'number') || (this.kind[0] == 'string'));
+            if (this.ndim===2) {
+               this.kind[1] = typeof this.tgtobj.br1;
+               this.plain[1] = !this.expr[1] && ((this.kind[1] == 'number') || (this.kind[1] == 'string'));
+            }
+            firsttime = true;
+         }
+         
+         if (this.ndim==1) {
+            if (this.plain[0]) {
+               this.arr.push(this.tgtobj.br0);
+            } else {
+               var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
+               while (iter.next()) 
+                  this.arr.push(iter.value);
+               if (firsttime) this.kind[0] = typeof iter.value;
+            }
+            
+         } else {
+            // only elementary branches in 2d for the moment
+         
+            if (this.plain[0] && this.plain[1]) {
+               this.arr.push(this.tgtobj.br0);
+               this.arr2.push(this.tgtobj.br1);
+            } else {
+               var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                   iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
+               
+               while (iter0.next()) {
+                  iter1.reset();
+                  while (iter1.next()) {
+                     this.arr.push(iter0.value);
+                     this.arr2.push(iter1.value);
+                  }
+               }
+               
+               if (firsttime) {
+                  this.kind[0] = typeof iter0.value;
+                  this.kind[1] = typeof iter1.value;
+               }
+            }
+         }
+         
+         if (this.arr.length > 10000) this.CreateHistogram();
+      } else
+      if (this.hist) {
+         if (this.ndim===2) {
+            if (this.plain[0] && this.plain[1]) {
+               this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
+            } else {
+               var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                   iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
+           
+               while (iter0.next()) {
+                  iter1.reset();
+                  while (iter1.next()) 
+                     this.Fill2DHistogram(iter0.value, iter1.value);
+               }
+            }
+         } else {
+            if (this.plain[0]) {
+               this.FillHistogram(this.tgtobj.br0);
+            } else {
+               var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
+               while (iter.next()) 
+                  this.FillHistogram(iter.value);
+            }
+         }
+      }
+   }
+   
+   JSROOT.TDrawSelector.prototype.ProcessArrays = function(entry) {
+      // process all branches as arrays
+      // works only for very limited number of cases with plain branches, but much faster
+      
+      if (this.arr !== undefined) {
+         for (var n=0;n<this.tgtarr.br0.length;++n)
+            this.arr.push(this.tgtarr.br0[n]);
+         if (this.ndim==2) 
+            for (var n=0;n<this.tgtarr.br1.length;++n)
+              this.arr2.push(this.tgtarr.br1[n]);
+         if (this.arr.length > 10000) this.CreateHistogram();
+      } else
+      if (this.hist) {
+         if (this.ndim==1) {
+            for (var n=0;n<this.tgtarr.br0.length;++n)
+               this.hist.Fill(this.tgtarr.br0[n]);
+         } else {
+            for (var n=0;n<this.tgtarr.br0.length;++n)
+               this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
+         }
+      }
+   }
+   
+   JSROOT.TDrawSelector.prototype.Terminate = function(res) {
+      if (res && !this.hist) this.CreateHistogram();
+      
+      this.ShowProgress();
+      
+      return JSROOT.CallBack(this.histo_callback, this.hist);
+   }
+
+   
+   // ======================================================================
    
    
    JSROOT.TTree = function(tree) {
@@ -545,328 +869,41 @@
       var names = expression ? expression.split(":") : [];
       if ((names.length < 1) || (names.length > 2))
          return JSROOT.CallBack(histo_callback, null);
-      
-      var br = [], expr = [], tree = this;
+
+      var selector = new JSROOT.TDrawSelector(histo_callback);
       
       for (var n=0;n<names.length;++n) {
-         br[n] = this.FindBranch(names[n], true);
-         if (!br[n]) {
+         var br = this.FindBranch(names[n], true);
+         if (!br) {
             console.log('Not found branch', names[n]);
             return JSROOT.CallBack(histo_callback, null);
          }
-         if (br[n].branch) {
-            
-            var rest = br[n].rest;
-            
-            console.log('Found branch ', br[n].branch.fName, ' with expression', rest);
-            
-            expr[n] = { arr: false, func: null, code: br[n].rest };
-            
-            if (rest.indexOf("[]")==0) { expr[n].arr = true; rest = rest.substr(2); }
-            
-            // ending [] has no meaning - iterator over all array elements done automatically
-            if (rest.indexOf("[]") === rest.length-2) rest = rest.substr(0,rest.length-2); 
-            
-            if (rest.length>0)
-               expr[n].func = new Function("func_var", "return func_var" + rest);
-            else
-               expr[n] = undefined; // without func no need to create special handling
-            
-            br[n] = br[n].branch;
-         }
          
-      }
-
-      var selector = new JSROOT.TSelector();
-      
-      selector.ndim = 1;
-      selector.hist = null;
-      selector.arr = [];
-      selector.AddBranch(br[0], "br0");
-      selector.expr = expr;
-      selector.plain = []; // is branches values can be used directly or need iterator or any other transformation
-      selector.kind = []; // is final value (after all iterators) is float, int or string
-      
-      if (names.length == 2) { 
-         selector.AddBranch(br[1], "br1");
-         selector.ndim = 2;
-         selector.arr2 = [];
-      } 
-      
-      selector.GetMinMaxBins = function(kind, arr, is_int, nbins) {
-         
-         var res = { min: 0, max: 0, nbins: nbins };
-         
-         if (!kind || !arr || (arr.length==0)) return res;
-         
-         if (kind === "string") {
-            res.lbls = []; // all labels
-            
-            for (var k=0;k<arr.length;++k) 
-               if (res.lbls.indexOf(arr[k])<0) 
-                  res.lbls.push(arr[k]);
-            
-            res.lbls.sort();
-            res.max = res.nbins = res.lbls.length;
-         } else {
-         
-            res.min = Math.min.apply(null, arr);
-            res.max = Math.max.apply(null, arr);
-
-            if (res.min>=res.max) {
-               res.max = res.min;
-               if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
-                  if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
-            } else
-            if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
-               res.min -= 1;
-               res.max += 2;
-               res.nbins = res.max - res.min;
-            } else {
-               res.max += (res.max-res.min)/res.nbins;
-            }
-         }
-         
-         res.k = res.nbins/(res.max-res.min);
-         
-         res.GetBin = function(value) {
-            var bin = this.lbls ? this.lbls.indexOf(value) : Math.floor((value-this.min)*this.k);
-            return (bin<0) ? 0 : ((bin>this.nbins) ? this.nbins+1 : bin+1); 
-         }
-
-         return res;
-      }
-      
-      selector.CreateHistogram = function() {
-         if (this.hist || !this.arr || this.arr.length==0) return;
-         
-         this.x = this.GetMinMaxBins(this.kind[0], this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200);
-         
-         this.y = this.GetMinMaxBins(this.kind[1], this.arr2, this.IsInteger(1), 50);
-         
-         this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
-         this.hist.fXaxis.fTitle = names[0];
-         this.hist.fXaxis.fXmin = this.x.min;
-         this.hist.fXaxis.fXmax = this.x.max;
-         if (this.x.lbls) {
-            this.hist.fXaxis.fLabels = JSROOT.Create("THashList");
-            for (var k=0;k<this.x.lbls.length;++k) {
-               var s = JSROOT.Create("TObjString");
-               s.fString = this.x.lbls[k];
-               s.fUniqueID = k+1;
-               if (s.fString === "") s.fString = "<empty>";
-               this.hist.fXaxis.fLabels.Add(s);
-            }
-         }
-         
-         if (this.ndim == 2) this.hist.fYaxis.fTitle = names[1];
-         this.hist.fYaxis.fXmin = this.y.min;
-         this.hist.fYaxis.fXmax = this.y.max;
-         if (this.y.lbls) {
-            this.hist.fYaxis.fLabels = JSROOT.Create("THashList");
-            for (var k=0;k<this.y.lbls.length;++k) {
-               var s = JSROOT.Create("TObjString");
-               s.fString = this.y.lbls[k];
-               s.fUniqueID = k+1;
-               if (s.fString === "") s.fString = "<empty>";
-               this.hist.fYaxis.fLabels.Add(s);
-            }
-         }
-         
-         this.hist.fName = "draw_" + names[0];
-         this.hist.fTitle = "drawing '" + expression + "' from " + tree.fName;
-         this.hist.$custom_stat = 111110;
-         
-         if (this.ndim==2)
-            for (var n=0;n<this.arr.length;++n) 
-               this.Fill2DHistogram(this.arr[n], this.arr2[n]);
+         if (br.branch) 
+            selector.AddDrawBranch(br.branch, br.rest, names[n]);
          else
-            for (var n=0;n<this.arr.length;++n) 
-               this.FillHistogram(this.arr[n]);
-         
-         delete this.arr;
-         delete this.arr2;
+            selector.AddDrawBranch(br, undefined, names[n]);
       }
       
-      selector.FillHistogram = function(xvalue) {
-         var bin = this.x.GetBin(xvalue);
-         
-         this.hist.fArray[bin] += 1;
-      }
-
-      selector.Fill2DHistogram = function(xvalue, yvalue) {
-         var xbin = this.x.GetBin(xvalue),
-             ybin = this.y.GetBin(yvalue);
-         
-         this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
-      }
-      
-      selector.CreateIterator = function(value, expr) {
-
-         if ((value===undefined) || (value===null))
-            return { next: function() { return false; }}
-
-         var iter = null; 
-         
-         if (expr) {
-            if (expr.arr && expr.func) {
-               // special case of array before func
-               
-               iter = new JSROOT.ArrayIterator(value);
-               
-               iter.next0 = iter.next;
-               iter.func = expr.func;
-               
-               iter.next = function() {
-                  if (this.iter2) {
-                     if (this.iter2.next()) {
-                        this.value = this.iter2.value;
-                        return true;
-                     }
-                     delete this.iter2;
-                  }
-                  if (!this.next0()) return false;
-                  
-                  this.value = this.func(this.value);
-                  
-                  if (this.CheckArrayPrototype(this.value)) {
-                     this.iter2 = new JSROOT.ArrayIterator(this.value);
-                     return this.next();
-                  }
-                  
-                  return true;
-               }
-               return iter;
-            } else
-            if (expr.func) 
-               value = expr.func(value);
-         }
-
-         if ((typeof value === 'object') && !isNaN(value.length) && (value.length>0))
-            iter = new JSROOT.ArrayIterator(value);
-         else
-            iter = {
-                value: value, // always used in iterators
-                cnt: 1,
-                next: function() { return --this.cnt === 0; },
-                reset: function() { this.cnt = 1; }
-             };
-         
-         return iter;
-      }
-
-      selector.Process = function(entry) {
-         // do something
-         
-         if (this.arr !== undefined) {
-            var firsttime = false;
-            
-            if (this.plain.length === 0) {
-               this.kind[0] = typeof this.tgtobj.br0;
-               this.plain[0] = !this.expr[0] && ((this.kind[0] == 'number') || (this.kind[0] == 'string'));
-               if (this.ndim===2) {
-                  this.kind[1] = typeof this.tgtobj.br1;
-                  this.plain[1] = !this.expr[1] && ((this.kind[1] == 'number') || (this.kind[1] == 'string'));
-               }
-               firsttime = true;
-            }
-            
-            if (this.ndim==1) {
-               if (this.plain[0]) {
-                  this.arr.push(this.tgtobj.br0);
-               } else {
-                  var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
-                  while (iter.next()) 
-                     this.arr.push(iter.value);
-                  if (firsttime) this.kind[0] = typeof iter.value;
-               }
-               
-            } else {
-               // only elementary branches in 2d for the moment
-            
-               if (this.plain[0] && this.plain[1]) {
-                  this.arr.push(this.tgtobj.br0);
-                  this.arr2.push(this.tgtobj.br1);
-               } else {
-                  var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
-                      iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
-                  
-                  while (iter0.next()) {
-                     iter1.reset();
-                     while (iter1.next()) {
-                        this.arr.push(iter0.value);
-                        this.arr2.push(iter1.value);
-                     }
-                  }
-                  
-                  if (firsttime) {
-                     this.kind[0] = typeof iter0.value;
-                     this.kind[1] = typeof iter1.value;
-                  }
-               }
-            }
-            
-            if (this.arr.length > 10000) this.CreateHistogram();
-         } else
-         if (this.hist) {
-            if (this.ndim===2) {
-               if (this.plain[0] && this.plain[1]) {
-                  this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
-               } else {
-                  var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
-                      iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
-              
-                  while (iter0.next()) {
-                     iter1.reset();
-                     while (iter1.next()) 
-                        this.Fill2DHistogram(iter0.value, iter1.value);
-                  }
-               }
-            } else {
-               if (this.plain[0]) {
-                  this.FillHistogram(this.tgtobj.br0);
-               } else {
-                  var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
-                  while (iter.next()) 
-                     this.FillHistogram(iter.value);
-               }
-            }
-         }
-      }
-      
-      selector.ProcessArrays = function(entry) {
-         // process all branches as arrays
-         // works only for very limited number of cases with plain branches, but much faster
-         
-         if (this.arr !== undefined) {
-            for (var n=0;n<this.tgtarr.br0.length;++n)
-               this.arr.push(this.tgtarr.br0[n]);
-            if (this.ndim==2) 
-               for (var n=0;n<this.tgtarr.br1.length;++n)
-                 this.arr2.push(this.tgtarr.br1[n]);
-            if (this.arr.length > 10000) this.CreateHistogram();
-         } else
-         if (this.hist) {
-            if (this.ndim==1) {
-               for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n]);
-            } else {
-               for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
-            }
-         }
-      }
-      
-      selector.Terminate = function(res) {
-         if (res && !this.hist) this.CreateHistogram();
-         
-         this.ShowProgress();
-         
-         return JSROOT.CallBack(histo_callback, this.hist);
-      }
+      selector.hist_title = "drawing '" + expression + "' from " + this.fName;
       
       return this.Process(selector, opt, nentries, firstentry);
    }
+
+   JSROOT.TTree.prototype.DrawBranch = function(branch, expr, opt, nentries, firstentry, histo_callback) {
+      // this is JSROOT implementaion of TTree::Draw
+      // in callback returns histogram
+      
+      var selector = new JSROOT.TDrawSelector(histo_callback);
+      
+      selector.AddDrawBranch(branch, expr, branch.fName);
+      
+      selector.hist_title = "drawing '" + branch.fName + "' from " + this.fName;
+      
+      return this.Process(selector, opt, nentries, firstentry);
+   }
+
+   
 
    return JSROOT;
 
