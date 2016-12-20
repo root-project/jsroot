@@ -226,9 +226,6 @@
                  if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
                  elem = s_i.fElements.arr[leaf.fID];
                  
-                 console.log('Serach streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum);
-                 
-                 console.log('find element', elem);
                  break;
               }
             }
@@ -277,8 +274,6 @@
          // set name used to store result
          member.name = selector.names[nn];
 
-         console.log('Create member ', member);
-         
          handle.arr.push({
             branch: branch,
             name: selector.names[nn],
@@ -569,7 +564,8 @@
             
             if (rest.indexOf("[]")==0) { expr[n].arr = true; rest = rest.substr(2); }
             
-            console.log('Create func ', rest);
+            // ending [] has no meaning - iterator over all array elements done automatically
+            if (rest.indexOf("[]") === rest.length-2) rest = rest.substr(0,rest.length-2); 
             
             if (rest.length>0)
                expr[n].func = new Function("func_var", "return func_var" + rest);
@@ -722,8 +718,22 @@
                iter.func = expr.func;
                
                iter.next = function() {
+                  if (this.iter2) {
+                     if (this.iter2.next()) {
+                        this.value = this.iter2.value;
+                        return true;
+                     }
+                     delete this.iter2;
+                  }
                   if (!this.next0()) return false;
+                  
                   this.value = this.func(this.value);
+                  
+                  if (this.CheckArrayPrototype(this.value)) {
+                     this.iter2 = new JSROOT.ArrayIterator(this.value);
+                     return this.next();
+                  }
+                  
                   return true;
                }
                return iter;
