@@ -534,7 +534,7 @@
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              datakind = 0, arrsize = 1, elem = null;
       
-         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName)===0)) )
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName)) {
             switch (leaf._typename) {
               case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
               case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
@@ -553,6 +553,10 @@
                  break;
               }
             }
+         } else
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && (leaf.fType === JSROOT.IO.kSTL)) {
+            datakind = JSROOT.IO.kInt;
+         }
     
          if (datakind > 0) {
             elem = JSROOT.IO.CreateStreamerElement("temporary", "int");
@@ -563,7 +567,7 @@
          }
          
          if (!elem) {
-            console.log('Not supported branch kinds', branch.fName);
+            console.log('Not supported branch kinds', branch.fName, leaf._typename);
             selector.Terminate(false);
             return false;
          }
