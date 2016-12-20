@@ -84,6 +84,11 @@
       this.value = 0; // value always used in iterator
    }
    
+   JSROOT.ArrayIterator.prototype.CheckArrayPrototype = function(arr) {
+      var proto = Object.prototype.toString.apply(arr);
+      return (proto.indexOf('[object')===0) && (proto.indexOf('Array]')>0);
+   }
+   
    JSROOT.ArrayIterator.prototype.next = function() {
       var cnt = 0;
       
@@ -107,23 +112,19 @@
       
       while (true) {
       
-         var obj = this.arr[cnt][this.indx[cnt]],
+         var obj = (this.arr[cnt])[this.indx[cnt]],
              typ = typeof obj; 
          
-         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0)) {
+         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && this.CheckArrayPrototype(obj)) {
             cnt++;
             this.arr[cnt] = obj;
             this.indx[cnt] = 0;
-         } else 
-         if ((typ === "number") || (typ === "boolean")) {
+         } else {
             this.value = obj;
             this.fastarr = this.arr[cnt];
             this.fastindx = this.indx[cnt];
             return true;
-         } else {
-            console.log('did not found match in array iterator');
-            return false; 
-         }
+         } 
       }
       
       return false;
@@ -224,6 +225,10 @@
                  if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
                  if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
                  elem = s_i.fElements.arr[leaf.fID];
+                 
+                 console.log('Serach streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum);
+                 
+                 console.log('find element', elem);
                  break;
               }
             }
@@ -272,6 +277,8 @@
          // set name used to store result
          member.name = selector.names[nn];
 
+         console.log('Create member ', member);
+         
          handle.arr.push({
             branch: branch,
             name: selector.names[nn],
@@ -420,7 +427,7 @@
 
                      // try to read next portion of tree data
                      return ReadNextBaskets();
-                   }
+                  }
 
                   elem.raw = basket.raw;
                   elem.basket = basket;
@@ -434,6 +441,8 @@
                   elem.baskets[elem.curr_basket++] = null; // remove reference
                }
             }
+            
+            // numentries = 10; // only for debug
             
             // second loop extracts all required data
             
@@ -475,6 +484,8 @@
                   isanyprocessed = true;
                }
             }
+            
+            // return handle.selector.Terminate(true); // only for debug to process single basket
          }
       }
       
@@ -488,7 +499,9 @@
       // if complex enabled, search branch and rest part
       
       function Find(lst, name) {
-         var search = name, dot = name.indexOf("."), br = null;
+         var search = name, br = null, 
+             dot = name.indexOf("."), arr = name.indexOf("[]"),
+             pos = (dot<0) ? arr : ((arr<0) ? dot : Math.min(dot,arr));
          
          for (var loop=0;loop<2;++loop) {
          
@@ -503,22 +516,26 @@
                }
             }
             
-            if (br || (dot <= 0)) break; 
+            if (br || (pos<=0)) break; 
             
             // first loop search complete name, second loop - only first part
-            search = name.substr(0, dot);
+            search = name.substr(0, pos);
          }
          
-         if (!br || (dot <= 0) || (dot === name.length-1)) return br;
+         if (!br || (pos <= 0) || (pos === name.length-1)) return br;
          
-         var res = Find(br.fBranches, name.substr(dot+1));
+         var res = null;
          
-         // special case if next-level branch has name parent_branch.next_branch 
-         if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
-            res = Find(br.fBranches, br.fName + name.substr(dot));
+         if (dot>0) {
+            res = Find(br.fBranches, name.substr(dot+1));
+            // special case if next-level branch has name parent_branch.next_branch 
+            if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
+               res = Find(br.fBranches, br.fName + name.substr(dot));
+         }
+         
 
          // when allowed, return find branch with rest part
-         if (!res && complex) return { branch: br, rest: name.substr(dot) };
+         if (!res && complex) return { branch: br, rest: name.substr(pos) };
          
          return res;
       }
@@ -526,11 +543,11 @@
       return Find(this.fBranches, branchname);
    }
    
-   JSROOT.TTree.prototype.Draw = function(expr, cut, opt, nentries, firstentry, histo_callback) {
+   JSROOT.TTree.prototype.Draw = function(expression, cut, opt, nentries, firstentry, histo_callback) {
       // this is JSROOT implementaion of TTree::Draw
       // in callback returns histogram
       
-      var names = expr ? expr.split(":") : [];
+      var names = expression ? expression.split(":") : [];
       if ((names.length < 1) || (names.length > 2))
          return JSROOT.CallBack(histo_callback, null);
       
@@ -543,8 +560,22 @@
             return JSROOT.CallBack(histo_callback, null);
          }
          if (br[n].branch) {
-            console.log('Found branch ', br[n].branch.fName, ' with expression', br[n].rest);
-            expr[n] = new Function("func_var", "return func_var" + br[n].rest); 
+            
+            var rest = br[n].rest;
+            
+            console.log('Found branch ', br[n].branch.fName, ' with expression', rest);
+            
+            expr[n] = { arr: false, func: null, code: br[n].rest };
+            
+            if (rest.indexOf("[]")==0) { expr[n].arr = true; rest = rest.substr(2); }
+            
+            console.log('Create func ', rest);
+            
+            if (rest.length>0)
+               expr[n].func = new Function("func_var", "return func_var" + rest);
+            else
+               expr[n] = undefined; // without func no need to create special handling
+            
             br[n] = br[n].branch;
          }
          
@@ -647,7 +678,7 @@
          }
          
          this.hist.fName = "draw_" + names[0];
-         this.hist.fTitle = "drawing '" + expr + "' from " + tree.fName;
+         this.hist.fTitle = "drawing '" + expression + "' from " + tree.fName;
          this.hist.$custom_stat = 111110;
          
          if (this.ndim==2)
@@ -673,18 +704,35 @@
          
          this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
       }
-
       
       selector.CreateIterator = function(value, expr) {
 
          if ((value===undefined) || (value===null))
             return { next: function() { return false; }}
-         
-         if (expr) value = expr(value);
-         
-         var typ = typeof value, iter = null; 
 
-         if ((typ === 'object') && !isNaN(value.length) && (value.length>0))
+         var iter = null; 
+         
+         if (expr) {
+            if (expr.arr && expr.func) {
+               // special case of array before func
+               
+               iter = new JSROOT.ArrayIterator(value);
+               
+               iter.next0 = iter.next;
+               iter.func = expr.func;
+               
+               iter.next = function() {
+                  if (!this.next0()) return false;
+                  this.value = this.func(this.value);
+                  return true;
+               }
+               return iter;
+            } else
+            if (expr.func) 
+               value = expr.func(value);
+         }
+
+         if ((typeof value === 'object') && !isNaN(value.length) && (value.length>0))
             iter = new JSROOT.ArrayIterator(value);
          else
             iter = {
