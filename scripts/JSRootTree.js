@@ -598,7 +598,7 @@
             var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL;
             
             if (count_stl) {
-               console.log('introduce special handling with STL size');
+               console.log('introduce special handling with STL size', elem.fType);
                
                // special handling of simple arrays
                if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString)) {
@@ -939,6 +939,27 @@
    JSROOT.TTree.prototype.DrawBranch = function(branch, expr, opt, nentries, firstentry, histo_callback) {
       // this is JSROOT implementaion of TTree::Draw
       // in callback returns histogram
+      
+      if (expr == "dump") {
+         var selector = new JSROOT.TSelector;
+
+         selector.arr = []; // accumulate here
+         
+         selector.AddBranch(branch, "br0");
+         
+         selector.Process = function() {
+            this.arr.push(this.tgtobj.br0);
+         }
+         
+         selector.Terminate = function(res) {
+            JSROOT.CallBack(histo_callback, this.arr);
+         }
+         
+         if (!nentries) nentries = 100;
+         
+         return this.Process(selector, opt, nentries, firstentry);
+      }
+      
       
       var selector = new JSROOT.TDrawSelector(histo_callback);
       

@@ -8685,7 +8685,9 @@
          t.DrawBranch(branch, opt, undefined, undefined, undefined, function(histo) {
             if (!histo) return painter.DrawingReady();
             
-            var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
+            var histopt = "";
+            if (opt === "dump") histopt = "inspect"; else
+            if (histo._typename && histo._typename.indexOf("TH2")==0) histopt = "col"; 
 
             JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
          });
