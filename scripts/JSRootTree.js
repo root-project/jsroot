@@ -534,7 +534,7 @@
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              datakind = 0, arrsize = 1, elem = null;
       
-         if ((nb_leaves === 1) && (leaf.fName === branch.fName)) {
+         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0))) {
             switch (leaf._typename) {
               case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
               case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;

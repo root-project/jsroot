@@ -10997,7 +10997,7 @@
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawBranch, dflt: "expand" });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawBranch, dflt: "expand", opt: ";dump" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
