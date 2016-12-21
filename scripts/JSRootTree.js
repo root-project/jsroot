@@ -574,9 +574,10 @@
 
          // just intermediate solution
          selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
+         
+         var member = JSROOT.IO.CreateMember(elem, this.$file);
 
          // this element used to read branch value
-         var member = JSROOT.IO.CreateMember(elem, this.$file);
          if (!member || !member.func) {
             console.log('Not supported branch kinds', branch.fName);
             selector.Terminate(false);
@@ -584,20 +585,50 @@
          }
          
          if (branch.fBranchCount) {
+            var count_indx = selector.branches.indexOf(branch.fBranchCount);
             
-            var indx = selector.branches.indexOf(branch.fBranchCount);
-            
-            if (indx<0) {
-               console.log('Not found fBranchCount', branch.fBranchCount.fName);
+            if (count_indx<0) {
+               console.log('Not found fBranchCount in the list', branch.fBranchCount.fName);
                selector.Terminate(false);
                return false;
             }
-            
-            // we specify that counter read as additional data member of target object 
-            member.cntname = selector.names[indx];
-            
+
             selector.process_arrays = false;
+
+            var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL;
+            
+            if (count_stl) {
+               console.log('introduce special handling with STL size');
+               
+               // special handling of simple arrays
+               // if ((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL))
+               
+               member.name = "$stl_member";
+               
+               var stlmember = {
+                   name: selector.names[nn],
+                   cntname: selector.names[count_indx],
+                   member0: member,
+                   func: function(buf, obj) {
+                       var cnt = obj[this.cntname], arr = new Array(cnt), n = 0;
+                       for (;n<cnt;++n) {
+                          this.member0.func(buf, obj);
+                          arr[n] = obj.$stl_member;
+                       }
+                       delete obj.$stl_member;
+                       obj[this.name] = arr;
+                   }
+               };
+               
+               member = stlmember;
+               
+            } else {
+               if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
+               member.cntname = selector.names[count_indx];
+            }
+
          }
+
          
          // set name used to store result
          member.name = selector.names[nn];
