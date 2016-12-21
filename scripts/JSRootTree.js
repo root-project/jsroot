@@ -601,26 +601,37 @@
                console.log('introduce special handling with STL size');
                
                // special handling of simple arrays
-               // if ((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL))
+               if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString)) {
+                  member = {
+                     name: selector.names[nn],
+                     stl_size: selector.names[count_indx],
+                     type: elem.fType,
+                     func: function(buf, obj) {
+                        obj[this.name] = buf.ReadFastArray(obj[this.stl_size], this.type);
+                     }
+                  };
+                  
+               } else {
                
-               member.name = "$stl_member";
-               
-               var stlmember = {
-                   name: selector.names[nn],
-                   cntname: selector.names[count_indx],
-                   member0: member,
-                   func: function(buf, obj) {
-                       var cnt = obj[this.cntname], arr = new Array(cnt), n = 0;
-                       for (;n<cnt;++n) {
-                          this.member0.func(buf, obj);
-                          arr[n] = obj.$stl_member;
-                       }
-                       delete obj.$stl_member;
-                       obj[this.name] = arr;
-                   }
-               };
-               
-               member = stlmember;
+                  member.name = "$stl_member";
+
+                  var stlmember = {
+                        name: selector.names[nn],
+                        stl_size: selector.names[count_indx],
+                        member0: member,
+                        func: function(buf, obj) {
+                           var cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
+                           for (;n<cnt;++n) {
+                              this.member0.func(buf, obj);
+                              arr[n] = obj.$stl_member;
+                           }
+                           delete obj.$stl_member;
+                           obj[this.name] = arr;
+                        }
+                  };
+
+                  member = stlmember;
+               }
                
             } else {
                if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
