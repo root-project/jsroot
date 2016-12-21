@@ -10551,7 +10551,8 @@
          for ( var l = 0; l < entry.fElements.arr.length; ++l) {
             var elem = entry.fElements.arr[l];
             if (!elem || !elem.fName) continue;
-            var info = elem.fTypeName + " " + elem.fName;
+            var info = elem.fTypeName + " " + elem.fName, 
+                title = elem.fTypeName + " type:" + elem.fType;
             if (elem.fArrayDim===1)
                info += "[" + elem.fArrayLength + "]";
             else
@@ -10562,7 +10563,7 @@
             info += ";";
             if (elem.fTitle != '') info += " // " + elem.fTitle;
                                  
-            item._childs.push({ _name : info, _title: elem.fTypeName, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
+            item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
          if (item._childs.length == 0) delete item._childs;
       }

@@ -770,7 +770,7 @@
          
          while(true) {
          
-            var numentries = 1;
+            var loopentries = 1;
             
             // firt loop used to check if all required data exists
             for (var n=0;n<handle.arr.length;++n) {
@@ -799,8 +799,8 @@
                   elem.nev = 0;
                   
                   if (handle.simple_read) {
-                     if (n==0) numentries = basket.fNevBuf; else
-                     if (numentries != basket.fNevBuf) { console.log('missmatch entries in simple mode', numentries, basket.fNevBuf); numentries = 1;  }   
+                     if (n==0) loopentries = basket.fNevBuf; else
+                     if (loopentries != basket.fNevBuf) { console.log('missmatch entries in simple mode', loopentries, basket.fNevBuf); loopentries = 1;  }   
                   }
 
                   elem.baskets[elem.curr_basket++] = null; // remove reference
@@ -811,27 +811,31 @@
             
             // second loop extracts all required data
             
-            if (handle.process_arrays && (numentries>1)) {
+            // do not read too much
+            if (handle.current_entry + loopentries > handle.numentries) 
+               loopentries = handle.numentries - handle.current_entry; 
+            
+            if (handle.process_arrays && (loopentries>1)) {
                // special case - read all data from baskets as arrays
 
                for (var n=0;n<handle.arr.length;++n) {
                   var elem = handle.arr[n];
-                  elem.arrmember.arrlength = numentries;
+                  elem.arrmember.arrlength = loopentries;
 
                   elem.arrmember.func(elem.raw, handle.selector.tgtarr);
 
-                  elem.nev += numentries;
+                  elem.nev += loopentries;
                   
                   elem.raw = elem.basket = null;
                }
 
                handle.selector.ProcessArrays(handle.current_entry);
 
-               handle.current_entry += numentries; 
+               handle.current_entry += loopentries; 
 
                isanyprocessed = true;
             } else {
-               for (var e=0;e<numentries;++e) {
+               for (var e=0;e<loopentries;++e) {
                   for (var n=0;n<handle.arr.length;++n) {
                      var elem = handle.arr[n];
 
@@ -850,7 +854,8 @@
                }
             }
             
-            // return handle.selector.Terminate(true); // only for debug to process single basket
+            if (handle.current_entry >= handle.numentries)
+                return handle.selector.Terminate(true); 
          }
       }
       
@@ -952,10 +957,11 @@
          }
          
          selector.Terminate = function(res) {
+            this.ShowProgress();
             JSROOT.CallBack(histo_callback, this.arr);
          }
          
-         if (!nentries) nentries = 100;
+         if (!nentries) nentries = 10;
          
          return this.Process(selector, opt, nentries, firstentry);
       }
