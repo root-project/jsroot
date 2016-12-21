@@ -498,32 +498,45 @@
       
       // check all branches with counters and add it to list of read branches
       
+      var cnt_br = [], cnt_names = [];
+      
       for (var nn = 0; nn < selector.branches.length; ++nn) {
-         var branch = selector.branches[nn],
-             brcnt = branch.fBranchCount;
+         var branch = selector.branches[nn];
          
-         if (!brcnt) continue;
+         for (var loop = 0; loop<2; ++loop) {
          
-         var indx = selector.branches.indexOf(brcnt), cntname = "";
-         if (indx > nn) { 
-            console.log('Should not happen - count branch after depend branch');
-            cntname = selector.names[indx];
-            selector.branches.splice(indx, 1);
-            selector.names.splice(indx, 1);
-            indx = -1;
+            var brcnt = loop === 0 ? branch.fBranchCount : branch.fBranchCount2;
+            if (!brcnt) continue;
+
+            var indx = selector.branches.indexOf(brcnt), cntname = "";
+            if (indx > nn) { 
+               console.log('Should not happen - count branch after depend branch');
+               cntname = selector.names[indx];
+               selector.branches.splice(indx, 1);
+               selector.names.splice(indx, 1);
+               indx = -1;
+            }
+
+            if ((indx < 0) && (cnt_br.indexOf(brcnt)<0)) {
+               if (cntname.length===0)
+                  for (var d=0;d<selector.branches.length*10;++d) {
+                     cntname = "counter" + d;
+                     if ((selector.names.indexOf(cntname) < 0) && (cnt_names.indexOf(cntname) < 0)) break;
+                  }
+
+               console.log('Add counter branch ', brcnt.fName, ' with member name ', cntname);
+               cnt_br.push(brcnt);
+               cnt_names.push(cntname);
+               //selector.branches.unshift(brcnt);
+               //selector.names.unshift(cntname);
+            }
          }
-         
-         if (indx < 0) {
-            if (cntname.length===0)
-               for (var d=0;d<selector.branches.length*10;++d) {
-                  cntname = "counter" + d;
-                  if (selector.names.indexOf(cntname) < 0) break;
-               }
-            
-            console.log('Add counter branch with name ', cntname);
-            selector.branches.unshift(brcnt);
-            selector.names.unshift(cntname);
-         }
+      }
+      
+      if (cnt_br.length>0) {
+         // ensure that counters read in proper order and before normal branches
+         selector.branches = cnt_br.concat(selector.branches);
+         selector.names = cnt_names.concat(selector.names);
       }
       
       for (var nn = 0; nn < selector.branches.length; ++nn) {
@@ -598,10 +611,12 @@
             var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL;
             
             if (count_stl) {
-               console.log('introduce special handling with STL size', elem.fType);
+               // console.log('introduce special handling with STL size', elem.fType);
                
                // special handling of simple arrays
-               if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString)) {
+               if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
+                   (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
+                  
                   member = {
                      name: selector.names[nn],
                      stl_size: selector.names[count_indx],
@@ -611,7 +626,21 @@
                      }
                   };
                   
+                  if (branch.fBranchCount2) {
+                     member.type -= JSROOT.IO.kOffsetP;  
+                     var count2_indx = selector.branches.indexOf(branch.fBranchCount2);
+                     member.arr_size = selector.names[count2_indx];
+                     member.func = function(buf, obj) {
+                        var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                        for (var n=0;n<sz0;++n) 
+                           arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) :  [];
+                        obj[this.name] = arr;
+                     }
+                  }
+                  
                } else {
+                  
+                  if (branch.fBranchCount2) throw new Error('Second branch counter not used - very BAD');
                
                   member.name = "$stl_member";
 

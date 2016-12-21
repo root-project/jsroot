@@ -303,6 +303,7 @@
             while (i < n) array[i++] = this.ntou8();
             break;
          case JSROOT.IO.kInt:
+         case JSROOT.IO.kCounter:   
             array = JSROOT.IO.NativeArray ? new Int32Array(n) : new Array(n);
             while (i < n) array[i++] = this.ntoi4();
             break;
@@ -791,6 +792,7 @@
                array[i] = this.ntou8();
             return array; // exit here to avoid conflicts
          case JSROOT.IO.kInt:
+         case JSROOT.IO.kCounter:
             array = new Int32Array(n);
             for (; i < n; ++i, o+=4)
                array[i] = view.getInt32(o);
