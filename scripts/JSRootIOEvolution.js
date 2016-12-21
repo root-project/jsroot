@@ -534,7 +534,7 @@
    JSROOT.TBuffer.prototype.ReadObjectAny = function() {
       var objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
           clRef = this.ReadClass();
-
+      
       // class identified as object and should be handled so
       if ('objtag' in clRef)
          return this.GetMappedObject(clRef.objtag);
@@ -1321,6 +1321,8 @@
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
                if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, file);
+               
+               if (basket.raw) basket.raw.fTagOffset = basket.fKeylen; 
             }
 
             baskets.push(basket);
@@ -1978,7 +1980,7 @@
                   (element.fSTLtype === JSROOT.IO.kSTLmultiset) ||
                   (element.fSTLtype === JSROOT.IO.kSTLmultiset + 40)) {
                  var p1 = member.typename.indexOf("<"),
-                 p2 = member.typename.lastIndexOf(">");
+                     p2 = member.typename.lastIndexOf(">");
 
                  member.conttype = member.typename.substr(p1+1,p2-p1-1);
 
@@ -2001,9 +2003,6 @@
                     if (element.fCtype === JSROOT.IO.kObjectp) member.isptr = true;
 
                     member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
-
-                    //member.testsplit = !member.isptr && (member.arrkind < 0) &&
-                    //                    (element.fCtype === JSROOT.IO.kObject);
 
                     member.readelem = JSROOT.IO.ReadVectorElement;
                  }
@@ -2501,7 +2500,7 @@
          if (ver.val<=0) ver.checksum = buf.ntou4();
          
          var streamer = buf.fFile.GetStreamer(this.conttype, ver);
-
+         
          streamer = buf.fFile.GetSplittedStreamer(streamer);
 
          if (streamer) {
