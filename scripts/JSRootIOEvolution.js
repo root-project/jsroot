@@ -1967,6 +1967,21 @@
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
+               member.branch_func = function(buf,obj) {
+                  // this is special functions, used by branch in the STL container
+                  var ver = buf.ReadVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
+                  for (var loop0=0;loop0<sz0;++loop0) {
+                     var cnt = obj[this.cntname][loop0];
+                     res[loop0] = buf.ReadNdimArray(this, function(buf2,member2) {
+                         var itemarr = new Array(cnt);
+                         for (var i = 0; i < cnt; ++i )
+                            itemarr[i] = member2.readitem(buf2);
+                         return itemarr;
+                     });
+                  }
+                  if (!buf.CheckBytecount(ver, this.typename)) res = null;
+                  obj[this.name] = res;
+               }
             } else {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
                member.func = function(buf,obj) {

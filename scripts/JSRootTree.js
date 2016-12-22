@@ -20,8 +20,8 @@
 
    JSROOT.TSelector = function() {
       // class to read data from TTree
-      this.branches = []; // list of reading structures
-      this.names = []; // list of names for each branch
+      this.branches = []; // list of branches to read
+      this.names = []; // list of member names for each branch in tgtobj
       this.is_integer = []; // array of 
       this.break_execution = 0;
       this.tgtobj = {};
@@ -680,7 +680,20 @@
                   // this is supported in original reader
                   member.stl_size = selector.names[count_indx]; 
                   
-               } else {
+               } else 
+               if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
+                  // special solution for kStreamLoop
+                  
+                  var brcnt = branch.fBranchCount2 || branch.$specialCount;
+                  if (!brcnt) throw new Error('Missing second count branch for kStreamLoop ' + branch.fName);
+                  
+                  delete branch.$specialCount;
+                  
+                  member.stl_size = selector.names[count_indx];
+                  member.cntname = selector.names[selector.branches.indexOf(brcnt)];
+                  member.func = member.branch_func; // this is special function, provided by base I/O
+                  
+               } else  {
                   
                   member.name = "$stl_member";
 
