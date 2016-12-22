@@ -8835,7 +8835,7 @@
          } else
          if (typeof fld == 'string') {
             simple = true;
-            item._value = '"' + fld + '"';
+            item._value = '&quot;' + fld.replace(/\&/g, '&amp;').replace(/\"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '&quot;';
             item._vclass = 'h_value_str';
          } else {
             simple = true;
