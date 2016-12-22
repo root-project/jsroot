@@ -505,7 +505,25 @@
          
          for (var loop = 0; loop<2; ++loop) {
          
-            var brcnt = loop === 0 ? branch.fBranchCount : branch.fBranchCount2;
+            var brcnt = (loop === 0) ? branch.fBranchCount : branch.fBranchCount2;
+            
+            if ((loop === 1) && !brcnt && branch.fBranchCount && (branch.fBranchCount.fStreamerType===JSROOT.IO.kSTL) && 
+                ((branch.fStreamerType === JSROOT.IO.kStreamLoop) || (branch.fStreamerType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop))) {
+               // special case when count member from kStreamLoop not assigned as fBranchCount2  
+               var s_i = this.$file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum),
+                   elem = s_i ? s_i.fElements.arr[branch.fID] : null,
+                   arr = branch.fBranchCount.fBranches.arr  ;
+
+               if (elem && elem.fCountName && arr) 
+                  for(var k=0;k<arr.length;++k) 
+                     if (arr[k].fName === branch.fBranchCount.fName + "." + elem.fCountName) {
+                        branch.$specialCount = brcnt = arr[k];
+                        break;
+                     }
+
+               if (!brcnt) console.error('Did not found branch for second counter of kStreamLoop element');
+            }  
+            
             if (!brcnt) continue;
 
             var indx = selector.branches.indexOf(brcnt), cntname = "";
@@ -640,21 +658,34 @@
                   
                } else {
                   
-                  if (branch.fBranchCount2) throw new Error('Second branch counter not used - very BAD');
-               
                   member.name = "$stl_member";
+
+                  var brcnt = branch.fBranchCount2 || branch.$specialCount, loop_size_name;
+
+                  if (brcnt) {
+                     delete branch.$specialCount;
+                     if (member.cntname) { 
+                        loop_size_name = selector.names[selector.branches.indexOf(brcnt)];
+                        member.cntname = "$loop_size";
+                     } else {
+                        throw new Error('Second branch counter not used - very BAD');
+                     }
+                  }
 
                   var stlmember = {
                         name: selector.names[nn],
                         stl_size: selector.names[count_indx],
+                        loop_size: loop_size_name,
                         member0: member,
                         func: function(buf, obj) {
                            var cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
-                           for (;n<cnt;++n) {
+                           for (var n=0;n<cnt;++n) {
+                              if (this.loop_size) obj.$loop_size = obj[this.loop_size][n]; 
                               this.member0.func(buf, obj);
                               arr[n] = obj.$stl_member;
                            }
                            delete obj.$stl_member;
+                           delete obj.$loop_size;
                            obj[this.name] = arr;
                         }
                   };

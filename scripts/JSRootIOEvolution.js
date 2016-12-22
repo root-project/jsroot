@@ -1309,7 +1309,7 @@
 
             var basket = {}, blob = (places.length > 2) ? blobs[n/2] : blobs;
 
-            var buf = JSROOT.CreateTBuffer(blob);
+            var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
             buf.ReadTBasket(basket);
 
@@ -1318,6 +1318,7 @@
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                // use data from original blob
                basket.raw = buf;
+               
             } else {
                // unpack data and create new blob
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
@@ -1407,7 +1408,7 @@
             if (objbuf==null) return callback(null);
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
-
+         
          buf.fTagOffset = key.fKeylen;
 
          callback(buf);
@@ -1939,7 +1940,6 @@
             if (member.readitem !== undefined) {
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion(), cnt = obj[this.cntname];
-
                   var res = buf.ReadNdimArray(this, function(buf2,member2) {
                      var itemarr = new Array(cnt);
                      for (var i = 0; i < cnt; ++i )
