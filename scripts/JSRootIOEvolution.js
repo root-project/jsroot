@@ -237,7 +237,8 @@
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where!=null)
-            alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
+            // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
+            console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
          this.o = ver.off + ver.bytecnt;
          return false;
       }
@@ -1623,6 +1624,21 @@
 
       return this.ReadObject(dir_name, cycle, readdir_callback);
    };
+   
+   JSROOT.TestLeaves = function(obj) {
+      if (!obj || !obj.fBranches) return 0;
+      
+      var cnt = 0;
+      
+      for (var n=0;n<obj.fBranches.arr.length;++n) {
+         var br = obj.fBranches.arr[n];
+         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
+         if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
+         cnt += JSROOT.TestLeaves(br);
+      }
+      
+      return cnt;
+   }
 
    JSROOT.TFile.prototype.AddMethods = function(clname, streamer) {
       // create additional entries in the streamer, which sets all methods of the class
@@ -1632,7 +1648,7 @@
       if (clname == "TTree") 
          streamer.push({
             name: "$file",
-            func: function(buf,obj) { obj[this.name] = buf.fFile; }
+            func: function(buf,obj) { obj[this.name] = buf.fFile; console.log('Reading tree', obj.fName, 'leavs', JSROOT.TestLeaves(obj)); }
           });
 
       var methods = JSROOT.getMethods(clname);
@@ -2076,6 +2092,7 @@
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                  if (this.stl_size) this.fMaxIndex[0] = obj[this.stl_size]; // special case of branch data
                   var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;

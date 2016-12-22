@@ -648,6 +648,28 @@
                      }
                   }
                   
+               } else 
+               if (elem.fType == JSROOT.IO.kStreamer) {
+                  // with streamers one need to extend existing array
+                  
+                  if (branch.fBranchCount2)
+                     throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+                  
+                  if ((member.fArrayDim<=0) && (member.fArrayLength>0)) {
+                     member.fArrayDim = 1; 
+                     member.fMaxIndex = [member.fArrayLength];
+                  }
+                  
+                  console.log('Special case ', member.fArrayDim, 'indexes', member.fMaxIndex);
+                  
+                  member.fArrayDim++;
+                  var newmanindx = new Array(member.fArrayDim);
+                  newmanindx[0] = 1; // fictional, should be replaced with obj[this.stl_size]
+                  for (var n=1;n<member.fArrayDim;++n) newmanindx[n] = member.fMaxIndex[n-1];
+                  member.fMaxIndex = newmanindx; 
+                  // this is supported in original reader
+                  member.stl_size = selector.names[count_indx]; 
+                  
                } else {
                   
                   member.name = "$stl_member";
@@ -689,9 +711,7 @@
                if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
                member.cntname = selector.names[count_indx];
             }
-
          }
-
          
          // set name used to store result
          member.name = selector.names[nn];
