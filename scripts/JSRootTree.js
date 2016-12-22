@@ -114,7 +114,7 @@
       while (true) {
       
          var obj = (this.arr[cnt])[this.indx[cnt]],
-             typ = typeof obj; 
+             typ = obj ? typeof obj : "any"; 
          
          if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && this.CheckArrayPrototype(obj)) {
             cnt++;
@@ -561,12 +561,12 @@
              datakind = 0, elem = null;
       
          if ((nb_leaves === 1) && (leaf.fName === branch.fName) && (branch._typename==="TBranchElement") && (branch.fID==-1)) {
-            console.log('special classname', branch.fClassName);
+            console.log('standalone (without class) typename', branch.fClassName);
             
-            var elem = JSROOT.IO.CreateStreamerElement("temporary", branch.fClassName)
+            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
 
             // only STL containers here
-            if (!elem.fSTLtype) elem = null;
+            // if (!elem.fSTLtype) elem = null;
          } else
          if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && (leaf.fType === JSROOT.IO.kSTL)) {
             datakind = JSROOT.IO.kInt; // this is counter from STL containers
@@ -596,7 +596,7 @@
          } 
     
          if (datakind > 0) {
-            elem = JSROOT.IO.CreateStreamerElement("temporary", "int");
+            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
             elem.fType = datakind;
          }
          

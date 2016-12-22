@@ -2490,7 +2490,8 @@
 
       elem.fType = JSROOT.IO.GetTypeId(typename);
       if (elem.fType > 0) return elem; // basic type
-      
+
+      /*
       if (typename.indexOf('string')===0) {
          elem._typename = 'TStreamerSTLstring';
          elem.fType = JSROOT.IO.kStreamer;
@@ -2498,6 +2499,7 @@
          elem.fCtype = 0;
          return elem;
       }
+      */
 
       // check if there are STL containers
       var stltype = JSROOT.IO.kNotSTL, pos = typename.indexOf("<");
