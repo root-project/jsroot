@@ -5268,27 +5268,20 @@
    JSROOT.THistPainter.prototype.DecodeOptions = function(opt, interactive) {
 
       /* decode string 'opt' and fill the option structure */
-      var hdim = this.Dimension();
-      var option = {
-         Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
-         Error: 0, errorX: JSROOT.gStyle.fErrorX,
-         Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
-         Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
-         Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-         Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
-         System: JSROOT.Painter.Coord.kCARTESIAN,
-         AutoColor : 0, NoStat : 0, AutoZoom : false,
-         HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
-         Optimize: JSROOT.gStyle.OptimizeDraw
-      };
-      
-      var d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption);
-
-      // check for graphical cuts
-
-      var pad = this.root_pad(), need_fillcol = false;
-
-      // if (hdim > 1) option.Scat = 1;  // default was scatter plot
+      var option = { Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
+             Error: 0, errorX: JSROOT.gStyle.fErrorX,
+             Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
+             Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
+             Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+             Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
+             System: JSROOT.Painter.Coord.kCARTESIAN,
+             AutoColor : 0, NoStat : 0, AutoZoom : false,
+             HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
+             Optimize: JSROOT.gStyle.OptimizeDraw },
+           d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption),
+           hdim = this.Dimension(),
+           pad = this.root_pad(), 
+           need_fillcol = false;
 
       // use error plot only when any sumw2 bigger than 0
       if ((hdim===1) && (this.histo.fSumw2.length > 0))
@@ -5304,6 +5297,11 @@
       if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
 
       if (d.check('NOSTAT')) option.NoStat = 1;
+      
+      var tooltip = null;
+      if (d.check('NOTOOLTIP')) tooltip = false;
+      if (d.check('TOOLTIP')) tooltip = true;
+      if ((tooltip!==null) && this.frame_painter()) this.frame_painter().tooltip_allowed = tooltip; 
 
       if (d.check('LOGX')) pad.fLogx = 1;
       if (d.check('LOGY')) pad.fLogy = 1;
