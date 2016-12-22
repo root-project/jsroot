@@ -535,17 +535,10 @@
             }
 
             if ((indx < 0) && (cnt_br.indexOf(brcnt)<0)) {
-               if (cntname.length===0)
-                  for (var d=0;d<selector.branches.length*10;++d) {
-                     cntname = "counter" + d;
-                     if ((selector.names.indexOf(cntname) < 0) && (cnt_names.indexOf(cntname) < 0)) break;
-                  }
-
+               if (!cntname) cntname = "$counter" + cnt_br.length;
                console.log('Add counter branch ', brcnt.fName, ' with member name ', cntname);
                cnt_br.push(brcnt);
                cnt_names.push(cntname);
-               //selector.branches.unshift(brcnt);
-               //selector.names.unshift(cntname);
             }
          }
       }
