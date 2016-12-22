@@ -95,6 +95,7 @@
       if (this.arr == undefined) {
          this.arr = [ this.object ];
          this.indx = [ 0 ];
+         if (this.object.length === 0) return false;
       } else {
         
          if (++this.fastindx < this.fastarr.length) {
@@ -337,7 +338,7 @@
             value = expr.func(value);
       }
 
-      if ((typeof value === 'object') && !isNaN(value.length) && (value.length>0))
+      if ((typeof value === 'object') && !isNaN(value.length))
          iter = new JSROOT.ArrayIterator(value);
       else
          iter = {
@@ -370,8 +371,10 @@
                this.arr.push(this.tgtobj.br0);
             } else {
                var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
-               while (iter.next()) 
+               
+               while (iter.next())  
                   this.arr.push(iter.value);
+               
                if (firsttime) this.kind[0] = typeof iter.value;
             }
             
@@ -659,8 +662,6 @@
                      member.fArrayDim = 1; 
                      member.fMaxIndex = [member.fArrayLength];
                   }
-                  
-                  console.log('Special case ', member.fArrayDim, 'indexes', member.fMaxIndex);
                   
                   member.fArrayDim++;
                   var newmanindx = new Array(member.fArrayDim);
