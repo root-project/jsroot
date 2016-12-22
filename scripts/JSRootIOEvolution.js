@@ -64,6 +64,7 @@
                case "unsigned char": return JSROOT.IO.kUChar;
                case "unsigned short": return JSROOT.IO.kUShort;
                case "unsigned": return JSROOT.IO.kUInt;
+               case "unsigned int": return JSROOT.IO.kUInt;
                case "unsigned long": return JSROOT.IO.kULong;
                case "int64_t": return JSROOT.IO.kLong64;
                case "uint64_t": return JSROOT.IO.kULong64;
@@ -2493,8 +2494,8 @@
       if (typename.indexOf('string')===0) {
          elem._typename = 'TStreamerSTLstring';
          elem.fType = JSROOT.IO.kStreamer;
-         element.fSTLtype = 0;
-         element.fCtype = 0;
+         elem.fSTLtype = 10000; // any positive number
+         elem.fCtype = 0;
          return elem;
       }
 
