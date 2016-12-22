@@ -217,7 +217,7 @@
          if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
             res.min -= 1;
             res.max += 2;
-            res.nbins = res.max - res.min;
+            res.nbins = Math.round(res.max - res.min);
          } else {
             res.max += (res.max-res.min)/res.nbins;
          }
