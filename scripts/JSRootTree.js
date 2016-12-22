@@ -558,8 +558,16 @@
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datakind = 0, arrsize = 1, elem = null;
+             datakind = 0, elem = null;
       
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName) && (branch._typename==="TBranchElement") && (branch.fID==-1)) {
+            console.log('special classname', branch.fClassName);
+            
+            var elem = JSROOT.IO.CreateStreamerElement("temporary", branch.fClassName)
+
+            // only STL containers here
+            if (!elem.fSTLtype) elem = null;
+         } else
          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0))) {
             switch (leaf._typename) {
               case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
@@ -570,7 +578,7 @@
               case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
               case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
               case 'TLeafElement' : {
-                 var s_i = this.$file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum);
+                 var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
                  
                  if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
                  if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
@@ -587,13 +595,10 @@
          if (datakind > 0) {
             elem = JSROOT.IO.CreateStreamerElement("temporary", "int");
             elem.fType = datakind;
-            if (arrsize > 1) {
-               elem.fArrayLength = arrsize; elem.fArrayDim = 1, elem.fMaxIndex[0] = arrsize; 
-            }
          }
          
          if (!elem) {
-            console.log('Not supported branch kinds', branch.fName, leaf._typename);
+            console.log('Not supported branch kind', branch.fName, branch._typename);
             selector.Terminate(false);
             return false;
          }
