@@ -2530,14 +2530,12 @@
          console.error('FAIL member-wise streaming for type', this.conttype, 'RALL-BACK buffer');
       }
 
-      var n = buf.ntoi4(), res = [];
-
-      for (var i=0;i<n;++i) {
-         if (this.arrkind > 0) res.push(buf.ReadFastArray(buf.ntou4(), this.arrkind)); else
-         if (this.arrkind===0) res.push(buf.ReadTString()); else
-         if (this.isptr) res.push(buf.ReadObjectAny()); else
-            res.push(buf.ClassStreamer({}, this.conttype));
-      }
+      var n = buf.ntoi4(), res = new Array(n), i = 0;
+      
+      if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
+      else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
+      else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); } 
+      else { while (i<n) res[i++] = buf.ClassStreamer({}, this.conttype); }
 
       return res;
    }
