@@ -568,6 +568,12 @@
             // only STL containers here
             if (!elem.fSTLtype) elem = null;
          } else
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && (leaf.fType === JSROOT.IO.kSTL)) {
+            datakind = JSROOT.IO.kInt; // this is counter from STL containers
+         } else
+         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && branch.fClonesName) {
+            datakind = JSROOT.IO.kInt; // this is counter from ClonesArrays
+         } else
          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0))) {
             switch (leaf._typename) {
               case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
@@ -587,10 +593,7 @@
                  break;
               }
             }
-         } else
-         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && (leaf.fType === JSROOT.IO.kSTL)) {
-            datakind = JSROOT.IO.kInt;
-         }
+         } 
     
          if (datakind > 0) {
             elem = JSROOT.IO.CreateStreamerElement("temporary", "int");
@@ -626,9 +629,10 @@
 
             selector.process_arrays = false;
 
-            var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL;
+            var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL,
+                count_clones = (branch.fBranchCount.fStreamerType === -1) && branch.fBranchCount.fClonesName;
             
-            if (count_stl) {
+            if (count_stl || count_clones) {
                // console.log('introduce special handling with STL size', elem.fType);
                
                // special handling of simple arrays
