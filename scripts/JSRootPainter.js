@@ -8648,16 +8648,9 @@
       var painter = new JSROOT.TObjectPainter(tree);
       
       JSROOT.AssertPrerequisites('tree', function() {
-         
          var t = new JSROOT.TTree(tree); 
-         
-         t.Draw(opt, undefined, undefined, undefined, undefined, function(histo) {
-            if (!histo) return painter.DrawingReady();
-
-            var histopt = (histo._typename.indexOf("TH2")==0) ? "col" : "";
-
-            JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
-
+         t.Draw(opt, function(histo, hopt) {
+            JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
          });
       });
       
@@ -8679,17 +8672,9 @@
          return painter.DrawingReady();
       
       JSROOT.AssertPrerequisites('tree', function() {
-         
          var t = new JSROOT.TTree(branch.$tree); 
-         
-         t.DrawBranch(branch, opt, undefined, undefined, undefined, function(histo) {
-            if (!histo) return painter.DrawingReady();
-            
-            var histopt = "";
-            if (opt === "dump") histopt = "inspect"; else
-            if (histo._typename && histo._typename.indexOf("TH2")==0) histopt = "col"; 
-
-            JSROOT.draw(divid, histo, histopt, painter.DrawingReady.bind(painter));
+         t.Draw({ expr: opt, branch: branch}, function(histo, hopt) {
+            JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
          });
       });
       

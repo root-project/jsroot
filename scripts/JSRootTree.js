@@ -456,7 +456,7 @@
       
       this.ShowProgress();
       
-      return JSROOT.CallBack(this.histo_callback, this.hist);
+      return JSROOT.CallBack(this.histo_callback, this.hist, this.ndim==2 ? "col" : "");
    }
 
    
@@ -468,11 +468,11 @@
    }
    
    
-   JSROOT.TTree.prototype.Process = function(selector, option, numentries, firstentry) {
+   JSROOT.TTree.prototype.Process = function(selector, args) {
       // function similar to the TTree::Process
       
-      if (!selector || !this.$file || !selector.branches) {
-         console.error('required parameter missing in for TTree::Select');
+      if (!selector || !this.$file || !selector.branches || (typeof args !== 'object')) {
+         console.error('required parameter missing in for TTree::Process');
          return false;
       }
       
@@ -482,9 +482,8 @@
           selector: selector, // reference on selector  
           arr: [], // list of branches 
           curr: -1,  // current entry ID
-          option: option || "",
-          numentries: isNaN(numentries) ? 1e9 : numentries,
-          firstentry: isNaN(firstentry) ? 0 : firstentry,
+          numentries: isNaN(args.numentries) ? 1e9 : args.numentries,
+          firstentry: isNaN(args.firstentry) ? 0 : args.firstentry,
           stage_min: -1, // current entryid limit
           stage_max: -1,  // current entryid limit
           staged: [], // list of requested baskets for next I/O operation
@@ -867,8 +866,6 @@
                }
             }
             
-            // numentries = 10; // only for debug
-            
             // second loop extracts all required data
             
             // do not read too much
@@ -973,44 +970,25 @@
       return Find(this.fBranches, branchname);
    }
    
-   JSROOT.TTree.prototype.Draw = function(expression, cut, opt, nentries, firstentry, histo_callback) {
+   JSROOT.TTree.prototype.Draw = function(args, result_callback) {
       // this is JSROOT implementaion of TTree::Draw
-      // in callback returns histogram
+      // in callback returns histogram and draw options
+      // following arguments allowed in args
+      //   expr - draw expression
+      //   firstentry - first entry to process
+      //   numentries - number of entries to process
       
-      var names = expression ? expression.split(":") : [];
-      if ((names.length < 1) || (names.length > 2))
-         return JSROOT.CallBack(histo_callback, null);
-
-      var selector = new JSROOT.TDrawSelector(histo_callback);
       
-      for (var n=0;n<names.length;++n) {
-         var br = this.FindBranch(names[n], true);
-         if (!br) {
-            console.log('Not found branch', names[n]);
-            return JSROOT.CallBack(histo_callback, null);
-         }
-         
-         if (br.branch) 
-            selector.AddDrawBranch(br.branch, br.rest, names[n]);
-         else
-            selector.AddDrawBranch(br, undefined, names[n]);
-      }
+      if (typeof args === 'string') args = { expr: args };
       
-      selector.hist_title = "drawing '" + expression + "' from " + this.fName;
+      var selector = null;
       
-      return this.Process(selector, opt, nentries, firstentry);
-   }
-
-   JSROOT.TTree.prototype.DrawBranch = function(branch, expr, opt, nentries, firstentry, histo_callback) {
-      // this is JSROOT implementaion of TTree::Draw
-      // in callback returns histogram
-      
-      if (expr == "dump") {
-         var selector = new JSROOT.TSelector;
+      if (args.branch && (args.expr === "dump")) {
+         selector = new JSROOT.TSelector;
 
          selector.arr = []; // accumulate here
          
-         selector.AddBranch(branch, "br0");
+         selector.AddBranch(args.branch, "br0");
          
          selector.Process = function() {
             this.arr.push(this.tgtobj.br0);
@@ -1018,25 +996,47 @@
          
          selector.Terminate = function(res) {
             this.ShowProgress();
-            JSROOT.CallBack(histo_callback, this.arr);
+            JSROOT.CallBack(result_callback, this.arr, "inspect");
          }
          
-         if (!nentries) nentries = 10;
+         if (!args.numentries) args.numentries = 10;
+      } else
+      if (args.branch) {
+         selector = new JSROOT.TDrawSelector(result_callback);
          
-         return this.Process(selector, opt, nentries, firstentry);
+         selector.AddDrawBranch(args.branch, args.expr, args.branch.fName);
+         
+         selector.hist_title = "drawing '" + args.branch.fName + "' from " + this.fName;
+      } else {
+      
+         var names = args.expr ? args.expr.split(":") : [];
+         if ((names.length < 1) || (names.length > 2))
+            return JSROOT.CallBack(result_callback, null);
+
+         selector = new JSROOT.TDrawSelector(result_callback);
+
+         for (var n=0;n<names.length;++n) {
+            var br = this.FindBranch(names[n], true);
+            if (!br) {
+               console.log('Not found branch', names[n]);
+               return JSROOT.CallBack(result_callback, null);
+            }
+
+            if (br.branch) 
+               selector.AddDrawBranch(br.branch, br.rest, names[n]);
+            else
+               selector.AddDrawBranch(br, undefined, names[n]);
+         }
+
+         selector.hist_title = "drawing '" + args.expr + "' from " + this.fName;
       }
       
+      if (!selector)
+         return JSROOT.CallBack(result_callback, null);
       
-      var selector = new JSROOT.TDrawSelector(histo_callback);
-      
-      selector.AddDrawBranch(branch, expr, branch.fName);
-      
-      selector.hist_title = "drawing '" + branch.fName + "' from " + this.fName;
-      
-      return this.Process(selector, opt, nentries, firstentry);
+      return this.Process(selector, args);
    }
 
-   
 
    return JSROOT;
 
