@@ -8823,7 +8823,7 @@
                }
             }
          } else
-         if ((typeof fld == 'number') || (typeof fld == 'boolean')) {
+         if ((typeof fld === 'number') || (typeof fld === 'boolean')) {
             simple = true;
             if (key == 'fBits')
                item._value = "0x" + fld.toString(16);
@@ -8831,10 +8831,15 @@
                item._value = fld.toString();
             item._vclass = 'h_value_num';
          } else
-         if (typeof fld == 'string') {
+         if (typeof fld === 'string') {
             simple = true;
             item._value = '&quot;' + fld.replace(/\&/g, '&amp;').replace(/\"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '&quot;';
             item._vclass = 'h_value_str';
+         } else 
+         if (typeof fld === 'undefined') {
+            simple = true;
+            item._value = "undefined";
+            item._vclass = 'h_value_num';
          } else {
             simple = true;
             alert('miss ' + key + '  ' + typeof fld);
