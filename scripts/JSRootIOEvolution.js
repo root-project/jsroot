@@ -1861,23 +1861,23 @@
                   obj[this.name] = buf.ReadFastArray(buf.ntou4(), this.arrkind);
                };
             } else
-               if (arrkind === 0) {
-                  member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
-               } else {
-                  member.classname = classname;
+            if (arrkind === 0) {
+               member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
+            } else {
+               member.classname = classname;
 
-                  if (element.fArrayLength>1) {
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
-                           return buf.ClassStreamer({}, handle.classname);
-                        });
-                     };
-                  } else {
-                     member.func = function(buf, obj) {
-                        obj[this.name] = buf.ClassStreamer({}, this.classname);
-                     };
-                  }
+               if (element.fArrayLength>1) {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
+                        return buf.ClassStreamer({}, handle.classname);
+                     });
+                  };
+               } else {
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ClassStreamer({}, this.classname);
+                  };
                }
+            }
             break;
          case JSROOT.IO.kOffsetL + JSROOT.IO.kObject:
          case JSROOT.IO.kOffsetL + JSROOT.IO.kAny:
@@ -2124,13 +2124,13 @@
             if (JSROOT.fUserStreamers !== null)
                member.func = JSROOT.fUserStreamers[element.fTypeName];
 
-         if (typeof member.func !== 'function') {
-            JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
+            if (typeof member.func !== 'function') {
+               JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
 
-            member.func = function(buf,obj) {};  // do nothing, fix in the future
-         } else {
-            member.element = element; // one can use element in the custom function
-         }
+               member.func = function(buf,obj) {};  // do nothing, fix in the future
+            } else {
+               member.element = element; // one can use element in the custom function
+            }
       }
       
       return member;
@@ -2151,7 +2151,6 @@
          if (streamer !== undefined) return streamer;
          this.fStreamers[fullname] = streamer = new Array;
       }
-
 
       if (clname == 'TObject'|| clname == 'TMethodCall') {
          streamer.push({ func: function(buf,obj) {

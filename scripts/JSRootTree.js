@@ -558,12 +558,34 @@
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datakind = 0, elem = null;
+             datakind = 0, elem = null, member = null;
       
          if ((nb_leaves === 1) && (leaf.fName === branch.fName) && (branch._typename==="TBranchElement") && (branch.fID==-1)) {
-            console.log('standalone (without class) typename', branch.fClassName);
             
             elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
+
+            console.log('TBranchElement with ID==-1 typename ', branch.fClassName, elem.fType);
+            
+            if (elem.fType === JSROOT.IO.kAny) {
+               // this is indication that object stored in the branch - need special handling
+               
+               var streamer = this.$file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
+               
+               if (!streamer) elem = null; else
+                  member = {
+                        name: selector.names[nn],
+                        typename: branch.fClassName,
+                        streamer: streamer, 
+                        func: function(buf,obj) {
+                           var res = { _typename: this.typename };
+                           for (var n = 0; n < this.streamer.length; ++n)
+                              this.streamer[n].func(buf, res);
+                           obj[this.name] = res;
+                        }
+                  };
+            }
+            
+            // elem.fType = JSROOT.IO.kAnyP;
 
             // only STL containers here
             // if (!elem.fSTLtype) elem = null;
@@ -609,7 +631,7 @@
          // just intermediate solution
          selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
          
-         var member = JSROOT.IO.CreateMember(elem, this.$file);
+         if (!member) member = JSROOT.IO.CreateMember(elem, this.$file);
 
          // this element used to read branch value
          if (!member || !member.func) {
@@ -671,6 +693,8 @@
                      member.fArrayDim = 1; 
                      member.fMaxIndex = [member.fArrayLength];
                   }
+                  
+                  console.log('Reading kStreamer');
                   
                   member.fArrayDim++;
                   var newmanindx = new Array(member.fArrayDim);
@@ -754,7 +778,7 @@
             baskets: [] // array for read baskets,
          });
          
-         if (handle.arr.length>1) {
+         if (handle.arr.length > 1) {
             var elem0 = handle.arr[0], elem = handle.arr[nn];
 
             if (elem.numbaskets !== elem0.numbaskets) handle.simple_read = false;
