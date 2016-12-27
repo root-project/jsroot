@@ -2115,11 +2115,23 @@
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-                  if (this.stl_size) this.fMaxIndex[0] = obj[this.stl_size]; // special case of branch data
                   var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
+               member.branch_func = function(buf,obj) {
+                  // special function to read data from STL branch
+                  var cnt = obj[this.stl_size], arr = new Array(cnt);
+                  if (cnt>0) {
+                     var ver = buf.ReadVersion();
+                     this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                     for (var n=0;n<cnt;++n)
+                        arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
+                     buf.CheckBytecount(ver, "branch " + this.typename);
+                  }
+                  obj[this.name] = arr;
+               }
+               
             } else {
                JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
                member.func = function(buf,obj) {

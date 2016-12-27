@@ -17,7 +17,11 @@
       factory(JSROOT);
    }
 } (function(JSROOT) {
-
+   
+   
+   JSROOT.BranchType = { kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
+                         kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41 }; 
+   
    JSROOT.TSelector = function() {
       // class to read data from TTree
       this.branches = []; // list of branches to read
@@ -558,9 +562,20 @@
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datakind = 0, elem = null, member = null;
+             datakind = 0, elem = null, member = null, 
+             is_brelem = (branch._typename==="TBranchElement");
+             
+         if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
+             // branch with  
+             console.log('Branch with kObjectNode cannot be read - has no baskets at all');
+             continue;
+         } else 
+         if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
+            // this is branch with counter 
+            datakind = JSROOT.IO.kInt;
+         } else
       
-         if ((nb_leaves === 1) && (leaf.fName === branch.fName) && (branch._typename==="TBranchElement") && (branch.fID==-1)) {
+         if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
             
             elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
 
@@ -651,10 +666,7 @@
 
             selector.process_arrays = false;
 
-            var count_stl = branch.fBranchCount.fStreamerType === JSROOT.IO.kSTL,
-                count_clones = (branch.fBranchCount.fStreamerType === -1) && branch.fBranchCount.fClonesName;
-            
-            if (count_stl || count_clones) {
+            if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
                // console.log('introduce special handling with STL size', elem.fType);
                
                // special handling of simple arrays
@@ -686,22 +698,13 @@
                if (elem.fType == JSROOT.IO.kStreamer) {
                   // with streamers one need to extend existing array
                   
-                  if (branch.fBranchCount2)
+                  if (branch.fBranchCount2 || branch.$specialCount)
                      throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+
+                  console.log('Reading kStreamer in STL branch');
                   
-                  if ((member.fArrayDim<=0) && (member.fArrayLength>0)) {
-                     member.fArrayDim = 1; 
-                     member.fMaxIndex = [member.fArrayLength];
-                  }
-                  
-                  console.log('Reading kStreamer');
-                  
-                  member.fArrayDim++;
-                  var newmanindx = new Array(member.fArrayDim);
-                  newmanindx[0] = 1; // fictional, should be replaced with obj[this.stl_size]
-                  for (var n=1;n<member.fArrayDim;++n) newmanindx[n] = member.fMaxIndex[n-1];
-                  member.fMaxIndex = newmanindx; 
-                  // this is supported in original reader
+                  // function provided by normal I/O
+                  member.func = member.branch_func;
                   member.stl_size = selector.names[count_indx]; 
                   
                } else 
