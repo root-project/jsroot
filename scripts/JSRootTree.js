@@ -871,7 +871,7 @@
             return handle.selector.Terminate(false);
          
          if (baskets.length !== handle.staged.length) {
-            console.log('Internal TTree reading problem');
+            console.log('Internal TTree reading problem', baskets.length, handle.staged.length);
             return handle.selector.Terminate(false);
          }
          

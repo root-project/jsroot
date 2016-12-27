@@ -1121,26 +1121,28 @@
          return callback(this.fFileContent.extract(place));
 
       var file = this;
+      
       if ((place.length > 2) && !file.fMultiRanges) {
-         var arg = { file: file, place: place, arr: [], callback: callback };
+         // if multiple requests not supported, read all segments sequentially
+         var arg = { mainfile: file, places: place, cnt: 0, arr: [], maincallback: callback };
 
          function workaround_callback(res) {
             if (res!==undefined) this.arr.push(res);
 
-            if (this.place.length===0)
-               return JSROOT.CallBack(this.callback, this.arr);
-
-            this.file.ReadBuffer([this.place.shift(), this.place.shift()], workaround_callback.bind(this));
+            if (this.cnt >= this.places.length)
+               return JSROOT.CallBack(this.maincallback, this.arr);
+            
+            var segment = [this.places[this.cnt], this.places[this.cnt+1]];
+            this.cnt+=2;
+            this.mainfile.ReadBuffer(segment, workaround_callback.bind(this));
          }
 
          return workaround_callback.bind(arg)();
       }
 
-      var url = this.fURL, ranges = "bytes=";
-      for (var n=0;n<place.length;n+=2) {
-         if (n>0) ranges+=","
-         ranges += (place[n] + "-" + (place[n] + place[n+1] - 1));
-      }
+      var url = this.fURL, ranges = "bytes";
+      for (var n=0;n<place.length;n+=2) 
+         ranges += (n>0 ? "," : "=") + (place[n] + "-" + (place[n] + place[n+1] - 1));
 
       if (this.fUseStampPar) {
          // try to avoid browser caching by adding stamp parameter to URL
