@@ -224,7 +224,7 @@
       this.last_read_version = ver.val = this.ntoi2();
       ver.off = this.o;
 
-      if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=6)) {
+      if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=4)) {
          ver.checksum = this.ntou4();
          if (!this.fFile.FindSinfoCheckum(ver.checksum)) {
             // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' val ' + ver.val);
@@ -565,7 +565,7 @@
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
-      if (! ('_typename' in obj)) obj._typename = classname;
+      if (obj._typename === undefined) obj._typename = classname;
 
       if (classname === 'TQObject') return obj;
 
@@ -574,8 +574,6 @@
          JSROOT.addMethods(obj);
          return obj;
       }
-
-      // TODO: version should be read before search for stremer
 
       var ver = this.ReadVersion();
 
@@ -1740,8 +1738,9 @@
       switch (member.type) {
          case JSROOT.IO.kBase:
             member.base = element.fBaseVersion; // indicate base class
+            member.basename = element.fName; // keep class name 
             member.func = function(buf, obj) {
-               buf.ClassStreamer(obj, this.name);
+               buf.ClassStreamer(obj, this.basename);
             };
             break;
          case JSROOT.IO.kShort:
@@ -2186,7 +2185,7 @@
       if (clname == 'TNamed') {
          // we cannot use streamer info due to bottstrap problem
          // try to make as much realistic as we can
-         streamer.push({ name:'TObject', base: 1, func: function(buf,obj) {
+         streamer.push({ basename:'TObject', base: 1, func: function(buf,obj) {
             if (!obj._typename) obj._typename = 'TNamed';
             buf.ClassStreamer(obj, "TObject"); }
          });
@@ -2284,7 +2283,6 @@
          }});
          return this.AddMethods(clname, streamer);
       }
-
 
       if (clname == 'TRefArray') {
          streamer.push({ func : function(buf, obj) {
@@ -2493,7 +2491,7 @@
       if ((clname == 'TObjString') && !s_i) {
          // special case when TObjString was stored inside streamer infos,
          // than streamer cannot be normally generated
-         streamer.push({ name:'TObject', base: 1, func: function(buf,obj) {
+         streamer.push({ basename:'TObject', base: 1, func: function(buf,obj) {
             if (!obj._typename) obj._typename = 'TObjString';
             buf.ClassStreamer(obj, "TObject"); }
          });
@@ -2507,7 +2505,7 @@
       if (!s_i) {
          delete this.fStreamers[fullname];
          if (!ver.nowarning)
-            console.warn('did not find streamer for ', clname + ":", ver.val, (ver.checksum === undefined) ? "" : "checksum:" + ver.checksum);
+            console.warn("Not found streamer for", clname, "ver", ver.val, "checksum", ver.checksum, fullname);
          return null;
       }
 
