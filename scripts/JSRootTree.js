@@ -646,7 +646,17 @@
          // just intermediate solution
          selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
          
-         if (!member) member = JSROOT.IO.CreateMember(elem, this.$file);
+         if (!member) {
+            member = JSROOT.IO.CreateMember(elem, this.$file);
+            if ((member.base !== undefined) && member.basename) {
+               // when element represent base class, we need handling which differ from normal IO
+               member.func = function(buf, obj) {
+                  if (!obj[this.name]) obj[this.name] = { _typename: this.basename };
+                  buf.ClassStreamer(obj[this.name], this.basename);
+               };
+
+            }
+         }
 
          // this element used to read branch value
          if (!member || !member.func) {
