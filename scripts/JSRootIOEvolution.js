@@ -371,28 +371,29 @@
    }
 
    JSROOT.TBuffer.prototype.ReadNdimArray = function(handle, func) {
-      var ndim = handle.fArrayDim, maxindx = handle.fMaxIndex;
+      var ndim = handle.fArrayDim, maxindx = handle.fMaxIndex, res;
       if ((ndim<1) && (handle.fArrayLength>0)) { ndim = 1; maxindx = [handle.fArrayLength]; }
       if (handle.minus1) --ndim;
 
       if (ndim<1) return func(this, handle);
 
-      var res = [];
-
       if (ndim===1) {
+         res = new Array(maxindx[0]);
          for (var n=0;n<maxindx[0];++n)
-            res.push(func(this, handle));
+            res[n] = func(this, handle);
       } else
       if (ndim===2) {
+         res = new Array(maxindx[0]);
          for (var n=0;n<maxindx[0];++n) {
-            var res2 = [];
+            var res2 = new Array(maxindx[1]);
             for (var k=0;k<maxindx[1];++k)
-              res2.push(func(this, handle));
-            res.push(res2);
+              res2[k] = func(this, handle);
+            res[n] = res2;
          }
       } else {
          var indx = [], arr = [], k;
-         for (k=0; k<ndim; ++k) { indx[k] = 0; arr[k] = (k==0) ? res : []; }
+         for (k=0; k<ndim; ++k) { indx[k] = 0; arr[k] = []; }
+         res = arr[0];
          while (indx[0] < maxindx[0]) {
             k = ndim-1;
             arr[k].push(func(this, handle));
@@ -847,10 +848,10 @@
       if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
       if (place.length===2) return new DataView(this.arr.buffer, place[0], place[1]);
 
-      var res = [];
+      var res = new Array(place.length/2);
 
       for (var n=0;n<place.length;n+=2)
-         res.push(new DataView(this.arr.buffer, place[n], place[n+1]));
+         res[n/2] = new DataView(this.arr.buffer, place[n], place[n+1]);
 
       return res; // return array of buffers
    }
@@ -2200,15 +2201,17 @@
             // stream all objects in the list from the I/O buffer
             if (!obj._typename) obj._typename = this.classname;
             obj.name = "";
-            obj.arr = new Array;
-            obj.opt = new Array;
+            obj.arr = [];
+            obj.opt = [];
             if (buf.last_read_version > 3) {
                buf.ClassStreamer(obj, "TObject");
                obj.name = buf.ReadTString();
-               var nobjects = buf.ntou4();
-               for (var i = 0; i < nobjects; ++i) {
-                  obj.arr.push(buf.ReadObjectAny());
-                  obj.opt.push(buf.ReadTString());
+               var nobjects = buf.ntou4(), i = 0;
+               obj.arr = new Array(nobjects);
+               obj.opt = new Array(nobjects);
+               for (; i<nobjects; ++i) {
+                  obj.arr[i] = buf.ReadObjectAny();
+                  obj.opt[i] = buf.ReadTString();
                }
             }
          } });
@@ -2219,7 +2222,6 @@
          streamer.push({ func : function(buf, list) {
             if (!list._typename) list._typename = "TClonesArray";
             list.name = "";
-            list.arr = new Array();
             var ver = buf.last_read_version;
             if (ver > 2)
                buf.ClassStreamer(list, "TObject");
@@ -2236,18 +2238,19 @@
             var nobjects = buf.ntou4();
             if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
 
+            list.arr = new Array(nobjects);
             list.fLast = nobjects-1;
             list.fLowerBound = buf.ntou4();
 
             var streamer = buf.fFile.GetStreamer(classv, { val: clv });
             streamer = buf.fFile.GetSplittedStreamer(streamer);
-
+            
             if (!streamer) {
                console.log('Cannot get member-wise streamer for', classv, clv);
             } else {
                // create objects
                for (var n=0;n<nobjects;++n)
-                  list.arr.push({ _typename: classv });
+                  list.arr[n] = { _typename: classv };
 
                // call streamer for all objects member-wise
                for (var k=0;k<streamer.length;++k)
@@ -2336,17 +2339,17 @@
          streamer.push({ func : function(buf, list) {
             list._typename = "TObjArray";
             list.name = "";
-            list.arr = new Array();
             var ver = buf.last_read_version;
             if (ver > 2)
                buf.ClassStreamer(list, "TObject");
             if (ver > 1)
                list.name = buf.ReadTString();
             var nobjects = buf.ntou4();
+            list.arr = new Array(nobjects);
             list.fLast = nobjects-1;
             list.fLowerBound = buf.ntou4();
             for (var i = 0; i < nobjects; ++i)
-               list.arr.push(buf.ReadObjectAny());
+               list.arr[i] = buf.ReadObjectAny();
          }});
          return this.AddMethods(clname, streamer);
       }
@@ -2639,15 +2642,12 @@
          }
       }
 
-      var n = buf.ntoi4(), res = [];
-
-      // console.log('Reading map', n, this.pairtype, this.typename);
+      var n = buf.ntoi4(), res = new Array(n);
       for (var i=0;i<n;++i) {
-         var obj = { _typename: this.pairtype };
-         streamer[0].func(buf, obj);
+         res[i] = { _typename: this.pairtype };
+         streamer[0].func(buf, res[i]);
          if (!this.readversion)
-            streamer[1].func(buf, obj);
-         res.push(obj);
+            streamer[1].func(buf, res[i]);
       }
 
       // due-to member-wise streaming second element read after first is completed
