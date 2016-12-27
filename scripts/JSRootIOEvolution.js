@@ -1303,7 +1303,7 @@
 
       this.ReadBuffer(places, function(blobs) {
 
-         if (!blobs) JSROOT.CallBack(call_back, null);
+         if (!blobs) return JSROOT.CallBack(call_back, null);
 
          var baskets = [];
 
