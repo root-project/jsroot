@@ -1068,7 +1068,7 @@
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
-      this.fMaxRanges = 200; // maximal number of file ranges requested at once
+      this.fMaxRanges = 500; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
@@ -1173,7 +1173,18 @@
             return callback(file.fFileContent.extract(place));
          }
 
-         if ((res === null) || (res === undefined)) return callback(res);
+         if ((res === null) || (res === undefined)) {
+            if ((place.length > 2) && (file.fMaxRanges>1)) {
+               // server return no response with multirequest - try to decrease ranges count or fail
+               if (file.fMaxRanges > 200) file.fMaxRanges = 200; else
+               if (file.fMaxRanges > 50) file.fMaxRanges = 50; else 
+               if (file.fMaxRanges > 10) file.fMaxRanges = 10; else return callback(res);
+               return file.ReadBuffer(place, callback);
+            }
+            
+            
+            return callback(res);
+         }
 
          var isstr = (typeof res == 'string');
 
@@ -1215,7 +1226,7 @@
             }
 
             console.error('Server returns normal response when multipart was requested, disable multirange support');
-            file.fMaxRanges = 2;
+            file.fMaxRanges = 1;
             return file.ReadBuffer(place, callback);
          }
 
