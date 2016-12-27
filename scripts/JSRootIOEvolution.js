@@ -2049,6 +2049,15 @@
                   member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
 
                   member.readelem = JSROOT.IO.ReadVectorElement;
+                  
+                  if (!member.isptr && (member.arrkind<0)) {
+                     var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
+                     if (subelem.fSTLtype && (subelem.fType === JSROOT.IO.kStreamer)) {
+                        subelem.$fictional = true;
+                        member.submember = JSROOT.IO.CreateMember(subelem, file); 
+                     }
+                  }
+                  
                }
             } else
             if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
@@ -2070,9 +2079,9 @@
                      var res = "", p = p1+1, cnt = 0;
                      while ((p<p2) && (cnt>=0)) {
                         switch (member.typename.charAt(p)) {
-                        case "<": cnt++; break;
-                        case ",": if (cnt===0) cnt--; break;
-                        case ">": cnt--; break;
+                           case "<": cnt++; break;
+                           case ",": if (cnt===0) cnt--; break;
+                           case ">": cnt--; break;
                         }
                         if (cnt>=0) res+=member.typename.charAt(p);
                         p++;
@@ -2111,7 +2120,15 @@
                   }
             }
 
-            if (member.readelem!==undefined) {
+            if (!member.readelem) {
+               JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
+               member.func = function(buf,obj) {
+                  var ver = buf.ReadVersion();
+                  buf.CheckBytecount(ver);
+                  obj[this.name] = null;
+               }
+            } else
+            if (!element.$fictional) {
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
@@ -2131,15 +2148,7 @@
                   }
                   obj[this.name] = arr;
                }
-               
-            } else {
-               JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
-               member.func = function(buf,obj) {
-                  var ver = buf.ReadVersion();
-                  buf.CheckBytecount(ver);
-                  obj[this.name] = null;
-               }
-            }
+            } 
             break;
 
          default:
@@ -2619,15 +2628,7 @@
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
       else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }
-      else if (this.conttype === "vector<vector<int> > ") {
-         // console.log("STL vector inside STL container", this.conttype);
-         while (i<n) {
-            var n2 = buf.ntoi4(), arr2 = new Array(n2);
-            for (var i2 = 0; i2<n2; ++i2)
-               arr2[i2] = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
-            res[i++] = arr2;
-         }
-      }
+      else if (this.submember) { while (i<n) res[i++] = this.submember.readelem(buf); }
       else { while (i<n) res[i++] = buf.ClassStreamer({}, this.conttype); }
 
       return res;
