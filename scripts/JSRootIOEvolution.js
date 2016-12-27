@@ -1068,7 +1068,7 @@
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
-      this.fMultiRanges = true; // true when server supports multirange requests
+      this.fMaxRanges = 200; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
@@ -1122,19 +1122,21 @@
 
       var file = this;
       
-      if ((place.length > 2) && !file.fMultiRanges) {
+      if (place.length > file.fMaxRanges*2) {
          // if multiple requests not supported, read all segments sequentially
-         var arg = { mainfile: file, places: place, cnt: 0, arr: [], maincallback: callback };
+         var arg = { mainfile: file, places: place, cnt: 0, lastreq: 0, arr: [], maincallback: callback };
 
          function workaround_callback(res) {
-            if (res!==undefined) this.arr.push(res);
+            if (this.lastreq===2) this.arr.push(res); else
+            for (var n=0;n<this.lastreq/2;++n) this.arr.push((res && res.length && n<res.length) ? res[n] : null);
 
             if (this.cnt >= this.places.length)
                return JSROOT.CallBack(this.maincallback, this.arr);
             
-            var segment = [this.places[this.cnt], this.places[this.cnt+1]];
-            this.cnt+=2;
-            this.mainfile.ReadBuffer(segment, workaround_callback.bind(this));
+            this.lastreq = Math.min(this.mainfile.fMaxRanges*2, this.places.length - this.cnt);
+            var segments = new Array(this.lastreq);
+            for (var k=0;k<this.lastreq;++k) segments[k] = this.places[this.cnt++]; 
+            this.mainfile.ReadBuffer(segments, workaround_callback.bind(this));
          }
 
          return workaround_callback.bind(arg)();
@@ -1185,7 +1187,6 @@
              view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
                        : new DataView(res);
 
-
          if (!ismulti) {
             // server may returns simple buffer
 
@@ -1202,7 +1203,7 @@
                }
             }
 
-            var canbe_single_segment = segm_start<=segm_last;
+            var canbe_single_segment = (segm_start<=segm_last);
             for(var n=0;n<place.length;n+=2)
                if ((place[n]<segm_start) || (place[n] + place[n+1] -1 > segm_last))
                   canbe_single_segment = false;
@@ -1214,7 +1215,7 @@
             }
 
             console.error('Server returns normal response when multipart was requested, disable multirange support');
-            file.fMultiRanges = false;
+            file.fMaxRanges = 2;
             return file.ReadBuffer(place, callback);
          }
 
@@ -1276,15 +1277,11 @@
                o += place[n+1];
                n += 2;
             } else {
-               //var mycnt = 0;
-               // segments may be merged by server
                while ((n<place.length) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
                   arr.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
                                    new DataView(res, o + place[n] - segm_start, place[n+1]));
                   n += 2;
-                  //mycnt++;
                }
-               //if (mycnt>1) console.log('MERGE segments', mycnt);
 
                o += (segm_last-segm_start+1);
             }
