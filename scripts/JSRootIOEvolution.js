@@ -2618,7 +2618,16 @@
       
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
-      else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); } 
+      else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }
+      else if (this.conttype === "vector<vector<int> > ") {
+         // console.log("STL vector inside STL container", this.conttype);
+         while (i<n) {
+            var n2 = buf.ntoi4(), arr2 = new Array(n2);
+            for (var i2 = 0; i2<n2; ++i2)
+               arr2[i2] = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+            res[i++] = arr2;
+         }
+      }
       else { while (i<n) res[i++] = buf.ClassStreamer({}, this.conttype); }
 
       return res;
