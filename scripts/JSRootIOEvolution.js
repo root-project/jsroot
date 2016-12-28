@@ -2066,12 +2066,10 @@
                    p2 = member.typename.lastIndexOf(">");
 
                member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
+               
+               var si = file.FindStreamerInfo(member.pairtype); 
 
-               if (file.FindStreamerInfo(member.pairtype)) {
-                  member.readversion = true;
-                  // console.log('There is streamer info for ',member.pairtype, 'one should read version');
-               } else {
-
+               if (!si) { 
                   function GetNextName() {
                      var res = "", p = p1+1, cnt = 0;
                      while ((p<p2) && (cnt>=0)) {
@@ -2092,22 +2090,22 @@
                       elem1 = JSROOT.IO.CreateStreamerElement("first", name1),
                       elem2 = JSROOT.IO.CreateStreamerElement("second", name2);
 
-                  var si = { _typename: 'TStreamerInfo',
-                             fName: member.pairtype,
-                             fElements: JSROOT.Create("TList"),
-                             fVersion: 1 };
+                  si = { _typename: 'TStreamerInfo',
+                          fName: member.pairtype,
+                          fElements: JSROOT.Create("TList"),
+                          fVersion: 1 };
                   si.fElements.Add(elem1);
                   si.fElements.Add(elem2);
-
-                  member.streamer = file.GetStreamer(member.pairtype, null, si);
-
-                  if (!member.streamer || member.streamer.length!=2) {
-                     JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
-                     delete member.streamer;
-                  }
                }
 
-               if (member.readversion || member.streamer)
+               member.streamer = file.GetStreamer(member.pairtype, null, si);
+
+               if (!member.streamer || (member.streamer.length!==2)) {
+                  JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
+                  delete member.streamer;
+               }
+
+               if (member.streamer)
                   member.readelem = JSROOT.IO.ReadMapElement;
             } else
             if ((element.fSTLtype === JSROOT.IO.kSTLbitset) ||
@@ -2636,9 +2634,8 @@
    JSROOT.IO.ReadMapElement = function(buf) {
       var streamer = this.streamer;
 
-      if (this.readversion) {
-         // when version written into buffer, it is indication of member splitting
-         // not very logical in my mind SL
+      if (this.member_wise) {
+         // when member-wise streaming is used, version is written
          var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
 
@@ -2653,12 +2650,12 @@
       for (var i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };
          streamer[0].func(buf, res[i]);
-         if (!this.readversion)
+         if (!this.member_wise)
             streamer[1].func(buf, res[i]);
       }
 
       // due-to member-wise streaming second element read after first is completed
-      if (this.readversion)
+      if (this.member_wise)
          for (var i=0;i<n;++i)
             streamer[1].func(buf, res[i]);
 
