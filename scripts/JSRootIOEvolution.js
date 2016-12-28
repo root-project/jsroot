@@ -237,9 +237,10 @@
 
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
-         if (where!=null)
+         if (where!=null) {
             // alert("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
             console.log("Missmatch in " + where + " bytecount expected = " + ver.bytecnt + "  got = " + (this.o-ver.off));
+         }
          this.o = ver.off + ver.bytecnt;
          return false;
       }
@@ -475,28 +476,38 @@
       obj.fNevBufSize = this.ntoi4();
       obj.fNevBuf = this.ntoi4();
       obj.fLast = this.ntoi4();
+      if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
+      
       var flag = this.ntoi1();
-      // here we implement only data skipping, no real I/O for TBasket is performed
+      
+      if (flag===0) return;
+      
+      // TODO: fix problem with non-compressed TTree
 
-      if ((flag!==0) && ((flag % 10) != 2)) {
-         var sz = this.ntoi4();
-         //obj.fEntryOffset = this.ReadFastArray(sz, JSROOT.IO.kInt);
-         this.shift(sz*4);
-
-         if (flag>40) {
-            sz = this.ntoi4();
-            //   obj.fDisplacement = this.ReadFastArray(sz, JSROOT.IO.kInt);
-            this.shift(sz*4);
-         }
+      if ((flag % 10) != 2) {
+         obj.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+         var kDisplacementMask = 0xFF000000;
+         if ((20<flag) && (flag<40)) 
+            for(var i=0; i<obj.fNevBuf; ++i)
+               obj.fEntryOffset[i] &= ~kDisplacementMask;
+               
+         if (flag>40) 
+            obj.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
       }
 
       if ((flag === 1) || (flag > 10)) {
+         // here is reading of raw data
          var sz = obj.fLast;
          if (ver.val <= 1) sz = this.ntoi4();
+         
          this.shift(sz); // obj.fBufferRef
       }
+      
+      // console.log('TBasket flag', flag, obj.fName);
+      
 
-      return this.CheckBytecount(ver,"ReadTBasket");
+      // TBasket never sets length - no need to check it
+      //return this.CheckBytecount(ver,"ReadTBasket");
    }
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
@@ -545,7 +556,7 @@
 
       if (clRef.name === -1) return null;
 
-      var arrkind = JSROOT.IO.GetArrayKind(clRef.name), obj = {};
+      var arrkind = JSROOT.IO.GetArrayKind(clRef.name), obj;
 
       if (arrkind === 0) {
          obj = this.ReadTString();
@@ -556,6 +567,7 @@
          this.MapObject(objtag, obj);
       } else {
          // reading normal object, should map before to
+         obj = {};
          this.MapObject(objtag, obj);
          this.ClassStreamer(obj, clRef.name);
       }
