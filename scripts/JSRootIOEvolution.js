@@ -2067,8 +2067,12 @@
 
                member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
                
-               var si = file.FindStreamerInfo(member.pairtype); 
-
+               // remember found streamer info from the file - 
+               // most probably it is the only one which should be used
+               member.si = file.FindStreamerInfo(member.pairtype); 
+               
+               var si = member.si;
+               
                if (!si) { 
                   function GetNextName() {
                      var res = "", p = p1+1, cnt = 0;
@@ -2638,14 +2642,20 @@
          // when member-wise streaming is used, version is written
          var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
-
-         streamer = buf.fFile.GetStreamer(this.pairtype, ver);
-         if (!streamer || streamer.length!=2) {
-            console.log('Fail to get streamer for ', this.pairtype);
-            return null;
+         
+         if (this.si) {
+            var si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
+            
+            if (this.si !== si) {
+               streamer = buf.fFile.GetStreamer(this.pairtype, ver, si);
+               if (!streamer || streamer.length!==2) {
+                  console.log('Fail to produce streamer for ', this.pairtype);
+                  return null;
+               }
+            }
          }
       }
-
+      
       var n = buf.ntoi4(), res = new Array(n);
       for (var i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };
