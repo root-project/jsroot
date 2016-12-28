@@ -845,13 +845,11 @@
 
                   var k = elem.staged_basket++;
                   
-                  if (!handle.simple_read) {
-                  
-                     var entry1 = elem.branch.fBasketEntry[k],
-                         entry2 = elem.branch.fBasketEntry[k+1];
-                  
-                     if ((entry2 < handle.stage_min) || (entry1 >= handle.stage_max)) continue;
-                  }
+                  // no need to read more baskets
+                  if (elem.branch.fBasketEntry[k] >= handle.stage_max) break;
+
+                  // first baskets can be skipped
+                  if (elem.branch.fBasketEntry[k+1] < handle.stage_min) continue;
 
                   places.push(elem.branch.fBasketSeek[k], elem.branch.fBasketBytes[k]);
                   
@@ -860,7 +858,7 @@
                    
                   elem.staged_entry = elem.branch.fBasketEntry[k+1];
                   
-                  handle.staged.push({branch:n, basket: k}); // remember basket staged for reading
+                  handle.staged.push({branch: n, basket: k}); // remember basket staged for reading
                   
                   break;
                }
@@ -1050,7 +1048,6 @@
       //   expr - draw expression
       //   firstentry - first entry to process
       //   numentries - number of entries to process
-      
       
       if (typeof args === 'string') args = { expr: args };
       
