@@ -1114,33 +1114,80 @@
    JSROOT.TTree.prototype.RunIOTest = function(args, result_callback) {
       // generic I/O test for all branches in the tree
       
-      var branches = [], names = [];
+      if (!args.names && !args.bracnhes) {
       
-      function CollectBranches(obj, prntname) {
-         if (!obj || !obj.fBranches) return 0;
-         
-         var cnt = 0;
-         
-         for (var n=0;n<obj.fBranches.arr.length;++n) {
-            var br = obj.fBranches.arr[n],
-                name = (prntname ? prntname + "/" : "") + br.fName;
-            
-            branches.push(br);
-            names.push(name);
-            cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-            if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
-            cnt += CollectBranches(br, name);
+         args.branches = [];
+         args.names = [];
+         args.nbr = 0;
+
+         function CollectBranches(obj, prntname) {
+            if (!obj || !obj.fBranches) return 0;
+
+            var cnt = 0;
+
+            for (var n=0;n<obj.fBranches.arr.length;++n) {
+               var br = obj.fBranches.arr[n],
+               name = (prntname ? prntname + "/" : "") + br.fName;
+
+               args.branches.push(br);
+               args.names.push(name);
+               cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
+               if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
+               cnt += CollectBranches(br, name);
+            }
+            return cnt;
          }
-         return cnt;
+
+         var numleaves = CollectBranches(this);
+
+         console.log('Collect branches', args.branches.length, 'leaves', numleaves);
+
+         args.names.push("Total are " + args.branches.length + " branches with " + numleaves + " leaves");
+      } 
+      
+      var tree = this;
+
+      args.lasttm = new Date().getTime();
+      args.lastnbr = args.nbr; 
+
+      function TestNextBranch() {
+         
+         var selector = new JSROOT.TSelector;
+
+         selector.AddBranch(args.branches[args.nbr], "br0");
+      
+         selector.Process = function() {
+            if (this.tgtobj.br0 === undefined) 
+               this.fail = true;
+         }
+         
+         selector.ShowProgress = function() {
+            // just suppress progress
+         }
+      
+         selector.Terminate = function(res) {
+            args.names[args.nbr] = ((!res || this.fails) ? "FAIL " : "ok ") + args.names[args.nbr];
+            args.nbr++;
+            
+            if (args.nbr >= args.branches.length) {
+               JSROOT.progress();
+               return JSROOT.CallBack(result_callback, args.names, "inspect");
+            }
+            
+            var now = new Date().getTime();
+            
+            if ((now - args.lasttm > 5000) || (args.nbr - args.lastnbr > 50)) 
+               setTimeout(tree.RunIOTest.bind(tree,args,result_callback), 100); // use timeout to avoid deep recursion
+            else
+               TestNextBranch();
+         }
+         
+         JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
+      
+         tree.Process(selector, { numentries: 10 });
       }
       
-      var numleaves = CollectBranches(this);
-      
-      console.log('Collect branches', branches.length, 'leaves', numleaves);
-      
-      names.push("Total are " + branches.length + " branches with " + numleaves + " leaves");
-      
-      JSROOT.CallBack(result_callback, names, "inspect");
+      TestNextBranch();
    }
 
    return JSROOT;
