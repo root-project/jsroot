@@ -2002,7 +2002,7 @@
 
          case JSROOT.IO.kStreamer:
             member.typename = element.fTypeName;
-
+            
             // if (element._typename === 'TStreamerSTL')
             //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
 
@@ -2023,7 +2023,7 @@
                var p1 = member.typename.indexOf("<"),
                    p2 = member.typename.lastIndexOf(">");
 
-               member.conttype = member.typename.substr(p1+1,p2-p1-1);
+               member.conttype = member.typename.substr(p1+1,p2-p1-1).trim();
 
                member.typeid = JSROOT.IO.GetTypeId(member.conttype);
 
