@@ -491,16 +491,16 @@
           curr: -1,  // current entry ID
           numentries: isNaN(args.numentries) ? 1e9 : args.numentries,
           firstentry: isNaN(args.firstentry) ? 0 : args.firstentry,
-          stage_min: -1, // current entryid limit
-          stage_max: -1,  // current entryid limit
+          process_min: -1, // current entryid limit
+          process_max: -1,  // current entryid limit
           staged: [], // list of requested baskets for next I/O operation
           current_entry: 0, // current processed entry
           simple_read: true, // all baskets in all used branches are in sync,
           process_arrays: false // one can process all branches as arrays
       };
       
-      handle.stage_min = handle.firstentry;
-      handle.stage_max = handle.firstentry + handle.numentries;
+      handle.process_min = handle.firstentry;
+      handle.process_max = handle.firstentry + handle.numentries;
       
       // check all branches with counters and add it to list of read branches
       
@@ -846,10 +846,10 @@
                   var k = elem.staged_basket++;
                   
                   // no need to read more baskets
-                  if (elem.branch.fBasketEntry[k] >= handle.stage_max) break;
+                  if (elem.branch.fBasketEntry[k] >= handle.process_max) break;
 
                   // first baskets can be skipped
-                  if (elem.branch.fBasketEntry[k+1] < handle.stage_min) continue;
+                  if (elem.branch.fBasketEntry[k+1] < handle.process_min) continue;
 
                   places.push(elem.branch.fBasketSeek[k], elem.branch.fBasketBytes[k]);
                   
@@ -1048,6 +1048,7 @@
       //   expr - draw expression
       //   firstentry - first entry to process
       //   numentries - number of entries to process
+      //   branch - TBranch object from TTree itself for the direct drawing
       
       if (typeof args === 'string') args = { expr: args };
       
@@ -1077,8 +1078,11 @@
          selector.AddDrawBranch(args.branch, args.expr, args.branch.fName);
          
          selector.hist_title = "drawing '" + args.branch.fName + "' from " + this.fName;
+      } else 
+      if (args.expr === "testio") {
+         // special debugging code
+         return this.RunIOTest(args, result_callback);
       } else {
-      
          var names = args.expr ? args.expr.split(":") : [];
          if ((names.length < 1) || (names.length > 2))
             return JSROOT.CallBack(result_callback, null);
@@ -1106,7 +1110,38 @@
       
       return this.Process(selector, args);
    }
-
+   
+   JSROOT.TTree.prototype.RunIOTest = function(args, result_callback) {
+      // generic I/O test for all branches in the tree
+      
+      var branches = [], names = [];
+      
+      function CollectBranches(obj, prntname) {
+         if (!obj || !obj.fBranches) return 0;
+         
+         var cnt = 0;
+         
+         for (var n=0;n<obj.fBranches.arr.length;++n) {
+            var br = obj.fBranches.arr[n],
+                name = (prntname ? prntname + "/" : "") + br.fName;
+            
+            branches.push(br);
+            names.push(name);
+            cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
+            if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
+            cnt += CollectBranches(br, name);
+         }
+         return cnt;
+      }
+      
+      var numleaves = CollectBranches(this);
+      
+      console.log('Collect branches', branches.length, 'leaves', numleaves);
+      
+      names.push("Total are " + branches.length + " branches with " + numleaves + " leaves");
+      
+      JSROOT.CallBack(result_callback, names, "inspect");
+   }
 
    return JSROOT;
 

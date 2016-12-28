@@ -1634,21 +1634,6 @@
 
       return this.ReadObject(dir_name, cycle, readdir_callback);
    };
-   
-   JSROOT.TestLeaves = function(obj) {
-      if (!obj || !obj.fBranches) return 0;
-      
-      var cnt = 0;
-      
-      for (var n=0;n<obj.fBranches.arr.length;++n) {
-         var br = obj.fBranches.arr[n];
-         cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-         if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
-         cnt += JSROOT.TestLeaves(br);
-      }
-      
-      return cnt;
-   }
 
    JSROOT.TFile.prototype.AddMethods = function(clname, streamer) {
       // create additional entries in the streamer, which sets all methods of the class
@@ -1658,7 +1643,7 @@
       if (clname == "TTree") 
          streamer.push({
             name: "$file",
-            func: function(buf,obj) { obj[this.name] = buf.fFile; console.log('Reading tree', obj.fName, 'leavs', JSROOT.TestLeaves(obj)); }
+            func: function(buf,obj) { obj[this.name] = buf.fFile; }
           });
 
       var methods = JSROOT.getMethods(clname);
