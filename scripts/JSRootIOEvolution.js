@@ -2577,30 +2577,31 @@
       
       if (this.member_wise) {
          
-         var ver = { val: buf.ntoi2() };
+         var ver = { val: buf.ntoi2() }, streamer = null;
          if (ver.val<=0) ver.checksum = buf.ntou4();
       
-         var streamer = buf.fFile.GetStreamer(this.conttype, ver);
-
-         streamer = buf.fFile.GetSplittedStreamer(streamer);
+         if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
+            streamer = this.member_streamer;
+         } else {
+            streamer = buf.fFile.GetStreamer(this.conttype, ver);
+            
+            this.member_streamer = streamer = buf.fFile.GetSplittedStreamer(streamer);
+            this.member_ver = ver.val;
+            this.member_checksum = ver.checksum;
+         }
 
          if (streamer) {
             
-            var n = buf.ntou4(), res = [];
+            var n = buf.ntou4(), res = [], i, k;
 
-            // console.log('Member-wise reading of ', this.typename, 'nelem', n, 'ver', ver);
-
-            for (var i=0;i<n;++i)
+            for (i=0;i<n;++i)
                res[i] = { _typename: this.conttype }; // create objects
 
-            for (var k=0;k<streamer.length;++k) {
-               //var pos = buf.o;
-               for (var i=0;i<n;++i)
+            for (k=0;k<streamer.length;++k) {
+               for (i=0;i<n;++i)
                   streamer[k].func(buf, res[i]);
-               //console.log('Read element', streamer[k].name, 'totallen', buf.o - pos);
             }
 
-            // console.log('reading splitted vector done', this.typename);
             return res;
          }
 
