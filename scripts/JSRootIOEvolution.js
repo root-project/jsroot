@@ -2086,7 +2086,7 @@
                         p++;
                      }
                      p1 = p-1;
-                     return res;
+                     return res.trim();
                   }
 
                   var name1 = GetNextName(), 
