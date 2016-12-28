@@ -2176,15 +2176,15 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TNamed') {
+      if (clname == "TNamed") {
          // we cannot use streamer info due to bottstrap problem
          // try to make as much realistic as we can
-         streamer.push({ basename:'TObject', base: 1, func: function(buf,obj) {
+         streamer.push({ basename: 'TObject', base: 1, func: function(buf,obj) {
             if (!obj._typename) obj._typename = 'TNamed';
             buf.ClassStreamer(obj, "TObject"); }
          });
          streamer.push({ name:'fName', func: function(buf,obj) { obj.fName = buf.ReadTString(); } });
-         streamer.push({ name:'fTitle', func : function(buf,obj) { obj.fTitle = buf.ReadTString(); } });
+         streamer.push({ name:'fTitle', func: function(buf,obj) { obj.fTitle = buf.ReadTString(); } });
          return this.AddMethods(clname, streamer);
       }
 
@@ -2574,18 +2574,19 @@
    }
 
    JSROOT.IO.ReadVectorElement = function(buf) {
+      
       if (this.member_wise) {
          
          var ver = { val: buf.ntoi2() };
          if (ver.val<=0) ver.checksum = buf.ntou4();
-         
+      
          var streamer = buf.fFile.GetStreamer(this.conttype, ver);
-         
+
          streamer = buf.fFile.GetSplittedStreamer(streamer);
 
          if (streamer) {
             
-            var n = buf.ntoi4(), res = [];
+            var n = buf.ntou4(), res = [];
 
             // console.log('Member-wise reading of ', this.typename, 'nelem', n, 'ver', ver);
 
@@ -2608,7 +2609,7 @@
          console.error('FAIL member-wise streaming for type', this.conttype, 'RALL-BACK buffer');
       }
 
-      var n = buf.ntoi4(), res = new Array(n), i = 0;
+      var n = buf.ntou4(), res = new Array(n), i = 0;
       
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
@@ -2665,7 +2666,7 @@
             continue;
          }
 
-         if (elem.name=='TObject') {
+         if (elem.basename == 'TObject') {
             tgt.push({ func: function(buf,obj) {
                buf.ntoi2(); // read version, why it here??
                obj.fUniqueID = buf.ntou4();
@@ -2681,7 +2682,7 @@
             ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
          }
 
-         var parent = this.GetStreamer(elem.name, ver);
+         var parent = this.GetStreamer(elem.basename, ver);
          if (parent) this.GetSplittedStreamer(parent, tgt);
       }
 
