@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 27/12/2016";
+   JSROOT.version = "dev 29/12/2016";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -524,11 +524,11 @@
             continue;
          }
          switch (val[indx]) {
-            case "'" : nquotes++; break;
-            case '"' : ndouble++; break;
-            case "[" : nbr++; break;
-            case "]" :  if (indx < val.length - 1) { nbr--; break; }
-            case "," :
+            case "'": nquotes++; break;
+            case '"': ndouble++; break;
+            case "[": nbr++; break;
+            case "]": if (indx < val.length - 1) { nbr--; break; }
+            case ",":
                if (nbr === 0) {
                   var sub =  val.substring(last, indx).trim();
                   if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))

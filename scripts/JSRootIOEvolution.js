@@ -291,7 +291,6 @@
             while (i < n) array[i++] = this.ntod();
             break;
          case JSROOT.IO.kFloat:
-         case JSROOT.IO.kDouble32:
             array = JSROOT.IO.NativeArray ? new Float32Array(n) : new Array(n);
             while (i < n) array[i++] = this.ntof();
             break;
@@ -724,6 +723,12 @@
       var res = bsign * Math.pow(2, bexp) * bman;
       return (Math.abs(res) < 1e-300) ? 0.0 : res;
    }
+   
+   JSROOT.TStrBuffer.prototype.ntof_bits = function(nbits) {
+      // function to read float 16 and double 32 - not implemented
+      this.shift(3);
+      return 0;
+   }
 
    JSROOT.TStrBuffer.prototype.ntod = function() {
       // IEEE-754 Floating-Point Conversion (double precision - 64 bits)
@@ -787,7 +792,6 @@
                array[i] = view.getFloat64(o);
             break;
          case JSROOT.IO.kFloat:
-         case JSROOT.IO.kDouble32:
             array = new Float32Array(n);
             for (; i < n; ++i, o+=4)
                array[i] = view.getFloat32(o);
@@ -926,6 +930,13 @@
    JSROOT.TArrBuffer.prototype.ntod = function() {
       var o = this.o; this.o+=8;
       return this.arr.getFloat64(o);
+   }
+   
+   JSROOT.TArrBuffer.prototype.ntof_bits = function(nbits) {
+      // function to read float 16 and double 32
+      var exp = this.ntou1(),
+          mantice = this.ntou2();
+      return 0;
    }
 
    // =======================================================================
@@ -1751,7 +1762,6 @@
          case JSROOT.IO.kDouble:
             member.func = function(buf,obj) { obj[this.name] = buf.ntod(); }; break;
          case JSROOT.IO.kFloat:
-         case JSROOT.IO.kDouble32:
             member.func = function(buf,obj) { obj[this.name] = buf.ntof(); }; break;
          case JSROOT.IO.kLegacyChar:
          case JSROOT.IO.kUChar:
@@ -1779,7 +1789,6 @@
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kLong64:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat:
-         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
             if (element.fArrayDim < 2) {
                member.arrlength = element.fArrayLength;
                member.func = function(buf, obj) {
@@ -1824,7 +1833,6 @@
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kLong64:
          case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat:
-         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
             member.cntname = element.fCountName;
             member.func = function(buf, obj) {
                if (buf.ntou1() === 1)
@@ -1842,7 +1850,59 @@
                   obj[this.name] = null;
             };
             break;
+         case JSROOT.IO.kDouble32:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble32:
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32:
+            member.double32 = true;
+         case JSROOT.IO.kFloat16:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kFloat16:
+         case JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16:
+            if (element.fFactor!==0) {
+               member.factor = 1./element.fFactor;
+               member.min = element.fXmin;
+               member.read = function(buf) { return buf.ntou4() * this.factor + this.min; };
+            } else
+            if ((element.fXmin===0) && member.double32) {
+               member.read = function(buf) { return buf.ntof(); };
+            } else {
+               member.nbits = Math.round(element.fXmin);
+               if (member.nbits===0) member.nbits = 12;
+               member.read = function(buf) { return buf.ntof_bits(this.nbits); }; 
+            }
 
+            if (member.type < JSROOT.IO.kOffsetL) {
+               member.func = function(buf,obj) { obj[this.name] = this.read(buf); }
+            } else {
+               member.readarr = function(buf) {
+                  var arr = this.double32 ? new Float64Array(this.arrlength) : new Float32Array(this.arrlength);
+                  for (var n=0;n<this.arrlength;++n) arr[n] = this.read(buf);
+                  return arr;
+               }
+               if (member.type > JSROOT.IO.kOffsetP) {
+                  member.cntname = element.fCountName;
+                  member.func = function(buf, obj) {
+                     if (buf.ntou1() === 1) {
+                        this.arrlength = obj[this.cntname];
+                        obj[this.name] = this.readarr(buf);
+                     } else {
+                        obj[this.name] = null;
+                     }
+                  };
+                  
+               } else
+               if (element.fArrayDim < 2) {
+                  member.arrlength = element.fArrayLength;
+                  member.func = function(buf, obj) { obj[this.name] = this.readarr(buf); };
+               } else {
+                  member.arrlength = element.fMaxIndex[element.fArrayDim-1];
+                  member.minus1 = true;
+                  member.func = function(buf, obj) {
+                     obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) { return handle.readarr(buf); });
+                  };
+               }
+            }
+            break;
+            
          case JSROOT.IO.kAnyP:
          case JSROOT.IO.kObjectP:
             member.func = function(buf, obj) {
@@ -2186,6 +2246,7 @@
          streamer.push({ func: function(buf,obj) {
             obj.fUniqueID = buf.ntou4();
             obj.fBits = buf.ntou4();
+            if (obj.fBits & (1<<4)) buf.ntou2(); // kIsReferenced, skip reference
          } });
          return this.AddMethods(clname, streamer);
       }
@@ -2408,23 +2469,59 @@
             element.fArrayDim = buf.ntou4();
             element.fMaxIndex = buf.ReadFastArray((ver == 1) ? buf.ntou4() : 5, JSROOT.IO.kUInt);
             element.fTypeName = buf.ReadTString();
-
-            if ((element.fType == JSROOT.IO.kUChar) && (element.fTypeName == "Bool_t" ||
-                  element.fTypeName == "bool"))
+            
+            if ((element.fType === JSROOT.IO.kUChar) && ((element.fTypeName == "Bool_t") || (element.fTypeName == "bool")))
                element.fType = JSROOT.IO.kBool;
-            if (ver > 1) {
-            }
+
+            element.fXmin = element.fXmax = element.fFactor = 0;
+            
+            /* if (ver > 1) { }
             if (ver <= 2) {
                // In TStreamerElement v2, fSize was holding the size of
                // the underlying data type.  In later version it contains
                // the full length of the data member.
             }
+            */
             if (ver == 3) {
                element.fXmin = buf.ntod();
                element.fXmax = buf.ntod();
                element.fFactor = buf.ntod();
-            }
-            if (ver > 3) {
+            } else 
+            if ((ver > 3) && (element.fBits & JSROOT.BIT(6))) { // kHasRange 
+               
+               var p1 = element.fTitle.indexOf("[");
+               if ((p1>=0) && (element.fType>JSROOT.IO.kOffsetP)) p1 = element.fTitle.indexOf("[", p1+1);
+               var p2 = element.fTitle.indexOf("]", p1+1);
+               
+               if ((p1>=0) && (p2>=p1+2)) {
+                  var arr = JSROOT.ParseAsArray(element.fTitle.substr(p1, p2-p1+1)), nbits = 32;
+                  
+                  if (arr.length===3) nbits = parseInt(arr[2]);
+                  if (isNaN(nbits) || (nbits<2) || (nbits>32)) nbits = 32;
+                  
+                  function parse_range(val) {
+                     if (!val) return 0;
+                     if (val.indexOf("pi")<0) return parseFloat(val); 
+                     val = val.trim();
+                     var sign = 1.;
+                     if (val[0] == "-") { sign = -1; val = val.substr(1); }
+                     switch(val) {
+                        case "2pi": 
+                        case "2*pi": 
+                        case "twopi": return sign*2*Math.PI;
+                        case "pi/2": return sign*Math.PI/2;
+                        case "pi/4": return sign*Math.PI/4;
+                     }
+                     return sign*Math.PI;
+                  }
+                  
+                  element.fXmin = parse_range(arr[0]); 
+                  element.fXmax = parse_range(arr[1]);
+                  
+                  var bigint = (nbits < 32) ? (1<<nbits) : 0xffffffff;
+                  if (element.fXmin < element.fXmax) element.fFactor = bigint/(element.fXmax - element.fXmin);
+                  else if (nbits<15) element.fXmin = nbits;
+               }
             }
          }});
          return this.AddMethods(clname, streamer);
@@ -2691,6 +2788,7 @@
                buf.ntoi2(); // read version, why it here??
                obj.fUniqueID = buf.ntou4();
                obj.fBits = buf.ntou4();
+               if (obj.fBits & (1<<4)) buf.ntou2(); // kIsReferenced, skip reference
             } });
             continue;
          }
