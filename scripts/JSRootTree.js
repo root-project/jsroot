@@ -564,7 +564,12 @@
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              datakind = 0, elem = null, member = null, 
              is_brelem = (branch._typename==="TBranchElement");
-             
+          
+         if (!branch.fEntries) {
+            console.log('Branch ', branch.fName, ' does not have entries');
+            selector.Terminate(false);
+            return false;
+         } else   
          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
              // branch with  
              console.log('Branch with kObjectNode cannot be read - has no baskets at all');
