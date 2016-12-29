@@ -45,6 +45,9 @@
          
          // constants of bits in version
          kStreamedMemberWise : JSROOT.BIT(14),
+         
+         // TOBject bits
+         kIsReferenced : JSROOT.BIT(4),
 
          IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
                                      (typ===this.kCounter) ||
@@ -2238,7 +2241,7 @@
          streamer.push({ func: function(buf,obj) {
             obj.fUniqueID = buf.ntou4();
             obj.fBits = buf.ntou4();
-            if (obj.fBits & (1<<4)) buf.ntou2(); // kIsReferenced, skip reference
+            if (obj.fBits & JSROOT.IO.kIsReferenced) buf.ntou2(); // skip pid
          } });
          return this.AddMethods(clname, streamer);
       }
@@ -2780,7 +2783,7 @@
                buf.ntoi2(); // read version, why it here??
                obj.fUniqueID = buf.ntou4();
                obj.fBits = buf.ntou4();
-               if (obj.fBits & (1<<4)) buf.ntou2(); // kIsReferenced, skip reference
+               if (obj.fBits & JSROOT.IO.kIsReferenced) buf.ntou2(); // skip pid
             } });
             continue;
          }
