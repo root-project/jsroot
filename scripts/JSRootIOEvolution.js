@@ -724,12 +724,6 @@
       return (Math.abs(res) < 1e-300) ? 0.0 : res;
    }
    
-   JSROOT.TStrBuffer.prototype.ntof_bits = function(nbits) {
-      // function to read float 16 and double 32 - not implemented
-      this.shift(3);
-      return 0;
-   }
-
    JSROOT.TStrBuffer.prototype.ntod = function() {
       // IEEE-754 Floating-Point Conversion (double precision - 64 bits)
       var inString = this.b.substring(this.o, this.o + 8); this.o+=8;
@@ -932,13 +926,6 @@
       return this.arr.getFloat64(o);
    }
    
-   JSROOT.TArrBuffer.prototype.ntof_bits = function(nbits) {
-      // function to read float 16 and double 32
-      var exp = this.ntou1(),
-          mantice = this.ntou2();
-      return 0;
-   }
-
    // =======================================================================
 
    JSROOT.CreateTBuffer = function(blob, pos, file, length) {
@@ -1867,7 +1854,12 @@
             } else {
                member.nbits = Math.round(element.fXmin);
                if (member.nbits===0) member.nbits = 12;
-               member.read = function(buf) { return buf.ntof_bits(this.nbits); }; 
+               member.dv = new DataView(new ArrayBuffer(16), 0);
+               member.read = function(buf) {
+                  var theExp = buf.ntou1(), theMan = buf.ntou2();
+                  this.dv.setUint32(0, (theExp << 23) | ((theMan & ((1<<(this.nbits+1))-1)) << (23-this.nbits)));
+                  return (1<<(this.nbits+1) & theMan) ? -1*this.dv.getFloat32(0) : this.dv.getFloat32(0);
+               }; 
             }
 
             if (member.type < JSROOT.IO.kOffsetL) {
