@@ -8621,13 +8621,13 @@
          subitem._more = false;
       } else   
       if (nb_leaves > 1) {
-         // not yet supported many leafs in one branch
          subitem._childs = [];
          for (var j = 0; j < nb_leaves; ++j) {
+            branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing 
             var leafitem = {
-                  _name : ClearName(branch.fLeaves.arr[j].fName),
-                  _kind : "ROOT." + branch.fLeaves.arr[j]._typename
-                  // _obj: branch.fLeaves.arr[j]
+               _name : ClearName(branch.fLeaves.arr[j].fName),
+               _kind : "ROOT." + branch.fLeaves.arr[j]._typename,
+               _obj: branch.fLeaves.arr[j]
             }
             subitem._childs.push(leafitem);
          }
@@ -8638,40 +8638,33 @@
    
    // ===========================================================================
    
-   JSROOT.Painter.drawTree = function(divid, tree, opt) {
+   JSROOT.Painter.drawTree = function(divid, obj, opt) {
       // this is function called from JSROOT.draw()
       // just envelope for real JSROOT.TTreeDraw method which do the main job
       // Tree functionality should be loaded at this place
+      // Can be also used for the branch and leaf object
       
-      var painter = new JSROOT.TObjectPainter(tree);
+      var painter = new JSROOT.TObjectPainter(obj);
       
       JSROOT.AssertPrerequisites('tree', function() {
+         var tree = obj, args = opt;
+         
+         if (obj.$branch) {
+            args = { expr: opt, branch: obj.$branch, leaf: obj.fName };
+            tree = obj.$branch.$tree;
+         } else
+         if (obj.$tree) {
+            args = { expr: opt, branch: obj };
+            tree = obj.$tree;
+         }
+         
+         if (!tree) {
+            console.log('No TTree object available for TTree::Draw');
+            return painter.DrawingReady();
+         }
+         
          var t = new JSROOT.TTree(tree); 
-         t.Draw(opt, function(histo, hopt) {
-            JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
-         });
-      });
-      
-      return painter;
-   }
-
-   // ===========================================================================
-
-   JSROOT.Painter.drawBranch = function(divid, branch, opt) {
-      // this is function called from JSROOT.draw()
-      // just envelope for real JSROOT.TTreeDraw method which do the main job
-      // Tree functionality should be loaded at this place
-      
-      var painter = new JSROOT.TObjectPainter(branch);
-      
-      // branch must include addition $tree field
-      // these field automatically set in the JSROOT.Painter.TreeHierarchy 
-      if (!branch || !branch.$tree) 
-         return painter.DrawingReady();
-      
-      JSROOT.AssertPrerequisites('tree', function() {
-         var t = new JSROOT.TTree(branch.$tree); 
-         t.Draw({ expr: opt, branch: branch}, function(histo, hopt) {
+         t.Draw(args, function(histo, hopt) {
             JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
          });
       });
@@ -10987,8 +10980,8 @@
    JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
    JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
    JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawBranch, dflt: "expand", opt: ";dump" });
-   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawTree, dflt: "expand", opt: ";dump" });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noexpand: true, func: JSROOT.Painter.drawTree, opt: ";dump" });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
    JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });

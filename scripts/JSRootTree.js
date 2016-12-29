@@ -656,8 +656,7 @@
                   name: selector.names[nn],
                   leaves: arr, 
                   func: function(buf, obj) {
-                     var tgt = obj[this.name];
-                     if (!tgt) tgt = obj[this.name] = {};
+                     var tgt = obj[this.name] = {};
                      for (var l=0;l<this.leaves.length;++l)
                         this.leaves[l].func(buf,tgt);
                   }
@@ -1087,10 +1086,15 @@
 
          selector.arr = []; // accumulate here
          
+         selector.leaf = args.leaf;
+         
          selector.AddBranch(args.branch, "br0");
          
          selector.Process = function() {
-            this.arr.push(this.tgtobj.br0);
+            if (this.leaf)
+               this.arr.push(this.tgtobj.br0[this.leaf]);
+            else   
+               this.arr.push(this.tgtobj.br0);
          }
          
          selector.Terminate = function(res) {
