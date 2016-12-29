@@ -556,13 +556,31 @@
          selector.names = cnt_names.concat(selector.names);
       }
       
+      function CreateLeafElem(leaf, name) {
+         // function creates TStreamerElement which corresponds to the elementary leaf
+         var datakind = 0;
+         switch (leaf._typename) {
+            case 'TLeafF': datakind = JSROOT.IO.kFloat; break;
+            case 'TLeafD': datakind = JSROOT.IO.kDouble; break;
+            case 'TLeafO': datakind = JSROOT.IO.kBool; break;
+            case 'TLeafB': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+            case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
+            case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
+            case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+            default: return null;
+         }
+         var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
+         elem.fType = datakind;
+         return elem;
+      }
+      
       for (var nn = 0; nn < selector.branches.length; ++nn) {
       
          var branch = selector.branches[nn],
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             datakind = 0, elem = null, member = null, 
+             elem = null, member = null, 
              is_brelem = (branch._typename==="TBranchElement");
           
          if (!branch.fEntries) {
@@ -577,7 +595,7 @@
          } else 
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
             // this is branch with counter 
-            datakind = JSROOT.IO.kInt;
+            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
          } else
       
          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
@@ -610,46 +628,51 @@
             // only STL containers here
             // if (!elem.fSTLtype) elem = null;
          } else
-         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && (leaf.fType === JSROOT.IO.kSTL)) {
-            datakind = JSROOT.IO.kInt; // this is counter from STL containers
-         } else
-         if ((nb_leaves === 1) && (leaf.fName === branch.fName + "_") && branch.fClonesName) {
-            datakind = JSROOT.IO.kInt; // this is counter from ClonesArrays
-         } else
          if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0))) {
-            switch (leaf._typename) {
-              case 'TLeafF' : datakind = JSROOT.IO.kFloat; break;
-              case 'TLeafD' : datakind = JSROOT.IO.kDouble; break;
-              case 'TLeafO' : datakind = JSROOT.IO.kBool; break;
-              case 'TLeafB' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
-              case 'TLeafS' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
-              case 'TLeafI' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
-              case 'TLeafL' : datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-              case 'TLeafElement' : {
-                 var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+            if (leaf._typename === 'TLeafElement') {
+              var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
                  
-                 if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
-                 if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
-                 elem = s_i.fElements.arr[leaf.fID];
-                 
-                 break;
-              }
+              if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
+              if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
+              elem = s_i.fElements.arr[leaf.fID];
+            } else {
+               elem = CreateLeafElem(leaf, selector.names[nn]);
             }
+         } else
+         if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
+            // branch with many elementary leaves
+            
+            console.log('Create reader for branch with ', nb_leaves, ' leaves');
+            
+            var arr = new Array(nb_leaves), isok = true;
+            for (var l=0;l<nb_leaves;++l) {
+               arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
+               arr[l] = JSROOT.IO.CreateMember(arr[l], this.$file);
+               if (!arr[l]) isok = false;
+            }
+            
+            if (isok)
+               member = {
+                  name: selector.names[nn],
+                  leaves: arr, 
+                  func: function(buf, obj) {
+                     var tgt = obj[this.name];
+                     if (!tgt) tgt = obj[this.name] = {};
+                     for (var l=0;l<this.leaves.length;++l)
+                        this.leaves[l].func(buf,tgt);
+                  }
+              }
          } 
-    
-         if (datakind > 0) {
-            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
-            elem.fType = datakind;
-         }
          
-         if (!elem) {
+         if (!elem && !member) {
             console.log('Not supported branch kind', branch.fName, branch._typename);
             selector.Terminate(false);
             return false;
          }
 
          // just intermediate solution
-         selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
+         if (elem)
+            selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
          
          if (!member) {
             member = JSROOT.IO.CreateMember(elem, this.$file);
@@ -785,7 +808,7 @@
             branch: branch,
             name: selector.names[nn],
             member: member,
-            type: elem.fType, // keep type identifier
+            type: elem ? elem.fType : 0, // keep type identifier
             curr_entry: -1, // last processed entry
             raw : null, // raw buffer for reading
             curr_basket: 0,  // number of basket used for processing
