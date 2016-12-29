@@ -8771,8 +8771,8 @@
          if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
 
          var item = {
-            _parent : top,
-            _name : key
+            _parent: top,
+            _name: key
          };
 
          if (fld === null) {
@@ -8781,8 +8781,8 @@
             continue;
          }
 
-         var proto = Object.prototype.toString.apply(fld);
-         var simple  = false;
+         var proto = Object.prototype.toString.apply(fld), 
+             simple = false;
 
          if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
             item._title = item._kind + " len=" + fld.length;
@@ -8807,12 +8807,13 @@
                inparent = (curr._obj === fld);
                curr = curr._parent;
             }
-
+            
             if (inparent) {
                item._value = "{ prnt }";
                simple = true;
             } else {
                item._obj = fld;
+               item._more = true;
                item._value = "{ }";
 
                switch(fld._typename) {
@@ -10983,9 +10984,9 @@
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, expand: JSROOT.Painter.FolderHierarchy });
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", expand: JSROOT.Painter.TaskHierarchy, for_derived: true });
-   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand" });
+   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
+   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", expand: JSROOT.Painter.TreeHierarchy, func: JSROOT.Painter.drawTree, dflt: "expand", opt: "testio" });
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", func: JSROOT.Painter.drawBranch, dflt: "expand", opt: ";dump" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", noinspect:true, noexpand:true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
