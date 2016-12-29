@@ -1,5 +1,14 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Reading TTree data
+  - all kinds of branches, including splitted STL conainers
+  - JSROOT.TSelector class to access TTree data
+  - simple access to branch data with "dump" draw option
+2. Elementary TTree::Draw
+  - simple 1D/2D histograms
+3. Full support of Float16_t and Double32_t types 
+
 
 ## Changes in 4.8.0
 1. Many improvements in the I/O part 
