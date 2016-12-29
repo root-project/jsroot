@@ -1107,6 +1107,8 @@
       if (args.branch) {
          selector = new JSROOT.TDrawSelector(result_callback);
          
+         if (args.leaf) args.expr = "."+args.leaf;
+         
          selector.AddDrawBranch(args.branch, args.expr, args.branch.fName);
          
          selector.hist_title = "drawing '" + args.branch.fName + "' from " + this.fName;
