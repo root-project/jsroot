@@ -1162,11 +1162,9 @@
             for (var n=0;n<obj.fBranches.arr.length;++n) {
                var br = obj.fBranches.arr[n],
                name = (prntname ? prntname + "/" : "") + br.fName;
-
                args.branches.push(br);
                args.names.push(name);
                cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-               if (br.fLeaves && br.fLeaves.arr.length>1) console.log('branch', br.fName, ' has ', br.fLeaves.arr.length, ' leavs');
                cnt += CollectBranches(br, name);
             }
             return cnt;
