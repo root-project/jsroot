@@ -802,26 +802,60 @@
          
          // set name used to store result
          member.name = selector.names[nn];
-
-         handle.arr.push({
-            branch: branch,
-            name: selector.names[nn],
-            member: member,
-            type: elem ? elem.fType : 0, // keep type identifier
-            curr_entry: -1, // last processed entry
-            raw : null, // raw buffer for reading
-            curr_basket: 0,  // number of basket used for processing
-            read_entry: -1,  // last entry which is already read 
-            staged_entry: -1, // entry which is staged for reading
-            staged_basket: 0,  // last basket staged for reading
-            numbaskets: branch.fWriteBasket || branch.fMaxBaskets,
-            baskets: [] // array for read baskets,
-         });
+         
+         var elem = {
+               branch: branch,
+               name: selector.names[nn],
+               member: member,
+               type: elem ? elem.fType : 0, // keep type identifier
+               curr_entry: -1, // last processed entry
+               raw : null, // raw buffer for reading
+               curr_basket: 0,  // number of basket used for processing
+               read_entry: -1,  // last entry which is already read 
+               staged_entry: -1, // entry which is staged for reading
+               staged_basket: 0,  // last basket staged for reading
+               numentries: branch.fEntries,
+               numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
+               baskets: [] // array for read baskets,
+         };
+         
+         handle.arr.push(elem);
+         
+         if (elem.numbaskets === 0) {
+            // without normal baskets, check if temporary data is available
+            
+            if (branch.fBaskets && (branch.fBaskets.arr.length>0)) {
+               var last = branch.fBaskets.arr.length - 1,
+                   bskt = branch.fBaskets.arr[last];
+               if (bskt && bskt.fBufferRef) {
+                  elem.direct_data = true;
+                  elem.raw = bskt.fBufferRef;
+                  elem.raw.locate(0); // set to initial position
+                  elem.nev = 0;
+                  elem.fNevBuf = elem.numentries; // number of entries 
+                  
+                  // console.log('get direct raw buffer', elem.raw.length, 'entries', elem.fNevBuf);
+               }
+            }
+            
+            if (!elem.direct_data || !elem.numentries) {
+               // if no any data found
+               console.log('No any data found for branch', branch.fName);
+               selector.Terminate(false);
+               return false;
+            }
+         }
          
          if (handle.arr.length > 1) {
-            var elem0 = handle.arr[0], elem = handle.arr[nn];
+            var elem0 = handle.arr[0];
 
-            if (elem.numbaskets !== elem0.numbaskets) handle.simple_read = false;
+            if (elem.direct_data !== elem0.direct_data) {
+               selector.Terminate(false);
+               return false;
+            }
+            
+            if ((elem.numentries !== elem0.numentries) ||
+                (elem.numbaskets !== elem0.numbaskets)) handle.simple_read = false;
             
             for (var n=0;n<elem.numbaskets;++n) 
                if (elem.branch.fBasketEntry[n]!==elem0.branch.fBasketEntry[n]) handle.simple_read = false;
@@ -859,7 +893,7 @@
       
       function ReadNextBaskets() {
          
-         var totalsz = 0, places = [], isany = true;
+         var totalsz = 0, places = [], isany = true, is_direct = false;
          
          handle.staged = [];
          
@@ -867,6 +901,12 @@
             isany = false;
             for (var n=0; n<handle.arr.length; n++) {
                var elem = handle.arr[n];
+               
+               if (elem.direct_data && elem.raw) {
+                  // branch already read raw buffer
+                  is_direct = true;
+                  continue;
+               }
 
                while (elem.staged_basket < elem.numbaskets) {
 
@@ -892,20 +932,26 @@
             }
          }
          
-         if ((totalsz === 0) && (handle.staged.length===0)) 
+         if ((totalsz === 0) && !is_direct) 
             return handle.selector.Terminate(true);
          
-         var portion = handle.arr[0].staged_basket / (handle.arr[0].numbaskets+1e-7); 
+         var portion = 1.;
+         if (handle.arr[0].numbaskets > 0)
+            portion = handle.arr[0].staged_basket / handle.arr[0].numbaskets; 
 
          handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
          
-         handle.file.ReadBaskets(places, ProcessBaskets); 
+         if (totalsz > 0)
+            handle.file.ReadBaskets(places, ProcessBaskets);
+         else
+         if (is_direct)   
+            ProcessBaskets([]); // directly process baskets
       }
       
       function ProcessBaskets(baskets) {
          // this is call-back when next baskets are read
 
-         if ((handle.selector.break_execution !== 0) || !baskets) 
+         if ((handle.selector.break_execution !== 0) || (baskets===null)) 
             return handle.selector.Terminate(false);
          
          if (baskets.length !== handle.staged.length) {
@@ -952,15 +998,16 @@
                   }
 
                   elem.raw = basket.raw;
-                  elem.basket = basket;
+                  elem.fNevBuf = basket.fNevBuf;
                   elem.nev = 0;
                   
                   if (handle.simple_read) {
-                     if (n==0) loopentries = basket.fNevBuf; else
-                     if (loopentries != basket.fNevBuf) { console.log('missmatch entries in simple mode', loopentries, basket.fNevBuf); loopentries = 1;  }   
+                     if (n==0) loopentries = elem.fNevBuf; else
+                     if (loopentries != elem.fNevBuf) { console.log('missmatch entries in simple mode', loopentries, elem.fNevBuf); loopentries = 1;  }   
                   }
 
-                  elem.baskets[elem.curr_basket++] = null; // remove reference
+                  basket.raw = null; // remove reference on raw buffer
+                  elem.baskets[elem.curr_basket++] = null; // remove reference on basket
                }
             }
             
@@ -981,7 +1028,7 @@
 
                   elem.nev += loopentries;
                   
-                  elem.raw = elem.basket = null;
+                  elem.raw = null;
                }
 
                handle.selector.ProcessArrays(handle.current_entry);
@@ -999,8 +1046,8 @@
                      elem.member.func(elem.raw, handle.selector.tgtobj);
                      elem.nev++;
 
-                     if (elem.nev >= elem.basket.fNevBuf)
-                        elem.raw = elem.basket = null;
+                     if (elem.nev >= elem.fNevBuf)
+                        elem.raw = null;
                   }
 
                   handle.selector.Process(handle.current_entry++);
