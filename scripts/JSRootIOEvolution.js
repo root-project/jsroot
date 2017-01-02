@@ -1257,7 +1257,8 @@
 
                if ((code1==13) && (code2==10)) {
                   if ((line.length>2) && (line.substr(0,2)=='--') && (line !== boundary)) {
-                     console.error('Expact boundary ' + boundary + '  got ' + line);
+                     console.error('Decode multipart message, expect boundary ', boundary, 'got ', line);
+                     return callback(null);
                   }
 
                   line = line.toLowerCase();

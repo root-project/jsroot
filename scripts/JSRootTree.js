@@ -587,6 +587,11 @@
             selector.Terminate(false);
             return false;
          } else   
+         if (branch.fFileName) {
+            console.error('Branch ', branch.fName, ' stored in different file ', branch.fFileName, ' not supported');
+            selector.Terminate(false);
+            return false;
+         } else  
          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
              // branch with  
              console.log('Branch with kObjectNode cannot be read - has no baskets at all');
@@ -930,6 +935,8 @@
             }
          }
          
+         // console.log('Reading ', totalsz, ' places', places.length/2);
+         
          if ((totalsz === 0) && !is_direct) 
             return handle.selector.Terminate(true);
          
@@ -949,6 +956,8 @@
       function ProcessBaskets(baskets) {
          // this is call-back when next baskets are read
 
+         // console.log('Process baskets');
+         
          if ((handle.selector.break_execution !== 0) || (baskets===null)) 
             return handle.selector.Terminate(false);
          
@@ -1013,7 +1022,7 @@
             
             // do not read too much
             if (handle.current_entry + loopentries > handle.numentries) 
-               loopentries = handle.numentries - handle.current_entry; 
+               loopentries = handle.numentries - handle.current_entry;
             
             if (handle.process_arrays && (loopentries>1)) {
                // special case - read all data from baskets as arrays
