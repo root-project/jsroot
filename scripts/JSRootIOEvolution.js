@@ -478,7 +478,7 @@
       if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
       var flag = this.ntoi1();
       
-      if (flag===0) return;
+      if (flag===0) return obj;
       
       if ((flag % 10) != 2) {
          if (obj.fNevBuf) {
@@ -506,6 +506,8 @@
          
          this.shift(sz); 
       }
+      
+      return obj;
    }
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
@@ -579,11 +581,8 @@
 
       if (classname === 'TQObject') return obj;
 
-      if (classname === "TBasket") {
-         this.ReadTBasket(obj);
-         JSROOT.addMethods(obj);
-         return obj;
-      }
+      if (classname === "TBasket") 
+         return this.ReadTBasket(obj);
 
       var ver = this.ReadVersion();
 
@@ -1350,10 +1349,10 @@
       }
       
       function ProcessBlobs(blobs) {
-         if (!blobs || (blobs.length*2 !== places.length)) return JSROOT.CallBack(call_back, null);
+         if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) return JSROOT.CallBack(call_back, null);
 
          var baskets = [], n = 0;
-
+         
          for (var k=0;k<bitems.length;++k) {
             if (!bitems[k].selected) continue;
             
@@ -1362,9 +1361,7 @@
 
             var blob = (places.length > 2) ? blobs[n++] : blobs,
                 buf = JSROOT.CreateTBuffer(blob, 0, file),
-                basket = {};
-
-            buf.ReadTBasket(basket);
+                basket = buf.ReadTBasket({ _typename: "TBasket" });
 
             if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket]) 
                console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
