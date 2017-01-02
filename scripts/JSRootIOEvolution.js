@@ -457,7 +457,6 @@
    }
 
    JSROOT.TBuffer.prototype.ReadTDirectory = function(dir) {
-
       var version = this.ntou2();
       dir.fDatimeC = this.ReadTDate();
       dir.fDatimeM = this.ReadTDate();
@@ -466,10 +465,8 @@
       dir.fSeekDir = (version > 1000) ? this.ntou8() : this.ntou4();
       dir.fSeekParent = (version > 1000) ? this.ntou8() : this.ntou4();
       dir.fSeekKeys = (version > 1000) ? this.ntou8() : this.ntou4();
-
       // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
    }
-
 
    JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
       this.ReadTKey(obj);
@@ -479,13 +476,10 @@
       obj.fNevBuf = this.ntoi4();
       obj.fLast = this.ntoi4();
       if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
-      
       var flag = this.ntoi1();
       
       if (flag===0) return;
       
-      // TODO: fix problem with non-compressed TTree
-
       if ((flag % 10) != 2) {
          if (obj.fNevBuf) {
             obj.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
@@ -500,17 +494,14 @@
 
       if ((flag === 1) || (flag > 10)) {
          // here is reading of raw data
-         var sz = obj.fLast;
-         if (ver.val <= 1) sz = this.ntoi4();
-         
-         this.shift(sz); // obj.fBufferRef
-      }
-      
-      // console.log('TBasket flag', flag, obj.fName);
-      
+         var sz = (ver.val <= 1) ? this.ntoi4() : obj.fLast;
 
-      // TBasket never sets length - no need to check it
-      //return this.CheckBytecount(ver,"ReadTBasket");
+         var blob = this.extract([this.o, sz]);   
+         
+         obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, this.fFile);
+         
+         this.shift(sz); 
+      }
    }
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
