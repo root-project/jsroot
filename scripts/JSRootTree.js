@@ -586,11 +586,11 @@
             selector.Terminate(false);
             return false;
          } else   
-         if (branch.fFileName) {
-            console.error('Branch ', branch.fName, ' stored in different file ', branch.fFileName, ' not supported');
-            selector.Terminate(false);
-            return false;
-         } else  
+//         if (branch.fFileName) {
+//            console.error('Branch ', branch.fName, ' stored in different file ', branch.fFileName, ' not supported');
+//            selector.Terminate(false);
+//            return false;
+//         } else  
          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
              // branch with  
              console.log('Branch with kObjectNode cannot be read - has no baskets at all');

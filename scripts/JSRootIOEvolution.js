@@ -928,7 +928,7 @@
    // =======================================================================
 
    JSROOT.CreateTBuffer = function(blob, pos, file, length) {
-      if ((blob==null) || (typeof(blob) == 'string'))
+      if (!blob || (typeof blob === 'string'))
          return new JSROOT.TStrBuffer(blob, pos, file, length);
 
       return new JSROOT.TArrBuffer(blob, pos, file, length);
@@ -1123,7 +1123,7 @@
       return this;
    }
 
-   JSROOT.TFile.prototype.ReadBuffer = function(place, callback) {
+   JSROOT.TFile.prototype.ReadBuffer = function(place, callback, filename) {
 
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return callback(this.fFileContent.extract(place));
@@ -1132,7 +1132,7 @@
       
       if (place.length > file.fMaxRanges*2) {
          // if multiple requests not supported, read all segments sequentially
-         var arg = { mainfile: file, places: place, cnt: 0, lastreq: 0, arr: [], maincallback: callback };
+         var arg = { mainfile: file, places: place, cnt: 0, lastreq: 0, arr: [], maincallback: callback, fname: filename  };
 
          function workaround_callback(res) {
             if (this.lastreq===2) this.arr.push(res); else
@@ -1144,13 +1144,18 @@
             this.lastreq = Math.min(this.mainfile.fMaxRanges*2, this.places.length - this.cnt);
             var segments = new Array(this.lastreq);
             for (var k=0;k<this.lastreq;++k) segments[k] = this.places[this.cnt++]; 
-            this.mainfile.ReadBuffer(segments, workaround_callback.bind(this));
+            this.mainfile.ReadBuffer(segments, workaround_callback.bind(this), this.fname);
          }
 
          return workaround_callback.bind(arg)();
       }
 
       var url = this.fURL, ranges = "bytes";
+      if (filename && (typeof filename === 'string') && (filename.length>0)) {
+         var pos = url.lastIndexOf("/");
+         url = (pos<0) ? filename : url.substr(0,pos+1) + filename; 
+      }
+      
       for (var n=0;n<place.length;n+=2) 
          ranges += (n>0 ? "," : "=") + (place[n] + "-" + (place[n] + place[n+1] - 1));
 
@@ -1189,7 +1194,6 @@
                if (file.fMaxRanges > 10) file.fMaxRanges = 10; else return callback(res);
                return file.ReadBuffer(place, callback);
             }
-            
             
             return callback(res);
          }
@@ -1318,51 +1322,82 @@
    JSROOT.TFile.prototype.ReadBaskets = function(items, call_back) {
       // read basket with tree data
 
-      var file = this, places = [];
+      var file = this, places = [], filename = "";
 
-      // extract places 
-      for (var n=0;n<items.length;++n) 
-         places.push(items[n].branch.fBasketSeek[items[n].basket], items[n].branch.fBasketBytes[items[n].basket]);
-      
-
-      this.ReadBuffer(places, function(blobs) {
-
-         if (!blobs || (blobs.length!==items.length)) return JSROOT.CallBack(call_back, null);
-
-         var baskets = [];
-
+      function ExtractPlaces() {
+         // extract places to read and define file name
+         
+         places = []; filename = "";
+         
          for (var n=0;n<items.length;++n) {
+            if (items[n].done) continue;
+            
+            var branch = items[n].branch;
+            
+            if (places.length===0)
+               filename = branch.fFileName;
+            else
+               if (filename !== branch.fFileName) continue;
+            
+            items[n].selected = true; // mark which item was selected for reading
+            
+            places.push(branch.fBasketSeek[items[n].basket], branch.fBasketBytes[items[n].basket]);
+         }
+         
+         // if ((filename.length>0) && (places.length > 0)) console.log('Reading baskets from file', filename);
+         
+         return places.length > 0;
+      }
+      
+      function ProcessBlobs(blobs) {
+         if (!blobs || (blobs.length*2 !== places.length)) return JSROOT.CallBack(call_back, null);
 
-            var basket = {}, blob = (items.length > 1) ? blobs[n] : blobs;
+         var baskets = [], n = 0;
 
-            var buf = JSROOT.CreateTBuffer(blob, 0, file);
+         for (var k=0;k<items.length;++k) {
+            if (!items[k].selected) continue;
+            
+            items[k].selected = false;
+            items[k].done = true;
+
+            var blob = (places.length > 2) ? blobs[n++] : blobs,
+                buf = JSROOT.CreateTBuffer(blob, 0, file),
+                basket = {};
 
             buf.ReadTBasket(basket);
 
-            if (basket.fNbytes !== items[n].branch.fBasketBytes[items[n].basket]) 
-               console.error('mismatch in read basket sizes', items[n].branch.fBasketBytes[items[n].basket]);
+            if (basket.fNbytes !== items[k].branch.fBasketBytes[items[k].basket]) 
+               console.error('mismatch in read basket sizes', items[k].branch.fBasketBytes[items[k].basket]);
             
-            // items[n].obj = basket; // keep basket object itself if necessary
+            // items[k].obj = basket; // keep basket object itself if necessary
             
-            items[n].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+            items[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
             
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                // use data from original blob
-               items[n].raw = buf;
+               items[k].raw = buf;
                
             } else {
                // unpack data and create new blob
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
-               if (objblob) items[n].raw = JSROOT.CreateTBuffer(objblob, 0, file);
+               if (objblob) items[k].raw = JSROOT.CreateTBuffer(objblob, 0, file);
                
-               if (items[n].raw) items[n].raw.fTagOffset = basket.fKeylen; 
+               if (items[k].raw) items[k].raw.fTagOffset = basket.fKeylen; 
             }
-
          }
 
-         JSROOT.CallBack(call_back, items);
-      });
+         if (ExtractPlaces())
+            file.ReadBuffer(places, ProcessBlobs, filename);
+         else
+            JSROOT.CallBack(call_back, items); 
+      }
+
+      // extract places where to read
+      if (ExtractPlaces())
+         file.ReadBuffer(places, ProcessBlobs, filename);
+      else
+         JSROOT.CallBack(call_back, null); 
    }
 
 

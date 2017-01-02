@@ -3,7 +3,8 @@
 ## Changes in dev
 1. Reading TTree data
   - all kinds of branches, including splitted STL conainers
-  - also bracnhes with several elementary leaves
+  - bracnhes with several elementary leaves
+  - branches from different ROOT files
   - JSROOT.TSelector class to access TTree data
   - simple access to branch data with "dump" draw option
 2. Elementary TTree::Draw
