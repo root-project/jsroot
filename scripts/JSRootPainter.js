@@ -8533,7 +8533,7 @@
            item = {
              _name : obj.fName,
              _kind : "ROOT." + obj._typename,
-             _title : obj.fTitle,
+             _title : obj.fTitle + "  type:"  +  obj._typename,
              _obj : obj
            };
 
@@ -8789,7 +8789,7 @@
       else
       if (top._obj !== obj) alert('object missmatch');
 
-      if (!('_title' in top) && ('_typename' in obj))
+      if (!top._title && obj._typename)
          top._title = "ROOT." + obj._typename;
 
       for (var key in obj) {
@@ -8816,7 +8816,7 @@
             var proto = Object.prototype.toString.apply(fld);
 
             if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
-               item._title = item._kind + " len=" + fld.length;
+               item._title = "array len=" + fld.length;
                simple = (proto != '[object Array]');
                if (fld.length === 0) {
                   item._value = "[ ]";
@@ -8835,7 +8835,7 @@
                item._expand = JSROOT.Painter.ObjectHierarchy;
                item._obj = fld;
             }  else { 
-               if ('_typename' in fld)
+               if (fld._typename)
                   item._kind = item._title = "ROOT." + fld._typename;
 
                // check if object already shown in hierarchy (circular dependency)
@@ -8854,10 +8854,10 @@
                   item._value = "{ }";
 
                   switch(fld._typename) {
-                  case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(fld); break;
-                  case 'TText': item._value = fld.fTitle; break;
-                  case 'TLatex': item._value = fld.fTitle; break;
-                  case 'TObjString': item._value = fld.fString; break;
+                     case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(fld); break;
+                     case 'TText': item._value = fld.fTitle; break;
+                     case 'TLatex': item._value = fld.fTitle; break;
+                     case 'TObjString': item._value = fld.fString; break;
                   }
                }
             }
@@ -10612,7 +10612,13 @@
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.default_by_click = "expand"; // that painter tries to do by default
       painter.with_icons = false;
-      painter.h = { _name: "Object", _title: "ROOT." + obj._typename, _click_action: "expand", _nosimple: false };
+      painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false };
+      if ((typeof obj.fTitle === 'string') && (obj.fTitle.length>0))
+         painter.h._title = obj.fTitle;
+      
+      if (obj._typename)
+         painter.h._title += "  type:" + obj._typename; 
+         
       if ((typeof obj.fName === 'string') && (obj.fName.length>0))
          painter.h._name = obj.fName;
 
