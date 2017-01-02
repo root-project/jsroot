@@ -2002,11 +2002,11 @@
             member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
          case JSROOT.IO.kCharStar:
             member.func = function(buf,obj) {
-            var len = buf.ntoi4();
-            obj[this.name] = buf.substring(buf.o, buf.o + len);
-            buf.o += len;
-         };
-         break;
+               var len = buf.ntoi4();
+               obj[this.name] = buf.substring(buf.o, buf.o + len);
+               buf.o += len;
+            };
+            break;
          case JSROOT.IO.kTString:
             member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
             break;

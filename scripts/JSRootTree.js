@@ -565,6 +565,7 @@
             case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
             case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
             case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+            case 'TLeafC': datakind = JSROOT.IO.kTString; break;
             default: return null;
          }
          var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
