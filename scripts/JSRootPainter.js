@@ -8739,8 +8739,44 @@
    }
 
    JSROOT.Painter.ObjectHierarchy = function(top, obj, args) {
-      if ((top==null) || (obj==null)) return false;
+      if (!top || (obj===null)) return false;
 
+      top._childs = [];
+      
+      if (Object.prototype.toString.apply(obj) === '[object DataView]') {
+
+         var item = {
+             _parent: top,
+             _name: 'size',
+             _value: obj.byteLength.toString(),
+             _vclass: 'h_value_num'
+         };
+         
+         top._childs.push(item);
+         var namelen = (obj.byteLength < 10) ? 1 : JSROOT.log10(obj.byteLength);
+         
+         for (var k=0;k<obj.byteLength;++k) {
+            if (k % 16 === 0) {
+               item = {
+                 _parent: top,
+                 _name: k.toString(),
+                 _value: "",
+                 _vclass: 'h_value_num'
+               };
+               while (item._name.length < namelen) item._name = "0" + item._name; 
+               top._childs.push(item);
+            }
+            
+            var val = obj.getUint8(k).toString(16);
+            while (val.length<2) val = "0"+val;
+            if (item._value.length>0) 
+               item._value += (k%4===0) ? " | " : " ";
+            
+            item._value += val;
+         } 
+         return true;
+      }
+      
       // check nosimple property in all parents
       var nosimple = true,  prnt = top;
       while (prnt) {
@@ -8748,7 +8784,6 @@
          prnt = prnt._parent;
       }
 
-      top._childs = [];
       if (!('_obj' in top))
          top._obj = obj;
       else
@@ -8774,46 +8809,56 @@
             continue;
          }
 
-         var proto = Object.prototype.toString.apply(fld), 
-             simple = false;
+        var simple = false;
 
-         if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
-            item._title = item._kind + " len=" + fld.length;
-            simple = (proto != '[object Array]');
-            if (fld.length === 0) {
-               item._value = "[ ]";
-               item._more = false; // hpainter will not try to expand again
-            } else {
+         if (typeof fld == 'object') {
+         
+            var proto = Object.prototype.toString.apply(fld);
+
+            if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
+               item._title = item._kind + " len=" + fld.length;
+               simple = (proto != '[object Array]');
+               if (fld.length === 0) {
+                  item._value = "[ ]";
+                  item._more = false; // hpainter will not try to expand again
+               } else {
+                  item._value = "[...]";
+                  item._more = true;
+                  item._expand = JSROOT.Painter.ObjectHierarchy;
+                  item._obj = fld;
+               }
+            } else
+            if (proto === "[object DataView]") {
+               item._title = 'DataView len=' + fld.byteLength;
                item._value = "[...]";
                item._more = true;
                item._expand = JSROOT.Painter.ObjectHierarchy;
                item._obj = fld;
-            }
-         } else
-         if (typeof fld == 'object') {
-            if ('_typename' in fld)
-               item._kind = item._title = "ROOT." + fld._typename;
+            }  else { 
+               if ('_typename' in fld)
+                  item._kind = item._title = "ROOT." + fld._typename;
 
-            // check if object already shown in hierarchy (circular dependency)
-            var curr = top, inparent = false;
-            while (curr && !inparent) {
-               inparent = (curr._obj === fld);
-               curr = curr._parent;
-            }
-            
-            if (inparent) {
-               item._value = "{ prnt }";
-               simple = true;
-            } else {
-               item._obj = fld;
-               item._more = true;
-               item._value = "{ }";
+               // check if object already shown in hierarchy (circular dependency)
+               var curr = top, inparent = false;
+               while (curr && !inparent) {
+                  inparent = (curr._obj === fld);
+                  curr = curr._parent;
+               }
 
-               switch(fld._typename) {
+               if (inparent) {
+                  item._value = "{ prnt }";
+                  simple = true;
+               } else {
+                  item._obj = fld;
+                  item._more = true;
+                  item._value = "{ }";
+
+                  switch(fld._typename) {
                   case 'TColor': item._value = JSROOT.Painter.MakeColorRGB(fld); break;
                   case 'TText': item._value = fld.fTitle; break;
                   case 'TLatex': item._value = fld.fTitle; break;
                   case 'TObjString': item._value = fld.fString; break;
+                  }
                }
             }
          } else
