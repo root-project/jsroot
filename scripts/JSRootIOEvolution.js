@@ -495,12 +495,14 @@
       if ((flag === 1) || (flag > 10)) {
          // here is reading of raw data
          var sz = (ver.val <= 1) ? this.ntoi4() : obj.fLast;
+
+         if (sz > obj.fKeylen) {
+            // buffer includes again complete TKey data - exclude it
+            var blob = this.extract([this.o + obj.fKeylen, sz - obj.fKeylen]);   
          
-         // buffer includes again complete TKey data - exclude it
-         var blob = this.extract([this.o + obj.fKeylen, sz - obj.fKeylen]);   
-         
-         obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, this.fFile, sz - obj.fKeylen);
-         obj.fBufferRef.fTagOffset = obj.fKeylen; 
+            obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, this.fFile, sz - obj.fKeylen);
+            obj.fBufferRef.fTagOffset = obj.fKeylen;
+         }
          
          this.shift(sz); 
       }

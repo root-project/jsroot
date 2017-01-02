@@ -18,7 +18,6 @@
    }
 } (function(JSROOT) {
    
-   
    JSROOT.BranchType = { kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
                          kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41 }; 
    
@@ -825,16 +824,17 @@
             // without normal baskets, check if temporary data is available
             
             if (branch.fBaskets && (branch.fBaskets.arr.length>0)) {
-               var last = branch.fBaskets.arr.length - 1,
-                   bskt = branch.fBaskets.arr[last];
-               if (bskt && bskt.fBufferRef) {
+               
+               for (var k=0;k<branch.fBaskets.arr.length;++k) {
+                  var bskt = branch.fBaskets.arr[k];
+                  if (!bskt || !bskt.fBufferRef) continue;
+               
                   elem.direct_data = true;
                   elem.raw = bskt.fBufferRef;
                   elem.raw.locate(0); // set to initial position
                   elem.nev = 0;
-                  elem.fNevBuf = elem.numentries; // number of entries 
-                  
-                  // console.log('get direct raw buffer', elem.raw.length, 'entries', elem.fNevBuf);
+                  elem.fNevBuf = elem.numentries; // number of entries
+                  break;
                }
             }
             
