@@ -895,7 +895,7 @@
       
       function ReadNextBaskets() {
          
-         var totalsz = 0, places = [], isany = true, is_direct = false;
+         var totalsz = 0, bitems = [], isany = true, is_direct = false;
          
          while ((totalsz < 1e6) && isany) {
             isany = false;
@@ -918,7 +918,7 @@
                   // first baskets can be skipped
                   if (elem.branch.fBasketEntry[k+1] < handle.process_min) continue;
                   
-                  places.push({
+                  bitems.push({
                      id: n, // to find which element we are reading
                      branch: elem.branch,
                      basket: k,
@@ -935,8 +935,6 @@
             }
          }
          
-         // console.log('Reading ', totalsz, ' places', places.length/2);
-         
          if ((totalsz === 0) && !is_direct) 
             return handle.selector.Terminate(true);
          
@@ -947,7 +945,7 @@
          handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
          
          if (totalsz > 0)
-            handle.file.ReadBaskets(places, ProcessBaskets);
+            handle.file.ReadBaskets(bitems, ProcessBaskets);
          else
          if (is_direct)   
             ProcessBaskets([]); // directly process baskets

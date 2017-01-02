@@ -1319,7 +1319,7 @@
       xhr.send(null);
    }
 
-   JSROOT.TFile.prototype.ReadBaskets = function(items, call_back) {
+   JSROOT.TFile.prototype.ReadBaskets = function(bitems, call_back) {
       // read basket with tree data
 
       var file = this, places = [], filename = "";
@@ -1329,19 +1329,19 @@
          
          places = []; filename = "";
          
-         for (var n=0;n<items.length;++n) {
-            if (items[n].done) continue;
+         for (var n=0;n<bitems.length;++n) {
+            if (bitems[n].done) continue;
             
-            var branch = items[n].branch;
+            var branch = bitems[n].branch;
             
             if (places.length===0)
                filename = branch.fFileName;
             else
                if (filename !== branch.fFileName) continue;
             
-            items[n].selected = true; // mark which item was selected for reading
+            bitems[n].selected = true; // mark which item was selected for reading
             
-            places.push(branch.fBasketSeek[items[n].basket], branch.fBasketBytes[items[n].basket]);
+            places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
          }
          
          // if ((filename.length>0) && (places.length > 0)) console.log('Reading baskets from file', filename);
@@ -1354,11 +1354,11 @@
 
          var baskets = [], n = 0;
 
-         for (var k=0;k<items.length;++k) {
-            if (!items[k].selected) continue;
+         for (var k=0;k<bitems.length;++k) {
+            if (!bitems[k].selected) continue;
             
-            items[k].selected = false;
-            items[k].done = true;
+            bitems[k].selected = false;
+            bitems[k].done = true;
 
             var blob = (places.length > 2) ? blobs[n++] : blobs,
                 buf = JSROOT.CreateTBuffer(blob, 0, file),
@@ -1366,31 +1366,31 @@
 
             buf.ReadTBasket(basket);
 
-            if (basket.fNbytes !== items[k].branch.fBasketBytes[items[k].basket]) 
-               console.error('mismatch in read basket sizes', items[k].branch.fBasketBytes[items[k].basket]);
+            if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket]) 
+               console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
             
             // items[k].obj = basket; // keep basket object itself if necessary
             
-            items[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+            bitems[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
             
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                // use data from original blob
-               items[k].raw = buf;
+               bitems[k].raw = buf;
                
             } else {
                // unpack data and create new blob
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
-               if (objblob) items[k].raw = JSROOT.CreateTBuffer(objblob, 0, file);
+               if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, file);
                
-               if (items[k].raw) items[k].raw.fTagOffset = basket.fKeylen; 
+               if (bitems[k].raw) bitems[k].raw.fTagOffset = basket.fKeylen; 
             }
          }
 
          if (ExtractPlaces())
             file.ReadBuffer(places, ProcessBlobs, filename);
          else
-            JSROOT.CallBack(call_back, items); 
+            JSROOT.CallBack(call_back, bitems); 
       }
 
       // extract places where to read
