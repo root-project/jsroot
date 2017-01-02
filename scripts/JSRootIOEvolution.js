@@ -1315,44 +1315,53 @@
       xhr.send(null);
    }
 
-   JSROOT.TFile.prototype.ReadBaskets = function(places, call_back) {
+   JSROOT.TFile.prototype.ReadBaskets = function(items, call_back) {
       // read basket with tree data
 
-      var file = this;
+      var file = this, places = [];
+
+      // extract places 
+      for (var n=0;n<items.length;++n) 
+         places.push(items[n].branch.fBasketSeek[items[n].basket], items[n].branch.fBasketBytes[items[n].basket]);
+      
 
       this.ReadBuffer(places, function(blobs) {
 
-         if (!blobs) return JSROOT.CallBack(call_back, null);
+         if (!blobs || (blobs.length!==items.length)) return JSROOT.CallBack(call_back, null);
 
          var baskets = [];
 
-         for (var n=0;n<places.length;n+=2) {
+         for (var n=0;n<items.length;++n) {
 
-            var basket = {}, blob = (places.length > 2) ? blobs[n/2] : blobs;
+            var basket = {}, blob = (items.length > 1) ? blobs[n] : blobs;
 
             var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
             buf.ReadTBasket(basket);
 
-            if (basket.fNbytes !== places[n+1]) console.log('mismatch in basket sizes', basket.fNbytes, places[n+1]);
-
+            if (basket.fNbytes !== items[n].branch.fBasketBytes[items[n].basket]) 
+               console.error('mismatch in read basket sizes', items[n].branch.fBasketBytes[items[n].basket]);
+            
+            // items[n].obj = basket; // keep basket object itself if necessary
+            
+            items[n].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+            
             if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                // use data from original blob
-               basket.raw = buf;
+               items[n].raw = buf;
                
             } else {
                // unpack data and create new blob
                var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
-               if (objblob) basket.raw = JSROOT.CreateTBuffer(objblob, 0, file);
+               if (objblob) items[n].raw = JSROOT.CreateTBuffer(objblob, 0, file);
                
-               if (basket.raw) basket.raw.fTagOffset = basket.fKeylen; 
+               if (items[n].raw) items[n].raw.fTagOffset = basket.fKeylen; 
             }
 
-            baskets.push(basket);
          }
 
-         JSROOT.CallBack(call_back, baskets);
+         JSROOT.CallBack(call_back, items);
       });
    }
 

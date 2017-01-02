@@ -492,7 +492,6 @@
           firstentry: isNaN(args.firstentry) ? 0 : args.firstentry,
           process_min: -1, // current entryid limit
           process_max: -1,  // current entryid limit
-          staged: [], // list of requested baskets for next I/O operation
           current_entry: 0, // current processed entry
           simple_read: true, // all baskets in all used branches are in sync,
           process_arrays: false // one can process all branches as arrays
@@ -898,8 +897,6 @@
          
          var totalsz = 0, places = [], isany = true, is_direct = false;
          
-         handle.staged = [];
-         
          while ((totalsz < 1e6) && isany) {
             isany = false;
             for (var n=0; n<handle.arr.length; n++) {
@@ -920,15 +917,18 @@
 
                   // first baskets can be skipped
                   if (elem.branch.fBasketEntry[k+1] < handle.process_min) continue;
-
-                  places.push(elem.branch.fBasketSeek[k], elem.branch.fBasketBytes[k]);
                   
+                  places.push({
+                     id: n, // to find which element we are reading
+                     branch: elem.branch,
+                     basket: k,
+                     raw: null // here should be result
+                  });
+
                   totalsz += elem.branch.fBasketBytes[k];
                   isany = true;
                    
                   elem.staged_entry = elem.branch.fBasketEntry[k+1];
-                  
-                  handle.staged.push({branch: n, basket: k}); // remember basket staged for reading
                   
                   break;
                }
@@ -953,27 +953,18 @@
             ProcessBaskets([]); // directly process baskets
       }
       
-      function ProcessBaskets(baskets) {
+      function ProcessBaskets(bitems) {
          // this is call-back when next baskets are read
 
          // console.log('Process baskets');
          
-         if ((handle.selector.break_execution !== 0) || (baskets===null)) 
+         if ((handle.selector.break_execution !== 0) || (bitems===null)) 
             return handle.selector.Terminate(false);
-         
-         if (baskets.length !== handle.staged.length) {
-            console.log('Internal TTree reading problem', baskets.length, handle.staged.length);
-            return handle.selector.Terminate(false);
-         }
          
          // redistribute read baskets over branches
-         for(var n=0;n<baskets.length;++n) {
-            var tgt = handle.staged[n];
-            handle.arr[tgt.branch].baskets[tgt.basket] = baskets[n];
-         }
+         for(var n=0;n<bitems.length;++n)
+            handle.arr[bitems[n].id].baskets[bitems[n].basket] = bitems[n];
          
-         handle.staged = [];
-
          // now process baskets
          
          var isanyprocessed = false;
@@ -993,10 +984,11 @@
                      continue; // ignore non-master branch
                   }
 
-                  var basket = elem.baskets[elem.curr_basket];
+                  // this is single responce from the tree, includes branch, bakset number, raw data
+                  var bitem = elem.baskets[elem.curr_basket]; 
 
                   // basket not read
-                  if (!basket) { 
+                  if (!bitem) { 
                      // no data, but no any event processed - problem
                      if (!isanyprocessed) return handle.selector.Terminate(false);
 
@@ -1004,8 +996,8 @@
                      return ReadNextBaskets();
                   }
 
-                  elem.raw = basket.raw;
-                  elem.fNevBuf = basket.fNevBuf;
+                  elem.raw = bitem.raw;
+                  elem.fNevBuf = bitem.fNevBuf;
                   elem.nev = 0;
                   
                   if (handle.simple_read) {
@@ -1013,8 +1005,9 @@
                      if (loopentries != elem.fNevBuf) { console.log('missmatch entries in simple mode', loopentries, elem.fNevBuf); loopentries = 1;  }   
                   }
 
-                  basket.raw = null; // remove reference on raw buffer
-                  elem.baskets[elem.curr_basket++] = null; // remove reference on basket
+                  bitem.raw = null; // remove reference on raw buffer
+                  bitem.branch = null; // remove reference on the branch
+                  elem.baskets[elem.curr_basket++] = undefined; // remove reference on basket
                }
             }
             
