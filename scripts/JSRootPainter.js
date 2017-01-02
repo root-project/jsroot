@@ -8834,7 +8834,14 @@
                item._more = true;
                item._expand = JSROOT.Painter.ObjectHierarchy;
                item._obj = fld;
-            }  else { 
+            }  else 
+            if (proto === "[object Date]") {
+               item._more = false;
+               item._title = 'Date';
+               item._value = fld.toString();
+               item._vclass = 'h_value_num';
+            } else { 
+               
                if (fld._typename)
                   item._kind = item._title = "ROOT." + fld._typename;
 
