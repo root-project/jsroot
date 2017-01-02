@@ -487,11 +487,12 @@
       // TODO: fix problem with non-compressed TTree
 
       if ((flag % 10) != 2) {
-         obj.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
-         var kDisplacementMask = 0xFF000000;
-         if ((20<flag) && (flag<40)) 
-            for(var i=0; i<obj.fNevBuf; ++i)
-               obj.fEntryOffset[i] &= ~kDisplacementMask;
+         if (obj.fNevBuf) {
+            obj.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+            if ((20<flag) && (flag<40)) 
+               for(var i=0, kDisplacementMask = 0xFF000000; i<obj.fNevBuf; ++i)
+                  obj.fEntryOffset[i] &= ~kDisplacementMask;
+         }
                
          if (flag>40) 
             obj.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
