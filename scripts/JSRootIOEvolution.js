@@ -71,6 +71,7 @@
                case "unsigned long": return JSROOT.IO.kULong;
                case "int64_t": return JSROOT.IO.kLong64;
                case "uint64_t": return JSROOT.IO.kULong64;
+               case "unsigned long long": return JSROOT.IO.kULong64;
             }
             return -1;
          },
