@@ -627,7 +627,7 @@
             // only STL containers here
             // if (!elem.fSTLtype) elem = null;
          } else
-         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0))) {
+         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0) || (leaf.fName.indexOf(branch.fName+"[")==0))) {
             if (leaf._typename === 'TLeafElement') {
               var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
                  
@@ -771,7 +771,7 @@
                         throw new Error('Second branch counter not used - very BAD');
                      }
                   }
-
+                  
                   var stlmember = {
                         name: selector.names[nn],
                         stl_size: selector.names[count_indx],
@@ -795,6 +795,9 @@
                
             } else {
                if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
+               
+               console.log('Use counter ', selector.names[count_indx], ' instead of ', member.cntname);
+               
                member.cntname = selector.names[count_indx];
             }
          }
@@ -817,7 +820,7 @@
                numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
                baskets: [] // array for read baskets,
          };
-         
+
          handle.arr.push(elem);
          
          if (elem.numbaskets === 0) {
@@ -849,17 +852,12 @@
          if (handle.arr.length > 1) {
             var elem0 = handle.arr[0];
 
-            if (elem.direct_data !== elem0.direct_data) {
-               selector.Terminate(false);
-               return false;
-            }
-            
-            if ((elem.numentries !== elem0.numentries) ||
+            if ((elem.direct_data !== elem0.direct_data) || 
+                (elem.numentries !== elem0.numentries) ||
                 (elem.numbaskets !== elem0.numbaskets)) handle.simple_read = false;
-            
+            else
             for (var n=0;n<elem.numbaskets;++n) 
                if (elem.branch.fBasketEntry[n]!==elem0.branch.fBasketEntry[n]) handle.simple_read = false;
-
          }
       }
       
