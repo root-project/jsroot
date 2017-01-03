@@ -606,7 +606,7 @@
             
             elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
 
-            console.log('TBranchElement with ID==-1 typename ', branch.fClassName, elem.fType);
+            // console.log('TBranchElement with ID==-1 typename ', branch.fClassName, elem.fType);
             
             if (elem.fType === JSROOT.IO.kAny) {
                // this is indication that object stored in the branch - need special handling
@@ -770,6 +770,9 @@
                   // function provided by normal I/O
                   member.func = member.branch_func;
                   member.stl_size = selector.names[count_indx]; 
+                  
+                  // for empty STL branch with map item read version anyway, for vector does not
+                  member.read_empty_stl_version = (member.readelem === JSROOT.IO.ReadMapElement); 
                   
                } else 
                if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
@@ -1287,6 +1290,8 @@
          }
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
+         
+         console.log(args.nbr, args.names[args.nbr]);
          
          if (args.branches[args.nbr].fID === -2) {
             // this is not interesting

@@ -51,6 +51,7 @@
          
          // TOBject bits
          kIsReferenced : JSROOT.BIT(4),
+         kHasUUID: JSROOT.BIT(5),
 
          IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
                                      (typ===this.kCounter) ||
@@ -591,6 +592,21 @@
 
       return obj;
    }
+   
+   JSROOT.TBuffer.prototype.ReadTRef = function(obj) {
+      this.ClassStreamer(obj, "TObject");
+
+      if (obj.fBits & JSROOT.IO.kHasUUID) {
+         
+         obj.fUUID = this.ReadTString();
+      } else {
+         obj.fPID = this.ntou2();
+         // obj.fProcess = buf.fFile.ReadProcessID(obj.fPID);
+      }
+      
+      return obj;
+      
+   }
 
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
@@ -601,6 +617,9 @@
       if (classname === "TBasket") 
          return this.ReadTBasket(obj);
 
+//      if (classname === "TRef") 
+//         return this.ReadTRef(obj);
+      
       var ver = this.ReadVersion();
 
       var streamer = this.fFile.GetStreamer(classname, ver);
@@ -2132,7 +2151,7 @@
 
                   console.warn('Now for', element.fTypeName, ' use type ', stl, JSROOT.IO.StlNames[stl]);
                }
-
+            
             if ((element._typename === 'TStreamerSTLstring') ||
                 (member.typename == "string") || (member.typename == "string*"))
                member.readelem = function(buf) { return buf.ReadTString(); };
@@ -2246,13 +2265,15 @@
                member.branch_func = function(buf,obj) {
                   // special function to read data from STL branch
                   var cnt = obj[this.stl_size], arr = new Array(cnt);
-                  if (cnt>0) {
+                  
+                  if ((cnt>0) || this.read_empty_stl_version) {
                      var ver = buf.ReadVersion();
                      this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
                      for (var n=0;n<cnt;++n)
                         arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                      buf.CheckBytecount(ver, "branch " + this.typename);
-                  }
+                  } 
+                     
                   obj[this.name] = arr;
                }
             } 
@@ -2279,7 +2300,7 @@
       // or generate it from the streamer infos and add it to the list
 
       // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == "TBasket") return null;
+      if (clname == 'TQObject' || clname == "TBasket" /* || clname == "TRef"*/) return null;
 
       var streamer = [], fullname = clname;
 
@@ -2400,6 +2421,25 @@
          }});
          return this.AddMethods(clname, streamer);
       }
+
+/*      if (clname === 'TRef') {
+         streamer.push({ func: function(buf, obj) {
+            if (!obj._typename) obj._typename = "TRef";
+            buf.ClassStreamer(obj, "TObject");
+
+            console.log('reading TRef', (obj.fBits & JSROOT.IO.kHasUUID) !== 0);
+
+            if (obj.fBits & JSROOT.IO.kHasUUID) {
+               
+               obj.fUUID = buf.ReadTString();
+            } else {
+               obj.fPID = buf.ntou2();
+               // obj.fProcess = buf.fFile.ReadProcessID(obj.fPID);
+            }
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+*/
 
       if (clname === 'TRefArray') {
          streamer.push({ func: function(buf, obj) {
