@@ -43,6 +43,9 @@
          kSTLunorderedset : 10, kSTLunorderedmultiset : 11, kSTLunorderedmap : 12,
          kSTLunorderedmultimap : 13, kSTLend : 14,
          
+         // names of STL containers
+         StlNames: [ "", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
+         
          // constants of bits in version
          kStreamedMemberWise : JSROOT.BIT(14),
          
@@ -2103,23 +2106,27 @@
          case JSROOT.IO.kStreamer:
             member.typename = element.fTypeName;
             
-            // if (element._typename === 'TStreamerSTL')
-            //   console.log('member', member.name, member.typename, element.fCtype, element.fSTLtype);
+            var stl = (element.fSTLtype || 0) % 40;
+            
+            // FIXME: this is workaround due to wrong type id in the streamer element
+            // example is ?file=https://root.cern/files/RelValMinBias-GEN-SIM-RECO.root&item=MetaData;1/ProductRegistry&opt=dump
+            // is it old ROOT file ?
+            if ((element._typename === 'TStreamerSTL') && (stl>0) && (stl<JSROOT.IO.StlNames.length))
+               if (element.fTypeName.indexOf(JSROOT.IO.StlNames[stl]+"<")!=0) {
+                  console.warn('STL type mismatch for ', element.fTypeName, ' got wrong type ', stl, JSROOT.IO.StlNames[stl]);
+                  for (var k=1;k<JSROOT.IO.StlNames.length;++k)
+                     if (element.fTypeName.indexOf(JSROOT.IO.StlNames[k]+"<")==0) { stl = k; break; }
+
+                  console.warn('Now for', element.fTypeName, ' use type ', stl, JSROOT.IO.StlNames[stl]);
+               }
 
             if ((element._typename === 'TStreamerSTLstring') ||
                 (member.typename == "string") || (member.typename == "string*"))
                member.readelem = function(buf) { return buf.ReadTString(); };
             else
-            if ((element.fSTLtype === JSROOT.IO.kSTLvector) ||
-                (element.fSTLtype === JSROOT.IO.kSTLvector + 40) ||
-                (element.fSTLtype === JSROOT.IO.kSTLlist) ||
-                (element.fSTLtype === JSROOT.IO.kSTLlist + 40) ||
-                (element.fSTLtype === JSROOT.IO.kSTLdeque) ||
-                (element.fSTLtype === JSROOT.IO.kSTLdeque + 40) ||
-                (element.fSTLtype === JSROOT.IO.kSTLset) ||
-                (element.fSTLtype === JSROOT.IO.kSTLset + 40) ||
-                (element.fSTLtype === JSROOT.IO.kSTLmultiset) ||
-                (element.fSTLtype === JSROOT.IO.kSTLmultiset + 40)) {
+            if ((stl === JSROOT.IO.kSTLvector) || (stl === JSROOT.IO.kSTLlist) ||
+                (stl === JSROOT.IO.kSTLdeque) || (stl === JSROOT.IO.kSTLset) ||
+                (stl === JSROOT.IO.kSTLmultiset)) {
                var p1 = member.typename.indexOf("<"),
                    p2 = member.typename.lastIndexOf(">");
 
@@ -2157,10 +2164,7 @@
                   
                }
             } else
-            if ((element.fSTLtype === JSROOT.IO.kSTLmap) ||
-                (element.fSTLtype === JSROOT.IO.kSTLmap + 40) ||
-                (element.fSTLtype === JSROOT.IO.kSTLmultimap) ||
-                (element.fSTLtype === JSROOT.IO.kSTLmultimap + 40)) {
+            if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
 
                var p1 = member.typename.indexOf("<"),
                    p2 = member.typename.lastIndexOf(">");
@@ -2204,8 +2208,7 @@
                if (member.streamer)
                   member.readelem = JSROOT.IO.ReadMapElement;
             } else
-            if ((element.fSTLtype === JSROOT.IO.kSTLbitset) ||
-                (element.fSTLtype === JSROOT.IO.kSTLbitset + 40)) {
+            if (stl === JSROOT.IO.kSTLbitset) {
                   member.readelem = function(buf,obj) {
                      return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
                   }
@@ -2665,7 +2668,7 @@
       elem.fType = JSROOT.IO.GetTypeId(typename);
       if (elem.fType > 0) return elem; // basic type
 
-      /*
+/*      
       if (typename.indexOf('string')===0) {
          elem._typename = 'TStreamerSTLstring';
          elem.fType = JSROOT.IO.kStreamer;
@@ -2673,21 +2676,15 @@
          elem.fCtype = 0;
          return elem;
       }
-      */
-
+*/
+      
       // check if there are STL containers
       var stltype = JSROOT.IO.kNotSTL, pos = typename.indexOf("<");
-      if ((pos>0) && (typename.indexOf(">") > pos+2))
-         switch(typename.substr(0, pos)) {
-            case 'vector': stltype = JSROOT.IO.kSTLvector; break;
-            case 'list': stltype = JSROOT.IO.kSTLlist; break;
-            case 'deque': stltype = JSROOT.IO.kSTLdeque; break;
-            case 'set': stltype = JSROOT.IO.kSTLset; break;
-            case 'multiset': stltype = JSROOT.IO.kSTLmultiset; break;
-            case 'map': stltype = JSROOT.IO.kSTLmap; break;
-            case 'multimap': stltype = JSROOT.IO.kSTLmultimap; break;
-            case 'bitset': stltype = JSROOT.IO.kSTLbitset; break;
-        }
+      if ((pos>0) && (typename.indexOf(">") > pos+2)) 
+         for (var stl=1;stl<JSROOT.IO.StlNames.length;++stl)
+            if (typename.substr(0, pos) === JSROOT.IO.StlNames[stl]) {
+               stltype = stl; break;
+            }
       
       if (stltype !== JSROOT.IO.kNotSTL) {
          elem._typename = 'TStreamerSTL';
@@ -2717,7 +2714,7 @@
    }
 
    JSROOT.IO.ReadVectorElement = function(buf) {
-      
+
       if (this.member_wise) {
          
          var ver = { val: buf.ntoi2() }, streamer = null;
@@ -2754,7 +2751,7 @@
       }
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
-      
+
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
       else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }
