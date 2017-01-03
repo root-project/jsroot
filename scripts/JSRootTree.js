@@ -1301,6 +1301,98 @@
    
    // ===========================================================================
    
+   
+   if (JSROOT.Painter)
+      
+   JSROOT.Painter.CreateBranchItem = function(node, branch, tree) {
+      if (!node || !branch) return false;
+
+      var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+          nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
+
+      function ClearName(arg) {
+         var pos = arg.indexOf("[");
+         return pos<0 ? arg : arg.substr(0, pos);
+      }
+      
+      branch.$tree = tree; // keep tree pointer, later do it more smart
+
+      var subitem = {
+            _name : ClearName(branch.fName),
+            _kind : "ROOT." + branch._typename,
+            _title : branch.fTitle,
+            _obj : branch 
+      };
+
+      if (!node._childs) node._childs = [];
+
+      node._childs.push(subitem);
+
+      if (branch._typename==='TBranchElement')
+         subitem._title += " from " + branch.fClassName + ";" + branch.fClassVersion;
+
+      if (nb_branches > 0) {
+         subitem._more = true;
+         subitem._expand = function(bnode,bobj) {
+            // really create all sub-branch items
+            if (!bobj) return false;
+            
+            for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
+               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
+            
+            if (!bobj.fLeaves || (bobj.fLeaves.arr.length !== 1)) return true;
+            
+            var leaf = bobj.fLeaves.arr[0];
+            if ((leaf._typename === 'TLeafElement') && (leaf.fType === JSROOT.IO.kSTL)) {
+               var szitem = {
+                     _name : "@size",
+                     _title : leaf.fTitle,
+                     _kind : "ROOT.TBranch",
+                     _icon : "img_leaf",
+                     _obj : bobj,
+                     _more : false
+               };
+               bnode._childs.push(szitem);
+               
+            }
+            return true;
+         }
+         return true;
+      } else
+      if (nb_leaves === 1) {
+         subitem._icon = "img_leaf";
+         subitem._more = false;
+      } else   
+      if (nb_leaves > 1) {
+         subitem._childs = [];
+         for (var j = 0; j < nb_leaves; ++j) {
+            branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing 
+            var leafitem = {
+               _name : ClearName(branch.fLeaves.arr[j].fName),
+               _kind : "ROOT." + branch.fLeaves.arr[j]._typename,
+               _obj: branch.fLeaves.arr[j]
+            }
+            subitem._childs.push(leafitem);
+         }
+      }
+
+      return true;
+   }
+   
+   if (JSROOT.Painter)
+   JSROOT.Painter.TreeHierarchy = function(node, obj) {
+      if (obj._typename != 'TTree' && obj._typename != 'TNtuple' && obj._typename != 'TNtupleD' ) return false;
+
+      node._childs = [];
+      node._tree = obj;  // set reference, will be used later by TTree::Draw
+
+      for ( var i = 0; i < obj.fBranches.arr.length; ++i)
+         JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
+
+      return true;
+   }
+
+   
  if (JSROOT.Painter)
    JSROOT.Painter.drawTree = function(divid, obj, opt) {
       // this is function called from JSROOT.draw()
