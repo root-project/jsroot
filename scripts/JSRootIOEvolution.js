@@ -603,7 +603,7 @@
          return this.ReadTBasket(obj);
 
       var ver = this.ReadVersion();
-
+      
       var streamer = this.fFile.GetStreamer(classname, ver);
 
       if (streamer !== null) {
@@ -1800,7 +1800,14 @@
       switch (member.type) {
          case JSROOT.IO.kBase:
             member.base = element.fBaseVersion; // indicate base class
-            member.basename = element.fName; // keep class name 
+            member.basename = element.fName; // keep class name
+            
+            if (member.base === 0) {
+               // special case of base class with ClassDef(0), but its parent must be streamed
+               // ROOT itself fails at this moment
+               if (member.basename === "TVirtualPerfStats") member.basename = "TObject"; 
+            }
+            
             member.func = function(buf, obj) {
                buf.ClassStreamer(obj, this.basename);
             };
@@ -2237,9 +2244,9 @@
                   member.readelem = JSROOT.IO.ReadMapElement;
             } else
             if (stl === JSROOT.IO.kSTLbitset) {
-                  member.readelem = function(buf,obj) {
-                     return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
-                  }
+               member.readelem = function(buf,obj) {
+                  return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
+               }
             }
 
             if (!member.readelem) {
@@ -2703,6 +2710,12 @@
          return this.AddMethods(clname, streamer);
       }
 
+   // in some cases ver=1 written for the class which set ClassDef(0)
+/*      if (!s_i && (ver.val===1) && (ver.checksum===undefined)) {
+         s_i = this.FindStreamerInfo(clname, 0);
+         if (s_i) console.log('Replace ver 1->0 for class', clname);
+      }
+*/
       if (!s_i) {
          delete this.fStreamers[fullname];
          if (!ver.nowarning)
