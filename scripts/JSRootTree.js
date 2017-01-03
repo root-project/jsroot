@@ -1298,6 +1298,40 @@
       
       TestNextBranch();
    }
+   
+   // ===========================================================================
+   
+ if (JSROOT.Painter)
+   JSROOT.Painter.drawTree = function(divid, obj, opt) {
+      // this is function called from JSROOT.draw()
+      // just envelope for real TTree::Draw method which do the main job
+      // Can be also used for the branch and leaf object
+
+      var tree = obj, args = opt;
+
+      if (obj.$branch) {
+         args = { expr: opt, branch: obj.$branch, leaf: obj.fName };
+         tree = obj.$branch.$tree;
+      } else
+         if (obj.$tree) {
+            args = { expr: opt, branch: obj };
+            tree = obj.$tree;
+         }
+
+      if (!tree) {
+         console.log('No TTree object available for TTree::Draw');
+         return this.DrawingReady();
+      }
+
+      var t = new JSROOT.TTree(tree), 
+          painter = this;
+
+      t.Draw(args, function(histo, hopt) {
+         JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
+      });
+
+      return this;
+   }
 
    return JSROOT;
 
