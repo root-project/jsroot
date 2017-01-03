@@ -1912,9 +1912,9 @@
                }; 
             }
             
-            member.readarr = function(buf) {
-               var arr = this.double32 ? new Float64Array(this.arrlength) : new Float32Array(this.arrlength);
-               for (var n=0;n<this.arrlength;++n) arr[n] = this.read(buf);
+            member.readarr = function(buf,len) {
+               var arr = this.double32 ? new Float64Array(len) : new Float32Array(len);
+               for (var n=0;n<len;++n) arr[n] = this.read(buf);
                return arr;
             }
 
@@ -1925,8 +1925,7 @@
                member.cntname = element.fCountName;
                member.func = function(buf, obj) {
                   if (buf.ntou1() === 1) {
-                     this.arrlength = obj[this.cntname];
-                     obj[this.name] = this.readarr(buf);
+                     obj[this.name] = this.readarr(buf, obj[this.cntname]);
                   } else {
                      obj[this.name] = null;
                   }
@@ -1934,12 +1933,12 @@
             } else
             if (element.fArrayDim < 2) {
                member.arrlength = element.fArrayLength;
-               member.func = function(buf, obj) { obj[this.name] = this.readarr(buf); };
+               member.func = function(buf, obj) { obj[this.name] = this.readarr(buf, this.arrlength); };
             } else {
                member.arrlength = element.fMaxIndex[element.fArrayDim-1];
                member.minus1 = true;
                member.func = function(buf, obj) {
-                  obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) { return handle.readarr(buf); });
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) { return handle.readarr(buf, handle.arrlength); });
                };
             }
             break;

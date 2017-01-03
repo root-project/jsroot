@@ -708,7 +708,7 @@
             selector.process_arrays = false;
 
             if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
-               console.log('introduce special handling with STL size', elem.fType);
+               // console.log('introduce special handling with STL size', elem.fType);
                
                if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
                   // special handling for compressed floats
@@ -716,8 +716,7 @@
                   member.stl_size = selector.names[count_indx];
                   
                   member.func = function(buf, obj) {
-                     this.arrlength = obj[this.stl_size]; 
-                     obj[this.name] = this.readarr(buf);
+                     obj[this.name] = this.readarr(buf, obj[this.stl_size]);
                   }
                   
                } else
