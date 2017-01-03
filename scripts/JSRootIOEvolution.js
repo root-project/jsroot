@@ -2684,7 +2684,7 @@
             case 'vector': stltype = JSROOT.IO.kSTLvector; break;
             case 'list': stltype = JSROOT.IO.kSTLlist; break;
             case 'deque': stltype = JSROOT.IO.kSTLdeque; break;
-            case 'set': JSROOT.IO.kSTLset; break;
+            case 'set': stltype = JSROOT.IO.kSTLset; break;
             case 'multiset': stltype = JSROOT.IO.kSTLmultiset; break;
             case 'map': stltype = JSROOT.IO.kSTLmap; break;
             case 'multimap': stltype = JSROOT.IO.kSTLmultimap; break;
