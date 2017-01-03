@@ -2168,14 +2168,28 @@
 
                   member.readelem = JSROOT.IO.ReadVectorElement;
                   
-                  if (!member.isptr && (member.arrkind<0)) {
-                     var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
-                     if (subelem.fSTLtype && (subelem.fType === JSROOT.IO.kStreamer)) {
-                        subelem.$fictional = true;
-                        member.submember = JSROOT.IO.CreateMember(subelem, file); 
-                     }
-                  }
+                  if (!member.isptr && (member.arrkind<0)) 
                   
+                     if (member.conttype==="TRef") {
+                        console.log('Create direct streamer for class', member.conttype);
+                        // FIXME: special handling of TRef, can be same for other ROOT classes
+                        member.submember = {
+                           classname: member.conttype,       
+                           sub: file.GetStreamer(member.conttype, {}),
+                           readelem: function(buf) {
+                              var obj = { _typename: this.classname };
+                              for (var k=0;k<this.sub.length;++k)
+                                 this.sub[k].func(buf, obj);
+                              return obj;
+                           }
+                        };
+                     } else {
+                        var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
+                        if (subelem.fSTLtype && (subelem.fType === JSROOT.IO.kStreamer)) {
+                           subelem.$fictional = true;
+                           member.submember = JSROOT.IO.CreateMember(subelem, file); 
+                        }
+                     }
                }
             } else
             if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
@@ -2404,13 +2418,10 @@
          return this.AddMethods(clname, streamer);
       }
 
-/*      if (clname === 'TRef') {
+      if (clname === 'TRef') {
          streamer.push({ func: function(buf, obj) {
             if (!obj._typename) obj._typename = "TRef";
             buf.ClassStreamer(obj, "TObject");
-
-            console.log('reading TRef', (obj.fBits & JSROOT.IO.kHasUUID) !== 0);
-
             if (obj.fBits & JSROOT.IO.kHasUUID) {
                
                obj.fUUID = buf.ReadTString();
@@ -2421,7 +2432,7 @@
          }});
          return this.AddMethods(clname, streamer);
       }
-*/
+
       if (clname === 'TRefArray') {
          streamer.push({ func: function(buf, obj) {
             obj._typename = "TRefArray";
@@ -2815,6 +2826,26 @@
             }
          }
       }
+      
+
+      // FIXME: logic is not very clear
+      // why for foreign class one needs normal object read function, which includes reading of the version
+      // but for class like map<int,TRef> object version is not stored
+      for (var nn=0;nn<2;++nn) 
+         if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
+            // create direct streamer for the specified class - map does not write version
+
+            console.log('Create direct streamer for class', streamer[nn].classname);
+
+            streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
+            
+            streamer[nn].readelem = function(buf) {
+               var obj = { _typename: this.classname };
+               for (var k=0;k<this.sub.length;++k)
+                  this.sub[k].func(buf, obj);
+               return obj;
+            }
+         }
       
       var i, n = buf.ntoi4(), res = new Array(n);
       

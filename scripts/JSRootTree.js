@@ -1291,7 +1291,7 @@
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
          
-         console.log(args.nbr, args.names[args.nbr]);
+         // console.log(args.nbr, args.names[args.nbr]);
          
          if (args.branches[args.nbr].fID === -2) {
             // this is not interesting
