@@ -148,7 +148,8 @@
               { name: "Update in grid", url: "demo/demo.htm?layout=grid3x2", title: "Update drawing on the grid layout", src:true, oldnames: ["Update drawing 2"] },
               { name: "File hierarchy", url: "demo/example_h.htm", title : "Use HierarchyPainter to display file objects hiararchy", src:true },
               { name: "Zooming", url: "demo/example_zooming.htm", title : "Redefine Zoom function to make synchronous zooming in other histogram", src:true },
-              { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" }
+              { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
+              { name: "User tree", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=demo/markus.js", title : "Example of user custom streamer for reading TTree data (LHCb)", src: "demo/markus.js" }
             ],
             'httpserver.C' : [
               { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C' },
