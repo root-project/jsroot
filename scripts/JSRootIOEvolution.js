@@ -839,6 +839,10 @@
             for (; i < n; ++i)
                array[i] = this.ReadTString();
             return array; // exit here to avoid conflicts
+         case JSROOT.IO.kDouble32:
+            throw new Error('kDouble32 should not be used in ReadFastArray');
+         case JSROOT.IO.kFloat16:
+            throw new Error('kFloat16 should not be used in ReadFastArray');
          default:
             array = new Uint32Array(n);
             for (; i < n; ++i, o+=4)
@@ -1716,13 +1720,17 @@
       if (this.fStreamerInfos)
          for (var i=0; i < this.fStreamerInfos.arr.length; ++i) {
             var si = this.fStreamerInfos.arr[i];
+            
+            // checksum is enough to identify class
+            if ((clchecksum !== undefined) && (si.fCheckSum === clchecksum)) return si;
+            
             if (si.fName !== clname) continue;
-            if (clchecksum !== undefined) {
-               if (si.fCheckSum === clchecksum) return si; else continue;
-            }
-            if (clversion !== undefined) {
-               if (si.fClassVersion===clversion) return si; else continue;
-            }
+            
+            // checksum should match
+            if (clchecksum !== undefined) continue;
+            
+            if ((clversion !== undefined) && (si.fClassVersion !== clversion)) continue;
+            
             return si;
          }
 
@@ -1903,37 +1911,36 @@
                   return (1<<(this.nbits+1) & theMan) ? -1*this.dv.getFloat32(0) : this.dv.getFloat32(0);
                }; 
             }
+            
+            member.readarr = function(buf) {
+               var arr = this.double32 ? new Float64Array(this.arrlength) : new Float32Array(this.arrlength);
+               for (var n=0;n<this.arrlength;++n) arr[n] = this.read(buf);
+               return arr;
+            }
 
             if (member.type < JSROOT.IO.kOffsetL) {
                member.func = function(buf,obj) { obj[this.name] = this.read(buf); }
+            } else
+            if (member.type > JSROOT.IO.kOffsetP) {
+               member.cntname = element.fCountName;
+               member.func = function(buf, obj) {
+                  if (buf.ntou1() === 1) {
+                     this.arrlength = obj[this.cntname];
+                     obj[this.name] = this.readarr(buf);
+                  } else {
+                     obj[this.name] = null;
+                  }
+               };
+            } else
+            if (element.fArrayDim < 2) {
+               member.arrlength = element.fArrayLength;
+               member.func = function(buf, obj) { obj[this.name] = this.readarr(buf); };
             } else {
-               member.readarr = function(buf) {
-                  var arr = this.double32 ? new Float64Array(this.arrlength) : new Float32Array(this.arrlength);
-                  for (var n=0;n<this.arrlength;++n) arr[n] = this.read(buf);
-                  return arr;
-               }
-               if (member.type > JSROOT.IO.kOffsetP) {
-                  member.cntname = element.fCountName;
-                  member.func = function(buf, obj) {
-                     if (buf.ntou1() === 1) {
-                        this.arrlength = obj[this.cntname];
-                        obj[this.name] = this.readarr(buf);
-                     } else {
-                        obj[this.name] = null;
-                     }
-                  };
-                  
-               } else
-               if (element.fArrayDim < 2) {
-                  member.arrlength = element.fArrayLength;
-                  member.func = function(buf, obj) { obj[this.name] = this.readarr(buf); };
-               } else {
-                  member.arrlength = element.fMaxIndex[element.fArrayDim-1];
-                  member.minus1 = true;
-                  member.func = function(buf, obj) {
-                     obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) { return handle.readarr(buf); });
-                  };
-               }
+               member.arrlength = element.fMaxIndex[element.fArrayDim-1];
+               member.minus1 = true;
+               member.func = function(buf, obj) {
+                  obj[this.name] = buf.ReadNdimArray(this, function(buf,handle) { return handle.readarr(buf); });
+               };
             }
             break;
             
@@ -2268,7 +2275,7 @@
          this.fStreamers[fullname] = streamer = new Array;
       }
 
-      if (clname == 'TObject'|| clname == 'TMethodCall') {
+      if ((clname === 'TObject') || (clname === 'TMethodCall')) {
          streamer.push({ func: function(buf,obj) {
             obj.fUniqueID = buf.ntou4();
             obj.fBits = buf.ntou4();
@@ -2277,21 +2284,21 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TNamed") {
+      if (clname === "TNamed") {
          // we cannot use streamer info due to bottstrap problem
          // try to make as much realistic as we can
          streamer.push({ basename: 'TObject', base: 1, func: function(buf,obj) {
             if (!obj._typename) obj._typename = 'TNamed';
             buf.ClassStreamer(obj, "TObject"); }
          });
-         streamer.push({ name:'fName', func: function(buf,obj) { obj.fName = buf.ReadTString(); } });
-         streamer.push({ name:'fTitle', func: function(buf,obj) { obj.fTitle = buf.ReadTString(); } });
+         streamer.push({ name: 'fName', func: function(buf,obj) { obj.fName = buf.ReadTString(); } });
+         streamer.push({ name: 'fTitle', func: function(buf,obj) { obj.fTitle = buf.ReadTString(); } });
          return this.AddMethods(clname, streamer);
       }
 
-      if ((clname == 'TList') || (clname == 'THashList')) {
+      if ((clname === 'TList') || (clname === 'THashList')) {
          streamer.push({ classname: clname,
-                         func : function(buf, obj) {
+                         func: function(buf, obj) {
             // stream all objects in the list from the I/O buffer
             if (!obj._typename) obj._typename = this.classname;
             obj.name = "";
@@ -2312,8 +2319,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TClonesArray') {
-         streamer.push({ func : function(buf, list) {
+      if (clname === 'TClonesArray') {
+         streamer.push({ func: function(buf, list) {
             if (!list._typename) list._typename = "TClonesArray";
             list.name = "";
             var ver = buf.last_read_version;
@@ -2355,8 +2362,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TMap') {
-         streamer.push({ func : function(buf, map) {
+      if (clname === 'TMap') {
+         streamer.push({ func: function(buf, map) {
             if (!map._typename) map._typename = "TMap";
             map.name = "";
             map.arr = new Array();
@@ -2379,8 +2386,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TRefArray') {
-         streamer.push({ func : function(buf, obj) {
+      if (clname === 'TRefArray') {
+         streamer.push({ func: function(buf, obj) {
             obj._typename = "TRefArray";
             buf.ClassStreamer(obj, "TObject");
             obj.name = buf.ReadTString();
@@ -2396,8 +2403,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TCanvas') {
-         streamer.push({ func : function(buf, obj) {
+      if (clname === 'TCanvas') {
+         streamer.push({ func: function(buf, obj) {
             obj._typename = "TCanvas";
             buf.ClassStreamer(obj, "TPad");
 
@@ -2428,8 +2435,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TObjArray')  {
-         streamer.push({ func : function(buf, list) {
+      if (clname === 'TObjArray')  {
+         streamer.push({ func: function(buf, list) {
             list._typename = "TObjArray";
             list.name = "";
             var ver = buf.last_read_version;
@@ -2447,8 +2454,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == 'TPolyMarker3D') {
-         streamer.push({ func : function(buf, marker) {
+      if (clname === 'TPolyMarker3D') {
+         streamer.push({ func: function(buf, marker) {
             var ver = buf.last_read_version;
 
             buf.ClassStreamer(marker, "TObject");
@@ -2469,8 +2476,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerInfo") {
-         streamer.push({ func : function(buf, streamerinfo) {
+      if (clname === "TStreamerInfo") {
+         streamer.push({ func: function(buf, streamerinfo) {
             // stream an object of class TStreamerInfo from the I/O buffer
             if (buf.last_read_version > 1) {
                buf.ClassStreamer(streamerinfo, "TNamed");
@@ -2483,8 +2490,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerElement") {
-         streamer.push({ func : function(buf, element) {
+      if (clname === "TStreamerElement") {
+         streamer.push({ func: function(buf, element) {
             // stream an object of class TStreamerElement
 
             var ver = buf.last_read_version;
@@ -2553,8 +2560,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerBase") {
-         streamer.push({ func : function(buf, elem) {
+      if (clname === "TStreamerBase") {
+         streamer.push({ func: function(buf, elem) {
             // stream an object of class TStreamerBase
 
             var ver = buf.last_read_version;
@@ -2566,8 +2573,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if ((clname == "TStreamerBasicPointer") || (clname == "TStreamerLoop")) {
-         streamer.push({ func : function(buf,elem) {
+      if ((clname === "TStreamerBasicPointer") || (clname === "TStreamerLoop")) {
+         streamer.push({ func: function(buf,elem) {
             // stream an object of class TStreamerBasicPointer
             if (buf.last_read_version > 1) {
                buf.ClassStreamer(elem, "TStreamerElement");
@@ -2579,8 +2586,8 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerSTL") {
-         streamer.push({ func : function(buf, elem) {
+      if (clname === "TStreamerSTL") {
+         streamer.push({ func: function(buf, elem) {
             if (buf.last_read_version > 1) {
                buf.ClassStreamer(elem, "TStreamerElement");
                elem.fSTLtype = buf.ntou4();
@@ -2590,17 +2597,17 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerSTLstring") {
-         streamer.push({ func : function(buf, elem) {
+      if (clname === "TStreamerSTLstring") {
+         streamer.push({ func: function(buf, elem) {
             if (buf.last_read_version > 0)
                buf.ClassStreamer(elem, "TStreamerSTL");
          }});
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerObject" || clname == "TStreamerBasicType" ||
-            clname == "TStreamerObjectAny" || clname == "TStreamerString" ||
-            clname == "TStreamerObjectPointer") {
+      if ((clname === "TStreamerObject") || (clname === "TStreamerBasicType") ||
+          (clname === "TStreamerObjectAny") || (clname === "TStreamerString") ||
+          (clname === "TStreamerObjectPointer")) {
          streamer.push({ func: function(buf, elem) {
             if (buf.last_read_version > 1)
                buf.ClassStreamer(elem, "TStreamerElement");
@@ -2608,7 +2615,7 @@
          return this.AddMethods(clname, streamer);
       }
 
-      if (clname == "TStreamerObjectAnyPointer") {
+      if (clname === "TStreamerObjectAnyPointer") {
          streamer.push({ func: function(buf, elem) {
             if (buf.last_read_version > 0)
                buf.ClassStreamer(elem, "TStreamerElement");
@@ -2627,7 +2634,7 @@
             buf.ClassStreamer(obj, "TObject"); }
          });
 
-         streamer.push({ name:'fString', func : function(buf, obj) {
+         streamer.push({ name: 'fString', func: function(buf, obj) {
             obj.fString = buf.ReadTString();
          }});
          return this.AddMethods(clname, streamer);

@@ -708,8 +708,19 @@
             selector.process_arrays = false;
 
             if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
-               // console.log('introduce special handling with STL size', elem.fType);
+               console.log('introduce special handling with STL size', elem.fType);
                
+               if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
+                  // special handling for compressed floats
+                  
+                  member.stl_size = selector.names[count_indx];
+                  
+                  member.func = function(buf, obj) {
+                     this.arrlength = obj[this.stl_size]; 
+                     obj[this.name] = this.readarr(buf);
+                  }
+                  
+               } else
                // special handling of simple arrays
                if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
                    (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
@@ -730,7 +741,7 @@
                      member.func = function(buf, obj) {
                         var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
                         for (var n=0;n<sz0;++n) 
-                           arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) :  [];
+                           arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) : [];
                         obj[this.name] = arr;
                      }
                   }
