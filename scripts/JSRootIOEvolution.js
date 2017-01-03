@@ -48,6 +48,10 @@
          
          // constants of bits in version
          kStreamedMemberWise : JSROOT.BIT(14),
+
+         // map of user-streamer function like func(buf,obj)
+         // or alias (classname) which can be used to read that function
+         UserStreamers: {},
          
          // TOBject bits
          kIsReferenced : JSROOT.BIT(4),
@@ -114,11 +118,8 @@
 
    };
 
-   // map of user-streamer function like func(buf,obj)
-   JSROOT.fUserStreamers = {};
-
    JSROOT.addUserStreamer = function(type, user_streamer) {
-      JSROOT.fUserStreamers[type] = user_streamer;
+      JSROOT.IO.UserStreamers[type] = user_streamer;
    }
 
    JSROOT.R__unzip = function(str, tgtsize, noalert, src_shift) {
@@ -375,7 +376,7 @@
       // 0 - if TString (or equivalent)
       // -1 - if any other kind
       if ((type_name === "TString") || (type_name === "string") ||
-          (JSROOT.fUserStreamers[type_name] === 'TString')) return 0;
+          (JSROOT.IO.UserStreamers[type_name] === 'TString')) return 0;
       if ((type_name.length < 7) || (type_name.indexOf("TArray")!==0)) return -1;
       if (type_name.length == 7)
          switch (type_name.charAt(6)) {
@@ -2283,7 +2284,7 @@
             break;
 
          default:
-            member.func = JSROOT.fUserStreamers[element.fTypeName];
+            member.func = JSROOT.IO.UserStreamers[element.fTypeName];
 
             if (typeof member.func !== 'function') {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
@@ -2716,13 +2717,16 @@
 */
       if (!s_i) {
          
-         var userfunc = JSROOT.fUserStreamers[clname];
+         var userfunc = JSROOT.IO.UserStreamers[clname];
          if (typeof userfunc == 'function') {
-            console.log('Provide user streamer for ', clname);
+            console.log('Provide user streamer for', clname);
             streamer.push({ typename: clname, func: userfunc });
             return streamer;
          }
          
+         // one can define in the user streamers just aliases
+         if (typeof userfunc === 'string') 
+            return this.GetStreamer(userfunc, ver);
          
          delete this.fStreamers[fullname];
          if (!ver.nowarning)
