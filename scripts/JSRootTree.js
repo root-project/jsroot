@@ -1254,7 +1254,7 @@
       function TestNextBranch() {
          
          var selector = new JSROOT.TSelector;
-
+         
          selector.AddBranch(args.branches[args.nbr], "br0");
       
          selector.Process = function() {
@@ -1267,7 +1267,10 @@
          }
       
          selector.Terminate = function(res) {
-            args.names[args.nbr] = ((!res || this.fails) ? "FAIL " : "ok ") + args.names[args.nbr];
+            if (typeof res !== 'string')
+               res = (!res || this.fails) ? "FAIL" : "ok";
+            
+            args.names[args.nbr] = res + " " + args.names[args.nbr];
             args.nbr++;
             
             if (args.nbr >= args.branches.length) {
@@ -1284,8 +1287,13 @@
          }
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
-      
-         tree.Process(selector, { numentries: 10 });
+         
+         if (args.branches[args.nbr].fID === -2) {
+            // this is not interesting
+            selector.Terminate("ignore");
+         } else {
+            tree.Process(selector, { numentries: 10 });
+         }
       }
       
       TestNextBranch();
