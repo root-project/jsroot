@@ -2163,9 +2163,7 @@
                
                // remember found streamer info from the file - 
                // most probably it is the only one which should be used
-               member.si = file.FindStreamerInfo(member.pairtype); 
-               
-               var si = member.si;
+               var si = member.si = file.FindStreamerInfo(member.pairtype); 
                
                if (!si) { 
                   function GetNextName() {
@@ -2183,17 +2181,11 @@
                      return res.trim();
                   }
 
-                  var name1 = GetNextName(), 
-                      name2 = GetNextName(),
-                      elem1 = JSROOT.IO.CreateStreamerElement("first", name1),
-                      elem2 = JSROOT.IO.CreateStreamerElement("second", name2);
-
-                  si = { _typename: 'TStreamerInfo',
-                          fName: member.pairtype,
-                          fElements: JSROOT.Create("TList"),
-                          fVersion: 1 };
-                  si.fElements.Add(elem1);
-                  si.fElements.Add(elem2);
+                  si = { _typename: 'TStreamerInfo', fVersion: 1, fName: member.pairtype,
+                         fElements: JSROOT.Create("TList") };
+                  
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("first", GetNextName()));
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("second", GetNextName()));
                }
 
                member.streamer = file.GetStreamer(member.pairtype, null, si);
@@ -2787,18 +2779,30 @@
          }
       }
       
-      var n = buf.ntoi4(), res = new Array(n);
-      for (var i=0;i<n;++i) {
+      var i, n = buf.ntoi4(), res = new Array(n);
+      
+      for (i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };
-         streamer[0].func(buf, res[i]);
-         if (!this.member_wise)
-            streamer[1].func(buf, res[i]);
+         if (streamer[0].readelem)
+            res[i].first = streamer[0].readelem(buf);
+         else
+            streamer[0].func(buf, res[i]);
+         
+         if (!this.member_wise) {
+            if (streamer[1].readelem)
+               res[i].second = streamer[1].readelem(buf);
+            else
+               streamer[1].func(buf, res[i]);
+         }
       }
 
       // due-to member-wise streaming second element read after first is completed
       if (this.member_wise)
-         for (var i=0;i<n;++i)
-            streamer[1].func(buf, res[i]);
+         for (i=0;i<n;++i)
+            if (streamer[1].readelem)
+               res[i].second = streamer[1].readelem(buf);
+            else
+               streamer[1].func(buf, res[i]);
 
       return res;
    }
