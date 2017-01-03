@@ -378,7 +378,9 @@
                { name: "SLT_kStream", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree;220/Rec::TrackParticleContainer_tlp1_MooreTrackParticles/m_hepSymMatrices/m_hepSymMatrices.m_matrix_val", opt: "dump", title: "Branch with vector<float> (kStreamer) inside of STL container" },
                { name: "branch_base", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/GenEventInfoProduct_generator__HLT./GenEventInfoProduct_generator__HLT.edm::EDProduct", opt: "dump", title: "Branch with base class data (which is empty)" },
                { name: "branch_mvect", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT./L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT.obj", opt: "dump", title: "Branch with object which has vector of vector of vector of int, requires special handling" },
-               { name: "files", asurl: true, file: "https://root.cern/files/alice_ESDs.root", item: "esdTree;1/ESDfriend./ESDfriend.fTracks/ESDfriend.fTracks.fTPCindex", opt: "dump", title: "Data branch stored in different file (in same dir), counter data in main file" }
+               { name: "files", asurl: true, file: "https://root.cern/files/alice_ESDs.root", item: "esdTree;1/ESDfriend./ESDfriend.fTracks/ESDfriend.fTracks.fTPCindex", opt: "dump", title: "Data branch stored in different file (in same dir), counter data in main file" },
+               { name: "float16", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T;2/event/fTracks/fTracks.fMass2", opt: "dump", title: "Float16_t type as TClonesArray branch" },
+               { name: "markus", url: "?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=http://jsroot.gsi.de/dev/demo/markus.js", title: "custom streamer for pool::Token class from some branches" }
             ],
             TF1 : [
                { name:"ip0", file: "ip0.root", item: "c;1" },
@@ -407,7 +409,8 @@
               { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
               { name: "count", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
               { name: "tank", file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name: "lego", file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" }
+              { name: "lego", file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "cheon", file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" }
             ],
             TGraph : [
               { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },

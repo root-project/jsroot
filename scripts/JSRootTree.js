@@ -632,7 +632,8 @@
             // only STL containers here
             // if (!elem.fSTLtype) elem = null;
          } else
-         if ((nb_leaves === 1) && ((leaf.fName === branch.fName) || (branch.fName.indexOf(leaf.fName+"[")==0) || (leaf.fName.indexOf(branch.fName+"[")==0))) {
+         if (nb_leaves === 1) {
+            // no special constrains for the leaf names
             if (leaf._typename === 'TLeafElement') {
               var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
                  
@@ -1293,7 +1294,9 @@
          
          // console.log(args.nbr, args.names[args.nbr]);
          
-         if (args.branches[args.nbr].fID === -2) {
+         var br = args.branches[args.nbr]; 
+         
+         if ((br.fID === -2) || !br.fLeaves || (br.fLeaves.arr.length === 0)) {
             // this is not interesting
             selector.Terminate("ignore");
          } else {

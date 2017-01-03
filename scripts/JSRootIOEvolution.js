@@ -2168,7 +2168,7 @@
                      member.isptr = true;
                      member.conttype = member.conttype.substr(0,member.conttype.length-1);
                   }
-
+                  
                   if (element.fCtype === JSROOT.IO.kObjectp) member.isptr = true;
 
                   member.arrkind = JSROOT.IO.GetArrayKind(member.conttype);
@@ -2283,8 +2283,7 @@
             break;
 
          default:
-            if (JSROOT.fUserStreamers !== null)
-               member.func = JSROOT.fUserStreamers[element.fTypeName];
+            member.func = JSROOT.fUserStreamers[element.fTypeName];
 
             if (typeof member.func !== 'function') {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
@@ -2439,7 +2438,6 @@
          }});
          return this.AddMethods(clname, streamer);
       }
-      
 
       if (clname === 'TRef') {
          streamer.push({ func: function(buf, obj) {
@@ -2717,6 +2715,15 @@
       }
 */
       if (!s_i) {
+         
+         var userfunc = JSROOT.fUserStreamers[clname];
+         if (typeof userfunc == 'function') {
+            console.log('Provide user streamer for ', clname);
+            streamer.push({ typename: clname, func: userfunc });
+            return streamer;
+         }
+         
+         
          delete this.fStreamers[fullname];
          if (!ver.nowarning)
             console.warn("Not found streamer for", clname, "ver", ver.val, "checksum", ver.checksum, fullname);
@@ -2825,7 +2832,7 @@
       }
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
-
+      
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
       else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }
