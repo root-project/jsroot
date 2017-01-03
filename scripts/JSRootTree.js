@@ -714,9 +714,22 @@
                   // special handling for compressed floats
                   
                   member.stl_size = selector.names[count_indx];
-                  
                   member.func = function(buf, obj) {
                      obj[this.name] = this.readarr(buf, obj[this.stl_size]);
+                  }
+                  
+               } else
+               if (((elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
+                  // special handling for compressed floats - not tested 
+                  var count2_indx = selector.branches.indexOf(branch.fBranchCount2);
+
+                  member.stl_size = selector.names[count_indx];
+                  member.arr_size = selector.names[count2_indx];
+                  member.func = function(buf, obj) {
+                     var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                     for (var n=0;n<sz0;++n) 
+                        arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
+                     obj[this.name] = arr;
                   }
                   
                } else
