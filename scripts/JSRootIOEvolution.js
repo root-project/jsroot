@@ -60,21 +60,34 @@
 
          GetTypeId : function(typname) {
             switch (typname) {
-               case "bool": return JSROOT.IO.kBool;
-               case "char": return JSROOT.IO.kChar;
-               case "short": return JSROOT.IO.kShort;
-               case "int": return JSROOT.IO.kInt;
-               case "long": return JSROOT.IO.kLong;
-               case "float": return JSROOT.IO.kFloat;
-               case "double": return JSROOT.IO.kDouble;
-               case "unsigned char": return JSROOT.IO.kUChar;
-               case "unsigned short": return JSROOT.IO.kUShort;
-               case "unsigned": return JSROOT.IO.kUInt;
-               case "unsigned int": return JSROOT.IO.kUInt;
-               case "unsigned long": return JSROOT.IO.kULong;
-               case "int64_t": return JSROOT.IO.kLong64;
-               case "uint64_t": return JSROOT.IO.kULong64;
-               case "unsigned long long": return JSROOT.IO.kULong64;
+               case "bool": 
+               case "Bool_t": return JSROOT.IO.kBool;
+               case "char": 
+               case "Char_t": return JSROOT.IO.kChar;
+               case "short": 
+               case "Short_t": return JSROOT.IO.kShort;
+               case "int": 
+               case "Int_t": return JSROOT.IO.kInt;
+               case "long": 
+               case "Long_t": return JSROOT.IO.kLong;
+               case "float": 
+               case "Float_t": return JSROOT.IO.kFloat;
+               case "double": 
+               case "Double_t": return JSROOT.IO.kDouble;
+               case "unsigned char": 
+               case "UChar_t": return JSROOT.IO.kUChar;
+               case "unsigned short": 
+               case "UShotr_t": return JSROOT.IO.kUShort;
+               case "unsigned": 
+               case "unsigned int": 
+               case "UInt_t": return JSROOT.IO.kUInt;
+               case "unsigned long": 
+               case "ULong_t": return JSROOT.IO.kULong;
+               case "int64_t": 
+               case "Long64_t": return JSROOT.IO.kLong64;
+               case "uint64_t": 
+               case "unsigned long long": 
+               case "ULong64_t": return JSROOT.IO.kULong64;
             }
             return -1;
          },
