@@ -101,7 +101,7 @@
       } else {
 
          guiCode += "<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
-                  + "<p><font face='Verdana' size='1px'><a href='https://root.cern.ch/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
+                  + "<p><font face='Verdana' size='1px'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
 
          var noselect = JSROOT.GetUrlOption("noselect") || myDiv.attr("noselect");
 

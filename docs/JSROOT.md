@@ -215,7 +215,7 @@ Another way to configure visibility flags is usage of ROOT macros, used to displ
 Example of such macro can be found in root tutorials. Typically it looks like:
 
      {
-      TGeoManager::Import("http://root.cern.ch/files/alice2.root");
+      TGeoManager::Import("http://root.cern/files/alice2.root");
       gGeoManager->DefaultColors();
       //   gGeoManager->SetVisLevel(4);
       gGeoManager->GetVolume("HALL")->InvisibleAll();
