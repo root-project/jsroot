@@ -593,21 +593,6 @@
       return obj;
    }
    
-   JSROOT.TBuffer.prototype.ReadTRef = function(obj) {
-      this.ClassStreamer(obj, "TObject");
-
-      if (obj.fBits & JSROOT.IO.kHasUUID) {
-         
-         obj.fUUID = this.ReadTString();
-      } else {
-         obj.fPID = this.ntou2();
-         // obj.fProcess = buf.fFile.ReadProcessID(obj.fPID);
-      }
-      
-      return obj;
-      
-   }
-
    JSROOT.TBuffer.prototype.ClassStreamer = function(obj, classname) {
 
       if (obj._typename === undefined) obj._typename = classname;
@@ -617,9 +602,6 @@
       if (classname === "TBasket") 
          return this.ReadTBasket(obj);
 
-//      if (classname === "TRef") 
-//         return this.ReadTRef(obj);
-      
       var ver = this.ReadVersion();
 
       var streamer = this.fFile.GetStreamer(classname, ver);
@@ -2300,7 +2282,7 @@
       // or generate it from the streamer infos and add it to the list
 
       // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == "TBasket" /* || clname == "TRef"*/) return null;
+      if (clname == 'TQObject' || clname == "TBasket") return null;
 
       var streamer = [], fullname = clname;
 
@@ -2440,7 +2422,6 @@
          return this.AddMethods(clname, streamer);
       }
 */
-
       if (clname === 'TRefArray') {
          streamer.push({ func: function(buf, obj) {
             obj._typename = "TRefArray";
