@@ -2417,10 +2417,26 @@
          }});
          return this.AddMethods(clname, streamer);
       }
+      
+      if (clname === 'TTreeIndex') {
+         streamer.push({ func: function(buf, obj) {
+            var ver = buf.last_read_version;
+            obj._typename = "TTreeIndex";
+            buf.ClassStreamer(obj, "TVirtualIndex");
+            obj.fMajorName = buf.ReadTString();
+            obj.fMinorName = buf.ReadTString();
+            obj.fN = buf.ntoi8();
+            obj.fIndexValues = buf.ReadFastArray(obj.fN, JSROOT.IO.kLong64);
+            if (ver>1) obj.fIndexValuesMinor = buf.ReadFastArray(obj.fN, JSROOT.IO.kLong64);
+            obj.fIndex = buf.ReadFastArray(obj.fN, JSROOT.IO.kLong64);
+         }});
+         return this.AddMethods(clname, streamer);
+      }
+      
 
       if (clname === 'TRef') {
          streamer.push({ func: function(buf, obj) {
-            if (!obj._typename) obj._typename = "TRef";
+            obj._typename = "TRef";
             buf.ClassStreamer(obj, "TObject");
             if (obj.fBits & JSROOT.IO.kHasUUID) {
                
