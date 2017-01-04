@@ -471,7 +471,7 @@
    // ======================================================================
    
    JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree 
-   
+
    JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
       
@@ -483,6 +483,7 @@
       
       // central handle with all information required for reading
       var handle = {
+          tree: this, // keep tree reference  
           file: this.$file, // keep file reference
           selector: selector, // reference on selector  
           arr: [], // list of branches 
@@ -958,6 +959,85 @@
       } else {
          handle.process_arrays = false;         
       }
+
+      function ReadBaskets(bitems, call_back) {
+         // read basket with tree data, selecting different files
+
+         var places = [], filename = "";
+
+         function ExtractPlaces() {
+            // extract places to read and define file name
+            
+            places = []; filename = "";
+            
+            for (var n=0;n<bitems.length;++n) {
+               if (bitems[n].done) continue;
+               
+               var branch = bitems[n].branch;
+               
+               if (places.length===0)
+                  filename = branch.fFileName;
+               else
+                  if (filename !== branch.fFileName) continue;
+               
+               bitems[n].selected = true; // mark which item was selected for reading
+               
+               places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
+            }
+            
+            // if ((filename.length>0) && (places.length > 0)) console.log('Reading baskets from file', filename);
+            
+            return places.length > 0;
+         }
+         
+         function ProcessBlobs(blobs) {
+            if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) return JSROOT.CallBack(call_back, null);
+
+            var baskets = [], n = 0;
+            
+            for (var k=0;k<bitems.length;++k) {
+               if (!bitems[k].selected) continue;
+               
+               bitems[k].selected = false;
+               bitems[k].done = true;
+
+               var blob = (places.length > 2) ? blobs[n++] : blobs,
+                   buf = JSROOT.CreateTBuffer(blob, 0, handle.file),
+                   basket = buf.ReadTBasket({ _typename: "TBasket" });
+
+               if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket]) 
+                  console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
+               
+               // items[k].obj = basket; // keep basket object itself if necessary
+               
+               bitems[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+               
+               if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
+                  // use data from original blob
+                  bitems[k].raw = buf;
+                  
+               } else {
+                  // unpack data and create new blob
+                  var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
+
+                  if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, handle.file);
+                  
+                  if (bitems[k].raw) bitems[k].raw.fTagOffset = basket.fKeylen; 
+               }
+            }
+
+            if (ExtractPlaces())
+               handle.file.ReadBuffer(places, ProcessBlobs, filename);
+            else
+               JSROOT.CallBack(call_back, bitems); 
+         }
+
+         // extract places where to read
+         if (ExtractPlaces())
+            handle.file.ReadBuffer(places, ProcessBlobs, filename);
+         else
+            JSROOT.CallBack(call_back, null); 
+      }
       
       function ReadNextBaskets() {
          
@@ -1029,7 +1109,7 @@
          handle.selector.ShowProgress(portion);
          
          if (totalsz > 0)
-            handle.file.ReadBaskets(bitems, ProcessBaskets);
+            ReadBaskets(bitems, ProcessBaskets);
          else
          if (is_direct)   
             ProcessBaskets([]); // directly process baskets
