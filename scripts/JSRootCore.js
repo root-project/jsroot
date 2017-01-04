@@ -1682,8 +1682,8 @@
       return m;
    };
 
-   JSROOT.addMethods = function(obj) {
-      this.extend(obj, JSROOT.getMethods(obj._typename, obj));
+   JSROOT.addMethods = function(obj, typename) {
+      this.extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
    };
 
    JSROOT.lastFFormat = "";

@@ -1554,6 +1554,19 @@
 
             if (key.fClassName==='TF1')
                return file.ReadFormulas(obj, user_call_back, -1);
+            
+            if (obj.$is_tree === true) {
+               // ensure that TTree methods are assigned
+               delete obj.$is_tree;
+               obj.$file = file;
+               if (!JSROOT.TreeMethods)
+                  return JSROOT.AssertPrerequisites('tree', function() {
+                     JSROOT.extend(obj, JSROOT.TreeMethods);
+                     JSROOT.CallBack(user_call_back, obj);
+                  });
+               
+               JSROOT.extend(obj, JSROOT.TreeMethods);
+            } 
 
             JSROOT.CallBack(user_call_back, obj);
          }); // end of ReadObjBuffer callback
@@ -2579,7 +2592,7 @@
       
       cs['TTree'] = {
          name: '$file',   
-         func: function(buf,obj) { obj[this.name] = buf.fFile; }
+         func: function(buf,obj) { obj.$file = buf.fFile; obj.$is_tree = true; }
       };
       
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer

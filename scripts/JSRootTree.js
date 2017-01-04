@@ -467,21 +467,17 @@
       
       return JSROOT.CallBack(this.histo_callback, this.hist, this.ndim==2 ? "col" : "");
    }
-
    
    // ======================================================================
    
+   JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree 
    
-   JSROOT.TTree = function(tree) {
-      JSROOT.extend(this, tree);
-   }
-   
-   
-   JSROOT.TTree.prototype.Process = function(selector, args) {
+   JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
       
       if (!selector || !this.$file || !selector.branches || (typeof args !== 'object')) {
-         console.error('required parameter missing in for TTree::Process');
+         console.error('required parameter missing in for TTreeProcess');
+         if (selector) selector.Terminate(false);
          return false;
       }
       
@@ -510,7 +506,7 @@
             if ((loop === 1) && !brcnt && branch.fBranchCount && (branch.fBranchCount.fStreamerType===JSROOT.IO.kSTL) && 
                 ((branch.fStreamerType === JSROOT.IO.kStreamLoop) || (branch.fStreamerType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop))) {
                // special case when count member from kStreamLoop not assigned as fBranchCount2  
-               var s_i = this.$file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum),
+               var s_i = handle.file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum),
                    elem = s_i ? s_i.fElements.arr[branch.fID] : null,
                    arr = branch.fBranchCount.fBranches.arr  ;
 
@@ -608,7 +604,7 @@
             if (elem.fType === JSROOT.IO.kAny) {
                // this is indication that object stored in the branch - need special handling
                
-               var streamer = this.$file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
+               var streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
                
                if (!streamer) elem = null; else
                   member = {
@@ -631,7 +627,7 @@
          } else
          if (is_brelem && (nb_leaves <= 1)) {
             // in some old files TBranchElement may appear without correspondent leaf 
-            var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+            var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
             if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
             if ((branch.fID<0) || (branch.fID>=s_i.fElements.arr.length)) console.log('branch ID out of range', branch.fID); else
             elem = s_i.fElements.arr[branch.fID];
@@ -648,7 +644,7 @@
             var arr = new Array(nb_leaves), isok = true;
             for (var l=0;l<nb_leaves;++l) {
                arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
-               arr[l] = JSROOT.IO.CreateMember(arr[l], this.$file);
+               arr[l] = JSROOT.IO.CreateMember(arr[l], handle.file);
                if (!arr[l]) isok = false;
             }
             
@@ -675,7 +671,7 @@
             selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
          
          if (!member) {
-            member = JSROOT.IO.CreateMember(elem, this.$file);
+            member = JSROOT.IO.CreateMember(elem, handle.file);
             if ((member.base !== undefined) && member.basename) {
                // when element represent base class, we need handling which differ from normal IO
                member.func = function(buf, obj) {
@@ -955,7 +951,7 @@
                elem.fType = item.type + JSROOT.IO.kOffsetL;
                elem.fArrayLength = 10; elem.fArrayDim = 1, elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
                
-               item.arrmember = JSROOT.IO.CreateMember(elem, this.$file);
+               item.arrmember = JSROOT.IO.CreateMember(elem, handle.file);
             }
          }
       } else {
@@ -1159,56 +1155,53 @@
       return true; // indicate that reading of tree will be performed
    }
    
-   JSROOT.TTree.prototype.FindBranch = function(branchname, complex) {
+   JSROOT.TreeMethods.FindBranch = function(name, complex, lst) {
       // search branch with specified name
       // if complex enabled, search branch and rest part
       
-      function Find(lst, name) {
-         var search = name, br = null, 
-             dot = name.indexOf("."), arr = name.indexOf("[]"),
-             pos = (dot<0) ? arr : ((arr<0) ? dot : Math.min(dot,arr));
-         
-         for (var loop=0;loop<2;++loop) {
-         
-            for (var n=0;n<lst.arr.length;++n) {
-               var brname = lst.arr[n].fName;
-               if (brname[brname.length-1] == "]") 
-                  brname = brname.substr(0, brname.indexOf("["));
-               if (brname === search) { 
-                  br = lst.arr[n];
-                  if (loop===0) return br; // when search full name, return found branchs
-                  break;
-               }
-            }
-            
-            if (br || (pos<=0)) break; 
-            
-            // first loop search complete name, second loop - only first part
-            search = name.substr(0, pos);
-         }
-         
-         if (!br || (pos <= 0) || (pos === name.length-1)) return br;
-         
-         var res = null;
-         
-         if (dot>0) {
-            res = Find(br.fBranches, name.substr(dot+1));
-            // special case if next-level branch has name parent_branch.next_branch 
-            if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
-               res = Find(br.fBranches, br.fName + name.substr(dot));
-         }
-         
-
-         // when allowed, return find branch with rest part
-         if (!res && complex) return { branch: br, rest: name.substr(pos) };
-         
-         return res;
-      }
+      if (lst === undefined) lst = this.fBranches;
       
-      return Find(this.fBranches, branchname);
+      var search = name, br = null, 
+          dot = name.indexOf("."), arr = name.indexOf("[]"),
+          pos = (dot<0) ? arr : ((arr<0) ? dot : Math.min(dot,arr));
+
+      for (var loop=0;loop<2;++loop) {
+
+         for (var n=0;n<lst.arr.length;++n) {
+            var brname = lst.arr[n].fName;
+            if (brname[brname.length-1] == "]") 
+               brname = brname.substr(0, brname.indexOf("["));
+            if (brname === search) { 
+               br = lst.arr[n];
+               if (loop===0) return br; // when search full name, return found branchs
+               break;
+            }
+         }
+
+         if (br || (pos<=0)) break; 
+
+         // first loop search complete name, second loop - only first part
+         search = name.substr(0, pos);
+      }
+
+      if (!br || (pos <= 0) || (pos === name.length-1)) return br;
+
+      var res = null;
+
+      if (dot>0) {
+         res = this.FindBranch(name.substr(dot+1), complex, br.fBranches);
+         // special case if next-level branch has name parent_branch.next_branch 
+         if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
+            res = this.FindBranch(br.fName + name.substr(dot), complex, br.fBranches);
+      }
+
+      // when allowed, return find branch with rest part
+      if (!res && complex) return { branch: br, rest: name.substr(pos) };
+
+      return res;
    }
    
-   JSROOT.TTree.prototype.Draw = function(args, result_callback) {
+   JSROOT.TreeMethods.Draw = function(args, result_callback) {
       // this is JSROOT implementaion of TTree::Draw
       // in callback returns histogram and draw options
       // following arguments allowed in args
@@ -1256,7 +1249,7 @@
       } else 
       if (args.expr === "testio") {
          // special debugging code
-         return this.RunIOTest(args, result_callback);
+         return this.IOTest(args, result_callback);
       } else {
          var names = args.expr ? args.expr.split(":") : [];
          if ((names.length < 1) || (names.length > 2))
@@ -1286,7 +1279,7 @@
       return this.Process(selector, args);
    }
    
-   JSROOT.TTree.prototype.RunIOTest = function(args, result_callback) {
+   JSROOT.TreeMethods.IOTest = function(args, result_callback) {
       // generic I/O test for all branches in the tree
       
       if (!args.names && !args.bracnhes) {
@@ -1318,10 +1311,10 @@
          args.names.push("Total are " + args.branches.length + " branches with " + numleaves + " leaves");
       } 
       
-      var tree = this;
-
       args.lasttm = new Date().getTime();
-      args.lastnbr = args.nbr; 
+      args.lastnbr = args.nbr;
+      
+      var tree = this;
 
       function TestNextBranch() {
          
@@ -1349,7 +1342,7 @@
             var now = new Date().getTime();
             
             if ((now - args.lasttm > 5000) || (args.nbr - args.lastnbr > 50)) 
-               setTimeout(tree.RunIOTest.bind(tree,args,result_callback), 100); // use timeout to avoid deep recursion
+               setTimeout(tree.IOTest.bind(tree,args,result_callback), 100); // use timeout to avoid deep recursion
             else
                TestNextBranch();
          }
@@ -1487,15 +1480,15 @@
          return this.DrawingReady();
       }
 
-      var t = new JSROOT.TTree(tree), 
-          painter = this;
+      var painter = this;
 
-      t.Draw(args, function(histo, hopt) {
+      tree.Draw(args, function(histo, hopt) {
          JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
       });
 
       return this;
    }
+ 
 
    return JSROOT;
 

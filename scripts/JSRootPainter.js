@@ -11018,8 +11018,6 @@
 
          if (!handle) continue;
 
-         // console.log('Duplicate handle ' + handle.name + ' for derived class ' + si.fName);
-
          var newhandle = JSROOT.extend({}, handle);
          // delete newhandle.for_derived; // should we disable?
          newhandle.name = si.fName;
