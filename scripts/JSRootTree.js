@@ -488,18 +488,11 @@
           selector: selector, // reference on selector  
           arr: [], // list of branches 
           curr: -1,  // current entry ID
-          numentries: isNaN(args.numentries) ? 1e9 : args.numentries,
-          firstentry: isNaN(args.firstentry) ? 0 : args.firstentry,
-          process_min: -1, // current entryid limit
-          process_max: -1,  // current entryid limit
-          current_entry: 0, // current processed entry
+          current_entry: -1, // current processed entry
           simple_read: true, // all baskets in all used branches are in sync,
           process_arrays: false // one can process all branches as arrays
       };
-      
-      handle.process_min = handle.firstentry;
-      handle.process_max = handle.firstentry + handle.numentries;
-      
+
       // check all branches with counters and add it to list of read branches
       
       var cnt_br = [], cnt_names = [];
@@ -580,7 +573,8 @@
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              elem = null, member = null, 
-             is_brelem = (branch._typename==="TBranchElement");
+             is_brelem = (branch._typename==="TBranchElement"),
+             count_indx = -1, count2_indx = -1;
           
          if (!branch.fEntries) {
             console.log('Branch ', branch.fName, ' does not have entries');
@@ -697,7 +691,7 @@
          }
          
          if (branch.fBranchCount) {
-            var count_indx = selector.branches.indexOf(branch.fBranchCount);
+            count_indx = selector.branches.indexOf(branch.fBranchCount);
             
             if (count_indx<0) {
                console.log('Not found fBranchCount in the list', branch.fBranchCount.fName);
@@ -721,7 +715,7 @@
                } else
                if (((elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
                   // special handling for compressed floats - not tested 
-                  var count2_indx = selector.branches.indexOf(branch.fBranchCount2);
+                  count2_indx = selector.branches.indexOf(branch.fBranchCount2);
 
                   member.stl_size = selector.names[count_indx];
                   member.arr_size = selector.names[count2_indx];
@@ -748,7 +742,7 @@
                   
                   if (branch.fBranchCount2) {
                      member.type -= JSROOT.IO.kOffsetP;  
-                     var count2_indx = selector.branches.indexOf(branch.fBranchCount2);
+                     count2_indx = selector.branches.indexOf(branch.fBranchCount2);
                      member.arr_size = selector.names[count2_indx];
                      member.func = function(buf, obj) {
                         var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
@@ -783,8 +777,10 @@
                   
                   delete branch.$specialCount;
                   
+                  count2_indx = selector.branches.indexOf(brcnt);
+                  
                   member.stl_size = selector.names[count_indx];
-                  member.cntname = selector.names[selector.branches.indexOf(brcnt)];
+                  member.cntname = selector.names[count2_indx];
                   member.func = member.branch_func; // this is special function, provided by base I/O
                   
                } else  {
@@ -794,9 +790,10 @@
                   var brcnt = branch.fBranchCount2 || branch.$specialCount, loop_size_name;
 
                   if (brcnt) {
+                     count2_indx = selector.branches.indexOf(brcnt);
                      delete branch.$specialCount;
                      if (member.cntname) { 
-                        loop_size_name = selector.names[selector.branches.indexOf(brcnt)];
+                        loop_size_name = selector.names[count2_indx];
                         member.cntname = "$loop_size";
                      } else {
                         throw new Error('Second branch counter not used - very BAD');
@@ -846,11 +843,24 @@
                curr_basket: 0,  // number of basket used for processing
                read_entry: -1,  // last entry which is already read 
                staged_entry: -1, // entry which is staged for reading
+               first_readentry: -1, // first entry to read
                staged_basket: 0,  // last basket staged for reading
                numentries: branch.fEntries,
                numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
+               counters: null, // branch indexes used as counters
+               ascounter: [], // list of other branches using that branch as counter 
                baskets: [] // array for read baskets,
          };
+         
+         if (count_indx>=0) { 
+            elem.counters = [ count_indx ];
+            handle.arr[count_indx].ascounter.push(nn);
+            
+            if (count2_indx>=0) {
+               elem.counters.push(count2_indx);
+               handle.arr[count2_indx].ascounter.push(nn);
+            }
+         }
 
          handle.arr.push(elem);
          
@@ -866,6 +876,7 @@
                   elem.direct_data = true;
                   elem.raw = bskt.fBufferRef;
                   elem.raw.locate(0); // set to initial position
+                  elem.first_readentry = branch.fFirstEntry; 
                   elem.nev = 0;
                   elem.fNevBuf = elem.numentries; // number of entries
                   break;
@@ -890,6 +901,34 @@
             for (var n=0;n<elem.numbaskets;++n) 
                if (elem.branch.fBasketEntry[n]!==elem0.branch.fBasketEntry[n]) handle.simple_read = false;
          }
+      }
+      
+      // now calculate entries range
+      
+      handle.firstentry = handle.lastentry = 0;
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+         var branch = selector.branches[nn],
+             e1 = branch.fFirstEntry, 
+             e2 = e1 + branch.fEntries;
+         handle.firstentry = Math.max(handle.firstentry, e1);
+         handle.lastentry = (nn===0) ? e2 : Math.min(handle.lastentry, e2);
+      }
+      
+      if (handle.firstentry >= handle.lastentry) {
+         console.log('No any common events for selected branches');
+         selector.Terminate(false);
+         return false;
+      }
+      
+      handle.process_min = handle.firstentry;
+      handle.process_max = handle.lastentry;
+      
+      if (!isNaN(args.firstentry) && (args.firstentry>handle.firstentry) && (args.firstentry < handle.lastentry))
+         handle.process_min = args.firstentry;
+      
+      if (!isNaN(args.numentries) && (args.numentries>0)) {
+         var max = handle.process_min + args.numentries;
+         if (max<handle.process_max) handle.process_max = max;
       }
       
       if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
@@ -926,7 +965,9 @@
          
          while ((totalsz < 1e6) && isany) {
             isany = false;
-            for (var n=0; n<handle.arr.length; n++) {
+            // very important, loop over branches in reverse order
+            // let check counter branch after reading of normal branch is prepared 
+            for (var n=handle.arr.length-1; n>=0; --n) {
                var elem = handle.arr[n];
                
                if (elem.direct_data && elem.raw) {
@@ -942,8 +983,20 @@
                   // no need to read more baskets
                   if (elem.branch.fBasketEntry[k] >= handle.process_max) break;
 
-                  // first baskets can be skipped
-                  if (elem.branch.fBasketEntry[k+1] < handle.process_min) continue;
+                  // check which baskets need to be read
+                  if (elem.first_readentry < 0) {
+                     var lmt = elem.branch.fBasketEntry[k+1],
+                         not_needed = (lmt < handle.process_min);
+                     
+                     for (var d=0;d<elem.ascounter.length;++d) {
+                        var dep = handle.arr[elem.ascounter[d]]; // dependent element
+                        if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data 
+                     }
+                     
+                     if (not_needed) continue; // if that basket not required, check next
+                     
+                     elem.first_readentry = elem.branch.fBasketEntry[k]; // remember which entry will be read first
+                  }
                   
                   bitems.push({
                      id: n, // to find which element we are reading
@@ -996,7 +1049,7 @@
          
          while(true) {
          
-            var loopentries = 1;
+            var loopentries = 1, min_curr = handle.process_max;
             
             // firt loop used to check if all required data exists
             for (var n=0;n<handle.arr.length;++n) {
@@ -1024,6 +1077,7 @@
                   elem.raw = bitem.raw;
                   elem.fNevBuf = bitem.fNevBuf;
                   elem.nev = 0;
+                  elem.current_entry = elem.branch.fBasketEntry[bitem.basket];
                   
                   if (handle.simple_read) {
                      if (n==0) loopentries = elem.fNevBuf; else
@@ -1032,15 +1086,20 @@
 
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
-                  elem.baskets[elem.curr_basket++] = undefined; // remove reference on basket
+                  elem.baskets[elem.curr_basket++] = undefined; // remove from array
                }
+               
+               min_curr = Math.min(min_curr, elem.current_entry);
             }
+            
+            // assign first entry which can be analyzed
+            if (handle.current_entry < 0) handle.current_entry = min_curr;
             
             // second loop extracts all required data
             
             // do not read too much
-            if (handle.current_entry + loopentries > handle.numentries) 
-               loopentries = handle.numentries - handle.current_entry;
+            if (handle.current_entry + loopentries > handle.process_max) 
+               loopentries = handle.process_max - handle.current_entry;
             
             if (handle.process_arrays && (loopentries>1)) {
                // special case - read all data from baskets as arrays
@@ -1061,27 +1120,34 @@
                handle.current_entry += loopentries; 
 
                isanyprocessed = true;
-            } else {
-               for (var e=0;e<loopentries;++e) {
-                  for (var n=0;n<handle.arr.length;++n) {
-                     var elem = handle.arr[n];
+            } else
 
-                     if (!elem.raw) continue;
+            // main processing loop   
+            while(loopentries--) {
+               for (var n=0;n<handle.arr.length;++n) {
+                  var elem = handle.arr[n];
 
+                  if (elem.raw && (handle.current_entry === elem.current_entry)) {
+                     // read only element where entry number matches
                      elem.member.func(elem.raw, handle.selector.tgtobj);
+
                      elem.nev++;
+                     elem.current_entry++;
 
-                     if (elem.nev >= elem.fNevBuf)
-                        elem.raw = null;
+                     if (elem.nev >= elem.fNevBuf) elem.raw = null;
                   }
-
-                  handle.selector.Process(handle.current_entry++);
-
-                  isanyprocessed = true;
                }
+
+               if (handle.current_entry >= handle.process_min)
+                  handle.selector.Process(handle.current_entry);
+
+               handle.current_entry++;
+
+               isanyprocessed = true;
             }
             
-            if (handle.current_entry >= handle.numentries)
+            
+            if (handle.current_entry >= handle.process_max)
                 return handle.selector.Terminate(true); 
          }
       }
