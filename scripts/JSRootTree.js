@@ -877,8 +877,8 @@
                   elem.raw = bskt.fBufferRef;
                   elem.raw.locate(0); // set to initial position
                   elem.first_readentry = branch.fFirstEntry; 
-                  elem.nev = 0;
-                  elem.fNevBuf = elem.numentries; // number of entries
+                  elem.current_entry = branch.fFirstEntry;
+                  elem.nev = elem.numentries; // number of entries in raw buffer
                   break;
                }
             }
@@ -1049,12 +1049,12 @@
          
          while(true) {
          
-            var loopentries = 1, min_curr = handle.process_max;
+            var loopentries = 100000000, min_curr = handle.process_max, n, elem;
             
             // firt loop used to check if all required data exists
-            for (var n=0;n<handle.arr.length;++n) {
+            for (n=0;n<handle.arr.length;++n) {
 
-               var elem = handle.arr[n];
+               elem = handle.arr[n];
 
                if (!elem.raw) {
                   if ((elem.curr_basket >= elem.numbaskets)) {
@@ -1062,7 +1062,7 @@
                      continue; // ignore non-master branch
                   }
 
-                  // this is single responce from the tree, includes branch, bakset number, raw data
+                  // this is single response from the tree, includes branch, bakset number, raw data
                   var bitem = elem.baskets[elem.curr_basket]; 
 
                   // basket not read
@@ -1075,21 +1075,16 @@
                   }
 
                   elem.raw = bitem.raw;
-                  elem.fNevBuf = bitem.fNevBuf;
-                  elem.nev = 0;
+                  elem.nev = bitem.fNevBuf; // number of entries in raw buffer
                   elem.current_entry = elem.branch.fBasketEntry[bitem.basket];
                   
-                  if (handle.simple_read) {
-                     if (n==0) loopentries = elem.fNevBuf; else
-                     if (loopentries != elem.fNevBuf) { console.log('missmatch entries in simple mode', loopentries, elem.fNevBuf); loopentries = 1;  }   
-                  }
-
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
                   elem.baskets[elem.curr_basket++] = undefined; // remove from array
                }
                
                min_curr = Math.min(min_curr, elem.current_entry);
+               loopentries = Math.min(loopentries, elem.nev); // define how much entries can be processed before next raw buffer will be finished
             }
             
             // assign first entry which can be analyzed
@@ -1104,14 +1099,14 @@
             if (handle.process_arrays && (loopentries>1)) {
                // special case - read all data from baskets as arrays
 
-               for (var n=0;n<handle.arr.length;++n) {
-                  var elem = handle.arr[n];
+               for (n=0;n<handle.arr.length;++n) {
+                  elem = handle.arr[n];
                   elem.arrmember.arrlength = loopentries;
 
                   elem.arrmember.func(elem.raw, handle.selector.tgtarr);
-
-                  elem.nev += loopentries;
                   
+                  elem.current_entry += loopentries;
+
                   elem.raw = null;
                }
 
@@ -1124,17 +1119,16 @@
 
             // main processing loop   
             while(loopentries--) {
-               for (var n=0;n<handle.arr.length;++n) {
-                  var elem = handle.arr[n];
+               for (n=0;n<handle.arr.length;++n) {
+                  elem = handle.arr[n];
 
-                  if (elem.raw && (handle.current_entry === elem.current_entry)) {
-                     // read only element where entry number matches
+                  if (handle.current_entry === elem.current_entry) {
+                     // read only element where entry id matches
                      elem.member.func(elem.raw, handle.selector.tgtobj);
 
-                     elem.nev++;
                      elem.current_entry++;
 
-                     if (elem.nev >= elem.fNevBuf) elem.raw = null;
+                     if (--elem.nev <= 0) elem.raw = null;
                   }
                }
 
@@ -1145,7 +1139,6 @@
 
                isanyprocessed = true;
             }
-            
             
             if (handle.current_entry >= handle.process_max)
                 return handle.selector.Terminate(true); 
