@@ -632,17 +632,16 @@
             // only STL containers here
             // if (!elem.fSTLtype) elem = null;
          } else
+         if (is_brelem && (nb_leaves <= 1)) {
+            // in some old files TBranchElement may appear without correspondent leaf 
+            var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+            if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
+            if ((branch.fID<0) || (branch.fID>=s_i.fElements.arr.length)) console.log('branch ID out of range', branch.fID); else
+            elem = s_i.fElements.arr[branch.fID];
+         } else  
          if (nb_leaves === 1) {
-            // no special constrains for the leaf names
-            if (leaf._typename === 'TLeafElement') {
-              var s_i = this.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
-                 
-              if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
-              if ((leaf.fID<0) || (leaf.fID>=s_i.fElements.arr.length)) console.log('Leaf with ID out of range', leaf.fID); else
-              elem = s_i.fElements.arr[leaf.fID];
-            } else {
-               elem = CreateLeafElem(leaf, selector.names[nn]);
-            }
+             // no special constrains for the leaf names
+            elem = CreateLeafElem(leaf, selector.names[nn]);
          } else
          if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
             // branch with many elementary leaves
@@ -1294,9 +1293,9 @@
          
          // console.log(args.nbr, args.names[args.nbr]);
          
-         var br = args.branches[args.nbr]; 
+         var br = args.branches[args.nbr];
          
-         if ((br.fID === -2) || !br.fLeaves || (br.fLeaves.arr.length === 0)) {
+         if ((br.fID === -2) || ((br._typename !== 'TBranchElement') && (!br.fLeaves || (br.fLeaves.arr.length === 0)))) {
             // this is not interesting
             selector.Terminate("ignore");
          } else {
