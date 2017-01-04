@@ -998,7 +998,11 @@
                      
                      if (not_needed) continue; // if that basket not required, check next
                      
+                     elem.curr_basket = k; // basket where reading will start
+                     
                      elem.first_readentry = elem.branch.fBasketEntry[k]; // remember which entry will be read first
+                     
+                     // console.log(n, 'Branch', elem.branch.fName, ' first to read', elem.first_readentry);
                   }
                   
                   bitems.push({
@@ -1058,7 +1062,7 @@
             for (n=0;n<handle.arr.length;++n) {
 
                elem = handle.arr[n];
-
+               
                if (!elem.raw) {
                   if ((elem.curr_basket >= elem.numbaskets)) {
                      if (n==0) return handle.selector.Terminate(true);
@@ -1071,7 +1075,7 @@
                   // basket not read
                   if (!bitem) { 
                      // no data, but no any event processed - problem
-                     if (!isanyprocessed) return handle.selector.Terminate(false);
+                     if (!isanyprocessed) { console.warn('no data?'); return handle.selector.Terminate(false); }
 
                      // try to read next portion of tree data
                      return ReadNextBaskets();
@@ -1080,6 +1084,8 @@
                   elem.raw = bitem.raw;
                   elem.nev = bitem.fNevBuf; // number of entries in raw buffer
                   elem.current_entry = elem.branch.fBasketEntry[bitem.basket];
+                  
+                  // console.log('Assign raw buffer', elem.branch.fName, ' first entry', elem.current_entry, ' numevents', elem.nev);
                   
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
@@ -1237,6 +1243,7 @@
          }
          
          if (!args.numentries) args.numentries = 10;
+         // if (!args.firstentry) args.firstentry = 212;
       } else
       if (args.branch) {
          selector = new JSROOT.TDrawSelector(result_callback);
