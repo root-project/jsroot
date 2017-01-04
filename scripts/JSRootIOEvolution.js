@@ -90,6 +90,7 @@
                case "unsigned long": 
                case "ULong_t": return JSROOT.IO.kULong;
                case "int64_t": 
+               case "long long": 
                case "Long64_t": return JSROOT.IO.kLong64;
                case "uint64_t": 
                case "unsigned long long": 
@@ -2319,9 +2320,6 @@
       cs['TList'] = cs['THashList'] = function(buf, obj) {
          // stream all objects in the list from the I/O buffer
          if (!obj._typename) obj._typename = this.typename;
-         obj.name = "";
-         obj.arr = [];
-         obj.opt = [];
          if (buf.last_read_version > 3) {
             buf.ClassStreamer(obj, "TObject");
             obj.name = buf.ReadTString();
@@ -2332,6 +2330,10 @@
                obj.arr[i] = buf.ReadObjectAny();
                obj.opt[i] = buf.ReadTString();
             }
+         } else {
+            obj.name = "";
+            obj.arr = [];
+            obj.opt = [];
          }
       };
       
