@@ -476,7 +476,7 @@
       // function similar to the TTree::Process
       
       if (!selector || !this.$file || !selector.branches || (typeof args !== 'object')) {
-         console.error('required parameter missing in for TTreeProcess');
+         console.error('required parameter missing for TTree::Process');
          if (selector) selector.Terminate(false);
          return false;
       }
@@ -653,9 +653,10 @@
                   name: selector.names[nn],
                   leaves: arr, 
                   func: function(buf, obj) {
-                     var tgt = obj[this.name] = {};
-                     for (var l=0;l<this.leaves.length;++l)
-                        this.leaves[l].func(buf,tgt);
+                     var tgt = obj[this.name], l = 0;
+                     if (!tgt) obj[this.name] = tgt = {};
+                     while (l<this.leaves.length)
+                        this.leaves[l++].func(buf,tgt);
                   }
               }
          } 
@@ -1220,14 +1221,19 @@
          selector.arr = []; // accumulate here
          
          selector.leaf = args.leaf;
+
+         // branch object remains, threrefore we need to copy fields to see them all
+         selector.copy_fields = !args.leaf && args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1);
          
          selector.AddBranch(args.branch, "br0");
          
          selector.Process = function() {
-            if (this.leaf)
-               this.arr.push(this.tgtobj.br0[this.leaf]);
-            else   
-               this.arr.push(this.tgtobj.br0);
+            var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0; 
+
+            if (res && this.copy_fields)
+               this.arr.push(JSROOT.extend({}, res));
+            else
+               this.arr.push(res);
          }
          
          selector.Terminate = function(res) {
