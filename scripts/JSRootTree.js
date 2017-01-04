@@ -41,29 +41,7 @@
    }
    
    JSROOT.TSelector.prototype.ShowProgress = function(value) {
-      // this function should be defined not here
-      
-      if ((document === undefined) || (JSROOT.progress===undefined)) return;
-
-      if (value===undefined) return JSROOT.progress();
-
-      var main_box = document.createElement("p"),
-          text_node = document.createTextNode(value),
-          selector = this;
-      
-      main_box.appendChild(text_node);
-      main_box.title = "Click on element to break drawing";
-
-      main_box.onclick = function() {
-         if (++selector.break_execution<3) {
-            main_box.title = "Tree draw will break after next I/O operation";
-            return text_node.nodeValue = "Breaking ... ";
-         }
-         selector.Abort();
-         JSROOT.progress();
-      }
-
-      JSROOT.progress(main_box);
+      // this function can be used to check current TTree progress
    }
    
    JSROOT.TSelector.prototype.Abort = function() {
@@ -187,9 +165,34 @@
          else
             this.expr[id] = undefined; // without func no need to create special handling
       }
-
       
       return true;
+   }
+   
+   JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
+      // this function should be defined not here
+      
+      if ((document === undefined) || (JSROOT.progress===undefined)) return;
+
+      if ((value===undefined) || isNaN(value)) return JSROOT.progress();
+
+      var main_box = document.createElement("p"),
+          text_node = document.createTextNode("TTree draw " + Math.round((value*100)) + " %  "),
+          selector = this;
+      
+      main_box.appendChild(text_node);
+      main_box.title = "Click on element to break drawing";
+
+      main_box.onclick = function() {
+         if (++selector.break_execution<3) {
+            main_box.title = "Tree draw will break after next I/O operation";
+            return text_node.nodeValue = "Breaking ... ";
+         }
+         selector.Abort();
+         JSROOT.progress();
+      }
+
+      JSROOT.progress(main_box);
    }
 
    JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(kind, arr, is_int, nbins) {
@@ -1018,11 +1021,11 @@
          if ((totalsz === 0) && !is_direct) 
             return handle.selector.Terminate(true);
          
-         var portion = 1.;
-         if (handle.arr[0].numbaskets > 0)
-            portion = handle.arr[0].staged_basket / handle.arr[0].numbaskets; 
-
-         handle.selector.ShowProgress("TTree draw " + Math.round((portion*100)) + " %  ");
+         var portion = 0;
+         if ((handle.current_entry>0) && (handle.process_max > handle.process_min))
+            portion = (handle.current_entry - handle.process_max)/ (handle.process_max - handle.process_min);
+         
+         handle.selector.ShowProgress(portion);
          
          if (totalsz > 0)
             handle.file.ReadBaskets(bitems, ProcessBaskets);
@@ -1324,10 +1327,6 @@
                this.fail = true;
          }
          
-         selector.ShowProgress = function() {
-            // just suppress progress
-         }
-      
          selector.Terminate = function(res) {
             if (typeof res !== 'string')
                res = (!res || this.fails) ? "FAIL" : "ok";
