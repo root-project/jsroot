@@ -2590,6 +2590,28 @@
          name: '$file',   
          func: function(buf,obj) { obj[this.name] = buf.fFile; }
       };
+      
+      cs['RooRealVar'] = function(buf,obj) {
+         var v = buf.last_read_version;
+         buf.ClassStreamer(obj, "RooAbsRealLValue");
+         if (v==1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
+         obj._error = buf.ntod();
+         obj._asymErrLo = buf.ntod();
+         obj._asymErrHi = buf.ntod();
+         if (v>=2) obj._binning = buf.ReadObjectAny();
+         if (v==3) obj._sharedProp = buf.ReadObjectAny();
+         if (v>=4) obj._sharedProp = buf.ClassStreamer({}, "RooRealVarSharedProperties");
+      };
+
+      cs['RooLinkedList'] = function(buf,obj) {
+         var v = buf.last_read_version;
+         buf.ClassStreamer(obj, "TObject");
+         var size = buf.ntoi4(); 
+         obj.arr = JSROOT.Create("TList");
+         while(size--)
+            obj.arr.Add(buf.ReadObjectAny());
+         if (v>1) obj._name = buf.ReadTString();
+      };
 
    }
 
