@@ -1798,16 +1798,7 @@
          case JSROOT.IO.kBase:
             member.base = element.fBaseVersion; // indicate base class
             member.basename = element.fName; // keep class name
-            
-            if (member.base === 0) {
-               // special case of base class with ClassDef(0), but its parent must be streamed
-               // ROOT itself fails at this moment
-               if (member.basename === "TVirtualPerfStats") member.basename = "TObject"; 
-            }
-            
-            member.func = function(buf, obj) {
-               buf.ClassStreamer(obj, this.basename);
-            };
+            member.func = function(buf, obj) { buf.ClassStreamer(obj, this.basename); };
             break;
          case JSROOT.IO.kShort:
             member.func = function(buf,obj) { obj[this.name] = buf.ntoi2(); }; break;
@@ -2591,6 +2582,8 @@
          func: function(buf,obj) { obj[this.name] = buf.fFile; }
       };
       
+      cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
+      
       cs['RooRealVar'] = function(buf,obj) {
          var v = buf.last_read_version;
          buf.ClassStreamer(obj, "RooAbsRealLValue");
@@ -2612,7 +2605,6 @@
             obj.arr.Add(buf.ReadObjectAny());
          if (v>1) obj._name = buf.ReadTString();
       };
-
    }
 
    JSROOT.TFile.prototype.GetStreamer = function(clname, ver, s_i) {
