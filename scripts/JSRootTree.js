@@ -169,6 +169,30 @@
       return true;
    }
    
+   JSROOT.TDrawSelector.prototype.ParseExpression = function(tree, expr) {
+   
+      var names = expr ? expr.split(":") : [];
+      if ((names.length < 1) || (names.length > 2)) return false;
+
+      for (var n=0;n<names.length;++n) {
+         var br = tree.FindBranch(names[n], true);
+         if (!br) {
+            console.log('Not found branch', names[n]);
+            return false;
+         }
+
+         if (br.branch) 
+            this.AddDrawBranch(br.branch, br.rest, names[n]);
+         else
+            this.AddDrawBranch(br, undefined, names[n]);
+      }
+
+      this.hist_title = "drawing '" + expr + "' from " + tree.fName;
+       
+      return true;
+   }
+
+   
    JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
       
@@ -195,7 +219,7 @@
       JSROOT.progress(main_box);
    }
 
-   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(kind, arr, is_int, nbins) {
+   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(name, kind, arr, is_int, nbins) {
       
       var res = { min: 0, max: 0, nbins: nbins };
       
@@ -242,9 +266,11 @@
    JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
       if (this.hist || !this.arr || this.arr.length==0) return;
       
-      this.x = this.GetMinMaxBins(this.kind[0], this.arr, this.IsInteger(0), (this.ndim == 2) ? 50 : 200);
+      this.x = this.GetMinMaxBins("x", this.kind[0], this.arr, this.IsInteger(0), (this.ndim > 1) ? 50 : 200);
       
-      this.y = this.GetMinMaxBins(this.kind[1], this.arr2, this.IsInteger(1), 50);
+      this.y = this.GetMinMaxBins("y", this.kind[1], this.arr2, this.IsInteger(1), 50);
+
+      this.z = this.GetMinMaxBins("z", this.kind[2], this.arr3, this.IsInteger(2), 50);
       
       this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
       this.hist.fXaxis.fTitle = this.axislbls[0];
@@ -261,7 +287,7 @@
          }
       }
       
-      if (this.ndim == 2) this.hist.fYaxis.fTitle = this.axislbls[1];
+      if (this.ndim > 1) this.hist.fYaxis.fTitle = this.axislbls[1];
       this.hist.fYaxis.fXmin = this.y.min;
       this.hist.fYaxis.fXmax = this.y.max;
       if (this.y.lbls) {
@@ -272,6 +298,20 @@
             s.fUniqueID = k+1;
             if (s.fString === "") s.fString = "<empty>";
             this.hist.fYaxis.fLabels.Add(s);
+         }
+      }
+
+      if (this.ndim > 2) this.hist.fZaxis.fTitle = this.axislbls[2];
+      this.hist.fZaxis.fXmin = this.z.min;
+      this.hist.fZaxis.fXmax = this.z.max;
+      if (this.z.lbls) {
+         this.hist.fZaxis.fLabels = JSROOT.Create("THashList");
+         for (var k=0;k<this.z.lbls.length;++k) {
+            var s = JSROOT.Create("TObjString");
+            s.fString = this.z.lbls[k];
+            s.fUniqueID = k+1;
+            if (s.fString === "") s.fString = "<empty>";
+            this.hist.fZaxis.fLabels.Add(s);
          }
       }
       
@@ -1350,26 +1390,10 @@
          // special debugging code
          return this.IOTest(args, result_callback);
       } else {
-         var names = args.expr ? args.expr.split(":") : [];
-         if ((names.length < 1) || (names.length > 2))
-            return JSROOT.CallBack(result_callback, null);
-
          selector = new JSROOT.TDrawSelector(result_callback);
-
-         for (var n=0;n<names.length;++n) {
-            var br = this.FindBranch(names[n], true);
-            if (!br) {
-               console.log('Not found branch', names[n]);
-               return JSROOT.CallBack(result_callback, null);
-            }
-
-            if (br.branch) 
-               selector.AddDrawBranch(br.branch, br.rest, names[n]);
-            else
-               selector.AddDrawBranch(br, undefined, names[n]);
-         }
-
-         selector.hist_title = "drawing '" + args.expr + "' from " + this.fName;
+         
+         if (!selector.ParseExpression(this, args.expr))
+            return JSROOT.CallBack(result_callback, null);
       }
       
       if (!selector)
