@@ -129,7 +129,9 @@
       this.kind = []; // is final value (after all iterators) is float, int or string
       this.axislbls = ["", "", ""];
       this.histo_callback = callback;
+      this.hist_name = "$htemp";
       this.hist_title = "Result of TTree::Draw";
+      this.hist_args = []; // arguments for histogram creation
    }
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
@@ -171,7 +173,30 @@
    
    JSROOT.TDrawSelector.prototype.ParseExpression = function(tree, expr) {
    
-      var names = expr ? expr.split(":") : [];
+      if (!expr || (typeof expr !== 'string')) return false;
+
+      // parse option for histogram creation
+      var pos = expr.lastIndexOf(">>");
+      if (pos>0) {
+         var harg = expr.substr(pos+2).trim();
+         expr = expr.substr(0,pos).trim();
+         pos = harg.indexOf("(");
+         if (pos>0) {
+            this.hist_name = harg.substr(0, pos);
+            harg = harg.substr(pos);
+         }
+         if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
+            harg = harg.substr(1,harg.length-2).split(",");
+            var isok = true;
+            for (var n=0;n<harg.length;++n) {
+               harg[n] = (n%3===0) ? parseInt(harg[n]) : parseFloat(harg[n]);
+               if (isNaN(harg[n])) isok = false;
+            }
+            if (isok) this.hist_args = harg; 
+         }
+      }
+      
+      var names = expr.split(":");
       if ((names.length < 1) || (names.length > 2)) return false;
 
       for (var n=0;n<names.length;++n) {
@@ -219,11 +244,11 @@
       JSROOT.progress(main_box);
    }
 
-   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(name, kind, arr, is_int, nbins) {
+   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, kind, arr, is_int, nbins) {
       
       var res = { min: 0, max: 0, nbins: nbins };
       
-      if (!kind || !arr || (arr.length==0)) return res;
+      if ((axisid>=this.ndim) || !kind || !arr || (arr.length==0)) return res;
       
       if (kind === "string") {
          res.lbls = []; // all labels
@@ -234,6 +259,11 @@
          
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
+      } else 
+      if (axisid*3 + 2 < this.hist_args.length) {
+         res.nbins = this.hist_args[axisid*3];
+         res.min = this.hist_args[axisid*3+1];
+         res.max = this.hist_args[axisid*3+2];
       } else {
       
          res.min = Math.min.apply(null, arr);
@@ -266,11 +296,11 @@
    JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
       if (this.hist || !this.arr || this.arr.length==0) return;
       
-      this.x = this.GetMinMaxBins("x", this.kind[0], this.arr, this.IsInteger(0), (this.ndim > 1) ? 50 : 200);
+      this.x = this.GetMinMaxBins(0, this.kind[0], this.arr, this.IsInteger(0), (this.ndim > 1) ? 50 : 200);
       
-      this.y = this.GetMinMaxBins("y", this.kind[1], this.arr2, this.IsInteger(1), 50);
+      this.y = this.GetMinMaxBins(1, this.kind[1], this.arr2, this.IsInteger(1), 50);
 
-      this.z = this.GetMinMaxBins("z", this.kind[2], this.arr3, this.IsInteger(2), 50);
+      this.z = this.GetMinMaxBins(2, this.kind[2], this.arr3, this.IsInteger(2), 50);
       
       this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
       this.hist.fXaxis.fTitle = this.axislbls[0];
@@ -315,9 +345,9 @@
          }
       }
       
-      this.hist.fName = "htemp";
+      this.hist.fName = this.hist_name;
       this.hist.fTitle = this.hist_title;
-      this.hist.$custom_stat = 111110;
+      this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
       
       if (this.ndim==2)
          for (var n=0;n<this.arr.length;++n) 
