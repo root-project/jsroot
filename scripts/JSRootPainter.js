@@ -8618,7 +8618,9 @@
 
       top._childs = [];
       
-      if (Object.prototype.toString.apply(obj) === '[object DataView]') {
+      var proto = Object.prototype.toString.apply(obj);
+      
+      if (proto === '[object DataView]') {
 
          var item = {
              _parent: top,
@@ -8658,7 +8660,9 @@
          if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
          prnt = prnt._parent;
       }
-
+      
+      var compress = ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) && (obj.length > this.arrlimit/2);
+      
       if (!('_obj' in top))
          top._obj = obj;
       else
@@ -8666,17 +8670,23 @@
 
       if (!top._title && obj._typename)
          top._title = "ROOT." + obj._typename;
+      
+      var lastitem, lastkey, lastfield, cnt;
 
       for (var key in obj) {
          if ((key == '_typename') || (key[0]=='$')) continue;
          var fld = obj[key];
          if (typeof fld == 'function') continue;
          if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
+         
+         if (compress && lastitem) {
+            if (lastfield===fld) { ++cnt; lastkey = key; continue; }
+            if (cnt>0) lastitem._name += ".." + lastkey; 
+         } 
 
-         var item = {
-            _parent: top,
-            _name: key
-         };
+         var item = { _parent: top, _name: key };
+         
+         if (compress) { lastitem = item;  lastkey = key; lastfield = fld; cnt = 0; }
 
          if (fld === null) {
             item._value = item._title = "null";
@@ -8688,7 +8698,7 @@
 
          if (typeof fld == 'object') {
          
-            var proto = Object.prototype.toString.apply(fld);
+            proto = Object.prototype.toString.apply(fld);
 
             if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
                item._title = "array len=" + fld.length;
@@ -8771,6 +8781,9 @@
          if (!simple || !nosimple)
             top._childs.push(item);
       }
+      
+      if (compress && lastitem && (cnt>0)) lastitem._name += ".." + lastkey; 
+      
       return true;
    }
 
@@ -8783,7 +8796,7 @@
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
-      this.arrlimit = 100; // how many items in one level of hierarchy
+      this.arrlimit = 250; // how many items in one level of hierarchy
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
