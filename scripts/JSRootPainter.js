@@ -8783,6 +8783,7 @@
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
+      this.arrlimit = 100; // how many items in one level of hierarchy
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
@@ -9208,7 +9209,6 @@
       if (!mdi) return false;
 
       return mdi.FindFrame(itemname) !== null;
-
    }
 
    JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {

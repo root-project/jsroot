@@ -176,14 +176,14 @@
       return true;
    }
 
-   JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, doupdate) {
+   JSROOT.HierarchyPainter.prototype.addItemHtml = function(hitem, d3prnt, arg) {
 
-      if (!hitem || ('_hidden' in hitem)) return;
+      if (!hitem || ('_hidden' in hitem)) return true;
 
       var isroot = (hitem === this.h),
           has_childs = ('_childs' in hitem),
           handle = JSROOT.getDrawHandle(hitem._kind),
-          img1 = "", img2 = "", can_click = false,
+          img1 = "", img2 = "", can_click = false, break_list = false,
           d3cont, itemname = this.itemFullName(hitem);
 
       if (handle !== null) {
@@ -213,11 +213,12 @@
       if (img1.length==0) img1 = (has_childs || hitem._more) ? "img_folder" : "img_page";
       if (img2.length==0) img2 = (has_childs || hitem._more) ? "img_folderopen" : "img_page";
 
-      if (doupdate) {
+      if (arg === "update") {
          d3prnt.selectAll("*").remove();
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append("div");
+         if (arg && (arg >= (hitem._parent._show_limit || this.arrlimit))) break_list = true;
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
@@ -239,7 +240,7 @@
       if (isroot) {
          // for root node no extra code
       } else
-      if (has_childs) {
+      if (has_childs && !break_list) {
          icon_class = hitem._isopen ? "img_minus" : "img_plus";
          plusminus = true;
       } else
@@ -253,7 +254,7 @@
       var h = this;
 
       if (icon_class.length > 0) {
-         if (this.isLastSibling(hitem)) icon_class+="bottom";
+         if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
          var d3icon = d3line.append("div").attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
                               .on("click", function() { h.tree_click(this, "plusminus"); });
@@ -261,7 +262,7 @@
 
       // make node icons
 
-      if (this.with_icons) {
+      if (this.with_icons && !break_list) {
          var icon_name = hitem._isopen ? img2 : img1;
 
          var d3img;
@@ -284,9 +285,16 @@
       }
 
       var d3a = d3line.append("a");
-      if (can_click || has_childs)
+      if (can_click || has_childs || break_list)
          d3a.attr("class","h_item")
             .on("click", function() { h.tree_click(this); });
+      
+      if (break_list) {
+         hitem._break_point = true; // indicate that list was broken here
+         d3a.attr('title', 'there are ' + (hitem._parent._childs.length-arg) + ' more items')
+            .text("...more...");
+         return false;
+      }
 
       if ('disp_kind' in h) {
          if (JSROOT.gStyle.DragAndDrop && can_click)
@@ -295,13 +303,13 @@
             d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
       }
 
-      var element_name = hitem._name;
+      var element_name = hitem._name, element_title = "";
 
       if ('_realname' in hitem)
          element_name = hitem._realname;
 
-      var element_title = "";
-      if ('_title' in hitem) element_title = hitem._title;
+      if ('_title' in hitem) 
+         element_title = hitem._title;
 
       if ('_fullname' in hitem)
          element_title += "  fullname: " + hitem._fullname;
@@ -321,12 +329,14 @@
 
       if (has_childs && (isroot || hitem._isopen)) {
          var d3chlds = d3cont.append("div").attr("class", "h_childs");
-         for (var i=0; i< hitem._childs.length;++i) {
+         for (var i=0; i< hitem._childs.length; ++i) {
             var chld = hitem._childs[i];
             chld._parent = hitem;
-            this.addItemHtml(chld, d3chlds);
+            if (!this.addItemHtml(chld, d3chlds, i)) break; // if too many items, skip rest
          }
       }
+      
+      return true;
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
@@ -408,7 +418,7 @@
          if (d3cont.empty()) return;
       }
 
-      this.addItemHtml(hitem, d3cont, true);
+      this.addItemHtml(hitem, d3cont, "update");
    }
 
    JSROOT.HierarchyPainter.prototype.UpdateBackground = function(hitem, scroll_into_view) {
@@ -428,14 +438,38 @@
    }
 
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
-      if (node===null) return;
-      var d3cont = d3.select(node.parentNode.parentNode);
+      if (!node) return;
 
+      var d3cont = d3.select(node.parentNode.parentNode);
       var itemname = d3cont.attr('item');
-      if (itemname == null) return;
+      if (!itemname) return;
       
       var hitem = this.Find(itemname);
-      if (hitem == null) return;
+      if (!hitem) return;
+      
+      if (hitem._break_point) {
+         // special case of more item
+         
+         delete hitem._break_point;
+         
+         // update item itself
+         this.addItemHtml(hitem, d3cont, "update");
+         
+         var prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
+             d3chlds = d3.select(d3cont.node().parentNode);
+
+         if (indx<0) return console.error('internal error');
+         
+         prnt._show_limit = (prnt._show_limit || this.arrlimit) * 2;
+         
+         for (var n=indx+1;n<prnt._childs.length;++n) {
+            var chld = prnt._childs[n];
+            chld._parent = prnt;
+            if (!this.addItemHtml(chld, d3chlds, n)) break; // if too many items, skip rest
+         }
+
+         return;
+      }
 
       var prnt = hitem, dflt = undefined;
       while (prnt) {
@@ -445,8 +479,7 @@
 
       if (!place || (place=="")) place = "item";
 
-      var sett = JSROOT.getDrawSettings(hitem._kind),
-          handle = sett.handle;
+      var sett = JSROOT.getDrawSettings(hitem._kind), handle = sett.handle;
 
       if (place == "icon") {
          var func = null;
