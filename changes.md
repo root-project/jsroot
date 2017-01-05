@@ -10,6 +10,7 @@
 2. Elementary TTree::Draw
   - simple 1D/2D histograms
 3. Full support of Float16_t and Double32_t types 
+4. Drawing of RooPlot objects, I/O support for RooFit classes   
 
 
 ## Changes in 4.8.0

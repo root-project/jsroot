@@ -10859,16 +10859,16 @@
       window.addEventListener('resize', ProcessResize);
    }
 
-   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas, opt:";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
-   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad, opt:";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
+   JSROOT.addDrawFunc({ name: "TCanvas", icon: "img_canvas", func: JSROOT.Painter.drawCanvas, opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
+   JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", func: JSROOT.Painter.drawPad, opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
    JSROOT.addDrawFunc({ name: "TSlider", icon: "img_canvas", func: JSROOT.Painter.drawPad });
    JSROOT.addDrawFunc({ name: "TFrame", icon: "img_frame", func: JSROOT.Painter.drawFrame });
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveStats", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func: JSROOT.Painter.drawPaveText });
-   JSROOT.addDrawFunc({ name: "TLatex", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TMathText", icon:"img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TText", icon:"img_text", func: JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TLatex", icon: "img_text", func: JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TMathText", icon: "img_text", func: JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TText", icon: "img_text", func: JSROOT.Painter.drawText });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same"});
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;LCOL;LEGO;same", expand_item: "fBins", theonly: true });
@@ -10885,10 +10885,11 @@
    JSROOT.addDrawFunc({ name: "TCutG", sameas: "TGraph" });
    JSROOT.addDrawFunc({ name: /^RooHist/, sameas: "TGraph" });
    JSROOT.addDrawFunc({ name: /^RooCurve/, sameas: "TGraph" });
-   JSROOT.addDrawFunc({ name: "TMultiGraph", icon:"img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
-   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon:'img_question', func: JSROOT.Painter.drawStreamerInfo });
+   JSROOT.addDrawFunc({ name: "RooPlot", icon: "img_canvas", prereq: "more2d", func: "JSROOT.Painter.drawRooPlot" });
+   JSROOT.addDrawFunc({ name: "TMultiGraph", icon: "img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
+   JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon: 'img_question', func: JSROOT.Painter.drawStreamerInfo });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
-   JSROOT.addDrawFunc({ name: "kind:Text", icon:"img_text", func: JSROOT.Painter.drawRawText });
+   JSROOT.addDrawFunc({ name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
    JSROOT.addDrawFunc({ name: "TF2", icon: "img_tf2", prereq: "math;more2d", func: "JSROOT.Painter.drawTF2" });
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });

@@ -848,6 +848,23 @@
 
    // =================================================================================
 
+   JSROOT.Painter.drawRooPlot = function(divid, plot, opt) {
+      
+      var painter = this, cnt = -1;
+      
+      function DrawNextItem() {
+         if (++cnt >= plot._items.arr.length) return painter.DrawingReady();
+         
+         JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt], DrawNextItem);
+      }
+      
+      JSROOT.draw(divid, plot._hist, "hist", DrawNextItem);
+      
+      return this;
+   }
+
+   // =================================================================================
+
    JSROOT.Painter.drawTF2 = function(divid, func, opt) {
       var hist = null, npx = 0, npy = 0, nsave = 1,
           d = new JSROOT.DrawOptions(opt);
