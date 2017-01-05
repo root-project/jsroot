@@ -10,9 +10,13 @@
 2. Elementary TTree::Draw
   - simple 1D/2D/3D histograms
   - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
-  - support of arrays and string
+  - support of arrays and strings
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
+5. Support of large arrays in object inspector.
+   If there are too many elements, only first part will be shown
+   or array will be compressed - same consequent items shown only once
+     
 
 
 ## Changes in 4.8.0

@@ -170,6 +170,27 @@ While draw option can include "+" sign itself, for superposition one could speci
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=[hpx;1,hprof;1]&opt=[logy,hist]>
   
 
+## TTree draw
+
+It is possible to display TTree data, using simplified TTree::Draw syntax. 
+
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px>
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz>
+   
+Histogram ranges and binning defined after reading first 1000 entries from the tree. 
+Like in ROOT, one could configure histogram binning and range    
+
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h(50,-5,5,50,-5,5)>
+
+It is possible to "dump" content of any branch:   
+
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1/px&opt=dump>
+
+In such case first 10 entries are read and displayed in object inspector.
+
+
+
 ## Geometry viewer
 
 JSROOT implements display of TGeo objects like:
@@ -333,7 +354,7 @@ The parameter value is the update interval in milliseconds.
 ### JSON file-based monitoring
 
 Solid file-based monitoring (without integration of THttpServer into application) can be
-implemented in JSON format. There is the TBufferJSON class, which is capable to potentially
+implemented in JSON format. There is the TBufferJSON class, which is capable to 
 convert any ROOT object (beside TTree) into JSON. Any ROOT application can use such class to
 create JSON files for selected objects and write such files in a directory,
 which can be accessed via web server. Then one can use JSROOT to read such files and display objects in a web browser.
@@ -358,9 +379,6 @@ First of all, one need to store the data of all objects, which only potentially 
 The second problem is I/O. To read the first object from the ROOT file, one need to perform several (about 5) file-reading operations via http protocol.
 There is no http file locking mechanism (at least not for standard web servers),
 therefore there is no guarantee that the file content is not changed/replaced between consequent read operations. Therefore, one should expect frequent I/O failures while trying to monitor data from ROOT binary files. There is a workaround for the problem - one could load the file completely and exclude many partial I/O operations by this. To achieve this with JSROOT, one should add "+" sign at the end of the file name. Of course, it only could work for small files.
-
-The third problem is the limitations of ROOT I/O in JavaScript. Although it tries to fully repeat logic of binary I/O with the streamer infos evaluation, the JavaScript ROOT I/O will never have 100% functionality of native ROOT. Especially, the custom streamers are a problem for JavaScript - one need to implement them once again and keep them synchronous with ROOT itself. And ROOT is full of custom streamers! Therefore it is just great feature that one can read binary files from a web browser, but one should never rely on the fact that such I/O works for all cases.
-Let say that major classes like TH1 or TGraph or TCanvas will be supported, but one will never see full support of TTree or RooWorkspace in JavaScript.
 
 If somebody still wants to use monitoring of data from ROOT files, could try link like:
 
@@ -501,4 +519,39 @@ Similar example with JSON file:
        JSROOT.draw("drawing", obj, "lego");
     }).send(null);
 
+
+### Reading TTree
+
+Since version 4.9 JSROOT provides possibility to access TTree data from JavaScript.
+For such access TSelector class should be used.
+
+
+    var filename = "https://root.cern/js/files/hsimple.root";
+    JSROOT.OpenFile(filename, function(file) {
+       file.ReadObject("ntuple;1", function(tree) {
+         
+          var selector = new JSROOT.TSelector();
+          
+          selector.AddBranch("px"); 
+          selector.AddBranch("py");
+          
+          selector.Process = function() {
+             // function called for every read event
+             console.log(this.tgtobj.px, this.tgtobj.py); 
+          }
+          
+          selector.Terminate = function(res) {
+             // function called when processing finishes 
+          }
+          
+          tree.Process(selector);
+       
+       });
+    });
+
+This examples shows how read TTree from binary file and create JSROOT.TSelector object.
+Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
+Selected branches can be accessed from **tgtobj** data member. At the end of tree reading TSelector::Terminate() method
+will be called.
+     
  
