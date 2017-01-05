@@ -8694,7 +8694,7 @@
             continue;
          }
 
-        var simple = false;
+         var simple = false;
 
          if (typeof fld == 'object') {
          
