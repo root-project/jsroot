@@ -1475,9 +1475,8 @@
             if (key.fClassName==='TF1')
                return file.ReadFormulas(obj, user_call_back, -1);
             
-            if (obj.$is_tree === true) {
+            if (obj.$kind === "TTree") {
                // ensure that TTree methods are assigned
-               delete obj.$is_tree;
                obj.$file = file;
                if (!JSROOT.TreeMethods)
                   return JSROOT.AssertPrerequisites('tree', function() {
@@ -2244,6 +2243,7 @@
       cs['TList'] = cs['THashList'] = function(buf, obj) {
          // stream all objects in the list from the I/O buffer
          if (!obj._typename) obj._typename = this.typename;
+         obj.$kind = "TList"; // all derived classes will be marked as well
          if (buf.last_read_version > 3) {
             buf.ClassStreamer(obj, "TObject");
             obj.name = buf.ReadTString();
@@ -2263,6 +2263,7 @@
       
       cs['TClonesArray'] = function(buf, list) {
          if (!list._typename) list._typename = "TClonesArray";
+         list.$kind = "TClonesArray";
          list.name = "";
          var ver = buf.last_read_version;
          if (ver > 2) buf.ClassStreamer(list, "TObject");
@@ -2308,7 +2309,6 @@
          if (ver > 1) map.name = buf.ReadTString();
 
          var nobjects = buf.ntou4();
-
          // create objects
          for (var n=0;n<nobjects;++n) {
             var obj = { _typename: "TPair" };
@@ -2377,7 +2377,8 @@
       };
 
       cs['TObjArray'] = function(buf, list) {
-         list._typename = "TObjArray";
+         if (!list._typename) list._typename = "TObjArray";
+         list.$kind = "TObjArray";
          list.name = "";
          var ver = buf.last_read_version;
          if (ver > 2)
@@ -2512,7 +2513,7 @@
       
       cs['TTree'] = {
          name: '$file',   
-         func: function(buf,obj) { obj.$file = buf.fFile; obj.$is_tree = true; }
+         func: function(buf,obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; }
       };
       
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer

@@ -8506,8 +8506,9 @@
 
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
-      if (lst._typename != 'TList' && lst._typename != 'THashList' && lst._typename != 'TMap' &&
-          lst._typename != 'TObjArray' && lst._typename != 'TClonesArray') return false;
+      if (lst.$kind !== "TList" && lst.$kind !== "TObjArray" && 
+          lst._typename !== 'TList' && lst._typename !== 'THashList' && lst._typename !== 'TMap' &&
+          lst._typename !== 'TObjArray' && lst._typename !== 'TClonesArray') return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
@@ -8716,9 +8717,11 @@
                item._vclass = 'h_value_num';
             } else { 
                
-               if (fld._typename)
-                  item._kind = item._title = "ROOT." + fld._typename;
-
+               if (fld.$kind || fld._typename)
+                  item._kind = item._title = "ROOT." + (fld.$kind || fld._typename);
+               
+               if (fld._typename) item._title = fld._typename;
+               
                // check if object already shown in hierarchy (circular dependency)
                var curr = top, inparent = false;
                while (curr && !inparent) {
@@ -9650,6 +9653,7 @@
          if (!_name) _name = hpainter.itemFullName(_item);
 
          var handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
+         
          if (_obj && handle && handle.expand_item) {
             _obj = _obj[handle.expand_item]; // just take specified field from the object
             if (_obj && _obj._typename)
