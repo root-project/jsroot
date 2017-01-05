@@ -493,22 +493,25 @@
           process_arrays: false // one can process all branches as arrays
       };
 
+      // find all branches if they specifed as names
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+         var branch = selector.branches[nn];
+         if (typeof branch !== 'string') continue;
+         
+         selector.branches[nn] = this.FindBranch(branch);
+         if (!selector.branches[nn]) {
+            console.log("Cannot find branch", branch);
+            selector.Terminate(false);
+            return false;
+         }
+      }
+
       // check all branches with counters and add it to list of read branches
-      
+
       var cnt_br = [], cnt_names = [];
       
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          var branch = selector.branches[nn];
-         
-         if (typeof branch === 'string') {
-            selector.branches[nn] = this.FindBranch(branch);
-            if (!selector.branches[nn]) {
-               console.log("Cannot find branch", branch);
-               selector.Terminate(false);
-               return false;
-            }
-            branch = selector.branches[nn];
-         }
          
          for (var loop = 0; loop<2; ++loop) {
          
