@@ -31,7 +31,14 @@
    }
    
    JSROOT.TSelector.prototype.AddBranch = function(branch, name) {
-      if (!name) name = "br" + this.branches.length; 
+      // Add branch to the selector
+      // Either branch name or branch itself should be specified
+      // Second parameter defines member name in the tgtobj
+      // If selector.AddBranch("px", "read_px") is called, 
+      // branch will be read into selector.tgtobj.read_px member  
+      
+      if (!name) 
+         name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
       this.branches.push(branch);
       this.names.push(name);
    }
@@ -628,7 +635,9 @@
    JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
       
-      if (!selector || !this.$file || !selector.branches || (typeof args !== 'object')) {
+      if (!args) args = {};
+      
+      if (!selector || !this.$file || !selector.branches) {
          console.error('required parameter missing for TTree::Process');
          if (selector) selector.Terminate(false);
          return false;
