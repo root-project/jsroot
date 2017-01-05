@@ -8,9 +8,10 @@
   - JSROOT.TSelector class to access TTree data
   - simple access to branch data with "dump" draw option
 2. Elementary TTree::Draw
-  - simple 1D/2D histograms
+  - simple 1D/2D/3D histograms
   - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
-3. Full support of Float16_t and Double32_t types 
+  - support of arrays and string
+3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
 
 

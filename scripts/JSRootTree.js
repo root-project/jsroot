@@ -143,9 +143,10 @@
       this.AddBranch(branch, "br" + id);
       
       switch(id) {
-         case 0: this.arr = []; break; // array to accumulate first dimension
+         case 0: this.arr1 = []; break; // array to accumulate first dimension
          case 1: this.arr2 = []; break; // array to accumulate second dimension
-         default: console.log('more than 2 dimensions not supported'); return false;
+         case 2: this.arr3 = []; break; // array to accumulate third dimension
+         default: console.log('more than 3 dimensions not supported'); return false;
       }
       
       this.axislbls[id] = axislbl || "";
@@ -197,7 +198,7 @@
       }
       
       var names = expr.split(":");
-      if ((names.length < 1) || (names.length > 2)) return false;
+      if ((names.length < 1) || (names.length > 3)) return false;
 
       for (var n=0;n<names.length;++n) {
          var br = tree.FindBranch(names[n], true);
@@ -294,15 +295,20 @@
    }
    
    JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
-      if (this.hist || !this.arr || this.arr.length==0) return;
+      if (this.hist || !this.arr1 || this.arr1.length==0) return;
       
-      this.x = this.GetMinMaxBins(0, this.kind[0], this.arr, this.IsInteger(0), (this.ndim > 1) ? 50 : 200);
+      this.x = this.GetMinMaxBins(0, this.kind[0], this.arr1, this.IsInteger(0), (this.ndim > 1) ? 50 : 200);
       
       this.y = this.GetMinMaxBins(1, this.kind[1], this.arr2, this.IsInteger(1), 50);
 
       this.z = this.GetMinMaxBins(2, this.kind[2], this.arr3, this.IsInteger(2), 50);
       
-      this.hist = (this.ndim == 2) ? JSROOT.CreateTH2(this.x.nbins, this.y.nbins) : JSROOT.CreateTH1(this.x.nbins);
+      switch (this.ndim) {
+         case 1: this.hist = JSROOT.CreateTH1(this.x.nbins, "F"); break; 
+         case 2: this.hist = JSROOT.CreateTH2(this.x.nbins, this.y.nbins, "F"); break;
+         case 3: this.hist = JSROOT.CreateTH3(this.x.nbins, this.y.nbins, this.z.nbins, "F"); break;
+      }
+      
       this.hist.fXaxis.fTitle = this.axislbls[0];
       this.hist.fXaxis.fXmin = this.x.min;
       this.hist.fXaxis.fXmax = this.x.max;
@@ -349,15 +355,23 @@
       this.hist.fTitle = this.hist_title;
       this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
       
-      if (this.ndim==2)
-         for (var n=0;n<this.arr.length;++n) 
-            this.Fill2DHistogram(this.arr[n], this.arr2[n]);
-      else
-         for (var n=0;n<this.arr.length;++n) 
-            this.FillHistogram(this.arr[n]);
+      switch (this.ndim) {
+         case 2: 
+            for (var n=0;n<this.arr1.length;++n) 
+               this.Fill2DHistogram(this.arr1[n], this.arr2[n]);
+            break;
+         case 3:
+            for (var n=0;n<this.arr1.length;++n) 
+               this.Fill2DHistogram(this.arr1[n], this.arr2[n], this.arr3[n]);
+            break;
+         default:
+            for (var n=0;n<this.arr1.length;++n) 
+                this.FillHistogram(this.arr1[n]);
+      }
       
-      delete this.arr;
+      delete this.arr1;
       delete this.arr2;
+      delete this.arr3;
    }
    
    JSROOT.TDrawSelector.prototype.FillHistogram = function(xvalue) {
@@ -371,6 +385,14 @@
           ybin = this.y.GetBin(yvalue);
       
       this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
+   }
+
+   JSROOT.TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue) {
+      var xbin = this.x.GetBin(xvalue),
+          ybin = this.y.GetBin(yvalue),
+          zbin = this.z.GetBin(zvalue);
+      
+      this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += 1;
    }
    
    JSROOT.TDrawSelector.prototype.CreateIterator = function(value, expr) {
@@ -429,36 +451,39 @@
 
    JSROOT.TDrawSelector.prototype.Process = function(entry) {
       
-      if (this.arr !== undefined) {
+      if (this.arr1 !== undefined) {
          var firsttime = false;
          
          if (this.plain.length === 0) {
             this.kind[0] = typeof this.tgtobj.br0;
             this.plain[0] = !this.expr[0] && ((this.kind[0] == 'number') || (this.kind[0] == 'string'));
-            if (this.ndim===2) {
+            if (this.ndim > 1) {
                this.kind[1] = typeof this.tgtobj.br1;
                this.plain[1] = !this.expr[1] && ((this.kind[1] == 'number') || (this.kind[1] == 'string'));
+            }
+            if (this.ndim > 2) {
+               this.kind[2] = typeof this.tgtobj.br2;
+               this.plain[2] = !this.expr[2] && ((this.kind[2] == 'number') || (this.kind[2] == 'string'));
             }
             firsttime = true;
          }
          
          if (this.ndim==1) {
             if (this.plain[0]) {
-               this.arr.push(this.tgtobj.br0);
+               this.arr1.push(this.tgtobj.br0);
             } else {
                var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
                
                while (iter.next())  
-                  this.arr.push(iter.value);
+                  this.arr1.push(iter.value);
                
                if (firsttime) this.kind[0] = typeof iter.value;
             }
             
-         } else {
-            // only elementary branches in 2d for the moment
-         
+         } else 
+         if (this.ndim==2) {
             if (this.plain[0] && this.plain[1]) {
-               this.arr.push(this.tgtobj.br0);
+               this.arr1.push(this.tgtobj.br0);
                this.arr2.push(this.tgtobj.br1);
             } else {
                var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
@@ -467,7 +492,7 @@
                while (iter0.next()) {
                   iter1.reset();
                   while (iter1.next()) {
-                     this.arr.push(iter0.value);
+                     this.arr1.push(iter0.value);
                      this.arr2.push(iter1.value);
                   }
                }
@@ -477,11 +502,49 @@
                   this.kind[1] = typeof iter1.value;
                }
             }
+         } else 
+         if (this.ndim==3) {
+            if (this.plain[0] && this.plain[1] && this.plain[2]) {
+               this.arr1.push(this.tgtobj.br0);
+               this.arr2.push(this.tgtobj.br1);
+               this.arr3.push(this.tgtobj.br2);
+            } else {
+               var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                   iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]),
+                   iter2 = this.CreateIterator(this.tgtobj.br2, this.expr[2]);
+               
+               while (iter0.next()) {
+                  iter1.reset();
+                  while (iter1.next()) {
+                     iter2.reset();
+                     while(iter2.next()) {
+                        this.arr1.push(iter0.value);
+                        this.arr2.push(iter1.value);
+                        this.arr3.push(iter2.value);
+                     }
+                  }
+               }
+               
+               if (firsttime) {
+                  this.kind[0] = typeof iter0.value;
+                  this.kind[1] = typeof iter1.value;
+                  this.kind[2] = typeof iter2.value;
+               }
+            }
          }
          
-         if (this.arr.length > 10000) this.CreateHistogram();
+         if (this.arr1.length > 10000) this.CreateHistogram();
       } else
       if (this.hist) {
+         if (this.ndim===1) {
+            if (this.plain[0]) {
+               this.FillHistogram(this.tgtobj.br0);
+            } else {
+               var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
+               while (iter.next()) 
+                  this.FillHistogram(iter.value);
+            }
+         } else
          if (this.ndim===2) {
             if (this.plain[0] && this.plain[1]) {
                this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
@@ -495,15 +558,25 @@
                      this.Fill2DHistogram(iter0.value, iter1.value);
                }
             }
-         } else {
-            if (this.plain[0]) {
-               this.FillHistogram(this.tgtobj.br0);
+         } else 
+         if (this.ndim===3) {
+            if (this.plain[0] && this.plain[1] && this.plain[2]) {
+               this.Fill3DHistogram(this.tgtobj.br0, this.tgtobj.br1, this.tgtobj.br2);
             } else {
-               var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
-               while (iter.next()) 
-                  this.FillHistogram(iter.value);
+               var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
+                   iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]),
+                   iter2 = this.CreateIterator(this.tgtobj.br2, this.expr[2]);
+           
+               while (iter0.next()) {
+                  iter1.reset();
+                  while (iter1.next()) {
+                     iter2.reset();
+                     while (iter2.next()) 
+                        this.Fill3DHistogram(iter0.value, iter1.value, iter2.value);
+                  }
+               }
             }
-         }
+         } 
       }
    }
    
@@ -511,21 +584,31 @@
       // process all branches as arrays
       // works only for very limited number of cases with plain branches, but much faster
       
-      if (this.arr !== undefined) {
+      if (this.arr1 !== undefined) {
          for (var n=0;n<this.tgtarr.br0.length;++n)
-            this.arr.push(this.tgtarr.br0[n]);
-         if (this.ndim==2) 
+            this.arr1.push(this.tgtarr.br0[n]);
+         if (this.ndim>1) 
             for (var n=0;n<this.tgtarr.br1.length;++n)
               this.arr2.push(this.tgtarr.br1[n]);
-         if (this.arr.length > 10000) this.CreateHistogram();
+         if (this.ndim>2) 
+            for (var n=0;n<this.tgtarr.br2.length;++n)
+              this.arr3.push(this.tgtarr.br2[n]);
+         if (this.arr1.length > 10000) this.CreateHistogram();
       } else
       if (this.hist) {
-         if (this.ndim==1) {
-            for (var n=0;n<this.tgtarr.br0.length;++n)
-               this.hist.Fill(this.tgtarr.br0[n]);
-         } else {
-            for (var n=0;n<this.tgtarr.br0.length;++n)
-               this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
+         switch (this.ndim) {
+            case 1:
+               for (var n=0;n<this.tgtarr.br0.length;++n)
+                  this.hist.Fill(this.tgtarr.br0[n]);
+               break;
+            case 2:
+               for (var n=0;n<this.tgtarr.br0.length;++n)
+                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
+               break;
+            case 3:
+               for (var n=0;n<this.tgtarr.br0.length;++n)
+                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n], this.tgtarr.br2[n]);
+               break;
          }
       }
    }

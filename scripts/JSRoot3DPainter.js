@@ -3684,7 +3684,7 @@
       this.Redraw();
 
       if (JSROOT.gStyle.AutoStat && this.create_canvas) {
-         var stats = this.CreateStat();
+         var stats = this.CreateStat(histo.$custom_stat);
          if (stats) JSROOT.draw(this.divid, stats, "");
       }
 

@@ -1236,6 +1236,17 @@
             JSROOT.Create("TH2", obj);
             obj.fArray = [];
             break;
+         case 'TH3':
+            JSROOT.Create("TH1", obj);
+            break;
+         case 'TH3I':
+         case 'TH3F':
+         case 'TH3D':
+         case 'TH3S':
+         case 'TH3C':
+            JSROOT.Create("TH3", obj);
+            obj.fArray = [];
+            break;
          case 'TGraph':
             JSROOT.Create("TNamed", obj);
             JSROOT.Create("TAttLine", obj);
@@ -1341,31 +1352,55 @@
    JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
-   JSROOT.CreateTH1 = function(nbinsx) {
-      var histo = JSROOT.extend(JSROOT.Create("TH1I"),
+   JSROOT.CreateHistArray = function(histo, kind) {
+      switch (kind) {
+         case "C" : histo.fArray = new Int16Array(histo.fNcells); break; 
+         case "S" : histo.fArray = new Int16Array(histo.fNcells); break; 
+         case "I" : histo.fArray = new Int32Array(histo.fNcells); break; 
+         case "L" : histo.fArray = new Float64Array(histo.fNcells); break;
+         case "F" : histo.fArray = new Float32Array(histo.fNcells); break;
+         default: histo.fArray = new Array(histo.fNcells); break;
+      }
+      for (var i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
+   }
+   
+   JSROOT.CreateTH1 = function(nbinsx, kind) {
+      var histo = JSROOT.extend(JSROOT.Create("TH1" + (kind || "I")),
                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
-      if (nbinsx!==undefined) {
+      if (nbinsx) {
          histo.fNcells = nbinsx+2;
-         for (var i=0;i<histo.fNcells;++i) histo.fArray.push(0);
          JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+         JSROOT.CreateHistArray(histo, kind);
       }
       return histo;
    }
 
-   JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
-      var histo = JSROOT.extend(JSROOT.Create("TH2I"),
+   JSROOT.CreateTH2 = function(nbinsx, nbinsy, kind) {
+      var histo = JSROOT.extend(JSROOT.Create("TH2"+ (kind || "I")),
                     { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
 
-      if ((nbinsx!==undefined) && (nbinsy!==undefined)) {
+      if (nbinsx && nbinsy) {
          histo.fNcells = (nbinsx+2) * (nbinsy+2);
-         for (var i=0;i<histo.fNcells;++i) histo.fArray.push(0);
          JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
          JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
+         JSROOT.CreateHistArray(histo, kind);
       }
       return histo;
    }
 
+   JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz, kind) {
+      var histo = JSROOT.extend(JSROOT.Create("TH3" + (kind || "I")),
+                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+      if (nbinsx && nbinsy && nbinsz) {
+         histo.fNcells = (nbinsx+2) * (nbinsy+2) * (nbinsz+2);
+         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+         JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
+         JSROOT.extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
+         JSROOT.CreateHistArray(histo, kind);
+      }
+      return histo;
+   }
 
    JSROOT.CreateTPolyLine = function(npoints, use_int32) {
       var poly = JSROOT.Create("TPolyLine");
@@ -1602,6 +1637,19 @@
       if (typename.indexOf("TH3") == 0) {
          m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
          m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
+         m.Fill = function(x, y, z, weight) {
+            var axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
+                bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
+                bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins),
+                bin2 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
+            if (bin1 < 0) bin1 = 0; else
+            if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
+            if (bin2 < 0) bin2 = 0; else
+            if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
+            if (bin3 < 0) bin3 = 0; else
+            if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
+            this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += ((weight===undefined) ? 1 : weight);
+         }
       }
 
       if (typename.indexOf("TProfile") == 0) {

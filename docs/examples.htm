@@ -226,6 +226,7 @@
             TTree : [
                { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple;1/px", title: "Histogram data of TBranch object" },
                { name: "2d",  asurl: true, file: "hsimple.root", item: "ntuple;1", opt: "px:py", title: "Two-dimensional TTree::Draw" },
+               { name: "3d",  asurl: true, file: "hsimple.root", item: "ntuple;1", opt: "px:py:pz", title: "Three-dimensional TTree::Draw" },
                { name: "hist",  asurl: true, file: "hsimple.root", item: "ntuple;1", opt: "px:py>>hist(50,-5,5,50,-5,5)", title: "TTree::Draw into custom histogram" },
                { name: "lhcb2", asurl: true, file: "https://root.cern/files/lhcb2.root", item: "E;1//Event/Gen/Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
                { name: "atlas", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree;220/TileMuContainer_p1_TileMuObj/vector<TileMu_p1>/vector<TileMu_p1>.m_phi", title: "Histogram data of tree from atlas30new.root file" }
