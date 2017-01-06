@@ -700,8 +700,10 @@
    
    // ======================================================================
    
+   /** @namespace JSROOT.TreeMethods */
    JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree 
 
+   /** @memberOf JSROOT.TreeMethods  */
    JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
       
@@ -1122,8 +1124,8 @@
                   elem.direct_data = true;
                   elem.raw = bskt.fBufferRef;
                   elem.raw.locate(0); // set to initial position
-                  elem.first_readentry = branch.fFirstEntry; 
-                  elem.current_entry = branch.fFirstEntry;
+                  elem.first_readentry = branch.fFirstEntry || 0; 
+                  elem.current_entry = branch.fFirstEntry || 0;
                   elem.nev = elem.numentries; // number of entries in raw buffer
                   break;
                }
@@ -1153,11 +1155,10 @@
       
       handle.firstentry = handle.lastentry = 0;
       for (var nn = 0; nn < selector.branches.length; ++nn) {
-         var branch = selector.branches[nn],
-             e1 = branch.fFirstEntry, 
-             e2 = e1 + branch.fEntries;
+         var branch = selector.branches[nn], e1 = branch.fFirstEntry;
+         if (e1 === undefined) e1 = (branch.fBasketBytes[0])  ? branch.fBasketEntry[0] : 0; 
          handle.firstentry = Math.max(handle.firstentry, e1);
-         handle.lastentry = (nn===0) ? e2 : Math.min(handle.lastentry, e2);
+         handle.lastentry = (nn===0) ? (e1 + branch.fEntries) : Math.min(handle.lastentry, e1 + branch.fEntries);
       }
       
       if (handle.firstentry >= handle.lastentry) {
@@ -1205,7 +1206,7 @@
          handle.process_arrays = false;         
       }
 
-      function ReadBaskets(bitems, call_back) {
+      function ReadBaskets(bitems, baskets_call_back) {
          // read basket with tree data, selecting different files
 
          var places = [], filename = "";
@@ -1236,7 +1237,8 @@
          }
          
          function ProcessBlobs(blobs) {
-            if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) return JSROOT.CallBack(call_back, null);
+            if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) 
+               return JSROOT.CallBack(baskets_call_back, null);
 
             var baskets = [], n = 0;
             
@@ -1270,18 +1272,18 @@
                   if (bitems[k].raw) bitems[k].raw.fTagOffset = basket.fKeylen; 
                }
             }
-
+            
             if (ExtractPlaces())
                handle.file.ReadBuffer(places, ProcessBlobs, filename);
             else
-               JSROOT.CallBack(call_back, bitems); 
+               JSROOT.CallBack(baskets_call_back, bitems);
          }
 
          // extract places where to read
          if (ExtractPlaces())
             handle.file.ReadBuffer(places, ProcessBlobs, filename);
          else
-            JSROOT.CallBack(call_back, null); 
+            JSROOT.CallBack(baskets_call_back, null); 
       }
       
       function ReadNextBaskets() {
@@ -1422,7 +1424,7 @@
             if (handle.current_entry < 0) handle.current_entry = min_curr;
             
             // second loop extracts all required data
-            
+
             // do not read too much
             if (handle.current_entry + loopentries > handle.process_max) 
                loopentries = handle.process_max - handle.current_entry;
