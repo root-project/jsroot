@@ -192,6 +192,12 @@
          this.branches.push(selector.nameOfBranch(indx));
          this.brarray.push(isarr);
          
+         // this is simple case of direct usage of the branch
+         if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
+            this.direct_branch = true;
+            return; 
+         }
+         
          var replace = "arg.var" + (this.branches.length-1);
          
          code = code.substr(0, pos) + replace + code.substr(pos2);
@@ -212,12 +218,17 @@
          return;
       }
       
-      var arg = {};
-      for (var n=0;n<this.branches.length;++n) {
-         var name = "var" + n;
-         arg[name] = obj[this.branches[n]];
+      if (this.direct_branch) {
+         // extract value directly 
+         this.value = obj[this.branches[0]];
+      } else {
+         var arg = {};
+         for (var n=0;n<this.branches.length;++n) {
+            var name = "var" + n;
+            arg[name] = obj[this.branches[n]];
+         }
+         this.value = this.func(arg);
       }
-      this.value = this.func(arg);
 
       this.length = 1;
       this.isarray = false;
@@ -561,7 +572,6 @@
       
       return JSROOT.CallBack(this.histo_callback, this.hist, (this.ndim==2) ? "col" : "");
    }
-
    
    // =============================================================================
    
