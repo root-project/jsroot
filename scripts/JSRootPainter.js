@@ -10320,6 +10320,9 @@
          if ((typeof user=='string') && (user.length>0)) prereq += "load:" + user;
 
          if (!layout) layout = gui_div.attr("layout");
+      } else {
+         var load = JSROOT.GetUrlOption("load", url);
+         if (load) prereq += "load:" + load;
       }
 
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand", url)=="")) expanditems.push("");
