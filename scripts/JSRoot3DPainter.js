@@ -2799,7 +2799,7 @@
          if (graph.fMinimum != -1111) uzmin = graph.fMinimum;
          if (graph.fMaximum != -1111) uzmax = graph.fMaximum;
 
-         var histo = JSROOT.CreateTH2(10, 10);
+         var histo = JSROOT.CreateHistogram("TH2I", 10, 10);
          histo.fName = graph.fName + "_h";
          histo.fTitle = graph.fTitle;
          histo.fXaxis.fXmin = uxmin;

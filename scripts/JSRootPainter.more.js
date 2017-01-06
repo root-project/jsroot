@@ -884,7 +884,7 @@
          var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
              dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
 
-         hist = JSROOT.CreateTH2(npx+1, npy+1);
+         hist = JSROOT.CreateHistogram("TH2I", npx+1, npy+1);
 
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
@@ -901,7 +901,7 @@
          npx = Math.max(func.fNpx, 2);
          npy = Math.max(func.fNpy, 2);
 
-         hist = JSROOT.CreateTH2(npx, npy);
+         hist = JSROOT.CreateHistogram("TH2I", npx, npy);
 
          hist.fXaxis.fXmin = func.fXmin;
          hist.fXaxis.fXmax = func.fXmax;
@@ -1603,7 +1603,7 @@
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      var histo = JSROOT.CreateTH1(100);
+      var histo = JSROOT.CreateHistogram("TH1I", 100);
       histo.fName = graph.fName + "_h";
       histo.fTitle = graph.fTitle;
       histo.fXaxis.fXmin = uxmin;

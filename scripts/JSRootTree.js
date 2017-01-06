@@ -355,9 +355,9 @@
       this.z = this.GetMinMaxBins(2, this.kind[2], this.arr3, this.IsInteger(2), 50);
       
       switch (this.ndim) {
-         case 1: this.hist = JSROOT.CreateTH1(this.x.nbins, "F"); break; 
-         case 2: this.hist = JSROOT.CreateTH2(this.x.nbins, this.y.nbins, "F"); break;
-         case 3: this.hist = JSROOT.CreateTH3(this.x.nbins, this.y.nbins, this.z.nbins, "F"); break;
+         case 1: this.hist = JSROOT.CreateHistogram("TH1F", this.x.nbins); break; 
+         case 2: this.hist = JSROOT.CreateHistogram("TH2F", this.x.nbins, this.y.nbins); break;
+         case 3: this.hist = JSROOT.CreateHistogram("TH3F", this.x.nbins, this.y.nbins, this.z.nbins); break;
       }
       
       this.hist.fXaxis.fTitle = this.axislbls[0];

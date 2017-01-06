@@ -1352,54 +1352,44 @@
    JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
-   JSROOT.CreateHistArray = function(histo, kind) {
-      switch (kind) {
-         case "C" : histo.fArray = new Int16Array(histo.fNcells); break; 
-         case "S" : histo.fArray = new Int16Array(histo.fNcells); break; 
-         case "I" : histo.fArray = new Int32Array(histo.fNcells); break; 
-         case "L" : histo.fArray = new Float64Array(histo.fNcells); break;
-         case "F" : histo.fArray = new Float32Array(histo.fNcells); break;
-         default: histo.fArray = new Array(histo.fNcells); break;
+   JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
+      // create histogram object of specified type
+      // if bins numbers are specified, appropriate typed array will be created
+      var histo = JSROOT.extend(JSROOT.Create(typename),
+                   { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+      if (nbinsx) JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
+      if (nbinsy) JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
+      if (nbinsz) JSROOT.extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
+      switch (parseInt(typename[2])) {
+         case 1: if (nbinsx) histo.fNcells = nbinsx+2; break;
+         case 2: if (nbinsx && nbinsy) histo.fNcells = (nbinsx+2) * (nbinsy+2); break;
+         case 3: if (nbinsx && nbinsy && nbinsz) histo.fNcells = (nbinsx+2) * (nbinsy+2) * (nbinsz+2); break;
       }
-      for (var i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
+      if (histo.fNcells > 0) {
+         switch (typename[3]) {
+            case "C" : histo.fArray = new Int8Array(histo.fNcells); break; 
+            case "S" : histo.fArray = new Int16Array(histo.fNcells); break; 
+            case "I" : histo.fArray = new Int32Array(histo.fNcells); break; 
+            case "F" : histo.fArray = new Float32Array(histo.fNcells); break;
+            case "L" : histo.fArray = new Float64Array(histo.fNcells); break;
+            case "D" : histo.fArray = new Float64Array(histo.fNcells); break;
+            default: histo.fArray = new Array(histo.fNcells); break;
+         }
+         for (var i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
+      }
+      return histo;
    }
    
-   JSROOT.CreateTH1 = function(nbinsx, kind) {
-      var histo = JSROOT.extend(JSROOT.Create("TH1" + (kind || "I")),
-                   { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
-
-      if (nbinsx) {
-         histo.fNcells = nbinsx+2;
-         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
-         JSROOT.CreateHistArray(histo, kind);
-      }
-      return histo;
+   JSROOT.CreateTH1 = function(nbinsx) {
+      return JSROOT.CreateHistogram("TH1I", nbinsx);
    }
 
-   JSROOT.CreateTH2 = function(nbinsx, nbinsy, kind) {
-      var histo = JSROOT.extend(JSROOT.Create("TH2"+ (kind || "I")),
-                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
-
-      if (nbinsx && nbinsy) {
-         histo.fNcells = (nbinsx+2) * (nbinsy+2);
-         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
-         JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
-         JSROOT.CreateHistArray(histo, kind);
-      }
-      return histo;
+   JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
+      return JSROOT.CreateHistogram("TH2I", nbinsx, nbinsy);
    }
 
-   JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz, kind) {
-      var histo = JSROOT.extend(JSROOT.Create("TH3" + (kind || "I")),
-                    { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
-      if (nbinsx && nbinsy && nbinsz) {
-         histo.fNcells = (nbinsx+2) * (nbinsy+2) * (nbinsz+2);
-         JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
-         JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
-         JSROOT.extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
-         JSROOT.CreateHistArray(histo, kind);
-      }
-      return histo;
+   JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz) {
+      return JSROOT.CreateHistogram("TH3I", nbinsx, nbinsy, nbinsz);
    }
 
    JSROOT.CreateTPolyLine = function(npoints, use_int32) {
