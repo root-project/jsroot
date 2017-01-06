@@ -231,6 +231,8 @@
          }
       }
 
+      this.hist_title = "drawing '" + expr + "' from " + tree.fName;
+
       var pos = expr.lastIndexOf("::");
       if (pos>0) {
          var cut = expr.substr(pos+2).trim();
@@ -247,7 +249,7 @@
          else
             this.AddCutBranch(br, undefined);
       }
-      
+
       var names = expr.split(":");
       if ((names.length < 1) || (names.length > 3)) return false;
 
@@ -264,8 +266,6 @@
             this.AddDrawBranch(br, undefined, names[n]);
       }
 
-      this.hist_title = "drawing '" + expr + "' from " + tree.fName;
-       
       return true;
    }
 
