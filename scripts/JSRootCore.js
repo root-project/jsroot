@@ -1355,8 +1355,9 @@
    JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
       // create histogram object of specified type
       // if bins numbers are specified, appropriate typed array will be created
-      var histo = JSROOT.extend(JSROOT.Create(typename),
-                   { fName: "dummy_histo_" + this.id_counter++, fTitle: "dummytitle" });
+      var histo = JSROOT.Create(typename);
+      if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
+      histo.fName = "hist"; histo.fTitle = "title";
       if (nbinsx) JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
       if (nbinsy) JSROOT.extend(histo.fYaxis, { fNbins: nbinsy, fXmin: 0, fXmax: nbinsy });
       if (nbinsz) JSROOT.extend(histo.fZaxis, { fNbins: nbinsz, fXmin: 0, fXmax: nbinsz });
@@ -1409,8 +1410,7 @@
    }
 
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
-      var graph = JSROOT.extend(JSROOT.Create("TGraph"),
-              { fBits: 0x3000408, fName: "dummy_graph_" + this.id_counter++, fTitle: "dummytitle" });
+      var graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x3000408, fName: "graph", fTitle: "title" });
 
       if (npoints>0) {
          graph.fMaxSize = graph.fNpoints = npoints;
