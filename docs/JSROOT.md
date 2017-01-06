@@ -183,6 +183,10 @@ Like in ROOT, one could configure histogram binning and range
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h(50,-5,5,50,-5,5)>
 
+One also could specify cut condition, separating it with "::" from the rest draw expression like:
+
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>5>
+
 It is possible to "dump" content of any branch:   
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1/px&opt=dump>

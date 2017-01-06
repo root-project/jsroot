@@ -9,6 +9,7 @@
   - simple access to branch data with "dump" draw option
 2. Elementary TTree::Draw
   - simple 1D/2D/3D histograms
+  - simple cut conditions
   - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
   - support of arrays and strings
 3. Full support of Float16_t and Double32_t types in I/O

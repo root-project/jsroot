@@ -150,7 +150,7 @@
       this.AddBranch(branch, "br" + id);
       
       switch(id) {
-         case 0: this.arr1 = []; break; // array to accumulate first dimension
+         case 0: this.arr1 = []; this.arrcut = []; break; // array to accumulate first dimension and cut expression
          case 1: this.arr2 = []; break; // array to accumulate second dimension
          case 2: this.arr3 = []; break; // array to accumulate third dimension
          default: console.log('more than 3 dimensions not supported'); return false;
@@ -179,6 +179,33 @@
       return true;
    }
    
+   JSROOT.TDrawSelector.prototype.AddCutBranch = function(branch, branch_expr) {
+      
+      this.AddBranch(branch, "brcut");
+      
+      this.hascut = true;
+       
+      if (branch_expr) {
+      
+         console.log('Add cut branch ', branch.fName, ' with expression', branch_expr);
+
+         this.cutexpr = { arr: false, func: null, code: branch_expr };
+
+         if (branch_expr.indexOf("[]")==0) { this.cutexpr.arr = true; branch_expr = branch_expr.substr(2); }
+
+         // ending [] has no meaning - iterator over all array elements done automatically
+         if (branch_expr.indexOf("[]") === branch_expr.length-2) 
+            branch_expr = branch_expr.substr(0,branch_expr.length-2); 
+
+         if (branch_expr.length>0)
+            this.cutexpr.func = new Function("func_var", "return func_var" + branch_expr);
+         else
+            this.cutexpr = undefined; // without func no need to create special handling
+      }
+      
+      return true;
+   }
+   
    JSROOT.TDrawSelector.prototype.ParseExpression = function(tree, expr) {
    
       if (!expr || (typeof expr !== 'string')) return false;
@@ -202,6 +229,23 @@
             }
             if (isok) this.hist_args = harg; 
          }
+      }
+
+      var pos = expr.lastIndexOf("::");
+      if (pos>0) {
+         var cut = expr.substr(pos+2).trim();
+         expr = expr.substr(0,pos).trim();
+         
+         var br = tree.FindBranch(cut, true);
+         if (!br) {
+            console.log('Not found cut branch', cut);
+            return false;
+         }
+
+         if (br.branch) 
+            this.AddCutBranch(br.branch, br.rest);
+         else
+            this.AddCutBranch(br, undefined);
       }
       
       var names = expr.split(":");
@@ -363,43 +407,44 @@
       this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
       
       switch (this.ndim) {
+         case 1:
+            for (var n=0;n<this.arr1.length;++n) 
+               this.Fill1DHistogram(this.arr1[n], this.arrcut[n]);
+            break;
          case 2: 
             for (var n=0;n<this.arr1.length;++n) 
-               this.Fill2DHistogram(this.arr1[n], this.arr2[n]);
+               this.Fill2DHistogram(this.arr1[n], this.arr2[n], this.arrcut[n]);
             break;
          case 3:
             for (var n=0;n<this.arr1.length;++n) 
-               this.Fill2DHistogram(this.arr1[n], this.arr2[n], this.arr3[n]);
+               this.Fill2DHistogram(this.arr1[n], this.arr2[n], this.arr3[n], this.arrcut[n]);
             break;
-         default:
-            for (var n=0;n<this.arr1.length;++n) 
-                this.FillHistogram(this.arr1[n]);
       }
       
       delete this.arr1;
       delete this.arr2;
       delete this.arr3;
+      delete this.arrcut;
    }
    
-   JSROOT.TDrawSelector.prototype.FillHistogram = function(xvalue) {
+   JSROOT.TDrawSelector.prototype.Fill1DHistogram = function(xvalue, weight) {
       var bin = this.x.GetBin(xvalue);
-      
-      this.hist.fArray[bin] += 1;
+      this.hist.fArray[bin] += weight;
    }
 
-   JSROOT.TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue) {
+   JSROOT.TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue, weight) {
       var xbin = this.x.GetBin(xvalue),
           ybin = this.y.GetBin(yvalue);
       
-      this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += 1;
+      this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += weight;
    }
 
-   JSROOT.TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue) {
+   JSROOT.TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue, weight) {
       var xbin = this.x.GetBin(xvalue),
           ybin = this.y.GetBin(yvalue),
           zbin = this.z.GetBin(zvalue);
       
-      this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += 1;
+      this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += weight;
    }
    
    JSROOT.TDrawSelector.prototype.CreateIterator = function(value, expr) {
@@ -458,6 +503,21 @@
 
    JSROOT.TDrawSelector.prototype.Process = function(entry) {
       
+      var weight = 1.;
+      if (this.hascut) {
+          if (this.plaincut===undefined)
+             this.plaincut = !this.cutexpr && (typeof this.tgtobj.brcut == 'number');
+          if (this.plaincut) {
+             weight = this.tgtobj.brcut;
+          } else {
+             var iter = this.CreateIterator(this.tgtobj.brcut, this.cutexpr);
+             while (iter.next()) weight = iter.value;
+          }
+          if (weight === false) weight = 0; else
+          if (weight === true) weight = 1; else
+          if (weight < 0) weight = 0;
+      }
+      
       if (this.arr1 !== undefined) {
          var firsttime = false;
          
@@ -478,11 +538,14 @@
          if (this.ndim==1) {
             if (this.plain[0]) {
                this.arr1.push(this.tgtobj.br0);
+               this.arrcut.push(weight);
             } else {
                var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
                
-               while (iter.next())  
+               while (iter.next()) {  
                   this.arr1.push(iter.value);
+                  this.arrcut.push(weight);
+               }
                
                if (firsttime) this.kind[0] = typeof iter.value;
             }
@@ -492,6 +555,7 @@
             if (this.plain[0] && this.plain[1]) {
                this.arr1.push(this.tgtobj.br0);
                this.arr2.push(this.tgtobj.br1);
+               this.arrcut.push(weight);
             } else {
                var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
                    iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
@@ -501,6 +565,7 @@
                   while (iter1.next()) {
                      this.arr1.push(iter0.value);
                      this.arr2.push(iter1.value);
+                     this.arrcut.push(weight);
                   }
                }
                
@@ -515,6 +580,7 @@
                this.arr1.push(this.tgtobj.br0);
                this.arr2.push(this.tgtobj.br1);
                this.arr3.push(this.tgtobj.br2);
+               this.arrcut.push(weight);
             } else {
                var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
                    iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]),
@@ -528,6 +594,7 @@
                         this.arr1.push(iter0.value);
                         this.arr2.push(iter1.value);
                         this.arr3.push(iter2.value);
+                        this.arrcut.push(weight);
                      }
                   }
                }
@@ -545,16 +612,16 @@
       if (this.hist) {
          if (this.ndim===1) {
             if (this.plain[0]) {
-               this.FillHistogram(this.tgtobj.br0);
+               this.Fill1DHistogram(this.tgtobj.br0, weight);
             } else {
                var iter = this.CreateIterator(this.tgtobj.br0, this.expr[0]);
                while (iter.next()) 
-                  this.FillHistogram(iter.value);
+                  this.Fill1DHistogram(iter.value, weight);
             }
          } else
          if (this.ndim===2) {
             if (this.plain[0] && this.plain[1]) {
-               this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1);
+               this.Fill2DHistogram(this.tgtobj.br0, this.tgtobj.br1, weight);
             } else {
                var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
                    iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]);
@@ -562,13 +629,13 @@
                while (iter0.next()) {
                   iter1.reset();
                   while (iter1.next()) 
-                     this.Fill2DHistogram(iter0.value, iter1.value);
+                     this.Fill2DHistogram(iter0.value, iter1.value, weight);
                }
             }
          } else 
          if (this.ndim===3) {
             if (this.plain[0] && this.plain[1] && this.plain[2]) {
-               this.Fill3DHistogram(this.tgtobj.br0, this.tgtobj.br1, this.tgtobj.br2);
+               this.Fill3DHistogram(this.tgtobj.br0, this.tgtobj.br1, this.tgtobj.br2, weight);
             } else {
                var iter0 = this.CreateIterator(this.tgtobj.br0, this.expr[0]),
                    iter1 = this.CreateIterator(this.tgtobj.br1, this.expr[1]),
@@ -579,7 +646,7 @@
                   while (iter1.next()) {
                      iter2.reset();
                      while (iter2.next()) 
-                        this.Fill3DHistogram(iter0.value, iter1.value, iter2.value);
+                        this.Fill3DHistogram(iter0.value, iter1.value, iter2.value, weight);
                   }
                }
             }
@@ -592,29 +659,32 @@
       // works only for very limited number of cases with plain branches, but much faster
       
       if (this.arr1 !== undefined) {
-         for (var n=0;n<this.tgtarr.br0.length;++n)
+         for (var n=0;n<this.tgtarr.br0.length;++n) {
             this.arr1.push(this.tgtarr.br0[n]);
+            this.arrcut.push(this.hascut ? this.tgtarr.brcut[n] : 1.);
+         }
          if (this.ndim>1) 
             for (var n=0;n<this.tgtarr.br1.length;++n)
               this.arr2.push(this.tgtarr.br1[n]);
          if (this.ndim>2) 
             for (var n=0;n<this.tgtarr.br2.length;++n)
               this.arr3.push(this.tgtarr.br2[n]);
+         
          if (this.arr1.length > 10000) this.CreateHistogram();
       } else
       if (this.hist) {
          switch (this.ndim) {
             case 1:
                for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n]);
+                  this.hist.Fill(this.tgtarr.br0[n], this.hascut ? this.tgtarr.brcut[n] : 1.);
                break;
             case 2:
                for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n]);
+                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n], this.hascut ? this.tgtarr.brcut[n] : 1.);
                break;
             case 3:
                for (var n=0;n<this.tgtarr.br0.length;++n)
-                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n], this.tgtarr.br2[n]);
+                  this.hist.Fill(this.tgtarr.br0[n], this.tgtarr.br1[n], this.tgtarr.br2[n], this.hascut ? this.tgtarr.brcut[n] : 1.);
                break;
          }
       }
@@ -1418,8 +1488,10 @@
       if (lst === undefined) lst = this.fBranches;
       
       var search = name, br = null, 
-          dot = name.indexOf("."), arr = name.indexOf("[]"),
+          dot = name.indexOf("."), arr = name.indexOf("[]"), spec = name.indexOf(">"), 
           pos = (dot<0) ? arr : ((arr<0) ? dot : Math.min(dot,arr));
+      
+      if (pos<0) pos = spec;
 
       for (var loop=0;loop<2;++loop) {
 
