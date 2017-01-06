@@ -10726,7 +10726,7 @@
 
    JSROOT.GridDisplay = function(frameid, sizex, sizey) {
       // create grid display object
-      // one could use followinf arguments
+      // one could use following arguments
       // new JSROOT.GridDisplay('yourframeid','4x4');
       // new JSROOT.GridDisplay('yourframeid','3x2');
       // new JSROOT.GridDisplay('yourframeid', 3, 4);
