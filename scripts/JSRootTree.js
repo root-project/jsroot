@@ -1762,7 +1762,7 @@
          
          for (var k=0;k<handle.arr.length;++k) {
             var elem = handle.arr[k];
-            if ((elem.type<=0) || (elem.type >= JSROOT.IO.kOffsetL)) handle.process_arrays = false;
+            if ((elem.type<=0) || (elem.type >= JSROOT.IO.kOffsetL) || (elem.type === JSROOT.IO.kCharStar)) handle.process_arrays = false;
          }
          
          if (handle.process_arrays) {
