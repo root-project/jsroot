@@ -98,47 +98,60 @@
       return plain ? 2 : 1;
    }
    
-   JSROOT.ArrayIterator = function(arr) {
+   JSROOT.ArrayIterator = function(arr, select) {
       // class used to iterate over all array indexes until number value
       this.object = arr;
       this.value = 0; // value always used in iterator
+      this.arr = []; // all arrays
+      this.indx = []; // all indexes
+      this.cnt = -1; // current index counter
+
+      if (typeof select === 'object')
+         this.select = select; // remember indexes for selection
+      else
+         this.select = []; // empty array, undefined for each dimension means iterate over all indexes
    }
    
    JSROOT.ArrayIterator.prototype.next = function() {
-      var cnt = 0;
+      var obj, typ, cnt = this.cnt;
       
-      if (this.arr == undefined) {
-         this.arr = [ this.object ];
-         this.indx = [ 0 ];
-         if (this.object.length === 0) return false;
-      } else {
+      if (cnt >= 0) {
         
-         if (++this.fastindx < this.fastarr.length) {
+         if (++this.fastindx < this.fastlimit) {
             this.value = this.fastarr[this.fastindx];
             return true;
          } 
 
-         cnt = this.arr.length-1;
-
          while (--cnt >= 0) {
-            if (++this.indx[cnt] < this.arr[cnt].length) break;
+            if ((this.select[cnt]===undefined) && (++this.indx[cnt] < this.arr[cnt].length)) break;
          }
          if (cnt < 0) return false;
       }
       
       while (true) {
+         
+         if (cnt < 0) {
+            if (!this.object.length) return false;
+            obj = this.object;
+         } else {
+            obj = (this.arr[cnt])[this.indx[cnt]];
+         }
       
-         var obj = (this.arr[cnt])[this.indx[cnt]],
-             typ = obj ? typeof obj : "any"; 
+         typ = obj ? typeof obj : "any"; 
          
          if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && (JSROOT.CheckArrayPrototype(obj)>0)) {
-            cnt++;
-            this.arr[cnt] = obj;
-            this.indx[cnt] = 0;
+            this.arr[++cnt] = obj;
+            switch (this.select[cnt]) {
+               case undefined: this.indx[cnt] = 0; break;
+               case "%last%": this.indx[cnt] = obj.length-1; break;
+               default: this.indx[cnt] = isNaN(this.select[cnt]) ? 0 : this.select[cnt]; 
+            }
          } else {
             this.value = obj;
             this.fastarr = this.arr[cnt];
             this.fastindx = this.indx[cnt];
+            this.fastlimit = (this.select[cnt]===undefined) ? this.fastarr.length : 0; //
+            this.cnt = cnt;
             return true;
          } 
       }
@@ -147,7 +160,10 @@
    }
    
    JSROOT.ArrayIterator.prototype.reset = function() {
-      delete this.arr;
+      this.arr = [];
+      this.indx = [];
+      delete this.fastarr;
+      this.cnt = -1;
       this.value = 0;
    }
 
@@ -156,7 +172,7 @@
    JSROOT.TDrawVariable = function() {
       // object with single variable in TTree::Draw expression
       this.code = "";
-      this.brindex = []; // index of branch which are reads
+      this.brindex = []; // index of used branches from selector
       this.branches = []; // names of bracnhes in target object
       this.brarray = []; // array specifier for each branch
       this.func = null; // generic function for variable calculation
@@ -166,6 +182,7 @@
    }
    
    JSROOT.TDrawVariable.prototype.UseBranch = function(selector, branch, leaf) {
+      // simplified variable build for the specified branch with or without leaf
       this.code = branch.fName;
 
       var indx = selector.indexOfBranch(branch);
@@ -208,7 +225,32 @@
          
          // check array specifier
          var isarr = undefined;
-         if ((code[pos2]=="[") && (code[pos2+1]=="]")) { isarr = true; pos2+=2; }
+         if (code[pos2]=="[") {
+            if ((code[pos2+1]=="]") && (code[pos2+2]!=="[")) { isarr = true; pos2+=2; } else {
+               isarr = []; // array with indexes for first dimension
+               
+               while (pos2 < code.length) {
+                  var prev = pos2++, cnt = 0;
+                  while ((pos2 < code.length) && ((code[pos2]!="]") || (cnt>0))) {
+                     if (code[pos2]=='[') cnt++; else if (code[pos2]==']') cnt--; 
+                     pos2++;
+                  }
+                  var sub = code.substr(prev+1, pos2-prev-1);
+                  switch(sub) {
+                     case "": 
+                     case "%all%": isarr.push(undefined); break;
+                     case "%last%": isarr.push("%last%"); break;
+                     case "%first%": isarr.push(0); break;
+                     default:
+                        var arrindx = sub ? parseInt(sub) : -1;
+                        if (!isNaN(arrindx) && (arrindx>=0)) isarr.push(arrindx);
+                                                        else isarr.push("%all%");
+                        
+                  }
+                  if (code[++pos2]!=="[") break;
+               }
+            }
+         }
          
          var indx = selector.indexOfBranch(br);
          if (indx<0) indx = selector.AddBranch(br);
@@ -274,7 +316,7 @@
             // plain array, can be used as is
             arrs[n] = arg[name]; 
          } else {
-            var iter = new JSROOT.ArrayIterator(arg[name]);
+            var iter = new JSROOT.ArrayIterator(arg[name], this.brarray[n]);
             arrs[n] = [];
             while (iter.next()) arrs[n].push(iter.value);
          }
