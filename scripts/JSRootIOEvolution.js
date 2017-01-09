@@ -58,9 +58,8 @@
          kIsReferenced : JSROOT.BIT(4),
          kHasUUID: JSROOT.BIT(5),
 
-         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) ||
-                                     (typ===this.kCounter) ||
-                                    ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
+         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) || (typ===this.kCounter) ||
+                                             ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
 
          IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); },
 

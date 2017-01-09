@@ -156,11 +156,12 @@
    JSROOT.TDrawVariable = function() {
       // object with single variable in TTree::Draw expression
       this.code = "";
+      this.brindex = []; // index of branch which are reads
       this.branches = []; // names of bracnhes in target object
       this.brarray = []; // array specifier for each branch
       this.func = null; // generic function for variable calculation
       
-      this.kind = "";
+      this.kind = undefined;
       this.buf = []; // buffer accumulates temporary values
    }
    
@@ -170,6 +171,7 @@
       var indx = selector.indexOfBranch(branch);
       if (indx<0) indx = selector.AddBranch(branch);
       
+      this.brindex.push(indx);
       this.branches.push(selector.nameOfBranch(indx));
       this.brarray.push(undefined);
       
@@ -211,6 +213,7 @@
          var indx = selector.indexOfBranch(br);
          if (indx<0) indx = selector.AddBranch(br);
          
+         this.brindex.push(indx);
          this.branches.push(selector.nameOfBranch(indx));
          this.brarray.push(isarr);
          
@@ -230,6 +233,14 @@
       this.func = new Function("arg", "return (" + code + ")");
    }
    
+   JSROOT.TDrawVariable.prototype.IsInteger = function(selector) {
+      // check if draw variable produces integer values
+      // derived from type of data in the branch
+      if ((this.kind !== "number") || !this.direct_branch) return false;
+      
+      return selector.IsInteger(this.brindex[0]);
+   }
+   
    JSROOT.TDrawVariable.prototype.Produce = function(obj) {
       // after reading tree braches into the object, calculate variable value
 
@@ -238,6 +249,7 @@
       
       if (this.branches.length === 0) {
          this.value = 1.; // used as dummy weight variable
+         this.kind = "number";
          return;
       }
       
@@ -271,8 +283,7 @@
       
       if (usearrlen < 0) {
          this.value = this.direct_branch ? arg.var0 : this.func(arg);
-         if (this.kind===undefined)
-            this.kind = typeof this.value;
+         if (!this.kind) this.kind = typeof this.value;
          return;
       }
       
@@ -280,8 +291,6 @@
          // special case - empty array, should be handled specially???
          console.log('empty array - is it ok???');
          this.value = 0;
-         if (this.kind===undefined)
-            this.kind = typeof this.value;
          return;
       }
       
@@ -301,8 +310,7 @@
          }
       }
 
-      if (this.kind===undefined)
-         this.kind = typeof this.value[0];
+      if (!this.kind) this.kind = typeof this.value[0];
    }
    
    JSROOT.TDrawVariable.prototype.get = function(indx) {
@@ -433,8 +441,7 @@
       
       if (axisid>=this.ndim) return res;
       
-      var arr = this.vars[axisid].buf, 
-          is_int = false; // TODO: correctly detect integer fields
+      var arr = this.vars[axisid].buf; 
       
       if (this.vars[axisid].kind === "string") {
          res.lbls = []; // all labels
@@ -460,7 +467,7 @@
             if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
                if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
          } else
-         if (is_int && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
+         if (this.vars[axisid].IsInteger(this) && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
             res.min -= 1;
             res.max += 2;
             res.nbins = Math.round(res.max - res.min);
@@ -589,6 +596,7 @@
    JSROOT.TNewSelector.prototype.ProcessArraysFunc = function(entry) {
       // function used when all bracnhes can be read as array
       // most typical usage - histogramming of single branch 
+      
       if (this.arr_limit) {
          var var0 = this.vars[0], len = this.tgtarr.br0.length,
              var1 = this.vars[1], var2 = this.vars[2];
@@ -603,6 +611,9 @@
             if (var1) var1.buf.push(this.tgtarr.br1[k]);
             if (var2) var2.buf.push(this.tgtarr.br2[k]);
          }
+         var0.kind = "number";
+         if (var1) var1.kind = "number";
+         if (var2) var2.kind = "number";
          this.cut.buf = null; // do not create buffer for cuts
          if (var0.buf.length >= this.arr_limit) {
             this.CreateHistogram();
@@ -631,7 +642,7 @@
 
 
    JSROOT.TNewSelector.prototype.Process = function(entry) {
-
+      
       for (var n=0;n<this.ndim;++n)
          this.vars[n].Produce(this.tgtobj);
       
@@ -1495,7 +1506,7 @@
 
          // just intermediate solution
          if (elem)
-            selector.is_integer[nn] = JSROOT.IO.IsInteger(elem.fType) || JSROOT.IO.IsInteger(elem.fType-JSROOT.IO.kOffsetL);
+            selector.is_integer[nn] = (elem.fType < 60) && JSROOT.IO.IsInteger(elem.fType % 20);
          
          if (!member) {
             member = JSROOT.IO.CreateMember(elem, handle.file);
