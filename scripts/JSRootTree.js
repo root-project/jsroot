@@ -188,24 +188,9 @@
       this.buf = []; // buffer accumulates temporary values
    }
    
-   JSROOT.TDrawVariable.prototype.UseBranch = function(selector, branch, leaf) {
-      // simplified variable build for the specified branch with or without leaf
-      this.code = branch.fName;
-
-      var indx = selector.indexOfBranch(branch);
-      if (indx<0) indx = selector.AddBranch(branch);
+   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code, only_branch) {
+      // when only_branch specified, its placed in the front of the expression 
       
-      this.brindex.push(indx);
-      this.branches.push(selector.nameOfBranch(indx));
-      this.brarray.push(undefined);
-      
-      if (!leaf) 
-         this.direct_branch = true;
-      else 
-         this.func = new Function("arg", "return arg." + this.branches[0] + "." + leaf);
-   } 
-   
-   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code) {
       function is_start_symbol(symb) {
          if ((symb >= "A") && (symb <= "Z")) return true; 
          if ((symb >= "a") && (symb <= "z")) return true;
@@ -218,17 +203,23 @@
          return (symb=== ".");
       }
       
-      this.code = code;
+      if (!code) code = ""; // should be empty string at least
+      
+      this.code = (only_branch ? only_branch.fName : "") + code;
 
-      var pos = 0;
-      while (pos < code.length) {
-      
-         while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
-         var pos2 = pos;
-         while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
-      
-         var br = tree.FindBranch(code.substr(pos, pos2-pos));
-         if (!br) { pos = pos2+1; continue; }
+      var pos = 0, pos2 = 0, br = null;
+      while ((pos < code.length) || only_branch) {
+
+         if (only_branch) {
+            br = only_branch;
+            only_branch = undefined;
+         } else {
+            while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
+            pos2 = pos;
+            while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
+            br = tree.FindBranch(code.substr(pos, pos2-pos));
+            if (!br) { pos = pos2+1; continue; }
+         }
          
          // check array specifier
          var isarr = undefined;
@@ -449,12 +440,12 @@
       return true;
    }
    
-   JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, leaf) {
+   JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr) {
       this.ndim = 1;
       
       this.vars[0] = new JSROOT.TDrawVariable();
-      this.vars[0].UseBranch(this, branch, leaf);
-      this.hist_title = "drawing branch '" + branch.fName + "' from " + tree.fName;
+      this.vars[0].Parse(tree, this, expr, branch);
+      this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
       
       this.cut = new JSROOT.TDrawVariable();
       
@@ -1641,7 +1632,7 @@
       } else
       if (args.branch) {
          selector = new JSROOT.TDrawSelector(result_callback);
-         selector.DrawOnlyBranch(this, args.branch, args.leaf);
+         selector.DrawOnlyBranch(this, args.branch, args.expr);
       } else 
       if (args.expr === "testio") {
          // special debugging code
@@ -1847,7 +1838,7 @@
       var tree = obj, args = opt;
 
       if (obj.$branch) {
-         args = { expr: opt, branch: obj.$branch, leaf: obj.fName };
+         args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
          tree = obj.$branch.$tree;
       } else
          if (obj.$tree) {
