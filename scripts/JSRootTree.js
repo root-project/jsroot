@@ -332,8 +332,8 @@
       }
       
       if (usearrlen == 0) {
-         // special case - empty array, should be handled specially???
-         console.log('empty array - is it ok???');
+         // empty array - no any histogram should be fillied
+         this.length = 0; 
          this.value = 0;
          return;
       }
