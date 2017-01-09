@@ -1890,10 +1890,10 @@
          case JSROOT.IO.kAnyP:
          case JSROOT.IO.kObjectP:
             member.func = function(buf, obj) {
-            obj[this.name] = buf.ReadNdimArray(this, function(buf) {
-               return buf.ReadObjectAny();
-            });
-         };
+               obj[this.name] = buf.ReadNdimArray(this, function(buf) {
+                  return buf.ReadObjectAny();
+               });
+            };
          break;
 
          case JSROOT.IO.kAny:
@@ -2600,7 +2600,8 @@
       // return function, which could be used for element of the map
 
       var elem = { _typename: 'TStreamerElement', fName: name, fTypeName: typename,
-                   fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0,0,0,0,0] };
+                   fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0,0,0,0,0],
+                   fXmin: 0, fXmax: 0, fFactor: 0 };
 
       elem.fType = JSROOT.IO.GetTypeId(typename);
       if (elem.fType > 0) return elem; // basic type

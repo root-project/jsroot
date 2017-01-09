@@ -641,6 +641,7 @@
       // function used when all bracnhes can be read as array
       // most typical usage - histogramming of single branch 
       
+      
       if (this.arr_limit) {
          var var0 = this.vars[0], len = this.tgtarr.br0.length,
              var1 = this.vars[1], var2 = this.vars[2];
@@ -1254,7 +1255,7 @@
                
                var elem = JSROOT.IO.CreateStreamerElement(item.name, "int");
                elem.fType = item.type + JSROOT.IO.kOffsetL;
-               elem.fArrayLength = 10; elem.fArrayDim = 1, elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
+               elem.fArrayLength = 10; elem.fArrayDim = 1; elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
                
                item.arrmember = JSROOT.IO.CreateMember(elem, handle.file);
             }
@@ -1492,9 +1493,7 @@
                for (n=0;n<handle.arr.length;++n) {
                   elem = handle.arr[n];
                   elem.arrmember.arrlength = loopentries;
-
                   elem.arrmember.func(elem.raw, handle.selector.tgtarr);
-                  
                   elem.current_entry += loopentries;
 
                   elem.raw = null;
@@ -1838,13 +1837,20 @@
       var tree = obj, args = opt;
 
       if (obj.$branch) {
+         // this is drawing of the single leaf from the branch 
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
          tree = obj.$branch.$tree;
       } else
-         if (obj.$tree) {
-            args = { expr: opt, branch: obj };
-            tree = obj.$tree;
-         }
+      if (obj.$tree) {
+         // this is drawing of the branch
+         
+         // if generic object tried to be drawn without specifying any options, it will be just dump
+         if (!opt && obj.fStreamerType && (obj.fStreamerType !== JSROOT.IO.kTString) &&
+             (obj.fStreamerType >= JSROOT.IO.kObject) && (obj.fStreamerType <= JSROOT.IO.kAnyP)) opt = "dump";  
+         
+         args = { expr: opt, branch: obj };
+         tree = obj.$tree;
+      }
 
       if (!tree) {
          console.log('No TTree object available for TTree::Draw');
