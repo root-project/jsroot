@@ -524,10 +524,20 @@ Similar example with JSON file:
     }).send(null);
 
 
-### Reading TTree
+### TTree API
 
 Since version 4.9 JSROOT provides possibility to access TTree data from JavaScript.
-For such access TSelector class should be used.
+Simple TTree::Draw operation can be performed with following code:
+
+
+    var filename = "https://root.cern/js/files/hsimple.root";
+    JSROOT.OpenFile(filename, function(file) {
+       file.ReadObject("ntuple;1", function(obj) {
+          JSROOT.draw("drawing", obj, "px:py::pz>5");
+       });
+    });
+    
+To get access to selected branches, one should use TSelector class:
 
 
     var filename = "https://root.cern/js/files/hsimple.root";
@@ -557,5 +567,4 @@ This examples shows how read TTree from binary file and create JSROOT.TSelector 
 Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
 Selected branches can be accessed from **tgtobj** data member. At the end of tree reading TSelector::Terminate() method
 will be called.
-     
  

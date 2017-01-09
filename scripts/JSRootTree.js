@@ -98,13 +98,14 @@
       return plain ? 2 : 1;
    }
    
-   JSROOT.ArrayIterator = function(arr, select) {
+   JSROOT.ArrayIterator = function(arr, select, tgtobj) {
       // class used to iterate over all array indexes until number value
       this.object = arr;
       this.value = 0; // value always used in iterator
       this.arr = []; // all arrays
       this.indx = []; // all indexes
       this.cnt = -1; // current index counter
+      this.tgtobj = tgtobj;
 
       if (typeof select === 'object')
          this.select = select; // remember indexes for selection
@@ -144,7 +145,13 @@
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
                case "%last%": this.indx[cnt] = obj.length-1; break;
-               default: this.indx[cnt] = isNaN(this.select[cnt]) ? 0 : this.select[cnt]; 
+               default: 
+                  if (!isNaN(this.select[cnt])) this.indx[cnt] = this.select[cnt]; else {
+                     // this is compile variable as array index - can be any expression
+                     this.select[cnt].Produce(this.tgtobj);
+                     // console.log('Array index is', this.select[cnt].get(0));
+                     this.indx[cnt] = Math.round(this.select[cnt].get(0)); 
+                  }
             }
          } else {
             this.value = obj;
@@ -242,10 +249,14 @@
                      case "%last%": isarr.push("%last%"); break;
                      case "%first%": isarr.push(0); break;
                      default:
-                        var arrindx = sub ? parseInt(sub) : -1;
-                        if (!isNaN(arrindx) && (arrindx>=0)) isarr.push(arrindx);
-                                                        else isarr.push("%all%");
-                        
+                        var arrindx = parseInt(sub);
+                        if (!isNaN(arrindx)) isarr.push((arrindx>=0) ? arrindx : undefined); else {
+                           // try to compile code as draw variable
+                           var subvar = new JSROOT.TDrawVariable();
+                           // console.log("produce subvar with code", sub);
+                           subvar.Parse(tree,selector, sub);
+                           isarr.push(subvar);
+                        }
                   }
                   if (code[++pos2]!=="[") break;
                }
@@ -316,7 +327,7 @@
             // plain array, can be used as is
             arrs[n] = arg[name]; 
          } else {
-            var iter = new JSROOT.ArrayIterator(arg[name], this.brarray[n]);
+            var iter = new JSROOT.ArrayIterator(arg[name], this.brarray[n], obj);
             arrs[n] = [];
             while (iter.next()) arrs[n].push(iter.value);
          }

@@ -11,7 +11,8 @@
   - simple 1D/2D/3D histograms
   - simple cut conditions
   - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
-  - support of arrays and strings
+  - strings support
+  - iterate over arrays indexes, let use another branch as index values 
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
 5. Support of large arrays in object inspector.
