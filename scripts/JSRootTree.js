@@ -75,15 +75,33 @@
 
    // =================================================================
    
+   JSROOT.CheckArrayPrototype = function(arr, check_content) {
+      // return 0 when not array
+      // 1 - when arbitrary array
+      // 2 - when plain (1-dim) array with same-type content 
+      if (typeof arr !== 'object') return 0;
+      var proto = Object.prototype.toString.apply(arr);
+      if (proto.indexOf('[object')!==0) return 0;
+      var pos = proto.indexOf('Array]');
+      if (pos < 0) return 0;
+      if (pos > 8) return 2; // this is typed array like Int32Array
+      
+      if (!check_content) return 1; //  
+      var typ, plain = true;
+      for (var k=0;k<arr.length;++k) {
+         var sub = typeof arr[k];
+         if (!typ) typ = sub;
+         if (sub!==typ) { plain = false; break; }
+         if ((sub=="object") && JSROOT.CheckArrayPrototype(arr[k])) { plain = false; break; } 
+      }
+      
+      return plain ? 2 : 1;
+   }
+   
    JSROOT.ArrayIterator = function(arr) {
       // class used to iterate over all array indexes until number value
       this.object = arr;
       this.value = 0; // value always used in iterator
-   }
-   
-   JSROOT.ArrayIterator.prototype.CheckArrayPrototype = function(arr) {
-      var proto = Object.prototype.toString.apply(arr);
-      return (proto.indexOf('[object')===0) && (proto.indexOf('Array]')>0);
    }
    
    JSROOT.ArrayIterator.prototype.next = function() {
@@ -113,7 +131,7 @@
          var obj = (this.arr[cnt])[this.indx[cnt]],
              typ = obj ? typeof obj : "any"; 
          
-         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && this.CheckArrayPrototype(obj)) {
+         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && (JSROOT.CheckArrayPrototype(obj)>0)) {
             cnt++;
             this.arr[cnt] = obj;
             this.indx[cnt] = 0;
@@ -199,30 +217,77 @@
    
    JSROOT.TDrawVariable.prototype.Produce = function(obj) {
       // after reading tree braches into the object, calculate variable value
-      
-      if (this.branches.length === 0) {
-         this.length = 1;
-         this.isarray = false;
-         this.value = 1.;
-         return;
-      }
-      
-      if (this.direct_branch) {
-         // extract value directly 
-         this.value = obj[this.branches[0]];
-      } else {
-         var arg = {};
-         for (var n=0;n<this.branches.length;++n) {
-            var name = "var" + n;
-            arg[name] = obj[this.branches[n]];
-         }
-         this.value = this.func(arg);
-      }
 
       this.length = 1;
       this.isarray = false;
+      
+      if (this.branches.length === 0) {
+         this.value = 1.; // used as dummy weight variable
+         return;
+      }
+      
+      var arg = {}, usearrlen = -1, arrs = [];
+      for (var n=0;n<this.branches.length;++n) {
+         var name = "var" + n;
+         arg[name] = obj[this.branches[n]];
+
+         // try to check if branch is array and need to be iterated
+         if (this.brarray[n]===undefined) 
+            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0);   
+         
+         // no array - no pain
+         if (this.brarray[n]===false) continue; 
+          
+         // check if array can be used as is - one dimension and normal values
+         var typ = 1;
+         if (this.brarray[n]===true)
+            typ = JSROOT.CheckArrayPrototype(arg[name], true);
+         
+         if (typ === 2) {
+            // plain array, can be used as is
+            arrs[n] = arg[name]; 
+         } else {
+            var iter = new JSROOT.ArrayIterator(arg[name]);
+            arrs[n] = [];
+            while (iter.next()) arrs[n].push(iter.value);
+         }
+         if ((usearrlen < 0) || (usearrlen < arrs[n].length)) usearrlen = arrs[n].length;  
+      }
+      
+      if (usearrlen < 0) {
+         this.value = this.direct_branch ? arg.var0 : this.func(arg);
+         if (this.kind===undefined)
+            this.kind = typeof this.value;
+         return;
+      }
+      
+      if (usearrlen == 0) {
+         // special case - empty array, should be handled specially???
+         console.log('empty array - is it ok???');
+         this.value = 0;
+         if (this.kind===undefined)
+            this.kind = typeof this.value;
+         return;
+      }
+      
+      this.length = usearrlen;
+      this.isarray = true;
+
+      if (this.direct_branch) {
+         this.value = arrs[0]; // just use array         
+      } else {
+         this.value = new Array(usearrlen);
+
+         for (var k=0;k<usearrlen;++k) {
+            for (var n=0;n<this.branches.length;++n) {
+               if (arrs[n]) arg["var"+n] = arrs[n][k];
+            }
+            this.value[k] = this.func(arg);
+         }
+      }
+
       if (this.kind===undefined)
-         this.kind = typeof this.value; 
+         this.kind = typeof this.value[0];
    }
    
    JSROOT.TDrawVariable.prototype.get = function(indx) {
@@ -961,7 +1026,7 @@
                
                this.value = this.func(this.value);
                
-               if (this.CheckArrayPrototype(this.value)) {
+               if (JSROOT.CheckArrayPrototype(this.value) > 0) {
                   this.iter2 = new JSROOT.ArrayIterator(this.value);
                   return this.next();
                }
