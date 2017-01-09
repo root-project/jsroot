@@ -164,6 +164,21 @@
       this.buf = []; // buffer accumulates temporary values
    }
    
+   JSROOT.TDrawVariable.prototype.UseBranch = function(selector, branch, leaf) {
+      this.code = branch.fName;
+
+      var indx = selector.indexOfBranch(branch);
+      if (indx<0) indx = selector.AddBranch(branch);
+      
+      this.branches.push(selector.nameOfBranch(indx));
+      this.brarray.push(undefined);
+      
+      if (!leaf) 
+         this.direct_branch = true;
+      else 
+         this.func = new Function("arg", "return arg." + this.branches[0] + "." + leaf);
+   } 
+   
    JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code) {
       function is_start_symbol(symb) {
          if ((symb >= "A") && (symb <= "Z")) return true; 
@@ -371,6 +386,18 @@
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
       
       return true;
+   }
+   
+   JSROOT.TNewSelector.prototype.DrawOnlyBranch = function(tree, branch, leaf) {
+      this.ndim = 1;
+      
+      this.vars[0] = new JSROOT.TDrawVariable();
+      this.vars[0].UseBranch(this, branch, leaf);
+      this.hist_title = "drawing branch '" + branch.fName + "' from " + tree.fName;
+      
+      this.cut = new JSROOT.TDrawVariable();
+      
+      if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
    }
 
    
@@ -2125,13 +2152,13 @@
          // if (!args.firstentry) args.firstentry = 212;
       } else
       if (args.branch) {
-         selector = new JSROOT.TDrawSelector(result_callback);
+         //selector = new JSROOT.TDrawSelector(result_callback);
+         //if (args.leaf) args.expr = "."+args.leaf;
+         //selector.AddDrawBranch(args.branch, args.expr, args.branch.fName);
+         //selector.hist_title = "drawing '" + args.branch.fName + "' from " + this.fName;
          
-         if (args.leaf) args.expr = "."+args.leaf;
-         
-         selector.AddDrawBranch(args.branch, args.expr, args.branch.fName);
-         
-         selector.hist_title = "drawing '" + args.branch.fName + "' from " + this.fName;
+         selector = new JSROOT.TNewSelector(result_callback);
+         selector.DrawOnlyBranch(this, args.branch, args.leaf);
       } else 
       if (args.expr === "testio") {
          // special debugging code
