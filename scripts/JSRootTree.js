@@ -159,17 +159,6 @@
          return (symb=== ".");
       }
       
-      // first check that this is just a branch 
-      /* 
-      var br = tree.FindBranch(code);
-      if (br) {
-         var indx = selector.indexOfBranch(br);
-         if (indx<0) indx = selector.AddBranch(br);
-         this.direct_branch = selector.nameOfBranch(indx); 
-         return res;
-      }
-      */
-      
       this.code = code;
 
       var pos = 0;
@@ -239,6 +228,12 @@
    JSROOT.TDrawVariable.prototype.get = function(indx) {
       return this.isarray ? this.value[indx] : this.value; 
    } 
+   
+   JSROOT.TDrawVariable.prototype.AppendArray = function(tgtarr) {
+      // appeand array to the buffer
+      
+      this.buf = this.buf.concat(tgtarr[this.branches[0]]);
+   }
 
    // =============================================================================
 
@@ -253,7 +248,7 @@
       this.hist_name = "$htemp";
       this.hist_title = "Result of TTree::Draw";
       this.hist_args = []; // arguments for histogram creation
-      this.doarr = true;
+      this.arr_limit = 3000;  // number of accumulated items before create histogram
    }
 
    JSROOT.TNewSelector.prototype = Object.create(JSROOT.TSelector.prototype);
@@ -296,15 +291,20 @@
       if ((names.length < 1) || (names.length > 3)) return false;
 
       this.ndim = names.length;
-      
+
+      var is_direct = !cut;
+
       for (var n=0;n<this.ndim;++n) {
          this.vars[n] = new JSROOT.TDrawVariable();
          this.vars[n].Parse(tree, this, names[n]);
+         if (!this.vars[n].direct_branch) is_direct = false; 
       }
       
       this.cut = new JSROOT.TDrawVariable();
       if (cut) this.cut.Parse(tree, this, cut);
-
+      
+      if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
+      
       return true;
    }
 
@@ -453,18 +453,18 @@
       switch (this.ndim) {
          case 1:
             for (var n=0;n<len;++n) 
-               this.Fill1DHistogram(var0[n], cut[n]);
+               this.Fill1DHistogram(var0[n], cut ? cut[n] : 1.);
             break;
          case 2: 
             var var1 = this.vars[1].buf;
             for (var n=0;n<len;++n) 
-               this.Fill2DHistogram(var0[n], var1[n], cut[n]);
+               this.Fill2DHistogram(var0[n], var1[n], cut ? cut[n] : 1.);
             delete this.vars[1].buf;
             break;
          case 3:
             var var1 = this.vars[1].buf, var2 = this.vars[2].buf; 
             for (var n=0;n<len;++n) 
-               this.Fill2DHistogram(var0[n], var1[n], var2[n], cut[n]);
+               this.Fill2DHistogram(var0[n], var1[n], var2[n], cut ? cut[n] : 1.);
             delete this.vars[1].buf;
             delete this.vars[2].buf;
             break;
@@ -493,6 +493,50 @@
       
       this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += weight;
    }
+   
+   JSROOT.TNewSelector.prototype.ProcessArraysFunc = function(entry) {
+      // function used when all bracnhes can be read as array
+      // most typical usage - histogramming of single branch 
+      if (this.arr_limit) {
+         var var0 = this.vars[0], len = this.tgtarr.br0.length,
+             var1 = this.vars[1], var2 = this.vars[2];
+         if ((var0.buf.length===0) && (len>=this.arr_limit)) {
+            // special usecase - first arraya large enough to create histogram directly base on it 
+            var0.buf = this.tgtarr.br0;
+            if (var1) var1.buf = this.tgtarr.br1;
+            if (var2) var2.buf = this.tgtarr.br2;
+         } else
+         for (var k=0;k<len;++k) {
+            var0.buf.push(this.tgtarr.br0[k]);
+            if (var1) var1.buf.push(this.tgtarr.br1[k]);
+            if (var2) var2.buf.push(this.tgtarr.br2[k]);
+         }
+         this.cut.buf = null; // do not create buffer for cuts
+         if (var0.buf.length >= this.arr_limit) {
+            this.CreateHistogram();
+            this.arr_limit = 0;
+         }
+      } else {
+         var br0 = this.tgtarr.br0, len = br0.length;
+         switch(this.ndim) {
+            case 1:
+               for (var k=0;k<len;++k)
+                  this.Fill1DHistogram(br0[k], 1.);
+               break;
+            case 2:
+               var br1 = this.tgtarr.br1;
+               for (var k=0;k<len;++k) 
+                  this.Fill2DHistogram(br0[k], br1[k], 1.);
+               break;
+            case 3:
+               var br1 = this.tgtarr.br1, br2 = this.tgtarr.br2;
+               for (var k=0;k<len;++k) 
+                  this.Fill3DHistogram(br0[k], br1[k], br2[k], 1.);
+               break;
+         } 
+      }
+   }
+
 
    JSROOT.TNewSelector.prototype.Process = function(entry) {
 
@@ -503,7 +547,7 @@
 
       var var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;   
 
-      if (this.doarr) {
+      if (this.arr_limit) {
          switch(this.ndim) {
             case 1:
               for (var n0=0;n0<var0.length;++n0) {
@@ -512,54 +556,45 @@
               }
               break;
             case 2:
-              for (var n0=0;n0<var0.length;++n0) {
+              for (var n0=0;n0<var0.length;++n0) 
                  for (var n1=0;n1<var1.length;++n1) {
                     var0.buf.push(var0.get(n0));
                     var1.buf.push(var1.get(n1));
                     cut.buf.push(cut.value);
                  }
-              }
               break;
             case 3:
-               for (var n0=0;n0<var0.length;++n0) {
-                  for (var n1=0;n1<var1.length;++n1) {
+               for (var n0=0;n0<var0.length;++n0)
+                  for (var n1=0;n1<var1.length;++n1)
                      for (var n2=0;n2<var2.length;++n2) {
                         var0.buf.push(var0.get(n0));
                         var1.buf.push(var1.get(n1));
                         var2.buf.push(var2.get(n2));
                         cut.buf.push(cut.value);
                      }
-                  }
-               }
                break;
          }
-         if (var0.buf.length > 10000) {
+         if (var0.buf.length >= this.arr_limit) {
             this.CreateHistogram();
-            this.doarr = false;
+            this.arr_limit = 0;
          }
       } else
       if (this.hist) {
          switch(this.ndim) {
             case 1:
-               for (var n0=0;n0<var0.length;++n0) {
+               for (var n0=0;n0<var0.length;++n0)
                   this.Fill1DHistogram(var0.get(n0), cut.value);
-               }
                break;
             case 2:
-               for (var n0=0;n0<var0.length;++n0) {
-                  for (var n1=0;n1<var1.length;++n1) {
+               for (var n0=0;n0<var0.length;++n0)
+                  for (var n1=0;n1<var1.length;++n1)
                      this.Fill2DHistogram(var0.get(n0), var1.get(n1), cut.value);
-                  }
-               }
                break;
             case 3:
-               for (var n0=0;n0<var0.length;++n0) {
-                  for (var n1=0;n1<var1.length;++n1) {
-                     for (var n2=0;n2<var2.length;++n2) {
+               for (var n0=0;n0<var0.length;++n0)
+                  for (var n1=0;n1<var1.length;++n1)
+                     for (var n2=0;n2<var2.length;++n2)
                         this.Fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
-                     }
-                  }
-               }
                break;
          } 
       }
@@ -1175,7 +1210,7 @@
           curr: -1,  // current entry ID
           current_entry: -1, // current processed entry
           simple_read: true, // all baskets in all used branches are in sync,
-          process_arrays: false // one can process all branches as arrays
+          process_arrays: true // one can process all branches as arrays
       };
 
       // find all branches if they specifed as names
