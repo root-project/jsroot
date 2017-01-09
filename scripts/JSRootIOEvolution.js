@@ -1759,6 +1759,7 @@
             member.func = function(buf,obj) { obj[this.name] = buf.ntou1() != 0; }; break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kBool:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kInt:
+         case JSROOT.IO.kOffsetL+JSROOT.IO.kCounter:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kDouble:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kUChar:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kShort:
