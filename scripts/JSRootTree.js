@@ -1408,7 +1408,7 @@
          
          var portion = 0;
          if ((handle.current_entry>0) && (handle.process_max > handle.process_min))
-            portion = (handle.current_entry - handle.process_max)/ (handle.process_max - handle.process_min);
+            portion = (handle.current_entry - handle.process_min)/ (handle.process_max - handle.process_min);
          
          handle.selector.ShowProgress(portion);
          
