@@ -8510,8 +8510,6 @@
           lst._typename !== 'TList' && lst._typename !== 'THashList' && lst._typename !== 'TMap' &&
           lst._typename !== 'TObjArray' && lst._typename !== 'TClonesArray') return false;
 
-      console.log('Create list hierarchy');
-      
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
          return true;
@@ -8570,7 +8568,8 @@
               var indx = names.indexOf(obj.fName);
               if ((indx>=0) && (cnt[indx]>1)) {
                  item._cycle = cycle[indx]++;
-                 item._name+=";"+item._cycle;
+                 item._keyname = item._name; 
+                 item._name = item._keyname + ";" + item._cycle;
               }
            }
          }

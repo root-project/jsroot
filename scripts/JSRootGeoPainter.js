@@ -1702,7 +1702,7 @@
          if (!obj.arr) return false;
          for (var n=0;n<obj.arr.length;++n) {
             var sobj = obj.arr[n];
-            var sname = itemname === undefined ? obj.opt[n] : (itemname + "/" + sobj.fName);
+            var sname = (itemname === undefined) ? obj.opt[n] : (itemname + "/[" + n + "]");
             if (this.drawExtras(sobj, sname, add_objects)) isany = true;
          }
       } else
