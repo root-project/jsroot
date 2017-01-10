@@ -201,7 +201,7 @@
       this.buf = []; // buffer accumulates temporary values
    }
    
-   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code, only_branch) {
+   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch) {
       // when only_branch specified, its placed in the front of the expression 
       
       function is_start_symbol(symb) {
@@ -213,7 +213,7 @@
       function is_next_symbol(symb) {
          if (is_start_symbol(symb)) return true;
          if ((symb >= "0") && (symb <= "9")) return true;
-         return (symb===".");
+         return false;
       }
       
       if (!code) code = ""; // should be empty string at least
@@ -223,13 +223,16 @@
       var pos = 0, pos2 = 0, br = null;
       while ((pos < code.length) || only_branch) {
 
+         var arriter = [];
+         
          if (only_branch) {
             br = only_branch;
             only_branch = undefined;
          } else {
+            // first try to find branch
             while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
             pos2 = pos;
-            while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
+            while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2]===".")) pos2++;
 
             br = tree.FindBranch(code.substr(pos, pos2-pos), true);
             if (!br) { pos = pos2+1; continue; }
@@ -241,45 +244,60 @@
             }
          }
          
-         // check array specifier
-         var isarr = undefined;
-         if (code[pos2]=="[") {
-            if ((code[pos2+1]=="]") && (code[pos2+2]!=="[")) { isarr = true; pos2+=2; } else {
-               isarr = []; // array with indexes for first dimension
-               
-               while (pos2 < code.length) {
-                  var prev = pos2++, cnt = 0;
-                  while ((pos2 < code.length) && ((code[pos2]!="]") || (cnt>0))) {
-                     if (code[pos2]=='[') cnt++; else if (code[pos2]==']') cnt--; 
-                     pos2++;
-                  }
-                  var sub = code.substr(prev+1, pos2-prev-1);
-                  switch(sub) {
-                     case "": 
-                     case "%all%": isarr.push(undefined); break;
-                     case "%last%": isarr.push("%last%"); break;
-                     case "%first%": isarr.push(0); break;
-                     default:
-                        var arrindx = parseInt(sub);
-                        if (!isNaN(arrindx)) isarr.push((arrindx>=0) ? arrindx : undefined); else {
-                           // try to compile code as draw variable
-                           var subvar = new JSROOT.TDrawVariable();
-                           // console.log("produce subvar with code", sub);
-                           subvar.Parse(tree,selector, sub);
-                           isarr.push(subvar);
-                        }
-                  }
-                  if (code[++pos2]!=="[") break;
+         // now extract all levels of iterators 
+         while (pos2 < code.length) {
+            if (code[pos2] === ".") {
+               // this is object member
+               var prev = ++pos2; 
+               if (!is_start_symbol(code[prev])) {
+                  console.error("Problem to parse ", code, "at", prev);
+                  return false;
                }
+               
+               while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
+               
+               arriter.push(code.substr(prev, pos2-prev));
+               continue;
             }
+
+            if (code[pos2]!=="[") break;
+            
+            // simple [] 
+            if (code[pos2+1]=="]") { arriter.push(undefined); pos2+=2; continue; }
+
+            var prev = pos2++, cnt = 0;
+            while ((pos2 < code.length) && ((code[pos2]!="]") || (cnt>0))) {
+               if (code[pos2]=='[') cnt++; else if (code[pos2]==']') cnt--; 
+               pos2++;
+            }
+            var sub = code.substr(prev+1, pos2-prev-1);
+            switch(sub) {
+               case "": 
+               case "%all%": arriter.push(undefined); break;
+               case "%last%": arriter.push("%last%"); break;
+               case "%first%": arriter.push(0); break;
+               default:
+                  var arrindx = parseInt(sub);
+                  if (!isNaN(arrindx)) arriter.push((arrindx>=0) ? arrindx : undefined); else {
+                     // try to compile code as draw variable
+                     var subvar = new JSROOT.TDrawVariable();
+                     // console.log("produce subvar with code", sub);
+                     subvar.Parse(tree,selector, sub);
+                     arriter.push(subvar);
+                  }
+            }
+            pos2++;
          }
+         
+         if (arriter.length===0) arriter = undefined; else
+         if ((arriter.length===1) && (arriter[0]===undefined)) arriter = true;
          
          var indx = selector.indexOfBranch(br);
          if (indx<0) indx = selector.AddBranch(br);
          
          this.brindex.push(indx);
          this.branches.push(selector.nameOfBranch(indx));
-         this.brarray.push(isarr);
+         this.brarray.push(arriter);
          
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
@@ -292,10 +310,6 @@
          code = code.substr(0, pos) + replace + code.substr(pos2);
          
          pos = pos + replace.length;
-         
-         // after branch is extracted, skip rest which can be just member of object
-         // happens when draw expression like branch[].fMember
-         while ((pos < code.length) && (is_next_symbol(code[pos]))) pos++;
       }
       
       this.func = new Function("arg", "return (" + code + ")");
