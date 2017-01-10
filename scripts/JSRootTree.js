@@ -122,7 +122,7 @@
    }
    
    JSROOT.ArrayIterator.prototype.next = function() {
-      var obj, typ, cnt = this.cnt;
+      var obj, typ, cnt = this.cnt, seltyp;
       
       if (cnt >= 0) {
         
@@ -150,8 +150,13 @@
          if ((typ === "object") && obj._typename) {
             if (JSROOT.IsRootCollection(obj)) obj = obj.arr;
                                          else typ = "any";
-         } else {
-            if ((cnt<0) && !obj.length) return false;
+         } 
+         
+         if ((typ=="any") && (typeof this.select[cnt+1] ==="string")) {
+            // this is extraction of the member from arbitrary class
+            this.arr[++cnt] = obj;
+            this.indx[cnt] = this.select[cnt]; // use member name as index
+            continue;
          }
          
          if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && (JSROOT.CheckArrayPrototype(obj)>0)) {
@@ -167,10 +172,17 @@
                   }
             }
          } else {
+            if (cnt<0) return false;
+            
             this.value = obj;
-            this.fastarr = this.arr[cnt];
-            this.fastindx = this.indx[cnt];
-            this.fastlimit = (this.select[cnt]===undefined) ? this.fastarr.length : 0; //
+            if (this.select[cnt]===undefined) {
+               this.fastarr = this.arr[cnt];
+               this.fastindx = this.indx[cnt];
+               this.fastlimit = this.fastarr.length;
+            } else {
+               this.fastindx = this.fastlimit = 0; // no any iteration on that level
+            }
+            
             this.cnt = cnt;
             return true;
          } 
@@ -291,6 +303,8 @@
          
          if (arriter.length===0) arriter = undefined; else
          if ((arriter.length===1) && (arriter[0]===undefined)) arriter = true;
+         
+         console.log('arriter', arriter);
          
          var indx = selector.indexOfBranch(br);
          if (indx<0) indx = selector.AddBranch(br);

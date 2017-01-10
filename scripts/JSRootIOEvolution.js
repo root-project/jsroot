@@ -446,7 +446,6 @@
       return res;
    }
 
-
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       if (!key) key = {};
       key.fNbytes = this.ntoi4();
@@ -1098,7 +1097,7 @@
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
-      this.fMaxRanges = 500; // maximal number of file ranges requested at once
+      this.fMaxRanges = 100; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
