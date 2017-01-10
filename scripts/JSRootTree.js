@@ -98,6 +98,14 @@
       return plain ? 2 : 1;
    }
    
+   JSROOT.IsRootCollection = function(obj) {
+      if (!obj || (typeof obj !== 'object')) return false;
+      
+      var kind = obj.$kind || obj._typename;
+      
+      return ((obj.arr !== undefined) && (kind === 'TList') || (kind === 'TObjArray') || (kind === 'TClonesArray')); 
+   }
+   
    JSROOT.ArrayIterator = function(arr, select, tgtobj) {
       // class used to iterate over all array indexes until number value
       this.object = arr;
@@ -132,13 +140,19 @@
       while (true) {
          
          if (cnt < 0) {
-            if (!this.object.length) return false;
             obj = this.object;
          } else {
             obj = (this.arr[cnt])[this.indx[cnt]];
          }
       
-         typ = obj ? typeof obj : "any"; 
+         typ = obj ? typeof obj : "any";
+         
+         if ((typ === "object") && obj._typename) {
+            if (JSROOT.IsRootCollection(obj)) obj = obj.arr;
+                                         else typ = "any";
+         } else {
+            if ((cnt<0) && !obj.length) return false;
+         }
          
          if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && (JSROOT.CheckArrayPrototype(obj)>0)) {
             this.arr[++cnt] = obj;
@@ -149,7 +163,6 @@
                   if (!isNaN(this.select[cnt])) this.indx[cnt] = this.select[cnt]; else {
                      // this is compile variable as array index - can be any expression
                      this.select[cnt].Produce(this.tgtobj);
-                     // console.log('Array index is', this.select[cnt].get(0));
                      this.indx[cnt] = Math.round(this.select[cnt].get(0)); 
                   }
             }
@@ -316,17 +329,13 @@
 
          // try to check if branch is array and need to be iterated
          if (this.brarray[n]===undefined) 
-            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0);   
+            this.brarray[n] = (JSROOT.CheckArrayPrototype(arg[name]) > 0) || JSROOT.IsRootCollection(arg[name]);   
          
          // no array - no pain
          if (this.brarray[n]===false) continue; 
-          
-         // check if array can be used as is - one dimension and normal values
-         var typ = 1;
-         if (this.brarray[n]===true)
-            typ = JSROOT.CheckArrayPrototype(arg[name], true);
          
-         if (typ === 2) {
+         // check if array can be used as is - one dimension and normal values
+         if ((this.brarray[n]===true) && (JSROOT.CheckArrayPrototype(arg[name], true) === 2)) {
             // plain array, can be used as is
             arrs[n] = arg[name]; 
          } else {

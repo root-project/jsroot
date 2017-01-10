@@ -10954,10 +10954,10 @@
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: ";dump" });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'JSROOT.Painter.drawTree', opt: ";dump" });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "THashList", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "TObjArray", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "TClonesArray", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
-   JSROOT.addDrawFunc({ name: "TMap", icon: "img_list", expand: JSROOT.Painter.ListHierarchy, dflt: "expand" });
+   JSROOT.addDrawFunc({ name: "THashList", sameas: "TList" });
+   JSROOT.addDrawFunc({ name: "TObjArray", sameas: "TList" });
+   JSROOT.addDrawFunc({ name: "TClonesArray", sameas: "TList" });
+   JSROOT.addDrawFunc({ name: "TMap", sameas: "TList" });
    JSROOT.addDrawFunc({ name: "TColor", icon: "img_color" });
    JSROOT.addDrawFunc({ name: "TFile", icon: "img_file", noinspect:true });
    JSROOT.addDrawFunc({ name: "TMemFile", icon: "img_file", noinspect:true });
