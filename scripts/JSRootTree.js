@@ -462,6 +462,11 @@
       this.cut = new JSROOT.TDrawVariable();
       if (cut) this.cut.Parse(tree, this, cut);
       
+      if (!this.branches.length) {
+         console.log('no any branch is selected');
+         return false;
+      }
+      
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
       
       return true;
