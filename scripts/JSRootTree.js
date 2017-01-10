@@ -282,7 +282,7 @@
                      // try to compile code as draw variable
                      var subvar = new JSROOT.TDrawVariable();
                      // console.log("produce subvar with code", sub);
-                     subvar.Parse(tree,selector, sub);
+                     if (!subvar.Parse(tree,selector, sub)) return false;
                      arriter.push(subvar);
                   }
             }
@@ -302,7 +302,7 @@
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
             this.direct_branch = true;
-            return; 
+            return true; 
          }
          
          var replace = "arg.var" + (this.branches.length-1);
@@ -313,6 +313,8 @@
       }
       
       this.func = new Function("arg", "return (" + code + ")");
+      
+      return true;
    }
    
    JSROOT.TDrawVariable.prototype.IsInteger = function(selector) {
@@ -473,12 +475,13 @@
 
       for (var n=0;n<this.ndim;++n) {
          this.vars[n] = new JSROOT.TDrawVariable();
-         this.vars[n].Parse(tree, this, names[n]);
+         if (!this.vars[n].Parse(tree, this, names[n])) return false;
          if (!this.vars[n].direct_branch) is_direct = false; 
       }
       
       this.cut = new JSROOT.TDrawVariable();
-      if (cut) this.cut.Parse(tree, this, cut);
+      if (cut) 
+         if (!this.cut.Parse(tree, this, cut)) return false;
       
       if (!this.branches.length) {
          console.log('no any branch is selected');
@@ -494,12 +497,13 @@
       this.ndim = 1;
       
       this.vars[0] = new JSROOT.TDrawVariable();
-      this.vars[0].Parse(tree, this, expr, branch);
+      if (!this.vars[0].Parse(tree, this, expr, branch)) return false;
       this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
       
       this.cut = new JSROOT.TDrawVariable();
       
       if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
+      return true;
    }
 
    
@@ -1690,7 +1694,7 @@
       } else
       if (args.branch) {
          selector = new JSROOT.TDrawSelector(result_callback);
-         selector.DrawOnlyBranch(this, args.branch, args.expr);
+         if (!selector.DrawOnlyBranch(this, args.branch, args.expr)) selector = null;
       } else 
       if (args.expr === "testio") {
          // special debugging code
@@ -1698,8 +1702,7 @@
       } else {
          selector = new JSROOT.TDrawSelector(result_callback);
          
-         if (!selector.ParseDrawExpression(this, args))
-            return JSROOT.CallBack(result_callback, null);
+         if (!selector.ParseDrawExpression(this, args)) selector = null;
       }
       
       if (!selector)
