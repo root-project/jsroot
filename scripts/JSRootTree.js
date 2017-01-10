@@ -200,7 +200,7 @@
       function is_next_symbol(symb) {
          if (is_start_symbol(symb)) return true;
          if ((symb >= "0") && (symb <= "9")) return true;
-         return (symb=== ".");
+         return (symb===".");
       }
       
       if (!code) code = ""; // should be empty string at least
@@ -218,6 +218,9 @@
             pos2 = pos;
             while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
             br = tree.FindBranch(code.substr(pos, pos2-pos));
+            
+            console.log('Search for branch ', code.substr(pos, pos2-pos), 'isok', !!br);
+            
             if (!br) { pos = pos2+1; continue; }
          }
          
@@ -272,6 +275,10 @@
          code = code.substr(0, pos) + replace + code.substr(pos2);
          
          pos = pos + replace.length;
+         
+         // after branch is extracted, skip rest which can be just member of object
+         // happens when draw expression like branch[].fMember
+         while ((pos < code.length) && (is_next_symbol(code[pos]))) pos++;
       }
       
       this.func = new Function("arg", "return (" + code + ")");
@@ -385,7 +392,9 @@
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
   
-   JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, expr) {
+   JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
+      
+      var expr = args.expr;
       
       // parse complete expression
       if (!expr || (typeof expr !== 'string')) return false;
@@ -400,6 +409,10 @@
             this.hist_name = harg.substr(0, pos);
             harg = harg.substr(pos);
          }
+         if (harg === "dump") {
+            this.dump_values = true;
+            if (args.nentries===undefined) args.nentries = 10;
+         } else
          if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
             harg = harg.substr(1,harg.length-2).split(",");
             var isok = true;
@@ -481,11 +494,11 @@
 
    JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
       
-      var res = { min: 0, max: 0, nbins: nbins };
+      var res = { min: 0, max: 0, nbins: nbins, fLabels: null };
       
       if (axisid>=this.ndim) return res;
       
-      var arr = this.vars[axisid].buf; 
+      var arr = this.vars[axisid].buf;
       
       if (this.vars[axisid].kind === "string") {
          res.lbls = []; // all labels
@@ -496,6 +509,15 @@
          
          res.lbls.sort();
          res.max = res.nbins = res.lbls.length;
+         
+         res.fLabels = JSROOT.Create("THashList");
+         for (var k=0;k<res.lbls.length;++k) {
+            var s = JSROOT.Create("TObjString");
+            s.fString = res.lbls[k];
+            s.fUniqueID = k+1;
+            if (s.fString === "") s.fString = "<empty>";
+            res.fLabels.Add(s);
+         }
       } else 
       if (axisid*3 + 2 < this.hist_args.length) {
          res.nbins = this.hist_args[axisid*3];
@@ -533,63 +555,41 @@
    JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
       if (this.hist || !this.vars[0].buf) return;
       
-      this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
+      if (this.dump_values) {
+         
+      } else {
       
-      this.y = this.GetMinMaxBins(1, 50);
+         this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
 
-      this.z = this.GetMinMaxBins(2, 50);
-      
-      switch (this.ndim) {
-         case 1: this.hist = JSROOT.CreateHistogram("TH1F", this.x.nbins); break; 
-         case 2: this.hist = JSROOT.CreateHistogram("TH2F", this.x.nbins, this.y.nbins); break;
-         case 3: this.hist = JSROOT.CreateHistogram("TH3F", this.x.nbins, this.y.nbins, this.z.nbins); break;
-      }
-      
-      this.hist.fXaxis.fTitle = this.vars[0].code;
-      this.hist.fXaxis.fXmin = this.x.min;
-      this.hist.fXaxis.fXmax = this.x.max;
-      if (this.x.lbls) {
-         this.hist.fXaxis.fLabels = JSROOT.Create("THashList");
-         for (var k=0;k<this.x.lbls.length;++k) {
-            var s = JSROOT.Create("TObjString");
-            s.fString = this.x.lbls[k];
-            s.fUniqueID = k+1;
-            if (s.fString === "") s.fString = "<empty>";
-            this.hist.fXaxis.fLabels.Add(s);
-         }
-      }
-      
-      if (this.ndim > 1) this.hist.fYaxis.fTitle = this.vars[1].code;
-      this.hist.fYaxis.fXmin = this.y.min;
-      this.hist.fYaxis.fXmax = this.y.max;
-      if (this.y.lbls) {
-         this.hist.fYaxis.fLabels = JSROOT.Create("THashList");
-         for (var k=0;k<this.y.lbls.length;++k) {
-            var s = JSROOT.Create("TObjString");
-            s.fString = this.y.lbls[k];
-            s.fUniqueID = k+1;
-            if (s.fString === "") s.fString = "<empty>";
-            this.hist.fYaxis.fLabels.Add(s);
-         }
-      }
+         this.y = this.GetMinMaxBins(1, 50);
 
-      if (this.ndim > 2) this.hist.fZaxis.fTitle = this.vars[2].code;
-      this.hist.fZaxis.fXmin = this.z.min;
-      this.hist.fZaxis.fXmax = this.z.max;
-      if (this.z.lbls) {
-         this.hist.fZaxis.fLabels = JSROOT.Create("THashList");
-         for (var k=0;k<this.z.lbls.length;++k) {
-            var s = JSROOT.Create("TObjString");
-            s.fString = this.z.lbls[k];
-            s.fUniqueID = k+1;
-            if (s.fString === "") s.fString = "<empty>";
-            this.hist.fZaxis.fLabels.Add(s);
+         this.z = this.GetMinMaxBins(2, 50);
+
+         switch (this.ndim) {
+            case 1: this.hist = JSROOT.CreateHistogram("TH1F", this.x.nbins); break; 
+            case 2: this.hist = JSROOT.CreateHistogram("TH2F", this.x.nbins, this.y.nbins); break;
+            case 3: this.hist = JSROOT.CreateHistogram("TH3F", this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
+
+         this.hist.fXaxis.fTitle = this.vars[0].code;
+         this.hist.fXaxis.fXmin = this.x.min;
+         this.hist.fXaxis.fXmax = this.x.max;
+         this.hist.fXaxis.fLabels = this.x.fLabels;
+
+         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.vars[1].code;
+         this.hist.fYaxis.fXmin = this.y.min;
+         this.hist.fYaxis.fXmax = this.y.max;
+         this.hist.fYaxis.fLabels = this.y.fLabels;
+
+         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.vars[2].code;
+         this.hist.fZaxis.fXmin = this.z.min;
+         this.hist.fZaxis.fXmax = this.z.max;
+         this.hist.fZaxis.fLabels = this.z.fLabels;
+
+         this.hist.fName = this.hist_name;
+         this.hist.fTitle = this.hist_title;
+         this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
       }
-      
-      this.hist.fName = this.hist_name;
-      this.hist.fTitle = this.hist_title;
-      this.hist.$custom_stat = (this.hist_name == "$htemp") ? 111110 : 111111;
       
       var var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length; 
          
@@ -1639,7 +1639,7 @@
       } else {
          selector = new JSROOT.TDrawSelector(result_callback);
          
-         if (!selector.ParseDrawExpression(this, args.expr))
+         if (!selector.ParseDrawExpression(this, args))
             return JSROOT.CallBack(result_callback, null);
       }
       
