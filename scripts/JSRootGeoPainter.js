@@ -1644,6 +1644,15 @@
 
       return null;
    }
+   
+   JSROOT.TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem, obj) {
+      // function called when mouse is going over the item in the browser
+      
+      // Be aware, that item name is real name in browser (with potentially cycle number in the name)
+      // One can use object to identify which track should be highlighted
+      
+      console.log('Mouse over', on, itemname, (obj ? obj._typename : "---"));
+   }
 
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
 

@@ -302,8 +302,8 @@
          if (JSROOT.gStyle.ContextMenu && can_menu)
             d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
          
-         // d3a.on("mouseover", function() { h.tree_mouseover(this, true); })
-         //   .on("mouseleave", function() { h.tree_mouseover(this, false); });
+         d3a.on("mouseover", function() { h.tree_mouseover(this, true); })
+            .on("mouseleave", function() { h.tree_mouseover(this, false); });
       }
 
       var element_name = hitem._name, element_title = "";
@@ -447,8 +447,6 @@
       var itemname = d3cont.attr('item');
       if (!itemname) return;
       
-      console.log('click', itemname);
-      
       var hitem = this.Find(itemname);
       if (!hitem) return;
       
@@ -554,7 +552,18 @@
    
    JSROOT.HierarchyPainter.prototype.tree_mouseover = function(elem, on) {
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');
-      console.log('item', itemname, 'on', on);
+      
+      var hitem = this.Find(itemname);
+      if (!hitem) return;
+      
+      var painter, prnt = hitem;
+      while (prnt && !painter) {
+         painter = prnt._painter;
+         prnt = prnt._parent;
+      }
+      
+      if (painter && typeof painter.MouseOverHierarchy === 'function') 
+         painter.MouseOverHierarchy(on, itemname, hitem, hitem._obj);
    }
 
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(elem) {
