@@ -980,17 +980,15 @@
          } else
       
          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
-            
-            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
 
-            // console.log('TBranchElement with ID==-1 typename ', branch.fClassName, elem.fType);
+            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
+            
+            console.log('TBranchElement with ID==-1 typename ', branch.fClassName, 'type', elem.fType);
             
             if (elem.fType === JSROOT.IO.kAny) {
-               // this is indication that object stored in the branch - need special handling
                
                var streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
-               
-               if (!streamer) elem = null; else
+               if (!streamer) { elem = null; console.warn('not found streamer!'); } else 
                   member = {
                         name: selector.names[nn],
                         typename: branch.fClassName,

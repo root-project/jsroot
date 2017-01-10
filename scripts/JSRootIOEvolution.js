@@ -2093,7 +2093,7 @@
 
                   member.readelem = JSROOT.IO.ReadVectorElement;
                   
-                  if (!member.isptr && (member.arrkind<0)) 
+                  if (!member.isptr && (member.arrkind<0)) { 
                   
                      if (member.conttype==="TRef") {
                         console.log('Create direct streamer for class', member.conttype);
@@ -2110,11 +2110,15 @@
                         };
                      } else {
                         var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
+                        
+                        // console.log('Do we need special handling for', member.conttype);
+                        
                         if (subelem.fSTLtype && (subelem.fType === JSROOT.IO.kStreamer)) {
                            subelem.$fictional = true;
                            member.submember = JSROOT.IO.CreateMember(subelem, file); 
                         }
                      }
+                  }
                }
             } else
             if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
@@ -2176,10 +2180,15 @@
                }
             } else
             if (!element.$fictional) {
+               member.stl_flag = true; // we may use such flag in the member-wise streaming
+               
                member.func = function(buf,obj) {
+                  
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+
                   var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
+
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
@@ -2668,14 +2677,31 @@
 
          if (streamer) {
             
-            var n = buf.ntou4(), res = [], i, k;
-
+            var n = buf.ntou4(), res = [], i, k, member;
+            
             for (i=0;i<n;++i)
                res[i] = { _typename: this.conttype }; // create objects
 
             for (k=0;k<streamer.length;++k) {
-               for (i=0;i<n;++i)
-                  streamer[k].func(buf, res[i]);
+               
+               member = streamer[k]; 
+               
+               if (member.stl_flag) {
+                  
+                  // console.log('read stl member ', member.typename, ' in special order')
+                  
+                  var ver = buf.ReadVersion();
+                  member.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+
+                  for (i=0;i<n;++i)
+                     res[i][member.name] = member.readelem(buf);
+
+                  buf.CheckBytecount(ver, member.typename);
+                  
+               } else {
+                  for (i=0;i<n;++i)
+                     member.func(buf, res[i]);
+               }
             }
 
             return res;
