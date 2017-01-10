@@ -962,6 +962,7 @@
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
             // this is branch with counter 
             elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
+            // handle.process_arrays = false;
          } else
       
          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
@@ -1048,8 +1049,18 @@
                   if (!obj[this.name]) obj[this.name] = { _typename: this.basename };
                   buf.ClassStreamer(obj[this.name], this.basename);
                };
-
             }
+            /* keep debug code for a while
+            if ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)) {
+               console.log('reading counter ', selector.names[nn], branch.fName);
+               member.func = function(buf, obj) {
+                  obj[this.name] = buf.ntou4();
+                  console.log('counter ', this.name, obj[this.name], 'rest', buf.remain());
+               }
+            }
+            */
+            
+            
          }
 
          // this element used to read branch value
@@ -1068,7 +1079,7 @@
                return false;
             }
 
-            selector.process_arrays = false;
+            handle.process_arrays = false;
 
             if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
                // console.log('introduce special handling with STL size', elem.fType);
@@ -1363,6 +1374,8 @@
 
             var baskets = [], n = 0;
             
+            // console.log('places', places, 'blobs', blobs.length, blobs[0].byteLength, blobs[1].byteLength);
+            
             for (var k=0;k<bitems.length;++k) {
                if (!bitems[k].selected) continue;
                
@@ -1372,6 +1385,8 @@
                var blob = (places.length > 2) ? blobs[n++] : blobs,
                    buf = JSROOT.CreateTBuffer(blob, 0, handle.file),
                    basket = buf.ReadTBasket({ _typename: "TBasket" });
+               
+               // console.log('Use blob', blob.byteLength, 'create buffer', buf.length);
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket]) 
                   console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
@@ -1383,10 +1398,13 @@
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
                   bitems[k].raw = buf;
+                  // console.log('USE BUFFER itself', buf.length, buf.remain());
                   
                } else {
                   // unpack data and create new blob
                   var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
+                  
+                  // console.log('UNPACK BLOB of length', objblob.byteLength);
 
                   if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, handle.file);
                   
