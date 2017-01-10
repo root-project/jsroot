@@ -179,20 +179,30 @@ It is possible to display TTree data, using simplified TTree::Draw syntax.
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz>
    
 Histogram ranges and binning defined after reading first 1000 entries from the tree. 
-Like in ROOT, one could configure histogram binning and range    
+Like in ROOT, one could configure histogram binning and range directly:   
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h(50,-5,5,50,-5,5)>
 
+It is allowed to use different expressions with branch values:
+
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px+py:px-py>
+   
+Such expression can include arithmetical operations and all methods, provided in JavaScript [Math](http://www.w3schools.com/jsref/jsref_obj_math.asp) class:
+     
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=Math.abs(px+py)>
+ 
 One also could specify cut condition, separating it with "::" from the rest draw expression like:
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>5>
 
-It is possible to "dump" content of any branch:   
+It is possible to "dump" content of any branch (by default - first 10 entries):   
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1/px&opt=dump>
 
-In such case first 10 entries are read and displayed in object inspector.
+Or one could dump values produced with draw expression (also first 10 entries):
 
+   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>>dump>
+ 
 
 
 ## Geometry viewer

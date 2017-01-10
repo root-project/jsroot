@@ -411,7 +411,7 @@
          }
          if (harg === "dump") {
             this.dump_values = true;
-            if (args.nentries===undefined) args.nentries = 10;
+            if (args.numentries===undefined) args.numentries = 10;
          } else
          if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
             harg = harg.substr(1,harg.length-2).split(",");
@@ -556,7 +556,11 @@
       if (this.hist || !this.vars[0].buf) return;
       
       if (this.dump_values) {
+         // just create array where dumped valus will be collected  
+         this.hist = [];
          
+         // reassign fill method
+         this.Fill1DHistogram = this.Fill2DHistogram = this.Fill3DHistogram = this.DumpValue;  
       } else {
       
          this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
@@ -635,6 +639,14 @@
           zbin = this.z.GetBin(zvalue);
       
       this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += weight;
+   }
+   
+   JSROOT.TDrawSelector.prototype.DumpValue = function(v1, v2, v3, v4) {
+      switch (this.ndim) {
+         case 1: this.hist.push(v1); break;
+         case 2: this.hist.push({ x: v1, y: v2 } ); break;
+         case 3: this.hist.push({ x: v1, y: v2, z: v3 } ); break;
+      }
    }
    
    JSROOT.TDrawSelector.prototype.ProcessArraysFunc = function(entry) {
@@ -753,7 +765,10 @@
       
       this.ShowProgress();
       
-      return JSROOT.CallBack(this.histo_callback, this.hist, (this.ndim==2) ? "col" : "");
+      var drawopt = (this.ndim==2) ? "col" : "";
+      if (this.dump_values) drawopt = "inspect";
+      
+      return JSROOT.CallBack(this.histo_callback, this.hist, drawopt);
    }
    
    // ======================================================================
