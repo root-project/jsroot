@@ -292,13 +292,18 @@
       return selector.IsInteger(this.brindex[0]);
    }
    
+   JSROOT.TDrawVariable.prototype.is_dummy = function() {
+      return this.branches.length === 0;
+   }
+   
+   
    JSROOT.TDrawVariable.prototype.Produce = function(obj) {
       // after reading tree braches into the object, calculate variable value
 
       this.length = 1;
       this.isarray = false;
       
-      if (this.branches.length === 0) {
+      if (this.is_dummy()) {
          this.value = 1.; // used as dummy weight variable
          this.kind = "number";
          return;
@@ -642,11 +647,18 @@
    }
    
    JSROOT.TDrawSelector.prototype.DumpValue = function(v1, v2, v3, v4) {
+      var obj; 
       switch (this.ndim) {
-         case 1: this.hist.push(v1); break;
-         case 2: this.hist.push({ x: v1, y: v2 } ); break;
-         case 3: this.hist.push({ x: v1, y: v2, z: v3 } ); break;
+         case 1: obj = { x: v1, weight: v2 }; break;
+         case 2: obj = { x: v1, y: v2, weight: v3 }; break;
+         case 3: obj = { x: v1, y: v2, z: v3, weight: v4 }; break;
       }
+      
+      if (this.cut.is_dummy()) {
+         if (this.ndim===1) obj = v1; else delete obj.weight;
+      }
+      
+      this.hist.push(obj);
    }
    
    JSROOT.TDrawSelector.prototype.ProcessArraysFunc = function(entry) {
