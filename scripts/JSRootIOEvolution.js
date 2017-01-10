@@ -787,8 +787,7 @@
       // buffer should work with DataView as first argument
       JSROOT.TBuffer.call(this, pos, file, length);
       this.arr = arr;
-      if (length!==undefined) this.length = length; else
-      if (arr && arr.buffer) this.length = arr.buffer.byteLength;
+      this.length = length || arr.byteLength; // use size of arrayview, blob buffer can be much bigger
    }
 
    JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
@@ -876,12 +875,12 @@
 
    JSROOT.TArrBuffer.prototype.extract = function(place) {
       if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
-      if (place.length===2) return new DataView(this.arr.buffer, place[0], place[1]);
+      if (place.length===2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
 
       var res = new Array(place.length/2);
 
       for (var n=0;n<place.length;n+=2)
-         res[n/2] = new DataView(this.arr.buffer, place[n], place[n+1]);
+         res[n/2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n+1]);
 
       return res; // return array of buffers
    }
