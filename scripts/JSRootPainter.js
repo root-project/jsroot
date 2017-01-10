@@ -8541,7 +8541,7 @@
                _name: i.toString(),
                _kind: "ROOT.NULL",
                _title: "NULL",
-               _value: "NULL", 
+               _value: "null", 
                _obj: null
             }
          } else {
