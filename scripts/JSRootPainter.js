@@ -8510,17 +8510,32 @@
           lst._typename !== 'TList' && lst._typename !== 'THashList' && lst._typename !== 'TMap' &&
           lst._typename !== 'TObjArray' && lst._typename !== 'TClonesArray') return false;
 
+      console.log('Create list hierarchy');
+      
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
          return true;
       }
+      
+      // if list has objects with similar names, create cycle number for them  
+      var ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
+      
+      for ( var i = 0; i < lst.arr.length; ++i) {
+         var obj = ismap ? lst.arr[i].first : lst.arr[i];
+         if (!obj || !obj.fName) continue; // for such objects index will be used as name
+         var indx = names.indexOf(obj.fName);
+         if (indx>=0) { 
+            cnt[indx]++; 
+         } else {
+            cnt[names.length] = cycle[names.length] = 1;
+            names.push(obj.fName);
+         }
+      }
 
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
-         var obj = lst.arr[i];
-
-         if (lst._typename == 'TMap') obj = obj.first;
-
+         var obj = ismap ? lst.arr[i].first : lst.arr[i];
+         
          var item;
 
          if (!obj || !obj._typename) {
@@ -8532,10 +8547,10 @@
             }
          } else {
            item = {
-             _name : obj.fName,
-             _kind : "ROOT." + obj._typename,
-             _title : obj.fTitle + "  type:"  +  obj._typename,
-             _obj : obj
+             _name: obj.fName,
+             _kind: "ROOT." + obj._typename,
+             _title: (obj.fTitle || "") + " type:"  +  obj._typename,
+             _obj: obj
            };
 
            switch(obj._typename) {
@@ -8547,13 +8562,17 @@
            }
 
            // if name is integer value, it should match array index
-           if ((item._name === undefined) || (item._name === "") ||
-                 (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
-                 || (lst.arr.indexOf(obj)<i))
-                   item._name = i.toString();
-
-           if (item._title === undefined)
-              item._title = obj._typename ? item._kind : item._name;
+           if (!item._name || (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
+               || (lst.arr.indexOf(obj)<i)) {
+              item._name = i.toString();
+           } else {
+              // if there are several such names, add cycle number to the item name
+              var indx = names.indexOf(obj.fName);
+              if ((indx>=0) && (cnt[indx]>1)) {
+                 item._cycle = cycle[indx]++;
+                 item._name+=";"+item._cycle;
+              }
+           }
          }
 
          folder._childs.push(item);
