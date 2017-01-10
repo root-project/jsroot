@@ -230,11 +230,15 @@
             while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
             pos2 = pos;
             while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
-            br = tree.FindBranch(code.substr(pos, pos2-pos));
-            
-            console.log('Search for branch ', code.substr(pos, pos2-pos), 'isok', !!br);
-            
+
+            br = tree.FindBranch(code.substr(pos, pos2-pos), true);
             if (!br) { pos = pos2+1; continue; }
+
+            // when full id includes branch name, replace only part of extracted expression 
+            if (br.branch && br.rest) {
+               pos2 -= br.rest.length;
+               br = br.branch;
+            }
          }
          
          // check array specifier
