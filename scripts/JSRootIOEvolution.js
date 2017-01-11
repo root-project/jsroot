@@ -2084,10 +2084,14 @@
                    p2 = member.typename.lastIndexOf(">");
 
                member.conttype = member.typename.substr(p1+1,p2-p1-1).trim();
-
+               
                member.typeid = JSROOT.IO.GetTypeId(member.conttype);
-
-               // console.log('container', member.name, member.typename, element.fCtype, element.fSTLtype, member.conttype);
+               
+               // check
+               if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
+                  console.warn('Contained type ', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
+                  member.typeid = element.fCtype;
+               }
 
                if (member.typeid > 0) {
                   member.readelem = function(buf) {
