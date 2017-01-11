@@ -2180,10 +2180,7 @@
                }
             } else
             if (!element.$fictional) {
-               member.stl_flag = true; // we may use such flag in the member-wise streaming
-               
                member.func = function(buf,obj) {
-                  
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
 
@@ -2206,6 +2203,16 @@
                      
                   obj[this.name] = arr;
                }
+               
+               member.split_func = function(buf, arr, n) {
+                  // function to read array from member-wise streaming
+                  var ver = buf.ReadVersion();
+                  this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                  for (var i=0;i<n;++i)
+                     arr[i][this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
+                  buf.CheckBytecount(ver, this.typename);
+               }
+
             } 
             break;
 
@@ -2683,21 +2690,9 @@
                res[i] = { _typename: this.conttype }; // create objects
 
             for (k=0;k<streamer.length;++k) {
-               
                member = streamer[k]; 
-               
-               if (member.stl_flag) {
-                  
-                  // console.log('read stl member ', member.typename, ' in special order')
-                  
-                  var ver = buf.ReadVersion();
-                  member.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-
-                  for (i=0;i<n;++i)
-                     res[i][member.name] = member.readelem(buf);
-
-                  buf.CheckBytecount(ver, member.typename);
-                  
+               if (member.split_func) { 
+                  member.split_func(buf, res, n);
                } else {
                   for (i=0;i<n;++i)
                      member.func(buf, res[i]);
@@ -2801,6 +2796,7 @@
 
       for (var n=0;n<streamer.length;++n) {
          var elem = streamer[n];
+         
          if (elem.base === undefined) {
             tgt.push(elem);
             continue;
