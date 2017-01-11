@@ -1103,7 +1103,7 @@
       this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
-      this.fMaxRanges = 100; // maximal number of file ranges requested at once
+      this.fMaxRanges = 200; // maximal number of file ranges requested at once
       this.fDirectories = [];
       this.fKeys = [];
       this.fSeekInfo = 0;
@@ -1149,57 +1149,58 @@
 
       return this;
    }
+   
+   JSROOT.mycallback = null;
 
-   JSROOT.TFile.prototype.ReadBuffer = function(place, callback, filename) {
+   JSROOT.TFile.prototype.ReadBuffer = function(place, result_callback, filename) {
 
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
-         return callback(this.fFileContent.extract(place));
-
-      var file = this;
+         return result_callback(this.fFileContent.extract(place));
       
-      if (place.length > file.fMaxRanges*2) {
-         // if multiple requests not supported, read all segments sequentially
-         var arg = { mainfile: file, places: place, cnt: 0, lastreq: 0, arr: [], maincallback: callback, fname: filename  };
+      var file = this, fileurl = file.fURL, 
+          first = 0, last = 0, blobs = [], read_callback; // array of requested segemnts
 
-         function workaround_callback(res) {
-            if (this.lastreq===2) this.arr.push(res); else
-            for (var n=0;n<this.lastreq/2;++n) this.arr.push((res && res.length && n<res.length) ? res[n] : null);
-
-            if (this.cnt >= this.places.length)
-               return JSROOT.CallBack(this.maincallback, this.arr);
-            
-            this.lastreq = Math.min(this.mainfile.fMaxRanges*2, this.places.length - this.cnt);
-            var segments = new Array(this.lastreq);
-            for (var k=0;k<this.lastreq;++k) segments[k] = this.places[this.cnt++]; 
-            this.mainfile.ReadBuffer(segments, workaround_callback.bind(this), this.fname);
-         }
-
-         return workaround_callback.bind(arg)();
-      }
-
-      var url = this.fURL, ranges = "bytes";
       if (filename && (typeof filename === 'string') && (filename.length>0)) {
-         var pos = url.lastIndexOf("/");
-         url = (pos<0) ? filename : url.substr(0,pos+1) + filename; 
+         var pos = fileurl.lastIndexOf("/");
+         fileurl = (pos<0) ? filename : fileurl.substr(0,pos+1) + filename; 
       }
       
-      for (var n=0;n<place.length;n+=2) 
-         ranges += (n>0 ? "," : "=") + (place[n] + "-" + (place[n] + place[n+1] - 1));
+      function send_new_request(increment) {
 
-      if (this.fUseStampPar) {
-         // try to avoid browser caching by adding stamp parameter to URL
-         if (url.indexOf('?')>0) url+="&stamp="; else url += "?stamp=";
-         url += this.fUseStampPar.getTime();
+         if (increment) {
+            first = last;
+            last = Math.min(first + file.fMaxRanges*2, place.length);
+            if (first>=place.length) return result_callback(blobs); 
+         }
+         
+         var fullurl = fileurl, ranges = "bytes", totalsz = 0;
+         if (file.fUseStampPar) {
+            // try to avoid browser caching by adding stamp parameter to URL
+            if (fullurl.indexOf('?')>0) fullurl+="&stamp="; else fullurl += "?stamp=";
+            fullurl += file.fUseStampPar.getTime();
+         }
+         
+         for (var n=first;n<last;n+=2) {
+            ranges += (n>first ? "," : "=") + (place[n] + "-" + (place[n] + place[n+1] - 1));
+            totalsz += place[n+1]; // accumulated total size  
+         }
+         if (last-first>2) totalsz += (last-first)*60; // for multi-range ~100 bytes/per request
+         
+         var xhr = JSROOT.NewHttpRequest(fullurl, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+         
+         if (file.fAcceptRanges) {
+            xhr.setRequestHeader("Range", ranges);
+            xhr.expected_size = totalsz; 
+         }
+         xhr.send(null);
       }
 
-      function read_callback(res) {
-
+      read_callback = function(res) {
+         
          if (!res && file.fUseStampPar && (place[0]===0) && (place.length===2)) {
             // if fail to read file with stamp parameter, try once again without it
             file.fUseStampPar = false;
-            var xhr = JSROOT.NewHttpRequest(file.fURL, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
-            if (file.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
-            return xhr.send(null);
+            return send_new_request();
          }
 
          if (res && (place[0]===0) && (place.length===2) && !file.fFileContent) {
@@ -1210,35 +1211,43 @@
             if (!file.fAcceptRanges)
                file.fEND = file.fFileContent.length;
 
-            return callback(file.fFileContent.extract(place));
+            return result_callback(file.fFileContent.extract(place));
          }
 
-         if ((res === null) || (res === undefined)) {
-            if ((place.length > 2) && (file.fMaxRanges>1)) {
+         if (!res) {
+            if ((first===0) && (last > 2) && (file.fMaxRanges>1)) {
                // server return no response with multirequest - try to decrease ranges count or fail
-               if (file.fMaxRanges > 200) file.fMaxRanges = 200; else
-               if (file.fMaxRanges > 50) file.fMaxRanges = 50; else 
-               if (file.fMaxRanges > 10) file.fMaxRanges = 10; else return callback(res);
-               return file.ReadBuffer(place, callback);
+               
+               if (last/2 > 200) file.fMaxRanges = 200; else
+               if (last/2 > 50) file.fMaxRanges = 50; else 
+               if (last/2 > 20) file.fMaxRanges = 20; else 
+               if (last/2 > 5) file.fMaxRanges = 5; else file.fMaxRanges = 1;
+               last = Math.min(last, file.fMaxRanges*2); 
+               // console.log('Change maxranges to ', file.fMaxRanges, 'last', last);
+               return send_new_request();
             }
             
-            return callback(res);
+            return result_callback(null);
          }
 
          var isstr = (typeof res == 'string');
 
          // if only single segment requested, return result as is
-         if (place.length===2) return callback(isstr ? res : new DataView(res));
-
+         if (last - first === 2) {
+            var b = isstr ? res : new DataView(res);
+            if (place.length===2) return result_callback(b);
+            blobs.push(b);
+            return send_new_request(true); 
+         }
+         
          // object to access response data
-         var arr = [], o = 0,
-             hdr = this.getResponseHeader('Content-Type'),
-             ismulti = hdr && (hdr.indexOf('multipart')>=0),
+         var hdr = this.getResponseHeader('Content-Type'),
+             ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart')>=0),
              view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
                        : new DataView(res);
 
          if (!ismulti) {
-            // server may returns simple buffer
+            // server may returns simple buffer, which combines all segments together
 
             var hdr_range = this.getResponseHeader('Content-Range'), segm_start = 0, segm_last = -1;
 
@@ -1254,30 +1263,33 @@
             }
 
             var canbe_single_segment = (segm_start<=segm_last);
-            for(var n=0;n<place.length;n+=2)
+            for(var n=first;n<last;n+=2)
                if ((place[n]<segm_start) || (place[n] + place[n+1] -1 > segm_last))
                   canbe_single_segment = false;
 
             if (canbe_single_segment) {
-               for (var n=0;n<place.length;n+=2)
-                  arr.push(isstr ? res.substr(place[n]-segm_start, place[n+1]) : new DataView(res, place[n]-segm_start, place[n+1]));
-               return callback(arr);
+               for (var n=first;n<last;n+=2)
+                  blobs.push(isstr ? res.substr(place[n]-segm_start, place[n+1]) : new DataView(res, place[n]-segm_start, place[n+1]));
+               return send_new_request(true);
             }
 
             console.error('Server returns normal response when multipart was requested, disable multirange support');
+
+            if ((file.fMaxRanges === 1) || (first!==0)) return result_callback(null);
+            
             file.fMaxRanges = 1;
-            return file.ReadBuffer(place, callback);
+            last = Math.min(last, file.fMaxRanges*2);
+            
+            return send_new_request();
          }
 
          // multipart messages requires special handling
 
-         var indx = hdr.indexOf("boundary="), boundary = "";
+         var indx = hdr.indexOf("boundary="), boundary = "", n = first, o = 0;
          if (indx > 0) boundary = "--" + hdr.substr(indx+9);
                   else console.error('Did not found boundary id in the response header');
 
-         var n = 0;
-
-         while (n<place.length) {
+         while (n<last) {
 
             var code1, code2 = view.getUint8(o), nline = 0, line = "",
                 finish_header = false, segm_start = 0, segm_last = -1;
@@ -1289,7 +1301,7 @@
                if ((code1==13) && (code2==10)) {
                   if ((line.length>2) && (line.substr(0,2)=='--') && (line !== boundary)) {
                      console.error('Decode multipart message, expect boundary ', boundary, 'got ', line);
-                     return callback(null);
+                     return result_callback(null);
                   }
 
                   line = line.toLowerCase();
@@ -1319,17 +1331,17 @@
 
             if (!finish_header) {
                console.error('Cannot decode header in multipart message ');
-               return callback(null);
+               return result_callback(null);
             }
 
             if (segm_start > segm_last) {
                // fall-back solution, believe that segments same as requested
-               arr.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
+               blobs.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
                o += place[n+1];
                n += 2;
             } else {
-               while ((n<place.length) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
-                  arr.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
+               while ((n<last) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
+                  blobs.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
                                    new DataView(res, o + place[n] - segm_start, place[n+1]));
                   n += 2;
                }
@@ -1338,12 +1350,10 @@
             }
          }
 
-         callback(arr);
+         send_new_request(true);
       }
 
-      var xhr = JSROOT.NewHttpRequest(url, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
-      if (this.fAcceptRanges) xhr.setRequestHeader("Range", ranges);
-      xhr.send(null);
+      send_new_request(true);
    }
 
    JSROOT.TFile.prototype.GetDir = function(dirname, cycle) {

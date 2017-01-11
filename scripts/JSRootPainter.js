@@ -9487,7 +9487,7 @@
 
          var item = items[i], can_split = true;
 
-         if ((item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
+         if (item && (item.length>1) && (item[0]=='\'') && (item[item.length-1]=='\'')) {
             items[i] = item.substr(1, item.length-2);
             can_split = false;
          }

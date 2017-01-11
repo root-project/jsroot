@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 10/01/2017";
+   JSROOT.version = "dev 11/01/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -246,7 +246,7 @@
    // wrapper for console.log, avoids missing console in IE
    // if divid specified, provide output to the HTML element
    JSROOT.console = function(value, divid) {
-      if ((divid!=null) && (typeof divid=='string') && ((typeof document.getElementById(divid))!='undefined'))
+      if ((typeof divid == 'string') && document.getElementById(divid))
          document.getElementById(divid).innerHTML = value;
       else
       if ((typeof console != 'undefined') && (typeof console.log == 'function'))
@@ -638,9 +638,23 @@
       if (kind === "head") method = "HEAD"; else
       if (kind === "multi") method = "POST";
 
-      if (window.ActiveXObject) {
+      if (JSROOT.browser.isIE) {
+         // TODO: remove special IE handling, since IE11 works similar to other browsers
 
          xhr.onreadystatechange = function() {
+
+            if (xhr.did_abort) return;
+
+            if ((xhr.readyState === 2) && xhr.expected_size) {
+               var len = parseInt(xhr.getResponseHeader("Content-Length"));
+               if (!isNaN(len) && (len>xhr.expected_size)) {
+                  // console.log('Expected ', xhr.expected_size, 'got', len);
+                  xhr.did_abort = true;
+                  xhr.abort();
+                  return callback(null);
+               }
+            }
+
             if (xhr.readyState != 4) return;
 
             if (xhr.status != 200 && xhr.status != 206) {
@@ -661,7 +675,7 @@
             var filecontent = new String("");
             var array = new VBArray(xhr.responseBody).toArray();
             for (var i = 0; i < array.length; ++i)
-               filecontent = filecontent + String.fromCharCode(array[i]);
+               filecontent += String.fromCharCode(array[i]);
             delete array;
             callback(filecontent);
          }
@@ -676,6 +690,19 @@
       } else {
 
          xhr.onreadystatechange = function() {
+
+            if (xhr.did_abort) return;
+
+            if ((xhr.readyState === 2) && xhr.expected_size) {
+               var len = parseInt(xhr.getResponseHeader("Content-Length"));
+               if (!isNaN(len) && (len>xhr.expected_size)) {
+                  // console.log('Expected ', xhr.expected_size, 'got', len);
+                  xhr.did_abort = true;
+                  xhr.abort();
+                  return callback(null);
+               }
+            }
+            
             if (xhr.readyState != 4) return;
 
             if ((xhr.status != 200) && (xhr.status != 206) &&
