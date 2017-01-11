@@ -5647,67 +5647,71 @@
    }
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
-      if (!this.MatchObjectType(obj)) {
-         alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj._typename + " expected " + this.histo._typename);
-         return false;
-      }
-
-      // TODO: simple replace of object does not help - one can have different
-      // complex relations between histo and stat box, histo and colz axis,
-      // one could have THStack or TMultiGraph object
-      // The only that could be done is update of content
-
-      // this.histo = obj;
-
+      
       var histo = this.GetObject();
 
-      histo.fFillColor = obj.fFillColor;
-      histo.fFillStyle = obj.fFillStyle;
-      histo.fLineColor = obj.fLineColor;
-      histo.fLineStyle = obj.fLineStyle;
-      histo.fLineWidth = obj.fLineWidth;
-
-      histo.fEntries = obj.fEntries;
-      histo.fTsumw = obj.fTsumw;
-      histo.fTsumwx = obj.fTsumwx;
-      histo.fTsumwx2 = obj.fTsumwx2;
-      if (this.Dimension() == 2) {
-         histo.fTsumwy = obj.fTsumwy;
-         histo.fTsumwy2 = obj.fTsumwy2;
-         histo.fTsumwxy = obj.fTsumwxy;
-      }
-      histo.fArray = obj.fArray;
-      histo.fNcells = obj.fNcells;
-      histo.fTitle = obj.fTitle;
-      histo.fMinimum = obj.fMinimum;
-      histo.fMaximum = obj.fMaximum;
-      histo.fXaxis.fNbins = obj.fXaxis.fNbins;
-      if (!this.main_painter().zoom_changed_interactive) {
-         histo.fXaxis.fXmin = obj.fXaxis.fXmin;
-         histo.fXaxis.fXmax = obj.fXaxis.fXmax;
-         histo.fXaxis.fFirst = obj.fXaxis.fFirst;
-         histo.fXaxis.fLast = obj.fXaxis.fLast;
-         histo.fXaxis.fBits = obj.fXaxis.fBits;
-         histo.fYaxis.fXmin = obj.fYaxis.fXmin;
-         histo.fYaxis.fXmax = obj.fYaxis.fXmax;
-         histo.fYaxis.fFirst = obj.fYaxis.fFirst;
-         histo.fYaxis.fLast = obj.fYaxis.fLast;
-         histo.fYaxis.fBits = obj.fYaxis.fBits;
-      }
-      histo.fSumw2 = obj.fSumw2;
-
-      if (this.IsTProfile()) {
-         histo.fBinEntries = obj.fBinEntries;
-      }
-
-      if (obj.fFunctions)
-         for (var n=0;n<obj.fFunctions.arr.length;++n) {
-            var func = obj.fFunctions.arr[n];
-            if ((func._typename == "TPaveStats") && (func.fName == 'stats')) {
-               var funcpainter = this.FindPainterFor(null,'stats');
-               if (funcpainter) funcpainter.UpdateObject(func);
-            }
+      if (obj !== histo) {
+      
+         if (!this.MatchObjectType(obj)) {
+            alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj._typename + " expected " + this.histo._typename);
+            return false;
          }
+
+         // TODO: simple replace of object does not help - one can have different
+         // complex relations between histo and stat box, histo and colz axis,
+         // one could have THStack or TMultiGraph object
+         // The only that could be done is update of content
+
+         // this.histo = obj;
+
+         histo.fFillColor = obj.fFillColor;
+         histo.fFillStyle = obj.fFillStyle;
+         histo.fLineColor = obj.fLineColor;
+         histo.fLineStyle = obj.fLineStyle;
+         histo.fLineWidth = obj.fLineWidth;
+
+         histo.fEntries = obj.fEntries;
+         histo.fTsumw = obj.fTsumw;
+         histo.fTsumwx = obj.fTsumwx;
+         histo.fTsumwx2 = obj.fTsumwx2;
+         if (this.Dimension() == 2) {
+            histo.fTsumwy = obj.fTsumwy;
+            histo.fTsumwy2 = obj.fTsumwy2;
+            histo.fTsumwxy = obj.fTsumwxy;
+         }
+         histo.fArray = obj.fArray;
+         histo.fNcells = obj.fNcells;
+         histo.fTitle = obj.fTitle;
+         histo.fMinimum = obj.fMinimum;
+         histo.fMaximum = obj.fMaximum;
+         histo.fXaxis.fNbins = obj.fXaxis.fNbins;
+         if (!this.main_painter().zoom_changed_interactive) {
+            histo.fXaxis.fXmin = obj.fXaxis.fXmin;
+            histo.fXaxis.fXmax = obj.fXaxis.fXmax;
+            histo.fXaxis.fFirst = obj.fXaxis.fFirst;
+            histo.fXaxis.fLast = obj.fXaxis.fLast;
+            histo.fXaxis.fBits = obj.fXaxis.fBits;
+            histo.fYaxis.fXmin = obj.fYaxis.fXmin;
+            histo.fYaxis.fXmax = obj.fYaxis.fXmax;
+            histo.fYaxis.fFirst = obj.fYaxis.fFirst;
+            histo.fYaxis.fLast = obj.fYaxis.fLast;
+            histo.fYaxis.fBits = obj.fYaxis.fBits;
+         }
+         histo.fSumw2 = obj.fSumw2;
+
+         if (this.IsTProfile()) {
+            histo.fBinEntries = obj.fBinEntries;
+         }
+
+         if (obj.fFunctions)
+            for (var n=0;n<obj.fFunctions.arr.length;++n) {
+               var func = obj.fFunctions.arr[n];
+               if ((func._typename == "TPaveStats") && (func.fName == 'stats')) {
+                  var funcpainter = this.FindPainterFor(null,'stats');
+                  if (funcpainter) funcpainter.UpdateObject(func);
+               }
+            }
+      }
 
       if (!this.zoom_changed_interactive) this.CheckPadRange();
 
@@ -11209,7 +11213,7 @@
     * If drawing was not exists, it will be performed with JSROOT.draw.
     * If drawing was already done, that content will be updated */
 
-   JSROOT.redraw = function(divid, obj, opt) {
+   JSROOT.redraw = function(divid, obj, opt, callback) {
       if (!obj) return;
 
       var dummy = new JSROOT.TObjectPainter();
@@ -11224,6 +11228,7 @@
       if (can_painter) {
          if (obj._typename === "TCanvas") {
             can_painter.RedrawObject(obj);
+            JSROOT.CallBack(callback, can_painter);
             return can_painter;
          }
 
@@ -11232,6 +11237,7 @@
             if (painter.MatchObjectType(obj._typename))
                if (painter.UpdateObject(obj)) {
                   can_painter.RedrawPad();
+                  JSROOT.CallBack(callback, painter);
                   return painter;
                }
          }
@@ -11242,7 +11248,7 @@
 
       JSROOT.cleanup(divid);
 
-      return JSROOT.draw(divid, obj, opt);
+      return JSROOT.draw(divid, obj, opt, callback);
    }
 
    // Check resize of drawn element
