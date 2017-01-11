@@ -2669,9 +2669,15 @@
 
       if (this.member_wise) {
          
+         console.log('member-wise streaming for of', this.conttype);
+         
          var ver = { val: buf.ntoi2() }, streamer = null;
          if (ver.val<=0) ver.checksum = buf.ntou4();
       
+         var n = buf.ntou4();
+         
+         if (n===0) return []; // for empty vector no need to search splitted streamers 
+         
          if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
             streamer = this.member_streamer;
          } else {
@@ -2681,14 +2687,14 @@
             this.member_ver = ver.val;
             this.member_checksum = ver.checksum;
          }
-
-         if (streamer) {
-            
-            var n = buf.ntou4(), res = [], i, k, member;
-            
-            for (i=0;i<n;++i)
-               res[i] = { _typename: this.conttype }; // create objects
-
+         
+         var res = new Array(n), i, k, member;
+         
+         for (i=0;i<n;++i)
+            res[i] = { _typename: this.conttype }; // create objects
+         if (!streamer) {
+            console.error('Fail to create splitted streamer for', this.conttype, 'need to read ', n, 'objects');
+         } else {
             for (k=0;k<streamer.length;++k) {
                member = streamer[k]; 
                if (member.split_func) { 
@@ -2698,13 +2704,8 @@
                      member.func(buf, res[i]);
                }
             }
-
-            return res;
          }
-
-         buf.o -= (ver.val<=0) ? 6 : 2; // rallback position of the
-         
-         console.error('FAIL member-wise streaming for type', this.conttype, 'RALL-BACK buffer');
+         return res;
       }
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
