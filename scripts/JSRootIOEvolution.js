@@ -63,7 +63,7 @@
 
          IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); },
 
-         GetTypeId : function(typname) {
+         GetTypeId : function(typname, norecursion) {
             switch (typname) {
                case "bool": 
                case "Bool_t": return JSROOT.IO.kBool;
@@ -95,6 +95,12 @@
                case "unsigned long long": 
                case "ULong64_t": return JSROOT.IO.kULong64;
             }
+            
+            if (!norecursion) {
+               var replace = JSROOT.IO.CustomStreamers[typname];
+               if (typeof replace === "string") return JSROOT.IO.GetTypeId(replace, true); 
+            }
+            
             return -1;
          },
          
@@ -2121,9 +2127,12 @@
                         
                         // console.log('Do we need special handling for', member.conttype);
                         
-                        if (subelem.fSTLtype && (subelem.fType === JSROOT.IO.kStreamer)) {
+                        if (subelem.fType === JSROOT.IO.kStreamer) {
                            subelem.$fictional = true;
                            member.submember = JSROOT.IO.CreateMember(subelem, file); 
+                        } else
+                        if (!file.FindStreamerInfo(member.conttype)) {
+                           console.warn('Didnot find streamer info for contained type ', member.conttype);
                         }
                      }
                   }
@@ -2202,16 +2211,15 @@
                   // special function to read data from STL branch
                   var cnt = obj[this.stl_size], arr = new Array(cnt);
                   
-/*                  console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain());
+/*                  if (this.typename === "vector<trigger::TriggerObjectType>") {
                   
-                  var ver = buf.ReadVersion();
+                     console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain(), 'pos', buf.o);
                   
-                  console.log('version', ver, ver.val & 0x3FFF, 'remain', buf.remain());
+                     while (buf.remain() > 0) console.log('dump2', buf.ntou2()); 
                   
-                  while (buf.remain() > 0) console.log('dump2', buf.ntou2()); 
-                  
-                  cnt = 0; */
-                  
+                     cnt = 0;
+                  }
+*/                  
                   if ((cnt>0) || this.read_empty_stl_version) {
                      var ver = buf.ReadVersion();
                      
@@ -2729,7 +2737,6 @@
       }
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
-      
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
       else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }
