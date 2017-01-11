@@ -264,14 +264,6 @@
       return ver;
    }
 
-   JSROOT.TBuffer.prototype.ReadVersionSTL = function(member_wise) {
-      // this version used for STL containers and does not include bytecount
-      if (!member_wise) return undefined;
-      var ver = { val: this.ntoi2() };
-      if (ver.val<=0) ver.checksum = this.ntou4();
-      return ver;
-   }
-
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where!=null) {
@@ -2201,10 +2193,21 @@
                }
             } else
             if (!element.$fictional) {
-               member.func = function(buf,obj) {
+               
+               member.read_version = function(buf) {
+                  // read version, check member-wise flag; if any, read version for contained object
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-                  this.stl_version = buf.ReadVersionSTL(this.member_wise);
+                  this.stl_version = undefined;
+                  if (this.member_wise) {
+                     this.stl_version = { val: buf.ntoi2() };
+                     if (this.stl_version.val<=0) this.stl_version.checksum = buf.ntou4();
+                  }
+                  return ver;
+               }
+               
+               member.func = function(buf,obj) {
+                  var ver = this.read_version(buf);
 
                   var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
 
@@ -2218,10 +2221,7 @@
                   // console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain(), 'pos', buf.o);
                   
                   if ((cnt>0) || this.read_empty_stl_version) {
-                     var ver = buf.ReadVersion();
-                     
-                     this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-                     this.stl_version = buf.ReadVersionSTL(this.member_wise);
+                     var ver = this.read_version(buf);
                      
                      // console.log('ver', ver, this.member_wise, this.stl_version);
                      
@@ -2232,12 +2232,9 @@
                      
                   obj[this.name] = arr;
                }
-               
                member.split_func = function(buf, arr, n) {
                   // function to read array from member-wise streaming
-                  var ver = buf.ReadVersion();
-                  this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-                  this.stl_version = buf.ReadVersionSTL(this.member_wise);
+                  var ver = this.read_version(buf);
                   for (var i=0;i<n;++i)
                      arr[i][this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   buf.CheckBytecount(ver, this.typename);
