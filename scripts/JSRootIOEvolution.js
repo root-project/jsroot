@@ -258,6 +258,14 @@
       return ver;
    }
 
+   JSROOT.TBuffer.prototype.ReadVersionSTL = function(member_wise) {
+      // this version used for STL containers and does not include bytecount
+      if (!member_wise) return undefined;
+      var ver = { val: this.ntoi2() };
+      if (ver.val<=0) ver.checksum = this.ntou4();
+      return ver;
+   }
+
    JSROOT.TBuffer.prototype.CheckBytecount = function(ver, where) {
       if ((ver.bytecnt !== undefined) && (ver.off + ver.bytecnt !== this.o)) {
          if (where!=null) {
@@ -2183,6 +2191,7 @@
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                  this.stl_version = buf.ReadVersionSTL(this.member_wise);
 
                   var res = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
 
@@ -2193,9 +2202,22 @@
                   // special function to read data from STL branch
                   var cnt = obj[this.stl_size], arr = new Array(cnt);
                   
+/*                  console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain());
+                  
+                  var ver = buf.ReadVersion();
+                  
+                  console.log('version', ver, ver.val & 0x3FFF, 'remain', buf.remain());
+                  
+                  while (buf.remain() > 0) console.log('dump2', buf.ntou2()); 
+                  
+                  cnt = 0; */
+                  
                   if ((cnt>0) || this.read_empty_stl_version) {
                      var ver = buf.ReadVersion();
+                     
                      this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                     this.stl_version = buf.ReadVersionSTL(this.member_wise);
+                     
                      for (var n=0;n<cnt;++n)
                         arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                      buf.CheckBytecount(ver, "branch " + this.typename);
@@ -2208,6 +2230,7 @@
                   // function to read array from member-wise streaming
                   var ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+                  this.stl_version = buf.ReadVersionSTL(this.member_wise);
                   for (var i=0;i<n;++i)
                      arr[i][this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   buf.CheckBytecount(ver, this.typename);
@@ -2669,12 +2692,9 @@
 
       if (this.member_wise) {
          
-         console.log('member-wise streaming for of', this.conttype);
+         // console.log('member-wise streaming for of', this.conttype);
          
-         var ver = { val: buf.ntoi2() }, streamer = null;
-         if (ver.val<=0) ver.checksum = buf.ntou4();
-      
-         var n = buf.ntou4();
+         var n = buf.ntou4(), streamer = null, ver = this.stl_version;
          
          if (n===0) return []; // for empty vector no need to search splitted streamers 
          
@@ -2693,7 +2713,7 @@
          for (i=0;i<n;++i)
             res[i] = { _typename: this.conttype }; // create objects
          if (!streamer) {
-            console.error('Fail to create splitted streamer for', this.conttype, 'need to read ', n, 'objects');
+            console.error('Fail to create splitted streamer for', this.conttype, 'need to read ', n, 'objects version', ver );
          } else {
             for (k=0;k<streamer.length;++k) {
                member = streamer[k]; 
@@ -2724,8 +2744,7 @@
 
       if (this.member_wise) {
          // when member-wise streaming is used, version is written
-         var ver = { val: buf.ntoi2() };
-         if (ver.val<=0) ver.checksum = buf.ntou4();
+         var ver =  this.stl_version;
          
          if (this.si) {
             var si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
