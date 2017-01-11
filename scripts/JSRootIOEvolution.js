@@ -2136,7 +2136,7 @@
                            member.submember = JSROOT.IO.CreateMember(subelem, file); 
                         } else
                         if (!file.FindStreamerInfo(member.conttype)) {
-                           console.warn('Didnot find streamer info for contained type ', member.conttype);
+                           console.warn('No streamer for', member.conttype, 'maybe not stored');
                         }
                      }
                   }
@@ -2146,7 +2146,7 @@
 
                var p1 = member.typename.indexOf("<"),
                    p2 = member.typename.lastIndexOf(">");
-
+               
                member.pairtype = "pair<" + member.typename.substr(p1+1,p2-p1-1) + ">";
                
                // remember found streamer info from the file - 
@@ -2215,20 +2215,15 @@
                   // special function to read data from STL branch
                   var cnt = obj[this.stl_size], arr = new Array(cnt);
                   
-/*                  if (this.typename === "vector<trigger::TriggerObjectType>") {
+                  // console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain(), 'pos', buf.o);
                   
-                     console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain(), 'pos', buf.o);
-                  
-                     while (buf.remain() > 0) console.log('dump2', buf.ntou2()); 
-                  
-                     cnt = 0;
-                  }
-*/                  
                   if ((cnt>0) || this.read_empty_stl_version) {
                      var ver = buf.ReadVersion();
                      
                      this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
                      this.stl_version = buf.ReadVersionSTL(this.member_wise);
+                     
+                     // console.log('ver', ver, this.member_wise, this.stl_version);
                      
                      for (var n=0;n<cnt;++n)
                         arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
