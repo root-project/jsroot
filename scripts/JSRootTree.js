@@ -64,7 +64,11 @@
       // call this function to abort processing
       this.break_execution = -1111;
    }
-   
+
+   JSROOT.TSelector.prototype.Begin = function(tree) {
+      // function called before start processing
+   }
+
    JSROOT.TSelector.prototype.Process = function(entry) {
       // function called when next entry extracted from the tree
    }
@@ -436,6 +440,7 @@
       this.hist_title = "Result of TTree::Draw";
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 3000;  // number of accumulated items before create histogram
+      this.monitoring = 0;
    }
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
@@ -504,10 +509,12 @@
       
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
       
+      this.monitoring = args.monitoring;
+      
       return true;
    }
    
-   JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr) {
+   JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
       this.ndim = 1;
       
       this.vars[0] = new JSROOT.TDrawVariable();
@@ -517,9 +524,16 @@
       this.cut = new JSROOT.TDrawVariable();
       
       if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
+      
+      this.monitoring = args.monitoring;
+
       return true;
    }
-
+   
+   JSROOT.TDrawSelector.prototype.Begin = function(tree) {
+      if (this.monitoring)
+         this.lasttm = new Date().getTime();
+   } 
    
    JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
@@ -819,6 +833,15 @@
                         this.Fill3DHistogram(var0.get(n0), var1.get(n1), var2.get(n2), cut.value);
                break;
          } 
+      }
+      
+      if (this.monitoring && this.hist && !this.dump_values) {
+         var now = new Date().getTime();
+         if (now - this.lasttm > this.monitoring) { 
+            this.lasttm = now;
+            var drawopt = (this.ndim==2) ? "col" : "";
+            JSROOT.CallBack(this.histo_callback, this.hist, drawopt, true);
+         }
       }
    }
    
@@ -1627,6 +1650,9 @@
          }
       }
       
+      // call begin before first entry is read
+      handle.selector.Begin(this);
+      
       ReadNextBaskets();
        
       return true; // indicate that reading of tree will be performed
@@ -1724,7 +1750,7 @@
       } else
       if (args.branch) {
          selector = new JSROOT.TDrawSelector(result_callback);
-         if (!selector.DrawOnlyBranch(this, args.branch, args.expr)) selector = null;
+         if (!selector.DrawOnlyBranch(this, args.branch, args.expr, args)) selector = null;
       } else 
       if (args.expr === "testio") {
          // special debugging code
@@ -1942,7 +1968,8 @@
          
          args = { expr: opt, branch: obj };
          tree = obj.$tree;
-      }
+      } else
+      if (typeof args === 'string') args = { expr: args };
 
       if (!tree) {
          console.log('No TTree object available for TTree::Draw');
@@ -1950,9 +1977,11 @@
       }
 
       var painter = this;
+      
+      args.monitoring = 5000;
 
-      tree.Draw(args, function(histo, hopt) {
-         JSROOT.draw(divid, histo, hopt, painter.DrawingReady.bind(painter));
+      tree.Draw(args, function(histo, hopt, intermediate) {
+         JSROOT.redraw(divid, histo, hopt, intermediate ? null : painter.DrawingReady.bind(painter));
       });
 
       return this;
