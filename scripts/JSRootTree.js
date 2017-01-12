@@ -564,9 +564,7 @@
       JSROOT.progress(main_box);
    }
    
-   JSROOT.TDrawSelector.prototype.GetBitsBins = function() {
-      
-      var nbits = this.hist_args[0] || 32;
+   JSROOT.TDrawSelector.prototype.GetBitsBins = function(nbits) {
       
       var res = { nbins: nbits, min: 0, max: nbits, k: 1., fLabels: JSROOT.Create("THashList") };
       
@@ -586,6 +584,28 @@
       if (axisid >= this.ndim) return res;
       
       var arr = this.vars[axisid].buf;
+      
+      if (this.vars[axisid].kind === "object") {
+         // this is any object type
+         var typename, similar = true, maxbits = 0;
+         for (var k=0;k<arr.length;++k) {
+            if (!arr[k]) continue;
+            if (!typename) typename = arr[k]._typename;
+            if (typename !== arr[k]._typename) similar = false; // check all object types
+            if (arr[k].fNbytes) maxbits = Math.max(maxbits, arr[k].fNbytes*8);
+         }
+         
+         if (typename && similar) {
+            if ((typename==="TBits") && (axisid===0)) {
+               console.log('Provide special handling fot TBits');
+               this.Fill1DHistogram = this.FillTBitsHistogram;
+               return this.GetBitsBins(Math.max(8,maxbits));
+            }
+         }
+         
+         console.log('See object typename', typename, 'similar', similar);
+      }
+      
       
       if (this.vars[axisid].kind === "string") {
          res.lbls = []; // all labels
@@ -651,10 +671,8 @@
       } else {
          
          if ((this.hist_name === "bits") && (this.hist_args.length <= 1)) {
-            
-            this.x = this.GetBitsBins();
+            this.x = this.GetBitsBins(this.hist_args[0] || 32);
             this.Fill1DHistogram = this.FillBitsHistogram;
-            
          } else {
             this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
          }
@@ -715,6 +733,16 @@
       delete this.cut.buf;
    }
 
+   JSROOT.TDrawSelector.prototype.FillTBitsHistogram = function(xvalue, weight) {
+      if (!weight || !xvalue || !xvalue.fNbytes || !xvalue.fAllBits) return;
+      
+      for (var bit=0,mask=1,b=0;(bit<this.x.nbins) && (b<xvalue.fNbytes);++bit) {
+         if (xvalue.fAllBits[b] && mask) this.hist.fArray[bit+1] += weight;
+         mask*=2;
+         if (mask>=0x100) { mask = 1; ++b; }
+      }
+   }
+   
    JSROOT.TDrawSelector.prototype.FillBitsHistogram = function(xvalue, weight) {
       if (!weight) return;
       
