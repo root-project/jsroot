@@ -1418,7 +1418,7 @@
             }
 
             var h = stack.fHists.arr[0];
-            stack.fHistogram = histo = JSROOT.Create("TH1I");
+            stack.fHistogram = histo = JSROOT.CreateHistogram("TH1I", h.fXaxis.fNbins);
             histo.fName = h.fName;
             histo.fXaxis = JSROOT.clone(h.fXaxis);
             histo.fYaxis = JSROOT.clone(h.fYaxis);
