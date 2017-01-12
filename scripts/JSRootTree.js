@@ -1016,13 +1016,11 @@
          if ((p1!=p2) || (counter_name.substr(0,p1) !== target_name.substr(0,p2))) {
             console.error('Counter', counter_name, 'does not fit for ', target_name);
          }
-         
          return counter_name.substr(p1+1);
          
       }
       
       // first expand all object branches
-      
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          var master = selector.branches[nn], master_name = selector.names[nn], cnt = 0; 
          if ((master._typename!=="TBranchElement") || (master.fType !== JSROOT.BranchType.kObjectNode)) continue;
@@ -1057,7 +1055,16 @@
          ScanBranches(master.fBranches);
          
          var obj = GetTargetObject(selector.names[nn], true);
-         obj._typename = "TBits";
+         obj._typename = "TObject";
+
+         // try to find class name of stored object
+         var s_i = handle.file.FindStreamerInfo(master.fClassName, master.fClassVersion, master.fCheckSum),
+             elem = s_i ? s_i.fElements.arr[master.fID] : null;
+             
+         if (elem && elem.fType === JSROOT.IO.kObject) {
+            obj._typename = elem.fTypeName;
+            console.log('Reconstruct object of type', elem.fTypeName);
+         }
          
          selector.branches.splice(nn, 1);
          selector.names.splice(nn, 1);
