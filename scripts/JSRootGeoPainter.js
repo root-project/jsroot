@@ -1648,10 +1648,38 @@
    JSROOT.TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {
       // function called when mouse is going over the item in the browser
       
+      var painter = this, obj = hitem._obj, mesh = null;
+      if (this.options._debug)
+         console.log('Mouse over', on, itemname, (hitem._obj ? hitem._obj._typename : "---"));
+
+      // let's highlight tracks and hits only for the time being
+      if (!hitem._obj || (hitem._obj._typename !== "TEveTrack" &&
+          hitem._obj._typename !== "TEvePointSet")) return;
+
       // Be aware, that item name is real name in browser (with potentially cycle number in the name)
       // One can use object to identify which track should be highlighted
-      
-      console.log('Mouse over', on, itemname, (hitem._obj ? hitem._obj._typename : "---"));
+      painter.getExtrasContainer().children.some(function(node, index) {
+         if (node.geo_object === obj) { mesh = node; return true; }
+         return false;
+      });
+      if (mesh && on) {
+         painter._selected.mesh = mesh;
+         painter._selected.originalColor = mesh.material.color;
+         painter._selected.originalSize = mesh.material.size;
+         painter._selected.originalLineWidth = mesh.material.linewidth;
+         painter._selected.mesh.material.color = new THREE.Color( 0x00ff00 );
+         painter._selected.mesh.material.size *= 2;
+         painter._selected.mesh.material.linewidth *= 2;
+      }
+      else if (painter._selected.mesh) {
+         if (painter._selected.originalColor)
+            painter._selected.mesh.material.color = painter._selected.originalColor;
+         if (painter._selected.originalSize)
+            painter._selected.mesh.material.size = painter._selected.originalSize;
+         if (painter._selected.originalLineWidth)
+            painter._selected.mesh.material.linewidth = painter._selected.originalLineWidth;
+      }
+      painter.Render3D(0);
    }
 
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
