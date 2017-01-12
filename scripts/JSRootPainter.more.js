@@ -1349,25 +1349,23 @@
 
       this.DrawNextHisto = function(indx, opt) {
          var stack = this.GetObject(),
-             hist = stack.fHistogram,
+             hist = stack.fHistogram, hopt = "axis",
              harr = this.nostack ? stack.fHists.arr : stack.fStack.arr,
-             nhists = harr ? harr.length : 0,
-             rindx = 0;
+             nhists = harr ? harr.length : 0, rindx = 0;
 
          if (indx>=nhists) return this.DrawingReady();
 
          if (indx>=0) {
             rindx = this.horder ? indx : nhists-indx-1;
             hist = harr[rindx];
+            hopt = hist.fOption.toUpperCase();
+            if (hopt.indexOf(opt) < 0) hopt += opt;
+            hopt += " SAME";
          }
 
          // special handling of stacked histograms - set $baseh object for correct drawing
          // also used to provide tooltips
-         if ((rindx > 0) && !this.nostack) hist['$baseh'] = harr[rindx - 1];
-
-         var hopt = hist.fOption.toUpperCase();
-         if (hopt.indexOf(opt) < 0) hopt += opt;
-         if (indx>=0) hopt += " SAME";
+         if ((rindx > 0) && !this.nostack) hist.$baseh = harr[rindx - 1];
 
          var subp = JSROOT.draw(this.divid, hist, hopt);
 
@@ -1401,8 +1399,10 @@
          this.horder = this.nostack || this.dolego;
 
          var mm = this.GetMinMax(d.check("E"));
+         
+         var histo = stack.fHistogram;
 
-         if (stack.fHistogram === null) {
+         if (!histo) {
             // compute the min/max of each axis
             var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
             for (var i = 0; i < nhists; ++i) {
@@ -1418,26 +1418,19 @@
             }
 
             var h = stack.fHists.arr[0];
-            stack.fHistogram = JSROOT.Create("TH1I");
-            stack.fHistogram.fName = "unnamed";
-            stack.fHistogram.fXaxis = JSROOT.clone(h.fXaxis);
-            stack.fHistogram.fYaxis = JSROOT.clone(h.fYaxis);
-            stack.fHistogram.fXaxis.fXmin = xmin;
-            stack.fHistogram.fXaxis.fXmax = xmax;
-            stack.fHistogram.fYaxis.fXmin = ymin;
-            stack.fHistogram.fYaxis.fXmax = ymax;
+            stack.fHistogram = histo = JSROOT.Create("TH1I");
+            histo.fName = h.fName;
+            histo.fXaxis = JSROOT.clone(h.fXaxis);
+            histo.fYaxis = JSROOT.clone(h.fYaxis);
+            histo.fXaxis.fXmin = xmin;
+            histo.fXaxis.fXmax = xmax;
+            histo.fYaxis.fXmin = ymin;
+            histo.fYaxis.fXmax = ymax;
          }
-         stack.fHistogram.fTitle = stack.fTitle;
-         var histo = stack.fHistogram;
+         histo.fTitle = stack.fTitle;
          if (!histo.TestBit(JSROOT.TH1StatusBits.kIsZoomed)) {
-            if (pad && pad.fLogy)
-                histo.fMaximum = mm.max * (1 + 0.2 * JSROOT.log10(mm.max / mm.min));
-             else
-                histo.fMaximum = mm.max;
-            if (pad && pad.fLogy)
-               histo.fMinimum = mm.min / (1 + 0.5 * JSROOT.log10(mm.max / mm.min));
-            else
-               histo.fMinimum = mm.min;
+            histo.fMinimum = (pad && pad.fLogy) ? mm.min / (1 + 0.5 * JSROOT.log10(mm.max / mm.min)) : mm.min;
+            histo.fMaximum = (pad && pad.fLogy) ? mm.max * (1 + 0.2 * JSROOT.log10(mm.max / mm.min)) : mm.max;
          }
 
          this.DrawNextHisto(!lsame ? -1 : 0, opt);
@@ -4513,7 +4506,7 @@
 
       var histo = this.GetObject(),
           binz = histo.getBinContent(i+1,j+1);
-      if (histo['$baseh']) binz -= histo['$baseh'].getBinContent(i+1,j+1);
+      if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
