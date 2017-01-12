@@ -470,7 +470,7 @@
          url = document.URL;
       }
 
-      var pos = url.indexOf("?");
+      var pos = url.indexOf("?"), nquotes;
       if (pos<0) return dflt;
       url = url.slice(pos+1);
 
@@ -481,12 +481,38 @@
          pos = url.indexOf("&");
          if (pos < 0) pos = url.length;
 
+         /*
+         // try to correctly handle quotes in the URL - keep %symbold 
+         pos = 0; nquotes = 0;
+         while ((pos < url.length) && ((nquotes!==0) || (url[pos]!=="&"))) {
+            if (url[pos]=="%") {
+               var repl = "";
+               if ((nquotes===0) && parseInt("0x" + url.substr(pos+1,2))) repl = decodeURI(url.substr(pos,3)); else
+               if ((nquotes>0) && (url.substr(pos,3) == "%27")) repl = "'"; else
+               if ((nquotes<0) && (url.substr(pos,3) == "%22")) repl = '"';
+               if (repl.length)  url = url.substr(0,pos) + repl + url.substr(pos+3);
+            }
+            switch (url[pos]) {
+               case "'": if (nquotes>=0) nquotes = (nquotes+1)%2; break;
+               case '"': if (nquotes<=0) nquotes = (nquotes-1)%2; break;
+            }
+            pos++;
+         }
+         */
+         
          if (url.indexOf(opt) == 0) {
             if (url.charAt(opt.length)=="&") return "";
-
-            // replace several symbols which are known to make a problem
+            
             if (url.charAt(opt.length)=="=")
                return decodeURI(url.slice(opt.length+1, pos));
+               
+               /*var sub = url.slice(opt.length+1, pos);
+               if ((sub.length>1) && (sub[0]===sub[sub.length-1]) && ((sub[0]=="'") || (sub[0]=='"'))) {
+                  return sub.substr(1,sub.length-2);
+               } else {
+                  return sub;  
+               }
+               */
          }
 
          url = url.slice(pos+1);
