@@ -1350,22 +1350,22 @@
       this.DrawNextHisto = function(indx, opt) {
          var stack = this.GetObject(),
              hist = stack.fHistogram, hopt = "axis",
-             harr = this.nostack ? stack.fHists.arr : stack.fStack.arr,
-             nhists = harr ? harr.length : 0, rindx = 0;
+             hlst = this.nostack ? stack.fHists : stack.fStack,
+             nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
          if (indx>=nhists) return this.DrawingReady();
 
          if (indx>=0) {
             rindx = this.horder ? indx : nhists-indx-1;
-            hist = harr[rindx];
-            hopt = hist.fOption.toUpperCase();
-            if (hopt.indexOf(opt) < 0) hopt += opt;
-            hopt += " SAME";
+            hist = hlst.arr[rindx];
+            hopt = hlst.opt[rindx] || hist.fOption || opt;
+            if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
+            hopt += " same";
          }
 
          // special handling of stacked histograms - set $baseh object for correct drawing
          // also used to provide tooltips
-         if ((rindx > 0) && !this.nostack) hist.$baseh = harr[rindx - 1];
+         if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
          var subp = JSROOT.draw(this.divid, hist, hopt);
 
@@ -1383,9 +1383,9 @@
              d = new JSROOT.DrawOptions(opt),
              lsame = d.check("SAME");
 
-         opt = d.opt; // use remaining draw options for histogram draw
-
          this.nostack = d.check("NOSTACK");
+
+         opt = d.opt; // use remaining draw options for histogram draw
 
          // when building stack, one could fail to sum up histograms
          if (!this.nostack)
