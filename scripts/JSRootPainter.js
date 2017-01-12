@@ -8780,9 +8780,9 @@
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
-                     default: if (JSROOT.Painter.IsRootCollection(fld)) {
-                        item._value = "[...]";
-                        item._title += ", size:"  + (fld.arr ? fld.arr.length : 0);
+                     default: if (JSROOT.Painter.IsRootCollection(fld) && (typeof fld.arr === "object")) {
+                        item._value = fld.arr.length ? "[...]" : "[]";
+                        item._title += ", size:"  + fld.arr.length;
                      }
                   }
                }
