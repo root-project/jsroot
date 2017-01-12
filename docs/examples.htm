@@ -379,15 +379,15 @@
                { name: "wjets", asurl: true, file: "WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
                { name: "index", asurl: true, file: "https://jsroot.gsi.de/files/tree/tree99.root", item: "T;1", opt: "ex3.fInt[ex3.fSize-2]", title: "Use branch value as index in another branch draw" },
                { name: "cms2", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/recoPhotons_photons__RECO./recoPhotons_photons__RECO.obj", opt: "[].pt_", title: "cms2.root file, example of draw subelement of the branch" },
-               { name: "todo_event", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2/event/fNseg", title: "TODO: Some data cannot be decoded" },
                { name: "bits", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T;2", opt: "event.fTracks.fBits>>bits(32)", title: "Special 1-D histogram kind with bits values" },
-               { name: "todo_tbits", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2", opt: "event.fTracks[].fTriggerBits", title: "TODO: special handling for TBits object" },
+               { name: "tbits", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2", opt: "event.fTriggerBits", title: "Special handling for TBits object" },
+               { name: "tbits_todo", notest: true, asurl: true, file: "https://root.cern/files/Event100000.root", item: "T;2", opt: "event.fTriggerBits", title: "TBits object splitted on the subbranches - not yet supported" },
                { name: "SLT_kStream", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree;220/Rec::TrackParticleContainer_tlp1_MooreTrackParticles/m_hepSymMatrices/m_hepSymMatrices.m_matrix_val", opt: "dump", title: "Branch with vector<float> (kStreamer) inside of STL container" },
                { name: "branch_base", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/GenEventInfoProduct_generator__HLT./GenEventInfoProduct_generator__HLT.edm::EDProduct", opt: "dump", title: "Branch with base class data (which is empty)" },
                { name: "branch_mvect", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events;1/L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT./L1GlobalTriggerObjectMapRecord_hltL1GtObjectMap__HLT.obj", opt: "dump", title: "Branch with object which has vector of vector of vector of int, requires special handling" },
                { name: "files", asurl: true, file: "https://root.cern/files/alice_ESDs.root", item: "esdTree;1/ESDfriend./ESDfriend.fTracks/ESDfriend.fTracks.fTPCindex", opt: "dump", title: "Data branch stored in different file (in same dir), counter data in main file" },
                { name: "float16", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T;2/event/fTracks/fTracks.fMass2", opt: "dump", title: "Float16_t type as TClonesArray branch" },
-               { name: "markus", url: "?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=http://jsroot.gsi.de/dev/demo/markus.js", title: "custom streamer for pool::Token class from some branches" },
+               { name: "markus", url: "?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=http://jsroot.gsi.de/files/tree/markus.js", title: "custom streamer for pool::Token class from some branches" },
                { name: "cmssw1", url: "?file=http://jsroot.gsi.de/files/tree/test_cmssw.root&load=http://jsroot.gsi.de/files/tree/cmssw.js&item=Events;1&opt=testio", title: "CMS-SW events, uses custom enumerations" },
                { name: "cmssw2", url: "?file=http://jsroot.gsi.de/files/tree/test_cmssw.root&item=MetaData;1&opt=testio", title: "CMS-SW metadata, complex std::map classes" }
             ],
@@ -525,6 +525,9 @@
             }
             
             var entry = examples[keyid][optid];
+            
+            // exclude some entries from the test
+            if (entry.notest) return RunBigTest(0); 
 
             var filename = "", itemname = "", jsonname = "", url = "", opt = "";
             
