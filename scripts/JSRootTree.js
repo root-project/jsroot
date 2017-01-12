@@ -587,19 +587,20 @@
       
       if (this.vars[axisid].kind === "object") {
          // this is any object type
-         var typename, similar = true, maxbits = 0;
+         var typename, similar = true, maxbits = 8;
          for (var k=0;k<arr.length;++k) {
             if (!arr[k]) continue;
             if (!typename) typename = arr[k]._typename;
             if (typename !== arr[k]._typename) similar = false; // check all object types
-            if (arr[k].fNbytes) maxbits = Math.max(maxbits, arr[k].fNbytes*8);
+            if (arr[k].fNbits) maxbits = Math.max(maxbits, arr[k].fNbits+1);
          }
          
          if (typename && similar) {
             if ((typename==="TBits") && (axisid===0)) {
                console.log('Provide special handling fot TBits');
                this.Fill1DHistogram = this.FillTBitsHistogram;
-               return this.GetBitsBins(Math.max(8,maxbits));
+               if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
+               return this.GetBitsBins(maxbits);
             }
          }
          
@@ -734,10 +735,18 @@
    }
 
    JSROOT.TDrawSelector.prototype.FillTBitsHistogram = function(xvalue, weight) {
-      if (!weight || !xvalue || !xvalue.fNbytes || !xvalue.fAllBits) return;
+      if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits) return;
       
-      for (var bit=0,mask=1,b=0;(bit<this.x.nbins) && (b<xvalue.fNbytes);++bit) {
-         if (xvalue.fAllBits[b] && mask) this.hist.fArray[bit+1] += weight;
+      var sz = Math.min(xvalue.fNbits+1, xvalue.fNbytes*8);
+      
+      for (var bit=0,mask=1,b=0;bit<sz;++bit) {
+         if (xvalue.fAllBits[b] && mask) {
+            if (bit <= this.x.nbins)
+               this.hist.fArray[bit+1] += weight;
+            else
+               this.hist.fArray[this.x.nbins+1] += weight;
+         }
+         
          mask*=2;
          if (mask>=0x100) { mask = 1; ++b; }
       }
