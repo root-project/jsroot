@@ -8508,12 +8508,17 @@
       return true;
    }
 
+   JSROOT.Painter.IsRootCollection = function(lst) {
+      if (!lst || (typeof lst !== 'object')) return false;
+
+      return (lst.$kind === "TList") || (lst.$kind === "TObjArray") || 
+            (lst._typename === 'TList') || (lst._typename === 'THashList') || (lst._typename === 'TMap') ||
+            (lst._typename === 'TObjArray') || (lst._typename === 'TClonesArray');
+   }
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
-      if (lst.$kind !== "TList" && lst.$kind !== "TObjArray" && 
-          lst._typename !== 'TList' && lst._typename !== 'THashList' && lst._typename !== 'TMap' &&
-          lst._typename !== 'TObjArray' && lst._typename !== 'TClonesArray') return false;
-
+      if (!JSROOT.Painter.IsRootCollection(lst)) return false;
+      
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
          return true;
@@ -8775,6 +8780,10 @@
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
+                     default: if (JSROOT.Painter.IsRootCollection(fld)) {
+                        item._value = "[...]";
+                        item._title += ", size:"  + (fld.arr ? fld.arr.length : 0);
+                     }
                   }
                }
             }
