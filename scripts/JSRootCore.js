@@ -1274,6 +1274,10 @@
             JSROOT.Create("TH3", obj);
             obj.fArray = [];
             break;
+         case 'THStack':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.extend(obj, { fHists: JSROOT.Create("TList"), fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+            break;
          case 'TGraph':
             JSROOT.Create("TNamed", obj);
             JSROOT.Create("TAttLine", obj);
@@ -1452,6 +1456,13 @@
       }
 
       return graph;
+   }
+
+   JSROOT.CreateTHStack = function() {
+      var stack = JSROOT.Create("THStack");
+      for(var i=0; i<arguments.length; ++i)
+         stack.fHists.Add(arguments[i], "");
+      return stack;
    }
 
    JSROOT.CreateTMultiGraph = function() {
