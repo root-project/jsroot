@@ -3160,9 +3160,9 @@
 
          // check if fully duplicated hint already exsits
          for (var k=0;k<n;++k) {
-            var hprev = hints[k];
+            var hprev = hints[k], diff = false;
             if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
-            for (var l=0, diff = false;l<hint.lines.length && !diff;++l)
+            for (var l=0;l<hint.lines.length && !diff;++l)
                if (hprev.lines[l] !== hint.lines[l]) diff = true;
             if (!diff) { hints[n] = null; break; }
          }
@@ -7983,15 +7983,15 @@
           l = left, r = right;
 
       function GetBinGrX(i) {
-         var x1 = painter.GetBinX(i);
-         return (pmain.logx && (x1<=0)) ? null : pmain.grx(x1);
+         var xx = painter.GetBinX(i);
+         return (pmain.logx && (xx<=0)) ? null : pmain.grx(xx);
       }
 
       function GetBinGrY(i) {
-         var y = painter.histo.getBinContent(i + 1);
-         if (pmain.logy && (y < painter.scale_ymin))
+         var yy = painter.histo.getBinContent(i + 1);
+         if (pmain.logy && (yy < painter.scale_ymin))
             return pmain.swap_xy ? -1000 : 10*height;
-         return Math.round(pmain.gry(y));
+         return Math.round(pmain.gry(yy));
       }
 
       var pnt_x = pmain.swap_xy ? pnt.y : pnt.x,
@@ -8123,7 +8123,7 @@
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
-
+      
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
          this.ProvideUserTooltip(null);

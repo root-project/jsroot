@@ -2362,34 +2362,24 @@
                maximum = 0;
          }
 
-         if (uxmin < 0 && rw.xmin >= 0) {
-            if (logx) uxmin = 0.9 * rw.xmin;
-                 else uxmin = 0;
-         }
-         if (uxmax > 0 && rw.xmax <= 0) {
-            if (logx) uxmax = 1.1 * rw.xmax;
-                 else uxmax = 0;
-         }
+         if (uxmin < 0 && rw.xmin >= 0) 
+            uxmin = logx ? 0.9 * rw.xmin : 0;
+         if (uxmax > 0 && rw.xmax <= 0)
+            uxmax = logx? 1.1 * rw.xmax : 0;
 
          if (mgraph.fMinimum != -1111)
             rw.ymin = minimum = mgraph.fMinimum;
          if (mgraph.fMaximum != -1111)
             rw.ymax = maximum = mgraph.fMaximum;
 
-         if (minimum < 0 && rw.ymin >= 0) {
-            if (logy) minimum = 0.9 * rw.ymin;
-         }
-         if (maximum > 0 && rw.ymax <= 0) {
-            if (logy) maximum = 1.1 * rw.ymax;
-         }
+         if (minimum < 0 && rw.ymin >= 0 && logy)
+            minimum = 0.9 * rw.ymin;
+         if (maximum > 0 && rw.ymax <= 0 && logy)
+            maximum = 1.1 * rw.ymax;
          if (minimum <= 0 && logy)
             minimum = 0.001 * maximum;
-         if (uxmin <= 0 && logx) {
-            if (uxmax > 1000)
-               uxmin = 1;
-            else
-               uxmin = 0.001 * uxmax;
-         }
+         if (uxmin <= 0 && logx)
+            uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax; 
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
