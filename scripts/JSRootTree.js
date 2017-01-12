@@ -988,6 +988,83 @@
           process_arrays: true // one can process all branches as arrays
       };
 
+      function GetTargetObject(fullname, force) {
+         var tgt = selector.tgtobj;
+         
+         while ((fullname.length>0) && tgt) {
+            var pos = fullname.indexOf(".");
+            
+            var sub = fullname;
+            if (pos<0) { fullname = ""; } else {
+               sub = fullname.subsr(0,pos);
+               fullname = fullname.subsr(pos+1);
+            }
+            
+            if (force && (fullname.length==0) && !tgt[sub]) tgt[sub] = {};
+            
+            tgt = tgt[sub];
+         }
+         
+         return tgt;
+      }
+      
+      function GetCounterName(counter_name, target_name) {
+         var p1 = counter_name.lastIndexOf("."),
+             p2 = target_name.lastIndexOf(".");
+         if ((p1<0) && (p2<0)) return counter_name;
+         
+         if ((p1!=p2) || (counter_name.substr(0,p1) !== target_name.substr(0,p2))) {
+            console.error('Counter', counter_name, 'does not fit for ', target_name);
+         }
+         
+         return counter_name.substr(p1+1);
+         
+      }
+      
+      // first expand all object branches
+      
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+         var master = selector.branches[nn], master_name = selector.names[nn], cnt = 0; 
+         if ((master._typename!=="TBranchElement") || (master.fType !== JSROOT.BranchType.kObjectNode)) continue;
+         
+         handle.process_arrays = false;
+         
+         function ScanBranches(lst) {
+            if (!lst || !lst.arr.length) return;
+            
+            for (var k=0;k<lst.arr.length;++k) {
+               var br = lst.arr[k];
+               if (br.fType === JSROOT.BranchType.kBaseClassNode) {
+                  ScanBranches(br.fBranches, master, master_name);
+                  continue;
+               }
+               if (br.fName.indexOf(master.fName + ".")!==0) {
+                  console.warn('Not expected branch name ', br.fName, 'for master', master.fName);
+                  continue;
+               }
+               
+               var subname = br.fName.substr(master.fName.length);
+               var p = subname.indexOf('['); 
+               if (p>0) subname = subname.substr(0,p);
+               console.log('add new branch for target', selector.names[nn] + subname);
+               
+               cnt++;
+               selector.branches.splice(nn+cnt,0, br);
+               selector.names.splice(nn+cnt,0,selector.names[nn] + subname);
+            }
+         }
+         
+         ScanBranches(master.fBranches);
+         
+         var obj = GetTargetObject(selector.names[nn], true);
+         obj._typename = "TBits";
+         
+         selector.branches.splice(nn, 1);
+         selector.names.splice(nn, 1);
+         nn--;
+       }
+      
+
       // find all branches if they specifed as names
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          var branch = selector.branches[nn];
@@ -1055,6 +1132,7 @@
          selector.names = cnt_names.concat(selector.names);
       }
       
+      
       function CreateLeafElem(leaf, name) {
          // function creates TStreamerElement which corresponds to the elementary leaf
          var datakind = 0;
@@ -1077,12 +1155,26 @@
       for (var nn = 0; nn < selector.branches.length; ++nn) {
       
          var branch = selector.branches[nn],
+             target_name = selector.names[nn], parent_name = "",
+             branch_target = selector.tgtobj,
              nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              elem = null, member = null, 
              is_brelem = (branch._typename==="TBranchElement"),
              count_indx = -1, count2_indx = -1;
+             
+         var pnt = target_name.lastIndexOf(".");
+         if (pnt>0) {
+            parent_name = target_name.substr(0,pnt);
+            target_name = target_name.substr(pnt+1);
+            branch_target = GetTargetObject(parent_name); 
+            if (!branch_target) {
+               console.error('Branch target', parent_name, 'not found');
+               selector.Terminate(false);
+               return false;
+            }
+         }
           
          if (!branch.fEntries) {
             console.log('Branch ', branch.fName, ' does not have entries');
@@ -1095,19 +1187,25 @@
 //            return false;
 //         } else  
          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
-             // branch with  
-             console.log('Branch with kObjectNode cannot be read - has no baskets at all');
+             // try to read all branches afterwards
+            
+             handle.process_arrays = false;
+             
+             // create new object, will be filled by other branch readers
+             
+             branch_target[target_name] = { _typename: "TBits" };
+             console.log('Branch with kObjectNode will be read to member',  target_name);
              continue;
          } else 
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
             // this is branch with counter 
-            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], "int");
+            elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
             // handle.process_arrays = false;
          } else
       
          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
 
-            elem = JSROOT.IO.CreateStreamerElement(selector.names[nn], branch.fClassName);
+            elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fClassName);
             
             console.log('TBranchElement with ID==-1 typename ', branch.fClassName, 'type', elem.fType);
             
@@ -1116,7 +1214,7 @@
                var streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
                if (!streamer) { elem = null; console.warn('not found streamer!'); } else 
                   member = {
-                        name: selector.names[nn],
+                        name: target_name,
                         typename: branch.fClassName,
                         streamer: streamer, 
                         func: function(buf,obj) {
@@ -1142,7 +1240,7 @@
          } else  
          if (nb_leaves === 1) {
              // no special constrains for the leaf names
-            elem = CreateLeafElem(leaf, selector.names[nn]);
+            elem = CreateLeafElem(leaf, target_name);
          } else
          if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
             // branch with many elementary leaves
@@ -1158,7 +1256,7 @@
             
             if (isok)
                member = {
-                  name: selector.names[nn],
+                  name: target_name,
                   leaves: arr, 
                   func: function(buf, obj) {
                      var tgt = obj[this.name], l = 0;
@@ -1250,7 +1348,7 @@
                    (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
                   
                   member = {
-                     name: selector.names[nn],
+                     name: target_name,
                      stl_size: selector.names[count_indx],
                      type: elem.fType,
                      func: function(buf, obj) {
@@ -1319,7 +1417,7 @@
                   }
                   
                   var stlmember = {
-                        name: selector.names[nn],
+                        name: target_name,
                         stl_size: selector.names[count_indx],
                         loop_size: loop_size_name,
                         member0: member,
@@ -1344,17 +1442,18 @@
                
                console.log('Use counter ', selector.names[count_indx], ' instead of ', member.cntname);
                
-               member.cntname = selector.names[count_indx];
+               member.cntname = GetCounterName(selector.names[count_indx], selector.names[nn]); 
             }
          }
          
          // set name used to store result
-         member.name = selector.names[nn];
+         member.name = target_name;
          
          var elem = {
                branch: branch,
-               name: selector.names[nn],
+               name: target_name,
                member: member,
+               tgt: branch_target, // used target object - can be differ for object members
                type: elem ? elem.fType : 0, // keep type identifier
                curr_entry: -1, // last processed entry
                raw : null, // raw buffer for reading
@@ -1732,7 +1831,7 @@
 
                   if (handle.current_entry === elem.current_entry) {
                      // read only element where entry id matches
-                     elem.member.func(elem.raw, handle.selector.tgtobj);
+                     elem.member.func(elem.raw, elem.tgt);
 
                      elem.current_entry++;
 
