@@ -214,8 +214,10 @@
 
    // ============================================================================
    
-   JSROOT.TDrawVariable = function() {
+   JSROOT.TDrawVariable = function(globals) {
       // object with single variable in TTree::Draw expression
+      this.globals = globals;
+      
       this.code = "";
       this.brindex = []; // index of used branches from selector
       this.branches = []; // names of bracnhes in target object
@@ -258,6 +260,21 @@
             while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2]===".")) pos2++;
+            
+            if (code[pos2]=="$") {
+               var repl = "";
+               switch (code.substr(pos, pos2-pos)) {
+                  case "LocalEntry":
+                  case "Entry": repl = "arg.globals.entry"; break;
+                  case "Entries": repl = "arg.globals.entries"; break;
+               }
+               if (repl) {
+                  console.log('Replace ', code.substr(pos, pos2-pos), 'with', repl); 
+                  code = code.substr(0, pos) + repl + code.substr(pos2+1);
+                  pos = pos + repl.length;
+                  continue;
+               }
+            }
 
             br = tree.FindBranch(code.substr(pos, pos2-pos), true);
             if (!br) { pos = pos2+1; continue; }
@@ -307,7 +324,7 @@
                      arriter.push(parseInt(sub)); 
                   } else {
                      // try to compile code as draw variable
-                     var subvar = new JSROOT.TDrawVariable();
+                     var subvar = new JSROOT.TDrawVariable(this.globals);
                      // console.log("produce subvar with code", sub);
                      if (!subvar.Parse(tree,selector, sub)) return false;
                      arriter.push(subvar);
@@ -358,7 +375,6 @@
       return this.branches.length === 0;
    }
    
-   
    JSROOT.TDrawVariable.prototype.Produce = function(obj) {
       // after reading tree braches into the object, calculate variable value
 
@@ -371,7 +387,7 @@
          return;
       }
       
-      var arg = {}, usearrlen = -1, arrs = [];
+      var arg = { globals: this.globals }, usearrlen = -1, arrs = [];
       for (var n=0;n<this.branches.length;++n) {
          var name = "var" + n;
          arg[name] = obj[this.branches[n]];
@@ -452,6 +468,7 @@
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 3000;  // number of accumulated items before create histogram
       this.monitoring = 0;
+      this.globals = {}; // object with global parameters, which could be used in any draw expression 
    }
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
@@ -507,12 +524,12 @@
       var is_direct = !cut;
 
       for (var n=0;n<this.ndim;++n) {
-         this.vars[n] = new JSROOT.TDrawVariable();
+         this.vars[n] = new JSROOT.TDrawVariable(this.globals);
          if (!this.vars[n].Parse(tree, this, names[n])) return false;
          if (!this.vars[n].direct_branch) is_direct = false; 
       }
       
-      this.cut = new JSROOT.TDrawVariable();
+      this.cut = new JSROOT.TDrawVariable(this.globals);
       if (cut) 
          if (!this.cut.Parse(tree, this, cut)) return false;
       
@@ -531,11 +548,11 @@
    JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
       this.ndim = 1;
       
-      this.vars[0] = new JSROOT.TDrawVariable();
+      this.vars[0] = new JSROOT.TDrawVariable(this.globals);
       if (!this.vars[0].Parse(tree, this, expr, branch)) return false;
       this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
       
-      this.cut = new JSROOT.TDrawVariable();
+      this.cut = new JSROOT.TDrawVariable(this.globals);
       
       if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
       
@@ -545,6 +562,8 @@
    }
    
    JSROOT.TDrawSelector.prototype.Begin = function(tree) {
+      this.globals.entries = tree.fEntries;
+      
       if (this.monitoring)
          this.lasttm = new Date().getTime();
    } 
@@ -857,6 +876,8 @@
 
 
    JSROOT.TDrawSelector.prototype.Process = function(entry) {
+      
+      this.globals.entry = entry; // can be used in any expression
       
       for (var n=0;n<this.ndim;++n)
          this.vars[n].Produce(this.tgtobj);

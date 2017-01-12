@@ -216,6 +216,15 @@ will dump last element from event.fTracks array. One also can extract size of us
 
    - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTracks[$size$]>>dump>
 
+There is special handling of TBits objects:
+
+   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTriggerBits>
+   
+Or any integer value can be decomposed on its bits:
+
+   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.TObject.fBits>>bits(32)>
+
+In the expression one could use "Entry$" and "Entries$" variables.
 
 
 ## Geometry viewer

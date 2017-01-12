@@ -2,18 +2,19 @@
 
 ## Changes in dev
 1. Reading TTree data
-  - all kinds of branches, including splitted STL conainers
-  - bracnhes with several elementary leaves
-  - branches from different ROOT files
-  - JSROOT.TSelector class to access TTree data
-  - simple access to branch data with "dump" draw option
+    - all kinds of branches, including splitted STL conainers
+    - bracnhes with several elementary leaves
+    - branches from different ROOT files
+    - JSROOT.TSelector class to access TTree data
+    - simple access to branch data with "dump" draw option
 2. Elementary TTree::Draw
-  - simple 1D/2D/3D histograms
-  - simple cut conditions
-  - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
-  - bits histogram like "event.fTracks.fBits>>bits(16)"
-  - strings support
-  - iterate over arrays indexes, let use another branch as index values 
+    - simple 1D/2D/3D histograms
+    - simple cut conditions
+    - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
+    - bits histogram like "event.fTracks.fBits>>bits(16)"
+    - strings support
+    - iterate over arrays indexes, let use another branch as index values
+    - support "Entry$" and "Entries$" variables in expressions 
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
 5. Support of large arrays in object inspector.
