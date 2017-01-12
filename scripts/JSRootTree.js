@@ -461,11 +461,14 @@
          if (pos>0) {
             this.hist_name = harg.substr(0, pos);
             harg = harg.substr(pos);
-         }
+         }  
          if (harg === "dump") {
             this.dump_values = true;
             if (args.numentries===undefined) args.numentries = 10;
          } else
+         if (pos<0) {
+            this.hist_name = harg; 
+         } else  
          if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
             harg = harg.substr(1,harg.length-2).split(",");
             var isok = true;
@@ -560,12 +563,27 @@
 
       JSROOT.progress(main_box);
    }
+   
+   JSROOT.TDrawSelector.prototype.GetBitsBins = function() {
+      
+      var nbits = this.hist_args[0] || 32;
+      
+      var res = { nbins: nbits, min: 0, max: nbits, k: 1., fLabels: JSROOT.Create("THashList") };
+      
+      for (var k=0;k<nbits;++k) {
+         var s = JSROOT.Create("TObjString");
+         s.fString = k.toString();
+         s.fUniqueID = k+1;
+         res.fLabels.Add(s);
+      }
+      return res;
+   }
 
    JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
       
       var res = { min: 0, max: 0, nbins: nbins, fLabels: null };
       
-      if (axisid>=this.ndim) return res;
+      if (axisid >= this.ndim) return res;
       
       var arr = this.vars[axisid].buf;
       
@@ -631,8 +649,15 @@
          // reassign fill method
          this.Fill1DHistogram = this.Fill2DHistogram = this.Fill3DHistogram = this.DumpValue;  
       } else {
-      
-         this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
+         
+         if ((this.hist_name === "bits") && (this.hist_args.length <= 1)) {
+            
+            this.x = this.GetBitsBins();
+            this.Fill1DHistogram = this.FillBitsHistogram;
+            
+         } else {
+            this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
+         }
 
          this.y = this.GetMinMaxBins(1, 50);
 
@@ -688,6 +713,15 @@
       
       delete this.vars[0].buf;
       delete this.cut.buf;
+   }
+
+   JSROOT.TDrawSelector.prototype.FillBitsHistogram = function(xvalue, weight) {
+      if (!weight) return;
+      
+      for (var bit=0,mask=1;bit<this.x.nbins;++bit) {
+         if (xvalue & mask) this.hist.fArray[bit+1] += weight;
+         mask*=2;
+      }
    }
    
    JSROOT.TDrawSelector.prototype.Fill1DHistogram = function(xvalue, weight) {

@@ -183,6 +183,10 @@ Like in ROOT, one could configure histogram binning and range directly:
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h(50,-5,5,50,-5,5)>
 
+One can accumulate histogram with value bits specifying for output ">>bits(16)" or ">>bits" for fBits:
+
+   - <https://root.cern/js/latest/?https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits>
+ 
 It is allowed to use different expressions with branch values:
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px+py:px-py>
