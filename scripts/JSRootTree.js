@@ -167,9 +167,18 @@
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
-               case "%last%": this.indx[cnt] = obj.length-1; break;
+               case "$last$": this.indx[cnt] = obj.length-1; break;
+               case "$size$":
+                  this.value = obj.length;
+                  this.fastindx = this.fastlimit = 0;
+                  this.cnt = cnt;
+                  return true;
+                  break;
                default: 
-                  if (!isNaN(this.select[cnt])) this.indx[cnt] = this.select[cnt]; else {
+                  if (!isNaN(this.select[cnt])) {
+                     this.indx[cnt] = this.select[cnt];
+                     if (this.indx[cnt] < 0) this.indx[cnt] = obj.length-1;
+                  } else {
                      // this is compile variable as array index - can be any expression
                      this.select[cnt].Produce(this.tgtobj);
                      this.indx[cnt] = Math.round(this.select[cnt].get(0)); 
@@ -289,12 +298,14 @@
             var sub = code.substr(prev+1, pos2-prev-1);
             switch(sub) {
                case "": 
-               case "%all%": arriter.push(undefined); break;
-               case "%last%": arriter.push("%last%"); break;
-               case "%first%": arriter.push(0); break;
+               case "$all$": arriter.push(undefined); break;
+               case "$last$": arriter.push("$last$"); break;
+               case "$size$": arriter.push("$size$"); break;
+               case "$first$": arriter.push(0); break;
                default:
-                  var arrindx = parseInt(sub);
-                  if (!isNaN(arrindx)) arriter.push((arrindx>=0) ? arrindx : undefined); else {
+                  if (!isNaN(parseInt(sub))) {
+                     arriter.push(parseInt(sub)); 
+                  } else {
                      // try to compile code as draw variable
                      var subvar = new JSROOT.TDrawVariable();
                      // console.log("produce subvar with code", sub);

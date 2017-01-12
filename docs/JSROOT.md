@@ -206,7 +206,16 @@ It is possible to "dump" content of any branch (by default - first 10 entries):
 Or one could dump values produced with draw expression (also first 10 entries):
 
    - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>>dump>
+
+Also working with array indexes are supported. By default, all elements in array are used for the TTree::Draw
+One could specify index for any array dimension (-1 means last element in the array). Like exprssion:
  
+   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTracks[-1].fBits>>dump>
+
+will dump last element from event.fTracks array. One also can extract size of used array:
+
+   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTracks[$size$]>>dump>
+
 
 
 ## Geometry viewer
