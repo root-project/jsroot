@@ -2219,8 +2219,8 @@
                   si = { _typename: 'TStreamerInfo', fVersion: 1, fName: member.pairtype,
                          fElements: JSROOT.Create("TList") };
                   
-                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("first", GetNextName()));
-                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("second", GetNextName()));
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("first", GetNextName()), file);
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("second", GetNextName()), file);
                }
 
                member.streamer = file.GetStreamer(member.pairtype, null, si);
@@ -2692,7 +2692,7 @@
       return JSROOT.IO.AddClassMethods(clname, streamer);
    };
 
-   JSROOT.IO.CreateStreamerElement = function(name, typename) {
+   JSROOT.IO.CreateStreamerElement = function(name, typename, file) {
       // return function, which could be used for element of the map
 
       var elem = { _typename: 'TStreamerElement', fName: name, fTypeName: typename,
@@ -2701,6 +2701,11 @@
 
       elem.fType = JSROOT.IO.GetTypeId(typename);
       if (elem.fType > 0) return elem; // basic type
+      
+      if (file && file.fBasicTypes[typename]) {
+         elem.fType = file.fBasicTypes[typename];
+         return elem;
+      }
 
 /*      
       if (typename.indexOf('string')===0) {

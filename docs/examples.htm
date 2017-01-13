@@ -388,7 +388,7 @@
                { name: "files", asurl: true, file: "https://root.cern/files/alice_ESDs.root", item: "esdTree;1/ESDfriend./ESDfriend.fTracks/ESDfriend.fTracks.fTPCindex", opt: "dump", title: "Data branch stored in different file (in same dir), counter data in main file" },
                { name: "float16", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T;2/event/fTracks/fTracks.fMass2", opt: "dump", title: "Float16_t type as TClonesArray branch" },
                { name: "markus", url: "?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=http://jsroot.gsi.de/files/tree/markus.js", title: "custom streamer for pool::Token class from some branches" },
-               { name: "cmssw1", url: "?file=http://jsroot.gsi.de/files/tree/test_cmssw.root&load=http://jsroot.gsi.de/files/tree/cmssw.js&item=Events;1&opt=testio", title: "CMS-SW events, uses custom enumerations" },
+               { name: "cmssw1", url: "?file=http://jsroot.gsi.de/files/tree/test_cmssw.root&item=Events;1&opt=testio", title: "CMS-SW events, uses custom enumerations, which are fished out from the streaminfos" },
                { name: "cmssw2", url: "?file=http://jsroot.gsi.de/files/tree/test_cmssw.root&item=MetaData;1&opt=testio", title: "CMS-SW metadata, complex std::map classes" }
             ],
             TF1 : [
