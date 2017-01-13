@@ -1431,10 +1431,15 @@
 
       // main loop to add all branches from selector for reading
       for (var nn = 0; nn < selector.branches.length; ++nn) {
-         if (!AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn])) {
+         
+         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn]); 
+         
+         if (!item) {
             selector.Terminate(false);
             return false;
          }
+         
+         selector.is_integer[nn] = JSROOT.IO.IsInteger(item.type); 
       }
 
       // check if simple reading can be performed and there are direct data in branch

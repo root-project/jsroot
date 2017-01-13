@@ -198,6 +198,8 @@ It is allowed to use different expressions with branch values:
 Such expression can include arithmetical operations and all methods, provided in JavaScript [Math](http://www.w3schools.com/jsref/jsref_obj_math.asp) class:
      
    - [opt=Math.abs(px+py)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=Math.abs%28px+py%29)
+
+In the expression one could use "Entry$" and "Entries$" variables.
  
 One also could specify cut condition, separating it with "::" from the rest draw expression like:
 
@@ -220,8 +222,6 @@ will dump last element from event.fTracks array. One also can extract size of us
 
    - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
    
-In the expression one could use "Entry$" and "Entries$" variables.
-
 At the expression end one can add several parameters:
   - "first" - id of the first entry to process
   - "entries" - number of entries to process
