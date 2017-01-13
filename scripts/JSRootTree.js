@@ -497,7 +497,10 @@
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
    
    JSROOT.TDrawSelector.prototype.ParseParameters = function(tree, args, expr) {
-      // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value 
+      
+      if (!expr || (typeof expr !== "string")) return "";
+      
+      // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       var pos = expr.lastIndexOf(";");
       while (pos>0) {
          var parname = expr.substr(pos+1), parvalue = undefined;
@@ -574,12 +577,8 @@
   
    JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
       
-      var expr = args.expr;
-      
       // parse complete expression
-      if (!expr || (typeof expr !== 'string')) return false;
-      
-      expr = this.ParseParameters(tree, args, expr);
+      var expr = this.ParseParameters(tree, args, args.expr);
 
       // parse option for histogram creation
 
@@ -2241,7 +2240,7 @@
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
          if ((args.branch.fType === JSROOT.BranchType.kClonesNode) || (args.branch.fType === JSROOT.BranchType.kSTLNode)) {
             // special case of size
-            args.expr = "";
+            args.expr = opt;
             args.direct_branch = true;
          }
          
