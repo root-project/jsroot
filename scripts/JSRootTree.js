@@ -176,6 +176,12 @@
                   this.cnt = cnt;
                   return true;
                   break;
+               case "$self$":
+                  this.value = obj;
+                  this.fastindx = this.fastlimit = 0;
+                  this.cnt = cnt;
+                  return true;
+                  break;
                default: 
                   if (!isNaN(this.select[cnt])) {
                      this.indx[cnt] = this.select[cnt];
@@ -285,6 +291,10 @@
             if (br.branch && br.rest) {
                pos2 -= br.rest.length;
                br = br.branch;
+            } else 
+            if (code[pos2-1]===".") {
+               // when branch name ends with point, means object itself should be extracted
+               arriter.push("$self$");
             }
          }
          
@@ -302,8 +312,8 @@
                var prev = ++pos2; 
                
                if (!is_start_symbol(code[prev])) {
-                  console.error("Problem to parse ", code, "at", prev);
-                  return false;
+                  arriter.push("$self$"); // last point means extraction of object itself
+                  break;
                }
                
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
