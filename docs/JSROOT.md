@@ -174,66 +174,67 @@ While draw option can include "+" sign itself, for superposition one could speci
 
 It is possible to display TTree data, using simplified TTree::Draw syntax. 
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px>
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz>
+   - [opt=px](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px)
+   - [opt=px:py](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px:py)
+   - [opt=px:py:pz](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz)
    
 Histogram ranges and binning defined after reading first 1000 entries from the tree. 
 Like in ROOT, one could configure histogram binning and range directly:   
 
-   - [test](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h %28 50,-5,5,50,-5,5 %29 )
+   - [opt=px:py>>h(50,-5,5,50,-5,5)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
 One can accumulate histogram with value bits specifying for output ">>bits(16)" or ">>bits" for fBits:
 
-   - <https://root.cern/js/latest/?https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits>
+   - [opt=event.fTracks.fBits>>bits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
  
 It is allowed to use different expressions with branch values:
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px+py:px-py>
+   - [opt=px+py:px-py](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px+py:px-py)
    
 Such expression can include arithmetical operations and all methods, provided in JavaScript [Math](http://www.w3schools.com/jsref/jsref_obj_math.asp) class:
      
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=Math.abs(px+py)>
+   - [opt=Math.abs(px+py)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=Math.abs%28px+py%29)
  
 One also could specify cut condition, separating it with "::" from the rest draw expression like:
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>5>
+   - [opt=px:py::pz>5](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>5)
 
 It is possible to "dump" content of any branch (by default - first 10 entries):   
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1/px&opt=dump>
+   - [item=ntuple/px&opt=dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple/px&opt=dump)
 
-Or one could dump values produced with draw expression (also first 10 entries):
+Or one could dump values produced with draw expression (also first 10 entries by default):
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>>dump>
+   - [opt=px:py::pz>>dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
 
 Also working with array indexes are supported. By default, all elements in array are used for the TTree::Draw
 One could specify index for any array dimension (-1 means last element in the array). Like exprssion:
  
-   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTracks[-1].fBits>>dump>
+   - [opt=event.fTracks[-1].fBits>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[-1].fBits>>dump)
 
 will dump last element from event.fTracks array. One also can extract size of used array:
 
-   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTracks[$size$]>>dump>
+   - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
 
 There is special handling of TBits objects:
 
-   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.fTriggerBits>
+   - [opt=event.fTriggerBits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTriggerBits)
    
 Or any integer value can be decomposed on its bits:
 
-   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree;2&opt=event.TObject.fBits>>bits(32)>
+   - [opt=event.TObject.fBits>>bits(32)](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.TObject.fBits>>bits%28 32 %29)
 
 In the expression one could use "Entry$" and "Entries$" variables.
 
 At the expression end one can add several parameters:
   - "first" - id of the first entry to process
   - "entries" - number of entries to process
-  - "monitor" - interval in milliseconds to update accumulated histogram during the draw
+  - "monitor" - periodically show incompleted draw results (interval in milliseconds)
+  - "maxrange" - maximal number of ranges in single HTTP request 
+  
 Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like    
 
-   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits>>bits(80);entries:1000;first:200>
-
+   - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
 
 ## Geometry viewer
