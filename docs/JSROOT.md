@@ -181,7 +181,7 @@ It is possible to display TTree data, using simplified TTree::Draw syntax.
 Histogram ranges and binning defined after reading first 1000 entries from the tree. 
 Like in ROOT, one could configure histogram binning and range directly:   
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h(50,-5,5,50,-5,5)>
+   - [test](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py>>h %28 50,-5,5,50,-5,5 %29 )
 
 One can accumulate histogram with value bits specifying for output ">>bits(16)" or ">>bits" for fBits:
 
