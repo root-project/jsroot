@@ -83,7 +83,7 @@
                case "unsigned char": 
                case "UChar_t": return JSROOT.IO.kUChar;
                case "unsigned short": 
-               case "UShotr_t": return JSROOT.IO.kUShort;
+               case "UShort_t": return JSROOT.IO.kUShort;
                case "unsigned": 
                case "unsigned int": 
                case "UInt_t": return JSROOT.IO.kUInt;
@@ -96,7 +96,7 @@
                case "unsigned long long": 
                case "ULong64_t": return JSROOT.IO.kULong64;
                case "Double32_t": return JSROOT.IO.kDouble32; 
-               case "Float16_t": return JSROOT.IO.kDouble16;
+               case "Float16_t": return JSROOT.IO.kFloat16;
                case "char*": return JSROOT.IO.kCharStar;
             }
             

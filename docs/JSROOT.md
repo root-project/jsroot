@@ -183,9 +183,13 @@ Like in ROOT, one could configure histogram binning and range directly:
 
    - [opt=px:py>>h(50,-5,5,50,-5,5)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
-One can accumulate histogram with value bits specifying for output ">>bits(16)" or ">>bits" for fBits:
+For any integer value one can accumulate histogram with value bits destribution, specifying as output ">>bits(16)" or ">>bits":
 
    - [opt=event.fTracks.fBits>>bits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
+
+There is special handling of TBits objects:
+
+   - [opt=event.fTriggerBits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTriggerBits)
  
 It is allowed to use different expressions with branch values:
 
@@ -215,15 +219,7 @@ One could specify index for any array dimension (-1 means last element in the ar
 will dump last element from event.fTracks array. One also can extract size of used array:
 
    - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
-
-There is special handling of TBits objects:
-
-   - [opt=event.fTriggerBits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTriggerBits)
    
-Or any integer value can be decomposed on its bits:
-
-   - [opt=event.TObject.fBits>>bits(32)](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.TObject.fBits>>bits%28 32 %29)
-
 In the expression one could use "Entry$" and "Entries$" variables.
 
 At the expression end one can add several parameters:
@@ -232,7 +228,7 @@ At the expression end one can add several parameters:
   - "monitor" - periodically show incompleted draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request 
   
-Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like    
+Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like:    
 
    - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
