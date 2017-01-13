@@ -495,14 +495,8 @@
    }
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
-  
-   JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
-      
-      var expr = args.expr;
-      
-      // parse complete expression
-      if (!expr || (typeof expr !== 'string')) return false;
-      
+   
+   JSROOT.TDrawSelector.prototype.ParseParameters = function(tree, args, expr) {
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value 
       var pos = expr.lastIndexOf(";");
       while (pos>0) {
@@ -547,10 +541,9 @@
                break;
          }
       }
-
-      // parse option for histogram creation
+      
       pos = expr.lastIndexOf(">>");
-      if (pos>0) {
+      if (pos>=0) {
          var harg = expr.substr(pos+2).trim();
          expr = expr.substr(0,pos).trim();
          pos = harg.indexOf("(");
@@ -575,6 +568,20 @@
             if (isok) this.hist_args = harg; 
          }
       }
+
+      return expr;
+   }
+  
+   JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
+      
+      var expr = args.expr;
+      
+      // parse complete expression
+      if (!expr || (typeof expr !== 'string')) return false;
+      
+      expr = this.ParseParameters(tree, args, expr);
+
+      // parse option for histogram creation
 
       this.hist_title = "drawing '" + expr + "' from " + tree.fName;
 
@@ -616,6 +623,14 @@
    JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
       this.ndim = 1;
       
+      expr = this.ParseParameters(tree, args, expr);
+      
+      if (expr === "dump") {
+         this.dump_values = true;
+         if (args.numentries===undefined) args.numentries = 10;
+         expr = "";
+      }
+
       this.vars[0] = new JSROOT.TDrawVariable(this.globals);
       if (!this.vars[0].Parse(tree, this, expr, branch, args.direct_branch)) return false;
       this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
