@@ -466,7 +466,7 @@
       this.hist_name = "$htemp";
       this.hist_title = "Result of TTree::Draw";
       this.hist_args = []; // arguments for histogram creation
-      this.arr_limit = 3000;  // number of accumulated items before create histogram
+      this.arr_limit = 1000;  // number of accumulated items before create histogram
       this.monitoring = 0;
       this.globals = {}; // object with global parameters, which could be used in any draw expression 
    }
@@ -511,6 +511,9 @@
             case "maxseg":
             case "maxrange":   
                if (intvalue) tree.$file.fMaxRanges = intvalue;
+               break;
+            case "accum":
+               if (intvalue) this.arr_limit = intvalue;
                break;
          }
       }
