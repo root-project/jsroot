@@ -1011,7 +1011,7 @@
 
       function FindInHandle(branch) {
          for (var k=0;k<handle.arr.length;++k)
-            if (handle.arr[k].branch === branch) return handle.arr[k].branch;
+            if (handle.arr[k].branch === branch) return handle.arr[k];
          return null;
       }
 
@@ -1061,6 +1061,7 @@
          var item_cnt = null, item_cnt2 = null;
          
          if (branch.fBranchCount) {
+            
             item_cnt = FindInHandle(branch.fBranchCount);
             
             if (!item_cnt) item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++); 
@@ -1107,7 +1108,7 @@
              handle.process_arrays = false;
              
              // object where all sub-branches will be collected
-             var master_target = target_object[target_name] = { _typename: "TBits" };
+             var master_target = target_object[target_name] = { _typename: "TObject" };
 
              var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
                  s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
@@ -1131,10 +1132,10 @@
                       continue;
                    }
                    
-                   var subname = br.fName.substr(branch.fName.length);
+                   var subname = br.fName.substr(branch.fName.length+1);
                    var p = subname.indexOf('['); 
                    if (p>0) subname = subname.substr(0,p);
-                   console.log('add new branch for target', selector.names[nn] + subname);
+                   console.log('add new branch with name', subname);
                    
                    AddBranchForReading(br, master_target, subname);
                 }
