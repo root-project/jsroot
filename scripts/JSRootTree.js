@@ -630,6 +630,10 @@
                console.log('Provide special handling fot TBits');
                this.Fill1DHistogram = this.FillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
+               
+               if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0]) 
+                  maxbits = this.hist_args[0];
+               
                return this.GetBitsBins(maxbits);
             }
          }
@@ -656,7 +660,11 @@
             if (s.fString === "") s.fString = "<empty>";
             res.fLabels.Add(s);
          }
-      } else 
+      } else
+      if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
+         this.Fill1DHistogram = this.FillBitsHistogram;
+         return this.GetBitsBins(this.hist_args[0] || 32);
+      } else
       if (axisid*3 + 2 < this.hist_args.length) {
          res.nbins = this.hist_args[axisid*3];
          res.min = this.hist_args[axisid*3+1];
@@ -701,12 +709,7 @@
          this.Fill1DHistogram = this.Fill2DHistogram = this.Fill3DHistogram = this.DumpValue;  
       } else {
          
-         if ((this.hist_name === "bits") && (this.hist_args.length <= 1)) {
-            this.x = this.GetBitsBins(this.hist_args[0] || 32);
-            this.Fill1DHistogram = this.FillBitsHistogram;
-         } else {
-            this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
-         }
+         this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
 
          this.y = this.GetMinMaxBins(1, 50);
 
