@@ -226,6 +226,15 @@ Or any integer value can be decomposed on its bits:
 
 In the expression one could use "Entry$" and "Entries$" variables.
 
+At the expression end one can add several parameters:
+  - "first" - id of the first entry to process
+  - "entries" - number of entries to process
+  - "monitor" - interval in milliseconds to update accumulated histogram during the draw
+Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like    
+
+   - <https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits>>bits(80);entries:1000;first:200>
+
+
 
 ## Geometry viewer
 

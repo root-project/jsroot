@@ -479,9 +479,40 @@
       
       // parse complete expression
       if (!expr || (typeof expr !== 'string')) return false;
+      
+      // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value 
+      var pos = expr.lastIndexOf(";");
+      while (pos>0) {
+         var parname = expr.substr(pos+1), parvalue = undefined;
+         expr = expr.substr(0,pos);
+         pos = expr.lastIndexOf(";");
+         
+         var separ = parname.indexOf(":");
+         if (separ>0) { parvalue = parname.substr(separ+1); parname = parname.substr(0, separ);  }
+         
+         var intvalue = parseInt(parvalue);
+         if (!parvalue || isNaN(intvalue)) intvalue = undefined;
+         
+         switch (parname) {
+            case "num": 
+            case "entries": 
+            case "numentries": 
+               if (parvalue==="all") args.numentries = tree.fEntries; else
+               if (parvalue==="half") args.numentries = Math.round(tree.fEntries/2); else
+               if (intvalue !== undefined) args.numentries = intvalue;
+               break;
+            case "first":   
+               if (intvalue !== undefined) args.firstentry = intvalue;
+               break;
+            case "mon":
+            case "monitor":
+               args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
+               break;
+         }
+      }
 
       // parse option for histogram creation
-      var pos = expr.lastIndexOf(">>");
+      pos = expr.lastIndexOf(">>");
       if (pos>0) {
          var harg = expr.substr(pos+2).trim();
          expr = expr.substr(0,pos).trim();
@@ -2094,12 +2125,13 @@
          return this.DrawingReady();
       }
 
-      var painter = this;
+      var callback = this.DrawingReady.bind(this);
       
-      args.monitoring = 5000;
-
       tree.Draw(args, function(histo, hopt, intermediate) {
-         JSROOT.redraw(divid, histo, hopt, intermediate ? null : painter.DrawingReady.bind(painter));
+         if (args.monitoring)
+            JSROOT.redraw(divid, histo, hopt, intermediate ? null : callback);
+         else
+            JSROOT.draw(divid, histo, hopt, callback);
       });
 
       return this;
