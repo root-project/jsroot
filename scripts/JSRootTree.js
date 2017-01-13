@@ -987,6 +987,408 @@
           simple_read: true, // all baskets in all used branches are in sync,
           process_arrays: true // one can process all branches as arrays
       };
+      
+      var namecnt = 0;
+      
+      function CreateLeafElem(leaf, name) {
+         // function creates TStreamerElement which corresponds to the elementary leaf
+         var datakind = 0;
+         switch (leaf._typename) {
+            case 'TLeafF': datakind = JSROOT.IO.kFloat; break;
+            case 'TLeafD': datakind = JSROOT.IO.kDouble; break;
+            case 'TLeafO': datakind = JSROOT.IO.kBool; break;
+            case 'TLeafB': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+            case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
+            case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
+            case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
+            case 'TLeafC': datakind = JSROOT.IO.kTString; break;
+            default: return null;
+         }
+         var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
+         elem.fType = datakind;
+         return elem;
+      }
+
+      function FindInHandle(branch) {
+         for (var k=0;k<handle.arr.length;++k)
+            if (handle.arr[k].branch === branch) return handle.arr[k].branch;
+         return null;
+      }
+
+      function AddBranchForReading(branch, target_object, target_name) {
+         // central method to add branch for reading
+
+         if (typeof branch === 'string')
+            branch = handle.tree.FindBranch(branch);
+         
+         if (!branch) { console.error('Did not found branch'); return null; }
+         
+         var item = FindInHandle(branch);
+         
+         if (item) {
+            console.error('Branch already configured for reading', branch.fName);
+            if (item.tgt !== target_object) console.error('Target object differs');
+            return elem;
+         }
+         
+         if (!branch.fEntries) {
+            console.log('Branch ', branch.fName, ' does not have entries');
+            return null;
+         } 
+         
+         item = {
+               branch: branch,
+               tgt: target_object, // used target object - can be differ for object members
+               name: target_name,
+               index: -1, // index in the list of read branches
+               member: null, // member to read branch
+               type: 0, // keep type identifier
+               curr_entry: -1, // last processed entry
+               raw : null, // raw buffer for reading
+               curr_basket: 0,  // number of basket used for processing
+               read_entry: -1,  // last entry which is already read 
+               staged_entry: -1, // entry which is staged for reading
+               first_readentry: -1, // first entry to read
+               staged_basket: 0,  // last basket staged for reading
+               numentries: branch.fEntries,
+               numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
+               counters: null, // branch indexes used as counters
+               ascounter: [], // list of other branches using that branch as counter 
+               baskets: [] // array for read baskets,
+         };
+
+         // check all counters if we 
+         var item_cnt = null, item_cnt2 = null;
+         
+         if (branch.fBranchCount) {
+            item_cnt = FindInHandle(branch.fBranchCount);
+            
+            if (!item_cnt) item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++); 
+            
+            if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
+
+            var BranchCount2 = branch.fBranchCount2;
+            
+            if (!BranchCount2 && (branch.fBranchCount.fStreamerType===JSROOT.IO.kSTL) && 
+                ((branch.fStreamerType === JSROOT.IO.kStreamLoop) || (branch.fStreamerType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop))) {
+                 // special case when count member from kStreamLoop not assigned as fBranchCount2  
+                 var s_i = handle.file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum),
+                     elem = s_i ? s_i.fElements.arr[branch.fID] : null,
+                     arr = branch.fBranchCount.fBranches.arr  ;
+
+                 if (elem && elem.fCountName && arr) 
+                    for(var k=0;k<arr.length;++k) 
+                       if (arr[k].fName === branch.fBranchCount.fName + "." + elem.fCountName) {
+                          BranchCount2 = arr[k];
+                          break;
+                       }
+
+                 if (!BranchCount2) console.error('Did not found branch for second counter of kStreamLoop element');
+              }
+            
+            if (BranchCount2) {
+               item_cnt2 = FindInHandle(BranchCount2);
+               
+               if (!item_cnt2) item_cnt = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++); 
+               
+               if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
+            }
+         }
+
+         
+         var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+             nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+             leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
+             elem = null, // TStreamerElement used to create reader 
+             member = null, // member for actual reading of the branch
+             is_brelem = (branch._typename==="TBranchElement");
+             
+
+          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
+             handle.process_arrays = false;
+             
+             // object where all sub-branches will be collected
+             var master_target = target_object[target_name] = { _typename: "TBits" };
+
+             var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+                 s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
+             
+             if (s_elem && s_elem.fType === JSROOT.IO.kObject) {
+                master_target._typename = s_elem.fTypeName;
+                console.log('Reconstruct object of type', s_elem.fTypeName);
+             }
+
+             function ScanBranches(lst) {
+                if (!lst || !lst.arr.length) return;
+                
+                for (var k=0;k<lst.arr.length;++k) {
+                   var br = lst.arr[k];
+                   if (br.fType === JSROOT.BranchType.kBaseClassNode) {
+                      ScanBranches(br.fBranches);
+                      continue;
+                   }
+                   if (br.fName.indexOf(branch.fName + ".")!==0) {
+                      console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
+                      continue;
+                   }
+                   
+                   var subname = br.fName.substr(branch.fName.length);
+                   var p = subname.indexOf('['); 
+                   if (p>0) subname = subname.substr(0,p);
+                   console.log('add new branch for target', selector.names[nn] + subname);
+                   
+                   AddBranchForReading(br, master_target, subname);
+                }
+             }
+             
+             ScanBranches(branch.fBranches);
+             
+             return item; // this kind of branch does not have baskets and not need to be read
+         }
+
+          
+         if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
+             // this is branch with counter 
+             elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
+             // handle.process_arrays = false;
+          } else
+       
+          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
+
+             elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fClassName);
+             
+             console.log('TBranchElement with ID==-1 typename ', branch.fClassName, 'type', elem.fType);
+             
+             if (elem.fType === JSROOT.IO.kAny) {
+                
+                var streamer = handle.file.GetStreamer(branch.fClassName, { val: branch.fClassVersion, checksum: branch.fCheckSum });
+                if (!streamer) { elem = null; console.warn('not found streamer!'); } else 
+                   member = {
+                         name: target_name,
+                         typename: branch.fClassName,
+                         streamer: streamer, 
+                         func: function(buf,obj) {
+                            var res = { _typename: this.typename };
+                            for (var n = 0; n < this.streamer.length; ++n)
+                               this.streamer[n].func(buf, res);
+                            obj[this.name] = res;
+                         }
+                   };
+             }
+             
+             // elem.fType = JSROOT.IO.kAnyP;
+
+             // only STL containers here
+             // if (!elem.fSTLtype) elem = null;
+          } else
+          if (is_brelem && (nb_leaves <= 1)) {
+             // in some old files TBranchElement may appear without correspondent leaf 
+             var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+             if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
+             if ((branch.fID<0) || (branch.fID>=s_i.fElements.arr.length)) console.log('branch ID out of range', branch.fID); else
+             elem = s_i.fElements.arr[branch.fID];
+          } else  
+          if (nb_leaves === 1) {
+              // no special constrains for the leaf names
+             elem = CreateLeafElem(leaf, target_name);
+          } else
+          if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
+             // branch with many elementary leaves
+             
+             console.log('Create reader for branch with ', nb_leaves, ' leaves');
+             
+             var arr = new Array(nb_leaves), isok = true;
+             for (var l=0;l<nb_leaves;++l) {
+                arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
+                arr[l] = JSROOT.IO.CreateMember(arr[l], handle.file);
+                if (!arr[l]) isok = false;
+             }
+             
+             if (isok)
+                member = {
+                   name: target_name,
+                   leaves: arr, 
+                   func: function(buf, obj) {
+                      var tgt = obj[this.name], l = 0;
+                      if (!tgt) obj[this.name] = tgt = {};
+                      while (l<this.leaves.length)
+                         this.leaves[l++].func(buf,tgt);
+                   }
+               }
+          } 
+          
+          if (!elem && !member) {
+             console.log('Not supported branch kind', branch.fName, branch._typename);
+             return null;
+          }
+
+          if (!member) {
+             member = JSROOT.IO.CreateMember(elem, handle.file);
+             if ((member.base !== undefined) && member.basename) {
+                // when element represent base class, we need handling which differ from normal IO
+                member.func = function(buf, obj) {
+                   if (!obj[this.name]) obj[this.name] = { _typename: this.basename };
+                   buf.ClassStreamer(obj[this.name], this.basename);
+                };
+             }
+          }
+
+          if (item_cnt) {
+
+             handle.process_arrays = false;
+
+             if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
+                // console.log('introduce special handling with STL size', elem.fType);
+                
+                if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
+                   // special handling for compressed floats
+                   
+                   member.stl_size = item_cnt.name;
+                   member.func = function(buf, obj) {
+                      obj[this.name] = this.readarr(buf, obj[this.stl_size]);
+                   }
+                   
+                } else
+                if (((elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
+                   // special handling for compressed floats - not tested
+                   
+                   member.stl_size = item_cnt.name;
+                   member.arr_size = item_cnt2.name;
+                   member.func = function(buf, obj) {
+                      var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                      for (var n=0;n<sz0;++n) 
+                         arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
+                      obj[this.name] = arr;
+                   }
+                   
+                } else
+                // special handling of simple arrays
+                if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
+                    (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
+                   
+                   member = {
+                      name: target_name,
+                      stl_size: item_cnt.name,
+                      type: elem.fType,
+                      func: function(buf, obj) {
+                         obj[this.name] = buf.ReadFastArray(obj[this.stl_size], this.type);
+                      }
+                   };
+                   
+                   if (branch.fBranchCount2) {
+                      member.type -= JSROOT.IO.kOffsetP;  
+                      member.arr_size = item_cnt2.name;
+                      member.func = function(buf, obj) {
+                         var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                         for (var n=0;n<sz0;++n) 
+                            arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) : [];
+                         obj[this.name] = arr;
+                      }
+                   }
+                   
+                } else 
+                if (elem.fType == JSROOT.IO.kStreamer) {
+                   // with streamers one need to extend existing array
+                   
+                   if (item_cnt2)
+                      throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+
+                   console.log('Reading kStreamer in STL branch');
+                   
+                   // function provided by normal I/O
+                   member.func = member.branch_func;
+                   member.stl_size = item_cnt.name; 
+                   
+                   // for empty STL branch with map item read version anyway, for vector does not
+                   member.read_empty_stl_version = (member.readelem === JSROOT.IO.ReadMapElement); 
+                   
+                } else 
+                if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
+                   // special solution for kStreamLoop
+                   
+                   if (!item_cnt2) throw new Error('Missing second count branch for kStreamLoop ' + branch.fName);
+                   
+                   member.stl_size = item_cnt.name;
+                   member.cntname = item_cnt2.name;
+                   member.func = member.branch_func; // this is special function, provided by base I/O
+                   
+                } else  {
+                   
+                   member.name = "$stl_member";
+
+                   var loop_size_name;
+
+                   if (item_cnt2) {
+                      if (member.cntname) { 
+                         loop_size_name = item_cnt2.name;
+                         member.cntname = "$loop_size";
+                      } else {
+                         throw new Error('Second branch counter not used - very BAD');
+                      }
+                   }
+                   
+                   var stlmember = {
+                         name: target_name,
+                         stl_size: item_cnt.name,
+                         loop_size: loop_size_name,
+                         member0: member,
+                         func: function(buf, obj) {
+                            var cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
+                            for (var n=0;n<cnt;++n) {
+                               if (this.loop_size) obj.$loop_size = obj[this.loop_size][n]; 
+                               this.member0.func(buf, obj);
+                               arr[n] = obj.$stl_member;
+                            }
+                            delete obj.$stl_member;
+                            delete obj.$loop_size;
+                            obj[this.name] = arr;
+                         }
+                   };
+
+                   member = stlmember;
+                }
+                
+             } else {
+                if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
+                
+                console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
+                
+                member.cntname = item_cnt.name; 
+             }
+          }
+          
+          // set name used to store result
+          member.name = target_name;
+
+         item.member = member; // member for reading
+         if (elem) item.type = elem.fType; 
+         item.index = handle.arr.length; // index in the global list of branches
+         
+         if (item_cnt) { 
+            item.counters = [ item_cnt.index ];
+            item_cnt.ascounter.push(item.index);
+            
+            if (item_cnt2) {
+               item.counters.push(item_cnt2.index);
+               item_cnt2.ascounter.push(item.index);
+            }
+         }
+         
+         handle.arr.push(item);
+         
+         return item;
+      }
+
+      // main loop to add all branches from selector for reading
+      for (var nn = 0; nn < selector.branches.length; ++nn) {
+         if (!AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn])) {
+            selector.Terminate(false);
+            return false;
+         }
+      }
+
+/*      
+      
 
       function GetTargetObject(fullname, force) {
          var tgt = selector.tgtobj;
@@ -1140,24 +1542,6 @@
       }
       
       
-      function CreateLeafElem(leaf, name) {
-         // function creates TStreamerElement which corresponds to the elementary leaf
-         var datakind = 0;
-         switch (leaf._typename) {
-            case 'TLeafF': datakind = JSROOT.IO.kFloat; break;
-            case 'TLeafD': datakind = JSROOT.IO.kDouble; break;
-            case 'TLeafO': datakind = JSROOT.IO.kBool; break;
-            case 'TLeafB': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
-            case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
-            case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
-            case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-            case 'TLeafC': datakind = JSROOT.IO.kTString; break;
-            default: return null;
-         }
-         var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
-         elem.fType = datakind;
-         return elem;
-      }
       
       for (var nn = 0; nn < selector.branches.length; ++nn) {
       
@@ -1293,17 +1677,6 @@
                   buf.ClassStreamer(obj[this.name], this.basename);
                };
             }
-            /* keep debug code for a while
-            if ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)) {
-               console.log('reading counter ', selector.names[nn], branch.fName);
-               member.func = function(buf, obj) {
-                  obj[this.name] = buf.ntou4();
-                  console.log('counter ', this.name, obj[this.name], 'rest', buf.remain());
-               }
-            }
-            */
-            
-            
          }
 
          // this element used to read branch value
@@ -1487,44 +1860,52 @@
          }
 
          handle.arr.push(elem);
+      }
+      
+*/      
+      // check if simple reading can be performed and there are direct data in branch
+      
+      for (var k=0;k<handle.arr.length;++k) {
          
-         if (elem.numbaskets === 0) {
+         var item = handle.arr[k];
+         
+         if (item.numbaskets === 0) {
             // without normal baskets, check if temporary data is available
             
-            if (branch.fBaskets && (branch.fBaskets.arr.length>0)) {
+            if (item.branch.fBaskets && (item.branch.fBaskets.arr.length>0)) {
                
-               for (var k=0;k<branch.fBaskets.arr.length;++k) {
-                  var bskt = branch.fBaskets.arr[k];
+               for (var k=0;k<item.branch.fBaskets.arr.length;++k) {
+                  var bskt = item.branch.fBaskets.arr[k];
                   if (!bskt || !bskt.fBufferRef) continue;
                
-                  elem.direct_data = true;
-                  elem.raw = bskt.fBufferRef;
-                  elem.raw.locate(0); // set to initial position
-                  elem.first_readentry = branch.fFirstEntry || 0; 
-                  elem.current_entry = branch.fFirstEntry || 0;
-                  elem.nev = elem.numentries; // number of entries in raw buffer
+                  item.direct_data = true;
+                  item.raw = bskt.fBufferRef;
+                  item.raw.locate(0); // set to initial position
+                  item.first_readentry = item.branch.fFirstEntry || 0; 
+                  item.current_entry = item.branch.fFirstEntry || 0;
+                  item.nev = item.numentries; // number of entries in raw buffer
                   break;
                }
             }
             
-            if (!elem.direct_data || !elem.numentries) {
+            if (!item.direct_data || !item.numentries) {
                // if no any data found
-               console.log('No any data found for branch', branch.fName);
+               console.log('No any data found for branch', item.branch.fName);
                selector.Terminate(false);
                return false;
             }
          }
          
-         if (handle.arr.length > 1) {
-            var elem0 = handle.arr[0];
+         if (k===0) continue;
+         
+         var item0 = handle.arr[0];
 
-            if ((elem.direct_data !== elem0.direct_data) || 
-                (elem.numentries !== elem0.numentries) ||
-                (elem.numbaskets !== elem0.numbaskets)) handle.simple_read = false;
+         if ((item.direct_data !== item0.direct_data) || 
+             (item.numentries !== item0.numentries) ||
+             (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
             else
-            for (var n=0;n<elem.numbaskets;++n) 
-               if (elem.branch.fBasketEntry[n]!==elem0.branch.fBasketEntry[n]) handle.simple_read = false;
-         }
+         for (var n=0;n<item.numbaskets;++n) 
+            if (item.branch.fBasketEntry[n]!==item0.branch.fBasketEntry[n]) handle.simple_read = false;
       }
       
       // now calculate entries range
