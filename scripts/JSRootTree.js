@@ -1122,12 +1122,12 @@
              }
 
              function ScanBranches(lst) {
-                if (!lst || !lst.arr.length) return;
+                if (!lst || !lst.arr.length) return true;
                 
                 for (var k=0;k<lst.arr.length;++k) {
                    var br = lst.arr[k];
                    if (br.fType === JSROOT.BranchType.kBaseClassNode) {
-                      ScanBranches(br.fBranches);
+                      if (!ScanBranches(br.fBranches)) return false;
                       continue;
                    }
                    if (br.fName.indexOf(branch.fName + ".")!==0) {
@@ -1140,11 +1140,12 @@
                    if (p>0) subname = subname.substr(0,p);
                    console.log('add new branch with name', subname);
                    
-                   AddBranchForReading(br, master_target, subname);
+                   if (!AddBranchForReading(br, master_target, subname)) return false;
                 }
+                return true;
              }
              
-             ScanBranches(branch.fBranches);
+             if (!ScanBranches(branch.fBranches)) return null;
              
              return item; // this kind of branch does not have baskets and not need to be read
          }
