@@ -1093,7 +1093,7 @@
             if (BranchCount2) {
                item_cnt2 = FindInHandle(BranchCount2);
                
-               if (!item_cnt2) item_cnt = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++); 
+               if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++); 
                
                if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
             }
