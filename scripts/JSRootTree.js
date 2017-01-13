@@ -1079,7 +1079,8 @@
       function AddBranchForReading(branch, target_object, target_name, is_direct) {
          // central method to add branch for reading
          // is_direct == true - read only this branch
-         // is_direct == 'child' add for STL or clonesarray 
+         // is_direct == '$child$' is just member of object from for STL or clonesarray
+         // is_direct == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created 
 
          if (typeof branch === 'string')
             branch = handle.tree.FindBranch(branch);
@@ -1190,12 +1191,16 @@
                 var subname = br.fName.substr(branch.fName.length+1);
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
-                
-                if (subname.indexOf(".")>0) continue; // skip special case - need to do later
 
                 console.log('add new branch with name', subname);
+                
+                var chld_direct = true;
+                if (chld_kind>0) {
+                   chld_direct = "$child$";
+                   if (subname.indexOf(".")>0) chld_direct = "TBits"; // skip special case - need to do later
+                }
 
-                if (!AddBranchForReading(br, master_target, subname, (chld_kind>0) ? "child" : true)) return false;
+                if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
              }
              return true;
           }
@@ -1230,16 +1235,12 @@
 
             if (!is_direct) {
                handle.process_arrays = false;
-               console.log('Read complex branch');
                
                member = {
                   name: target_name,
                   conttype: branch.fClonesName || "TObject",
                   func: function(buf,obj) {
                      var size = buf.ntoi4(), n = 0;
-                     
-                     console.log('Read complex counter', size, 'type', this.conttype, 'name', this.name);
-                     
                      obj[this.name] = new Array(size); // can one reuse memory later ???
                      while (n<size) obj[this.name][n++] = { _typename: this.conttype }; // create new objects
                   }
@@ -1329,14 +1330,37 @@
              }
           }
 
-          if (item_cnt && (is_direct==="child")) {
+          if (item_cnt && (typeof is_direct === "string")) {
             console.log('special case for child branch', branch.fName, 'counter name is ', item_cnt.name);
-            
+
             member.func0 = member.func;
             member.name0 = item_cnt.name;
-            member.func = function(buf,obj) {
-               var tgt = obj[this.name0], n = 0; // array where reading is done
-               while (n<tgt.length) this.func0(buf,tgt[n++]); // read all individual object with standard functions 
+            if ((is_direct === "$child$") || (target_name.indexOf(".")<0)) {
+               // this is very simple case of direct childs
+               member.func = function(buf,obj) {
+                  var arr = obj[this.name0], n = 0; // array where reading is done
+                  while (n<arr.length) this.func0(buf,arr[n++]); // read all individual object with standard functions 
+               }
+               
+            } else {
+               var snames = target_name.split(".");
+               if (snames.length !== 2) {
+                  console.log('Not yet supported more than 2 parts in the names');
+                  return null;
+               }
+               
+               target_name = member.name = snames[1];
+               member.name1 = snames[0];
+               member.subtype1 = is_direct;
+               
+               member.func = function(buf,obj) {
+                  var arr = obj[this.name0]; // array where reading is done
+                  for (var n=0; n<arr.length; ++n) {
+                     var obj1 = arr[n][this.name1];
+                     if (!obj1) obj1 = arr[n][this.name1] = { _typename: this.subtype1 };
+                     this.func0(buf,obj1); // read all individual object with standard functions 
+                  }
+               }
             }
           } else
           if (item_cnt) {
