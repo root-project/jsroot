@@ -1168,7 +1168,6 @@
              is_brelem = (branch._typename==="TBranchElement"),
              child_scan = 0; // scan child branches after main branch is appended
              
-             
           function ScanBranches(lst, master_target, chld_kind) {
              if (!lst || !lst.arr.length) return true;
 
@@ -1192,13 +1191,20 @@
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
 
-                console.log('add new branch with name', subname);
-                
                 var chld_direct = true;
                 if (chld_kind>0) {
                    chld_direct = "$child$";
-                   if (subname.indexOf(".")>0) chld_direct = "TBits"; // skip special case - need to do later
+                   var pp = subname.indexOf(".");
+                   if (pp>0) {
+                      chld_direct = br.fClassName || "TObject";
+                      var prefix = branch.fName + "." + subname.substr(0,pp+1);
+                      for (var kk=k+1;kk<lst.arr.length;++kk)
+                         if ((lst.arr[kk].fName.indexOf(prefix)===0) && lst.arr[kk].fClassName) chld_direct = lst.arr[kk].fClassName;
+                   }
                 }
+
+                console.log('Add branch', branch.fName, 'target', subname, chld_direct);
+                
 
                 if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
              }
@@ -1331,8 +1337,6 @@
           }
 
           if (item_cnt && (typeof is_direct === "string")) {
-            console.log('special case for child branch', branch.fName, 'counter name is ', item_cnt.name);
-
             member.func0 = member.func;
             member.name0 = item_cnt.name;
             if ((is_direct === "$child$") || (target_name.indexOf(".")<0)) {
