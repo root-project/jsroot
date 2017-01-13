@@ -9018,12 +9018,15 @@
                         return process_child(top._childs[0]._childs[i], true);
 
                // if allowed, try to found item with key
-               if (arg.check_keys)
+               if (arg.check_keys) {
+                  var newest = null;
                   for (var i = 0; i < top._childs.length; ++i) {
-                    if ((typeof top._childs[i]._keyname === 'string') &&
-                         (top._childs[i]._keyname === localname))
-                           return process_child(top._childs[i]);
+                    if (top._childs[i]._keyname === localname) {
+                       if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i]; 
+                    }
                   }
+                  if (newest) return process_child(newest); 
+               }
 
                var allow_index = arg.allow_index;
                if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&

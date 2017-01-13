@@ -96,7 +96,8 @@
                case "unsigned long long": 
                case "ULong64_t": return JSROOT.IO.kULong64;
                case "Double32_t": return JSROOT.IO.kDouble32; 
-               case "Float16_t": return JSROOT.IO.kDouble16; 
+               case "Float16_t": return JSROOT.IO.kDouble16;
+               case "char*": return JSROOT.IO.kCharStar;
             }
             
             if (!norecursion) {
