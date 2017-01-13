@@ -301,9 +301,6 @@
                // this is object member
                var prev = ++pos2; 
                
-               if (code[pos2]==="@") console.log('here');
-               
-               
                if (!is_start_symbol(code[prev])) {
                   console.error("Problem to parse ", code, "at", prev);
                   return false;
@@ -1081,6 +1078,8 @@
 
       function AddBranchForReading(branch, target_object, target_name, is_direct) {
          // central method to add branch for reading
+         // is_direct == true - read only this branch
+         // is_direct == 'child' add for STL or clonesarray 
 
          if (typeof branch === 'string')
             branch = handle.tree.FindBranch(branch);
@@ -1165,12 +1164,45 @@
              leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
              elem = null, // TStreamerElement used to create reader 
              member = null, // member for actual reading of the branch
-             is_brelem = (branch._typename==="TBranchElement");
+             is_brelem = (branch._typename==="TBranchElement"),
+             child_scan = 0; // scan child branches after main branch is appended
              
+             
+          function ScanBranches(lst, master_target, chld_kind) {
+             if (!lst || !lst.arr.length) return true;
+
+             for (var k=0;k<lst.arr.length;++k) {
+                var br = lst.arr[k];
+                if ((chld_kind>0) && (br.fType!==chld_kind)) {
+                   console.log('Child type differ from expected', br.fType, chld_kind);
+                   continue;
+                }
+                
+                if (br.fType === JSROOT.BranchType.kBaseClassNode) {
+                   if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
+                   continue;
+                }
+                if (br.fName.indexOf(branch.fName + ".")!==0) {
+                   console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
+                   continue;
+                }
+
+                var subname = br.fName.substr(branch.fName.length+1);
+                var p = subname.indexOf('['); 
+                if (p>0) subname = subname.substr(0,p);
+                
+                if (subname.indexOf(".")>0) continue; // skip special case - need to do later
+
+                console.log('add new branch with name', subname);
+
+                if (!AddBranchForReading(br, master_target, subname, (chld_kind>0) ? "child" : true)) return false;
+             }
+             return true;
+          }
 
           if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
              
-             if (is_direct) {
+             if (is_direct === true) {
                 console.log('kObjectNode does not have data to be readed directly');
                 return null;
              }
@@ -1178,53 +1210,42 @@
              handle.process_arrays = false;
              
              // object where all sub-branches will be collected
-             var master_target = target_object[target_name] = { _typename: "TObject" };
+             var tgt = target_object[target_name] = { _typename: "TObject" };
 
              var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
                  s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
              
              if (s_elem && s_elem.fType === JSROOT.IO.kObject) {
-                master_target._typename = s_elem.fTypeName;
-                console.log('Reconstruct object of type', s_elem.fTypeName);
+                tgt._typename = s_elem.fTypeName;
+                console.log('Reconstruct object of type', tgt, s_elem.fTypeName);
              }
-
-             function ScanBranches(lst) {
-                if (!lst || !lst.arr.length) return true;
-                
-                for (var k=0;k<lst.arr.length;++k) {
-                   var br = lst.arr[k];
-                   if (br.fType === JSROOT.BranchType.kBaseClassNode) {
-                      if (!ScanBranches(br.fBranches)) return false;
-                      continue;
-                   }
-                   if (br.fName.indexOf(branch.fName + ".")!==0) {
-                      console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
-                      continue;
-                   }
-                   
-                   var subname = br.fName.substr(branch.fName.length+1);
-                   var p = subname.indexOf('['); 
-                   if (p>0) subname = subname.substr(0,p);
-                   console.log('add new branch with name', subname);
-                   
-                   if (!AddBranchForReading(br, master_target, subname)) return false;
-                }
-                return true;
-             }
-             
-             if (!ScanBranches(branch.fBranches)) return null;
+             if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
              
              return item; // this kind of branch does not have baskets and not need to be read
          }
-
           
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
-            if (is_direct || true) {
-               // read only counter from the branch 
-               elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
-            } else {
-               
+
+            elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
+
+            if (!is_direct) {
                handle.process_arrays = false;
+               console.log('Read complex branch');
+               
+               member = {
+                  name: target_name,
+                  conttype: branch.fClonesName || "TObject",
+                  func: function(buf,obj) {
+                     var size = buf.ntoi4(), n = 0;
+                     
+                     console.log('Read complex counter', size, 'type', this.conttype, 'name', this.name);
+                     
+                     obj[this.name] = new Array(size); // can one reuse memory later ???
+                     while (n<size) obj[this.name][n++] = { _typename: this.conttype }; // create new objects
+                  }
+               }
+               
+               child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
             }
           } else
        
@@ -1308,6 +1329,16 @@
              }
           }
 
+          if (item_cnt && (is_direct==="child")) {
+            console.log('special case for child branch', branch.fName, 'counter name is ', item_cnt.name);
+            
+            member.func0 = member.func;
+            member.name0 = item_cnt.name;
+            member.func = function(buf,obj) {
+               var tgt = obj[this.name0], n = 0; // array where reading is done
+               while (n<tgt.length) this.func0(buf,tgt[n++]); // read all individual object with standard functions 
+            }
+          } else
           if (item_cnt) {
 
              handle.process_arrays = false;
@@ -1451,13 +1482,17 @@
          
          handle.arr.push(item);
          
+         // now one should add all other child branches
+         if (child_scan)
+            if (!ScanBranches(branch.fBranches, target_object, child_scan)) return null;
+         
          return item;
       }
 
       // main loop to add all branches from selector for reading
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          
-         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], selector.directs[nn]); 
+         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], !!selector.directs[nn]); 
          
          if (!item) {
             selector.Terminate(false);
