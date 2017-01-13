@@ -227,6 +227,8 @@ At the expression end one can add several parameters:
   - "entries" - number of entries to process
   - "monitor" - periodically show incompleted draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request 
+  - "accum" - number of accumulated values before creating histogram
+  - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
   
 Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like:    
 

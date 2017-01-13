@@ -467,6 +467,7 @@
       this.hist_title = "Result of TTree::Draw";
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 1000;  // number of accumulated items before create histogram
+      this.htype = "F";
       this.monitoring = 0;
       this.globals = {}; // object with global parameters, which could be used in any draw expression 
    }
@@ -514,6 +515,13 @@
                break;
             case "accum":
                if (intvalue) this.arr_limit = intvalue;
+               break;
+            case "htype":
+               if (parvalue && (parvalue.length===1)) {
+                  this.htype = parvalue.toUpperCase();
+                  if ((this.htype!=="C") && (this.htype!=="S") && (this.htype!=="I") 
+                       && (this.htype!=="F") && (this.htype!=="L") && (this.htype!=="D")) this.htype = "F";
+               }
                break;
          }
       }
@@ -754,9 +762,9 @@
          this.z = this.GetMinMaxBins(2, 50);
 
          switch (this.ndim) {
-            case 1: this.hist = JSROOT.CreateHistogram("TH1F", this.x.nbins); break; 
-            case 2: this.hist = JSROOT.CreateHistogram("TH2F", this.x.nbins, this.y.nbins); break;
-            case 3: this.hist = JSROOT.CreateHistogram("TH3F", this.x.nbins, this.y.nbins, this.z.nbins); break;
+            case 1: this.hist = JSROOT.CreateHistogram("TH1"+this.htype, this.x.nbins); break; 
+            case 2: this.hist = JSROOT.CreateHistogram("TH2"+this.htype, this.x.nbins, this.y.nbins); break;
+            case 3: this.hist = JSROOT.CreateHistogram("TH3"+this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
 
          this.hist.fXaxis.fTitle = this.vars[0].code;
