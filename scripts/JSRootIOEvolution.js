@@ -68,6 +68,7 @@
                case "bool": 
                case "Bool_t": return JSROOT.IO.kBool;
                case "char": 
+               case "signed char": 
                case "Char_t": return JSROOT.IO.kChar;
                case "short": 
                case "Short_t": return JSROOT.IO.kShort;
@@ -94,6 +95,8 @@
                case "uint64_t": 
                case "unsigned long long": 
                case "ULong64_t": return JSROOT.IO.kULong64;
+               case "Double32_t": return JSROOT.IO.kDouble32; 
+               case "Float16_t": return JSROOT.IO.kDouble16; 
             }
             
             if (!norecursion) {
@@ -1113,6 +1116,7 @@
       this.fStreamerInfos = null;
       this.fFileName = "";
       this.fStreamers = [];
+      this.fBasicTypes = {}; // custom basic types, in most case enumerations 
 
       if (typeof this.fURL != 'string') return this;
 
@@ -1536,6 +1540,43 @@
 
       if (typeof JSROOT.addStreamerInfos === 'function')
          JSROOT.addStreamerInfos(lst);
+      
+      for (var k=0;k<lst.arr.length;++k) {
+         var si = lst.arr[k];
+         if (!si.fElements) continue;
+         for (var l=0;l<si.fElements.arr.length;++l) {
+            var elem = si.fElements.arr[l];
+            
+            if (!elem.fTypeName || !elem.fType) continue;
+            
+            var typ = elem.fType, typname = elem.fTypeName;
+            
+            if (typ >= 60) {
+               if ((typ===JSROOT.IO.kStreamer) && (elem._typename=="TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype<20)) {
+                  var prefix = JSROOT.IO.StlNames[elem.fSTLtype]+"<";
+                  if ((typname.indexOf(prefix)===0) && (typname[typname.length-1] == ">")) {
+                     typ = elem.fCtype;
+                     typname = typname.substr(prefix.length, typname.length-prefix.length-1).trim();
+                  }
+               }
+               if (typ>60) continue;
+            } else {
+               if ((typ>20) && (typname[typname.length-1]=="*")) typname = typname.substr(0,typname.length-1);
+               typ = typ % 20;
+            }
+            
+            var kind = JSROOT.IO.GetTypeId(typname);
+            if (kind === typ) continue;
+               
+            if ((typ === JSROOT.IO.kBits) && (kind===JSROOT.IO.kUInt)) continue;
+            if ((typ === JSROOT.IO.kCounter) && (kind===JSROOT.IO.kInt)) continue;
+
+            if (this.fBasicTypes[typname]!==typ) {
+               console.log('Extract basic data type', typ, typname);
+               this.fBasicTypes[typname] = typ;
+            }
+         }
+      }
    }
 
 
@@ -2088,6 +2129,10 @@
                member.conttype = member.typename.substr(p1+1,p2-p1-1).trim();
                
                member.typeid = JSROOT.IO.GetTypeId(member.conttype);
+               if ((member.typeid<0) && file.fBasicTypes[member.conttype]) {
+                  member.typeid = file.fBasicTypes[member.conttype];
+                  console.log('!!! Reuse basic type ',member.conttype,' from file streamer infos');
+               }
                
                // check
                if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
