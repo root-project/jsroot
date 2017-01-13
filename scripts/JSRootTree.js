@@ -508,6 +508,10 @@
             case "monitor":
                args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
                break;
+            case "maxseg":
+            case "maxrange":   
+               if (intvalue) tree.$file.fMaxRanges = intvalue;
+               break;
          }
       }
 
