@@ -25,12 +25,13 @@
       // class to read data from TTree
       this.branches = []; // list of branches to read
       this.names = []; // list of member names for each branch in tgtobj
+      this.directs = []; // indication if only branch without any childs should be read
       this.is_integer = []; // array of 
       this.break_execution = 0;
       this.tgtobj = {};
    }
    
-   JSROOT.TSelector.prototype.AddBranch = function(branch, name) {
+   JSROOT.TSelector.prototype.AddBranch = function(branch, name, direct) {
       // Add branch to the selector
       // Either branch name or branch itself should be specified
       // Second parameter defines member name in the tgtobj
@@ -41,6 +42,7 @@
          name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
       this.branches.push(branch);
       this.names.push(name);
+      this.directs.push(direct);
       return this.branches.length-1;
    }
    
@@ -228,7 +230,7 @@
       this.buf = []; // buffer accumulates temporary values
    }
    
-   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch) {
+   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch,direct_branch) {
       // when only_branch specified, its placed in the front of the expression 
       
       function is_start_symbol(symb) {
@@ -288,9 +290,20 @@
          
          // now extract all levels of iterators 
          while (pos2 < code.length) {
+            
+            if ((code[pos2]==="@") && (code.substr(pos2,5)=="@size") && (arriter.length==0)) {
+               pos2+=5; 
+               direct_branch = true; 
+               break;
+            } 
+
             if (code[pos2] === ".") {
                // this is object member
                var prev = ++pos2; 
+               
+               if (code[pos2]==="@") console.log('here');
+               
+               
                if (!is_start_symbol(code[prev])) {
                   console.error("Problem to parse ", code, "at", prev);
                   return false;
@@ -301,7 +314,7 @@
                arriter.push(code.substr(prev, pos2-prev));
                continue;
             }
-
+            
             if (code[pos2]!=="[") break;
             
             // simple [] 
@@ -339,7 +352,9 @@
          console.log('arriter', arriter);
          
          var indx = selector.indexOfBranch(br);
-         if (indx<0) indx = selector.AddBranch(br);
+         if (indx<0) indx = selector.AddBranch(br, undefined, direct_branch);
+         
+         direct_branch = undefined;
          
          this.brindex.push(indx);
          this.branches.push(selector.nameOfBranch(indx));
@@ -595,7 +610,7 @@
       this.ndim = 1;
       
       this.vars[0] = new JSROOT.TDrawVariable(this.globals);
-      if (!this.vars[0].Parse(tree, this, expr, branch)) return false;
+      if (!this.vars[0].Parse(tree, this, expr, branch, args.direct_branch)) return false;
       this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
       
       this.cut = new JSROOT.TDrawVariable(this.globals);
@@ -1064,7 +1079,7 @@
          return null;
       }
 
-      function AddBranchForReading(branch, target_object, target_name) {
+      function AddBranchForReading(branch, target_object, target_name, is_direct) {
          // central method to add branch for reading
 
          if (typeof branch === 'string')
@@ -1113,7 +1128,7 @@
             
             item_cnt = FindInHandle(branch.fBranchCount);
             
-            if (!item_cnt) item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++); 
+            if (!item_cnt) item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true); 
             
             if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
 
@@ -1139,7 +1154,7 @@
             if (BranchCount2) {
                item_cnt2 = FindInHandle(BranchCount2);
                
-               if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++); 
+               if (!item_cnt2) item_cnt2 = AddBranchForReading(BranchCount2, target_object, "$counter" + namecnt++, true); 
                
                if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
             }
@@ -1154,6 +1169,12 @@
              
 
           if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
+             
+             if (is_direct) {
+                console.log('kObjectNode does not have data to be readed directly');
+                return null;
+             }
+             
              handle.process_arrays = false;
              
              // object where all sub-branches will be collected
@@ -1198,9 +1219,13 @@
 
           
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
-             // this is branch with counter 
-             elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
-             // handle.process_arrays = false;
+            if (is_direct || true) {
+               // read only counter from the branch 
+               elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
+            } else {
+               
+               handle.process_arrays = false;
+            }
           } else
        
           if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
@@ -1432,7 +1457,7 @@
       // main loop to add all branches from selector for reading
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          
-         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn]); 
+         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], selector.directs[nn]); 
          
          if (!item) {
             selector.Terminate(false);
@@ -2059,24 +2084,24 @@
             // really create all sub-branch items
             if (!bobj) return false;
             
+            if (!bnode._childs) bnode._childs = [];
+
+            if (bobj.fLeaves && (bobj.fLeaves.arr.length === 1) &&
+                ((bobj.fType === JSROOT.BranchType.kClonesNode) || (bobj.fType === JSROOT.BranchType.kSTLNode))) {
+                 bobj.fLeaves.arr[0].$branch = bobj;
+                 bnode._childs.push({
+                    _name : "@size",
+                    _title : "container size",
+                    _kind : "ROOT.TLeafElement",
+                    _icon : "img_leaf",
+                    _obj : bobj.fLeaves.arr[0],
+                    _more : false
+                 });
+              }
+
             for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
             
-            if (!bobj.fLeaves || (bobj.fLeaves.arr.length !== 1)) return true;
-            
-            var leaf = bobj.fLeaves.arr[0];
-            if ((leaf._typename === 'TLeafElement') && (leaf.fType === JSROOT.IO.kSTL)) {
-               var szitem = {
-                     _name : "@size",
-                     _title : leaf.fTitle,
-                     _kind : "ROOT.TBranch",
-                     _icon : "img_leaf",
-                     _obj : bobj,
-                     _more : false
-               };
-               bnode._childs.push(szitem);
-               
-            }
             return true;
          }
          return true;
@@ -2126,6 +2151,12 @@
       if (obj.$branch) {
          // this is drawing of the single leaf from the branch 
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
+         if ((args.branch.fType === JSROOT.BranchType.kClonesNode) || (args.branch.fType === JSROOT.BranchType.kSTLNode)) {
+            // special case of size
+            args.expr = "";
+            args.direct_branch = true;
+         }
+         
          tree = obj.$branch.$tree;
       } else
       if (obj.$tree) {
