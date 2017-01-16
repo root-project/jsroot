@@ -1253,9 +1253,9 @@
              var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
                  s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
              
-             if (s_elem && s_elem.fType === JSROOT.IO.kObject) {
+             if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny))) {
                 tgt._typename = s_elem.fTypeName;
-                console.log('Reconstruct object of type', tgt, s_elem.fTypeName);
+                console.log('Reconstruct object of type', s_elem.fTypeName);
              }
              if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
              
@@ -1272,6 +1272,11 @@
              
              // object where all sub-branches will be collected
              var tgt = target_object[target_name] = { _typename: branch.fClassName };
+             
+             var methods = JSROOT.getMethods(branch.fClassName);
+             console.log(branch.fClassName, 'methods', methods);
+             
+             
              if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
              return item; // this kind of branch does not have baskets and not need to be read
           }

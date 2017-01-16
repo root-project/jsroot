@@ -1779,6 +1779,12 @@
             return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
          }
       }
+      if (typename.indexOf("ROOT::Math::LorentzVector")==0) {
+         m.mass = function() { return 1; };
+         m['@mass2'] = function() { return 2; };
+      }
+      
+      
 
       JSROOT.methodsCache[typename] = m;
       return m;
