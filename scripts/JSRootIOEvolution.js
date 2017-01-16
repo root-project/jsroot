@@ -2063,15 +2063,18 @@
             }
 
             if (member.readitem !== undefined) {
-               member.func = function(buf,obj) {
-                  var ver = buf.ReadVersion(), cnt = obj[this.cntname];
-                  var res = buf.ReadNdimArray(this, function(buf2,member2) {
+               member.read_loop = function(buf,cnt) {
+                  return buf.ReadNdimArray(this, function(buf2,member2) {
                      var itemarr = new Array(cnt);
                      for (var i = 0; i < cnt; ++i )
                         itemarr[i] = member2.readitem(buf2);
                      return itemarr;
                   });
-
+               }
+               
+               member.func = function(buf,obj) {
+                  var ver = buf.ReadVersion();
+                  var res = this.read_loop(buf, obj[this.cntname]);
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
@@ -2082,12 +2085,7 @@
                   
                   for (var loop0=0;loop0<sz0;++loop0) {
                      var cnt = obj[this.cntname][loop0];
-                     res[loop0] = buf.ReadNdimArray(this, function(buf2,member2) {
-                         var itemarr = new Array(cnt);
-                         for (var i = 0; i < cnt; ++i )
-                            itemarr[i] = member2.readitem(buf2);
-                         return itemarr;
-                     });
+                     res[loop0] = this.read_loop(buf, cnt);
                   }
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
@@ -2102,12 +2100,7 @@
                   
                   for (var loop0=0;loop0<arr.length;++loop0) {
                      var obj1 = this.get(arr,loop0), cnt = obj1[this.cntname];
-                     obj1[this.name] = buf.ReadNdimArray(this, function(buf2,member2) { 
-                        var itemarr = new Array(cnt);
-                        for (var i = 0; i < cnt; ++i )
-                           itemarr[i] = member2.readitem(buf2);
-                        return itemarr;
-                     }); 
+                     obj1[this.name] = this.read_loop(buf, cnt); 
                   }
                   
                   buf.CheckBytecount(ver, this.typename);
