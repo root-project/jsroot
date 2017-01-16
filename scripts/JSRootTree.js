@@ -1111,6 +1111,13 @@
          }
          var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
          elem.fType = datakind;
+         if (leaf.fLeafCount) {
+            elem._typename = "TStreamerBasicPointer";
+            elem.fType = JSROOT.IO.kOffsetP + datakind; 
+            elem.fCountVersion = 0;
+            elem.fCountName = leaf.fLeafCount.fName;
+            elem.fCountClass = "int";
+         }
          return elem;
       }
 
@@ -1166,7 +1173,15 @@
          };
 
          // check all counters if we 
-         var item_cnt = null, item_cnt2 = null;
+         var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+             nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
+             leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
+             elem = null, // TStreamerElement used to create reader 
+             member = null, // member for actual reading of the branch
+             is_brelem = (branch._typename==="TBranchElement"),
+             child_scan = 0, // scan child branches after main branch is appended
+             item_cnt = null, item_cnt2 = null;
+         
          
          if (branch.fBranchCount) {
             
@@ -1202,16 +1217,21 @@
                
                if (!item_cnt2) { console.error('Cannot add counter branch2', BranchCount2.fName); return null; }
             }
+         } else
+         if (nb_leaves===1 && leaf && leaf.fLeafCount) {
+            var br_cnt = handle.tree.FindBranch(leaf.fLeafCount.fName);
+            
+            if (br_cnt) {
+               console.log('Find counter branch', br_cnt.fName);
+
+               item_cnt = FindInHandle(br_cnt);
+               
+               if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, "$counter" + namecnt++, true); 
+               
+               if (!item_cnt) { console.error('Cannot add counter branch', br_cnt.fName); return null; }
+            }
          }
          
-         var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
-             nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
-             leaf = (nb_leaves>0) ? branch.fLeaves.arr[0] : null,
-             elem = null, // TStreamerElement used to create reader 
-             member = null, // member for actual reading of the branch
-             is_brelem = (branch._typename==="TBranchElement"),
-             child_scan = 0; // scan child branches after main branch is appended
-             
           function ScanBranches(lst, master_target, chld_kind) {
              if (!lst || !lst.arr.length) return true;
 
@@ -1430,7 +1450,7 @@
 
              handle.process_arrays = false;
 
-             if ((branch.fBranchCount.fType === JSROOT.BranchType.kClonesNode) || (branch.fBranchCount.fType === JSROOT.BranchType.kSTLNode)) {
+             if ((item_cnt.branch.fType === JSROOT.BranchType.kClonesNode) || (item_cnt.branch.fType === JSROOT.BranchType.kSTLNode)) {
                 // console.log('introduce special handling with STL size', elem.fType);
                 
                 if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
