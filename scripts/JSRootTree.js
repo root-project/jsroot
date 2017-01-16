@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['JSRootCore', 'JSRootIOEvolution'], factory );
+      define( ['JSRootCore', 'JSRootIOEvolution', 'JSRootMath'], factory );
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -317,6 +317,8 @@
                }
                
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
+               
+               if (code[pos2]=="(") { pos2 = prev-1; break; }
                
                arriter.push(code.substr(prev, pos2-prev));
                continue;
@@ -1264,6 +1266,8 @@
                 console.log('Object branch ' + object_class + ' can not have data to be readed directly');
                 return null;
              }
+             
+             console.log('object class', object_class );
              
              handle.process_arrays = false;
              
@@ -2286,7 +2290,6 @@
 
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
-         console.log('Draw function ', obj.func, ' for branch ', obj.branch.fName);
          args = { expr: "." + obj.func + "()", branch: obj.branch };
          if (opt && opt.indexOf("dump")==0) args.expr += ">>" + opt; else
          if (opt) args.expr += opt;

@@ -959,6 +959,11 @@
          modules.push('JSRootIOEvolution');
       }
 
+      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0)) { 
+         mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
+         modules.push('JSRootMath');
+      }
+
       if (kind.indexOf('tree;')>=0) {
          mainfiles += "$$$scripts/JSRootTree" + ext + ".js;";
          modules.push('JSRootTree');
@@ -985,11 +990,6 @@
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
-
-      if (kind.indexOf('math;')>=0)  {
-         mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
-         modules.push('JSRootMath');
-      }
 
       if (kind.indexOf('more2d;')>=0) {
          mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
@@ -1779,9 +1779,9 @@
             return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
          }
       }
-      if (typename.indexOf("ROOT::Math::LorentzVector")==0) {
-         m.mass = function() { return 1; };
-      }
+      
+      if (typeof JSROOT.getMoreMethods == "function")
+         JSROOT.getMoreMethods(m, typename, obj);
 
       JSROOT.methodsCache[typename] = m;
       return m;

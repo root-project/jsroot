@@ -644,6 +644,42 @@
       return JSROOT.Math.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    };
 
+   
+   // =========================================================================
+   
+   JSROOT.getMoreMethods = function(m,typename, obj) {
+      // different methods which are typically used in TTree::Draw
+   
+      if (typename.indexOf("ROOT::Math::LorentzVector")===0) {
+         m.Px = m.X = function() { return this.fCoordinates.Px(); }
+         m.Py = m.Y = function() { return this.fCoordinates.Py(); }
+         m.Pz = m.Z = function() { return this.fCoordinates.Pz(); }
+         m.E = m.T = function() { return this.fCoordinates.E(); }
+         m.M2 = function() { return this.fCoordinates.M2(); }
+         m.M = function() { return this.fCoordinates.M(); }
+         m.R = m.P = function() { return this.fCoordinates.R(); }
+         m.P2 = function() { return this.P() * this.P(); }
+      }
+
+      if (typename.indexOf("ROOT::Math::PxPyPzE4D")===0) {
+         m.Px = m.X = function() { return this.fX; }
+         m.Py = m.Y = function() { return this.fY; }
+         m.Pz = m.Z = function() { return this.fZ; }
+         m.E = m.T = function() { return this.fT; }
+         m.P2 = function() { return this.fX*this.fX + this.fY*this.fY + this.fZ*this.fZ; } 
+         m.R = m.P = function() { return Math.sqrt(this.P2()); } 
+         m.Mag2 = m.M2 = function() { return this.fT*this.fT - this.fX*this.fX - this.fY*this.fY - this.fZ*this.fZ; }
+         m.Mag = m.M = function() { 
+            var mm = this.M2();
+            if (mm >= 0) return Math.sqrt(mm);
+            return -Math.sqrt(-mm);
+         }
+         m.Perp2 = Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;}
+      }
+   }
+
+   
+
    return JSROOT;
 
 }));
