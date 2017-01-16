@@ -1782,8 +1782,6 @@
       if (typename.indexOf("ROOT::Math::LorentzVector")==0) {
          m.mass = function() { return 1; };
       }
-      
-      
 
       JSROOT.methodsCache[typename] = m;
       return m;

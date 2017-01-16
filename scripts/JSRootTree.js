@@ -1269,7 +1269,9 @@
              
              // object where all sub-branches will be collected
              var tgt = target_object[target_name] = { _typename: object_class };
-
+             
+             JSROOT.addMethods(tgt, object_class);
+             
              if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
              
              return item; // this kind of branch does not have baskets and not need to be read
@@ -1288,9 +1290,12 @@
                   func: function(buf,obj) {
                      var size = buf.ntoi4(), n = 0;
                      obj[this.name] = new Array(size); // can one reuse memory later ???
-                     while (n<size) obj[this.name][n++] = { _typename: this.conttype }; // create new objects
+                     while (n<size) obj[this.name][n++] = JSROOT.extend({ _typename: this.conttype }, this.methods); // create new objects
                   }
                }
+               
+               // TODO: one could create plain list of functions, which should be faster
+               member.methods = JSROOT.getMethods(member, member.conttype);
                
                child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
             }
@@ -2226,9 +2231,8 @@
                      bnode._childs.push({
                         _name: key+"()",
                         _title: "function " + key + " of class " + object_class,
-                        _kind: "ROOT.TLeafElement",
-                        _icon: "img_leaf",
-                        _obj: bobj,
+                        _kind: "ROOT.TBranchFunc", // fictional class, only for drawing
+                        _obj: { _typename: "TBranchFunc", branch: bobj, func: key },
                         _more : false
                      });
 
@@ -2280,6 +2284,14 @@
 
       var tree = obj, args = opt;
 
+      if (obj._typename == "TBranchFunc") {
+         // fictional object, created only in browser
+         console.log('Draw function ', obj.func, ' for branch ', obj.branch.fName);
+         args = { expr: "." + obj.func + "()", branch: obj.branch };
+         if (opt && opt.indexOf("dump")==0) args.expr += ">>" + opt; else
+         if (opt) args.expr += opt;
+         tree = obj.branch.$tree;
+      } else
       if (obj.$branch) {
          // this is drawing of the single leaf from the branch 
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
