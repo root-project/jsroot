@@ -1781,7 +1781,6 @@
       }
       if (typename.indexOf("ROOT::Math::LorentzVector")==0) {
          m.mass = function() { return 1; };
-         m['@mass2'] = function() { return 2; };
       }
       
       

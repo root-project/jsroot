@@ -1045,6 +1045,24 @@
    }
    
    // ======================================================================
+
+   JSROOT.GetBranchObjectClass = function(branch, tree) {
+      if (!branch || (branch._typename!=="TBranchElement")) return "";
+
+      if (branch.fType === JSROOT.BranchType.kObjectNode) {
+         var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+             s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
+         if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
+            return s_elem.fTypeName;
+         return "TObject";
+      }
+
+      if ((branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID===-2) && (branch.fStreamerType===-1)) {
+         // object where all sub-branches will be collected
+         return branch.fClassName;
+      }
+      return "";
+   }
    
    /** @namespace JSROOT.TreeMethods */
    JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree 
@@ -1237,49 +1255,25 @@
              }
              return true;
           }
-
-          if (is_brelem && (branch.fType === JSROOT.BranchType.kObjectNode)) {
+          
+          var object_class = JSROOT.GetBranchObjectClass(branch, handle.tree); 
+          
+          if (object_class) {
              
              if (is_direct === true) {
-                console.log('kObjectNode does not have data to be readed directly');
+                console.log('Object branch ' + object_class + ' can not have data to be readed directly');
                 return null;
              }
              
              handle.process_arrays = false;
              
              // object where all sub-branches will be collected
-             var tgt = target_object[target_name] = { _typename: "TObject" };
+             var tgt = target_object[target_name] = { _typename: object_class };
 
-             var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-                 s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
-             
-             if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny))) {
-                tgt._typename = s_elem.fTypeName;
-                console.log('Reconstruct object of type', s_elem.fTypeName);
-             }
              if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
              
              return item; // this kind of branch does not have baskets and not need to be read
          }
-          
-          if (is_brelem && (branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID===-2) && (branch.fStreamerType===-1)) {
-             if (is_direct === true) {
-                console.log('Object branch does not have data to be readed directly');
-                return null;
-             }
-             
-             handle.process_arrays = false;
-             
-             // object where all sub-branches will be collected
-             var tgt = target_object[target_name] = { _typename: branch.fClassName };
-             
-             var methods = JSROOT.getMethods(branch.fClassName);
-             console.log(branch.fClassName, 'methods', methods);
-             
-             
-             if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
-             return item; // this kind of branch does not have baskets and not need to be read
-          }
           
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
 
@@ -2204,23 +2198,42 @@
             if (!bobj) return false;
             
             if (!bnode._childs) bnode._childs = [];
-
+            
             if (bobj.fLeaves && (bobj.fLeaves.arr.length === 1) &&
                 ((bobj.fType === JSROOT.BranchType.kClonesNode) || (bobj.fType === JSROOT.BranchType.kSTLNode))) {
                  bobj.fLeaves.arr[0].$branch = bobj;
                  bnode._childs.push({
-                    _name : "@size",
-                    _title : "container size",
-                    _kind : "ROOT.TLeafElement",
-                    _icon : "img_leaf",
-                    _obj : bobj.fLeaves.arr[0],
+                    _name: "@size",
+                    _title: "container size",
+                    _kind: "ROOT.TLeafElement",
+                    _icon: "img_leaf",
+                    _obj: bobj.fLeaves.arr[0],
                     _more : false
                  });
               }
 
-            for ( var i = 0; i < bobj.fBranches.arr.length; ++i) 
+            for (var i=0; i < bobj.fBranches.arr.length; ++i) 
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
+
+            var object_class = JSROOT.GetBranchObjectClass(bobj, bobj.$tree); 
+            var methods = object_class ? JSROOT.getMethods(object_class) : {};
             
+            if (methods)
+               for (var key in methods) {
+                  if (typeof methods[key] !== 'function') continue;
+                  var s = methods[key].toString();
+                  if ((s.indexOf("return")>0) && (s.indexOf("function ()")==0))
+                     bnode._childs.push({
+                        _name: key+"()",
+                        _title: "function " + key + " of class " + object_class,
+                        _kind: "ROOT.TLeafElement",
+                        _icon: "img_leaf",
+                        _obj: bobj,
+                        _more : false
+                     });
+
+               }
+
             return true;
          }
          return true;
