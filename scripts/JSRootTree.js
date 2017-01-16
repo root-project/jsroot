@@ -1111,13 +1111,6 @@
          }
          var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
          elem.fType = datakind;
-         if (leaf.fLeafCount) {
-            elem._typename = "TStreamerBasicPointer";
-            elem.fType = JSROOT.IO.kOffsetP + datakind; 
-            elem.fCountVersion = 0;
-            elem.fCountName = leaf.fLeafCount.fName;
-            elem.fCountClass = "int";
-         }
          return elem;
       }
 
@@ -1191,6 +1184,8 @@
             
             if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
 
+            console.log('Add counter brnach', branch.fBranchCount.fName, 'as', item_cnt.name);
+            
             var BranchCount2 = branch.fBranchCount2;
             
             if (!BranchCount2 && (branch.fBranchCount.fStreamerType===JSROOT.IO.kSTL) && 
@@ -1449,124 +1444,118 @@
           if (item_cnt) {
 
              handle.process_arrays = false;
+             
+             if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
+                // special handling for compressed floats
 
-             if ((item_cnt.branch.fType === JSROOT.BranchType.kClonesNode) || (item_cnt.branch.fType === JSROOT.BranchType.kSTLNode)) {
-                // console.log('introduce special handling with STL size', elem.fType);
-                
-                if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
-                   // special handling for compressed floats
-                   
-                   member.stl_size = item_cnt.name;
-                   member.func = function(buf, obj) {
-                      obj[this.name] = this.readarr(buf, obj[this.stl_size]);
-                   }
-                   
-                } else
-                if (((elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
-                   // special handling for compressed floats - not tested
-                   
-                   member.stl_size = item_cnt.name;
-                   member.arr_size = item_cnt2.name;
-                   member.func = function(buf, obj) {
-                      var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
-                      for (var n=0;n<sz0;++n) 
-                         arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
+                member.stl_size = item_cnt.name;
+                member.func = function(buf, obj) {
+                   obj[this.name] = this.readarr(buf, obj[this.stl_size]);
+                }
+
+             } else
+             if (((elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kOffsetP+JSROOT.IO.kFloat16)) && branch.fBranchCount2) {
+                // special handling for variable arrays of compressed floats in branch - not tested
+
+                member.stl_size = item_cnt.name;
+                member.arr_size = item_cnt2.name;
+                member.func = function(buf, obj) {
+                   var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                   for (var n=0;n<sz0;++n) 
+                      arr[n] = (buf.ntou1() === 1) ? this.readarr(buf, sz1[n]) : [];
                       obj[this.name] = arr;
-                   }
+                }
                    
-                } else
-                // special handling of simple arrays
-                if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
-                    (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
+             } else
+             // special handling of simple arrays
+             if (((elem.fType > 0) && (elem.fType < JSROOT.IO.kOffsetL)) || (elem.fType === JSROOT.IO.kTString) ||
+                 (((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL)) && branch.fBranchCount2)) {
                    
-                   member = {
+                member = {
                       name: target_name,
                       stl_size: item_cnt.name,
                       type: elem.fType,
                       func: function(buf, obj) {
                          obj[this.name] = buf.ReadFastArray(obj[this.stl_size], this.type);
                       }
-                   };
+                };
+
+                if (branch.fBranchCount2) {
+                   member.type -= JSROOT.IO.kOffsetP;  
+                   member.arr_size = item_cnt2.name;
+                   member.func = function(buf, obj) {
+                      var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
+                      for (var n=0;n<sz0;++n) 
+                         arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) : [];
+                         obj[this.name] = arr;
+                   }
+                }
                    
-                   if (branch.fBranchCount2) {
-                      member.type -= JSROOT.IO.kOffsetP;  
-                      member.arr_size = item_cnt2.name;
-                      member.func = function(buf, obj) {
-                         var sz0 = obj[this.stl_size], sz1 = obj[this.arr_size], arr = new Array(sz0);
-                         for (var n=0;n<sz0;++n) 
-                            arr[n] = (buf.ntou1() === 1) ? buf.ReadFastArray(sz1[n], this.type) : [];
+             } else
+             if ((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL) && member.cntname) {
+                console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
+                  
+                member.cntname = item_cnt.name; 
+             } else
+             if (elem.fType == JSROOT.IO.kStreamer) {
+                // with streamers one need to extend existing array
+
+                if (item_cnt2)
+                   throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+
+                console.log('Reading kStreamer in STL branch');
+
+                // function provided by normal I/O
+                member.func = member.branch_func;
+                member.stl_size = item_cnt.name; 
+
+                // for empty STL branch with map item read version anyway, for vector does not
+                member.read_empty_stl_version = (member.readelem === JSROOT.IO.ReadMapElement); 
+                   
+             } else 
+             if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
+                // special solution for kStreamLoop
+
+                if (!item_cnt2) throw new Error('Missing second count branch for kStreamLoop ' + branch.fName);
+
+                member.stl_size = item_cnt.name;
+                member.cntname = item_cnt2.name;
+                member.func = member.branch_func; // this is special function, provided by base I/O
+                   
+             } else  {
+                   
+                member.name = "$stl_member";
+
+                var loop_size_name;
+
+                if (item_cnt2) {
+                   if (member.cntname) { 
+                      loop_size_name = item_cnt2.name;
+                      member.cntname = "$loop_size";
+                   } else {
+                      throw new Error('Second branch counter not used - very BAD');
+                   }
+                }
+
+                var stlmember = {
+                      name: target_name,
+                      stl_size: item_cnt.name,
+                      loop_size: loop_size_name,
+                      member0: member,
+                      func: function(buf, obj) {
+                         var cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
+                         for (var n=0;n<cnt;++n) {
+                            if (this.loop_size) obj.$loop_size = obj[this.loop_size][n]; 
+                            this.member0.func(buf, obj);
+                            arr[n] = obj.$stl_member;
+                         }
+                         delete obj.$stl_member;
+                         delete obj.$loop_size;
                          obj[this.name] = arr;
                       }
-                   }
-                   
-                } else 
-                if (elem.fType == JSROOT.IO.kStreamer) {
-                   // with streamers one need to extend existing array
-                   
-                   if (item_cnt2)
-                      throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
+                };
 
-                   console.log('Reading kStreamer in STL branch');
-                   
-                   // function provided by normal I/O
-                   member.func = member.branch_func;
-                   member.stl_size = item_cnt.name; 
-                   
-                   // for empty STL branch with map item read version anyway, for vector does not
-                   member.read_empty_stl_version = (member.readelem === JSROOT.IO.ReadMapElement); 
-                   
-                } else 
-                if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
-                   // special solution for kStreamLoop
-                   
-                   if (!item_cnt2) throw new Error('Missing second count branch for kStreamLoop ' + branch.fName);
-                   
-                   member.stl_size = item_cnt.name;
-                   member.cntname = item_cnt2.name;
-                   member.func = member.branch_func; // this is special function, provided by base I/O
-                   
-                } else  {
-                   
-                   member.name = "$stl_member";
-
-                   var loop_size_name;
-
-                   if (item_cnt2) {
-                      if (member.cntname) { 
-                         loop_size_name = item_cnt2.name;
-                         member.cntname = "$loop_size";
-                      } else {
-                         throw new Error('Second branch counter not used - very BAD');
-                      }
-                   }
-                   
-                   var stlmember = {
-                         name: target_name,
-                         stl_size: item_cnt.name,
-                         loop_size: loop_size_name,
-                         member0: member,
-                         func: function(buf, obj) {
-                            var cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
-                            for (var n=0;n<cnt;++n) {
-                               if (this.loop_size) obj.$loop_size = obj[this.loop_size][n]; 
-                               this.member0.func(buf, obj);
-                               arr[n] = obj.$stl_member;
-                            }
-                            delete obj.$stl_member;
-                            delete obj.$loop_size;
-                            obj[this.name] = arr;
-                         }
-                   };
-
-                   member = stlmember;
-                }
-                
-             } else {
-                if (member.cntname === undefined) console.log('Problem with branch ', branch.fName, ' reader function not defines counter name');
-                
-                console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
-                
-                member.cntname = item_cnt.name; 
+                member = stlmember;
              }
           }
           
