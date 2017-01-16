@@ -1361,39 +1361,45 @@
           }
 
           if (item_cnt && (typeof is_direct === "string")) {
-             console.log('branch', branch.fName, 'target name', target_name);
-             
-            member.func0 = member.func;
-            member.name0 = item_cnt.name;
-            
-            if (target_name.indexOf(".") >=0) {
-               if (is_direct === "$child$") {
-                  console.error('target name contains point, but suppose to be direct child', target_name);
-                  return null;
-               }
-               var snames = target_name.split(".");
-               if (snames.length !== 2) {
-                  console.log('Not yet supported more than 2 parts in the target name', target_name);
-                  return null;
-               }
-               target_name = member.name = snames[1];
-               member.name1 = snames[0];
-               member.subtype1 = is_direct;
-            }
-            
-            // this is very simple case of direct childs
-            member.func = function(buf,obj) {
-               var arr = obj[this.name0], len = arr.length; // array where reading is done
-               for (var n=0;n<arr.length;++n) {
-                  var obj1 = arr[n];
-                  if (this.name1) {
-                     obj1 = obj1[this.name1];
-                     if (!obj1) obj1 = arr[n][this.name1] = { _typename: this.subtype1 };
-                  }
-                  this.func0(buf,obj1); // read all individual object with standard functions
-               }
-            }
-               
+             member.name0 = item_cnt.name;
+
+             if (target_name.indexOf(".") >=0) {
+                // case when target is sub-object and need to be created before 
+                if (is_direct === "$child$") {
+                   console.error('target name contains point, but suppose to be direct child', target_name);
+                   return null;
+                }
+                var snames = target_name.split(".");
+                if (snames.length !== 2) {
+                   console.log('Not yet supported more than 2 parts in the target name', target_name);
+                   return null;
+                }
+                target_name = member.name = snames[1];
+                member.name1 = snames[0];
+                member.subtype1 = is_direct;
+                member.get = function(arr,n) {
+                   var obj1 = arr[n][this.name1];
+                   if (!obj1) obj1 = arr[n][this.name1] = { _typename: this.subtype1 };
+                   return obj1;
+                }
+
+             } else {
+                member.get = function(arr,n) { return arr[n]; }
+             }
+
+             if (member.objs_branch_func) {
+                // STL branch provides special function for the reading
+                member.func = member.objs_branch_func;
+             } else {
+                member.func0 = member.func;
+
+                member.func = function(buf,obj) {
+                   var arr = obj[this.name0], n = 0; // objects array where reading is done
+                   while(n<arr.length) 
+                      this.func0(buf,this.get(arr,n++)); // read all individual object with standard functions
+                }
+             }
+
           } else
           if (item_cnt) {
 

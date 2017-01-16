@@ -2055,11 +2055,11 @@
                if (member.arrkind > 0) {
                   member.readitem = function(buf) { return buf.ReadFastArray(buf.ntou4(), this.arrkind); };
                } else
-                  if (member.arrkind === 0) {
-                     member.readitem = function(buf) { return buf.ReadTString(); }
-                  } else {
-                     member.readitem = function(buf) { return buf.ClassStreamer({}, this.typename); }
-                  }
+               if (member.arrkind === 0) {
+                  member.readitem = function(buf) { return buf.ReadTString(); }
+               } else {
+                  member.readitem = function(buf) { return buf.ClassStreamer({}, this.typename); }
+               }
             }
 
             if (member.readitem !== undefined) {
@@ -2077,7 +2077,9 @@
                }
                member.branch_func = function(buf,obj) {
                   // this is special functions, used by branch in the STL container
+                  
                   var ver = buf.ReadVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
+                  
                   for (var loop0=0;loop0<sz0;++loop0) {
                      var cnt = obj[this.cntname][loop0];
                      res[loop0] = buf.ReadNdimArray(this, function(buf2,member2) {
@@ -2090,6 +2092,28 @@
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
+               
+               member.objs_branch_func = function(buf,obj) {
+                  // special function when branch read as part of complete object
+                  // objects already preallocated and only appropriate member must be set
+                  // see code in JSRootTree.js for reference
+                  
+                  var ver = buf.ReadVersion(), arr = obj[this.name0]; // objects array where reading is done
+                  
+                  for (var loop0=0;loop0<arr.length;++loop0) {
+                     var obj1 = this.get(arr,loop0), cnt = obj1[this.cntname];
+                     obj1[this.name] = buf.ReadNdimArray(this, function(buf2,member2) { 
+                        var itemarr = new Array(cnt);
+                        for (var i = 0; i < cnt; ++i )
+                           itemarr[i] = member2.readitem(buf2);
+                        return itemarr;
+                     }); 
+                  }
+                  
+                  buf.CheckBytecount(ver, this.typename);
+               }
+
+               
             } else {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
                member.func = function(buf,obj) {
@@ -2296,7 +2320,27 @@
                      arr[i][this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   buf.CheckBytecount(ver, this.typename);
                }
-
+               member.objs_branch_func = function(buf,obj) {
+                  // special function when branch read as part of complete object
+                  // objects already preallocated and only appropriate member must be set
+                  // see code in JSRootTree.js for reference
+                  
+                  var arr = obj[this.name0]; // objects array where reading is done
+                  
+                  if ((arr.length>0) || this.read_empty_stl_version) {
+                     
+                     console.log('read STL branch', arr.length, this.typename);
+                  
+                     var ver = this.read_version(buf);
+                  
+                     for (var n=0;n<arr.length;++n) {
+                        var obj1 = this.get(arr,n);
+                        obj1[this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); }); 
+                     }
+                     
+                     buf.CheckBytecount(ver, "branch " + this.typename);
+                  }
+               }
             } 
             break;
 
@@ -2793,7 +2837,7 @@
          }
          return res;
       }
-
+      
       var n = buf.ntou4(), res = new Array(n), i = 0;
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); } 
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); } 
