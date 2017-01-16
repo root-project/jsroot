@@ -2223,7 +2223,7 @@
             var object_class = JSROOT.GetBranchObjectClass(bobj, bobj.$tree); 
             var methods = object_class ? JSROOT.getMethods(object_class) : {};
             
-            if (methods)
+            if (methods && (bobj.fBranches.arr.length>0))
                for (var key in methods) {
                   if (typeof methods[key] !== 'function') continue;
                   var s = methods[key].toString();
