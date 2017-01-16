@@ -1206,16 +1206,20 @@
                    if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
                    continue;
                 }
-                if (br.fName.indexOf(branch.fName + ".")!==0) {
-                   console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
-                   continue;
+                
+                var subname = br.fName, chld_direct = 1; 
+                
+                if (branch.fType === JSROOT.BranchType.kObjectNode) {
+                   if (br.fName.indexOf(branch.fName + ".")!==0) {
+                      console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
+                      continue;
+                   }
+                   subname = br.fName.substr(branch.fName.length+1);
                 }
-
-                var subname = br.fName.substr(branch.fName.length+1);
+                
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
 
-                var chld_direct = true;
                 if (chld_kind > 0) {
                    chld_direct = "$child$";
                    var pp = subname.indexOf(".");
@@ -1228,7 +1232,6 @@
                 }
 
                 console.log('Add branch', branch.fName, 'target', subname, chld_direct);
-                
 
                 if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
              }
@@ -1258,6 +1261,20 @@
              
              return item; // this kind of branch does not have baskets and not need to be read
          }
+          
+          if (is_brelem && (branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID===-2) && (branch.fStreamerType===-1)) {
+             if (is_direct === true) {
+                console.log('Object branch does not have data to be readed directly');
+                return null;
+             }
+             
+             handle.process_arrays = false;
+             
+             // object where all sub-branches will be collected
+             var tgt = target_object[target_name] = { _typename: branch.fClassName };
+             if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
+             return item; // this kind of branch does not have baskets and not need to be read
+          }
           
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
 
