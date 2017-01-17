@@ -1073,7 +1073,7 @@
    
    // ======================================================================
 
-   JSROOT.GetBranchObjectClass = function(branch, tree) {
+   JSROOT.GetBranchObjectClass = function(branch, tree, with_clones) {
       if (!branch || (branch._typename!=="TBranchElement")) return "";
 
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
@@ -1088,6 +1088,10 @@
          // object where all sub-branches will be collected
          return branch.fClassName;
       }
+      
+      if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
+         return branch.fClonesName;
+      
       return "";
    }
    
@@ -1205,11 +1209,13 @@
             
             item_cnt = FindInHandle(branch.fBranchCount);
             
-            if (!item_cnt) item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true); 
+            if (!item_cnt) {
+               item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true); 
+               console.log('Add counter brnach', branch.fBranchCount.fName, 'as', item_cnt ? item_cnt.name : "---");
+            }
             
             if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
 
-            console.log('Add counter brnach', branch.fBranchCount.fName, 'as', item_cnt.name);
             
             var BranchCount2 = branch.fBranchCount2;
             
@@ -1267,15 +1273,12 @@
                    continue;
                 }
                 
-                var subname = br.fName, chld_direct = 1; 
-                
-                if (branch.fType === JSROOT.BranchType.kObjectNode) {
-                   if (br.fName.indexOf(branch.fName + ".")!==0) {
-                      console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
-                      continue;
-                   }
-                   subname = br.fName.substr(branch.fName.length+1);
+                if (br.fName.indexOf(branch.fName + ".")!==0) {
+                   console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
+                   continue;
                 }
+                
+                var subname = br.fName.substr(branch.fName.length+1), chld_direct = 1;
                 
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
@@ -1291,7 +1294,7 @@
                    }
                 }
 
-                console.log('Add branch', branch.fName, 'target', subname, chld_direct);
+                console.log('Add branch', br.fName, 'target', subname, chld_direct);
 
                 if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
              }
@@ -1426,6 +1429,7 @@
           }
 
           if (item_cnt && (typeof is_direct === "string")) {
+             
              member.name0 = item_cnt.name;
 
              if (target_name.indexOf(".") >=0) {
@@ -1442,9 +1446,10 @@
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
                 member.subtype1 = is_direct;
+                member.methods1 = JSROOT.getMethods(member.subtype1);
                 member.get = function(arr,n) {
                    var obj1 = arr[n][this.name1];
-                   if (!obj1) obj1 = arr[n][this.name1] = { _typename: this.subtype1 };
+                   if (!obj1) obj1 = arr[n][this.name1] = JSROOT.extend({ _typename: this.subtype1 }, this.methods1);
                    return obj1;
                 }
 
@@ -2080,7 +2085,7 @@
          // branch object remains, threrefore we need to copy fields to see them all
          selector.copy_fields = !args.leaf && args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1);
          
-         selector.AddBranch(args.branch, "br0");
+         selector.AddBranch(args.branch, "br0", args.direct_branch);
          
          selector.Process = function() {
             var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0; 
@@ -2199,8 +2204,8 @@
          
          var br = args.branches[args.nbr];
          
-         var object_class = JSROOT.GetBranchObjectClass(br, tree);
-         var num = br.fEntries, 
+         var object_class = JSROOT.GetBranchObjectClass(br, tree),
+             num = br.fEntries, 
              first = br.fFirstEntry || 0,
              last = br.fEntryNumber || (first+num);
          
@@ -2281,8 +2286,8 @@
             for (var i=0; i < bobj.fBranches.arr.length; ++i) 
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
 
-            var object_class = JSROOT.GetBranchObjectClass(bobj, bobj.$tree); 
-            var methods = object_class ? JSROOT.getMethods(object_class) : {};
+            var object_class = JSROOT.GetBranchObjectClass(bobj, bobj.$tree, true), 
+                methods = object_class ? JSROOT.getMethods(object_class) : null;
             
             if (methods && (bobj.fBranches.arr.length>0))
                for (var key in methods) {
