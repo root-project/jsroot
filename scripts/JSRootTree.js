@@ -381,10 +381,13 @@
          
          pos = pos + replace.length;
       }
-      
+
       // support usage of some standard TMath functions
-      code = JSROOT.Math.ReplaceExpression(code, "arg.$math");
-      
+      code = code.replace(/ROOT__TMath__Exp\(/g, 'Math.exp(')
+                 .replace(/ROOT__TMath__Abs\(/g, 'Math.abs(')
+                 .replace(/ROOT__TMath__Prob\(/g, 'arg.$math.Prob(')
+                 .replace(/ROOT__TMath__Gaus\(/g, 'arg.$math.Gaus(');
+
       this.func = new Function("arg", "return (" + code + ")");
       
       return true;
@@ -588,6 +591,8 @@
       // parse option for histogram creation
 
       this.hist_title = "drawing '" + expr + "' from " + tree.fName;
+      
+      expr = expr.replace(/TMath::/g, 'ROOT__TMath__'); // avoid confusion due-to :: in the namespace 
 
       var pos = expr.lastIndexOf("::"), cut = "";
       if (pos>0) {
