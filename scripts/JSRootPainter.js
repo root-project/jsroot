@@ -8508,16 +8508,8 @@
       return true;
    }
 
-   JSROOT.Painter.IsRootCollection = function(lst) {
-      if (!lst || (typeof lst !== 'object')) return false;
-
-      return (lst.$kind === "TList") || (lst.$kind === "TObjArray") || 
-            (lst._typename === 'TList') || (lst._typename === 'THashList') || (lst._typename === 'TMap') ||
-            (lst._typename === 'TObjArray') || (lst._typename === 'TClonesArray');
-   }
-
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
-      if (!JSROOT.Painter.IsRootCollection(lst)) return false;
+      if (!JSROOT.IsRootCollection(lst)) return false;
       
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
@@ -8780,7 +8772,7 @@
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
-                     default: if (JSROOT.Painter.IsRootCollection(fld) && (typeof fld.arr === "object")) {
+                     default: if (JSROOT.IsRootCollection(fld) && (typeof fld.arr === "object")) {
                         item._value = fld.arr.length ? "[...]" : "[]";
                         item._title += ", size:"  + fld.arr.length;
                      }

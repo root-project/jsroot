@@ -104,14 +104,6 @@
       return plain ? 2 : 1;
    }
    
-   JSROOT.IsRootCollection = function(obj) {
-      if (!obj || (typeof obj !== 'object')) return false;
-      
-      var kind = obj.$kind || obj._typename;
-      
-      return ((obj.arr !== undefined) && (kind === 'TList') || (kind === 'TObjArray') || (kind === 'TClonesArray')); 
-   }
-   
    JSROOT.ArrayIterator = function(arr, select, tgtobj) {
       // class used to iterate over all array indexes until number value
       this.object = arr;
@@ -297,8 +289,6 @@
                // when branch name ends with point, means object itself should be extracted
                arriter.push("$self$");
             }
-            
-            console.log('found branch', br.fName, 'mode', branch_mode);
          }
          
          // now extract all levels of iterators 
@@ -323,6 +313,16 @@
                
                if (code[pos2]=="(") { pos2 = prev-1; break; }
                
+               // this is selection of member, but probably we need to actiavte iterator for ROOT collection
+               if ((arriter.length===0) && br) {
+                  if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
+                     arriter.push(undefined); 
+                  } else {   
+                     var objclass = JSROOT.IO.GetBranchObjectClass(br, tree, false, true);
+                     console.log('Object class', objclass);
+                     if (objclass && JSROOT.IsRootCollection(null, objclass)) arriter.push(undefined); 
+                  }
+               }
                arriter.push(code.substr(prev, pos2-prev));
                continue;
             }
@@ -1076,16 +1076,8 @@
    
    // ======================================================================
 
-   JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones) {
+   JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
       if (!branch || (branch._typename!=="TBranchElement")) return "";
-
-      if (branch.fType === JSROOT.BranchType.kObjectNode) {
-         var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-             s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
-         if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
-            return s_elem.fTypeName;
-         return "TObject";
-      }
 
       if ((branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID===-2) && (branch.fStreamerType===-1)) {
          // object where all sub-branches will be collected
@@ -1094,7 +1086,22 @@
       
       if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
          return branch.fClonesName;
+
+      var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+          s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
       
+      if (branch.fType === JSROOT.BranchType.kObjectNode) {
+         if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
+            return s_elem.fTypeName;
+         return "TObject";
+      }
+      
+      if ((branch.fType === JSROOT.BranchType.kLeafNode) && s_elem && with_leafs) {
+         if ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)) return s_elem.fTypeName; 
+         if (s_elem.fType === JSROOT.IO.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length-1);  
+      }
+         
+
       return "";
    }
    

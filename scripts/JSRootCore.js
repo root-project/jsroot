@@ -1787,6 +1787,16 @@
       JSROOT.methodsCache[typename] = m;
       return m;
    };
+   
+   JSROOT.IsRootCollection = function(lst, typename) {
+      if (lst && (typeof lst === 'object')) {
+         if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
+         if (!typename) typename = lst._typename; 
+      }
+      if (!typename) return false;
+      return (typename === 'TList') || (typename === 'THashList') || (typename === 'TMap') ||
+             (typename === 'TObjArray') || (typename === 'TClonesArray');
+   }
 
    JSROOT.addMethods = function(obj, typename) {
       this.extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
