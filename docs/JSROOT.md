@@ -205,6 +205,10 @@ One also could specify cut condition, separating it with "::" from the rest draw
 
    - [opt=px:py::pz>5](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>5)
 
+Contrary to the normal ROOT, JSROOT allows to use "?" operator (placed into braces):
+
+   - [opt=px:py::(pz>5?2:1)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::%28pz>5?2:1%29)
+
 It is possible to "dump" content of any branch (by default - first 10 entries):   
 
    - [item=ntuple/px&opt=dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple/px&opt=dump)

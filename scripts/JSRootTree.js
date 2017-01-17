@@ -406,7 +406,7 @@
    }
    
    JSROOT.TDrawVariable.prototype.is_dummy = function() {
-      return this.branches.length === 0;
+      return (this.branches.length === 0) && !this.func;
    }
    
    JSROOT.TDrawVariable.prototype.Produce = function(obj) {
