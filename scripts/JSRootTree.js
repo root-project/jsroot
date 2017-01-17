@@ -493,6 +493,7 @@
       this.cut = null; // cut variable
       this.hist = null;
       this.histo_callback = callback;
+      this.histo_drawopt = "";
       this.hist_name = "$htemp";
       this.hist_title = "Result of TTree::Draw";
       this.hist_args = []; // arguments for histogram creation
@@ -549,6 +550,9 @@
                   if ((this.htype!=="C") && (this.htype!=="S") && (this.htype!=="I") 
                        && (this.htype!=="F") && (this.htype!=="L") && (this.htype!=="D")) this.htype = "F";
                }
+               break;
+            case "drawopt":
+               this.histo_drawopt = parvalue;
                break;
          }
       }
@@ -625,6 +629,9 @@
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
       
       this.monitoring = args.monitoring;
+      
+      if (!this.histo_drawopt)
+         this.histo_drawopt = (this.ndim===2) ? "col" : "";
       
       return true;
    }
@@ -1051,8 +1058,7 @@
          var now = new Date().getTime();
          if (now - this.lasttm > this.monitoring) { 
             this.lasttm = now;
-            var drawopt = (this.ndim==2) ? "col" : "";
-            JSROOT.CallBack(this.histo_callback, this.hist, drawopt, true);
+            JSROOT.CallBack(this.histo_callback, this.hist, this.histo_drawopt, true);
          }
       }
    }
@@ -1062,10 +1068,7 @@
       
       this.ShowProgress();
       
-      var drawopt = (this.ndim==2) ? "col" : "";
-      if (this.dump_values) drawopt = "inspect";
-      
-      return JSROOT.CallBack(this.histo_callback, this.hist, drawopt);
+      return JSROOT.CallBack(this.histo_callback, this.hist, this.dump_values ? "inspect" : this.histo_drawopt);
    }
    
    // ======================================================================

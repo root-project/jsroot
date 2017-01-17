@@ -222,17 +222,20 @@ will dump last element from event.fTracks array. One also can extract size of us
 
    - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
    
-At the expression end one can add several parameters:
+At the end of expression one can add several parameters with the syntax:
+
+    <draw_expession>;par1name:par1value;par2name:par2value
+    
+Followining parameters are supported:    
   - "first" - id of the first entry to process
   - "entries" - number of entries to process
   - "monitor" - periodically show incompleted draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request 
   - "accum" - number of accumulated values before creating histogram
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
+  - "drawopt" - drawing option for produced histogram
   
-Parameters can be specified with following syntax "<draw_expession>;par1name:par1value;par2name:par2value". Like:    
-
-   - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
+Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
 
 ## Geometry viewer
