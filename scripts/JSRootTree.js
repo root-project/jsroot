@@ -889,6 +889,12 @@
    JSROOT.TDrawSelector.prototype.Fill1DHistogram = function(xvalue, weight) {
       var bin = this.x.GetBin(xvalue);
       this.hist.fArray[bin] += weight;
+      
+      if (!this.x.lbls) {
+         this.hist.fTsumw += weight;
+         this.hist.fTsumwx += weight*xvalue;
+         this.hist.fTsumwx2 += weight*xvalue*xvalue;
+      }
    }
 
    JSROOT.TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue, weight) {
@@ -896,6 +902,14 @@
           ybin = this.y.GetBin(yvalue);
       
       this.hist.fArray[xbin+(this.x.nbins+2)*ybin] += weight;
+      if (!this.x.lbls && !this.y.lbls) {
+         this.hist.fTsumw += weight;
+         this.hist.fTsumwx += weight*xvalue;
+         this.hist.fTsumwy += weight*yvalue;
+         this.hist.fTsumwx2 += weight*xvalue*xvalue;
+         this.hist.fTsumwxy += weight*xvalue*yvalue;
+         this.hist.fTsumwy2 += weight*yvalue*yvalue;
+      }
    }
 
    JSROOT.TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue, weight) {
@@ -2108,6 +2122,7 @@
       
          args.branches = [];
          args.names = [];
+         args.nchilds = [];
          args.nbr = 0;
 
          function CollectBranches(obj, prntname) {
@@ -2120,8 +2135,14 @@
                name = (prntname ? prntname + "/" : "") + br.fName;
                args.branches.push(br);
                args.names.push(name);
+               args.nchilds.push(0);
+               var pos = args.nchilds.length-1;
                cnt += br.fLeaves ? br.fLeaves.arr.length : 0;
-               cnt += CollectBranches(br, name);
+               var nchld = CollectBranches(br, name);
+               
+               cnt += nchld;
+               args.nchilds[pos] = nchld; 
+               
             }
             return cnt;
          }
@@ -2175,11 +2196,26 @@
          
          var br = args.branches[args.nbr];
          
-         if ((br.fID === -2) || ((br._typename !== 'TBranchElement') && (!br.fLeaves || (br.fLeaves.arr.length === 0)))) {
-            // this is not interesting
+         var object_class = JSROOT.GetBranchObjectClass(br, tree);
+         var num = br.fEntries, 
+             first = br.fFirstEntry || 0,
+             last = br.fEntryNumber || (first+num);
+         
+         if ((object_class && (args.nchilds[args.nbr]>100)) || (!br.fLeaves || (br.fLeaves.arr.length === 0)) || (num<=0)) {
+            // ignore empty branches or objects with too-many subbrancn
+            if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
             selector.Terminate("ignore");
          } else {
-            tree.Process(selector, { numentries: 10 });
+            
+            var drawargs = { numentries: 10 };
+            if (num<drawargs.numentries) { 
+               drawargs.numentries = num; 
+            } else {
+               // select randomly first entry to test I/O 
+               drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random()); 
+            } 
+            
+            tree.Process(selector, drawargs);
          }
       }
       
