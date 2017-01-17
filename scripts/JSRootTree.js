@@ -288,11 +288,9 @@
             if (!br) { pos = pos2+1; continue; }
 
             // when full id includes branch name, replace only part of extracted expression 
-            if (br.branch && br.rest) {
-               if (br.rest === ".fTriggerBits") 
-                  branch_mode = ".fTriggerBits"; 
-               else
-                  pos2 -= br.rest.length;
+            if (br.branch && (br.rest!==undefined)) {
+               pos2 -= br.rest.length;
+               branch_mode = br.read_mode; // maybe selection of the sub-object done
                br = br.branch;
             } else 
             if (code[pos2-1]===".") {
@@ -300,7 +298,7 @@
                arriter.push("$self$");
             }
             
-            console.log('found branch', br.fName);
+            console.log('found branch', br.fName, 'mode', branch_mode);
          }
          
          // now extract all levels of iterators 
@@ -1078,7 +1076,7 @@
    
    // ======================================================================
 
-   JSROOT.GetBranchObjectClass = function(branch, tree, with_clones) {
+   JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones) {
       if (!branch || (branch._typename!=="TBranchElement")) return "";
 
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
@@ -1100,7 +1098,7 @@
       return "";
    }
    
-   JSROOT.MakeMethodsList = function(typename) {
+   JSROOT.IO.MakeMethodsList = function(typename) {
       // create fast list to assign all methods to the object
       
       var methods = JSROOT.getMethods(typename);
@@ -1122,6 +1120,14 @@
          res.values.push(methods[key]);
       }
       return res;   
+   }
+   
+   JSROOT.IO.DetectBranchMemberClass = function(brlst, prefix, start) {
+      // try to define classname for the branch member, scanning list of branches 
+      var clname = "";
+      for (var kk=(start || 0); kk<brlst.arr.length; ++kk)
+         if ((brlst.arr[kk].fName.indexOf(prefix)===0) && brlst.arr[kk].fClassName) clname = brlst.arr[kk].fClassName;
+      return clname;
    }
    
    /** @namespace JSROOT.TreeMethods */
@@ -1320,12 +1326,7 @@
                 if (chld_kind > 0) {
                    chld_direct = "$child$";
                    var pp = subname.indexOf(".");
-                   if (pp>0) {
-                      chld_direct = br.fClassName || "TObject";
-                      var prefix = branch.fName + "." + subname.substr(0,pp+1);
-                      for (var kk=k+1;kk<lst.arr.length;++kk)
-                         if ((lst.arr[kk].fName.indexOf(prefix)===0) && lst.arr[kk].fClassName) chld_direct = lst.arr[kk].fClassName;
-                   }
+                   if (pp>0) chld_direct = JSROOT.IO.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0,pp+1), k) || "TObject";
                 }
 
                 console.log('Add branch', br.fName, 'target', subname, chld_direct);
@@ -1335,7 +1336,7 @@
              return true;
           }
           
-          var object_class = JSROOT.GetBranchObjectClass(branch, handle.tree); 
+          var object_class = JSROOT.IO.GetBranchObjectClass(branch, handle.tree); 
           
           if (object_class) {
              
@@ -1362,7 +1363,7 @@
 
             elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
 
-            if (!read_mode || (read_mode===".fTriggerBits")) {
+            if (!read_mode || ((typeof read_mode==="string") && (read_mode[0]==="."))) {
                handle.process_arrays = false;
                
                member = {
@@ -1381,9 +1382,15 @@
                   }
                }
                
-               if (read_mode === ".fTriggerBits") member.conttype = "TBits";
+               if ((typeof read_mode==="string") && (read_mode[0]===".")) {
+                  member.conttype = JSROOT.IO.DetectBranchMemberClass(branch.fBranches, branch.fName+read_mode);
+                  if (!member.conttype) {
+                     console.error('Cannot select object', read_mode, "in the branch", branch.fName);
+                     return null;
+                  }
+               }
                
-               member.methods = JSROOT.MakeMethodsList(member.conttype);
+               member.methods = JSROOT.IO.MakeMethodsList(member.conttype);
                
                child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
             }
@@ -1487,7 +1494,7 @@
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
                 member.subtype1 = read_mode;
-                member.methods1 = JSROOT.MakeMethodsList(member.subtype1);
+                member.methods1 = JSROOT.IO.MakeMethodsList(member.subtype1);
                 member.get = function(arr,n) {
                    var obj1 = arr[n][this.name1];
                    if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
@@ -2098,7 +2105,16 @@
       }
 
       // when allowed, return find branch with rest part
-      if (!res && complex) return { branch: br, rest: name.substr(pos) };
+      if (!res && complex) {
+         res = { branch: br, rest: name.substr(pos) };
+         var pp = res.rest.indexOf(".", 1); // ignore point in the beginning
+         var prefix = (pp < 0) ? res.rest : res.rest.substr(0,pp);
+         if (JSROOT.IO.DetectBranchMemberClass(res.branch.fBranches, res.branch.fName + prefix)) {
+            // this looks like sub-object in the branch
+            res.read_mode = prefix;
+            res.rest = (pp<0) ? "" : res.rest.substr(pp); 
+         }
+      }
 
       return res;
    }
@@ -2245,7 +2261,7 @@
          
          var br = args.branches[args.nbr];
          
-         var object_class = JSROOT.GetBranchObjectClass(br, tree),
+         var object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
              num = br.fEntries, 
              first = br.fFirstEntry || 0,
              last = br.fEntryNumber || (first+num);
@@ -2327,7 +2343,7 @@
             for (var i=0; i < bobj.fBranches.arr.length; ++i) 
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
 
-            var object_class = JSROOT.GetBranchObjectClass(bobj, bobj.$tree, true), 
+            var object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true), 
                 methods = object_class ? JSROOT.getMethods(object_class) : null;
             
             if (methods && (bobj.fBranches.arr.length>0))
