@@ -1322,7 +1322,7 @@
                }
                
                // TODO: one could create plain list of functions, which should be faster
-               member.methods = JSROOT.getMethods(member, member.conttype);
+               member.methods = JSROOT.getMethods(member.conttype);
                
                child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
             }

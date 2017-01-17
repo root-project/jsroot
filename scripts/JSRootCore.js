@@ -1501,6 +1501,7 @@
    JSROOT.methodsCache = {}; // variable used to keep methods for known classes
 
    JSROOT.getMethods = function(typename, obj) {
+      
       var m = JSROOT.methodsCache[typename];
 
       var has_methods = (m!==undefined);
