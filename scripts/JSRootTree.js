@@ -607,8 +607,23 @@
          cut = expr.substr(pos+2).trim();
          expr = expr.substr(0,pos).trim();
       }
+
+      // var names = expr.split(":"); // to allow usage of ? operator, we need to handle : as well
+      var names = [], nbr1 = 0, nbr2 = 0, prev = 0;
+      for (pos=0; pos < expr.length; ++pos) {
+         switch (expr[pos]) {
+            case "(" : nbr1++; break;
+            case ")" : nbr1--; break;
+            case "[" : nbr2++; break;
+            case "]" : nbr2--; break;
+            case ":" : 
+               if (!nbr1 && !nbr2 && (pos>prev)) names.push(expr.substr(prev,pos-prev));
+               prev = pos+1;
+               break;
+         }
+      }
+      if (!nbr1 && !nbr2 && (pos>prev)) names.push(expr.substr(prev,pos-prev));
       
-      var names = expr.split(":");
       if ((names.length < 1) || (names.length > 3)) return false;
 
       this.ndim = names.length;
