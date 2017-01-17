@@ -1158,7 +1158,7 @@
    
    JSROOT.mycallback = null;
 
-   JSROOT.TFile.prototype.ReadBuffer = function(place, result_callback, filename) {
+   JSROOT.TFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
 
       if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return result_callback(this.fFileContent.extract(place));
@@ -1198,6 +1198,23 @@
             xhr.setRequestHeader("Range", ranges);
             xhr.expected_size = totalsz; 
          }
+         
+         if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+            var sum1 = 0, sum2 = 0, sum_total = 0;
+            for (var n=1;n<place.length;n+=2) {
+               sum_total+=place[n];
+               if (n<first) sum1+=place[n];
+               if (n<last) sum2+=place[n];
+            }
+            if (!sum_total) sum_total = 1;
+            
+            var progress_offest = sum1/sum_total, progress_this = (sum2-sum1)/sum_total;
+            xhr.addEventListener("progress", function updateProgress(oEvent) {
+               if (oEvent.lengthComputable)
+                  progress_callback(progress_offest + progress_this*oEvent.loaded/oEvent.total);
+            });
+         }
+         
          xhr.send(null);
       }
 

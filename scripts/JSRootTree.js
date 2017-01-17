@@ -679,7 +679,7 @@
       if ((value===undefined) || isNaN(value)) return JSROOT.progress();
 
       var main_box = document.createElement("p"),
-          text_node = document.createTextNode("TTree draw " + (value*100).toFixed(1) + " %  "),
+          text_node = document.createTextNode("TTree draw " + (value*100).toFixed(2) + " %  "),
           selector = this;
       
       main_box.appendChild(text_node);
@@ -1237,7 +1237,8 @@
                ascounter: [], // list of other branches using that branch as counter 
                baskets: [], // array for read baskets,
                staged_prev: 0, // entry limit of previous I/O request 
-               staged_now: 0 // entry limit of current I/O request
+               staged_now: 0, // entry limit of current I/O request
+               progress_showtm: 0 // last time when progress was showed
          };
 
          // check all counters if we 
@@ -1819,6 +1820,23 @@
             return places.length > 0;
          }
          
+         function ReadProgress(value) {
+            
+            if ((handle.staged_prev === handle.staged_now) || 
+               (handle.process_max <= handle.process_min)) return;
+            
+            var tm = new Date().getTime();
+            
+            if (tm - handle.progress_showtm < 500) return; // no need to show very often
+
+            handle.progress_showtm = tm;
+            
+            var portion = (handle.staged_prev + value * (handle.staged_now - handle.staged_prev)) /
+                          (handle.process_max - handle.process_min);
+            
+            handle.selector.ShowProgress(portion);
+         }
+         
          function ProcessBlobs(blobs) {
             if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) 
                return JSROOT.CallBack(baskets_call_back, null);
@@ -1864,14 +1882,14 @@
             }
             
             if (ExtractPlaces())
-               handle.file.ReadBuffer(places, ProcessBlobs, filename);
+               handle.file.ReadBuffer(places, ProcessBlobs, filename, ReadProgress);
             else
                JSROOT.CallBack(baskets_call_back, bitems);
          }
 
          // extract places where to read
          if (ExtractPlaces())
-            handle.file.ReadBuffer(places, ProcessBlobs, filename);
+            handle.file.ReadBuffer(places, ProcessBlobs, filename, ReadProgress);
          else
             JSROOT.CallBack(baskets_call_back, null); 
       }
@@ -1951,6 +1969,8 @@
          // console.log('prev', handle.staged_prev, 'now', handle.staged_now, 'maximum', handle.process_max);
          
          handle.selector.ShowProgress(portion);
+         
+         handle.progress_showtm = new Date().getTime();
          
          if (totalsz > 0)
             ReadBaskets(bitems, ProcessBaskets);
