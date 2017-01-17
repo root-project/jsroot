@@ -391,7 +391,7 @@
                  .replace(/ROOT__TMath__Abs\(/g, 'Math.abs(')
                  .replace(/ROOT__TMath__Prob\(/g, 'arg.$math.Prob(')
                  .replace(/ROOT__TMath__Gaus\(/g, 'arg.$math.Gaus(');
-
+      
       this.func = new Function("arg", "return (" + code + ")");
       
       return true;
@@ -1352,13 +1352,14 @@
                    if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
                    continue;
                 }
+
+                var subname = br.fName, chld_direct = 1;
                 
-                if (br.fName.indexOf(match_prefix)!==0) {
-                   // console.warn('Not expected branch name ', br.fName, 'for prefix', match_prefix);
-                   continue;
+                if (br.fName.indexOf(match_prefix)===0) {
+                   subname = subname.substr(match_prefix.length);
+                } else {
+                   if (chld_kind>0) continue; // for defined childs names prefix must be present 
                 }
-                
-                var subname = br.fName.substr(match_prefix.length), chld_direct = 1;
                 
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
