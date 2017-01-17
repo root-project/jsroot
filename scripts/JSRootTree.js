@@ -311,15 +311,16 @@
                
                while ((pos2 < code.length) && is_next_symbol(code[pos2])) pos2++;
                
+               // this is looks like function call - do not need to extract member with 
                if (code[pos2]=="(") { pos2 = prev-1; break; }
                
                // this is selection of member, but probably we need to actiavte iterator for ROOT collection
                if ((arriter.length===0) && br) {
+                  // TODO: if selected member is simple data type - no need to make other checks - just break here
                   if ((br.fType === JSROOT.BranchType.kClonesNode) || (br.fType === JSROOT.BranchType.kSTLNode)) {
                      arriter.push(undefined); 
                   } else {   
                      var objclass = JSROOT.IO.GetBranchObjectClass(br, tree, false, true);
-                     console.log('Object class', objclass);
                      if (objclass && JSROOT.IsRootCollection(null, objclass)) arriter.push(undefined); 
                   }
                }
@@ -678,7 +679,7 @@
       if ((value===undefined) || isNaN(value)) return JSROOT.progress();
 
       var main_box = document.createElement("p"),
-          text_node = document.createTextNode("TTree draw " + Math.round((value*100)) + " %  "),
+          text_node = document.createTextNode("TTree draw " + (value*100).toFixed(1) + " %  "),
           selector = this;
       
       main_box.appendChild(text_node);
@@ -1234,7 +1235,9 @@
                numbaskets: branch.fWriteBasket, // number of baskets which can be read from the file
                counters: null, // branch indexes used as counters
                ascounter: [], // list of other branches using that branch as counter 
-               baskets: [] // array for read baskets,
+               baskets: [], // array for read baskets,
+               staged_prev: 0, // entry limit of previous I/O request 
+               staged_now: 0 // entry limit of current I/O request
          };
 
          // check all counters if we 
@@ -1751,6 +1754,8 @@
       if (!isNaN(args.firstentry) && (args.firstentry>handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
       
+      handle.staged_now = handle.process_min;
+      
       if (!isNaN(args.numentries) && (args.numentries>0)) {
          var max = handle.process_min + args.numentries;
          if (max<handle.process_max) handle.process_max = max;
@@ -1873,7 +1878,7 @@
       
       function ReadNextBaskets() {
          
-         var totalsz = 0, bitems = [], isany = true, is_direct = false;
+         var totalsz = 0, bitems = [], isany = true, is_direct = false, min_staged = handle.process_max;
          
          while ((totalsz < 1e6) && isany) {
             isany = false;
@@ -1926,6 +1931,8 @@
                    
                   elem.staged_entry = elem.branch.fBasketEntry[k+1];
                   
+                  min_staged = Math.min(min_staged, elem.staged_entry);
+                  
                   break;
                }
             }
@@ -1934,9 +1941,14 @@
          if ((totalsz === 0) && !is_direct) 
             return handle.selector.Terminate(true);
          
+         handle.staged_prev = handle.staged_now; 
+         handle.staged_now = min_staged; 
+         
          var portion = 0;
-         if ((handle.current_entry>0) && (handle.process_max > handle.process_min))
-            portion = (handle.current_entry - handle.process_min)/ (handle.process_max - handle.process_min);
+         if (handle.process_max > handle.process_min)
+            portion = (handle.staged_prev - handle.process_min)/ (handle.process_max - handle.process_min);
+         
+         // console.log('prev', handle.staged_prev, 'now', handle.staged_now, 'maximum', handle.process_max);
          
          handle.selector.ShowProgress(portion);
          
