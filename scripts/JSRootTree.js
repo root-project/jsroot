@@ -504,7 +504,9 @@
       this.arr_limit = 1000;  // number of accumulated items before create histogram
       this.htype = "F";
       this.monitoring = 0;
-      this.globals = {}; // object with global parameters, which could be used in any draw expression 
+      this.globals = {}; // object with global parameters, which could be used in any draw expression
+      this.last_progress = 0;
+      this.aver_diff = 0;
    }
 
    JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
@@ -692,9 +694,20 @@
       if ((document === undefined) || (JSROOT.progress===undefined)) return;
 
       if ((value===undefined) || isNaN(value)) return JSROOT.progress();
+      
+      if (this.last_progress !== value) {
+         var diff = value - this.last_progress;
+         if (!this.aver_diff) this.aver_diff = diff;
+         this.aver_diff = diff*0.3 + this.aver_diff*0.7; 
+      }
+      
+      var ndig = 0;
+      if (this.aver_diff < 0.0001) ndig = 3; else
+      if (this.aver_diff < 0.001) ndig = 2; else
+      if (this.aver_diff < 0.01) ndig = 1; 
 
       var main_box = document.createElement("p"),
-          text_node = document.createTextNode("TTree draw " + (value*100).toFixed(2) + " %  "),
+          text_node = document.createTextNode("TTree draw " + (value*100).toFixed(ndig) + " %  "),
           selector = this;
       
       main_box.appendChild(text_node);
@@ -710,6 +723,7 @@
       }
 
       JSROOT.progress(main_box);
+      this.last_progress = value;
    }
    
    JSROOT.TDrawSelector.prototype.GetBitsBins = function(nbits) {
