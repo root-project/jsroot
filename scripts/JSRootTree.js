@@ -1095,6 +1095,30 @@
       return "";
    }
    
+   JSROOT.MakeMethodsList = function(typename) {
+      // create fast list to assign all methods to the object
+      
+      var methods = JSROOT.getMethods(typename);
+      
+      var res = {
+         names : [],
+         values : [],
+         Create : function() {
+            var obj = {};
+            for (var n=0;n<this.names.length;++n)
+               obj[this.names[n]] = this.values[n];
+            return obj;
+         }
+      }
+      
+      res.names.push("_typename"); res.values.push(typename);
+      for (var key in methods) {
+         res.names.push(key);
+         res.values.push(methods[key]);
+      }
+      return res;   
+   }
+   
    /** @namespace JSROOT.TreeMethods */
    JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree 
 
@@ -1337,12 +1361,12 @@
                   func: function(buf,obj) {
                      var size = buf.ntoi4(), n = 0;
                      obj[this.name] = new Array(size); // can one reuse memory later ???
-                     while (n<size) obj[this.name][n++] = JSROOT.extend({ _typename: this.conttype }, this.methods); // create new objects
+                     while (n<size) obj[this.name][n++] = this.methods.Create(); // create new objects
                   }
                }
                
                // TODO: one could create plain list of functions, which should be faster
-               member.methods = JSROOT.getMethods(member.conttype);
+               member.methods = JSROOT.MakeMethodsList(member.conttype);
                
                child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
             }
@@ -1446,10 +1470,10 @@
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
                 member.subtype1 = is_direct;
-                member.methods1 = JSROOT.getMethods(member.subtype1);
+                member.methods1 = JSROOT.MakeMethodsList(member.subtype1);
                 member.get = function(arr,n) {
                    var obj1 = arr[n][this.name1];
-                   if (!obj1) obj1 = arr[n][this.name1] = JSROOT.extend({ _typename: this.subtype1 }, this.methods1);
+                   if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
                    return obj1;
                 }
 
