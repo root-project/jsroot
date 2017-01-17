@@ -236,7 +236,7 @@
       this.buf = []; // buffer accumulates temporary values
    }
    
-   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch,direct_branch) {
+   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch,branch_mode) {
       // when only_branch specified, its placed in the front of the expression 
       
       function is_start_symbol(symb) {
@@ -289,13 +289,18 @@
 
             // when full id includes branch name, replace only part of extracted expression 
             if (br.branch && br.rest) {
-               pos2 -= br.rest.length;
+               if (br.rest === ".fTriggerBits") 
+                  branch_mode = ".fTriggerBits"; 
+               else
+                  pos2 -= br.rest.length;
                br = br.branch;
             } else 
             if (code[pos2-1]===".") {
                // when branch name ends with point, means object itself should be extracted
                arriter.push("$self$");
             }
+            
+            console.log('found branch', br.fName);
          }
          
          // now extract all levels of iterators 
@@ -303,7 +308,7 @@
             
             if ((code[pos2]==="@") && (code.substr(pos2,5)=="@size") && (arriter.length==0)) {
                pos2+=5; 
-               direct_branch = true; 
+               branch_mode = true; 
                break;
             } 
 
@@ -361,9 +366,9 @@
          console.log('arriter', arriter);
          
          var indx = selector.indexOfBranch(br);
-         if (indx<0) indx = selector.AddBranch(br, undefined, direct_branch);
+         if (indx<0) indx = selector.AddBranch(br, undefined, branch_mode);
          
-         direct_branch = undefined;
+         branch_mode = undefined;
          
          this.brindex.push(indx);
          this.branches.push(selector.nameOfBranch(indx));
@@ -371,7 +376,7 @@
          
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
-            this.direct_branch = true;
+            this.direct_branch = true; // remember that branch read as is
             return true; 
          }
          
@@ -1173,11 +1178,12 @@
          return null;
       }
 
-      function AddBranchForReading(branch, target_object, target_name, is_direct) {
+      function AddBranchForReading(branch, target_object, target_name, read_mode) {
          // central method to add branch for reading
-         // is_direct == true - read only this branch
-         // is_direct == '$child$' is just member of object from for STL or clonesarray
-         // is_direct == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created 
+         // read_mode == true - read only this branch
+         // read_mode == '$child$' is just member of object from for STL or clonesarray
+         // read_mode == '<any class name>' is sub-object from STL or clonesarray, happens when such new object need to be created
+         // read_mode == '.member_name' select only reading of member_name instead of complete object
 
          if (typeof branch === 'string')
             branch = handle.tree.FindBranch(branch);
@@ -1285,6 +1291,10 @@
           function ScanBranches(lst, master_target, chld_kind) {
              if (!lst || !lst.arr.length) return true;
 
+             var match_prefix = branch.fName;
+             if ((typeof read_mode=== "string") && (read_mode[0]==".")) match_prefix += read_mode;
+             match_prefix+=".";
+             
              for (var k=0;k<lst.arr.length;++k) {
                 var br = lst.arr[k];
                 if ((chld_kind>0) && (br.fType!==chld_kind)) {
@@ -1297,12 +1307,12 @@
                    continue;
                 }
                 
-                if (br.fName.indexOf(branch.fName + ".")!==0) {
-                   console.warn('Not expected branch name ', br.fName, 'for master', branch.fName);
+                if (br.fName.indexOf(match_prefix)!==0) {
+                   // console.warn('Not expected branch name ', br.fName, 'for prefix', match_prefix);
                    continue;
                 }
                 
-                var subname = br.fName.substr(branch.fName.length+1), chld_direct = 1;
+                var subname = br.fName.substr(match_prefix.length), chld_direct = 1;
                 
                 var p = subname.indexOf('['); 
                 if (p>0) subname = subname.substr(0,p);
@@ -1329,7 +1339,7 @@
           
           if (object_class) {
              
-             if (is_direct === true) {
+             if (read_mode === true) {
                 console.log('Object branch ' + object_class + ' can not have data to be readed directly');
                 return null;
              }
@@ -1352,7 +1362,7 @@
 
             elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
 
-            if (!is_direct) {
+            if (!read_mode || (read_mode===".fTriggerBits")) {
                handle.process_arrays = false;
                
                member = {
@@ -1360,12 +1370,19 @@
                   conttype: branch.fClonesName || "TObject",
                   func: function(buf,obj) {
                      var size = buf.ntoi4(), n = 0;
-                     obj[this.name] = new Array(size); // can one reuse memory later ???
+                     if (!obj[this.name]) {
+                        obj[this.name] = new Array(size); 
+                     } else {
+                        n = obj[this.name].length;
+                        obj[this.name].length = size; // reallocate array
+                     }
+                     
                      while (n<size) obj[this.name][n++] = this.methods.Create(); // create new objects
                   }
                }
                
-               // TODO: one could create plain list of functions, which should be faster
+               if (read_mode === ".fTriggerBits") member.conttype = "TBits";
+               
                member.methods = JSROOT.MakeMethodsList(member.conttype);
                
                child_scan = (branch.fType === JSROOT.BranchType.kClonesNode) ? JSROOT.BranchType.kClonesMemberNode : JSROOT.BranchType.kSTLMemberNode; 
@@ -1452,13 +1469,13 @@
              }
           }
 
-          if (item_cnt && (typeof is_direct === "string")) {
+          if (item_cnt && (typeof read_mode === "string")) {
              
              member.name0 = item_cnt.name;
 
              if (target_name.indexOf(".") >=0) {
                 // case when target is sub-object and need to be created before 
-                if (is_direct === "$child$") {
+                if (read_mode === "$child$") {
                    console.error('target name contains point, but suppose to be direct child', target_name);
                    return null;
                 }
@@ -1469,7 +1486,7 @@
                 }
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
-                member.subtype1 = is_direct;
+                member.subtype1 = read_mode;
                 member.methods1 = JSROOT.MakeMethodsList(member.subtype1);
                 member.get = function(arr,n) {
                    var obj1 = arr[n][this.name1];
@@ -1643,7 +1660,7 @@
       // main loop to add all branches from selector for reading
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          
-         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], !!selector.directs[nn]); 
+         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], selector.directs[nn]); 
          
          if (!item) {
             selector.Terminate(false);
