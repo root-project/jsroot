@@ -273,8 +273,8 @@
                var repl = "";
                switch (code.substr(pos, pos2-pos)) {
                   case "LocalEntry":
-                  case "Entry": repl = "arg.globals.entry"; break;
-                  case "Entries": repl = "arg.globals.entries"; break;
+                  case "Entry": repl = "arg.$globals.entry"; break;
+                  case "Entries": repl = "arg.$globals.entries"; break;
                }
                if (repl) {
                   console.log('Replace ', code.substr(pos, pos2-pos), 'with', repl); 
@@ -382,6 +382,9 @@
          pos = pos + replace.length;
       }
       
+      // support usage of some standard TMath functions
+      code = JSROOT.Math.ReplaceExpression(code, "arg.$math");
+      
       this.func = new Function("arg", "return (" + code + ")");
       
       return true;
@@ -411,7 +414,7 @@
          return;
       }
       
-      var arg = { globals: this.globals }, usearrlen = -1, arrs = [];
+      var arg = { $globals: this.globals, $math: JSROOT.Math }, usearrlen = -1, arrs = [];
       for (var n=0;n<this.branches.length;++n) {
          var name = "var" + n;
          arg[name] = obj[this.branches[n]];

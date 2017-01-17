@@ -644,6 +644,13 @@
       return JSROOT.Math.Landau(x, f.GetParValue(i+1),f.GetParValue(i+2), true);
    };
 
+   JSROOT.Math.ReplaceExpression = function(expr, math_addr) {
+      return expr.replace(/TMath::Exp\(/g, 'Math.exp(')
+                 .replace(/TMath::Abs\(/g, 'Math.abs(')
+                 .replace(/TMath::Prob\(/g, math_addr + '.Prob(')
+                 .replace(/TMath::Gaus\(/g, math_addr + '.Gaus(');
+   }
+   
    
    // =========================================================================
    
