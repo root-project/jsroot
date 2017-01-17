@@ -1522,14 +1522,15 @@
                    
              } else 
              if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
-                // special solution for kStreamLoop
-
-                if (!item_cnt2) throw new Error('Missing second count branch for kStreamLoop ' + branch.fName);
-
-                member.stl_size = item_cnt.name;
-                member.cntname = item_cnt2.name;
-                member.func = member.branch_func; // this is special function, provided by base I/O
-                   
+                if (item_cnt2) {
+                   // special solution for kStreamLoop
+                   member.stl_size = item_cnt.name;
+                   member.cntname = item_cnt2.name;
+                   member.func = member.branch_func; // this is special function, provided by base I/O
+                } else {
+                   console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
+                   member.cntname = item_cnt.name;
+                }
              } else  {
                    
                 member.name = "$stl_member";
