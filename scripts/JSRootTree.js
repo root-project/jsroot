@@ -1140,12 +1140,36 @@
       for (var k=0;k<arr.length;++k) 
          if ((k!==branch.fID) && match_elem(arr[k])) return arr[k];
       
-      
       console.error('Did not found/match element for branch', branch.fName, 'class', branch.fClassName);
       
       return null; 
    }
+
    
+   JSROOT.IO.DefineMemberTypeName = function(file, parent_class, member_name) {
+      // return type name of given member in the class
+
+      var s_i = file.FindStreamerInfo(parent_class),
+          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null,
+          elem = null;
+      if (!arr) return "";
+      
+      
+      for (var k=0;k<arr.length;++k) {
+         if (arr[k].fTypeName === "BASE") {
+            var res = JSROOT.IO.DefineMemberTypeName(file, arr[k].fName, member_name);
+            if (res) return res;
+         } else 
+         if (arr[k].fName === member_name) { elem = arr[k]; break; }
+      }
+      
+      if (!elem) return "";
+      
+      var clname = elem.fTypeName;
+      if (clname[clname.length-1]==="*") clname = clname.substr(0, clname.length-1);
+      
+      return clname;
+   }
    
    JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
       // return class name of the object, stored in the branch
@@ -1594,17 +1618,16 @@
                    return null;
                 }
                 
-                console.log('Members list ', snames);
-                
                 target_name = member.name = snames.pop(); // use last element
                 member.snames = snames; // remember all sub-names
                 member.smethods = []; // and special handles to create missing objects 
-                
+
                 var parent_class = branch.fParentName; // unfortunately, without version  
-                
+
+                console.log('Members list ', snames, 'last class', read_mode, 'parent', parent_class);
+
                 for (var k=0;k<snames.length;++k) {
-                   // var chld_class = handle.file.GetMemberClass(parent_class, snames[k]);
-                   var chld_class = "";
+                   var chld_class = JSROOT.IO.DefineMemberTypeName(handle.file, parent_class, snames[k]);
                    member.smethods[k] = JSROOT.IO.MakeMethodsList(chld_class || "AbstractClass");
                    parent_class = chld_class;
                 }
