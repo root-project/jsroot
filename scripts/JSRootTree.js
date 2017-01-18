@@ -1118,8 +1118,12 @@
          return branch.fClonesName;
 
       var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-          s_elem = s_i ? s_i.fElements.arr[branch.fID] : null;
+          s_elem = ((branch.fID>=0) && s_i) ? s_i.fElements.arr[branch.fID] : null;
       
+      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem) {
+          return s_elem.fTypeName;
+      }
+          
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
          if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
             return s_elem.fTypeName;
@@ -1130,7 +1134,6 @@
          if ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)) return s_elem.fTypeName; 
          if (s_elem.fType === JSROOT.IO.kObjectp) return s_elem.fTypeName.substr(0, s_elem.fTypeName.length-1);  
       }
-         
 
       return "";
    }
@@ -2335,7 +2338,11 @@
              first = br.fFirstEntry || 0,
              last = br.fEntryNumber || (first+num);
          
-         if ((object_class && (args.nchilds[args.nbr]>100)) || (!br.fLeaves || (br.fLeaves.arr.length === 0)) || (num<=0)) {
+         var skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0)) || (num<=0);
+         
+         if (object_class) skip_branch = (args.nchilds[args.nbr]>100);  
+         
+         if (skip_branch) {
             // ignore empty branches or objects with too-many subbrancn
             if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
             selector.Terminate("ignore");
