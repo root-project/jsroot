@@ -1106,7 +1106,41 @@
    
    // ======================================================================
 
+   JSROOT.IO.FindBrachStreamerElement = function(branch, file) {
+      // return TStreamerElement associated with the branch - if any
+      // unfortunately, branch.fID is not number of element in streamer info
+      
+      if (!branch || !file || (branch._typename!=="TBranchElement") || (branch.fID<0)) return null;
+
+      var s_i = file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+      if (!s_i) return null;
+      
+      var s_elem = s_i.fElements.arr[branch.fID];
+      
+      var match_name = branch.fName;
+      var pos = match_name.indexOf("[");
+      if (pos>0) match_name = match_name.substr(0, pos);
+      pos = match_name.lastIndexOf(".");
+      if (pos>0) match_name = match_name.substr(pos+1);
+      
+      if (s_elem && (s_elem.fType === branch.fStreamerType) && (s_elem.fName === match_name)) return s_elem;
+      
+      // console.warn('Missmatch with branch name and extracted element', branch.fName, match_name, (s_elem ? s_elem.fName : "---"));
+      
+      for (var k=0;k<s_i.fElements.arr.length;++k) {
+         s_elem = s_i.fElements.arr[k];
+         if ((s_elem.fType === branch.fStreamerType) && (s_elem.fName === match_name)) return s_elem;
+      }
+      
+      console.error('Did not found/match element for branch', branch.fName, 'class', branch.fClassName);
+      
+      return null; 
+   }
+   
+   
    JSROOT.IO.GetBranchObjectClass = function(branch, tree, with_clones, with_leafs) {
+      // return class name of the object, stored in the branch
+      
       if (!branch || (branch._typename!=="TBranchElement")) return "";
 
       if ((branch.fType === JSROOT.BranchType.kLeafNode) && (branch.fID===-2) && (branch.fStreamerType===-1)) {
@@ -1470,16 +1504,11 @@
           } else
           if (is_brelem && (nb_leaves <= 1)) {
 
-             var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+             elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
 
-             if (branch.fStreamerType && branch.fStreamerType < 20) 
-                // this is basic type - no need to make complex search for streamer infos
+             // this is basic type - can try to solve problem differently
+             if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) 
                 elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fStreamerType);
-             else
-             // in some old files TBranchElement may appear without correspondent leaf 
-             if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
-             if ((branch.fID<0) || (branch.fID>=s_i.fElements.arr.length)) console.log('branch ID out of range', branch.fID); else
-             elem = s_i.fElements.arr[branch.fID];
           } else  
           if (nb_leaves === 1) {
               // no special constrains for the leaf names
