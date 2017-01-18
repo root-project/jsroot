@@ -539,6 +539,15 @@
       
       return obj;
    }
+   
+   JSROOT.TBuffer.prototype.ReadTRef = function(obj) {
+      this.ClassStreamer(obj, "TObject");
+      if (obj.fBits & JSROOT.IO.kHasUUID)
+         obj.fUUID = this.ReadTString();
+      else
+         obj.fPID = this.ntou2();
+      return obj;
+   }
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
       // read class definition from I/O buffer
@@ -613,6 +622,9 @@
 
       if (classname === "TBasket") 
          return this.ReadTBasket(obj);
+      
+      if (classname === "TRef") 
+         return this.ReadTRef(obj);
 
       var ver = this.ReadVersion();
       
