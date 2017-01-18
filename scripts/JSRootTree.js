@@ -1120,8 +1120,8 @@
       var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
           s_elem = ((branch.fID>=0) && s_i) ? s_i.fElements.arr[branch.fID] : null;
       
-      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem) {
-          return s_elem.fTypeName;
+      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName==="BASE")) {
+          return s_elem.fName;
       }
           
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
@@ -2334,22 +2334,23 @@
          var br = args.branches[args.nbr];
          
          var object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
-             num = br.fEntries, 
-             first = br.fFirstEntry || 0,
-             last = br.fEntryNumber || (first+num);
+             num = br.fEntries;
          
-         var skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0)) || (num<=0);
+         var skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
          
          if (object_class) skip_branch = (args.nchilds[args.nbr]>100);  
          
-         if (skip_branch) {
+         if (skip_branch  || (num<=0)) {
             // ignore empty branches or objects with too-many subbrancn
             if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
             selector.Terminate("ignore");
          } else {
             
-            var drawargs = { numentries: 10 };
-            if (num<drawargs.numentries) { 
+            var drawargs = { numentries: 10 },
+                first = br.fFirstEntry || 0,
+                last = br.fEntryNumber || (first+num);
+            
+            if (num < drawargs.numentries) { 
                drawargs.numentries = num; 
             } else {
                // select randomly first entry to test I/O 
