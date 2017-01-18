@@ -1112,10 +1112,9 @@
       
       if (!branch || !file || (branch._typename!=="TBranchElement") || (branch.fID<0)) return null;
 
-      var s_i = file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
-      if (!s_i) return null;
-      
-      var s_elem = s_i.fElements.arr[branch.fID];
+      var s_i = file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
+          arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
+      if (!arr) return null;
       
       var match_name = branch.fName;
       var pos = match_name.indexOf("[");
@@ -1123,14 +1122,24 @@
       pos = match_name.lastIndexOf(".");
       if (pos>0) match_name = match_name.substr(pos+1);
       
-      if (s_elem && (s_elem.fType === branch.fStreamerType) && (s_elem.fName === match_name)) return s_elem;
+      function match_elem(elem) {
+         if (!elem) return false;
+         if (elem.fName !== match_name) return false;
+         if (elem.fType === branch.fStreamerType) return true;
+         if ((branch.fStreamerType===JSROOT.IO.kSTL) && 
+             (elem.fType === JSROOT.IO.kStreamer)) return true;
+         console.warn('Should match element', elem.fType, 'with branch', branch.fStreamerType);
+         return false;
+      }
+      
+      // first check branch fID - in many cases gut guess
+      if (match_elem(arr[branch.fID])) return arr[branch.fID];
       
       // console.warn('Missmatch with branch name and extracted element', branch.fName, match_name, (s_elem ? s_elem.fName : "---"));
       
-      for (var k=0;k<s_i.fElements.arr.length;++k) {
-         s_elem = s_i.fElements.arr[k];
-         if ((s_elem.fType === branch.fStreamerType) && (s_elem.fName === match_name)) return s_elem;
-      }
+      for (var k=0;k<arr.length;++k) 
+         if ((k!==branch.fID) && match_elem(arr[k])) return arr[k];
+      
       
       console.error('Did not found/match element for branch', branch.fName, 'class', branch.fClassName);
       
@@ -1151,8 +1160,7 @@
       if (with_clones && branch.fClonesName && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)))
          return branch.fClonesName;
 
-      var s_i = tree.$file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
-          s_elem = ((branch.fID>=0) && s_i) ? s_i.fElements.arr[branch.fID] : null;
+      var s_elem = JSROOT.IO.FindBrachStreamerElement(branch, tree.$file); 
       
       if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName==="BASE")) {
           return s_elem.fName;
@@ -1335,14 +1343,13 @@
             if (!BranchCount2 && (branch.fBranchCount.fStreamerType===JSROOT.IO.kSTL) && 
                 ((branch.fStreamerType === JSROOT.IO.kStreamLoop) || (branch.fStreamerType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop))) {
                  // special case when count member from kStreamLoop not assigned as fBranchCount2  
-                 var s_i = handle.file.FindStreamerInfo(branch.fClassName,  branch.fClassVersion, branch.fCheckSum),
-                     elem = s_i ? s_i.fElements.arr[branch.fID] : null,
-                     arr = branch.fBranchCount.fBranches.arr  ;
+                 var elemd = JSROOT.IO.FindBrachStreamerElement(branch, handle.file), 
+                     arrd = branch.fBranchCount.fBranches.arr;
 
-                 if (elem && elem.fCountName && arr) 
-                    for(var k=0;k<arr.length;++k) 
-                       if (arr[k].fName === branch.fBranchCount.fName + "." + elem.fCountName) {
-                          BranchCount2 = arr[k];
+                 if (elemd && elemd.fCountName && arrd) 
+                    for(var k=0;k<arrd.length;++k) 
+                       if (arrd[k].fName === branch.fBranchCount.fName + "." + elemd.fCountName) {
+                          BranchCount2 = arrd[k];
                           break;
                        }
 
