@@ -1278,7 +1278,7 @@
             case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
             case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
             case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-            case 'TLeafC': datakind = JSROOT.IO.kTString; break;
+            case 'TLeafC': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
             default: return null;
          }
          return JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
@@ -1538,12 +1538,15 @@
              elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
 
              // this is basic type - can try to solve problem differently
-             if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) 
+             if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) {
                 elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fStreamerType);
+             }
           } else  
           if (nb_leaves === 1) {
               // no special constrains for the leaf names
+             
              elem = CreateLeafElem(leaf, target_name);
+
           } else
           if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
              // branch with many elementary leaves
@@ -1663,7 +1666,7 @@
 
           } else
           if (item_cnt) {
-
+             
              handle.process_arrays = false;
              
              if ((elem.fType === JSROOT.IO.kDouble32) || (elem.fType === JSROOT.IO.kFloat16)) {
@@ -2429,9 +2432,9 @@
          }
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
-         
-         console.log("TESTING", args.nbr, args.names[args.nbr]);
-         
+
+         // console.log("TESTING", args.nbr, args.names[args.nbr]);
+
          var br = args.branches[args.nbr];
          
          var object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
@@ -2457,7 +2460,9 @@
                // select randomly first entry to test I/O 
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random()); 
             } 
-            
+
+            // console.log("select firstentry:", drawargs.firstentry, "numentries:", drawargs.numentries);
+
             tree.Process(selector, drawargs);
          }
       }
