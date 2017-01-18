@@ -2215,7 +2215,7 @@
                      } else {
                         var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
                         
-                        // console.log('Do we need special handling for', member.conttype);
+                        console.log('Do we need special handling for', member.conttype);
                         
                         if (subelem.fType === JSROOT.IO.kStreamer) {
                            subelem.$fictional = true;
@@ -2258,8 +2258,8 @@
                   si = { _typename: 'TStreamerInfo', fVersion: 1, fName: member.pairtype,
                          fElements: JSROOT.Create("TList") };
                   
-                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("first", GetNextName()), file);
-                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("second", GetNextName()), file);
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("first", GetNextName(), file));
+                  si.fElements.Add(JSROOT.IO.CreateStreamerElement("second", GetNextName(), file));
                }
 
                member.streamer = file.GetStreamer(member.pairtype, null, si);
@@ -2760,17 +2760,14 @@
 
       if (typeof typename === "string") {
          elem.fType = JSROOT.IO.GetTypeId(typename);
+         if ((elem.fType<0) && file && file.fBasicTypes[typename]) 
+            elem.fType = file.fBasicTypes[typename]; 
       } else {
          elem.fType = typename;
-         elem.fTypeName = JSROOT.IO.TypeNames[typename] || "int";
+         typename = elem.fTypeName = JSROOT.IO.TypeNames[elem.fType] || "int";
       } 
-         
-      if (elem.fType > 0) return elem; // basic type
       
-      if (file && file.fBasicTypes[typename]) {
-         elem.fType = file.fBasicTypes[typename];
-         return elem;
-      }
+      if (elem.fType > 0) return elem; // basic type
 
 /*      
       if (typename.indexOf('string')===0) {

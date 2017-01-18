@@ -1612,6 +1612,8 @@
                 }
              } else {
                 // very complex task - we need to reconstuct several embeded members with their types
+                // try our best - but not all data types can be reconstructed correctly
+                // while classname is not enough - there can be different versions
                 
                 if (!branch.fParentName) {
                    console.error('Not possible to provide more than 2 parts in the target name', target_name);
@@ -1624,7 +1626,7 @@
 
                 var parent_class = branch.fParentName; // unfortunately, without version  
 
-                console.log('Members list ', snames, 'last class', read_mode, 'parent', parent_class);
+                // console.log('Members list ', snames, 'last class', read_mode, 'parent', parent_class);
 
                 for (var k=0;k<snames.length;++k) {
                    var chld_class = JSROOT.IO.DefineMemberTypeName(handle.file, parent_class, snames[k]);
@@ -2428,7 +2430,7 @@
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
          
-         // console.log(args.nbr, args.names[args.nbr]);
+         console.log("TESTING", args.nbr, args.names[args.nbr]);
          
          var br = args.branches[args.nbr];
          
