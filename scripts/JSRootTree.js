@@ -1138,6 +1138,8 @@
       return "";
    }
    
+   
+   
    JSROOT.IO.MakeMethodsList = function(typename) {
       // create fast list to assign all methods to the object
       
@@ -1213,9 +1215,7 @@
             case 'TLeafC': datakind = JSROOT.IO.kTString; break;
             default: return null;
          }
-         var elem = JSROOT.IO.CreateStreamerElement(name || leaf.fName, "int");
-         elem.fType = datakind;
-         return elem;
+         return JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
       }
 
       function FindInHandle(branch) {
@@ -1405,7 +1405,7 @@
           
          if (is_brelem && ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode))) {
 
-            elem = JSROOT.IO.CreateStreamerElement(target_name, "int");
+            elem = JSROOT.IO.CreateStreamerElement(target_name, JSROOT.IO.kInt);
 
             if (!read_mode || ((typeof read_mode==="string") && (read_mode[0]==="."))) {
                handle.process_arrays = false;
@@ -1469,8 +1469,14 @@
              // if (!elem.fSTLtype) elem = null;
           } else
           if (is_brelem && (nb_leaves <= 1)) {
-             // in some old files TBranchElement may appear without correspondent leaf 
+
              var s_i = handle.file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum);
+
+             if (branch.fStreamerType && branch.fStreamerType < 20) 
+                // this is basic type - no need to make complex search for streamer infos
+                elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fStreamerType);
+             else
+             // in some old files TBranchElement may appear without correspondent leaf 
              if (!s_i) console.log('Not found streamer info ', branch.fClassName,  branch.fClassVersion, branch.fCheckSum); else
              if ((branch.fID<0) || (branch.fID>=s_i.fElements.arr.length)) console.log('branch ID out of range', branch.fID); else
              elem = s_i.fElements.arr[branch.fID];
@@ -1523,18 +1529,18 @@
           if (item_cnt && (typeof read_mode === "string")) {
              
              member.name0 = item_cnt.name;
+             
+             var snames = target_name.split(".");
 
-             if (target_name.indexOf(".") >=0) {
-                // case when target is sub-object and need to be created before 
-                if (read_mode === "$child$") {
-                   console.error('target name contains point, but suppose to be direct child', target_name);
-                   return null;
-                }
-                var snames = target_name.split(".");
-                if (snames.length !== 2) {
-                   console.log('Not yet supported more than 2 parts in the target name', target_name);
-                   return null;
-                }
+             if (snames.length === 1) {
+                // no point in the name - just plain array of objects
+                member.get = function(arr,n) { return arr[n]; }
+             } else 
+             if (read_mode === "$child$") {
+                console.error('target name contains point, but suppose to be direct child', target_name);
+                return null;
+             } else 
+             if (snames.length === 2) { 
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
                 member.subtype1 = read_mode;
@@ -1544,10 +1550,42 @@
                    if (!obj1) obj1 = arr[n][this.name1] = this.methods1.Create();
                    return obj1;
                 }
-
              } else {
-                member.get = function(arr,n) { return arr[n]; }
+                // very complex task - we need to reconstuct several embeded members with their types
+                
+                if (!branch.fParentName) {
+                   console.error('Not possible to provide more than 2 parts in the target name', target_name);
+                   return null;
+                }
+                
+                console.log('Members list ', snames);
+                
+                target_name = member.name = snames.pop(); // use last element
+                member.snames = snames; // remember all sub-names
+                member.smethods = []; // and special handles to create missing objects 
+                
+                var parent_class = branch.fParentName; // unfortunately, without version  
+                
+                for (var k=0;k<snames.length;++k) {
+                   // var chld_class = handle.file.GetMemberClass(parent_class, snames[k]);
+                   var chld_class = "";
+                   member.smethods[k] = JSROOT.IO.MakeMethodsList(chld_class || "AbstractClass");
+                   parent_class = chld_class;
+                }
+                member.get = function(arr,n) {
+                   var obj1 = arr[n][this.snames[0]];
+                   if (!obj1) obj1 = arr[n][this.snames[0]] = this.smethods[0].Create();
+                   for (var k=1;k<this.snames.length;++k) {
+                      var obj2 = obj1[this.snames[k]];
+                      if (!obj2) obj2 = obj1[this.snames[k]] = this.smethods[k].Create();
+                      obj1 = obj2;
+                   }
+                   return obj1;
+                }
              }
+                
+             // case when target is sub-object and need to be created before 
+                
 
              if (member.objs_branch_func) {
                 // STL branch provides special function for the reading
@@ -1812,9 +1850,11 @@
             for(var nn=0;nn<handle.arr.length;++nn) {
                var item = handle.arr[nn];
                
-               var elem = JSROOT.IO.CreateStreamerElement(item.name, "int");
+               var elem = JSROOT.IO.CreateStreamerElement(item.name, item.type);
                elem.fType = item.type + JSROOT.IO.kOffsetL;
-               elem.fArrayLength = 10; elem.fArrayDim = 1; elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
+               elem.fArrayLength = 10; 
+               elem.fArrayDim = 1; 
+               elem.fMaxIndex[0] = 10; // 10 if artificial number, will be replaced during reading
                
                item.arrmember = JSROOT.IO.CreateMember(elem, handle.file);
             }

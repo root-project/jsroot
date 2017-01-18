@@ -37,6 +37,9 @@
          Mode : "array", // could be string or array, enable usage of ArrayBuffer in http requests
          NativeArray : true, // when true, native arrays like Int32Array or Float64Array are used
 
+         TypeNames : ["BASE", "char", "short", "int", "long", "float", "int", "const char*", "double", "Double32_t", 
+                      "char", "unsigned  char", "unsigned short", "unsigned", "unsigned long", "unsigned", "Long64_t", "ULong64_t", "bool", "Float16_t"],
+         
          // constants used for coding type of STL container
          kNotSTL : 0, kSTLvector : 1, kSTLlist : 2, kSTLdeque : 3, kSTLmap : 4, kSTLmultimap : 5,
          kSTLset : 6, kSTLmultiset : 7, kSTLbitset : 8, kSTLforwardlist : 9,
@@ -2755,7 +2758,13 @@
                    fType: 0, fSize: 0, fArrayLength: 0, fArrayDim: 0, fMaxIndex: [0,0,0,0,0],
                    fXmin: 0, fXmax: 0, fFactor: 0 };
 
-      elem.fType = JSROOT.IO.GetTypeId(typename);
+      if (typeof typename === "string") {
+         elem.fType = JSROOT.IO.GetTypeId(typename);
+      } else {
+         elem.fType = typename;
+         elem.fTypeName = JSROOT.IO.TypeNames[typename] || "int";
+      } 
+         
       if (elem.fType > 0) return elem; // basic type
       
       if (file && file.fBasicTypes[typename]) {
