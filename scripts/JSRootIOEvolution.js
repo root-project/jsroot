@@ -1572,13 +1572,17 @@
             
             if (typ >= 60) {
                if ((typ===JSROOT.IO.kStreamer) && (elem._typename=="TStreamerSTL") && elem.fSTLtype && elem.fCtype && (elem.fCtype<20)) {
-                  var prefix = JSROOT.IO.StlNames[elem.fSTLtype]+"<";
+                  var prefix = (JSROOT.IO.StlNames[elem.fSTLtype] || "undef") + "<";
                   if ((typname.indexOf(prefix)===0) && (typname[typname.length-1] == ">")) {
                      typ = elem.fCtype;
                      typname = typname.substr(prefix.length, typname.length-prefix.length-1).trim();
+                     
+                     if ((elem.fSTLtype === JSROOT.IO.kSTLmap) || (elem.fSTLtype === JSROOT.IO.kSTLmultimap))
+                        if (typname.indexOf(",")>0) typname = typname.substr(0, typname.indexOf(",")).trim();
+                                               else continue;
                   }
                }
-               if (typ>60) continue;
+               if (typ>=60) continue;
             } else {
                if ((typ>20) && (typname[typname.length-1]=="*")) typname = typname.substr(0,typname.length-1);
                typ = typ % 20;
