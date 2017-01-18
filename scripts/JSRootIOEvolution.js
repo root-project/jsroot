@@ -2342,9 +2342,6 @@
                   var arr = obj[this.name0]; // objects array where reading is done
                   
                   if ((arr.length>0) || this.read_empty_stl_version) {
-                     
-                     console.log('read STL branch', arr.length, this.typename);
-                  
                      var ver = this.read_version(buf);
                   
                      for (var n=0;n<arr.length;++n) {

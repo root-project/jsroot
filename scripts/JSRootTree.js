@@ -1478,7 +1478,7 @@
 
             elem = JSROOT.IO.CreateStreamerElement(target_name, JSROOT.IO.kInt);
 
-            if (!read_mode || ((typeof read_mode==="string") && (read_mode[0]==="."))) {
+            if (!read_mode || ((typeof read_mode==="string") && (read_mode[0]===".")) || (read_mode===1)) {
                handle.process_arrays = false;
                
                member = {
