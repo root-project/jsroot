@@ -773,7 +773,6 @@
          console.log('See object typename', typename, 'similar', similar);
       }
       
-      
       if (this.vars[axisid].kind === "string") {
          res.lbls = []; // all labels
          
@@ -811,10 +810,17 @@
             if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
                if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
          } else
-         if (this.vars[axisid].IsInteger(this) && (res.max-res.min >=1) && (res.max-res.min<nbins*10)) {
-            res.min -= 1;
-            res.max += 2;
-            res.nbins = Math.round(res.max - res.min);
+         if (this.vars[axisid].IsInteger(this)) {
+            res.min = Math.round(res.min); res.max = Math.round(res.max);  
+            if ((res.max-res.min >=1) && (res.max-res.min<nbins*5)) {
+               res.min -= 1;
+               res.max += 2;
+               res.nbins = Math.round(res.max - res.min);
+            } else {
+               var range = (res.max - res.min + 2), step = Math.floor(range / nbins);
+               while (step*nbins < range) step++;
+               res.max = res.min + nbins*step;
+            }
          } else {
             res.max += (res.max-res.min)/res.nbins;
          }
