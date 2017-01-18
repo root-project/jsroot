@@ -1143,12 +1143,15 @@
       this.divid = null;
    }
 
-   JSROOT.TBasePainter.prototype.DrawingReady = function() {
+   JSROOT.TBasePainter.prototype.DrawingReady = function(res_painter) {
       // function should be called by the painter when first drawing is completed
       this._ready_called_ = true;
-      if ('_ready_callback_' in this) {
-         for (var k=0;k<this._ready_callback_.length;++k)
-            JSROOT.CallBack(this._ready_callback_[k], this);
+      if (this._ready_callback_ !== undefined) {
+         if (!this._return_res_painter) res_painter = this;
+                                   else delete this._return_res_painter; 
+         
+         while (this._ready_callback_.length)
+            JSROOT.CallBack(this._ready_callback_.shift(), res_painter);
          delete this._ready_callback_;
       }
       return this;
@@ -1178,12 +1181,12 @@
    }
 
    JSROOT.TBasePainter.prototype.RedrawObject = function(obj) {
-      if (this.UpdateObject(obj)) {
-         var current = document.body.style.cursor;
-         document.body.style.cursor = 'wait';
-         this.RedrawPad();
-         document.body.style.cursor = current;
-      }
+      if (!this.UpdateObject(obj)) return false;
+      var current = document.body.style.cursor;
+      document.body.style.cursor = 'wait';
+      this.RedrawPad();
+      document.body.style.cursor = current;
+      return true;
    }
 
    JSROOT.TBasePainter.prototype.CheckResize = function(arg) {
@@ -4270,6 +4273,7 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
+      
       if (!this.iscan && this.has_canvas) return false;
 
       if (size && (typeof size === 'object') && size.force) force = true;
@@ -5652,10 +5656,7 @@
 
       if (obj !== histo) {
       
-         if (!this.MatchObjectType(obj)) {
-            alert("JSROOT.THistPainter.UpdateObject - wrong class " + obj._typename + " expected " + this.histo._typename);
-            return false;
-         }
+         if (!this.MatchObjectType(obj)) return false;
 
          // TODO: simple replace of object does not help - one can have different
          // complex relations between histo and stat box, histo and colz axis,
@@ -9255,6 +9256,7 @@
       var h = this,
           painter = null,
           updating = false,
+          item = null,
           frame_name = itemname,
           marker = "::_display_on_frame_::",
           p = drawopt ? drawopt.indexOf(marker) : -1;
@@ -9264,18 +9266,24 @@
          drawopt = drawopt.substr(0, p);
       }
 
-      function display_callback() {
-         if (painter) painter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
-         JSROOT.CallBack(call_back, painter, itemname);
+      function display_callback(respainter) {
+         
+         JSROOT.progress();
+         
+         if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
+            respainter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
+            if (item) item._painter = respainter;
+         }
+         JSROOT.CallBack(call_back, respainter || painter, itemname);
       }
 
       h.CreateDisplay(function(mdi) {
 
          if (!mdi) return display_callback();
 
-         var item = h.Find(itemname);
+         item = h.Find(itemname);
 
-         if ((item!=null) && ('_player' in item))
+         if (item && ('_player' in item))
             return h.player(itemname, drawopt, display_callback);
 
          updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
@@ -9286,9 +9294,7 @@
             item._doing_update = true;
          }
 
-         if (item!=null) {
-            if (!h.canDisplay(item, drawopt)) return display_callback();
-         }
+         if (item && !h.canDisplay(item, drawopt)) return display_callback();
 
          var divid = "";
          if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
@@ -9303,49 +9309,43 @@
 
             JSROOT.progress();
 
-            if (updating && item) delete item['_doing_update'];
+            if (updating && item) delete item._doing_update;
             if (obj==null) return display_callback();
 
             JSROOT.progress("Drawing " + itemname);
+            
+            if (divid.length > 0) 
+               return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback); 
+            
+            mdi.ForEachPainter(function(p, frame) {
+               if (p.GetItemName() != itemname) return;
+               // verify that object was drawn with same option as specified now (if any)
+               if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
+               mdi.ActivateFrame(frame);
 
-            if (divid.length > 0) {
-               painter = updating ? h.redraw(divid, obj, drawopt) : h.draw(divid, obj, drawopt);
-            } else {
-               mdi.ForEachPainter(function(p, frame) {
-                  if (p.GetItemName() != itemname) return;
-                  // verify that object was drawn with same option as specified now (if any)
-                  if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
-                  painter = p;
-                  mdi.ActivateFrame(frame);
+               var handle = null;
+               if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+               if (handle && handle.draw_field && obj[handle.draw_field])
+                  obj = obj[handle.draw_field];
 
-                  var handle = null;
-                  if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
-                  if (handle && handle.draw_field && obj[handle.draw_field])
-                     obj = obj[handle.draw_field];
+               if (p.RedrawObject(obj)) painter = p;
+            });
+            
+            if (painter) return display_callback();
 
-                  painter.RedrawObject(obj);
-               });
-            }
+            if (updating) {
+               JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
+               return display_callback();
+            } 
+              
+            var frame = mdi.FindFrame(frame_name, true);
+            d3.select(frame).html("");
+            mdi.ActivateFrame(frame);
+            
+            JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt, display_callback);
 
-            if (painter==null) {
-               if (updating) {
-                  JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
-               } else {
-                  var frame = mdi.FindFrame(frame_name, true);
-                  d3.select(frame).html("");
-                  mdi.ActivateFrame(frame);
-                  painter = h.draw(d3.select(frame).attr("id"), obj, drawopt);
-                  item._painter = painter;
-                  if (JSROOT.gStyle.DragAndDrop)
-                     h.enable_dropping(frame, itemname);
-               }
-            }
-
-            JSROOT.progress();
-
-            if (painter === null) return display_callback();
-
-            painter.WhenReady(display_callback);
+            if (JSROOT.gStyle.DragAndDrop)
+               h.enable_dropping(frame, itemname);
 
          }, drawopt);
       });
@@ -9365,25 +9365,27 @@
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
 
+      function drop_callback(drop_painter) {
+         if (drop_painter) drop_painter.SetItemName(itemname);
+         JSROOT.CallBack(call_back);
+      }
+      
       h.get(itemname, function(item, obj) {
          if (obj) {
             var dummy = new JSROOT.TObjectPainter();
 
             dummy.SetDivId(divid, -1);
-            var main_painter = dummy.main_painter(true), drop_painter;
+            var main_painter = dummy.main_painter(true);
 
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
                main_painter.PerformDrop(obj, itemname, item);
             else
             if (main_painter && main_painter.accept_drops) {
-               drop_painter = h.draw(divid, obj, "same " + opt);
+               return JSROOT.draw(divid, obj, "same " + opt, drop_callback);
             } else {
                h.CleanupFrame(divid);
-               drop_painter = h.draw(divid, obj, opt);
+               return JSROOT.draw(divid, obj, opt, drop_callback);
             }
-
-            if (drop_painter)
-               return drop_painter.WhenReady(function() { drop_painter.SetItemName(itemname); JSROOT.CallBack(call_back); });
          }
          JSROOT.CallBack(call_back);
       });
@@ -10283,13 +10285,13 @@
       mdi.ForEachPainter(function(p, frame) {
          if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
          mdi.ActivateFrame(frame);
-         p.RedrawObject(obj);
-         isany = true;
+         if (p.RedrawObject(obj)) isany = true;
       });
       return isany;
    }
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
+      
       if ('disp' in this)
          this.disp.CheckMDIResize(null, size);
    }
@@ -10877,7 +10879,7 @@
       var myInterval = null, myDelay = delay ? delay : 300;
 
       if (myDelay < 20) myDelay = 20;
-
+      
       function ResizeTimer() {
          myInterval = null;
 
@@ -11126,7 +11128,7 @@
       return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
 
-   /** @fn JSROOT.draw(divid, obj, opt)
+   /** @fn JSROOT.draw(divid, obj, opt, callback)
     * Draw object in specified HTML element with given draw options  */
 
    JSROOT.draw = function(divid, obj, opt, callback) {

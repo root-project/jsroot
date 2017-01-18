@@ -2627,7 +2627,10 @@
 
       var callback = this.DrawingReady.bind(this);
       
+      this._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
+      
       tree.Draw(args, function(histo, hopt, intermediate) {
+         
          if (args.monitoring)
             JSROOT.redraw(divid, histo, hopt, intermediate ? null : callback);
          else
