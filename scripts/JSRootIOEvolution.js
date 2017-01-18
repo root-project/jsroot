@@ -97,7 +97,8 @@
                case "Double32_t": return JSROOT.IO.kDouble32; 
                case "Float16_t": return JSROOT.IO.kFloat16;
                case "char*": 
-               case "const char*": return JSROOT.IO.kCharStar;
+               case "const char*":
+               case "const Char_t*": return JSROOT.IO.kCharStar;
             }
             
             if (!norecursion) {
