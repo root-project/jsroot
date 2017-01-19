@@ -377,6 +377,7 @@
             while (i < n) array[i++] = this.ntou4();
             break;
       }
+
       return array;
    }
 
@@ -528,7 +529,7 @@
       if ((flag === 1) || (flag > 10)) {
          // here is reading of raw data
          var sz = (ver.val <= 1) ? this.ntoi4() : obj.fLast;
-
+         
          if (sz > obj.fKeylen) {
             // buffer includes again complete TKey data - exclude it
             var blob = this.extract([this.o + obj.fKeylen, sz - obj.fKeylen]);   

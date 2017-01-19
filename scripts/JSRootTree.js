@@ -661,11 +661,21 @@
       this.ndim = 1;
       
       expr = this.ParseParameters(tree, args, expr);
-      
+
+      this.monitoring = args.monitoring;
+
       if (expr === "dump") {
          this.dump_values = true;
          if (args.numentries===undefined) args.numentries = 10;
-         expr = "";
+         
+         this.hist = []; // array of dump objects
+         
+         this.AddBranch(branch); // add branch
+         
+         this.Process = this.ProcessDump;
+         
+         return true;
+         
       }
 
       this.vars[0] = new JSROOT.TDrawVariable(this.globals);
@@ -675,8 +685,6 @@
       this.cut = new JSROOT.TDrawVariable(this.globals);
       
       if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
-      
-      this.monitoring = args.monitoring;
 
       return true;
    }
@@ -1028,7 +1036,13 @@
          } 
       }
    }
-
+   
+   JSROOT.TDrawSelector.prototype.ProcessDump = function(entry) {
+      // simple dump of the branch - no need to analyze something
+      
+      this.hist.push(this.tgtobj.br0);
+      
+   }
 
    JSROOT.TDrawSelector.prototype.Process = function(entry) {
       
@@ -1116,7 +1130,7 @@
       // return TStreamerElement associated with the branch - if any
       // unfortunately, branch.fID is not number of element in streamer info
       
-      if (!branch || !file || (branch._typename!=="TBranchElement") || (branch.fID<0)) return null;
+      if (!branch || !file || (branch._typename!=="TBranchElement") || (branch.fID<0) || (branch.fStreamerType<0)) return null;
 
       var s_i = file.FindStreamerInfo(branch.fClassName, branch.fClassVersion, branch.fCheckSum),
           arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
@@ -1344,12 +1358,11 @@
                staged_now: 0, // entry limit of current I/O request
                progress_showtm: 0, // last time when progress was showed
                GetBasketEntry : function(k) {
-                  if (!this.branch || (k>this.branch.fMaxBaskets)) return 0;
+                  if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
                   var res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
                   if (res) return res;
-                  if ((k>0) && this.branch.fBaskets.arr[k-1] && this.branch.fBaskets.arr[k-1].fBufferRef)
-                     return this.branch.fBasketEntry[k-1] + this.branch.fBaskets.arr[k-1].fNevBuf;
-                  return 0;
+                  var bskt = (k>0) ? this.branch.fBaskets.arr[k-1] : null; 
+                  return bskt ? (this.branch.fBasketEntry[k-1] + bskt.fNevBuf) : 0;
                }
                
          };
@@ -1670,8 +1683,6 @@
 
              if (member.objs_branch_func) {
                 // STL branch provides special function for the reading
-                console.log('Assign special function for branch', branch.fName);
-                
                 member.func = member.objs_branch_func;
 
              } else {
@@ -1975,8 +1986,6 @@
                    buf = JSROOT.CreateTBuffer(blob, 0, handle.file),
                    basket = buf.ReadTBasket({ _typename: "TBasket" });
                
-               // console.log('Use blob', blob.byteLength, 'create buffer', buf.length);
-
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket]) 
                   console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);
                
@@ -1993,7 +2002,7 @@
                   // unpack data and create new blob
                   var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
                   
-                  // console.log('UNPACK BLOB of length', objblob.byteLength);
+                  // console.log('UNPACK BLOB of length', objblob.byteLength, bitems[k]);
 
                   if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, handle.file);
                   
@@ -2037,6 +2046,8 @@
                      var lmt = elem.GetBasketEntry(k+1),
                          not_needed = (lmt < handle.process_min);
                      
+                     // console.log('element', elem.branch.fName, 'k',k, 'not_needed', not_needed, 'numbaskets', elem.numbaskets);
+                     
                      for (var d=0;d<elem.ascounter.length;++d) {
                         var dep = handle.arr[elem.ascounter[d]]; // dependent element
                         if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data 
@@ -2047,10 +2058,10 @@
                      elem.curr_basket = k; // basket where reading will start
                      
                      elem.first_readentry = elem.GetBasketEntry(k); // remember which entry will be read first
+                     
                   }
                   
                   // check if basket already loaded in the branch
-
                   
                   var bitem = {
                         id: n, // to find which element we are reading
@@ -2060,9 +2071,12 @@
                      };
                   
                   var bskt = elem.branch.fBaskets.arr[k];
-                  if (bskt && bskt.fBufferRef) {
+                  if (bskt) {
                      bitem.raw = bskt.fBufferRef;
-                     bitem.raw.locate(0); // reset pointer - same branch may be read several times
+                     if (bitem.raw)
+                        bitem.raw.locate(0); // reset pointer - same branch may be read several times
+                     else
+                        bitem.raw = new JSROOT.TBuffer(0, handle.file); // create dummy buffer - basket ha no data 
                      bitem.fNevBuf = bskt.fNevBuf;
                      is_direct = true;
                      elem.baskets[k] = bitem; 
@@ -2142,7 +2156,7 @@
                   if (!bitem) { 
                      // no data, but no any event processed - problem
                      if (!isanyprocessed) { 
-                        console.warn('no data?', elem.branch.fName); 
+                        console.warn('no data?', elem.branch.fName, elem.curr_basket); 
                         return handle.selector.Terminate(false); 
                      }
 
