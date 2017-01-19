@@ -2903,13 +2903,13 @@
       // FIXME: logic is not very clear
       // why for foreign class one needs normal object read function, which includes reading of the version
       // but for class like map<int,TRef> object version is not stored
-      /*for (var nn=0;nn<2;++nn) 
+      for (var nn=0;nn<2;++nn) 
          if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
             // create direct streamer for the specified class - map does not write version
 
-            console.log('Create direct streamer for class ' + streamer[nn].classname, ' typename', this.typename);
+//            throw new Error('Create direct streamer for class ' + streamer[nn].classname +  ' typename ' + this.typename);
 
-            streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
+/*            streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
             
             streamer[nn].readelem = function(buf) {
                var obj = { _typename: this.classname };
@@ -2917,8 +2917,8 @@
                   this.sub[k].func(buf, obj);
                return obj;
             }
+*/            
          }
-         */
       
       var i, n = buf.ntoi4(), res = new Array(n);
 

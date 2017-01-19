@@ -1342,9 +1342,21 @@
                baskets: [], // array for read baskets,
                staged_prev: 0, // entry limit of previous I/O request 
                staged_now: 0, // entry limit of current I/O request
-               progress_showtm: 0 // last time when progress was showed
+               progress_showtm: 0, // last time when progress was showed
+               GetBasketEntry : function(k) {
+                  if (!this.branch || (k>=this.branch.fMaxBaskets)) return 0;
+                  var res = this.branch.fBasketEntry[k];
+                  if (res) return res;
+                  if ((k>0) && this.branch.fBaskets.arr[k-1] && this.branch.fBaskets.arr[k-1].fBufferRef)
+                     return this.branch.fBasketEntry[k-1] + this.branch.fBaskets.arr[k-1].fNevBuf;
+                  return 0;
+               }
+               
          };
 
+         // last basket can be stored directly with the branch
+         while (item.GetBasketEntry(item.numbaskets)) item.numbaskets++;
+         
          // check all counters if we 
          var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
@@ -1834,7 +1846,7 @@
          
          var item = handle.arr[h];
          
-         if (item.numbaskets === 0) {
+/*         if (item.numbaskets === 0) {
             // without normal baskets, check if temporary data is available
             
             if (item.branch.fBaskets && (item.branch.fBaskets.arr.length>0)) {
@@ -1848,7 +1860,7 @@
                   item.raw.locate(0); // set to initial position
                   item.first_readentry = item.branch.fFirstEntry || 0; 
                   item.current_entry = item.branch.fFirstEntry || 0;
-                  item.nev = item.numentries; // number of entries in raw buffer
+                  item.nev = bskt.fNevBuf; // number of entries in raw buffer
                   break;
                }
             }
@@ -1860,17 +1872,16 @@
                return false;
             }
          }
+         */
          
          if (h===0) continue;
          
          var item0 = handle.arr[0];
 
-         if ((item.direct_data !== item0.direct_data) || 
-             (item.numentries !== item0.numentries) ||
-             (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
-            else
+         if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
+          else
          for (var n=0;n<item.numbaskets;++n) 
-            if (item.branch.fBasketEntry[n]!==item0.branch.fBasketEntry[n]) handle.simple_read = false;
+            if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n)) handle.simple_read = false;
       }
       
       // now calculate entries range
@@ -1878,7 +1889,7 @@
       handle.firstentry = handle.lastentry = 0;
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          var branch = selector.branches[nn], e1 = branch.fFirstEntry;
-         if (e1 === undefined) e1 = (branch.fBasketBytes[0])  ? branch.fBasketEntry[0] : 0; 
+         if (e1 === undefined) e1 = (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0); 
          handle.firstentry = Math.max(handle.firstentry, e1);
          handle.lastentry = (nn===0) ? (e1 + branch.fEntries) : Math.min(handle.lastentry, e1 + branch.fEntries);
       }
@@ -1889,8 +1900,6 @@
          return false;
       }
 
-
-      
       handle.process_min = handle.firstentry;
       handle.process_max = handle.lastentry;
       
@@ -1903,6 +1912,8 @@
          var max = handle.process_min + args.numentries;
          if (max<handle.process_max) handle.process_max = max;
       }
+
+      console.log('Min/max', handle.process_min, handle.process_max);
       
       if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
          // this is indication that selector can process arrays of values
@@ -2049,22 +2060,16 @@
             for (var n=handle.arr.length-1; n>=0; --n) {
                var elem = handle.arr[n];
                
-               if (elem.direct_data && elem.raw) {
-                  // branch already read raw buffer
-                  is_direct = true;
-                  continue;
-               }
-
                while (elem.staged_basket < elem.numbaskets) {
 
                   var k = elem.staged_basket++;
                   
                   // no need to read more baskets
-                  if (elem.branch.fBasketEntry[k] >= handle.process_max) break;
+                  if (elem.GetBasketEntry(k) >= handle.process_max) break;
 
                   // check which baskets need to be read
                   if (elem.first_readentry < 0) {
-                     var lmt = elem.branch.fBasketEntry[k+1],
+                     var lmt = elem.GetBasketEntry(k+1),
                          not_needed = (lmt < handle.process_min);
                      
                      for (var d=0;d<elem.ascounter.length;++d) {
@@ -2076,22 +2081,32 @@
                      
                      elem.curr_basket = k; // basket where reading will start
                      
-                     elem.first_readentry = elem.branch.fBasketEntry[k]; // remember which entry will be read first
-                     
-                     // console.log(n, 'Branch', elem.branch.fName, ' first to read', elem.first_readentry);
+                     elem.first_readentry = elem.GetBasketEntry(k); // remember which entry will be read first
                   }
                   
-                  bitems.push({
-                     id: n, // to find which element we are reading
-                     branch: elem.branch,
-                     basket: k,
-                     raw: null // here should be result
-                  });
+                  // check if basket already loaded in the branch
 
-                  totalsz += elem.branch.fBasketBytes[k];
-                  isany = true;
+                  
+                  var bitem = {
+                        id: n, // to find which element we are reading
+                        branch: elem.branch,
+                        basket: k,
+                        raw: null // here should be result
+                     };
+                  
+                  var bskt = elem.branch.fBaskets.arr[k];
+                  if (bskt && bskt.fBufferRef) {
+                     bitem.raw = bskt.fBufferRef;
+                     bitem.fNevBuf = bskt.fNevBuf;
+                     is_direct = true;
+                     elem.baskets[k] = bitem; 
+                  } else {
+                     bitems.push(bitem);
+                     totalsz += elem.branch.fBasketBytes[k];
+                     isany = true;
+                  }
                    
-                  elem.staged_entry = elem.branch.fBasketEntry[k+1];
+                  elem.staged_entry = elem.GetBasketEntry(k+1);
                   
                   min_staged = Math.min(min_staged, elem.staged_entry);
                   
@@ -2116,11 +2131,11 @@
          
          handle.progress_showtm = new Date().getTime();
          
-         if (totalsz > 0)
-            ReadBaskets(bitems, ProcessBaskets);
-         else
-         if (is_direct)   
-            ProcessBaskets([]); // directly process baskets
+         if (totalsz > 0) return ReadBaskets(bitems, ProcessBaskets);
+
+         if (is_direct) return ProcessBaskets([]); // directly process baskets
+
+         throw new Error("No any data is requested - never come here");
       }
       
       function ProcessBaskets(bitems) {
@@ -2160,7 +2175,10 @@
                   // basket not read
                   if (!bitem) { 
                      // no data, but no any event processed - problem
-                     if (!isanyprocessed) { console.warn('no data?'); return handle.selector.Terminate(false); }
+                     if (!isanyprocessed) { 
+                        console.warn('no data?', elem.branch.fName); 
+                        return handle.selector.Terminate(false); 
+                     }
 
                      // try to read next portion of tree data
                      return ReadNextBaskets();
@@ -2168,7 +2186,7 @@
 
                   elem.raw = bitem.raw;
                   elem.nev = bitem.fNevBuf; // number of entries in raw buffer
-                  elem.current_entry = elem.branch.fBasketEntry[bitem.basket];
+                  elem.current_entry = elem.GetBasketEntry(bitem.basket);
                   
                   // console.log('Assign raw buffer', elem.branch.fName, ' first entry', elem.current_entry, ' numevents', elem.nev);
                   
