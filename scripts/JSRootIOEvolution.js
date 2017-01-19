@@ -2284,6 +2284,8 @@
                   JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
                   delete member.streamer;
                }
+               
+               member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
 
                if (member.streamer)
                   member.readelem = JSROOT.IO.ReadMapElement;
@@ -2332,8 +2334,6 @@
                   
                   if ((cnt>0) || this.read_empty_stl_version) {
                      var ver = this.read_version(buf);
-                     
-                     // console.log('ver', ver, this.member_wise, this.stl_version);
                      
                      for (var n=0;n<cnt;++n)
                         arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
@@ -2896,16 +2896,18 @@
             }
          }
       }
+
+      
       
 
       // FIXME: logic is not very clear
       // why for foreign class one needs normal object read function, which includes reading of the version
       // but for class like map<int,TRef> object version is not stored
-      for (var nn=0;nn<2;++nn) 
+      /*for (var nn=0;nn<2;++nn) 
          if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
             // create direct streamer for the specified class - map does not write version
 
-            throw new Error('Create direct streamer for class' + streamer[nn].classname);
+            console.log('Create direct streamer for class ' + streamer[nn].classname, ' typename', this.typename);
 
             streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
             
@@ -2916,8 +2918,11 @@
                return obj;
             }
          }
+         */
       
       var i, n = buf.ntoi4(), res = new Array(n);
+
+      if (n>0) console.log('create array', n, 'pair_type', this.pairtype);
       
       for (i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };

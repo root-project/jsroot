@@ -1658,7 +1658,10 @@
 
              if (member.objs_branch_func) {
                 // STL branch provides special function for the reading
+                console.log('Assign special function for branch', branch.fName);
+                
                 member.func = member.objs_branch_func;
+
              } else {
                 member.func0 = member.func;
 
@@ -1737,9 +1740,6 @@
                 // function provided by normal I/O
                 member.func = member.branch_func;
                 member.stl_size = item_cnt.name; 
-
-                // for empty STL branch with map item read version anyway, for vector does not
-                member.read_empty_stl_version = (member.readelem === JSROOT.IO.ReadMapElement); 
                    
              } else 
              if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
