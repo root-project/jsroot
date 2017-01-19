@@ -1344,8 +1344,8 @@
                staged_now: 0, // entry limit of current I/O request
                progress_showtm: 0, // last time when progress was showed
                GetBasketEntry : function(k) {
-                  if (!this.branch || (k>=this.branch.fMaxBaskets)) return 0;
-                  var res = this.branch.fBasketEntry[k];
+                  if (!this.branch || (k>this.branch.fMaxBaskets)) return 0;
+                  var res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
                   if (res) return res;
                   if ((k>0) && this.branch.fBaskets.arr[k-1] && this.branch.fBaskets.arr[k-1].fBufferRef)
                      return this.branch.fBasketEntry[k-1] + this.branch.fBaskets.arr[k-1].fNevBuf;
@@ -1355,8 +1355,8 @@
          };
 
          // last basket can be stored directly with the branch
-         while (item.GetBasketEntry(item.numbaskets)) item.numbaskets++;
-         
+         while (item.GetBasketEntry(item.numbaskets+1)) item.numbaskets++;
+
          // check all counters if we 
          var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
              nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0,
@@ -1842,44 +1842,11 @@
       
       // check if simple reading can be performed and there are direct data in branch
       
-      for (var h=0;h<handle.arr.length;++h) {
+      for (var h=1;(h < handle.arr.length) && handle.simple_read;++h) {
          
-         var item = handle.arr[h];
-         
-/*         if (item.numbaskets === 0) {
-            // without normal baskets, check if temporary data is available
-            
-            if (item.branch.fBaskets && (item.branch.fBaskets.arr.length>0)) {
-               
-               for (var k=0;k<item.branch.fBaskets.arr.length;++k) {
-                  var bskt = item.branch.fBaskets.arr[k];
-                  if (!bskt || !bskt.fBufferRef) continue;
-               
-                  item.direct_data = true;
-                  item.raw = bskt.fBufferRef;
-                  item.raw.locate(0); // set to initial position
-                  item.first_readentry = item.branch.fFirstEntry || 0; 
-                  item.current_entry = item.branch.fFirstEntry || 0;
-                  item.nev = bskt.fNevBuf; // number of entries in raw buffer
-                  break;
-               }
-            }
-            
-            if (!item.direct_data || !item.numentries) {
-               // if no any data found
-               console.log('No any data found for branch', item.branch.fName);
-               selector.Terminate(false);
-               return false;
-            }
-         }
-         */
-         
-         if (h===0) continue;
-         
-         var item0 = handle.arr[0];
+         var item = handle.arr[h], item0 = handle.arr[0];
 
          if ((item.numentries !== item0.numentries) || (item.numbaskets !== item0.numbaskets)) handle.simple_read = false;
-          else
          for (var n=0;n<item.numbaskets;++n) 
             if (item.GetBasketEntry(n) !== item0.GetBasketEntry(n)) handle.simple_read = false;
       }
@@ -1912,8 +1879,6 @@
          var max = handle.process_min + args.numentries;
          if (max<handle.process_max) handle.process_max = max;
       }
-
-      console.log('Min/max', handle.process_min, handle.process_max);
       
       if ((typeof selector.ProcessArrays === 'function') && handle.simple_read) {
          // this is indication that selector can process arrays of values
@@ -2097,6 +2062,7 @@
                   var bskt = elem.branch.fBaskets.arr[k];
                   if (bskt && bskt.fBufferRef) {
                      bitem.raw = bskt.fBufferRef;
+                     bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      bitem.fNevBuf = bskt.fNevBuf;
                      is_direct = true;
                      elem.baskets[k] = bitem; 
