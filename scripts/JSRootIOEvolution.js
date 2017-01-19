@@ -1473,6 +1473,21 @@
          callback(buf);
       });
    }
+   
+   JSROOT.TFile.prototype.AddReadTree = function(obj) {
+      // method called when TTree object is streamed 
+      
+      console.log('Add tree object', obj);
+      
+      if (JSROOT.TreeMethods) {
+         console.log('add methods immediately', obj);
+         return JSROOT.extend(obj, JSROOT.TreeMethods);
+      }
+      
+      if (this.readTrees===undefined) this.readTrees = [];
+      
+      if (this.readTrees.indexOf(obj)<0) this.readTrees.push(obj);
+   }
 
    JSROOT.TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
       // Read any object from a root file
@@ -1527,17 +1542,12 @@
             if (key.fClassName==='TF1')
                return file.ReadFormulas(obj, user_call_back, -1);
             
-            if (obj.$kind === "TTree") {
-               // ensure that TTree methods are assigned
-               obj.$file = file;
-               if (!JSROOT.TreeMethods)
-                  return JSROOT.AssertPrerequisites('tree', function() {
-                     JSROOT.extend(obj, JSROOT.TreeMethods);
-                     JSROOT.CallBack(user_call_back, obj);
-                  });
-               
-               JSROOT.extend(obj, JSROOT.TreeMethods);
-            } 
+            if (file.readTrees) 
+               return JSROOT.AssertPrerequisites('tree', function() {
+                  file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
+                  delete file.readTrees;
+                  JSROOT.CallBack(user_call_back, obj);
+               });
 
             JSROOT.CallBack(user_call_back, obj);
          }); // end of ReadObjBuffer callback
@@ -2682,7 +2692,7 @@
       
       cs['TTree'] = {
          name: '$file',   
-         func: function(buf,obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; }
+         func: function(buf,obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile.AddReadTree(obj); }
       };
       
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
