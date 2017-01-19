@@ -2228,10 +2228,10 @@
                         subelem.$fictional = true;
                         member.submember = JSROOT.IO.CreateMember(subelem, file); 
                      } 
-                     else
-                     if (!file.FindStreamerInfo(member.conttype) && !JSROOT.IO.CustomStreamers[member.conttype]) {
-                        console.warn('No streamer for class ', member.conttype, ' from STL container, probably such object are not stored');
-                     }
+//                     else
+//                     if (!file.FindStreamerInfo(member.conttype) && !JSROOT.IO.CustomStreamers[member.conttype]) {
+//                        console.warn('No streamer for class ', member.conttype, ' from STL container, probably such object are not stored');
+//                     }
                   }
                }
             } else

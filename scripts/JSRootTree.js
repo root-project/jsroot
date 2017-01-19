@@ -26,7 +26,6 @@
       this.branches = []; // list of branches to read
       this.names = []; // list of member names for each branch in tgtobj
       this.directs = []; // indication if only branch without any childs should be read
-      this.is_integer = []; // array of 
       this.break_execution = 0;
       this.tgtobj = {};
    }
@@ -52,10 +51,6 @@
    
    JSROOT.TSelector.prototype.nameOfBranch = function(indx) {
       return this.names[indx];
-   }
-   
-   JSROOT.TSelector.prototype.IsInteger = function(nbranch) {
-      return this.is_integer[nbranch];
    }
    
    JSROOT.TSelector.prototype.ShowProgress = function(value) {
@@ -403,14 +398,6 @@
       this.func = new Function("arg", "return (" + code + ")");
       
       return true;
-   }
-   
-   JSROOT.TDrawVariable.prototype.IsInteger = function(selector) {
-      // check if draw variable produces integer values
-      // derived from type of data in the branch
-      if ((this.kind !== "number") || !this.direct_branch) return false;
-      
-      return selector.IsInteger(this.brindex[0]);
    }
    
    JSROOT.TDrawVariable.prototype.is_dummy = function() {
@@ -822,14 +809,15 @@
          res.min = Math.min.apply(null, arr);
          res.max = Math.max.apply(null, arr);
          
-         if (res.min>=res.max) {
-            res.max = res.min;
-            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
-               if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
-         } else
-         if (this.vars[axisid].IsInteger(this)) {
-            res.min = Math.round(res.min); res.max = Math.round(res.max);  
-            if ((res.max-res.min >=1) && (res.max-res.min<nbins*5)) {
+         res.isinteger = (Math.round(res.min)===res.min) && (Math.round(res.max)===res.max);
+         if (res.isinteger) 
+            for (var k=0;k<arr.length;++k)
+               if (arr[k]!==Math.round(arr[k])) { res.isinteger = false; break; }
+         
+         if (res.isinteger) {
+            res.min = Math.round(res.min); 
+            res.max = Math.round(res.max);
+            if (res.max-res.min < nbins*5) {
                res.min -= 1;
                res.max += 2;
                res.nbins = Math.round(res.max - res.min);
@@ -838,6 +826,11 @@
                while (step*nbins < range) step++;
                res.max = res.min + nbins*step;
             }
+         } else 
+         if (res.min >= res.max) {
+            res.max = res.min;
+            if (Math.abs(res.min)<100) { res.min-=1; res.max+=1; } else
+            if (res.min>0) { res.min*=0.9; res.max*=1.1; } else { res.min*=1.1; res.max*=0.9; } 
          } else {
             res.max += (res.max-res.min)/res.nbins;
          }
@@ -1308,7 +1301,7 @@
             case 'TLeafS': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUShort : JSROOT.IO.kShort; break;
             case 'TLeafI': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUInt : JSROOT.IO.kInt; break;
             case 'TLeafL': datakind = leaf.fIsUnsigned ? JSROOT.IO.kULong64 : JSROOT.IO.kLong64; break;
-            case 'TLeafC': datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
+            case 'TLeafC': datakind = JSROOT.IO.kTString; break; // datakind = leaf.fIsUnsigned ? JSROOT.IO.kUChar : JSROOT.IO.kChar; break;
             default: return null;
          }
          return JSROOT.IO.CreateStreamerElement(name || leaf.fName, datakind);
@@ -1857,8 +1850,6 @@
             selector.Terminate(false);
             return false;
          }
-         
-         selector.is_integer[nn] = JSROOT.IO.IsInteger(item.type); 
       }
       
       // check if simple reading can be performed and there are direct data in branch
@@ -2641,7 +2632,6 @@
       }
 
       var callback = this.DrawingReady.bind(this);
-      
       this._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
       
       tree.Draw(args, function(histo, hopt, intermediate) {
