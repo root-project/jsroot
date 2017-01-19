@@ -8520,15 +8520,17 @@
       // if list has objects with similar names, create cycle number for them  
       var ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
       
-      for ( var i = 0; i < lst.arr.length; ++i) {
+      for (var i = 0; i < lst.arr.length; ++i) {
          var obj = ismap ? lst.arr[i].first : lst.arr[i];
-         if (!obj || !obj.fName) continue; // for such objects index will be used as name
-         var indx = names.indexOf(obj.fName);
+         if (!obj) continue; // for such objects index will be used as name
+         var objname = obj.fName || obj.name;
+         if (!objname) continue;
+         var indx = names.indexOf(objname);
          if (indx>=0) { 
             cnt[indx]++; 
          } else {
             cnt[names.length] = cycle[names.length] = 1;
-            names.push(obj.fName);
+            names.push(objname);
          }
       }
 
@@ -8548,7 +8550,7 @@
             }
          } else {
            item = {
-             _name: obj.fName,
+             _name: obj.fName || obj.name,
              _kind: "ROOT." + obj._typename,
              _title: (obj.fTitle || "") + " type:"  +  obj._typename,
              _obj: obj
