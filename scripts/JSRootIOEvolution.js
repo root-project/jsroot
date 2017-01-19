@@ -1477,12 +1477,8 @@
    JSROOT.TFile.prototype.AddReadTree = function(obj) {
       // method called when TTree object is streamed 
       
-      console.log('Add tree object', obj);
-      
-      if (JSROOT.TreeMethods) {
-         console.log('add methods immediately', obj);
+      if (JSROOT.TreeMethods)
          return JSROOT.extend(obj, JSROOT.TreeMethods);
-      }
       
       if (this.readTrees===undefined) this.readTrees = [];
       
