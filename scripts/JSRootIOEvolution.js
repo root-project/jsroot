@@ -2222,31 +2222,15 @@
                   
                   if (!member.isptr && (member.arrkind<0)) { 
                   
-                     if (member.conttype==="TRef") {
-                        throw new Error('Create direct streamer for class ' + member.conttype);
-                        // FIXME: special handling of TRef, can be same for other ROOT classes
-                        member.submember = {
-                           classname: member.conttype,       
-                           sub: file.GetStreamer(member.conttype, {}),
-                           readelem: function(buf) {
-                              var obj = { _typename: this.classname };
-                              for (var k=0;k<this.sub.length;++k)
-                                 this.sub[k].func(buf, obj);
-                              return obj;
-                           }
-                        };
-                     } else {
-                        var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
-                        
-                        // console.log('Do we need special handling for', member.conttype);
-                        
-                        if (subelem.fType === JSROOT.IO.kStreamer) {
-                           subelem.$fictional = true;
-                           member.submember = JSROOT.IO.CreateMember(subelem, file); 
-                        } else
-                        if (!file.FindStreamerInfo(member.conttype)) {
-                           console.warn('No streamer for', member.conttype, 'maybe not stored');
-                        }
+                     var subelem = JSROOT.IO.CreateStreamerElement("temp", member.conttype);
+
+                     if (subelem.fType === JSROOT.IO.kStreamer) {
+                        subelem.$fictional = true;
+                        member.submember = JSROOT.IO.CreateMember(subelem, file); 
+                     } 
+                     else
+                     if (!file.FindStreamerInfo(member.conttype) && !JSROOT.IO.CustomStreamers[member.conttype]) {
+                        console.warn('No streamer for class ', member.conttype, ' from STL container, probably such object are not stored');
                      }
                   }
                }
