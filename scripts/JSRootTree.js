@@ -1307,7 +1307,7 @@
             branch = handle.tree.FindBranch(branch);
          
          if (!branch) { console.error('Did not found branch'); return null; }
-         
+
          var item = FindInHandle(branch);
          
          if (item) {
@@ -1448,19 +1448,18 @@
 
                 if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
              }
+             
              return true;
           }
-          
+
           var object_class = JSROOT.IO.GetBranchObjectClass(branch, handle.tree); 
-          
+
           if (object_class) {
              
              if (read_mode === true) {
                 console.log('Object branch ' + object_class + ' can not have data to be readed directly');
                 return null;
              }
-             
-             console.log('object class', object_class );
              
              handle.process_arrays = false;
              
@@ -1540,7 +1539,7 @@
              // if (!elem.fSTLtype) elem = null;
           } else
           if (is_brelem && (nb_leaves <= 1)) {
-
+             
              elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
 
              // this is basic type - can try to solve problem differently
@@ -1586,6 +1585,7 @@
 
           if (!member) {
              member = JSROOT.IO.CreateMember(elem, handle.file);
+             
              if ((member.base !== undefined) && member.basename) {
                 // when element represent base class, we need handling which differ from normal IO
                 member.func = function(buf, obj) {
@@ -1808,7 +1808,7 @@
          }
          
          handle.arr.push(item);
-         
+
          // now one should add all other child branches
          if (child_scan)
             if (!ScanBranches(branch.fBranches, target_object, child_scan)) return null;
@@ -1828,12 +1828,12 @@
          
          selector.is_integer[nn] = JSROOT.IO.IsInteger(item.type); 
       }
-
+      
       // check if simple reading can be performed and there are direct data in branch
       
-      for (var k=0;k<handle.arr.length;++k) {
+      for (var h=0;h<handle.arr.length;++h) {
          
-         var item = handle.arr[k];
+         var item = handle.arr[h];
          
          if (item.numbaskets === 0) {
             // without normal baskets, check if temporary data is available
@@ -1862,7 +1862,7 @@
             }
          }
          
-         if (k===0) continue;
+         if (h===0) continue;
          
          var item0 = handle.arr[0];
 
@@ -1889,6 +1889,8 @@
          selector.Terminate(false);
          return false;
       }
+
+
       
       handle.process_min = handle.firstentry;
       handle.process_max = handle.lastentry;

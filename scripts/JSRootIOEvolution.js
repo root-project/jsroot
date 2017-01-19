@@ -69,6 +69,9 @@
                case "char": 
                case "signed char": 
                case "Char_t": return JSROOT.IO.kChar;
+               case "Color_t":
+               case "Style_t":
+               case "Width_t":
                case "short": 
                case "Short_t": return JSROOT.IO.kShort;
                case "int": 
@@ -2213,7 +2216,7 @@
                   if (!member.isptr && (member.arrkind<0)) { 
                   
                      if (member.conttype==="TRef") {
-                        console.log('Create direct streamer for class', member.conttype);
+                        throw new Error('Create direct streamer for class' + member.conttype);
                         // FIXME: special handling of TRef, can be same for other ROOT classes
                         member.submember = {
                            classname: member.conttype,       
@@ -2902,7 +2905,7 @@
          if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
             // create direct streamer for the specified class - map does not write version
 
-            console.log('Create direct streamer for class', streamer[nn].classname);
+            throw new Error('Create direct streamer for class' + streamer[nn].classname);
 
             streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
             
