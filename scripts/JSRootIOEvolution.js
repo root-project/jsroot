@@ -2217,7 +2217,7 @@
                   if (!member.isptr && (member.arrkind<0)) { 
                   
                      if (member.conttype==="TRef") {
-                        throw new Error('Create direct streamer for class' + member.conttype);
+                        throw new Error('Create direct streamer for class ' + member.conttype);
                         // FIXME: special handling of TRef, can be same for other ROOT classes
                         member.submember = {
                            classname: member.conttype,       
@@ -2898,17 +2898,19 @@
          }
       }
 
-      
-      
 
+      var i, n = buf.ntoi4(), res = new Array(n);
+      
       // FIXME: logic is not very clear
       // why for foreign class one needs normal object read function, which includes reading of the version
       // but for class like map<int,TRef> object version is not stored
+      
+      if (n>0)
       for (var nn=0;nn<2;++nn) 
          if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
             // create direct streamer for the specified class - map does not write version
 
-//            throw new Error('Create direct streamer for class ' + streamer[nn].classname +  ' typename ' + this.typename);
+            throw new Error('Create direct streamer for class ' + streamer[nn].classname +  ' typename ' + this.typename);
 
 /*            streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
             
@@ -2920,10 +2922,7 @@
             }
 */            
          }
-      
-      var i, n = buf.ntoi4(), res = new Array(n);
 
-      if (n>0) console.log('create array', n, 'pair_type', this.pairtype);
       
       for (i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };

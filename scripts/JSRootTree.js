@@ -145,19 +145,26 @@
       
          typ = obj ? typeof obj : "any";
          
-         if ((typ === "object") && obj._typename) {
-            if (JSROOT.IsRootCollection(obj)) obj = obj.arr;
-                                         else typ = "any";
+         if (typ === "object") {
+            if (obj._typename !== undefined) {   
+               if (JSROOT.IsRootCollection(obj)) { obj = obj.arr; typ = "array"; }
+                                            else typ = "any";
+            } else
+            if (!isNaN(obj.length) && (JSROOT.CheckArrayPrototype(obj)>0)) {
+               typ = "array";
+            } else {
+               typ = "any";
+            }
          } 
          
-         if ((typ=="any") && (typeof this.select[cnt+1] ==="string")) {
+         if ((typ=="any") && (typeof this.select[cnt+1] === "string")) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
             this.indx[cnt] = this.select[cnt]; // use member name as index
             continue;
          }
          
-         if ((typ === "object") && !isNaN(obj.length) && (obj.length > 0) && (JSROOT.CheckArrayPrototype(obj)>0)) {
+         if ((typ === "array") && (obj.length > 0)) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
@@ -185,6 +192,7 @@
                   }
             }
          } else {
+            
             if (cnt<0) return false;
             
             this.value = obj;
@@ -710,6 +718,7 @@
       }
       
       var ndig = 0;
+      if (this.aver_diff <= 0) ndig = 0; else
       if (this.aver_diff < 0.0001) ndig = 3; else
       if (this.aver_diff < 0.001) ndig = 2; else
       if (this.aver_diff < 0.01) ndig = 1; 
