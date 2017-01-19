@@ -2278,8 +2278,7 @@
                
                member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
 
-               if (member.streamer)
-                  member.readelem = JSROOT.IO.ReadMapElement;
+               if (member.streamer) member.readelem = JSROOT.IO.ReadMapElement;
             } else
             if (stl === JSROOT.IO.kSTLbitset) {
                member.readelem = function(buf,obj) {
@@ -2888,54 +2887,25 @@
          }
       }
 
+      for (var nn=0;nn<2;++nn) 
+         if (streamer[nn].readelem && !streamer[nn].pair_name) {
+            streamer[nn].pair_name = (nn==0) ? "first" : "second";
+            streamer[nn].func = function(buf, obj) {
+               obj[this.pair_name] = this.readelem(buf);
+            }
+         }
 
       var i, n = buf.ntoi4(), res = new Array(n);
       
-      // FIXME: logic is not very clear
-      // why for foreign class one needs normal object read function, which includes reading of the version
-      // but for class like map<int,TRef> object version is not stored
-      
-      if (n>0)
-      for (var nn=0;nn<2;++nn) 
-         if (!streamer[nn].readelem && (streamer[nn].type === JSROOT.IO.kAny) && (streamer[nn].classname==="TRef")) {
-            // create direct streamer for the specified class - map does not write version
-
-            throw new Error('Create direct streamer for class ' + streamer[nn].classname +  ' typename ' + this.typename);
-
-/*            streamer[nn].sub = buf.fFile.GetStreamer(streamer[nn].classname, {});
-            
-            streamer[nn].readelem = function(buf) {
-               var obj = { _typename: this.classname };
-               for (var k=0;k<this.sub.length;++k)
-                  this.sub[k].func(buf, obj);
-               return obj;
-            }
-*/            
-         }
-
-      
       for (i=0;i<n;++i) {
          res[i] = { _typename: this.pairtype };
-         if (streamer[0].readelem)
-            res[i].first = streamer[0].readelem(buf);
-         else
-            streamer[0].func(buf, res[i]);
-         
-         if (!this.member_wise) {
-            if (streamer[1].readelem)
-               res[i].second = streamer[1].readelem(buf);
-            else
-               streamer[1].func(buf, res[i]);
-         }
+         streamer[0].func(buf, res[i]);
+         if (!this.member_wise) streamer[1].func(buf, res[i]);
       }
 
       // due-to member-wise streaming second element read after first is completed
       if (this.member_wise)
-         for (i=0;i<n;++i)
-            if (streamer[1].readelem)
-               res[i].second = streamer[1].readelem(buf);
-            else
-               streamer[1].func(buf, res[i]);
+         for (i=0;i<n;++i) streamer[1].func(buf, res[i]);
 
       return res;
    }
