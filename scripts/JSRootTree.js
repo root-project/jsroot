@@ -1155,8 +1155,9 @@
          if (!elem) return false;
          if (elem.fName !== match_name) return false;
          if (elem.fType === branch.fStreamerType) return true;
-         if ((branch.fStreamerType===JSROOT.IO.kSTL) && 
-             (elem.fType === JSROOT.IO.kStreamer)) return true;
+         if (((branch.fStreamerType===JSROOT.IO.kSTL) || (branch.fStreamerType===JSROOT.IO.kSTL + JSROOT.IO.kOffsetL) ||
+              (branch.fStreamerType===JSROOT.IO.kSTLp) || (branch.fStreamerType===JSROOT.IO.kSTLp + JSROOT.IO.kOffsetL)) 
+                 && (elem.fType === JSROOT.IO.kStreamer)) return true;
          console.warn('Should match element', elem.fType, 'with branch', branch.fStreamerType);
          return false;
       }
@@ -2447,7 +2448,7 @@
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
-         console.log("TESTING", args.nbr, args.names[args.nbr]);
+         // console.log("TESTING", args.nbr, args.names[args.nbr]);
 
          var br = args.branches[args.nbr];
          
@@ -2475,7 +2476,7 @@
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random()); 
             } 
 
-            console.log("select firstentry:", drawargs.firstentry, "numentries:", drawargs.numentries);
+            // console.log("select firstentry:", drawargs.firstentry, "numentries:", drawargs.numentries);
 
             tree.Process(selector, drawargs);
          }
