@@ -1227,8 +1227,6 @@
       return "";
    }
    
-   
-   
    JSROOT.IO.MakeMethodsList = function(typename) {
       // create fast list to assign all methods to the object
       
@@ -1440,6 +1438,7 @@
             if (!lst || !lst.arr.length) return true;
 
             var match_prefix = branch.fName;
+            if (match_prefix[match_prefix.length-1] === ".") match_prefix = match_prefix.substr(0,match_prefix.length-1);
             if ((typeof read_mode=== "string") && (read_mode[0]==".")) match_prefix += read_mode;
             match_prefix+=".";
 
