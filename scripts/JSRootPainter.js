@@ -4019,21 +4019,48 @@
          .attr("height",h)
          .call(this.fillatt.func);
 
-      this.svg_layer("btns_layer").attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")");
+      this.svg_layer("btns_layer")
+          .attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")")
+          .attr("display", svg.property("pad_enlarged") ? "none" : ""); // hide buttons when sub-pad is enlarged
 
       return true;
    }
+   
+   JSROOT.TPadPainter.prototype.PadDoubleClick = function() {
+      if (!this.has_canvas) return false;
+      d3.event.preventDefault();
+      
+      var svg_can = this.svg_canvas(),
+          pad_enlarged = svg_can.property("pad_enlarged");
+      
+      if (!pad_enlarged) svg_can.property("pad_enlarged", this.this_pad_name); else
+      if (pad_enlarged === this.this_pad_name) svg_can.property("pad_enlarged", null); else
+         console.error('missmatch with double click events');
+      
+      this.CheckResize({force:true});
+   }
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
-      if (!this.has_canvas)
-         return this.CreateCanvasSvg(only_resize ? 2 : 0);
+      // returns true when pad is displayed and all its items should be redrawn
+      
+      if (!this.has_canvas) {
+         this.CreateCanvasSvg(only_resize ? 2 : 0);
+         return true;
+      }
 
-      var width = this.svg_canvas().property("draw_width"),
-          height = this.svg_canvas().property("draw_height"),
+      var svg_can = this.svg_canvas(), 
+          width = svg_can.property("draw_width"),
+          height = svg_can.property("draw_height"),
+          pad_enlarged = svg_can.property("pad_enlarged"),
+          pad_visible = !pad_enlarged || (pad_enlarged === this.this_pad_name),
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
           y = Math.round(height - this.pad.fAbsYlowNDC * height) - h;
+
+      if (pad_enlarged === this.this_pad_name) {
+         w = width; h = height; x = 0; y = 0; 
+      }
 
       var svg_pad = null, svg_rect = null, btns = null;
 
@@ -4042,13 +4069,15 @@
          svg_rect = svg_pad.select(".root_pad_border");
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = this.svg_canvas().select(".subpads_layer")
+         svg_pad = svg_can.select(".subpads_layer")
              .append("g")
              .attr("class", "root_pad")
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
-         svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
+         svg_rect = svg_pad.append("svg:rect")
+                           .attr("class", "root_pad_border")
+                           .attr("pointer-events", "visibleFill"); // get events also for not visisble rect
          svg_pad.append("svg:g").attr("class","root_frame");
          svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
@@ -4056,7 +4085,9 @@
          btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
 
          if (JSROOT.gStyle.ContextMenu)
-            svg_pad.select(".root_pad_border").on("contextmenu", this.ShowContextMenu.bind(this));
+            svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
+         
+         svg_rect.on("dblclick", this.PadDoubleClick.bind(this));
 
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
@@ -4066,6 +4097,7 @@
       }
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
+             .attr("display", pad_visible ? "" : "none")
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
@@ -4078,7 +4110,9 @@
               .call(this.fillatt.func)
               .call(this.lineatt.func);
 
-      btns.attr("transform","translate("+ (w- btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h-this.ButtonSize(1.25)) + ")");
+      btns.attr("transform","translate("+ (w - btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
+      
+      return pad_visible;
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
@@ -4238,14 +4272,18 @@
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
+      
+      var showsub = true;
+      
       if (this.iscan)
          this.CreateCanvasSvg(2);
       else
-         this.CreatePadSvg(true);
+         showsub = this.CreatePadSvg(true);
 
       // at the moment canvas painter donot redraw its subitems
-      for (var i = 0; i < this.painters.length; ++i)
-         this.painters[i].Redraw(resize);
+      if (showsub)
+         for (var i = 0; i < this.painters.length; ++i)
+            this.painters[i].Redraw(resize);
    }
 
    JSROOT.TPadPainter.prototype.NumDrawnSubpads = function() {

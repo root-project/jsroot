@@ -20,7 +20,7 @@
 5. Support of large arrays in object inspector.
    If there are too many elements, only first part will be shown
    or array will be compressed - same consequent items shown only once
-     
+6. Sub-pad can be enlarged when double-clicked outside frame (#116)
 
 
 ## Changes in 4.8.0
