@@ -263,7 +263,7 @@
       var map = [], newfmt = undefined;
 
       function unref_value(value) {
-         if (value===null) return;
+         if ((value===null) || (value===undefined)) return;
 
          if (typeof value === 'string') {
             if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
@@ -277,8 +277,7 @@
 
          var i, k, res, proto = Object.prototype.toString.apply(value);
 
-         // TODO: should we process here typed arrays???
-         //       are there special JSON syntax for typed arrays
+         // scan array - it can contain other objects
          if ((proto.indexOf('[object')==0) && (proto.indexOf('Array]')>0)) {
              for (i = 0; i < value.length; ++i) {
                 res = unref_value(value[i]);
@@ -294,6 +293,36 @@
             if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = true;
             return map[ref];
+         }
+         
+         if ((newfmt!==false) && (len>1) && (ks[0]==='$arr') && (ks[1]==='len')) {
+            // this is ROOT-coded array
+            var arr = null, dflt = (value.$arr==="Bool") ? false : 0;
+            switch (value.$arr) {
+               case "Int8" : arr = new Int8Array(value.len); break;
+               case "Uint8" : arr = new Uint8Array(value.len); break;
+               case "Int16" : arr = new Int16Array(value.len); break;
+               case "Uint16" : arr = new Uint16Array(value.len); break;
+               case "Int32" : arr = new Int32Array(value.len); break;
+               case "Uint32" : arr = new Uint32Array(value.len); break;
+               case "Float32" : arr = new Float32Array(value.len); break;
+               case "Int64" : 
+               case "Uint64" : 
+               case "Float64" : arr = new Float64Array(value.len); break;
+               default : arr = new Array(value.len); break;
+            }
+            for (var k=0;k<value.len;++k) arr[k] = dflt;
+            
+            if (value.v !== undefined) {
+               var p = value.p || 0;
+               if (typeof value!=='object') 
+                  arr[p] = value.v;
+               else 
+               for (var k=0;k<value.v.length;++k)
+                  arr[p++] = value.v[k];
+            }
+            
+            return arr;
          }
          
          if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
@@ -482,7 +511,7 @@
          if (pos < 0) pos = url.length;
 
          /*
-         // try to correctly handle quotes in the URL - keep %symbold 
+         // try to correctly handle quotes in the URL - keep %symbol 
          pos = 0; nquotes = 0;
          while ((pos < url.length) && ((nquotes!==0) || (url[pos]!=="&"))) {
             if (url[pos]=="%") {
