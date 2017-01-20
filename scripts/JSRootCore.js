@@ -320,10 +320,10 @@
                if (typeof v === 'object') {
                   for (var k=0;k<v.length;++k) arr[p++] = v[k];
                } else {
-                  arr[p] = v;
+                  arr[p++] = v;
                   if ((nkey<len) && (ks[nkey][0]=='n')) {
                      var cnt = value[ks[nkey++]]; // counter
-                     while (--cnt) arr[++p] = v; 
+                     while (--cnt) arr[p++] = v; 
                   } 
                }
             }
