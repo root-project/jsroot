@@ -3960,10 +3960,9 @@
             factor = 0.66;
 
             // for TCanvas reconstruct ratio between width and height
-            if ((this.pad!==null) && ('fCw' in this.pad) && ('fCh' in this.pad) && (this.pad.fCw > 0)) {
+            if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
                factor = this.pad.fCh / this.pad.fCw;
-               if ((factor < 0.1) || (factor > 10))
-                  factor = 0.66;
+               if ((factor < 0.1) || (factor > 10)) factor = 0.66;
             }
 
             h = Math.round(w * factor);
