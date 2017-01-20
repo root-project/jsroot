@@ -4021,14 +4021,16 @@
 
       this.svg_layer("btns_layer")
           .attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")")
-          .attr("display", svg.property("pad_enlarged") ? "none" : ""); // hide buttons when sub-pad is enlarged
+          .attr("display", svg.property("pad_enlarged") ? "none" : null); // hide buttons when sub-pad is enlarged
 
       return true;
    }
    
    JSROOT.TPadPainter.prototype.PadDoubleClick = function() {
+      
       if (!this.has_canvas) return false;
       d3.event.preventDefault();
+      d3.event.stopPropagation();
       
       var svg_can = this.svg_canvas(),
           pad_enlarged = svg_can.property("pad_enlarged");
@@ -4056,13 +4058,10 @@
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
-          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h;
+          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h,
+          svg_pad = null, svg_rect = null, btns = null;
 
-      if (pad_enlarged === this.this_pad_name) {
-         w = width; h = height; x = 0; y = 0; 
-      }
-
-      var svg_pad = null, svg_rect = null, btns = null;
+      if (pad_enlarged === this.this_pad_name) {  w = width; h = height; x = y = 0; }
 
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
@@ -4097,7 +4096,7 @@
       }
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
-             .attr("display", pad_visible ? "" : "none")
+             .attr("display", pad_visible ? null : "none")
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
@@ -4280,10 +4279,11 @@
       else
          showsub = this.CreatePadSvg(true);
 
-      // at the moment canvas painter donot redraw its subitems
-      if (showsub)
-         for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw(resize);
+      // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
+      for (var i = 0; i < this.painters.length; ++i) {
+         var sub = this.painters[i]; 
+         if (showsub || sub.this_pad_name) sub.Redraw(resize);
+      }
    }
 
    JSROOT.TPadPainter.prototype.NumDrawnSubpads = function() {
