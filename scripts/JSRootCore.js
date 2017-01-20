@@ -313,13 +313,20 @@
             }
             for (var k=0;k<value.len;++k) arr[k] = dflt;
             
-            if (value.v !== undefined) {
-               var p = value.p || 0;
-               if (typeof value!=='object') 
-                  arr[p] = value.v;
-               else 
-               for (var k=0;k<value.v.length;++k)
-                  arr[p++] = value.v[k];
+            var nkey = 2, p = 0;
+            while (nkey<len) {
+               if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
+               if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
+               var v = value[ks[nkey++]]; // value
+               if (typeof v === 'object') {
+                  for (var k=0;k<v.length;++k) arr[p++] = v[k];
+               } else {
+                  arr[p] = v;
+                  if ((nkey<len) && (ks[nkey][0]=='n')) {
+                     var cnt = value[ks[nkey++]]; // counter
+                     while (--cnt) arr[++p] = v; 
+                  } 
+               }
             }
             
             return arr;
