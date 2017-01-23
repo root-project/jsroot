@@ -341,6 +341,29 @@
       
       return true;
    }
+   
+   JSROOT.HierarchyPainter.prototype.toggleOpenState = function(isopen, h) {
+      var hitem = h ? h : this.h;
+
+      if (!('_childs' in hitem)) {
+         if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return;
+         this.expand(this.itemFullName(hitem));
+         if (hitem._childs) hitem._isopen = true;
+         return;
+      }
+
+      if (hitem != this.h)
+         if (isopen)
+            hitem._isopen = true;
+         else
+            delete hitem._isopen;
+
+      for (var i=0; i < hitem._childs.length; ++i)
+         this.toggleOpenState(isopen, hitem._childs[i]);
+
+      if (!h) this.RefreshHtml();
+   }
+
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
 
@@ -380,9 +403,9 @@
 
       var d3p = maindiv.append("p");
 
-      d3p.append("a").attr("href", '#').text("open all").on("click", function() { h.toggle(true); d3.event.preventDefault(); });
+      d3p.append("a").attr("href", '#').text("open all").on("click", function() { h.toggleOpenState(true); d3.event.preventDefault(); });
       d3p.append("text").text(" | ");
-      d3p.append("a").attr("href", '#').text("close all").on("click", function() { h.toggle(false); d3.event.preventDefault(); });
+      d3p.append("a").attr("href", '#').text("close all").on("click", function() { h.toggleOpenState(false); d3.event.preventDefault(); });
 
       if ('_online' in this.h) {
          d3p.append("text").text(" | ");

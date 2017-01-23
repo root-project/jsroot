@@ -1479,8 +1479,6 @@
                   if (pp>0) chld_direct = JSROOT.IO.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0,pp+1), k) || "TObject";
                }
 
-               console.log('Add branch', br.fName, 'target', subname, chld_direct);
-
                if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
             }
 

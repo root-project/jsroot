@@ -9170,28 +9170,6 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.toggle = function(status, h) {
-      var hitem = (h==null) ? this.h : h;
-
-      if (!('_childs' in hitem)) {
-         if (!status || this.with_icons || ((typeof hitem._expand) !== 'function')) return;
-         this.expand(this.itemFullName(hitem));
-         if ('_childs' in hitem) hitem._isopen = true;
-         return;
-      }
-
-      if (hitem != this.h)
-         if (status)
-            hitem._isopen = true;
-         else
-            delete hitem._isopen;
-
-      for (var i=0; i < hitem._childs.length; ++i)
-         this.toggle(status, hitem._childs[i]);
-
-      if (h==null) this.RefreshHtml();
-   }
-
    JSROOT.HierarchyPainter.prototype.get = function(arg, call_back, options) {
       // get object item with specified name
       // depending from provided option, same item can generate different object types
