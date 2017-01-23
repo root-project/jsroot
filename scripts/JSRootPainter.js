@@ -1201,26 +1201,34 @@
    }
    
    JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
-      // action can be true, false, 'toggle'
+      // action can be true, false, 'toggle', 'state'
       // if action not specified, just return possibility to enlarge main div 
       
       var main = this.select_main();
       
       if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
       
+      if (action===undefined) return true;
+      
+      var state = (main.property('normal_css') == null) ? "off" : "on";
+      
+      if (action === 'state') return state;
+      
       if (action === 'toggle') action = (main.property('normal_css') == null); 
       
-      if (action === true) {
+      if ((action === true) && (state!=="on")) {
          main.property('normal_css', main.node().style.cssText);
          main.style({ position: "absolute", left: "3px", top: "3px", bottom :"3px", right: "3px", "z-index":10, width:null, height:null });
-      } else 
-      if (action === false) {
+         return true;
+      }  
+      if ((action === false) && (state!=="off")) {
          if (main.property('normal_css'))
             main.node().style.cssText = main.property('normal_css');
          main.property('normal_css', null);
+         return true;
       }
       
-      return true;
+      return false;
    }
 
    JSROOT.TBasePainter.prototype.main_visible_rect = function() {
@@ -4042,18 +4050,18 @@
          d3.event.stopPropagation();
       }
 
+      var svg_can = this.svg_canvas(),
+          pad_enlarged = svg_can.property("pad_enlarged");
+
       if (this.iscan || !this.has_canvas) {
          if (!this.enlarge_main('toggle')) return;
+         if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null); 
       } else {
-         
-         var svg_can = this.svg_canvas(),
-             pad_enlarged = svg_can.property("pad_enlarged");
-
          if (!pad_enlarged) {
             this.enlarge_main(true);
-            svg_can.property("pad_enlarged", this.this_pad_name); 
+            svg_can.property("pad_enlarged", this.pad); 
          } else
-         if (pad_enlarged === this.this_pad_name) {
+         if (pad_enlarged === this.pad) {
             this.enlarge_main(false);
             svg_can.property("pad_enlarged", null); 
          } else {
@@ -4064,7 +4072,7 @@
       this.CheckResize({force:true});
    }
 
-   JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
+   JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize, parent_visible) {
       // returns true when pad is displayed and all its items should be redrawn
       
       if (!this.has_canvas) {
@@ -4076,15 +4084,23 @@
           width = svg_can.property("draw_width"),
           height = svg_can.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
-          pad_visible = !pad_enlarged || (pad_enlarged === this.this_pad_name),
+          pad_visible = !pad_enlarged || (pad_enlarged === this.pad),
           w = Math.round(this.pad.fAbsWNDC * width),
           h = Math.round(this.pad.fAbsHNDC * height),
           x = Math.round(this.pad.fAbsXlowNDC * width),
-          y = Math.round(height - this.pad.fAbsYlowNDC * height) - h,
+          y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (pad_enlarged === this.this_pad_name) {  w = width; h = height; x = y = 0; }
-
+      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; } else
+      if (parent_visible && pad_enlarged) {
+         // this is sub-pad of selected pad
+         w = Math.round(this.pad.fAbsWNDC / pad_enlarged.fAbsWNDC * width);
+         h = Math.round(this.pad.fAbsHNDC / pad_enlarged.fAbsHNDC * height);
+         x = Math.round((this.pad.fAbsXlowNDC - pad_enlarged.fAbsXlowNDC) / pad_enlarged.fAbsWNDC  * width);
+         y = Math.round(height * (1 - (this.pad.fAbsYlowNDC - pad_enlarged.fAbsYlowNDC)/pad_enlarged.fAbsHNDC)) - h;
+         pad_visible = true;
+      }
+      
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
          svg_rect = svg_pad.select(".root_pad_border");
@@ -4110,8 +4126,6 @@
          
          svg_rect.on("dblclick", this.PadDoubleClick.bind(this));
          
-         if (this.this_pad_name === "c1_1_1") setTimeout(this.PadDoubleClick.bind(this), 1000);
-
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
          if (!this.lineatt || !this.lineatt.changed)
@@ -4297,20 +4311,19 @@
       }); // end menu creation
    }
 
-   JSROOT.TPadPainter.prototype.Redraw = function(resize) {
-      
-      var showsub = true;
+   JSROOT.TPadPainter.prototype.Redraw = function(resize, showsubitems) {
       
       if (this.iscan) {
          this.CreateCanvasSvg(2);
+         showsubitems = true;
       } else {
-         showsub = this.CreatePadSvg(true);
+         showsubitems = this.CreatePadSvg(true, showsubitems);
       }
 
       // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
          var sub = this.painters[i]; 
-         if (showsub || sub.this_pad_name) sub.Redraw(resize);
+         if (showsubitems || sub.this_pad_name) sub.Redraw(resize, showsubitems);
       }
    }
 
