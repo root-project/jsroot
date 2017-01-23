@@ -1213,7 +1213,7 @@
       
       if (action===undefined) return true;
       
-      var state = (main.property('normal_css') == null) ? "off" : "on";
+      var state = (main.property('normal_css') === undefined) ? "off" : "on";
       
       if (action === 'state') return state;
       
@@ -1221,12 +1221,11 @@
       
       if ((action === true) && (state!=="on")) {
          main.property('normal_css', main.node().style.cssText);
-         main.style({ position: "absolute", left: "3px", top: "3px", bottom :"3px", right: "3px", "z-index":10, width:null, height:null });
+         main.style({ position: "absolute", left: "3px", top: "3px", bottom :"3px", right: "3px", "z-index":10, width:null, height:null, "background-color": "white" });
          return true;
       }  
       if ((action === false) && (state!=="off")) {
-         if (main.property('normal_css'))
-            main.node().style.cssText = main.property('normal_css');
+         main.node().style.cssText = main.property('normal_css');
          main.property('normal_css', null);
          return true;
       }
