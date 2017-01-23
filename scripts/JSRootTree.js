@@ -1453,6 +1453,14 @@
                   if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
                   continue;
                }
+               
+               var elem = JSROOT.IO.FindBrachStreamerElement(br, handle.file);
+               if (elem && (elem.fTypeName==="BASE")) {
+                  // if branch is data of base class, map it to original target 
+                  if (br.fTotBytes && !AddBranchForReading(br, target_object, target_name, read_mode)) return false;
+                  if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
+                  continue;
+               }
 
                var subname = br.fName, chld_direct = 1;
 
