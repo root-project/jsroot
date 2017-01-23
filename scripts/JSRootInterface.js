@@ -56,6 +56,18 @@
          }
       }
    }
+   
+   LocalFileSelected = function(evnt) {
+      
+      var files = evnt.target.files;
+      
+      for (var n=0;n<files.length;++n) {
+         var f = files[n];
+         console.log('Get selected', f.name, f.type, f.size);
+      }
+      
+      
+   }
 
    ReadFile = function() {
       var filename = $("#urlToLoad").val();
@@ -117,7 +129,9 @@
                +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
             for (var i in arrFiles)
                guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
-            guiCode += '</select><br/>'
+            guiCode += '</select>'
+               +'<input type="file" name="file" id="localFile" style="display:none"/><output id="list" style="display:none"></output>'
+               +'<input type="button" value="..." name="filebtn" style="width:15%; margin-top:5px;margin-left:5px;" onclick="document.ex.file.click();"/><br/>'
                +'<p><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
                +'<input style="padding:2px; margin-top:5px;"'
@@ -146,6 +160,8 @@
       var drawDivId = 'right-div';
 
       myDiv.empty().append(guiCode);
+      
+      document.getElementById('localFile').addEventListener('change', LocalFileSelected, false);
 
       var h0 = null;
 
