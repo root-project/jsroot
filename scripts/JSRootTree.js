@@ -1364,6 +1364,15 @@
                   if (res) return res;
                   var bskt = (k>0) ? this.branch.fBaskets.arr[k-1] : null; 
                   return bskt ? (this.branch.fBasketEntry[k-1] + bskt.fNevBuf) : 0;
+               },
+               GetTarget : function(tgtobj) {
+                  if (!this.tgt) return tgtobj;
+                  for (var k=0;k<this.tgt.length;++k) {
+                     var sub = this.tgt[k];
+                     if (!tgtobj[sub.name]) tgtobj[sub.name] = sub.lst.Create();
+                     tgtobj = tgtobj[sub.name];
+                  }
+                  return tgtobj;
                }
                
          };
@@ -1530,13 +1539,12 @@
              }
 
              handle.process_arrays = false;
-
-             // object where all sub-branches will be collected
-             var tgt = target_object[target_name] = { _typename: object_class };
-
-             JSROOT.addMethods(tgt, object_class);
-
-             if (!ScanBranches(branch.fBranches, tgt,  0)) return null;
+             
+             var newtgt = new Array(target_object ? (target_object.length + 1) : 1); 
+             for (var l=0;l<newtgt.length-1;++l) newtgt[l] = target_object[l];
+             newtgt[newtgt.length-1] = { name: target_name, lst: JSROOT.IO.MakeMethodsList(object_class) };
+             
+             if (!ScanBranches(branch.fBranches, newtgt,  0)) return null;
 
              return item; // this kind of branch does not have baskets and not need to be read
 
@@ -1849,7 +1857,7 @@
       // main loop to add all branches from selector for reading
       for (var nn = 0; nn < selector.branches.length; ++nn) {
          
-         var item = AddBranchForReading(selector.branches[nn], selector.tgtobj, selector.names[nn], selector.directs[nn]); 
+         var item = AddBranchForReading(selector.branches[nn], undefined, selector.names[nn], selector.directs[nn]); 
          
          if (!item) {
             selector.Terminate(false);
@@ -2220,7 +2228,8 @@
 
                   if (handle.current_entry === elem.current_entry) {
                      // read only element where entry id matches
-                     elem.member.func(elem.raw, elem.tgt);
+                     
+                     elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
 
                      elem.current_entry++;
 
