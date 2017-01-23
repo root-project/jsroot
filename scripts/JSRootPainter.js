@@ -1134,7 +1134,7 @@
       if (on===false) delete chld.painter;
       return chld.painter;
    }
-
+   
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
       
@@ -1198,6 +1198,29 @@
       if ((typeof this.divid == "string") &&
           (this.divid.charAt(0) != "#")) return d3.select("#" + this.divid);
       return d3.select(this.divid);
+   }
+   
+   JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
+      // action can be true, false, 'toggle'
+      // if action not specified, just return possibility to enlarge main div 
+      
+      var main = this.select_main();
+      
+      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
+      
+      if (action === 'toggle') action = (main.property('normal_css') == null); 
+      
+      if (action === true) {
+         main.property('normal_css', main.node().style.cssText);
+         main.style({ position: "absolute", left: "3px", top: "3px", bottom :"3px", right: "3px", "z-index":10, width:null, height:null });
+      } else 
+      if (action === false) {
+         if (main.property('normal_css'))
+            main.node().style.cssText = main.property('normal_css');
+         main.property('normal_css', null);
+      }
+      
+      return true;
    }
 
    JSROOT.TBasePainter.prototype.main_visible_rect = function() {
@@ -3965,7 +3988,8 @@
 
          svg.append("svg:title").text("ROOT canvas");
          svg.append("svg:rect").attr("class","canvas_fillrect")
-                               .attr("x",0).attr("y",0).style("pointer-events", "visibleFill");
+                               .attr("x",0).attr("y",0).style("pointer-events", "visibleFill")
+                               .on("dblclick", this.PadDoubleClick.bind(this));
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
          svg.append("svg:g").attr("class","special_layer");
@@ -4011,29 +4035,31 @@
       return true;
    }
    
-   JSROOT.TPadPainter.prototype.PadDoubleClick1 = function() {
-      var select = d3.select("#jsroot_enlarge_div");
-      
-      if (!select.empty()) return;
-      
-      select = d3.select('body')
-           .append("div")
-           .attr("id", "jsroot_enlarge_div")
-           .style({ position: "absolute", left: "1px", top: "1px", bottom :"1px", right: "1px", background: "darkblue", opacity :"0.5", "any-sub": null});
-   }
-   
    JSROOT.TPadPainter.prototype.PadDoubleClick = function() {
       
-      if (!this.has_canvas) return false;
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-      
-      var svg_can = this.svg_canvas(),
-          pad_enlarged = svg_can.property("pad_enlarged");
-      
-      if (!pad_enlarged) svg_can.property("pad_enlarged", this.this_pad_name); else
-      if (pad_enlarged === this.this_pad_name) svg_can.property("pad_enlarged", null); else
-         console.error('missmatch with double click events');
+      if (d3.event) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation();
+      }
+
+      if (this.iscan || !this.has_canvas) {
+         if (!this.enlarge_main('toggle')) return;
+      } else {
+         
+         var svg_can = this.svg_canvas(),
+             pad_enlarged = svg_can.property("pad_enlarged");
+
+         if (!pad_enlarged) {
+            this.enlarge_main(true);
+            svg_can.property("pad_enlarged", this.this_pad_name); 
+         } else
+         if (pad_enlarged === this.this_pad_name) {
+            this.enlarge_main(false);
+            svg_can.property("pad_enlarged", null); 
+         } else {
+            console.error('missmatch with pad double click events');
+         }
+      }
       
       this.CheckResize({force:true});
    }
@@ -4083,6 +4109,8 @@
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
          
          svg_rect.on("dblclick", this.PadDoubleClick.bind(this));
+         
+         if (this.this_pad_name === "c1_1_1") setTimeout(this.PadDoubleClick.bind(this), 1000);
 
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
@@ -4231,6 +4259,9 @@
 
       menu.add("separator");
 
+      if (this.enlarge_main())
+         menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.PadDoubleClick.bind(this));
+
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
       fname += ".png";
@@ -4270,10 +4301,11 @@
       
       var showsub = true;
       
-      if (this.iscan)
+      if (this.iscan) {
          this.CreateCanvasSvg(2);
-      else
+      } else {
          showsub = this.CreatePadSvg(true);
+      }
 
       // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {

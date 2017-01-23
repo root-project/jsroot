@@ -20,7 +20,9 @@
 5. Support of large arrays in object inspector.
    If there are too many elements, only first part will be shown
    or array will be compressed - same consequent items shown only once
-6. Sub-pad can be enlarged when double-clicked outside frame (#116)
+6. Canvas or selected sub-pad can be enlarged when double-clicked outside frame (#116)
+   Complete drawing will be expanded to the visible space.
+   Not available for flex, tabs and collapsible layouts.  
 
 
 ## Changes in 4.8.0
