@@ -511,16 +511,15 @@
 
       line.Apply = function(selection) {
          this.used = true;
+         var arg;
          if (this.color=='none') {
-            selection.style('stroke', null);
-            selection.style('stroke-width', null);
-            selection.style('stroke-dasharray', null);
+            arg = { 'stroke':null,'stroke-width': null, 'stroke-dasharray': null };
          } else {
-            selection.style('stroke', this.color);
-            selection.style('stroke-width', this.width);
-            if (this.dash && (this.dash.length>0))
-               selection.style('stroke-dasharray', this.dash);
+            arg = { 'stroke':this.color, 'stroke-width': this.width };
+            if (this.dash && (this.dash.length>0)) arg['stroke-dasharray'] = this.dash;
          }
+         
+         selection.style(arg);
       }
 
       line.Change = function(color, width, dash) {
@@ -1676,11 +1675,7 @@
             prnt = prnt.parentNode;
          }
 
-         elem.style('position','absolute')
-             .style('left', (size.x + offx) + 'px')
-             .style('top', (size.y + offy) + 'px')
-             .style('width', size.width + 'px')
-             .style('height', size.height + 'px');
+         elem.style({position:'absolute', left: (size.x+offx)+'px', top: (size.y+offy)+'px', width: size.width+'px', height: size.height+'px'});
       }
 
       return elem;
@@ -1905,7 +1900,7 @@
              break;
          }
 
-         patt.selectAll('line').style("stroke",line_color).style("stroke-width", 1);
+         patt.selectAll('line').style({stroke:line_color, "stroke-width":1});
          patt.selectAll('rect').style("fill",line_color);
 
          return true;
@@ -1982,11 +1977,9 @@
                               .attr('class','resize_corner2')
                               .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
 
-      resize_corner1.style("opacity", "0")
-                    .style("cursor", "nw-resize");
+      resize_corner1.style({opacity:0,cursor:"nw-resize"});
 
-      resize_corner2.style("opacity", "0")
-                    .style("cursor", "se-resize")
+      resize_corner2.style({opacity:0,cursor:"se-resize"})
                     .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
       var drag_rect = null;
@@ -2888,11 +2881,7 @@
                        .property('_align', align);
 
       var element = document.createElement("p");
-      d3.select(element).style("visibility", "hidden")
-                        .style("overflow", "hidden")
-                        .style("position", "absolute")
-                        .style("font-size", font.size+'px')
-                        .style("font-family", font.name)
+      d3.select(element).style({visibility:"hidden", overflow:"hidden", position:"absolute", "font-size": font.size+'px', "font-family": font.name})
                         .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 
@@ -3052,9 +3041,7 @@
             this.draw_g
                 .append("rect")
                 .attr("class","interactive_rect")
-                .style("opacity","0")
-                .style("fill","none")
-                .style("pointer-events", "visibleFill")
+                .style({opacity:0, fill:"none", "pointer-events":"visibleFill"})
                 .on('mouseenter', MouseMoveEvent)
                 .on('mousemove', MouseMoveEvent)
                 .on('mouseleave', MouseCloseEvent);
@@ -3267,9 +3254,7 @@
          if (was_empty)
             group = hintsg.append("svg:svg")
                           .attr("class", "painter_hint_"+n)
-                          .style('overflow','hidden')
-                          .attr("opacity","0")
-                          .style("pointer-events","none");
+                          .style({overflow:'hidden', opacity:0, "pointer-events":"none"});
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
@@ -4026,6 +4011,17 @@
       return true;
    }
    
+   JSROOT.TPadPainter.prototype.PadDoubleClick1 = function() {
+      var select = d3.select("#jsroot_enlarge_div");
+      
+      if (!select.empty()) return;
+      
+      select = d3.select('body')
+           .append("div")
+           .attr("id", "jsroot_enlarge_div")
+           .style({ position: "absolute", left: "1px", top: "1px", bottom :"1px", right: "1px", background: "darkblue", opacity :"0.5", "any-sub": null});
+   }
+   
    JSROOT.TPadPainter.prototype.PadDoubleClick = function() {
       
       if (!this.has_canvas) return false;
@@ -4575,7 +4571,7 @@
 
       // special rect to correctly get mouse events for whole button area
       svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
-         .style("opacity","0").style("fill","none").style("pointer-events", "visibleFill");
+         .style({opacity:0, fill:"none", "pointer-events":"visibleFill"});
 
       svg.on("click", this.PadButtonClick.bind(this, funcname));
 
@@ -6017,9 +6013,7 @@
           layer.append("svg:path")
                .attr("class", "xgrid")
                .attr("d", grid)
-               .style("stroke", grid_color)
-               .style("stroke-width", JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+               .style({stroke:grid_color, "stroke-width": JSROOT.gStyle.fGridWidth, "stroke-dasharray": JSROOT.Painter.root_line_styles[grid_style]});
       }
 
       // add a grid on y axis, if the option is set
@@ -6035,9 +6029,7 @@
           layer.append("svg:path")
                .attr("class", "ygrid")
                .attr("d", grid)
-               .style("stroke", grid_color)
-               .style("stroke-width", JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+               .style({stroke:grid_color, "stroke-width": JSROOT.gStyle.fGridWidth, "stroke-dasharray": JSROOT.Painter.root_line_styles[grid_style]});
       }
    }
 
@@ -8472,10 +8464,7 @@
       var frame = this.select_main();
       var main = frame.select("div");
       if (main.empty())
-         main = frame.append("div")
-                     .style('max-width','100%')
-                     .style('max-height','100%')
-                     .style('overflow','auto');
+         main = frame.append("div").style({'max-width':'100%', 'max-height':'100%', overflow:'auto'});
 
       main.html(txt);
 
@@ -10468,9 +10457,9 @@
       JSROOT.Painter.readStyleFromURL();
 
       d3.select('html').style('height','100%');
-      d3.select('body').style({ 'min-height':'100%', 'margin':'0px', "overflow": "hidden"});
+      d3.select('body').style({ 'min-height': '100%', margin:'0px', overflow: "hidden"});
 
-      myDiv.style({"position":"absolute", "left":"1px", "top" :"1px", "bottom" :"1px", "right": "1px"});
+      myDiv.style({position: "absolute", left: "1px", top: "1px", bottom: "1px", right: "1px"});
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
       hpainter.SetDisplay(layout, myDiv.attr('id'));
@@ -10759,9 +10748,7 @@
                .html("")
                .append("div")
                .attr("id", this.frameid + "_simple_display")
-               .style("width", "100%")
-               .style("height", "100%")
-               .style("overflow" ,"hidden")
+               .style({width:"100%", height:"100%", overflow:"hidden"})
                .attr("frame_title", title)
                .node();
    }
