@@ -56,7 +56,10 @@
                 'M483.885,136.845H28.782c-15.708,0-28.451,12.741-28.451,28.451c0,15.711,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.74,28.451-28.451C512.331,149.586,499.599,136.845,483.885,136.845z' +
                 'M483.885,273.275H28.782c-15.708,0-28.451,12.731-28.451,28.452c0,15.707,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.744,28.451-28.451C512.337,286.007,499.599,273.275,483.885,273.275z' +
                 'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
-                }
+                },
+
+      circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },  
+      diamand: { path: "M256,0L384,256L256,511L128,256z" }
    };
 
    JSROOT.Toolbar = function(container, buttons) {
@@ -3997,7 +4000,7 @@
          svg.append("svg:title").text("ROOT canvas");
          svg.append("svg:rect").attr("class","canvas_fillrect")
                                .attr("x",0).attr("y",0).style("pointer-events", "visibleFill")
-                               .on("dblclick", this.PadDoubleClick.bind(this));
+                               .on("dblclick", this.EnlargePad.bind(this));
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
          svg.append("svg:g").attr("class","special_layer");
@@ -4043,7 +4046,7 @@
       return true;
    }
    
-   JSROOT.TPadPainter.prototype.PadDoubleClick = function() {
+   JSROOT.TPadPainter.prototype.EnlargePad = function() {
       
       if (d3.event) {
          d3.event.preventDefault();
@@ -4053,13 +4056,13 @@
       var svg_can = this.svg_canvas(),
           pad_enlarged = svg_can.property("pad_enlarged");
 
-      if (this.iscan || !this.has_canvas) {
+      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw())) {
          if (!this.enlarge_main('toggle')) return;
          if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null); 
       } else {
          if (!pad_enlarged) {
             this.enlarge_main(true);
-            svg_can.property("pad_enlarged", this.pad); 
+            svg_can.property("pad_enlarged", this.pad);
          } else
          if (pad_enlarged === this.pad) {
             this.enlarge_main(false);
@@ -4072,7 +4075,7 @@
       this.CheckResize({force:true});
    }
 
-   JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize, parent_visible) {
+   JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
       // returns true when pad is displayed and all its items should be redrawn
       
       if (!this.has_canvas) {
@@ -4091,15 +4094,7 @@
           y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; } else
-      if (parent_visible && pad_enlarged) {
-         // this is sub-pad of selected pad
-         w = Math.round(this.pad.fAbsWNDC / pad_enlarged.fAbsWNDC * width);
-         h = Math.round(this.pad.fAbsHNDC / pad_enlarged.fAbsHNDC * height);
-         x = Math.round((this.pad.fAbsXlowNDC - pad_enlarged.fAbsXlowNDC) / pad_enlarged.fAbsWNDC  * width);
-         y = Math.round(height * (1 - (this.pad.fAbsYlowNDC - pad_enlarged.fAbsYlowNDC)/pad_enlarged.fAbsHNDC)) - h;
-         pad_visible = true;
-      }
+      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; } 
       
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
@@ -4124,7 +4119,7 @@
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
          
-         svg_rect.on("dblclick", this.PadDoubleClick.bind(this));
+         svg_rect.on("dblclick", this.EnlargePad.bind(this));
          
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
@@ -4274,7 +4269,8 @@
       menu.add("separator");
 
       if (this.enlarge_main())
-         menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.PadDoubleClick.bind(this));
+         if (this.iscan || this.HasObjectsToDraw())
+            menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
 
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
@@ -4311,19 +4307,20 @@
       }); // end menu creation
    }
 
-   JSROOT.TPadPainter.prototype.Redraw = function(resize, showsubitems) {
+   JSROOT.TPadPainter.prototype.Redraw = function(resize) {
+      
+      var showsubitems = true; 
       
       if (this.iscan) {
          this.CreateCanvasSvg(2);
-         showsubitems = true;
       } else {
-         showsubitems = this.CreatePadSvg(true, showsubitems);
+         showsubitems = this.CreatePadSvg(true);
       }
 
       // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
          var sub = this.painters[i]; 
-         if (showsubitems || sub.this_pad_name) sub.Redraw(resize, showsubitems);
+         if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
       }
    }
 
@@ -4489,6 +4486,8 @@
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
 
       if (funcname == "CanvasSnapShot") return this.SaveAsPng(true);
+      
+      if (funcname == "EnlargePad") return this.EnlargePad();
 
       if (funcname == "PadSnapShot") return this.SaveAsPng(false);
 
@@ -4665,6 +4664,10 @@
       if (JSROOT.gStyle.ContextMenu)
          painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
+      if (painter.enlarge_main())
+         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+
+      
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
 
@@ -4687,6 +4690,7 @@
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
          if (JSROOT.gStyle.ContextMenu)
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
