@@ -410,7 +410,7 @@
             btn.append('img').attr("src", factcmds[n]._icon);
       }
 
-      var d3p = maindiv.append("p");
+      var d3p = maindiv.append("p").style("margin-left","3px");
 
       d3p.append("a").attr("href", '#').text("open all").on("click", function() { h.toggleOpenState(true); d3.event.preventDefault(); });
       d3p.append("text").text(" | ");
