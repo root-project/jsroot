@@ -346,22 +346,31 @@
       var hitem = h ? h : this.h;
 
       if (!('_childs' in hitem)) {
-         if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return;
+         if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return false;
          this.expand(this.itemFullName(hitem));
          if (hitem._childs) hitem._isopen = true;
-         return;
+         return true;
       }
 
-      if (hitem != this.h)
-         if (isopen)
-            hitem._isopen = true;
-         else
-            delete hitem._isopen;
+      if ((hitem != this.h) && isopen && !hitem._isopen) {
+         // when there are childs and they are not see, simply show them
+         hitem._isopen = true;
+         return true;
+      }
 
+      var change_child = false;
       for (var i=0; i < hitem._childs.length; ++i)
-         this.toggleOpenState(isopen, hitem._childs[i]);
+         if (this.toggleOpenState(isopen, hitem._childs[i])) change_child = true; 
 
+      if ((hitem != this.h) && !isopen && hitem._isopen && !change_child) {
+         // if none of the childs can be closed, than just close that item
+         delete hitem._isopen;
+         return true;
+       }
+      
       if (!h) this.RefreshHtml();
+      
+      return false;
    }
 
 
