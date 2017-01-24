@@ -2060,8 +2060,18 @@
          return change_size || change_pos;
       }
 
-      var drag_move = d3.drag().subject(Object)
-         .on("start",  function() {
+      var prefix = "", drag_move, drag_resize;
+      if (JSROOT._test_d3_ === 3) {
+         prefix = "drag";
+         drag_move = d3.behavior.drag().origin(Object);
+         drag_resize = d3.behavior.drag().origin(Object);
+      } else {
+         drag_move = d3.drag().subject(Object);
+         drag_resize = d3.drag().subject(Object);
+      }
+      
+      drag_move
+         .on(prefix+"start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
@@ -2107,7 +2117,7 @@
                drag_rect.attr("x", x).attr("y", y);
 
                d3.event.sourceEvent.stopPropagation();
-          }).on("end", function() {
+          }).on(prefix+"end", function() {
                if (drag_rect==null) return;
 
                d3.event.sourceEvent.preventDefault();
@@ -2119,8 +2129,8 @@
                   }
             });
 
-      var drag_resize = d3.drag().subject(Object)
-        .on( "start", function() {
+      drag_resize
+        .on(prefix+"start", function() {
            if (detectRightButton(d3.event.sourceEvent)) return;
 
            d3.event.sourceEvent.stopPropagation();
@@ -2166,7 +2176,7 @@
             drag_rect.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
 
             d3.event.sourceEvent.stopPropagation();
-         }).on("end", function() {
+         }).on(prefix+"end", function() {
             if (drag_rect == null) return;
 
             d3.event.sourceEvent.preventDefault();

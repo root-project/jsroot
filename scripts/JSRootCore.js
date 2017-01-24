@@ -959,14 +959,19 @@
          if (jsroot._test_d3_ === undefined) {
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
                jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.1", debugout);
-               jsroot._test_d3_ = 1;
+               jsroot._test_d3_ = 4;
+            } else 
+            if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
+               jsroot.console("d3 version is " + d3.version + ", try to adjust");
+               d3.timeFormat = d3.time.format;
+               d3.scaleTime = d3.time.scale;
+               d3.scaleLog = d3.scale.log;
+               d3.scaleLinear = d3.scale.linear;
+               
+               jsroot._test_d3_ = 3;
             } else {
-               if ((typeof d3 == 'object') && d3.version) {
-                  jsroot.console("d3 version is " + d3.version + " but version 4 is required - replace");
-                  delete d3;
-               }
                mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.min.js;';
-               jsroot._test_d3_ = 2;
+               jsroot._test_d3_ = 4;
             }
          }
          modules.push('JSRootPainter');
