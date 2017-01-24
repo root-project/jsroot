@@ -137,22 +137,14 @@
       JSROOT.IO.CustomStreamers[type] = user_streamer;
    }
 
-   JSROOT.R__unzip = function(str, tgtsize, noalert, src_shift) {
+   JSROOT.R__unzip = function(arr, tgtsize, noalert, src_shift) {
       // Reads header envelope, determines zipped size and unzip content
 
-      var isarr = (typeof str != 'string') && ('byteLength' in str),
-          totallen = isarr ? str.byteLength : str.length,
-          curr = 0, fullres = 0, tgtbuf = null;
+      var totallen = arr.byteLength, curr = src_shift || 0, fullres = 0, tgtbuf = null;
 
-      if (src_shift!==undefined) curr = src_shift;
+      function getChar(o) { return String.fromCharCode(arr.getUint8(o)); }
 
-      function getChar(o) {
-         return isarr ? String.fromCharCode(str.getUint8(o)) : str.charAt(o);
-      }
-
-      function getCode(o) {
-         return isarr ? str.getUint8(o) : str.charCodeAt(o);
-      }
+      function getCode(o) { return arr.getUint8(o); }
 
       while (fullres < tgtsize) {
 
@@ -170,25 +162,16 @@
          var srcsize = JSROOT.IO.Z_HDRSIZE +
                          ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
 
-         if (isarr) {
-            // portion of packed data to process
-            var uint8arr = new Uint8Array(str.buffer, str.byteOffset + curr + JSROOT.IO.Z_HDRSIZE + 2, str.byteLength - curr - JSROOT.IO.Z_HDRSIZE - 2);
+         // portion of packed data to process
+         var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + JSROOT.IO.Z_HDRSIZE + 2, arr.byteLength - curr - JSROOT.IO.Z_HDRSIZE - 2);
 
-            //  place for unpacking
-            if (tgtbuf===null) tgtbuf = new ArrayBuffer(tgtsize);
+         //  place for unpacking
+         if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-            var reslen = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
-            if (reslen<=0) break;
+         var reslen = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+         if (reslen<=0) break;
 
-            fullres += reslen;
-         } else {
-            // old code using String for unpacking, keep for compativility
-            var unpacked = window.RawInflate.inflate(str.substr(JSROOT.IO.Z_HDRSIZE + 2 + curr, srcsize));
-            if ((unpacked === null) || (unpacked.length===0)) break;
-            if (tgtbuf===null) tgtbuf = unpacked; else tgtbuf += unpacked;
-            fullres += unpacked.length;
-         }
-
+         fullres += reslen;
          curr += srcsize;
       }
 
@@ -197,7 +180,7 @@
          return null;
       }
 
-      return isarr ? new DataView(tgtbuf) : tgtbuf;
+      return new DataView(tgtbuf);
    }
 
    // =================================================================================
@@ -2249,6 +2232,7 @@
       this.fLocalFile = file; 
       this.fEND = file.size;
       this.fFullURL = file.name;
+      this.fURL = file.name;
       this.fFileName = file.name;
       this.ReadKeys(newfile_callback);
       return this;
