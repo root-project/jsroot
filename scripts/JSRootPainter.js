@@ -5156,7 +5156,7 @@
         labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
         label_g.call(labelfont.func);
      }
-
+     
      if (axis.fTitle.length > 0) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),

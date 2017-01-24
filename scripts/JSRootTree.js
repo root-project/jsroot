@@ -730,10 +730,9 @@
       this.last_progress = value;
    }
    
-   JSROOT.TDrawSelector.prototype.GetBitsBins = function(nbits) {
-      
-      var res = { nbins: nbits, min: 0, max: nbits, k: 1., fLabels: JSROOT.Create("THashList") };
-      
+   JSROOT.TDrawSelector.prototype.GetBitsBins = function(nbits, res) {
+      res.nbins = res.max = nbits; 
+      res.fLabels = JSROOT.Create("THashList");
       for (var k=0;k<nbits;++k) {
          var s = JSROOT.Create("TObjString");
          s.fString = k.toString();
@@ -745,13 +744,15 @@
 
    JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
       
-      var res = { min: 0, max: 0, nbins: nbins, fLabels: null, title: "" };
+      var res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
       
       if (axisid >= this.ndim) return res;
       
       var arr = this.vars[axisid].buf;
       
-      res.title = this.vars[axisid].code.replace(/ROOT__TMath__/g, 'TMath::'); 
+      if (this.vars[axisid].code)
+         res.title = this.vars[axisid].code.replace(/ROOT__TMath__/g, 'TMath::'); 
+      if (!res.title || (typeof res.title !== 'string')) res.title = "";
       
       if (this.vars[axisid].kind === "object") {
          // this is any object type
@@ -772,7 +773,7 @@
                if ((this.hist_name === "bits") && (this.hist_args.length == 1) && this.hist_args[0]) 
                   maxbits = this.hist_args[0];
                
-               return this.GetBitsBins(maxbits);
+               return this.GetBitsBins(maxbits, res);
             }
          }
          
@@ -800,7 +801,7 @@
       } else
       if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
          this.Fill1DHistogram = this.FillBitsHistogram;
-         return this.GetBitsBins(this.hist_args[0] || 32);
+         return this.GetBitsBins(this.hist_args[0] || 32, res);
       } else
       if (axisid*3 + 2 < this.hist_args.length) {
          res.nbins = this.hist_args[axisid*3];
@@ -860,7 +861,7 @@
       } else {
          
          this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
-
+         
          this.y = this.GetMinMaxBins(1, 50);
 
          this.z = this.GetMinMaxBins(2, 50);
