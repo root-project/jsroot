@@ -75,6 +75,7 @@
                case "short": 
                case "Short_t": return JSROOT.IO.kShort;
                case "int": 
+               case "EErrorType": 
                case "Int_t": return JSROOT.IO.kInt;
                case "long": 
                case "Long_t": return JSROOT.IO.kLong;
