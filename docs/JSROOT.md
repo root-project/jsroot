@@ -22,7 +22,8 @@ One could use JSROOT directly from local file system. If source code was unpacke
 To automate files loading and objects drawing, one can provide number of URL parameters in address string like:
 
 - file - name of the file, which will be automatically open with page loading
-- files - array of file names for loading 
+- files - array of file names for loading
+- localfile - automatically activate dialog for selecting local ROOT files 
 - json - name of JSON file with stored ROOT object like histogram or canvas 
 - item - item name to be displayed
 - opt - drawing option for the item

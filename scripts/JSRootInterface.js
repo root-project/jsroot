@@ -29,7 +29,7 @@
    }
 } (function($, myui, d3, JSROOT) {
 
-   var hpainter = null;
+   var hpainter = null, localfile_read_callback = null;
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootInterface.css');
@@ -62,9 +62,12 @@
       
       for (var n=0;n<files.length;++n) {
          var f = files[n];
+         $("#urlToLoad").val(f.name);
          // console.log('Get selected', f.name, f.type, f.size, f);
-         if (hpainter) hpainter.OpenRootFile(f);
+         if (hpainter) hpainter.OpenRootFile(f, localfile_read_callback);
       }
+      
+      localfile_read_callback = null;
    }
 
    ReadFile = function() {
@@ -121,15 +124,15 @@
                 arrFiles = files.split(';');
 
             guiCode += '<form name="ex">'
-               +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad"/>'
-               +'<select name="s" style="width:65%; margin-top:5px;" '
+               +'<input type="text" name="state" value="" style="width:95%; margin-top:5px;" id="urlToLoad" title="input file name"/>'
+               +'<select name="s" style="width:65%; margin-top:5px;" title="select file name" '
                +'onchange="document.ex.state.value = document.ex.s.options[document.ex.s.selectedIndex].value;document.ex.s.selectedIndex=0;document.ex.s.value=\'\'">'
                +'<option value=" " selected="selected">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>';
             for (var i in arrFiles)
                guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
             guiCode += '</select>'
                +'<input type="file" name="file" id="localFile" style="display:none"/><output id="list" style="display:none"></output>'
-               +'<input type="button" value="..." name="filebtn" style="width:15%; margin-top:5px;margin-left:5px;" onclick="document.ex.file.click();"/><br/>'
+               +'<input type="button" value="..." name="filebtn" style="width:15%; margin-top:5px;margin-left:5px;" onclick="document.ex.file.click();" title="select local file for reading"/><br/>'
                +'<p><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
                +'<input style="padding:2px; margin-top:5px;"'
@@ -177,7 +180,11 @@
       JSROOT.Painter.ConfigureVSeparator(hpainter);
 
       // JSROOT.Painter.ConfigureHSeparator(28, true);
-
+      
+      hpainter.SelectLocalFile = function(read_callback) {
+         localfile_read_callback = read_callback;
+         document.ex.file.click();         
+      }
 
       hpainter.StartGUI(h0, function() {
 

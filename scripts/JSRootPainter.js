@@ -10357,6 +10357,7 @@
           prereq = "",
           filesdir = JSROOT.GetUrlOption("path", url),
           filesarr = JSROOT.GetUrlOptionAsArray("#file;files", url),
+          localfile = JSROOT.GetUrlOption("localfile", url),
           jsonarr = JSROOT.GetUrlOptionAsArray("#json;jsons", url),
           expanditems = JSROOT.GetUrlOptionAsArray("expand", url),
           itemsarr = JSROOT.GetUrlOptionAsArray("#item;items", url),
@@ -10434,7 +10435,7 @@
            default: this.disp_kind = 'flex';
          }
       }
-
+      
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
 
       function OpenAllFiles() {
@@ -10442,7 +10443,9 @@
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
-         else if (expanditems.length>0)
+         else if ((localfile!==null) && (typeof hpainter.SelectLocalFile == 'function')) {
+            localfile = null; hpainter.SelectLocalFile(OpenAllFiles);
+         } else if (expanditems.length>0)
             hpainter.expand(expanditems.shift(), OpenAllFiles);
          else if (style.length>0)
             hpainter.ApplyStyle(style.shift(), OpenAllFiles);
