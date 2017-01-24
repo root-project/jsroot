@@ -857,7 +857,8 @@
            .button({ icons: { primary: "ui-icon-close" }, text: false })
            .click(function(){
               mdi.CleanupFrame($(this).parent().next().attr('id'));
-              $(this).parent().next().andSelf().remove();
+              $(this).parent().next().remove(); // remove drawing
+              $(this).parent().remove();  // remove header
            });
 
       $('#' + uid)
