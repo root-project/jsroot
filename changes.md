@@ -23,6 +23,8 @@
 6. Canvas or selected sub-pad can be enlarged when double-clicked outside frame (#116)
    Complete drawing will be expanded to the visible space.
    Not available for flex, tabs and collapsible layouts.  
+7. Support reading of local ROOT files with FileReader.
+   Files can be selected only with interactive dialog.
 
 
 ## Changes in 4.8.0

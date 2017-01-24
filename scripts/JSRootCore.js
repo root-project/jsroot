@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 23/01/2017";
+   JSROOT.version = "dev 24/01/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1147,7 +1147,10 @@
    // function can be used to open ROOT file, I/O functionality will be loaded when missing
    JSROOT.OpenFile = function(filename, callback) {
       JSROOT.AssertPrerequisites("io", function() {
-         new JSROOT.TFile(filename, callback);
+         if (typeof filename === 'string')
+            new JSROOT.TFile(filename, callback);
+         else
+            new JSROOT.TLocalFile(filename, callback);
       });
    }
 

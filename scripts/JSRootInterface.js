@@ -58,15 +58,13 @@
    }
    
    LocalFileSelected = function(evnt) {
-      
       var files = evnt.target.files;
       
       for (var n=0;n<files.length;++n) {
          var f = files[n];
-         console.log('Get selected', f.name, f.type, f.size);
+         // console.log('Get selected', f.name, f.type, f.size, f);
+         if (hpainter) hpainter.OpenRootFile(f);
       }
-      
-      
    }
 
    ReadFile = function() {

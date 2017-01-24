@@ -1172,11 +1172,9 @@
       return this;
    }
    
-   JSROOT.mycallback = null;
-
    JSROOT.TFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
 
-      if ((this.fFileContent!==null) && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
+      if ((this.fFileContent!==null) && !filename && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
          return result_callback(this.fFileContent.extract(place));
       
       var file = this, fileurl = file.fURL, 
@@ -2369,6 +2367,147 @@
       return member;
    }
    
+   JSROOT.TFile.prototype.GetStreamer = function(clname, ver, s_i) {
+      // return the streamer for the class 'clname', from the list of streamers
+      // or generate it from the streamer infos and add it to the list
+
+      // these are special cases, which are handled separately
+      if (clname == 'TQObject' || clname == "TBasket") return null;
+
+      var streamer, fullname = clname;
+
+      if (ver) {
+         fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
+         streamer = this.fStreamers[fullname];
+         if (streamer !== undefined) return streamer;
+      }
+      
+      var custom = JSROOT.IO.CustomStreamers[clname];
+      
+      // one can define in the user streamers just aliases
+      if (typeof custom === 'string') 
+         return this.GetStreamer(custom, ver, s_i);
+      
+      // streamer is just separate function
+      if (typeof custom === 'function') {
+         streamer = [{ typename: clname, func: custom }];
+         return JSROOT.IO.AddClassMethods(clname, streamer);
+      }
+      
+      streamer = [];
+         
+      if (typeof custom === 'object') {
+         if (!custom.name && !custom.func) return custom;
+         streamer.push(custom); // special read entry, add in the beginning of streamer
+      } 
+
+      // check element in streamer infos, one can have special cases
+      if (!s_i) s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
+
+      if (!s_i) {
+         delete this.fStreamers[fullname];
+         if (!ver.nowarning)
+            console.warn("Not found streamer for", clname, "ver", ver.val, "checksum", ver.checksum, fullname);
+         return null;
+      }
+
+      // for each entry in streamer info produce member function
+
+      if (s_i.fElements)
+         for (var j=0; j < s_i.fElements.arr.length; ++j) 
+            streamer.push(JSROOT.IO.CreateMember(s_i.fElements.arr[j], this));
+
+      this.fStreamers[fullname] = streamer;
+
+      return JSROOT.IO.AddClassMethods(clname, streamer);
+   }
+
+   JSROOT.TFile.prototype.GetSplittedStreamer = function(streamer, tgt) {
+      // here we produce list of members, resolving all base classes
+
+      if (!streamer) return tgt;
+
+      if (!tgt) tgt = [];
+
+      for (var n=0;n<streamer.length;++n) {
+         var elem = streamer[n];
+         
+         if (elem.base === undefined) {
+            tgt.push(elem);
+            continue;
+         }
+
+         if (elem.basename == 'TObject') {
+            tgt.push({ func: function(buf,obj) {
+               buf.ntoi2(); // read version, why it here??
+               obj.fUniqueID = buf.ntou4();
+               obj.fBits = buf.ntou4();
+               if (obj.fBits & JSROOT.IO.kIsReferenced) buf.ntou2(); // skip pid
+            } });
+            continue;
+         }
+
+         var ver = { val: elem.base };
+
+         if (ver.val === 4294967295) {
+            // this is -1 and indicates foreign class, need more workarounds
+            ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
+         }
+
+         var parent = this.GetStreamer(elem.basename, ver);
+         if (parent) this.GetSplittedStreamer(parent, tgt);
+      }
+
+      return tgt;
+   }
+
+   JSROOT.TFile.prototype.Delete = function() {
+      this.fDirectories = null;
+      this.fKeys = null;
+      this.fStreamers = null;
+      this.fSeekInfo = 0;
+      this.fNbytesInfo = 0;
+      this.fTagOffset = 0;
+   }
+   
+   // =============================================================
+
+   JSROOT.TLocalFile = function(file, newfile_callback) {
+      JSROOT.TFile.call(this, null);
+      this.fUseStampPar = false;
+      this.fLocalFile = file; 
+      this.fEND = file.size;
+      this.fFullURL = file.name;
+      this.fFileName = file.name;
+      this.ReadKeys(newfile_callback);
+      return this;
+   }
+   
+   JSROOT.TLocalFile.prototype = Object.create(JSROOT.TFile.prototype);
+   
+   JSROOT.TLocalFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
+      
+      if (filename) 
+         throw new Error("Cannot access other local file "+filename)
+      
+      var reader = new FileReader(), cnt = 0, blobs = [], file = this.fLocalFile;
+      
+      reader.onload = function(evnt) {
+         var res = new DataView(evnt.target.result);
+         if (place.length===2) return result_callback(res);
+         
+         blobs.push(res);
+         cnt+=2;
+         if (cnt >= place.length) return result_callback(blobs);
+         reader.readAsArrayBuffer(file.slice(place[cnt], place[cnt]+place[cnt+1]));
+      }
+      
+      reader.readAsArrayBuffer(file.slice(place[0], place[0]+place[1]));
+   }
+   
+   // =========================================
+
+   
    JSROOT.IO.ProduceCustomStreamers = function() {
       var cs = JSROOT.IO.CustomStreamers;
       
@@ -2699,61 +2838,6 @@
       };
    }
 
-   JSROOT.TFile.prototype.GetStreamer = function(clname, ver, s_i) {
-      // return the streamer for the class 'clname', from the list of streamers
-      // or generate it from the streamer infos and add it to the list
-
-      // these are special cases, which are handled separately
-      if (clname == 'TQObject' || clname == "TBasket") return null;
-
-      var streamer, fullname = clname;
-
-      if (ver) {
-         fullname += (ver.checksum ? ("$chksum" + ver.checksum) : ("$ver" + ver.val));
-         streamer = this.fStreamers[fullname];
-         if (streamer !== undefined) return streamer;
-      }
-      
-      var custom = JSROOT.IO.CustomStreamers[clname];
-      
-      // one can define in the user streamers just aliases
-      if (typeof custom === 'string') 
-         return this.GetStreamer(custom, ver, s_i);
-      
-      // streamer is just separate function
-      if (typeof custom === 'function') {
-         streamer = [{ typename: clname, func: custom }];
-         return JSROOT.IO.AddClassMethods(clname, streamer);
-      }
-      
-      streamer = [];
-         
-      if (typeof custom === 'object') {
-         if (!custom.name && !custom.func) return custom;
-         streamer.push(custom); // special read entry, add in the beginning of streamer
-      } 
-
-      // check element in streamer infos, one can have special cases
-      if (!s_i) s_i = this.FindStreamerInfo(clname, ver.val, ver.checksum);
-
-      if (!s_i) {
-         delete this.fStreamers[fullname];
-         if (!ver.nowarning)
-            console.warn("Not found streamer for", clname, "ver", ver.val, "checksum", ver.checksum, fullname);
-         return null;
-      }
-
-      // for each entry in streamer info produce member function
-
-      if (s_i.fElements)
-         for (var j=0; j < s_i.fElements.arr.length; ++j) 
-            streamer.push(JSROOT.IO.CreateMember(s_i.fElements.arr[j], this));
-
-      this.fStreamers[fullname] = streamer;
-
-      return JSROOT.IO.AddClassMethods(clname, streamer);
-   };
-
    JSROOT.IO.CreateStreamerElement = function(name, typename, file) {
       // return function, which could be used for element of the map
 
@@ -2909,56 +2993,6 @@
 
       return res;
    }
-
-   JSROOT.TFile.prototype.GetSplittedStreamer = function(streamer, tgt) {
-      // here we produce list of members, resolving all base classes
-
-      if (!streamer) return tgt;
-
-      if (!tgt) tgt = [];
-
-      for (var n=0;n<streamer.length;++n) {
-         var elem = streamer[n];
-         
-         if (elem.base === undefined) {
-            tgt.push(elem);
-            continue;
-         }
-
-         if (elem.basename == 'TObject') {
-            tgt.push({ func: function(buf,obj) {
-               buf.ntoi2(); // read version, why it here??
-               obj.fUniqueID = buf.ntou4();
-               obj.fBits = buf.ntou4();
-               if (obj.fBits & JSROOT.IO.kIsReferenced) buf.ntou2(); // skip pid
-            } });
-            continue;
-         }
-
-         var ver = { val: elem.base };
-
-         if (ver.val === 4294967295) {
-            // this is -1 and indicates foreign class, need more workarounds
-            ver.val = 1; // need to search version 1 - that happens when several versions of foreign class exists ???
-         }
-
-         var parent = this.GetStreamer(elem.basename, ver);
-         if (parent) this.GetSplittedStreamer(parent, tgt);
-      }
-
-      return tgt;
-   }
-
-   JSROOT.TFile.prototype.Delete = function() {
-      this.fDirectories = null;
-      this.fKeys = null;
-      this.fStreamers = null;
-      this.fSeekInfo = 0;
-      this.fNbytesInfo = 0;
-      this.fTagOffset = 0;
-   }
-   
-   // =================================
    
    var iomode = JSROOT.GetUrlOption("iomode");
    if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else

@@ -8961,6 +8961,7 @@
          _kind : "ROOT.TFile",
          _file : file,
          _fullurl : file.fFullURL,
+         _localfile : file.fLocalFile,
          _had_direct_read : false,
          // this is central get method, item or itemname can be used
          _get : function(item, itemname, callback) {
@@ -9008,12 +9009,9 @@
                });
             }
 
-            if (fff._file != null) {
-               ReadFileObject(fff._file);
-            } else {
-               // try to reopen ROOT file
-               new JSROOT.TFile(fff._fullurl, ReadFileObject);
-            }
+            if (fff._file) ReadFileObject(fff._file); else
+            if (fff._localfile) new JSROOT.TLocalFile(fff._localfile, ReadFileObject); else
+            if (fff._fullurl) new JSROOT.TFile(fff._fullurl, ReadFileObject);
          }
       };
 
@@ -9901,7 +9899,7 @@
       // first check that file with such URL already opened
 
       var isfileopened = false;
-      this.ForEachRootFile(function(item) { if (item._fullurl==filepath) isfileopened = true; });
+      this.ForEachRootFile(function(item) { if (item._fullurl===filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
