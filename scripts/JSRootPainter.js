@@ -1378,7 +1378,8 @@
    JSROOT.TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
       if (this.draw_g) {
          // one should keep svg:g element on its place
-         d3.selectAll(this.draw_g.node().childNodes).remove();
+         // d3.selectAll(this.draw_g.node().childNodes).remove();
+         this.draw_g.selectAll('*').remove();
       } else
       if (take_pad) {
          if (typeof layer != 'string') layer = "text_layer";
@@ -1392,8 +1393,8 @@
 
       // set attributes for debugging
       if (this.draw_object!==null) {
-         this.draw_g.attr('objname', this.draw_object.fName);
-         this.draw_g.attr('objtype', this.draw_object._typename);
+         this.draw_g.attr('objname', this.draw_object.fName || "name");
+         this.draw_g.attr('objtype', this.draw_object._typename || "type");
       }
 
       return this.draw_g;

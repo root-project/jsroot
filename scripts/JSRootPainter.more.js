@@ -3535,7 +3535,7 @@
       return res;
    }
 
-      JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
+   JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
