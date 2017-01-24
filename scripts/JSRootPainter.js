@@ -9961,7 +9961,7 @@
       while (item._parent) {
          item = item._parent;
          if ('_file' in item)
-            return { kind: "file", fileurl: item._file.fURL, itemname: subname };
+            return { kind: "file", fileurl: item._file.fURL, itemname: subname, localfile: !!item._file.fLocalFile };
 
          if ('_jsonfile' in item)
             return { kind: "json", fileurl: item._jsonfile, itemname: subname };

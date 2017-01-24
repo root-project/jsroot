@@ -674,7 +674,7 @@
             if (sett.opts)
                menu.addDrawMenu("Draw", sett.opts, function(arg) { this.display(itemname, arg); });
 
-            if (fileprop && sett.opts) {
+            if (fileprop && sett.opts && !fileprop.localfile) {
                var filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(JSROOT.source_dir) == 0)
                   filepath = filepath.slice(JSROOT.source_dir.length);
