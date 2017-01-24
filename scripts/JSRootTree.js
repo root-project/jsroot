@@ -745,11 +745,13 @@
 
    JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
       
-      var res = { min: 0, max: 0, nbins: nbins, fLabels: null };
+      var res = { min: 0, max: 0, nbins: nbins, fLabels: null, title: "" };
       
       if (axisid >= this.ndim) return res;
       
       var arr = this.vars[axisid].buf;
+      
+      res.title = this.vars[axisid].code.replace(/ROOT__TMath__/g, 'TMath::'); 
       
       if (this.vars[axisid].kind === "object") {
          // this is any object type
@@ -869,17 +871,17 @@
             case 3: this.hist = JSROOT.CreateHistogram("TH3"+this.htype, this.x.nbins, this.y.nbins, this.z.nbins); break;
          }
 
-         this.hist.fXaxis.fTitle = this.vars[0].code;
+         this.hist.fXaxis.fTitle = this.x.title;
          this.hist.fXaxis.fXmin = this.x.min;
          this.hist.fXaxis.fXmax = this.x.max;
          this.hist.fXaxis.fLabels = this.x.fLabels;
 
-         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.vars[1].code;
+         if (this.ndim > 1) this.hist.fYaxis.fTitle = this.y.title;
          this.hist.fYaxis.fXmin = this.y.min;
          this.hist.fYaxis.fXmax = this.y.max;
          this.hist.fYaxis.fLabels = this.y.fLabels;
 
-         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.vars[2].code;
+         if (this.ndim > 2) this.hist.fZaxis.fTitle = this.z.title;
          this.hist.fZaxis.fXmin = this.z.min;
          this.hist.fZaxis.fXmax = this.z.max;
          this.hist.fZaxis.fLabels = this.z.fLabels;
