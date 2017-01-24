@@ -12,7 +12,7 @@
       var dir = jsroot.source_dir + "scripts/", ext = jsroot.source_min ? ".min" : "";
 
       var paths = {
-            'd3'                   : dir+'d3.v3.min',
+            'd3'                   : dir+'d3.min',
             'jquery'               : dir+'jquery.min',
             'jquery-ui'            : dir+'jquery-ui.min',
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
