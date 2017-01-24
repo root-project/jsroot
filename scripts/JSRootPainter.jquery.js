@@ -1053,12 +1053,12 @@
          }
 
          main.find(".jsroot_minbutton").find('.ui-icon')
-             .toggleClass("ui-icon-carat-1-s", state!="minimal")
-             .toggleClass("ui-icon-carat-2-n-s", state=="minimal");
+             .toggleClass("ui-icon-triangle-1-s", state!="minimal")
+             .toggleClass("ui-icon-triangle-2-n-s", state=="minimal");
 
          main.find(".jsroot_maxbutton").find('.ui-icon')
-             .toggleClass("ui-icon-carat-1-n", state!="maximal")
-             .toggleClass("ui-icon-carat-2-n-s", state=="maximal");
+             .toggleClass("ui-icon-triangle-1-n", state!="maximal")
+             .toggleClass("ui-icon-triangle-2-n-s", state=="maximal");
 
          switch (state) {
             case "minimal" :
@@ -1135,28 +1135,25 @@
            .next()
            .attr('title','maximize canvas')
            .addClass('jsroot_maxbutton')
-           .button({ icons: { primary: "ui-icon-carat-1-n" }, text: false })
+           .button({ icons: { primary: "ui-icon-triangle-1-n" }, text: false })
            .click(function() {
               var main = $(this).parent().parent();
-              var maximize = $(this).find('.ui-icon').hasClass("ui-icon-carat-1-n");
+              var maximize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-n");
               ChangeWindowState(main, maximize ? "maximal" : "normal");
            })
            .next()
            .attr('title','minimize canvas')
            .addClass('jsroot_minbutton')
-           .button({ icons: { primary: "ui-icon-carat-1-s" }, text: false })
+           .button({ icons: { primary: "ui-icon-triangle-1-s" }, text: false })
            .click(function() {
               var main = $(this).parent().parent();
-              var minimize = $(this).find('.ui-icon').hasClass("ui-icon-carat-1-s");
+              var minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
               ChangeWindowState(main, minimize ? "minimal" : "normal");
            });
 
       // set default z-index to avoid overlap of these special elements
       $("#" + subid).find(".ui-resizable-handle").css('z-index', '');
 
-      //var draw_w = $("#" + subid).width() - 1;
-      //var draw_h = $("#" + subid).height() - $("#" + subid).find(".flex_header").height()-1;
-      //$("#" + subid).find(".flex_draw").width(draw_w).height(draw_h);
       this.cnt++;
 
       return $("#" + subid + "_cont").attr('frame_title', title).prop('can_enlarge',false).get(0);
