@@ -4780,9 +4780,9 @@
             tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
          var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
 
-         this.tfunc1 = this.tfunc2 = d3.time.format(tf1);
+         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
          if (tf2!==tf1)
-            this.tfunc2 = d3.time.format(tf2);
+            this.tfunc2 = d3.timeFormat(tf2);
 
          this.format = function(d, asticks) {
             return asticks ? this.tfunc1(d) : this.tfunc2(d);
@@ -5932,7 +5932,7 @@
          this.scale_xmax = this.zoom_xmax;
       }
       if (this.x_kind == 'time') {
-         this.x = d3.time.scale();
+         this.x = d3.scaleTime();
       } else
       if (this.swap_xy ? pad.fLogy : pad.fLogx) {
          this.logx = true;
@@ -6009,7 +6009,7 @@
          this.y = d3.scaleLog();
       } else
       if (this.y_kind=='time') {
-         this.y = d3.time.scale();
+         this.y = d3.scaleTime();
       } else {
          this.y = d3.scaleLinear()
       }
