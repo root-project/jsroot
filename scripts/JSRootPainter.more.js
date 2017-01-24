@@ -2627,10 +2627,10 @@
          var z = null, z_kind = "normal";
 
          if (this.root_pad().fLogz) {
-            z = d3.scale.log();
+            z = d3.scaleLog();
             z_kind = "log";
          } else {
-            z = d3.scale.linear();
+            z = d3.scaleLinear();
          }
          z.domain([zmin, zmax]).range([s_height,0]);
 

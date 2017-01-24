@@ -775,10 +775,10 @@
                if (xmin>0) break;
             }
          if (xmin <= 0) xmin = 1e-4*xmax;
-         this.grx = d3.scale.log();
+         this.grx = d3.scaleLog();
          this.x_kind = "log";
       } else {
-         this.grx = d3.scale.linear();
+         this.grx = d3.scaleLinear();
          if (histo && histo.fXaxis.fLabels) this.x_kind = "labels";
                                        else this.x_kind = "lin";
       }
@@ -800,10 +800,10 @@
             }
 
          if (ymin <= 0) ymin = 1e-4*ymax;
-         this.gry = d3.scale.log();
+         this.gry = d3.scaleLog();
          this.y_kind = "log";
       } else {
-         this.gry = d3.scale.linear();
+         this.gry = d3.scaleLinear();
          if (histo && histo.fYaxis.fLabels) this.y_kind = "labels";
                                        else this.y_kind = "lin";
       }
@@ -819,10 +819,10 @@
       if (pad && pad.fLogz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
-         this.grz = d3.scale.log();
+         this.grz = d3.scaleLog();
          this.z_kind = "log";
       } else {
-         this.grz = d3.scale.linear();
+         this.grz = d3.scaleLinear();
          this.z_kind = "lin";
       }
 

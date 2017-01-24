@@ -25,6 +25,8 @@
    Not available for flex, tabs and collapsible layouts.  
 7. Support reading of local ROOT files with FileReader.
    Files can be selected only with interactive dialog.
+8. Update libraries
+      - d3.js - v4.4.1
 
 
 ## Changes in 4.8.0

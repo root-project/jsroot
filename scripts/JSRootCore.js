@@ -896,15 +896,17 @@
 
    JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
-      // 'io' for I/O functionality (default)
-      // '2d' for basic 2d graphic (TCanvas, TH1)
-      // 'more2d' for extra 2d graphic (TH2, TGraph)
-      // 'jq' jQuery and jQuery-ui
-      // 'jq2d' jQuery-dependend part of 2d graphic
-      // '3d' for histograms 3d graphic
-      // 'geom' for geometry drawing support
-      // 'simple' for basic user interface
-      // 'load:' list of user-specific scripts at the end of kind string
+      //     'io'  TFile functionality
+      //   'tree'  TTree support
+      //     '2d'  basic 2d graphic (TCanvas, TH1)
+      // 'more2d'  extra 2d graphic (TH2, TGraph)
+      //   'math'  some methods from TMath class
+      //     'jq'  jQuery and jQuery-ui
+      //   'jq2d'  jQuery-dependend part of 2d graphic
+      //     '3d'  histograms 3d graphic
+      //   'geom'  TGeo support
+      // 'simple'  for basic user interface
+      //  'load:'  list of user-specific scripts at the end of kind string
 
       var jsroot = JSROOT;
 
@@ -943,7 +945,7 @@
          modules.push('JSRootIOEvolution');
       }
 
-      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0)) { 
+      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0)) { 
          mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
          modules.push('JSRootMath');
       }
@@ -955,11 +957,15 @@
 
       if (kind.indexOf('2d;')>=0) {
          if (jsroot._test_d3_ === undefined) {
-            if (typeof d3 != 'undefined') {
-               jsroot.console('Reuse existing d3.js ' + d3.version + ", required 3.5.9", debugout);
+            if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
+               jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.1", debugout);
                jsroot._test_d3_ = 1;
             } else {
-               mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.v3.min.js;';
+               if ((typeof d3 == 'object') && d3.version) {
+                  jsroot.console("d3 version is " + d3.version + " but version 4 is required - replace");
+                  delete d3;
+               }
+               mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.min.js;';
                jsroot._test_d3_ = 2;
             }
          }

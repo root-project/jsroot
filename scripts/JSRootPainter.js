@@ -2060,8 +2060,8 @@
          return change_size || change_pos;
       }
 
-      var drag_move = d3.behavior.drag().origin(Object)
-         .on("dragstart",  function() {
+      var drag_move = d3.drag().subject(Object)
+         .on("start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
@@ -2107,7 +2107,7 @@
                drag_rect.attr("x", x).attr("y", y);
 
                d3.event.sourceEvent.stopPropagation();
-          }).on("dragend", function() {
+          }).on("end", function() {
                if (drag_rect==null) return;
 
                d3.event.sourceEvent.preventDefault();
@@ -2119,8 +2119,8 @@
                   }
             });
 
-      var drag_resize = d3.behavior.drag().origin(Object)
-        .on( "dragstart", function() {
+      var drag_resize = d3.drag().subject(Object)
+        .on( "start", function() {
            if (detectRightButton(d3.event.sourceEvent)) return;
 
            d3.event.sourceEvent.stopPropagation();
@@ -2166,7 +2166,7 @@
             drag_rect.attr("x", x).attr("y", y).attr("width", w).attr("height", h);
 
             d3.event.sourceEvent.stopPropagation();
-         }).on( "dragend", function() {
+         }).on("end", function() {
             if (drag_rect == null) return;
 
             d3.event.sourceEvent.preventDefault();
@@ -5225,10 +5225,10 @@
           reverse = false;
 
       if (gaxis.fChopt.indexOf("G")>=0) {
-         func = d3.scale.log();
+         func = d3.scaleLog();
          kind = "log";
       } else {
-         func = d3.scale.linear();
+         func = d3.scaleLinear();
       }
 
       func.domain([min, max]);
@@ -5949,9 +5949,9 @@
             this.scale_xmin = this.scale_xmax * 0.0001;
          }
 
-         this.x = d3.scale.log();
+         this.x = d3.scaleLog();
       } else {
-         this.x = d3.scale.linear();
+         this.x = d3.scaleLinear();
       }
 
       this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
@@ -6006,12 +6006,12 @@
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
          
-         this.y = d3.scale.log();
+         this.y = d3.scaleLog();
       } else
       if (this.y_kind=='time') {
          this.y = d3.time.scale();
       } else {
-         this.y = d3.scale.linear()
+         this.y = d3.scaleLinear()
       }
 
       this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
