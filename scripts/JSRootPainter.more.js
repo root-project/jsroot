@@ -4331,7 +4331,6 @@
          this.draw_g
               .append("svg:path")
               .attr("d", path)
-//              .style("fill","none")
               .call(this.markeratt.func);
 
          return handle;

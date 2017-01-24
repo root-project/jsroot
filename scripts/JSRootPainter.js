@@ -514,15 +514,12 @@
 
       line.Apply = function(selection) {
          this.used = true;
-         var arg;
          if (this.color=='none') {
-            arg = { 'stroke':null,'stroke-width': null, 'stroke-dasharray': null };
+            selection.style('stroke',null).style('stroke-width',null).style('stroke-dasharray',null);
          } else {
-            arg = { 'stroke':this.color, 'stroke-width': this.width };
-            if (this.dash && (this.dash.length>0)) arg['stroke-dasharray'] = this.dash;
+            selection.style('stroke',this.color).style('stroke-width',this.width);
+            if (this.dash && (this.dash.length>0)) selection.style('stroke-dasharray',this.dash);
          }
-         
-         selection.style(arg);
       }
 
       line.Change = function(color, width, dash) {
@@ -1221,7 +1218,7 @@
       
       if ((action === true) && (state!=="on")) {
          main.property('normal_css', main.node().style.cssText);
-         main.style({ position: "absolute", left: "3px", top: "3px", bottom :"3px", right: "3px", "z-index":10, width:null, height:null, "background-color": "white" });
+         main.style('position',"absolute").style('left',"3px").style('top',"3px").style('bottom',"3px").style('right',"3px").style("z-index",10).style('width', null).style('height',null).style("background-color","white");
          return true;
       }  
       if ((action === false) && (state!=="off")) {
@@ -1708,7 +1705,7 @@
             prnt = prnt.parentNode;
          }
 
-         elem.style({position:'absolute', left: (size.x+offx)+'px', top: (size.y+offy)+'px', width: size.width+'px', height: size.height+'px'});
+         elem.style('position','absolute').style('left',(size.x+offx)+'px').style('top',(size.y+offy)+'px').style('width',size.width+'px').style('height',size.height+'px');
       }
 
       return elem;
@@ -1933,7 +1930,7 @@
              break;
          }
 
-         patt.selectAll('line').style({stroke:line_color, "stroke-width":1});
+         patt.selectAll('line').style('stroke',line_color).style("stroke-width",1);
          patt.selectAll('rect').style("fill",line_color);
 
          return true;
@@ -2010,9 +2007,9 @@
                               .attr('class','resize_corner2')
                               .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
 
-      resize_corner1.style({opacity:0,cursor:"nw-resize"});
+      resize_corner1.style('opacity',0).style('cursor',"nw-resize");
 
-      resize_corner2.style({opacity:0,cursor:"se-resize"})
+      resize_corner2.style('opacity',0).style('cursor',"se-resize")
                     .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
 
       var drag_rect = null;
@@ -2914,7 +2911,8 @@
                        .property('_align', align);
 
       var element = document.createElement("p");
-      d3.select(element).style({visibility:"hidden", overflow:"hidden", position:"absolute", "font-size": font.size+'px', "font-family": font.name})
+      d3.select(element).style('visibility',"hidden").style('overflow',"hidden").style('position',"absolute")
+                        .style("font-size",font.size+'px').style("font-family",font.name)
                         .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 
@@ -3074,7 +3072,7 @@
             this.draw_g
                 .append("rect")
                 .attr("class","interactive_rect")
-                .style({opacity:0, fill:"none", "pointer-events":"visibleFill"})
+                .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill")
                 .on('mouseenter', MouseMoveEvent)
                 .on('mousemove', MouseMoveEvent)
                 .on('mouseleave', MouseCloseEvent);
@@ -3287,7 +3285,7 @@
          if (was_empty)
             group = hintsg.append("svg:svg")
                           .attr("class", "painter_hint_"+n)
-                          .style({overflow:'hidden', opacity:0, "pointer-events":"none"});
+                          .style('overflow','hidden').style('opacity',0).style("pointer-events","none");
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
@@ -4614,7 +4612,7 @@
 
       // special rect to correctly get mouse events for whole button area
       svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
-         .style({opacity:0, fill:"none", "pointer-events":"visibleFill"});
+         .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill");
 
       svg.on("click", this.PadButtonClick.bind(this, funcname));
 
@@ -6061,7 +6059,8 @@
           layer.append("svg:path")
                .attr("class", "xgrid")
                .attr("d", grid)
-               .style({stroke:grid_color, "stroke-width": JSROOT.gStyle.fGridWidth, "stroke-dasharray": JSROOT.Painter.root_line_styles[grid_style]});
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray",JSROOT.Painter.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -6077,7 +6076,8 @@
           layer.append("svg:path")
                .attr("class", "ygrid")
                .attr("d", grid)
-               .style({stroke:grid_color, "stroke-width": JSROOT.gStyle.fGridWidth, "stroke-dasharray": JSROOT.Painter.root_line_styles[grid_style]});
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
    }
 
@@ -8512,7 +8512,7 @@
       var frame = this.select_main();
       var main = frame.select("div");
       if (main.empty())
-         main = frame.append("div").style({'max-width':'100%', 'max-height':'100%', overflow:'auto'});
+         main = frame.append("div").style('max-width','100%').style('max-height','100%').style('overflow','auto');
 
       main.html(txt);
 
@@ -10506,9 +10506,9 @@
       JSROOT.Painter.readStyleFromURL();
 
       d3.select('html').style('height','100%');
-      d3.select('body').style({ 'min-height': '100%', margin:'0px', overflow: "hidden"});
+      d3.select('body').style('min-height','100%').style('margin','0px').style('overflow',"hidden");
 
-      myDiv.style({position: "absolute", left: "1px", top: "1px", bottom: "1px", right: "1px"});
+      myDiv.style('position',"absolute").style('left',"1px").style('top',"1px").style('bottom',"1px").style('right',"1px");
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
       hpainter.SetDisplay(layout, myDiv.attr('id'));
@@ -10797,8 +10797,8 @@
                .html("")
                .append("div")
                .attr("id", this.frameid + "_simple_display")
-               .style({width:"100%", height:"100%", overflow:"hidden"})
                .attr("frame_title", title)
+               .style("width", "100%").style("height", "100%").style("overflow", "hidden")
                .node();
    }
 
@@ -10890,7 +10890,7 @@
             content += "</table></div>";
 
             main.html(content);
-            main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px', 'overflow' : 'hidden'});
+            main.selectAll('.grid_cell').style('width',w+'px').style('height',h+'px').style('overflow','hidden');
          }
 
          drawid = topid + "_" + this.cnt;
@@ -10916,7 +10916,7 @@
          var rect = main.node().getBoundingClientRect();
          var h = Math.floor(rect.height / this.sizey) - 1;
          var w = Math.floor(rect.width / this.sizex) - 1;
-         main.selectAll('.grid_cell').style({ 'width':  w + 'px', 'height': h + 'px'});
+         main.selectAll('.grid_cell').style('width',w+'px').style('height',h+'px');
       }
 
       JSROOT.MDIDisplay.prototype.CheckMDIResize.call(this, frame_id, size);

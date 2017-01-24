@@ -276,7 +276,7 @@
                           .attr("src", icon_name)
                           .attr("alt","")
                           .attr("title", hitem._kind)
-                          .style({'vertical-align': 'top', 'width':'18px', 'height':'18px'});
+                          .style('vertical-align','top').style('width','18px').style('height','18px');
 
          if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
             d3img.on("click", function() { h.tree_click(this, "icon"); });
