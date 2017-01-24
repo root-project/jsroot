@@ -670,7 +670,6 @@
       if (('obj' in func) && ('func' in func) &&
          (typeof func.obj == 'object') && (typeof func.func == 'string') &&
          (typeof func.obj[func.func] == 'function')) {
-         alert('Old-style call-back, change code for ' + func.func);
              return func.obj[func.func](arg1, arg2);
       }
    }
@@ -679,13 +678,13 @@
       // Create asynchronous XMLHttpRequest object.
       // One should call req.send() to submit request
       // kind of the request can be:
-      //  "bin" - abstract binary data, result as string (default)
-      //  "buf" - abstract binary data, result as BufferArray (if supported)
-      //  "text" - returns req.responseText
-      //  "object" - returns JSROOT.parse(req.responseText)
-      //  "xml" - returns res.responseXML
-      //  "head" - returns request itself, uses "HEAD" method
-      //  "multi" - returns correctly parsed multi.json request, uses "POST" method
+      //   "bin" - abstract binary data, result as string (default)
+      //   "buf" - abstract binary data, result as BufferArray
+      //   "text" - returns req.responseText
+      //   "object" - returns JSROOT.parse(req.responseText)
+      //   "multi" - returns correctly parsed multi.json request
+      //   "xml" - returns res.responseXML
+      //   "head" - returns request itself, uses "HEAD" method
       // Result will be returned to the callback functions
       // Request will be set as this pointer in the callback
       // If failed, request returns null
@@ -701,113 +700,61 @@
       if (kind === "head") method = "HEAD"; else
       if (kind === "multi") method = "POST";
 
-      if (JSROOT.browser.isIE) {
-         // TODO: remove special IE handling, since IE11 works similar to other browsers
+      xhr.onreadystatechange = function() {
 
-         xhr.onreadystatechange = function() {
+         if (xhr.did_abort) return;
 
-            if (xhr.did_abort) return;
-
-            if ((xhr.readyState === 2) && xhr.expected_size) {
-               var len = parseInt(xhr.getResponseHeader("Content-Length"));
-               if (!isNaN(len) && (len>xhr.expected_size)) {
-                  // console.log('Expected ', xhr.expected_size, 'got', len);
-                  xhr.did_abort = true;
-                  xhr.abort();
-                  return callback(null);
-               }
-            }
-
-            if (xhr.readyState != 4) return;
-
-            if (xhr.status != 200 && xhr.status != 206) {
-               // error
+         if ((xhr.readyState === 2) && xhr.expected_size) {
+            var len = parseInt(xhr.getResponseHeader("Content-Length"));
+            if (!isNaN(len) && (len>xhr.expected_size)) {
+               xhr.did_abort = true;
+               xhr.abort();
                return callback(null);
             }
-
-            if (kind == "xml") return callback(xhr.responseXML);
-            if (kind == "text") return callback(xhr.responseText);
-            if (kind == "object") return callback(pthis.parse(xhr.responseText));
-            if (kind == "multi") return callback(pthis.parse_multi(xhr.responseText));
-            if (kind == "head") return callback(xhr);
-
-            if ((kind == "buf") && ('responseType' in xhr) &&
-                (xhr.responseType == 'arraybuffer') && ('response' in xhr))
-               return callback(xhr.response);
-
-            var filecontent = new String("");
-            var array = new VBArray(xhr.responseBody).toArray();
-            for (var i = 0; i < array.length; ++i)
-               filecontent += String.fromCharCode(array[i]);
-            delete array;
-            callback(filecontent);
          }
 
-         xhr.open(method, url, true);
+         if (xhr.readyState != 4) return;
 
-         if (kind=="buf") {
-            if (('Uint8Array' in window) && ('responseType' in xhr))
-              xhr.responseType = 'arraybuffer';
+         if ((xhr.status != 200) && (xhr.status != 206) &&
+               ((xhr.status !== 0) || (url.indexOf("file://")!==0))) {
+            return callback(null);
          }
 
-      } else {
-
-         xhr.onreadystatechange = function() {
-
-            if (xhr.did_abort) return;
-
-            if ((xhr.readyState === 2) && xhr.expected_size) {
-               var len = parseInt(xhr.getResponseHeader("Content-Length"));
-               if (!isNaN(len) && (len>xhr.expected_size)) {
-                  // console.log('Expected ', xhr.expected_size, 'got', len);
-                  xhr.did_abort = true;
-                  xhr.abort();
-                  return callback(null);
-               }
-            }
-            
-            if (xhr.readyState != 4) return;
-
-            if ((xhr.status != 200) && (xhr.status != 206) &&
-                ((xhr.status !== 0) || (url.indexOf("file://")!==0))) {
-               return callback(null);
-            }
-
-            if (kind == "xml") return callback(xhr.responseXML);
-            if (kind == "text") return callback(xhr.responseText);
-            if (kind == "object") return callback(pthis.parse(xhr.responseText));
-            if (kind == "multi") return callback(pthis.parse_multi(xhr.responseText));
-            if (kind == "head") return callback(xhr);
-
-            // if no response type is supported, return as text (most probably, will fail)
-            if (! ('responseType' in xhr))
-               return callback(xhr.responseText);
-
-            if ((kind=="bin") && ('Uint8Array' in window) && ('byteLength' in xhr.response)) {
-               // if string representation in requested - provide it
-
-               var filecontent = "", u8Arr = new Uint8Array(xhr.response);
-               for (var i = 0; i < u8Arr.length; ++i)
-                  filecontent += String.fromCharCode(u8Arr[i]);
-               delete u8Arr;
-
-               return callback(filecontent);
-            }
-
-            callback(xhr.response);
+         switch(kind) {
+            case "xml": return callback(xhr.responseXML);
+            case "text": return callback(xhr.responseText);
+            case "object": return callback(pthis.parse(xhr.responseText));
+            case "multi": return callback(pthis.parse_multi(xhr.responseText));
+            case "head": return callback(xhr);
          }
 
-         xhr.open(method, url, true);
+         // if no response type is supported, return as text (most probably, will fail)
+         if (! ('responseType' in xhr))
+            return callback(xhr.responseText);
 
-         if ((kind == "bin") || (kind == "buf")) {
-            if (('Uint8Array' in window) && ('responseType' in xhr)) {
-               xhr.responseType = 'arraybuffer';
-            } else {
-               //XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-               xhr.overrideMimeType("text/plain; charset=x-user-defined");
-            }
+         if ((kind=="bin") && ('byteLength' in xhr.response)) {
+            // if string representation in requested - provide it
+
+            var filecontent = "", u8Arr = new Uint8Array(xhr.response);
+            for (var i = 0; i < u8Arr.length; ++i)
+               filecontent += String.fromCharCode(u8Arr[i]);
+            delete u8Arr;
+
+            return callback(filecontent);
          }
 
+         callback(xhr.response);
+      }
+
+      xhr.open(method, url, true);
+
+      if ((kind == "bin") || (kind == "buf")) {
+         if ('responseType' in xhr) {
+            xhr.responseType = 'arraybuffer';
+         } else {
+            //XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+            xhr.overrideMimeType("text/plain; charset=x-user-defined");
+         }
       }
       
       return xhr;
