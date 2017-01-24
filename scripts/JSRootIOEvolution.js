@@ -202,11 +202,13 @@
 
    // =================================================================================
 
-   JSROOT.TBuffer = function(_o, _file) {
+   JSROOT.TBuffer = function(arr, pos, file, length) {
+      // buffer takes with DataView as first argument
       this._typename = "TBuffer";
-      this.o = (_o !== undefined) ? _o : 0;
-      this.length = 0;
-      this.fFile = _file;
+      this.arr = arr;
+      this.o = pos || 0;
+      this.fFile = file;
+      this.length = length || arr.byteLength; // use size of arrayview, blob buffer can be much bigger
       this.ClearObjectMap();
       this.fTagOffset = 0;
       this.last_read_version = 0;
@@ -317,75 +319,168 @@
 
       return res;
    }
+   
+   JSROOT.TBuffer.prototype.ntou1 = function() {
+      return this.arr.getUint8(this.o++);
+   }
+
+   JSROOT.TBuffer.prototype.ntou2 = function() {
+      var o = this.o; this.o+=2;
+      return this.arr.getUint16(o);
+   }
+
+   JSROOT.TBuffer.prototype.ntou4 = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getUint32(o);
+   }
+
+   JSROOT.TBuffer.prototype.ntou8 = function() {
+      var high = this.arr.getUint32(this.o); this.o+=4;
+      var low = this.arr.getUint32(this.o); this.o+=4;
+      return high * 0x100000000 + low;
+   }
+
+   JSROOT.TBuffer.prototype.ntoi1 = function() {
+      return this.arr.getInt8(this.o++);
+   }
+
+   JSROOT.TBuffer.prototype.ntoi2 = function() {
+      var o = this.o; this.o+=2;
+      return this.arr.getInt16(o);
+   }
+
+   JSROOT.TBuffer.prototype.ntoi4 = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getInt32(o);
+   }
+
+   JSROOT.TBuffer.prototype.ntoi8 = function() {
+      var high = this.arr.getUint32(this.o); this.o+=4;
+      var low = this.arr.getUint32(this.o); this.o+=4;
+      if (high < 0x80000000) return high * 0x100000000 + low;
+      return -1 - ((~high) * 0x100000000 + ~low);
+   }
+
+   JSROOT.TBuffer.prototype.ntof = function() {
+      var o = this.o; this.o+=4;
+      return this.arr.getFloat32(o);
+   }
+
+   JSROOT.TBuffer.prototype.ntod = function() {
+      var o = this.o; this.o+=8;
+      return this.arr.getFloat64(o);
+   }
 
    JSROOT.TBuffer.prototype.ReadFastArray = function(n, array_type) {
       // read array of n values from the I/O buffer
 
-      var array = null, i = 0;
+      var array, i = 0, o = this.o, view = this.arr;
       switch (array_type) {
          case JSROOT.IO.kDouble:
-            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntod();
+            array = new Float64Array(n);
+            for (; i < n; ++i, o+=8)
+               array[i] = view.getFloat64(o);
             break;
          case JSROOT.IO.kFloat:
-            array = JSROOT.IO.NativeArray ? new Float32Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntof();
+            array = new Float32Array(n);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getFloat32(o);
             break;
          case JSROOT.IO.kLong:
          case JSROOT.IO.kLong64:
-            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntoi8();
-            break;
+            array = new Float64Array(n);
+            for (; i < n; ++i)
+               array[i] = this.ntoi8();
+            return array; // exit here to avoid conflicts
          case JSROOT.IO.kULong:
          case JSROOT.IO.kULong64:
-            array = JSROOT.IO.NativeArray ? new Float64Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntou8();
-            break;
+            array = new Float64Array(n);
+            for (; i < n; ++i)
+               array[i] = this.ntou8();
+            return array; // exit here to avoid conflicts
          case JSROOT.IO.kInt:
-         case JSROOT.IO.kCounter:   
-            array = JSROOT.IO.NativeArray ? new Int32Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntoi4();
+         case JSROOT.IO.kCounter:
+            array = new Int32Array(n);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getInt32(o);
             break;
          case JSROOT.IO.kBits:
          case JSROOT.IO.kUInt:
-            array = JSROOT.IO.NativeArray ? new Uint32Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntou4();
+            array = new Uint32Array(n);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getUint32(o);
             break;
          case JSROOT.IO.kShort:
-            array = JSROOT.IO.NativeArray ? new Int16Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntoi2();
+            array = new Int16Array(n);
+            for (; i < n; ++i, o+=2)
+               array[i] = view.getInt16(o);
             break;
          case JSROOT.IO.kUShort:
-            array = JSROOT.IO.NativeArray ? new Uint16Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntou2();
+            array = new Uint16Array(n);
+            for (; i < n; ++i, o+=2)
+               array[i] = view.getUint16(o);
             break;
          case JSROOT.IO.kChar:
-            array = JSROOT.IO.NativeArray ? new Int8Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntoi1();
+            array = new Int8Array(n);
+            for (; i < n; ++i)
+               array[i] = view.getInt8(o++);
             break;
          case JSROOT.IO.kBool:
          case JSROOT.IO.kUChar:
-            array = JSROOT.IO.NativeArray ? new Uint8Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntou1();
+            array = new Uint8Array(n);
+            for (; i < n; ++i)
+               array[i] = view.getUint8(o++);
             break;
          case JSROOT.IO.kTString:
             array = new Array(n);
-            while (i < n) array[i++] = this.ReadTString();
-            break;
+            for (; i < n; ++i)
+               array[i] = this.ReadTString();
+            return array; // exit here to avoid conflicts
+         case JSROOT.IO.kDouble32:
+            throw new Error('kDouble32 should not be used in ReadFastArray');
+         case JSROOT.IO.kFloat16:
+            throw new Error('kFloat16 should not be used in ReadFastArray');
          default:
-            array = JSROOT.IO.NativeArray ? new Uint32Array(n) : new Array(n);
-            while (i < n) array[i++] = this.ntou4();
+            array = new Uint32Array(n);
+            for (; i < n; ++i, o+=4)
+               array[i] = view.getUint32(o);
             break;
       }
+
+      this.o = o;
 
       return array;
    }
 
    JSROOT.TBuffer.prototype.can_extract = function(place) {
       for (var n=0;n<place.length;n+=2)
-        if (place[n] + place[n+1] > this.length) return false;
+         if (place[n] + place[n+1] > this.length) return false;
       return true;
    }
+   
+   JSROOT.TBuffer.prototype.extract = function(place) {
+      if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
+      if (place.length===2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
+
+      var res = new Array(place.length/2);
+
+      for (var n=0;n<place.length;n+=2)
+         res[n/2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n+1]);
+
+      return res; // return array of buffers
+   }
+
+   JSROOT.TBuffer.prototype.codeAt = function(pos) {
+      return this.arr.getUint8(pos);
+   }
+
+   JSROOT.TBuffer.prototype.substring = function(beg, end) {
+      var res = "";
+      for (var n=beg;n<end;++n)
+         res += String.fromCharCode(this.arr.getUint8(n));
+      return res;
+   }
+
 
    JSROOT.IO.GetArrayKind = function(type_name) {
       // returns type of array
@@ -651,176 +746,11 @@
       return obj;
    }
 
-   // =======================================================================
-
-   JSROOT.TArrBuffer = function(arr, pos, file, length) {
-      // buffer should work with DataView as first argument
-      JSROOT.TBuffer.call(this, pos, file, length);
-      this.arr = arr;
-      this.length = length || arr.byteLength; // use size of arrayview, blob buffer can be much bigger
-   }
-
-   JSROOT.TArrBuffer.prototype = Object.create(JSROOT.TBuffer.prototype);
-
-   JSROOT.TArrBuffer.prototype.ReadFastArray = function(n, array_type) {
-      // read array of n values from the I/O buffer
-
-      var array, i = 0, o = this.o, view = this.arr;
-      switch (array_type) {
-         case JSROOT.IO.kDouble:
-            array = new Float64Array(n);
-            for (; i < n; ++i, o+=8)
-               array[i] = view.getFloat64(o);
-            break;
-         case JSROOT.IO.kFloat:
-            array = new Float32Array(n);
-            for (; i < n; ++i, o+=4)
-               array[i] = view.getFloat32(o);
-            break;
-         case JSROOT.IO.kLong:
-         case JSROOT.IO.kLong64:
-            array = new Float64Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ntoi8();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kULong:
-         case JSROOT.IO.kULong64:
-            array = new Float64Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ntou8();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kInt:
-         case JSROOT.IO.kCounter:
-            array = new Int32Array(n);
-            for (; i < n; ++i, o+=4)
-               array[i] = view.getInt32(o);
-            break;
-         case JSROOT.IO.kBits:
-         case JSROOT.IO.kUInt:
-            array = new Uint32Array(n);
-            for (; i < n; ++i, o+=4)
-               array[i] = view.getUint32(o);
-            break;
-         case JSROOT.IO.kShort:
-            array = new Int16Array(n);
-            for (; i < n; ++i, o+=2)
-               array[i] = view.getInt16(o);
-            break;
-         case JSROOT.IO.kUShort:
-            array = new Uint16Array(n);
-            for (; i < n; ++i, o+=2)
-               array[i] = view.getUint16(o);
-            break;
-         case JSROOT.IO.kChar:
-            array = new Int8Array(n);
-            for (; i < n; ++i)
-               array[i] = view.getInt8(o++);
-            break;
-         case JSROOT.IO.kBool:
-         case JSROOT.IO.kUChar:
-            array = new Uint8Array(n);
-            for (; i < n; ++i)
-               array[i] = view.getUint8(o++);
-            break;
-         case JSROOT.IO.kTString:
-            array = new Array(n);
-            for (; i < n; ++i)
-               array[i] = this.ReadTString();
-            return array; // exit here to avoid conflicts
-         case JSROOT.IO.kDouble32:
-            throw new Error('kDouble32 should not be used in ReadFastArray');
-         case JSROOT.IO.kFloat16:
-            throw new Error('kFloat16 should not be used in ReadFastArray');
-         default:
-            array = new Uint32Array(n);
-            for (; i < n; ++i, o+=4)
-               array[i] = view.getUint32(o);
-            break;
-      }
-
-      this.o = o;
-
-      return array;
-   }
-
-   JSROOT.TArrBuffer.prototype.extract = function(place) {
-      if (!this.arr || !this.arr.buffer || !this.can_extract(place)) return null;
-      if (place.length===2) return new DataView(this.arr.buffer, this.arr.byteOffset + place[0], place[1]);
-
-      var res = new Array(place.length/2);
-
-      for (var n=0;n<place.length;n+=2)
-         res[n/2] = new DataView(this.arr.buffer, this.arr.byteOffset + place[n], place[n+1]);
-
-      return res; // return array of buffers
-   }
-
-   JSROOT.TArrBuffer.prototype.codeAt = function(pos) {
-      return this.arr.getUint8(pos);
-   }
-
-   JSROOT.TArrBuffer.prototype.substring = function(beg, end) {
-      var res = "";
-      for (var n=beg;n<end;++n)
-         res += String.fromCharCode(this.arr.getUint8(n));
-      return res;
-   }
-
-   JSROOT.TArrBuffer.prototype.ntou1 = function() {
-      return this.arr.getUint8(this.o++);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntou2 = function() {
-      var o = this.o; this.o+=2;
-      return this.arr.getUint16(o);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntou4 = function() {
-      var o = this.o; this.o+=4;
-      return this.arr.getUint32(o);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntou8 = function() {
-      var high = this.arr.getUint32(this.o); this.o+=4;
-      var low = this.arr.getUint32(this.o); this.o+=4;
-      return high * 0x100000000 + low;
-   }
-
-   JSROOT.TArrBuffer.prototype.ntoi1 = function() {
-      return this.arr.getInt8(this.o++);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntoi2 = function() {
-      var o = this.o; this.o+=2;
-      return this.arr.getInt16(o);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntoi4 = function() {
-      var o = this.o; this.o+=4;
-      return this.arr.getInt32(o);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntoi8 = function() {
-      var high = this.arr.getUint32(this.o); this.o+=4;
-      var low = this.arr.getUint32(this.o); this.o+=4;
-      if (high < 0x80000000) return high * 0x100000000 + low;
-      return -1 - ((~high) * 0x100000000 + ~low);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntof = function() {
-      var o = this.o; this.o+=4;
-      return this.arr.getFloat32(o);
-   }
-
-   JSROOT.TArrBuffer.prototype.ntod = function() {
-      var o = this.o; this.o+=8;
-      return this.arr.getFloat64(o);
-   }
    
    // =======================================================================
 
    JSROOT.CreateTBuffer = function(blob, pos, file, length) {
-      return new JSROOT.TArrBuffer(blob, pos, file, length);
+      return new JSROOT.TBuffer(blob, pos, file, length);
    }
 
    JSROOT.ReconstructObject = function(class_name, obj_rawdata, sinfo_rawdata) {
