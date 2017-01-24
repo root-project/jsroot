@@ -1373,6 +1373,8 @@
 
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
+      if (!this._toplevel) return;
+      
       var extras = this.getExtrasContainer('get');
       if (extras) this._toplevel.remove(extras);
 
