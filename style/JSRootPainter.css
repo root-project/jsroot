@@ -397,9 +397,8 @@
 
 .jsroot_ctxmenu {
     position: absolute;
-    min-width: 64px;
+    min-width: 48px;
     height: auto;
-    padding: 4px;
     margin: 0;
     margin-left: 0px;
     margin-top: 0px;
@@ -408,8 +407,13 @@
     box-shadow: 2px 2px 2px #AAA;
     z-index: 11;
     overflow: visible;
-    font-size: 11px;
-    line-height: 16px;
+    line-height: 14px;
+}
+
+.jsroot_ctxmenu li {
+    font-size: 12px;
+    padding: 1px;
+    white-space: nowrap;
 }
 
 .jsroot .fast_command {
