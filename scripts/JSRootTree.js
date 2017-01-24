@@ -2640,8 +2640,26 @@
          
          args = { expr: opt, branch: obj };
          tree = obj.$tree;
-      } else
-      if (typeof args === 'string') args = { expr: args };
+      } else {
+         
+         if (args=='player') {
+
+            var painter = this;
+            
+            console.log('Do nothing - create player');
+
+            JSROOT.AssertPrerequisites("jq2d", function() {
+               JSROOT.CreateTreePlayer(painter);
+               painter.ConfigureTree(tree);
+               painter.Show(divid);
+               painter.DrawingReady();
+            });
+            
+            return painter;
+         }
+         
+         if (typeof args === 'string') args = { expr: args };
+      }
 
       if (!tree) {
          console.log('No TTree object available for TTree::Draw');

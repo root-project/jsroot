@@ -1167,122 +1167,128 @@
    }
 
    // ========== performs tree drawing on server ==================
+   
+   JSROOT.CreateTreePlayer = function(player) {
+      
+      player.hist_painter = null;
+      
+      player.ConfigureOnline = function(itemname, url, askey, root_version) {
+         this.SetItemName(itemname);
+         this.url = url;
+         this.root_version = root_version;
+         this.askey = askey;
+      }
+      
+      player.ConfigureTree = function(tree) {
+         this.local_tree = tree;
+      }
+      
+      player.Show = function(divid) {
+         this.drawid = divid + "_draw";
 
-   JSROOT.TTreePlayer = function(itemname, url, askey, root_version) {
-      JSROOT.TBasePainter.call(this);
-      this.SetItemName(itemname);
-      this.url = url;
-      this.root_version = root_version;
-      this.hist_painter = null;
-      this.askey = askey;
-      return this;
-   }
+         $("#" + divid)
+           .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
+               "<button class='treedraw_exe'>Draw</button>" +
+               " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
+               "<button class='treedraw_more'>More</button>" +
+               "</div>" +
+               "<div id='" + this.drawid + "' style='width:100%'></div>");
 
-   JSROOT.TTreePlayer.prototype = Object.create( JSROOT.TBasePainter.prototype );
+         var player = this;
 
-   JSROOT.TTreePlayer.prototype.Show = function(divid) {
-      this.drawid = divid + "_draw";
+         $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
+         $("#" + divid).find('.treedraw_varexp')
+              .val("px:py")
+              .keyup(function(e){
+                  if(e.keyCode == 13) player.PerformDraw();
+               });
 
-      $("#" + divid)
-        .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
-            "<button class='treedraw_exe'>Draw</button>" +
-            " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
-            "<button class='treedraw_more'>More</button>" +
-            "</div>" +
-            "<div id='" + this.drawid + "' style='width:100%'></div>");
+         $("#" + divid).find('.treedraw_more').click(function() {
+            $(this).remove();
+            $("#" + divid).find(".treedraw_buttons")
+            .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
+                    " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
+                    " Num:<input class='treedraw_number' style='width:7em'></input>" +
+                    " First:<input class='treedraw_first' style='width:7em'></input>");
 
-      var player = this;
+            $("#" + divid +" .treedraw_opt").val("");
+            $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
+            $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
+         });
 
-      $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
-      $("#" + divid).find('.treedraw_varexp')
-           .val("px:py")
-           .keyup(function(e){
-               if(e.keyCode == 13) player.PerformDraw();
-            });
+         this.SetDivId(divid);
 
-      $("#" + divid).find('.treedraw_more').click(function() {
-         $(this).remove();
-         $("#" + divid).find(".treedraw_buttons")
-         .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
-                 " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
-                 " Num:<input class='treedraw_number' style='width:7em'></input>" +
-                 " First:<input class='treedraw_first' style='width:7em'></input>");
-
-         $("#" + divid +" .treedraw_opt").val("");
-         $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-         $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-      });
-
-      this.SetDivId(divid);
-
-      this.CheckResize();
-   }
-
-   JSROOT.TTreePlayer.prototype.PerformDraw = function() {
-
-      var frame = $(this.select_main().node());
-
-      var url = this.url + '/exe.json.gz?compact=3&method=Draw';
-      var expr = frame.find('.treedraw_varexp').val();
-      var hname = "h_tree_draw";
-
-      var pos = expr.indexOf(">>");
-      if (pos<0) {
-         expr += ">>" + hname;
-      } else {
-         hname = expr.substr(pos+2);
-         if (hname[0]=='+') hname = hname.substr(1);
-         var pos2 = hname.indexOf("(");
-         if (pos2>0) hname = hname.substr(0, pos2);
+         this.CheckResize();
       }
 
-      if (frame.find('.treedraw_more').length==0) {
-         var cut = frame.find('.treedraw_cut').val();
-         var option = frame.find('.treedraw_opt').val();
-         var nentries = frame.find('.treedraw_number').val();
-         var firstentry = frame.find('.treedraw_first').val();
+      player.PerformDraw = function() {
+         var frame = $(this.select_main().node());
 
-         url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
+         var url = this.url + '/exe.json.gz?compact=3&method=Draw';
+         var expr = frame.find('.treedraw_varexp').val();
+         var hname = "h_tree_draw";
 
-         // if any of optional arguments specified, specify all of them
-         if ((option!="") || (nentries!="") || (firstentry!="")) {
-            if (nentries=="") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
-            if (firstentry=="") firstentry = "0";
-            url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
+         var pos = expr.indexOf(">>");
+         if (pos<0) {
+            expr += ">>" + hname;
+         } else {
+            hname = expr.substr(pos+2);
+            if (hname[0]=='+') hname = hname.substr(1);
+            var pos2 = hname.indexOf("(");
+            if (pos2>0) hname = hname.substr(0, pos2);
          }
-      } else {
-         url += '&prototype="Option_t*"&opt="' + expr + '"';
+
+         if (frame.find('.treedraw_more').length==0) {
+            var cut = frame.find('.treedraw_cut').val();
+            var option = frame.find('.treedraw_opt').val();
+            var nentries = frame.find('.treedraw_number').val();
+            var firstentry = frame.find('.treedraw_first').val();
+
+            url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
+
+            // if any of optional arguments specified, specify all of them
+            if ((option!="") || (nentries!="") || (firstentry!="")) {
+               if (nentries=="") nentries = (this.root_version >= 394499) ? "TTree::kMaxEntries": "1000000000"; // kMaxEntries available since ROOT 6.05/03
+               if (firstentry=="") firstentry = "0";
+               url += '&option="' + option + '"&nentries=' + nentries + '&firstentry=' + firstentry;
+            }
+         } else {
+            url += '&prototype="Option_t*"&opt="' + expr + '"';
+         }
+         url += '&_ret_object_=' + hname;
+
+         var player = this;
+
+         function SubmitDrawRequest() {
+            JSROOT.NewHttpRequest(url, 'object', function(res) {
+               if (res==null) return;
+               $("#"+player.drawid).empty();
+               player.hist_painter = JSROOT.draw(player.drawid, res)
+            }).send();
+         }
+
+         if (this.askey) {
+            // first let read tree from the file
+            this.askey = false;
+            JSROOT.NewHttpRequest(this.url + "/root.json", 'text', SubmitDrawRequest).send();
+         } else SubmitDrawRequest();
       }
-      url += '&_ret_object_=' + hname;
+      
+      player.CheckResize = function(arg) {
+         var main = $(this.select_main().node());
 
-      var player = this;
+         $("#" + this.drawid).width(main.width());
+         var h = main.height();
+         var h0 = main.find(".treedraw_buttons").height();
+         $("#" + this.drawid).height(h - 1 - h0);
 
-      function SubmitDrawRequest() {
-         JSROOT.NewHttpRequest(url, 'object', function(res) {
-            if (res==null) return;
-            $("#"+player.drawid).empty();
-            player.hist_painter = JSROOT.draw(player.drawid, res)
-         }).send();
+         if (this.hist_painter)
+            this.hist_painter.CheckResize(arg);
       }
-
-      if (this.askey) {
-         // first let read tree from the file
-         this.askey = false;
-         JSROOT.NewHttpRequest(this.url + "/root.json", 'text', SubmitDrawRequest).send();
-      } else SubmitDrawRequest();
+      
+      return player;
    }
-
-   JSROOT.TTreePlayer.prototype.CheckResize = function(arg) {
-      var main = $(this.select_main().node());
-
-      $("#" + this.drawid).width(main.width());
-      var h = main.height();
-      var h0 = main.find(".treedraw_buttons").height();
-      $("#" + this.drawid).height(h - 1 - h0);
-
-      if (this.hist_painter)
-         this.hist_painter.CheckResize(arg);
-   }
+   
 
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey) {
 
@@ -1301,8 +1307,12 @@
 
       var divid = d3.select(frame).attr('id');
 
-      var player = new JSROOT.TTreePlayer(itemname, url, askey, root_version);
+      var player = new JSROOT.TBasePainter();
+      
+      JSROOT.CreateTreePlayer(player);
+      player.ConfigureOnline(itemname, url, askey, root_version);
       player.Show(divid);
+      
       return player;
    }
 
