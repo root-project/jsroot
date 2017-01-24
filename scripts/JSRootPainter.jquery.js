@@ -1220,8 +1220,43 @@
 
          this.CheckResize();
       }
+      
+      player.PerformLocalDraw = function() {
+         if (!this.local_tree) return;
+
+         var frame = $(this.select_main().node());
+
+         var args = {
+           expr: frame.find('.treedraw_varexp').val()   
+         };
+         
+
+         if (frame.find('.treedraw_more').length==0) {
+            args.cut = frame.find('.treedraw_cut').val();
+            if (!args.cut) delete args.cut;
+            
+            args.drawoption = frame.find('.treedraw_opt').val();
+            if (!args.drawoption) delete args.drawoption;
+            
+            args.numentries = parseInt(frame.find('.treedraw_number').val());
+            if (isNaN(args.numentries)) delete args.numentries;
+            
+            args.firstentry = parseInt(frame.find('.treedraw_first').val());
+            if (isNaN(args.firstentry)) delete args.firstentry;
+         }
+         
+         var player = this;
+         
+         player.local_tree.Draw(args, function(histo, hopt, intermediate) {
+            var func = args.monitoring ? JSROOT.redraw : JSROOT.draw;  
+            player.hist_painter = func(player.drawid, histo, hopt);
+         });
+      }
 
       player.PerformDraw = function() {
+         
+         if (this.local_tree) return this.PerformLocalDraw();
+         
          var frame = $(this.select_main().node());
 
          var url = this.url + '/exe.json.gz?compact=3&method=Draw';

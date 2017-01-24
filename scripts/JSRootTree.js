@@ -2642,12 +2642,8 @@
          tree = obj.$tree;
       } else {
          
-         if (args=='player') {
-
+         if ((args==='player') || !args) {
             var painter = this;
-            
-            console.log('Do nothing - create player');
-
             JSROOT.AssertPrerequisites("jq2d", function() {
                JSROOT.CreateTreePlayer(painter);
                painter.ConfigureTree(tree);
