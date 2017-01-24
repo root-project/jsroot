@@ -1049,11 +1049,11 @@
          var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
 
          if (has_jq)
-            jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 2.1.4", debugout);
+            jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 3.1.1", debugout);
          else
             lst_jq += (use_bower ? "###jquery/dist" : "$$$scripts") + "/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
-            jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.11.4", debugout);
+            jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.12.1", debugout);
          else {
             lst_jq += (use_bower ? "###jquery-ui" : "$$$scripts") + '/jquery-ui.min.js;';
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
