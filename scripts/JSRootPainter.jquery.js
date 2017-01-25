@@ -1188,7 +1188,7 @@
 
          $("#" + divid)
            .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
-               "<button class='treedraw_exe'>Draw</button>" +
+               "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
                " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
                "<button class='treedraw_more'>More</button>" +
                "</div>" +
@@ -1199,17 +1199,15 @@
          $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
          $("#" + divid).find('.treedraw_varexp')
               .val("px:py")
-              .keyup(function(e){
-                  if(e.keyCode == 13) player.PerformDraw();
-               });
+              .keyup(function(e) { if(e.keyCode == 13) player.PerformDraw(); });
 
          $("#" + divid).find('.treedraw_more').click(function() {
             $(this).remove();
             $("#" + divid).find(".treedraw_buttons")
-            .append(" Cut:<input class='treedraw_cut' style='width:8em'></input>"+
-                    " Opt:<input class='treedraw_opt' style='width:5em'></input>"+
-                    " Num:<input class='treedraw_number' style='width:7em'></input>" +
-                    " First:<input class='treedraw_first' style='width:7em'></input>");
+            .append(" Cut:<input class='treedraw_cut' style='width:8em' title='cut expression'></input>"+
+                    " Opt:<input class='treedraw_opt' style='width:5em' title='histogram draw options'></input>"+
+                    " Num:<input class='treedraw_number' style='width:7em' title='number of entries to process (default all)'></input>" +
+                    " First:<input class='treedraw_first' style='width:7em' title='first entry to process (default first)'></input>");
 
             $("#" + divid +" .treedraw_opt").val("");
             $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
@@ -1229,14 +1227,13 @@
          var args = {
            expr: frame.find('.treedraw_varexp').val()   
          };
-         
 
          if (frame.find('.treedraw_more').length==0) {
             args.cut = frame.find('.treedraw_cut').val();
             if (!args.cut) delete args.cut;
             
-            args.drawoption = frame.find('.treedraw_opt').val();
-            if (!args.drawoption) delete args.drawoption;
+            args.drawopt = frame.find('.treedraw_opt').val();
+            if (!args.drawopt) delete args.drawopt;
             
             args.numentries = parseInt(frame.find('.treedraw_number').val());
             if (isNaN(args.numentries)) delete args.numentries;
@@ -1245,10 +1242,11 @@
             if (isNaN(args.firstentry)) delete args.firstentry;
          }
          
-         var player = this;
+         var player = this, first_time = true;
          
          player.local_tree.Draw(args, function(histo, hopt, intermediate) {
-            var func = args.monitoring ? JSROOT.redraw : JSROOT.draw;  
+            var func = (args.monitoring || first_time) ? JSROOT.redraw : JSROOT.draw;
+            first_time = false;
             player.hist_painter = func(player.drawid, histo, hopt);
          });
       }

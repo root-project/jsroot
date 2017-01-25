@@ -553,7 +553,7 @@
                }
                break;
             case "drawopt":
-               this.histo_drawopt = parvalue;
+               args.drawopt = parvalue;
                break;
          }
       }
@@ -600,6 +600,9 @@
       expr = expr.replace(/TMath::/g, 'ROOT__TMath__'); // avoid confusion due-to :: in the namespace 
 
       var pos = expr.lastIndexOf("::"), cut = "";
+      if (args.cut) {
+         cut = args.cut;
+      } else 
       if (pos>0) {
          cut = expr.substr(pos+2).trim();
          expr = expr.substr(0,pos).trim();
@@ -646,7 +649,9 @@
       
       this.monitoring = args.monitoring;
       
-      if (!this.histo_drawopt)
+      if (args.drawopt !== undefined)
+         this.histo_drawopt = args.drawopt;
+      else
          this.histo_drawopt = (this.ndim===2) ? "col" : "";
       
       return true;
@@ -2322,10 +2327,12 @@
       // this is JSROOT implementaion of TTree::Draw
       // in callback returns histogram and draw options
       // following arguments allowed in args
-      //   expr - draw expression
-      //   firstentry - first entry to process
-      //   numentries - number of entries to process
-      //   branch - TBranch object from TTree itself for the direct drawing
+      //    expr       - draw expression
+      //    cut        - cut expression (also can be part of 'expr' after '::'
+      //    drawopt    - draw options for result histogram
+      //    firstentry - first entry to process
+      //    numentries - number of entries to process
+      //    branch     - TBranch object from TTree itself for the direct drawing
       
       if (typeof args === 'string') args = { expr: args };
       
