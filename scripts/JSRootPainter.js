@@ -3296,7 +3296,8 @@
          if (was_empty)
             group = hintsg.append("svg:svg")
                           .attr("class", "painter_hint_"+n)
-                          .style('overflow','hidden').style('opacity',0).style("pointer-events","none");
+                          .attr('opacity',0) // use attribute, not style to make animation with d3.transition()
+                          .style('overflow','hidden').style("pointer-events","none");
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
