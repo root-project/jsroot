@@ -10976,7 +10976,7 @@
          if (myInterval !== null) clearTimeout(myInterval);
          myInterval = setTimeout(ResizeTimer, myDelay);
       }
-
+      
       window.addEventListener('resize', ProcessResize);
    }
 

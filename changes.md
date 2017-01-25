@@ -11,10 +11,13 @@
     - simple 1D/2D/3D histograms
     - simple cut conditions
     - configurable histogram like "px:py>>hist(50,-5,5,50,-5,5)"
-    - bits histogram like "event.fTracks.fBits>>bits(16)"
     - strings support
     - iterate over arrays indexes, let use another branch as index values
     - support "Entry$" and "Entries$" variables in expressions
+    - bits histogram like "event.fTracks.fBits>>bits(16)"
+    - special hanlindling of TBits
+    - arbitrary math function from JavaScript Math class, some TMath:: function from ROOT
+    - if branch is object, one could use methods "TMath::Abs(lep1_p4.X()+lep1_p4.Y())"
     - interactive player to configure and execute draw expression  
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
@@ -24,7 +27,7 @@
 6. Canvas or selected sub-pad can be enlarged when double-clicked outside frame (#116)
    Complete drawing will be expanded to the visible space.
    Not available for flex, tabs and collapsible layouts.  
-7. Support reading of local ROOT files with FileReader.
+7. Support reading of local ROOT files with HTML5 FileReader.
    Files can be selected only with interactive dialog.
 8. Update libraries
       - d3.js     - 4.4.1

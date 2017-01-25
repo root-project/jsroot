@@ -2697,6 +2697,8 @@
             painter.Show(divid, args);
             args.create_player = 2;
             JSROOT.redraw(painter.drawid, histo, hopt, args.player_intermediate ? null : callback);
+            painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
+            
          });
       });
 
