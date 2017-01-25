@@ -272,7 +272,6 @@
                   case "Entries": repl = "arg.$globals.entries"; break;
                }
                if (repl) {
-                  console.log('Replace ', code.substr(pos, pos2-pos), 'with', repl); 
                   code = code.substr(0, pos) + repl + code.substr(pos2+1);
                   pos = pos + repl.length;
                   continue;
@@ -354,7 +353,6 @@
                   } else {
                      // try to compile code as draw variable
                      var subvar = new JSROOT.TDrawVariable(this.globals);
-                     // console.log("produce subvar with code", sub);
                      if (!subvar.Parse(tree,selector, sub)) return false;
                      arriter.push(subvar);
                   }
@@ -364,8 +362,6 @@
          
          if (arriter.length===0) arriter = undefined; else
          if ((arriter.length===1) && (arriter[0]===undefined)) arriter = true;
-         
-         console.log('arriter', arriter);
          
          var indx = selector.indexOfBranch(br);
          if (indx<0) indx = selector.AddBranch(br, undefined, branch_mode);
@@ -647,7 +643,7 @@
          if (!this.cut.Parse(tree, this, cut)) return false;
       
       if (!this.branches.length) {
-         console.log('no any branch is selected');
+         console.warn('no any branch is selected');
          return false;
       }
       
@@ -775,7 +771,6 @@
          
          if (typename && similar) {
             if ((typename==="TBits") && (axisid===0)) {
-               console.log('Provide special handling fot TBits');
                this.Fill1DHistogram = this.FillTBitsHistogram;
                if (maxbits % 8) maxbits = (maxbits & 0xfff0) + 8;
                
@@ -785,8 +780,6 @@
                return this.GetBitsBins(maxbits, res);
             }
          }
-         
-         console.log('See object typename', typename, 'similar', similar);
       }
       
       if (this.vars[axisid].kind === "string") {
@@ -1344,7 +1337,7 @@
          }
          
          if (!branch.fEntries) {
-            console.log('Branch ', branch.fName, ' does not have entries');
+            console.warn('Branch ', branch.fName, ' does not have entries');
             return null;
          } 
          
@@ -1409,7 +1402,7 @@
             
             if (!item_cnt) {
                item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true); 
-               console.log('Add counter branch', branch.fBranchCount.fName, 'as', item_cnt ? item_cnt.name : "---");
+               // console.log('Add counter branch', branch.fBranchCount.fName, 'as', item_cnt ? item_cnt.name : "---");
             }
             
             if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
@@ -1445,8 +1438,6 @@
             var br_cnt = handle.tree.FindBranch(leaf.fLeafCount.fName);
             
             if (br_cnt) {
-               console.log('Find counter branch', br_cnt.fName);
-
                item_cnt = FindInHandle(br_cnt);
                
                if (!item_cnt) item_cnt = AddBranchForReading(br_cnt, target_object, "$counter" + namecnt++, true); 
@@ -1465,10 +1456,7 @@
 
             for (var k=0;k<lst.arr.length;++k) {
                var br = lst.arr[k];
-               if ((chld_kind>0) && (br.fType!==chld_kind)) {
-                  console.log('Child type differ from expected', br.fType, chld_kind);
-                  continue;
-               }
+               if ((chld_kind>0) && (br.fType!==chld_kind)) continue;
 
                if (br.fType === JSROOT.BranchType.kBaseClassNode) {
                   if (!ScanBranches(br.fBranches, master_target, chld_kind)) return false;
@@ -1546,7 +1534,7 @@
           if ((object_class = JSROOT.IO.GetBranchObjectClass(branch, handle.tree))) {
                 
              if (read_mode === true) {
-                console.log('Object branch ' + object_class + ' can not have data to be readed directly');
+                console.warn('Object branch ' + object_class + ' can not have data to be readed directly');
                 return null;
              }
 
@@ -1565,8 +1553,6 @@
           if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
 
              elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fClassName);
-             
-             console.log('TBranchElement with ID==-1 typename ', branch.fClassName, 'type', elem.fType);
              
              if (elem.fType === JSROOT.IO.kAny) {
                 
@@ -1608,8 +1594,6 @@
           if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
              // branch with many elementary leaves
              
-             console.log('Create reader for branch with ', nb_leaves, ' leaves');
-             
              var arr = new Array(nb_leaves), isok = true;
              for (var l=0;l<nb_leaves;++l) {
                 arr[l] = CreateLeafElem(branch.fLeaves.arr[l]);
@@ -1631,7 +1615,7 @@
           } 
           
           if (!elem && !member) {
-             console.log('Not supported branch kind', branch.fName, branch._typename);
+             console.warn('Not supported branch kind', branch.fName, branch._typename);
              return null;
           }
 
@@ -1686,8 +1670,6 @@
                 member.smethods = []; // and special handles to create missing objects 
 
                 var parent_class = branch.fParentName; // unfortunately, without version  
-
-                // console.log('Members list ', snames, 'last class', read_mode, 'parent', parent_class);
 
                 for (var k=0;k<snames.length;++k) {
                    var chld_class = JSROOT.IO.DefineMemberTypeName(handle.file, parent_class, snames[k]);
@@ -1776,7 +1758,6 @@
                    
              } else
              if ((elem.fType > JSROOT.IO.kOffsetP) && (elem.fType < JSROOT.IO.kOffsetP + JSROOT.IO.kOffsetL) && member.cntname) {
-                console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
                   
                 member.cntname = item_cnt.name; 
              } else
@@ -1785,8 +1766,6 @@
 
                 if (item_cnt2)
                    throw new Error('Second branch counter not supported yet with JSROOT.IO.kStreamer');
-
-                console.log('Reading kStreamer in STL branch');
 
                 // function provided by normal I/O
                 member.func = member.branch_func;
@@ -1800,7 +1779,6 @@
                    member.cntname = item_cnt2.name;
                    member.func = member.branch_func; // this is special function, provided by base I/O
                 } else {
-                   console.log('Use counter ', item_cnt.name, ' instead of ', member.cntname);
                    member.cntname = item_cnt.name;
                 }
              } else  {
@@ -1899,7 +1877,7 @@
       }
       
       if (handle.firstentry >= handle.lastentry) {
-         console.log('No any common events for selected branches');
+         console.warn('No any common events for selected branches');
          selector.Terminate(false);
          return false;
       }
@@ -1972,8 +1950,6 @@
                places.push(branch.fBasketSeek[bitems[n].basket], branch.fBasketBytes[bitems[n].basket]);
             }
             
-            // if ((filename.length>0) && (places.length > 0)) console.log('Reading baskets from file', filename);
-            
             return places.length > 0;
          }
          
@@ -2000,8 +1976,6 @@
 
             var baskets = [], n = 0;
             
-            // console.log('places', places, 'blobs', blobs.length, blobs[0].byteLength, blobs[1].byteLength);
-            
             for (var k=0;k<bitems.length;++k) {
                if (!bitems[k].selected) continue;
                
@@ -2022,13 +1996,9 @@
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
                   bitems[k].raw = buf;
-                  // console.log('USE BUFFER itself', buf.length, buf.remain());
-                  
                } else {
                   // unpack data and create new blob
                   var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
-                  
-                  // console.log('UNPACK BLOB of length', objblob.byteLength, bitems[k]);
 
                   if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, handle.file);
                   
@@ -2071,8 +2041,6 @@
                   if (elem.first_readentry < 0) {
                      var lmt = elem.GetBasketEntry(k+1),
                          not_needed = (lmt < handle.process_min);
-                     
-                     // console.log('element', elem.branch.fName, 'k',k, 'not_needed', not_needed, 'numbaskets', elem.numbaskets);
                      
                      for (var d=0;d<elem.ascounter.length;++d) {
                         var dep = handle.arr[elem.ascounter[d]]; // dependent element
@@ -2131,8 +2099,6 @@
          if (handle.process_max > handle.process_min)
             portion = (handle.staged_prev - handle.process_min)/ (handle.process_max - handle.process_min);
          
-         // console.log('prev', handle.staged_prev, 'now', handle.staged_now, 'maximum', handle.process_max);
-         
          handle.selector.ShowProgress(portion);
          
          handle.progress_showtm = new Date().getTime();
@@ -2147,8 +2113,6 @@
       function ProcessBaskets(bitems) {
          // this is call-back when next baskets are read
 
-         // console.log('Process baskets');
-         
          if ((handle.selector.break_execution !== 0) || (bitems===null)) 
             return handle.selector.Terminate(false);
          
@@ -2193,8 +2157,6 @@
                   elem.raw = bitem.raw;
                   elem.nev = bitem.fNevBuf; // number of entries in raw buffer
                   elem.current_entry = elem.GetBasketEntry(bitem.basket);
-                  
-                  // console.log('Assign raw buffer', elem.branch.fName, ' first entry', elem.current_entry, ' numevents', elem.nev);
                   
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
@@ -2424,8 +2386,6 @@
 
          var numleaves = CollectBranches(this);
 
-         console.log('Collect branches', args.branches.length, 'leaves', numleaves);
-
          args.names.push("Total are " + args.branches.length + " branches with " + numleaves + " leaves");
       } 
       
@@ -2467,8 +2427,6 @@
          
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
-         // console.log("TESTING", args.nbr, args.names[args.nbr]);
-
          var br = args.branches[args.nbr];
          
          var object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
@@ -2478,7 +2436,7 @@
          
          if (object_class) skip_branch = (args.nchilds[args.nbr]>100);  
          
-         if (skip_branch  || (num<=0)) {
+         if (skip_branch || (num<=0)) {
             // ignore empty branches or objects with too-many subbrancn
             if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
             selector.Terminate("ignore");
@@ -2494,8 +2452,6 @@
                // select randomly first entry to test I/O 
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random()); 
             } 
-
-            // console.log("select firstentry:", drawargs.firstentry, "numentries:", drawargs.numentries);
 
             tree.Process(selector, drawargs);
          }
@@ -2667,7 +2623,7 @@
       }
 
       if (!tree) {
-         console.log('No TTree object available for TTree::Draw');
+         console.error('No TTree object available for TTree::Draw');
          return this.DrawingReady();
       }
 
