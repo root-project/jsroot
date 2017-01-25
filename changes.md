@@ -21,9 +21,10 @@
     - interactive player to configure and execute draw expression  
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
-5. Support of large arrays in object inspector.
-   If there are too many elements, only first part will be shown
-   or array will be compressed - same consequent items shown only once
+5. Many improvements in object inspector
+    - support of large lists; only first part is shown
+    - support of large arrays; values group in decades
+    - allow to call draw function for sub-elements in inspector
 6. Canvas or selected sub-pad can be enlarged when double-clicked outside frame (#116)
    Complete drawing will be expanded to the visible space.
    Not available for flex, tabs and collapsible layouts.  

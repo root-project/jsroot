@@ -309,7 +309,9 @@
          
          d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
             .on("mouseleave", function() { h.tree_mouseover(false, this); });
-      }
+      } else
+      if (hitem._direct_context && JSROOT.gStyle.ContextMenu)
+         d3a.on('contextmenu', function() { h.direct_contextmenu(this); });
 
       var element_name = hitem._name, element_title = "";
 
@@ -602,8 +604,36 @@
       if (painter && typeof painter.MouseOverHierarchy === 'function') 
          painter.MouseOverHierarchy(on, itemname, hitem);
    }
+   
+   JSROOT.HierarchyPainter.prototype.direct_contextmenu = function(elem) {
+      // this is alterntaive context menu, used in the object inspector
+      
+      d3.event.preventDefault();
+      var itemname = d3.select(elem.parentNode.parentNode).attr('item');
+      var hitem = this.Find(itemname);
+      if (!hitem) return;
+
+      if (typeof this.fill_context !== 'function') return; 
+      
+      var painter = this;
+
+      JSROOT.Painter.createMenu(function(menu) {
+         
+         menu.painter = painter;
+         
+         painter.fill_context(menu, hitem);
+               
+         if (menu.size() > 0) {
+            menu.tree_node = elem.parentNode;
+            menu.show(d3.event);
+         }
+      });
+
+   }
 
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(elem) {
+      // this is handling of context menu request for the normal objects browser
+      
       d3.event.preventDefault();
 
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');

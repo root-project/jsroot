@@ -8606,6 +8606,12 @@
          return true;
       }
       
+      var do_context = false, prnt = folder;
+      while (prnt) {
+         if (prnt._do_context) do_context = true;
+         prnt = prnt._parent;
+      }
+      
       // if list has objects with similar names, create cycle number for them  
       var ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
       
@@ -8652,6 +8658,8 @@
               case 'TObjString': item._value = obj.fString; break;
               default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
            }
+           
+           if (do_context && JSROOT.canDraw(obj._typename)) item._direct_context = true;
 
            // if name is integer value, it should match array index
            if (!item._name || (!isNaN(parseInt(item._name)) && (parseInt(item._name)!==i))
@@ -8767,8 +8775,9 @@
       }
       
       // check nosimple property in all parents
-      var nosimple = true,  prnt = top;
+      var nosimple = true, do_context = false, prnt = top;
       while (prnt) {
+         if (prnt._do_context) do_context = true;
          if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
          prnt = prnt._parent;
       }
@@ -8899,7 +8908,10 @@
                if (fld.$kind || fld._typename)
                   item._kind = item._title = "ROOT." + (fld.$kind || fld._typename);
                
-               if (fld._typename) item._title = fld._typename;
+               if (fld._typename) {
+                  item._title = fld._typename;
+                  if (do_context && JSROOT.canDraw(flt._typename)) item._direct_context = true;
+               }
                
                // check if object already shown in hierarchy (circular dependency)
                var curr = top, inparent = false;
@@ -10672,7 +10684,7 @@
       var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.default_by_click = "expand"; // that painter tries to do by default
       painter.with_icons = false;
-      painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false };
+      painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
       if ((typeof obj.fTitle === 'string') && (obj.fTitle.length>0))
          painter.h._title = obj.fTitle;
       
@@ -10684,9 +10696,20 @@
 
       painter.select_main().style('overflow','auto');
       
+      painter.fill_context = function(menu, hitem) {
+         var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
+         if (sett.opts)
+            menu.addDrawMenu("Draw", sett.opts, function(arg) {
+               if (!hitem || !hitem._obj) return;
+               var obj = hitem._obj, divid = this.divid; // need to remember while many references will be removed (inluding _obj)
+               JSROOT.cleanup(divid);
+               JSROOT.draw(divid, obj, arg);
+            });
+      }
+      
       if (JSROOT.IsRootCollection(obj)) {
          painter.h._name = obj.name || obj._typename;
-         JSROOT.Painter.ListHierarchy(painter.h,obj);
+         JSROOT.Painter.ListHierarchy(painter.h, obj);
       } else {
          JSROOT.Painter.ObjectHierarchy(painter.h, obj);
       }
