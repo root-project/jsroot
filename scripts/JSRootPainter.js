@@ -10684,7 +10684,12 @@
 
       painter.select_main().style('overflow','auto');
       
-      JSROOT.Painter.ObjectHierarchy(painter.h, obj);
+      if (JSROOT.IsRootCollection(obj)) {
+         painter.h._name = obj.name || obj._typename;
+         JSROOT.Painter.ListHierarchy(painter.h,obj);
+      } else {
+         JSROOT.Painter.ObjectHierarchy(painter.h, obj);
+      }
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
          painter.DrawingReady();
