@@ -225,7 +225,7 @@
          d3cont = d3prnt;
       } else {
          d3cont = d3prnt.append("div");
-         if (arg && (arg >= (hitem._parent._show_limit || this.arrlimit))) break_list = true;
+         if (arg && (arg >= (hitem._parent._show_limit || JSROOT.gStyle.HierarchyLimit))) break_list = true;
       }
 
       hitem._d3cont = d3cont.node(); // set for direct referencing
@@ -502,7 +502,7 @@
 
          if (indx<0) return console.error('internal error');
          
-         prnt._show_limit = (prnt._show_limit || this.arrlimit) * 2;
+         prnt._show_limit = (prnt._show_limit || JSROOT.gStyle.HierarchyLimit) * 2;
          
          for (var n=indx+1;n<prnt._childs.length;++n) {
             var chld = prnt._childs[n];

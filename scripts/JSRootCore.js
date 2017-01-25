@@ -160,6 +160,7 @@
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
+         HierarchyLimit : 250,   // how many items shown on one level of hierarhcy  
 
          // these are TStyle attributes, which can be chenged via URL 'style' parameter
 

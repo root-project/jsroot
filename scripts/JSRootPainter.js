@@ -8773,15 +8773,72 @@
          prnt = prnt._parent;
       }
       
-      var compress = ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) && (obj.length > this.arrlimit/2);
+      var isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
+          compress = isarray && (obj.length > JSROOT.gStyle.HierarchyLimit),  arrcompress = false;
+      
+      if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
+      
+      if (compress) {
+         arrcompress = true;
+         for (var k=0;k<obj.length;++k) {
+            var typ = typeof obj[k];
+            if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
+            arrcompress = false; break;
+         }
+      }
       
       if (!('_obj' in top))
          top._obj = obj;
       else
       if (top._obj !== obj) alert('object missmatch');
-
-      if (!top._title && obj._typename)
-         top._title = "ROOT." + obj._typename;
+      
+      if (!top._title) {
+         if (obj._typename)
+            top._title = "ROOT." + obj._typename;
+         else
+         if (isarray) top._title = "Array len: " + obj.length;
+      }
+      
+      if (arrcompress) {
+         for (var k=0;k<obj.length;) {
+            
+            var nextk = Math.min(k+10,obj.length), allsame = true, prevk = k; 
+               
+            while (allsame) {
+               allsame = true;
+               for (var d=prevk;d<nextk;++d)
+                  if (obj[k]!==obj[d]) allsame = false;
+               
+               if (allsame) {
+                  if (nextk===obj.length) break;
+                  prevk = nextk;
+                  nextk = Math.min(nextk+10,obj.length);
+               } else 
+               if (prevk !== k) { 
+                  // last block with similar 
+                  nextk = prevk; 
+                  allsame = true; 
+                  break; 
+               }
+            }
+            
+            var item = { _parent: top, _name: k+".."+(nextk-1), _vclass: 'h_value_num' };
+            
+            if (allsame) {
+               item._value = obj[k].toString();
+            } else {
+               item._value = "";
+               for (var d=k;d<nextk;++d) 
+                  item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
+               item._value += " ]";
+            }
+            
+            top._childs.push(item);
+            
+            k = nextk;
+         }
+         return true;
+      }
       
       var lastitem, lastkey, lastfield, cnt;
 
@@ -8916,7 +8973,6 @@
       this.name = name;
       this.h = null; // hierarchy
       this.with_icons = true;
-      this.arrlimit = 250; // how many items in one level of hierarchy
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
