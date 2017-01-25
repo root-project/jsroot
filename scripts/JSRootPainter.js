@@ -8910,7 +8910,7 @@
                
                if (fld._typename) {
                   item._title = fld._typename;
-                  if (do_context && JSROOT.canDraw(flt._typename)) item._direct_context = true;
+                  if (do_context && JSROOT.canDraw(fld._typename)) item._direct_context = true;
                }
                
                // check if object already shown in hierarchy (circular dependency)
@@ -10699,7 +10699,7 @@
       painter.fill_context = function(menu, hitem) {
          var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
          if (sett.opts)
-            menu.addDrawMenu("Draw", sett.opts, function(arg) {
+            menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;
                var obj = hitem._obj, divid = this.divid; // need to remember while many references will be removed (inluding _obj)
                JSROOT.cleanup(divid);

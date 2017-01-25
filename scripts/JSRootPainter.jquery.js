@@ -80,13 +80,19 @@
       menu.addDrawMenu = function(menu_name, opts, call_back) {
          if (!opts) opts = [];
          if (opts.length==0) opts.push("");
+         
+         var without_sub = false;
+         if (menu_name.indexOf("nosub:")==0) {
+            without_sub = true;
+            menu_name = menu_name.substr(6);
+         }
 
          if (opts.length === 1) {
             if (opts[0]==='inspect') menu_name = menu_name.replace("Draw", "Inspect");
             return this.add(menu_name, opts[0], call_back);
          }
 
-         this.add("sub:" + menu_name, opts[0], call_back);
+         if (!without_sub) this.add("sub:" + menu_name, opts[0], call_back);
 
          for (var i=0;i<opts.length;++i) {
             var name = opts[i];
@@ -97,6 +103,8 @@
                // check if there are similar options, which can be grouped once again
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
             }
+            
+            if (without_sub) name = menu_name + " " + name;
 
             if (group < i+2) {
                this.add(name, opts[i], call_back);
@@ -108,7 +116,7 @@
                i = group-1;
             }
          }
-         this.add("endsub:");
+         if (!without_sub) this.add("endsub:");
       }
 
       menu.remove = function() {
