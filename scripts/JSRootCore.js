@@ -139,6 +139,7 @@
    // this style also can be changed providing style=itemname in the URL
    JSROOT.gStyle = {
          Tooltip : 1, // 0 - off, 1 - on
+         TooltipAnimation : 500, // time in msec for appearance of tooltips, 0 - no animation
          ContextMenu : true,
          Zooming : true,  // global zooming flag, enable/disable any kind of interactive zooming
          ZoomMouse : true,  // Zooming with the mouse events

@@ -3365,7 +3365,10 @@
          }
 
          if (was_empty)
-            group.transition().duration(500).attrTween("opacity", translateFn());
+            if (JSROOT.gStyle.TooltipAnimation > 0)
+               group.transition().duration(JSROOT.gStyle.TooltipAnimation).attrTween("opacity", translateFn());
+            else
+               group.attr('opacity',1);
       }
 
       actualw += 2*wmargin;
