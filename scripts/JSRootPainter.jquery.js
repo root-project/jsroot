@@ -1170,7 +1170,7 @@
    
    JSROOT.CreateTreePlayer = function(player) {
       
-      player.hist_painter = null;
+      player.draw_first = true;
       
       player.ConfigureOnline = function(itemname, url, askey, root_version) {
          this.SetItemName(itemname);
@@ -1183,14 +1183,34 @@
          this.local_tree = tree;
       }
       
-      player.Show = function(divid) {
+      player.ShowExtraButtons = function(args) {
+          $("#" + this.divid).find(".treedraw_buttons")
+             .append(" Cut:<input class='treedraw_cut' style='width:8em' title='cut expression'></input>"+
+                     " Opt:<input class='treedraw_opt' style='width:5em' title='histogram draw options'></input>"+
+                     " Num:<input class='treedraw_number' style='width:7em' title='number of entries to process (default all)'></input>" +
+                     " First:<input class='treedraw_first' style='width:7em' title='first entry to process (default first)'></input>");
+
+          var page = 1000, numentries = undefined;
+          if (this.local_tree) numentries = this.local_tree.fEntries; 
+       
+          $("#" + this.divid +" .treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "");
+          $("#" + this.divid +" .treedraw_opt").val(args && args.drawopt ? args.drawopt : "");
+          $("#" + this.divid +" .treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries });
+          $("#" + this.divid +" .treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries });
+      }
+      
+      player.Show = function(divid, args) {
+         this.SetDivId(divid);
+
          this.drawid = divid + "_draw";
 
+         var show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
+         
          $("#" + divid)
            .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
                "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
                " Expr:<input class='treedraw_varexp' style='width:12em'></input> " +
-               "<button class='treedraw_more'>More</button>" +
+               (show_extra ? "" : "<button class='treedraw_more'>More</button>") +
                "</div>" +
                "<div id='" + this.drawid + "' style='width:100%'></div>");
 
@@ -1198,23 +1218,16 @@
 
          $("#" + divid).find('.treedraw_exe').click(function() { player.PerformDraw(); });
          $("#" + divid).find('.treedraw_varexp')
-              .val("px:py")
+              .val(args && args.parse_expr ? args.parse_expr : "px:py")
               .keyup(function(e) { if(e.keyCode == 13) player.PerformDraw(); });
-
-         $("#" + divid).find('.treedraw_more').click(function() {
-            $(this).remove();
-            $("#" + divid).find(".treedraw_buttons")
-            .append(" Cut:<input class='treedraw_cut' style='width:8em' title='cut expression'></input>"+
-                    " Opt:<input class='treedraw_opt' style='width:5em' title='histogram draw options'></input>"+
-                    " Num:<input class='treedraw_number' style='width:7em' title='number of entries to process (default all)'></input>" +
-                    " First:<input class='treedraw_first' style='width:7em' title='first entry to process (default first)'></input>");
-
-            $("#" + divid +" .treedraw_opt").val("");
-            $("#" + divid +" .treedraw_number").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-            $("#" + divid +" .treedraw_first").val("").spinner({ numberFormat: "n", min: 0, page: 1000});
-         });
-
-         this.SetDivId(divid);
+         
+         if (show_extra) 
+            player.ShowExtraButtons(args);
+         else
+            $("#" + divid).find('.treedraw_more').click(function() {
+               $(this).remove();
+               player.ShowExtraButtons();
+            });
 
          this.CheckResize();
       }
@@ -1242,15 +1255,13 @@
             if (isNaN(args.firstentry)) delete args.firstentry;
          }
          
-         var player = this, first_time = true;
+         var player = this;
          
          player.local_tree.Draw(args, function(histo, hopt, intermediate) {
-            var func = (args.monitoring || first_time) ? JSROOT.redraw : JSROOT.draw;
-            first_time = false;
-            player.hist_painter = func(player.drawid, histo, hopt);
+            JSROOT.redraw(player.drawid, histo, hopt);
          });
       }
-
+      
       player.PerformDraw = function() {
          
          if (this.local_tree) return this.PerformLocalDraw();
@@ -1295,8 +1306,8 @@
          function SubmitDrawRequest() {
             JSROOT.NewHttpRequest(url, 'object', function(res) {
                if (res==null) return;
-               $("#"+player.drawid).empty();
-               player.hist_painter = JSROOT.draw(player.drawid, res)
+               JSROOT.cleanup(player.drawid);
+               JSROOT.draw(player.drawid, res);
             }).send();
          }
 
@@ -1315,8 +1326,7 @@
          var h0 = main.find(".treedraw_buttons").height();
          $("#" + this.drawid).height(h - 1 - h0);
 
-         if (this.hist_painter)
-            this.hist_painter.CheckResize(arg);
+         JSROOT.resize(this.drawid);
       }
       
       return player;

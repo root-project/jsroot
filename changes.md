@@ -14,7 +14,8 @@
     - bits histogram like "event.fTracks.fBits>>bits(16)"
     - strings support
     - iterate over arrays indexes, let use another branch as index values
-    - support "Entry$" and "Entries$" variables in expressions 
+    - support "Entry$" and "Entries$" variables in expressions
+    - interactive player to configure and execute draw expression  
 3. Full support of Float16_t and Double32_t types in I/O
 4. Drawing of RooPlot objects, I/O support for RooFit classes   
 5. Support of large arrays in object inspector.

@@ -11337,7 +11337,6 @@
    // Or one just supply object with exact sizes like { width:300, height:200, force:true };
 
    JSROOT.resize = function(divid, arg) {
-
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
       var dummy = new JSROOT.TObjectPainter(), done = false;

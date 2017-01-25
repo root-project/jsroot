@@ -390,10 +390,10 @@
       }
 
       // support usage of some standard TMath functions
-      code = code.replace(/ROOT__TMath__Exp\(/g, 'Math.exp(')
-                 .replace(/ROOT__TMath__Abs\(/g, 'Math.abs(')
-                 .replace(/ROOT__TMath__Prob\(/g, 'arg.$math.Prob(')
-                 .replace(/ROOT__TMath__Gaus\(/g, 'arg.$math.Gaus(');
+      code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
+                 .replace(/TMath::Abs\(/g, 'Math.abs(')
+                 .replace(/TMath::Prob\(/g, 'arg.$math.Prob(')
+                 .replace(/TMath::Gaus\(/g, 'arg.$math.Gaus(');
       
       this.func = new Function("arg", "return (" + code + ")");
       
@@ -538,6 +538,9 @@
             case "monitor":
                args.monitoring = (intvalue !== undefined) ? intvalue : 5000;
                break;
+            case "player":
+               args.player = true;
+               break;
             case "maxseg":
             case "maxrange":   
                if (intvalue) tree.$file.fMaxRanges = intvalue;
@@ -591,22 +594,25 @@
    JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
       
       // parse complete expression
-      var expr = this.ParseParameters(tree, args, args.expr);
+      var expr = this.ParseParameters(tree, args, args.expr), cut = "";
 
       // parse option for histogram creation
 
       this.hist_title = "drawing '" + expr + "' from " + tree.fName;
       
-      expr = expr.replace(/TMath::/g, 'ROOT__TMath__'); // avoid confusion due-to :: in the namespace 
-
-      var pos = expr.lastIndexOf("::"), cut = "";
+      var pos = 0;
       if (args.cut) {
          cut = args.cut;
-      } else 
-      if (pos>0) {
-         cut = expr.substr(pos+2).trim();
-         expr = expr.substr(0,pos).trim();
+      } else {
+         pos = expr.replace(/TMath::/g, 'TMath__').lastIndexOf("::"); // avoid confusion due-to :: in the namespace 
+         if (pos>0) {
+            cut = expr.substr(pos+2).trim();
+            expr = expr.substr(0,pos).trim();
+         }
       }
+      
+      args.parse_expr = expr;
+      args.parse_cut = cut;
 
       // var names = expr.split(":"); // to allow usage of ? operator, we need to handle : as well
       var names = [], nbr1 = 0, nbr2 = 0, prev = 0;
@@ -755,9 +761,7 @@
       
       var arr = this.vars[axisid].buf;
       
-      if (this.vars[axisid].code)
-         res.title = this.vars[axisid].code.replace(/ROOT__TMath__/g, 'TMath::'); 
-      if (!res.title || (typeof res.title !== 'string')) res.title = "";
+      res.title = this.vars[axisid].code || ""; 
       
       if (this.vars[axisid].kind === "object") {
          // this is any object type
@@ -2618,7 +2622,7 @@
       // just envelope for real TTree::Draw method which do the main job
       // Can be also used for the branch and leaf object
 
-      var tree = obj, args = opt;
+      var tree = obj, args = opt, painter = this;
 
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
@@ -2650,14 +2654,12 @@
       } else {
          
          if ((args==='player') || !args) {
-            var painter = this;
             JSROOT.AssertPrerequisites("jq2d", function() {
                JSROOT.CreateTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
                painter.DrawingReady();
             });
-            
             return painter;
          }
          
@@ -2672,12 +2674,30 @@
       var callback = this.DrawingReady.bind(this);
       this._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
       
+      JSROOT.cleanup(divid);
+      
       tree.Draw(args, function(histo, hopt, intermediate) {
          
-         if (args.monitoring)
-            JSROOT.redraw(divid, histo, hopt, intermediate ? null : callback);
-         else
-            JSROOT.draw(divid, histo, hopt, callback);
+         var drawid = "";
+         
+         if (!args.player) drawid = divid; else
+         if (args.create_player === 2) drawid = painter.drawid; 
+         
+         if (drawid)
+            return JSROOT.redraw(drawid, histo, hopt, intermediate ? null : callback);
+         
+         if (args.create_player === 1) { args.player_intermediate = intermediate; return; }
+            
+         // redirect drawing to the player
+         args.player_create = 1;
+         args.player_intermediate = intermediate;
+         JSROOT.AssertPrerequisites("jq2d", function() {
+            JSROOT.CreateTreePlayer(painter);
+            painter.ConfigureTree(tree);
+            painter.Show(divid, args);
+            args.create_player = 2;
+            JSROOT.redraw(painter.drawid, histo, hopt, args.player_intermediate ? null : callback);
+         });
       });
 
       return this;
