@@ -1188,19 +1188,23 @@
       }
       
       player.ShowExtraButtons = function(args) {
-          $("#" + this.divid).find(".treedraw_buttons")
+         var main = $("#" + this.divid); 
+         
+          main.find(".treedraw_buttons")
              .append(" Cut: <input class='treedraw_cut ui-corner-all ui-widget' style='width:8em;margin-left:5px' title='cut expression'></input>"+
                      " Opt: <input class='treedraw_opt ui-corner-all ui-widget' style='width:5em;margin-left:5px' title='histogram draw options'></input>"+
                      " Num: <input class='treedraw_number' style='width:7em;margin-left:5px' title='number of entries to process (default all)'></input>" +
-                     " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>");
+                     " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>" + 
+                     " <button class='treedraw_clear' title='Clear drawing'>Clear</button>");
 
           var page = 1000, numentries = undefined, p = this;
           if (this.local_tree) numentries = this.local_tree.fEntries || 0; 
        
-          $("#" + this.divid +" .treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
-          $("#" + this.divid +" .treedraw_opt").val(args && args.drawopt ? args.drawopt : "").keyup(this.keyup);
-          $("#" + this.divid +" .treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
-          $("#" + this.divid +" .treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
+          main.find(".treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
+          main.find(".treedraw_opt").val(args && args.drawopt ? args.drawopt : "").keyup(this.keyup);
+          main.find(".treedraw_number").val(args && args.numentries ? args.numentries : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
+          main.find(".treedraw_first").val(args && args.firstentry ? args.firstentry : "").spinner({ numberFormat: "n", min: 0, page: 1000, max: numentries }).keyup(this.keyup);
+          main.find(".treedraw_clear").button().click(function() { JSROOT.cleanup(p.drawid); });
       }
       
       player.Show = function(divid, args) {
@@ -1210,10 +1214,12 @@
 
          var show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
          
-         $("#" + divid)
-           .html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
+         var main =$("#" + divid); 
+         
+         
+         main.html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
                "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
-               " Expr:<input class='treedraw_varexp ui-corner-all ui-widget' style='width:12em;margin-left:5px'></input> " +
+               " Expr:<input class='treedraw_varexp ui-corner-all ui-widget' style='width:12em;margin-left:5px' title='draw expression'></input> " +
                (show_extra ? "" : "<button class='treedraw_more'>More</button>") +
                "</div>" +
                "<hr/>" + 
@@ -1224,18 +1230,21 @@
 
          var p = this;
 
-         $("#" + divid).find('.treedraw_exe').button().click(function() { p.PerformDraw(); });
-         $("#" + divid).find('.treedraw_varexp')
+         if (this.local_tree)
+            main.find('.treedraw_buttons').attr('title', "Tree draw player for: " + this.local_tree.fName);
+         main.find('.treedraw_exe').button().click(function() { p.PerformDraw(); });
+         main.find('.treedraw_varexp')
               .val(args && args.parse_expr ? args.parse_expr : "px:py")
               .keyup(this.keyup);
          
-         if (show_extra) 
+         if (show_extra) { 
             this.ShowExtraButtons(args);
-         else
-            $("#" + divid).find('.treedraw_more').button().click(function() {
+         } else {
+            main.find('.treedraw_more').button().click(function() {
                $(this).remove();
                p.ShowExtraButtons();
             });
+         }
 
          this.CheckResize();
       }
@@ -1278,11 +1287,11 @@
          
          var frame = $(this.select_main().node());
 
-         var url = this.url + '/exe.json.gz?compact=3&method=Draw';
-         var expr = frame.find('.treedraw_varexp').val();
-         var hname = "h_tree_draw";
-
-         var pos = expr.indexOf(">>");
+         var url = this.url + '/exe.json.gz?compact=3&method=Draw',
+             expr = frame.find('.treedraw_varexp').val(),
+             hname = "h_tree_draw", option = "",
+             pos = expr.indexOf(">>");
+         
          if (pos<0) {
             expr += ">>" + hname;
          } else {
@@ -1293,10 +1302,11 @@
          }
 
          if (frame.find('.treedraw_more').length==0) {
-            var cut = frame.find('.treedraw_cut').val();
-            var option = frame.find('.treedraw_opt').val();
-            var nentries = frame.find('.treedraw_number').val();
-            var firstentry = frame.find('.treedraw_first').val();
+            var cut = frame.find('.treedraw_cut').val(),
+                nentries = frame.find('.treedraw_number').val(),
+                firstentry = frame.find('.treedraw_first').val();
+            
+            option = frame.find('.treedraw_opt').val();
 
             url += '&prototype="const char*,const char*,Option_t*,Long64_t,Long64_t"&varexp="' + expr + '"&selection="' + cut + '"';
 
@@ -1317,7 +1327,7 @@
             JSROOT.NewHttpRequest(url, 'object', function(res) {
                if (res==null) return;
                JSROOT.cleanup(player.drawid);
-               JSROOT.draw(player.drawid, res);
+               JSROOT.draw(player.drawid, res, option);
             }).send();
          }
 
