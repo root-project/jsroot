@@ -1928,7 +1928,7 @@
    JSROOT.Painter.HistPainter_DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       var main = this.main_painter(),
-          handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
       this.getContourIndex(0);
 

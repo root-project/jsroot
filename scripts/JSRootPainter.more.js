@@ -879,29 +879,29 @@
           npy = Math.round(func.fSave[nsave-1]);
           if (nsave !== (npx+1)*(npy+1) + 6) nsave = 0;
       }
-
+      
       if (nsave > 6) {
          var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
              dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
-
-         hist = JSROOT.CreateHistogram("TH2I", npx+1, npy+1);
+         
+         hist = JSROOT.CreateHistogram("TH2F", npx+1, npy+1);
 
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
-
+         
          hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
 
          var k = 0;
          for (var j=0;j<=npy;++j)
-            for (var i=0;i<=npx;++i)
+            for (var i=0;i<=npx;++i) 
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
 
       } else {
          npx = Math.max(func.fNpx, 2);
          npy = Math.max(func.fNpy, 2);
 
-         hist = JSROOT.CreateHistogram("TH2I", npx, npy);
+         hist = JSROOT.CreateHistogram("TH2F", npx, npy);
 
          hist.fXaxis.fXmin = func.fXmin;
          hist.fXaxis.fXmax = func.fXmax;
@@ -935,7 +935,7 @@
       if (d.empty()) opt = "cont3"; else
       if (d.opt === "SAME") opt = "cont2 same";
       else opt = d.opt;
-
+      
       return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
    };
 
@@ -3478,13 +3478,13 @@
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = pmain.grx(x);
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
-
+         
          if (args.use3d) {
-            if (res.grx[i] < -this.size_xy3d) { res.i1 = i; res.grx[i] = -this.size_xy3d; }
-            if (res.grx[i] > this.size_xy3d) { res.i2 = i; res.grx[i] = this.size_xy3d; }
+            if (res.grx[i] < -pmain.size_xy3d) { res.i1 = i; res.grx[i] = -pmain.size_xy3d; }
+            if (res.grx[i] > pmain.size_xy3d) { res.i2 = i; res.grx[i] = pmain.size_xy3d; }
          }
       }
-
+      
       if (hdim===1) {
          res.gry[0] = pmain.gry(0);
          res.gry[1] = pmain.gry(1);
@@ -3496,8 +3496,8 @@
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
          if (args.use3d) {
-            if (res.gry[j] < -this.size_xy3d) { res.j1 = j; res.gry[j] = -this.size_xy3d; }
-            if (res.gry[j] > this.size_xy3d) { res.j2 = j; res.gry[j] = this.size_xy3d; }
+            if (res.gry[j] < -pmain.size_xy3d) { res.j1 = j; res.gry[j] = -pmain.size_xy3d; }
+            if (res.gry[j] > pmain.size_xy3d) { res.j2 = j; res.gry[j] = pmain.size_xy3d; }
          }
       }
 
@@ -3580,7 +3580,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.BuildContour = function(handle, levels, palette, call_back) {
+   JSROOT.TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
       var histo = this.GetObject(),
           kMAXCONTOUR = 404,
           kMAXCOUNT = 400,
@@ -3780,8 +3780,8 @@
                if (nadd == 0) break;
             }
 
-            if (iminus+1 < iplus)
-               call_back(colindx, xp, yp, iminus, iplus, ipoly);
+            if ((iminus+1 < iplus) && (iminus>=0))
+               contour_func(colindx, xp, yp, iminus, iplus, ipoly);
 
             istart = 0;
             for (i=2;i<np;i+=2) {
