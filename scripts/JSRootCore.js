@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 26/01/2017";
+   JSROOT.version = "5.0.0a 26/01/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -960,7 +960,7 @@
       if (kind.indexOf('2d;')>=0) {
          if (jsroot._test_d3_ === undefined) {
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
-               jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.1", debugout);
+               jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.4", debugout);
                jsroot._test_d3_ = 4;
             } else 
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {

@@ -1,9 +1,9 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 5.0.0
 1. Reading TTree data
-    - all kinds of branches, including splitted STL conainers
-    - bracnhes with several elementary leaves
+    - all kinds of branches, including split STL conainers
+    - branches with several elementary leaves
     - branches from different ROOT files
     - JSROOT.TSelector class to access TTree data
     - simple access to branch data with "dump" draw option
@@ -42,9 +42,9 @@
    - support most of STL containers
    - support TMap and TClonesArray containers
    - all kind of multidimensional arrays 
-   - correct tratement of foreign classes
+   - correct treatment of foreign classes
    - supports different versions of class in the same file
-   - support memebers like ClassName* fField; //[fCnt]
+   - support members like ClassName* fField; //[fCnt]
    - support const char*
    - support fixed-size array of TString, TObject and TNamed 
 2. Many new draw options for different classes are supported:
@@ -74,7 +74,7 @@
 1. Workaround for MathJax output - scaling not always works in Firefox
 2. Fix - bin scaling for box draw option for TH2 and TH3 histograms 
 3. Fix - increase points limits for contour plots
-4. Fix - position of 3D canvas in webkit browsers
+4. Fix - position of 3D canvas in WebKit browsers
 5. Fix - use abs bin content in RMS calculations
 6. Fix - support char star* and object arrays in I/O
 7. Fix - correct decoding of TAxis time offset
@@ -178,7 +178,7 @@
 
 ## Changes in 4.4.1
 1. Fix - colz palette resize when drawing histogram second time
-2. Fix - use embeded in TCanvas color for background color of canvas itself
+2. Fix - use embedded in TCanvas color for background color of canvas itself
 3. Fix - rotate too long X axis text labels 
 4. Fix - draw histogram bins on frame boundary
 5. Fix - use alternative color for shapes with default black color  
@@ -189,7 +189,7 @@
 1. Fix faces orientation for all TGeo shapes. 
 2. Improve TGeoTorus creation - handle all parameters combinations
 3. Implement TGeoCompositeShape, using ThreeCSG.js
-4. Fix problem with color pallete when switch to 3D mode (#28)
+4. Fix problem with color palette when switch to 3D mode (#28)
 5. Use nested CSS classes to avoid conflicts with other libraries (#29)
 6. Let move and resize TFrame
 7. Improve TH1/TH2 drawings
@@ -203,7 +203,7 @@
    - touch devices are supported 
 10. Fix - let draw same object on the canvas with different options
 11. Create cached list of known class methods. It can be extended by users. 
-12. Use of cached methods improves binary I/O perfromance by 20%
+12. Use of cached methods improves binary I/O performance by 20%
 13. Support TGaxis
 14. Project now can be obtained via 'bower install jsroot' 
 15. Support 'scat' and 'text' draw options for TH2 
@@ -250,7 +250,7 @@
 
 ## Changes in 4.0
 1. New TGeo classes support:
-   - browsing  through volumes hieararchy
+   - browsing  through volumes hierarchy
    - changing visibility flags
    - drawing of selected volumes
 2. New 'flex' layout:
@@ -319,7 +319,7 @@
 
 
 ## Changes in 3.7
-1. Support of X axis with custom labels like: http://jsroot.gsi.de/dev/index.htm?nobrowser&json=../files/hist_xlabels.json
+1. Support of X axis with custom labels like: http://jsroot.gsi.de/dev/?nobrowser&json=../files/hist_xlabels.json
 2. Extend functionality of JSROOT.addDrawFunc() function. One could register type-specific
    `make_request` and `after_request` functions; `icon`, `prereq`, `script`, `monitor` properties.
    This let add more custom elements to the generic gui, implemented with JSROOT.HierarchyPainter   
@@ -497,7 +497,7 @@
 6. Add correct filling of statistic for TProfile,
    fix small problem with underflow/overflow bins.
 7. Provide way to select display kind ('collapsible', 'tabs') in the simple GUI.
-8. Implement 'grid' display, one could specify any number of devision like
+8. Implement 'grid' display, one could specify any number of division like
    'grid 3x3' or 'grid 4x2'.
 9. MDI display object created at the moment when first draw is performed.
 10. Introduce painter class for TCanvas, support resize and update of canvas drawing
