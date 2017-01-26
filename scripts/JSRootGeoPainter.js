@@ -1517,6 +1517,8 @@
       // Interpolate //
 
       function animate() {
+         if (painter._animating === undefined) return;
+         
          if (painter._animating) {
             requestAnimationFrame( animate );
          } else {
@@ -2356,6 +2358,11 @@
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var call_ready = false;
+      
+      if (!this.options) {
+         console.warn('options object does not exist in completeDraw - something went wrong');
+         return;
+      }
 
       if (this._first_drawing) {
          this.adjustCameraPosition(true);
@@ -2442,6 +2449,8 @@
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
          
          delete this.options;
+         
+         delete this._animating;
       }
       
       if (this._renderer) {
