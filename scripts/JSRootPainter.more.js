@@ -881,8 +881,8 @@
       }
       
       if (nsave > 6) {
-         var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / (npx-1) / 2,
-             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / (npy-1) / 2;
+         var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx / 2,
+             dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy / 2;
          
          hist = JSROOT.CreateHistogram("TH2F", npx+1, npy+1);
 
@@ -894,7 +894,7 @@
 
          var k = 0;
          for (var j=0;j<=npy;++j)
-            for (var i=0;i<=npx;++i) 
+            for (var i=0;i<=npx;++i)
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
 
       } else {
