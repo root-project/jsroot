@@ -630,6 +630,15 @@
    };
 
    /** @memberOf JSROOT.Math */
+   JSROOT.Math.gausxy = function(f, x, y, i) {
+      // function used when xygaus(0) used in the TFormula
+      
+      return f.GetParValue(i+0) * Math.exp(-0.5 * Math.pow((x-f.GetParValue(i+1)) / f.GetParValue(i+2), 2)) 
+                                * Math.exp(-0.5 * Math.pow((y-f.GetParValue(i+3)) / f.GetParValue(i+4), 2)); 
+   };
+
+   
+   /** @memberOf JSROOT.Math */
    JSROOT.Math.expo = function(f, x, i) {
       return Math.exp(f.GetParValue(i+0) + f.GetParValue(i+1) * x);
    };

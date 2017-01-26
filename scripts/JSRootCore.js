@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 25/01/2017";
+   JSROOT.version = "dev 26/01/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1575,6 +1575,7 @@
                  this._math = JSROOT.Math;
                  _func = _func.replace(/TMath::Prob\(/g, 'this._math.Prob(')
                               .replace(/TMath::Gaus\(/g, 'this._math.Gaus(')
+                              .replace(/xygaus\(/g, 'this._math.gausxy(this, x, y, ')
                               .replace(/gaus\(/g, 'this._math.gaus(this, x, ')
                               .replace(/gausn\(/g, 'this._math.gausn(this, x, ')
                               .replace(/expo\(/g, 'this._math.expo(this, x, ')
