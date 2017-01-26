@@ -572,7 +572,8 @@
                   var guiCode = "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>"     
                               + '<div id="browser"></div></div>'
                               + '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
-                  d3.select("#viewer").html(guiCode);
+                  document.getElementById('viewer').innerHTML = guiCode; 
+                  // d3.select("#viewer").html(guiCode);
 
                   hpainter = new JSROOT.HierarchyPainter('root', 'browser');
                   hpainter.SetDisplay(layout,"right-div");
