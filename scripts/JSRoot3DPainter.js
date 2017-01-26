@@ -1938,13 +1938,16 @@
           palette = this.GetPalette(),
           painter = this,
           layerz = 2*main.size_z3d;
-
+      
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
              // ignore less than three points
              if (iplus - iminus < 3) return;
 
-             if (realz) layerz = main.grz(levels[ilevel]);
+             if (realz) { 
+                layerz = main.grz(levels[ilevel]);
+                if ((layerz < 0) || (layerz > 2*main.size_z3d)) return;
+             }
 
              var linepos = new Float32Array((iplus-iminus+1)*3), indx = 0;
              for (var i=iminus;i<=iplus;++i) {
