@@ -131,7 +131,7 @@
             for (var i in arrFiles)
                guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
             guiCode += '</select>'
-               +'<input type="file" name="file" id="gui_localFile" style="display:none"/><output id="list" style="display:none"></output>'
+               +'<input type="file" name="file" id="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
                +'<input type="button" value="..." name="filebtn" style="width:15%; margin-top:5px;margin-left:5px;" onclick="document.ex.file.click();" title="select local file for reading"/><br/>'
                +'<p><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
