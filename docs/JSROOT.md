@@ -158,22 +158,22 @@ More examples of supported classes can be found on: <https://root.cern/js/latest
 
 In the URL string one could use "+" sign to specify objects superposition:
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=hpx;1+hprof;1>
+   - [item=hpx+hprof](https://root.cern/js/latest/?file=../files/hsimple.root&item=hpx+hprof)
 
 Analogue, one could specify individual draw options for superimposed objects
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=hpx;1+hprof;1&opt=logy+hist>
+   - [item=hpx+hprof&opt=logy+hist](https://root.cern/js/latest/?file=../files/hsimple.root&item=hpx+hprof&opt=logy+hist)
   
 Here "logy" option will be used for "hpx1" item and "hist" option for "hprof;1" item.
 
 While draw option can include "+" sign itself, for superposition one could specify arrays of items and draw options like:  
 
-   - <https://root.cern/js/latest/?file=../files/hsimple.root&item=[hpx;1,hprof;1]&opt=[logy,hist]>
+   - [item=[hpx;1,hprof;1]&opt=[logy,hist]](https://root.cern/js/latest/?file=../files/hsimple.root&item=[hpx;1,hprof;1]&opt=[logy,hist])
   
 
 ## TTree draw
 
-It is possible to display TTree data, using simplified TTree::Draw syntax. 
+JSROOT provides possibility to display TTree data, using [TTree::Draw](https://root.cern/doc/master/classTTree.html) syntax: 
 
    - [opt=px](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px)
    - [opt=px:py](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px:py)
@@ -184,7 +184,7 @@ Like in ROOT, one could configure histogram binning and range directly:
 
    - [opt=px:py>>h(50,-5,5,50,-5,5)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
-For any integer value one can accumulate histogram with value bits destribution, specifying as output ">>bits(16)" or ">>bits":
+For any integer value one can accumulate histogram with value bits distribution, specifying as output ">>bits(16)" or ">>bits":
 
    - [opt=event.fTracks.fBits>>bits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
 
@@ -206,7 +206,7 @@ One also could specify cut condition, separating it with "::" from the rest draw
 
    - [opt=px:py::pz>5](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>5)
 
-Contrary to the normal ROOT, JSROOT allows to use "?" operator (placed into braces):
+Contrary to the normal ROOT, JSROOT allows to use "(expr?res1:res2)" operator (placed into brackets):
 
    - [opt=px:py::(pz>5?2:1)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::%28pz>5?2:1%29)
 
@@ -218,12 +218,12 @@ Or one could dump values produced with draw expression (also first 10 entries by
 
    - [opt=px:py::pz>>dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
 
-Also working with array indexes are supported. By default, all elements in array are used for the TTree::Draw
-One could specify index for any array dimension (-1 means last element in the array). Like exprssion:
+Working with array indexes is supported. By default, all elements in array are used for the TTree::Draw
+One could specify index for any array dimension (-1 means last element in the array). Like expression:
  
    - [opt=event.fTracks[-1].fBits>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[-1].fBits>>dump)
 
-will dump last element from event.fTracks array. One also can extract size of used array:
+will dump last element from `event.fTracks` array. One also can extract size of used array:
 
    - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
    
@@ -231,10 +231,10 @@ At the end of expression one can add several parameters with the syntax:
 
     <draw_expession>;par1name:par1value;par2name:par2value
     
-Followining parameters are supported:    
+Following parameters are supported:    
   - "first" - id of the first entry to process
   - "entries" - number of entries to process
-  - "monitor" - periodically show incompleted draw results (interval in milliseconds)
+  - "monitor" - periodically show intermediate draw results (interval in milliseconds)
   - "maxrange" - maximal number of ranges in single HTTP request 
   - "accum" - number of accumulated values before creating histogram
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
@@ -247,8 +247,8 @@ Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](
 
 JSROOT implements display of TGeo objects like:
 
-- <https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1>
-- <https://root.cern/js/latest/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z>  
+- [file=rootgeom.root&item=simple1](https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1)
+- [file=building.root&item=geom&opt=z](https://root.cern/js/latest/?nobrowser&file=../files/geom/building.root&item=geom;1&opt=z)  
 
 Following classes are supported by geometry viewer:
   - TGeoVolume
@@ -260,8 +260,8 @@ Following draw options could be specified (separated by semicolon or ';'):
    - axis  - draw axis coordinates
    - z   - set z axis direction up (normally y axis is up and x looks in user direction)           
    - clipx/clipy/clipz - enable correspondent clipping panel
-   - clip or clipxyz - enable all three clipping pannels
-   - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occulsion)
+   - clip or clipxyz - enable all three clipping panels
+   - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occlusion)
    - wire - instead of filled surfaces only wireframe will be drawn
    - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
    - more3 - show 3 times more volumes as usual
@@ -269,17 +269,17 @@ Following draw options could be specified (separated by semicolon or ';'):
    - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
    - macro:name.C - invoke ROOT configuration macro
    - dflt_colors - set default volumes colors as TGeoManager::DefaultColors() does
-   - transpXY - set global transperancy value (XY is number between 1 and 99)
+   - transpXY - set global transparency value (XY is number between 1 and 99)
    - rotate - enable automatic rotation of the geometry 
    
 
-It is possible to dispplay only part of geometry model. For instance, one could select sub-item like:  
+It is possible to display only part of geometry model. For instance, one could select sub-item like:  
 
-  <https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1>
+- [file=rootgeom.root&item=simple1;1/Nodes/REPLICA_1](https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1)
 
 Or one can use simple selection syntax (work only with first-level volumes):
  
-  <https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2>
+- [item=simple1&opt=-bar1-bar2](https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1&opt=-bar1-bar2)
   
 Syntax uses '+' sign to enable visibility flag of specified volume and '-' sign to disable visibility.
 One could use wildcard symbol like '+TUBE1*'.  
@@ -328,7 +328,7 @@ Other detectors examples:
 Together with geometry one could display tracks (TEveTrack) and hits (TEvePointSet) objects.
 Either one do it interactively by drag and drop, or superimpose drawing with `+` sign like:
 
-<https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1>
+- [item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits](https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits)
 
 
 
@@ -336,7 +336,7 @@ Either one do it interactively by drag and drop, or superimpose drawing with `+`
 
 In principle, one could open any ROOT file placed in the web, providing the full URL to it like:
 
-<https://jsroot.gsi.de/latest/?file=https://root.cern/js/files/hsimple.root&item=hpx>
+- <https://jsroot.gsi.de/latest/?file=https://root.cern/js/files/hsimple.root&item=hpx>
 
 But one should be aware of [Same-origin policy](https://en.wikipedia.org/wiki/Same-origin_policy), when the browser blocks requests to files from domains other than current web page.
 To enable CORS on Apache web server, hosting ROOT files, one should add following lines to `.htaccess` file:
@@ -371,6 +371,22 @@ In such case one can also specify a custom files list:
 
 In such `<div>` element one could put most parameters which are allowed in the URL string (like item, file, opt and so on)
 
+
+## Reading local ROOT files 
+
+Due to security reasons it is not allowed to access arbitrary files from local file system.
+For instance, for the Chrome browser one could use "--allow-file-access-from-files" option when starting browser
+
+In modern browsers JSROOT can use HTML5 FileReader functionality to access local files.
+Major limitation here - user should interactively select files for reading.
+There is button __"..."__ on the main JSROOT page, which starts file selection dialog. 
+Or one could invoke such dialog with "localfile" parameter in URL string.
+
+-  <https://jsroot.gsi.de/dev/?localfile>
+
+If valid ROOT file is selected, JSROOT will be able to normally read content of such file. 
+
+  
 
 ## JSROOT with THttpServer 
 
@@ -434,7 +450,7 @@ therefore there is no guarantee that the file content is not changed/replaced be
 
 If somebody still wants to use monitoring of data from ROOT files, could try link like:
 
-<https://root.cern/js/latest/index.htm?nobrowser&file=../files/hsimple.root+&item=hpx;1&monitoring=2000>
+- <https://root.cern/js/latest/index.htm?nobrowser&file=../files/hsimple.root+&item=hpx;1&monitoring=2000>
 
 In this particular case, the histogram is not changing.
 
@@ -451,7 +467,7 @@ Details about the JSROOT API can be found in the next chapters.
 ## JSROOT API
 
 JSROOT can be downloaded from <https://github.com/linev/jsroot>. 
-It also provided with each ROOT distribution in `etc/http/scripts/` subfolder. 
+It also provided with each ROOT distribution in `etc/http/scripts/` sub-folder. 
 
 Many different examples of JSROOT API usage can be found on [JSROOT API examples](https://root.cern/js/latest/api.htm) page.
 
@@ -574,7 +590,6 @@ Similar example with JSON file:
 
 ### TTree API
 
-Since version 4.9 JSROOT provides possibility to access TTree data from JavaScript.
 Simple TTree::Draw operation can be performed with following code:
 
 
@@ -614,5 +629,11 @@ To get access to selected branches, one should use TSelector class:
 This examples shows how read TTree from binary file and create JSROOT.TSelector object.
 Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
 Selected branches can be accessed from **tgtobj** data member. At the end of tree reading TSelector::Terminate() method
-will be called.
+will be called. 
+
+As second parameter of tree.Process() function one could provide object with arguments
+
+    var args = { numentries: 1000, firstentry: 500 };
+    tree.Process(selector, args);
+    
  
