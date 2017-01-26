@@ -384,7 +384,7 @@
          
          pos = pos + replace.length;
       }
-
+      
       // support usage of some standard TMath functions
       code = code.replace(/TMath::Exp\(/g, 'Math.exp(')
                  .replace(/TMath::Abs\(/g, 'Math.abs(')
@@ -619,6 +619,7 @@
             case "[" : nbr2++; break;
             case "]" : nbr2--; break;
             case ":" : 
+               if (expr[pos+1]==":") { pos++; continue; }
                if (!nbr1 && !nbr2 && (pos>prev)) names.push(expr.substr(prev,pos-prev));
                prev = pos+1;
                break;
