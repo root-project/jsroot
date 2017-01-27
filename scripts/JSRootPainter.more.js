@@ -1349,7 +1349,7 @@
 
       this.DrawNextHisto = function(indx, opt) {
          var stack = this.GetObject(),
-             hist = stack.fHistogram, hopt = "axis",
+             hist = stack.fHistogram, hopt = "",
              hlst = this.nostack ? stack.fHists : stack.fStack,
              nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
@@ -1361,16 +1361,20 @@
             hopt = hlst.opt[rindx] || hist.fOption || opt;
             if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
             hopt += " same";
+         } else {
+            hopt = (opt || "") + " axis"; 
          }
 
          // special handling of stacked histograms - set $baseh object for correct drawing
          // also used to provide tooltips
          if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
-         var subp = JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx+1, opt));
+         var subp = JSROOT.draw(this.divid, hist, hopt);
 
          if (indx<0) this.firstpainter = subp;
                 else this.painters.push(subp);
+         
+         subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
       }
 
       this.drawStack = function(opt) {
