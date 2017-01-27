@@ -1213,16 +1213,16 @@
    JSROOT.Painter.drawHStack = function(divid, stack, opt) {
       // paint the list of histograms
       // By default, histograms are shown stacked.
-      // -the first histogram is paint
-      // -then the sum of the first and second, etc
+      // - the first histogram is paint
+      // - then the sum of the first and second, etc
 
       // 'this' pointer set to created painter instance
       this.nostack = false;
       this.firstpainter = null;
       this.painters = []; // keep painters to be able update objects
 
-      this.SetDivId(divid);
-
+      this.SetDivId(divid, -1); // it maybe no element to set divid
+      
       if (!stack.fHists || (stack.fHists.arr.length == 0)) return this.DrawingReady();
 
       this.Cleanup = function() {
@@ -1367,11 +1367,10 @@
          // also used to provide tooltips
          if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
-         var subp = JSROOT.draw(this.divid, hist, hopt);
+         var subp = JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx+1, opt));
 
          if (indx<0) this.firstpainter = subp;
                 else this.painters.push(subp);
-         subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
       }
 
       this.drawStack = function(opt) {
@@ -1444,8 +1443,9 @@
          if (this.firstpainter)
             if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
 
-         var nhists = obj.fHists.arr.length,
-             harr = this.nostack ? obj.fHists.arr : obj.fStack.arr;
+         var harr = this.nostack ? obj.fHists.arr : obj.fStack.arr,
+             nhists = Math.min(harr.length, this.painters.length); 
+                 
          for (var i = 0; i < nhists; ++i) {
             var hist = harr[this.horder ? i : nhists - i - 1];
             if (this.painters[i].UpdateObject(hist)) isany = true;
@@ -1454,7 +1454,11 @@
          return isany;
       }
 
-      return this.drawStack(opt);
+      this.drawStack(opt);
+      
+      this.SetDivId(divid); // only when first histogram drawn, we could assign divid
+      
+      return this;
    }
 
    // =======================================================================
