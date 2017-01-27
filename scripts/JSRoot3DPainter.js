@@ -85,7 +85,6 @@
             // all absolute coordinates calculated relative to such node
             var abs_parent = this.parent;
             while (abs_parent) {
-               // console.log(abs_parent.nodeType, abs_parent.id);
                var style = getComputedStyle(abs_parent);
                if (!style || (style.position !== 'static')) break;
                if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType != 1)) break;
@@ -1820,8 +1819,6 @@
          }
       }
 
-      // console.log('Total number of lego vertices', totalvertices);
-
       // lego3 or lego4 do not draw border lines
       if (this.options.Lego > 12) return;
 
@@ -2174,7 +2171,7 @@
             }
 
             if (k===0) continue;
-            if (k<9) { console.log('FOND less than 3 points', k/3); continue; }
+            if (k<9) { console.log('found less than 3 points', k/3); continue; }
 
             if (grid && (gridcnt === 6)) {
                for (var jj=0;jj < 6; ++jj)
@@ -2243,8 +2240,6 @@
             }
          }
       }
-
-      // console.log('lpos', lpos.length, 'lindx', lindx);
 
       for (var lvl=1;lvl<levels.length;++lvl)
          if (pos[lvl]) {
@@ -2334,7 +2329,6 @@
                    if ((i === iminus) || (xp[i] !== xp[i-1]) || (yp[i] !== yp[i-1]))
                       pnts.push(new THREE.Vector2(xp[i], yp[i]));
 
-
                 if (pnts.length < 3) return;
 
                 var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
@@ -2345,7 +2339,6 @@
                    lastcolindx = colindx;
                    layerz+=0.0001*main.size_z3d; // change layers Z
                 }
-
 
                 var pos = new Float32Array(faces.length*9),
                     norm = new Float32Array(faces.length*9),
@@ -2456,8 +2449,6 @@
                }
 
                if (faces && (faces.length>pnts.length-3)) break;
-
-               // console.log('Triangulation problem with bin', i, bin.fPoly.fName, 'ngr', ngr, ' npoints', pnts.length, 'orig', gr.fNpoints);
             }
 
             if (faces && faces.length && pnts) {
@@ -2535,8 +2526,6 @@
                }
             }
          }
-
-         // console.log('creating bin', i,'nfaces', nfaces, 'indx', indx);
 
          var geometry = new THREE.BufferGeometry();
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
@@ -3311,8 +3300,6 @@
          }
       }
 
-      // console.log('Num pixels', numpixels, 'webgl', main.webgl);
-
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 10000)) return false;
 
@@ -3480,8 +3467,6 @@
             }
          }
       }
-
-      // console.log("Create buffer for", nbins, 'bins fullsize', nbins * buffer_size);
 
       if ((helper_kind === 1) && (nbins * buffer_size / 3 > 0xFFF0)) helper_kind = 2;
 
