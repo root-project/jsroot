@@ -5643,10 +5643,11 @@
       return JSROOT.Painter.root_colors[id];
    }
 
-   JSROOT.THistPainter.prototype.ScanContent = function() {
+   JSROOT.THistPainter.prototype.ScanContent = function(when_axis_changed) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
+      // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
       alert("HistPainter.prototype.ScanContent not implemented");
    }
@@ -7370,18 +7371,28 @@
 
    JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
-   JSROOT.TH1Painter.prototype.ScanContent = function() {
-      // from here we analyze object content
-      // therefore code will be moved
+   JSROOT.TH1Painter.prototype.ScanContent = function(when_axis_changed) {
+      // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
-      this.nbinsx = this.histo.fXaxis.fNbins;
-      this.nbinsy = 0;
-
-      this.CreateAxisFuncs(false);
+      if (!this.nbinsx && when_axis_changed) when_axis_changed = false; 
+      
+      if (!when_axis_changed) {
+         this.nbinsx = this.histo.fXaxis.fNbins;
+         this.nbinsy = 0;
+         this.CreateAxisFuncs(false);
+      } 
+      
+      var left = this.GetSelectIndex("x", "left"),
+          right = this.GetSelectIndex("x", "right");
+      
+      if (when_axis_changed) {
+         if ((left === this.scan_xleft) && (right === this.scan_xright)) return; 
+      }
+ 
+      this.scan_xleft = left;
+      this.scan_xright = right;
 
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true,
-          left = this.GetSelectIndex("x","left"),
-          right = this.GetSelectIndex("x","right"),
           profile = this.IsTProfile(), value, err;
 
       for (var i = 0; i < this.nbinsx; ++i) {
@@ -8358,6 +8369,8 @@
 
       this.mode3d = false;
 
+      this.ScanContent(true);
+      
       this.CreateXY();
 
       if (typeof this.DrawColorPalette === 'function')

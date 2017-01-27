@@ -2666,7 +2666,9 @@
             this.Create3DScene();
             this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
          }
-
+         
+         this.ScanContent(true);
+         
          this.Draw3DBins();
 
          main.Render3D();
