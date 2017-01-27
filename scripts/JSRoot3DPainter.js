@@ -3091,7 +3091,11 @@
 
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
-   JSROOT.TH3Painter.prototype.ScanContent = function() {
+   JSROOT.TH3Painter.prototype.ScanContent = function(when_axis_changed) {
+      
+      // no need to rescan histogram while result does not depend from axis selection
+      if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
+      
       var histo = this.GetObject();
 
       this.nbinsx = histo.fXaxis.fNbins;

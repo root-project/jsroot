@@ -6413,7 +6413,7 @@
          if ((hist.fMinimum===-1111) && (hist.fMaximum===-1111)) return false;
          if (!painter.draw_content) return false; // if not drawin content, not change min/max
          hist.fMinimum = hist.fMaximum = -1111;
-         painter.ScanContent(); // to reset ymin/ymax
+         painter.ScanContent(true); // to reset ymin/ymax
          return true;
       }
 
