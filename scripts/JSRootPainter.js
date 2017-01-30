@@ -1201,7 +1201,7 @@
    }
    
    JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
-      // action can be true, false, 'toggle', 'state'
+      // action can be:  true, false, 'toggle', 'state', 'verify'
       // if action not specified, just return possibility to enlarge main div 
       
       var main = this.select_main();
@@ -1209,6 +1209,17 @@
       if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
       
       if (action===undefined) return true;
+      
+      if (action === 'verify') {
+         if (main.property('can_enlarge')===true) return true;
+         this.enlarge_main('toggle');
+         var sz1 = this.main_visible_rect();
+         this.enlarge_main('toggle');
+         var sz2 = this.main_visible_rect();
+         var res = (sz1.height>=sz2.height) && (sz1.width>=sz2.width);
+         main.property('can_enlarge', res);
+         return res;
+      }
       
       var state = (main.property('normal_css') === undefined) ? "off" : "on";
       
@@ -4659,9 +4670,7 @@
       if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
    }
 
-
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
-
       var nocanvas = (can===null);
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
@@ -4677,7 +4686,7 @@
       if (JSROOT.gStyle.ContextMenu)
          painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
-      if (painter.enlarge_main())
+      if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
       
       if (nocanvas && opt.indexOf("noframe") < 0)
@@ -4702,7 +4711,8 @@
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+         if (painter.enlarge_main('verify'))
+            painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
          if (JSROOT.gStyle.ContextMenu)
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
