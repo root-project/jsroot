@@ -4290,10 +4290,9 @@
       }
 
       menu.add("separator");
-
-      if (this.enlarge_main())
-         if (this.iscan || this.HasObjectsToDraw())
-            menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
+      
+      if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
+         menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
 
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
@@ -4647,8 +4646,9 @@
       if (!iscan)
          group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx')-this.ButtonSize(0.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
 
-      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this))
+      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
          this.pad_painter().AddButton(btn, tooltip, funcname);
+      
    }
 
    JSROOT.TPadPainter.prototype.DecodeOptions = function(opt) {
@@ -4686,7 +4686,7 @@
       if (JSROOT.gStyle.ContextMenu)
          painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
-      if (painter.enlarge_main('verify'))
+      if (painter.enlarge_main('verify')) 
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
       
       if (nocanvas && opt.indexOf("noframe") < 0)
@@ -4711,8 +4711,10 @@
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-         if (painter.enlarge_main('verify'))
+         
+         if ((painter.has_canvas && painter.HasObjectsToDraw()) || painter.enlarge_main('verify'))
             painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+         
          if (JSROOT.gStyle.ContextMenu)
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
