@@ -1369,7 +1369,7 @@
             if ((typ === JSROOT.IO.kBits) && (kind===JSROOT.IO.kUInt)) continue;
             if ((typ === JSROOT.IO.kCounter) && (kind===JSROOT.IO.kInt)) continue;
 
-            if (this.fBasicTypes[typname]!==typ) {
+            if (typname && typ && (this.fBasicTypes[typname]!==typ)) {
                console.log('Extract basic data type', typ, typname);
                this.fBasicTypes[typname] = typ;
             }

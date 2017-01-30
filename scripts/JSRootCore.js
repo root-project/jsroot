@@ -1922,7 +1922,7 @@
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
       var user = JSROOT.GetUrlOption('load', src);
-      if ((user!=null) && (user.length>0)) prereq += "load:" + user;
+      if ((user!=null) && (user.length>0)) prereq += "io;2d;load:" + user;
       var onload = JSROOT.GetUrlOption('onload', src);
       var bower = JSROOT.GetUrlOption('bower', src);
       if (bower!==null) {

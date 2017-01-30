@@ -10500,16 +10500,15 @@
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 
-         prereq = gui_div.attr("prereq");
-         if (!prereq) prereq = "";
+         prereq = gui_div.attr("prereq") || "";
 
          var user = gui_div.attr("load");
-         if ((typeof user=='string') && (user.length>0)) prereq += "load:" + user;
+         if ((typeof user=='string') && (user.length>0)) prereq += ";io;2d;load:" + user;
 
          if (!layout) layout = gui_div.attr("layout");
       } else {
          var load = JSROOT.GetUrlOption("load", url);
-         if (load) prereq += "load:" + load;
+         if (load) prereq += ";io;2d;load:" + load;
       }
 
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand", url)=="")) expanditems.push("");
