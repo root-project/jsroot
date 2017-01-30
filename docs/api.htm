@@ -84,6 +84,21 @@
             height: 100%;
             overflow: hidden;
          }
+         
+         #srcviewer {
+            display : none;
+            position: absolute;
+            border: 0px;
+            left: 240px;
+            width: calc(100% - 240px);
+            height: 100%;
+            overflow: auto;
+            margin: 5px;
+         }
+         
+         #srcviewer pre {
+            margin: 3px; 
+         }
 
          .link:hover {
             text-decoration: underline;
@@ -100,6 +115,8 @@
       </div>
       
       <iframe id="viewer"></iframe>
+
+      <div id="srcviewer"></div>
 
       <script>
          var jsroot_path = "./";
@@ -188,7 +205,10 @@
          var content = document.getElementById('content');
          
          function ProcessClick(durl) {
-             var viewer = document.getElementById( 'viewer' );
+            var viewer = document.getElementById( 'viewer' );
+            var srcviewer = document.getElementById( 'srcviewer' );
+            viewer.style.display = '';
+            srcviewer.style.display = 'none';
              
              if (durl.indexOf("http")==0)
                 viewer.src = durl;
@@ -203,6 +223,36 @@
                 window.location.hash = shortname;
                 ProcessClick(durl);
              });
+         }
+         
+         function ProcessSourceClick(durl) {
+            JSROOT.NewHttpRequest(JSROOT.source_dir + durl, "text", function(res) {
+               if (!res) return console.error("Cannot find " + durl);
+
+               var viewer = document.getElementById( 'viewer' );
+               var srcviewer = document.getElementById( 'srcviewer' );
+               viewer.style.display = 'none';
+               srcviewer.style.display = 'block';
+               srcviewer.innerHTML = "";
+               
+               var lines = res.split("\n");
+               for (var k=0;k<lines.length;++k) {
+                  var pre = document.createElement( 'pre' );
+                  
+                  pre.textContent = lines[k];
+                  srcviewer.appendChild(pre);
+               }
+               srcviewer.focus();
+               
+            }).send();
+         }
+
+         function SetSourceListener(elem, shortname, durl) {
+            elem.addEventListener( 'click', function (event) {
+               event.preventDefault();
+               window.location.hash = shortname;
+               ProcessSourceClick(durl);
+            });
          }
 
          function MakeShortName(name1, name2) {
@@ -249,10 +299,10 @@
                   aaa.title = "Click to see source of the example";
                   aaa.href = "https://github.com/linev/jsroot/blob/dev/" + ((entry.src===true) ? url : entry.src);
                   content.appendChild( aaa );
-                  SetListener(aaa, shortname + "_src", aaa.href);
+                  SetSourceListener(aaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
                   
                   if (window.location.hash == "#" + shortname + "_src")
-                     ProcessClick(aaa.href);
+                     ProcessSourceClick(((entry.src===true) ? url : entry.src));
                } 
                  
                content.appendChild(document.createElement('br'));
