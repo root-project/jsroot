@@ -1124,9 +1124,9 @@
       });
    }
 
-   JSROOT.redraw = function(divid, obj, opt) {
+   JSROOT.redraw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.redraw(divid, obj, opt);
+         JSROOT.redraw(divid, obj, opt, callback);
       });
    }
 
