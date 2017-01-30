@@ -62,19 +62,19 @@
             overflow: auto;
          }
 
-            #panel #content {
-               padding: 0px 20px;
-            }
+         #panel #content {
+            padding: 0px 20px;
+         }
             
-            #panel img {
-               border: 1px solid #ccc;
-            }
+         #panel img {
+            border: 1px solid #ccc;
+         }
 
 
-            #panel #book {
-               text-align: center;
-               margin-top: 15px;
-            }
+         #panel #book {
+            text-align: center;
+            margin-top: 15px;
+         }
 
          #viewer {
             position: absolute;
@@ -83,6 +83,21 @@
             width: calc(100% - 240px);
             height: 100%;
             overflow: hidden;
+         }
+
+         #srcviewer {
+            display : none;
+            position: absolute;
+            border: 0px;
+            left: 240px;
+            width: calc(100% - 240px);
+            height: 100%;
+            overflow: auto;
+            margin: 5px;
+         }
+         
+         #srcviewer pre {
+            margin: 3px; 
          }
 
          .link:hover {
@@ -99,8 +114,9 @@
          <br/>
       </div>
       
-      <iframe id="viewer">
-      </iframe>
+      <iframe id="viewer"></iframe>
+
+      <div id="srcviewer"></div>
 
       <script>
          var jsroot_path = "./";
@@ -150,7 +166,7 @@
               { name: "File hierarchy", url: "demo/example_h.htm", title : "Use HierarchyPainter to display file objects hiararchy", src:true },
               { name: "Zooming", url: "demo/example_zooming.htm", title : "Redefine Zoom function to make synchronous zooming in other histogram", src:true },
               { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
-              { name: "User tree", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs/m_refs&opt=dump&load=demo/markus.js", title : "Example of user custom streamer for reading TTree data (LHCb)", src: "demo/markus.js" }
+              { name: "User tree", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&load=demo/markus.js", title : "Example of user custom streamer for reading TTree data (LHCb)", src: "demo/markus.js" }
             ],
             'httpserver.C' : [
               { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C' },
@@ -190,21 +206,55 @@
          
          function ProcessClick(durl) {
              var viewer = document.getElementById( 'viewer' );
+             var srcviewer = document.getElementById( 'srcviewer' );
+             viewer.style.display = '';
+             srcviewer.style.display = 'none';
+             
              if (durl.indexOf("http")==0)
                 viewer.src = durl;
              else
-                 viewer.src = jsroot_path + durl;
+                viewer.src = jsroot_path + durl;
              viewer.focus();
          }
          
          function SetListener(elem, shortname, durl) {
              elem.addEventListener( 'click', function (event) {
-                  event.preventDefault();
-                  window.location.hash = shortname;
-                  ProcessClick(durl);
-               });
+                event.preventDefault();
+                window.location.hash = shortname;
+                ProcessClick(durl);
+             });
          }
          
+         function ProcessSourceClick(durl) {
+            JSROOT.NewHttpRequest(durl, "text", function(res) {
+               if (!res) return console.error("Cannot find " + durl);
+
+               var viewer = document.getElementById( 'viewer' );
+               var srcviewer = document.getElementById( 'srcviewer' );
+               viewer.style.display = 'none';
+               srcviewer.style.display = 'block';
+               srcviewer.innerHTML = "";
+               
+               var lines = res.split("\n");
+               for (var k=0;k<lines.length;++k) {
+                  var pre = document.createElement( 'pre' );
+                  
+                  pre.textContent = lines[k];
+                  srcviewer.appendChild(pre);
+               }
+               srcviewer.focus();
+               
+            }).send();
+         }
+
+         function SetSourceListener(elem, shortname, durl) {
+            elem.addEventListener( 'click', function (event) {
+               event.preventDefault();
+               window.location.hash = shortname;
+               ProcessSourceClick(durl);
+            });
+         }
+
          function MakeShortName(name1, name2) {
             return name1.toLowerCase().replace(" ","_").replace(".","_") + "_" + 
                    name2.toLowerCase().replace(" (2)","_2").replace(" (1)","_1").replace("(","").replace(")","").replace(".","_").replace(" ","_").replace(" ","_");         
@@ -217,10 +267,10 @@
             var div = document.createElement( 'h2' );
             if ('link' in opts[0]) {
                var ll = document.createElement( 'a' );
-                 ll.textContent = key;
-                 ll.href = opts[0].link;
-                 ll.style.color = 'green';
-                 div.appendChild(ll);
+               ll.textContent = key;
+               ll.href = opts[0].link;
+               ll.style.color = 'green';
+               div.appendChild(ll);
             } else {
                div.textContent = key;
             }
@@ -237,36 +287,33 @@
                var url = entry.url;
                
                var aaa = document.createElement( 'a' );
-                 aaa.textContent = entry.name;
-                 aaa.href = jsroot_path + url;
-               if ('title' in entry)
-                  aaa.title = entry.title; 
+                   aaa.textContent = entry.name;
+                   aaa.href = jsroot_path + url;
+               if ('title' in entry) aaa.title = entry.title; 
                content.appendChild( aaa );
-                 SetListener(aaa, shortname, url);
+               SetListener(aaa, shortname, url);
                  
-                 if ('src' in entry) 
-                    if (JSROOT.browser.isOpera || JSROOT.browser.isFirefox || JSROOT.browser.isChrome) {
-                       aaa = document.createElement( 'a' );
-                       aaa.textContent = " (src)";
-                       
-                       if (typeof entry.src === 'string')
-                          aaa.href = "view-source:" + JSROOT.source_dir + entry.src;
-                       else
-                          aaa.href = "view-source:" + JSROOT.source_dir + url;
-                     aaa.title = "Click to see source of the example"; 
-                     aaa.target = '_blank';
-                     content.appendChild( aaa );
-                    } 
+               if ('src' in entry) {
+                  aaa = document.createElement( 'a' );
+                  aaa.textContent = " (src)";
+                  aaa.title = "Click to see source of the example";
+                  aaa.href = JSROOT.source_dir + ((entry.src===true) ? url : entry.src);
+                  content.appendChild( aaa );
+                  SetSourceListener(aaa, shortname + "_src", aaa.href);
+                  
+                  if (window.location.hash == "#" + shortname + "_src")
+                     ProcessSourceClick(aaa.href);
+               } 
                  
                content.appendChild(document.createElement('br'));
                
-                if (window.location.hash == "#" + shortname)
-                   ProcessClick(url);
-                else
-                if ('oldnames' in entry)
-                   for (var t in entry.oldnames)
-                      if (window.location.hash == "#" + MakeShortName(key, entry.oldnames[t]))
-                         ProcessClick(url);  
+              if (window.location.hash == "#" + shortname)
+                  ProcessClick(url);
+              else
+              if ('oldnames' in entry)
+                 for (var t in entry.oldnames)
+                   if (window.location.hash == "#" + MakeShortName(key, entry.oldnames[t]))
+                      ProcessClick(url);  
             }
          }
          
