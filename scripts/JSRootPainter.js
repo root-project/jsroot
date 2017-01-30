@@ -4661,6 +4661,7 @@
 
 
    JSROOT.Painter.drawCanvas = function(divid, can, opt) {
+
       var nocanvas = (can===null);
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
@@ -4678,7 +4679,6 @@
 
       if (painter.enlarge_main())
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
-
       
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
@@ -10346,6 +10346,11 @@
          this.disp_kind = layout;
          this.disp_frameid = frameid;
       }
+      
+      if (this.disp_kind && !this.register_resize) {
+         this.register_resize = true;
+         JSROOT.RegisterForResize(this);
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.GetLayout = function() {
@@ -10548,8 +10553,6 @@
          else
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
-
-               JSROOT.RegisterForResize(hpainter);
 
                hpainter.SetMonitoring(monitor);
 

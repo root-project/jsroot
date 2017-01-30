@@ -1254,7 +1254,6 @@
          
          var main =$("#" + divid); 
          
-         
          main.html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
                "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
                " Expr:<input class='treedraw_varexp ui-corner-all ui-widget' style='width:12em;margin-left:5px' title='draw expression'></input> " +
@@ -1262,7 +1261,7 @@
                "</div>" +
                "<hr/>" + 
                "<div id='" + this.drawid + "' style='width:100%'></div>");
-
+         
          // only when main html element created, one can set divid
          this.SetDivId(divid);
 
@@ -1380,16 +1379,17 @@
          var main = $(this.select_main().node());
 
          $("#" + this.drawid).width(main.width());
-         var h = main.height();
-         var h0 = main.find(".treedraw_buttons").height();
-         $("#" + this.drawid).height(h - 1 - h0);
+         var h = main.height(), 
+             h0 = main.find(".treedraw_buttons").outerHeight(true),
+             h1 = main.find("hr").outerHeight(true);
+
+         $("#" + this.drawid).height(h - h0 - h1 - 2);
          
          JSROOT.resize(this.drawid);
       }
       
       return player;
    }
-   
 
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey) {
 
