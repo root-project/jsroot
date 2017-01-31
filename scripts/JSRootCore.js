@@ -309,13 +309,13 @@
                case "Int32" : arr = new Int32Array(value.len); break;
                case "Uint32" : arr = new Uint32Array(value.len); break;
                case "Float32" : arr = new Float32Array(value.len); break;
-               case "Int64" : 
-               case "Uint64" : 
+               case "Int64" :
+               case "Uint64" :
                case "Float64" : arr = new Float64Array(value.len); break;
                default : arr = new Array(value.len); break;
             }
             for (var k=0;k<value.len;++k) arr[k] = dflt;
-            
+
             var nkey = 2, p = 0;
             while (nkey<len) {
                if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
@@ -327,14 +327,14 @@
                   arr[p++] = v;
                   if ((nkey<len) && (ks[nkey][0]=='n')) {
                      var cnt = value[ks[nkey++]]; // counter
-                     while (--cnt) arr[p++] = v; 
+                     while (--cnt) arr[p++] = v;
                   } 
                }
             }
-            
+
             return arr;
          }
-         
+
          if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
             newfmt = true;
             var f1 = unref_value(value.first),
