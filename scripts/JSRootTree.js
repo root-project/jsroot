@@ -1339,7 +1339,7 @@
             branch = handle.tree.FindBranch(branch);
          
          if (!branch) { console.error('Did not found branch'); return null; }
-
+         
          var item = FindInHandle(branch);
          
          if (item) {
@@ -1351,7 +1351,9 @@
          if (!branch.fEntries) {
             console.warn('Branch ', branch.fName, ' does not have entries');
             return null;
-         } 
+         }
+         
+         console.log('Add branch', branch.fName);         
          
          item = {
                branch: branch,
@@ -1501,7 +1503,7 @@
                   var pp = subname.indexOf(".");
                   if (pp>0) chld_direct = JSROOT.IO.DetectBranchMemberClass(lst, branch.fName + "." + subname.substr(0,pp+1), k) || "TObject";
                }
-
+               
                if (!AddBranchForReading(br, master_target, subname, chld_direct)) return false;
             }
 
@@ -1988,6 +1990,8 @@
             if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length))) 
                return JSROOT.CallBack(baskets_call_back, null);
 
+            console.log('Process blobs', blobs.length);
+            
             var baskets = [], n = 0;
             
             for (var k=0;k<bitems.length;++k) {
@@ -2006,6 +2010,8 @@
                // items[k].obj = basket; // keep basket object itself if necessary
                
                bitems[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+               
+               console.log('Extract item', k, 'entries', basket.fNevBuf, 'basket', bitems[k].basket);
                
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
@@ -2048,13 +2054,13 @@
 
                   var k = elem.staged_basket++;
                   
-                  // no need to read more baskets
+                  // no need to read more baskets, process_max is not included
                   if (elem.GetBasketEntry(k) >= handle.process_max) break;
 
                   // check which baskets need to be read
                   if (elem.first_readentry < 0) {
                      var lmt = elem.GetBasketEntry(k+1),
-                         not_needed = (lmt < handle.process_min);
+                         not_needed = (lmt <= handle.process_min);
                      
                      for (var d=0;d<elem.ascounter.length;++d) {
                         var dep = handle.arr[elem.ascounter[d]]; // dependent element
@@ -2066,7 +2072,6 @@
                      elem.curr_basket = k; // basket where reading will start
                      
                      elem.first_readentry = elem.GetBasketEntry(k); // remember which entry will be read first
-                     
                   }
                   
                   // check if basket already loaded in the branch
@@ -2163,6 +2168,8 @@
                         console.warn('no data?', elem.branch.fName, elem.curr_basket); 
                         return handle.selector.Terminate(false); 
                      }
+                     
+                     console.warn('NO RAW DATA');
 
                      // try to read next portion of tree data
                      return ReadNextBaskets();
@@ -2171,6 +2178,8 @@
                   elem.raw = bitem.raw;
                   elem.nev = bitem.fNevBuf; // number of entries in raw buffer
                   elem.current_entry = elem.GetBasketEntry(bitem.basket);
+                  
+                  console.log('ELEM',n,'FIRST', elem.current_entry, "NUM", elem.nev);
                   
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
@@ -2189,7 +2198,9 @@
             // do not read too much
             if (handle.current_entry + loopentries > handle.process_max) 
                loopentries = handle.process_max - handle.current_entry;
-            
+
+            console.log('current', handle.current_entry, 'loop', loopentries);
+
             if (handle.process_arrays && (loopentries>1)) {
                // special case - read all data from baskets as arrays
 
@@ -2219,6 +2230,8 @@
                      
                      elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
 
+                     console.log('ELEMENT', n,'ENTRY', elem.current_entry, 'REMAIN', elem.nev);
+                     
                      elem.current_entry++;
 
                      if (--elem.nev <= 0) elem.raw = null;
@@ -2316,7 +2329,7 @@
       
       var selector = null;
       
-      if (args.branch && (args.expr === "dump")) {
+      if (args.branch && (args.expr.indexOf("dump")===0)) {
          selector = new JSROOT.TSelector;
 
          selector.arr = []; // accumulate here
@@ -2341,6 +2354,8 @@
             this.ShowProgress();
             JSROOT.CallBack(result_callback, this.arr, "inspect");
          }
+         
+         JSROOT.TDrawSelector.prototype.ParseParameters.call({}, this, args, args.expr);
          
          if (!args.numentries) args.numentries = 10;
          // if (!args.firstentry) args.firstentry = 212;
@@ -2463,7 +2478,9 @@
             } else {
                // select randomly first entry to test I/O 
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random()); 
-            } 
+            }
+            
+            console.log('branch', br.fName, 'first', (drawargs.firstentry || 0), "num", drawargs.numentries);
 
             tree.Process(selector, drawargs);
          }
@@ -2607,7 +2624,10 @@
             args.expr = opt;
             args.direct_branch = true;
          }
+
+         console.log('Draw leaf', args.expr, args.direct_branch);
          
+
          tree = obj.$branch.$tree;
       } else
       if (obj.$tree) {
