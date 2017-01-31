@@ -245,6 +245,7 @@
          this.o -= 4; // rollback read bytes, this is old buffer without bytecount
 
       this.last_read_version = ver.val = this.ntoi2();
+      this.last_read_checksum = 0;
       ver.off = this.o;
 
       if ((ver.val <= 0) && ver.bytecnt && (ver.bytecnt>=4)) {
@@ -253,6 +254,8 @@
             // JSROOT.console('Fail to find streamer info with check sum ' + ver.checksum + ' version ' + ver.val);
             this.o-=4; // not found checksum in the list
             delete ver.checksum; // remove checksum
+         } else {
+            this.last_read_checksum = ver.checksum; 
          }
       }
       return ver;
