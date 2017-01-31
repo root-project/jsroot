@@ -263,7 +263,6 @@
             while ((pos < code.length) && !is_start_symbol(code[pos])) pos++;
             pos2 = pos;
             while ((pos2 < code.length) && (is_next_symbol(code[pos2]) || code[pos2]===".")) pos2++;
-            
             if (code[pos2]=="$") {
                var repl = "";
                switch (code.substr(pos, pos2-pos)) {
@@ -1488,6 +1487,8 @@
 
                var p = subname.indexOf('['); 
                if (p>0) subname = subname.substr(0,p);
+               p = subname.indexOf('<');
+               if (p>0) subname = subname.substr(0,p);
 
                if (chld_kind > 0) {
                   chld_direct = "$child$";
@@ -2243,57 +2244,59 @@
       // search branch with specified name
       // if complex enabled, search branch and rest part
       
-      if (lst === undefined) lst = this.fBranches;
+      var top_search = false, search = name, res = null;
       
-      var search = name, br = null, 
-          dot = name.indexOf("."), arr = name.indexOf("[]"), spec = name.indexOf(">"), 
-          pos = (dot<0) ? arr : ((arr<0) ? dot : Math.min(dot,arr));
+      if (lst===undefined) {
+         
+         console.log('search for ', name)
+         
+         top_search = true;
+         lst = this.fBranches;
+         var pos = search.indexOf("[");
+         if (pos>0) search = search.substr(0,pos);
+      }
       
-      if (pos<0) pos = spec;
-
-      for (var loop=0;loop<2;++loop) {
-
-         for (var n=0;n<lst.arr.length;++n) {
-            var brname = lst.arr[n].fName;
-            if (brname[brname.length-1] == "]") 
-               brname = brname.substr(0, brname.indexOf("["));
-            if (brname === search) { 
-               br = lst.arr[n];
-               if (loop===0) return br; // when search full name, return found branchs
-               break;
-            }
-         }
-
-         if (br || (pos<=0)) break; 
-
-         // first loop search complete name, second loop - only first part
-         search = name.substr(0, pos);
+      if (!lst || (lst.arr.length===0)) return null;
+      
+      for (var n=0;n<lst.arr.length;++n) {
+         var brname = lst.arr[n].fName;
+         if (brname[brname.length-1] == "]") 
+            brname = brname.substr(0, brname.indexOf("["));
+         
+         // special case when branch name includes STL map name
+         if ((search.indexOf(brname)!==0) && (brname.indexOf("<")>0)) {
+            var p1 = brname.indexOf("<"), p2 = brname.lastIndexOf(">");
+            brname = brname.substr(0, p1) + brname.substr(p2+1);  
+         } 
+         
+         if (brname === search) { res = { branch: lst.arr[n], rest:"" }; break; }
+         
+         if (search.indexOf(brname)!==0) continue;
+         
+         // this is a case when branch name is in the begin of the search string
+         
+         // check where point is 
+         var pnt = brname.length;
+         if (brname[pnt-1] === '.') pnt--;
+         if (search[pnt] !== '.') continue;
+         
+         res = this.FindBranch(search, complex, lst.arr[n].fBranches);
+         if (!res) res = this.FindBranch(search.substr(pnt+1), complex, lst.arr[n].fBranches);
+         
+         if (!res) res = { branch: lst.arr[n], rest: search.substr(pnt) };
+         
+         break;
       }
+      
+      if (!top_search || !res) return res;
+      
+      if (name.length > search.length) res.rest += name.substr(search.length); 
+      
+      if (!complex && (res.rest.length>0)) return null;
+      
+      console.log('return res', res.branch.fName, 'rest', res.rest);
 
-      if (!br || (pos <= 0) || (pos === name.length-1)) return br;
-
-      var res = null;
-
-      if (dot>0) {
-         res = this.FindBranch(name.substr(dot+1), complex, br.fBranches);
-         // special case if next-level branch has name parent_branch.next_branch 
-         if (!res && (br.fName.indexOf(".")<0) && (br.fName.indexOf("[")<0))
-            res = this.FindBranch(br.fName + name.substr(dot), complex, br.fBranches);
-      }
-
-      // when allowed, return find branch with rest part
-      if (!res && complex) {
-         res = { branch: br, rest: name.substr(pos) };
-         var pp = res.rest.indexOf(".", 1); // ignore point in the beginning
-         var prefix = (pp < 0) ? res.rest : res.rest.substr(0,pp);
-         if (JSROOT.IO.DetectBranchMemberClass(res.branch.fBranches, res.branch.fName + prefix)) {
-            // this looks like sub-object in the branch
-            res.read_mode = prefix;
-            res.rest = (pp<0) ? "" : res.rest.substr(pp); 
-         }
-      }
-
-      return res;
+      return complex ? res : res.branch;
    }
    
    JSROOT.TreeMethods.Draw = function(args, result_callback) {
