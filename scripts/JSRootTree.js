@@ -159,7 +159,7 @@
             continue;
          }
          
-         if ((typ === "array") && (obj.length > 0)) {
+         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt+1]==="$size$"))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
@@ -372,6 +372,8 @@
          this.branches.push(selector.nameOfBranch(indx));
          this.brarray.push(arriter);
          
+         console.log('arriter', arriter);
+         
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
             this.direct_branch = true; // remember that branch read as is
@@ -536,6 +538,10 @@
                break;
             case "player":
                args.player = true;
+               break;
+            case "dump":
+               this.dump_values = true;
+               if (args.numentries===undefined) args.numentries = 10;
                break;
             case "maxseg":
             case "maxrange":   
