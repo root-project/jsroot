@@ -4292,7 +4292,7 @@
       menu.add("separator");
       
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
-         menu.add("Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
+         menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
 
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
