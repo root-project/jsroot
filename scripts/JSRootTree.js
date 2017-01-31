@@ -305,6 +305,12 @@
                // this is object member
                var prev = ++pos2; 
                
+               if ((code[prev]==="@") && (code.substr(prev,5)==="@size")) {
+                  arriter.push("$size$"); 
+                  pos2+=5;
+                  break;
+               }
+               
                if (!is_start_symbol(code[prev])) {
                   arriter.push("$self$"); // last point means extraction of object itself
                   break;
@@ -371,7 +377,7 @@
          this.branches.push(selector.nameOfBranch(indx));
          this.brarray.push(arriter);
          
-         console.log('arriter', arriter);
+         // console.log('arriter', arriter);
          
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {
@@ -2248,8 +2254,6 @@
       
       if (lst===undefined) {
          
-         console.log('search for ', name)
-         
          top_search = true;
          lst = this.fBranches;
          var pos = search.indexOf("[");
@@ -2294,8 +2298,6 @@
       
       if (!complex && (res.rest.length>0)) return null;
       
-      console.log('return res', res.branch.fName, 'rest', res.rest);
-
       return complex ? res : res.branch;
    }
    
