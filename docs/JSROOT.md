@@ -218,14 +218,14 @@ Or one could dump values produced with draw expression (also first 10 entries by
 
    - [opt=px:py::pz>>dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
 
-Working with array indexes is supported. By default, all elements in array are used for the TTree::Draw
-One could specify index for any array dimension (-1 means last element in the array). Like expression:
+Working with array indexes is supported. By default, all elements in array are used for the drawing.
+One could specify index for any array dimension (-1 means last element in the array). For instance, dump last element from `event.fTracks` array:
  
    - [opt=event.fTracks[-1].fBits>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[-1].fBits>>dump)
 
-will dump last element from `event.fTracks` array. One also can extract size of used array:
+For any array or collection kind one could extract its size with expression:
 
-   - [opt=event.fTracks[$size$]>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[$size$]>>dump)
+   - [opt=event.fTracks.@size](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks.@size;num:3000)
    
 At the end of expression one can add several parameters with the syntax:
 
