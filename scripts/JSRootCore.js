@@ -212,7 +212,7 @@
          fErrorX : 0.5,   // X size of the error marks for the histogram drawings
          fHistMinimumZero: false,   // when true, BAR and LEGO drawing using base = 0
          fPaintTextFormat : "g",
-         fTimeOffset : 788918400, // UTC time at 01/01/95
+         fTimeOffset : 788918400 // UTC time at 01/01/95
       };
 
    JSROOT.BIT = function(n) { return 1 << (n); }
