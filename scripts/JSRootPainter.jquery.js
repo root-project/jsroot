@@ -503,8 +503,6 @@
       if (hitem._break_point) {
          // special case of more item
 
-         console.log('click on break point');
-
          delete hitem._break_point;
 
          // update item itself
@@ -566,29 +564,28 @@
 
          var can_draw = hitem._can_draw,
              can_expand = hitem._more,
-             dflt_expand = (this.default_by_click === "expand");
+             dflt_expand = (this.default_by_click === "expand"),
+             drawopt = "";
+
+         if (d3.event.shiftKey) {
+            drawopt = (handle && handle.shift) ? handle.shift : "inspect";
+            if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
+         }
+         if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
 
          if (hitem._childs) can_expand = false;
 
          if (can_draw === undefined) can_draw = sett.draw;
          if (can_expand === undefined) can_expand = sett.expand;
 
-         if (can_draw && can_expand) {
+         if (can_draw && can_expand && !drawopt) {
             // if default action specified as expand, disable drawing
             if (dflt_expand || (handle && (handle.dflt === 'expand'))) can_draw = false; else
             if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
          }
 
-         if (can_draw) {
-            var drawopt = "";
-            if (d3.event.shiftKey) {
-               drawopt = (handle && handle.shift) ? handle.shift : "inspect";
-               if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
-            }
-            if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
-
+         if (can_draw)
             return this.display(itemname, drawopt);
-         }
 
          if (can_expand || dflt_expand)
             return this.expand(itemname, null, d3cont);
