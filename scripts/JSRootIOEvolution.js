@@ -2036,11 +2036,12 @@
                      if (subelem.fType === JSROOT.IO.kStreamer) {
                         subelem.$fictional = true;
                         member.submember = JSROOT.IO.CreateMember(subelem, file);
-                     } else
-                     if ((member.conttype.indexOf('pair<')===0) &&
-                        JSROOT.IO.GetPairStreamer(null, member.conttype, file))  {
-                          // member.read_empty_stl_version = true; // seems to be, pair<> needs empty version
-                      }
+                     }
+                     //else
+                     //if ((member.conttype.indexOf('pair<')===0) &&
+                     //   JSROOT.IO.GetPairStreamer(null, member.conttype, file))  {
+                     //     // member.read_empty_stl_version = true; // seems to be, pair<> needs empty version
+                     // }
                   }
                }
             } else
@@ -2146,6 +2147,8 @@
                   // see code in JSRootTree.js for reference
 
                   var arr = obj[this.name0]; // objects array where reading is done
+
+                  // console.log('Read branch', this.name, 'length', arr.length);
 
                   var ver = this.read_version(buf, arr.length);
 

@@ -2329,16 +2329,23 @@
          selector.leaf = args.leaf;
 
          // branch object remains, threrefore we need to copy fields to see them all
-         selector.copy_fields = !args.leaf && args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1);
+         selector.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
+                                (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
 
          selector.AddBranch(args.branch, "br0", args.direct_branch);
 
          selector.Process = function() {
             var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
-            if (res && this.copy_fields)
-               this.arr.push(JSROOT.extend({}, res));
-            else
+            if (res && this.copy_fields) {
+               if (JSROOT.CheckArrayPrototype(res)===0) {
+                  this.arr.push(JSROOT.extend({}, res));
+               } else {
+                  var arr = new Array(res.length);
+                  for (var k=0;k<res.length;++k) arr[k] = res[k];
+                  this.arr.push(arr);
+               }
+            } else
                this.arr.push(res);
          }
 
