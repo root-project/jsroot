@@ -30,7 +30,10 @@
    Not available for flex, tabs and collapsible layouts.  
 7. Support reading of local ROOT files with HTML5 FileReader.
    Files can be selected only with interactive dialog.
-8. Update libraries
+8. Combine "Ctrl" and "Shift" keys with mouse click on the items: 
+     - with Shift key typically object inspector will be activated
+     - with Ctrl key alternative draw options will be used (like colz for TH2)
+9. Update libraries
       - d3.js     - 4.4.4
       - three.js  - 84
       - jquery    - 3.3.1

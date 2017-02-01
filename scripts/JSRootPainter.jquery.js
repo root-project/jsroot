@@ -546,7 +546,7 @@
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place=="item") && ('_expand' in hitem)) place = "plusminus";
+      if ((place=="item") && ('_expand' in hitem) && !d3.event.ctrlKey && !d3.event.shiftKey) place = "plusminus";
 
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
@@ -579,8 +579,16 @@
             if (this.isItemDisplayed(itemname)) can_draw = false; // if already displayed, try to expand
          }
 
-         if (can_draw)
-            return this.display(itemname, (d3.event.ctrlKey ? "dump" : ""));
+         if (can_draw) {
+            var drawopt = "";
+            if (d3.event.shiftKey) {
+               drawopt = (handle && handle.shift) ? handle.shift : "inspect";
+               if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
+            }
+            if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
+
+            return this.display(itemname, drawopt);
+         }
 
          if (can_expand || dflt_expand)
             return this.expand(itemname, null, d3cont);
