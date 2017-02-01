@@ -11405,7 +11405,7 @@
     * If drawing was already done, that content will be updated */
 
    JSROOT.redraw = function(divid, obj, opt, callback) {
-      if (!obj) return;
+      if (!obj) return JSROOT.CallBack(callback, null);
 
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);
