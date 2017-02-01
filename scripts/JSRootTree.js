@@ -1523,9 +1523,10 @@
                member = {
                   name: target_name,
                   conttype: branch.fClonesName || "TObject",
+                  reallocate: args.reallocate_objects,
                   func: function(buf,obj) {
                      var size = buf.ntoi4(), n = 0;
-                     if (!obj[this.name]) {
+                     if (!obj[this.name] || this.reallocate) {
                         obj[this.name] = new Array(size);
                      } else {
                         n = obj[this.name].length;
@@ -2334,6 +2335,8 @@
 
          selector.AddBranch(args.branch, "br0", args.direct_branch);
 
+         args.reallocate_objects = true; // indicate reader to always reallocate new objects
+
          selector.Process = function() {
             var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
@@ -2341,9 +2344,7 @@
                if (JSROOT.CheckArrayPrototype(res)===0) {
                   this.arr.push(JSROOT.extend({}, res));
                } else {
-                  var arr = new Array(res.length);
-                  for (var k=0;k<res.length;++k) arr[k] = res[k];
-                  this.arr.push(arr);
+                  this.arr.push(res);
                }
             } else
                this.arr.push(res);
