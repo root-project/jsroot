@@ -286,16 +286,20 @@ Request `root.json` implemented with [TBufferJSON](https://root.cern/root/html/T
 The result will be: "title".
 
 For the `root.json` request one could specify the 'compact' parameter, which allow to reduce the number of spaces and new lines without data lost. This parameter can have values from '0' (no compression) till '3' (no spaces and new lines at all).
+In addition, one can use simple compression algorithm for big arrays. If compact='10', zero values in the begin and at the end
+of the array will be excluded. If compact='20', similar values or large zero gaps in-between will be compressed. Such array
+compression support in JSROOT from version 4.8.2.   
 
-Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH1 object shown in the table:
+Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH2 histogram from hsimple.C shown in the table:
 
 | Request                 |    Size    |
 | :---------------------- | :--------- |
-| root.bin                | 1658 bytes |
-| root.bin.gz             |  782 bytes |
-| root.json               | 7555 bytes |
-| root.json?compact=3     | 5381 bytes |
-| root.json.gz?compact=3  | 1207 bytes |
+| root.bin                | 7672 bytes |
+| root.bin.gz             | 1582 bytes |
+| root.json               | 8570 bytes |
+| root.json?compact=3     | 6004 bytes |
+| root.json?compact=23    | 5216 bytes |
+| root.json.gz?compact=23 | 1855 bytes |
 
 One should remember that JSON representation always includes names of the data fields which are not present in the binary representation. Even then the size difference is negligible.
 
