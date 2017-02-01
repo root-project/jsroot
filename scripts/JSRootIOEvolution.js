@@ -2734,8 +2734,6 @@
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
 
-      if (this.submember) console.log('READING', this.typename, 'N',n);
-
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); }
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); }
       else if (this.isptr) { while (i<n) res[i++] = buf.ReadObjectAny(); }

@@ -2473,7 +2473,7 @@
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random());
             }
 
-            console.log('branch', br.fName, 'first', (drawargs.firstentry || 0), "num", drawargs.numentries);
+            console.log('test branch', br.fName, 'first', (drawargs.firstentry || 0), "num", drawargs.numentries);
 
             tree.Process(selector, drawargs);
          }
@@ -2487,7 +2487,7 @@
 
    if (JSROOT.Painter)
 
-   JSROOT.Painter.CreateBranchItem = function(node, branch, tree) {
+   JSROOT.Painter.CreateBranchItem = function(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
       var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
@@ -2495,7 +2495,12 @@
 
       function ClearName(arg) {
          var pos = arg.indexOf("[");
-         return pos<0 ? arg : arg.substr(0, pos);
+         if (pos>0) arg = arg.substr(0, pos);
+         if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
+            arg = arg.substr(parent_branch.fName.length);
+            if (arg[0]===".") arg = arg.substr(1);
+         }
+         return arg;
       }
 
       branch.$tree = tree; // keep tree pointer, later do it more smart
@@ -2536,7 +2541,7 @@
               }
 
             for (var i=0; i < bobj.fBranches.arr.length; ++i)
-               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree);
+               JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
             var object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
                 methods = object_class ? JSROOT.getMethods(object_class) : null;
