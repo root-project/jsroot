@@ -10140,7 +10140,7 @@
          return JSROOT.CallBack(callback, item, obj);
       }
 
-      if (req.length == 0) req = 'root.json.gz?compact=3';
+      if (req.length == 0) req = 'root.json.gz?compact=23';
 
       if (url.length > 0) url += "/";
       url += req;
