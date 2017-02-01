@@ -2463,7 +2463,7 @@
 
          if (object_class) skip_branch = (args.nchilds[args.nbr]>100);
 
-         skip_branch = args.nchilds[args.nbr]>1;
+         // skip_branch = args.nchilds[args.nbr]>1;
 
          if (skip_branch || (num<=0)) {
             // ignore empty branches or objects with too-many subbrancn
@@ -2482,6 +2482,7 @@
                drawargs.firstentry = first + Math.round((last-first-drawargs.numentries)*Math.random());
             }
 
+            // keep console output for debug purposes
             console.log('test branch', br.fName, 'first', (drawargs.firstentry || 0), "num", drawargs.numentries);
 
             tree.Process(selector, drawargs);
