@@ -2035,15 +2035,7 @@
                      if (subelem.fType === JSROOT.IO.kStreamer) {
                         subelem.$fictional = true;
                         member.submember = JSROOT.IO.CreateMember(subelem, file);
-                     } else
-                     if ((member.conttype.indexOf('pair<')===0) &&
-                         JSROOT.IO.GetPairStreamer(null, member.conttype, file))  {
-                           member.read_empty_stl_version = true; // seems to be, pair<> needs empty version
                      }
-//                     else
-//                     if (!file.FindStreamerInfo(member.conttype) && !JSROOT.IO.CustomStreamers[member.conttype]) {
-//                        console.warn('No streamer for class ', member.conttype, ' from STL container, probably such object are not stored');
-//                     }
                   }
                }
             } else
@@ -2065,8 +2057,6 @@
                   delete member.streamer;
                }
 
-               member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
-
                if (member.streamer) member.readelem = JSROOT.IO.ReadMapElement;
             } else
             if (stl === JSROOT.IO.kSTLbitset) {
@@ -2085,9 +2075,27 @@
             } else
             if (!element.$fictional) {
 
-               member.read_version = function(buf) {
+               member.read_version = function(buf, cnt) {
                   // read version, check member-wise flag; if any, read version for contained object
+
+                  var debug = buf.o;
+
+                  // workaround - in some cases version is not written for empty container
+                  if ((cnt===0) && (buf.remain()<6)) return null;
+
                   var ver = buf.ReadVersion();
+
+                  // console.log('ver', ver);
+
+                  if ((cnt===0) && (ver.bytecnt===0)) return ver;
+
+                  // workaround - in some cases version is not written for empty container
+                  if ((cnt===0) && (ver.bytecnt!==6) && (ver.bytecnt!=2)) {
+                     buf.o = ver.off - ((ver.bytecnt===undefined) ? 2 : 6);
+                     if (buf.o !== debug) throw Error('missmatch ' + buf.o +' != ' + debug);
+                     return null;
+                  }
+
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
                   this.stl_version = undefined;
                   if (this.member_wise) {
@@ -2105,18 +2113,19 @@
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
                }
+
                member.branch_func = function(buf,obj) {
                   // special function to read data from STL branch
                   var cnt = obj[this.stl_size], arr = new Array(cnt);
 
-                  // console.log(this.typename, 'READ branch with', cnt, "elements buf.remain", buf.remain(), 'pos', buf.o);
+                  var ver = this.read_version(buf, cnt);
 
-                  if ((cnt>0) || this.read_empty_stl_version) {
-                     var ver = this.read_version(buf);
-                     for (var n=0;n<cnt;++n)
-                        arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
-                     buf.CheckBytecount(ver, "branch " + this.typename);
-                  }
+                  // console.log('read ', this.conttype, 'cnt', cnt, 'ver', ver, 'bufpos', buf.o);
+
+                  for (var n=0;n<cnt;++n)
+                     arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
+
+                  if (ver) buf.CheckBytecount(ver, "branch " + this.typename);
 
                   obj[this.name] = arr;
                }
@@ -2134,16 +2143,14 @@
 
                   var arr = obj[this.name0]; // objects array where reading is done
 
-                  if ((arr.length>0) || this.read_empty_stl_version) {
-                     var ver = this.read_version(buf);
+                  var ver = this.read_version(buf, arr.length);
 
-                     for (var n=0;n<arr.length;++n) {
-                        var obj1 = this.get(arr,n);
-                        obj1[this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
-                     }
-
-                     buf.CheckBytecount(ver, "branch " + this.typename);
+                  for (var n=0;n<arr.length;++n) {
+                     var obj1 = this.get(arr,n);
+                     obj1[this.name] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
                   }
+
+                  if (ver) buf.CheckBytecount(ver, "branch " + this.typename);
                }
             }
             break;
@@ -2698,9 +2705,14 @@
 
          var n = buf.ntou4(), streamer = null, ver = this.stl_version;
 
+         // console.log('member-wise streaming for of', this.conttype, n);
+
          if (n===0) return []; // for empty vector no need to search splitted streamers
 
-         // console.log('member-wise streaming for of', this.conttype, n);
+         if (n>200000) {
+            throw new Error('member-wise streaming for of ' + this.conttype + " num " + n);
+            return [];
+         }
 
          if ((ver.val === this.member_ver) && (ver.checksum === this.member_checksum)) {
             streamer = this.member_streamer;
@@ -2733,6 +2745,8 @@
       }
 
       var n = buf.ntou4(), res = new Array(n), i = 0;
+
+      if (n>200000) { console.error('vector streaming for of', this.conttype, n); return res; }
 
       if (this.arrkind > 0) { while (i<n) res[i++] = buf.ReadFastArray(buf.ntou4(), this.arrkind); }
       else if (this.arrkind===0) { while (i<n) res[i++] = buf.ReadTString(); }

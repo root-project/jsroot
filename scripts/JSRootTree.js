@@ -1789,7 +1789,6 @@
                 // function provided by normal I/O
                 member.func = member.branch_func;
                 member.stl_size = item_cnt.name;
-
              } else
              if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
                 if (item_cnt2) {
@@ -2456,9 +2455,11 @@
 
          if (object_class) skip_branch = (args.nchilds[args.nbr]>100);
 
+         skip_branch = args.nchilds[args.nbr]>1;
+
          if (skip_branch || (num<=0)) {
             // ignore empty branches or objects with too-many subbrancn
-            if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
+            // if (object_class) console.log('Ignore branch', br.fName, 'class', object_class, 'with', args.nchilds[args.nbr],'subbrnaches');
             selector.Terminate("ignore");
          } else {
 
