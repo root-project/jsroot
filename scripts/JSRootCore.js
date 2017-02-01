@@ -93,7 +93,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "5.0.0a 31/01/2017";
+   JSROOT.version = "5.0.0b 1/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -160,7 +160,7 @@
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
-         HierarchyLimit : 250,   // how many items shown on one level of hierarhcy  
+         HierarchyLimit : 250,   // how many items shown on one level of hierarhcy
 
          // these are TStyle attributes, which can be chenged via URL 'style' parameter
 
@@ -297,7 +297,7 @@
             newfmt = true;
             return map[ref];
          }
-         
+
          if ((newfmt!==false) && (len>1) && (ks[0]==='$arr') && (ks[1]==='len')) {
             // this is ROOT-coded array
             var arr = null, dflt = (value.$arr==="Bool") ? false : 0;
@@ -328,7 +328,7 @@
                   if ((nkey<len) && (ks[nkey][0]=='n')) {
                      var cnt = value[ks[nkey++]]; // counter
                      while (--cnt) arr[p++] = v;
-                  } 
+                  }
                }
             }
 
@@ -343,7 +343,7 @@
             if (s1!==undefined) value.second = s1;
             value._typename = value['$pair'];
             delete value['$pair'];
-            return; // pair object is not counted in the objects map  
+            return; // pair object is not counted in the objects map
          }
 
          // debug code, can be commented out later
@@ -474,7 +474,7 @@
       return src;
    }
 
-   /** @memberOf JSROOT 
+   /** @memberOf JSROOT
     * Method should be used to parse JSON code, produced with TBufferJSON */
    JSROOT.parse = function(arg) {
       if ((arg==null) || (arg=="")) return null;
@@ -483,7 +483,7 @@
       return obj;
    }
 
-   /** @memberOf JSROOT 
+   /** @memberOf JSROOT
     * Method should be used to parse JSON code, produced by multi.json of THttpServer */
    JSROOT.parse_multi = function(arg) {
       if (!arg) return null;
@@ -493,7 +493,7 @@
             arr[i] = this.JSONR_unref(arr[i]);
       return arr;
    }
-   
+
    /** @memberOf JSROOT */
    JSROOT.GetUrlOption = function(opt, url, dflt) {
       // analyzes document.URL and extracts options after '?' mark
@@ -521,7 +521,7 @@
          if (pos < 0) pos = url.length;
 
          /*
-         // try to correctly handle quotes in the URL - keep %symbol 
+         // try to correctly handle quotes in the URL - keep %symbol
          pos = 0; nquotes = 0;
          while ((pos < url.length) && ((nquotes!==0) || (url[pos]!=="&"))) {
             if (url[pos]=="%") {
@@ -538,18 +538,18 @@
             pos++;
          }
          */
-         
+
          if (url.indexOf(opt) == 0) {
             if (url.charAt(opt.length)=="&") return "";
-            
+
             if (url.charAt(opt.length)=="=")
                return decodeURI(url.slice(opt.length+1, pos));
-               
+
                /*var sub = url.slice(opt.length+1, pos);
                if ((sub.length>1) && (sub[0]===sub[sub.length-1]) && ((sub[0]=="'") || (sub[0]=='"'))) {
                   return sub.substr(1,sub.length-2);
                } else {
-                  return sub;  
+                  return sub;
                }
                */
          }
@@ -758,7 +758,7 @@
             xhr.overrideMimeType("text/plain; charset=x-user-defined");
          }
       }
-      
+
       return xhr;
    }
 
@@ -947,7 +947,7 @@
          modules.push('JSRootIOEvolution');
       }
 
-      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0)) { 
+      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0)) {
          mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
          modules.push('JSRootMath');
       }
@@ -962,14 +962,14 @@
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
                jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.4", debugout);
                jsroot._test_d3_ = 4;
-            } else 
+            } else
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
                jsroot.console("d3 version is " + d3.version + ", try to adjust");
                d3.timeFormat = d3.time.format;
                d3.scaleTime = d3.time.scale;
                d3.scaleLog = d3.scale.log;
                d3.scaleLinear = d3.scale.linear;
-               
+
                jsroot._test_d3_ = 3;
             } else {
                mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.min.js;';
@@ -1116,8 +1116,8 @@
 
    // function can be used to draw supported ROOT classes,
    // required functionality will be loaded automatically
-   // if painter pointer required, one should load '2d' functionlity itself 
-   // or use callback function which provides painter pointer as first argument  
+   // if painter pointer required, one should load '2d' functionlity itself
+   // or use callback function which provides painter pointer as first argument
    JSROOT.draw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.draw(divid, obj, opt, callback);
@@ -1425,9 +1425,9 @@
       }
       if (histo.fNcells > 0) {
          switch (typename[3]) {
-            case "C" : histo.fArray = new Int8Array(histo.fNcells); break; 
-            case "S" : histo.fArray = new Int16Array(histo.fNcells); break; 
-            case "I" : histo.fArray = new Int32Array(histo.fNcells); break; 
+            case "C" : histo.fArray = new Int8Array(histo.fNcells); break;
+            case "S" : histo.fArray = new Int16Array(histo.fNcells); break;
+            case "I" : histo.fArray = new Int32Array(histo.fNcells); break;
             case "F" : histo.fArray = new Float32Array(histo.fNcells); break;
             case "L" : histo.fArray = new Float64Array(histo.fNcells); break;
             case "D" : histo.fArray = new Float64Array(histo.fNcells); break;
@@ -1437,7 +1437,7 @@
       }
       return histo;
    }
-   
+
    JSROOT.CreateTH1 = function(nbinsx) {
       return JSROOT.CreateHistogram("TH1I", nbinsx);
    }
@@ -1501,7 +1501,7 @@
    JSROOT.methodsCache = {}; // variable used to keep methods for known classes
 
    JSROOT.getMethods = function(typename, obj) {
-      
+
       var m = JSROOT.methodsCache[typename];
 
       var has_methods = (m!==undefined);
@@ -1781,18 +1781,18 @@
             return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
          }
       }
-      
+
       if (typeof JSROOT.getMoreMethods == "function")
          JSROOT.getMoreMethods(m, typename, obj);
 
       JSROOT.methodsCache[typename] = m;
       return m;
    };
-   
+
    JSROOT.IsRootCollection = function(lst, typename) {
       if (lst && (typeof lst === 'object')) {
          if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
-         if (!typename) typename = lst._typename; 
+         if (!typename) typename = lst._typename;
       }
       if (!typename) return false;
       return (typename === 'TList') || (typename === 'THashList') || (typename === 'TMap') ||

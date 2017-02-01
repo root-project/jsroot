@@ -58,7 +58,7 @@
                 'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
                 },
 
-      circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },  
+      circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },
       diamand: { path: "M256,0L384,256L256,511L128,256z" }
    };
 
@@ -1128,16 +1128,16 @@
       // on === false - delete painter
       // on === undefined - return painter
       var main = this.select_main().node(),
-         chld = main ? main.firstChild : null;   
+         chld = main ? main.firstChild : null;
       if (!chld) return null;
       if (on===true) chld.painter = this; else
       if (on===false) delete chld.painter;
       return chld.painter;
    }
-   
+
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
-      
+
       this.AccessTopPainter(false);
       this.divid = null;
    }
@@ -1147,8 +1147,8 @@
       this._ready_called_ = true;
       if (this._ready_callback_ !== undefined) {
          if (!this._return_res_painter) res_painter = this;
-                                   else delete this._return_res_painter; 
-         
+                                   else delete this._return_res_painter;
+
          while (this._ready_callback_.length)
             JSROOT.CallBack(this._ready_callback_.shift(), res_painter);
          delete this._ready_callback_;
@@ -1199,17 +1199,17 @@
           (this.divid.charAt(0) != "#")) return d3.select("#" + this.divid);
       return d3.select(this.divid);
    }
-   
+
    JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
       // action can be:  true, false, 'toggle', 'state', 'verify'
-      // if action not specified, just return possibility to enlarge main div 
-      
+      // if action not specified, just return possibility to enlarge main div
+
       var main = this.select_main();
-      
+
       if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
-      
+
       if (action===undefined) return true;
-      
+
       if (action === 'verify') {
          if (main.property('can_enlarge')===true) return true;
          this.enlarge_main('toggle');
@@ -1220,24 +1220,24 @@
          main.property('can_enlarge', res);
          return res;
       }
-      
+
       var state = (main.property('normal_css') === undefined) ? "off" : "on";
-      
+
       if (action === 'state') return state;
-      
-      if (action === 'toggle') action = (main.property('normal_css') == null); 
-      
+
+      if (action === 'toggle') action = (main.property('normal_css') == null);
+
       if ((action === true) && (state!=="on")) {
          main.property('normal_css', main.node().style.cssText);
          main.style('position',"absolute").style('left',"3px").style('top',"3px").style('bottom',"3px").style('right',"3px").style("z-index",10).style('width', null).style('height',null).style("background-color","white");
          return true;
-      }  
+      }
       if ((action === false) && (state!=="off")) {
          main.node().style.cssText = main.property('normal_css');
          main.property('normal_css', null);
          return true;
       }
-      
+
       return false;
    }
 
@@ -1259,10 +1259,10 @@
       // it registered in the first child element
       if (arguments.length > 0)
          this.divid = divid;
-      
+
       this.AccessTopPainter(true);
    }
-   
+
    JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
       if (typeof name === 'string') this._hitemname = name;
                                else delete this._hitemname;
@@ -1320,7 +1320,7 @@
       delete this.lineatt;
       delete this.markeratt;
       delete this.bins;
-      
+
       JSROOT.TBasePainter.prototype.Cleanup.call(this);
    }
 
@@ -1479,7 +1479,7 @@
       var main = this.main_painter();
       if (main) {
          // this is frame coordinates
-         value = (axis=="y") ? main.gry(value) + main.frame_y()  
+         value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
          // if used pad coordiantes, we should
          // if (pad_coordinates)
@@ -2081,7 +2081,7 @@
          drag_move = d3.drag().subject(Object);
          drag_resize = d3.drag().subject(Object);
       }
-      
+
       drag_move
          .on(prefix+"start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
@@ -2727,7 +2727,7 @@
           f = draw_g.property('text_factor'),
           font = draw_g.property('text_font'),
           font_size = font.size;
-      
+
       if ((f>0) && ((f<0.9) || (f>1.))) {
          font.size = Math.floor(font.size/f);
          if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
@@ -3917,7 +3917,7 @@
          svg_p.property('pad_painter', null);
          svg_p.property('mainpainter', null);
       }
-      
+
       this.painters = [];
       this.pad = null;
       this.this_pad_name = "";
@@ -4068,9 +4068,9 @@
 
       return true;
    }
-   
+
    JSROOT.TPadPainter.prototype.EnlargePad = function() {
-      
+
       if (d3.event) {
          d3.event.preventDefault();
          d3.event.stopPropagation();
@@ -4081,7 +4081,7 @@
 
       if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw())) {
          if (!this.enlarge_main('toggle')) return;
-         if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null); 
+         if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null);
       } else {
          if (!pad_enlarged) {
             this.enlarge_main(true);
@@ -4089,24 +4089,24 @@
          } else
          if (pad_enlarged === this.pad) {
             this.enlarge_main(false);
-            svg_can.property("pad_enlarged", null); 
+            svg_can.property("pad_enlarged", null);
          } else {
             console.error('missmatch with pad double click events');
          }
       }
-      
+
       this.CheckResize({force:true});
    }
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
       // returns true when pad is displayed and all its items should be redrawn
-      
+
       if (!this.has_canvas) {
          this.CreateCanvasSvg(only_resize ? 2 : 0);
          return true;
       }
 
-      var svg_can = this.svg_canvas(), 
+      var svg_can = this.svg_canvas(),
           width = svg_can.property("draw_width"),
           height = svg_can.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
@@ -4117,8 +4117,8 @@
           y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; } 
-      
+      if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
+
       if (only_resize) {
          svg_pad = this.svg_pad(this.this_pad_name);
          svg_rect = svg_pad.select(".root_pad_border");
@@ -4141,9 +4141,9 @@
 
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
-         
+
          svg_rect.on("dblclick", this.EnlargePad.bind(this));
-         
+
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
          if (!this.lineatt || !this.lineatt.changed)
@@ -4166,7 +4166,7 @@
               .call(this.lineatt.func);
 
       btns.attr("transform","translate("+ (w - btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
-      
+
       return pad_visible;
    }
 
@@ -4290,7 +4290,7 @@
       }
 
       menu.add("separator");
-      
+
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
          menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
 
@@ -4330,9 +4330,9 @@
    }
 
    JSROOT.TPadPainter.prototype.Redraw = function(resize) {
-      
-      var showsubitems = true; 
-      
+
+      var showsubitems = true;
+
       if (this.iscan) {
          this.CreateCanvasSvg(2);
       } else {
@@ -4341,7 +4341,7 @@
 
       // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
-         var sub = this.painters[i]; 
+         var sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
       }
    }
@@ -4370,7 +4370,7 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckCanvasResize = function(size, force) {
-      
+
       if (!this.iscan && this.has_canvas) return false;
 
       if (size && (typeof size === 'object') && size.force) force = true;
@@ -4508,7 +4508,7 @@
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
 
       if (funcname == "CanvasSnapShot") return this.SaveAsPng(true);
-      
+
       if (funcname == "EnlargePad") return this.EnlargePad();
 
       if (funcname == "PadSnapShot") return this.SaveAsPng(false);
@@ -4648,7 +4648,7 @@
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
          this.pad_painter().AddButton(btn, tooltip, funcname);
-      
+
    }
 
    JSROOT.TPadPainter.prototype.DecodeOptions = function(opt) {
@@ -4686,9 +4686,9 @@
       if (JSROOT.gStyle.ContextMenu)
          painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
-      if (painter.enlarge_main('verify')) 
+      if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
-      
+
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
 
@@ -4711,10 +4711,10 @@
 
       if (painter.MatchObjectType("TPad") && (!painter.has_canvas || painter.HasObjectsToDraw())) {
          painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-         
+
          if ((painter.has_canvas && painter.HasObjectsToDraw()) || painter.enlarge_main('verify'))
             painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
-         
+
          if (JSROOT.gStyle.ContextMenu)
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
@@ -5172,7 +5172,7 @@
         labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
         label_g.call(labelfont.func);
      }
-     
+
      if (axis.fTitle.length > 0) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
@@ -5390,7 +5390,7 @@
              Optimize: JSROOT.gStyle.OptimizeDraw },
            d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption),
            hdim = this.Dimension(),
-           pad = this.root_pad(), 
+           pad = this.root_pad(),
            need_fillcol = false;
 
       // use error plot only when any sumw2 bigger than 0
@@ -5407,11 +5407,11 @@
       if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
 
       if (d.check('NOSTAT')) option.NoStat = 1;
-      
+
       var tooltip = null;
       if (d.check('NOTOOLTIP')) tooltip = false;
       if (d.check('TOOLTIP')) tooltip = true;
-      if ((tooltip!==null) && this.frame_painter()) this.frame_painter().tooltip_allowed = tooltip; 
+      if ((tooltip!==null) && this.frame_painter()) this.frame_painter().tooltip_allowed = tooltip;
 
       if (d.check('LOGX')) pad.fLogx = 1;
       if (d.check('LOGY')) pad.fLogy = 1;
@@ -5758,11 +5758,11 @@
    }
 
    JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
-      
+
       var histo = this.GetObject();
 
       if (obj !== histo) {
-      
+
          if (!this.MatchObjectType(obj)) return false;
 
          // TODO: simple replace of object does not help - one can have different
@@ -6033,7 +6033,7 @@
 
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
-         
+
          this.y = d3.scaleLog();
       } else
       if (this.y_kind=='time') {
@@ -6344,7 +6344,7 @@
 
       if (!this.histo.fFunctions)
          this.histo.fFunctions = JSROOT.Create("TList");
-      
+
       this.histo.fFunctions.Add(stats,"");
 
       return stats;
@@ -7386,21 +7386,21 @@
    JSROOT.TH1Painter.prototype.ScanContent = function(when_axis_changed) {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
-      if (!this.nbinsx && when_axis_changed) when_axis_changed = false; 
-      
+      if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
+
       if (!when_axis_changed) {
          this.nbinsx = this.histo.fXaxis.fNbins;
          this.nbinsy = 0;
          this.CreateAxisFuncs(false);
-      } 
-      
+      }
+
       var left = this.GetSelectIndex("x", "left"),
           right = this.GetSelectIndex("x", "right");
-      
+
       if (when_axis_changed) {
-         if ((left === this.scan_xleft) && (right === this.scan_xright)) return; 
+         if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
       }
- 
+
       this.scan_xleft = left;
       this.scan_xright = right;
 
@@ -7527,7 +7527,7 @@
       }
 
       res.integral = stat_sumw;
-      
+
       if (stat_sumw > 0) {
          res.meanx = stat_sumwx / stat_sumw;
          res.meany = stat_sumwy / stat_sumw;
@@ -8239,7 +8239,7 @@
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
-      
+
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
          this.ProvideUserTooltip(null);
@@ -8382,7 +8382,7 @@
       this.mode3d = false;
 
       this.ScanContent(true);
-      
+
       this.CreateXY();
 
       if (typeof this.DrawColorPalette === 'function')
@@ -8625,29 +8625,29 @@
 
    JSROOT.Painter.ListHierarchy = function(folder, lst) {
       if (!JSROOT.IsRootCollection(lst)) return false;
-      
+
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
          folder._more = false;
          return true;
       }
-      
+
       var do_context = false, prnt = folder;
       while (prnt) {
          if (prnt._do_context) do_context = true;
          prnt = prnt._parent;
       }
-      
-      // if list has objects with similar names, create cycle number for them  
+
+      // if list has objects with similar names, create cycle number for them
       var ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
-      
+
       for (var i = 0; i < lst.arr.length; ++i) {
          var obj = ismap ? lst.arr[i].first : lst.arr[i];
          if (!obj) continue; // for such objects index will be used as name
          var objname = obj.fName || obj.name;
          if (!objname) continue;
          var indx = names.indexOf(objname);
-         if (indx>=0) { 
-            cnt[indx]++; 
+         if (indx>=0) {
+            cnt[indx]++;
          } else {
             cnt[names.length] = cycle[names.length] = 1;
             names.push(objname);
@@ -8657,7 +8657,7 @@
       folder._childs = [];
       for ( var i = 0; i < lst.arr.length; ++i) {
          var obj = ismap ? lst.arr[i].first : lst.arr[i];
-         
+
          var item;
 
          if (!obj || !obj._typename) {
@@ -8665,7 +8665,7 @@
                _name: i.toString(),
                _kind: "ROOT.NULL",
                _title: "NULL",
-               _value: "null", 
+               _value: "null",
                _obj: null
             }
          } else {
@@ -8683,7 +8683,7 @@
               case 'TObjString': item._value = obj.fString; break;
               default: if (lst.opt && lst.opt[i] && lst.opt[i].length) item._value = lst.opt[i];
            }
-           
+
            if (do_context && JSROOT.canDraw(obj._typename)) item._direct_context = true;
 
            // if name is integer value, it should match array index
@@ -8695,7 +8695,7 @@
               var indx = names.indexOf(obj.fName);
               if ((indx>=0) && (cnt[indx]>1)) {
                  item._cycle = cycle[indx]++;
-                 item._keyname = item._name; 
+                 item._keyname = item._name;
                  item._name = item._keyname + ";" + item._cycle;
               }
            }
@@ -8762,9 +8762,9 @@
       if (!top || (obj===null)) return false;
 
       top._childs = [];
-      
+
       var proto = Object.prototype.toString.apply(obj);
-      
+
       if (proto === '[object DataView]') {
 
          var item = {
@@ -8773,10 +8773,10 @@
              _value: obj.byteLength.toString(),
              _vclass: 'h_value_num'
          };
-         
+
          top._childs.push(item);
          var namelen = (obj.byteLength < 10) ? 1 : JSROOT.log10(obj.byteLength);
-         
+
          for (var k=0;k<obj.byteLength;++k) {
             if (k % 16 === 0) {
                item = {
@@ -8785,20 +8785,20 @@
                  _value: "",
                  _vclass: 'h_value_num'
                };
-               while (item._name.length < namelen) item._name = "0" + item._name; 
+               while (item._name.length < namelen) item._name = "0" + item._name;
                top._childs.push(item);
             }
-            
+
             var val = obj.getUint8(k).toString(16);
             while (val.length<2) val = "0"+val;
-            if (item._value.length>0) 
+            if (item._value.length>0)
                item._value += (k%4===0) ? " | " : " ";
-            
+
             item._value += val;
-         } 
+         }
          return true;
       }
-      
+
       // check nosimple property in all parents
       var nosimple = true, do_context = false, prnt = top;
       while (prnt) {
@@ -8806,12 +8806,12 @@
          if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
          prnt = prnt._parent;
       }
-      
+
       var isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
           compress = isarray && (obj.length > JSROOT.gStyle.HierarchyLimit),  arrcompress = false;
-      
+
       if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
-      
+
       if (compress) {
          arrcompress = true;
          for (var k=0;k<obj.length;++k) {
@@ -8820,60 +8820,60 @@
             arrcompress = false; break;
          }
       }
-      
+
       if (!('_obj' in top))
          top._obj = obj;
       else
       if (top._obj !== obj) alert('object missmatch');
-      
+
       if (!top._title) {
          if (obj._typename)
             top._title = "ROOT." + obj._typename;
          else
          if (isarray) top._title = "Array len: " + obj.length;
       }
-      
+
       if (arrcompress) {
          for (var k=0;k<obj.length;) {
-            
-            var nextk = Math.min(k+10,obj.length), allsame = true, prevk = k; 
-               
+
+            var nextk = Math.min(k+10,obj.length), allsame = true, prevk = k;
+
             while (allsame) {
                allsame = true;
                for (var d=prevk;d<nextk;++d)
                   if (obj[k]!==obj[d]) allsame = false;
-               
+
                if (allsame) {
                   if (nextk===obj.length) break;
                   prevk = nextk;
                   nextk = Math.min(nextk+10,obj.length);
-               } else 
-               if (prevk !== k) { 
-                  // last block with similar 
-                  nextk = prevk; 
-                  allsame = true; 
-                  break; 
+               } else
+               if (prevk !== k) {
+                  // last block with similar
+                  nextk = prevk;
+                  allsame = true;
+                  break;
                }
             }
-            
+
             var item = { _parent: top, _name: k+".."+(nextk-1), _vclass: 'h_value_num' };
-            
+
             if (allsame) {
                item._value = obj[k].toString();
             } else {
                item._value = "";
-               for (var d=k;d<nextk;++d) 
+               for (var d=k;d<nextk;++d)
                   item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
                item._value += " ]";
             }
-            
+
             top._childs.push(item);
-            
+
             k = nextk;
          }
          return true;
       }
-      
+
       var lastitem, lastkey, lastfield, cnt;
 
       for (var key in obj) {
@@ -8881,14 +8881,14 @@
          var fld = obj[key];
          if (typeof fld == 'function') continue;
          if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
-         
+
          if (compress && lastitem) {
             if (lastfield===fld) { ++cnt; lastkey = key; continue; }
-            if (cnt>0) lastitem._name += ".." + lastkey; 
-         } 
+            if (cnt>0) lastitem._name += ".." + lastkey;
+         }
 
          var item = { _parent: top, _name: key };
-         
+
          if (compress) { lastitem = item;  lastkey = key; lastfield = fld; cnt = 0; }
 
          if (fld === null) {
@@ -8900,7 +8900,7 @@
          var simple = false;
 
          if (typeof fld == 'object') {
-         
+
             proto = Object.prototype.toString.apply(fld);
 
             if ((proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0)) {
@@ -8922,22 +8922,22 @@
                item._more = true;
                item._expand = JSROOT.Painter.ObjectHierarchy;
                item._obj = fld;
-            }  else 
+            }  else
             if (proto === "[object Date]") {
                item._more = false;
                item._title = 'Date';
                item._value = fld.toString();
                item._vclass = 'h_value_num';
-            } else { 
-               
+            } else {
+
                if (fld.$kind || fld._typename)
                   item._kind = item._title = "ROOT." + (fld.$kind || fld._typename);
-               
+
                if (fld._typename) {
                   item._title = fld._typename;
                   if (do_context && JSROOT.canDraw(fld._typename)) item._direct_context = true;
                }
-               
+
                // check if object already shown in hierarchy (circular dependency)
                var curr = top, inparent = false;
                while (curr && !inparent) {
@@ -8957,7 +8957,7 @@
                      case 'TText': item._value = fld.fTitle; break;
                      case 'TLatex': item._value = fld.fTitle; break;
                      case 'TObjString': item._value = fld.fString; break;
-                     default: 
+                     default:
                         if (JSROOT.IsRootCollection(fld) && (typeof fld.arr === "object")) {
                            item._value = fld.arr.length ? "[...]" : "[]";
                            item._title += ", size:"  + fld.arr.length;
@@ -8982,7 +8982,7 @@
             simple = true;
             item._value = '&quot;' + fld.replace(/\&/g, '&amp;').replace(/\"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '&quot;';
             item._vclass = 'h_value_str';
-         } else 
+         } else
          if (typeof fld === 'undefined') {
             simple = true;
             item._value = "undefined";
@@ -8995,9 +8995,9 @@
          if (!simple || !nosimple)
             top._childs.push(item);
       }
-      
-      if (compress && lastitem && (cnt>0)) lastitem._name += ".." + lastkey; 
-      
+
+      if (compress && lastitem && (cnt>0)) lastitem._name += ".." + lastkey;
+
       return true;
    }
 
@@ -9013,7 +9013,7 @@
       this.background = backgr;
       this.files_monitoring = (frameid == null); // by default files monitored when nobrowser option specified
       this.nobrowser = (frameid === null);
-      if (!this.nobrowser) this.SetDivId(frameid); // this is required to be able cleanup painter  
+      if (!this.nobrowser) this.SetDivId(frameid); // this is required to be able cleanup painter
 
       // remember only very first instance
       if (!JSROOT.hpainter)
@@ -9053,9 +9053,9 @@
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
-      
+
       JSROOT.TBasePainter.prototype.Cleanup.call(this);
-      
+
       if (JSROOT.hpainter === this)
          JSROOT.hpainter = null;
    }
@@ -9154,7 +9154,7 @@
       //   top:   element to start search from
 
       function find_in_hierarchy(top, fullname) {
-         
+
          if (!fullname || (fullname.length == 0) || !top) return top;
 
          var pos = fullname.length;
@@ -9163,18 +9163,18 @@
             // it is allowed to provide item name, which includes top-parent like file.root/folder/item
             // but one could skip top-item name, if there are no other items
             if (fullname === top._name) return top;
-            
+
             var len = top._name.length;
             if (fullname[len] == "/") {
                fullname = fullname.substr(len+1);
                pos = fullname.length;
             }
          }
-         
+
          function process_child(child, ignore_prnt) {
             // set parent pointer when searching child
             if (!ignore_prnt) child._parent = top;
-            
+
             if ((pos >= fullname.length-1) || (pos < 0)) return child;
 
             return find_in_hierarchy(child, fullname.substr(pos + 1));
@@ -9189,9 +9189,9 @@
                for (var i = 0; i < top._childs.length; ++i)
                   if (top._childs[i]._name == localname)
                      return process_child(top._childs[i]);
-               
-               // if first child online, check its elements 
-               if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined)) 
+
+               // if first child online, check its elements
+               if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined))
                   for (var i = 0; i < top._childs[0]._childs.length; ++i)
                      if (top._childs[0]._childs[i]._name == localname)
                         return process_child(top._childs[0]._childs[i], true);
@@ -9201,10 +9201,10 @@
                   var newest = null;
                   for (var i = 0; i < top._childs.length; ++i) {
                     if (top._childs[i]._keyname === localname) {
-                       if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i]; 
+                       if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i];
                     }
                   }
-                  if (newest) return process_child(newest); 
+                  if (newest) return process_child(newest);
                }
 
                var allow_index = arg.allow_index;
@@ -9224,7 +9224,7 @@
 
             pos = fullname.lastIndexOf("/", pos - 1);
          }
-         
+
          if (arg.force) {
              // if didnot found element with given name we just generate it
              if (top._childs === undefined) top._childs = [];
@@ -9236,7 +9236,7 @@
 
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
-      
+
       var top = this.h, itemname = "";
 
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
@@ -9249,9 +9249,9 @@
    }
 
    JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
-      
+
       if (node && node._kind ==='TopFolder') return "__top_folder__";
-      
+
       var res = "";
 
       while (node) {
@@ -9431,9 +9431,9 @@
       }
 
       function display_callback(respainter) {
-         
+
          JSROOT.progress();
-         
+
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
             respainter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
             if (item) item._painter = respainter;
@@ -9477,10 +9477,10 @@
             if (obj==null) return display_callback();
 
             JSROOT.progress("Drawing " + itemname);
-            
-            if (divid.length > 0) 
-               return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback); 
-            
+
+            if (divid.length > 0)
+               return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback);
+
             mdi.ForEachPainter(function(p, frame) {
                if (p.GetItemName() != itemname) return;
                // verify that object was drawn with same option as specified now (if any)
@@ -9494,18 +9494,18 @@
 
                if (p.RedrawObject(obj)) painter = p;
             });
-            
+
             if (painter) return display_callback();
 
             if (updating) {
                JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
                return display_callback();
-            } 
-              
+            }
+
             var frame = mdi.FindFrame(frame_name, true);
             d3.select(frame).html("");
             mdi.ActivateFrame(frame);
-            
+
             JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt, display_callback);
 
             if (JSROOT.gStyle.DragAndDrop)
@@ -9533,7 +9533,7 @@
          if (drop_painter) drop_painter.SetItemName(itemname);
          JSROOT.CallBack(call_back);
       }
-      
+
       h.get(itemname, function(item, obj) {
          if (obj) {
             var dummy = new JSROOT.TObjectPainter();
@@ -9859,7 +9859,7 @@
          if (!_name) _name = hpainter.itemFullName(_item);
 
          var handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
-         
+
          if (_obj && handle && handle.expand_item) {
             _obj = _obj[handle.expand_item]; // just take specified field from the object
             if (_obj && _obj._typename)
@@ -10350,16 +10350,17 @@
    }
 
    JSROOT.HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
+
       if ((frameid==null) && (typeof layout == 'object')) {
          this.disp = layout;
          this.disp_kind = 'custom';
          this.disp_frameid = null;
       } else {
-         this.disp_kind = layout;
+         this.disp_kind = layout || "simple";
          this.disp_frameid = frameid;
       }
-      
-      if (this.disp_kind && !this.register_resize) {
+
+      if (!this.register_resize) {
          this.register_resize = true;
          JSROOT.RegisterForResize(this);
       }
@@ -10460,7 +10461,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
-      
+
       if ('disp' in this)
          this.disp.CheckMDIResize(null, size);
    }
@@ -10547,7 +10548,7 @@
            default: this.disp_kind = 'flex';
          }
       }
-      
+
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
 
       function OpenAllFiles() {
@@ -10677,7 +10678,7 @@
          for ( var l = 0; l < entry.fElements.arr.length; ++l) {
             var elem = entry.fElements.arr[l];
             if (!elem || !elem.fName) continue;
-            var info = elem.fTypeName + " " + elem.fName, 
+            var info = elem.fTypeName + " " + elem.fName,
                 title = elem.fTypeName + " type:" + elem.fType;
             if (elem.fArrayDim===1)
                info += "[" + elem.fArrayLength + "]";
@@ -10688,7 +10689,7 @@
             if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
             info += ";";
             if (elem.fTitle != '') info += " // " + elem.fTitle;
-                                 
+
             item._childs.push({ _name : info, _title: title, _kind: elem.fTypeName, _icon: (elem.fTypeName == 'BASE') ? "img_class" : "img_member" });
          }
          if (item._childs.length == 0) delete item._childs;
@@ -10714,15 +10715,15 @@
       painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
       if ((typeof obj.fTitle === 'string') && (obj.fTitle.length>0))
          painter.h._title = obj.fTitle;
-      
+
       if (obj._typename)
-         painter.h._title += "  type:" + obj._typename; 
-         
+         painter.h._title += "  type:" + obj._typename;
+
       if ((typeof obj.fName === 'string') && (obj.fName.length>0))
          painter.h._name = obj.fName;
 
       painter.select_main().style('overflow','auto');
-      
+
       painter.fill_context = function(menu, hitem) {
          var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
          if (sett.opts)
@@ -10733,7 +10734,7 @@
                JSROOT.draw(divid, obj, arg);
             });
       }
-      
+
       if (JSROOT.IsRootCollection(obj)) {
          painter.h._name = obj.name || obj._typename;
          JSROOT.Painter.ListHierarchy(painter.h, obj);
@@ -10744,7 +10745,7 @@
          painter.SetDivId(divid);
          painter.DrawingReady();
       });
-      
+
       return painter;
    }
 
@@ -10813,6 +10814,8 @@
    JSROOT.MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
       var resized_frame = null;
+
+      console.log('CHECK MDI RESIZE');
 
       this.ForEachPainter(function(painter, frame) {
 
@@ -11062,7 +11065,7 @@
       var myInterval = null, myDelay = delay ? delay : 300;
 
       if (myDelay < 20) myDelay = 20;
-      
+
       function ResizeTimer() {
          myInterval = null;
 
@@ -11087,7 +11090,7 @@
          if (myInterval !== null) clearTimeout(myInterval);
          myInterval = setTimeout(ResizeTimer, myDelay);
       }
-      
+
       window.addEventListener('resize', ProcessResize);
    }
 
@@ -11315,18 +11318,18 @@
     * Draw object in specified HTML element with given draw options  */
 
    JSROOT.draw = function(divid, obj, opt, callback) {
-      
+
       function completeDraw(painter) {
-         if (painter && callback && (typeof painter.WhenReady == 'function')) 
+         if (painter && callback && (typeof painter.WhenReady == 'function'))
             painter.WhenReady(callback);
          else
             JSROOT.CallBack(callback, painter);
          return painter;
       }
-      
-      if ((obj===null) || (typeof obj !== 'object')) return completeDraw(null); 
 
-      if (opt == 'inspect') 
+      if ((obj===null) || (typeof obj !== 'object')) return completeDraw(null);
+
+      if (opt == 'inspect')
          return completeDraw(JSROOT.Painter.drawInspector(divid, obj));
 
       var handle = null, painter = null;
@@ -11344,11 +11347,11 @@
          if ((painter===null) && ('painter_kind' in handle))
             painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
-         if (painter==null) 
+         if (painter==null)
             painter = handle.func(divid, obj, opt);
          else
             painter = handle.func.bind(painter)(divid, obj, opt, painter);
-         
+
          return completeDraw(painter);
       }
 
