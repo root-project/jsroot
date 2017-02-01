@@ -56,17 +56,17 @@
          }
       }
    }
-   
+
    LocalFileSelected = function(evnt) {
       var files = evnt.target.files;
-      
+
       for (var n=0;n<files.length;++n) {
          var f = files[n];
          $("#urlToLoad").val(f.name);
          // console.log('Get selected', f.name, f.type, f.size, f);
          if (hpainter) hpainter.OpenRootFile(f, localfile_read_callback);
       }
-      
+
       localfile_read_callback = null;
    }
 
@@ -161,14 +161,14 @@
       var drawDivId = 'right-div';
 
       myDiv.empty().append(guiCode);
-      
+
 
       var h0 = null;
 
       if (online) {
          if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
          if (typeof h0 != 'object') h0 = "";
-      } else 
+      } else
       if (!noselect) {
          document.getElementById('gui_localFile').addEventListener('change', LocalFileSelected, false);
       }
@@ -182,10 +182,10 @@
       JSROOT.Painter.ConfigureVSeparator(hpainter);
 
       // JSROOT.Painter.ConfigureHSeparator(28, true);
-      
+
       hpainter.SelectLocalFile = function(read_callback) {
          localfile_read_callback = read_callback;
-         document.ex.file.click();         
+         document.ex.file.click();
       }
 
       hpainter.StartGUI(h0, function() {

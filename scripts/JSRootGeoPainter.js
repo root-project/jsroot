@@ -932,7 +932,7 @@
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
          var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
-         
+
          // worker does not work when starting from file system
          if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
             console.log('disable worker for jsroot from file system');
@@ -1374,7 +1374,7 @@
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
       if (!this._toplevel) return;
-      
+
       var extras = this.getExtrasContainer('get');
       if (extras) this._toplevel.remove(extras);
 
@@ -1518,7 +1518,7 @@
 
       function animate() {
          if (painter._animating === undefined) return;
-         
+
          if (painter._animating) {
             requestAnimationFrame( animate );
          } else {
@@ -1554,9 +1554,9 @@
 
       function animate() {
          if (!painter._renderer || !painter.options) return;
-         
+
          var current = new Date();
-         
+
          if ( painter.options.autoRotate ) requestAnimationFrame( animate );
 
          if (painter._controls) {
@@ -1648,10 +1648,10 @@
 
       return null;
    }
-   
+
    JSROOT.TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {
       // function called when mouse is going over the item in the browser
-      
+
       var painter = this, obj = hitem._obj, mesh = null;
       if (this.options._debug)
          console.log('Mouse over', on, itemname, (hitem._obj ? hitem._obj._typename : "---"));
@@ -2112,7 +2112,7 @@
       this.add_3d_canvas(size, this._renderer.domElement);
 
       // set top painter only when first child exists
-      
+
       this.AccessTopPainter(true);
 
       this.CreateToolbar();
@@ -2358,7 +2358,7 @@
    JSROOT.TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var call_ready = false;
-      
+
       if (!this.options) {
          console.warn('options object does not exist in completeDraw - something went wrong');
          return;
@@ -2422,9 +2422,9 @@
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
-         
+
          this.AccessTopPainter(false); // remove as pointer
-         
+
          this.helpText();
 
          JSROOT.Painter.DisposeThreejsObject(this._scene);
@@ -2445,26 +2445,26 @@
          if (obj) delete obj._painter;
 
          if (this._worker) this._worker.terminate();
-         
+
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
-         
+
          delete this.options;
-         
+
          delete this._animating;
       }
-      
+
       if (this._renderer) {
-         if (this._renderer.dispose) this._renderer.dispose(); 
-         if (this._renderer.context) delete this._renderer.context; 
+         if (this._renderer.dispose) this._renderer.dispose();
+         if (this._renderer.context) delete this._renderer.context;
       }
-      
+
       delete this._scene;
       this._scene_width = 0;
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
       this._camera = null;
-      
+
       if (this._clones) this._clones.Cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
       delete this._draw_nodes;

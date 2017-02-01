@@ -723,8 +723,8 @@
          var x = this.AxisToSvg("x", marker.fX),
              y = this.AxisToSvg("y", marker.fY);
 
-         var path = att.create(x,y); 
-         
+         var path = att.create(x,y);
+
          if (path && path.length > 0)
             this.draw_g.append("svg:path")
                 .attr("d", path)
@@ -849,17 +849,17 @@
    // =================================================================================
 
    JSROOT.Painter.drawRooPlot = function(divid, plot, opt) {
-      
+
       var painter = this, cnt = -1;
-      
+
       function DrawNextItem() {
          if (++cnt >= plot._items.arr.length) return painter.DrawingReady();
-         
+
          JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt], DrawNextItem);
       }
-      
+
       JSROOT.draw(divid, plot._hist, "hist", DrawNextItem);
-      
+
       return this;
    }
 
@@ -879,16 +879,16 @@
           npy = Math.round(func.fSave[nsave-1]);
           if (nsave !== (npx+1)*(npy+1) + 6) nsave = 0;
       }
-      
+
       if (nsave > 6) {
          var dx = (func.fSave[nsave-5] - func.fSave[nsave-6]) / npx / 2,
              dy = (func.fSave[nsave-3] - func.fSave[nsave-4]) / npy / 2;
-         
+
          hist = JSROOT.CreateHistogram("TH2F", npx+1, npy+1);
 
          hist.fXaxis.fXmin = func.fSave[nsave-6] - dx;
          hist.fXaxis.fXmax = func.fSave[nsave-5] + dx;
-         
+
          hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
 
@@ -935,7 +935,7 @@
       if (d.empty()) opt = "cont3"; else
       if (d.opt === "SAME") opt = "cont2 same";
       else opt = d.opt;
-      
+
       return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
    };
 
@@ -1185,7 +1185,7 @@
          // if function calculated, one always could zoom inside
          return true;
       }
-      
+
       this.PerformDraw = function() {
          if (this.main_painter() === null) {
             var histo = this.CreateDummyHisto();
@@ -1200,10 +1200,10 @@
       this.SetDivId(divid, -1);
       var d = new JSROOT.DrawOptions(opt);
       this.nosave = d.check('NOSAVE');
-      
-      if (JSROOT.Math !== undefined) 
+
+      if (JSROOT.Math !== undefined)
          return this.PerformDraw();
-      
+
       JSROOT.AssertPrerequisites("math", this.PerformDraw.bind(this));
       return this;
    }
@@ -1222,7 +1222,7 @@
       this.painters = []; // keep painters to be able update objects
 
       this.SetDivId(divid, -1); // it maybe no element to set divid
-      
+
       if (!stack.fHists || (stack.fHists.arr.length == 0)) return this.DrawingReady();
 
       this.Cleanup = function() {
@@ -1362,7 +1362,7 @@
             if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
             hopt += " same";
          } else {
-            hopt = (opt || "") + " axis"; 
+            hopt = (opt || "") + " axis";
          }
 
          // special handling of stacked histograms - set $baseh object for correct drawing
@@ -1373,7 +1373,7 @@
 
          if (indx<0) this.firstpainter = subp;
                 else this.painters.push(subp);
-         
+
          subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
       }
 
@@ -1402,7 +1402,7 @@
          this.horder = this.nostack || this.dolego;
 
          var mm = this.GetMinMax(d.check("E"));
-         
+
          var histo = stack.fHistogram;
 
          if (!histo) {
@@ -1448,8 +1448,8 @@
             if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
 
          var harr = this.nostack ? obj.fHists.arr : obj.fStack.arr,
-             nhists = Math.min(harr.length, this.painters.length); 
-                 
+             nhists = Math.min(harr.length, this.painters.length);
+
          for (var i = 0; i < nhists; ++i) {
             var hist = harr[this.horder ? i : nhists - i - 1];
             if (this.painters[i].UpdateObject(hist)) isany = true;
@@ -1459,9 +1459,9 @@
       }
 
       this.drawStack(opt);
-      
+
       this.SetDivId(divid); // only when first histogram drawn, we could assign divid
-      
+
       return this;
    }
 
@@ -2370,7 +2370,7 @@
                maximum = 0;
          }
 
-         if (uxmin < 0 && rw.xmin >= 0) 
+         if (uxmin < 0 && rw.xmin >= 0)
             uxmin = logx ? 0.9 * rw.xmin : 0;
          if (uxmax > 0 && rw.xmax <= 0)
             uxmax = logx? 1.1 * rw.xmax : 0;
@@ -2387,7 +2387,7 @@
          if (minimum <= 0 && logy)
             minimum = 0.001 * maximum;
          if (uxmin <= 0 && logx)
-            uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax; 
+            uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
 
          // Create a temporary histogram to draw the axis (if necessary)
          if (!histo) {
@@ -3208,10 +3208,10 @@
 
 
    JSROOT.TH2Painter.prototype.ScanContent = function(when_axis_changed) {
-      
+
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy) return;
-      
+
       var i,j,histo = this.GetObject();
 
       this.nbinsx = histo.fXaxis.fNbins;
@@ -3470,13 +3470,13 @@
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          res.grx[i] = pmain.grx(x);
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
-         
+
          if (args.use3d) {
             if (res.grx[i] < -pmain.size_xy3d) { res.i1 = i; res.grx[i] = -pmain.size_xy3d; }
             if (res.grx[i] > pmain.size_xy3d) { res.i2 = i; res.grx[i] = pmain.size_xy3d; }
          }
       }
-      
+
       if (hdim===1) {
          res.gry[0] = pmain.gry(0);
          res.gry[1] = pmain.gry(1);
