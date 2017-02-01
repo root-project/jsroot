@@ -155,7 +155,7 @@
 
    JSROOT.Painter.CreateOrbitControl = function(painter, camera, scene, renderer, lookat) {
 
-      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel) 
+      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
 
       if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
@@ -164,7 +164,7 @@
       }
 
       var control = new THREE.OrbitControls(camera, renderer.domElement);
-      
+
       control.enableDamping = false;
       control.dampingFactor = 1.0;
       control.enableZoom = true;
@@ -173,13 +173,13 @@
          control.target0.copy(lookat);
          control.update();
       }
-      
+
       control.tooltip = new JSROOT.Painter.TooltipFor3D(painter.select_main().node(), renderer.domElement);
-      
+
       control.painter = painter;
       control.camera = camera;
       control.scene = scene;
-      control.renderer = renderer; 
+      control.renderer = renderer;
       control.raycaster = new THREE.Raycaster();
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
       control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
@@ -188,7 +188,7 @@
       control.control_changed = false;
       control.control_active = false;
       control.mouse_ctxt = { x:0, y: 0, on: false };
-      
+
       control.Cleanup = function() {
          if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
             this.domElement.removeEventListener( 'wheel', control_mousewheel);
@@ -201,9 +201,9 @@
          this.domElement.removeEventListener('contextmenu', this.lstn_contextmenu);
          this.domElement.removeEventListener('mousemove', this.lstn_mousemove);
          this.domElement.removeEventListener('mouseleave', this.lstn_mouseleave);
-         
+
          this.dispose(); // this is from OrbitControl itself
-         
+
          this.tooltip.hide();
          delete this.tooltip;
          delete this.painter;
@@ -213,7 +213,7 @@
          delete this.raycaster;
          delete this.mouse_zoom_mesh;
       }
-      
+
       control.HideTooltip = function() {
          this.tooltip.hide();
       }
@@ -225,7 +225,7 @@
          mouse.clientY = evnt.clientY;
          return mouse;
       }
-      
+
       control.GetIntersects = function(mouse) {
          // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
          var sz = (this.renderer instanceof THREE.WebGLRenderer) ? this.renderer.getSize() : this.renderer.domElement;
@@ -253,7 +253,7 @@
 
          return null;
       }
-      
+
       control.ProcessDblClick = function(evnt) {
          var intersect = this.DetectZoomMesh(evnt);
          if (intersect && this.painter) {
@@ -306,11 +306,11 @@
          else
             this.ContextMenu(this.mouse_ctxt, this.GetIntersects(this.mouse_ctxt));
       }
-      
+
       control.ContextMenu = function(pos, intersects) {
          // do nothing, function called when context menu want to be activated
       }
-      
+
       control.SwitchTooltip = function(on) {
          this.block_mousemove = !on;
          if (on===false) {
@@ -318,15 +318,15 @@
             this.RemoveZoomMesh();
          }
       }
-      
+
       control.RemoveZoomMesh = function() {
          if (this.mouse_zoom_mesh && this.mouse_zoom_mesh.object.ShowSelection())
             this.painter.Render3D();
          this.mouse_zoom_mesh = null; // in any case clear mesh, enable orbit control again
       }
-      
+
       control.MainProcessMouseMove = function(evnt) {
-         if (this.control_active && evnt.buttons && (evnt.buttons & 2)) 
+         if (this.control_active && evnt.buttons && (evnt.buttons & 2))
             this.block_ctxt = true; // if right button in control was active, block next context menu
 
          if (this.control_active || this.block_mousemove || !this.ProcessMouseMove) return;
@@ -470,7 +470,7 @@
          control.RemoveZoomMesh();
       }
 
-      
+
       control.MainProcessDblClick = function(evnt) {
          this.ProcessDblClick(evnt);
       }
@@ -479,11 +479,11 @@
       control.addEventListener( 'start', control.StartEvent.bind(control));
       control.addEventListener( 'end', control.EndEvent.bind(control));
 
-      control.lstn_contextmenu = control.MainProcessContextMenu.bind(control); 
+      control.lstn_contextmenu = control.MainProcessContextMenu.bind(control);
       control.lstn_dblclick = control.MainProcessDblClick.bind(control);
       control.lstn_mousemove = control.MainProcessMouseMove.bind(control);
       control.lstn_mouseleave = control.MainProcessMouseLeave.bind(control);
-      
+
       renderer.domElement.addEventListener('dblclick', control.lstn_dblclick);
       renderer.domElement.addEventListener('contextmenu', control.lstn_contextmenu);
       renderer.domElement.addEventListener('mousemove', control.lstn_mousemove);
@@ -533,10 +533,10 @@
 
          JSROOT.Painter.DisposeThreejsObject(this.scene);
          if (this.control) this.control.Cleanup();
-         
+
          if (this.renderer) {
-            if (this.renderer.dispose) this.renderer.dispose(); 
-            if (this.renderer.context) delete this.renderer.context; 
+            if (this.renderer.dispose) this.renderer.dispose();
+            if (this.renderer.context) delete this.renderer.context;
          }
 
          delete this.size_xy3d;
@@ -848,7 +848,7 @@
       toplevel.add(top);
 
       var ticks = [], maxtextheight = 0;
-      
+
       while (xticks.next()) {
          var grx = xticks.grpos;
          var is_major = (xticks.kind===1);
@@ -856,7 +856,7 @@
          if (xticks.last_major()) lbl = "x"; else
             if (lbl === null) { is_major = false; lbl = ""; }
 
-         
+
          if (is_major && lbl && (lbl.length>0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
@@ -880,9 +880,9 @@
          ticks.push(grx, 0, 0, grx, (is_major ? -ticklen : -ticklen * 0.6), 0);
       }
 
-/*      
+/*
       var ggg1 = new THREE.Geometry(), ggg2 = new THREE.Geometry();
-      
+
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
@@ -1001,21 +1001,22 @@
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
       xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
-      
+
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
          m.set(text_scale, 0,           0,  lbl.grx,
                0,          text_scale,  0,  -maxtextheight*text_scale - 1.5*ticklen,
-               0,          0,           1,  0);
-         
+               0,          0,           1,  0,
+               0,          0,           0,  1);
+
          var mesh = new THREE.Mesh(lbl, textMaterial);
          mesh.applyMatrix(m);
          xcont.add(mesh);
       });
-      
+
       // xcont.add(new THREE.Mesh(ggg1, textMaterial));
-      
+
       if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
       top.add(xcont);
 
@@ -1028,12 +1029,13 @@
          // matrix to swap y and z scales and shift along z to its position
          m.set(-text_scale, 0,           0, lbl.grx,
                0,           text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-               0,           0,           1, 0);
+               0,           0,           -1, 0,
+               0,            0,           0, 1);
          var mesh = new THREE.Mesh(lbl, textMaterial);
          mesh.applyMatrix(m);
          xcont.add(mesh);
       });
-      
+
       //xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
       if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
@@ -1102,19 +1104,20 @@
          ycont.rotation.y = -1/4*Math.PI;
          ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
          //ycont.add(new THREE.Mesh(ggg1, textMaterial));
-         
+
          lbls.forEach(function(lbl) {
             var m = new THREE.Matrix4();
             // matrix to swap y and z scales and shift along z to its position
             m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
                   -text_scale,  0, 0, lbl.gry,
-                  0, 0,  1, 0);
-            
+                  0, 0,  1, 0,
+                  0, 0,  0, 1);
+
             var mesh = new THREE.Mesh(lbl, textMaterial);
             mesh.applyMatrix(m);
             ycont.add(mesh);
          });
-         
+
          ycont.xyid = 3;
          if (opts.zoom) ycont.add(CreateZoomMesh("y", this.size_xy3d));
          top.add(ycont);
@@ -1126,11 +1129,11 @@
          //ycont.add(new THREE.Mesh(ggg2, textMaterial));
          lbls.forEach(function(lbl) {
             var m = new THREE.Matrix4();
-            // matrix to swap y and z scales and shift along z to its position
-            m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-                  text_scale,  0, 0, lbl.gry,
-                  0, 0,  1, 0);
-            
+            m.set(0, text_scale, 0,  -maxtextheight*text_scale - 1.5*ticklen,
+                  text_scale, 0, 0,  lbl.gry,
+                  0,         0, -1,  0,
+                  0, 0, 0, 1);
+
             var mesh = new THREE.Mesh(lbl, textMaterial);
             mesh.applyMatrix(m);
             ycont.add(mesh);
@@ -1250,7 +1253,7 @@
 
       ggg = new THREE.BufferGeometry().fromGeometry(ggg);
 */
-      
+
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
 
@@ -1260,7 +1263,7 @@
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
          //zcont[n].add(new THREE.Mesh(ggg, textMaterial));
-         
+
          lbls.forEach(function(lbl) {
             var m = new THREE.Matrix4();
             // matrix to swap y and z scales and shift along z to its position
@@ -1935,13 +1938,13 @@
           palette = this.GetPalette(),
           painter = this,
           layerz = 2*main.size_z3d;
-      
+
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
              // ignore less than three points
              if (iplus - iminus < 3) return;
 
-             if (realz) { 
+             if (realz) {
                 layerz = main.grz(levels[ilevel]);
                 if ((layerz < 0) || (layerz > 2*main.size_z3d)) return;
              }
@@ -2655,9 +2658,9 @@
             this.Create3DScene();
             this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
          }
-         
+
          this.ScanContent(true);
-         
+
          this.Draw3DBins();
 
          main.Render3D();
@@ -3081,10 +3084,10 @@
    JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
    JSROOT.TH3Painter.prototype.ScanContent = function(when_axis_changed) {
-      
+
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
-      
+
       var histo = this.GetObject();
 
       this.nbinsx = histo.fXaxis.fNbins;
