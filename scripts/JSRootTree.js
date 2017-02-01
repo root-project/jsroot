@@ -101,6 +101,7 @@
 
    JSROOT.ArrayIterator = function(arr, select, tgtobj) {
       // class used to iterate over all array indexes until number value
+
       this.object = arr;
       this.value = 0; // value always used in iterator
       this.arr = []; // all arrays
@@ -152,6 +153,13 @@
             }
          }
 
+         if (this.select[cnt+1]=="$self$") {
+            this.value = obj;
+            this.fastindx = this.fastlimit = 0;
+            this.cnt = cnt+1;
+            return true;
+         }
+
          if ((typ=="any") && (typeof this.select[cnt+1] === "string")) {
             // this is extraction of the member from arbitrary class
             this.arr[++cnt] = obj;
@@ -159,19 +167,13 @@
             continue;
          }
 
-         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt+1]==="$size$") || (this.select[cnt+1]==="$self$"))) {
+         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt+1]==="$size$"))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
                case "$last$": this.indx[cnt] = obj.length-1; break;
                case "$size$":
                   this.value = obj.length;
-                  this.fastindx = this.fastlimit = 0;
-                  this.cnt = cnt;
-                  return true;
-                  break;
-               case "$self$":
-                  this.value = obj;
                   this.fastindx = this.fastlimit = 0;
                   this.cnt = cnt;
                   return true;
