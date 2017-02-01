@@ -159,7 +159,7 @@
             continue;
          }
 
-         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt+1]==="$size$"))) {
+         if ((typ === "array") && ((obj.length > 0) || (this.select[cnt+1]==="$size$") || (this.select[cnt+1]==="$self$"))) {
             this.arr[++cnt] = obj;
             switch (this.select[cnt]) {
                case undefined: this.indx[cnt] = 0; break;
@@ -285,10 +285,13 @@
                pos2 -= br.rest.length;
                branch_mode = br.read_mode; // maybe selection of the sub-object done
                br = br.branch;
-            } else
-            if (code[pos2-1]===".") {
-               // when branch name ends with point, means object itself should be extracted
+            }
+
+            // when code ends with the point - means object itself will be accessed
+            // sometime branch name itself ends with the point
+            if ((pos2>=code.length-1) && (code[code.length-1]===".")) {
                arriter.push("$self$");
+               pos2 = code.length;
             }
          }
 
@@ -376,8 +379,6 @@
          this.brindex.push(indx);
          this.branches.push(selector.nameOfBranch(indx));
          this.brarray.push(arriter);
-
-         // console.log('arriter', arriter);
 
          // this is simple case of direct usage of the branch
          if ((pos===0) && (pos2 === code.length) && (this.branches.length===1)) {

@@ -10815,8 +10815,6 @@
       // perform resize for each frame
       var resized_frame = null;
 
-      console.log('CHECK MDI RESIZE');
-
       this.ForEachPainter(function(painter, frame) {
 
          if ((only_frame_id !== null) && (d3.select(frame).attr('id') != only_frame_id)) return;
