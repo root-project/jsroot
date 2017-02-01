@@ -1985,9 +1985,10 @@
                }
 
             if ((element._typename === 'TStreamerSTLstring') ||
-                (member.typename == "string") || (member.typename == "string*"))
+                (member.typename == "string") || (member.typename == "string*")) {
                member.readelem = function(buf) { return buf.ReadTString(); };
-            else
+               member.read_empty_stl_version = false;
+            } else
             if ((stl === JSROOT.IO.kSTLvector) || (stl === JSROOT.IO.kSTLlist) ||
                 (stl === JSROOT.IO.kSTLdeque) || (stl === JSROOT.IO.kSTLset) ||
                 (stl === JSROOT.IO.kSTLmultiset)) {
@@ -2035,7 +2036,11 @@
                      if (subelem.fType === JSROOT.IO.kStreamer) {
                         subelem.$fictional = true;
                         member.submember = JSROOT.IO.CreateMember(subelem, file);
-                     }
+                     } else
+                     if ((member.conttype.indexOf('pair<')===0) &&
+                        JSROOT.IO.GetPairStreamer(null, member.conttype, file))  {
+                          // member.read_empty_stl_version = true; // seems to be, pair<> needs empty version
+                      }
                   }
                }
             } else
@@ -2051,6 +2056,8 @@
                member.si = file.FindStreamerInfo(member.pairtype);
 
                member.streamer = JSROOT.IO.GetPairStreamer(member.si, member.pairtype, file);
+
+               member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
 
                if (!member.streamer || (member.streamer.length!==2)) {
                   JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
@@ -2078,10 +2085,8 @@
                member.read_version = function(buf, cnt) {
                   // read version, check member-wise flag; if any, read version for contained object
 
-                  var debug = buf.o;
-
                   // workaround - in some cases version is not written for empty container
-                  if ((cnt===0) && (buf.remain()<6)) return null;
+                  if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false)) return null;
 
                   var ver = buf.ReadVersion();
 
@@ -2090,9 +2095,8 @@
                   if ((cnt===0) && (ver.bytecnt===0)) return ver;
 
                   // workaround - in some cases version is not written for empty container
-                  if ((cnt===0) && (ver.bytecnt!==6) && (ver.bytecnt!=2)) {
+                  if ((cnt===0) && (ver.bytecnt!==6) && (ver.bytecnt!=2) && !this.read_empty_stl_version) {
                      buf.o = ver.off - ((ver.bytecnt===undefined) ? 2 : 6);
-                     if (buf.o !== debug) throw Error('missmatch ' + buf.o +' != ' + debug);
                      return null;
                   }
 
