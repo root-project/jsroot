@@ -8,15 +8,15 @@ The idea of THttpServer is to provide remote http access to running ROOT applica
 
 ## Starting the HTTP server
 
-To start the http server, at any time, create an instance of the [THttpServer](https://root.cern.ch/root/html/THttpServer.html) class like:
+To start the http server, at any time, create an instance of the [THttpServer](https://root.cern/root/html/THttpServer.html) class like:
 
     serv = new THttpServer("http:8080");
 
-This will start a [civetweb](https://github.com/bel2125/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
+This will start a [civetweb](https://github.com/civetweb/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
 
-There is a [snapshot (frozen copy)](https://root.cern.ch/js/latest/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C) macro from ROOT tutorial.
+There is a [snapshot (frozen copy)](https://root.cern/js/latest/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C) macro from ROOT tutorial.
 
-<iframe width="800" height="500" src="https://root.cern.ch/js/latest/httpserver.C/?layout=simple&item=Canvases/c1">
+<iframe width="800" height="500" src="https://root.cern/js/latest/httpserver.C/?layout=simple&item=Canvases/c1">
 </iframe>
 
 One could specify several options when creating http server. They could be add as additional URL parameters to the constructor arguments like:
@@ -123,7 +123,7 @@ One could provide several options for the same item, separating them with '&' si
 
     root [10]  serv->Restrict("/Folder/histo1",  "allow_method=GetTitle&hide=guest");
  
-Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern.ch/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation.
+Complete list of supported options could be found in [TRootSniffer:Restrict()](https://root.cern/root/html/TRootSniffer.html#TRootSniffer:Restrict) method documentation.
 
 
 ## Using FastCGI interface
@@ -279,23 +279,27 @@ If the access to the server is restricted with htdigest, it is recommended to us
 
 ### Objects data access in JSON format
 
-Request `root.json` implemented with [TBufferJSON](https://root.cern.ch/root/html/TBufferJSON.html) class. TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern.ch/js/) for drawing. `root.json` request returns either complete object or just object member like:
+Request `root.json` implemented with [TBufferJSON](https://root.cern/root/html/TBufferJSON.html) class. TBufferJSON generates such object representation, which could be directly used in [JSROOT](https://root.cern/js/) for drawing. `root.json` request returns either complete object or just object member like:
 
     [shell] wget http://localhost:8080/Objects/subfolder/obj/fTitle/root.json
 
 The result will be: "title".
 
 For the `root.json` request one could specify the 'compact' parameter, which allow to reduce the number of spaces and new lines without data lost. This parameter can have values from '0' (no compression) till '3' (no spaces and new lines at all).
+In addition, one can use simple compression algorithm for big arrays. If compact='10', zero values in the begin and at the end
+of the array will be excluded. If compact='20', similar values or large zero gaps in-between will be compressed. Such array
+compression support in JSROOT from version 4.8.2.   
 
-Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH1 object shown in the table:
+Usage of `root.json` request is about as efficient as binary `root.bin` request. Comparison of different request methods with TH2 histogram from hsimple.C shown in the table:
 
 | Request                 |    Size    |
 | :---------------------- | :--------- |
-| root.bin                | 1658 bytes |
-| root.bin.gz             |  782 bytes |
-| root.json               | 7555 bytes |
-| root.json?compact=3     | 5381 bytes |
-| root.json.gz?compact=3  | 1207 bytes |
+| root.bin                | 7672 bytes |
+| root.bin.gz             | 1582 bytes |
+| root.json               | 8570 bytes |
+| root.json?compact=3     | 6004 bytes |
+| root.json?compact=23    | 5216 bytes |
+| root.json.gz?compact=23 | 1855 bytes |
 
 One should remember that JSON representation always includes names of the data fields which are not present in the binary representation. Even then the size difference is negligible.
 
@@ -304,7 +308,7 @@ One should remember that JSON representation always includes names of the data f
 
 ### Generating images out of objects
 
-For the ROOT classes which are implementing Draw method (like [TH1](https://root.cern.ch/root/html/TH1.html) or [TGraph](https://root.cern.ch/root/html/TGraph.html))
+For the ROOT classes which are implementing Draw method (like [TH1](https://root.cern/root/html/TH1.html) or [TGraph](https://root.cern/root/html/TGraph.html))
 one could produce images with requests: `root.png`, `root.gif`, `root.jpeg`. For example:
 
     wget "http://localhost:8080/Files/hsimple.root/hpx/root.png?w=500&h=500&opt=lego1" -O lego1.png
@@ -335,7 +339,7 @@ Or one could allow access to the folder, object or specific object methods with:
 'exe.json' accepts following parameters:
 
    - `method` - name of method to execute
-   - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern.ch/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
+   - `prototype` - method prototype (see [TClass::GetMethodWithPrototype](https://root.cern/root/html/TClass.html#TClass:GetMethodWithPrototype) for details)
    - `compact` - compact parameter, used to compress return value
    - `_ret_object_` - name of the object which should be returned as result of method execution (used together with remote TTree::Draw call)
 
@@ -355,7 +359,7 @@ If method required object as argument, it could be posted in binary or XML forma
  
     [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_&_post_class_=TH1I&c1=10' --post-file=h.bin -O res.json
 
-Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern.ch/root/html/TBufferXML.html#TBufferXML:ConvertToXML)) method, only string with XML code could be specified:
+Here is important to specify post object class, which is not stored in the binary buffer. When used XML form (produced with [TBufferXML::ConvertToXML](https://root.cern/root/html/TBufferXML.html#TBufferXML:ConvertToXML)) method, only string with XML code could be specified:
 
     [shell] wget 'http://localhost:8080/hist/exe.json?method=Add&h1=_post_object_xml_&c1=10' --post-file=h.xml -O res.json
 

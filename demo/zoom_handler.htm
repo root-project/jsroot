@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+   <title>Automatic zooming in second histogram</title>
+
+   <!-- Example derived from https://jsfiddle.net/obj9vffj/4/ -->
+
+   <!-- Load all required functionality in advance and call user function when ready -->
+   <script src="../scripts/JSRootCore.min.js?io&2d&onload=OpenFile" type="text/javascript"></script>
+
+   <script type='text/javascript'>
+
+      var h1painter, h2painter;
+
+      // function load user ROOT file and invoke call-back when ready 
+      function OpenFile() {
+         var filename = "https://root.cern.ch/js/files/hsimple.root";
+         JSROOT.OpenFile(filename, DrawObjects);
+      }
+
+      // this function is draw objects from the file
+      function DrawObjects(file) {
+         file.ReadObject("hpx;1", function(obj) {
+            h1painter = JSROOT.draw("drawth1", obj, "hist");
+         });
+         file.ReadObject("hpxpy;1", function(obj) {
+            h2painter = JSROOT.draw("drawth2", obj, "col");
+            // only when painting is complete, call-back function will be invoked
+            h2painter.WhenReady(AssinZoomFunctions);
+        });
+      }
+
+      // redefine zoom function of TH2 painter to make synchronous zooming of TH1 object       
+      function AssinZoomFunctions() {
+          h2painter.OldZoom = h2painter.Zoom;
+          h2painter.Zoom = function(xmin,xmax,ymin,ymax,zmin,zmax) {
+             h1painter.Zoom(xmin, xmax);
+             this.OldZoom(xmin,xmax,ymin,ymax,zmin,zmax);
+          }
+      }
+
+   </script>
+</head>
+
+<body>
+  <div id="drawth2" style="width:600px; height:400px"></div>
+  <div id="drawth1" style="width:600px; height:400px"></div>
+</body>
+
+</html>
+

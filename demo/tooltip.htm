@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+   <title>Use of tooltip callback in JSROOT</title>
+
+   <script src="../scripts/JSRootCore.js?2d&onload=startGUI" type="text/javascript"></script>
+
+   <script type='text/javascript'>
+
+      var cnt = 0;
+
+      function updateGUI() {
+         // if getting histogram from THttpServer as JSON string, one should parse it like:
+         // var histo = JSROOT.parse(your_json_string);
+
+         // this is just generation of histogram
+         var histo = JSROOT.CreateTH2(20, 20);
+         for (var iy=0;iy<20;iy++)
+            for (var ix=0;ix<20;ix++) {
+               var bin = histo.getBin(ix+1, iy+1), val = 0;
+               switch (cnt % 4) {
+                  case 1: val = ix + 19 - iy; break;
+                  case 2: val = 38 - ix - iy; break;
+                  case 3: val = 19 - ix + iy; break;
+                  default: val = ix + iy; break;
+               }
+               histo.setBinContent(bin, val);
+            }
+
+         histo.fName = "generated";
+         histo.fTitle = "Drawing " + cnt++;
+
+         var painter = JSROOT.redraw('object_draw', histo, "colz");
+
+         if (cnt==1) painter.ConfigureUserTooltipCallback(function(info) {
+            if (info==null) { 
+               // one could clear previous draw
+               // JSROOT.cleanup("tooltip_draw");
+               d3.select("#user_tooltip").html("No tooltip");
+               return;
+            } 
+            // set tooltip info
+            d3.select("#user_tooltip").html("object " + info.name + "  bin " + info.bin + "  cont " + info.cont);
+
+            var h1 = JSROOT.CreateTH1(20);
+            // copy content from TH2 to TH1
+            for (var n=0;n<20;n++)
+               h1.setBinContent(n+1, info.obj.getBinContent(n+1, info.biny));
+            h1.fName = "tooltip";
+            h1.fTitle = "Projection of biny=" + info.biny;
+            JSROOT.redraw("tooltip_draw", h1);
+     });
+
+      }
+
+      function startGUI() {
+         updateGUI();
+         setInterval(updateGUI, 3000); 
+      }
+
+
+   </script>
+
+
+</head>
+
+<body>
+
+  <div id="object_draw" style="width: 800px; height:600px; float:left"></div>
+
+  <div id="tooltip_draw" style="width: 400px; height:300px"></div>
+
+  <div id="user_tooltip">Place for tooltip</div>
+
+</body>
+</html>
+

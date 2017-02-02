@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "homepage": "https://root.cern.ch/js/",
+  "homepage": "https://root.cern/js/",
   "authors": [
     "Sergey Linev <S.Linev@gsi.de>",
     "Bertrand Bellenot <bertrand.bellenot@cern.ch>"
@@ -12,9 +12,9 @@
     "globals"
   ],
   "dependencies": {
-    "d3": "~3.5.9",
-    "jquery": "2.1.4",
-    "jquery-ui": "1.11.4",
+    "d3": "~4.4.4",
+    "jquery": "3.1.1",
+    "jquery-ui": "1.12.1",
     "jquery-mousewheel" : "3.1.13",
     "jqueryui-touch-punch" : "*",
     "MathJax" : "2.6.1",
