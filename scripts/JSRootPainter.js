@@ -1216,7 +1216,11 @@
          var sz1 = this.main_visible_rect();
          this.enlarge_main('toggle');
          var sz2 = this.main_visible_rect();
-         var res = (sz1.height>=sz2.height) && (sz1.width>=sz2.width);
+         var res = (sz1.height>10) && (sz1.width>20) &&
+                   (((sz1.height>=sz2.height) && (sz1.width>=sz2.width)) ||
+                    ((sz1.height>1.5*sz2.height) && (sz1.width>=0.9*sz2.width)) ||
+                    ((sz1.height>0.9*sz2.height) && (sz1.width>1.5*sz2.width)));
+
          main.property('can_enlarge', res);
          return res;
       }
