@@ -1,7 +1,7 @@
 // custom draw function (old code, now not used).
-Amore_Histo_Draw = function(divid, obj, opt) { 
+Amore_Histo_Draw = function(divid, obj, opt) {
 
-   // normal draw function 
+   // normal draw function
    var painter = JSROOT.draw(divid, obj.fVal, opt);
 
    // redefine update function while it expects histogram as argument
