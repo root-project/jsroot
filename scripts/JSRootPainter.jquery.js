@@ -1308,6 +1308,7 @@
             if (!args.cut) delete args.cut;
 
             args.drawopt = frame.find('.treedraw_opt').val();
+            if (args.drawopt === "dump") { args.dump = true; args.drawopt = ""; }
             if (!args.drawopt) delete args.drawopt;
 
             args.numentries = parseInt(frame.find('.treedraw_number').val());
