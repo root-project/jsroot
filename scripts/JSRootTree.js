@@ -518,7 +518,7 @@
 
       // parse parameters which defined at the end as expression;par1name:par1value;par2name:par2value
       var pos = expr.lastIndexOf(";");
-      while (pos>0) {
+      while (pos>=0) {
          var parname = expr.substr(pos+1), parvalue = undefined;
          expr = expr.substr(0,pos);
          pos = expr.lastIndexOf(";");
@@ -548,8 +548,7 @@
                args.player = true;
                break;
             case "dump":
-               this.dump_values = true;
-               if (args.numentries===undefined) args.numentries = 10;
+               args.dump = true;
                break;
             case "maxseg":
             case "maxrange":
@@ -581,8 +580,7 @@
             harg = harg.substr(pos);
          }
          if (harg === "dump") {
-            this.dump_values = true;
-            if (args.numentries===undefined) args.numentries = 10;
+            args.dump = true;
          } else
          if (pos<0) {
             this.hist_name = harg;
@@ -596,6 +594,12 @@
             }
             if (isok) this.hist_args = harg;
          }
+      }
+
+      if (args.dump) {
+         this.dump_values = true;
+         args.reallocate_objects = true;
+         if (args.numentries===undefined) args.numentries = 10;
       }
 
       return expr;
@@ -677,22 +681,27 @@
    JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
       this.ndim = 1;
 
+      if (expr.indexOf("dump")==0) expr = ";" + expr;
+
       expr = this.ParseParameters(tree, args, expr);
 
       this.monitoring = args.monitoring;
 
-      if (expr === "dump") {
-         this.dump_values = true;
-         if (args.numentries===undefined) args.numentries = 10;
+      if (this.dump_values) {
 
          this.hist = []; // array of dump objects
 
-         this.AddBranch(branch); // add branch
+         this.leaf = args.leaf;
+
+         // branch object remains, threrefore we need to copy fields to see them all
+         this.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
+                              (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
+
+         this.AddBranch(branch, "br0", args.direct_branch); // add branch
 
          this.Process = this.ProcessDump;
 
          return true;
-
       }
 
       this.vars[0] = new JSROOT.TDrawVariable(this.globals);
@@ -1062,8 +1071,17 @@
    JSROOT.TDrawSelector.prototype.ProcessDump = function(entry) {
       // simple dump of the branch - no need to analyze something
 
-      this.hist.push(this.tgtobj.br0);
+      var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
 
+      if (res && this.copy_fields) {
+         if (JSROOT.CheckArrayPrototype(res)===0) {
+            this.hist.push(JSROOT.extend({}, res));
+         } else {
+            this.hist.push(res);
+         }
+      } else {
+         this.hist.push(res);
+      }
    }
 
    JSROOT.TDrawSelector.prototype.Process = function(entry) {
@@ -2320,56 +2338,15 @@
 
       if (!args.expr) args.expr = "";
 
-      var selector = null;
-
-      if (args.branch && (args.expr.indexOf("dump")===0)) {
-         selector = new JSROOT.TSelector;
-
-         selector.arr = []; // accumulate here
-
-         selector.leaf = args.leaf;
-
-         // branch object remains, threrefore we need to copy fields to see them all
-         selector.copy_fields = ((args.branch.fLeaves && (args.branch.fLeaves.arr.length > 1)) ||
-                                (args.branch.fBranches && (args.branch.fBranches.arr.length > 0))) && !args.leaf;
-
-         selector.AddBranch(args.branch, "br0", args.direct_branch);
-
-         args.reallocate_objects = true; // indicate reader to always reallocate new objects
-
-         selector.Process = function() {
-            var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
-
-            if (res && this.copy_fields) {
-               if (JSROOT.CheckArrayPrototype(res)===0) {
-                  this.arr.push(JSROOT.extend({}, res));
-               } else {
-                  this.arr.push(res);
-               }
-            } else
-               this.arr.push(res);
-         }
-
-         selector.Terminate = function(res) {
-            this.ShowProgress();
-            JSROOT.CallBack(result_callback, this.arr, "inspect");
-         }
-
-         JSROOT.TDrawSelector.prototype.ParseParameters.call({}, this, args, args.expr);
-
-         if (!args.numentries) args.numentries = 10;
-         // if (!args.firstentry) args.firstentry = 212;
-      } else
-      if (args.branch) {
-         selector = new JSROOT.TDrawSelector(result_callback);
-         if (!selector.DrawOnlyBranch(this, args.branch, args.expr, args)) selector = null;
-      } else
-      if (args.expr === "testio") {
-         // special debugging code
+      // special debugging code
+      if (args.expr === "testio")
          return this.IOTest(args, result_callback);
-      } else {
-         selector = new JSROOT.TDrawSelector(result_callback);
 
+      var selector = new JSROOT.TDrawSelector(result_callback);
+
+      if (args.branch) {
+         if (!selector.DrawOnlyBranch(this, args.branch, args.expr, args)) selector = null;
+      } else {
          if (!selector.ParseDrawExpression(this, args)) selector = null;
       }
 
