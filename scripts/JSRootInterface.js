@@ -39,12 +39,12 @@
    }
 
    guiLayout = function() {
-      var selects = document.getElementById("layout");
+      var selects = document.getElementById("gui_layout");
       return selects ? selects.options[selects.selectedIndex].text : 'collapsible';
    }
 
    setGuiLayout = function(value) {
-      var selects = document.getElementById("layout");
+      var selects = document.getElementById("gui_layout");
       if (!selects) return;
 
       for (var i in selects.options) {
@@ -106,7 +106,7 @@
                  + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
                  + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
                  + ' <input type="checkbox" name="monitoring" id="monitoring"/> Monitoring '
-                 + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="layout">'
+                 + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="gui_layout">'
                  + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                  + ' </select>';
       } else {
@@ -136,12 +136,12 @@
                +'       onclick="ReadSelectedFile()" type="button" title="Read the Selected File" value="Load"/>'
                +'<input style="padding:2px; margin-left:10px;"'
                +'       onclick="ResetUI()" type="button" title="Clear All" value="Reset"/>'
-               +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="layout">'
+               +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="gui_layout">'
                +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                +'</select><br/>';
          } else
          if (noselect === "file") {
-            guiCode += '<select style="padding:2px; margin-left:5px; margin-top:5px;" title="layout kind" id="layout">'
+            guiCode += '<select style="padding:2px; margin-left:5px; margin-top:5px;" title="layout kind" id="gui_layout">'
                      + '  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                      + '</select><br/>';
          }
@@ -194,7 +194,7 @@
 
          // specify display kind every time selection done
          // will be actually used only for first drawing or after reset
-         $("#layout").change(function() {
+         $("#gui_layout").change(function() {
             if (hpainter) hpainter.SetDisplay(guiLayout(), drawDivId);
          });
 

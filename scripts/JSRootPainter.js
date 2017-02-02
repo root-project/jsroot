@@ -10355,7 +10355,7 @@
          this.disp_kind = 'custom';
          this.disp_frameid = null;
       } else {
-         this.disp_kind = layout || "simple";
+         this.disp_kind = layout;
          this.disp_frameid = frameid;
       }
 
