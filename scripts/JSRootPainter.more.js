@@ -2466,7 +2466,7 @@
 
       JSROOT.extend(this, new JSROOT.TPavePainter(obj));
 
-      this.SetDivId(divid);
+      this.SetDivId(divid, 2);
 
       this.DrawLegendItems = function(w, h) {
 
