@@ -2,7 +2,7 @@
 
 ## Changes in 5.0.0
 1. Reading TTree data
-    - all kinds of branches, including split STL conainers
+    - all kinds of branches, including split STL containers
     - branches with several elementary leaves
     - branches from different ROOT files
     - JSROOT.TSelector class to access TTree data
@@ -15,7 +15,7 @@
     - iterate over arrays indexes, let use another branch as index values
     - support "Entry$" and "Entries$" variables in expressions
     - bits histogram like "event.fTracks.fBits>>bits(16)"
-    - special hanlindling of TBits
+    - special handling of TBits
     - arbitrary math function from JavaScript Math class, some TMath:: function from ROOT
     - if branch is object, one could use methods "TMath::Abs(lep1_p4.X()+lep1_p4.Y())"
     - interactive player to configure and execute draw expression  
