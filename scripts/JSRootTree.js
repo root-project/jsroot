@@ -1531,6 +1531,19 @@
             return true;
          }
 
+         if (branch._typename === "TBranchObject") {
+            member = {
+               name: target_name,
+               typename: branch.fClassName,
+               virtual: leaf.fVirtual,
+               func: function(buf,obj) {
+                  var clname = this.typename;
+                  if (this.virtual) clname = buf.ReadFastString(buf.ntou1()+1);
+                  obj[this.name] = buf.ClassStreamer({}, clname);
+               }
+            };
+         } else
+
          if ((branch.fType === JSROOT.BranchType.kClonesNode) || (branch.fType === JSROOT.BranchType.kSTLNode)) {
 
             elem = JSROOT.IO.CreateStreamerElement(target_name, JSROOT.IO.kInt);
