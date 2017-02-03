@@ -2632,6 +2632,11 @@
          if (v>=4) obj._sharedProp = buf.ClassStreamer({}, "RooRealVarSharedProperties");
       };
 
+      cs['RooAbsBinning'] = function(buf,obj) {
+         buf.ClassStreamer(obj, (buf.last_read_version==1) ? "TObject" : "TNamed");
+         buf.ClassStreamer(obj, "RooPrintable");
+      };
+
       cs['RooLinkedList'] = function(buf,obj) {
          var v = buf.last_read_version;
          buf.ClassStreamer(obj, "TObject");
