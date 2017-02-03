@@ -14,10 +14,7 @@ To start the http server, at any time, create an instance of the [THttpServer](h
 
 This will start a [civetweb](https://github.com/civetweb/civetweb)-based http server on the port 8080. Then one should be able to open the address "http://localhost:8080" in any modern browser (Firefox, Chrome, Opera, Safari, IE11) and browse objects created in application. By default, the server can access files, canvases, and histograms via the gROOT pointer. All those objects can be displayed with JSROOT graphics.
 
-There is a [snapshot (frozen copy)](https://root.cern/js/latest/httpserver.C/) of such server, running in [tutorials/http/httpserver.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C) macro from ROOT tutorial.
-
-<iframe width="800" height="500" src="https://root.cern/js/latest/httpserver.C/?layout=simple&item=Canvases/c1">
-</iframe>
+There is a [server snapshot](https://root.cern/js/latest/httpserver.C/?layout=simple&item=Canvases/c1) of running macro [tutorials/http/httpserver.C](https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C) from ROOT tutorials.
 
 One could specify several options when creating http server. They could be add as additional URL parameters to the constructor arguments like:
 
@@ -422,6 +419,6 @@ To use `multi.json` request from the JavaScript, one should create special 'POST
      }); 
      xhr.send("Files/job1.root/hpx/root.json\nFiles/job1.root/hpxpy/root.json\nFiles/job1.root/hprof/root.json\n");
 
-Here arguemnt "multi" identifies, that server response should be parsed with `JSROOT.parse_multi` function, which correctly interprets JSON code, produced by multi.json request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.  
+Here arguemnt "multi" identifies, that server response should be parsed with `JSROOT.parse_multi()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.  
 
        

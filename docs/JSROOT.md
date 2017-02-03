@@ -175,57 +175,57 @@ While draw option can include "+" sign itself, for superposition one could speci
 
 JSROOT provides possibility to display TTree data, using [TTree::Draw](https://root.cern/doc/master/classTTree.html) syntax: 
 
-   - [opt=px](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px)
-   - [opt=px:py](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px:py)
-   - [opt=px:py:pz](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz)
+   - [opt=px](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px)
+   - [opt=px:py](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py)
+   - [opt=px:py:pz](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple;1&opt=px:py:pz)
    
 Histogram ranges and binning defined after reading first 1000 entries from the tree. 
 Like in ROOT, one could configure histogram binning and range directly:   
 
-   - [opt=px:py>>h(50,-5,5,50,-5,5)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
+   - [opt=px:py>>h(50,-5,5,50,-5,5)](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
 For any integer value one can accumulate histogram with value bits distribution, specifying as output ">>bits(16)" or ">>bits":
 
-   - [opt=event.fTracks.fBits>>bits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
+   - [opt=event.fTracks.fBits>>bits](https://root.cern/js/latest/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
 
 There is special handling of TBits objects:
 
-   - [opt=event.fTriggerBits](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTriggerBits)
+   - [opt=event.fTriggerBits](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTriggerBits)
  
 It is allowed to use different expressions with branch values:
 
-   - [opt=px+py:px-py](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px+py:px-py)
+   - [opt=px+py:px-py](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px+py:px-py)
    
 Such expression can include arithmetical operations and all methods, provided in JavaScript [Math](http://www.w3schools.com/jsref/jsref_obj_math.asp) class:
      
-   - [opt=Math.abs(px+py)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=Math.abs%28px+py%29)
+   - [opt=Math.abs(px+py)](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=Math.abs%28px+py%29)
 
 In the expression one could use "Entry$" and "Entries$" variables.
  
 One also could specify cut condition, separating it with "::" from the rest draw expression like:
 
-   - [opt=px:py::pz>5](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>5)
+   - [opt=px:py::pz>5](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>5)
 
 Contrary to the normal ROOT, JSROOT allows to use "(expr?res1:res2)" operator (placed into brackets):
 
-   - [opt=px:py::(pz>5?2:1)](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::%28pz>5?2:1%29)
+   - [opt=px:py::(pz>5?2:1)](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py::%28pz>5?2:1%29)
 
 It is possible to "dump" content of any branch (by default - first 10 entries):   
 
-   - [item=ntuple/px&opt=dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple/px&opt=dump)
+   - [item=ntuple/px&opt=dump](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple/px&opt=dump)
 
 Or one could dump values produced with draw expression (also first 10 entries by default):
 
-   - [opt=px:py::pz>>dump](http://jsroot.gsi.de/dev/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
+   - [opt=px:py::pz>>dump](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py::pz>>dump)
 
 Working with array indexes is supported. By default, all elements in array are used for the drawing.
 One could specify index for any array dimension (-1 means last element in the array). For instance, dump last element from `event.fTracks` array:
  
-   - [opt=event.fTracks[-1].fBits>>dump](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[-1].fBits>>dump)
+   - [opt=event.fTracks[-1].fBits>>dump](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[-1].fBits>>dump)
 
 For any array or collection kind one could extract its size with expression:
 
-   - [opt=event.fTracks.@size](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks.@size;num:3000)
+   - [opt=event.fTracks.@size](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks.@size;num:3000)
    
 At the end of expression one can add several parameters with the syntax:
 
@@ -240,7 +240,7 @@ Following parameters are supported:
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
   - "drawopt" - drawing option for produced histogram
   
-Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](http://jsroot.gsi.de/dev/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
+Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
 
 ## Geometry viewer
@@ -318,7 +318,7 @@ Example of major LHC detectors:
 
 Other detectors examples:
  * HADES: [full](https://root.cern/js/latest/?file=https://root.cern/files/hades2.root&item=CBMGeom;1&opt=all;dflt_colors), [preselected](https://root.cern/js/latest/?json=../files/geom/hades.json.gz)  
- * BABAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:https://root.cern/files/babar_all.C), [emca](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:http://jsroot.gsi.de/files/geom/babar_emca.C) 
+ * BABAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:https://root.cern/files/babar_all.C), [emca](https://root.cern/js/latest/?file=https://root.cern/files/babar.root&item=babar;1&opt=macro:https://root.cern/files/babar_emca.C) 
  * STAR: [full](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:https://root.cern/files/star_all.C;clipxyz), [svtt](https://root.cern/js/latest/?file=https://root.cern/files/star.root&item=star;1&opt=macro:https://root.cern/files/star_svtt.C) 
  * D0: [full](https://root.cern/js/latest/?file=https://root.cern/files/d0.root&item=d0;1&opt=clipxyz)
  * NA47: [full](https://root.cern/js/latest/?file=https://root.cern/files/na47.root&item=na47;1&opt=dflt_colors)
@@ -382,7 +382,7 @@ Major limitation here - user should interactively select files for reading.
 There is button __"..."__ on the main JSROOT page, which starts file selection dialog. 
 Or one could invoke such dialog with "localfile" parameter in URL string.
 
--  <https://jsroot.gsi.de/dev/?localfile>
+-  <https://root.cern/js/latest/?localfile>
 
 If valid ROOT file is selected, JSROOT will be able to normally read content of such file. 
 
@@ -459,7 +459,7 @@ In this particular case, the histogram is not changing.
 
 Even without any server-side application, JSROOT provides nice ROOT-like graphics,
 which could be used in arbitrary HTML pages.
-There is [example page](https://root.cern/js/latest/demo/example.htm),
+There is [example page](https://root.cern/js/latest/demo/th2.htm),
 where a 2-D histogram is artificially generated and displayed.
 Details about the JSROOT API can be found in the next chapters.
 
@@ -491,6 +491,7 @@ In URL string with JSRootCore.js script one can specify which JSROOT functionali
     + '3d' 3D drawing for 2D/3D histograms
     + 'geo' 3D drawing of TGeo classes
     + 'io' binary file I/O
+    + 'tree' TTree functionality
     + 'math' advanced mathemathical functions
     + 'mathjax' loads MathJax.js and use it for latex output
     + 'gui' default gui for offline/online applications
@@ -582,7 +583,7 @@ For example, reading an object from a file and displaying it will look like:
     
 Similar example with JSON file:
 
-    var filename = "http://jsroot.gsi.de/files/th2ul.json.gz";
+    var filename = "https://root.cern/js/files/th2ul.json.gz";
     JSROOT.NewHttpRequest(filename, 'object', function(obj) {
        JSROOT.draw("drawing", obj, "lego");
     }).send(null);
