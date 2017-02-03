@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Fix problem with zooming in THStack
+2. Support ROOT files with old zip algorithm (before 2010) 
 
 
 ## Changes in 5.0.0

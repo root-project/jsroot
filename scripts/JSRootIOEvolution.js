@@ -149,27 +149,26 @@
 
       while (fullres < tgtsize) {
 
-         if (curr + JSROOT.IO.Z_HDRSIZE >= totallen) {
+         var fmt = "uncknown", off = 0, HDRSIZE = 9;
+
+         if (curr + HDRSIZE >= totallen) {
             if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
             return null;
          }
 
-         var fmt = "uncknown";
-         if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) fmt = "new"; else
-         if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) fmt = "old"; else
+         if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) { fmt = "new"; off = 2; } else
+         if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) { fmt = "old"; off = 0; } else
          if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA";
 
          /*   C H E C K   H E A D E R   */
-         if (fmt !== "new") {
+         if ((fmt !== "new") && (fmt !== "old")) {
             if (!noalert) alert("R__unzip: " + fmt + " zlib format is not supported!");
             return null;
          }
 
-         var srcsize = JSROOT.IO.Z_HDRSIZE +
-                         ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
+         var srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
 
-         // portion of packed data to process
-         var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + JSROOT.IO.Z_HDRSIZE + 2, arr.byteLength - curr - JSROOT.IO.Z_HDRSIZE - 2);
+         var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
 
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
@@ -182,7 +181,7 @@
       }
 
       if (fullres !== tgtsize) {
-         if (!noalert) alert("R__unzip: fail to unzip data expacts " + tgtsize + " , got " + fullres);
+         if (!noalert) alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);
          return null;
       }
 
