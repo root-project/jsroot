@@ -2637,6 +2637,12 @@
          buf.ClassStreamer(obj, "RooPrintable");
       };
 
+      cs['RooCategory'] = function(buf,obj) {
+         var v = buf.last_read_version;
+         buf.ClassStreamer(obj, "RooAbsCategoryLValue");
+         obj._sharedProp = (v===1) ? buf.ReadObjectAny() : buf.ClassStreamer({}, "RooCategorySharedProperties");
+      };
+
       cs['RooLinkedList'] = function(buf,obj) {
          var v = buf.last_read_version;
          buf.ClassStreamer(obj, "TObject");
