@@ -154,9 +154,14 @@
             return null;
          }
 
+         var fmt = "uncknown";
+         if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) fmt = "new"; else
+         if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) fmt = "old"; else
+         if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA";
+
          /*   C H E C K   H E A D E R   */
-         if (!((getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED))) {
-            if (!noalert) alert("R__unzip: Old zlib format is not supported!");
+         if (fmt !== "new") {
+            if (!noalert) alert("R__unzip: " + fmt + " zlib format is not supported!");
             return null;
          }
 
