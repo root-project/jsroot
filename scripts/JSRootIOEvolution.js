@@ -2643,6 +2643,14 @@
          obj._sharedProp = (v===1) ? buf.ReadObjectAny() : buf.ClassStreamer({}, "RooCategorySharedProperties");
       };
 
+      cs['RooWorkspace::CodeRepo'] = function(buf,obj) {
+         var sz = (buf.last_read_version == 2) ? 3 : 2;
+         for (var i=0;i<sz;++i) {
+            var cnt = buf.ntoi4() * ((i==0) ? 4 : 3);
+            while (cnt--) buf.ReadTString();
+         }
+      }
+
       cs['RooLinkedList'] = function(buf,obj) {
          var v = buf.last_read_version;
          buf.ClassStreamer(obj, "TObject");
