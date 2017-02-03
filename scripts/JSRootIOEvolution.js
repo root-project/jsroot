@@ -2093,19 +2093,17 @@
                   // workaround - in some cases version is not written for empty container
                   if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false)) return null;
 
-                  var ver = buf.ReadVersion();
-
-                  // console.log('ver', ver);
+                  var o = buf.o, ver = buf.ReadVersion();
 
                   if ((cnt===0) && (ver.bytecnt===0)) return ver;
 
-                  // workaround - in some cases version is not written for empty container
-                  if ((cnt===0) && (ver.bytecnt!==6) && (ver.bytecnt!=2) && !this.read_empty_stl_version) {
-                     buf.o = ver.off - ((ver.bytecnt===undefined) ? 2 : 6);
-                     return null;
-                  }
-
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+
+                  // workaround - in some cases version is not written for empty container
+                  if (cnt===0)
+                     if (((ver.bytecnt!==6) && (ver.bytecnt!=2) && !this.read_empty_stl_version) ||
+                        (ver.bytecnt && (ver.bytecnt > (this.member_wise ? 12 : 6)))) { buf.o = o; return null; }
+
                   this.stl_version = undefined;
                   if (this.member_wise) {
                      this.stl_version = { val: buf.ntoi2() };
