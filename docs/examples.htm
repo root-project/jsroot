@@ -234,7 +234,7 @@
                { name: "lhcb2", asurl: true, file: "https://root.cern/files/lhcb2.root", item: "E;1//Event/Gen/Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
                { name: "atlas", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree", opt: "TileMuContainer_p1_TileMuObj.vector.m_phi", title: "Histogram data of tree from atlas30new.root file" },
                { name: "expr", asurl: true, file: "WJets.root", opt: "TMath::Abs(lep1_p4.M())", item: "t", title: "Use of expression and object methods" },
-               { name: "vect_expr", asurl: true, file: "WJets.root", opt: "jets.M()", item: "t", title: "Use of expression for objects, stored in the vector" }
+               { name: "vect_expr", asurl: true, file: "WJets.root", item: "t", opt: "jets.M()", title: "Use of expression for objects, stored in the vector" }
             ],
             TProfile : [
               { opt: "", file: "hsimple.root", item: "hprof;1" },
@@ -384,6 +384,7 @@
                { name: "wjets", asurl: true, file: "WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
                { name: "index", asurl: true, file: "tree99.root", item: "T;1", opt: "ex3.fInt[ex3.fSize-2]", title: "Use branch value as index in another branch draw" },
                { name: "cms2", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events", opt:"recoPhotons_photons__RECO.obj[].pt_", title: "cms2.root file, example of draw subelement of the branch" },
+               { name: "brobj", asurl: true, file: "https://root.cern/files/mods.root", item: "MODS/Particles", opt: "dump",  title: "TObjectBranch, appears in older ROOT files" },
                { name: "bits", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks.fBits>>bits(32);num:5000", title: "Special 1-D histogram kind with bits values" },
                { name: "tbits", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2", opt: "event.fTriggerBits", title: "Special handling for TBits object" },
                { name: "tbits2", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTriggerBits", title: "TBits object splitted on the subbranches" },
