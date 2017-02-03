@@ -196,7 +196,7 @@
       this.arr = arr;
       this.o = pos || 0;
       this.fFile = file;
-      this.length = length || arr.byteLength; // use size of arrayview, blob buffer can be much bigger
+      this.length = length || (arr ? arr.byteLength : 0); // use size of arrayview, blob buffer can be much bigger
       this.ClearObjectMap();
       this.fTagOffset = 0;
       this.last_read_version = 0;

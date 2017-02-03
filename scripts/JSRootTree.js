@@ -1,6 +1,7 @@
 /// @file JSRootTree.js
 /// Collect all TTree-relevant methods like reading and processing
 
+
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
@@ -2119,7 +2120,7 @@
                      if (bitem.raw)
                         bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      else
-                        bitem.raw = new JSROOT.TBuffer(0, handle.file); // create dummy buffer - basket ha no data
+                        bitem.raw = new JSROOT.TBuffer(null, 0, handle.file, 0); // create dummy buffer - basket has no data
                      bitem.fNevBuf = bskt.fNevBuf;
                      is_direct = true;
                      elem.baskets[k] = bitem;
