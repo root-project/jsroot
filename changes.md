@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Fix problem with zooming in THStack
+
+
 ## Changes in 5.0.0
 1. Reading TTree data
     - all kinds of branches, including split STL containers

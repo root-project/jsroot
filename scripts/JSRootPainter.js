@@ -7453,15 +7453,17 @@
          this.draw_content = true;
       }
 
-      if (hmin >= hmax) {
-         if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
-         if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-                  else { this.ymin = 0; this.ymax = hmin * 2; }
-      } else {
-         var dy = (hmax - hmin) * 0.05;
-         this.ymin = hmin - dy;
-         if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-         this.ymax = hmax + dy;
+      if (this.draw_content) {
+         if (hmin >= hmax) {
+            if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
+               if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
+               else { this.ymin = 0; this.ymax = hmin * 2; }
+         } else {
+            var dy = (hmax - hmin) * 0.05;
+            this.ymin = hmin - dy;
+            if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
+            this.ymax = hmax + dy;
+         }
       }
 
       hmin = hmax = null;
@@ -7481,9 +7483,9 @@
             set_zoom = true;
       }
 
-      if (set_zoom) {
-         this.zoom_ymin = (hmin == null) ? this.ymin : hmin;
-         this.zoom_ymax = (hmax == null) ? this.ymax : hmax;
+      if (set_zoom && this.draw_content) {
+         this.zoom_ymin = (hmin === null) ? this.ymin : hmin;
+         this.zoom_ymax = (hmax === null) ? this.ymax : hmax;
       }
 
       // If no any draw options specified, do not try draw histogram
