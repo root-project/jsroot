@@ -48,6 +48,8 @@
          // constants of bits in version
          kStreamedMemberWise : JSROOT.BIT(14),
 
+         kSplitCollectionOfPointers: 100,
+
          // map of user-streamer function like func(buf,obj)
          // or alias (classname) which can be used to read that function
          // or list of read functions
@@ -598,6 +600,8 @@
       if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
       var flag = this.ntoi1();
 
+      console.log('READ BASKET', ver, flag, obj.fNevBuf, obj.fBufferSize, obj.fNevBufSize, obj.fLast);
+
       if (flag===0) return obj;
 
       if ((flag % 10) != 2) {
@@ -608,8 +612,10 @@
                   obj.fEntryOffset[i] &= ~kDisplacementMask;
          }
 
-         if (flag>40)
+         if (flag>40) {
             obj.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+            console.log('READ DISPLACEMENT', obj.fDisplacement.length);
+         }
       }
 
       if ((flag === 1) || (flag > 10)) {
@@ -1979,7 +1985,7 @@
             if ((element._typename === 'TStreamerSTLstring') ||
                 (member.typename == "string") || (member.typename == "string*")) {
                member.readelem = function(buf) { return buf.ReadTString(); };
-               member.read_empty_stl_version = false;
+               // member.read_empty_stl_version = false;
             } else
             if ((stl === JSROOT.IO.kSTLvector) || (stl === JSROOT.IO.kSTLlist) ||
                 (stl === JSROOT.IO.kSTLdeque) || (stl === JSROOT.IO.kSTLset) ||
@@ -2050,7 +2056,7 @@
 
                member.streamer = JSROOT.IO.GetPairStreamer(member.si, member.pairtype, file);
 
-               member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
+               // member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
 
                if (!member.streamer || (member.streamer.length!==2)) {
                   JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
@@ -2078,19 +2084,37 @@
                member.read_version = function(buf, cnt) {
                   // read version, check member-wise flag; if any, read version for contained object
 
+                  console.log('start reading version', buf.o, buf.remain(), 'cnt', cnt, 'read_empty', this.read_empty_stl_version);
+
                   // workaround - in some cases version is not written for empty container
-                  if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false)) return null;
+                  if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false))  {
+                     if (this.read_empty_stl_version) throw new Error("SKIP0 VERSION WHEN SHOULD READ " + this.typename + " - " + this.name);
+                     return null;
+                  }
 
                   var o = buf.o, ver = buf.ReadVersion();
 
-                  if ((cnt===0) && (ver.bytecnt===0)) return ver;
+                  console.log('cnt',cnt, 'ver', ver, 'read_empty', this.read_empty_stl_version);
 
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
+
+                  if ((cnt===0) && (ver.bytecnt===0) && !this.member_wise) {
+
+                     if (this.read_empty_stl_version!==true) throw new Error("READ ZERO WHEN SHOULD NOT " + this.typename + " - " + this.name + ' ver ' + ver.val);
+
+                     return ver;
+                  }
 
                   // workaround - in some cases version is not written for empty container
                   if (cnt===0)
                      if (((ver.bytecnt!==6) && (ver.bytecnt!=2) && !this.read_empty_stl_version) ||
-                        (ver.bytecnt && (ver.bytecnt > (this.member_wise ? 12 : 6)))) { buf.o = o; return null; }
+                        (ver.bytecnt && (ver.bytecnt > (this.member_wise ? 12 : 6)))) {
+                        if (this.read_empty_stl_version) throw new Error("SKIP1 VERSION WHEN SHOULD READ " + this.typename + " - " + this.name + '  bytecnt ' + ver.bytecnt);
+                        buf.o = o;
+                        return null;
+                        }
+
+                  if ((cnt===0) && this.read_empty_stl_version===false) throw new Error("READ VERSION WHEN SHOULD SKIP " + this.typename + " - " + this.name);
 
                   this.stl_version = undefined;
                   if (this.member_wise) {
@@ -2730,7 +2754,7 @@
          if (n===0) return []; // for empty vector no need to search splitted streamers
 
          if (n>200000) {
-            throw new Error('member-wise streaming for of ' + this.conttype + " num " + n);
+            throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
             return [];
          }
 

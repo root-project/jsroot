@@ -1386,6 +1386,7 @@
                type: 0, // keep type identifier
                curr_entry: -1, // last processed entry
                raw : null, // raw buffer for reading
+               basket : null, // current basket object
                curr_basket: 0,  // number of basket used for processing
                read_entry: -1,  // last entry which is already read
                staged_entry: -1, // entry which is staged for reading
@@ -1399,12 +1400,23 @@
                staged_prev: 0, // entry limit of previous I/O request
                staged_now: 0, // entry limit of current I/O request
                progress_showtm: 0, // last time when progress was showed
+               have_to_read_empty_stl_branch: false, // by default splitted container branch read version if empty container
                GetBasketEntry : function(k) {
                   if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
                   var res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
                   if (res) return res;
                   var bskt = (k>0) ? this.branch.fBaskets.arr[k-1] : null;
                   return bskt ? (this.branch.fBasketEntry[k-1] + bskt.fNevBuf) : 0;
+               },
+               LocateBuffer : function(entry) {
+                 // locate buffer at proper position
+                  var shift = entry - this.first_entry, off;
+                  if (this.basket.fEntryOffset) {
+                     off = this.basket.fEntryOffset[shift];
+                  } else {
+                     off = this.basket.fNevBufSize * shift;
+                  }
+                  this.raw.locate((this.raw.entry_shift || 0) + off);
                },
                GetTarget : function(tgtobj) {
                   if (!this.tgt) return tgtobj;
@@ -1415,7 +1427,6 @@
                   }
                   return tgtobj;
                }
-
          };
 
          // last basket can be stored directly with the branch
@@ -1630,7 +1641,12 @@
           } else
           if (is_brelem && (nb_leaves <= 1)) {
 
+             item.have_to_read_empty_stl_branch = (branch.fType === JSROOT.BranchType.kClonesMemberNode);
+
              elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
+
+             if (elem)
+                console.log('ELEMENT', elem.fName, elem.fType, elem.fTypeName, 'READ_EMPTY', item.have_to_read_empty_stl_branch);
 
              // this is basic type - can try to solve problem differently
              if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) {
@@ -1747,6 +1763,8 @@
                 // STL branch provides special function for the reading
                 member.func = member.objs_branch_func;
 
+                member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
+
              } else {
                 member.func0 = member.func;
 
@@ -1822,6 +1840,8 @@
                 // function provided by normal I/O
                 member.func = member.branch_func;
                 member.stl_size = item_cnt.name;
+                member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
+
              } else
              if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
                 if (item_cnt2) {
@@ -1829,6 +1849,7 @@
                    member.stl_size = item_cnt.name;
                    member.cntname = item_cnt2.name;
                    member.func = member.branch_func; // this is special function, provided by base I/O
+                   member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
                 } else {
                    member.cntname = item_cnt.name;
                 }
@@ -1939,7 +1960,7 @@
       if (!isNaN(args.firstentry) && (args.firstentry>handle.firstentry) && (args.firstentry < handle.lastentry))
          handle.process_min = args.firstentry;
 
-      handle.staged_now = handle.process_min;
+      handle.current_entry = handle.staged_now = handle.process_min;
 
       if (!isNaN(args.numentries) && (args.numentries>0)) {
          var max = handle.process_min + args.numentries;
@@ -2021,6 +2042,23 @@
             handle.selector.ShowProgress(portion);
          }
 
+         function ReadBasketEntryOffset(branch, basket, buf) {
+            if (branch.fEntryOffsetLen <= 0) return;
+
+            // ready entry offest len when necessary
+
+            buf.locate(basket.fLast - buf.raw_shift);
+
+            basket.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+            if (!basket.fEntryOffset) basket.fEntryOffset = [ basket.fKeylen ];
+
+            if (buf.remain() > 0)
+               basket.fDisplacement = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+
+            // rollback buffer - not needed in the future
+            buf.locate(buf.raw_shift);
+         }
+
          function ProcessBlobs(blobs) {
             if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length)))
                return JSROOT.CallBack(baskets_call_back, null);
@@ -2042,19 +2080,35 @@
 
                // items[k].obj = basket; // keep basket object itself if necessary
 
-               bitems[k].fNevBuf = basket.fNevBuf; // only number of entries in the basket are relevant for the moment
+               bitems[k].bskt_obj = basket; // only number of entries in the basket are relevant for the moment
+
+               console.log('CHECK', basket.fKeylen, basket.fObjlen, basket.fNbytes);
 
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
-                  bitems[k].raw = buf;
+                  buf.raw_shift = 0;
+                  buf.entry_shift = basket.fKeylen;
+
                } else {
                   // unpack data and create new blob
                   var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
 
-                  if (objblob) bitems[k].raw = JSROOT.CreateTBuffer(objblob, 0, handle.file);
-
-                  if (bitems[k].raw) bitems[k].raw.fTagOffset = basket.fKeylen;
+                  if (objblob) {
+                     buf = JSROOT.CreateTBuffer(objblob, 0, handle.file);
+                     buf.raw_shift = basket.fKeylen;
+                     buf.fTagOffset = basket.fKeylen;
+                  } else {
+                     throw new Error('FAIL TO UNPACK');
+                  }
                }
+
+               bitems[k].raw = buf; // here already unpacket buffer
+
+               console.log('BUFFER', buf.remain());
+
+               ReadBasketEntryOffset(bitems[k].branch, basket, buf);
+
+               console.log('Extract RAW ', buf.remain(), 'last', basket.fLast - basket.fKeylen, 'objlen', basket.fObjlen);
             }
 
             if (ExtractPlaces())
@@ -2093,10 +2147,10 @@
                      var lmt = elem.GetBasketEntry(k+1),
                          not_needed = (lmt <= handle.process_min);
 
-                     for (var d=0;d<elem.ascounter.length;++d) {
-                        var dep = handle.arr[elem.ascounter[d]]; // dependent element
-                        if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
-                     }
+                     //for (var d=0;d<elem.ascounter.length;++d) {
+                     //   var dep = handle.arr[elem.ascounter[d]]; // dependent element
+                     //   if (dep.first_readentry < lmt) not_needed = false; // check that counter provide required data
+                     //}
 
                      if (not_needed) continue; // if that basket not required, check next
 
@@ -2121,7 +2175,12 @@
                         bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      else
                         bitem.raw = JSROOT.CreateTBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
-                     bitem.fNevBuf = bskt.fNevBuf;
+                     bitem.raw.raw_shift = 0;
+
+                     if (bskt.fBufferRef)
+                        ReadBasketEntryOffset(elem.branch, bskt, bitem.raw);
+
+                     bitem.bskt_obj = bskt;
                      is_direct = true;
                      elem.baskets[k] = bitem;
                   } else {
@@ -2183,7 +2242,10 @@
 
                elem = handle.arr[n];
 
-               if (!elem.raw) {
+               if (!elem.raw || !elem.basket || (elem.first_entry + elem.basket.fNevBuf <= handle.current_entry)) {
+                  delete elem.raw;
+                  delete elem.basket;
+
                   if ((elem.curr_basket >= elem.numbaskets)) {
                      if (n==0) return handle.selector.Terminate(true);
                      continue; // ignore non-master branch
@@ -2205,20 +2267,19 @@
                   }
 
                   elem.raw = bitem.raw;
-                  elem.nev = bitem.fNevBuf; // number of entries in raw buffer
-                  elem.current_entry = elem.GetBasketEntry(bitem.basket);
+                  elem.basket = bitem.bskt_obj;
+                  // elem.nev = bitem.fNevBuf; // number of entries in raw buffer
+                  elem.first_entry = elem.GetBasketEntry(bitem.basket);
 
                   bitem.raw = null; // remove reference on raw buffer
                   bitem.branch = null; // remove reference on the branch
+                  bitem.bskt_obj = null; // remove reference on the branch
                   elem.baskets[elem.curr_basket++] = undefined; // remove from array
                }
 
-               min_curr = Math.min(min_curr, elem.current_entry);
-               loopentries = Math.min(loopentries, elem.nev); // define how much entries can be processed before next raw buffer will be finished
+                // define how much entries can be processed before next raw buffer will be finished
+               loopentries = Math.min(loopentries, elem.first_entry + elem.basket.fNevBuf - handle.current_entry);
             }
-
-            // assign first entry which can be analyzed
-            if (handle.current_entry < 0) handle.current_entry = min_curr;
 
             // second loop extracts all required data
 
@@ -2233,7 +2294,6 @@
                   elem = handle.arr[n];
                   elem.arrmember.arrlength = loopentries;
                   elem.arrmember.func(elem.raw, handle.selector.tgtarr);
-                  elem.current_entry += loopentries;
 
                   elem.raw = null;
                }
@@ -2250,19 +2310,14 @@
                for (n=0;n<handle.arr.length;++n) {
                   elem = handle.arr[n];
 
-                  if (handle.current_entry === elem.current_entry) {
-                     // read only element where entry id matches
+                  // locate buffer offest at proper place
+                  elem.LocateBuffer(handle.current_entry);
 
-                     elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
-
-                     elem.current_entry++;
-
-                     if (--elem.nev <= 0) elem.raw = null;
-                  }
+                  // read only element where entry id matches
+                  elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
                }
 
-               if (handle.current_entry >= handle.process_min)
-                  handle.selector.Process(handle.current_entry);
+               handle.selector.Process(handle.current_entry);
 
                handle.current_entry++;
 
