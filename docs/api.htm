@@ -297,21 +297,25 @@
                SetListener(aaa, shortname, url);
                  
                if ('src' in entry) {
-                  aaa = document.createElement( 'a' );
-                  aaa.textContent = " (src)";
-                  aaa.title = "Click to see source of the example";
-                  aaa.href = "https://github.com/linev/jsroot/blob/master/" + ((entry.src===true) ? url : entry.src);
-                  content.appendChild( aaa );
-                  SetSourceListener(aaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
+                  var saaa = document.createElement( 'a' );
+                  saaa.textContent = " (src)";
+                  saaa.title = "Click to see source of the example";
+                  saaa.href = "https://github.com/linev/jsroot/blob/master/" + ((entry.src===true) ? url : entry.src);
+                  content.appendChild( saaa );
+                  SetSourceListener(saaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
                   
-                  if (window.location.hash == "#" + shortname + "_src")
+                  if (window.location.hash == "#" + shortname + "_src") {
+                     saaa.focus();
                      ProcessSourceClick(((entry.src===true) ? url : entry.src));
+                  }
                } 
                  
                content.appendChild(document.createElement('br'));
                
-              if (window.location.hash == "#" + shortname)
-                  ProcessClick(url);
+              if (window.location.hash == "#" + shortname) {
+                 aaa.focus();
+                 ProcessClick(url);
+              }
             }
          }
          
