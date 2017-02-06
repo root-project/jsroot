@@ -2509,12 +2509,10 @@
 
       cs['TStreamerInfo'] = function(buf, obj) {
          // stream an object of class TStreamerInfo from the I/O buffer
-         if (buf.last_read_version > 1) {
-            buf.ClassStreamer(obj, "TNamed");
-            obj.fCheckSum = buf.ntou4();
-            obj.fClassVersion = buf.ntou4();
-            obj.fElements = buf.ReadObjectAny();
-         }
+         buf.ClassStreamer(obj, "TNamed");
+         obj.fCheckSum = buf.ntou4();
+         obj.fClassVersion = buf.ntou4();
+         obj.fElements = buf.ReadObjectAny();
       };
 
       cs['TStreamerElement'] = function(buf, element) {
