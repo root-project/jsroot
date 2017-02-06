@@ -1976,18 +1976,6 @@
 
             var stl = (element.fSTLtype || 0) % 40;
 
-            // FIXME: this is workaround due to wrong type id in the streamer element
-            // example is ?file=https://root.cern/files/RelValMinBias-GEN-SIM-RECO.root&item=MetaData;1/ProductRegistry&opt=dump
-            // is it old ROOT file ?
-            if ((element._typename === 'TStreamerSTL') && (stl>0) && (stl<JSROOT.IO.StlNames.length))
-               if (element.fTypeName.indexOf(JSROOT.IO.StlNames[stl]+"<")!=0) {
-                  console.warn('STL type mismatch for ', element.fTypeName, ' got wrong type ', stl, JSROOT.IO.StlNames[stl]);
-                  for (var k=1;k<JSROOT.IO.StlNames.length;++k)
-                     if (element.fTypeName.indexOf(JSROOT.IO.StlNames[k]+"<")==0) { stl = k; break; }
-
-                  console.warn('Now for', element.fTypeName, ' use type ', stl, JSROOT.IO.StlNames[stl]);
-               }
-
             if ((element._typename === 'TStreamerSTLstring') ||
                 (member.typename == "string") || (member.typename == "string*")) {
                member.readelem = function(buf) { return buf.ReadTString(); };
@@ -2590,11 +2578,17 @@
       };
 
       cs['TStreamerSTL'] = function(buf, elem) {
-         if (buf.last_read_version > 1) {
-            buf.ClassStreamer(elem, "TStreamerElement");
-            elem.fSTLtype = buf.ntou4();
-            elem.fCtype = buf.ntou4();
-         }
+         buf.ClassStreamer(elem, "TStreamerElement");
+         elem.fSTLtype = buf.ntou4();
+         elem.fCtype = buf.ntou4();
+
+         if ((elem.fSTLtype === JSROOT.IO.kSTLmultimap) &&
+              ((elem.fTypeName.indexOf("std::set")===0) ||
+               (elem.fTypeName.indexOf("set")==0))) elem.fSTLtype = JSROOT.IO.kSTLset;
+
+         if ((elem.fSTLtype === JSROOT.IO.kSTLset) &&
+               ((elem.fTypeName.indexOf("std::multimap")===0) ||
+                (elem.fTypeName.indexOf("multimap")===0))) elem.fSTLtype = JSROOT.IO.kSTLmultimap;
       };
 
       cs['TStreamerSTLstring'] = function(buf, elem) {
