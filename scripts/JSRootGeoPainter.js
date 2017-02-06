@@ -1652,6 +1652,8 @@
    JSROOT.TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {
       // function called when mouse is going over the item in the browser
 
+      if (!this.options) return; // protection for cleaned-up painter
+
       var painter = this, obj = hitem._obj, mesh = null;
       if (this.options._debug)
          console.log('Mouse over', on, itemname, (hitem._obj ? hitem._obj._typename : "---"));
