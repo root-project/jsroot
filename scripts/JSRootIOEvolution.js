@@ -28,8 +28,6 @@
          kByteCountMask: 0x40000000,
          kNewClassTag: 0xFFFFFFFF,
          kClassMask: 0x80000000,
-         Z_DEFLATED: 8,
-         Z_HDRSIZE: 9,
          Mode: "array", // could be string or array, enable usage of ArrayBuffer in http requests
          NativeArray: true, // when true, native arrays like Int32Array or Float64Array are used
 
@@ -46,7 +44,7 @@
          StlNames: [ "", "vector", "list", "deque", "map", "multimap", "set", "multiset", "bitset"],
 
          // constants of bits in version
-         kStreamedMemberWise : JSROOT.BIT(14),
+         kStreamedMemberWise: JSROOT.BIT(14),
 
          kSplitCollectionOfPointers: 100,
 
@@ -56,15 +54,15 @@
          CustomStreamers: {},
 
          // TOBject bits
-         kIsReferenced : JSROOT.BIT(4),
+         kIsReferenced: JSROOT.BIT(4),
          kHasUUID: JSROOT.BIT(5),
 
-         IsInteger : function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) || (typ===this.kCounter) ||
+         IsInteger: function(typ) { return ((typ>=this.kChar) && (typ<=this.kLong)) || (typ===this.kCounter) ||
                                              ((typ>=this.kLegacyChar) && (typ<=this.kBool)); },
 
-         IsNumeric : function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); },
+         IsNumeric: function(typ) { return (typ>0) && (typ<=this.kBool) && (typ!==this.kCharStar); },
 
-         GetTypeId : function(typname, norecursion) {
+         GetTypeId: function(typname, norecursion) {
             switch (typname) {
                case "bool":
                case "Bool_t": return JSROOT.IO.kBool;
@@ -115,7 +113,7 @@
             return -1;
          },
 
-         GetTypeSize : function(typname) {
+         GetTypeSize: function(typname) {
             switch (typname) {
                case JSROOT.IO.kBool: return 1;
                case JSROOT.IO.kChar: return 1;
@@ -158,8 +156,8 @@
             return null;
          }
 
-         if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) { fmt = "new"; off = 2; } else
-         if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == JSROOT.IO.Z_DEFLATED) { fmt = "old"; off = 0; } else
+         if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == 8) { fmt = "new"; off = 2; } else
+         if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == 8) { fmt = "old"; off = 0; } else
          if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA";
 
          /*   C H E C K   H E A D E R   */
@@ -601,8 +599,6 @@
       if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
       var flag = this.ntoi1();
 
-      console.log('READ BASKET', ver, flag, obj.fNevBuf, obj.fBufferSize, obj.fNevBufSize, obj.fLast);
-
       if (flag===0) return obj;
 
       if ((flag % 10) != 2) {
@@ -613,10 +609,8 @@
                   obj.fEntryOffset[i] &= ~kDisplacementMask;
          }
 
-         if (flag>40) {
+         if (flag>40)
             obj.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
-            console.log('READ DISPLACEMENT', obj.fDisplacement.length);
-         }
       }
 
       if ((flag === 1) || (flag > 10)) {
@@ -660,7 +654,7 @@
          tag = this.ntou4();
       }
       if (!(tag & JSROOT.IO.kClassMask)) {
-         classInfo.objtag = tag; // indicate that we have deal with objects tag
+         classInfo.objtag = tag + this.fDisplacement; // indicate that we have deal with objects tag
          return classInfo;
       }
       if (tag == JSROOT.IO.kNewClassTag) {
@@ -671,7 +665,7 @@
             this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
       }  else {
          // got a tag to an already seen class
-         var clTag = (tag & ~JSROOT.IO.kClassMask);
+         var clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
          classInfo.name = this.GetMappedClass(clTag);
 
          if (classInfo.name === -1) {
