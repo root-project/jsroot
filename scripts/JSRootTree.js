@@ -1426,7 +1426,7 @@
                   }
                   return tgtobj;
                },
-               GetEntry: function(entry, tgtobj) {
+               GetEntry: function(entry) {
                  // This should be equivalent to TBranch::GetEntry() method
                   var shift = entry - this.first_entry, off;
                   if (!this.branch.TestBit(JSROOT.IO.BranchBits.kDoNotUseBufferMap))
@@ -1440,7 +1440,7 @@
                   }
                   this.raw.locate(off - this.raw.raw_shift);
 
-                  this.member.func(this.raw, this.GetTarget(tgtobj));
+                  // this.member.func(this.raw, this.GetTarget(tgtobj));
                }
          };
 
@@ -2272,6 +2272,9 @@
 
                for (n=0;n<handle.arr.length;++n) {
                   elem = handle.arr[n];
+
+                  elem.GetEntry(handle.current_entry);
+
                   elem.arrmember.arrlength = loopentries;
                   elem.arrmember.func(elem.raw, handle.selector.tgtarr);
 
@@ -2292,7 +2295,9 @@
                   elem = handle.arr[n];
 
                   // locate buffer offest at proper place
-                  elem.GetEntry(handle.current_entry, handle.selector.tgtobj);
+                  elem.GetEntry(handle.current_entry);
+
+                  elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
                }
 
                handle.selector.Process(handle.current_entry);

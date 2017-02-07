@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.0.x
+1. Fix - read many branch entries as arrays 
+
+
 ## Changes in 5.0.1
 1. Support older ROOT files, created before 2010 
 2. Support TBranchObject - appears in old files
