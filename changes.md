@@ -2,6 +2,7 @@
 
 ## Changes in 5.0.x
 1. Fix - read many branch entries as arrays 
+2. Fix - command sumbission to THttpServer 
 
 
 ## Changes in 5.0.1
