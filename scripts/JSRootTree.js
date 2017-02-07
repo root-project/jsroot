@@ -1409,7 +1409,6 @@
                staged_prev: 0, // entry limit of previous I/O request
                staged_now: 0, // entry limit of current I/O request
                progress_showtm: 0, // last time when progress was showed
-               have_to_read_empty_stl_branch: false, // by default splitted container branch read version if empty container
                GetBasketEntry : function(k) {
                   if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
                   var res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
@@ -1654,12 +1653,7 @@
           } else
           if (is_brelem && (nb_leaves <= 1)) {
 
-             item.have_to_read_empty_stl_branch = (branch.fType === JSROOT.BranchType.kClonesMemberNode);
-
              elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
-
-             if (elem)
-                console.log('ELEMENT', elem.fName, elem.fType, elem.fTypeName, 'READ_EMPTY', item.have_to_read_empty_stl_branch);
 
              // this is basic type - can try to solve problem differently
              if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) {
@@ -1775,9 +1769,6 @@
              if (member.objs_branch_func) {
                 // STL branch provides special function for the reading
                 member.func = member.objs_branch_func;
-
-                member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
-
              } else {
                 member.func0 = member.func;
 
@@ -1853,8 +1844,6 @@
                 // function provided by normal I/O
                 member.func = member.branch_func;
                 member.stl_size = item_cnt.name;
-                member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
-
              } else
              if ((elem.fType === JSROOT.IO.kStreamLoop) || (elem.fType === JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop)) {
                 if (item_cnt2) {
@@ -1862,7 +1851,6 @@
                    member.stl_size = item_cnt.name;
                    member.cntname = item_cnt2.name;
                    member.func = member.branch_func; // this is special function, provided by base I/O
-                   member.read_empty_stl_version = item.have_to_read_empty_stl_branch;
                 } else {
                    member.cntname = item_cnt.name;
                 }
@@ -2071,7 +2059,7 @@
                basket.fDisplacement = undefined;
 
             // rollback buffer - not needed in the future
-            buf.locate(buf.raw_shift);
+            // buf.locate(buf.raw_shift);
          }
 
          function ProcessBlobs(blobs) {
@@ -2097,8 +2085,6 @@
 
                bitems[k].bskt_obj = basket; // only number of entries in the basket are relevant for the moment
 
-               console.log('CHECK', basket.fKeylen, basket.fObjlen, basket.fNbytes);
-
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
                   buf.raw_shift = 0;
@@ -2117,11 +2103,7 @@
 
                bitems[k].raw = buf; // here already unpacket buffer
 
-               console.log('BUFFER', buf.remain());
-
                ReadBasketEntryOffset(bitems[k].branch, basket, buf);
-
-               console.log('Extract RAW ', buf.remain(), 'last', basket.fLast - basket.fKeylen, 'objlen', basket.fObjlen);
             }
 
             if (ExtractPlaces())

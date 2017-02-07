@@ -5,7 +5,8 @@
 2. Support TBranchObject - appears in old files
 3. Fix - problem with zooming in THStack
 4. Fix - empty baskets at the end of branch store
-5. Fix - more checks when reading version for empty STL container 
+5. Fix - solve problem with empty STL containers
+6. Fix - correcty set buffer position for the entry  
 
 
 ## Changes in 5.0.0

@@ -1980,7 +1980,6 @@
             if ((element._typename === 'TStreamerSTLstring') ||
                 (member.typename == "string") || (member.typename == "string*")) {
                member.readelem = function(buf) { return buf.ReadTString(); };
-               // member.read_empty_stl_version = false;
             } else
             if ((stl === JSROOT.IO.kSTLvector) || (stl === JSROOT.IO.kSTLlist) ||
                 (stl === JSROOT.IO.kSTLdeque) || (stl === JSROOT.IO.kSTLset) ||
@@ -2030,11 +2029,6 @@
                         subelem.$fictional = true;
                         member.submember = JSROOT.IO.CreateMember(subelem, file);
                      }
-                     //else
-                     //if ((member.conttype.indexOf('pair<')===0) &&
-                     //   JSROOT.IO.GetPairStreamer(null, member.conttype, file))  {
-                     //     // member.read_empty_stl_version = true; // seems to be, pair<> needs empty version
-                     // }
                   }
                }
             } else
@@ -2050,8 +2044,6 @@
                member.si = file.FindStreamerInfo(member.pairtype);
 
                member.streamer = JSROOT.IO.GetPairStreamer(member.si, member.pairtype, file);
-
-               // member.read_empty_stl_version = true; // in branch reading read version even for empty container, vector does not have it
 
                if (!member.streamer || (member.streamer.length!==2)) {
                   JSROOT.console('Fail to build streamer for pair ' + member.pairtype);
@@ -2077,40 +2069,10 @@
             if (!element.$fictional) {
 
                member.read_version = function(buf, cnt) {
-                  // read version, check member-wise flag; if any, read version for contained object
 
-                  // console.log('start reading version', buf.o, buf.remain(), 'cnt', cnt, 'read_empty', this.read_empty_stl_version);
-
-                  // workaround - in some cases version is not written for empty container
-                  if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false))  {
-                     if (this.read_empty_stl_version) throw new Error("SKIP0 VERSION WHEN SHOULD READ " + this.typename + " - " + this.name);
-                     return null;
-                  }
-
+                  if (cnt===0) return null;
                   var o = buf.o, ver = buf.ReadVersion();
-
-                  console.log('cnt',cnt, 'ver', ver, 'read_empty', this.read_empty_stl_version);
-
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
-
-                  if ((cnt===0) && (ver.bytecnt===0) && !this.member_wise) {
-
-                     if (this.read_empty_stl_version!==true) throw new Error("READ ZERO WHEN SHOULD NOT " + this.typename + " - " + this.name + ' ver ' + ver.val);
-
-                     return ver;
-                  }
-
-                  // workaround - in some cases version is not written for empty container
-                  if (cnt===0)
-                     if (((ver.bytecnt!==6) && (ver.bytecnt!=2) && !this.read_empty_stl_version) ||
-                        (ver.bytecnt && (ver.bytecnt > (this.member_wise ? 12 : 6)))) {
-                        if (this.read_empty_stl_version) throw new Error("SKIP1 VERSION WHEN SHOULD READ " + this.typename + " - " + this.name + '  bytecnt ' + ver.bytecnt);
-                        buf.o = o;
-                        return null;
-                        }
-
-                  if ((cnt===0) && this.read_empty_stl_version===false) throw new Error("READ VERSION WHEN SHOULD SKIP " + this.typename + " - " + this.name);
-
                   this.stl_version = undefined;
                   if (this.member_wise) {
                      this.stl_version = { val: buf.ntoi2() };
