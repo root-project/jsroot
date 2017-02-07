@@ -1,9 +1,10 @@
 # JSROOT changelog
 
-## Changes in 5.0.x
-1. Fix - read many branch entries as arrays 
-2. Fix - command sumbission to THttpServer
-3. Fix - refill stat also for empty histogram if this is main histogram  
+## Changes in 5.0.2
+1. Fix - read branch entries as arrays 
+2. Fix - command submission to THttpServer
+3. Fix - let refill statbox also for empty histogram  
+4. Fix - propblem with online TTree::Draw and ROOT6 
 
 
 ## Changes in 5.0.1
