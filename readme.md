@@ -4,9 +4,9 @@ JavaScript ROOT provides interactive ROOT-like graphics in the web browsers.
 Data can be read and displayed from binary and JSON ROOT files. 
 JSROOT implements user interface for THttpServer class.   
 
-<a href="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=COLZ"><img src="http://jsroot.gsi.de/files/img/th2.png" align="left" hspace="10" vspace="6" alt="TH2 drawing" title="Draw TH2 histogram with COLZ options"></a>
-<a href="https://root.cern/js/latest/?nobrowser&file=../files/danilo6.root&item=canvas;1"><img src="http://jsroot.gsi.de/files/img/tf1.png" align="left" hspace="10" vspace="6" alt="TF1 drawing" title="Superimpose histogram with fit results"></a>
-<a href="https://root.cern/js/latest/?nobrowser&json=../files/simple_alice.json.gz"><img src="http://jsroot.gsi.de/files/img/tgeo.png" align="left" hspace="10" vspace="6" alt="TGeo drawing" title="Extraction from ALICE geometry"></a>
+<a href="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz>4"><img src="http://jsroot.gsi.de/files/img/ttree.png" align="left" hspace="10" vspace="6" alt="TTree::Draw()" title="2-dimensional TTree::Draw with cut options"></a>
+<a href="https://root.cern/js/latest/?nobrowser&file=../files/histpainter6.root&item=draw_hstack;1"><img src="http://jsroot.gsi.de/files/img/thstack.png" align="left" hspace="10" vspace="6" alt="THStack" title="Several varians of THStack drawing"></a>
+<a href="https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1"><img src="http://jsroot.gsi.de/files/img/geo_tracks.png" align="left" hspace="10" vspace="6" alt="Geometry" title="Drawing of TGeo model superimposed with tracks and hits"></a>
 <br/>
 <br/>
 <br/>

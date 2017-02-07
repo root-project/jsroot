@@ -2017,8 +2017,6 @@
                   console.log('!!! Reuse basic type ',member.conttype,' from file streamer infos');
                }
 
-               // console.log('Create streamer for ', member.typename, 'container', member.conttype, 'typeid', member.typeid);
-
                // check
                if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
                   console.warn('Contained type ', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
@@ -2091,7 +2089,6 @@
             if (!element.$fictional) {
 
                member.read_version = function(buf, cnt) {
-
                   if (cnt===0) return null;
                   var o = buf.o, ver = buf.ReadVersion();
                   this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
@@ -2118,8 +2115,6 @@
 
                   var ver = this.read_version(buf, cnt);
 
-                  // console.log('read ', this.conttype, 'cnt', cnt, 'ver', ver, 'bufpos', buf.o);
-
                   for (var n=0;n<cnt;++n)
                      arr[n] = buf.ReadNdimArray(this, function(buf2,member2) { return member2.readelem(buf2); });
 
@@ -2140,8 +2135,6 @@
                   // see code in JSRootTree.js for reference
 
                   var arr = obj[this.name0]; // objects array where reading is done
-
-                  // console.log('Read branch', this.name, 'length', arr.length);
 
                   var ver = this.read_version(buf, arr.length);
 
@@ -2728,11 +2721,9 @@
 
          var n = buf.ntou4(), streamer = null, ver = this.stl_version;
 
-         // console.log('member-wise streaming for of', this.conttype, n);
-
          if (n===0) return []; // for empty vector no need to search splitted streamers
 
-         if (n>200000) {
+         if (n>1000000) {
             throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
             return [];
          }

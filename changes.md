@@ -1,12 +1,12 @@
 # JSROOT changelog
 
-## Changes in dev
-1. Support ROOT files with old zip algorithm (before 2010) 
+## Changes in 5.0.1
+1. Support older ROOT files, created before 2010 
 2. Support TBranchObject - appears in old files
-3. Fix - problem with zooming in THStack
-4. Fix - empty baskets at the end of branch store
-5. Fix - solve problem with empty STL containers
-6. Fix - correcty set buffer position for the entry  
+3. Correcty set TBasket buffer position for the entry
+4. Fix - problem with empty STL containers
+5. Fix - empty baskets at the end of branch store
+6. Fix - problem with zooming in THStack
 
 
 ## Changes in 5.0.0
