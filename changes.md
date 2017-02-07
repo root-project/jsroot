@@ -3,7 +3,7 @@
 ## Changes in 5.0.1
 1. Support older ROOT files, created before 2010 
 2. Support TBranchObject - appears in old files
-3. Correcty set TBasket buffer position for the entry
+3. Correctly set TBasket buffer position for the entry
 4. Fix - problem with empty STL containers
 5. Fix - empty baskets at the end of branch store
 6. Fix - problem with zooming in THStack
