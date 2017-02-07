@@ -239,6 +239,7 @@
       this.fObjectMap = {};
       this.fClassMap = {};
       this.fObjectMap[0] = null;
+      this.fDisplacement = 0;
    }
 
    JSROOT.TBuffer.prototype.ReadVersion = function() {
@@ -2084,7 +2085,7 @@
                member.read_version = function(buf, cnt) {
                   // read version, check member-wise flag; if any, read version for contained object
 
-                  console.log('start reading version', buf.o, buf.remain(), 'cnt', cnt, 'read_empty', this.read_empty_stl_version);
+                  // console.log('start reading version', buf.o, buf.remain(), 'cnt', cnt, 'read_empty', this.read_empty_stl_version);
 
                   // workaround - in some cases version is not written for empty container
                   if ((cnt===0) && ((buf.remain()<6) || this.read_empty_stl_version === false))  {

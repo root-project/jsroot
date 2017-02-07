@@ -1414,9 +1414,9 @@
                   if (this.basket.fEntryOffset) {
                      off = this.basket.fEntryOffset[shift];
                   } else {
-                     off = this.basket.fNevBufSize * shift;
+                     off = this.basket.fKeylen + this.basket.fNevBufSize * shift;
                   }
-                  this.raw.locate((this.raw.entry_shift || 0) + off);
+                  this.raw.locate(off - this.raw.raw_shift);
                },
                GetTarget : function(tgtobj) {
                   if (!this.tgt) return tgtobj;
@@ -2052,6 +2052,9 @@
             basket.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
             if (!basket.fEntryOffset) basket.fEntryOffset = [ basket.fKeylen ];
 
+            console.log(basket.fKeylen, 'READ fEntryOffset', basket.fEntryOffset.length, basket.fNevBuf);
+            for (var k=0;k<20;++k) console.log('k',k,'off',basket.fEntryOffset[k]);
+
             if (buf.remain() > 0)
                basket.fDisplacement = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
 
@@ -2087,8 +2090,6 @@
                if (basket.fKeylen + basket.fObjlen === basket.fNbytes) {
                   // use data from original blob
                   buf.raw_shift = 0;
-                  buf.entry_shift = basket.fKeylen;
-
                } else {
                   // unpack data and create new blob
                   var objblob = JSROOT.R__unzip(blob, basket.fObjlen, false, buf.o);
