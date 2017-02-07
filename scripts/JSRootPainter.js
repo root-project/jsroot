@@ -3823,10 +3823,9 @@
       // no need to refill statistic if histogram is dummy
       if (main.IsDummyHisto()) return true;
 
-      var dostat = new Number(pave.fOptStat);
-      var dofit = new Number(pave.fOptFit);
-      if (!dostat) dostat = JSROOT.gStyle.fOptStat;
-      if (!dofit) dofit = JSROOT.gStyle.fOptFit;
+      var dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
+      if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
+      if (isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
       // make empty at the beginning
       pave.Clear();
@@ -5321,7 +5320,7 @@
    JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    JSROOT.THistPainter.prototype.IsDummyHisto = function() {
-      return (this.histo==null) || !this.draw_content || (this.options.Axis>0);
+      return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
    JSROOT.THistPainter.prototype.IsTProfile = function() {
@@ -6313,8 +6312,10 @@
 
       if (!this.draw_content || !this.is_main_painter()) return null;
 
+      this.create_stats = true;
+
       var stats = this.FindStat();
-      if (stats != null) return stats;
+      if (stats) return stats;
 
       var st = JSROOT.gStyle;
 
