@@ -631,6 +631,29 @@
       return obj;
    }
 
+   JSROOT.TBuffer.prototype.ReadBasketEntryOffset = function(basket, offset) {
+      // this is remaining part of TBasket streamer to decode fEntryOffset
+      // after unzipping of the TBasket data
+
+      this.locate(basket.fLast - offset);
+
+      if (this.remain() <= 0) {
+         if (!basket.fEntryOffset && (basket.fNevBuf <=1)) basket.fEntryOffset = [ basket.fKeylen ];
+         if (!basket.fEntryOffset) console.warn("No fEntryOffset when expected for basket with", basket.fNevBuf, "entries");
+         return;
+      }
+
+      basket.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+      if (!basket.fEntryOffset) basket.fEntryOffset = [ basket.fKeylen ];
+
+      if (this.remain() > 0)
+         basket.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
+      else
+         basket.fDisplacement = undefined;
+
+      return basket;
+   }
+
    JSROOT.TBuffer.prototype.ReadTRef = function(obj) {
       this.ClassStreamer(obj, "TObject");
       if (obj.fBits & JSROOT.IO.kHasUUID)
@@ -1959,7 +1982,6 @@
 
                   buf.CheckBytecount(ver, this.typename);
                }
-
 
             } else {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);

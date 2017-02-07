@@ -1409,15 +1409,25 @@
                staged_prev: 0, // entry limit of previous I/O request
                staged_now: 0, // entry limit of current I/O request
                progress_showtm: 0, // last time when progress was showed
-               GetBasketEntry : function(k) {
+               GetBasketEntry: function(k) {
                   if (!this.branch || (k > this.branch.fMaxBaskets)) return 0;
                   var res = (k < this.branch.fMaxBaskets) ? this.branch.fBasketEntry[k] : 0;
                   if (res) return res;
                   var bskt = (k>0) ? this.branch.fBaskets.arr[k-1] : null;
                   return bskt ? (this.branch.fBasketEntry[k-1] + bskt.fNevBuf) : 0;
                },
-               LocateBuffer : function(entry) {
-                 // locate buffer position like GetEntry()
+               GetTarget: function(tgtobj) {
+                  // returns target object which should be used for the branch reading
+                  if (!this.tgt) return tgtobj;
+                  for (var k=0;k<this.tgt.length;++k) {
+                     var sub = this.tgt[k];
+                     if (!tgtobj[sub.name]) tgtobj[sub.name] = sub.lst.Create();
+                     tgtobj = tgtobj[sub.name];
+                  }
+                  return tgtobj;
+               },
+               GetEntry: function(entry, tgtobj) {
+                 // This should be equivalent to TBranch::GetEntry() method
                   var shift = entry - this.first_entry, off;
                   if (!this.branch.TestBit(JSROOT.IO.BranchBits.kDoNotUseBufferMap))
                      this.raw.ClearObjectMap();
@@ -1429,15 +1439,8 @@
                      off = this.basket.fKeylen + this.basket.fNevBufSize * shift;
                   }
                   this.raw.locate(off - this.raw.raw_shift);
-               },
-               GetTarget : function(tgtobj) {
-                  if (!this.tgt) return tgtobj;
-                  for (var k=0;k<this.tgt.length;++k) {
-                     var sub = this.tgt[k];
-                     if (!tgtobj[sub.name]) tgtobj[sub.name] = sub.lst.Create();
-                     tgtobj = tgtobj[sub.name];
-                  }
-                  return tgtobj;
+
+                  this.member.func(this.raw, this.GetTarget(tgtobj));
                }
          };
 
@@ -2043,25 +2046,6 @@
             handle.selector.ShowProgress(portion);
          }
 
-         function ReadBasketEntryOffset(branch, basket, buf) {
-            if (branch.fEntryOffsetLen <= 0) return;
-
-            // ready entry offest len when necessary
-
-            buf.locate(basket.fLast - buf.raw_shift);
-
-            basket.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
-            if (!basket.fEntryOffset) basket.fEntryOffset = [ basket.fKeylen ];
-
-            if (buf.remain() > 0)
-               basket.fDisplacement = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
-            else
-               basket.fDisplacement = undefined;
-
-            // rollback buffer - not needed in the future
-            // buf.locate(buf.raw_shift);
-         }
-
          function ProcessBlobs(blobs) {
             if (!blobs || ((places.length>2) && (blobs.length*2 !== places.length)))
                return JSROOT.CallBack(baskets_call_back, null);
@@ -2103,7 +2087,8 @@
 
                bitems[k].raw = buf; // here already unpacket buffer
 
-               ReadBasketEntryOffset(bitems[k].branch, basket, buf);
+               if (bitems[k].branch.fEntryOffsetLen > 0)
+                  buf.ReadBasketEntryOffset(basket, buf.raw_shift);
             }
 
             if (ExtractPlaces())
@@ -2170,10 +2155,10 @@
                         bitem.raw.locate(0); // reset pointer - same branch may be read several times
                      else
                         bitem.raw = JSROOT.CreateTBuffer(null, 0, handle.file); // create dummy buffer - basket has no data
-                     bitem.raw.raw_shift = 0;
+                     bitem.raw.raw_shift = bskt.fKeylen;
 
-                     if (bskt.fBufferRef)
-                        ReadBasketEntryOffset(elem.branch, bskt, bitem.raw);
+                     if (bskt.fBufferRef && (elem.branch.fEntryOffsetLen > 0))
+                        bitem.raw.ReadBasketEntryOffset(bskt, bitem.raw.raw_shift);
 
                      bitem.bskt_obj = bskt;
                      is_direct = true;
@@ -2302,14 +2287,12 @@
 
             // main processing loop
             while(loopentries--) {
+
                for (n=0;n<handle.arr.length;++n) {
                   elem = handle.arr[n];
 
                   // locate buffer offest at proper place
-                  elem.LocateBuffer(handle.current_entry);
-
-                  // read only element where entry id matches
-                  elem.member.func(elem.raw, elem.GetTarget(handle.selector.tgtobj));
+                  elem.GetEntry(handle.current_entry, handle.selector.tgtobj);
                }
 
                handle.selector.Process(handle.current_entry);
