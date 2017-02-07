@@ -22,6 +22,15 @@
    JSROOT.BranchType = { kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
                          kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41 };
 
+   JSROOT.IO.BranchBits = {
+      kDoNotProcess: JSROOT.BIT(10), // Active bit for branches
+      kIsClone: JSROOT.BIT(11), // to indicate a TBranchClones
+      kBranchObject: JSROOT.BIT(12), // branch is a TObject*
+      kBranchAny: JSROOT.BIT(17), // branch is an object*
+      kAutoDelete: JSROOT.BIT(15),
+      kDoNotUseBufferMap: JSROOT.BIT(22) // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
+   }
+
    JSROOT.TSelector = function() {
       // class to read data from TTree
       this.branches = []; // list of branches to read
@@ -1409,10 +1418,14 @@
                   return bskt ? (this.branch.fBasketEntry[k-1] + bskt.fNevBuf) : 0;
                },
                LocateBuffer : function(entry) {
-                 // locate buffer at proper position
+                 // locate buffer position like GetEntry()
                   var shift = entry - this.first_entry, off;
+                  if (!this.branch.TestBit(JSROOT.IO.BranchBits.kDoNotUseBufferMap))
+                     this.raw.ClearObjectMap();
                   if (this.basket.fEntryOffset) {
                      off = this.basket.fEntryOffset[shift];
+                     if (this.basket.fDisplacement)
+                        this.raw.fDisplacement = this.basket.fDisplacement[shift];
                   } else {
                      off = this.basket.fKeylen + this.basket.fNevBufSize * shift;
                   }
@@ -2052,11 +2065,10 @@
             basket.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
             if (!basket.fEntryOffset) basket.fEntryOffset = [ basket.fKeylen ];
 
-            console.log(basket.fKeylen, 'READ fEntryOffset', basket.fEntryOffset.length, basket.fNevBuf);
-            for (var k=0;k<20;++k) console.log('k',k,'off',basket.fEntryOffset[k]);
-
             if (buf.remain() > 0)
                basket.fDisplacement = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+            else
+               basket.fDisplacement = undefined;
 
             // rollback buffer - not needed in the future
             buf.locate(buf.raw_shift);
