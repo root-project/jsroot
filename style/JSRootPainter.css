@@ -52,6 +52,12 @@
    display: block;
 }
 
+.jsroot .h_button {
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}
+
 .jsroot .h_item {
     cursor: pointer;
 }

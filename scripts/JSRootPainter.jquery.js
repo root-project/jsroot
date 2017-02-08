@@ -427,23 +427,23 @@
 
       var d3p = maindiv.append("p").style("margin-left","3px");
 
-      d3p.append("a").attr("href", '#').text("open all").on("click", function() { h.toggleOpenState(true); d3.event.preventDefault(); });
+      d3p.append("a").attr("class", "h_button").text("open all").on("click", h.toggleOpenState.bind(h,true));
       d3p.append("text").text(" | ");
-      d3p.append("a").attr("href", '#').text("close all").on("click", function() { h.toggleOpenState(false); d3.event.preventDefault(); });
+      d3p.append("a").attr("class", "h_button").text("close all").on("click", h.toggleOpenState.bind(h,false));
 
       if ('_online' in this.h) {
          d3p.append("text").text(" | ");
-         d3p.append("a").attr("href", '#').text("reload").on("click", function() { h.reload(); d3.event.preventDefault(); });
+         d3p.append("a").attr("class", "h_button").text("reload").on("click", h.reload.bind(h));
       }
 
       if ('disp_kind' in this) {
          d3p.append("text").text(" | ");
-         d3p.append("a").attr("href", '#').text("clear").on("click", function() { h.clear(false); d3.event.preventDefault(); });
+         d3p.append("a").attr("class", "h_button").text("clear").on("click", h.clear.bind(h,false));
       }
 
       if (this.nobrowser) {
          d3p.append("text").text(" | ");
-         d3p.append("a").attr("href", '#').text("hide").on("click", function() { h.ToggleFloatBrowser(false); d3.event.preventDefault(); });
+         d3p.append("a").attr("class", "h_button").text("hide").on("click", h.ToggleFloatBrowser.bind(h,false));
       }
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
