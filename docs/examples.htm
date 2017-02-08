@@ -447,7 +447,7 @@
               { name:"folder", url: "?file=" + filepath + "folders.root&expand=RsnMgr;1/input/0/2/10", title: "TFolder class" },
               { name:"task", url: "?file=" + filepath + "tasks.root&expand=run;1", title: "TTask class" },
               { name:"alitask", url: "?file=" + filepath + "alitasks.root&expand=RsnMgr;1/input/1/3/9", title: "AliRoot TTask classes" },
-              { name:"aliQA", url: "?file=" + filepath + "QAresults_barrel.root&expand=TPC_PerformanceQA/TPCQA;1", title: "Alice QA file" },
+              { name:"aliQA", asurl: "browser", file: "QAresults_barrel.root", item: "TPC_PerformanceQA/TPCQA;1/AliPerformanceTPC", opt: "inspect", title: "Objects from Alice QA file" },
               { name: "roofit", url: "?nobrowser&file=https://root.cern/files/stressRooFit_v534_ref.root&layout=grid2x2&items=[rf101_plot2,rf201_plot1,rf310_plot2,rf708_plot6]", title: "Several RooFit plots (still some classes not work)" },
               { name:"ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O" }
             ]

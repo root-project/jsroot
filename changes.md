@@ -5,6 +5,7 @@
 2. Let use quotes in the URL parameters to protect complex arguments with special symbols
 3. Support col0 option for TH2Poly class to suppress empty bins
 4. Correctly handle unzoom with logx/logy scales
+5. Handle in I/O TMatrixTSym classes, introduce direct streamers 
 
 
 ## Changes in 5.0.2

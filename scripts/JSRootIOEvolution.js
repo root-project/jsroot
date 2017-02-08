@@ -53,6 +53,10 @@
          // or list of read functions
          CustomStreamers: {},
 
+         // these are streamers which do not handle version regularly
+         // used for special classes like TRef or TBasket
+         DirectStreamers: {},
+
          // TOBject bits
          kIsReferenced: JSROOT.BIT(4),
          kHasUUID: JSROOT.BIT(5),
@@ -732,13 +736,11 @@
 
       if (obj._typename === undefined) obj._typename = classname;
 
-      if (classname === 'TQObject') return obj;
-
-      if (classname === "TBasket")
-         return this.ReadTBasket(obj);
-
-      if (classname === "TRef")
-         return this.ReadTRef(obj);
+      var direct = JSROOT.IO.DirectStreamers[classname];
+      if (direct) {
+         direct(this, obj);
+         return obj;
+      }
 
       var ver = this.ReadVersion();
 
@@ -2420,15 +2422,6 @@
          obj.fIndex = buf.ReadFastArray(obj.fN, JSROOT.IO.kLong64);
       };
 
-      cs['TRef'] = function(buf, obj) {
-         obj._typename = "TRef";
-         buf.ClassStreamer(obj, "TObject");
-         if (obj.fBits & JSROOT.IO.kHasUUID)
-            obj.fUUID = buf.ReadTString();
-         else
-            obj.fPID = buf.ntou2();
-      };
-
       cs['TRefArray'] = function(buf, obj) {
          obj._typename = "TRefArray";
          buf.ClassStreamer(obj, "TObject");
@@ -2652,6 +2645,35 @@
             obj.arr.Add(buf.ReadObjectAny());
          if (v>1) obj._name = buf.ReadTString();
       };
+
+      var ds = JSROOT.IO.DirectStreamers;
+
+      ds['TQObject'] = function(buf,obj) {
+         // do nothing
+      };
+
+      ds['TBasket'] = function(buf,obj) {
+         buf.ReadTBasket(obj);
+      }
+
+      ds['TRef'] = function(buf,obj) {
+         buf.ReadTRef(obj);
+      }
+
+      ds['TMatrixTSym<double>'] = ds['TMatrixTSym<float>'] = function(buf,obj) {
+         var kind = (obj._typename.indexOf("<double>")>0) ? JSROOT.IO.kDouble : JSROOT.IO.kFloat;
+
+         buf.ClassStreamer(obj, "TMatrixTBase" + ((kind===JSROOT.IO.kDouble) ? "<double>" : "<float>"));
+
+         obj.fElements = (kind===JSROOT.IO.kDouble) ? new Float64Array(obj.fNelems) : new Float32Array(obj.fNelems);
+
+         var arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1))/2, kind), cnt = 0;
+
+         for (var i=0;i<obj.fNrows;++i)
+            for (var j=i;j<obj.fNcols;++j)
+               obj.fElements[j*obj.fNcols + i] = obj.fElements[i*obj.fNcols + j] = arr[cnt++];
+      }
+
    }
 
    JSROOT.IO.CreateStreamerElement = function(name, typename, file) {
