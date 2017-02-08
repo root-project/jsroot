@@ -5,7 +5,9 @@
 2. Let use quotes in the URL parameters to protect complex arguments with special symbols
 3. Support col0 option for TH2Poly class to suppress empty bins
 4. Correctly handle unzoom with logx/logy scales
-5. Handle in I/O TMatrixTSym classes, introduce direct streamers 
+5. Introduce direct streamers - like TBasket or TRef
+   Benefit - one can add custom streamers of such kind or reuse existing 
+6. Handle in I/O TMatrixTSym classes 
 
 
 ## Changes in 5.0.2

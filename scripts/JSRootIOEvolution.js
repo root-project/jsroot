@@ -541,43 +541,13 @@
 
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       if (!key) key = {};
-      key.fNbytes = this.ntoi4();
-      key.fVersion = this.ntoi2();
-      key.fObjlen = this.ntou4();
-      key.fDatime = this.ClassStreamer({}, 'TDatime');
-      key.fKeylen = this.ntou2();
-      key.fCycle = this.ntou2();
-      if (key.fVersion > 1000) {
-         key.fSeekKey = this.ntou8();
-         this.shift(8); // skip seekPdir
-      } else {
-         key.fSeekKey = this.ntou4();
-         this.shift(4); // skip seekPdir
-      }
-      key.fClassName = this.ReadTString();
-      key.fName = this.ReadTString();
-      key.fTitle = this.ReadTString();
-
+      this.ClassStreamer(key, 'TKey');
       var name = key.fName.replace(/['"]/g,'');
-
       if (name !== key.fName) {
          key.fRealName = key.fName;
          key.fName = name;
       }
-
       return key;
-   }
-
-   JSROOT.TBuffer.prototype.ReadTDirectory = function(dir) {
-      var version = this.ntou2();
-      dir.fDatimeC = this.ClassStreamer({}, 'TDatime');
-      dir.fDatimeM = this.ClassStreamer({}, 'TDatime');
-      dir.fNbytesKeys = this.ntou4();
-      dir.fNbytesName = this.ntou4();
-      dir.fSeekDir = (version > 1000) ? this.ntou8() : this.ntou4();
-      dir.fSeekParent = (version > 1000) ? this.ntou8() : this.ntou4();
-      dir.fSeekKeys = (version > 1000) ? this.ntou8() : this.ntou4();
-      // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
    }
 
    JSROOT.TBuffer.prototype.ReadBasketEntryOffset = function(basket, offset) {
@@ -782,7 +752,7 @@
 
    JSROOT.TDirectory.prototype.ReadKeys = function(objbuf, readkeys_callback) {
 
-      objbuf.ReadTDirectory(this);
+      objbuf.ClassStreamer(this, 'TDirectory');
 
       if ((this.fSeekKeys <= 0) || (this.fNbytesKeys <= 0))
          return JSROOT.CallBack(readkeys_callback, this);
@@ -1420,7 +1390,7 @@
             buf3.locate(file.fNbytesName);
 
             // we read TDirectory part of TFile
-            buf3.ReadTDirectory(file);
+            buf3.ClassStreamer(file,'TDirectory');
 
             if (!file.fSeekKeys) {
                JSROOT.console("Empty keys list in " + file.fURL);
@@ -2582,6 +2552,8 @@
          if (v>1) obj._name = buf.ReadTString();
       };
 
+      // these are direct streamers - not follow version/checksum logic
+
       var ds = JSROOT.IO.DirectStreamers;
 
       ds['TQObject'] = function(buf,obj) {
@@ -2603,8 +2575,40 @@
 //         }
       }
 
+      ds['TKey'] = function(buf,key) {
+         key.fNbytes = buf.ntoi4();
+         key.fVersion = buf.ntoi2();
+         key.fObjlen = buf.ntou4();
+         key.fDatime = buf.ClassStreamer({}, 'TDatime');
+         key.fKeylen = buf.ntou2();
+         key.fCycle = buf.ntou2();
+         if (key.fVersion > 1000) {
+            key.fSeekKey = buf.ntou8();
+            buf.shift(8); // skip seekPdir
+         } else {
+            key.fSeekKey = buf.ntou4();
+            buf.shift(4); // skip seekPdir
+         }
+         key.fClassName = buf.ReadTString();
+         key.fName = buf.ReadTString();
+         key.fTitle = buf.ReadTString();
+      }
+
+      ds['TDirectory'] = function(buf, dir) {
+         var version = buf.ntou2();
+         dir.fDatimeC = buf.ClassStreamer({}, 'TDatime');
+         dir.fDatimeM = buf.ClassStreamer({}, 'TDatime');
+         dir.fNbytesKeys = buf.ntou4();
+         dir.fNbytesName = buf.ntou4();
+         dir.fSeekDir = (version > 1000) ? buf.ntou8() : buf.ntou4();
+         dir.fSeekParent = (version > 1000) ? buf.ntou8() : buf.ntou4();
+         dir.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
+         // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
+      }
+
+
       ds['TBasket'] = function(buf,obj) {
-         buf.ReadTKey(obj);
+         buf.ClassStreamer(obj, 'TKey');
          var ver = buf.ReadVersion();
          obj.fBufferSize = buf.ntoi4();
          obj.fNevBufSize = buf.ntoi4();
