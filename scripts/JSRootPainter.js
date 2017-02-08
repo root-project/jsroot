@@ -5976,9 +5976,10 @@
                if (this.scale_xmin>0) break;
             }
 
-         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax)) {
+         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
             this.scale_xmin = this.scale_xmax * 0.0001;
-         }
+
+         this.xmin_log = this.scale_xmin;
 
          this.x = d3.scaleLog();
       } else {
@@ -6036,6 +6037,9 @@
 
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
+
+         this.ymin_log = this.scale_ymin;
+
          this.y = d3.scaleLog();
       } else
       if (this.y_kind=='time') {
@@ -6468,8 +6472,9 @@
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
 
       if (zoom_x) {
-         var cnt = 0;
-         if (xmin <= main.xmin) { xmin = main.xmin; cnt++; }
+         var cnt = 0, main_xmin = main.xmin;
+         if (main.logx && main.xmin_log) main_xmin = main.xmin_log;
+         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
          if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
       } else {
@@ -6477,8 +6482,9 @@
       }
 
       if (zoom_y) {
-         var cnt = 0;
-         if (ymin <= main.ymin) { ymin = main.ymin; cnt++; }
+         var cnt = 0, main_ymin = main.ymin;
+         if (main.logy && main.ymin_log) main_ymin = main.ymin_log;
+         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
          if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
       } else {
@@ -6486,8 +6492,9 @@
       }
 
       if (zoom_z) {
-         var cnt = 0;
-         if (zmin <= main.zmin) { zmin = main.zmin; cnt++; }
+         var cnt = 0, main_zmin = main.zmin;
+         // if (main.logz && main.ymin_nz && main.Dimension()===2) main_zmin = 0.3*main.ymin_nz;
+         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
          if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
       } else {
