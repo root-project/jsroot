@@ -352,6 +352,9 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
 
 More details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
+Alternative - enable CORS requests in the browser. It can be easily done with [CORS Everywhere](https://addons.mozilla.org/de/firefox/addon/cors-everywhere/) plugin for the Firefox.
+
+
 Other solution - copy all JSROOT files to the location where the data files are located.
 In such case one could use the server with its default settings.
 

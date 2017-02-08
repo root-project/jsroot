@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Let disable stamp parameter in file url with "-" at the end of file name
+2. Let use quotes in the URL parameters to protect complex arguments with special symbols
 
 
 ## Changes in 5.0.2
