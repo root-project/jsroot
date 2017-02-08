@@ -539,25 +539,12 @@
       return res;
    }
 
-   JSROOT.TBuffer.prototype.ReadTDate = function() {
-      var datime = this.ntou4();
-      var res = new Date();
-      res.setFullYear((datime >>> 26) + 1995);
-      res.setMonth((datime << 6) >>> 28);
-      res.setDate((datime << 10) >>> 27);
-      res.setHours((datime << 15) >>> 27);
-      res.setMinutes((datime << 20) >>> 26);
-      res.setSeconds((datime << 26) >>> 26);
-      res.setMilliseconds(0);
-      return res;
-   }
-
    JSROOT.TBuffer.prototype.ReadTKey = function(key) {
       if (!key) key = {};
       key.fNbytes = this.ntoi4();
       key.fVersion = this.ntoi2();
       key.fObjlen = this.ntou4();
-      key.fDatime = this.ReadTDate();
+      key.fDatime = this.ClassStreamer({}, 'TDatime');
       key.fKeylen = this.ntou2();
       key.fCycle = this.ntou2();
       if (key.fVersion > 1000) {
@@ -583,8 +570,8 @@
 
    JSROOT.TBuffer.prototype.ReadTDirectory = function(dir) {
       var version = this.ntou2();
-      dir.fDatimeC = this.ReadTDate();
-      dir.fDatimeM = this.ReadTDate();
+      dir.fDatimeC = this.ClassStreamer({}, 'TDatime');
+      dir.fDatimeM = this.ClassStreamer({}, 'TDatime');
       dir.fNbytesKeys = this.ntou4();
       dir.fNbytesName = this.ntou4();
       dir.fSeekDir = (version > 1000) ? this.ntou8() : this.ntou4();
@@ -2600,6 +2587,21 @@
       ds['TQObject'] = function(buf,obj) {
          // do nothing
       };
+
+      ds['TDatime'] = function(buf,obj) {
+         obj.fDatime = buf.ntou4();
+//         obj.GetDate = function() {
+//            var res = new Date();
+//            res.setFullYear((this.fDatime >>> 26) + 1995);
+//            res.setMonth((this.fDatime << 6) >>> 28);
+//            res.setDate((this.fDatime << 10) >>> 27);
+//            res.setHours((this.fDatime << 15) >>> 27);
+//            res.setMinutes((this.fDatime << 20) >>> 26);
+//            res.setSeconds((this.fDatime << 26) >>> 26);
+//            res.setMilliseconds(0);
+//            return res;
+//         }
+      }
 
       ds['TBasket'] = function(buf,obj) {
          buf.ReadTKey(obj);
