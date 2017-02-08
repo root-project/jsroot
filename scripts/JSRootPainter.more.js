@@ -3899,6 +3899,7 @@
          bin = histo.fBins.arr[i];
          colindx = this.getValueColor(bin.fContent, true);
          if (colindx === null) continue;
+         if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
 
          // check if bin outside visible range
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
@@ -4815,8 +4816,8 @@
       this.options = this.DecodeOptions(opt);
 
       if (this.IsTH2Poly()) {
-         this.options.Color = 1; // default color
-         if (this.options.Lego) this.options.Lego = 12; // and lego always 12
+         if (this.options.Lego) this.options.Lego = 12; else// and lego always 12
+         if (!this.options.Color) this.options.Color = 1; // default color
       }
 
       this._show_empty_bins = false; // this.MatchObjectType('TProfile2D');
