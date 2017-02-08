@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Let disable stamp parameter in file url with "-" at the end of file name
+
+
 ## Changes in 5.0.2
 1. Fix - read branch entries as arrays 
 2. Fix - command submission to THttpServer

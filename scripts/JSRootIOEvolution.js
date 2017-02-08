@@ -907,7 +907,7 @@
       this.fFullURL = url;
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
-      this.fUseStampPar = new Date; // use additional time stamp parameter for file name to avoid browser caching problem
+      this.fUseStampPar = "stamp="+(new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
       this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
       this.fMaxRanges = 200; // maximal number of file ranges requested at once
@@ -924,9 +924,14 @@
 
       if (typeof this.fURL != 'string') return this;
 
-      if (this.fURL.charAt(this.fURL.length-1) == "+") {
+      if (this.fURL[this.fURL.length-1] === "+") {
          this.fURL = this.fURL.substr(0, this.fURL.length-1);
          this.fAcceptRanges = false;
+      }
+
+      if (this.fURL[this.fURL.length-1] === "-") {
+         this.fURL = this.fURL.substr(0, this.fURL.length-1);
+         this.fUseStampPar = false;
       }
 
       if (this.fURL.indexOf("file://")==0) {
@@ -980,11 +985,8 @@
          }
 
          var fullurl = fileurl, ranges = "bytes", totalsz = 0;
-         if (file.fUseStampPar) {
-            // try to avoid browser caching by adding stamp parameter to URL
-            if (fullurl.indexOf('?')>0) fullurl+="&stamp="; else fullurl += "?stamp=";
-            fullurl += file.fUseStampPar.getTime();
-         }
+         // try to avoid browser caching by adding stamp parameter to URL
+         if (file.fUseStampPar) fullurl += ((fullurl.indexOf('?')<0) ? "?" : "&") + file.fUseStampPar;
 
          for (var n=first;n<last;n+=2) {
             ranges += (n>first ? "," : "=") + (place[n] + "-" + (place[n] + place[n+1] - 1));
