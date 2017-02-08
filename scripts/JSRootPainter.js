@@ -652,53 +652,32 @@
       return dt.getTime();
    }
 
-   JSROOT.Painter.formatExp = function(label) {
-      var str = label;
-      if (parseFloat(str) == 1.0) return '1';
-      if (parseFloat(str) == 10.0) return '10';
-      var str = str.replace('e+', 'x10@');
-      var str = str.replace('e-', 'x10@-');
-      var _val = str.substring(0, str.indexOf('@'));
-      var _exp = str.substr(str.indexOf('@'));
-      _val = _val.replace('@', '');
-      _exp = _exp.replace('@', '');
-      var u, size = _exp.length;
-      for (var j = 0; j < size; ++j) {
-         var u, c  = _exp.charAt(j);
-         if (c == '+') u = '\u207A'; else
-         if (c == '-') u = '\u207B'; else {
-            var e = parseInt(c);
-            if (e == 1) u = String.fromCharCode(0xB9); else
-            if (e > 1 && e < 4) u = String.fromCharCode(0xB0 + e); else
-                                u = String.fromCharCode(0x2070 + e);
+   JSROOT.Painter.translateExp = function(_exp) {
+      // replace exponent like -12|+3|7 to utf-8 superscript symbols
+      var res = "", code;
+      for (var n=0;n<_exp.length;++n) {
+         switch (_exp[n]) {
+            case '+': code = 0x207A; break;
+            case '-': code = 0x207B; break;
+            case '1': code = 0xB9; break;
+            case '2': code = 0xB2; break;
+            case '3': code = 0xB3; break;
+            default:
+               code = parseInt(_exp[n]);
+               code = isNaN(code) ? 0 : 0x2070 + code;
          }
-         _exp = _exp.replace(c, u);
+         res += code ? String.fromCharCode(code) : _exp[n];
       }
-      _val = _val.replace('1x', '');
-      return _val + _exp;
-   };
+      return res;
+   }
 
-   JSROOT.Painter.translateExp = function(str) {
-      var lstr = str.match(/\^{[0-9]*}/gi);
-      if (lstr != null) {
-         var symbol = '';
-         for (var i = 0; i < lstr.length; ++i) {
-            symbol = lstr[i].replace(' ', '');
-            symbol = symbol.replace('^{', ''); // &sup
-            symbol = symbol.replace('}', ''); // ;
-            var size = symbol.length;
-            for (var j = 0; j < size; ++j) {
-               var c = symbol.charAt(j);
-               var u, e = parseInt(c);
-               if (e == 1) u = String.fromCharCode(0xB9);
-               else if (e > 1 && e < 4) u = String.fromCharCode(0xB0 + e);
-               else u = String.fromCharCode(0x2070 + e);
-               symbol = symbol.replace(c, u);
-            }
-            str = str.replace(lstr[i], symbol);
-         }
-      }
-      return str;
+   JSROOT.Painter.formatExp = function(label) {
+      if (parseFloat(label) == 1.0) return '1';
+      if (parseFloat(label) == 10.0) return '10';
+      var str = label.replace('e+', 'x10@').replace('e-', 'x10@-'),
+          pos = str.indexOf('@');
+
+      return str.substr(0, pos).replace('1x', '') + JSROOT.Painter.translateExp(str.substr(pos+1));
    };
 
    JSROOT.Painter.symbols_map = {
@@ -862,41 +841,39 @@
       '#right' : ''
    };
 
-   JSROOT.Painter.translateLaTeX = function(string) {
-      var str = string;
-      str = this.translateExp(str);
+   JSROOT.Painter.translateLaTeX = function(_string) {
+      var str = _string, i;
+
+      var lstr = str.match(/\^{[0-9]*}/gi);
+      if (lstr)
+         for (i = 0; i < lstr.length; ++i)
+            str = str.replace(lstr[i], JSROOT.Painter.translateExp(lstr[i].replace(' ', '').replace('^{', '').replace('}', '')));
+
       while (str.indexOf('^{o}') != -1)
          str = str.replace('^{o}', '\xBA');
-      var lstr = str.match(/\#sqrt{(.*?)}/gi);
-      if (lstr != null)
-         for (var i = 0; i < lstr.length; ++i) {
-            var symbol = lstr[i].replace(' ', '');
-            symbol = symbol.replace('#sqrt{', '#sqrt');
-            symbol = symbol.replace('}', '');
-            str = str.replace(lstr[i], symbol);
-         }
+
+      lstr = str.match(/\#sqrt{(.*?)}/gi);
+      if (lstr)
+         for (i = 0; i < lstr.length; ++i)
+            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
+
+
       lstr = str.match(/\_{(.*?)}/gi);
-      if (lstr != null)
-         for (var i = 0; i < lstr.length; ++i) {
-            var symbol = lstr[i].replace(' ', '');
-            symbol = symbol.replace('_{', ''); // &sub
-            symbol = symbol.replace('}', ''); // ;
-            str = str.replace(lstr[i], symbol);
-         }
+      if (lstr)
+         for (i = 0; i < lstr.length; ++i)
+            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('{', '').replace('}', ''));
+
       lstr = str.match(/\^{(.*?)}/gi);
-      if (lstr != null)
-         for (i = 0; i < lstr.length; ++i) {
-            var symbol = lstr[i].replace(' ', '');
-            symbol = symbol.replace('^{', ''); // &sup
-            symbol = symbol.replace('}', ''); // ;
-            str = str.replace(lstr[i], symbol);
-         }
+      if (lstr)
+         for (i = 0; i < lstr.length; ++i)
+            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('{', '').replace('}', ''));
+
       while (str.indexOf('#/') != -1)
          str = str.replace('#/', JSROOT.Painter.symbols_map['#/']);
-      for ( var x in JSROOT.Painter.symbols_map) {
+
+      for ( var x in JSROOT.Painter.symbols_map)
          while (str.indexOf(x) != -1)
             str = str.replace(x, JSROOT.Painter.symbols_map[x]);
-      }
 
       // simple workaround for simple #splitline{first_line}{second_line}
       if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
