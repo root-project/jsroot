@@ -2060,7 +2060,7 @@
 
                var blob = (places.length > 2) ? blobs[n++] : blobs,
                    buf = JSROOT.CreateTBuffer(blob, 0, handle.file),
-                   basket = buf.ReadTBasket({ _typename: "TBasket" });
+                   basket = buf.ClassStreamer({}, "TBasket");
 
                if (basket.fNbytes !== bitems[k].branch.fBasketBytes[bitems[k].basket])
                   console.error('mismatch in read basket sizes', bitems[k].branch.fBasketBytes[bitems[k].basket]);

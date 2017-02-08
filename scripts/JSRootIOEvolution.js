@@ -593,48 +593,6 @@
       // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
    }
 
-   JSROOT.TBuffer.prototype.ReadTBasket = function(obj) {
-      this.ReadTKey(obj);
-      var ver = this.ReadVersion();
-      obj.fBufferSize = this.ntoi4();
-      obj.fNevBufSize = this.ntoi4();
-      obj.fNevBuf = this.ntoi4();
-      obj.fLast = this.ntoi4();
-      if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
-      var flag = this.ntoi1();
-
-      if (flag===0) return obj;
-
-      if ((flag % 10) != 2) {
-         if (obj.fNevBuf) {
-            obj.fEntryOffset = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
-            if ((20<flag) && (flag<40))
-               for(var i=0, kDisplacementMask = 0xFF000000; i<obj.fNevBuf; ++i)
-                  obj.fEntryOffset[i] &= ~kDisplacementMask;
-         }
-
-         if (flag>40)
-            obj.fDisplacement = this.ReadFastArray(this.ntoi4(), JSROOT.IO.kInt);
-      }
-
-      if ((flag === 1) || (flag > 10)) {
-         // here is reading of raw data
-         var sz = (ver.val <= 1) ? this.ntoi4() : obj.fLast;
-
-         if (sz > obj.fKeylen) {
-            // buffer includes again complete TKey data - exclude it
-            var blob = this.extract([this.o + obj.fKeylen, sz - obj.fKeylen]);
-
-            obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, this.fFile, sz - obj.fKeylen);
-            obj.fBufferRef.fTagOffset = obj.fKeylen;
-         }
-
-         this.shift(sz);
-      }
-
-      return obj;
-   }
-
    JSROOT.TBuffer.prototype.ReadBasketEntryOffset = function(basket, offset) {
       // this is remaining part of TBasket streamer to decode fEntryOffset
       // after unzipping of the TBasket data
@@ -656,15 +614,6 @@
          basket.fDisplacement = undefined;
 
       return basket;
-   }
-
-   JSROOT.TBuffer.prototype.ReadTRef = function(obj) {
-      this.ClassStreamer(obj, "TObject");
-      if (obj.fBits & JSROOT.IO.kHasUUID)
-         obj.fUUID = this.ReadTString();
-      else
-         obj.fPID = this.ntou2();
-      return obj;
    }
 
    JSROOT.TBuffer.prototype.ReadClass = function() {
@@ -2653,11 +2602,51 @@
       };
 
       ds['TBasket'] = function(buf,obj) {
-         buf.ReadTBasket(obj);
+         buf.ReadTKey(obj);
+         var ver = buf.ReadVersion();
+         obj.fBufferSize = buf.ntoi4();
+         obj.fNevBufSize = buf.ntoi4();
+         obj.fNevBuf = buf.ntoi4();
+         obj.fLast = buf.ntoi4();
+         if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
+         var flag = buf.ntoi1();
+
+         if (flag===0) return;
+
+         if ((flag % 10) != 2) {
+            if (obj.fNevBuf) {
+               obj.fEntryOffset = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+               if ((20<flag) && (flag<40))
+                  for(var i=0, kDisplacementMask = 0xFF000000; i<obj.fNevBuf; ++i)
+                     obj.fEntryOffset[i] &= ~kDisplacementMask;
+            }
+
+            if (flag>40)
+               obj.fDisplacement = buf.ReadFastArray(buf.ntoi4(), JSROOT.IO.kInt);
+         }
+
+         if ((flag === 1) || (flag > 10)) {
+            // here is reading of raw data
+            var sz = (ver.val <= 1) ? buf.ntoi4() : obj.fLast;
+
+            if (sz > obj.fKeylen) {
+               // buffer includes again complete TKey data - exclude it
+               var blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
+
+               obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
+               obj.fBufferRef.fTagOffset = obj.fKeylen;
+            }
+
+            buf.shift(sz);
+         }
       }
 
       ds['TRef'] = function(buf,obj) {
-         buf.ReadTRef(obj);
+         buf.ClassStreamer(obj, "TObject");
+         if (obj.fBits & JSROOT.IO.kHasUUID)
+            obj.fUUID = buf.ReadTString();
+         else
+            obj.fPID = buf.ntou2();
       }
 
       ds['TMatrixTSym<double>'] = ds['TMatrixTSym<float>'] = function(buf,obj) {
