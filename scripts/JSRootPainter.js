@@ -4997,7 +4997,8 @@
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100;
+          axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100,
+          pad_w = this.pad_width() || 10, pad_h = this.pad_height() || 10;
 
       this.vertical = vertical;
 
@@ -5007,15 +5008,15 @@
 
       if (is_gaxis) {
          if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis);
-         scaling_size = (vertical ? this.pad_width() : this.pad_height());
-         text_scaling_size = Math.min(this.pad_width(), this.pad_height());
+         scaling_size = (vertical ? pad_w : pad_h);
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
          if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis.fAxisColor, 1);
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
-         text_scaling_size = Math.min(w,h);
       }
+
+      text_scaling_size = Math.min(pad_w, pad_h);
 
       if (!is_gaxis || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
@@ -5198,6 +5199,7 @@
      if (axis.fTitle.length > 0) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
+             title_offest = 1.6*axis.fTitleOffset*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/text_scaling_size),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
              title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
@@ -5207,7 +5209,11 @@
          var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
 
          if (vertical) {
-            var xoffset = -side*Math.round(labeloffset + (2-side/10) * axis.fTitleOffset*title_fontsize);
+
+            // var xoffset = -side*Math.round(labeloffset + (2-side/10) * axis.fTitleOffset*title_fontsize);
+
+            var xoffset = Math.round(-side*title_offest*pad_w);
+
             if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
                // special handling for color palette labels - draw them always on right side
                var rect = axis_g.node().getBoundingClientRect();
@@ -5222,7 +5228,7 @@
          } else {
             this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
                           Math.round(center ? w/2 : (reverse ? 0 : w)),
-                          Math.round(side*(labeloffset + 1.9*title_fontsize*axis.fTitleOffset)),
+                          Math.round(side * title_offest * pad_h),
                           0, (rotate<0 ? -180 : 0),
                           axis.fTitle, title_color, 1, title_g);
          }
