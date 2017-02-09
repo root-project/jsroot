@@ -844,13 +844,12 @@
    JSROOT.Painter.translateLaTeX = function(_string) {
       var str = _string, i;
 
-      var lstr = str.match(/\^{[0-9]*}/gi);
+      str = str.replace(/\^{o}/gi, '\xBA');
+
+      var lstr = str.match(/\^{(.*?)}/gi);
       if (lstr)
          for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], JSROOT.Painter.translateExp(lstr[i].replace(' ', '').replace('^{', '').replace('}', '')));
-
-      while (str.indexOf('^{o}') != -1)
-         str = str.replace('^{o}', '\xBA');
+            str = str.replace(lstr[i], JSROOT.Painter.translateExp(lstr[i].substr(2, lstr[i].length-3)));
 
       lstr = str.match(/\#sqrt{(.*?)}/gi);
       if (lstr)
@@ -861,12 +860,7 @@
       lstr = str.match(/\_{(.*?)}/gi);
       if (lstr)
          for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('{', '').replace('}', ''));
-
-      lstr = str.match(/\^{(.*?)}/gi);
-      if (lstr)
-         for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('{', '').replace('}', ''));
+            str = str.replace(lstr[i], lstr[i].substr(2, lstr[i].length-3));
 
       while (str.indexOf('#/') != -1)
          str = str.replace('#/', JSROOT.Painter.symbols_map['#/']);
