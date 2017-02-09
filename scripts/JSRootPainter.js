@@ -731,9 +731,11 @@
 
    JSROOT.Painter.formatExp = function(label) {
       var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
-          pos = str.indexOf('@');
+          pos = str.indexOf('@'),
+          exp = JSROOT.Painter.translateSuperscript(str.substr(pos+1)),
+          str = str.substr(0, pos);
 
-      return str.substr(0, pos) + JSROOT.Painter.translateSuperscript(str.substr(pos+1));
+      return ((str === "1x10") ? "10" : str) + exp;
    }
 
    JSROOT.Painter.symbols_map = {
