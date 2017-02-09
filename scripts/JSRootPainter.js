@@ -5061,7 +5061,8 @@
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
           axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100,
-          pad_w = this.pad_width() || 10, pad_h = this.pad_height() || 10;
+          pad_w = this.pad_width() || 10,
+          pad_h = this.pad_height() || 10;
 
       this.vertical = vertical;
 
@@ -6250,6 +6251,7 @@
 
       this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
       this.x_handle.SetDivId(this.divid, -1);
+      this.x_handle.pad_name = this.pad_name;
 
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
@@ -6258,6 +6260,7 @@
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
+      this.y_handle.pad_name = this.pad_name;
 
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
@@ -7316,8 +7319,8 @@
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          var faxis = this.histo.fXaxis;
-         if (kind=="y")  faxis = this.histo.fYaxis;  else
-         if (kind=="z")  faxis = obj ? obj : this.histo.fZaxis;
+         if (kind=="y") faxis = this.histo.fYaxis;  else
+         if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
          menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
