@@ -528,9 +528,9 @@
          }
 
          if (url.indexOf(opt) == 0) {
-            if (url.charAt(opt.length)=="&") return "";
+            if (url[opt.length]=="&") return "";
 
-            if (url.charAt(opt.length)==="=") {
+            if (url[opt.length]==="=") {
                url = url.slice(opt.length+1, pos);
                if (((url[0]==="'") || (url[0]==='"')) && (url[0]===url[url.length-1])) url = url.substr(1, url.length-2);
                return url;
@@ -915,7 +915,7 @@
 
       jsroot.doing_assert[0].running = true;
 
-      if (kind.charAt(kind.length-1)!=";") kind+=";";
+      if (kind[kind.length-1]!=";") kind+=";";
 
       var ext = jsroot.source_min ? ".min" : "",
           need_jquery = false,
@@ -1799,7 +1799,7 @@
       fmt = fmt.trim();
       var len = fmt.length;
       if (len<2) return value.toFixed(4);
-      var last = fmt.charAt(len-1);
+      var last = fmt[len-1];
       fmt = fmt.slice(0,len-1);
       var isexp = null;
       var prec = fmt.indexOf(".");
@@ -1812,9 +1812,9 @@
       if ((last=='f') || (last=='F')) { isexp = false; } else
       if (last=='W') { isexp = false; significance = true; } else
       if ((last=='g') || (last=='G')) {
-         var se = JSROOT.FFormat(value, fmt+'Q');
-         var _fmt = JSROOT.lastFFormat;
-         var sg = JSROOT.FFormat(value, fmt+'W');
+         var se = JSROOT.FFormat(value, fmt+'Q'),
+             _fmt = JSROOT.lastFFormat,
+             sg = JSROOT.FFormat(value, fmt+'W');
 
          if (se.length < sg.length) {
             JSROOT.lastFFormat = _fmt;
@@ -1846,7 +1846,7 @@
          }
 
          var l = 0;
-         while ((l<sg.length) && (sg.charAt(l) == '0' || sg.charAt(l) == '-' || sg.charAt(l) == '.')) l++;
+         while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
          var diff = sg.length - l - prec;
          if (sg.indexOf(".")>l) diff--;

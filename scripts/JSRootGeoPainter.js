@@ -188,7 +188,7 @@
          if (indx<0) return dflt;
          opt = opt.substr(0, indx) + opt.substr(indx+name.length);
          var indx2 = indx;
-         while ((indx2<opt.length) && (opt.charAt(indx2).match(/[0-9]/))) indx2++;
+         while ((indx2<opt.length) && (opt[indx2].match(/[0-9]/))) indx2++;
          if (indx2>indx) dflt = parseInt(opt.substr(indx, indx2-indx));
          opt = opt.substr(0,indx) + opt.substr(indx2);
          return dflt;

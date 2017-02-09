@@ -486,7 +486,7 @@
           (JSROOT.IO.CustomStreamers[type_name] === 'TString')) return 0;
       if ((type_name.length < 7) || (type_name.indexOf("TArray")!==0)) return -1;
       if (type_name.length == 7)
-         switch (type_name.charAt(6)) {
+         switch (type_name[6]) {
             case 'I': return JSROOT.IO.kInt;
             case 'D': return JSROOT.IO.kDouble;
             case 'F': return JSROOT.IO.kFloat;
@@ -1510,12 +1510,12 @@
             function GetNextName() {
                var res = "", p = p1+1, cnt = 0;
                while ((p<p2) && (cnt>=0)) {
-                  switch (typname.charAt(p)) {
-                  case "<": cnt++; break;
-                  case ",": if (cnt===0) cnt--; break;
-                  case ">": cnt--; break;
+                  switch (typname[p]) {
+                     case "<": cnt++; break;
+                     case ",": if (cnt===0) cnt--; break;
+                     case ">": cnt--; break;
                   }
-                  if (cnt>=0) res+=typname.charAt(p);
+                  if (cnt>=0) res+=typname[p];
                   p++;
                }
                p1 = p-1;
@@ -1745,7 +1745,7 @@
          case JSROOT.IO.kObjectp:
          case JSROOT.IO.kObject:
             var classname = (element.fTypeName === 'BASE') ? element.fName : element.fTypeName;
-            if (classname.charAt(classname.length-1) == "*")
+            if (classname[classname.length-1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
             var arrkind = JSROOT.IO.GetArrayKind(classname);
@@ -1779,7 +1779,7 @@
          case JSROOT.IO.kOffsetL + JSROOT.IO.kAnyp:
          case JSROOT.IO.kOffsetL + JSROOT.IO.kObjectp:
             var classname = element.fTypeName;
-            if (classname.charAt(classname.length-1) == "*")
+            if (classname[classname.length-1] == "*")
                classname = classname.substr(0, classname.length - 1);
 
             member.arrkind = JSROOT.IO.GetArrayKind(classname);

@@ -914,7 +914,7 @@
          str = str.replace(new RegExp(i,'g'), JSROOT.Painter.symbols_map[i]);
 
       // simple workaround for simple #splitline{first_line}{second_line}
-      if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
+      if ((str.indexOf("#splitline{")==0) && (str[str.length-1]=="}")) {
          var pos = str.indexOf("}{");
          if ((pos>0) && (pos === str.lastIndexOf("}{")))
             str = str.replace("}{", "\n ").slice(11, str.length-1)
@@ -1086,7 +1086,7 @@
       var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
           currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy;
 
-      res.path = ((kind.charAt(0) == "L") ? "L" : "M") +
+      res.path = ((kind[0] == "L") ? "L" : "M") +
                   bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
 
       // just calculate all deltas, can be used to build exclusion
@@ -1199,7 +1199,7 @@
       // return d3.select for main element, defined with divid
       if ((this.divid === null) || (this.divid === undefined)) return d3.select(null);
       if ((typeof this.divid == "string") &&
-          (this.divid.charAt(0) != "#")) return d3.select("#" + this.divid);
+          (this.divid[0] != "#")) return d3.select("#" + this.divid);
       return d3.select(this.divid);
    }
 
@@ -1401,11 +1401,11 @@
       } else
       if (take_pad) {
          if (typeof layer != 'string') layer = "text_layer";
-         if (layer.charAt(0) == ".") layer = layer.substr(1);
+         if (layer[0] == ".") layer = layer.substr(1);
          this.draw_g = this.svg_layer(layer).append("svg:g");
       } else {
          if (typeof layer != 'string') layer = ".main_layer";
-         if (layer.charAt(0) != ".") layer = "." + layer;
+         if (layer[0] != ".") layer = "." + layer;
          this.draw_g = this.svg_frame().select(layer).append("svg:g");
       }
 
@@ -3560,7 +3560,7 @@
       }
 
       if ((nlines===1) && !this.IsStats() &&
-          (lines[0].indexOf("#splitline{")===0) && (lines[0].charAt(lines[0].length-1)=="}")) {
+          (lines[0].indexOf("#splitline{")===0) && (lines[0][lines[0].length-1]=="}")) {
             var pos = lines[0].indexOf("}{");
             if ((pos>0) && (pos == lines[0].lastIndexOf("}{"))) {
                lines[1] = lines[0].substr(pos+2, lines[0].length - pos - 3);
@@ -4449,7 +4449,7 @@
           case "yaxis":
           case "zaxis":
              selp = this.main_painter();
-             selkind = name.charAt(0);
+             selkind = name[0];
              break;
           case "frame":
              selp = this.frame_painter();
