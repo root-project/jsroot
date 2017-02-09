@@ -514,6 +514,9 @@ When JSROOT installed with bower package manager, one could re-use basic librari
 
     <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
 
+Bower support will be automatically enabled when script path conatin "bower_components/jsroot/" string.
+ 
+
 
 ### Use of JSON
 
