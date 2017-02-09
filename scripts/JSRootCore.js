@@ -1908,6 +1908,7 @@
       if ((user!=null) && (user.length>0)) prereq += "io;2d;load:" + user;
       var onload = JSROOT.GetUrlOption('onload', src);
       var bower = JSROOT.GetUrlOption('bower', src);
+      if ((bower===null) && (JSROOT.source_dir.indexOf("bower_components/jsroot/")>=0)) bower = "";
       if (bower!==null) {
          if (bower.length>0) JSROOT.bower_dir = bower; else
             if (JSROOT.source_dir.indexOf("jsroot/") == JSROOT.source_dir.length - 7)
