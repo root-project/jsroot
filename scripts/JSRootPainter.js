@@ -652,33 +652,40 @@
       return dt.getTime();
    }
 
+   JSROOT.Painter.superscript_symbols_map = {
+       '1': '\xB9',
+       '2': '\xB2',
+       '3': '\xB3',
+       'o': '\xBA',
+       '0': '\u2070',
+       'i': '\u2071',
+       '4': '\u2074',
+       '5': '\u2075',
+       '6': '\u2076',
+       '7': '\u2077',
+       '8': '\u2078',
+       '9': '\u2079',
+       '+': '\u207A',
+       '-': '\u207B',
+       '=': '\u207C',
+       '(': '\u207D',
+       ')': '\u207E',
+       'n': '\u207F'
+   }
+
    JSROOT.Painter.translateExp = function(_exp) {
-      // replace exponent like -12|+3|7 to utf-8 superscript symbols
-      var res = "", code;
-      for (var n=0;n<_exp.length;++n) {
-         switch (_exp[n]) {
-            case '+': code = 0x207A; break;
-            case '-': code = 0x207B; break;
-            case '1': code = 0xB9; break;
-            case '2': code = 0xB2; break;
-            case '3': code = 0xB3; break;
-            default:
-               code = parseInt(_exp[n]);
-               code = isNaN(code) ? 0 : 0x2070 + code;
-         }
-         res += code ? String.fromCharCode(code) : _exp[n];
-      }
+      var res = "";
+      for (var n=0;n<_exp.length;++n)
+         res += (this.superscript_symbols_map[_exp[n]] || _exp[n]);
       return res;
    }
 
    JSROOT.Painter.formatExp = function(label) {
-      if (parseFloat(label) == 1.0) return '1';
-      if (parseFloat(label) == 10.0) return '10';
-      var str = label.replace('e+', 'x10@').replace('e-', 'x10@-'),
+      var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
           pos = str.indexOf('@');
 
-      return str.substr(0, pos).replace('1x', '') + JSROOT.Painter.translateExp(str.substr(pos+1));
-   };
+      return str.substr(0, pos) + JSROOT.Painter.translateExp(str.substr(pos+1));
+   }
 
    JSROOT.Painter.symbols_map = {
       // greek letters
