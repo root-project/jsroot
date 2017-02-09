@@ -195,11 +195,11 @@
       if ((inter=="") || (inter=="1")) inter = "11111"; else
       if (inter=="0") inter = "00000";
       if ((inter!==null) && (inter.length==5)) {
-         JSROOT.gStyle.Tooltip =     parseInt(inter.charAt(0));
-         JSROOT.gStyle.ContextMenu = (inter.charAt(1) != '0');
-         JSROOT.gStyle.Zooming  =    (inter.charAt(2) != '0');
-         JSROOT.gStyle.MoveResize =  (inter.charAt(3) != '0');
-         JSROOT.gStyle.DragAndDrop = (inter.charAt(4) != '0');
+         JSROOT.gStyle.Tooltip =     parseInt(inter[0]);
+         JSROOT.gStyle.ContextMenu = (inter[1] != '0');
+         JSROOT.gStyle.Zooming  =    (inter[2] != '0');
+         JSROOT.gStyle.MoveResize =  (inter[3] != '0');
+         JSROOT.gStyle.DragAndDrop = (inter[4] != '0');
       }
 
       var tt = JSROOT.GetUrlOption("tooltip", url);
@@ -551,25 +551,18 @@
 
    JSROOT.Painter.getFontDetails = function(fontIndex, size) {
 
-      var fontName = JSROOT.Painter.root_fonts[Math.floor(fontIndex / 10)];
-
-      var res = { name: "Arial", size: 11, weight: null, style: null };
-
-      if (size != undefined) res.size = Math.round(size);
-
-      if (typeof fontName != 'string') fontName = "";
+      var res = { name: "Arial", size: Math.round(size || 11), weight: null, style: null },
+          fontName = JSROOT.Painter.root_fonts[Math.floor(fontIndex / 10)] || "";
 
       while (fontName.length > 0) {
-         if (fontName.charAt(0)==='b') res.weight = "bold"; else
-         if (fontName.charAt(0)==='i') res.style = "italic"; else
-         if (fontName.charAt(0)==='o') res.style = "oblique"; else break;
+         if (fontName[0]==='b') res.weight = "bold"; else
+         if (fontName[0]==='i') res.style = "italic"; else
+         if (fontName[0]==='o') res.style = "oblique"; else break;
          fontName = fontName.substr(1);
       }
 
-      if (fontName == 'Symbol') {
-         res.weight = null;
-         res.style = null;
-      }
+      if (fontName == 'Symbol')
+         res.weight = res.style = null;
 
       res.name = fontName;
 
@@ -577,14 +570,14 @@
          selection.attr("font-family", this.name)
                   .attr("font-size", this.size)
                   .attr("xml:space","preserve");
-         if (this.weight!=null)
+         if (this.weight)
             selection.attr("font-weight", this.weight);
-         if (this.style!=null)
+         if (this.style)
             selection.attr("font-style", this.style);
       }
 
       res.asStyle = function(sz) {
-         return ((sz!=null) ? sz : this.size) + "px " + this.name;
+         return (sz ? sz : this.size) + "px " + this.name;
       }
 
       res.stringWidth = function(svg, line) {
@@ -918,8 +911,7 @@
             str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
 
       for (i in JSROOT.Painter.symbols_map)
-         while (str.indexOf(i) != -1)
-            str = str.replace(i, JSROOT.Painter.symbols_map[i]);
+         str = str.replace(new RegExp(i,'g'), JSROOT.Painter.symbols_map[i]);
 
       // simple workaround for simple #splitline{first_line}{second_line}
       if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
@@ -935,110 +927,102 @@
       return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
    }
 
+   JSROOT.Painter.math_symbols_map = {
+         '#LT':"\\langle",
+         '#GT':"\\rangle",
+         '#club':"\\clubsuit",
+         '#spade':"\\spadesuit",
+         '#heart':"\\heartsuit",
+         '#diamond':"\\diamondsuit",
+         '#voidn':"\\wp",
+         '#voidb':"f",
+         '#copyright':"(c)",
+         '#ocopyright':"(c)",
+         '#trademark':"TM",
+         '#void3':"TM",
+         '#oright':"R",
+         '#void1':"R",
+         '#3dots':"\\ldots",
+         '#lbar':"\\mid",
+         '#void8':"\\mid",
+         '#divide':"\\div",
+         '#Jgothic':"\\Im",
+         '#Rgothic':"\\Re",
+         '#doublequote':"\"",
+         '#plus':"+",
+         '#diamond':"\\diamondsuit",
+         '#voidn':"\\wp",
+         '#voidb':"f",
+         '#copyright':"(c)",
+         '#ocopyright':"(c)",
+         '#trademark':"TM",
+         '#void3':"TM",
+         '#oright':"R",
+         '#void1':"R",
+         '#3dots':"\\ldots",
+         '#lbar':"\\mid",
+         '#void8':"\\mid",
+         '#divide':"\\div",
+         '#Jgothic':"\\Im",
+         '#Rgothic':"\\Re",
+         '#doublequote':"\"",
+         '#plus':"+",
+         '#minus':"-",
+         '#\/':"/",
+         '#upoint':".",
+         '#aa':"\\mathring{a}",
+         '#AA':"\\mathring{A}",
+         '#omicron':"o",
+         '#Alpha':"A",
+         '#Beta':"B",
+         '#Epsilon':"E",
+         '#Zeta':"Z",
+         '#Eta':"H",
+         '#Iota':"I",
+         '#Kappa':"K",
+         '#Mu':"M",
+         '#Nu':"N",
+         '#Omicron':"O",
+         '#Rho':"P",
+         '#Tau':"T",
+         '#Chi':"X",
+         '#varomega':"\\varpi",
+         '#corner':"?",
+         '#ltbar':"?",
+         '#bottombar':"?",
+         '#notsubset':"?",
+         '#arcbottom':"?",
+         '#cbar':"?",
+         '#arctop':"?",
+         '#topbar':"?",
+         '#arcbar':"?",
+         '#downleftarrow':"?",
+         '#splitline':"\\genfrac{}{}{0pt}{}",
+         '#it':"\\textit",
+         '#bf':"\\textbf",
+         '#frac':"\\frac",
+         '#left{':"\\lbrace",
+         '#right}':"\\rbrace",
+         '#left\\[':"\\lbrack",
+         '#right\\]':"\\rbrack",
+         '#\\[\\]{':"\\lbrack",
+         ' } ':"\\rbrack",
+         '#\\[':"\\lbrack",
+         '#\\]':"\\rbrack",
+         '#{':"\\lbrace",
+         '#}':"\\rbrace",
+         ' ':"\\;"
+   };
+
    JSROOT.Painter.translateMath = function(str, kind, color) {
       // function translate ROOT TLatex into MathJax format
 
       if (kind!=2) {
-         str = str.replace(/#LT/g, "\\langle");
-         str = str.replace(/#GT/g, "\\rangle");
-         str = str.replace(/#club/g, "\\clubsuit");
-         str = str.replace(/#spade/g, "\\spadesuit");
-         str = str.replace(/#heart/g, "\\heartsuit");
-         str = str.replace(/#diamond/g, "\\diamondsuit");
-         str = str.replace(/#voidn/g, "\\wp");
-         str = str.replace(/#voidb/g, "f");
-         str = str.replace(/#copyright/g, "(c)");
-         str = str.replace(/#ocopyright/g, "(c)");
-         str = str.replace(/#trademark/g, "TM");
-         str = str.replace(/#void3/g, "TM");
-         str = str.replace(/#oright/g, "R");
-         str = str.replace(/#void1/g, "R");
-         str = str.replace(/#3dots/g, "\\ldots");
-         str = str.replace(/#lbar/g, "\\mid");
-         str = str.replace(/#void8/g, "\\mid");
-         str = str.replace(/#divide/g, "\\div");
-         str = str.replace(/#Jgothic/g, "\\Im");
-         str = str.replace(/#Rgothic/g, "\\Re");
-         str = str.replace(/#doublequote/g, "\"");
-         str = str.replace(/#plus/g, "+");
+         for (var x in JSROOT.Painter.math_symbols_map)
+            str = str.replace(new RegExp(x,'g'), JSROOT.Painter.math_symbols_map[x]);
 
-         str = str.replace(/#diamond/g, "\\diamondsuit");
-         str = str.replace(/#voidn/g, "\\wp");
-         str = str.replace(/#voidb/g, "f");
-         str = str.replace(/#copyright/g, "(c)");
-         str = str.replace(/#ocopyright/g, "(c)");
-         str = str.replace(/#trademark/g, "TM");
-         str = str.replace(/#void3/g, "TM");
-         str = str.replace(/#oright/g, "R");
-         str = str.replace(/#void1/g, "R");
-         str = str.replace(/#3dots/g, "\\ldots");
-         str = str.replace(/#lbar/g, "\\mid");
-         str = str.replace(/#void8/g, "\\mid");
-         str = str.replace(/#divide/g, "\\div");
-         str = str.replace(/#Jgothic/g, "\\Im");
-         str = str.replace(/#Rgothic/g, "\\Re");
-         str = str.replace(/#doublequote/g, "\"");
-         str = str.replace(/#plus/g, "+");
-         str = str.replace(/#minus/g, "-");
-         str = str.replace(/#\//g, "/");
-         str = str.replace(/#upoint/g, ".");
-         str = str.replace(/#aa/g, "\\mathring{a}");
-         str = str.replace(/#AA/g, "\\mathring{A}");
-
-         str = str.replace(/#omicron/g, "o");
-         str = str.replace(/#Alpha/g, "A");
-         str = str.replace(/#Beta/g, "B");
-         str = str.replace(/#Epsilon/g, "E");
-         str = str.replace(/#Zeta/g, "Z");
-         str = str.replace(/#Eta/g, "H");
-         str = str.replace(/#Iota/g, "I");
-         str = str.replace(/#Kappa/g, "K");
-         str = str.replace(/#Mu/g, "M");
-         str = str.replace(/#Nu/g, "N");
-         str = str.replace(/#Omicron/g, "O");
-         str = str.replace(/#Rho/g, "P");
-         str = str.replace(/#Tau/g, "T");
-         str = str.replace(/#Chi/g, "X");
-         str = str.replace(/#varomega/g, "\\varpi");
-
-         str = str.replace(/#corner/g, "?");
-         str = str.replace(/#ltbar/g, "?");
-         str = str.replace(/#bottombar/g, "?");
-         str = str.replace(/#notsubset/g, "?");
-         str = str.replace(/#arcbottom/g, "?");
-         str = str.replace(/#cbar/g, "?");
-         str = str.replace(/#arctop/g, "?");
-         str = str.replace(/#topbar/g, "?");
-         str = str.replace(/#arcbar/g, "?");
-         str = str.replace(/#downleftarrow/g, "?");
-         str = str.replace(/#splitline/g, "\\genfrac{}{}{0pt}{}");
-         str = str.replace(/#it/g, "\\textit");
-         str = str.replace(/#bf/g, "\\textbf");
-
-         str = str.replace(/#frac/g, "\\frac");
-         //str = str.replace(/#left{/g, "\\left\\{");
-         //str = str.replace(/#right}/g, "\\right\\}");
-         str = str.replace(/#left{/g, "\\lbrace");
-         str = str.replace(/#right}/g, "\\rbrace");
-         str = str.replace(/#left\[/g, "\\lbrack");
-         str = str.replace(/#right\]/g, "\\rbrack");
-         //str = str.replace(/#left/g, "\\left");
-         //str = str.replace(/#right/g, "\\right");
-         // processing of #[] #{} should be done
-         str = str.replace(/#\[\]{/g, "\\lbrack");
-         str = str.replace(/ } /g, "\\rbrack");
-         //str = str.replace(/#\[\]/g, "\\brack");
-         //str = str.replace(/#{}/g, "\\brace");
-         str = str.replace(/#\[/g, "\\lbrack");
-         str = str.replace(/#\]/g, "\\rbrack");
-         str = str.replace(/#{/g, "\\lbrace");
-         str = str.replace(/#}/g, "\\rbrace");
-         str = str.replace(/ /g, "\\;");
-
-         for (var x in JSROOT.Painter.symbols_map) {
-            var y = "\\" + x.substr(1);
-            str = str.replace(new RegExp(x,'g'), y);
-         }
+         for (var x in JSROOT.Painter.symbols_map)
+            str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
       } else {
          str = str.replace(/\\\^/g, "\\hat");
       }
@@ -3967,19 +3951,15 @@
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
-      var render_to = this.select_main();
+      var render_to = this.select_main(),
+          rect = this.main_visible_rect(),
+          w = rect.width, h = rect.height, // this is size where canvas should be rendered
+          factor = null, svg = null;
 
-      var rect = this.main_visible_rect();
-
-      // this is size where canvas should be rendered
-      var w = rect.width, h = rect.height;
-
-      if ((typeof new_size == 'object') && (new_size!==null) && ('width' in new_size) && ('height' in new_size)) {
+      if (new_size && new_size.width && new_size.height) {
          w = new_size.width;
          h = new_size.height;
       }
-
-      var factor = null, svg = null;
 
       if (check_resize > 0) {
 
