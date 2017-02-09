@@ -8,6 +8,7 @@
 5. Introduce direct streamers - like TBasket or TRef
    Benefit - one can add custom streamers of such kind or reuse existing 
 6. Handle in I/O TMatrixTSym classes 
+7. Support more supperscript/subscript letters in normal text output 
 
 
 ## Changes in 5.0.2

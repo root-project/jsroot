@@ -670,13 +670,62 @@
        '=': '\u207C',
        '(': '\u207D',
        ')': '\u207E',
-       'n': '\u207F'
+       'n': '\u207F',
+       'a': '\xAA',
+       'v': '\u2C7D',
+       'h': '\u02B0',
+       'j': '\u02B2',
+       'r': '\u02B3',
+       'w': '\u02B7',
+       'y': '\u02B8',
+       'l': '\u02E1',
+       's': '\u02E2',
+       'x': '\u02E3'
    }
 
-   JSROOT.Painter.translateExp = function(_exp) {
+   JSROOT.Painter.subscript_symbols_map = {
+         '0': '\u2080',
+         '1': '\u2081',
+         '2': '\u2082',
+         '3': '\u2083',
+         '4': '\u2084',
+         '5': '\u2085',
+         '6': '\u2086',
+         '7': '\u2087',
+         '8': '\u2088',
+         '9': '\u2089',
+         '+': '\u208A',
+         '-': '\u208B',
+         '=': '\u208C',
+         '(': '\u208D',
+         ')': '\u208E',
+         'a': '\u2090',
+         'e': '\u2091',
+         'o': '\u2092',
+         'x': '\u2093',
+         'ə': '\u2094',
+         'h': '\u2095',
+         'k': '\u2096',
+         'l': '\u2097',
+         'm': '\u2098',
+         'n': '\u2099',
+         'p': '\u209A',
+         's': '\u209B',
+         't': '\u209C',
+         'j': '\u2C7C'
+    }
+
+   JSROOT.Painter.translateSuperscript = function(_exp) {
       var res = "";
       for (var n=0;n<_exp.length;++n)
          res += (this.superscript_symbols_map[_exp[n]] || _exp[n]);
+      return res;
+   }
+
+   JSROOT.Painter.translateSubscript = function(_sub) {
+      var res = "";
+      for (var n=0;n<_sub.length;++n)
+         res += (this.subscript_symbols_map[_sub[n]] || _sub[n]);
       return res;
    }
 
@@ -684,7 +733,7 @@
       var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
           pos = str.indexOf('@');
 
-      return str.substr(0, pos) + JSROOT.Painter.translateExp(str.substr(pos+1));
+      return str.substr(0, pos) + JSROOT.Painter.translateSuperscript(str.substr(pos+1));
    }
 
    JSROOT.Painter.symbols_map = {
@@ -851,43 +900,33 @@
    JSROOT.Painter.translateLaTeX = function(_string) {
       var str = _string, i;
 
-      str = str.replace(/\^{o}/gi, '\xBA');
-
       var lstr = str.match(/\^{(.*?)}/gi);
       if (lstr)
          for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], JSROOT.Painter.translateExp(lstr[i].substr(2, lstr[i].length-3)));
+            str = str.replace(lstr[i], JSROOT.Painter.translateSuperscript(lstr[i].substr(2, lstr[i].length-3)));
+
+      lstr = str.match(/\_{(.*?)}/gi);
+      if (lstr)
+         for (i = 0; i < lstr.length; ++i)
+            str = str.replace(lstr[i], JSROOT.Painter.translateSubscript(lstr[i].substr(2, lstr[i].length-3)));
 
       lstr = str.match(/\#sqrt{(.*?)}/gi);
       if (lstr)
          for (i = 0; i < lstr.length; ++i)
             str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
 
-
-      lstr = str.match(/\_{(.*?)}/gi);
-      if (lstr)
-         for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], lstr[i].substr(2, lstr[i].length-3));
-
-      while (str.indexOf('#/') != -1)
-         str = str.replace('#/', JSROOT.Painter.symbols_map['#/']);
-
-      for ( var x in JSROOT.Painter.symbols_map)
-         while (str.indexOf(x) != -1)
-            str = str.replace(x, JSROOT.Painter.symbols_map[x]);
+      for (i in JSROOT.Painter.symbols_map)
+         while (str.indexOf(i) != -1)
+            str = str.replace(i, JSROOT.Painter.symbols_map[i]);
 
       // simple workaround for simple #splitline{first_line}{second_line}
       if ((str.indexOf("#splitline{")==0) && (str.charAt(str.length-1)=="}")) {
          var pos = str.indexOf("}{");
-         if ((pos>0) && (pos == str.lastIndexOf("}{"))) {
-            str = str.replace("}{", "\n ");
-            str = str.slice(11, str.length-1);
-         }
+         if ((pos>0) && (pos === str.lastIndexOf("}{")))
+            str = str.replace("}{", "\n ").slice(11, str.length-1)
       }
 
-      str = str.replace('^2','\xB2').replace('^3','\xB3');
-
-      return str;
+      return str.replace(/\^2/gi,'\xB2').replace(/\^3/gi,'\xB3');
    }
 
    JSROOT.Painter.isAnyLatex = function(str) {
