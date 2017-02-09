@@ -7,12 +7,15 @@ It is the successor of the JSRootIO project.
 
 ## Installing JSROOT
 
-In most practical cases it is not necessary to install JSROOT on the local computer - it can be used directly from project web sites <https://root.cern/js/> and <http://jsroot.gsi.de/>. Developers repository for JSROOT code situated on <https://github.com/linev/jsroot/>.
+In most practical cases it is not necessary to install JSROOT - it can be used directly from project web sites <https://root.cern/js/> and <http://jsroot.gsi.de/>. 
 
-In rare cases one need to install JSROOT on separate web server - for such case one could use provided packages from <https://github.com/linev/jsroot/releases>. 
+When required, there are following alternatives to install JSROOT on other web servers:
 
-One could use JSROOT directly from local file system. If source code was unpacked in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
-
+   - download and unpack [provided](https://github.com/linev/jsroot/releases) packages (recommended)
+   - use [bower](https://bower.io/) package manager and invoke `bower install jsroot`  
+   - clone master branch from [repository](https://github.com/linev/jsroot/)
+ 
+One could use JSROOT directly from local file system. If source code was unpacked/checked-out in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
 
 
 ## Drawing objects in JSROOT
@@ -505,7 +508,11 @@ For instance, to load functionality with normal 2D graphics and binary ROOT file
 
     <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.min.js?2d&io"></script>
 
-One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly. 
+One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
+
+When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:   
+
+    <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
 
 
 ### Use of JSON
