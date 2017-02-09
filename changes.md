@@ -9,7 +9,7 @@
    Benefit - one can add custom streamers of such kind or reuse existing 
 6. Handle in I/O TMatrixTSym classes 
 7. Support more supperscript/subscript letters in normal text output 
-8. Make positioning of TAxis title like in ROOT itself
+8. Let move TAxis title, its position now similar to ROOT itself
 
 
 ## Changes in 5.0.2

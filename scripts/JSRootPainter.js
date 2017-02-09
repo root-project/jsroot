@@ -2219,9 +2219,8 @@
             complete_drag();
          });
 
-      if (!('only_resize' in callback)) {
+      if (!callback.only_resize)
          this.draw_g.style("cursor", "move").call(drag_move);
-      }
 
       resize_corner1.call(drag_resize);
       resize_corner2.call(drag_resize);
@@ -2887,7 +2886,7 @@
       if (use_normal_text) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x.toFixed(1), pos_y = y.toFixed(1), pos_dy = null, middleline = false;
+         var pos_x = x.toFixed(1), pos_y = y.toFixed(1), pos_dy = "", middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
@@ -2918,8 +2917,8 @@
                          .attr("y", 0)
                          .attr("fill", tcolor ? tcolor : null)
                          .attr("transform", trans)
-                         .text(label)
-         if (pos_dy!=null) txt.attr("dy", pos_dy);
+                         .text(label);
+         if (pos_dy) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
 
          draw_g.property('normaltext_use', true);
@@ -4990,6 +4989,70 @@
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
+   JSROOT.TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k) {
+      if (!JSROOT.gStyle.MoveResize) return;
+
+      var pthis = this,  drag_rect = null, prefix = "", drag_move, acc_x, acc_y, sign_0;
+      if (JSROOT._test_d3_ === 3) {
+         prefix = "drag";
+         drag_move = d3.behavior.drag().origin(Object);
+      } else {
+         drag_move = d3.drag().subject(Object);
+      }
+
+      drag_move
+         .on(prefix+"start",  function() {
+
+            d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
+            var box = title_g.node().getBBox(); // check that elements visible, request precise value
+
+            acc_x = title_g.property('shift_x');
+            acc_y = title_g.property('shift_y');
+
+            sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
+
+            drag_rect = title_g.append("rect")
+                 .classed("zoom", true)
+                 .attr("x", box.x)
+                 .attr("y", box.y)
+                 .attr("width", box.width)
+                 .attr("height", box.height)
+                 .style("cursor", "move");
+//                 .style("pointer-events","none"); // let forward double click to underlying elements
+          }).on("drag", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               if (vertical) acc_x += d3.event.dx;
+                        else acc_y += d3.event.dy;
+
+               if (sign_0 === (vertical ? (acc_x>0) : (acc_y>0)))
+                  title_g.attr('transform', 'translate(' + acc_x + ',' + acc_y +  ')');
+
+          }).on(prefix+"end", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               title_g.property('shift_x', acc_x)
+                      .property('shift_y', acc_y);
+
+               var axis = pthis.GetObject();
+
+               axis.fTitleOffset = (vertical ? acc_x : acc_y) / offset_k;
+
+               drag_rect.remove();
+               drag_rect = null;
+            });
+
+      title_g.style("cursor", "move").call(drag_move);
+   }
+
    JSROOT.TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
@@ -5196,47 +5259,6 @@
         label_g.call(labelfont.func);
      }
 
-     if (axis.fTitle.length > 0) {
-         var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
-             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
-             title_offest = 1.6*axis.fTitleOffset*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/text_scaling_size),
-             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
-             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = JSROOT.Painter.root_colors[axis.fTitleColor];
-
-         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
-
-         var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
-
-         if (vertical) {
-
-            // var xoffset = -side*Math.round(labeloffset + (2-side/10) * axis.fTitleOffset*title_fontsize);
-
-            var xoffset = Math.round(-side*title_offest*pad_w);
-
-            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
-               // special handling for color palette labels - draw them always on right side
-               var rect = axis_g.node().getBoundingClientRect();
-               if (xoffset < rect.width - tickSize) xoffset = Math.round(rect.width - tickSize);
-            }
-
-            this.DrawText((center ? "middle" : (myxor ? "begin" : "end" ))+ ";middle",
-                           xoffset,
-                           Math.round(center ? h/2 : (reverse ? h : 0)),
-                           0, (rotate<0 ? -90 : -270),
-                           axis.fTitle, title_color, 1, title_g);
-         } else {
-            this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
-                          Math.round(center ? w/2 : (reverse ? 0 : w)),
-                          Math.round(side * title_offest * pad_h),
-                          0, (rotate<0 ? -180 : 0),
-                          axis.fTitle, title_color, 1, title_g);
-         }
-
-         this.FinishTextDrawing(title_g);
-     }
-
-
      if (JSROOT.gStyle.Zooming) {
         var r =  axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
@@ -5251,6 +5273,54 @@
         else
            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
             .attr("width", w).attr("height", labelfont.size + 3);
+      }
+
+      if (axis.fTitle.length > 0) {
+         var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
+             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/text_scaling_size),
+             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+             title_color = JSROOT.Painter.root_colors[axis.fTitleColor],
+             shift_x = 0, shift_y = 0;
+
+         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+         var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
+         if (vertical) {
+            title_offest_k *= -side*pad_w;
+
+            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+
+            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+               // special handling for color palette labels - draw them always on right side
+               var rect = axis_g.node().getBoundingClientRect();
+               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+            }
+
+            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+
+            this.DrawText((center ? "middle" : (myxor ? "begin" : "end" ))+ ";middle",
+                           0, 0, 0, (rotate<0 ? -90 : -270),
+                           axis.fTitle, title_color, 1, title_g);
+         } else {
+            title_offest_k *= side*pad_h;
+
+            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+            this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                          0, 0, 0, (rotate<0 ? -180 : 0),
+                          axis.fTitle, title_color, 1, title_g);
+         }
+
+         this.FinishTextDrawing(title_g);
+
+         title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
+                .property('shift_x',shift_x)
+                .property('shift_y',shift_y);
+
+         this.AddTitleDrag(title_g, vertical, title_offest_k);
       }
 
       this.position = 0;
