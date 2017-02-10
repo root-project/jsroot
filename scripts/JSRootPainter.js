@@ -10133,7 +10133,13 @@
       JSROOT.progress("Opening " + filepath + " ...");
       JSROOT.OpenFile(filepath, function(file) {
          JSROOT.progress();
-         if (!file) return JSROOT.CallBack(call_back);
+         if (!file) {
+            // make CORS warning
+            if (!d3.select("#gui_fileCORS").style("background","red").empty())
+               setTimeout(function() { d3.select("#gui_fileCORS").style("background",''); }, 5000);
+            return JSROOT.CallBack(call_back, false);
+         }
+
          var h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) {
@@ -10669,7 +10675,7 @@
 
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
 
-      function OpenAllFiles() {
+      function OpenAllFiles(res) {
          if (jsonarr.length>0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
@@ -11596,14 +11602,16 @@
    // function to display progress message in the left bottom corner
    // previous message will be overwritten
    // if no argument specified, any shown messages will be removed
-   JSROOT.progress = function(msg) {
-      var id = "jsroot_progressbox";
-      var box = d3.select("#"+id);
+   JSROOT.progress = function(msg, tmout) {
+      var id = "jsroot_progressbox",
+          box = d3.select("#"+id);
 
       if (!JSROOT.gStyle.ProgressBox) return box.remove();
 
-      if ((arguments.length == 0) || (msg === undefined) || (msg === null))
-         return box.remove();
+      if ((arguments.length == 0) || !msg) {
+         if ((tmout !== -1) || (!box.empty() && box.property("with_timeout"))) box.remove();
+         return;
+      }
 
       if (box.empty()) {
          box = d3.select(document.body)
@@ -11612,11 +11620,18 @@
          box.append("p");
       }
 
-      if (typeof msg === "string")
+      box.property("with_timeout", false);
+
+      if (typeof msg === "string") {
          box.select("p").html(msg);
-      else {
+      } else {
          box.html("");
          box.node().appendChild(msg);
+      }
+
+      if (!isNaN(tmout) && (tmout>0)) {
+         box.property("with_timeout", true);
+         setTimeout(JSROOT.progress.bind(JSROOT,'',-1), tmout);
       }
    }
 

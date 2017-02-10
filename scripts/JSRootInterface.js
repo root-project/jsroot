@@ -130,7 +130,7 @@
             guiCode += '</select>'
                +'<input type="file" id="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
                +'<input type="button" value="..." id="gui_fileBtn" style="width:15%; margin-top:5px;margin-left:5px;" title="select local file for reading"/><br/>'
-               +'<p><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+               +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
                +' how to open files from other servers.</small></p>'
                +'<input style="padding:2px; margin-top:5px;"'
                +'       onclick="ReadSelectedFile()" type="button" title="Read the Selected File" value="Load"/>'
