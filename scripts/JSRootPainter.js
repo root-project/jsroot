@@ -4963,10 +4963,11 @@
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
-   JSROOT.TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k) {
+   JSROOT.TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this,  drag_rect = null, prefix = "", drag_move, acc_x, acc_y, sign_0;
+      var pthis = this,  drag_rect = null, prefix = "", drag_move,
+          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos;
       if (JSROOT._test_d3_ === 3) {
          prefix = "drag";
          drag_move = d3.behavior.drag().origin(Object);
@@ -4980,12 +4981,18 @@
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
 
-            var box = title_g.node().getBBox(); // check that elements visible, request precise value
+            var box = title_g.node().getBBox(), // check that elements visible, request precise value
+                axis = pthis.GetObject();
 
-            acc_x = title_g.property('shift_x');
-            acc_y = title_g.property('shift_y');
+            new_x = acc_x = title_g.property('shift_x');
+            new_y = acc_y = title_g.property('shift_y');
 
             sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
+
+            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+               alt_pos = (reverse === vertical) ? axis_length : 0;
+            else
+               alt_pos = Math.round(axis_length/2);
 
             drag_rect = title_g.append("rect")
                  .classed("zoom", true)
@@ -5001,11 +5008,24 @@
                d3.event.sourceEvent.preventDefault();
                d3.event.sourceEvent.stopPropagation();
 
-               if (vertical) acc_x += d3.event.dx;
-                        else acc_y += d3.event.dy;
+               acc_x += d3.event.dx;
+               acc_y += d3.event.dy;
 
-               if (sign_0 === (vertical ? (acc_x>0) : (acc_y>0)))
-                  title_g.attr('transform', 'translate(' + acc_x + ',' + acc_y +  ')');
+               var set_x = title_g.property('shift_x'),
+                   set_y = title_g.property('shift_y');
+
+               if (vertical) {
+                  set_x = acc_x;
+                  if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
+               } else {
+                  set_y = acc_y;
+                  if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
+               }
+
+               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
+                  new_x = set_x; new_y = set_y;
+                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+               }
 
           }).on(prefix+"end", function() {
                if (!drag_rect) return;
@@ -5013,12 +5033,13 @@
                d3.event.sourceEvent.preventDefault();
                d3.event.sourceEvent.stopPropagation();
 
-               title_g.property('shift_x', acc_x)
-                      .property('shift_y', acc_y);
+               title_g.property('shift_x', new_x)
+                      .property('shift_y', new_y);
 
                var axis = pthis.GetObject();
 
-               axis.fTitleOffset = (vertical ? acc_x : acc_y) / offset_k;
+               axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
+               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
 
                drag_rect.remove();
                drag_rect = null;
@@ -5295,7 +5316,7 @@
                 .property('shift_x',shift_x)
                 .property('shift_y',shift_y);
 
-         this.AddTitleDrag(title_g, vertical, title_offest_k);
+         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
       }
 
       this.position = 0;
