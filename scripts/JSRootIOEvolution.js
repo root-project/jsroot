@@ -2655,20 +2655,23 @@
             obj.fPID = buf.ntou2();
       }
 
-      ds['TMatrixTSym<double>'] = ds['TMatrixTSym<float>'] = function(buf,obj) {
-         var kind = (obj._typename.indexOf("<double>")>0) ? JSROOT.IO.kDouble : JSROOT.IO.kFloat;
-
-         buf.ClassStreamer(obj, "TMatrixTBase" + ((kind===JSROOT.IO.kDouble) ? "<double>" : "<float>"));
-
-         obj.fElements = (kind===JSROOT.IO.kDouble) ? new Float64Array(obj.fNelems) : new Float32Array(obj.fNelems);
-
-         var arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1))/2, kind), cnt = 0;
-
+      ds['TMatrixTSym<float>'] = function(buf,obj) {
+         buf.ClassStreamer(obj, "TMatrixTBase<float>");
+         obj.fElements = new Float32Array(obj.fNelems);
+         var arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1))/2, JSROOT.IO.kFloat), cnt = 0;
          for (var i=0;i<obj.fNrows;++i)
             for (var j=i;j<obj.fNcols;++j)
-               obj.fElements[j*obj.fNcols + i] = obj.fElements[i*obj.fNcols + j] = arr[cnt++];
+               obj.fElements[j*obj.fNcols+i] = obj.fElements[i*obj.fNcols+j] = arr[cnt++];
       }
 
+      ds['TMatrixTSym<double>'] = function(buf,obj) {
+         buf.ClassStreamer(obj, "TMatrixTBase<double>");
+         obj.fElements = new Float64Array(obj.fNelems);
+         var arr = buf.ReadFastArray((obj.fNrows * (obj.fNcols + 1))/2, JSROOT.IO.kDouble), cnt = 0;
+         for (var i=0;i<obj.fNrows;++i)
+            for (var j=i;j<obj.fNcols;++j)
+               obj.fElements[j*obj.fNcols+i] = obj.fElements[i*obj.fNcols+j] = arr[cnt++];
+      }
    }
 
    JSROOT.IO.CreateStreamerElement = function(name, typename, file) {
