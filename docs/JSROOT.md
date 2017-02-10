@@ -355,27 +355,22 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
 
 More details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
-Alternative - enable CORS requests in the browser. It can be easily done with [CORS Everywhere](https://addons.mozilla.org/de/firefox/addon/cors-everywhere/) plugin for the Firefox.
+Alternative - enable CORS requests in the browser. It can be easily done with [CORS Everywhere plugin](https://addons.mozilla.org/de/firefox/addon/cors-everywhere/) for the Firefox browser or [Allow CORS plugin](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en) for the Chrome browser.
 
 
-Other solution - copy all JSROOT files to the location where the data files are located.
-In such case one could use the server with its default settings.
-
-A simple case is to copy only the top index.htm file on the server and specify the full path to JSRootCore.js script like:
+Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to JSRootCore.js script like:
 
     ...
     <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.js?gui"></script>
     ...
 
-In such case one can also specify a custom files list:
+In the `<div>` element with "simpleGUI" id one can specify many custom parameters, which are allowed in the URL string:
 
     ...
-     <div id="simpleGUI" path="files/subdir" files="userfile1.root;subdir/usefile2.root">
+     <div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
        loading scripts ...
      </div>
     ...
-
-In such `<div>` element one could put most parameters which are allowed in the URL string (like item, file, opt and so on)
 
 
 ## Reading local ROOT files 
