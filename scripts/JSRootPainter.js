@@ -1720,8 +1720,12 @@
          // canvas element offset relative to first parent with absolute position
          // workaround - TR is not handled correctly, wherefore ignored
          var offx = 0, offy = 0;
-         while (prnt /*&& !offx && !offy*/) {
-            if (getComputedStyle(prnt).position !== 'static') break;
+         while (prnt && (prnt !== document)) {
+            try {
+               if (getComputedStyle(prnt).position !== 'static') break;
+            } catch(err) {
+               break;
+            }
             if (prnt.nodeName!=='TR') {
                offx += prnt.offsetLeft;
                offy += prnt.offsetTop;
