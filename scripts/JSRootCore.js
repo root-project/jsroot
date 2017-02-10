@@ -1090,10 +1090,7 @@
    // function can be used to open ROOT file, I/O functionality will be loaded when missing
    JSROOT.OpenFile = function(filename, callback) {
       JSROOT.AssertPrerequisites("io", function() {
-         if (typeof filename === 'string')
-            new JSROOT.TFile(filename, callback);
-         else
-            new JSROOT.TLocalFile(filename, callback);
+         JSROOT.OpenFile(filename, callback);
       });
    }
 

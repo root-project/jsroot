@@ -2828,6 +2828,13 @@
       return res;
    }
 
+   JSROOT.OpenFile = function(filename, callback) {
+      if (typeof filename === 'object'  && filename.size && filename.name)
+         return new JSROOT.TLocalFile(filename, callback);
+
+      return new JSROOT.TFile(filename, callback);
+   }
+
    var iomode = JSROOT.GetUrlOption("iomode");
    if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
    if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
