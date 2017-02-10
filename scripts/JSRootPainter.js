@@ -1550,7 +1550,7 @@
 
    JSROOT.TObjectPainter.prototype.embed_3d = function() {
       // returns embed mode for 3D drawings (three.js) inside SVG
-      // 0 - no embedding,  3D drawing take full size of canvas
+      // 0 - no embedding, 3D drawing take full size of canvas
       // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
       // 2 - normall embedding via ForeginObject, works only with Firefox
 
@@ -1561,7 +1561,6 @@
    }
 
    JSROOT.TObjectPainter.prototype.access_3d_kind = function(new_value) {
-
       var svg = this.svg_pad();
       if (svg.empty()) return -1;
 
@@ -1576,10 +1575,8 @@
 
       if (can3d === undefined) can3d = this.embed_3d();
 
-      var pad = this.svg_pad(), clname = this.pad_name;
-
-      if (clname == '') clname = 'canvas';
-      clname = "draw3d_" + clname;
+      var pad = this.svg_pad(),
+          clname = "draw3d_" + (this.pad_name || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
@@ -1631,7 +1628,6 @@
 
       return size;
    }
-
 
    JSROOT.TObjectPainter.prototype.clear_3d_canvas = function() {
       var can3d = this.access_3d_kind(null);
@@ -4171,6 +4167,12 @@
               .attr("height", h)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
+
+      if (svg_pad.property('can3d') === 1)
+         // special case of 3D canvas overlay
+          this.select_main()
+              .select(".draw3d_" + this.this_pad_name)
+              .style('display', pad_visible ? '' : 'none');
 
       btns.attr("transform","translate("+ (w - btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
 
