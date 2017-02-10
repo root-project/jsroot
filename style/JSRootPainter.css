@@ -411,7 +411,7 @@
     border: 1px solid #999;
     background: #F8F8F8;
     box-shadow: 2px 2px 2px #AAA;
-    z-index: 11;
+    z-index: 101;
     overflow: visible;
     line-height: 14px;
 }
@@ -482,7 +482,7 @@
     min-width: 100px;
     height: auto;
     overflow: visible;
-    z-index: 11;
+    z-index: 101;
     border: 1px solid #999;
     background: #F8F8F8;
     left: 10px;
@@ -589,3 +589,19 @@
 .jsroot .svg_toolbar_btn:hover {
     opacity: 1.0;
 }
+
+/* stylesheet for enlarged canvas */
+#jsroot_enlarge_div {
+     position: absolute;
+     margin: 0px;
+     border: 0px;
+     padding: 0px;
+     left: 1px;
+     right: 1px;
+     top: 1px;
+     bottom: 1px;
+     background: white;
+     opacity: 0.95;
+     z-index: 100;
+}
+

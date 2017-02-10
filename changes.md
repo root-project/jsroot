@@ -10,6 +10,7 @@
 6. Handle in I/O TMatrixTSym classes 
 7. Support more supperscript/subscript letters in normal text output 
 8. Let move TAxis title, its position now similar to ROOT itself
+9. Improve enlarge functionality - now works with all layouts 
 
 
 ## Changes in 5.0.2

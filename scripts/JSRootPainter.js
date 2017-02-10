@@ -1194,53 +1194,63 @@
       return false; // indicate if resize is processed
    }
 
-   JSROOT.TBasePainter.prototype.select_main = function() {
+   JSROOT.TBasePainter.prototype.select_main = function(is_direct) {
       // return d3.select for main element, defined with divid
-      if ((this.divid === null) || (this.divid === undefined)) return d3.select(null);
-      if ((typeof this.divid == "string") &&
-          (this.divid[0] != "#")) return d3.select("#" + this.divid);
-      return d3.select(this.divid);
+
+      if (!this.divid) return d3.select(null);
+      var id = this.divid;
+      if ((typeof id == "string") && (id[0]!='#')) id = "#" + id;
+      var res = d3.select(id);
+
+      if (is_direct || res.empty()) return res;
+
+      // one could redirect here
+      if (res.property('use_enlarge')) return d3.select("#jsroot_enlarge_div");
+
+      return res;
    }
 
    JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
       // action can be:  true, false, 'toggle', 'state', 'verify'
       // if action not specified, just return possibility to enlarge main div
 
-      var main = this.select_main();
+      var main = this.select_main(true);
 
       if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
 
       if (action===undefined) return true;
 
-      if (action === 'verify') {
-         if (main.property('can_enlarge')===true) return true;
-         this.enlarge_main('toggle');
-         var sz1 = this.main_visible_rect();
-         this.enlarge_main('toggle');
-         var sz2 = this.main_visible_rect();
-         var res = (sz1.height>10) && (sz1.width>20) &&
-                   (((sz1.height>=sz2.height) && (sz1.width>=sz2.width)) ||
-                    ((sz1.height>1.5*sz2.height) && (sz1.width>=0.9*sz2.width)) ||
-                    ((sz1.height>0.9*sz2.height) && (sz1.width>1.5*sz2.width)));
+      if (action==='verify') return true;
 
-         main.property('can_enlarge', res);
-         return res;
-      }
-
-      var state = (main.property('normal_css') === undefined) ? "off" : "on";
+      var state = main.property('use_enlarge') ? "on" : "off";
 
       if (action === 'state') return state;
 
-      if (action === 'toggle') action = (main.property('normal_css') == null);
+      if (action === 'toggle') action = (state==="off");
+
+      var enlarge = d3.select("#jsroot_enlarge_div");
 
       if ((action === true) && (state!=="on")) {
-         main.property('normal_css', main.node().style.cssText);
-         main.style('position',"absolute").style('left',"3px").style('top',"3px").style('bottom',"3px").style('right',"3px").style("z-index",10).style('width', null).style('height',null).style("background-color","white");
+         if (!enlarge.empty()) return false;
+
+         enlarge = d3.select(document.body)
+                       .append("div")
+                       .attr("id","jsroot_enlarge_div");
+
+         while (main.node().childNodes.length > 0)
+            enlarge.node().appendChild(main.node().firstChild);
+
+         main.property('use_enlarge', true);
+
          return true;
       }
       if ((action === false) && (state!=="off")) {
-         main.node().style.cssText = main.property('normal_css');
-         main.property('normal_css', null);
+
+         while (enlarge.node() && enlarge.node().childNodes.length > 0)
+            main.node().appendChild(enlarge.node().firstChild);
+
+         enlarge.remove();
+         main.property('use_enlarge', false);
          return true;
       }
 
@@ -1766,7 +1776,7 @@
       if (divid !== undefined)
          this.divid = divid;
 
-      if ((is_main === null) || (is_main === undefined)) is_main = 0;
+      if (!is_main) is_main = 0;
 
       this.create_canvas = false;
 
