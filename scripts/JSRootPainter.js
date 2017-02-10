@@ -110,13 +110,12 @@
    };
 
    JSROOT.Toolbar.prototype.createIcon = function(button, thisIcon) {
-      var size = thisIcon.size || 512;
-      var scale = thisIcon.scale || 1;
-
-      var svg = button.append("svg:svg")
+      var size = thisIcon.size || 512,
+          scale = thisIcon.scale || 1,
+          svg = button.append("svg:svg")
                       .attr('height', '1em')
                       .attr('width', '1em')
-                      .attr('viewBox', [0, 0, size, size].join(' '))
+                      .attr('viewBox', [0, 0, size, size].join(' '));
 
       if ('recs' in thisIcon) {
           var rec = {};
@@ -267,7 +266,7 @@
 
       for (var indx = 0; indx < moreCol.length; ++indx) {
          var entry = moreCol[indx];
-         for (var n=0; n < entry.str.length; n+=6) {
+         for (var n=0; n<entry.str.length; n+=6) {
             var num = parseInt(entry.col) + parseInt(n/6);
             colorMap[num] = 'rgb(' + parseInt("0x" +entry.str.slice(n,n+2)) + "," + parseInt("0x" + entry.str.slice(n+2,n+4)) + "," + parseInt("0x" + entry.str.slice(n+4,n+6)) + ")";
          }
@@ -285,14 +284,14 @@
          rgb = "rgba(" + rgb + "," + col.fAlpha.toFixed(3) + ")";
 
       switch (rgb) {
-         case 'rgb(255,255,255)' : rgb = 'white'; break;
-         case 'rgb(0,0,0)' : rgb = 'black'; break;
-         case 'rgb(255,0,0)' : rgb = 'red'; break;
-         case 'rgb(0,255,0)' : rgb = 'green'; break;
-         case 'rgb(0,0,255)' : rgb = 'blue'; break;
-         case 'rgb(255,255,0)' : rgb = 'yellow'; break;
-         case 'rgb(255,0,255)' : rgb = 'magenta'; break;
-         case 'rgb(0,255,255)' : rgb = 'cyan'; break;
+         case 'rgb(255,255,255)': rgb = 'white'; break;
+         case 'rgb(0,0,0)': rgb = 'black'; break;
+         case 'rgb(255,0,0)': rgb = 'red'; break;
+         case 'rgb(0,255,0)': rgb = 'green'; break;
+         case 'rgb(0,0,255)': rgb = 'blue'; break;
+         case 'rgb(255,255,0)': rgb = 'yellow'; break;
+         case 'rgb(255,0,255)': rgb = 'magenta'; break;
+         case 'rgb(0,255,255)': rgb = 'cyan'; break;
       }
       return rgb;
    }
@@ -302,7 +301,7 @@
 
       for (var n = 0; n < objarr.arr.length; ++n) {
          var col = objarr.arr[n];
-         if ((col==null) || (col._typename != 'TColor')) continue;
+         if (!col || (col._typename != 'TColor')) continue;
 
          var num = col.fNumber;
          if ((num<0) || (num>4096)) continue;
@@ -315,19 +314,19 @@
       }
    }
 
-   JSROOT.Painter.root_line_styles = new Array("", "", "3,3", "1,2",
+   JSROOT.Painter.root_line_styles = ["", "", "3,3", "1,2",
          "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
-         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3");
+         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"];
 
    // Initialize ROOT markers
-   JSROOT.Painter.root_markers = new Array(
-           0, 100,   8,   7,   0,  //  0..4
+   JSROOT.Painter.root_markers =
+         [ 0, 100,   8,   7,   0,  //  0..4
            9, 100, 100, 100, 100,  //  5..9
          100, 100, 100, 100, 100,  // 10..14
          100, 100, 100, 100, 100,  // 15..19
          100, 103, 105, 104,   0,  // 20..24
            3,   4,   2,   1, 106,  // 25..29
-           6,   7,   5, 102, 101); // 30..34
+           6,   7,   5, 102, 101]; // 30..34
 
    /** Function returns the ready to use marker for drawing */
    JSROOT.Painter.createAttMarker = function(attmarker, style) {
@@ -733,163 +732,163 @@
 
    JSROOT.Painter.symbols_map = {
       // greek letters
-      '#alpha' : '\u03B1',
-      '#beta' : '\u03B2',
-      '#chi' : '\u03C7',
-      '#delta' : '\u03B4',
-      '#varepsilon' : '\u03B5',
-      '#phi' : '\u03C6',
-      '#gamma' : '\u03B3',
-      '#eta' : '\u03B7',
-      '#iota' : '\u03B9',
-      '#varphi' : '\u03C6',
-      '#kappa' : '\u03BA',
-      '#lambda' : '\u03BB',
-      '#mu' : '\u03BC',
-      '#nu' : '\u03BD',
-      '#omicron' : '\u03BF',
-      '#pi' : '\u03C0',
-      '#theta' : '\u03B8',
-      '#rho' : '\u03C1',
-      '#sigma' : '\u03C3',
-      '#tau' : '\u03C4',
-      '#upsilon' : '\u03C5',
-      '#varomega' : '\u03D6',
-      '#omega' : '\u03C9',
-      '#xi' : '\u03BE',
-      '#psi' : '\u03C8',
-      '#zeta' : '\u03B6',
-      '#Alpha' : '\u0391',
-      '#Beta' : '\u0392',
-      '#Chi' : '\u03A7',
-      '#Delta' : '\u0394',
-      '#Epsilon' : '\u0395',
-      '#Phi' : '\u03A6',
-      '#Gamma' : '\u0393',
-      '#Eta' : '\u0397',
-      '#Iota' : '\u0399',
-      '#vartheta' : '\u03D1',
-      '#Kappa' : '\u039A',
-      '#Lambda' : '\u039B',
-      '#Mu' : '\u039C',
-      '#Nu' : '\u039D',
-      '#Omicron' : '\u039F',
-      '#Pi' : '\u03A0',
-      '#Theta' : '\u0398',
-      '#Rho' : '\u03A1',
-      '#Sigma' : '\u03A3',
-      '#Tau' : '\u03A4',
-      '#Upsilon' : '\u03A5',
-      '#varsigma' : '\u03C2',
-      '#Omega' : '\u03A9',
-      '#Xi' : '\u039E',
-      '#Psi' : '\u03A8',
-      '#Zeta' : '\u0396',
-      '#varUpsilon' : '\u03D2',
-      '#epsilon' : '\u03B5',
+      '#alpha': '\u03B1',
+      '#beta': '\u03B2',
+      '#chi': '\u03C7',
+      '#delta': '\u03B4',
+      '#varepsilon': '\u03B5',
+      '#phi': '\u03C6',
+      '#gamma': '\u03B3',
+      '#eta': '\u03B7',
+      '#iota': '\u03B9',
+      '#varphi': '\u03C6',
+      '#kappa': '\u03BA',
+      '#lambda': '\u03BB',
+      '#mu': '\u03BC',
+      '#nu': '\u03BD',
+      '#omicron': '\u03BF',
+      '#pi': '\u03C0',
+      '#theta': '\u03B8',
+      '#rho': '\u03C1',
+      '#sigma': '\u03C3',
+      '#tau': '\u03C4',
+      '#upsilon': '\u03C5',
+      '#varomega': '\u03D6',
+      '#omega': '\u03C9',
+      '#xi': '\u03BE',
+      '#psi': '\u03C8',
+      '#zeta': '\u03B6',
+      '#Alpha': '\u0391',
+      '#Beta': '\u0392',
+      '#Chi': '\u03A7',
+      '#Delta': '\u0394',
+      '#Epsilon': '\u0395',
+      '#Phi': '\u03A6',
+      '#Gamma': '\u0393',
+      '#Eta': '\u0397',
+      '#Iota': '\u0399',
+      '#vartheta': '\u03D1',
+      '#Kappa': '\u039A',
+      '#Lambda': '\u039B',
+      '#Mu': '\u039C',
+      '#Nu': '\u039D',
+      '#Omicron': '\u039F',
+      '#Pi': '\u03A0',
+      '#Theta': '\u0398',
+      '#Rho': '\u03A1',
+      '#Sigma': '\u03A3',
+      '#Tau': '\u03A4',
+      '#Upsilon': '\u03A5',
+      '#varsigma': '\u03C2',
+      '#Omega': '\u03A9',
+      '#Xi': '\u039E',
+      '#Psi': '\u03A8',
+      '#Zeta': '\u0396',
+      '#varUpsilon': '\u03D2',
+      '#epsilon': '\u03B5',
       // math symbols
 
-      '#sqrt' : '\u221A',
+      '#sqrt': '\u221A',
 
       // from TLatex tables #2 & #3
-      '#leq' : '\u2264',
-      '#/' : '\u2044',
-      '#infty' : '\u221E',
-      '#voidb' : '\u0192',
-      '#club' : '\u2663',
-      '#diamond' : '\u2666',
-      '#heart' : '\u2665',
-      '#spade' : '\u2660',
-      '#leftrightarrow' : '\u2194',
-      '#leftarrow' : '\u2190',
-      '#uparrow' : '\u2191',
-      '#rightarrow' : '\u2192',
-      '#downarrow' : '\u2193',
-      '#circ' : '\u02C6', // ^
-      '#pm' : '\xB1',
-      '#doublequote' : '\u2033',
-      '#geq' : '\u2265',
-      '#times' : '\xD7',
-      '#propto' : '\u221D',
-      '#partial' : '\u2202',
-      '#bullet' : '\u2022',
-      '#divide' : '\xF7',
-      '#neq' : '\u2260',
-      '#equiv' : '\u2261',
-      '#approx' : '\u2248', // should be \u2245 ?
-      '#3dots' : '\u2026',
-      '#cbar' : '\u007C',
-      '#topbar' : '\xAF',
-      '#downleftarrow' : '\u21B5',
-      '#aleph' : '\u2135',
-      '#Jgothic' : '\u2111',
-      '#Rgothic' : '\u211C',
-      '#voidn' : '\u2118',
-      '#otimes' : '\u2297',
-      '#oplus' : '\u2295',
-      '#oslash' : '\u2205',
-      '#cap' : '\u2229',
-      '#cup' : '\u222A',
-      '#supseteq' : '\u2287',
-      '#supset' : '\u2283',
-      '#notsubset' : '\u2284',
-      '#subseteq' : '\u2286',
-      '#subset' : '\u2282',
-      '#int' : '\u222B',
-      '#in' : '\u2208',
-      '#notin' : '\u2209',
-      '#angle' : '\u2220',
-      '#nabla' : '\u2207',
-      '#oright' : '\xAE',
-      '#ocopyright' : '\xA9',
-      '#trademark' : '\u2122',
-      '#prod' : '\u220F',
-      '#surd' : '\u221A',
-      '#upoint' : '\u22C5',
-      '#corner' : '\xAC',
-      '#wedge' : '\u2227',
-      '#vee' : '\u2228',
-      '#Leftrightarrow' : '\u21D4',
-      '#Leftarrow' : '\u21D0',
-      '#Uparrow' : '\u21D1',
-      '#Rightarrow' : '\u21D2',
-      '#Downarrow' : '\u21D3',
-      '#LT' : '\x3C',
-      '#void1' : '\xAE',
-      '#copyright' : '\xA9',
-      '#void3' : '\u2122',
-      '#sum' : '\u2211',
-      '#arctop' : '',
-      '#lbar' : '',
-      '#arcbottom' : '',
-      '#void8' : '',
-      '#bottombar' : '\u230A',
-      '#arcbar' : '',
-      '#ltbar' : '',
-      '#AA' : '\u212B',
-      '#aa' : '\u00E5',
-      '#void06' : '',
-      '#GT' : '\x3E',
-      '#forall' : '\u2200',
-      '#exists' : '\u2203',
-      '#bar' : '',
-      '#vec' : '',
-      '#dot' : '\u22C5',
-      '#hat' : '\xB7',
-      '#ddot' : '',
-      '#acute' : '\acute',
-      '#grave' : '',
-      '#check' : '\u2713',
-      '#tilde' : '\u02DC',
-      '#slash' : '\u2044',
-      '#hbar' : '\u0127',
-      '#box' : '',
-      '#Box' : '',
-      '#parallel' : '',
-      '#perp' : '\u22A5',
-      '#odot' : '',
-      '#left' : '',
-      '#right' : ''
+      '#leq': '\u2264',
+      '#/': '\u2044',
+      '#infty': '\u221E',
+      '#voidb': '\u0192',
+      '#club': '\u2663',
+      '#diamond': '\u2666',
+      '#heart': '\u2665',
+      '#spade': '\u2660',
+      '#leftrightarrow': '\u2194',
+      '#leftarrow': '\u2190',
+      '#uparrow': '\u2191',
+      '#rightarrow': '\u2192',
+      '#downarrow': '\u2193',
+      '#circ': '\u02C6', // ^
+      '#pm': '\xB1',
+      '#doublequote': '\u2033',
+      '#geq': '\u2265',
+      '#times': '\xD7',
+      '#propto': '\u221D',
+      '#partial': '\u2202',
+      '#bullet': '\u2022',
+      '#divide': '\xF7',
+      '#neq': '\u2260',
+      '#equiv': '\u2261',
+      '#approx': '\u2248', // should be \u2245 ?
+      '#3dots': '\u2026',
+      '#cbar': '\u007C',
+      '#topbar': '\xAF',
+      '#downleftarrow': '\u21B5',
+      '#aleph': '\u2135',
+      '#Jgothic': '\u2111',
+      '#Rgothic': '\u211C',
+      '#voidn': '\u2118',
+      '#otimes': '\u2297',
+      '#oplus': '\u2295',
+      '#oslash': '\u2205',
+      '#cap': '\u2229',
+      '#cup': '\u222A',
+      '#supseteq': '\u2287',
+      '#supset': '\u2283',
+      '#notsubset': '\u2284',
+      '#subseteq': '\u2286',
+      '#subset': '\u2282',
+      '#int': '\u222B',
+      '#in': '\u2208',
+      '#notin': '\u2209',
+      '#angle': '\u2220',
+      '#nabla': '\u2207',
+      '#oright': '\xAE',
+      '#ocopyright': '\xA9',
+      '#trademark': '\u2122',
+      '#prod': '\u220F',
+      '#surd': '\u221A',
+      '#upoint': '\u22C5',
+      '#corner': '\xAC',
+      '#wedge': '\u2227',
+      '#vee': '\u2228',
+      '#Leftrightarrow': '\u21D4',
+      '#Leftarrow': '\u21D0',
+      '#Uparrow': '\u21D1',
+      '#Rightarrow': '\u21D2',
+      '#Downarrow': '\u21D3',
+      '#LT': '\x3C',
+      '#void1': '\xAE',
+      '#copyright': '\xA9',
+      '#void3': '\u2122',
+      '#sum': '\u2211',
+      '#arctop': '',
+      '#lbar': '',
+      '#arcbottom': '',
+      '#void8': '',
+      '#bottombar': '\u230A',
+      '#arcbar': '',
+      '#ltbar': '',
+      '#AA': '\u212B',
+      '#aa': '\u00E5',
+      '#void06': '',
+      '#GT': '\x3E',
+      '#forall': '\u2200',
+      '#exists': '\u2203',
+      '#bar': '',
+      '#vec': '',
+      '#dot': '\u22C5',
+      '#hat': '\xB7',
+      '#ddot': '',
+      '#acute': '\acute',
+      '#grave': '',
+      '#check': '\u2713',
+      '#tilde': '\u02DC',
+      '#slash': '\u2044',
+      '#hbar': '\u0127',
+      '#box': '',
+      '#Box': '',
+      '#parallel': '',
+      '#perp': '\u22A5',
+      '#odot': '',
+      '#left': '',
+      '#right': ''
    };
 
    JSROOT.Painter.translateLaTeX = function(_string) {
@@ -5316,14 +5315,9 @@
           y1 = this.AxisToSvg("y", gaxis.fY1),
           x2 = this.AxisToSvg("x", gaxis.fX2),
           y2 = this.AxisToSvg("y", gaxis.fY2),
-          w = x2 - x1, h = y1 - y2;
-
-      var vertical = w<5,
-          kind = "normal",
-          func = null,
-          min = gaxis.fWmin,
-          max = gaxis.fWmax,
-          reverse = false;
+          w = x2 - x1, h = y1 - y2,
+          vertical = w < 5, kind = "normal", func = null,
+          min = gaxis.fWmin, max = gaxis.fWmax, reverse = false;
 
       if (gaxis.fChopt.indexOf("G")>=0) {
          func = d3.scaleLog();
@@ -5358,7 +5352,6 @@
 
       this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
-
 
    JSROOT.drawGaxis = function(divid, obj, opt) {
       var painter = new JSROOT.TAxisPainter(obj, false);
