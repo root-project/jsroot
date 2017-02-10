@@ -1150,7 +1150,7 @@
 
       this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen], function(blob1) {
 
-         if (blob1==null) callback(null);
+         if (blob1==null) return callback(null);
 
          var buf = null;
 
