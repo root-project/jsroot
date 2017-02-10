@@ -30,10 +30,12 @@
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/jquery-ui.css');
 
-   JSROOT.Painter.createMenu = function(maincallback, menuname) {
-      if (!menuname || (typeof menuname !== 'string')) menuname = 'root_ctx_menu';
+   JSROOT.Painter.createMenu = function(painter, maincallback) {
+      var menuname = 'root_ctx_menu';
 
-      var menu = { element: null, code: "", cnt: 1, funcs: {}, separ: false };
+      if (!maincallback && typeof painter==='function') { maincallback = painter; painter = null; }
+
+      var menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
       menu.add = function(name, arg, func) {
          if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
@@ -631,13 +633,9 @@
 
       if (typeof this.fill_context !== 'function') return;
 
-      var painter = this;
+      JSROOT.Painter.createMenu(this, function(menu) {
 
-      JSROOT.Painter.createMenu(function(menu) {
-
-         menu.painter = painter;
-
-         painter.fill_context(menu, hitem);
+         menu.painter.fill_context(menu, hitem);
 
          if (menu.size() > 0) {
             menu.tree_node = elem.parentNode;
@@ -670,9 +668,7 @@
          return el.firstChild.href;
       }
 
-      JSROOT.Painter.createMenu(function(menu) {
-
-         menu.painter = painter;
+      JSROOT.Painter.createMenu(painter, function(menu) {
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
             var addr = "", cnt = 0;

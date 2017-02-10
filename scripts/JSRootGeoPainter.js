@@ -97,9 +97,8 @@
             d3.event.preventDefault();
             d3.event.stopPropagation();
 
-            JSROOT.Painter.createMenu(function(menu) {
-               menu.painter = painter; // set as this in callbacks
-               painter.FillContextMenu(menu);
+            JSROOT.Painter.createMenu(painter, function(menu) {
+               menu.painter.FillContextMenu(menu);
                menu.show(evnt);
             });
          }
@@ -503,11 +502,7 @@
 
    JSROOT.TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
 
-      var painter = this;
-
-      JSROOT.Painter.createMenu(function(menu) {
-         menu.painter = painter; // set as this in callbacks
-
+      JSROOT.Painter.createMenu(this, function(menu) {
          var numitems = 0, numnodes = 0, cnt = 0;
          if (intersects)
             for (var n=0;n<intersects.length;++n) {
@@ -516,7 +511,7 @@
             }
 
          if (numnodes + numitems === 0) {
-            painter.FillContextMenu(menu);
+            menu.painter.FillContextMenu(menu);
          } else {
             var many = (numnodes + numitems) > 1;
 
@@ -533,9 +528,9 @@
                   hdr = name;
                } else
                if (obj.stack) {
-                  name = painter._clones.ResolveStack(obj.stack).name;
-                  itemname = painter.GetStackFullName(obj.stack);
-                  hdr = painter.GetItemName();
+                  name = menu.painter._clones.ResolveStack(obj.stack).name;
+                  itemname = menu.painter.GetStackFullName(obj.stack);
+                  hdr = menu.painter.GetItemName();
                   if (name.indexOf("Nodes/") === 0) hdr = name.substr(6); else
                   if (name.length > 0) hdr = name; else
                   if (!hdr) hdr = "header";
@@ -553,7 +548,7 @@
                      var mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
                      if (mesh.geo_object) mesh.geo_object._hidden_via_menu = true; // and hide object for further redraw
-                     painter.Render3D();
+                     menu.painter.Render3D();
                   });
 
                   if (many) menu.add("endsub:");
@@ -561,7 +556,7 @@
                   continue;
                }
 
-               var wireframe = painter.accessObjectWireFrame(obj);
+               var wireframe = menu.painter.accessObjectWireFrame(obj);
 
                if (wireframe!==undefined)
                   menu.addchk(wireframe, "Wireframe", n, function(indx) {
@@ -599,7 +594,7 @@
                });
 
                menu.add("Hide", n, function(indx) {
-                  var resolve = painter._clones.ResolveStack(intersects[indx].object.stack);
+                  var resolve = menu.painter._clones.ResolveStack(intersects[indx].object.stack);
 
                   if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
                      JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);

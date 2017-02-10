@@ -168,12 +168,12 @@
     */
    JSROOT.Painter = {};
 
-   JSROOT.Painter.createMenu = function(maincallback, menuname) {
+   JSROOT.Painter.createMenu = function(painter, maincallback) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
       JSROOT.AssertPrerequisites('jq2d', function() {
          document.body.style.cursor = 'auto';
-         JSROOT.Painter.createMenu(maincallback, menuname);
+         JSROOT.Painter.createMenu(painter, maincallback);
       });
    }
 
@@ -3803,11 +3803,8 @@
          evnt = d3.event;
       }
 
-      var pthis = this;
-
-      JSROOT.Painter.createMenu(function(menu) {
-         menu.painter = pthis; // set as this in callbacks
-         pthis.FillContextMenu(menu);
+      JSROOT.Painter.createMenu(this, function(menu) {
+         menu.painter.FillContextMenu(menu);
          menu.show(evnt);
       }); // end menu creation
    }
@@ -4462,8 +4459,7 @@
 
        if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
 
-       JSROOT.Painter.createMenu(function(menu) {
-          menu.painter = selp;
+       JSROOT.Painter.createMenu(selp, function(menu) {
           if (selp.FillContextMenu(menu,selkind))
              setTimeout(menu.show.bind(menu, evnt), 50);
        });
@@ -4521,8 +4517,7 @@
          d3.event.preventDefault();
          d3.event.stopPropagation();
 
-         JSROOT.Painter.createMenu(function(menu) {
-            menu.painter = pthis; // set as this in callbacks
+         JSROOT.Painter.createMenu(pthis, function(menu) {
             menu.add("header:Menus");
 
             if (pthis.iscan)
@@ -7250,9 +7245,8 @@
       // one need to copy event, while after call back event may be changed
       menu_painter.ctx_menu_evnt = evnt;
 
-      JSROOT.Painter.createMenu(function(menu) {
-         menu.painter = this; // in all menu callbacks painter will be 'this' pointer
-         var domenu = this.FillContextMenu(menu, kind, obj);
+      JSROOT.Painter.createMenu(menu_painter, function(menu) {
+         var domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when actiavted in the frame corner
          if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
@@ -7260,12 +7254,12 @@
 
          if (domenu) {
             // suppress any running zomming
-            this.SwitchTooltip(false);
-            menu.show(this.ctx_menu_evnt, this.SwitchTooltip.bind(this, true) );
+            menu.painter.SwitchTooltip(false);
+            menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
          }
 
-         delete this.ctx_menu_evnt; // delete temporary variable
-      }.bind(menu_painter) );  // end menu creation
+         delete menu.painter.ctx_menu_evnt; // delete temporary variable
+      });  // end menu creation
    }
 
 
