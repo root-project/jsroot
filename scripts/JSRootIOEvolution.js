@@ -902,7 +902,7 @@
          }
          if (last-first>2) totalsz += (last-first)*60; // for multi-range ~100 bytes/per request
 
-         var xhr = JSROOT.NewHttpRequest(fullurl, ((JSROOT.IO.Mode == "array") ? "buf" : "bin"), read_callback);
+         var xhr = JSROOT.NewHttpRequest(fullurl, "buf", read_callback);
 
          if (file.fAcceptRanges) {
             xhr.setRequestHeader("Range", ranges);
@@ -2835,9 +2835,6 @@
       return new JSROOT.TFile(filename, callback);
    }
 
-   var iomode = JSROOT.GetUrlOption("iomode");
-   if ((iomode=="str") || (iomode=="string")) JSROOT.IO.Mode = "string"; else
-   if ((iomode=="bin") || (iomode=="arr") || (iomode=="array")) JSROOT.IO.Mode = "array";
    JSROOT.IO.NativeArray = ('Float64Array' in window);
 
    JSROOT.IO.ProduceCustomStreamers();
