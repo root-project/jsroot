@@ -9656,7 +9656,7 @@
 
       if ((options.length == 1) && (options[0] == "iotest")) {
          h.clear();
-         d3.select("#" + h.disp_frameid).html("<h2>Start I/O test "+ ('IO' in JSROOT ? "Mode=" + JSROOT.IO.Mode : "") +  "</h2>")
+         d3.select("#" + h.disp_frameid).html("<h2>Start I/O test</h2>")
 
          var tm0 = new Date();
          return h.get(items[0], function(item, obj) {
