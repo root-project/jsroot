@@ -1053,11 +1053,9 @@
             return result_callback(null);
          }
 
-         var isstr = (typeof res == 'string');
-
          // if only single segment requested, return result as is
          if (last - first === 2) {
-            var b = isstr ? res : new DataView(res);
+            var b = new DataView(res);
             if (place.length===2) return result_callback(b);
             blobs.push(b);
             return send_new_request(true);
@@ -1066,8 +1064,7 @@
          // object to access response data
          var hdr = this.getResponseHeader('Content-Type'),
              ismulti = (typeof hdr === 'string') && (hdr.indexOf('multipart')>=0),
-             view = isstr ? { getUint8: function(pos) { return res.charCodeAt(pos);  }, byteLength: res.length }
-                       : new DataView(res);
+             view = new DataView(res);
 
          if (!ismulti) {
             // server may returns simple buffer, which combines all segments together
@@ -1092,7 +1089,7 @@
 
             if (canbe_single_segment) {
                for (var n=first;n<last;n+=2)
-                  blobs.push(isstr ? res.substr(place[n]-segm_start, place[n+1]) : new DataView(res, place[n]-segm_start, place[n+1]));
+                  blobs.push(new DataView(res, place[n]-segm_start, place[n+1]));
                return send_new_request(true);
             }
 
@@ -1159,13 +1156,12 @@
 
             if (segm_start > segm_last) {
                // fall-back solution, believe that segments same as requested
-               blobs.push(isstr ? res.substr(o, place[n+1]) : new DataView(res, o, place[n+1]));
+               blobs.push(new DataView(res, o, place[n+1]));
                o += place[n+1];
                n += 2;
             } else {
                while ((n<last) && (place[n] >= segm_start) && (place[n] + place[n+1] - 1 <= segm_last)) {
-                  blobs.push(isstr ? res.substr(o + place[n] - segm_start, place[n+1]) :
-                                   new DataView(res, o + place[n] - segm_start, place[n+1]));
+                  blobs.push(new DataView(res, o + place[n] - segm_start, place[n+1]));
                   n += 2;
                }
 
