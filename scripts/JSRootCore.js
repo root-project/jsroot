@@ -703,6 +703,7 @@
             if (!isNaN(len) && (len>xhr.expected_size)) {
                xhr.did_abort = true;
                xhr.abort();
+               console.warn('Server response size ' + len + ' larger than expected ' + xhr.expected_size + ' Abort I/O operation');
                return callback(null);
             }
          }
