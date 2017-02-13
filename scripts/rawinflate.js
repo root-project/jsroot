@@ -136,6 +136,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
        v = new Array(N_MAX), // values in order of bit length
        x = new Array(BMAX+1),// bit offsets, then code stack
        r = new zip_HuftNode(), // table entry for structure assignment
+       rr = null, // temporary variable, use in assignment
        a,         // counter for codes of length k
        el,        // length of EOB code (value 256)
        f,         // i repeats in table every f entries
@@ -154,11 +155,9 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
        o,
        tail = this.root = null;      // (zip_HuftList)
 
-   for (i=0; i<c.length; ++i) c[i] = 0;
-   for (i=0; i<lx.length; ++i) lx[i] = 0;
-   for (i=0; i<u.length; ++i) u[i] = null;
-   for (i=0; i<v.length; ++i) v[i] = 0;
-   for (i=0; i<x.length; ++i) x[i] = 0;
+   for (i=0; i<=BMAX; ++i) c[i] = lx[i] = x[i] = 0;
+   for (i=0; i<BMAX; ++i) u[i] = null;
+   for (i=0; i<N_MAX; ++i) v[i] = 0;
 
    // Generate counts for each bit length
    el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
@@ -259,7 +258,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
             // allocate and link in new table
             q = new Array(z);
-            for (o = 0; o < z; o++) {
+            for (o = 0; o < z; ++o) {
                q[o] = new zip_HuftNode();
             }
 
@@ -278,10 +277,11 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
                r.e = 16 + j;  // bits in this table
                r.t = q;    // pointer to this table
                j = (i & ((1 << w) - 1)) >> (w - lx[h]);
-               u[h-1][j].e = r.e;
-               u[h-1][j].b = r.b;
-               u[h-1][j].n = r.n;
-               u[h-1][j].t = r.t;
+               rr = u[h-1][j];
+               rr.e = r.e;
+               rr.b = r.b;
+               rr.n = r.n;
+               rr.t = r.t;
             }
          }
 
@@ -300,10 +300,11 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
          // fill code-like entries with r //
          f = 1 << (k - w);
          for (j = i >> w; j < z; j += f) {
-            q[j].e = r.e;
-            q[j].b = r.b;
-            q[j].n = r.n;
-            q[j].t = r.t;
+            rr = q[j];
+            rr.e = r.e;
+            rr.b = r.b;
+            rr.n = r.n;
+            rr.t = r.t;
          }
 
          // backwards increment the k-bit code i
@@ -730,8 +731,6 @@ JSROOT.ZIP.inflate = function(arr, tgt)
 
    return cnt;
 }
-
-
 
 return JSROOT;
 
