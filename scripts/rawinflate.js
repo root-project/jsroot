@@ -36,15 +36,15 @@
 
 /* constant parameters */
 var zip_WSIZE = 32768,       // Sliding Window size
-    zip_STORED_BLOCK = 0,
-    zip_STATIC_TREES = 1,
-    zip_DYN_TREES    = 2,
+//    zip_STORED_BLOCK = 0,
+//    zip_STATIC_TREES = 1,
+//    zip_DYN_TREES    = 2,
 
 /* for inflate */
-    zip_lbits = 9,            // bits in base literal/length lookup table
-    zip_dbits = 6,            // bits in base distance lookup table
-    zip_INBUFSIZ = 32768,     // Input buffer size
-    zip_INBUF_EXTRA = 64,     // Extra buffer
+//    zip_lbits = 9,            // bits in base literal/length lookup table
+//    zip_dbits = 6,            // bits in base distance lookup table
+//    zip_INBUFSIZ = 32768,     // Input buffer size
+//    zip_INBUF_EXTRA = 64,     // Extra buffer
 
 /* variables (inflate) */
     zip_slide,
@@ -61,6 +61,7 @@ var zip_WSIZE = 32768,       // Sliding Window size
     zip_tl, zip_td,           // literal/length and distance decoder tables
     zip_bl, zip_bd,           // number of bits decoded by tl and td
     zip_inflate_data,
+    zip_inflate_datalen,
     zip_inflate_pos,
 
 /* constant tables (inflate) */
@@ -317,8 +318,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
          // backup over finished tables
          while ((i & ((1 << w) - 1)) != x[h]) {
-            w -= lx[h];      // don't need to update q
-            h--;
+            w -= lx[h--];      // don't need to update q
          }
       }
    }
@@ -336,7 +336,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
 var zip_NEEDBITS = function(n) {
    while (zip_bit_len < n) {
-      if (zip_inflate_pos < zip_inflate_data.byteLength)
+      if (zip_inflate_pos < zip_inflate_datalen)
          zip_bit_buf |= zip_inflate_data[zip_inflate_pos++] << zip_bit_len;
       zip_bit_len += 8;
    }
@@ -601,7 +601,7 @@ var zip_inflate_dynamic = function(buff, off, size) {
    }
 
    // build the decoding tables for literal/length and distance codes
-   zip_bl = zip_lbits;
+   zip_bl = 9; // zip_lbits;
    h = new zip_HuftBuild(ll, nl, 257, zip_cplens, zip_cplext, zip_bl);
    if (zip_bl == 0)  // no literals or lengths
       h.status = 1;
@@ -614,7 +614,7 @@ var zip_inflate_dynamic = function(buff, off, size) {
 
    for (i = 0; i < nd; ++i)
       ll[i] = ll[i + nl];
-   zip_bd = zip_dbits;
+   zip_bd = 6; // zip_dbits;
    h = new zip_HuftBuild(ll, nd, 0, zip_cpdist, zip_cpdext, zip_bd);
    zip_td = h.root;
    zip_bd = h.m;
@@ -633,19 +633,6 @@ var zip_inflate_dynamic = function(buff, off, size) {
    return zip_inflate_codes(buff, off, size);
 }
 
-var zip_inflate_start = function() {
-
-   if (zip_slide == null)
-      zip_slide = new Array(2 * zip_WSIZE);
-   zip_wp = 0;
-   zip_bit_buf = 0;
-   zip_bit_len = 0;
-   zip_method = -1;
-   zip_eof = false;
-   zip_copy_leng = zip_copy_dist = 0;
-   zip_tl = null;
-}
-
 var zip_inflate_internal = function(buff, off, size) {
    // decompress an inflated entry
    var n = 0, i;
@@ -655,7 +642,7 @@ var zip_inflate_internal = function(buff, off, size) {
          return n;
 
       if (zip_copy_leng > 0) {
-         if (zip_method != zip_STORED_BLOCK) {
+         if (zip_method != 0 /*zip_STORED_BLOCK*/) {
             // STATIC_TREES or DYN_TREES
             while (zip_copy_leng > 0 && n < size) {
                zip_copy_leng--;
@@ -732,8 +719,18 @@ JSROOT.ZIP = {};
 
 JSROOT.ZIP.inflate = function(arr, tgt)
 {
-   zip_inflate_start();
+   if (zip_slide == null)
+      zip_slide = new Array(2 * zip_WSIZE);
+   zip_wp = 0;
+   zip_bit_buf = 0;
+   zip_bit_len = 0;
+   zip_method = -1;
+   zip_eof = false;
+   zip_copy_leng = zip_copy_dist = 0;
+   zip_tl = null;
+
    zip_inflate_data = arr;
+   zip_inflate_datalen = arr.byteLength;
    zip_inflate_pos = 0;
 
    var i, cnt = 0;
