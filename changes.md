@@ -13,6 +13,13 @@
 9. Improve enlarge functionality - now works with all layouts
 
 
+## Changes in 5.0.3
+1. Fix - prevent exception when discover HTML element position (#121)
+2. Fix - prevent I/O failure when server automatically gzip response (#119)
+3. Fix - lego drawing for stacked TH1 histograms
+4. Fix - when change global tooltips settings, also change for each sub-pad
+
+
 ## Changes in 5.0.2
 1. Fix - read branch entries as arrays
 2. Fix - command submission to THttpServer
