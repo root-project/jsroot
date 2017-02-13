@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.0.3
+1. Fix - prevent excpetion when discover element position (#121)
+2. Fix - prevent I/O failure when server automatically gzip response (#119) 
+
+
 ## Changes in 5.0.2
 1. Fix - read branch entries as arrays 
 2. Fix - command submission to THttpServer
