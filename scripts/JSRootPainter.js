@@ -4020,6 +4020,7 @@
          }
 
          svg = this.select_main()
+             .html("")
              .append("svg")
              .attr("class", "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
