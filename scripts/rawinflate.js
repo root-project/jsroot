@@ -115,8 +115,6 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
                              e,     // list of extra bits for non-simple codes
                              mm ) { // maximum lookup bits
 
-   this.BMAX = 16;      // maximum bit length of any code
-   this.N_MAX = 288;    // maximum number of codes in any set
    this.status = 0;     // 0: success, 1: incomplete table, 2: bad input
    this.root = null;    // (zip_HuftList) starting table
    this.m = 0;          // maximum lookup bits, returns actual
@@ -129,9 +127,16 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
    The code with value 256 is special, and the tables are constructed
    so that no bits beyond that code are fetched when that code is
    decoded. */
-{
-   var a,         // counter for codes of length k
-       c = new Array(this.BMAX+1),  // bit length count table
+
+   var BMAX = 16,      // maximum bit length of any code
+       N_MAX = 288,    // maximum number of codes in any set
+       c = new Array(BMAX+1),  // bit length count table
+       lx = new Array(BMAX+1), // stack of bits per table
+       u = new Array(BMAX), // zip_HuftNode[BMAX][]  table stack
+       v = new Array(N_MAX), // values in order of bit length
+       x = new Array(BMAX+1),// bit offsets, then code stack
+       r = new zip_HuftNode(), // table entry for structure assignment
+       a,         // counter for codes of length k
        el,        // length of EOB code (value 256)
        f,         // i repeats in table every f entries
        g,         // maximum code length
@@ -139,34 +144,24 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
        i,         // counter, current code
        j,         // counter
        k,         // number of bits in current code
-       lx = new Array(this.BMAX+1), // stack of bits per table
        p,         // pointer into c[], b[], or v[]
        pidx,      // index of p
        q,         // (zip_HuftNode) points to current table
-       r = new zip_HuftNode(), // table entry for structure assignment
-       u = new Array(this.BMAX), // zip_HuftNode[BMAX][]  table stack
-       v = new Array(this.N_MAX), // values in order of bit length
        w,
-       x = new Array(this.BMAX+1),// bit offsets, then code stack
        xp,        // pointer into x or c
        y,         // number of dummy codes added
        z,         // number of entries in current table
        o,
        tail = this.root = null;      // (zip_HuftList)
 
-   for (i = 0; i < c.length; ++i)
-      c[i] = 0;
-   for (i = 0; i < lx.length; ++i)
-      lx[i] = 0;
-   for (i = 0; i < u.length; ++i)
-      u[i] = null;
-   for (i = 0; i < v.length; ++i)
-      v[i] = 0;
-   for (i = 0; i < x.length; ++i)
-      x[i] = 0;
+   for (i=0; i<c.length; ++i) c[i] = 0;
+   for (i=0; i<lx.length; ++i) lx[i] = 0;
+   for (i=0; i<u.length; ++i) u[i] = null;
+   for (i=0; i<v.length; ++i) v[i] = 0;
+   for (i=0; i<x.length; ++i) x[i] = 0;
 
    // Generate counts for each bit length
-   el = n > 256 ? b[256] : this.BMAX; // set length of EOB code, if any
+   el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
    p = b; pidx = 0;
    i = n;
    do {
@@ -178,17 +173,17 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
       this.root = null;
       this.m = 0;
       this.status = 0;
-      return;
+      return this;
    }
 
    // Find minimum and maximum length, bound *m by those
-   for (j = 1; j <= this.BMAX; ++j)
+   for (j = 1; j <= BMAX; ++j)
       if (c[j] != 0)
          break;
    k = j;         // minimum code length
    if (mm < j)
       mm = j;
-   for (i = this.BMAX; i != 0; --i)
+   for (i = BMAX; i != 0; --i)
       if (c[i] != 0)
          break;
    g = i;         // maximum code length
@@ -200,13 +195,13 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
       if ((y -= c[j]) < 0) {
          this.status = 2;  // bad input: more codes than bits
          this.m = mm;
-         return;
+         return this;
       }
    }
    if ((y -= c[i]) < 0) {
       this.status = 2;
       this.m = mm;
-      return;
+      return this;
    }
    c[i] += y;
 
@@ -328,8 +323,9 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
    /* Return true (1) if we were given an incomplete table */
    this.status = ((y != 0 && g != 1) ? 1 : 0);
-} /* end of constructor */
+  /* end of constructor */
 
+   return this;
 }
 
 /* routines (inflate) */
@@ -481,8 +477,7 @@ var zip_inflate_fixed = function(buff, off, size) {
       while (i < 288) l[i++] = 8; // make a complete, but wrong code set
       zip_fixed_bl = 7;
 
-      var h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext,
-                            zip_fixed_bl);
+      var h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
       if (h.status != 0) {
          alert("HufBuild error: "+h.status);
          return -1;
@@ -491,12 +486,10 @@ var zip_inflate_fixed = function(buff, off, size) {
       zip_fixed_bl = h.m;
 
       // distance table
-      for (i = 0; i < 30; ++i) // make an incomplete code set
-         l[i] = 5;
+      for (i = 0; i<30; ++i) l[i] = 5;// make an incomplete code set
       zip_fixed_bd = 5;
 
-      h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext,
-                            zip_fixed_bd);
+      h = new zip_HuftBuild(l, 30, 0, zip_cpdist, zip_cpdext, zip_fixed_bd);
       if (h.status > 1) {
          zip_fixed_tl = null;
          alert("HufBuild error: "+h.status);
