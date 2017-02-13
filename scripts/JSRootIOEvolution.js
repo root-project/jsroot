@@ -7,7 +7,10 @@
       define( ['JSRootCore', 'rawinflate'], factory );
    } else {
       if (typeof JSROOT == 'undefined')
-         throw new Error("This extension requires JSRootCore.js", "JSRootIOEvolution.js");
+         throw new Error("JSROOT I/O requires JSRootCore.js", "JSRootIOEvolution.js");
+
+      if (typeof JSROOT.ZIP == 'undefined')
+         throw new Error("JSROOT I/O requires rawinflate.js", "JSRootIOEvolution.js");
 
       if (typeof JSROOT.IO == "object")
          throw new Error("This JSROOT IO already loaded", "JSRootIOEvolution.js");
@@ -151,10 +154,7 @@
 
       function getCode(o) { return arr.getUint8(o); }
 
-      if (RawInflate === undefined) {
-         if (!noalert) alert("R__unzip: rawinflate.min.js script is not loaded");
-         return null;
-      }
+      var tm1 = new Date().getTime();
 
       while (fullres < tgtsize) {
 
@@ -182,12 +182,16 @@
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         var reslen = RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+         var reslen = JSROOT.ZIP.inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
          if (reslen<=0) break;
 
          fullres += reslen;
          curr += srcsize;
       }
+
+      var tm2 = new Date().getTime();
+
+      if (totallen>1e6) console.log(tgtsize, 'takes ', tm2-tm1);
 
       if (fullres !== tgtsize) {
          if (!noalert) alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);

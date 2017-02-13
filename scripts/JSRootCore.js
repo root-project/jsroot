@@ -928,7 +928,7 @@
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0)) {
          mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
                       "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-         modules.push('JSRootIOEvolution');
+         modules.push('rawinflate','JSRootIOEvolution');
       }
 
       if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0)) {

@@ -5,7 +5,25 @@
  * http://www.onicos.com/staff/iz/amuse/javascript/expert/inflate.txt
  */
 
-(function(){
+
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      // AMD. Register as an anonymous module.
+      define( ['JSRootCore'], factory );
+   } else {
+
+      if (typeof JSROOT == 'undefined')
+         throw new Error('JSROOT is not defined', 'rawinflate.js');
+
+      if (typeof JSROOT.ZIP !== 'undefined')
+         throw new Error('JSROOT.ZIP already exists', 'rawinflate.js');
+
+      // Browser globals
+      factory(JSROOT);
+   }
+} (function(JSROOT) {
+
+
 
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0.0.1
@@ -737,39 +755,16 @@ var zip_inflate_internal = function(buff, off, size) {
    return n;
 }
 
-var zip_inflate = function(str)
+JSROOT.ZIP = {};
+
+JSROOT.ZIP.inflate = function(arr, tgt)
 {
-   var i, j;
-
-   zip_inflate_start();
-   zip_inflate_data = str;
-   zip_inflate_pos = 0;
-
-   zip_NEEDBITS = zip_NEEDBITS_DFLT;
-
-   var buff = new Array(1024);
-   var aout = [];
-   while ((i = zip_inflate_internal(buff, 0, buff.length)) > 0) {
-      var cbuf = new Array(i);
-      for (j = 0; j < i; ++j) {
-         cbuf[j] = String.fromCharCode(buff[j]);
-      }
-      aout[aout.length] = cbuf.join("");
-   }
-   zip_inflate_data = null; // G.C.
-   return aout.join("");
-}
-
-var zip_inflate_arr = function(arr, tgt)
-{
-   var i, j;
-
    zip_inflate_start();
    zip_inflate_data = arr;
    zip_inflate_pos = 0;
    zip_NEEDBITS = zip_NEEDBITS_ARR;
 
-   var cnt = 0;
+   var i, cnt = 0;
    while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
       cnt += i;
    }
@@ -779,9 +774,7 @@ var zip_inflate_arr = function(arr, tgt)
 }
 
 
-if (! window.RawInflate) RawInflate = {};
 
-RawInflate.inflate = zip_inflate;
-RawInflate.arr_inflate = zip_inflate_arr;
+return JSROOT;
 
-})();
+}));
