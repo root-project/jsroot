@@ -4276,13 +4276,15 @@
       else
          menu.add("header: Canvas");
 
-      if (this.iscan || !this.has_canvas)
-         menu.addchk((JSROOT.gStyle.Tooltip > 0), "Enable tooltips (global)", function() {
-            JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
-            this.ForEachPainterInPad(function(fp) {
+      menu.addchk((JSROOT.gStyle.Tooltip > 0), "Enable tooltips (global)", function() {
+         JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
+         var can_painter = this;
+         if (!this.iscan && this.has_canvas) can_painter = this.pad_painter();
+         if (can_painter && can_painter.ForEachPainterInPad)
+            can_painter.ForEachPainterInPad(function(fp) {
                if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
             });
-         });
+      });
 
       if (!this._websocket) {
 
