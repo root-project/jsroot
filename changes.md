@@ -3,6 +3,7 @@
 ## Changes in 5.0.3
 1. Fix - prevent excpetion when discover element position (#121)
 2. Fix - prevent I/O failure when server automatically gzip response (#119) 
+3. Fix - lego drawing for stacked TH1 histograms 
 
 
 ## Changes in 5.0.2
