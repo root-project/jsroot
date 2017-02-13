@@ -104,7 +104,7 @@
       };
 
       this.show  = function(v) {
-         if (JSROOT.gStyle.Tooltip <= 0) return;
+         // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
          if (typeof v !='string' && v.length) {
             var res = v[0];
@@ -622,7 +622,7 @@
 
       this.first_render_tm = 0;
       this.enable_hightlight = false;
-      this.enable_tooltip = true;
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
@@ -648,7 +648,7 @@
 
          painter.BinHighlight3D(tip, mesh);
 
-         return (painter.enable_tooltip && tip && tip.info) ? tip.info : "";
+         return (painter.tooltip_allowed && tip && tip.info) ? tip.info : "";
       }
 
       this.control.ProcessMouseLeave = function() {
@@ -1371,7 +1371,7 @@
    JSROOT.Painter.BinHighlight3D = function(tip, selfmesh) {
 
       var changed = false, tooltip_mesh = null, changed_self = true,
-          want_remove = !tip || (tip.x1===undefined) || !this.enable_hightlight || !this.enable_tooltip;
+          want_remove = !tip || (tip.x1===undefined) || !this.enable_hightlight;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -2608,7 +2608,7 @@
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
-            this.enable_hightlight = this.first_render_tm < 1200;
+            this.enable_hightlight = (this.first_render_tm < 1200) && this.tooltip_allowed;
             console.log('First render tm = ' + this.first_render_tm);
          }
 

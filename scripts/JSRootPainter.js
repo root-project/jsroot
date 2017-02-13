@@ -7414,25 +7414,25 @@
          if (menu.size() > 0)
             menu.add("separator");
 
-         menu.addchk(this.enable_tooltip, 'Show tooltips', function() {
-            this.enable_tooltip = !this.enable_tooltip;
+         var main = this.main_painter() || this;
+
+         menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
+            main.tooltip_allowed = !main.tooltip_allowed;
          });
 
-         if (this.enable_tooltip)
-            menu.addchk(this.enable_hightlight, 'Hightlight bins', function() {
-               this.enable_hightlight = !this.enable_hightlight;
-               if (!this.enable_hightlight && this.BinHighlight3D) this.BinHighlight3D(null);
-            });
-
-         menu.addchk(this.options.FrontBox, 'Front box', function() {
-            this.options.FrontBox = !this.options.FrontBox;
-            if (this.Render3D) this.Render3D();
-         });
-         menu.addchk(this.options.BackBox, 'Back box', function() {
-            this.options.BackBox = !this.options.BackBox;
-            if (this.Render3D) this.Render3D();
+         menu.addchk(main.enable_hightlight, 'Hightlight bins', function() {
+            main.enable_hightlight = !main.enable_hightlight;
+            if (!main.enable_hightlight && main.BinHighlight3D) main.BinHighlight3D(null);
          });
 
+         menu.addchk(main.options.FrontBox, 'Front box', function() {
+            main.options.FrontBox = !main.options.FrontBox;
+            if (main.Render3D) main.Render3D();
+         });
+         menu.addchk(main.options.BackBox, 'Back box', function() {
+            main.options.BackBox = !main.options.BackBox;
+            if (main.Render3D) main.Render3D();
+         });
 
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
@@ -7448,9 +7448,9 @@
             }
          }
 
-         if (this.control && typeof this.control.reset === 'function')
+         if (main.control && typeof main.control.reset === 'function')
             menu.add('Reset camera', function() {
-               this.control.reset();
+               main.control.reset();
             });
       }
 
