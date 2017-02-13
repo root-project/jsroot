@@ -47,7 +47,7 @@ var zip_WSIZE = 32768,       // Sliding Window size
 //    zip_INBUF_EXTRA = 64,     // Extra buffer
 
 /* variables (inflate) */
-    zip_slide,
+    zip_slide = null,
     zip_wp,                   // current position in slide
     zip_fixed_tl = null,      // inflate static
     zip_fixed_td,             // inflate static
@@ -471,18 +471,14 @@ var zip_inflate_fixed = function(buff, off, size) {
 
    // if first time, set up tables for fixed blocks
    if (zip_fixed_tl == null) {
-      var i,      // temporary variable
+      var i = 0,      // temporary variable
           l = new Array(288); // length list for huft_build
 
       // literal table
-      for (i = 0; i < 144; ++i)
-         l[i] = 8;
-      for (; i < 256; ++i)
-         l[i] = 9;
-      for (; i < 280; ++i)
-         l[i] = 7;
-      for (; i < 288; ++i)  // make a complete, but wrong code set
-         l[i] = 8;
+      while (i < 144) l[i++] = 8;
+      while (i < 256) l[i++] = 9;
+      while (i < 280) l[i++] = 7;
+      while (i < 288) l[i++] = 8; // make a complete, but wrong code set
       zip_fixed_bl = 7;
 
       var h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext,
@@ -719,7 +715,7 @@ JSROOT.ZIP = {};
 
 JSROOT.ZIP.inflate = function(arr, tgt)
 {
-   if (zip_slide == null)
+   if (!zip_slide)
       zip_slide = new Array(2 * zip_WSIZE);
    zip_wp = 0;
    zip_bit_buf = 0;
