@@ -147,6 +147,11 @@
 
       function getCode(o) { return arr.getUint8(o); }
 
+      if (RawInflate === undefined) {
+         if (!noalert) alert("R__unzip: rawinflate.min.js script is not loaded");
+         return null;
+      }
+
       while (fullres < tgtsize) {
 
          var fmt = "uncknown", off = 0, HDRSIZE = 9;
@@ -173,7 +178,7 @@
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         var reslen = window.RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+         var reslen = RawInflate.arr_inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
          if (reslen<=0) break;
 
          fullres += reslen;
