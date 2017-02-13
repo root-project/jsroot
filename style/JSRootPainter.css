@@ -603,5 +603,6 @@
      background: white;
      opacity: 0.95;
      z-index: 100;
+     overflow: hidden;
 }
 
