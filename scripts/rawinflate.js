@@ -611,8 +611,7 @@ var zip_inflate_dynamic = function(buff, off, size) {
    if (zip_bl == 0)  // no literals or lengths
       h.status = 1;
    if (h.status != 0) {
-      if (h.status == 1)
-         ;// **incomplete literal tree**
+      // if (h.status == 1); // **incomplete literal tree**
       return -1;     // incomplete code set
    }
    zip_tl = h.root;
@@ -630,9 +629,8 @@ var zip_inflate_dynamic = function(buff, off, size) {
       return -1;
    }
 
-   if (h.status == 1) {
-      ;// **incomplete distance tree**
-   }
+   //if (h.status == 1); // **incomplete distance tree**
+
    if (h.status != 0)
       return -1;
 
@@ -641,8 +639,6 @@ var zip_inflate_dynamic = function(buff, off, size) {
 }
 
 var zip_inflate_start = function() {
-
-   var i;
 
    if (zip_slide == null)
       zip_slide = new Array(2 * zip_WSIZE);
@@ -657,9 +653,8 @@ var zip_inflate_start = function() {
 
 var zip_inflate_internal = function(buff, off, size) {
    // decompress an inflated entry
-   var n, i;
+   var n = 0, i;
 
-   n = 0;
    while (n < size) {
       if (zip_eof && zip_method == -1)
          return n;
@@ -731,11 +726,8 @@ var zip_inflate_internal = function(buff, off, size) {
             break;
       }
 
-      if (i == -1) {
-         if (zip_eof)
-            return 0;
-         return -1;
-      }
+      if (i == -1)
+         return zip_eof ? 0 : -1;
       n += i;
    }
    return n;
