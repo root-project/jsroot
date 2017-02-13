@@ -257,7 +257,7 @@
       control.ProcessDblClick = function(evnt) {
          var intersect = this.DetectZoomMesh(evnt);
          if (intersect && this.painter) {
-            this.painter.Unzoom(intersect.object.zoom);
+            this.painter.Unzoom(intersect.object.use_y_for_z ? "y" : intersect.object.zoom);
          } else {
             this.reset();
          }
@@ -409,6 +409,8 @@
                        else position = position/2/control.painter.size_z3d;
 
             control.painter.AnalyzeMouseWheelEvent(evnt, item, position, false);
+
+            if ((kind==="z") && intersect.object.use_y_for_z) kind="y";
 
             control.painter.Zoom(kind, item.min, item.max);
          }
