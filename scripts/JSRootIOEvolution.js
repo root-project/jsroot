@@ -154,8 +154,6 @@
 
       function getCode(o) { return arr.getUint8(o); }
 
-      var tm1 = new Date().getTime();
-
       while (fullres < tgtsize) {
 
          var fmt = "uncknown", off = 0, HDRSIZE = 9;
@@ -188,10 +186,6 @@
          fullres += reslen;
          curr += srcsize;
       }
-
-      var tm2 = new Date().getTime();
-
-      if (totallen>1e6) console.log(tgtsize, 'takes ', tm2-tm1);
 
       if (fullres !== tgtsize) {
          if (!noalert) alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);
