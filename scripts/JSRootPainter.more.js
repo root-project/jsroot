@@ -1347,7 +1347,7 @@
          return res;
       }
 
-      this.DrawNextHisto = function(indx, opt) {
+      this.DrawNextHisto = function(indx, opt, mm) {
          var stack = this.GetObject(),
              hist = stack.fHistogram, hopt = "",
              hlst = this.nostack ? stack.fHists : stack.fStack,
@@ -1363,6 +1363,7 @@
             hopt += " same";
          } else {
             hopt = (opt || "") + " axis";
+            if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
          }
 
          // special handling of stacked histograms - set $baseh object for correct drawing
@@ -1406,6 +1407,7 @@
          var histo = stack.fHistogram;
 
          if (!histo) {
+
             // compute the min/max of each axis
             var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
             for (var i = 0; i < nhists; ++i) {
@@ -1431,12 +1433,17 @@
             histo.fYaxis.fXmax = ymax;
          }
          histo.fTitle = stack.fTitle;
-         if (!histo.TestBit(JSROOT.TH1StatusBits.kIsZoomed)) {
-            histo.fMinimum = (pad && pad.fLogy) ? mm.min / (1 + 0.5 * JSROOT.log10(mm.max / mm.min)) : mm.min;
-            histo.fMaximum = (pad && pad.fLogy) ? mm.max * (1 + 0.2 * JSROOT.log10(mm.max / mm.min)) : mm.max;
+
+         if (pad && pad.fLogy) {
+            if (mm.max<=0) mm.max = 1;
+            if (mm.min<=0) mm.min = 1e-4*mm.max;
+            var kmin = 1/(1 + 0.5*JSROOT.log10(mm.max / mm.min)),
+                kmax = 1 + 0.2*JSROOT.log10(mm.max / mm.min);
+            mm.min*=kmin;
+            mm.max*=kmax;
          }
 
-         this.DrawNextHisto(!lsame ? -1 : 0, opt);
+         this.DrawNextHisto(!lsame ? -1 : 0, opt, mm);
          return this;
       }
 
@@ -2832,9 +2839,9 @@
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
       if (histo.fContour) nlevels = histo.fContour.length;
-      if ((this.histo.fMinimum != -1111) && (this.histo.fMaximum != -1111)) {
-         zmin = this.histo.fMinimum;
-         zmax = this.histo.fMaximum;
+      if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
+         zmin = this.options.minimum;
+         zmax = this.options.maximum;
       }
       if (this.zoom_zmin != this.zoom_zmax) {
          zmin = this.zoom_zmin;

@@ -5491,7 +5491,8 @@
              System: JSROOT.Painter.Coord.kCARTESIAN,
              AutoColor : 0, NoStat : 0, AutoZoom : false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
-             Optimize: JSROOT.gStyle.OptimizeDraw },
+             Optimize: JSROOT.gStyle.OptimizeDraw,
+             minimum: -1111, maximum: -1111 },
            d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption),
            hdim = this.Dimension(),
            pad = this.root_pad(),
@@ -5503,6 +5504,8 @@
             if (this.histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
 
       if (d.check('PAL', true)) option.Palette = parseInt(d.part);
+      if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = this.histo.fMinimum;
+      if (d.check('MAXIMUM:', true)) option.maximum = parseFloat(d.part); else option.maximum = this.histo.fMaximum;
 
       if (d.check('NOOPTIMIZE')) option.Optimize = 0;
       if (d.check('OPTIMIZE')) option.Optimize = 2;
@@ -6533,9 +6536,9 @@
 
       function UzoomMinMax(ndim, hist) {
          if (painter.Dimension()!==ndim) return false;
-         if ((hist.fMinimum===-1111) && (hist.fMaximum===-1111)) return false;
+         if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
          if (!painter.draw_content) return false; // if not drawin content, not change min/max
-         hist.fMinimum = hist.fMaximum = -1111;
+         painter.options.minimum = painter.options.maximum = -1111;
          painter.ScanContent(true); // to reset ymin/ymax
          return true;
       }
@@ -7578,15 +7581,17 @@
 
       hmin = hmax = null;
       var set_zoom = false;
-      if (this.histo.fMinimum !== -1111) {
-         hmin = this.histo.fMinimum;
+
+      if (this.options.minimum !== -1111) {
+         hmin = this.options.minimum;
          if (hmin < this.ymin)
             this.ymin = hmin;
          else
             set_zoom = true;
       }
-      if (this.histo.fMaximum !== -1111) {
-         hmax = this.histo.fMaximum;
+
+      if (this.options.maximum !== -1111) {
+         hmax = this.options.maximum;
          if (hmax > this.ymax)
             this.ymax = hmax;
          else

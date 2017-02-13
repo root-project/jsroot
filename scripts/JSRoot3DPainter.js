@@ -2708,8 +2708,8 @@
 
          var zmult = 1.1;
 
-         if (this.histo.fMinimum !== -1111) this.zmin = this.histo.fMinimum;
-         if (this.histo.fMaximum !== -1111) { this.zmax = this.histo.fMaximum; zmult = 1; }
+         if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
+         if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
 
          if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
