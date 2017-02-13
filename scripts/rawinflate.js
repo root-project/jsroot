@@ -161,11 +161,9 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
    // Generate counts for each bit length
    el = (n > 256) ? b[256] : BMAX; // set length of EOB code, if any
-   p = b; pidx = 0;
-   i = n;
+   p = b; pidx = 0; i = n;
    do {
-      c[p[pidx]]++; // assume all entries <= BMAX
-      pidx++;
+      c[p[pidx++]]++; // assume all entries <= BMAX
    } while (--i > 0);
 
    if (c[0] == n) {   // null input--all zero length codes
@@ -236,8 +234,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
          // here i is the Huffman code of length k bits for value p[pidx]
          // make tables up to required level
          while (k > w + lx[1 + h]) {
-            w += lx[1 + h]; // add bits already decoded
-            h++;
+            w += lx[1 + h++]; // add bits already decoded
 
             // compute minimum size table less than or equal to *m bits
             z = (z = g - w) > mm ? mm : z; // upper limit
@@ -414,7 +411,7 @@ var zip_inflate_codes = function(buff, off, size) {
 
       // do the copy
       while (zip_copy_leng > 0 && n < size) {
-         zip_copy_leng--;
+         --zip_copy_leng;
          zip_copy_dist &= zip_WSIZE - 1;
          zip_wp &= zip_WSIZE - 1;
          buff[off + n++] = zip_slide[zip_wp++] = zip_slide[zip_copy_dist++];
@@ -449,7 +446,7 @@ var zip_inflate_stored = function(buff, off, size) {
 
    n = 0;
    while (zip_copy_leng > 0 && n < size) {
-      zip_copy_leng--;
+      --zip_copy_leng;
       zip_wp &= zip_WSIZE - 1;
       zip_NEEDBITS(8);
       buff[off + n++] = zip_slide[zip_wp++] = zip_GETBITS(8);
@@ -635,7 +632,7 @@ var zip_inflate_internal = function(buff, off, size) {
          if (zip_method != 0 /*zip_STORED_BLOCK*/) {
             // STATIC_TREES or DYN_TREES
             while (zip_copy_leng > 0 && n < size) {
-               zip_copy_leng--;
+               --zip_copy_leng;
                zip_copy_dist &= zip_WSIZE - 1;
                zip_wp &= zip_WSIZE - 1;
                buff[off + n++] = zip_slide[zip_wp++] =
@@ -643,7 +640,7 @@ var zip_inflate_internal = function(buff, off, size) {
             }
          } else {
             while (zip_copy_leng > 0 && n < size) {
-               zip_copy_leng--;
+               --zip_copy_leng;
                zip_wp &= zip_WSIZE - 1;
                zip_NEEDBITS(8);
                buff[off + n++] = zip_slide[zip_wp++] = zip_GETBITS(8);
