@@ -4561,7 +4561,7 @@
    }
 
    JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt==null) || !this.draw_content || !this.draw_g || !this.tt_handle) {
+      if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
@@ -4590,6 +4590,9 @@
                // found potential bins candidate
                if ((realx < bin.fXmin) || (realx > bin.fXmax) ||
                     (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
+
+               // ignore empty bins with col0 option
+               if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
 
                var gr = bin.fPoly, numgraphs = 1;
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
