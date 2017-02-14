@@ -2903,7 +2903,7 @@
       this.name_prefix = ""; // name prefix used for nodes names
 
       if (obj) {
-         if (obj._geoh) this.toplevel = false;
+         if (obj.$geoh) this.toplevel = false;
          this.CreateClones(obj);
       } else
       if (clones) this.nodes = clones;
@@ -3016,9 +3016,9 @@
              clone.fDY = shape.fDY;
              clone.fDZ = shape.fDZ;
              clone.vol = shape.fDX*shape.fDY*shape.fDZ;
-             if (shape._nfaces === undefined)
-                shape._nfaces = JSROOT.GEO.createGeometry(shape, -1);
-             clone.nfaces = shape._nfaces;
+             if (shape.$nfaces === undefined)
+                shape.$nfaces = JSROOT.GEO.createGeometry(shape, -1);
+             clone.nfaces = shape.$nfaces;
              if (clone.nfaces <= 0) clone.vol = 0;
 
              // if (clone.nfaces < -10) console.log('Problem  with node ' + obj.fName + ':' + obj.fMother.fName);

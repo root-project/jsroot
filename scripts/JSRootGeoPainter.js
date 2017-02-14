@@ -39,7 +39,7 @@
 
    JSROOT.TGeoPainter = function( obj, is_manager ) {
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
-         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, _geoh: obj._geoh, _proxy: true };
+         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       JSROOT.TObjectPainter.call(this, obj);
 
@@ -2651,7 +2651,7 @@
       }
 
       JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
-      vol._geoh = true; // workaround, let know browser that we are in volumes hierarchy
+      vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
 
       var node1 = JSROOT.Create("TGeoNodeMatrix");
@@ -2692,7 +2692,7 @@
 
    JSROOT.GEO.getBrowserItem = function(item, itemname, callback) {
       // mark object as belong to the hierarchy, require to
-      if (item._geoobj) item._geoobj._geoh = true;
+      if (item._geoobj) item._geoobj.$geoh = true;
 
       JSROOT.CallBack(callback, item, item._geoobj);
    }
