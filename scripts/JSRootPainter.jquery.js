@@ -452,7 +452,7 @@
 
       if (status_item && (JSROOT.GetUrlOption('nostatus')===null)) {
          var func = JSROOT.findFunction(status_item._status);
-         var hdiv = (typeof func == 'function') ? JSROOT.Painter.ConfigureHSeparator(30) : null;
+         var hdiv = (typeof func == 'function') ? this.CreateStatusLine(30) : null;
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
@@ -997,21 +997,7 @@
 
       this.AdjustSeparator(300,null);
 
-      this.CreateStatusLine(30);
-
-
-/*
-      $("#separator-div").addClass("separator").draggable({
-         axis: "x" , zIndex: 100, cursor: "ew-resize",
-         helper : function() { return $("#separator-div").clone().attr('id','separator-clone').css('background-color','grey'); },
-         stop: function(event,ui) {
-            event.stopPropagation();
-            var left = ui.position.left;
-            $("#separator-clone").remove();
-            JSROOT.Painter.AdjustLayout(left, null, false);
-         }
-      });
-*/
+      // this.CreateStatusLine(30);
 
 
 /*      $("#"+ this.gui_div + "_browser_ui")
@@ -1028,7 +1014,6 @@
            }
       });
 */
-      // this.CreateStatusLine(30);
 
 /*      $("#" + divid + "_browser").draggable({
          containment: "#"+divid,
@@ -1081,23 +1066,24 @@
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw) {
 
+      var w = 5;
+
       if (vsepar!==null) {
          vsepar = parseInt(vsepar);
          d3.select("#" + this.gui_div + "_browser_ui").style('width',vsepar+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+10) + 'px');
-         d3.select("#" + this.gui_div + "_vsepar").style('left',vsepar+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
+         d3.select("#" + this.gui_div + "_vsepar").style('left',vsepar+'px').style('width',w+"px");
       }
 
       if (hsepar!==null) {
          hsepar = parseInt(hsepar);
-
-         if (hsepar<0) hsepar += ($("#" + this.gui_div + "_browser").outerHeight(true) - 5);
-         d3.select("#" + this.gui_div + "_browser_ui").style('bottom',(hsepar+10)+'px');
-         d3.select("#" + this.gui_div + "_vsepar").style('bottom',hsepar+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('bottom',(hsepar+10)+'px');
+         if (hsepar<0) hsepar += ($("#" + this.gui_div + "_browser").outerHeight(true) - w);
+         if (hsepar< 5) hsepar = 5;
+         d3.select("#" + this.gui_div + "_browser_ui").style('bottom',(hsepar+w)+'px');
+         d3.select("#" + this.gui_div + "_vsepar").style('bottom',(hsepar+w)+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('bottom',(hsepar+w)+'px');
          d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
-         d3.select("#" + this.gui_div + "_hsepar").style('bottom', hsepar+'px');
-         console.log('SET H');
+         d3.select("#" + this.gui_div + "_hsepar").style('bottom', hsepar+'px').style('height',w+"px")
       }
 
       if (redraw) JSROOT.resize(this.gui_div + "_drawing");
@@ -1751,104 +1737,14 @@
 
    // =======================================================================
 
-   JSROOT.Painter.separ = null;
-
-   JSROOT.Painter.AdjustLayout = function(left, height, firsttime) {
-      if (this.separ == null) return;
-
-      if (left!=null) {
-         var wdiff = $("#"+this.separ.left).outerWidth() - $("#"+this.separ.left).width();
-         var w = 5;
-         $("#"+this.separ.vertical).css('left', left + "px").width(w).css('top','1px');
-         $("#"+this.separ.left).width(left-wdiff-1).css('top','1px');
-         $("#"+this.separ.right).css('left',left+w+"px").css('top','1px');
-         if (!this.separ.horizontal) {
-            $("#"+this.separ.vertical).css('bottom', '1px');
-            $("#"+this.separ.left).css('bottom', '1px');
-            $("#"+this.separ.right).css('bottom', '1px');
-         }
-      }
-
-      if ((height!=null) && this.separ.horizontal)  {
-         var diff = $("#"+this.separ.bottom).outerHeight() - $("#"+this.separ.bottom).height();
-         height -= 2*diff;
-         if (height<5) height = 5;
-         var bot = height + diff;
-         $('#'+this.separ.bottom).height(height);
-         var h = 5;
-         $("#"+this.separ.horizontal).css('bottom', bot + 'px').height(h);
-         bot += h;
-         $("#"+this.separ.left).css('bottom', bot + 'px');
-      }
-
-      if (this.separ.horizontal)
-         if (this.separ.hpart) {
-            var ww = $("#"+this.separ.left).outerWidth() - 2;
-            $('#'+this.separ.bottom).width(ww);
-            $("#"+this.separ.horizontal).width(ww);
-         } else {
-            var bot = $("#"+this.separ.left).css('bottom');
-            $("#"+this.separ.vertical).css('bottom', bot);
-            $("#"+this.separ.right).css('bottom', bot);
-         }
-
-      if (firsttime || (this.separ.handle==null)) return;
-
-      if (typeof this.separ.handle == 'function') this.separ.handle(); else
-      if ((typeof this.separ.handle == 'object') &&
-          (typeof this.separ.handle.CheckResize === 'function')) this.separ.handle.CheckResize();
-   }
-
    JSROOT.Painter.ConfigureVSeparator = function(handle) {
-
-      JSROOT.Painter.separ = { handle: handle, left: "left-div", right: "right-div", vertical: "separator-div",
-                               horizontal : null, bottom : null, hpart: true };
-
-      $("#separator-div").addClass("separator").draggable({
-         axis: "x" , zIndex: 100, cursor: "ew-resize",
-         helper : function() { return $("#separator-div").clone().attr('id','separator-clone').css('background-color','grey'); },
-         stop: function(event,ui) {
-            event.stopPropagation();
-            var left = ui.position.left;
-            $("#separator-clone").remove();
-            JSROOT.Painter.AdjustLayout(left, null, false);
-         }
-      });
-
-      var w0 = Math.round($(window).width() * 0.2);
-      if (w0<300) w0 = Math.min(300, Math.round($(window).width() * 0.5));
-
-      JSROOT.Painter.AdjustLayout(w0, null, true);
+      // FIXME: remove
    }
 
-   JSROOT.Painter.ConfigureHSeparator = function(height, onlyleft) {
+   JSROOT.Painter.ConfigureHSeparator = function(height) {
+     if (!JSROOT.hpainter) return "";
 
-      if ((JSROOT.Painter.separ == null) ||
-          (JSROOT.Painter.separ.horizontal != null)) return null;
-
-      JSROOT.Painter.separ['horizontal'] = 'horizontal-separator-div';
-      JSROOT.Painter.separ['bottom'] = 'bottom-div';
-      JSROOT.Painter.separ.hpart = (onlyleft === true);
-
-      var prnt = $("#"+this.separ.left).parent();
-
-      prnt.append('<div id="horizontal-separator-div" class="separator" style="left:1px; right:1px;  height:4px; bottom:16px; cursor: ns-resize"></div>');
-      prnt.append('<div id="bottom-div" class="column" style="left:1px; right:1px; height:15px; bottom:1px"></div>');
-
-      $("#horizontal-separator-div").addClass("separator").draggable({
-         axis: "y" , zIndex: 100, cursor: "ns-resize",
-         helper : function() { return $("#horizontal-separator-div").clone().attr('id','horizontal-separator-clone').css('background-color','grey'); },
-         stop: function(event,ui) {
-            event.stopPropagation();
-            var top = $(window).height() - ui.position.top;
-            $('#horizontal-separator-clone').remove();
-            JSROOT.Painter.AdjustLayout(null, top, false);
-         }
-      });
-
-      JSROOT.Painter.AdjustLayout(null, height, false);
-
-      return JSROOT.Painter.separ.bottom;
+      return JSROOT.hpainter.CreateStatusLine(height);
    }
 
    return JSROOT.Painter;
