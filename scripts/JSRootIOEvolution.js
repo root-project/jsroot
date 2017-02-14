@@ -909,7 +909,7 @@
 
          if (file.fAcceptRanges) {
             xhr.setRequestHeader("Range", ranges);
-            xhr.expected_size = Math.min(1.1*totalsz, totalsz+200); // 200 if offset for the potential gzip
+            xhr.expected_size = Math.max(Math.round(1.1*totalsz), totalsz+200); // 200 if offset for the potential gzip
          }
 
          if (progress_callback && (typeof xhr.addEventListener === 'function')) {
