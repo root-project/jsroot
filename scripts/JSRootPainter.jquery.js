@@ -873,7 +873,7 @@
         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0) // main container
         .append("div").attr("id", this.gui_div + "_browser_ui")
         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
-        .style('z-index',10).style('padding-left', '5px')
+        .style('z-index',10)
         .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
         .html(guiCode);
 
@@ -974,7 +974,47 @@
 
       d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
 
-      $("#"+ this.gui_div + "_browser_ui")
+      d3.select("#" + this.gui_div + "_browser")
+        .append("div").attr("id", this.gui_div + "_vsepar")
+        .attr("class", "jsroot_separator")
+        .style('position',"absolute").style('left','300px').style('top',0).style('bottom',0).style('width','5px')
+        .style('cursor', 'ew-resize');
+
+      $("#" + this.gui_div + "_vsepar").draggable({
+           axis: "x" , zIndex: 10, cursor: "ew-resize",
+           helper : function() { return $("#"+hpainter.gui_div+"_vsepar").clone().attr('id','separator-clone').css('background-color','grey'); },
+           drag: function(event,ui) {
+              var left = ui.position.left;
+              hpainter.AdjustSeparator(left, null, true);
+           },
+           stop: function(event,ui) {
+              // event.stopPropagation();
+              var left = ui.position.left;
+              $("#separator-clone").remove();
+              hpainter.AdjustSeparator(left, null, true);
+           }
+        });
+
+      this.AdjustSeparator(300,null);
+
+      this.CreateStatusLine(30);
+
+
+/*
+      $("#separator-div").addClass("separator").draggable({
+         axis: "x" , zIndex: 100, cursor: "ew-resize",
+         helper : function() { return $("#separator-div").clone().attr('id','separator-clone').css('background-color','grey'); },
+         stop: function(event,ui) {
+            event.stopPropagation();
+            var left = ui.position.left;
+            $("#separator-clone").remove();
+            JSROOT.Painter.AdjustLayout(left, null, false);
+         }
+      });
+*/
+
+
+/*      $("#"+ this.gui_div + "_browser_ui")
         .toggleClass('jsroot_browser_fix_border')
         .resizable({
            handles: "e",
@@ -987,12 +1027,80 @@
               JSROOT.resize(hpainter.gui_div + "_drawing");
            }
       });
+*/
+      // this.CreateStatusLine(30);
 
 /*      $("#" + divid + "_browser").draggable({
          containment: "#"+divid,
          snap: true,snapMode: "inner", snapTolerance: 10
       })
 */
+   }
+
+   JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height) {
+      if (!this.gui_div) return false;
+
+      var id = this.gui_div + "_status";
+      if (!d3.select("#"+id).empty()) return id;
+
+      d3.select("#"+this.gui_div)
+        .append("div").attr("id",id)
+        .attr("class","jsroot_status jsroot_browser_area")
+        .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
+        .style('margin',0).style('border',0);
+
+      d3.select("#"+this.gui_div)
+        .append("div").attr("id",this.gui_div + "_hsepar")
+        .attr("class","jsroot_separator")
+        .style('position',"absolute").style('left',0).style('right',0).style('bottom',0).style('height','5px')
+        .style('cursor', 'ns-resize');
+
+      var hpainter = this;
+
+      $("#" + this.gui_div + "_hsepar").draggable({
+         axis: "y" , zIndex: 10, cursor: "ns-resize",
+         helper : function() { return $("#"+hpainter.gui_div+"_hsepar").clone().attr('id','hseparator-clone').css('background-color','grey'); },
+         drag: function(event,ui) {
+            // console.log('ui.position', ui.position.top, ui.position);
+            //var left = ui.position.left;
+            hpainter.AdjustSeparator(null, -ui.position.top, false);
+         },
+         stop: function(event,ui) {
+            // event.stopPropagation();
+            //var left = ui.position.left;
+            $("#hseparator-clone").remove();
+            hpainter.AdjustSeparator(null, -ui.position.top, true);
+            //hpainter.AdjustSeparator(left, null, true);
+         }
+      });
+
+      this.AdjustSeparator(null, height, true);
+
+      return id;
+   }
+
+   JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw) {
+
+      if (vsepar!==null) {
+         vsepar = parseInt(vsepar);
+         d3.select("#" + this.gui_div + "_browser_ui").style('width',vsepar+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+10) + 'px');
+         d3.select("#" + this.gui_div + "_vsepar").style('left',vsepar+'px');
+      }
+
+      if (hsepar!==null) {
+         hsepar = parseInt(hsepar);
+
+         if (hsepar<0) hsepar += ($("#" + this.gui_div + "_browser").outerHeight(true) - 5);
+         d3.select("#" + this.gui_div + "_browser_ui").style('bottom',(hsepar+10)+'px');
+         d3.select("#" + this.gui_div + "_vsepar").style('bottom',hsepar+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('bottom',(hsepar+10)+'px');
+         d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
+         d3.select("#" + this.gui_div + "_hsepar").style('bottom', hsepar+'px');
+         console.log('SET H');
+      }
+
+      if (redraw) JSROOT.resize(this.gui_div + "_drawing");
    }
 
    JSROOT.BuildGUI = function() {

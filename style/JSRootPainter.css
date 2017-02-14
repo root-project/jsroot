@@ -608,25 +608,35 @@
 
 /* stylesheet for browser */
 
-.jsroot_draw_column {
+.jsroot_browser_area {
    background-color: #E6E6FA;
    overflow: hidden;
    font-size: 12px;
    font-family: Verdana;
 }
 
-.jsroot_draw_column * {
+.jsroot_browser_area * {
 	font-size: 12px;
 }
 
-.jsroot_draw_column p { 
+.jsroot_browser_area p { 
 	margin-top: 5px; 
 	margin-bottom: 5px;
 }
 
+.jsroot_separator {
+   background-color: white;
+   position: absolute;
+   border: 0;
+   margin: 0;
+   padding: 0;
+}
+
+/*
 .jsroot_browser_fix_border {
 	border-right: 5px solid grey;
 }
+*/
 
 .jsroot_browser_title {
 	font-family: Verdana;

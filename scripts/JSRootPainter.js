@@ -10736,10 +10736,10 @@
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_browser")
-                         .attr("class","jsroot_browser jsroot_draw_column");
+                         .attr("class","jsroot_browser jsroot_browser_area");
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
-                         .attr("class","jsroot_drawing jsroot_draw_column")
+                         .attr("class","jsroot_drawing jsroot_browser_area")
                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0)
                          .style('margin',0).style('border',0);
 
