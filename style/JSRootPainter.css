@@ -606,3 +606,30 @@
      overflow: hidden;
 }
 
+/* stylesheet for browser */
+
+.jsroot_draw_column {
+   background-color: #E6E6FA;
+   overflow: hidden;
+   font-size: 12px;
+   font-family: Verdana;
+}
+
+.jsroot_draw_column * {
+	font-size: 12px;
+}
+
+.jsroot_draw_column p { 
+	margin-top: 5px; 
+	margin-bottom: 5px;
+}
+
+.jsroot_browser_fix_border {
+	border-right: 5px solid grey;
+}
+
+.jsroot_browser_title {
+	font-family: Verdana;
+	font-size: 20px;
+}
+

@@ -25,7 +25,6 @@
             'threejs_all'          : dir+'three.extra.min',
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
-            'JSRootInterface'      : dir+'JSRootInterface'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
@@ -1026,9 +1025,6 @@
 
       if (kind.indexOf("simple;")>=0) {
          need_jquery = true;
-         mainfiles += '$$$scripts/JSRootInterface' + ext + ".js;";
-         extrafiles += '$$$style/JSRootInterface' + ext + '.css;';
-         modules.push('JSRootInterface');
       }
 
       if (need_jquery && !jsroot.load_jquery) {

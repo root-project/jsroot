@@ -822,51 +822,47 @@
 
       if (!this.select_main().empty()) return false;
 
-      var guiCode = "<div>";
+      var guiCode = "<div>"
+              + '<p id="gui_toptitle" class="jsroot_browser_title">'
+              + (this.is_online ? 'ROOT online server' : 'Read a ROOT file') + '</p>'
+              + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
 
       if (this.is_online) {
-         guiCode += '<h1><font face="Verdana" size="4"><div id="gui_toptitle">ROOT online server</div></font></h1>'
-                 + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
-                 + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
+         guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
                  + ' <input type="checkbox" name="monitoring" id="gui_monitoring"/> Monitoring '
                  + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="gui_layout">'
                  + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                  + ' </select>';
-      } else {
+      } else
+      if (!this.no_select) {
+         var myDiv = d3.select("#"+this.gui_div),
+         files = myDiv.attr("files") || "../files/hsimple.root",
+         path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
+         arrFiles = files.split(';');
 
-         guiCode += "<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
-                  + "<p><font face='Verdana' size='1px'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
-
-         if (!this.no_select) {
-            var myDiv = d3.select("#"+this.gui_div),
-                files = myDiv.attr("files") || "../files/hsimple.root",
-                path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
-                arrFiles = files.split(';');
-
-            guiCode +=
-               '<input type="text" value="" style="width:95%; margin-top:5px;" id="gui_urlToLoad" title="input file name"/>'
-               +'<select id="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
-               +'<option value="" selected="selected"></option>';
-            for (var i in arrFiles)
-               guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
-            guiCode += '</select>'
-               +'<input type="file" id="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
-               +'<input type="button" value="..." id="gui_fileBtn" style="width:15%; margin-top:5px;margin-left:5px;" title="select local file for reading"/><br/>'
-               +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
-               +' how to open files from other servers.</small></p>'
-               +'<input style="padding:2px; margin-top:5px;"'
-               +'       id="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
-               +'<input style="padding:2px; margin-left:10px;"'
-               +'       id="gui_ResetUIBtn" type="button" title="Clear All" value="Reset"/>'
-               +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="gui_layout">'
-               +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
-               +'</select><br/>';
-         } else
-         if (this.no_select === "file") {
-            guiCode += '<select style="padding:2px; margin-left:5px; margin-top:5px;" title="layout kind" id="gui_layout">'
-                     + '  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
-                     + '</select><br/>';
-         }
+         guiCode +=
+            '<input type="text" value="" style="width:90%; margin-top:5px;" id="gui_urlToLoad" title="input file name"/>'
+            +'<select id="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
+            +'<option value="" selected="selected"></option>';
+         for (var i in arrFiles)
+            guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
+         guiCode += '</select>'
+            +'<input type="file" id="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
+            +'<input type="button" value="..." id="gui_fileBtn" style="width:15%; margin-top:5px;margin-left:5px;" title="select local file for reading"/><br/>'
+            +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+            +' how to open files from other servers.</small></p>'
+            +'<input style="padding:2px; margin-top:5px;"'
+            +'       id="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
+            +'<input style="padding:2px; margin-left:10px;"'
+            +'       id="gui_ResetUIBtn" type="button" title="Clear All" value="Reset"/>'
+            +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="gui_layout">'
+            +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+            +'</select><br/>';
+      } else
+      if (this.no_select === "file") {
+         guiCode += '<select style="padding:2px; margin-left:5px; margin-top:5px;" title="layout kind" id="gui_layout">'
+            + '  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+            + '</select><br/>';
       }
 
       guiCode += "</div>";
@@ -880,8 +876,6 @@
         .style('z-index',10).style('padding-left', '5px')
         .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
         .html(guiCode);
-
-
 
 
 //      d3.select("#"+divid+"_browser")
@@ -951,7 +945,7 @@
 
       this.CompleteBrowser = function() {
          var selects = document.getElementById("gui_layout");
-         if (selects) return;
+         if (selects)
             for (var i in selects.options) {
                var s = selects.options[i].text;
                if (typeof s == 'undefined') continue;
@@ -973,21 +967,25 @@
          } else
          if (!this.no_select) {
             var fname = "";
-            this.ForEachRootFile(function(item) { if (fname=="") fname = item._fullurl; });
-            $("#gui_urlToLoad").val(fname);
+            this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
+            d3.select("#gui_urlToLoad").property('value', fname);
          }
       }
 
-      d3.select("#" + this.gui_div + "_drawing").style('left','303px'); // initial position
+      d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
 
-      $("#"+ this.gui_div + "_browser_ui").resizable({
-         handles: "e",
-         containment: "#"+this.gui_div+"_browser",
-         stop: function( event, ui ) {
-            console.log('stop', ui.size);
-            d3.select("#" + hpainter.gui_div + "_drawing").style('left',(parseInt(ui.size.width) + 3) + 'px');
-            JSROOT.resize(hpainter.gui_div + "_drawing");
-         }
+      $("#"+ this.gui_div + "_browser_ui")
+        .toggleClass('jsroot_browser_fix_border')
+        .resizable({
+           handles: "e",
+           containment: "#"+this.gui_div+"_browser",
+           minWidth: 100,
+           resize: function( event, ui ) {
+              d3.select("#" + hpainter.gui_div + "_drawing").style('left',(parseInt(ui.size.width) + 10) + 'px');
+           },
+           stop: function( event, ui ) {
+              JSROOT.resize(hpainter.gui_div + "_drawing");
+           }
       });
 
 /*      $("#" + divid + "_browser").draggable({
