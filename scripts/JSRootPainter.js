@@ -10732,6 +10732,30 @@
       else OpenAllFiles();
    }
 
+   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
+      this.gui_div = myDiv.attr('id');
+
+      myDiv.append("div").attr("id",this.gui_div + "_browser")
+                         .attr("class","jsroot_browser");
+
+      myDiv.append("div").attr("id",this.gui_div + "_drawing")
+                         .attr("class","jsroot_drawing")
+                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0)
+                         .style('margin',0).style('border',0);
+
+      this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
+      // this.SetDivId(id + "_browser");
+
+      this.SetDisplay(layout, this.gui_div + "_drawing");
+   }
+
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(kind, browser_divid) {
+      var hpainter = this;
+      JSROOT.AssertPrerequisites('jq2d', function() {
+          hpainter.CreateBrowser(kind, browser_divid);
+      });
+   }
+
    JSROOT.BuildNobrowserGUI = function() {
       var myDiv = d3.select('#simpleGUI'),
           online = false, drawing = false;
@@ -10752,12 +10776,31 @@
       JSROOT.Painter.readStyleFromURL();
 
       d3.select('html').style('height','100%');
-      d3.select('body').style('min-height','100%').style('margin','0px').style('overflow',"hidden");
+      d3.select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
 
-      myDiv.style('position',"absolute").style('left',"1px").style('top',"1px").style('bottom',"1px").style('right',"1px");
+      myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
+
+/*
+      myDiv.append("div").attr("id",id + "_browser")
+                          .attr("class","jsroot_browser")
+                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0)
+            .append("div").attr("id",id + "_browser")
+                          .attr("class","jsroot_browser")
+            .append("div").attr("id",id + "_browser_control")
+                          .attr("class","jsroot_browser_control")
+                          .style('position',"absolute").style('left',"2px").style('top',"0px").style('height',"50px").style('width',"10px")
+                          .style('opacity',"0").style('z-index',12)
+                          .on('mouseenter', function() { d3.select(this).style('opacity',"0.3").style('background-color', 'green')})
+                          .on('mouseleave', function() { d3.select(this).style('opacity',"0").style('background-color', '')})
+                          .on('click', function() { hpainter.CreateBrowser('float', id); });
+
+*/
+
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
-      hpainter.SetDisplay(layout, myDiv.attr('id'));
+
+      hpainter.PrepareGuiDiv(myDiv, layout);
+      // hpainter.SetDisplay(layout, id + "_drawing");
 
       hpainter._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
 

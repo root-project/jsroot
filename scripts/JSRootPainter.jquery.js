@@ -642,7 +642,6 @@
             menu.show(d3.event);
          }
       });
-
    }
 
    JSROOT.HierarchyPainter.prototype.tree_contextmenu = function(elem) {
@@ -815,6 +814,224 @@
             return h.dropitem(dropname, $(this).attr("id"));
          }
       });
+   }
+
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(kind) {
+
+      if (!this.gui_div) return false;
+
+      if (!this.select_main().empty()) return false;
+
+      var guiCode = "<div>";
+
+      if (this.is_online) {
+         guiCode += '<h1><font face="Verdana" size="4"><div id="gui_toptitle">ROOT online server</div></font></h1>'
+                 + "<p><font face='Verdana' size='1px'><a href='https://github.com/linev/jsroot'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>"
+                 + '<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
+                 + ' <input type="checkbox" name="monitoring" id="gui_monitoring"/> Monitoring '
+                 + ' <select style="padding:2px; margin-left:10px; margin-top:5px;" id="gui_layout">'
+                 + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+                 + ' </select>';
+      } else {
+
+         guiCode += "<h1><font face='Verdana' size='4'>Read a ROOT file</font></h1>"
+                  + "<p><font face='Verdana' size='1px'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></font></p>";
+
+         if (!this.no_select) {
+            var myDiv = d3.select("#"+this.gui_div),
+                files = myDiv.attr("files") || "../files/hsimple.root",
+                path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
+                arrFiles = files.split(';');
+
+            guiCode +=
+               '<input type="text" value="" style="width:95%; margin-top:5px;" id="gui_urlToLoad" title="input file name"/>'
+               +'<select id="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
+               +'<option value="" selected="selected"></option>';
+            for (var i in arrFiles)
+               guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
+            guiCode += '</select>'
+               +'<input type="file" id="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
+               +'<input type="button" value="..." id="gui_fileBtn" style="width:15%; margin-top:5px;margin-left:5px;" title="select local file for reading"/><br/>'
+               +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+               +' how to open files from other servers.</small></p>'
+               +'<input style="padding:2px; margin-top:5px;"'
+               +'       id="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
+               +'<input style="padding:2px; margin-left:10px;"'
+               +'       id="gui_ResetUIBtn" type="button" title="Clear All" value="Reset"/>'
+               +'<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" id="gui_layout">'
+               +'  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+               +'</select><br/>';
+         } else
+         if (this.no_select === "file") {
+            guiCode += '<select style="padding:2px; margin-left:5px; margin-top:5px;" title="layout kind" id="gui_layout">'
+                     + '  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+                     + '</select><br/>';
+         }
+      }
+
+      guiCode += "</div>";
+
+      guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
+
+      d3.select("#" + this.gui_div + "_browser")
+        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0) // main container
+        .append("div").attr("id", this.gui_div + "_browser_ui")
+        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
+        .style('z-index',10).style('padding-left', '5px')
+        .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
+        .html(guiCode);
+
+
+
+
+//      d3.select("#"+divid+"_browser")
+//         .style('position',"absolute").style('left',"2px").style('top',"0px").style('bottom',"0px").style('width',"300px")
+//         .style('z-index',11)
+//         .style('background-color', 'lightblue');
+
+      var hpainter = this, localfile_read_callback = null;
+
+      if (!this.is_online && !this.no_select) {
+
+         this.ReadSelectedFile = function() {
+            var filename = $("#gui_urlToLoad").val().trim();
+            if (!filename) return;
+
+            if ((filename.toLowerCase().lastIndexOf(".json") == filename.length-5))
+               hpainter.OpenJsonFile(filename);
+            else
+               hpainter.OpenRootFile(filename);
+         }
+
+         $("#gui_selectFileName").val("").change(function() {
+            $("#gui_urlToLoad").val($(this).val());
+         });
+         $("#gui_fileBtn").click(function() {
+            $("#gui_localFile").click();
+         });
+
+         $("#gui_ReadFileBtn").click(function(){
+            hpainter.ReadSelectedFile();
+         });
+
+         $("#gui_ResetUIBtn").click(function(){
+            hpainter.clear(true);
+         });
+
+         $("#gui_urlToLoad").keyup(function(e) {
+            if (e.keyCode == 13) hpainter.ReadSelectedFile();
+         });
+
+         $("#gui_localFile").change(function(evnt) {
+            var files = evnt.target.files;
+
+            for (var n=0;n<files.length;++n) {
+               var f = files[n];
+               $("#gui_urlToLoad").val(f.name);
+               if (hpainter) hpainter.OpenRootFile(f, localfile_read_callback);
+            }
+
+            localfile_read_callback = null;
+         });
+
+         this.SelectLocalFile = function(read_callback) {
+            localfile_read_callback = read_callback;
+            $("#gui_localFile").click();
+         }
+      }
+
+      $("#gui_layout").change(function() {
+         var selects = document.getElementById("gui_layout");
+         var layout = selects ? selects.options[selects.selectedIndex].text : 'collapsible';
+
+         hpainter.SetDisplay(layout, hpainter.gui_div + "_drawing");
+      });
+
+      this.SetDivId("gui_browser");
+
+      this.CompleteBrowser = function() {
+         var selects = document.getElementById("gui_layout");
+         if (selects) return;
+            for (var i in selects.options) {
+               var s = selects.options[i].text;
+               if (typeof s == 'undefined') continue;
+               if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
+                  selects.selectedIndex = i;
+                  break;
+               }
+            }
+
+         if (this.is_online) {
+            if (this.h && this.h._toptitle)
+               $("#gui_toptitle").html(this.h._toptitle);
+            $("#gui_monitoring")
+              .prop('checked', this.IsMonitoring())
+              .click(function() {
+                  hpainter.EnableMonitoring(this.checked);
+                  hpainter.updateAll(!this.checked);
+               });
+         } else
+         if (!this.no_select) {
+            var fname = "";
+            this.ForEachRootFile(function(item) { if (fname=="") fname = item._fullurl; });
+            $("#gui_urlToLoad").val(fname);
+         }
+      }
+
+      d3.select("#" + this.gui_div + "_drawing").style('left','303px'); // initial position
+
+      $("#"+ this.gui_div + "_browser_ui").resizable({
+         handles: "e",
+         containment: "#"+this.gui_div+"_browser",
+         stop: function( event, ui ) {
+            console.log('stop', ui.size);
+            d3.select("#" + hpainter.gui_div + "_drawing").style('left',(parseInt(ui.size.width) + 3) + 'px');
+            JSROOT.resize(hpainter.gui_div + "_drawing");
+         }
+      });
+
+/*      $("#" + divid + "_browser").draggable({
+         containment: "#"+divid,
+         snap: true,snapMode: "inner", snapTolerance: 10
+      })
+*/
+   }
+
+   JSROOT.BuildGUI = function() {
+      var myDiv = d3.select('#simpleGUI'), online = false;
+
+      if (myDiv.empty()) {
+         myDiv = d3.select('#onlineGUI');
+         if (myDiv.empty()) return alert('no div for gui found');
+         online = true;
+      }
+
+      if (myDiv.attr("ignoreurl") === "true")
+         JSROOT.gStyle.IgnoreUrlOptions = true;
+
+      if ((JSROOT.GetUrlOption("nobrowser")!==null) || (myDiv.attr("nobrowser") && myDiv.attr("nobrowser")!=="false"))
+         return JSROOT.BuildNobrowserGUI();
+
+      JSROOT.Painter.readStyleFromURL();
+
+      var hpainter = new JSROOT.HierarchyPainter('root', null);
+
+      hpainter.is_online = online;
+
+      hpainter.no_select = JSROOT.GetUrlOption("noselect") || myDiv.attr("noselect");
+
+      hpainter.PrepareGuiDiv(myDiv, null);
+
+      hpainter.CreateBrowser('fix');
+
+      var h0 = null;
+
+      if (online) {
+         if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
+         if (typeof h0 != 'object') h0 = "";
+      }
+
+      hpainter.StartGUI(h0, hpainter.CompleteBrowser.bind(hpainter), myDiv);
    }
 
    // ==================================================
