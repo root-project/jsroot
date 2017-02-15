@@ -923,8 +923,11 @@
             area.property('last_vsepar', vsepar.style('left'));
             area.property('last_drawing', drawing.style('left'));
          }
-         var www = $(area.node()).outerWidth(true);
-         tgt = (-www-10).toString() + "px";
+         tgt = (-$(area.node()).outerWidth(true)-10).toString() + "px";
+         var mainw = $(main.node()).outerWidth(true);
+
+         if (vsepar.empty() && ($(area.node()).offset().left > mainw/2)) tgt = (mainw+10) + "px";
+
          tgt_separ = "-10px";
          tgt_drawing = "0px";
       }
