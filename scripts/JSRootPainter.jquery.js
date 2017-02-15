@@ -1124,6 +1124,8 @@
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw) {
 
+      if (!this.gui_div) return;
+
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
       if (vsepar!==null) {
@@ -1797,10 +1799,17 @@
    // =======================================================================
 
    JSROOT.Painter.ConfigureVSeparator = function(handle) {
-      // FIXME: remove
+      // FIXME: obsolete, will be removed
+   }
+
+   JSROOT.Painter.AdjustLayout = function(left, height, firsttime) {
+      // FIXME: obsolete, will be removed
+      if (JSROOT.hpainter)
+         JSROOT.hpainter.AdjustSeparator(left, height, true);
    }
 
    JSROOT.Painter.ConfigureHSeparator = function(height) {
+      // FIXME: obsolete, will be removed
      if (!JSROOT.hpainter) return "";
 
       return JSROOT.hpainter.CreateStatusLine(height);
