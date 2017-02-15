@@ -822,8 +822,7 @@
       if (!this.select_main().empty()) return false;
 
       var guiCode = "<div style='overflow:hidden'>"
-              + '<p id="gui_toptitle" class="jsroot_browser_title">'
-              + (this.is_online ? 'ROOT online server' : 'Read a ROOT file') + '</p>'
+              + '<p class="jsroot_browser_title"></p>'
               + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
 
       if (this.is_online) {
@@ -841,7 +840,7 @@
 
          guiCode +=
             '<input type="text" value="" style="width:90%; margin-top:5px;" id="gui_urlToLoad" title="input file name"/>'
-            +'<select id="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
+            +'<select class="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
          for (var i in arrFiles)
             guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
@@ -868,14 +867,15 @@
 
       guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
 
-      d3.select("#" + this.gui_div + "_browser")
-        .append("div").attr("id", this.gui_div + "_browser_ui")
-        .attr('class', 'jsroot_browser_area')
-        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
-        .style('padding-left','5px')
-        .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
-        .html(guiCode);
+      var main = d3.select("#" + this.gui_div + "_browser");
 
+      main.append('div').attr('id', this.gui_div + "_browser_ui").classed('jsroot_browser_area',true)
+           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
+           .style('padding-left','5px')
+           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
+           .html(guiCode);
+
+      main.select('.jsroot_browser_title').text(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
 
 //      d3.select("#"+divid+"_browser")
 //         .style('position',"absolute").style('left',"2px").style('top',"0px").style('bottom',"0px").style('width',"300px")
@@ -896,8 +896,8 @@
                hpainter.OpenRootFile(filename);
          }
 
-         $("#gui_selectFileName").val("").change(function() {
-            $("#gui_urlToLoad").val($(this).val());
+         main.select(".gui_selectFileName").property('value',"").on("change", function() {
+            $("#gui_urlToLoad").val(d3.select(this).property('value'));
          });
          $("#gui_fileBtn").click(function() {
             $("#gui_localFile").click();
@@ -967,16 +967,13 @@
       } else {
          // d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
 
+         var vsepar =
+            main.append('div').attr('id', this.gui_div + "_vsepar").classed('jsroot_separator', true)
+                .style('position',"absolute").style('top',0).style('bottom',0).style('cursor', 'ew-resize');
          // creation of vertical separator
-         d3.select("#" + this.gui_div + "_browser")
-         .append("div").attr("id", this.gui_div + "_vsepar")
-         .attr("class", "jsroot_separator")
-         .style('position',"absolute").style('top',0).style('bottom',0)
-         .style('cursor', 'ew-resize');
-
-         $('#'+this.gui_div+"_vsepar").draggable({
+         $(vsepar.node()).draggable({
             axis: "x" , cursor: "ew-resize",
-            helper : function() { return $(this).clone().attr('id','separator-clone').css('background-color','grey'); },
+            helper : function() { return $(this).clone().attr('id','jsroot-separator-clone').css('background-color','grey'); },
             drag: function(event,ui) {
                var left = ui.position.left;
                hpainter.AdjustSeparator(left, null, true);
@@ -984,7 +981,7 @@
             stop: function(event,ui) {
                // event.stopPropagation();
                var left = ui.position.left;
-               $("#separator-clone").remove();
+               $("#jsroot-separator-clone").remove();
                hpainter.AdjustSeparator(left, null, true);
             }
          });
@@ -996,6 +993,10 @@
    }
 
    JSROOT.HierarchyPainter.prototype.InitializeBrowser = function() {
+
+      var main = d3.select("#" + this.gui_div + "_browser");
+      if (main.empty()) return;
+
       var selects = document.getElementById("gui_layout");
       if (selects)
          for (var i in selects.options) {
@@ -1009,7 +1010,7 @@
 
       if (this.is_online) {
          if (this.h && this.h._toptitle)
-            $("#gui_toptitle").html(this.h._toptitle);
+            main.select('.jsroot_browser_title').text(this.h._toptitle);
          $("#gui_monitoring")
            .prop('checked', this.IsMonitoring())
            .click(function() {
