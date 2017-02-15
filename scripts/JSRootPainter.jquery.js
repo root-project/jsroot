@@ -492,9 +492,6 @@
    JSROOT.HierarchyPainter.prototype.tree_click = function(node, place) {
       if (!node) return;
 
-      //if (d3.event.shiftKey) console.log("Mouse+Shift pressed");
-      //if (d3.event.ctrlKey) console.log("Mouse+Ctrl pressed");
-
       var d3cont = d3.select(node.parentNode.parentNode);
       var itemname = d3cont.attr('item');
       if (!itemname) return;
