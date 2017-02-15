@@ -106,7 +106,6 @@
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
    }
 
-
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
       if (JSROOT.GEO.NodeKind(this.GetObject()) !== 0) return;
 

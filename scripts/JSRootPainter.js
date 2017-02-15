@@ -10646,7 +10646,13 @@
                          .attr("class","jsroot_draw_area")
                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      myDiv.append("div").attr("class","jsroot_browser");
+      var br = myDiv.append("div").attr("class","jsroot_browser");
+
+      var btns = br.append("div").classed("jroot_browser_btns", true);
+
+      btns.style('position',"absolute").style("left","10px").style("top","10px");
+
+      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.arrow_right, 20, "Enable");
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
