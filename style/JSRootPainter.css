@@ -423,10 +423,11 @@
 }
 
 .jsroot .fast_command {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     margin-left: 3px;
     margin-top: 3px;
+    padding: 0px;
 }
 
 .jsroot .fast_command img {
