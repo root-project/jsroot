@@ -620,7 +620,17 @@
    border: 0;
 }
 
+
+
 .jsroot_browser_area {
+   background-color: #E6E6FA;
+   overflow: hidden;
+   font-size: 12px;
+   font-family: Verdana;
+   pointer-events: all;
+}
+
+.jsroot_status_area {
    background-color: #E6E6FA;
    overflow: hidden;
    font-size: 12px;

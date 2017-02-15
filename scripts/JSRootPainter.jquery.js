@@ -850,7 +850,7 @@
            .css('bottom', '40px')
            .toggleClass('jsroot_flex_browser', true)
            .resizable({
-              containment: "#" + this.gui_div + " .jsroot_browser",
+              containment: "parent",
               minWidth: 100,
               resize: function( event, ui ) {
 
@@ -861,7 +861,7 @@
               }
          })
          .draggable({
-             containment: "#" + this.gui_div + " .jsroot_browser",
+             containment: "parent",
              handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
              snap: true,
              snapMode: "inner",
@@ -877,6 +877,7 @@
         // creation of vertical separator
         $(vsepar.node()).draggable({
            axis: "x" , cursor: "ew-resize",
+           containment: "parent",
            helper : function() { return $(this).clone().attr('id','jsroot-separator-clone').css('background-color','grey'); },
            drag: function(event,ui) {
               var left = ui.position.left;
@@ -890,7 +891,7 @@
            }
         });
 
-        this.AdjustSeparator(300,null, true);
+        this.AdjustSeparator(300,null, true, true);
      }
    }
 
@@ -1088,20 +1089,19 @@
 
       var main = d3.select("#"+this.gui_div + " .jsroot_browser");
 
-
-      main.append("div").attr("id",id)
-        .classed("jsroot_browser_area", true)
+      main.insert("div",".jsroot_browser_area").attr("id",id)
+        .classed("jsroot_status_area", true)
         .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
         .style('margin',0).style('border',0);
 
-      var hsepar = main.append("div").classed("jsroot_h_separator", true)
+      var hsepar = main.insert("div",".jsroot_browser_area").classed("jsroot_h_separator", true)
         .style('position',"absolute").style('left',0).style('right',0).style('bottom',0).style('height','5px')
         .style('cursor', 'ns-resize');
 
       var hpainter = this;
 
       $(hsepar.node()).draggable({
-         axis: "y" , cursor: "ns-resize",
+         axis: "y" , cursor: "ns-resize", containment: "parent",
          helper : function() { return $(this).clone().attr('id','hseparator-clone').css('background-color','grey'); },
          drag: function(event,ui) {
             // console.log('ui.position', ui.position.top, ui.position);
@@ -1122,18 +1122,19 @@
       return id;
    }
 
-   JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw) {
+   JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
 
       if (!this.gui_div) return;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
-      if (vsepar!==null) {
-         vsepar = parseInt(vsepar);
-         if (vsepar<50) vsepar = 50;
-         main.select(".jsroot_browser_area").style('width',vsepar+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
-         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
+      if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
+         // if separator set for the first time, check if status line present
+         hsepar = main.select(".jsroot_h_separator").style('bottom');
+         if ((typeof hsepar=='string') && (hsepar.indexOf('px')==hsepar.length-2))
+            hsepar = hsepar.substr(0,hsepar.length-2);
+         else
+            hsepar = null;
       }
 
       if (hsepar!==null) {
@@ -1146,6 +1147,15 @@
          d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
          main.select(".jsroot_h_separator").style('bottom', hsepar+'px').style('height',w+"px")
       }
+
+      if (vsepar!==null) {
+         vsepar = parseInt(vsepar);
+         if (vsepar<50) vsepar = 50;
+         main.select(".jsroot_browser_area").style('width',vsepar+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
+         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
+      }
+
 
       if (redraw) JSROOT.resize(this.gui_div + "_drawing");
    }
