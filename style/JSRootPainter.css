@@ -615,6 +615,15 @@
    font-family: Verdana;
 }
 
+.jsroot_flex_browser {
+	border: solid 3px white;
+}
+
+.jsroot_draw_area {
+   background-color: #E6E6FA;
+   overflow: hidden;
+}
+
 .jsroot_browser_area * {
 	font-size: 12px;
 }

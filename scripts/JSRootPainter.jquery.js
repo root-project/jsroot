@@ -813,13 +813,15 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(kind) {
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind) {
 
       if (!this.gui_div) return false;
 
+      this.browser_kind = browser_kind;
+
       if (!this.select_main().empty()) return false;
 
-      var guiCode = "<div>"
+      var guiCode = "<div style='overflow:hidden'>"
               + '<p id="gui_toptitle" class="jsroot_browser_title">'
               + (this.is_online ? 'ROOT online server' : 'Read a ROOT file') + '</p>'
               + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
@@ -869,8 +871,9 @@
       d3.select("#" + this.gui_div + "_browser")
         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0) // main container
         .append("div").attr("id", this.gui_div + "_browser_ui")
+        .attr('class', 'jsroot_browser_area')
         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
-        .style('z-index',10)
+        .style('padding-left','5px')
         .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
         .html(guiCode);
 
@@ -940,83 +943,88 @@
 
       this.SetDivId("gui_browser");
 
-      this.CompleteBrowser = function() {
-         var selects = document.getElementById("gui_layout");
-         if (selects)
-            for (var i in selects.options) {
-               var s = selects.options[i].text;
-               if (typeof s == 'undefined') continue;
-               if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
-                  selects.selectedIndex = i;
-                  break;
+      if ((browser_kind==="flex") || false) {
+          $("#"+ this.gui_div + "_browser_ui")
+            .css('bottom', '40px')
+            .toggleClass('jsroot_flex_browser', true)
+            .resizable({
+               containment: "#"+this.gui_div+"_browser",
+               minWidth: 100,
+               resize: function( event, ui ) {
+
+               },
+               stop: function( event, ui ) {
+
+                  //JSROOT.resize(hpainter.gui_div + "_drawing");
                }
+          })
+          .draggable({
+             containment: "#"+this.gui_div+"_browser",
+              snap: true,
+              snapMode: "inner",
+              snapTolerance: 10
+           });
+      } else {
+         // d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
+
+         // creation of vertical separator
+         d3.select("#" + this.gui_div + "_browser")
+         .append("div").attr("id", this.gui_div + "_vsepar")
+         .attr("class", "jsroot_separator")
+         .style('position',"absolute").style('top',0).style('bottom',0)
+         .style('cursor', 'ew-resize');
+
+         $('#'+this.gui_div+"_vsepar").draggable({
+            axis: "x" , cursor: "ew-resize",
+            helper : function() { return $(this).clone().attr('id','separator-clone').css('background-color','grey'); },
+            drag: function(event,ui) {
+               var left = ui.position.left;
+               hpainter.AdjustSeparator(left, null, true);
+            },
+            stop: function(event,ui) {
+               // event.stopPropagation();
+               var left = ui.position.left;
+               $("#separator-clone").remove();
+               hpainter.AdjustSeparator(left, null, true);
             }
+         });
 
-         if (this.is_online) {
-            if (this.h && this.h._toptitle)
-               $("#gui_toptitle").html(this.h._toptitle);
-            $("#gui_monitoring")
-              .prop('checked', this.IsMonitoring())
-              .click(function() {
-                  hpainter.EnableMonitoring(this.checked);
-                  hpainter.updateAll(!this.checked);
-               });
-         } else
-         if (!this.no_select) {
-            var fname = "";
-            this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
-            d3.select("#gui_urlToLoad").property('value', fname);
-         }
+         this.AdjustSeparator(300,null);
       }
-
-      d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
-
-      d3.select("#" + this.gui_div + "_browser")
-        .append("div").attr("id", this.gui_div + "_vsepar")
-        .attr("class", "jsroot_separator")
-        .style('position',"absolute").style('left','300px').style('top',0).style('bottom',0).style('width','5px')
-        .style('cursor', 'ew-resize');
-
-      $("#" + this.gui_div + "_vsepar").draggable({
-           axis: "x" , zIndex: 10, cursor: "ew-resize",
-           helper : function() { return $("#"+hpainter.gui_div+"_vsepar").clone().attr('id','separator-clone').css('background-color','grey'); },
-           drag: function(event,ui) {
-              var left = ui.position.left;
-              hpainter.AdjustSeparator(left, null, true);
-           },
-           stop: function(event,ui) {
-              // event.stopPropagation();
-              var left = ui.position.left;
-              $("#separator-clone").remove();
-              hpainter.AdjustSeparator(left, null, true);
-           }
-        });
-
-      this.AdjustSeparator(300,null);
 
       // this.CreateStatusLine(30);
 
 
-/*      $("#"+ this.gui_div + "_browser_ui")
-        .toggleClass('jsroot_browser_fix_border')
-        .resizable({
-           handles: "e",
-           containment: "#"+this.gui_div+"_browser",
-           minWidth: 100,
-           resize: function( event, ui ) {
-              d3.select("#" + hpainter.gui_div + "_drawing").style('left',(parseInt(ui.size.width) + 10) + 'px');
-           },
-           stop: function( event, ui ) {
-              JSROOT.resize(hpainter.gui_div + "_drawing");
-           }
-      });
-*/
 
-/*      $("#" + divid + "_browser").draggable({
-         containment: "#"+divid,
-         snap: true,snapMode: "inner", snapTolerance: 10
-      })
-*/
+   }
+
+   JSROOT.HierarchyPainter.prototype.InitializeBrowser = function() {
+      var selects = document.getElementById("gui_layout");
+      if (selects)
+         for (var i in selects.options) {
+            var s = selects.options[i].text;
+            if (typeof s == 'undefined') continue;
+            if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
+               selects.selectedIndex = i;
+               break;
+            }
+         }
+
+      if (this.is_online) {
+         if (this.h && this.h._toptitle)
+            $("#gui_toptitle").html(this.h._toptitle);
+         $("#gui_monitoring")
+           .prop('checked', this.IsMonitoring())
+           .click(function() {
+               hpainter.EnableMonitoring(this.checked);
+               hpainter.updateAll(!this.checked);
+            });
+      } else
+      if (!this.no_select) {
+         var fname = "";
+         this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
+         d3.select("#gui_urlToLoad").property('value', fname);
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height) {
@@ -1040,8 +1048,8 @@
       var hpainter = this;
 
       $("#" + this.gui_div + "_hsepar").draggable({
-         axis: "y" , zIndex: 10, cursor: "ns-resize",
-         helper : function() { return $("#"+hpainter.gui_div+"_hsepar").clone().attr('id','hseparator-clone').css('background-color','grey'); },
+         axis: "y" , cursor: "ns-resize",
+         helper : function() { return $(this).clone().attr('id','hseparator-clone').css('background-color','grey'); },
          drag: function(event,ui) {
             // console.log('ui.position', ui.position.top, ui.position);
             //var left = ui.position.left;
@@ -1120,7 +1128,7 @@
          if (typeof h0 != 'object') h0 = "";
       }
 
-      hpainter.StartGUI(h0, hpainter.CompleteBrowser.bind(hpainter), myDiv);
+      hpainter.StartGUI(h0, hpainter.InitializeBrowser.bind(hpainter), myDiv);
    }
 
    // ==================================================
