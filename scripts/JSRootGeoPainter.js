@@ -30,12 +30,82 @@
    if (typeof JSROOT.GEO !== 'object')
       console.error('JSROOT.GEO namespace is not defined')
 
+   JSROOT.Toolbar = function(container, buttons) {
+      if ((container !== undefined) && (typeof container.append == 'function'))  {
+         this.element = container.append("div").attr('class','jsroot');
+         this.addButtons(buttons);
+      }
+   }
+
+   JSROOT.Toolbar.prototype.addButtons = function(buttons) {
+      var pthis = this;
+
+      this.buttonsNames = [];
+      buttons.forEach(function(buttonGroup) {
+         var group = pthis.element.append('div').attr('class', 'toolbar-group');
+
+         buttonGroup.forEach(function(buttonConfig) {
+            var buttonName = buttonConfig.name;
+            if (!buttonName) {
+               throw new Error('must provide button \'name\' in button config');
+            }
+            if (pthis.buttonsNames.indexOf(buttonName) !== -1) {
+               throw new Error('button name \'' + buttonName + '\' is taken');
+            }
+            pthis.buttonsNames.push(buttonName);
+
+            pthis.createButton(group, buttonConfig);
+         });
+      });
+   };
+
+   JSROOT.Toolbar.prototype.createButton = function(group, config) {
+
+      var title = config.title;
+      if (title === undefined) title = config.name;
+
+      if (typeof config.click !== 'function')
+         throw new Error('must provide button \'click\' function in button config');
+
+      var button = group.append('a')
+                        .attr('class','toolbar-btn')
+                        .attr('rel', 'tooltip')
+                        .attr('data-title', title)
+                        .on('click', config.click);
+
+      this.createIcon(button, config.icon || JSROOT.ToolbarIcons.question);
+   };
+
+   JSROOT.Toolbar.prototype.createIcon = function(button, thisIcon) {
+      var size = thisIcon.size || 512,
+          scale = thisIcon.scale || 1,
+          svg = button.append("svg:svg")
+                      .attr('height', '1em')
+                      .attr('width', '1em')
+                      .attr('viewBox', [0, 0, size, size].join(' '));
+
+      if ('recs' in thisIcon) {
+          var rec = {};
+          for (var n=0;n<thisIcon.recs.length;++n) {
+             JSROOT.extend(rec, thisIcon.recs[n]);
+             svg.append('rect').attr("x", rec.x).attr("y", rec.y)
+                               .attr("width", rec.w).attr("height", rec.h)
+                               .attr("fill", rec.f);
+          }
+       } else {
+          var elem = svg.append('svg:path').attr('d',thisIcon.path);
+          if (scale !== 1)
+             elem.attr('transform', 'scale(' + scale + ' ' + scale +')');
+       }
+   };
+
+   JSROOT.Toolbar.prototype.removeAllButtons = function() {
+      this.element.remove();
+   };
+
    /**
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
-
-   // ======= Geometry painter================================================
-
 
    JSROOT.TGeoPainter = function( obj, is_manager ) {
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
