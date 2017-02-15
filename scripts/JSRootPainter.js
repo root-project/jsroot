@@ -10736,9 +10736,8 @@
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
-                         .attr("class","jsroot_drawing jsroot_draw_area")
-                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0)
-                         .style('margin',0).style('border',0);
+                         .attr("class","jsroot_draw_area")
+                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
       myDiv.append("div").attr("id",this.gui_div + "_browser")
            .attr("class","jsroot_browser");
@@ -10779,23 +10778,6 @@
       d3.select('body').style('min-height','100%').style('margin',0).style('overflow',"hidden");
 
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
-
-/*
-      myDiv.append("div").attr("id",id + "_browser")
-                          .attr("class","jsroot_browser")
-                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0)
-            .append("div").attr("id",id + "_browser")
-                          .attr("class","jsroot_browser")
-            .append("div").attr("id",id + "_browser_control")
-                          .attr("class","jsroot_browser_control")
-                          .style('position',"absolute").style('left',"2px").style('top',"0px").style('height',"50px").style('width',"10px")
-                          .style('opacity',"0").style('z-index',12)
-                          .on('mouseenter', function() { d3.select(this).style('opacity',"0.3").style('background-color', 'green')})
-                          .on('mouseleave', function() { d3.select(this).style('opacity',"0").style('background-color', '')})
-                          .on('click', function() { hpainter.CreateBrowser('float', id); });
-
-*/
-
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 

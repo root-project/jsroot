@@ -869,7 +869,6 @@
       guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
 
       d3.select("#" + this.gui_div + "_browser")
-        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0) // main container
         .append("div").attr("id", this.gui_div + "_browser_ui")
         .attr('class', 'jsroot_browser_area')
         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
@@ -960,6 +959,7 @@
           })
           .draggable({
              containment: "#"+this.gui_div+"_browser",
+              handle : $("#" + this.gui_div).find(".jsroot_browser_title"),
               snap: true,
               snapMode: "inner",
               snapTolerance: 10
@@ -993,9 +993,6 @@
       }
 
       // this.CreateStatusLine(30);
-
-
-
    }
 
    JSROOT.HierarchyPainter.prototype.InitializeBrowser = function() {

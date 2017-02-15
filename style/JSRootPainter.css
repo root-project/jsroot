@@ -608,11 +608,33 @@
 
 /* stylesheet for browser */
 
+.jsroot_browser {
+	pointer-events: none;
+	position: absolute;
+	left: 0;
+	top: 0;
+	bottom: 0;
+	right:0;
+   margin: 0;
+   border: 0;
+}
+
 .jsroot_browser_area {
    background-color: #E6E6FA;
    overflow: hidden;
    font-size: 12px;
    font-family: Verdana;
+   pointer-events: all;
+}
+
+.jsroot_browser_area p { 
+   margin-top: 5px; 
+   margin-bottom: 5px;
+}
+
+.jsroot_browser_title {
+   font-family: Verdana;
+   font-size: 20px;
 }
 
 .jsroot_flex_browser {
@@ -622,27 +644,17 @@
 .jsroot_draw_area {
    background-color: #E6E6FA;
    overflow: hidden;
+   margin: 0;
+   border: 0;
 }
 
-.jsroot_browser_area * {
-	font-size: 12px;
-}
-
-.jsroot_browser_area p { 
-	margin-top: 5px; 
-	margin-bottom: 5px;
-}
 
 .jsroot_separator {
+	pointer-events: all;
    background-color: white;
    position: absolute;
    border: 0;
    margin: 0;
    padding: 0;
-}
-
-.jsroot_browser_title {
-	font-family: Verdana;
-	font-size: 20px;
 }
 
