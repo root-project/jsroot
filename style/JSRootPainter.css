@@ -649,7 +649,7 @@
 }
 
 
-.jsroot_separator {
+.jsroot_h_separator , .jsroot_v_separator {
 	pointer-events: all;
    background-color: white;
    position: absolute;

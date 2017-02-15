@@ -861,10 +861,10 @@
 
       guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
 
-      var main = d3.select("#" + this.gui_div + "_browser");
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
       var jmain = $(main.node());
 
-      main.append('div').attr('id', this.gui_div + "_browser_ui").classed('jsroot_browser_area',true)
+      main.append('div').classed('jsroot_browser_area',true)
            .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
            .style('padding-left','5px')
            .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
@@ -924,7 +924,7 @@
 
          this.SelectLocalFile = function(read_callback) {
             localfile_read_callback = read_callback;
-            $("#" + this.gui_div + "_browser").find(".gui_localFile").click();
+            $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
          }
       }
 
@@ -936,11 +936,11 @@
       this.SetDivId("gui_browser");
 
       if ((browser_kind==="flex") || false) {
-          $("#"+ this.gui_div + "_browser_ui")
+          jmain.find(".jsroot_browser_area")
             .css('bottom', '40px')
             .toggleClass('jsroot_flex_browser', true)
             .resizable({
-               containment: "#"+this.gui_div+"_browser",
+               containment: "#"+this.gui_div+" .jsroot_browser",
                minWidth: 100,
                resize: function( event, ui ) {
 
@@ -951,7 +951,7 @@
                }
           })
           .draggable({
-             containment: "#"+this.gui_div+"_browser",
+              containment: "#"+this.gui_div+" .jsroot_browser",
               handle : $("#" + this.gui_div).find(".jsroot_browser_title"),
               snap: true,
               snapMode: "inner",
@@ -961,7 +961,7 @@
          // d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
 
          var vsepar =
-            main.append('div').attr('id', this.gui_div + "_vsepar").classed('jsroot_separator', true)
+            main.append('div').classed('jsroot_v_separator', true)
                 .style('position',"absolute").style('top',0).style('bottom',0).style('cursor', 'ew-resize');
          // creation of vertical separator
          $(vsepar.node()).draggable({
@@ -987,7 +987,7 @@
 
    JSROOT.HierarchyPainter.prototype.InitializeBrowser = function() {
 
-      var main = d3.select("#" + this.gui_div + "_browser");
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
       var jmain = $(main.node());
 
@@ -1025,21 +1025,21 @@
       var id = this.gui_div + "_status";
       if (!d3.select("#"+id).empty()) return id;
 
-      d3.select("#"+this.gui_div)
-        .append("div").attr("id",id)
-        .attr("class","jsroot_status jsroot_browser_area")
+      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
+
+
+      main.append("div").attr("id",id)
+        .classed("jsroot_browser_area", true)
         .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
         .style('margin',0).style('border',0);
 
-      d3.select("#"+this.gui_div)
-        .append("div").attr("id",this.gui_div + "_hsepar")
-        .attr("class","jsroot_separator")
+      var hsepar = main.append("div").classed("jsroot_h_separator", true)
         .style('position',"absolute").style('left',0).style('right',0).style('bottom',0).style('height','5px')
         .style('cursor', 'ns-resize');
 
       var hpainter = this;
 
-      $("#" + this.gui_div + "_hsepar").draggable({
+      $(hsepar.node()).draggable({
          axis: "y" , cursor: "ns-resize",
          helper : function() { return $(this).clone().attr('id','hseparator-clone').css('background-color','grey'); },
          drag: function(event,ui) {
@@ -1063,24 +1063,24 @@
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw) {
 
-      var w = 5;
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
       if (vsepar!==null) {
          vsepar = parseInt(vsepar);
-         d3.select("#" + this.gui_div + "_browser_ui").style('width',vsepar+'px');
+         main.select(".jsroot_browser_area").style('width',vsepar+'px');
          d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
-         d3.select("#" + this.gui_div + "_vsepar").style('left',vsepar+'px').style('width',w+"px");
+         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
 
       if (hsepar!==null) {
          hsepar = parseInt(hsepar);
-         if (hsepar<0) hsepar += ($("#" + this.gui_div + "_browser").outerHeight(true) - w);
+         if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
          if (hsepar< 5) hsepar = 5;
-         d3.select("#" + this.gui_div + "_browser_ui").style('bottom',(hsepar+w)+'px');
-         d3.select("#" + this.gui_div + "_vsepar").style('bottom',(hsepar+w)+'px');
+         main.select(".jsroot_browser_area").style('bottom',(hsepar+w)+'px');
+         main.select(".jsroot_v_separator").style('bottom',(hsepar+w)+'px');
          d3.select("#" + this.gui_div + "_drawing").style('bottom',(hsepar+w)+'px');
          d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
-         d3.select("#" + this.gui_div + "_hsepar").style('bottom', hsepar+'px').style('height',w+"px")
+         main.select(".jsroot_h_separator").style('bottom', hsepar+'px').style('height',w+"px")
       }
 
       if (redraw) JSROOT.resize(this.gui_div + "_drawing");

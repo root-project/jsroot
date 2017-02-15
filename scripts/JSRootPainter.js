@@ -10739,8 +10739,7 @@
                          .attr("class","jsroot_draw_area")
                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      myDiv.append("div").attr("id",this.gui_div + "_browser")
-           .attr("class","jsroot_browser");
+      myDiv.append("div").attr("class","jsroot_browser");
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
