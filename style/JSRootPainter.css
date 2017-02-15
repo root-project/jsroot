@@ -630,6 +630,17 @@
    pointer-events: all;
 }
 
+.jsroot_browser_btns {
+   pointer-events: all;
+	opacity: 0;
+	display:flex;
+	flex-direction: column;
+}
+
+.jsroot_browser_btns:hover {
+   opacity: 0.3;
+}
+
 .jsroot_status_area {
    background-color: #E6E6FA;
    overflow: hidden;

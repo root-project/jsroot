@@ -63,7 +63,6 @@
 
       CreateSVG : function(group,btn,size,title) {
          var svg = group.append("svg:svg")
-                     .attr("x",0).attr("y",0)
                      .attr("class", "svg_toolbar_btn")
                      .attr("width",size+"px")
                      .attr("height",size+"px")
@@ -10643,16 +10642,20 @@
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
-                         .attr("class","jsroot_draw_area")
+                         .classed("jsroot_draw_area", true)
                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      var br = myDiv.append("div").attr("class","jsroot_browser");
+      var br = myDiv.append("div").classed("jsroot_browser", true);
 
-      var btns = br.append("div").classed("jroot_browser_btns", true);
+      var btns = br.append("div").classed("jsroot_browser_btns", true);
 
       btns.style('position',"absolute").style("left","10px").style("top","10px");
 
-      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.arrow_right, 20, "Enable");
+      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "flex browser");
+      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "flex", true));
+
+      svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
+      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");

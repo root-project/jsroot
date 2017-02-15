@@ -853,10 +853,8 @@
               containment: "parent",
               minWidth: 100,
               resize: function( event, ui ) {
-
               },
               stop: function( event, ui ) {
-
                  //JSROOT.resize(hpainter.gui_div + "_drawing");
               }
          })
@@ -865,9 +863,16 @@
              handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
              snap: true,
              snapMode: "inner",
-             snapTolerance: 10
+             snapTolerance: 10,
+             stop: function( event, ui ) {
+                main.select(".jsroot_browser_btns").style('left', (ui.position.left+10) + 'px')
+                                                   .style('top', (ui.position.top+10) + 'px')
+             }
+
           });
      } else {
+
+        main.select(".jsroot_browser_btns").style('left', '10px').style('top', '10px');
 
         main.select(".jsroot_browser_area").style('left',0).style('top',0).style('bottom',0).style('height',null);
 
@@ -896,19 +901,44 @@
    }
 
    JSROOT.HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
-      var area = d3.select("#" + this.gui_div).select('.jsroot_browser_area');
+      if (!this.gui_div) return;
 
-      if (this.browser_kind=='flex') {
-         var tgt = area.property('last_left');
-         if (tgt) {
-            area.property('last_left', null)
-         } else {
-            area.property('last_left', area.style('left'));
-            var www = $(area.node()).outerWidth(true);
-            tgt = (-www-10).toString() + "px";
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+
+      var area = main.select('.jsroot_browser_area');
+
+      if (area.empty()) return;
+
+      var vsepar = main.select(".jsroot_v_separator"),
+          drawing = d3.select("#" + this.gui_div + "_drawing"),
+          tgt = area.property('last_left'),
+          tgt_separ = area.property('last_vsepar'),
+          tgt_drawing = area.property('last_drawing'),
+          hpainter = this;
+      if (tgt) {
+         area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
+      } else {
+         area.property('last_left', area.style('left'));
+         if (!vsepar.empty()) {
+            area.property('last_vsepar', vsepar.style('left'));
+            area.property('last_drawing', drawing.style('left'));
          }
-         area.transition().style('left', tgt).duration(700);
+         var www = $(area.node()).outerWidth(true);
+         tgt = (-www-10).toString() + "px";
+         tgt_separ = "-10px";
+         tgt_drawing = "0px";
       }
+
+      area.transition().style('left', tgt).duration(700);
+
+
+      if (!vsepar.empty()) {
+         vsepar.transition().style('left', tgt_separ).duration(700);
+         drawing.transition().style('left', tgt_drawing).duration(700).on("end", function() {
+             JSROOT.resize(hpainter.gui_div + "_drawing");
+         });
+      }
+
    }
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
@@ -925,7 +955,11 @@
          // this is case when browser created,
          // if update_html specified, hidden state will be toggled
 
-         if (update_html) this.ToggleBrowserVisisbility();
+         if (update_html) {
+            if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
+                                               else this.ToggleBrowserKind(browser_kind);
+         }
+
          return true;
       }
 
@@ -969,7 +1003,7 @@
 
       guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
 
-      main.append('div').classed('jsroot_browser_area',true)
+      main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area',true)
            .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
            .style('padding-left','5px')
            .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
