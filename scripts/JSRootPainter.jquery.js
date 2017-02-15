@@ -427,7 +427,7 @@
             btn.append('img').attr("src", factcmds[n]._icon);
       }
 
-      var d3p = maindiv.append("p").style("margin-left","3px");
+      var d3p = maindiv.append("p").style("margin","5px").style("margin-left","3px");
 
       d3p.append("a").attr("class", "h_button").text("open all").on("click", h.toggleOpenState.bind(h,true));
       d3p.append("text").text(" | ");
@@ -443,9 +443,11 @@
          d3p.append("a").attr("class", "h_button").text("clear").on("click", h.clear.bind(h,false));
       }
 
-      if (this.nobrowser) {
+      if (this.gui_div) {
          d3p.append("text").text(" | ");
-         d3p.append("a").attr("class", "h_button").text("hide").on("click", h.ToggleFloatBrowser.bind(h,false));
+         d3p.append("a").attr("class", "h_button").text("toggle").on("click", h.ToggleBrowserKind.bind(h));
+         //d3p.append("text").text(" | ");
+         //d3p.append("a").attr("class", "h_button").text("hide").on("click", h.ToggleBrowserVisisbility.bind(h));
       }
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
@@ -813,13 +815,118 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind) {
+   JSROOT.HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
+      if (!this.gui_div) return;
+
+      if (!kind) {
+         if (!this.browser_kind) return;
+         kind = this.browser_kind === "flex" ? "fix" : "flex";
+      }
+
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+          jmain = $(main.node()), hpainter = this;
+
+      if (this.browser_kind === "flex") {
+         jmain.find(".jsroot_browser_area")
+              .css('bottom', '0px')
+              .toggleClass('jsroot_flex_browser', false)
+              .resizable("destroy")
+              .draggable("destroy");
+
+         main.select('.jsroot_browser_area').style('width',null).style('height',null);
+
+      } else
+      if (this.browser_kind === "fix") {
+         main.select(".jsroot_v_separator").remove();
+         d3.select("#" + this.gui_div + "_drawing").style('left','0px'); // reset size
+         JSROOT.resize(this.gui_div + "_drawing");
+      }
+
+      this.browser_kind = kind;
+
+      if (kind==="flex") {
+
+         jmain.find(".jsroot_browser_area")
+           .css('bottom', '40px')
+           .toggleClass('jsroot_flex_browser', true)
+           .resizable({
+              containment: "#" + this.gui_div + " .jsroot_browser",
+              minWidth: 100,
+              resize: function( event, ui ) {
+
+              },
+              stop: function( event, ui ) {
+
+                 //JSROOT.resize(hpainter.gui_div + "_drawing");
+              }
+         })
+         .draggable({
+             containment: "#" + this.gui_div + " .jsroot_browser",
+             handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
+             snap: true,
+             snapMode: "inner",
+             snapTolerance: 10
+          });
+     } else {
+
+        main.select(".jsroot_browser_area").style('left',0).style('top',0).style('bottom',0).style('height',null);
+
+        var vsepar =
+           main.append('div').classed('jsroot_v_separator', true)
+               .style('position',"absolute").style('top',0).style('bottom',0).style('cursor', 'ew-resize');
+        // creation of vertical separator
+        $(vsepar.node()).draggable({
+           axis: "x" , cursor: "ew-resize",
+           helper : function() { return $(this).clone().attr('id','jsroot-separator-clone').css('background-color','grey'); },
+           drag: function(event,ui) {
+              var left = ui.position.left;
+              hpainter.AdjustSeparator(left, null, true);
+           },
+           stop: function(event,ui) {
+              // event.stopPropagation();
+              var left = ui.position.left;
+              $("#jsroot-separator-clone").remove();
+              hpainter.AdjustSeparator(left, null, true);
+           }
+        });
+
+        this.AdjustSeparator(300,null, true);
+     }
+   }
+
+   JSROOT.HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
+      var area = d3.select("#" + this.gui_div).select('.jsroot_browser_area');
+
+      if (this.browser_kind=='flex') {
+         var tgt = area.property('last_left');
+         if (tgt) {
+            area.property('last_left', null)
+         } else {
+            area.property('last_left', area.style('left'));
+            var www = $(area.node()).outerWidth(true);
+            tgt = (-www-10).toString() + "px";
+         }
+         area.transition().style('left', tgt).duration(700);
+      }
+   }
+
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
 
       if (!this.gui_div) return false;
 
-      this.browser_kind = browser_kind;
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      var jmain = $(main.node());
 
-      if (!this.select_main().empty()) return false;
+      // one requires top-level container
+      if (main.empty()) return false;
+
+      if (!main.select('.jsroot_browser_area').empty()) {
+         // this is case when browser created,
+         // if update_html specified, hidden state will be toggled
+
+         if (update_html) this.ToggleBrowserVisisbility();
+         return true;
+      }
 
       var guiCode = "<div style='overflow:hidden'>"
               + '<p class="jsroot_browser_title"></p>'
@@ -861,9 +968,6 @@
 
       guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
-      var jmain = $(main.node());
-
       main.append('div').classed('jsroot_browser_area',true)
            .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
            .style('padding-left','5px')
@@ -886,9 +990,9 @@
             if (!filename) return;
 
             if ((filename.toLowerCase().lastIndexOf(".json") == filename.length-5))
-               hpainter.OpenJsonFile(filename);
+               this.OpenJsonFile(filename);
             else
-               hpainter.OpenRootFile(filename);
+               this.OpenRootFile(filename);
          }
 
          jmain.find(".gui_selectFileName").val("").change( function() {
@@ -935,52 +1039,9 @@
 
       this.SetDivId("gui_browser");
 
-      if ((browser_kind==="flex") || false) {
-          jmain.find(".jsroot_browser_area")
-            .css('bottom', '40px')
-            .toggleClass('jsroot_flex_browser', true)
-            .resizable({
-               containment: "#"+this.gui_div+" .jsroot_browser",
-               minWidth: 100,
-               resize: function( event, ui ) {
+      this.ToggleBrowserKind(browser_kind || "fix");
 
-               },
-               stop: function( event, ui ) {
-
-                  //JSROOT.resize(hpainter.gui_div + "_drawing");
-               }
-          })
-          .draggable({
-              containment: "#"+this.gui_div+" .jsroot_browser",
-              handle : $("#" + this.gui_div).find(".jsroot_browser_title"),
-              snap: true,
-              snapMode: "inner",
-              snapTolerance: 10
-           });
-      } else {
-         // d3.select("#" + this.gui_div + "_drawing").style('left','310px'); // initial position
-
-         var vsepar =
-            main.append('div').classed('jsroot_v_separator', true)
-                .style('position',"absolute").style('top',0).style('bottom',0).style('cursor', 'ew-resize');
-         // creation of vertical separator
-         $(vsepar.node()).draggable({
-            axis: "x" , cursor: "ew-resize",
-            helper : function() { return $(this).clone().attr('id','jsroot-separator-clone').css('background-color','grey'); },
-            drag: function(event,ui) {
-               var left = ui.position.left;
-               hpainter.AdjustSeparator(left, null, true);
-            },
-            stop: function(event,ui) {
-               // event.stopPropagation();
-               var left = ui.position.left;
-               $("#jsroot-separator-clone").remove();
-               hpainter.AdjustSeparator(left, null, true);
-            }
-         });
-
-         this.AdjustSeparator(300,null);
-      }
+      if (update_html) this.RefreshHtml();
 
       // this.CreateStatusLine(30);
    }
@@ -1067,6 +1128,7 @@
 
       if (vsepar!==null) {
          vsepar = parseInt(vsepar);
+         if (vsepar<50) vsepar = 50;
          main.select(".jsroot_browser_area").style('width',vsepar+'px');
          d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");

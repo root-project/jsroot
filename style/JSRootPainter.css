@@ -630,6 +630,7 @@
 .jsroot_browser_area p { 
    margin-top: 5px; 
    margin-bottom: 5px;
+   white-space: nowrap;
 }
 
 .jsroot_browser_title {

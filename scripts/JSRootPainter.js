@@ -9150,34 +9150,6 @@
 
    JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
-   JSROOT.HierarchyPainter.prototype.ToggleFloatBrowser = function(force_mode) {
-      if (!this.nobrowser || !this.disp) return;
-
-      var elem = d3.select("#"+this.disp.frameid);
-      if (elem.empty()) return;
-
-      var container = d3.select(elem.node().parentNode);
-
-      var main = container.select('.float_browser');
-
-      if (main.empty()) {
-         if (force_mode === false) return;
-         var div = container.append("div").attr("class","jsroot");
-         main = div.append("div").attr("class","float_browser").style('left', '-320px');
-         main.transition().delay(700).style('left', '5px');
-         this.SetDivId(main.node());
-         this.RefreshHtml();
-      } else {
-         if (main.style('left') == '5px') {
-            if (force_mode !== true)
-               main.transition().delay(700).style('left', '-320px');
-         } else {
-            if (force_mode !== false)
-               main.transition().delay(700).style('left', '5px');
-         }
-      }
-   }
-
    JSROOT.HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
@@ -10747,10 +10719,12 @@
       this.SetDisplay(layout, this.gui_div + "_drawing");
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(kind, browser_divid) {
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
+      if (!this.gui_div) return;
+
       var hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
-          hpainter.CreateBrowser(kind, browser_divid);
+          hpainter.CreateBrowser(browser_kind, update_html);
       });
    }
 

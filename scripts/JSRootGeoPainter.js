@@ -80,8 +80,7 @@
             title: 'Show hierarchy browser',
             icon: JSROOT.ToolbarIcons.arrow_right,
             click: function() {
-               if (JSROOT.hpainter)
-                  JSROOT.hpainter.ToggleFloatBrowser();
+               JSROOT.hpainter.CreateBrowser('flex', true);
             }
          });
 
@@ -246,7 +245,7 @@
       if (JSROOT.hpainter) {
          // show browser if it not visible
          if (JSROOT.hpainter.nobrowser && force)
-            JSROOT.hpainter.ToggleFloatBrowser(true);
+            JSROOT.hpainter.CreateBrowser('flex', true);
 
          JSROOT.hpainter.actiavte(names, force);
 
