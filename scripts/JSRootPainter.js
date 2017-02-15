@@ -59,82 +59,39 @@
                 },
 
       circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },
-      diamand: { path: "M256,0L384,256L256,511L128,256z" }
-   };
+      diamand: { path: "M256,0L384,256L256,511L128,256z" },
 
-   JSROOT.Toolbar = function(container, buttons) {
-      if ((container !== undefined) && (typeof container.append == 'function'))  {
-         this.element = container.append("div").attr('class','jsroot');
-         this.addButtons(buttons);
+      CreateSVG : function(group,btn,size,title) {
+         var svg = group.append("svg:svg")
+                     .attr("x",0).attr("y",0)
+                     .attr("class", "svg_toolbar_btn")
+                     .attr("width",size+"px")
+                     .attr("height",size+"px")
+                     .attr("viewBox", "0 0 512 512")
+                     .style("overflow","hidden");
+
+           svg.append("svg:title").text(title);
+
+           if ('recs' in btn) {
+              var rec = {};
+              for (var n=0;n<btn.recs.length;++n) {
+                 JSROOT.extend(rec, btn.recs[n]);
+                 svg.append('rect').attr("x", rec.x).attr("y", rec.y)
+                     .attr("width", rec.w).attr("height", rec.h)
+                     .attr("fill", rec.f);
+              }
+           } else {
+              svg.append('svg:path').attr('d',btn.path);
+           }
+
+           //  special rect to correctly get mouse events for whole button area
+           svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
+              .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill");
+
+           return svg;
       }
-   }
-
-   JSROOT.Toolbar.prototype.addButtons = function(buttons) {
-      var pthis = this;
-
-      this.buttonsNames = [];
-      buttons.forEach(function(buttonGroup) {
-         var group = pthis.element.append('div').attr('class', 'toolbar-group');
-
-         buttonGroup.forEach(function(buttonConfig) {
-            var buttonName = buttonConfig.name;
-            if (!buttonName) {
-               throw new Error('must provide button \'name\' in button config');
-            }
-            if (pthis.buttonsNames.indexOf(buttonName) !== -1) {
-               throw new Error('button name \'' + buttonName + '\' is taken');
-            }
-            pthis.buttonsNames.push(buttonName);
-
-            pthis.createButton(group, buttonConfig);
-         });
-      });
    };
 
-
-   JSROOT.Toolbar.prototype.createButton = function(group, config) {
-
-      var title = config.title;
-      if (title === undefined) title = config.name;
-
-      if (typeof config.click !== 'function')
-         throw new Error('must provide button \'click\' function in button config');
-
-      var button = group.append('a')
-                        .attr('class','toolbar-btn')
-                        .attr('rel', 'tooltip')
-                        .attr('data-title', title)
-                        .on('click', config.click);
-
-      this.createIcon(button, config.icon || JSROOT.ToolbarIcons.question);
-   };
-
-   JSROOT.Toolbar.prototype.createIcon = function(button, thisIcon) {
-      var size = thisIcon.size || 512,
-          scale = thisIcon.scale || 1,
-          svg = button.append("svg:svg")
-                      .attr('height', '1em')
-                      .attr('width', '1em')
-                      .attr('viewBox', [0, 0, size, size].join(' '));
-
-      if ('recs' in thisIcon) {
-          var rec = {};
-          for (var n=0;n<thisIcon.recs.length;++n) {
-             JSROOT.extend(rec, thisIcon.recs[n]);
-             svg.append('rect').attr("x", rec.x).attr("y", rec.y)
-                               .attr("width", rec.w).attr("height", rec.h)
-                               .attr("fill", rec.f);
-          }
-       } else {
-          var elem = svg.append('svg:path').attr('d',thisIcon.path);
-          if (scale !== 1)
-             elem.attr('transform', 'scale(' + scale + ' ' + scale +')');
-       }
-   };
-
-   JSROOT.Toolbar.prototype.removeAllButtons = function() {
-      this.element.remove();
-   };
 
    JSROOT.DrawOptions = function(opt) {
       this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
@@ -4625,36 +4582,15 @@
 
       var iscan = this.iscan || !this.has_canvas;
 
-      var svg = group.append("svg:svg")
-                     .attr("class", "svg_toolbar_btn")
-                     .attr("name", funcname)
-                     .attr("x", x)
-                     .attr("y", 0)
-                     .attr("width",this.ButtonSize()+"px")
-                     .attr("height",this.ButtonSize()+"px")
-                     .attr("viewBox", "0 0 512 512")
-                     .style("overflow","hidden");
+      var svg = JSROOT.ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
+            tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
+
+      svg.attr("name", funcname).attr("x", x).attr("y", 0);
 
       if (keyname) svg.attr("key", keyname);
 
       svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) +
             (keyname ? " (keyshortcut " + keyname + ")" : ""));
-
-      if ('recs' in btn) {
-         var rec = {};
-         for (var n=0;n<btn.recs.length;++n) {
-            JSROOT.extend(rec, btn.recs[n]);
-            svg.append('rect').attr("x", rec.x).attr("y", rec.y)
-                              .attr("width", rec.w).attr("height", rec.h)
-                              .attr("fill", rec.f);
-         }
-      } else {
-         svg.append('svg:path').attr('d',btn.path);
-      }
-
-      // special rect to correctly get mouse events for whole button area
-      svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
-         .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill");
 
       svg.on("click", this.PadButtonClick.bind(this, funcname));
 
@@ -4665,7 +4601,6 @@
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
          this.pad_painter().AddButton(btn, tooltip, funcname);
-
    }
 
    JSROOT.TPadPainter.prototype.DecodeOptions = function(opt) {
