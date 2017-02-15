@@ -1050,7 +1050,7 @@
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
-      var jmain = $(main.node());
+      var jmain = $(main.node()), hpainter = this;
 
       var selects = main.select(".gui_layout").node();
       if (selects)
