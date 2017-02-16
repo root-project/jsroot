@@ -681,19 +681,16 @@
 .jsroot_separator {
    pointer-events: all;
    background-color: white;
-   position: absolute;
    border: 0;
    margin: 0;
    padding: 0;
 }
 
 .jsroot_h_separator {
-	.jsroot_separator;
 	cursor: ns-resize;
 } 
 
 .jsroot_v_separator {
-	.jsroot_separator;
 	cursor: ew-resize;
 }
 

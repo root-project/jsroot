@@ -913,7 +913,9 @@
         area.css('left',0).css('top',0).css('bottom',0).css('height','');
 
         var vsepar =
-           main.append('div').classed('jsroot_v_separator', true).style('top',0).style('bottom',0);
+           main.append('div')
+               .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
+               .style('position', 'absolute').style('top',0).style('bottom',0);
         // creation of vertical separator
         $(vsepar.node()).draggable({
            axis: "x" , cursor: "ew-resize",
@@ -1185,8 +1187,9 @@
         .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
         .style('margin',0).style('border',0);
 
-      var hsepar = main.insert("div",".jsroot_browser_area").classed("jsroot_h_separator", true)
-                       .style('left',0).style('right',0).style('bottom',0).style('height','5px');
+      var hsepar = main.insert("div",".jsroot_browser_area")
+                       .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
+                       .style('position','absolute').style('left',0).style('right',0).style('bottom',0).style('height','5px');
 
       var hpainter = this;
 
@@ -1719,6 +1722,7 @@
                 .toggleClass('jsroot_separator', true)
                 .prop('handle', handle)
                 .attr('separator-id', group.id)
+                .css('position','absolute')
                 .css(handle.vertical ? 'top' : 'left', "calc(" + group.position+"% - 2px)")
                 .css(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
                 .css(handle.vertical ? 'height' : 'width', '5px')
