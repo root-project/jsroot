@@ -1233,8 +1233,10 @@
 
             if (file.readTrees)
                return JSROOT.AssertPrerequisites('tree', function() {
-                  file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
-                  delete file.readTrees;
+                  if (file.readTrees) {
+                     file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
+                     delete file.readTrees;
+                  }
                   JSROOT.CallBack(user_call_back, obj);
                });
 
