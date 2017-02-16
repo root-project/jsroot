@@ -889,8 +889,6 @@
           });
      } else {
 
-        main.select(".jsroot_browser_btns").style('left', '10px').style('top', '10px');
-
         area.css('left',0).css('top',0).css('bottom',0).css('height','');
 
         var vsepar =
@@ -931,13 +929,13 @@
           tgt = area.property('last_left'),
           tgt_separ = area.property('last_vsepar'),
           tgt_drawing = area.property('last_drawing'),
-          hpainter = this;
+          hpainter = this, visible_at_the_end;
 
       if (tgt) {
-         this.browser_visible = true;
+         visible_at_the_end = true;
          area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
       } else {
-         this.browser_visible = false;
+         visible_at_the_end = false;
          area.property('last_left', area.style('left'));
          if (!vsepar.empty()) {
             area.property('last_vsepar', vsepar.style('left'));
@@ -954,9 +952,15 @@
 
       var hpainter = this;
 
+      this.browser_visible = 'changing';
+
       area.transition().style('left', tgt).duration(700).on("end", function() {
-         hpainter.SetButtonsPosition();
+         hpainter.browser_visible = visible_at_the_end;
+         if (visible_at_the_end) hpainter.SetButtonsPosition();
       });
+
+      if (!visible_at_the_end)
+         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(700);
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(700);
@@ -978,7 +982,7 @@
          // this is case when browser created,
          // if update_html specified, hidden state will be toggled
 
-         if (update_html) {
+         if (update_html && (this.browser_visible!=='changing')) {
             if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
                                                else this.ToggleBrowserKind(browser_kind);
          }
