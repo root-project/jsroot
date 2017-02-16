@@ -938,7 +938,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
-      if (!this.gui_div) return;
+      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
 
@@ -949,14 +949,11 @@
           drawing = d3.select("#" + this.gui_div + "_drawing"),
           tgt = area.property('last_left'),
           tgt_separ = area.property('last_vsepar'),
-          tgt_drawing = area.property('last_drawing'),
-          hpainter = this, visible_at_the_end;
+          tgt_drawing = area.property('last_drawing');
 
-      if (tgt) {
-         visible_at_the_end = true;
+      if (!this.browser_visible) {
          area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
       } else {
-         visible_at_the_end = false;
          area.property('last_left', area.style('left'));
          if (!vsepar.empty()) {
             area.property('last_vsepar', vsepar.style('left'));
@@ -971,7 +968,7 @@
          tgt_drawing = "0px";
       }
 
-      var hpainter = this;
+      var hpainter = this, visible_at_the_end  = !this.browser_visible;
 
       this.browser_visible = 'changing';
 
