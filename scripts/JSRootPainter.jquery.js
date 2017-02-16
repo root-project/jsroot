@@ -1046,7 +1046,8 @@
 
       if (this.is_online || !this.no_select || this.no_select=="file")
          guiCode += '<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" class="gui_layout">'
-                 + '  <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>grid 1x2</option><option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
+                 + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>horiz2</option><option>horiz32</option><option>vert2</option><option>vert3</option><option>vert231</option>'
+                 +'  <option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                  + '</select><br/>';
 
       guiCode += "</div>";
@@ -1790,7 +1791,7 @@
                      chlds.children(".jsroot_separator").css(name, size);
                   }
 
-                  $(this).css(handle.vertical ? 'top' : 'left', "calc(" + pos.toFixed(1)+"% - 2px)")
+                  $(this).css(handle.vertical ? 'top' : 'left', "calc(" + pos.toFixed(1)+"% - 2px)");
 
                   SetGroupSize($(this).parent(), id-1);
                   SetGroupSize($(this).parent(), id);
