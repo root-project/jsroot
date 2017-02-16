@@ -10489,15 +10489,13 @@
 
    JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
       // function should update object drawings for other painters
-      var mdi = this.disp;
-      if (mdi==null) return false;
+      var mdi = this.disp, handle = null, isany = false;
+      if (!mdi) return false;
 
-      var handle = null;
       if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
       if (handle && handle.draw_field && obj[handle.draw_field])
          obj = obj[handle.draw_field];
 
-      var isany = false;
       mdi.ForEachPainter(function(p, frame) {
          if ((p===painter) || (p.GetItemName() != painter.GetItemName())) return;
          mdi.ActivateFrame(frame);
@@ -10507,9 +10505,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
-
-      if (this.disp)
-         this.disp.CheckMDIResize(null, size);
+      if (this.disp) this.disp.CheckMDIResize(null, size);
    }
 
    JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, call_back, url) {
@@ -10660,13 +10656,14 @@
 
       var btns = br.append("div").classed("jsroot_browser_btns", true);
 
-      btns.style('position',"absolute").style("left","10px").style("top","10px");
+      btns.style('position',"absolute").style("left","7px").style("top","7px");
+      if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
 
       var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "float browser");
-      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "float", true));
+      svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
 
       svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
-      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "fix", true));
+      svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");

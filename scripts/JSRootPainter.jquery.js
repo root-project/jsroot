@@ -815,6 +815,21 @@
       });
    }
 
+   JSROOT.HierarchyPainter.prototype.SetButtonsPosition = function() {
+      if (!this.gui_div) return;
+
+      var jmain = $("#"+this.gui_div+" .jsroot_browser"), top = 7, left = 7;
+
+      if (this.browser_visible) {
+         var area = jmain.find(".jsroot_browser_area");
+         top = area.offset().top + 7;
+         left = area.offset().left + area.innerWidth() - 27;
+      }
+
+      jmain.find(".jsroot_browser_btns")
+          .css('left', left+'px').css('top', top+'px');
+   }
+
    JSROOT.HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
       if (!this.gui_div) return;
 
@@ -823,17 +838,17 @@
          kind = this.browser_kind === "float" ? "fix" : "float";
       }
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
-          jmain = $(main.node()), hpainter = this;
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+          jmain = $(main.node()),
+          area = jmain.find(".jsroot_browser_area"),
+          hpainter = this;
 
       if (this.browser_kind === "float") {
-         jmain.find(".jsroot_browser_area")
-              .css('bottom', '0px')
+          area.css('bottom', '0px')
+              .css('width','').css('height','')
               .toggleClass('jsroot_float_browser', false)
               .resizable("destroy")
               .draggable("destroy");
-
-         main.select('.jsroot_browser_area').style('width',null).style('height',null);
       } else
       if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
@@ -845,13 +860,13 @@
       this.browser_visible = true;
 
       if (kind==="float") {
-         jmain.find(".jsroot_browser_area")
-           .css('bottom', '40px')
+         area.css('bottom', '40px')
            .toggleClass('jsroot_float_browser', true)
            .resizable({
               containment: "parent",
               minWidth: 100,
               resize: function( event, ui ) {
+                 hpainter.SetButtonsPosition();
               },
               stop: function( event, ui ) {
                  var bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
@@ -865,8 +880,7 @@
              snapMode: "inner",
              snapTolerance: 10,
              drag: function( event, ui ) {
-                main.select(".jsroot_browser_btns").style('left', (ui.position.left+10) + 'px')
-                    .style('top', (ui.position.top+10) + 'px')
+                hpainter.SetButtonsPosition();
              },
              stop: function( event, ui ) {
                 var bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
@@ -877,7 +891,7 @@
 
         main.select(".jsroot_browser_btns").style('left', '10px').style('top', '10px');
 
-        main.select(".jsroot_browser_area").style('left',0).style('top',0).style('bottom',0).style('height',null);
+        area.css('left',0).css('top',0).css('bottom',0).css('height','');
 
         var vsepar =
            main.append('div').classed('jsroot_v_separator', true)
@@ -888,19 +902,20 @@
            containment: "parent",
            helper : function() { return $(this).clone().attr('id','jsroot-separator-clone').css('background-color','grey'); },
            drag: function(event,ui) {
-              var left = ui.position.left;
-              hpainter.AdjustSeparator(left, null, true);
+              hpainter.SetButtonsPosition();
+              hpainter.AdjustSeparator(ui.position.left, null, true);
            },
            stop: function(event,ui) {
               // event.stopPropagation();
-              var left = ui.position.left;
               $("#jsroot-separator-clone").remove();
-              hpainter.AdjustSeparator(left, null, true);
+              hpainter.AdjustSeparator(ui.position.left, null, true);
            }
         });
 
         this.AdjustSeparator(300, null, true, true);
      }
+
+      this.SetButtonsPosition();
    }
 
    JSROOT.HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
@@ -937,7 +952,11 @@
          tgt_drawing = "0px";
       }
 
-      area.transition().style('left', tgt).duration(700);
+      var hpainter = this;
+
+      area.transition().style('left', tgt).duration(700).on("end", function() {
+         hpainter.SetButtonsPosition();
+      });
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(700);
