@@ -854,6 +854,8 @@
               resize: function( event, ui ) {
               },
               stop: function( event, ui ) {
+                 var bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
+                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
               }
          })
          .draggable({
@@ -864,11 +866,12 @@
              snapTolerance: 10,
              drag: function( event, ui ) {
                 main.select(".jsroot_browser_btns").style('left', (ui.position.left+10) + 'px')
-                .style('top', (ui.position.top+10) + 'px')
+                    .style('top', (ui.position.top+10) + 'px')
              },
              stop: function( event, ui ) {
+                var bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
+                if (bottom<7) $(this).css('height', "").css('bottom', 0);
              }
-
           });
      } else {
 
