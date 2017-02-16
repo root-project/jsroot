@@ -4,16 +4,20 @@
 1. New 'float' browser kind, which overlays with objects drawing
 2. Browser can be enabled after drawing already done with 'nobrowser' mode
 3. One can hide browser at any time, switching to 'nobrowser' mode
-4. Improve enlarge functionality - now works with all layouts
-5. Let move TAxis title, its position now similar to ROOT itself
-6. Support col0 option for TH2Poly class to suppress empty bins
-7. Support more supperscript/subscript letters in normal text output
-8. Correctly handle unzoom with logx/logy scales
-9. Let disable stamp parameter in file url with "-" at the end of file name
-10. Let use quotes in the URL parameters to protect complex arguments with special symbols
-11. Introduce direct streamers - like TBasket or TRef
+4. New 'horizontal' and 'veritcal' layouts for object display.
+   One could configure several frames, each divided on sub-frames.
+   Like display=horiz231 will create three hirizontal frames, 
+   divided on 2,3 and 1 subframes.  
+5. Improve enlarge functionality - now works with all layouts
+6. Let move TAxis title, its position now similar to ROOT itself
+7. Support col0 option for TH2Poly class to suppress empty bins
+8. Support more supperscript/subscript letters in normal text output
+9. Correctly handle unzoom with logx/logy scales
+10. Let disable stamp parameter in file url with "-" at the end of file name
+11. Let use quotes in the URL parameters to protect complex arguments with special symbols
+12. Introduce direct streamers - like TBasket or TRef
    Benefit - one can add custom streamers of such kind or reuse existing
-12. Handle TMatrixTSym classes in I/O  
+13. Handle TMatrixTSym classes in I/O  
 
 
 ## Changes in 5.0.3

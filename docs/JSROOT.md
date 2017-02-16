@@ -32,7 +32,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - opt - drawing option for the item
 - items - array of items name 
 - opts - array of drawing options for the items 
-- layout - can be 'simple', 'flex', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values
+- layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - nobrowser - do not display file browser
 - float - display floating browser
 - load - name of extra JavaScript to load

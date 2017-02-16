@@ -773,8 +773,8 @@
       if (this.disp_kind == "tabs")
          this.disp = new JSROOT.TabsDisplay(this.disp_frameid);
       else
-      if (this.disp_kind == "new")
-         this.disp = new JSROOT.NewGridDisplay(this.disp_frameid);
+      if ((this.disp_kind[0] == "h") || (this.disp_kind[0] == "v"))
+         this.disp = new JSROOT.NewGridDisplay(this.disp_frameid, this.disp_kind);
       else
       if ((this.disp_kind == "flex") || (this.disp_kind == "flexible"))
          this.disp = new JSROOT.FlexibleDisplay(this.disp_frameid);
@@ -1670,14 +1670,36 @@
 
    // ================== new grid with flexible boundaries ========
 
-   JSROOT.NewGridDisplay = function(frameid) {
+   JSROOT.NewGridDisplay = function(frameid, kind) {
+      // following kinds are supported
+      //  vertical or horizontal - only first letter matters, definse basic orientation
+      //   v4 or h4 - 4 equal elements in specified direction
+      //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+
       JSROOT.MDIDisplay.call(this, frameid);
       this.framecnt = 0;
       this.getcnt = 0;
       this.groups = [];
-      this.vertical = true;
+      this.vertical = kind && (kind[0] == 'v');
       $("#"+frameid).css('overflow','hidden');
-      this.CreateGroup(this, $("#"+this.frameid), 3, [1,2,1]);
+
+      var num = 2, arr = undefined;
+
+      kind = kind ?  parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
+      if (kind && (kind>1)) {
+         if (kind<10) {
+            num = kind;
+         } else {
+            arr = [];
+            while (kind>0) {
+               arr.unshift(kind % 10);
+               kind = Math.round((kind - arr[0])/ 10);
+            }
+            num = arr.length;
+         }
+      }
+
+      this.CreateGroup(this, $("#"+this.frameid), num, arr);
    }
 
    JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
