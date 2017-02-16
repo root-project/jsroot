@@ -10892,7 +10892,7 @@
 
       this.ForEachPainter(function(painter, frame) {
 
-         if ((only_frame_id !== null) && (d3.select(frame).attr('id') != only_frame_id)) return;
+         if (only_frame_id && (d3.select(frame).attr('id') != only_frame_id)) return;
 
          if ((painter.GetItemName()!==null) && (typeof painter.CheckResize == 'function')) {
             // do not call resize for many painters on the same frame
