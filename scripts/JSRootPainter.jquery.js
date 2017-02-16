@@ -1743,6 +1743,7 @@
          if (group.id>0) {
             separ = $('<div></div>')
                 .toggleClass('jsroot_separator', true)
+                .toggleClass(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
                 .prop('handle', handle)
                 .attr('separator-id', group.id)
                 .css('position','absolute')

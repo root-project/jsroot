@@ -676,21 +676,43 @@
    border: 0;
 }
 
-/* separator style, used for browser and new grid layout */
+/* separator style, used for browser and new grid layout 
+*/
+
 
 .jsroot_separator {
    pointer-events: all;
-   background-color: white;
    border: 0;
    margin: 0;
    padding: 0;
 }
 
+.jsroot_vline:after {
+    content:"";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px dotted #ff0000;
+}
+
+.jsroot_hline:after {
+    content:"";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dotted #ff0000;
+}
+
+
 .jsroot_h_separator {
 	cursor: ns-resize;
+   background-color: white;
 } 
 
 .jsroot_v_separator {
 	cursor: ew-resize;
+   background-color: white;
 }
 
