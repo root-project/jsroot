@@ -1767,9 +1767,9 @@
                   var handle = $(this).prop('handle'), pos = 0,
                       id = parseInt($(this).attr('separator-id'));
                   if (handle.vertical)
-                     pos = (ui.offset.top+2)/$(this).parent().innerHeight()*100;
+                     pos = (ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
                   else
-                     pos = (ui.offset.left+2)/$(this).parent().innerWidth()*100;
+                     pos = (ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
 
                   var diff = handle.groups[id].position - pos;
 
@@ -1784,9 +1784,10 @@
 
                   function SetGroupSize(prnt, grid) {
                      var chlds = prnt.children("[groupid='"+grid+"']"),
-                         name = handle.vertical ? 'height' : 'width';
-                     chlds.css(name, Math.round(handle.groups[grid].size) + "%");
-                     chlds.children(".jsroot_separator").css(name, Math.round(handle.groups[grid].size) + "%");
+                         name = handle.vertical ? 'height' : 'width',
+                         size = handle.groups[grid].size.toFixed(1)+'%';
+                     chlds.css(name, size);
+                     chlds.children(".jsroot_separator").css(name, size);
                   }
 
                   $(this).css(handle.vertical ? 'top' : 'left', "calc(" + pos.toFixed(1)+"% - 2px)")
