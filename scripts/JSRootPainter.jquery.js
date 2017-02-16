@@ -1752,6 +1752,12 @@
                cursor: handle.vertical ? "ns-resize" : "ew-resize",
                containment: "parent",
                helper : function() { return $(this).clone().css('background-color','grey'); },
+               start: function(event,ui) {
+                  // remember start position
+                  var handle = $(this).prop('handle'),
+                      id = parseInt($(this).attr('separator-id'));
+                  handle.groups[id].startpos = handle.groups[id].position;
+               },
                drag: function(event,ui) {
                   var handle = $(this).prop('handle'), pos = 0,
                       id = parseInt($(this).attr('separator-id'));
@@ -1788,7 +1794,18 @@
                   SetGroupSize($(this).parent(), id);
                },
                stop: function(event,ui) {
-                  // here we should correctly resize all drawings
+                  // verify if start position was changed
+                  var handle = $(this).prop('handle'),
+                     id = parseInt($(this).attr('separator-id'));
+                  if (handle.groups[id].startpos === handle.groups[id].position) return;
+
+                  function ResizeGroup(prnt, grid) {
+                     var sel = prnt.children("[groupid='"+grid+"']");
+                     if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
+                     sel.each(function() { JSROOT.resize($(this).get(0)); });
+                  }
+                  ResizeGroup($(this).parent(), id-1);
+                  ResizeGroup($(this).parent(), id);
                }
             });
          }
