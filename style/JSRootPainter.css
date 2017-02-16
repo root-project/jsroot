@@ -641,6 +641,11 @@
    opacity: 0.3;
 }
 
+.jsroot_browser_hierarchy {
+	overflow:auto;
+	flex:1;
+}
+
 .jsroot_status_area {
    background-color: #E6E6FA;
    overflow: hidden;

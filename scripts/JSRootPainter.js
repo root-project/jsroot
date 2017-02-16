@@ -9882,7 +9882,7 @@
       }
 
       if (force) {
-         if (!this.browser_kind) return this.CreateBrowser('flex', true, find_next);
+         if (!this.browser_kind) return this.CreateBrowser('float', true, find_next);
          if (!this.browser_visible) this.ToggleBrowserVisisbility();
       }
 

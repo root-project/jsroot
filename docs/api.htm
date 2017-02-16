@@ -137,8 +137,9 @@
          var examples = {
             'URL syntax': [
               { name: "Open file", url: "?file=" + filepath + "hsimple.root", title: "Open ROOT file with the JSROOT" },
-              { name: "Display item", url: "?file=" + filepath + "hsimple.root&item=hpxpy;1&opt=colz", title: "Open ROOT file and display item"  },
-              { name: "Hide browser", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hprof;1", title: "Do not show file hierarchy - only display item"  },
+              { name: "Display item", url: "?file=" + filepath + "hsimple.root&item=hpxpy;1&opt=colz", title: "Open ROOT file and display item" },
+              { name: "Hide browser", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hprof;1", title: "Hide browser - only display items, browser can be activated later" },
+              { name: "Float browser", url: "?float&file=" + filepath + "hsimple.root&item=ntuple;1&opt=px:pz", title: "Display floating browser, which overlays objects drawings" },
               { name: "Flexible layout", url: "?file=" + filepath + "hsimple.root&layout=flex&items=[hpx;1,hpxpy;1,hprof;1]&opts=[hist,colz,e1]", title: "Display several items with flexible layout" },
               { name: "Grid layout", url: "?path=" + filepath + "&layout=grid2x2&files=[hsimple.root,glbox.root]&items=[hsimple.root/hpx;1,hsimple.root/hpxpy;1,hsimple.root/hprof;1,glbox.root/h31;1]&opt=[hist,lego,e1,box1]", title: "Example of grid layout with 2D and 3D drawings" },
               { name: "Tabs layout", url: "?file=" + filepath + "hsimple.root&layout=tabs&items=[hpx;1,hpxpy;1,hprof;1]&opts=[hist,colz,e1]", title: "Example of tabs layout" },

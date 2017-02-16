@@ -830,12 +830,28 @@
           .css('left', left+'px').css('top', top+'px');
    }
 
+   JSROOT.HierarchyPainter.prototype.AdjustFloatBrowserSize = function(jmain) {
+      if (!jmain) return;
+
+      var area = jmain.find(".jsroot_browser_area"),
+          cont = jmain.find(".jsroot_browser_hierarchy"),
+          chld = cont.children(":first");
+
+      if (!chld.length) return;
+
+      var h1 = cont.innerHeight(),
+          h2 = chld.innerHeight();
+
+      if ((h2!==undefined) && (h2<h1*0.7))
+         area.css('bottom', ''); // .css('height', (cont.offset().top + h2 + 10) + 'px');
+   }
+
    JSROOT.HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
       if (!this.gui_div) return;
 
       if (!kind) {
          if (!this.browser_kind) return;
-         kind = this.browser_kind === "float" ? "fix" : "float";
+         kind = (this.browser_kind === "float") ? "fix" : "float";
       }
 
       var main = d3.select("#"+this.gui_div+" .jsroot_browser"),
@@ -887,6 +903,8 @@
                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
              }
           });
+         this.AdjustFloatBrowserSize(jmain);
+
      } else {
 
         area.css('left',0).css('top',0).css('bottom',0).css('height','');
@@ -1030,7 +1048,7 @@
 
       guiCode += "</div>";
 
-      guiCode += '<div id="gui_browser" style="overflow:auto;flex:1;"></div>';
+      guiCode += '<div id="' + this.gui_div + '_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area',true)
            .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
@@ -1101,14 +1119,14 @@
          hpainter.SetDisplay(layout, hpainter.gui_div + "_drawing");
       });
 
-      this.SetDivId("gui_browser");
-
-      this.ToggleBrowserKind(browser_kind || "fix");
+      this.SetDivId(this.gui_div + '_browser_hierarchy');
 
       if (update_html) {
          this.RefreshHtml();
          this.InitializeBrowser();
       }
+
+      this.ToggleBrowserKind(browser_kind || "fix");
 
       // this.CreateStatusLine(30);
 
@@ -1122,6 +1140,8 @@
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
       var jmain = $(main.node()), hpainter = this;
+
+      if (this.browser_kind === "float") this.AdjustFloatBrowserSize(jmain);
 
       var selects = main.select(".gui_layout").node();
       if (selects)
