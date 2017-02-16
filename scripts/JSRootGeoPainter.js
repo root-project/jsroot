@@ -144,16 +144,6 @@
          }
       }];
 
-      if (JSROOT.hpainter && JSROOT.hpainter.nobrowser)
-         buttonList.push({
-            name: 'browser',
-            title: 'Show hierarchy browser',
-            icon: JSROOT.ToolbarIcons.arrow_right,
-            click: function() {
-               JSROOT.hpainter.CreateBrowser('flex', true);
-            }
-         });
-
       if (JSROOT.gStyle.ContextMenu)
       buttonList.push({
          name: 'menu',

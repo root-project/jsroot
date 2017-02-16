@@ -444,8 +444,8 @@
       }
 
       if (this.gui_div) {
-         d3p.append("text").text(" | ");
-         d3p.append("a").attr("class", "h_button").text("toggle").on("click", h.ToggleBrowserKind.bind(h));
+         // d3p.append("text").text(" | ");
+         // d3p.append("a").attr("class", "h_button").text("toggle").on("click", h.ToggleBrowserKind.bind(h));
          //d3p.append("text").text(" | ");
          //d3p.append("a").attr("class", "h_button").text("hide").on("click", h.ToggleBrowserVisisbility.bind(h));
       }
@@ -864,9 +864,11 @@
              snap: true,
              snapMode: "inner",
              snapTolerance: 10,
-             stop: function( event, ui ) {
+             drag: function( event, ui ) {
                 main.select(".jsroot_browser_btns").style('left', (ui.position.left+10) + 'px')
-                                                   .style('top', (ui.position.top+10) + 'px')
+                .style('top', (ui.position.top+10) + 'px')
+             },
+             stop: function( event, ui ) {
              }
 
           });
@@ -933,7 +935,6 @@
       }
 
       area.transition().style('left', tgt).duration(700);
-
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(700);
@@ -1220,18 +1221,11 @@
 
       hpainter.no_select = JSROOT.GetUrlOption("noselect") || myDiv.attr("noselect");
 
-      hpainter.PrepareGuiDiv(myDiv, null);
+      hpainter.PrepareGuiDiv(myDiv);
 
       hpainter.CreateBrowser('fix');
 
-      var h0 = null;
-
-      if (online) {
-         if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
-         if (typeof h0 != 'object') h0 = "";
-      }
-
-      hpainter.StartGUI(h0, hpainter.InitializeBrowser.bind(hpainter), myDiv);
+      hpainter.StartGUI(myDiv, hpainter.InitializeBrowser.bind(hpainter));
    }
 
    // ==================================================

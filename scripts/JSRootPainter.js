@@ -10507,7 +10507,7 @@
          this.disp.CheckMDIResize(null, size);
    }
 
-   JSROOT.HierarchyPainter.prototype.StartGUI = function(h0, call_back, gui_div, url) {
+   JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, call_back, url) {
       var hpainter = this,
           prereq = "",
           filesdir = JSROOT.GetUrlOption("path", url),
@@ -10633,12 +10633,18 @@
          OpenAllFiles();
       }
 
-      if (h0) hpainter.OpenOnline(h0, AfterOnlineOpened);
+      var h0 = null;
+      if (this.is_online) {
+         if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
+         if (typeof h0 !== 'object') h0 = "";
+      }
+
+      if (h0!==null) hpainter.OpenOnline(h0, AfterOnlineOpened);
       else if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, OpenAllFiles);
       else OpenAllFiles();
    }
 
-   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
+   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv) {
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
@@ -10660,7 +10666,7 @@
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
 
-      this.SetDisplay(layout, this.gui_div + "_drawing");
+      this.SetDisplay(null, this.gui_div + "_drawing");
    }
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
@@ -10686,9 +10692,6 @@
       if (myDiv.attr("ignoreurl") === "true")
          JSROOT.gStyle.IgnoreUrlOptions = true;
 
-      var layout = myDiv.attr("layout");
-      if (!layout) layout = JSROOT.GetUrlOption("layout", null, "simple");
-
       JSROOT.Painter.readStyleFromURL();
 
       d3.select('html').style('height','100%');
@@ -10698,19 +10701,12 @@
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 
-      hpainter.PrepareGuiDiv(myDiv, layout);
+      hpainter.is_online = online;
+
+      hpainter.PrepareGuiDiv(myDiv);
       // hpainter.SetDisplay(layout, id + "_drawing");
 
-      hpainter._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
-
-      var h0 = null;
-      if (online) {
-         var func = JSROOT.findFunction('GetCachedHierarchy');
-         if (typeof func == 'function') h0 = func();
-         if (typeof h0 != 'object') h0 = "";
-      }
-
-      hpainter.StartGUI(h0, function() {
+      hpainter.StartGUI(myDiv, function() {
          if (!drawing) return;
          var func = JSROOT.findFunction('GetCachedObject');
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
@@ -10721,7 +10717,7 @@
             if (JSROOT.GetUrlOption("websocket")!==null)
                obj_painter.OpenWebsocket();
          });
-      }, myDiv);
+      });
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, lst) {
