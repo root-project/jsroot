@@ -838,8 +838,8 @@
       } else
       if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
-         d3.select("#" + this.gui_div + "_drawing").style('left','0px'); // reset size
-         JSROOT.resize(this.gui_div + "_drawing");
+         d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
+         this.CheckResize();
       }
 
       this.browser_kind = kind;
@@ -855,7 +855,6 @@
               resize: function( event, ui ) {
               },
               stop: function( event, ui ) {
-                 //JSROOT.resize(hpainter.gui_div + "_drawing");
               }
          })
          .draggable({
@@ -898,7 +897,7 @@
            }
         });
 
-        this.AdjustSeparator(300,null, true, true);
+        this.AdjustSeparator(300, null, true, true);
      }
    }
 
@@ -938,11 +937,8 @@
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(700);
-         drawing.transition().style('left', tgt_drawing).duration(700).on("end", function() {
-             JSROOT.resize(hpainter.gui_div + "_drawing");
-         });
+         drawing.transition().style('left', tgt_drawing).duration(700).on("end", this.CheckResize.bind(this));
       }
-
    }
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
@@ -1194,8 +1190,7 @@
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
 
-
-      if (redraw) JSROOT.resize(this.gui_div + "_drawing");
+      if (redraw) this.CheckResize();
    }
 
    JSROOT.BuildGUI = function() {

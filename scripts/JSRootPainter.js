@@ -10503,7 +10503,7 @@
 
    JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
 
-      if ('disp' in this)
+      if (this.disp)
          this.disp.CheckMDIResize(null, size);
    }
 
