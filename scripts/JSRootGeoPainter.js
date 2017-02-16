@@ -303,9 +303,6 @@
 
       if (JSROOT.hpainter) {
          // show browser if it not visible
-         if (JSROOT.hpainter.nobrowser && force)
-            JSROOT.hpainter.CreateBrowser('flex', true);
-
          JSROOT.hpainter.actiavte(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds

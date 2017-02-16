@@ -9881,6 +9881,11 @@
          find_next();
       }
 
+      if (force) {
+         if (!this.browser_kind) return this.CreateBrowser('flex', true, find_next);
+         if (!this.browser_visible) this.ToggleBrowserVisisbility();
+      }
+
       // use recursion
       find_next();
    }
@@ -10669,12 +10674,12 @@
       this.SetDisplay(null, this.gui_div + "_drawing");
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
       if (!this.gui_div) return;
 
       var hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
-          hpainter.CreateBrowser(browser_kind, update_html);
+          hpainter.CreateBrowser(browser_kind, update_html, call_back);
       });
    }
 

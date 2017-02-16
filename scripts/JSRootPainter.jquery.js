@@ -834,7 +834,6 @@
               .draggable("destroy");
 
          main.select('.jsroot_browser_area').style('width',null).style('height',null);
-
       } else
       if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
@@ -843,9 +842,9 @@
       }
 
       this.browser_kind = kind;
+      this.browser_visible = true;
 
       if (kind==="flex") {
-
          jmain.find(".jsroot_browser_area")
            .css('bottom', '40px')
            .toggleClass('jsroot_flex_browser', true)
@@ -907,7 +906,6 @@
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
 
       var area = main.select('.jsroot_browser_area');
-
       if (area.empty()) return;
 
       var vsepar = main.select(".jsroot_v_separator"),
@@ -916,9 +914,12 @@
           tgt_separ = area.property('last_vsepar'),
           tgt_drawing = area.property('last_drawing'),
           hpainter = this;
+
       if (tgt) {
+         this.browser_visible = true;
          area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
       } else {
+         this.browser_visible = false;
          area.property('last_left', area.style('left'));
          if (!vsepar.empty()) {
             area.property('last_vsepar', vsepar.style('left'));
@@ -941,7 +942,7 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html) {
+   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
 
       if (!this.gui_div) return false;
 
@@ -959,6 +960,8 @@
             if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
                                                else this.ToggleBrowserKind(browser_kind);
          }
+
+         JSROOT.CallBack(call_back);
 
          return true;
       }
@@ -1079,6 +1082,10 @@
       if (update_html) this.RefreshHtml();
 
       // this.CreateStatusLine(30);
+
+      JSROOT.CallBack(call_back);
+
+      return true;
    }
 
    JSROOT.HierarchyPainter.prototype.InitializeBrowser = function() {
@@ -1846,7 +1853,7 @@
 
    JSROOT.Painter.ConfigureHSeparator = function(height) {
       // FIXME: obsolete, will be removed
-     if (!JSROOT.hpainter) return "";
+      if (!JSROOT.hpainter) return "";
 
       return JSROOT.hpainter.CreateStatusLine(height);
    }
