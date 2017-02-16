@@ -10662,8 +10662,8 @@
 
       btns.style('position',"absolute").style("left","10px").style("top","10px");
 
-      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "flex browser");
-      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "flex", true));
+      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "float browser");
+      svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "float", true));
 
       svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
       svg.style("margin","2px").on("click", this.CreateBrowser.bind(this, "fix", true));

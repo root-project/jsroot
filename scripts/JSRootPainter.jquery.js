@@ -820,16 +820,16 @@
 
       if (!kind) {
          if (!this.browser_kind) return;
-         kind = this.browser_kind === "flex" ? "fix" : "flex";
+         kind = this.browser_kind === "float" ? "fix" : "float";
       }
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
           jmain = $(main.node()), hpainter = this;
 
-      if (this.browser_kind === "flex") {
+      if (this.browser_kind === "float") {
          jmain.find(".jsroot_browser_area")
               .css('bottom', '0px')
-              .toggleClass('jsroot_flex_browser', false)
+              .toggleClass('jsroot_float_browser', false)
               .resizable("destroy")
               .draggable("destroy");
 
@@ -844,10 +844,10 @@
       this.browser_kind = kind;
       this.browser_visible = true;
 
-      if (kind==="flex") {
+      if (kind==="float") {
          jmain.find(".jsroot_browser_area")
            .css('bottom', '40px')
-           .toggleClass('jsroot_flex_browser', true)
+           .toggleClass('jsroot_float_browser', true)
            .resizable({
               containment: "parent",
               minWidth: 100,
@@ -1079,7 +1079,10 @@
 
       this.ToggleBrowserKind(browser_kind || "fix");
 
-      if (update_html) this.RefreshHtml();
+      if (update_html) {
+         this.RefreshHtml();
+         this.InitializeBrowser();
+      }
 
       // this.CreateStatusLine(30);
 
@@ -1225,7 +1228,10 @@
 
       hpainter.PrepareGuiDiv(myDiv);
 
-      hpainter.CreateBrowser('fix');
+      var kind = "fix";
+      if ((JSROOT.GetUrlOption("float")!==null) || myDiv.attr("float")) kind = "float";
+
+      hpainter.CreateBrowser(kind);
 
       hpainter.StartGUI(myDiv, hpainter.InitializeBrowser.bind(hpainter));
    }
