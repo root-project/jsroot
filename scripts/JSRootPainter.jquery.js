@@ -850,6 +850,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
+
       if (!this.gui_div) return;
 
       if (!kind) {
@@ -864,6 +865,7 @@
 
       if (this.browser_kind === "float") {
           area.css('bottom', '0px')
+              .css('top', '0px')
               .css('width','').css('height','')
               .toggleClass('jsroot_float_browser', false)
               .resizable("destroy")
@@ -871,6 +873,7 @@
       } else
       if (this.browser_kind === "fix") {
          main.select(".jsroot_v_separator").remove();
+         area.css('left', '0px');
          d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
          this.CheckResize();
       }
