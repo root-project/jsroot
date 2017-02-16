@@ -773,6 +773,9 @@
       if (this.disp_kind == "tabs")
          this.disp = new JSROOT.TabsDisplay(this.disp_frameid);
       else
+      if (this.disp_kind == "new")
+         this.disp = new JSROOT.NewGridDisplay(this.disp_frameid);
+      else
       if ((this.disp_kind == "flex") || (this.disp_kind == "flexible"))
          this.disp = new JSROOT.FlexibleDisplay(this.disp_frameid);
       else
@@ -1521,7 +1524,6 @@
 
 
    JSROOT.FlexibleDisplay.prototype.ActivateFrame = function(frame) {
-
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
@@ -1671,6 +1673,138 @@
 
       return $("#" + subid + "_cont").attr('frame_title', title).get(0);
    }
+
+   // ================== new grid with flexible boundaries ========
+
+   JSROOT.NewGridDisplay = function(frameid) {
+      JSROOT.MDIDisplay.call(this, frameid);
+      this.framecnt = 0;
+      this.getcnt = 0;
+      this.groups = [];
+      this.vertical = true;
+      $("#"+frameid).css('overflow','hidden');
+
+      this.CreateGroup(this, $("#"+this.frameid), 3);
+   }
+
+   JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+
+   JSROOT.NewGridDisplay.prototype.CreateGroup = function(handle, main, num, childs) {
+
+      for (var cnt = 0; cnt<num; ++cnt) {
+
+         var group = {
+               id: cnt,
+               frameid: '',
+               position: 0,
+               size: Math.round(100/num)
+         };
+         if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
+         if (cnt===num-1) group.size = 100 - group.position;
+
+         if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
+
+         handle.groups.push(group);
+
+         var elem = $('<div></div>')
+           .attr('groupid', group.id)
+           .css('float', 'bottom').css('height',group.size+'%').css('width','100%');
+
+         if (group.frameid)
+            elem.attr('id',group.frameid)
+                .toggleClass('jsroot_newgrid', true);
+
+         var separ = main.find('.jsroot_newsepar');
+
+         if (separ.length>0)
+            elem.insertBefore(separ.get(0));
+         else
+            main.append(elem);
+
+         if (group.id>0) {
+            elem = $('<div></div>')
+            .toggleClass('jsroot_newsepar', true)
+            .prop('handle', handle)
+            .attr('separator-id', group.id)
+            .css('position', 'absolute')
+            .css('height','1px')
+            .css('margin',0)
+            .css('width','100%')
+            .css('border', '2px solid green')
+            .css('background-color','green')
+            .css('top',group.position+"%")
+            .css('cursor', 'ns-resize');
+            main.append(elem);
+
+            elem.draggable({
+               axis: "y" ,
+               cursor: "ns-resize",
+               containment: "parent",
+               helper : function() { return $(this).clone().css('background-color','grey'); },
+               drag: function(event,ui) {
+                  var handle = $(this).prop('handle');
+                  var pos = Math.round(ui.offset.top/$(this).parent().innerHeight()*100);
+                  var id = parseInt($(this).attr('separator-id'));
+
+                  var diff = handle.groups[id].position - pos;
+
+                  if (!diff) return; // if no significant change, do nothing
+
+                  // do not change if size too small
+                  if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
+
+                  handle.groups[id-1].size -= diff;
+                  handle.groups[id].size += diff;
+                  handle.groups[id].position = pos;
+                  $(this).css('top', pos+"%");
+                  $(this).parent().children("[groupid='"+(id-1)+"']").css('height', handle.groups[id-1].size + "%");
+                  $(this).parent().children("[groupid='"+id+"']").css('height', handle.groups[id].size + "%");
+               },
+               stop: function(event,ui) {
+                  // here we should correctly resize all drawings
+
+               }
+
+            });
+         }
+      }
+
+   }
+
+   JSROOT.NewGridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      $('#' + this.frameid).find('.jsroot_newgrid').each(function() {
+         userfunc($(this).get(0));
+      });
+   }
+
+   JSROOT.NewGridDisplay.prototype.GetActiveFrame = function() {
+      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      if (found) return found;
+
+      this.ForEachFrame(function(frame) {
+         if (!found) found = frame;
+      }, true);
+
+      return found;
+   }
+
+
+   JSROOT.NewGridDisplay.prototype.ActivateFrame = function(frame) {
+      this.active_frame_title = d3.select(frame).attr('frame_title');
+   }
+
+   JSROOT.NewGridDisplay.prototype.CreateFrame = function(title) {
+      this.BeforeCreateFrame(title);
+
+      var frame = $('#'+this.frameid).find('.jsroot_newgrid').get(this.getcnt);
+
+      this.getcnt = (this.getcnt+1) % this.framecnt;
+
+      d3.select(frame).attr('frame_title', title);
+
+      return frame;
+   }
+
 
    // ========== performs tree drawing on server ==================
 
