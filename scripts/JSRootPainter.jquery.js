@@ -1683,8 +1683,7 @@
       this.groups = [];
       this.vertical = true;
       $("#"+frameid).css('overflow','hidden');
-
-      this.CreateGroup(this, $("#"+this.frameid), 3);
+      this.CreateGroup(this, $("#"+this.frameid), 3, [1,2,1]);
    }
 
    JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
@@ -1692,13 +1691,7 @@
    JSROOT.NewGridDisplay.prototype.CreateGroup = function(handle, main, num, childs) {
 
       for (var cnt = 0; cnt<num; ++cnt) {
-
-         var group = {
-               id: cnt,
-               frameid: '',
-               position: 0,
-               size: Math.round(100/num)
-         };
+         var group = { id: cnt, frameid: '', position: 0, size: Math.round(100/num) };
          if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          if (cnt===num-1) group.size = 100 - group.position;
 
@@ -1706,45 +1699,66 @@
 
          handle.groups.push(group);
 
-         var elem = $('<div></div>')
-           .attr('groupid', group.id)
-           .css('float', 'bottom').css('height',group.size+'%').css('width','100%');
+         var elem = $('<div></div>').attr('groupid', group.id);
+
+         if (handle.vertical)
+            elem.css('float', 'bottom').css('height',group.size+'%').css('width','100%');
+         else
+            elem.css('float', 'left').css('width',group.size+'%').css('height','100%');
 
          if (group.frameid)
-            elem.attr('id',group.frameid)
-                .toggleClass('jsroot_newgrid', true);
+            elem.attr('id',group.frameid).toggleClass('jsroot_newgrid', true);
 
-         var separ = main.find('.jsroot_newsepar');
+         var separ = main.children('.jsroot_newsepar');
 
          if (separ.length>0)
             elem.insertBefore(separ.get(0));
          else
             main.append(elem);
 
-         if (group.id>0) {
-            elem = $('<div></div>')
-            .toggleClass('jsroot_newsepar', true)
-            .prop('handle', handle)
-            .attr('separator-id', group.id)
-            .css('position', 'absolute')
-            .css('height','1px')
-            .css('margin',0)
-            .css('width','100%')
-            .css('border', '2px solid green')
-            .css('background-color','green')
-            .css('top',group.position+"%")
-            .css('cursor', 'ns-resize');
-            main.append(elem);
+         if (childs && (childs[cnt]>1)) {
+            group.vertical = !handle.vertical;
+            group.groups = [];
+            elem.css('overflow','hidden');
+            this.CreateGroup(group, elem, childs[cnt]);
+         }
 
-            elem.draggable({
-               axis: "y" ,
-               cursor: "ns-resize",
+         if (group.id>0) {
+            separ = $('<div></div>')
+                .toggleClass('jsroot_newsepar', true)
+                .prop('handle', handle)
+                .attr('separator-id', group.id)
+                .css('position', 'absolute')
+                .css('border', '2px solid green')
+                .css('background-color','green')
+                .css('margin',0);
+            var separsize = (handle.size || 100)+"%";
+
+            if (handle.vertical)
+               separ.css('height','1px')
+                   .css('width',separsize)
+                   .css('top',group.position+"%")
+                   .css('cursor', 'ns-resize');
+            else
+               separ.css('width','1px')
+                   .css('height',separsize)
+                   .css('left',group.position+"%")
+                   .css('cursor', 'ew-resize');
+
+            main.append(separ);
+
+            separ.draggable({
+               axis: handle.vertical ? "y" : "x",
+               cursor: handle.vertical ? "ns-resize" : "ew-resize",
                containment: "parent",
                helper : function() { return $(this).clone().css('background-color','grey'); },
                drag: function(event,ui) {
-                  var handle = $(this).prop('handle');
-                  var pos = Math.round(ui.offset.top/$(this).parent().innerHeight()*100);
-                  var id = parseInt($(this).attr('separator-id'));
+                  var handle = $(this).prop('handle'), pos = 0,
+                      id = parseInt($(this).attr('separator-id'));
+                  if (handle.vertical)
+                     pos = Math.round(ui.offset.top/$(this).parent().innerHeight()*100);
+                  else
+                     pos = Math.round(ui.offset.left/$(this).parent().innerWidth()*100);
 
                   var diff = handle.groups[id].position - pos;
 
@@ -1756,15 +1770,26 @@
                   handle.groups[id-1].size -= diff;
                   handle.groups[id].size += diff;
                   handle.groups[id].position = pos;
-                  $(this).css('top', pos+"%");
-                  $(this).parent().children("[groupid='"+(id-1)+"']").css('height', handle.groups[id-1].size + "%");
-                  $(this).parent().children("[groupid='"+id+"']").css('height', handle.groups[id].size + "%");
+
+                  function SetGroupSize(prnt, grid) {
+                     var chlds = prnt.children("[groupid='"+grid+"']"),
+                         name = handle.vertical ? 'height' : 'width';
+                     chlds.css(name, handle.groups[grid].size + "%");
+                     chlds.children(".jsroot_newsepar").css(name, handle.groups[grid].size + "%");
+                  }
+
+                  if (handle.vertical) {
+                     $(this).css('top', pos+"%");
+                  } else {
+                     $(this).css('left', pos+"%");
+                  }
+
+                  SetGroupSize($(this).parent(), id-1);
+                  SetGroupSize($(this).parent(), id);
                },
                stop: function(event,ui) {
                   // here we should correctly resize all drawings
-
                }
-
             });
          }
       }
