@@ -971,7 +971,7 @@
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
-      if (kind.indexOf('more2d;')>=0) {
+      if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0)) {
          mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
          modules.push('JSRootPainter.more');
       }
