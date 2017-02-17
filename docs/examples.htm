@@ -221,8 +221,11 @@
             ],
             TH3 : [
               { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
-              { name: "box", file: "histpainter6.root", item: "draw_th3_box;1", opt: "" },
-              { opt: "box1", file: "glbox.root", item: "h31;1" },
+              { opt: "box", file: "histpainter6.root", item: "draw_th3_box;1/h3box" },
+              { name: "box2", file: "hsimple.root", item: "ntuple", opt: "px:py:pz;hbins:15;drawopt:box2", title: "use colors" },
+              { name: "box3", file: "hsimple.root", item: "ntuple", opt: "px:py:pz;hbins:15;drawopt:box3", title: "use colors" },
+              { opt: "glbox1", file: "glbox.root", item: "h31;1", title: "draw spheres" },
+              { opt: "glbox2", title: "draw spheres with color derived from bin content" }
             ],
             TTree : [
                { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },

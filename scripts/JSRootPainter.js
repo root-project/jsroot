@@ -118,6 +118,12 @@
       return true;
    }
 
+   JSROOT.DrawOptions.prototype.partAsInt = function() {
+      if (!this.part) return 0;
+      var val = parseInt(this.part);
+      return isNaN(val) ? 0 : val;
+   }
+
 
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
@@ -5452,6 +5458,7 @@
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
              Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
+             GLBox: 0, GLColor: 0,
              System: JSROOT.Painter.Coord.kCARTESIAN,
              AutoColor : 0, NoStat : 0, AutoZoom : false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
@@ -5523,6 +5530,9 @@
 
       if (d.check('CANDLE', true)) option.Candle = d.part;
 
+      if (d.check('GLBOX',true)) option.GLBox = 10 + d.partAsInt();
+      // if (d.check('GLCOL')) option.GLColor = 1;
+
       d.check('GL'); // suppress GL
 
       if (d.check('LEGO', true)) {
@@ -5590,8 +5600,7 @@
          }
       }
 
-      if (d.check('BOX1')) option.Box = 11; else
-      if (d.check('BOX')) option.Box = 1;
+      if (d.check('BOX',true)) option.Box = 10 + d.partAsInt();
 
       if (option.Box)
          if (hdim > 1) option.Scat = 0;
@@ -11214,7 +11223,7 @@
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
-   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX1" });
+   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2" });
    JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "more2d", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
    JSROOT.addDrawFunc({ name: "TGraphPolargram" }); // just dummy entry to avoid drawing of this object

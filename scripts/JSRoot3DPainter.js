@@ -3367,19 +3367,24 @@
 
       if (!this.draw_content) return;
 
-      if (!this.options.Box)
+      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
          if (this.Draw3DScatter()) return;
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = JSROOT.Painter.root_colors[rootcolor],
-          material = null, buffer_size = 0, use_helper = false, use_colors = false,
-          single_bin_verts, single_bin_norms;
+          buffer_size = 0, use_lambert = false,
+          use_helper = false, use_colors = false, use_opacity = 1,
+          single_bin_verts, single_bin_norms,
+          box_option = this.options.Box,
+          tipscale = 0.5;
 
-      if (this.options.Box === 11) {
-         // material = new THREE.MeshPhongMaterial({ color : fillcolor /*, specular : 0x4f4f4f */ });
-         // material = new THREE.MeshBasicMaterial( { color: fillcolor, shading: THREE.SmoothShading  } );
+      if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
 
-         material = new THREE.MeshLambertMaterial({ color : fillcolor });
+      if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
+
+         tipscale = 0.4;
+         use_lambert = true;
+         if (this.options.GLBox === 12) use_colors = true;
 
          var geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
@@ -3414,9 +3419,6 @@
          }
 
       } else {
-         // material = new THREE.MeshLambertMaterial({ color : fillcolor });
-
-         // material = new THREE.MeshBasicMaterial( { color: fillcolor  } );
 
          var indicies = JSROOT.Painter.Box_Indexes,
              normals = JSROOT.Painter.Box_Normals,
@@ -3437,8 +3439,11 @@
             single_bin_norms[k*3+1] = normals[nn+1];
             single_bin_norms[k*3+2] = normals[nn+2];
          }
-
          use_helper = true;
+
+         if (box_option===12) { use_colors = true; } else
+         if (box_option===13) { use_colors = true; use_helper = false; }  else
+         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; }
       }
 
       var histo = this.GetObject(),
@@ -3607,20 +3612,16 @@
          all_bins_buffgeom.addAttribute('position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
          all_bins_buffgeom.addAttribute('normal', new THREE.BufferAttribute( bin_norms[nseq], 3 ) );
 
-         if (use_colors) {
-            fillcolor = this.fPalette[ncol];
-            material = null;
-         }
+         if (use_colors) fillcolor = this.fPalette[ncol];
 
-         if (!material) material = new THREE.MeshBasicMaterial( { color: fillcolor  } );
+         var material = use_lambert ? new THREE.MeshLambertMaterial({ color : fillcolor, opacity: use_opacity })
+                                    : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity });
 
          var combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
          combined_bins.bins_faces = buffer_size/3;
          combined_bins.painter = this;
-
-         var tipscale = (this.options.Box === 11) ? 0.4 : 0.5;
 
          combined_bins.scalex = tipscale*scalex;
          combined_bins.scaley = tipscale*scaley;
