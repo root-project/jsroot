@@ -1256,7 +1256,7 @@
             break;
          case 'TH2':
             JSROOT.Create("TH1", obj);
-            JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy : 0});
+            JSROOT.extend(obj, { fScalefactor: 1., fTsumwy: 0.,  fTsumwy2: 0, fTsumwxy: 0});
             break;
          case 'TH2I':
          case 'TH2F':
@@ -1268,6 +1268,7 @@
             break;
          case 'TH3':
             JSROOT.Create("TH1", obj);
+            JSROOT.extend(obj, { fTsumwy: 0.,  fTsumwy2: 0, fTsumwz: 0.,  fTsumwz2: 0, fTsumwxy: 0, fTsumwxz: 0, fTsumwyz: 0 });
             break;
          case 'TH3I':
          case 'TH3F':

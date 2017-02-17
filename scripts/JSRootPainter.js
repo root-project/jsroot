@@ -6332,11 +6332,8 @@
    }
 
    JSROOT.THistPainter.prototype.IsAxisZoomed = function(axis) {
-      var obj = this.main_painter();
-      if (obj == null) obj = this;
-      if (axis === "x") return obj.zoom_xmin != obj.zoom_xmax;
-      if (axis === "y") return obj.zoom_ymin != obj.zoom_ymax;
-      return false;
+      var obj = this.main_painter() || this;
+      return obj['zoom_'+axis+'min'] !== obj['zoom_'+axis+'max'];
    }
 
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
@@ -11223,7 +11220,7 @@
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
-   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2" });
+   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" });
    JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "more2d", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
    JSROOT.addDrawFunc({ name: "TGraphPolargram" }); // just dummy entry to avoid drawing of this object

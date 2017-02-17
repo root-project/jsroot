@@ -1020,6 +1020,18 @@
           zbin = this.z.GetBin(zvalue);
 
       this.hist.fArray[xbin + (this.x.nbins+2) * (ybin + (this.y.nbins+2)*zbin) ] += weight;
+      if (!this.x.lbls && !this.y.lbls && !this.z.lbls) {
+         this.hist.fTsumw += weight;
+         this.hist.fTsumwx += weight*xvalue;
+         this.hist.fTsumwy += weight*yvalue;
+         this.hist.fTsumwz += weight*zvalue;
+         this.hist.fTsumwx2 += weight*xvalue*xvalue;
+         this.hist.fTsumwy2 += weight*yvalue*yvalue;
+         this.hist.fTsumwz2 += weight*zvalue*zvalue;
+         this.hist.fTsumwxy += weight*xvalue*yvalue;
+         this.hist.fTsumwxz += weight*xvalue*zvalue;
+         this.hist.fTsumwyz += weight*yvalue*zvalue;
+      }
    }
 
    JSROOT.TDrawSelector.prototype.DumpValue = function(v1, v2, v3, v4) {

@@ -19,7 +19,8 @@
 13. Introduce direct streamers - like TBasket or TRef
    Benefit - one can add custom streamers of such kind or reuse existing
 14. Handle TMatrixTSym classes in I/O  
-15. Implement for TH3 box2, box3, glbox2, glcol draw options 
+15. Implement for TH3 box2, box3, glbox2, glcol draw options
+16. Correctly count TH3 statistic in TTree::Draw 
 
 
 ## Changes in 5.0.3
