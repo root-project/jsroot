@@ -1711,6 +1711,7 @@
          var group = { id: cnt, frameid: '', position: 0, size: Math.round(100/num) };
          if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          if (cnt===num-1) group.size = 100 - group.position;
+         group.position0 = group.position;
 
          if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
 
@@ -1756,6 +1757,60 @@
 
             main.append(separ);
 
+            separ.bind('changePosition', function(e, drag_ui) {
+               var handle = $(this).prop('handle'),
+                   id = parseInt($(this).attr('separator-id')),
+                   pos = handle.groups[id].position;
+
+               if (drag_ui === 'restore') {
+                  pos = handle.groups[id].position0;
+               } else
+               if (drag_ui && drag_ui.offset) {
+                  if (handle.vertical)
+                     pos = (drag_ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
+                  else
+                     pos = (drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
+               }
+
+               var diff = handle.groups[id].position - pos;
+
+               if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
+
+               // do not change if size too small
+               if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
+
+               handle.groups[id-1].size -= diff;
+               handle.groups[id].size += diff;
+               handle.groups[id].position = pos;
+
+               function SetGroupSize(prnt, grid) {
+                  var name = handle.vertical ? 'height' : 'width',
+                      size = handle.groups[grid].size.toFixed(1)+'%';
+                  prnt.children("[groupid='"+grid+"']").css(name, size)
+                      .children(".jsroot_separator").css(name, size);
+               }
+
+               $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
+
+               SetGroupSize($(this).parent(), id-1);
+               SetGroupSize($(this).parent(), id);
+
+               if (drag_ui === 'restore') {
+                  $(this).trigger('resizeGroup', id-1);
+                  $(this).trigger('resizeGroup', id);
+               }
+            });
+
+            separ.bind('resizeGroup', function(e, grid) {
+               var sel = $(this).parent().children("[groupid='"+grid+"']");
+               if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
+               sel.each(function() { JSROOT.resize($(this).get(0)); });
+            });
+
+            separ.dblclick(function() {
+               $(this).trigger('changePosition', 'restore');
+            });
+
             separ.draggable({
                axis: handle.vertical ? "y" : "x",
                cursor: handle.vertical ? "ns-resize" : "ew-resize",
@@ -1768,35 +1823,7 @@
                   handle.groups[id].startpos = handle.groups[id].position;
                },
                drag: function(event,ui) {
-                  var handle = $(this).prop('handle'), pos = 0,
-                      id = parseInt($(this).attr('separator-id'));
-                  if (handle.vertical)
-                     pos = (ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
-                  else
-                     pos = (ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
-
-                  var diff = handle.groups[id].position - pos;
-
-                  if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
-
-                  // do not change if size too small
-                  if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
-
-                  handle.groups[id-1].size -= diff;
-                  handle.groups[id].size += diff;
-                  handle.groups[id].position = pos;
-
-                  function SetGroupSize(prnt, grid) {
-                     var name = handle.vertical ? 'height' : 'width',
-                         size = handle.groups[grid].size.toFixed(1)+'%';
-                     prnt.children("[groupid='"+grid+"']").css(name, size)
-                         .children(".jsroot_separator").css(name, size);
-                  }
-
-                  $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
-
-                  SetGroupSize($(this).parent(), id-1);
-                  SetGroupSize($(this).parent(), id);
+                  $(this).trigger('changePosition', ui);
                },
                stop: function(event,ui) {
                   // verify if start position was changed
@@ -1804,13 +1831,8 @@
                      id = parseInt($(this).attr('separator-id'));
                   if (Math.abs(handle.groups[id].startpos - handle.groups[id].position)<0.5) return;
 
-                  function ResizeGroup(prnt, grid) {
-                     var sel = prnt.children("[groupid='"+grid+"']");
-                     if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
-                     sel.each(function() { JSROOT.resize($(this).get(0)); });
-                  }
-                  ResizeGroup($(this).parent(), id-1);
-                  ResizeGroup($(this).parent(), id);
+                  $(this).trigger('resizeGroup', id-1);
+                  $(this).trigger('resizeGroup', id);
                }
             });
          }
