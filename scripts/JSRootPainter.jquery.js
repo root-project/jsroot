@@ -1673,18 +1673,33 @@
 
    JSROOT.NewGridDisplay = function(frameid, kind) {
       // following kinds are supported
-      //  vertical or horizontal - only first letter matters, definse basic orientation
+      //  vertical or horizontal - only first letter matters, defines basic orientation
       //   v4 or h4 - 4 equal elements in specified direction
       //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
 
       JSROOT.MDIDisplay.call(this, frameid);
+
       this.framecnt = 0;
       this.getcnt = 0;
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
       $("#"+frameid).css('overflow','hidden');
 
-      var num = 2, arr = undefined;
+      var num = 2, arr = undefined, sizes = undefined;
+
+      if (kind && kind.indexOf("_")>0) {
+         var arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
+         if (!isNaN(arg) && (arg>10)) {
+            kind = kind.substr(0, kind.indexOf("_"));
+            sizes = [];
+            while (arg>0) {
+               sizes.unshift(Math.max(arg % 10, 1));
+               arg = Math.round((arg-sizes[0])/10);
+               if (sizes[0]===0) sizes[0]=1;
+            }
+         }
+      }
 
       kind = kind ?  parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
       if (kind && (kind>1)) {
@@ -1694,23 +1709,34 @@
             arr = [];
             while (kind>0) {
                arr.unshift(kind % 10);
-               kind = Math.round((kind - arr[0])/ 10);
+               kind = Math.round((kind-arr[0])/10);
+               if (arr[0]==0) arr[0]=1;
             }
             num = arr.length;
          }
       }
 
-      this.CreateGroup(this, $("#"+this.frameid), num, arr);
+      if (sizes && (sizes.length!==num)) sizes = undefined;
+
+      this.CreateGroup(this, $("#"+this.frameid), num, arr, sizes);
    }
 
    JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.NewGridDisplay.prototype.CreateGroup = function(handle, main, num, childs) {
+   JSROOT.NewGridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
+
+      if (!sizes) sizes = new Array(num);
+      var sum1 = 0, sum2 = 0;
+      for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
+      for (var n=0;n<num;++n) {
+         sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
+         sum2 += sizes[n];
+         if (n==num-1) sizes[n] += (100-sum2); // make 100%
+      }
 
       for (var cnt = 0; cnt<num; ++cnt) {
-         var group = { id: cnt, frameid: '', position: 0, size: Math.round(100/num) };
+         var group = { id: cnt, frameid: '', position: 0, size: sizes[cnt] };
          if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
-         if (cnt===num-1) group.size = 100 - group.position;
          group.position0 = group.position;
 
          if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
