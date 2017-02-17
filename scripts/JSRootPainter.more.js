@@ -2788,34 +2788,39 @@
 
       if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
       this.fContour = [];
-      this.zmin = zmin;
-      this.zmax = zmax;
+      this.colzmin = zmin;
+      this.colzmax = zmax;
 
       if (this.root_pad().fLogz) {
-         if (this.zmax <= 0) this.zmax = 1.;
-         if (this.zmin <= 0)
+         if (this.colzmax <= 0) this.colzmax = 1.;
+         if (this.colzmin <= 0)
             if ((zminpositive===undefined) || (zminpositive <= 0))
-               this.zmin = 0.0001*this.zmax;
+               this.colzmin = 0.0001*this.colzmax;
             else
-               this.zmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
-         if (this.zmin >= this.zmax) this.zmin = 0.0001*this.zmax;
+               this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
+         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
 
-         var logmin = Math.log(this.zmin)/Math.log(10);
-         var logmax = Math.log(this.zmax)/Math.log(10);
-         var dz = (logmax-logmin)/nlevels;
-         this.fContour.push(this.zmin);
+         var logmin = Math.log(this.colzmin)/Math.log(10),
+             logmax = Math.log(this.colzmax)/Math.log(10),
+             dz = (logmax-logmin)/nlevels;
+         this.fContour.push(this.colzmin);
          for (var level=1; level<nlevels; level++)
             this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.fContour.push(this.zmax);
+         this.fContour.push(this.colzmax);
          this.fCustomContour = true;
       } else {
-         if ((this.zmin === this.zmax) && (this.zmin !== 0)) {
-            this.zmax += 0.01*Math.abs(this.zmax);
-            this.zmin -= 0.01*Math.abs(this.zmin);
+         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
+            this.colzmax += 0.01*Math.abs(this.colzmax);
+            this.colzmin -= 0.01*Math.abs(this.colzmin);
          }
-         var dz = (this.zmax-this.zmin)/nlevels;
+         var dz = (this.colzmax-this.colzmin)/nlevels;
          for (var level=0; level<=nlevels; level++)
-            this.fContour.push(this.zmin + dz*level);
+            this.fContour.push(this.colzmin + dz*level);
+      }
+
+      if (this.Dimension() < 3) {
+         this.zmin = this.colzmin;
+         this.zmax = this.colzmax;
       }
 
       return this.fContour;
@@ -2828,8 +2833,8 @@
       if ((main !== this) && main.fContour) {
          this.fContour = main.fContour;
          this.fCustomContour = main.fCustomContour;
-         this.zmin = main.zmin;
-         this.zmax = main.zmax;
+         this.colzmin = main.colzmin;
+         this.colzmax = main.colzmax;
          return this.fContour;
       }
 
@@ -2851,9 +2856,13 @@
       if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
          this.fContour = JSROOT.clone(histo.fContour);
          this.fCustomContour = true;
-         this.zmin = zmin;
-         this.zmax = zmax;
+         this.colzmin = zmin;
+         this.colzmax = zmax;
          if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
+         if (this.Dimension()<3) {
+            this.zmin = this.colzmin;
+            this.zmax = this.colzmax;
+         }
          return this.fContour;
       }
 
@@ -2879,12 +2888,12 @@
       }
 
       // bins less than zmin not drawn
-      if (zc < this.zmin) return (this.options.Color === 11) ? 0 : -1;
+      if (zc < this.colzmin) return (this.options.Color === 11) ? 0 : -1;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.zmin) return ((this.zmin != 0) || (this.options.Color === 11) || this.IsTH2Poly()) ? 0 : -1;
+      if (zc===this.colzmin) return ((this.colzmin != 0) || (this.options.Color === 11) || this.IsTH2Poly()) ? 0 : -1;
 
-      return Math.floor(0.01+(zc-this.zmin)*(cntr.length-1)/(this.zmax-this.zmin));
+      return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
 
    JSROOT.THistPainter.prototype.getIndexColor = function(index, asindx) {
