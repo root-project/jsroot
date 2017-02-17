@@ -1725,6 +1725,8 @@
 
          if (group.frameid)
             elem.attr('id',group.frameid).toggleClass('jsroot_newgrid', true);
+         else
+            elem.css('display','flex').css('flex-direction', handle.vertical ? "row" : "column");
 
          var separ = main.children('.jsroot_separator');
 
@@ -1785,14 +1787,13 @@
                   handle.groups[id].position = pos;
 
                   function SetGroupSize(prnt, grid) {
-                     var chlds = prnt.children("[groupid='"+grid+"']"),
-                         name = handle.vertical ? 'height' : 'width',
+                     var name = handle.vertical ? 'height' : 'width',
                          size = handle.groups[grid].size.toFixed(1)+'%';
-                     chlds.css(name, size);
-                     chlds.children(".jsroot_separator").css(name, size);
+                     prnt.children("[groupid='"+grid+"']").css(name, size)
+                         .children(".jsroot_separator").css(name, size);
                   }
 
-                  $(this).css(handle.vertical ? 'top' : 'left', "calc(" + pos.toFixed(1)+"% - 2px)");
+                  $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
 
                   SetGroupSize($(this).parent(), id-1);
                   SetGroupSize($(this).parent(), id);
