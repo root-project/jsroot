@@ -49,14 +49,26 @@ For instance:
 - <https://root.cern/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
+Following layouts are supported:
+
+  - simple - available space used for single object (default)
+  - [collapsible](https://root.cern/js/latest/api.htm#url_syntax_collapsible_layout) - fix-sized canvas group behind each other and can be collapsed individually
+  - [flex](https://root.cern/js/latest/api.htm#url_syntax_flexible_layout) - creates as many frames as necessary, each can be individually moved/enlarged
+  - [tabs](https://root.cern/js/latest/api.htm#url_syntax_tabs_layout) - tabs widget 
+  - [gridNxM](https://root.cern/js/latest/api.htm#url_syntax_grid_layout) - fixed-size grid with NxM frames  
+  - vertN - N frames sorted in vertical direction (like grid1xN) but with possibility to adjust size
+  - horizN - N frames sorted in horizontal direction (like gridNx1) but with possibility to adjust size
+  - [vert121](https://root.cern//js/latest/api.htm#url_syntax_veritcal_layout) - 3 frames sorted in vertical direction, second frame divided on two sub-frames
+  - [horiz32_12](https://root.cern//js/latest/api.htm#url_syntax_horizontal_layout) - 2 horizontal frames with 3 and 2 subframes and 1/3 and 2/3 relative size   
+
 When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`. 
 
-Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.   
+Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.
 
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
     <iframe width="700" height="400" 
-            src="https://root.cern/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
+            src="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy&opt=colz">
     </iframe>
 
 

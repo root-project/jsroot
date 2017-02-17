@@ -4,15 +4,15 @@
 1. New 'float' browser kind, which overlays with objects drawing
 2. Browser can be enabled after drawing already done with 'nobrowser' mode
 3. One can hide browser at any time, switching to 'nobrowser' mode
-4. New 'horizontal' and 'veritcal' layouts for object display.
+4. New 'horizontal' and 'vertical' layouts for object display.
    One could configure several frames, each divided on sub-frames.
-   Like display=horiz231 will create three hirizontal frames, 
-   divided on 2,3 and 1 subframes.  
+   Like display=horiz231 will create three horizontal frames, 
+   divided on 2,3 and 1 sub-frames.  
 5. Improve enlarge functionality - now works with all layouts
 6. Do not display all canvas tool buttons by default - provide toggle button instead 
 7. Let move TAxis title, its position now similar to ROOT itself
 8. Support col0 option for TH2Poly class to suppress empty bins
-9. Support more supperscript/subscript letters in normal text output
+9. Support more superscript/subscript letters in normal text output
 10. Correctly handle unzoom with logx/logy scales
 11. Let disable stamp parameter in file url with "-" at the end of file name
 12. Let use quotes in the URL parameters to protect complex arguments with special symbols
