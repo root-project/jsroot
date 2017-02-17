@@ -560,8 +560,10 @@
          if (handle && handle.aslink)
             return window.open(itemname + "/");
 
-        if (handle && handle.execute)
+         if (handle && handle.execute)
             return this.ExecuteCommand(itemname, node.parentNode);
+
+         if (handle && handle.ignore_online && this.isOnlineItem(hitem)) return;
 
          var can_draw = hitem._can_draw,
              can_expand = hitem._more,
@@ -1379,7 +1381,8 @@
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
       return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
-                         .css('position','relative').get(0);
+                         .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
+                         .get(0);
     }
 
    // ================================================
