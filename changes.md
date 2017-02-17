@@ -9,15 +9,16 @@
    Like display=horiz231 will create three hirizontal frames, 
    divided on 2,3 and 1 subframes.  
 5. Improve enlarge functionality - now works with all layouts
-6. Let move TAxis title, its position now similar to ROOT itself
-7. Support col0 option for TH2Poly class to suppress empty bins
-8. Support more supperscript/subscript letters in normal text output
-9. Correctly handle unzoom with logx/logy scales
-10. Let disable stamp parameter in file url with "-" at the end of file name
-11. Let use quotes in the URL parameters to protect complex arguments with special symbols
-12. Introduce direct streamers - like TBasket or TRef
+6. Do not display all canvas tool buttons by default - provide toggle button instead 
+7. Let move TAxis title, its position now similar to ROOT itself
+8. Support col0 option for TH2Poly class to suppress empty bins
+9. Support more supperscript/subscript letters in normal text output
+10. Correctly handle unzoom with logx/logy scales
+11. Let disable stamp parameter in file url with "-" at the end of file name
+12. Let use quotes in the URL parameters to protect complex arguments with special symbols
+13. Introduce direct streamers - like TBasket or TRef
    Benefit - one can add custom streamers of such kind or reuse existing
-13. Handle TMatrixTSym classes in I/O  
+14. Handle TMatrixTSym classes in I/O  
 
 
 ## Changes in 5.0.3

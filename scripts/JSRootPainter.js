@@ -60,6 +60,7 @@
 
       circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },
       diamand: { path: "M256,0L384,256L256,511L128,256z" },
+      rect: { path: "M80,80h352v352h-352z" },
 
       CreateSVG : function(group,btn,size,title) {
          var svg = group.append("svg:svg")
@@ -4105,7 +4106,7 @@
          svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
          svg_pad.append("svg:g").attr("class","stat_layer");
-         btns = svg_pad.append("svg:g").attr("class","btns_layer").property('nextx', 0);
+         btns = svg_pad.append("svg:g").attr("class","btns_layer");
 
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
@@ -4139,7 +4140,7 @@
               .select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
-      btns.attr("transform","translate("+ (w - btns.property('nextx') - this.ButtonSize(0.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
+      btns.attr("transform","translate("+ (w - (btns.property('nextx') || 0) - this.ButtonSize(1.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
 
       return pad_visible;
    }
@@ -4580,27 +4581,39 @@
       // avoid buttons with duplicate names
       if (!group.select("[name=" + funcname + ']').empty()) return;
 
-      var x = group.property("nextx");
-      if (x===undefined) x = 0;
-
       var iscan = this.iscan || !this.has_canvas;
+
+      var x = group.property("nextx");
+      if (!x) {
+         var ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Show tool buttons");
+
+         ctrl.attr("name", "ToggleButtons").attr("x", 0).attr("y", 0).attr("normalx",0);
+         ctrl.on("click", function() {
+            d3.select(this.parentNode).selectAll('svg').each(function() {
+               var btn = d3.select(this);
+               if (btn.attr('name')==="ToggleButtons") return;
+               btn.style('display', btn.style('display')=='none' ? "" : "none");
+            })
+         });
+
+         x = iscan ? this.ButtonSize(1.25) : 0;
+      }
 
       var svg = JSROOT.ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
             tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
 
-      svg.attr("name", funcname).attr("x", x).attr("y", 0);
+      svg.attr("name", funcname).attr("x", x).attr("y", 0).attr("normalx",x).style('display','none');
 
       if (keyname) svg.attr("key", keyname);
 
-      svg.append("svg:title").text(tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) +
-            (keyname ? " (keyshortcut " + keyname + ")" : ""));
-
       svg.on("click", this.PadButtonClick.bind(this, funcname));
 
-      group.property("nextx", x+this.ButtonSize(1.25));
+      group.property("nextx", x + this.ButtonSize(1.25));
 
-      if (!iscan)
-         group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx')-this.ButtonSize(0.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
+      if (!iscan) {
+         group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx') - this.ButtonSize(1.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
+         group.select("svg[name='ToggleButtons']").attr("x", group.property('nextx'));
+      }
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
          this.pad_painter().AddButton(btn, tooltip, funcname);
