@@ -1678,6 +1678,7 @@
    JSROOT.NewGridDisplay = function(frameid, kind) {
       // following kinds are supported
       //  vertical or horizontal - only first letter matters, defines basic orientation
+      //   'x' in the name disable interactive separators
       //   v4 or h4 - 4 equal elements in specified direction
       //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
       //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
@@ -1688,6 +1689,8 @@
       this.getcnt = 0;
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
+      this.use_separarators = !kind || (kind.indexOf("x")<0);
+
       $("#"+frameid).css('overflow','hidden');
 
       var num = 2, arr = undefined, sizes = undefined;
@@ -1722,7 +1725,7 @@
 
       if (sizes && (sizes.length!==num)) sizes = undefined;
 
-      this.CreateGroup(this, $("#"+this.frameid), num, arr, sizes);
+      this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
    }
 
    JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
@@ -1747,132 +1750,127 @@
 
          handle.groups.push(group);
 
-         var elem = $('<div></div>').attr('groupid', group.id);
+         var elem = main.insert("div", ".jsroot_separator").attr('groupid', group.id);
 
          if (handle.vertical)
-            elem.css('float', 'bottom').css('height',group.size+'%').css('width','100%');
+            elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
          else
-            elem.css('float', 'left').css('width',group.size+'%').css('height','100%');
+            elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
 
          if (group.frameid)
-            elem.attr('id',group.frameid).toggleClass('jsroot_newgrid', true);
+            elem.attr('id',group.frameid).classed('jsroot_newgrid', true);
          else
-            elem.css('display','flex').css('flex-direction', handle.vertical ? "row" : "column");
+            elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
 
-         var separ = main.children('.jsroot_separator');
-
-         if (separ.length>0)
-            elem.insertBefore(separ.get(0));
-         else
-            main.append(elem);
+         // var separ = main.select('.jsroot_separator');
 
          if (childs && (childs[cnt]>1)) {
             group.vertical = !handle.vertical;
             group.groups = [];
-            elem.css('overflow','hidden');
+            elem.style('overflow','hidden');
             this.CreateGroup(group, elem, childs[cnt]);
          }
 
-         if (group.id>0) {
-            separ = $('<div></div>')
-                .toggleClass('jsroot_separator', true)
-                .toggleClass(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
-                .prop('handle', handle)
-                .attr('separator-id', group.id)
-                .css('position','absolute')
-                .css(handle.vertical ? 'top' : 'left', "calc(" + group.position+"% - 2px)")
-                .css(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
-                .css(handle.vertical ? 'height' : 'width', '5px')
-                .css('cursor', handle.vertical ? "ns-resize" : "ew-resize");
-
-            main.append(separ);
-
-            separ.bind('changePosition', function(e, drag_ui) {
-               var handle = $(this).prop('handle'),
-                   id = parseInt($(this).attr('separator-id')),
-                   pos = handle.groups[id].position;
-
-               if (drag_ui === 'restore') {
-                  pos = handle.groups[id].position0;
-               } else
-               if (drag_ui && drag_ui.offset) {
-                  if (handle.vertical)
-                     pos = (drag_ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
-                  else
-                     pos = (drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
-               }
-
-               var diff = handle.groups[id].position - pos;
-
-               if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
-
-               // do not change if size too small
-               if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
-
-               handle.groups[id-1].size -= diff;
-               handle.groups[id].size += diff;
-               handle.groups[id].position = pos;
-
-               function SetGroupSize(prnt, grid) {
-                  var name = handle.vertical ? 'height' : 'width',
-                      size = handle.groups[grid].size.toFixed(1)+'%';
-                  prnt.children("[groupid='"+grid+"']").css(name, size)
-                      .children(".jsroot_separator").css(name, size);
-               }
-
-               $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
-
-               SetGroupSize($(this).parent(), id-1);
-               SetGroupSize($(this).parent(), id);
-
-               if (drag_ui === 'restore') {
-                  $(this).trigger('resizeGroup', id-1);
-                  $(this).trigger('resizeGroup', id);
-               }
-            });
-
-            separ.bind('resizeGroup', function(e, grid) {
-               var sel = $(this).parent().children("[groupid='"+grid+"']");
-               if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
-               sel.each(function() { JSROOT.resize($(this).get(0)); });
-            });
-
-            separ.dblclick(function() {
-               $(this).trigger('changePosition', 'restore');
-            });
-
-            separ.draggable({
-               axis: handle.vertical ? "y" : "x",
-               cursor: handle.vertical ? "ns-resize" : "ew-resize",
-               containment: "parent",
-               helper : function() { return $(this).clone().css('background-color','grey'); },
-               start: function(event,ui) {
-                  // remember start position
-                  var handle = $(this).prop('handle'),
-                      id = parseInt($(this).attr('separator-id'));
-                  handle.groups[id].startpos = handle.groups[id].position;
-               },
-               drag: function(event,ui) {
-                  $(this).trigger('changePosition', ui);
-               },
-               stop: function(event,ui) {
-                  // verify if start position was changed
-                  var handle = $(this).prop('handle'),
-                     id = parseInt($(this).attr('separator-id'));
-                  if (Math.abs(handle.groups[id].startpos - handle.groups[id].position)<0.5) return;
-
-                  $(this).trigger('resizeGroup', id-1);
-                  $(this).trigger('resizeGroup', id);
-               }
-            });
-         }
+         if ((group.id>0) && this.use_separarators) this.CreateSeparator(handle, main, group);
       }
+   }
 
+   JSROOT.NewGridDisplay.prototype.CreateSeparator = function(handle, main, group) {
+      var separ = $(main.append("div").node());
+
+      separ.toggleClass('jsroot_separator', true)
+           .toggleClass(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
+           .prop('handle', handle)
+           .attr('separator-id', group.id)
+           .css('position','absolute')
+           .css(handle.vertical ? 'top' : 'left', "calc(" + group.position+"% - 2px)")
+           .css(handle.vertical ? 'width' : 'height', (handle.size || 100)+"%")
+           .css(handle.vertical ? 'height' : 'width', '5px')
+           .css('cursor', handle.vertical ? "ns-resize" : "ew-resize");
+
+      separ.bind('changePosition', function(e, drag_ui) {
+         var handle = $(this).prop('handle'),
+             id = parseInt($(this).attr('separator-id')),
+             pos = handle.groups[id].position;
+
+         if (drag_ui === 'restore') {
+            pos = handle.groups[id].position0;
+         } else
+         if (drag_ui && drag_ui.offset) {
+            if (handle.vertical)
+               pos = (drag_ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
+            else
+               pos = (drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
+         }
+
+         var diff = handle.groups[id].position - pos;
+
+         if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
+
+         // do not change if size too small
+         if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
+
+         handle.groups[id-1].size -= diff;
+         handle.groups[id].size += diff;
+         handle.groups[id].position = pos;
+
+         function SetGroupSize(prnt, grid) {
+            var name = handle.vertical ? 'height' : 'width',
+                size = handle.groups[grid].size.toFixed(1)+'%';
+            prnt.children("[groupid='"+grid+"']").css(name, size)
+                .children(".jsroot_separator").css(name, size);
+         }
+
+         $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
+
+         SetGroupSize($(this).parent(), id-1);
+         SetGroupSize($(this).parent(), id);
+
+         if (drag_ui === 'restore') {
+            $(this).trigger('resizeGroup', id-1);
+            $(this).trigger('resizeGroup', id);
+         }
+      });
+
+      separ.bind('resizeGroup', function(e, grid) {
+         var sel = $(this).parent().children("[groupid='"+grid+"']");
+         if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
+         sel.each(function() { JSROOT.resize($(this).get(0)); });
+      });
+
+      separ.dblclick(function() {
+         $(this).trigger('changePosition', 'restore');
+      });
+
+      separ.draggable({
+         axis: handle.vertical ? "y" : "x",
+         cursor: handle.vertical ? "ns-resize" : "ew-resize",
+         containment: "parent",
+         helper : function() { return $(this).clone().css('background-color','grey'); },
+         start: function(event,ui) {
+            // remember start position
+            var handle = $(this).prop('handle'),
+                id = parseInt($(this).attr('separator-id'));
+            handle.groups[id].startpos = handle.groups[id].position;
+         },
+         drag: function(event,ui) {
+            $(this).trigger('changePosition', ui);
+         },
+         stop: function(event,ui) {
+            // verify if start position was changed
+            var handle = $(this).prop('handle'),
+               id = parseInt($(this).attr('separator-id'));
+            if (Math.abs(handle.groups[id].startpos - handle.groups[id].position)<0.5) return;
+
+            $(this).trigger('resizeGroup', id-1);
+            $(this).trigger('resizeGroup', id);
+         }
+      });
    }
 
    JSROOT.NewGridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      $('#' + this.frameid).find('.jsroot_newgrid').each(function() {
-         userfunc($(this).get(0));
+      d3.select('#' + this.frameid).selectAll('.jsroot_newgrid').each(function() {
+         userfunc(d3.select(this).node());
       });
    }
 
@@ -1887,7 +1885,6 @@
       return found;
    }
 
-
    JSROOT.NewGridDisplay.prototype.ActivateFrame = function(frame) {
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
@@ -1895,7 +1892,11 @@
    JSROOT.NewGridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
-      var frame = $('#'+this.frameid).find('.jsroot_newgrid').get(this.getcnt);
+      var frame = null, cnt = this.getcnt;
+
+      d3.select('#'+this.frameid).selectAll('.jsroot_newgrid').each(function() {
+         if (cnt-- === 0) frame = d3.select(this).node();
+      });
 
       this.getcnt = (this.getcnt+1) % this.framecnt;
 
