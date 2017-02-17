@@ -5531,7 +5531,7 @@
       if (d.check('CANDLE', true)) option.Candle = d.part;
 
       if (d.check('GLBOX',true)) option.GLBox = 10 + d.partAsInt();
-      // if (d.check('GLCOL')) option.GLColor = 1;
+      if (d.check('GLCOL')) option.GLColor = 1;
 
       d.check('GL'); // suppress GL
 

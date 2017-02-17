@@ -3373,7 +3373,7 @@
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = JSROOT.Painter.root_colors[rootcolor],
           buffer_size = 0, use_lambert = false,
-          use_helper = false, use_colors = false, use_opacity = 1,
+          use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
           box_option = this.options.Box,
           tipscale = 0.5;
@@ -3443,7 +3443,7 @@
 
          if (box_option===12) { use_colors = true; } else
          if (box_option===13) { use_colors = true; use_helper = false; }  else
-         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; }
+         if (this.options.GLColor) { use_colors = true; use_opacity = 0.2; use_scale = false; use_helper = false; use_lambert = true; }
       }
 
       var histo = this.GetObject(),
@@ -3468,7 +3468,7 @@
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
-               wei = Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333);
+               wei = use_scale ? Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
                nbins++;
@@ -3522,13 +3522,11 @@
          bin_norms[nseq] = new Float32Array(nbins * buffer_size);
          bin_tooltips[nseq] = new Int32Array(nbins);
 
-         if (helper_kind[nseq]===1) {
+         if (helper_kind[nseq]===1)
             helper_indexes[nseq] = new Uint16Array(nbins * JSROOT.Painter.Box_MeshSegments.length);
-         }
 
-         if (helper_kind[nseq]===2) {
+         if (helper_kind[nseq]===2)
             helper_positions[nseq] = new Float32Array(nbins * JSROOT.Painter.Box_Segments.length * 3);
-         }
       }
 
       var binx, grx, biny, gry, binz, grz;
@@ -3541,8 +3539,8 @@
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
 
-               wei = Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333);
-               if (wei < 1e-3) continue; // do not show empty bins
+               wei = use_scale ? Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333) : 1;
+               if (wei < 1e-3) continue; // do not show very small bins
 
                var nseq = 0;
                if (use_colors) {
@@ -3614,7 +3612,7 @@
 
          if (use_colors) fillcolor = this.fPalette[ncol];
 
-         var material = use_lambert ? new THREE.MeshLambertMaterial({ color : fillcolor, opacity: use_opacity })
+         var material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity<1) })
                                     : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity });
 
          var combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
@@ -3627,6 +3625,7 @@
          combined_bins.scaley = tipscale*scaley;
          combined_bins.scalez = tipscale*scalez;
          combined_bins.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
+         combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
             var indx = Math.floor(intersect.index / this.bins_faces);
@@ -3637,7 +3636,7 @@
                 grx = p.grx(p.GetBinX(tip.ix-0.5)),
                 gry = p.gry(p.GetBinY(tip.iy-0.5)),
                 grz = p.grz(p.GetBinZ(tip.iz-0.5)),
-                wei = Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333);
+                wei = this.use_scale ? Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
             tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
