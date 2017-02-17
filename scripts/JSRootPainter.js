@@ -10498,11 +10498,9 @@
       if (document.getElementById(this.disp_frameid) == null)
          return JSROOT.CallBack(callback, null);
 
-      if (this.disp_kind == "simple")
-         this.disp = new JSROOT.SimpleDisplay(this.disp_frameid);
-      else
-      if (this.disp_kind.search("grid") == 0)
-         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
+      if ((this.disp_kind == "simple") ||
+          (this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0))
+           this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
       else
          return JSROOT.AssertPrerequisites('jq2d', this.CreateDisplay.bind(this,callback));
 
@@ -10998,158 +10996,212 @@
       });
    }
 
-   // ==================================================
-
-   JSROOT.SimpleDisplay = function(frameid) {
-      JSROOT.MDIDisplay.call(this, frameid);
-   }
-
-   JSROOT.SimpleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
-
-   JSROOT.SimpleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var node = d3.select("#"+this.frameid + "_simple_display");
-      if (!node.empty())
-         JSROOT.CallBack(userfunc, node.node());
-   }
-
-   JSROOT.SimpleDisplay.prototype.GetActiveFrame = function() {
-      var node = d3.select("#"+this.frameid + "_simple_display");
-      return node.empty() ? null : node.node();
-   }
-
-   JSROOT.SimpleDisplay.prototype.CreateFrame = function(title) {
-
-      this.BeforeCreateFrame(title);
-
-      this.CleanupFrame(this.frameid+"_simple_display");
-
-      return d3.select("#"+this.frameid)
-               .html("")
-               .append("div")
-               .attr("id", this.frameid + "_simple_display")
-               .attr("frame_title", title)
-               .style("width", "100%").style("height", "100%").style("overflow", "hidden")
-               .node();
-   }
-
-   JSROOT.SimpleDisplay.prototype.Reset = function() {
-      JSROOT.MDIDisplay.prototype.Reset.call(this);
-      // try to remove different properties from the div
-      d3.select("#"+this.frameid).html("");
-   }
-
    // ================================================
 
-   JSROOT.GridDisplay = function(frameid, sizex, sizey) {
-      // create grid display object
-      // one could use following arguments
-      // new JSROOT.GridDisplay('yourframeid','4x4');
-      // new JSROOT.GridDisplay('yourframeid','3x2');
-      // new JSROOT.GridDisplay('yourframeid', 3, 4);
+   JSROOT.GridDisplay = function(frameid, kind, kind2) {
+      // following kinds are supported
+      //  vertical or horizontal - only first letter matters, defines basic orientation
+      //   'x' in the name disable interactive separators
+      //   v4 or h4 - 4 equal elements in specified direction
+      //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
+      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
+      //   gridNxM - normal grid layout without interactive separators
+      //   simple - no layout, full frame used for object drawings
 
       JSROOT.MDIDisplay.call(this, frameid);
-      this.cnt = 0;
-      if (typeof sizex == "string") {
-         if (sizex.search("grid") == 0)
-            sizex = sizex.slice(4).trim();
 
-         var separ = sizex.search("x");
+      this.framecnt = 0;
+      this.getcnt = 0;
+      this.groups = [];
+      this.vertical = kind && (kind[0] == 'v');
+      this.use_separarators = !kind || (kind.indexOf("x")<0);
+      this.simple_layout = false;
+
+      $("#"+frameid).css('overflow','hidden');
+
+      if (kind === "simple") {
+         this.simple_layout = true;
+         this.use_separarators = false;
+         return;
+      }
+
+      var num = 2, arr = undefined, sizes = undefined;
+
+      if ((kind.indexOf("grid") == 0) || kind2) {
+         if (kind2) kind = kind + "x" + kind2;
+               else kind = kind.substr(4).trim();
+         this.use_separarators = false;
+         if (kind[0]==="i") {
+            this.use_separarators = true;
+            kind = kind.substr(1);
+         }
+
+         var separ = kind.indexOf("x"), sizex = 3, sizey = 3;
 
          if (separ > 0) {
-            sizey = parseInt(sizex.slice(separ + 1));
-            sizex = parseInt(sizex.slice(0, separ));
+            sizey = parseInt(kind.substr(separ + 1));
+            sizex = parseInt(kind.substr(0, separ));
          } else {
-            sizex = parseInt(sizex);
-            sizey = sizex;
+            sizex = sizey = parseInt(kind);
          }
 
          if (isNaN(sizex)) sizex = 3;
          if (isNaN(sizey)) sizey = 3;
+
+         if (sizey>1) {
+            this.vertical = true;
+            num = sizey;
+            if (sizex>1) {
+               arr = new Array(num);
+               for (var k=0;k<num;++k) arr[k] = sizex;
+            }
+         } else
+         if (sizex > 1) {
+            this.vertical = false;
+            num = sizex;
+         } else {
+            this.simple_layout = true;
+            return;
+         }
+         kind = "";
       }
 
-      if (!sizex) sizex = 3;
-      if (!sizey) sizey = sizex;
-      this.sizex = sizex;
-      this.sizey = sizey;
+      if (kind && kind.indexOf("_")>0) {
+         var arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
+         if (!isNaN(arg) && (arg>10)) {
+            kind = kind.substr(0, kind.indexOf("_"));
+            sizes = [];
+            while (arg>0) {
+               sizes.unshift(Math.max(arg % 10, 1));
+               arg = Math.round((arg-sizes[0])/10);
+               if (sizes[0]===0) sizes[0]=1;
+            }
+         }
+      }
+
+      kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
+      if (kind && (kind>1)) {
+         if (kind<10) {
+            num = kind;
+         } else {
+            arr = [];
+            while (kind>0) {
+               arr.unshift(kind % 10);
+               kind = Math.round((kind-arr[0])/10);
+               if (arr[0]==0) arr[0]=1;
+            }
+            num = arr.length;
+         }
+      }
+
+      if (sizes && (sizes.length!==num)) sizes = undefined;
+
+      if (!this.simple_layout)
+         this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
    }
 
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
-   JSROOT.GridDisplay.prototype.NumGridFrames = function() {
-      return this.sizex*this.sizey;
-   }
+   JSROOT.GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
 
-   JSROOT.GridDisplay.prototype.IsSingle = function() {
-      return (this.sizex == 1) && (this.sizey == 1);
-   }
-
-   JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      for (var cnt = 0; cnt < this.sizex * this.sizey; ++cnt) {
-         var elem = this.IsSingle() ? d3.select("#"+this.frameid) : d3.select("#" + this.frameid + "_grid_" + cnt);
-
-         if (!elem.empty() && elem.attr('frame_title') != '')
-            JSROOT.CallBack(userfunc, elem.node());
+      if (!sizes) sizes = new Array(num);
+      var sum1 = 0, sum2 = 0;
+      for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
+      for (var n=0;n<num;++n) {
+         sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
+         sum2 += sizes[n];
+         if (n==num-1) sizes[n] += (100-sum2); // make 100%
       }
+
+      for (var cnt = 0; cnt<num; ++cnt) {
+         var group = { id: cnt, frameid: '', position: 0, size: sizes[cnt] };
+         if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
+         group.position0 = group.position;
+
+         if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
+
+         handle.groups.push(group);
+
+         var separ = null, chlds = main.node().childNodes;
+         if ((group.id>0) && this.use_separarators)
+            for (var k=0;k<chlds.length;++k)
+               if (chlds[k].className.indexOf("jsroot_separator")>=0) { separ = chlds[k]; break; }
+
+         var elem = main.append("div").attr('groupid', group.id);
+
+         if (separ)
+             main.node().insertBefore(elem.node(), separ)
+
+         if (handle.vertical)
+            elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
+         else
+            elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
+
+         if (group.frameid)
+            elem.attr('id',group.frameid).classed('jsroot_newgrid', true);
+         else
+            elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
+
+         // var separ = main.select('.jsroot_separator');
+
+         if (childs && (childs[cnt]>1)) {
+            group.vertical = !handle.vertical;
+            group.groups = [];
+            elem.style('overflow','hidden');
+            this.CreateGroup(group, elem, childs[cnt]);
+         }
+
+         if ((group.id>0) && this.use_separarators && this.CreateSeparator)
+            this.CreateSeparator(handle, main, group);
+      }
+   }
+
+   JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+      var main = d3.select('#' + this.frameid);
+
+      if (this.simple_layout)
+         userfunc(main.node());
+      else
+      main.selectAll('.jsroot_newgrid').each(function() {
+         userfunc(d3.select(this).node());
+      });
+   }
+
+   JSROOT.GridDisplay.prototype.GetActiveFrame = function() {
+      if (this.simple_layout) return d3.select('#' + this.frameid).node();
+
+      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      if (found) return found;
+
+      this.ForEachFrame(function(frame) {
+         if (!found) found = frame;
+      }, true);
+
+      return found;
+   }
+
+   JSROOT.GridDisplay.prototype.ActivateFrame = function(frame) {
+      this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
-
       this.BeforeCreateFrame(title);
 
-      var main = d3.select("#" + this.frameid);
-      if (main.empty()) return null;
+      var main = d3.select('#' + this.frameid), frame = null;
 
-      var drawid = this.frameid;
-
-      if (!this.IsSingle()) {
-         var topid = this.frameid + '_grid';
-         if (d3.select("#" + topid).empty()) {
-            var rect = main.node().getBoundingClientRect();
-            var h = Math.floor(rect.height / this.sizey) - 1;
-            var w = Math.floor(rect.width / this.sizex) - 1;
-
-            var content = "<div style='width:100%; height:100%; margin:0; padding:0; border:0; overflow:hidden'>"+
-                          "<table id='" + topid + "' style='width:100%; height:100%; table-layout:fixed; border-collapse: collapse;'>";
-            var cnt = 0;
-            for (var i = 0; i < this.sizey; ++i) {
-               content += "<tr>";
-               for (var j = 0; j < this.sizex; ++j)
-                  content += "<td><div id='" + topid + "_" + cnt++ + "' class='grid_cell'></div></td>";
-               content += "</tr>";
-            }
-            content += "</table></div>";
-
-            main.html(content);
-            main.selectAll('.grid_cell').style('width',w+'px').style('height',h+'px').style('overflow','hidden');
-         }
-
-         drawid = topid + "_" + this.cnt;
-         if (++this.cnt >= this.sizex * this.sizey) this.cnt = 0;
+      if (this.simple_layout) {
+         frame = main.node();
+      } else {
+         var cnt = this.getcnt;
+         main.selectAll('.jsroot_newgrid').each(function() {
+           if (cnt-- === 0) frame = d3.select(this).node();
+         });
+         this.getcnt = (this.getcnt+1) % this.framecnt;
       }
 
-      this.CleanupFrame(drawid);
+      d3.select(frame).attr('frame_title', title);
 
-      return d3.select("#" + drawid).html("").attr('frame_title', title).node();
-   }
-
-   JSROOT.GridDisplay.prototype.Reset = function() {
-      JSROOT.MDIDisplay.prototype.Reset.call(this);
-      if (this.IsSingle())
-         d3.select("#" + this.frameid).attr('frame_title', null);
-      this.cnt = 0;
-   }
-
-   JSROOT.GridDisplay.prototype.CheckMDIResize = function(frame_id, size) {
-
-      if (!this.IsSingle()) {
-         var main = d3.select("#" + this.frameid);
-         var rect = main.node().getBoundingClientRect();
-         var h = Math.floor(rect.height / this.sizey) - 1;
-         var w = Math.floor(rect.width / this.sizex) - 1;
-         main.selectAll('.grid_cell').style('width',w+'px').style('height',h+'px');
-      }
-
-      JSROOT.MDIDisplay.prototype.CheckMDIResize.call(this, frame_id, size);
+      return frame;
    }
 
    // =========================================================================

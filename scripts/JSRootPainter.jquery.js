@@ -775,19 +775,13 @@
       if (this.disp_kind == "tabs")
          this.disp = new JSROOT.TabsDisplay(this.disp_frameid);
       else
-      if ((this.disp_kind[0] == "h") || (this.disp_kind[0] == "v"))
-         this.disp = new JSROOT.NewGridDisplay(this.disp_frameid, this.disp_kind);
-      else
-      if ((this.disp_kind == "flex") || (this.disp_kind == "flexible"))
+      if (this.disp_kind.indexOf("flex")==0)
          this.disp = new JSROOT.FlexibleDisplay(this.disp_frameid);
       else
-      if (this.disp_kind.search("grid") == 0)
-         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
-      else
-      if (this.disp_kind == "simple")
-         this.disp = new JSROOT.SimpleDisplay(this.disp_frameid);
-      else
+      if (this.disp_kind.indexOf("coll")==0)
          this.disp = new JSROOT.CollapsibleDisplay(this.disp_frameid);
+      else
+         this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
 
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
@@ -1675,154 +1669,7 @@
 
    // ================== new grid with flexible boundaries ========
 
-   JSROOT.NewGridDisplay = function(frameid, kind) {
-      // following kinds are supported
-      //  vertical or horizontal - only first letter matters, defines basic orientation
-      //   'x' in the name disable interactive separators
-      //   v4 or h4 - 4 equal elements in specified direction
-      //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
-      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
-      //   gridNxM - normal grid layout without interactive separators
-
-      JSROOT.MDIDisplay.call(this, frameid);
-
-      this.framecnt = 0;
-      this.getcnt = 0;
-      this.groups = [];
-      this.vertical = kind && (kind[0] == 'v');
-      this.use_separarators = !kind || (kind.indexOf("x")<0);
-      this.simple_layout = false;
-
-      $("#"+frameid).css('overflow','hidden');
-
-      if (kind === "simple") {
-         this.simple_layout = true;
-         this.use_separarators = false;
-         return;
-      }
-
-      var num = 2, arr = undefined, sizes = undefined;
-
-      if (kind.indexOf("grid") == 0) {
-         kind = kind.substr(4).trim();
-         this.use_separarators = false;
-         if (kind[0]==="i") {
-            this.use_separarators = true;
-            kind = kind.substr(1);
-         }
-
-         var separ = kind.indexOf("x"), sizex = 3, sizey = 3;
-
-         if (separ > 0) {
-            sizey = parseInt(kind.substr(separ + 1));
-            sizex = parseInt(kind.substr(0, separ));
-         } else {
-            sizex = sizey = parseInt(kind);
-         }
-
-         if (isNaN(sizex)) sizex = 3;
-         if (isNaN(sizey)) sizey = 3;
-
-         if (sizey>1) {
-            this.vertical = true;
-            num = sizey;
-            if (sizex>1) {
-               arr = new Array(num);
-               for (var k=0;k<num;++k) arr[k] = sizex;
-            }
-         } else
-         if (sizex > 1) {
-            this.vertical = false;
-            num = sizex;
-         } else {
-            this.simple_layout = true;
-            return;
-         }
-         kind = "";
-      }
-
-      if (kind && kind.indexOf("_")>0) {
-         var arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
-         if (!isNaN(arg) && (arg>10)) {
-            kind = kind.substr(0, kind.indexOf("_"));
-            sizes = [];
-            while (arg>0) {
-               sizes.unshift(Math.max(arg % 10, 1));
-               arg = Math.round((arg-sizes[0])/10);
-               if (sizes[0]===0) sizes[0]=1;
-            }
-         }
-      }
-
-      kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
-      if (kind && (kind>1)) {
-         if (kind<10) {
-            num = kind;
-         } else {
-            arr = [];
-            while (kind>0) {
-               arr.unshift(kind % 10);
-               kind = Math.round((kind-arr[0])/10);
-               if (arr[0]==0) arr[0]=1;
-            }
-            num = arr.length;
-         }
-      }
-
-      if (sizes && (sizes.length!==num)) sizes = undefined;
-
-      if (!this.simple_layout)
-         this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
-   }
-
-   JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
-
-   JSROOT.NewGridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
-
-      if (!sizes) sizes = new Array(num);
-      var sum1 = 0, sum2 = 0;
-      for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
-      for (var n=0;n<num;++n) {
-         sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
-         sum2 += sizes[n];
-         if (n==num-1) sizes[n] += (100-sum2); // make 100%
-      }
-
-      for (var cnt = 0; cnt<num; ++cnt) {
-         var group = { id: cnt, frameid: '', position: 0, size: sizes[cnt] };
-         if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
-         group.position0 = group.position;
-
-         if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
-
-         handle.groups.push(group);
-
-         var elem = main.insert("div", ".jsroot_separator").attr('groupid', group.id);
-
-         if (handle.vertical)
-            elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
-         else
-            elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
-
-         if (group.frameid)
-            elem.attr('id',group.frameid).classed('jsroot_newgrid', true);
-         else
-            elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
-
-         // var separ = main.select('.jsroot_separator');
-
-         if (childs && (childs[cnt]>1)) {
-            group.vertical = !handle.vertical;
-            group.groups = [];
-            elem.style('overflow','hidden');
-            this.CreateGroup(group, elem, childs[cnt]);
-         }
-
-         if ((group.id>0) && this.use_separarators) this.CreateSeparator(handle, main, group);
-      }
-   }
-
-   JSROOT.NewGridDisplay.prototype.CreateSeparator = function(handle, main, group) {
+   JSROOT.GridDisplay.prototype.CreateSeparator = function(handle, main, group) {
       var separ = $(main.append("div").node());
 
       separ.toggleClass('jsroot_separator', true)
@@ -1913,54 +1760,6 @@
             $(this).trigger('resizeGroup', id);
          }
       });
-   }
-
-   JSROOT.NewGridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var main = d3.select('#' + this.frameid);
-
-      if (this.simple_layout)
-         userfunc(main.node());
-      else
-      main.selectAll('.jsroot_newgrid').each(function() {
-         userfunc(d3.select(this).node());
-      });
-   }
-
-   JSROOT.NewGridDisplay.prototype.GetActiveFrame = function() {
-      if (this.simple_layout) return d3.select('#' + this.frameid).node();
-
-      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
-      if (found) return found;
-
-      this.ForEachFrame(function(frame) {
-         if (!found) found = frame;
-      }, true);
-
-      return found;
-   }
-
-   JSROOT.NewGridDisplay.prototype.ActivateFrame = function(frame) {
-      this.active_frame_title = d3.select(frame).attr('frame_title');
-   }
-
-   JSROOT.NewGridDisplay.prototype.CreateFrame = function(title) {
-      this.BeforeCreateFrame(title);
-
-      var main = d3.select('#' + this.frameid), frame = null;
-
-      if (this.simple_layout) {
-         frame = main.node();
-      } else {
-         var cnt = this.getcnt;
-         main.selectAll('.jsroot_newgrid').each(function() {
-           if (cnt-- === 0) frame = d3.select(this).node();
-         });
-         this.getcnt = (this.getcnt+1) % this.framecnt;
-      }
-
-      d3.select(frame).attr('frame_title', title);
-
-      return frame;
    }
 
    // ========== performs tree drawing on server ==================
