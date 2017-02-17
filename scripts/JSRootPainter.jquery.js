@@ -1378,8 +1378,9 @@
             .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s").end().next()
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
-      return $("#" + hid).attr('frame_title', title).css('overflow','hidden').get(0);
-   }
+      return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
+                         .css('position','relative').get(0);
+    }
 
    // ================================================
 

@@ -1673,13 +1673,11 @@
             elem = d3.select(prnt).append('div').attr("class", size.clname);
 
          // our position inside canvas, but to set 'absolute' position we should use
-         // canvas element offset relative to first parent with absolute position
-         // workaround - TR is not handled correctly, wherefore ignored
+         // canvas element offset relative to first parent with non-static position
          // now try to use getBoundingClientRect - it should be more precise
 
          var pos0 = prnt.getBoundingClientRect();
 
-         // var offx = 0, offy = 0;
          while (prnt) {
             if (prnt === document) { prnt = null; break; }
             try {
@@ -1687,17 +1685,10 @@
             } catch(err) {
                break;
             }
-            //if (prnt.nodeName!=='TR') {
-            //   offx += prnt.offsetLeft;
-            //   offy += prnt.offsetTop;
-            // }
             prnt = prnt.parentNode;
          }
 
          var pos1 = prnt ? prnt.getBoundingClientRect() : { top: 0, left: 0 };
-
-         // console.log('offx', offx, pos0.left - pos1.left);
-         // console.log('offy', offy, pos0.top - pos1.top);
 
          var offx = Math.round(pos0.left - pos1.left),
              offy = Math.round(pos0.top - pos1.top);
