@@ -226,7 +226,7 @@
               { name: "box3", file: "hsimple.root", item: "ntuple", opt: "px:py:pz;hbins:15;drawopt:box3", title: "use colors" },
               { opt: "glbox1", file: "glbox.root", item: "h31;1", title: "draw spheres" },
               { opt: "glbox2", title: "draw spheres with color derived from bin content" },
-              { opt: "glcol", title: "draw semi-transparent boxes with color derived from bin content" }
+              { opt: "glcol", file: "histpainter6.root", item: "glvoxel",  title: "draw semi-transparent boxes with color derived from bin content" }
             ],
             TTree : [
                { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },
@@ -367,16 +367,16 @@
               { name: "candle", file: "candleplot.root", item: "c1;1" },
               { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
               { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
-              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert33&items=[draw_th2e,draw_scat,draw_arr,draw_box,draw_box1,draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
-              { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
-              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert33&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
-              { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
-              { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
+              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert33&items=[draw_th2e,draw_scat,draw_arr,draw_box,draw_box1,draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
+              { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
+              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert33&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
+              { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
+              { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
               { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" }
             ],
             TH2Poly : [
                { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
-               { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert22&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
+               { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert22&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
             ],
             TH3 : [
                { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
