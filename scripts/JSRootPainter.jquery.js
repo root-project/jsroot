@@ -1682,6 +1682,7 @@
       //   v4 or h4 - 4 equal elements in specified direction
       //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
       //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
+      //   gridNxM - normal grid layout without interactive separators
 
       JSROOT.MDIDisplay.call(this, frameid);
 
@@ -1690,10 +1691,55 @@
       this.groups = [];
       this.vertical = kind && (kind[0] == 'v');
       this.use_separarators = !kind || (kind.indexOf("x")<0);
+      this.simple_layout = false;
 
       $("#"+frameid).css('overflow','hidden');
 
+      if (kind === "simple") {
+         this.simple_layout = true;
+         this.use_separarators = false;
+         return;
+      }
+
       var num = 2, arr = undefined, sizes = undefined;
+
+      if (kind.indexOf("grid") == 0) {
+         kind = kind.substr(4).trim();
+         this.use_separarators = false;
+         if (kind[0]==="i") {
+            this.use_separarators = true;
+            kind = kind.substr(1);
+         }
+
+         var separ = kind.indexOf("x"), sizex = 3, sizey = 3;
+
+         if (separ > 0) {
+            sizey = parseInt(kind.substr(separ + 1));
+            sizex = parseInt(kind.substr(0, separ));
+         } else {
+            sizex = sizey = parseInt(kind);
+         }
+
+         if (isNaN(sizex)) sizex = 3;
+         if (isNaN(sizey)) sizey = 3;
+
+         if (sizey>1) {
+            this.vertical = true;
+            num = sizey;
+            if (sizex>1) {
+               arr = new Array(num);
+               for (var k=0;k<num;++k) arr[k] = sizex;
+            }
+         } else
+         if (sizex > 1) {
+            this.vertical = false;
+            num = sizex;
+         } else {
+            this.simple_layout = true;
+            return;
+         }
+         kind = "";
+      }
 
       if (kind && kind.indexOf("_")>0) {
          var arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
@@ -1725,7 +1771,8 @@
 
       if (sizes && (sizes.length!==num)) sizes = undefined;
 
-      this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
+      if (!this.simple_layout)
+         this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
    }
 
    JSROOT.NewGridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
@@ -1869,12 +1916,19 @@
    }
 
    JSROOT.NewGridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      d3.select('#' + this.frameid).selectAll('.jsroot_newgrid').each(function() {
+      var main = d3.select('#' + this.frameid);
+
+      if (this.simple_layout)
+         userfunc(main.node());
+      else
+      main.selectAll('.jsroot_newgrid').each(function() {
          userfunc(d3.select(this).node());
       });
    }
 
    JSROOT.NewGridDisplay.prototype.GetActiveFrame = function() {
+      if (this.simple_layout) return d3.select('#' + this.frameid).node();
+
       var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found) return found;
 
@@ -1892,19 +1946,22 @@
    JSROOT.NewGridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
-      var frame = null, cnt = this.getcnt;
+      var main = d3.select('#' + this.frameid), frame = null;
 
-      d3.select('#'+this.frameid).selectAll('.jsroot_newgrid').each(function() {
-         if (cnt-- === 0) frame = d3.select(this).node();
-      });
-
-      this.getcnt = (this.getcnt+1) % this.framecnt;
+      if (this.simple_layout) {
+         frame = main.node();
+      } else {
+         var cnt = this.getcnt;
+         main.selectAll('.jsroot_newgrid').each(function() {
+           if (cnt-- === 0) frame = d3.select(this).node();
+         });
+         this.getcnt = (this.getcnt+1) % this.framecnt;
+      }
 
       d3.select(frame).attr('frame_title', title);
 
       return frame;
    }
-
 
    // ========== performs tree drawing on server ==================
 
