@@ -1705,7 +1705,7 @@
          }
       }
 
-      kind = kind ?  parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
+      kind = kind ? parseInt(kind.replace( /^\D+/g, ''), 10) : 0;
       if (kind && (kind>1)) {
          if (kind<10) {
             num = kind;

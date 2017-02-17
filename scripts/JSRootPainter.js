@@ -118,12 +118,11 @@
       return true;
    }
 
-   JSROOT.DrawOptions.prototype.partAsInt = function() {
-      if (!this.part) return 0;
-      var val = parseInt(this.part);
-      return isNaN(val) ? 0 : val;
+   JSROOT.DrawOptions.prototype.partAsInt = function(offset, dflt) {
+      var val = this.part.replace( /^\D+/g, '');
+      val = val ? parseInt(val,10) : Number.NaN;
+      return isNaN(val) ? (dflt || 0) : val + (offset || 0);
    }
-
 
    /**
     * @class JSROOT.Painter Holder of different functions and classes for drawing
@@ -5474,7 +5473,7 @@
          for (var n=0;n<this.histo.fSumw2.length;++n)
             if (this.histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
 
-      if (d.check('PAL', true)) option.Palette = parseInt(d.part);
+      if (d.check('PAL', true)) option.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = this.histo.fMinimum;
       if (d.check('MAXIMUM:', true)) option.maximum = parseFloat(d.part); else option.maximum = this.histo.fMaximum;
 
@@ -5502,12 +5501,12 @@
       if (d.check('TICKY')) pad.fTicky = 1;
 
       if (d.check('FILL_', true)) {
-         if (!isNaN(parseInt(d.part))) this.histo.fFillColor = parseInt(d.part); else
-            for (var col=0;col<8;++col)
-               if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fFillColor = col;
+         if (d.partAsInt(1)>0) this.histo.fFillColor = d.partAsInt(); else
+         for (var col=0;col<8;++col)
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fFillColor = col;
       }
       if (d.check('LINE_', true)) {
-         if (!isNaN(parseInt(d.part))) this.histo.fLineColor = parseInt(d.part); else
+         if (d.partAsInt(1)>0) this.histo.fLineColor = d.partAsInt(); else
          for (var col=0;col<8;++col)
             if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fLineColor = col;
       }
@@ -5545,15 +5544,14 @@
          if (d.part.indexOf('4') >= 0) option.Lego = 14;
          if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
          if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
-         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
+         if (d.part.indexOf('Z') >= 0) option.Zscale = 1;
       }
 
       if (d.check('SURF', true)) {
          option.Scat = 0;
-         option.Surf = 1;
-         if (d.part.indexOf('FB') >= 0) { option.FrontBox = 0; d.part = d.part.replace('FB',''); }
-         if (d.part.indexOf('BB') >= 0) { option.BackBox = 0; d.part = d.part.replace('BB',''); }
-         if ((d.part.length>0) && !isNaN(parseInt(d.part))) option.Surf = 10 + parseInt(d.part);
+         option.Surf = d.partAsInt(10, 1);
+         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
+         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
          if (d.part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
@@ -5573,7 +5571,7 @@
          if (hdim > 1) {
             option.Scat = 0;
             option.Contour = 1;
-            if (d.part.indexOf('Z')>=0) option.Zscale = 1;
+            if (d.part.indexOf('Z') >= 0) option.Zscale = 1;
             if (d.part.indexOf('1') >= 0) option.Contour = 11; else
             if (d.part.indexOf('2') >= 0) option.Contour = 12; else
             if (d.part.indexOf('3') >= 0) option.Contour = 13; else
@@ -5588,7 +5586,7 @@
       if (d.check('BAR', true)) option.Bar = 10;
       if (option.Bar > 0) {
          option.Hist = 0; need_fillcol = true;
-         if (!isNaN(parseInt(d.part))) option.Bar += parseInt(d.part);
+         option.Bar += d.partAsInt();
       }
 
       if (d.check('ARR')) {
@@ -5629,15 +5627,8 @@
          option.Scat = 0;
          option.Hist = 0;
 
-         var angle = parseInt(d.part.substr(0,2));
-         if (isNaN(angle)) angle = parseInt(d.part.substr(0,1));
-         if (!isNaN(angle)) {
-            if (angle < 0) angle = 0;
-            if (angle > 90) angle = 90;
-            option.Text = 1000 + angle;
-         } else {
-            angle = 0;
-         }
+         var angle = Math.min(d.partAsInt(), 90);
+         if (angle) option.Text = 1000 + angle;
 
          if (d.part.indexOf('N')>=0 && this.IsTH2Poly())
             option.Text = 3000 + angle;
