@@ -591,6 +591,17 @@
     opacity: 1.0;
 }
 
+.jsroot .svg_toggle_btn {
+    fill: steelblue;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.jsroot .svg_toggle_btn:hover {
+    opacity: 1.0;
+}
+
+
 /* stylesheet for enlarged canvas */
 #jsroot_enlarge_div {
      position: absolute;

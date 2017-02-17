@@ -4585,13 +4585,20 @@
 
       var x = group.property("nextx");
       if (!x) {
-         var ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Show tool buttons");
+         var ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
+
+         if (!JSROOT.touches) ctrl.attr('class', 'svg_toggle_btn');
 
          ctrl.attr("name", "ToggleButtons").attr("x", 0).attr("y", 0).attr("normalx",0);
          ctrl.on("click", function() {
+            d3.event.preventDefault();
             d3.select(this.parentNode).selectAll('svg').each(function() {
                var btn = d3.select(this);
-               if (btn.attr('name')==="ToggleButtons") return;
+               if (btn.attr('name')==="ToggleButtons") {
+                  if (btn.classed('svg_toggle_btn')) btn.attr("class", 'svg_toolbar_btn'); else
+                  if (!JSROOT.touches) btn.attr("class", 'svg_toggle_btn');
+
+               } else
                btn.style('display', btn.style('display')=='none' ? "" : "none");
             })
          });
