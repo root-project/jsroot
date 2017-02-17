@@ -10656,18 +10656,20 @@
                          .classed("jsroot_draw_area", true)
                          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
-      var br = myDiv.append("div").classed("jsroot_browser", true);
+      if (!this.exclude_browser) {
+         var br = myDiv.append("div").classed("jsroot_browser", true);
 
-      var btns = br.append("div").classed("jsroot_browser_btns", true);
+         var btns = br.append("div").classed("jsroot_browser_btns", true);
 
-      btns.style('position',"absolute").style("left","7px").style("top","7px");
-      if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+         btns.style('position',"absolute").style("left","7px").style("top","7px");
+         if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
 
-      var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "float browser");
-      svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
+         var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "float browser");
+         svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
 
-      svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
-      svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
+         svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+      }
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
@@ -10708,6 +10710,7 @@
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 
       hpainter.is_online = online;
+      if (drawing) hpainter.exclude_browser = true;
 
       hpainter.PrepareGuiDiv(myDiv);
       // hpainter.SetDisplay(layout, id + "_drawing");
