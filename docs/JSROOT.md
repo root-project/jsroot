@@ -254,6 +254,7 @@ Following parameters are supported:
   - "maxrange" - maximal number of ranges in single HTTP request 
   - "accum" - number of accumulated values before creating histogram
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
+  - "hbins" - number of bins on each histogram axis 
   - "drawopt" - drawing option for produced histogram
   
 Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)

@@ -574,6 +574,10 @@
                        && (this.htype!=="F") && (this.htype!=="L") && (this.htype!=="D")) this.htype = "F";
                }
                break;
+            case "hbins" :
+               this.hist_nbins = parseInt(parvalue);
+               if (isNaN(this.hist_nbins) || (this.hist_nbins<=3)) delete this.hist_nbins;
+               break;
             case "drawopt":
                args.drawopt = parvalue;
                break;
@@ -847,6 +851,9 @@
 
          res.min = Math.min.apply(null, arr);
          res.max = Math.max.apply(null, arr);
+
+         if (this.hist_nbins)
+            nbins = res.nbins = this.hist_nbins;
 
          res.isinteger = (Math.round(res.min)===res.min) && (Math.round(res.max)===res.max);
          if (res.isinteger)
