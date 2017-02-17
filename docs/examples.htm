@@ -180,7 +180,7 @@
               { name: "lego", opt: "lego2,pal50" },
               { opt: "X+Y+" },
               { opt: "inspect", title: "universal object inspector, can be used for any class" },
-              { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[two_axis,draw_e1,draw_e34,draw_bar,draw_text]", title:"several TH1 examples from THistPainter documentation" }
+              { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert32&items=[two_axis,draw_e1,draw_bar,draw_e34,draw_text]", title:"several TH1 examples from THistPainter documentation" }
             ],
             TH2 : [
               { opt: "", file: "hsimple.root", item: "hpxpy;1" },
@@ -267,7 +267,7 @@
             ],
             TGeo : [
               { name:"logo", file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
-              { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
+              { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=vert333&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
               { name:"prim2", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[cone,coneseg,tube,tubeseg,ctub,eltu,pcon,pgon]&opts=[a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives, group 2" },
               { name:"prim3", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x2&items=[sphere,torus,parab,hype,comp]&opts=[a,a,a,a,a]", title:"Basic TGeo primitives, group 3" },
               { name:"comp", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[axis,axis,compaaxis,axis]", title:"Components of composite shape" },
@@ -348,7 +348,7 @@
          
          var extra = {
             TH1: [
-              { name:"docu_zero", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&style=style_zero&items=[draw_zero2,draw_zero1,draw_bar]", title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
+              { name:"docu_zero", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert21&style=style_zero&items=[draw_bar,draw_zero2,draw_zero1]", title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
               { name: "varbins", file: "hbins.root", item: "SpectraPions;1" },
               { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
               { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
@@ -363,16 +363,16 @@
               { name: "candle", file: "candleplot.root", item: "c1;1" },
               { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
               { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
-              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_th2e,draw_scat, draw_arr, draw_box, draw_box1, draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
+              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert33&items=[draw_th2e,draw_scat,draw_arr,draw_box,draw_box1,draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
               { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
-              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
+              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert33&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
               { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
               { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
-              { name: "docu_poly", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" },
               { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" }
             ],
             TH2Poly : [
-               { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" }
+               { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
+               { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=vert22&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
             ],
             TH3 : [
                { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
