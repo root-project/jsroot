@@ -11017,7 +11017,7 @@
       this.use_separarators = !kind || (kind.indexOf("x")<0);
       this.simple_layout = false;
 
-      $("#"+frameid).css('overflow','hidden');
+      d3.select("#"+frameid).style('overflow','hidden');
 
       if (kind === "simple") {
          this.simple_layout = true;
@@ -11122,15 +11122,7 @@
 
          handle.groups.push(group);
 
-         var separ = null, chlds = main.node().childNodes;
-         if ((group.id>0) && this.use_separarators)
-            for (var k=0;k<chlds.length;++k)
-               if (chlds[k].className.indexOf("jsroot_separator")>=0) { separ = chlds[k]; break; }
-
          var elem = main.append("div").attr('groupid', group.id);
-
-         if (separ)
-             main.node().insertBefore(elem.node(), separ)
 
          if (handle.vertical)
             elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
@@ -11142,18 +11134,17 @@
          else
             elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
 
-         // var separ = main.select('.jsroot_separator');
-
          if (childs && (childs[cnt]>1)) {
             group.vertical = !handle.vertical;
             group.groups = [];
             elem.style('overflow','hidden');
             this.CreateGroup(group, elem, childs[cnt]);
          }
-
-         if ((group.id>0) && this.use_separarators && this.CreateSeparator)
-            this.CreateSeparator(handle, main, group);
       }
+
+      if (this.use_separarators && this.CreateSeparator)
+         for (var cnt=1;cnt<num;++cnt)
+            this.CreateSeparator(handle, main, handle.groups[cnt]);
    }
 
    JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
