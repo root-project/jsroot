@@ -646,6 +646,7 @@
 .jsroot_browser_hierarchy {
 	overflow:auto;
 	flex:1;
+	margin-top:5px;
 }
 
 .jsroot_status_area {

@@ -427,7 +427,7 @@
             btn.append('img').attr("src", factcmds[n]._icon);
       }
 
-      var d3p = maindiv.append("p").style("margin","5px").style("margin-left","3px");
+      var d3p = maindiv.append("p").style("margin-left","3px");
 
       d3p.append("a").attr("class", "h_button").text("open all").on("click", h.toggleOpenState.bind(h,true));
       d3p.append("text").text(" | ");
@@ -987,8 +987,6 @@
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
 
-      console.log('Create Browser', browser_kind, update_html)
-
       if (!this.gui_div || this.exclude_browser) return false;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
@@ -1109,23 +1107,23 @@
             localfile_read_callback = read_callback;
             $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
          }
+      }
 
-         var jlayout = jmain.find(".gui_layout");
-         if (jlayout.length) {
-            var lst = ['simple', 'collapsible', 'flex', 'tabs', 'horiz2', 'horiz32', 'vert2', 'vert3', 'vert231',
-                        'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
+      var jlayout = jmain.find(".gui_layout");
+      if (jlayout.length) {
+         var lst = ['simple', 'collapsible', 'flex', 'tabs', 'horiz2', 'horiz32', 'vert2', 'vert3', 'vert231',
+                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
 
-            for (var k=0;k<lst.length;++k){
-               var opt = document.createElement('option');
-               opt.value = lst[k];
-               opt.innerHTML = lst[k];
-               jlayout.get(0).appendChild(opt);
-           }
+         for (var k=0;k<lst.length;++k){
+            var opt = document.createElement('option');
+            opt.value = lst[k];
+            opt.innerHTML = lst[k];
+            jlayout.get(0).appendChild(opt);
+        }
 
-            jlayout.change(function() {
-               hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
-            });
-         }
+         jlayout.change(function() {
+            hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
+         });
       }
 
       this.SetDivId(this.gui_div + '_browser_hierarchy');
