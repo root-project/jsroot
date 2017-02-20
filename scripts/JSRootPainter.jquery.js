@@ -1019,34 +1019,37 @@
       } else
       if (!this.no_select) {
          var myDiv = d3.select("#"+this.gui_div),
-         files = myDiv.attr("files") || "../files/hsimple.root",
-         path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
-         arrFiles = files.split(';');
+             files = myDiv.attr("files") || "../files/hsimple.root",
+             path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
+             arrFiles = files.split(';');
 
          guiCode +=
-            '<input type="text" value="" style="width:90%; margin-top:5px;" class="gui_urlToLoad" title="input file name"/>'
-            +'<select class="gui_selectFileName" style="width:65%; margin-top:5px;" title="select file name"'
+            '<input type="text" value="" style="width:90%; margin:5px;" class="gui_urlToLoad" title="input file name"/><br/>'
+            +'<div  style="display:flex;flex-direction:row;padding-top:5px">'
+            +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
          for (var i in arrFiles)
             guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
          guiCode += '</select>'
             +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
-            +'<input type="button" value="..." class="gui_fileBtn" style="width:15%; margin-top:5px;margin-left:5px;" title="select local file for reading"/><br/>'
+            +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
+            +'</div>'
             +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
             +' how to open files from other servers.</small></p>'
-            +'<input style="padding:2px; margin-top:5px;"'
+            +'<div  style="display:flex;flex-direction:row">'
+            +'<input style="padding:3px;margin-right:5px;"'
             +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
-            +'<input style="padding:2px; margin-left:10px;"'
+            +'<input style="padding:3px;margin-right:5px;"'
             +'       class="gui_ResetUIBtn" type="button" title="Clear All" value="Reset"/>'
       }
 
       if (this.is_online || !this.no_select || this.no_select=="file")
-         guiCode += '<select style="padding:2px; margin-left:10px; margin-top:5px;" title="layout kind" class="gui_layout">'
+         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout">'
                  + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>horiz2</option><option>horiz32</option><option>vert2</option><option>vert3</option><option>vert231</option>'
                  +'  <option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
                  + '</select><br/>';
 
-      guiCode += "</div>";
+      guiCode += "</div></div>";
 
       guiCode += '<div id="' + this.gui_div + '_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
 
@@ -1057,11 +1060,6 @@
            .html(guiCode);
 
       main.select('.jsroot_browser_title').text(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
-
-//      d3.select("#"+divid+"_browser")
-//         .style('position',"absolute").style('left',"2px").style('top',"0px").style('bottom',"0px").style('width',"300px")
-//         .style('z-index',11)
-//         .style('background-color', 'lightblue');
 
       var hpainter = this, localfile_read_callback = null;
 
@@ -1077,18 +1075,21 @@
                this.OpenRootFile(filename);
          }
 
-         jmain.find(".gui_selectFileName").val("").change( function() {
-            jmain.find(".gui_urlToLoad").val($(this).val());
+         jmain.find(".gui_selectFileName").val("").selectmenu( {
+            width: false,
+            select: function(event, ui) {
+                jmain.find(".gui_urlToLoad").val($(this).val());
+            }
          });
-         jmain.find(".gui_fileBtn").click(function() {
+         jmain.find(".gui_fileBtn").button().click(function() {
             jmain.find(".gui_localFile").click();
          });
 
-         jmain.find(".gui_ReadFileBtn").click(function(){
+         jmain.find(".gui_ReadFileBtn").button().click(function(){
             hpainter.ReadSelectedFile();
          });
 
-         jmain.find(".gui_ResetUIBtn").click(function(){
+         jmain.find(".gui_ResetUIBtn").button().click(function(){
             hpainter.clear(true);
          });
 
@@ -1114,10 +1115,13 @@
          }
       }
 
-      jmain.find(".gui_layout").change(function() {
-         var layout = $(this).val() || 'collapsible';
-         hpainter.SetDisplay(layout, hpainter.gui_div + "_drawing");
+      jmain.find(".gui_layout").selectmenu({
+         width: false,
+         select: function( event, ui ) {
+            hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
+         }
       });
+
 
       this.SetDivId(this.gui_div + '_browser_hierarchy');
 
@@ -1147,7 +1151,7 @@
       if (selects)
          for (var i in selects.options) {
             var s = selects.options[i].text;
-            if (typeof s == 'undefined') continue;
+            if (typeof s !== 'string') continue;
             if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
                selects.selectedIndex = i;
                break;
@@ -1235,7 +1239,7 @@
       if (vsepar!==null) {
          vsepar = parseInt(vsepar);
          if (vsepar<50) vsepar = 50;
-         main.select(".jsroot_browser_area").style('width',vsepar+'px');
+         main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
          d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
