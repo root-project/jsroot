@@ -930,7 +930,7 @@
            }
         });
 
-        this.AdjustSeparator(300, null, true, true);
+        this.AdjustSeparator(250, null, true, true);
      }
 
       this.SetButtonsPosition();
@@ -1024,7 +1024,7 @@
              arrFiles = files.split(';');
 
          guiCode +=
-            '<input type="text" value="" style="width:90%; margin:5px;" class="gui_urlToLoad" title="input file name"/><br/>'
+            '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>'
             +'<div  style="display:flex;flex-direction:row;padding-top:5px">'
             +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
