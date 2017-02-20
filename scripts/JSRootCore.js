@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 17/02/2017";
+   JSROOT.version = "dev 20/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -146,7 +146,7 @@
          ZoomTouch : true,  // Zooming with the touch devices
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
          DragAndDrop : true,  // enables drag and drop functionality
-         ToolBar : true,    // show additional tool buttons on the canvas
+         ToolBar : 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
          CanEnlarge : true,  // if drawing inside particular div can be enrlarged on full window
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat : true,

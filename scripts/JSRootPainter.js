@@ -180,7 +180,8 @@
 
       var toolbar = JSROOT.GetUrlOption("toolbar", url);
       if (toolbar !== null)
-         JSROOT.gStyle.ToolBar = (toolbar !== "0") && (toolbar !== "false");
+         if (toolbar==='popup') JSROOT.gStyle.ToolBar = 'popup';
+                           else JSROOT.gStyle.ToolBar = (toolbar !== "0") && (toolbar !== "false");
 
       var palette = JSROOT.GetUrlOption("palette", url);
       if (palette!==null) {
@@ -4575,6 +4576,39 @@
 
    }
 
+   JSROOT.TPadPainter.prototype.toggleButtonsVisibility = function(action) {
+      var group = this.svg_layer("btns_layer", this.this_pad_name),
+          btn = group.select("[name='Toggle']"),
+          state = btn.property('buttons_state');
+
+      if (btn.property('timout_handler')) {
+         if (action!=='timeout') clearTimeout(btn.property('timout_handler'));
+         btn.property('timout_handler', null);
+      }
+
+      var is_visible = false;
+      switch(action) {
+         case 'enable': is_visible = true; break;
+         case 'enterbtn': return; // do nothing, just cleanup timeout
+         case 'timeout': isvisible = false; break;
+         case 'toggle': {
+            state = !state; btn.property('buttons_state', state);
+            is_visible = state;
+            break;
+         }
+         case 'disable':
+         case 'leavebtn': {
+            if (state) return;
+            return btn.property('timout_handler', setTimeout(this.toggleButtonsVisibility.bind(this,'timeout'),500));
+         }
+      }
+
+      group.selectAll('svg').each(function() {
+         if (this===btn.node()) return;
+         d3.select(this).style('display', is_visible ? "" : "none");
+      });
+   }
+
    JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
 
       // do not add buttons when not allowed
@@ -4584,37 +4618,32 @@
       if (group.empty()) return;
 
       // avoid buttons with duplicate names
-      if (!group.select("[name=" + funcname + ']').empty()) return;
+      if (!group.select("[name='" + funcname + "']").empty()) return;
 
-      var iscan = this.iscan || !this.has_canvas;
+      var iscan = this.iscan || !this.has_canvas, ctrl;
 
       var x = group.property("nextx");
       if (!x) {
-         var ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
+         ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
-         if (!JSROOT.touches) ctrl.attr('class', 'svg_toggle_btn');
-
-         ctrl.attr("name", "ToggleButtons").attr("x", 0).attr("y", 0).attr("normalx",0);
-         ctrl.on("click", function() {
-            d3.event.preventDefault();
-            d3.select(this.parentNode).selectAll('svg').each(function() {
-               var btn = d3.select(this);
-               if (btn.attr('name')==="ToggleButtons") {
-                  if (btn.classed('svg_toggle_btn')) btn.attr("class", 'svg_toolbar_btn'); else
-                  if (!JSROOT.touches) btn.attr("class", 'svg_toggle_btn');
-
-               } else
-               btn.style('display', btn.style('display')=='none' ? "" : "none");
-            })
-         });
+         ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0).attr("normalx",0)
+             .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
+             .on("click", this.toggleButtonsVisibility.bind(this, 'toggle'))
+             .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enable'))
+             .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'disable'));
 
          x = iscan ? this.ButtonSize(1.25) : 0;
+      } else {
+         ctrl = group.select("[name='Toggle']");
       }
 
       var svg = JSROOT.ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
             tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
 
-      svg.attr("name", funcname).attr("x", x).attr("y", 0).attr("normalx",x).style('display','none');
+      svg.attr("name", funcname).attr("x", x).attr("y", 0).attr("normalx",x)
+         .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
+         .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enterbtn'))
+         .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'leavebtn'));
 
       if (keyname) svg.attr("key", keyname);
 
@@ -4624,7 +4653,7 @@
 
       if (!iscan) {
          group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx') - this.ButtonSize(1.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
-         group.select("svg[name='ToggleButtons']").attr("x", group.property('nextx'));
+         ctrl.attr("x", group.property('nextx'));
       }
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
@@ -11004,8 +11033,9 @@
       //   'x' in the name disable interactive separators
       //   v4 or h4 - 4 equal elements in specified direction
       //   v231 -  created 3 vertical elements, first divided on 2, second on 3 and third on 1 part
-      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5/2
+      //   v23_52 - create two vertical elements with 2 and 3 subitems, size ratio 5:2
       //   gridNxM - normal grid layout without interactive separators
+      //   gridiNxM - grid layout with interactive separators
       //   simple - no layout, full frame used for object drawings
 
       JSROOT.MDIDisplay.call(this, frameid);

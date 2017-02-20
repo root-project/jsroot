@@ -987,10 +987,10 @@
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
 
-      if (!this.gui_div) return false;
+      if (!this.gui_div || this.exclude_browser) return false;
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
-      var jmain = $(main.node());
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+          jmain = $(main.node());
 
       // one requires top-level container
       if (main.empty()) return false;
