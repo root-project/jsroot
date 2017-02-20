@@ -9822,27 +9822,30 @@
                options[i] += "::_display_on_frame_::"+frame_names[i];
             }
 
-         // We start display of all items parallel
-         for (var i = 0; i < items.length; ++i)
-            h.display(items[i], options[i], DisplayCallback.bind(this,i));
+         function DropNextItem(indx, painter) {
+            if (painter && dropitems[indx] && (dropitems[indx].length>0))
+               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(this, indx, painter));
+
+            dropitems[indx] = null; // mark that all drop items are processed
+
+            if (!call_back) return;
+
+            for (var cnt = 0; cnt < items.length; ++cnt)
+               if ((items[cnt]!==null) || (dropitems[cnt]!==null))  return;
+
+            // only when items drawn and all sub-items dropped, one could perform call-back
+            JSROOT.CallBack(call_back);
+            call_back = null;
+         }
 
          function DisplayCallback(indx, painter, itemname) {
             items[indx] = null; // mark item as ready
             DropNextItem(indx, painter);
          }
 
-         function DropNextItem(indx, painter) {
-            if (painter && dropitems[indx] && (dropitems[indx].length>0))
-               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(this, indx, painter));
-
-            var isany = false;
-            for (var cnt = 0; cnt < items.length; ++cnt)
-               if (items[cnt]!==null) isany = true;
-
-            // only when items drawn and all sub-items dropped, one could perform call-back
-            if (!isany) JSROOT.CallBack(call_back);
-         }
-
+         // We start display of all items parallel
+         for (var i = 0; i < items.length; ++i)
+            h.display(items[i], options[i], DisplayCallback.bind(this,i));
       });
    }
 
@@ -10560,7 +10563,7 @@
       if (this.disp) this.disp.CheckMDIResize(null, size);
    }
 
-   JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, call_back, url) {
+   JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
       var hpainter = this,
           prereq = "",
           filesdir = JSROOT.GetUrlOption("path", url),
@@ -10656,14 +10659,13 @@
             hpainter.expand(expanditems.shift(), OpenAllFiles);
          else if (style.length>0)
             hpainter.ApplyStyle(style.shift(), OpenAllFiles);
-         else
+         else {
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
-
                hpainter.SetMonitoring(monitor);
-
-               JSROOT.CallBack(call_back);
+               JSROOT.CallBack(gui_call_back);
            });
+         }
       }
 
       function AfterOnlineOpened() {

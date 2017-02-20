@@ -987,6 +987,8 @@
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
 
+      console.log('Create Browser', browser_kind, update_html)
+
       if (!this.gui_div || this.exclude_browser) return false;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
@@ -1044,10 +1046,7 @@
       }
 
       if (this.is_online || !this.no_select || this.no_select=="file")
-         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout">'
-                 + ' <option>simple</option><option>collapsible</option><option>flex</option><option>tabs</option><option>horiz2</option><option>horiz32</option><option>vert2</option><option>vert3</option><option>vert231</option>'
-                 +'  <option>grid 2x2</option><option>grid 1x3</option><option>grid 2x3</option><option>grid 3x3</option><option>grid 4x4</option>'
-                 + '</select><br/>';
+         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>';
 
       guiCode += "</div></div>";
 
@@ -1075,11 +1074,8 @@
                this.OpenRootFile(filename);
          }
 
-         jmain.find(".gui_selectFileName").val("").selectmenu( {
-            width: false,
-            select: function(event, ui) {
-                jmain.find(".gui_urlToLoad").val($(this).val());
-            }
+         jmain.find(".gui_selectFileName").val("").change(function() {
+            jmain.find(".gui_urlToLoad").val($(this).val());
          });
          jmain.find(".gui_fileBtn").button().click(function() {
             jmain.find(".gui_localFile").click();
@@ -1113,15 +1109,24 @@
             localfile_read_callback = read_callback;
             $("#" + this.gui_div + " .jsroot_browser").find(".gui_localFile").click();
          }
-      }
 
-      jmain.find(".gui_layout").selectmenu({
-         width: false,
-         select: function( event, ui ) {
-            hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
+         var jlayout = jmain.find(".gui_layout");
+         if (jlayout.length) {
+            var lst = ['simple', 'collapsible', 'flex', 'tabs', 'horiz2', 'horiz32', 'vert2', 'vert3', 'vert231',
+                        'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
+
+            for (var k=0;k<lst.length;++k){
+               var opt = document.createElement('option');
+               opt.value = lst[k];
+               opt.innerHTML = lst[k];
+               jlayout.get(0).appendChild(opt);
+           }
+
+            jlayout.change(function() {
+               hpainter.SetDisplay($(this).val() || 'collapsible', hpainter.gui_div + "_drawing");
+            });
          }
-      });
-
+      }
 
       this.SetDivId(this.gui_div + '_browser_hierarchy');
 
@@ -1148,6 +1153,7 @@
       if (this.browser_kind === "float") this.AdjustFloatBrowserSize(jmain);
 
       var selects = main.select(".gui_layout").node();
+
       if (selects)
          for (var i in selects.options) {
             var s = selects.options[i].text;
