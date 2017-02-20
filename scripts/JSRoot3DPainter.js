@@ -3444,8 +3444,11 @@
 
          if (box_option===12) { use_colors = true; } else
          if (box_option===13) { use_colors = true; use_helper = false; }  else
-         if (this.options.GLColor) { use_colors = true; use_opacity = 0.2; use_scale = false; use_helper = false; use_lambert = true; }
+         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; use_scale = false; use_helper = false; use_lambert = true; }
       }
+
+      if (use_scale)
+         use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
       var histo = this.GetObject(),
           i1 = this.GetSelectIndex("x", "left", 0.5),
@@ -3469,7 +3472,7 @@
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
-               wei = use_scale ? Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333) : 1;
+               wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not draw empty or very small bins
 
                nbins++;
@@ -3540,7 +3543,7 @@
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= this.gminbin) continue;
 
-               wei = use_scale ? Math.pow(Math.abs(bin_content / this.gmaxbin), 0.3333) : 1;
+               wei = use_scale ? Math.pow(Math.abs(bin_content*use_scale), 0.3333) : 1;
                if (wei < 1e-3) continue; // do not show very small bins
 
                var nseq = 0;
@@ -3597,7 +3600,6 @@
          }
       }
 
-
       for(var ncol=0;ncol<cols_size.length;++ncol) {
          if (!cols_size[ncol]) continue; // ignore dummy colors
 
@@ -3637,7 +3639,7 @@
                 grx = p.grx(p.GetBinX(tip.ix-0.5)),
                 gry = p.gry(p.GetBinY(tip.iy-0.5)),
                 grz = p.grz(p.GetBinZ(tip.iz-0.5)),
-                wei = this.use_scale ? Math.pow(Math.abs(tip.value / p.gmaxbin), 0.3333) : 1;
+                wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
             tip.y1 = gry - this.scaley*wei; tip.y2 = gry + this.scaley*wei;
