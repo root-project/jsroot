@@ -4355,7 +4355,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            if ((binz == 0) || (binz < this.minbin)) continue;
+            if ((binz <= 0) || (binz < this.minbin)) continue;
 
             cw = handle.grx[i+1] - handle.grx[i];
             ch = handle.gry[j] - handle.gry[j+1];
