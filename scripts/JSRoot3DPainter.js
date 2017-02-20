@@ -3663,9 +3663,9 @@
                helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions[nseq], 3 ) );
             }
 
-            var helper_material = new THREE.LineBasicMaterial( { color: 0x000000 } );
-
-            var lines = new THREE.LineSegments(helper_geom, helper_material );
+            var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
+                helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
+                lines = new THREE.LineSegments(helper_geom, helper_material );
 
             this.toplevel.add(lines);
          }
