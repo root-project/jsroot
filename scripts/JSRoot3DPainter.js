@@ -3297,13 +3297,14 @@
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
 
       // scale down factor if too large values
-      var coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1, numpixels = 0;
+      var coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
+          numpixels = 0, content_lmt = Math.max(0, this.gminbin);
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content <= this.gminbin) continue;
+               if (bin_content <= content_lmt) continue;
                numpixels += Math.round(bin_content*coef);
             }
          }
@@ -3319,7 +3320,7 @@
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
-               if (bin_content <= this.gminbin) continue;
+               if (bin_content <= content_lmt) continue;
                var num = Math.round(bin_content*coef);
 
                for (var n=0;n<num;++n) {
