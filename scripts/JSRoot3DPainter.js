@@ -1605,7 +1605,7 @@
          else if (pthis.options.BaseLine !== false)
             binz1 = pthis.options.BaseLine;
          else
-            binz1 = axis_zmin;
+            binz1 = pthis.options.Zero ? axis_zmin : 0;
          if (binz2 < binz1) { var d = binz1; binz1 = binz2; binz2 = d; }
 
          if ((binz1 >= zmax) || (binz2 < zmin)) return false;
