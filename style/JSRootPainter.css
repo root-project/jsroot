@@ -709,11 +709,11 @@
 
 .jsroot_h_separator {
 	cursor: ns-resize;
-   background-color: white;
+   background-color: azure;
 } 
 
 .jsroot_v_separator {
 	cursor: ew-resize;
-   background-color: white;
+   background-color: azure;
 }
 

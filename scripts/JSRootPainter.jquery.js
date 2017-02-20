@@ -390,7 +390,6 @@
       return false;
    }
 
-
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
 
       if (!this.divid) return JSROOT.CallBack(callback);
@@ -413,7 +412,8 @@
          d3elem.append("div")
                .attr("class", "jsroot")
                .style("background-color", this.background ? this.background : "")
-               .style('font-size', this.with_icons ? "12px" : "15px");
+               .style('padding', this.background ? '5px' : "")
+               .style('font-size', this.with_icons ? "12px" : "15px")
 
       for (var n=0;n<factcmds.length;++n) {
          var btn = maindiv.append("button")
@@ -427,7 +427,7 @@
             btn.append('img').attr("src", factcmds[n]._icon);
       }
 
-      var d3p = maindiv.append("p").style("margin-left","3px");
+      var d3p = maindiv.append("p").style("margin-left","3px").style("margin-bottom","3px").style("margin-top",0);
 
       d3p.append("a").attr("class", "h_button").text("open all").on("click", h.toggleOpenState.bind(h,true));
       d3p.append("text").text(" | ");
@@ -1010,12 +1010,15 @@
       }
 
       var guiCode = "<div style='overflow:hidden'>"
-              + '<p class="jsroot_browser_title"></p>'
-              + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
+                  + '<p class="jsroot_browser_title"></p>'
+                  + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
-                 + ' <input type="checkbox" name="monitoring" class="gui_monitoring"/> Monitoring ';
+                 + '<div style="display:flex;flex-direction:row;">'
+                 + '<label style="margin-right:5px; vertical-align:middle;">'
+                 + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
+                 + 'Monitoring</label>';
       } else
       if (!this.no_select) {
          var myDiv = d3.select("#"+this.gui_div),
@@ -1025,7 +1028,7 @@
 
          guiCode +=
             '<input type="text" value="" style="width:95%; margin:5px;border:2px;" class="gui_urlToLoad" title="input file name"/>'
-            +'<div  style="display:flex;flex-direction:row;padding-top:5px">'
+            +'<div style="display:flex;flex-direction:row;padding-top:5px">'
             +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
          for (var i in arrFiles)
@@ -1036,22 +1039,26 @@
             +'</div>'
             +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
             +' how to open files from other servers.</small></p>'
-            +'<div  style="display:flex;flex-direction:row">'
+            +'<div style="display:flex;flex-direction:row">'
             +'<input style="padding:3px;margin-right:5px;"'
             +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
             +'<input style="padding:3px;margin-right:5px;"'
-            +'       class="gui_ResetUIBtn" type="button" title="Clear All" value="Reset"/>'
+            +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>'
+      } else
+      if (this.no_select=="file") {
+         guiCode += '<div style="display:flex;flex-direction:row">';
       }
 
       if (this.is_online || !this.no_select || this.no_select=="file")
-         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>';
+         guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
+                  + '</div>';
 
-      guiCode += "</div></div>";
+      guiCode += "</div>";
 
       guiCode += '<div id="' + this.gui_div + '_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area',true)
-           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','300px')
+           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
            .style('padding-left','5px')
            .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
            .html(guiCode);
@@ -1152,15 +1159,23 @@
 
       var selects = main.select(".gui_layout").node();
 
-      if (selects)
+      if (selects) {
+         var found = false;
          for (var i in selects.options) {
             var s = selects.options[i].text;
             if (typeof s !== 'string') continue;
             if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
-               selects.selectedIndex = i;
+               selects.selectedIndex = i; found = true;
                break;
             }
          }
+         if (!found) {
+            var opt = document.createElement('option');
+            opt.innerHTML = opt.value = this.GetLayout();
+            selects.appendChild(opt);
+            selects.selectedIndex = selects.options.length-1;
+         }
+      }
 
       if (this.is_online) {
          if (this.h && this.h._toptitle)
