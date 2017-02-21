@@ -5307,7 +5307,7 @@
         label_g.call(labelfont.func);
      }
 
-     if (JSROOT.gStyle.Zooming) {
+     if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
         var r =  axis_g.append("svg:rect")
                        .attr("class", "axis_zoom")
                        .style("opacity", "0")
@@ -5430,6 +5430,8 @@
       var painter = new JSROOT.TAxisPainter(obj, false);
 
       painter.SetDivId(divid);
+
+      painter.disable_zooming = true;
 
       painter.Redraw();
 
