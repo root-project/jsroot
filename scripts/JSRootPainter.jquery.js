@@ -1246,6 +1246,9 @@
       }
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
+      for (var k=0;k<4;++k)
+         d3.select(this.status_layout.GetFrame(k))
+           .append("label").attr("class","jsroot_status_label");
 
       JSROOT.Painter.StatusHandler = this;
 
@@ -1258,17 +1261,23 @@
 
       if (pnt) {
          var f2 = this.status_layout.GetFrame(2);
-         $(f2).html(Math.round(pnt.x)+","+Math.round(pnt.y));
+         $(f2).children('label').text(Math.round(pnt.x)+","+Math.round(pnt.y));
       }
 
       var hint = hints ? hints[0] : null;
+      // try to select hint with exact match of the position when several hints available
+      if (hints && hints.length>1)
+         for (var k=0;k<hints.length;++k)
+            if (hints[k].exact) { hint = hints[k]; break; }
 
       if (hint) {
-         var name = hint.obj ? hint.obj.fName : "";
-         var title = hint.obj ? hint.obj.fTitle : "";
-         if (name) $(this.status_layout.GetFrame(0)).html(name);
-         if (title) $(this.status_layout.GetFrame(1)).html(title);
-         if (hint.lines) $(this.status_layout.GetFrame(3)).html(hint.lines.join(' '));
+         var name = hint.name || (hint.obj ? hint.obj.fName : "");
+         if (hint.lines && hint.lines.length>1) name = hint.lines[0];
+
+         var title = hint.title || (hint.obj ? hint.obj.fTitle : "");
+         if (name) $(this.status_layout.GetFrame(0)).children('label').text(name);
+         if (title) $(this.status_layout.GetFrame(1)).children('label').text(title);
+         if (hint.lines) $(this.status_layout.GetFrame(3)).children('label').text(hint.lines.slice(1).join(' '));
       }
    }
 

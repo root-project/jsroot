@@ -706,7 +706,6 @@
     border-top: 1px dotted #ff0000;
 }
 
-
 .jsroot_h_separator {
 	cursor: ns-resize;
    background-color: azure;
@@ -717,3 +716,10 @@
    background-color: azure;
 }
 
+.jsroot_status_label {
+   margin: 2px;
+   margin-left: 5px;
+   font-size: medium;
+   vertical-align: middle;
+    white-space: nowrap;
+}
