@@ -112,11 +112,12 @@
 
             var hint = (typeof v!=='string') ? v : { name: "obj name", title: "obj title", lines: ['name', v] };
 
-            JSROOT.Painter.StatusHandler.ShowStatus(mouse_pos, [hint]);
-            return;
+            return JSROOT.Painter.StatusHandler.ShowStatus(mouse_pos, [hint]);
          }
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {
+            if (v.only_status) return this.hide();
+
             if (v.line) { v = v.line; } else {
                var res = v.lines[0];
                for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
@@ -450,29 +451,13 @@
       }
 
       function control_mouseup(evnt) {
-         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2) {
+         if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.Get3DZoomCoord) {
 
             var kind = control.mouse_zoom_mesh.object.zoom,
-                pos1 = control.mouse_zoom_mesh.point[kind],
-                pos2 = control.mouse_zoom_mesh.point2[kind];
-
-            if (kind==="z") { pos1 = pos1/2/control.painter.size_z3d; pos2 = pos2/2/control.painter.size_z3d; }
-                       else { pos1 = (pos1 + control.painter.size_xy3d)/2/control.painter.size_xy3d; pos2=(pos2 + control.painter.size_xy3d)/2/control.painter.size_xy3d; }
-
-            // we recalculate positions ourself,
-            // in the future one should use CreateXY in 3D painters
+                pos1 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point, kind),
+                pos2 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point2, kind);
 
             if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
-
-            var min = control.painter['scale_'+kind+'min'], max = control.painter['scale_'+kind+'max'];
-
-            if (control.painter["log"+kind]) {
-               pos1 = Math.exp(Math.log(min) + pos1*(Math.log(max)-Math.log(min)));
-               pos2 = Math.exp(Math.log(min) + pos2*(Math.log(max)-Math.log(min)));
-            } else {
-               pos1 = min + pos1*(max-min);
-               pos2 = min + pos2*(max-min);
-            }
 
             if ((kind==="z") && control.mouse_zoom_mesh.object.use_y_for_z) kind="y";
 
@@ -485,7 +470,6 @@
          // if selection was drawn, it should be removed and picture rendered again
          control.RemoveZoomMesh();
       }
-
 
       control.MainProcessDblClick = function(evnt) {
          this.ProcessDblClick(evnt);
@@ -641,13 +625,14 @@
       var painter = this;
 
       this.control.ProcessMouseMove = function(intersects) {
-         var tip = null, mesh = null;
+         var tip = null, mesh = null, zoom_mesh = null;
 
          for (var i = 0; i < intersects.length; ++i) {
             if (intersects[i].object.tooltip) {
                tip = intersects[i].object.tooltip(intersects[i]);
                if (tip) { mesh = intersects[i].object; break; }
-            }
+            } else
+            if (intersects[i].object.zoom && !zoom_mesh) zoom_mesh = intersects[i].object;
          }
 
          if (tip && !tip.use_itself) {
@@ -659,6 +644,27 @@
          }
 
          painter.BinHighlight3D(tip, mesh);
+
+         if (!tip && zoom_mesh && painter.Get3DZoomCoord && painter.tooltip_allowed) {
+            var pnt = zoom_mesh.GlobalIntersect(this.raycaster),
+                axis_name = zoom_mesh.zoom,
+                axis_value = painter.Get3DZoomCoord(pnt, axis_name);
+
+            if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
+
+            var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
+
+            var hint = { name: axis_name,
+                         title: "TAxis",
+                         line: "any info",
+                         only_status: true};
+
+            if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
+
+            hint.line = axis_name + " : " + painter.AxisAsText(axis_name, axis_value);
+
+            return hint;
+         }
 
          return (painter.tooltip_allowed && tip && tip.lines) ? tip : "";
       }
@@ -918,6 +924,21 @@
 */
       var ticksgeom = new THREE.BufferGeometry();
       ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+
+      this.Get3DZoomCoord = function(point, kind) {
+         // return axis coordinate from intersecetion point with axis geometry
+         var pos = point[kind], min = this['scale_'+kind+'min'], max = this['scale_'+kind+'max'];
+
+         if (kind==="z") pos = pos/2/this.size_z3d;
+                   else  pos = (pos+this.size_xy3d)/2/this.size_xy3d;
+
+         if (this["log"+kind]) {
+            pos = Math.exp(Math.log(min) + pos*(Math.log(max)-Math.log(min)));
+         } else {
+            pos = min + pos*(max-min);
+         }
+         return pos;
+      }
 
       function CreateZoomMesh(kind, size_3d, use_y_for_z) {
          var geom = new THREE.Geometry();

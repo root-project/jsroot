@@ -7163,9 +7163,9 @@
       var id = (axis_name=="x") ? 0 : 1;
       if (this.swap_xy) id = 1-id;
 
-      var axis = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
+      var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
 
-      hint.line = axis_name + " : " + this.AxisAsText(axis_name, axis);
+      hint.line = axis_name + " : " + this.AxisAsText(axis_name, axis_value);
 
       JSROOT.Painter.StatusHandler.ShowStatus({ x: m[0], y: m[1] }, [hint]);
    }
