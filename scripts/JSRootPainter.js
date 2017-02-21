@@ -1678,7 +1678,7 @@
          this.svg_canvas().property('redraw_by_resize', true);
 
          if (elem.empty())
-            elem = d3.select(prnt).append('div').attr("class", size.clname);
+            elem = d3.select(prnt).append('div').attr("class", size.clname + " jsroot_noselect");
 
          // our position inside canvas, but to set 'absolute' position we should use
          // canvas element offset relative to first parent with non-static position
