@@ -10576,7 +10576,12 @@
           optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts", url),
           monitor = JSROOT.GetUrlOption("monitoring", url),
           layout = JSROOT.GetUrlOption("layout", url),
-          style = JSROOT.GetUrlOptionAsArray("#style", url);
+          style = JSROOT.GetUrlOptionAsArray("#style", url),
+          status = (JSROOT.GetUrlOption("nostatus", url)!==null) ? "no" : JSROOT.GetUrlOption("status", url),
+          browser_kind = (JSROOT.GetUrlOption("float",url)!==null) ? "float" : "fix";
+
+
+      this.no_select = JSROOT.GetUrlOption("noselect", url);
 
       if (gui_div && !gui_div.empty()) {
 
@@ -10608,8 +10613,14 @@
          if (!jsonarr.length) jsonarr = GetDivOptionAsArray("#json;jsons");
          if (!optionsarr.length) optionsarr = GetDivOptionAsArray("#opt;opts");
          if (!style.length) style = GetDivOptionAsArray("#style");
+         if (status===null)
+            status = (gui_div.attr("nostatus")==="") ? "no" : gui_div.attr("status");
 
          if (monitor === null) monitor = gui_div.attr("monitor");
+
+         if (gui_div.attr("float")) browser_kind = "float";
+         if (this.no_select===null) this.no_select = gui_div.attr("noselect");
+         if (gui_div.attr('files_monitoring')) this.files_monitoring = true;
 
          prereq = gui_div.attr("prereq") || "";
 
@@ -10653,8 +10664,23 @@
       }
 
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
+      if (status==="no") { this.status_disabled = true; status = null; } else
+      if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 30; }
+      if (this.no_select==="") this.no_select = true;
+
+      if (this.start_without_browser) browser_kind = "";
+
+      if (status || browser_kind) prereg = "jq2d;" + prereq;
+
+      this.PrepareGuiDiv(gui_div, this.disp_kind);
 
       function OpenAllFiles(res) {
+         if (browser_kind) {
+            hpainter.CreateBrowser(browser_kind); browser_kind = "";
+         }
+         if (status) {
+            hpainter.CreateStatusLine(status,"toggle"); status = null;
+         }
          if (jsonarr.length>0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
@@ -10665,13 +10691,12 @@
             hpainter.expand(expanditems.shift(), OpenAllFiles);
          else if (style.length>0)
             hpainter.ApplyStyle(style.shift(), OpenAllFiles);
-         else {
+         else
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
                hpainter.SetMonitoring(monitor);
                JSROOT.CallBack(gui_call_back);
            });
-         }
       }
 
       function AfterOnlineOpened() {
@@ -10705,7 +10730,7 @@
       else OpenAllFiles();
    }
 
-   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv) {
+   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
@@ -10726,14 +10751,16 @@
          svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
          svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
-         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "status line");
-         svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 30, "toggle"));
+         if (!this.status_disabled) {
+            svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "status line");
+            svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 30, "toggle"));
+         }
       }
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
 
-      this.SetDisplay(null, this.gui_div + "_drawing");
+      this.SetDisplay(layout, this.gui_div + "_drawing");
    }
 
    JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
@@ -10780,8 +10807,7 @@
       hpainter.is_online = online;
       if (drawing) hpainter.exclude_browser = true;
 
-      hpainter.PrepareGuiDiv(myDiv);
-      // hpainter.SetDisplay(layout, id + "_drawing");
+      hpainter.start_without_browser = true; // indicate that browser not required at the beginning
 
       hpainter.StartGUI(myDiv, function() {
          if (!drawing) return;

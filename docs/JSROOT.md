@@ -42,7 +42,9 @@ To automate files loading and objects drawing, one can provide number of URL par
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 - style - name of TStyle object to define global JSROOT style
-- toolbar - show canvas tool buttons 'off', 'on' and 'popup'   
+- toolbar - show canvas tool buttons 'off', 'on' and 'popup'
+- status - show status line from the beginning
+- nostatus - disable status line completely (same as status=no)   
 
 For instance:
 

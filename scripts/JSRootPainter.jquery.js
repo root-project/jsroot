@@ -1190,7 +1190,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
-      if (!this.gui_div) return '';
+      if (this.status_disabled || !this.gui_div) return '';
 
       var main = d3.select("#"+this.gui_div + " .jsroot_browser");
       if (main.empty()) return '';
@@ -1302,15 +1302,6 @@
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 
       hpainter.is_online = online;
-
-      hpainter.no_select = JSROOT.GetUrlOption("noselect") || myDiv.attr("noselect");
-
-      hpainter.PrepareGuiDiv(myDiv);
-
-      var kind = "fix";
-      if ((JSROOT.GetUrlOption("float")!==null) || myDiv.attr("float")) kind = "float";
-
-      hpainter.CreateBrowser(kind);
 
       hpainter.StartGUI(myDiv, hpainter.InitializeBrowser.bind(hpainter));
    }
