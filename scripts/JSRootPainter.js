@@ -3217,13 +3217,11 @@
 
 
       if (JSROOT.Painter.StatusHandler && JSROOT.Painter.StatusHandler.ShowStatus) {
+         hintsg.remove();
 
          JSROOT.Painter.StatusHandler.ShowStatus(pnt, hints);
-
-         hintsg.remove();
          return;
       }
-
 
       // end of closing tooltips
       if ((pnt === null) || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
@@ -8536,20 +8534,20 @@
    }
 
    JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
-      var tip = { bin: indx };
+      var tip = { bin: indx, name: this.GetObject().fName, title: this.GetObject().fTitle };
       switch (this.Dimension()) {
          case 1:
             tip.ix = indx; tip.iy = 1;
             tip.value = this.histo.getBinContent(tip.ix);
             tip.error = this.histo.getBinError(indx);
-            tip.info = this.GetBinTips(indx-1);
+            tip.lines = this.GetBinTips(indx-1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
             tip.value = this.histo.getBinContent(tip.ix, tip.iy);
             tip.error = this.histo.getBinError(indx);
-            tip.info = this.GetBinTips(tip.ix-1, tip.iy-1);
+            tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          case 3:
             tip.ix = indx % (this.nbinsx+2);
@@ -8557,7 +8555,7 @@
             tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
             tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
             tip.error = this.histo.getBinError(indx);
-            tip.info = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
+            tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
       }
 

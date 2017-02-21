@@ -106,9 +106,19 @@
       this.show  = function(v) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
-         if (typeof v !='string' && v.length) {
-            var res = v[0];
-            for (var n=1;n<v.length;++n) res+= "<br/>" + v[n];
+
+         if (JSROOT.Painter.StatusHandler && JSROOT.Painter.StatusHandler.ShowStatus) {
+            this.hide();
+
+            var hint = (typeof v!=='string') ? v : { name: "obj name", title: "obj title", lines: ['name', v] };
+
+            JSROOT.Painter.StatusHandler.ShowStatus(null, [hint]);
+            return;
+         }
+
+         if (v && (typeof v =='object') && v.lines) {
+            var res = v.lines[0];
+            for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
             v = res;
          }
 
@@ -357,11 +367,11 @@
 
          var intersects = this.GetIntersects(mouse);
 
-         var info = this.ProcessMouseMove(intersects);
+         var tip = this.ProcessMouseMove(intersects);
 
          this.cursor_changed = false;
-         if (info && (info.length>0)) {
-            this.tooltip.show(info, 200);
+         if (tip) {
+            this.tooltip.show(tip);
             this.tooltip.pos(evnt)
          } else {
             this.tooltip.hide();
@@ -648,7 +658,7 @@
 
          painter.BinHighlight3D(tip, mesh);
 
-         return (painter.tooltip_allowed && tip && tip.info) ? tip.info : "";
+         return (painter.tooltip_allowed && tip && tip.lines) ? tip : "";
       }
 
       this.control.ProcessMouseLeave = function() {
