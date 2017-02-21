@@ -730,12 +730,16 @@
          this.startDrawGeometry();
    }
 
+   JSROOT.TGeoPainter.prototype.ResolveStack = function(stack) {
+      return this._clones && stack ? this._clones.ResolveStack(stack) : null;
+   }
+
    JSROOT.TGeoPainter.prototype.GetStackFullName = function(stack) {
-      var mainitemname = this.GetItemName();
-      if (!stack || !this._clones) return mainitemname;
-      var sub = this._clones.ResolveStack(stack).name;
-      if (mainitemname) sub = mainitemname + (sub ? ("/" + sub) : "");
-      return sub;
+      var mainitemname = this.GetItemName(),
+          sub = this.ResolveStack(stack);
+
+      if (!sub || !sub.name) return mainitemname;
+      return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
@@ -750,7 +754,7 @@
 
       this._controls.ProcessMouseMove = function(intersects) {
 
-         var tooltip = null;
+         var tooltip = null, resolve = null;
 
          if (painter.options.highlight) {
 
@@ -772,8 +776,10 @@
                   painter._selected.mesh.material.size = painter._selected.mesh.highlightMarkerSize;
                painter.Render3D(0);
 
-               if (intersects[0].object.stack)
+               if (intersects[0].object.stack) {
                   tooltip = painter.GetStackFullName(intersects[0].object.stack);
+                  if (tooltip) resolve = painter.ResolveStack(intersects[0].object.stack);
+               }
                else if (intersects[0].object.geo_name)
                   tooltip = intersects[0].object.geo_name;
             }
@@ -801,7 +807,9 @@
             painter.ActiavteInBrowser(names);
          }
 
-         return tooltip;
+         if (!resolve || !resolve.obj) return tooltip;
+
+        return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, line: tooltip };
       }
 
       this._controls.ProcessMouseLeave = function() {

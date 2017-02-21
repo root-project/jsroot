@@ -1282,7 +1282,9 @@
          var name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
          if (name) $(this.status_layout.GetFrame(0)).children('label').text(name);
          if (hint.title) $(this.status_layout.GetFrame(1)).children('label').text(hint.title);
-         if (hint.lines) $(this.status_layout.GetFrame(3)).children('label').text(hint.lines.slice(1).join(' '));
+         var info = hint.line;
+         if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
+         if (info) $(this.status_layout.GetFrame(3)).children('label').text(info);
       }
    }
 

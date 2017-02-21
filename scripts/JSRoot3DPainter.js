@@ -116,10 +116,12 @@
             return;
          }
 
-         if (v && (typeof v =='object') && v.lines) {
-            var res = v.lines[0];
-            for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
-            v = res;
+         if (v && (typeof v =='object') && (v.lines || v.line)) {
+            if (v.line) { v = v.line; } else {
+               var res = v.lines[0];
+               for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
+               v = res;
+            }
          }
 
          if (this.tt === null) {
