@@ -7145,6 +7145,31 @@
       if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
+   JSROOT.THistPainter.prototype.ShowAxisStatus = function(axis_name) {
+      // method called normally when mouse enter main object element
+
+      if (!JSROOT.Painter.StatusHandler || !JSROOT.Painter.StatusHandler.ShowStatus) return;
+
+      var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
+
+      var hint = { name: axis_name,
+                   title: "TAxis",
+                   line: "any info" };
+
+      if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
+
+      var m = d3.mouse(this.svg_frame().node());
+
+      var id = (axis_name=="x") ? 0 : 1;
+      if (this.swap_xy) id = 1-id;
+
+      var axis = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
+
+      hint.line = axis_name + " : " + this.AxisAsText(axis_name, axis);
+
+      JSROOT.Painter.StatusHandler.ShowStatus({ x: m[0], y: m[1] }, [hint]);
+   }
+
    JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
@@ -7188,6 +7213,11 @@
          svg.selectAll(".yaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
+
+      svg.selectAll(".xaxis_container")
+         .on("mousemove", this.ShowAxisStatus.bind(this,"x"));
+      svg.selectAll(".yaxis_container")
+         .on("mousemove", this.ShowAxisStatus.bind(this,"y"));
 
       svg.property('interactive_set', true);
    }
