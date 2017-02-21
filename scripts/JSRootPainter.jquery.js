@@ -992,6 +992,9 @@
       // one requires top-level container
       if (main.empty()) return false;
 
+
+      if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
+
       if (!main.select('.jsroot_browser_area').empty()) {
          // this is case when browser created,
          // if update_html specified, hidden state will be toggled

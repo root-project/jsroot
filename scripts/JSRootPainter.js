@@ -10654,7 +10654,8 @@
          if (!optionsarr.length) optionsarr = GetDivOptionAsArray("#opt;opts");
          if (!style.length) style = GetDivOptionAsArray("#style");
          if (status===null)
-            status = (gui_div.attr("nostatus")==="") ? "no" : gui_div.attr("status");
+            status = gui_div.attr("nostatus") ? "no" : gui_div.attr("status");
+         if (gui_div.attr("nofloat")) this.float_browser_disabled = true;
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 
@@ -10715,6 +10716,7 @@
       if (!browser_kind) browser_kind = "fix"; else
       if (browser_kind==="no") browser_kind = ""; else
       if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
+      if (JSROOT.GetUrlOption("nofloat",url)!==null) this.float_browser_disabled = true;
 
       if (this.start_without_browser) browser_kind = "";
 
@@ -10793,16 +10795,16 @@
          btns.style('position',"absolute").style("left","7px").style("top","7px");
          if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
 
-         var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float browser");
-         svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
+         if (!this.float_browser_disabled)
+            JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float browser")
+                               .style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
 
-         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser");
-         svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+         JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
+                            .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
-         if (!this.status_disabled) {
-            svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line");
-            svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
-         }
+         if (!this.status_disabled)
+            JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
+                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
       }
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
