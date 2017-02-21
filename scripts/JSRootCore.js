@@ -17,7 +17,7 @@
             'jquery-ui'            : dir+'jquery-ui.min',
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
-            'rawinflate'           : dir+'rawinflate'+ext,
+            'rawinflate'           : dir+'rawinflate.min',
             'MathJax'              : 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng.min',
             'dat.gui'              : dir+'dat.gui.min',
@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 20/02/2017";
+   JSROOT.version = "dev 21/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -925,7 +925,7 @@
           modules = [];  // modules used for require.js
 
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0)) {
-         mainfiles += "$$$scripts/rawinflate" + ext + ".js;" +
+         mainfiles += "$$$scripts/rawinflate.min.js;" +
                       "$$$scripts/JSRootIOEvolution" + ext + ".js;";
          modules.push('rawinflate','JSRootIOEvolution');
       }
