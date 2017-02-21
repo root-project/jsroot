@@ -411,9 +411,11 @@
       var maindiv =
          d3elem.append("div")
                .attr("class", "jsroot")
-               .style("background-color", this.background ? this.background : "")
-               .style('padding', this.background ? '5px' : "")
-               .style('font-size', this.with_icons ? "12px" : "15px")
+               .style('font-size', this.with_icons ? "12px" : "15px");
+
+      if (this.background) // case of object inspector and streamer infos display
+         maindiv.style("background-color", this.background)
+                .style('margin', '2px').style('padding', '2px');
 
       for (var n=0;n<factcmds.length;++n) {
          var btn = maindiv.append("button")
@@ -441,13 +443,6 @@
       if ('disp_kind' in this) {
          d3p.append("text").text(" | ");
          d3p.append("a").attr("class", "h_button").text("clear").on("click", h.clear.bind(h,false));
-      }
-
-      if (this.gui_div) {
-         // d3p.append("text").text(" | ");
-         // d3p.append("a").attr("class", "h_button").text("toggle").on("click", h.ToggleBrowserKind.bind(h));
-         //d3p.append("text").text(" | ");
-         //d3p.append("a").attr("class", "h_button").text("hide").on("click", h.ToggleBrowserVisisbility.bind(h));
       }
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));

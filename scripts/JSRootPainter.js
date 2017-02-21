@@ -10623,7 +10623,7 @@
 
       if (expanditems.length==0 && (JSROOT.GetUrlOption("expand", url)=="")) expanditems.push("");
 
-      if (filesdir!=null) {
+      if (typeof filesdir === 'string') {
          for (var i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
          for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
@@ -10639,9 +10639,14 @@
          switch (itemsarr.length) {
            case 0:
            case 1: this.disp_kind = 'simple'; break;
-           case 2: this.disp_kind = 'grid 1x2'; break;
-           case 3:
-           case 4: this.disp_kind = 'grid 1x2'; break;
+           case 2: this.disp_kind = 'vert2'; break;
+           case 3: this.disp_kind = 'vert21'; break;
+           case 4: this.disp_kind = 'vert22'; break;
+           case 5: this.disp_kind = 'vert32'; break;
+           case 6: this.disp_kind = 'vert222'; break;
+           case 7: this.disp_kind = 'vert322'; break;
+           case 8: this.disp_kind = 'vert332'; break;
+           case 9: this.disp_kind = 'vert333'; break;
            default: this.disp_kind = 'flex';
          }
       }
