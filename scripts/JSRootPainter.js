@@ -10616,8 +10616,10 @@
           layout = JSROOT.GetUrlOption("layout", url),
           style = JSROOT.GetUrlOptionAsArray("#style", url),
           status = (JSROOT.GetUrlOption("nostatus", url)!==null) ? "no" : JSROOT.GetUrlOption("status", url),
-          browser_kind = (JSROOT.GetUrlOption("float",url)!==null) ? "float" : "fix";
+          browser_kind = JSROOT.GetUrlOption("browser",url);
 
+      if (JSROOT.GetUrlOption("float",url)!==null) browser_kind='float'; else
+      if (JSROOT.GetUrlOption("fix",url)!==null) browser_kind='fix';
 
       this.no_select = JSROOT.GetUrlOption("noselect", url);
 
@@ -10656,7 +10658,11 @@
 
          if (monitor === null) monitor = gui_div.attr("monitor");
 
-         if (gui_div.attr("float")) browser_kind = "float";
+         if (!browser_kind) {
+            if (gui_div.attr("float")) browser_kind = "float"; else
+            if (gui_div.attr("fix")) browser_kind = "fix";
+         }
+
          if (this.no_select===null) this.no_select = gui_div.attr("noselect");
          if (gui_div.attr('files_monitoring')) this.files_monitoring = true;
 
@@ -10705,6 +10711,10 @@
       if (status==="no") { this.status_disabled = true; status = null; } else
       if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 25; }
       if (this.no_select==="") this.no_select = true;
+
+      if (!browser_kind) browser_kind = "fix"; else
+      if (browser_kind==="no") browser_kind = ""; else
+      if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
 
       if (this.start_without_browser) browser_kind = "";
 
