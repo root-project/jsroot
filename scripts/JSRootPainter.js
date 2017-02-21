@@ -10675,7 +10675,7 @@
 
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
       if (status==="no") { this.status_disabled = true; status = null; } else
-      if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 30; }
+      if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 25; }
       if (this.no_select==="") this.no_select = true;
 
       if (this.start_without_browser) browser_kind = "";
@@ -10763,7 +10763,7 @@
 
          if (!this.status_disabled) {
             svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "status line");
-            svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 30, "toggle"));
+            svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
          }
       }
 

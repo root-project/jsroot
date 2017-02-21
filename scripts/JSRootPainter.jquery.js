@@ -866,6 +866,8 @@
          main.select(".jsroot_v_separator").remove();
          area.css('left', '0px');
          d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
+         main.select(".jsroot_h_separator").style('left','0px');
+         d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
          this.CheckResize();
       }
 
@@ -1192,7 +1194,7 @@
    JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
       if (this.status_disabled || !this.gui_div) return '';
 
-      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return '';
 
       var id = this.gui_div + "_status",
@@ -1216,14 +1218,16 @@
          return "";
       }
 
+      var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
+
       line = main.insert("div",".jsroot_browser_area").attr("id",id)
                  .classed("jsroot_status_area", true)
-                 .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
+                 .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
                  .style('margin',0).style('border',0);
 
       hsepar = main.insert("div",".jsroot_browser_area")
                    .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
-                   .style('position','absolute').style('left',0).style('right',0).style('bottom',0).style('height','5px');
+                   .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
       var hpainter = this;
 
@@ -1246,8 +1250,9 @@
       }
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
+      var frame_titles = ['object name','object title','mouse coordiantes', 'object info'];
       for (var k=0;k<4;++k)
-         d3.select(this.status_layout.GetFrame(k))
+         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k])
            .append("label").attr("class","jsroot_status_label");
 
       JSROOT.Painter.StatusHandler = this;
@@ -1309,8 +1314,8 @@
             hlimit = (hsepar+w) + 'px';
          }
 
-         main.select(".jsroot_browser_area").style('bottom',hlimit);
-         main.select(".jsroot_v_separator").style('bottom',hlimit);
+         //main.select(".jsroot_browser_area").style('bottom',hlimit);
+         //main.select(".jsroot_v_separator").style('bottom',hlimit);
          d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
@@ -1318,7 +1323,9 @@
          vsepar = parseInt(vsepar);
          if (vsepar<50) vsepar = 50;
          main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w) + 'px');
+         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
+         main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
+         d3.select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
 
