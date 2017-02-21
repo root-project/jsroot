@@ -1252,7 +1252,7 @@
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
       var frame_titles = ['object name','object title','mouse coordiantes', 'object info'];
       for (var k=0;k<4;++k)
-         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k])
+         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
       JSROOT.Painter.StatusHandler = this;
@@ -1271,17 +1271,17 @@
 
       var hint = hints ? hints[0] : null;
       // try to select hint with exact match of the position when several hints available
-      if (hints && hints.length>1)
-         for (var k=0;k<hints.length;++k)
+      if (hints && hints.length>0)
+         for (var k=0;k<hints.length;++k) {
+            if (!hints[k]) continue;
+            if (!hint) hint = hints[k];
             if (hints[k].exact) { hint = hints[k]; break; }
+         }
 
       if (hint) {
-         var name = hint.name || (hint.obj ? hint.obj.fName : "");
-         if (hint.lines && hint.lines.length>1) name = hint.lines[0];
-
-         var title = hint.title || (hint.obj ? hint.obj.fTitle : "");
+         var name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
          if (name) $(this.status_layout.GetFrame(0)).children('label').text(name);
-         if (title) $(this.status_layout.GetFrame(1)).children('label').text(title);
+         if (hint.title) $(this.status_layout.GetFrame(1)).children('label').text(hint.title);
          if (hint.lines) $(this.status_layout.GetFrame(3)).children('label').text(hint.lines.slice(1).join(' '));
       }
    }

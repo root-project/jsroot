@@ -2545,6 +2545,11 @@
 
       this.FillAttContextMenu(menu);
 
+      if (menu.size()>0)
+         menu.add('Inspect', function() {
+             JSROOT.draw(this.divid, this.GetObject(), 'inspect');
+         });
+
       return menu.size() > 0;
    }
 
@@ -8369,7 +8374,8 @@
          return null;
       }
 
-      var res = { obj: this.histo, x: midx, y: midy,
+      var res = { name: this.histo.fName, title: this.histo.fTitle,
+                  x: midx, y: midy,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(findbin) };

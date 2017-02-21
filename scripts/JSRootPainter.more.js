@@ -1079,7 +1079,9 @@
                               .call(this.lineatt.func)
                               .call(this.fillatt.func);
 
-         var res = { x: bin.grx,
+         var res = { name: this.GetObject().fName,
+                     title: this.GetObject().fTitle,
+                     x: bin.grx,
                      y: bin.gry,
                      color1: this.lineatt.color,
                      color2: this.fillatt.color,
@@ -2034,7 +2036,8 @@
 
       var d = d3.select(findbin).datum();
 
-      var res = { x: d.grx1, y: d.gry1,
+      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+                  x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(d, true) };
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
@@ -2110,7 +2113,8 @@
          return null;
       }
 
-      var res = { x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
+      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+                  x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
                   color1: this.lineatt.color,
                   lines: this.TooltipText(bestbin, true) };
 
@@ -4622,7 +4626,8 @@
             return null;
          }
 
-         var res = { x: pnt.x, y: pnt.y,
+         var res = { name: histo.fName, title: histo.fTitle,
+                     x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.color : 'blue',
                      exact: true, menu: true,
@@ -4666,7 +4671,8 @@
             return null;
          }
 
-         var res = { x: pnt.x, y: pnt.y,
+         var res = { name: histo.fName, title: histo.fTitle,
+                     x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.color : 'blue',
                      lines: this.GetCandleTips(p), exact: true, menu: true };
@@ -4722,7 +4728,8 @@
          return null;
       }
 
-      var res = { x: pnt.x, y: pnt.y,
+      var res = { name: histo.fName, title: histo.fTitle,
+                  x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(i, j), exact: true, menu: true };

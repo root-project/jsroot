@@ -8,6 +8,7 @@
    One could configure several frames, each divided on sub-frames.
    Like display=horiz231 will create three horizontal frames, 
    divided on 2,3 and 1 sub-frames.  
+5. One could enable status line with where current tooltip info will be shown  
 5. Improve enlarge functionality - now works with all layouts
 6. Do not display all canvas tool buttons by default - provide toggle button instead 
 7. Let move TAxis title, its position now similar to ROOT itself
