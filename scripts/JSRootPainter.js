@@ -3210,6 +3210,16 @@
       var layer = this.svg_layer("stat_layer"),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
+
+      if (JSROOT.Painter.StatusHandler && JSROOT.Painter.StatusHandler.ShowStatus) {
+
+         JSROOT.Painter.StatusHandler.ShowStatus(pnt, hints);
+
+         hintsg.remove();
+         return;
+      }
+
+
       // end of closing tooltips
       if ((pnt === null) || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
          hintsg.remove();
@@ -8359,7 +8369,7 @@
          return null;
       }
 
-      var res = { x: midx, y: midy,
+      var res = { obj: this.histo, x: midx, y: midy,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(findbin) };
@@ -11251,20 +11261,22 @@
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
+   JSROOT.GridDisplay.prototype.GetFrame = function(id) {
+      var main = d3.select('#' + this.frameid);
+      if (this.simple_layout) return main.node();
+      var res = null;
+      main.selectAll('.jsroot_newgrid').each(function() {
+         if (id-- === 0) res = this;
+      });
+      return res;
+   }
+
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
-      var main = d3.select('#' + this.frameid), frame = null;
-
-      if (this.simple_layout) {
-         frame = main.node();
-      } else {
-         var cnt = this.getcnt;
-         main.selectAll('.jsroot_newgrid').each(function() {
-           if (cnt-- === 0) frame = d3.select(this).node();
-         });
+      var frame = this.GetFrame(this.getcnt);
+      if (!this.simple_layout && this.framecnt)
          this.getcnt = (this.getcnt+1) % this.framecnt;
-      }
 
       d3.select(frame).attr('frame_title', title);
 

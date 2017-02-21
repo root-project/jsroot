@@ -1199,7 +1199,7 @@
           line = d3.select("#"+id), hsepar;
 
       if (!line.empty()) {
-         if (!mode) return id;
+         if (!mode) return (this.status_layout==="app") ? id : "";
 
          hsepar = main.select(".jsroot_h_separator");
 
@@ -1207,6 +1207,10 @@
 
          hsepar.remove();
          line.remove();
+
+         delete this.status_layout;
+
+         if (JSROOT.Painter.StatusHandler === this) delete JSROOT.Painter.StatusHandler;
 
          this.AdjustSeparator(null, 0, true);
          return "";
@@ -1236,8 +1240,38 @@
 
       this.AdjustSeparator(null, height, true);
 
-      return id;
+      if (!mode) {
+         this.status_layout = "app";
+         return id;
+      }
+
+      this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
+
+      JSROOT.Painter.StatusHandler = this;
+
+      return true;
    }
+
+   JSROOT.HierarchyPainter.prototype.ShowStatus = function(pnt, hints) {
+
+      if (!this.status_layout) return;
+
+      if (pnt) {
+         var f2 = this.status_layout.GetFrame(2);
+         $(f2).html(Math.round(pnt.x)+","+Math.round(pnt.y));
+      }
+
+      var hint = hints ? hints[0] : null;
+
+      if (hint) {
+         var name = hint.obj ? hint.obj.fName : "";
+         var title = hint.obj ? hint.obj.fTitle : "";
+         if (name) $(this.status_layout.GetFrame(0)).html(name);
+         if (title) $(this.status_layout.GetFrame(1)).html(title);
+         if (hint.lines) $(this.status_layout.GetFrame(3)).html(hint.lines.join(' '));
+      }
+   }
+
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
 
