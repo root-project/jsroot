@@ -1189,28 +1189,43 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height) {
-      if (!this.gui_div) return false;
-
-      var id = this.gui_div + "_status";
-      if (!d3.select("#"+id).empty()) return id;
+   JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
+      if (!this.gui_div) return '';
 
       var main = d3.select("#"+this.gui_div + " .jsroot_browser");
+      if (main.empty()) return '';
 
-      main.insert("div",".jsroot_browser_area").attr("id",id)
-        .classed("jsroot_status_area", true)
-        .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
-        .style('margin',0).style('border',0);
+      var id = this.gui_div + "_status",
+          line = d3.select("#"+id), hsepar;
 
-      var hsepar = main.insert("div",".jsroot_browser_area")
-                       .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
-                       .style('position','absolute').style('left',0).style('right',0).style('bottom',0).style('height','5px');
+      if (!line.empty()) {
+         if (!mode) return id;
+
+         hsepar = main.select(".jsroot_h_separator");
+
+         $(hsepar.node()).draggable("destroy");
+
+         hsepar.remove();
+         line.remove();
+
+         this.AdjustSeparator(null, 0, true);
+         return "";
+      }
+
+      line = main.insert("div",".jsroot_browser_area").attr("id",id)
+                 .classed("jsroot_status_area", true)
+                 .style('position',"absolute").style('left',0).style('height',"10px").style('bottom',0).style('right',0)
+                 .style('margin',0).style('border',0);
+
+      hsepar = main.insert("div",".jsroot_browser_area")
+                   .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
+                   .style('position','absolute').style('left',0).style('right',0).style('bottom',0).style('height','5px');
 
       var hpainter = this;
 
       $(hsepar.node()).draggable({
          axis: "y" , cursor: "ns-resize", containment: "parent",
-         helper : function() { return $(this).clone().css('background-color','grey'); },
+         helper: function() { return $(this).clone().css('background-color','grey'); },
          drag: function(event,ui) {
             hpainter.AdjustSeparator(null, -ui.position.top, false);
          },
@@ -1241,13 +1256,19 @@
 
       if (hsepar!==null) {
          hsepar = parseInt(hsepar);
-         if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
-         if (hsepar< 5) hsepar = 5;
-         main.select(".jsroot_browser_area").style('bottom',(hsepar+w)+'px');
-         main.select(".jsroot_v_separator").style('bottom',(hsepar+w)+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('bottom',(hsepar+w)+'px');
-         d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
-         main.select(".jsroot_h_separator").style('bottom', hsepar+'px').style('height',w+"px")
+         var elem = main.select(".jsroot_h_separator"), hlimit = 0;
+
+         if (!elem.empty()) {
+            if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
+            if (hsepar<5) hsepar = 5;
+            elem.style('bottom', hsepar+'px').style('height',w+"px");
+            d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
+            hlimit = (hsepar+w) + 'px';
+         }
+
+         main.select(".jsroot_browser_area").style('bottom',hlimit);
+         main.select(".jsroot_v_separator").style('bottom',hlimit);
+         d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
       if (vsepar!==null) {

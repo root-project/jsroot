@@ -58,7 +58,8 @@
                 'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
                 },
 
-      circle: { path: "M256,256 m -150, 0 a 150,150 0 1,0 300,0 a 150,150 0 1,0 -300,0" },
+      circle: { path: "M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0" },
+      three_circles: { path: "M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 " },
       diamand: { path: "M256,0L384,256L256,511L128,256z" },
       rect: { path: "M80,80h352v352h-352z" },
 
@@ -10724,12 +10725,24 @@
 
          svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
          svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+
+         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "status line");
+         svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 30, "toggle"));
       }
 
       this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
       // this.SetDivId(id + "_browser");
 
       this.SetDisplay(null, this.gui_div + "_drawing");
+   }
+
+   JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
+      if (!this.gui_div) return;
+
+      var hpainter = this;
+      JSROOT.AssertPrerequisites('jq2d', function() {
+          hpainter.CreateStatusLine(height, mode);
+      });
    }
 
    JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
