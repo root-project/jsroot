@@ -103,7 +103,7 @@
          this.tt.style.left = (l + 3) + 'px';
       };
 
-      this.show  = function(v) {
+      this.show  = function(v, mouse_pos) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
 
@@ -112,7 +112,7 @@
 
             var hint = (typeof v!=='string') ? v : { name: "obj name", title: "obj title", lines: ['name', v] };
 
-            JSROOT.Painter.StatusHandler.ShowStatus(null, [hint]);
+            JSROOT.Painter.StatusHandler.ShowStatus(mouse_pos, [hint]);
             return;
          }
 
@@ -373,7 +373,7 @@
 
          this.cursor_changed = false;
          if (tip) {
-            this.tooltip.show(tip);
+            this.tooltip.show(tip, mouse);
             this.tooltip.pos(evnt)
          } else {
             this.tooltip.hide();

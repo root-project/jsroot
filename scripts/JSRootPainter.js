@@ -2553,6 +2553,27 @@
       return menu.size() > 0;
    }
 
+   JSROOT.TObjectPainter.prototype.ShowObjectStatus = function() {
+      // method called normally when mouse enter main object element
+
+      if (!JSROOT.Painter.StatusHandler || !JSROOT.Painter.StatusHandler.ShowStatus) return;
+
+      var obj = this.GetObject();
+      if (!obj) return;
+
+      var hint = { name: this.GetItemName() || obj.fName,
+                   title: obj.fTitle ? obj.fTitle : obj._typename,
+                   line: obj._typename ? obj._typename : "any info" };
+
+      //var pnt = null, can = this.svg_canvas();
+      //if (!can.empty()) {
+      //   pnt = d3.mouse(can.node());
+      //   pnt = { x: pnt[0], y: pnt[1] };
+      // }
+
+      JSROOT.Painter.StatusHandler.ShowStatus(null, [hint]);
+   }
+
 
    JSROOT.TObjectPainter.prototype.FindInPrimitives = function(objname) {
       // try to find object by name in list of pad primitives
@@ -3499,7 +3520,8 @@
           .attr("height", height)
           .style("pointer-events", "visibleFill")
           .call(this.fillatt.func)
-          .call(this.lineatt.func);
+          .call(this.lineatt.func)
+          .on("mouseenter", this.ShowObjectStatus.bind(this));
 
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, arg);
@@ -3509,7 +3531,7 @@
                      ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this) );
+         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveLabel = function(width, height) {
@@ -4012,7 +4034,8 @@
          svg.append("svg:title").text("ROOT canvas");
          svg.append("svg:rect").attr("class","canvas_fillrect")
                                .attr("x",0).attr("y",0).style("pointer-events", "visibleFill")
-                               .on("dblclick", this.EnlargePad.bind(this));
+                               .on("dblclick", this.EnlargePad.bind(this))
+                               .on("mouseenter", this.ShowObjectStatus.bind(this));
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
          svg.append("svg:g").attr("class","special_layer");
@@ -4131,7 +4154,8 @@
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
 
-         svg_rect.on("dblclick", this.EnlargePad.bind(this));
+         svg_rect.on("dblclick", this.EnlargePad.bind(this))
+                 .on("mouseenter", this.ShowObjectStatus.bind(this));
 
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
@@ -7139,24 +7163,24 @@
 
       if (JSROOT.gStyle.Zooming) {
          if (JSROOT.gStyle.ZoomMouse) {
-            svg.on("mousedown", this.startRectSel.bind(this) );
-            svg.on("dblclick", this.mouseDoubleClick.bind(this) );
+            svg.on("mousedown", this.startRectSel.bind(this));
+            svg.on("dblclick", this.mouseDoubleClick.bind(this));
          }
          if (JSROOT.gStyle.ZoomWheel)
-            svg.on("wheel", this.mouseWheel.bind(this) );
+            svg.on("wheel", this.mouseWheel.bind(this));
       }
 
       if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch) || JSROOT.gStyle.ContextMenu))
-         svg.on("touchstart", this.startTouchZoom.bind(this) );
+         svg.on("touchstart", this.startTouchZoom.bind(this));
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
             svg.selectAll(".xaxis_container")
-               .on("touchstart", this.startTouchMenu.bind(this,"x") );
+               .on("touchstart", this.startTouchMenu.bind(this,"x"));
             svg.selectAll(".yaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this,"y") );
+                .on("touchstart", this.startTouchMenu.bind(this,"y"));
          }
-         svg.on("contextmenu", this.ShowContextMenu.bind(this) );
+         svg.on("contextmenu", this.ShowContextMenu.bind(this));
          svg.selectAll(".xaxis_container")
              .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
          svg.selectAll(".yaxis_container")
@@ -7171,7 +7195,7 @@
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
-      window.addEventListener( 'keydown', this.keys_handler, false );
+      window.addEventListener('keydown', this.keys_handler, false);
    }
 
    JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
@@ -10759,14 +10783,14 @@
          btns.style('position',"absolute").style("left","7px").style("top","7px");
          if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
 
-         var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "float browser");
+         var svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float browser");
          svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
 
-         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "fix browser");
+         svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser");
          svg.style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
          if (!this.status_disabled) {
-            svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "status line");
+            svg = JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line");
             svg.style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
          }
       }
