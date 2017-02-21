@@ -36,6 +36,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - browser - layout of the browser 'float', 'fix', 'no', 'off'  
 - nobrowser - do not display file browser (same as browser=no)
 - float - display floating browser (same as browser=float)
+- status - configure status line 'no' (default), 'off' (completely disable), 'size' 
 - load - name of extra JavaScript to load
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
 - paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
@@ -44,8 +45,6 @@ To automate files loading and objects drawing, one can provide number of URL par
 - mathjax - use MathJax for latex output
 - style - name of TStyle object to define global JSROOT style
 - toolbar - show canvas tool buttons 'off', 'on' and 'popup'
-- status - show status line from the beginning
-- nostatus - disable status line completely (same as status=no)   
 
 For instance:
 

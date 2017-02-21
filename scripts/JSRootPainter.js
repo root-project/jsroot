@@ -10615,7 +10615,7 @@
           monitor = JSROOT.GetUrlOption("monitoring", url),
           layout = JSROOT.GetUrlOption("layout", url),
           style = JSROOT.GetUrlOptionAsArray("#style", url),
-          status = (JSROOT.GetUrlOption("nostatus", url)!==null) ? "no" : JSROOT.GetUrlOption("status", url),
+          status = JSROOT.GetUrlOption("status", url),
           browser_kind = JSROOT.GetUrlOption("browser",url);
 
       if (JSROOT.GetUrlOption("float",url)!==null) browser_kind='float'; else
@@ -10653,8 +10653,7 @@
          if (!jsonarr.length) jsonarr = GetDivOptionAsArray("#json;jsons");
          if (!optionsarr.length) optionsarr = GetDivOptionAsArray("#opt;opts");
          if (!style.length) style = GetDivOptionAsArray("#style");
-         if (status===null)
-            status = gui_div.attr("nostatus") ? "no" : gui_div.attr("status");
+         if (status===null) status = gui_div.attr("status");
          if (gui_div.attr("nofloat")) this.float_browser_disabled = true;
 
          if (monitor === null) monitor = gui_div.attr("monitor");
@@ -10709,7 +10708,8 @@
       }
 
       if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
-      if (status==="no") { this.status_disabled = true; status = null; } else
+      if (status==="no") status = null; else
+      if (status==="off") { this.status_disabled = true; status = null; } else
       if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 25; }
       if (this.no_select==="") this.no_select = true;
 

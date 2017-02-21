@@ -1204,7 +1204,7 @@
           line = d3.select("#"+id), hsepar;
 
       if (!line.empty()) {
-         if (!mode) return (this.status_layout==="app") ? id : "";
+         if (this.status_layout==="app") return !mode ? id : false;
 
          hsepar = main.select(".jsroot_h_separator");
 
