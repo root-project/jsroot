@@ -2561,17 +2561,13 @@
       var obj = this.GetObject();
       if (!obj) return;
 
-      var hint = { name: this.GetItemName() || obj.fName,
-                   title: obj.fTitle ? obj.fTitle : obj._typename,
-                   line: obj._typename ? obj._typename : "any info" };
-
       //var pnt = null, can = this.svg_canvas();
       //if (!can.empty()) {
       //   pnt = d3.mouse(can.node());
       //   pnt = { x: pnt[0], y: pnt[1] };
       // }
 
-      JSROOT.Painter.ShowStatus(null, [hint]);
+      JSROOT.Painter.ShowStatus(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
 
 
@@ -7152,11 +7148,9 @@
 
       var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
 
-      var hint = { name: axis_name,
-                   title: "TAxis",
-                   line: "any info" };
+      var hint_name = axis_name, hint_title = "TAxis";
 
-      if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
+      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
 
       var m = d3.mouse(this.svg_frame().node());
 
@@ -7165,9 +7159,8 @@
 
       var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
 
-      hint.line = axis_name + " : " + this.AxisAsText(axis_name, axis_value);
-
-      JSROOT.Painter.ShowStatus({ x: m[0], y: m[1] }, [hint]);
+      JSROOT.Painter.ShowStatus(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
+                                m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
