@@ -1269,13 +1269,20 @@
    }
 
    JSROOT.HierarchyPainter.prototype.ShowStatus = function(name, title, info, coordinates) {
-
       if (!this.status_layout) return;
 
       $(this.status_layout.GetFrame(0)).children('label').text(name || "");
       $(this.status_layout.GetFrame(1)).children('label').text(title || "");
       $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
       $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+
+      if (!this.status_layout.first_check) {
+         this.status_layout.first_check = true;
+         var maxh = 0;
+         for (var n=0;n<4;++n)
+            maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
+         if (maxh>5) this.AdjustSeparator(null, maxh, true);
+      }
    }
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
