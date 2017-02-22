@@ -1272,33 +1272,10 @@
 
       if (!this.status_layout) return;
 
-      if ((arguments.length==2) && (typeof arguments[1]=='object')) {
-         var pnt = arguments[0], hints = arguments[1];
-         title = name = coordinates = info = "";
-         if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
-         var hint = hints ? hints[0] : null;
-         // try to select hint with exact match of the position when several hints available
-         if (hints && hints.length>0)
-            for (var k=0;k<hints.length;++k) {
-               if (!hints[k]) continue;
-               if (!hint) hint = hints[k];
-               if (hints[k].exact) { hint = hints[k]; break; }
-            }
-
-         if (hint) {
-            name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
-            title = hint.title || "";
-            info = hint.line;
-            if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
-         }
-      }
-
-      if (title || name || coordinates || info) {
-         $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-         $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-         $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-         $(this.status_layout.GetFrame(3)).children('label').text(info || "");
-      }
+      $(this.status_layout.GetFrame(0)).children('label').text(name || "");
+      $(this.status_layout.GetFrame(1)).children('label').text(title || "");
+      $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
+      $(this.status_layout.GetFrame(3)).children('label').text(info || "");
    }
 
    JSROOT.HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {

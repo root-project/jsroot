@@ -3232,12 +3232,35 @@
       var layer = this.svg_layer("stat_layer"),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
-
       if (JSROOT.Painter.ShowStatus) {
          hintsg.remove();
 
-         JSROOT.Painter.ShowStatus(pnt, hints);
-         return;
+         var title = "", name = "", coordinates = "", info = "";
+         if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
+         var hint = null, best_dist2 = 1e10, best_hint = null;
+         // try to select hint with exact match of the position when several hints available
+         if (hints && hints.length>0)
+            for (var k=0;k<hints.length;++k) {
+               if (!hints[k]) continue;
+               if (!hint) hint = hints[k];
+               if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
+
+               if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
+
+               var dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
+               if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
+            }
+
+         if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
+
+         if (hint) {
+            name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
+            title = hint.title || "";
+            info = hint.line;
+            if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
+         }
+
+         return JSROOT.Painter.ShowStatus(name, title, info, coordinates);
       }
 
       // end of closing tooltips

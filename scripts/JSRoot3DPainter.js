@@ -103,16 +103,22 @@
          this.tt.style.left = (l + 3) + 'px';
       };
 
-      this.show  = function(v, mouse_pos) {
+      this.show = function(v, mouse_pos) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
 
          if (JSROOT.Painter.ShowStatus) {
             this.hide();
 
-            var hint = (typeof v!=='string') ? v : { name: "obj name", title: "obj title", lines: ['name', v] };
+            var name = "", title = "", coord = "", info = "";
+            if (mouse_pos) coord = mouse_pos.x.toFixed(0)+ "," + mouse_pos.y.toFixed(0);
+            if (typeof v=="string") info = v; else {
+               name = v.name; title = v.title;
+               if (v.line) info = v.line; else
+               if (v.lines) { info = v.lines.slice(1).join(' '); name = v.lines[0]; }
+            }
 
-            return JSROOT.Painter.ShowStatus(mouse_pos, [hint]);
+            return JSROOT.Painter.ShowStatus(name, title, info, coord);
          }
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {
