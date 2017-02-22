@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/02/2017";
+   JSROOT.version = "dev 22/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -100,6 +100,8 @@
    JSROOT.bower_dir = ""; // when specified, use standard libs from bower location
 
    JSROOT.id_counter = 0;
+
+   // JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false, isWin:false };
@@ -760,7 +762,7 @@
          else
             JSROOT.progress();
 
-         if ((urllist!=null) && (urllist.length>0))
+         if (urllist)
             return JSROOT.loadScript(urllist, callback, debugout);
 
          JSROOT.CallBack(callback);
@@ -769,8 +771,9 @@
       if ((urllist==null) || (urllist.length==0))
          return completeLoad();
 
-      var filename = urllist;
-      var separ = filename.indexOf(";");
+      var filename = urllist, separ = filename.indexOf(";"),
+          isrootjs = false, isbower = false;
+
       if (separ>0) {
          filename = filename.substr(0, separ);
          urllist = urllist.slice(separ+1);
@@ -778,7 +781,11 @@
          urllist = "";
       }
 
-      var isrootjs = false, isbower = false;
+      if (filename.indexOf('&&&scripts/')===0) {
+         isrootjs = true;
+         filename = filename.slice(3);
+         if (JSROOT.use_full_libs) filename = "libs/" + filename.slice(8, filename.length-7) + ".js";
+      } else
       if (filename.indexOf("$$$")===0) {
          isrootjs = true;
          filename = filename.slice(3);
@@ -817,32 +824,26 @@
       if (isstyle) {
          var styles = document.getElementsByTagName('link');
          for (var n = 0; n < styles.length; ++n) {
-            if ((styles[n].type != 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
+            if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
 
-            var href = styles[n].href;
-            if ((href == null) || (href.length == 0)) continue;
-
-            if (href.indexOf(filename)>=0) return completeLoad();
+            if (styles[n].href.indexOf(filename)>=0) return completeLoad();
          }
 
       } else {
          var scripts = document.getElementsByTagName('script');
 
          for (var n = 0; n < scripts.length; ++n) {
-            // if (scripts[n].type != 'text/javascript') continue;
-
             var src = scripts[n].src;
-            if ((src == null) || (src.length == 0)) continue;
+            if (!src) continue;
 
-            if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0)) {
+            if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0))
                // avoid wrong decision when script name is specified as more argument
                return completeLoad();
-            }
          }
       }
 
-      if (isrootjs && (JSROOT.source_dir!=null)) filename = JSROOT.source_dir + filename; else
-      if (isbower && (JSROOT.bower_dir.length>0)) filename = JSROOT.bower_dir + filename;
+      if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename; else
+      if (isbower && JSROOT.bower_dir) filename = JSROOT.bower_dir + filename;
 
       var element = null;
 
@@ -925,7 +926,7 @@
           modules = [];  // modules used for require.js
 
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0)) {
-         mainfiles += "$$$scripts/rawinflate.min.js;" +
+         mainfiles += "&&&scripts/rawinflate.min.js;" +
                       "$$$scripts/JSRootIOEvolution" + ext + ".js;";
          modules.push('rawinflate','JSRootIOEvolution');
       }
@@ -955,7 +956,7 @@
 
                jsroot._test_d3_ = 3;
             } else {
-               mainfiles += use_bower ? '###d3/d3.min.js;' : '$$$scripts/d3.min.js;';
+               mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
                jsroot._test_d3_ = 4;
             }
          }
@@ -966,7 +967,7 @@
 
       if (kind.indexOf('savepng;')>=0) {
          modules.push('saveSvgAsPng');
-         mainfiles += '$$$scripts/saveSvgAsPng.min.js;';
+         mainfiles += '&&&scripts/saveSvgAsPng.min.js;';
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
@@ -997,8 +998,8 @@
                         "###threejs/examples/js/shaders/SSAOShader.js;"
            extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
          } else {
-            mainfiles += "$$$scripts/three.min.js;" +
-                         "$$$scripts/three.extra.min.js;";
+            mainfiles += "&&&scripts/three.min.js;" +
+                         "&&&scripts/three.extra.min.js;";
          }
          modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
@@ -1033,11 +1034,11 @@
          if (has_jq)
             jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 3.1.1", debugout);
          else
-            lst_jq += (use_bower ? "###jquery/dist" : "$$$scripts") + "/jquery.min.js;";
+            lst_jq += (use_bower ? "###jquery/dist" : "&&&scripts") + "/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined')
             jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.12.1", debugout);
          else {
-            lst_jq += (use_bower ? "###jquery-ui" : "$$$scripts") + '/jquery-ui.min.js;';
+            lst_jq += (use_bower ? "###jquery-ui" : "&&&scripts") + '/jquery-ui.min.js;';
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
          }
 
@@ -1889,6 +1890,8 @@
       if ( typeof define === "function" && define.amd )
          return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
 
+      if (JSROOT.GetUrlOption('libs')!=null) JSROOT.use_full_libs = true;
+
       var prereq = "";
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
       if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
@@ -1899,10 +1902,11 @@
       if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
-      var user = JSROOT.GetUrlOption('load', src);
-      if ((user!=null) && (user.length>0)) prereq += "io;2d;load:" + user;
-      var onload = JSROOT.GetUrlOption('onload', src);
-      var bower = JSROOT.GetUrlOption('bower', src);
+      var user = JSROOT.GetUrlOption('load', src),
+          onload = JSROOT.GetUrlOption('onload', src),
+          bower = JSROOT.GetUrlOption('bower', src);
+
+      if (user) prereq += "io;2d;load:" + user;
       if ((bower===null) && (JSROOT.source_dir.indexOf("bower_components/jsroot/")>=0)) bower = "";
       if (bower!==null) {
          if (bower.length>0) JSROOT.bower_dir = bower; else
