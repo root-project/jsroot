@@ -41,11 +41,11 @@
 
             // redraw histogram at specified frame
             JSROOT.redraw(frame, histo, drawopt);
-          });
+         });
 
-          req.send(null);
+         req.send(null);
  
-          req.cnt = cnt++; // remember counter to find correct frame later
+         req.cnt = cnt++; // remember counter to find correct frame later
       }
 
       function startGUI() {
