@@ -10737,7 +10737,7 @@
 
       if (status==="no") status = null; else
       if (status==="off") { this.status_disabled = true; status = null; } else
-      if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 25; }
+      if ((status!==null) && (status!=='on')) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 'on'; }
       if (this.no_select==="") this.no_select = true;
 
       if (!browser_kind) browser_kind = "fix"; else
@@ -10830,7 +10830,7 @@
 
          if (!this.status_disabled)
             JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
-                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
+                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 'on', "toggle"));
       }
 
       this.SetDisplay(layout, this.gui_div + "_drawing");

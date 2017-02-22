@@ -447,9 +447,9 @@
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
-      if (status_item && (JSROOT.GetUrlOption('nostatus')===null)) {
+      if (status_item && !this.status_disabled && (JSROOT.GetUrlOption('nostatus')===null)) {
          var func = JSROOT.findFunction(status_item._status);
-         var hdiv = (typeof func == 'function') ? this.CreateStatusLine(30) : null;
+         var hdiv = (typeof func == 'function') ? this.CreateStatusLine('on') : null;
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
@@ -1142,8 +1142,6 @@
 
       this.ToggleBrowserKind(browser_kind || "fix");
 
-      // this.CreateStatusLine(30);
-
       JSROOT.CallBack(call_back);
 
       return true;
@@ -1248,6 +1246,8 @@
          }
       });
 
+      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 25;
+
       this.AdjustSeparator(null, height, true);
 
       if (!mode) {
@@ -1256,6 +1256,8 @@
       }
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
+      if ((mode==='toggle') && (height === this.last_hsepar_height)) this.status_layout.first_check = true; // if restored size, do not adjust height once again
+
       var frame_titles = ['object name','object title','mouse coordiantes', 'object info'];
       for (var k=0;k<4;++k)
          d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
@@ -1307,13 +1309,12 @@
          if (!elem.empty()) {
             if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
             if (hsepar<5) hsepar = 5;
-            elem.style('bottom', hsepar+'px').style('height',w+"px");
+            this.last_hsepar_height = hsepar;
+            elem.style('bottom', hsepar+'px').style('height', w+'px');
             d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
             hlimit = (hsepar+w) + 'px';
          }
 
-         //main.select(".jsroot_browser_area").style('bottom',hlimit);
-         //main.select(".jsroot_v_separator").style('bottom',hlimit);
          d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
       }
 
