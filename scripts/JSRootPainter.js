@@ -9604,7 +9604,7 @@
 
       function display_callback(respainter) {
 
-         JSROOT.progress();
+         if (!updating) JSROOT.progress();
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
             respainter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
@@ -9639,16 +9639,16 @@
             drawopt = drawopt.slice(0, pos);
          }
 
-         JSROOT.progress("Loading " + itemname);
+         if (!updating) JSROOT.progress("Loading " + itemname);
 
          h.get(itemname, function(item, obj) {
 
-            JSROOT.progress();
+            if (!updating) JSROOT.progress();
 
             if (updating && item) delete item._doing_update;
             if (obj==null) return display_callback();
 
-            JSROOT.progress("Drawing " + itemname);
+            if (!updating) JSROOT.progress("Drawing " + itemname);
 
             if (divid.length > 0)
                return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback);
@@ -9766,13 +9766,12 @@
 
       // first collect items
       this.disp.ForEachPainter(function(p) {
-         var itemname = p.GetItemName();
-         var drawopt = p.GetItemDrawOpt();
+         var itemname = p.GetItemName(),
+             drawopt = p.GetItemDrawOpt();
          if ((itemname==null) || (allitems.indexOf(itemname)>=0)) return;
 
-         var item = hpainter.Find(itemname);
-         if ((item==null) || ('_not_monitor' in item) || ('_player' in item)) return;
-         var forced = false;
+         var item = hpainter.Find(itemname), forced = false;
+         if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
 
          if ('_always_monitor' in item) {
             forced = true;
