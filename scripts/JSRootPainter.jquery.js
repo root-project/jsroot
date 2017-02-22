@@ -1215,7 +1215,10 @@
 
          delete this.status_layout;
 
-         if (JSROOT.Painter.StatusHandler === this) delete JSROOT.Painter.StatusHandler;
+         if (this.status_handler && (JSROOT.Painter.ShowStatus === this.status_handler)) {
+            delete JSROOT.Painter.ShowStatus;
+            delete this.status_handler;
+         }
 
          this.AdjustSeparator(null, 0, true);
          return "";
@@ -1258,7 +1261,9 @@
          d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
-      JSROOT.Painter.StatusHandler = this;
+      this.status_handler = this.ShowStatus.bind(this);
+
+      JSROOT.Painter.ShowStatus = this.status_handler;
 
       return true;
    }

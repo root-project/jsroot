@@ -107,12 +107,12 @@
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
 
-         if (JSROOT.Painter.StatusHandler && JSROOT.Painter.StatusHandler.ShowStatus) {
+         if (JSROOT.Painter.ShowStatus) {
             this.hide();
 
             var hint = (typeof v!=='string') ? v : { name: "obj name", title: "obj title", lines: ['name', v] };
 
-            return JSROOT.Painter.StatusHandler.ShowStatus(mouse_pos, [hint]);
+            return JSROOT.Painter.ShowStatus(mouse_pos, [hint]);
          }
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {

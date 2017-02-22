@@ -2556,7 +2556,7 @@
    JSROOT.TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
-      if (!JSROOT.Painter.StatusHandler || !JSROOT.Painter.StatusHandler.ShowStatus) return;
+      if (!JSROOT.Painter.ShowStatus) return;
 
       var obj = this.GetObject();
       if (!obj) return;
@@ -2571,7 +2571,7 @@
       //   pnt = { x: pnt[0], y: pnt[1] };
       // }
 
-      JSROOT.Painter.StatusHandler.ShowStatus(null, [hint]);
+      JSROOT.Painter.ShowStatus(null, [hint]);
    }
 
 
@@ -3237,10 +3237,10 @@
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
 
-      if (JSROOT.Painter.StatusHandler && JSROOT.Painter.StatusHandler.ShowStatus) {
+      if (JSROOT.Painter.ShowStatus) {
          hintsg.remove();
 
-         JSROOT.Painter.StatusHandler.ShowStatus(pnt, hints);
+         JSROOT.Painter.ShowStatus(pnt, hints);
          return;
       }
 
@@ -7148,7 +7148,7 @@
    JSROOT.THistPainter.prototype.ShowAxisStatus = function(axis_name) {
       // method called normally when mouse enter main object element
 
-      if (!JSROOT.Painter.StatusHandler || !JSROOT.Painter.StatusHandler.ShowStatus) return;
+      if (!JSROOT.Painter.ShowStatus) return;
 
       var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
 
@@ -7167,7 +7167,7 @@
 
       hint.line = axis_name + " : " + this.AxisAsText(axis_name, axis_value);
 
-      JSROOT.Painter.StatusHandler.ShowStatus({ x: m[0], y: m[1] }, [hint]);
+      JSROOT.Painter.ShowStatus({ x: m[0], y: m[1] }, [hint]);
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
