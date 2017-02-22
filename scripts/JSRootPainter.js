@@ -11171,6 +11171,7 @@
       if (kind === "simple") {
          this.simple_layout = true;
          this.use_separarators = false;
+         this.framecnt = 1;
          return;
       }
 
@@ -11210,6 +11211,8 @@
             num = sizex;
          } else {
             this.simple_layout = true;
+            this.use_separarators = false;
+            this.framecnt = 1;
             return;
          }
          kind = "";
@@ -11252,7 +11255,6 @@
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    JSROOT.GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
-
       if (!sizes) sizes = new Array(num);
       var sum1 = 0, sum2 = 0;
       for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
@@ -11332,6 +11334,10 @@
          if (id-- === 0) res = this;
       });
       return res;
+   }
+
+   JSROOT.GridDisplay.prototype.NumGridFrames = function() {
+      return this.framecnt;
    }
 
    JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
