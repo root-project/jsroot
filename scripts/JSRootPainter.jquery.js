@@ -919,11 +919,10 @@
            helper : function() { return $(this).clone().css('background-color','grey'); },
            drag: function(event,ui) {
               hpainter.SetButtonsPosition();
-              hpainter.AdjustSeparator(ui.position.left, null, true);
+              hpainter.AdjustSeparator(ui.position.left, null);
            },
            stop: function(event,ui) {
-              // event.stopPropagation();
-              hpainter.AdjustSeparator(ui.position.left, null, true);
+              hpainter.CheckResize();
            }
         });
 
@@ -1239,10 +1238,10 @@
          axis: "y" , cursor: "ns-resize", containment: "parent",
          helper: function() { return $(this).clone().css('background-color','grey'); },
          drag: function(event,ui) {
-            hpainter.AdjustSeparator(null, -ui.position.top, false);
+            hpainter.AdjustSeparator(null, -ui.position.top);
          },
          stop: function(event,ui) {
-            hpainter.AdjustSeparator(null, -ui.position.top, true);
+            hpainter.CheckResize();
          }
       });
 
@@ -1327,6 +1326,7 @@
          d3.select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
          main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
       }
+
 
       if (redraw) this.CheckResize();
    }
