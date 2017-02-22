@@ -1117,8 +1117,8 @@
 
       var jlayout = jmain.find(".gui_layout");
       if (jlayout.length) {
-         var lst = ['simple', 'collapsible', 'flex', 'tabs', 'horiz2', 'horiz32', 'vert2', 'vert3', 'vert231',
-                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4'];
+         var lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+                     'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4', 'collapsible',  'tabs'];
 
          for (var k=0;k<lst.length;++k){
             var opt = document.createElement('option');
