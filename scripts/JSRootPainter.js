@@ -10635,88 +10635,68 @@
    }
 
    JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
-      var hpainter = this,
-          prereq = "",
-          filesdir = JSROOT.GetUrlOption("path", url),
-          filesarr = JSROOT.GetUrlOptionAsArray("#file;files", url),
-          localfile = JSROOT.GetUrlOption("localfile", url),
-          jsonarr = JSROOT.GetUrlOptionAsArray("#json;jsons", url),
-          expanditems = JSROOT.GetUrlOptionAsArray("expand", url),
-          itemsarr = JSROOT.GetUrlOptionAsArray("#item;items", url),
-          optionsarr = JSROOT.GetUrlOptionAsArray("#opt;opts", url),
-          monitor = JSROOT.GetUrlOption("monitoring", url),
-          layout = JSROOT.GetUrlOption("layout", url),
-          style = JSROOT.GetUrlOptionAsArray("#style", url),
-          status = JSROOT.GetUrlOption("status", url),
-          browser_kind = JSROOT.GetUrlOption("browser",url);
 
-      if (JSROOT.GetUrlOption("float",url)!==null) browser_kind='float'; else
-      if (JSROOT.GetUrlOption("fix",url)!==null) browser_kind='fix';
-
-      this.no_select = JSROOT.GetUrlOption("noselect", url);
-
-      if (gui_div && !gui_div.empty()) {
-
-         function GetDivOptionAsArray(opt) {
-            var res = [];
-            while (opt.length>0) {
-               var separ = opt.indexOf(";");
-               var part = separ>0 ? opt.substr(0, separ) : opt;
-               if (separ>0) opt = opt.substr(separ+1); else opt = "";
-
-               var canarray = true;
-               if (part[0]=='#') { part = part.substr(1); canarray = false; }
-
-               var val = gui_div.attr(part);
-
-               if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
-               else if (val!==null) res.push(val);
-            }
-            return res;
-         }
-
-         if (filesarr.length === 0) {
-            filesarr = GetDivOptionAsArray("#file"); // 'files' used in normal UI to give selection list
-            if ((filesarr.length>0) && !filesdir) filesdir = gui_div.attr("path");
-         }
-
-         if (!expanditems.length) expanditems = GetDivOptionAsArray("expand");
-         if (!itemsarr.length) itemsarr = GetDivOptionAsArray("#item;items");
-         if (!jsonarr.length) jsonarr = GetDivOptionAsArray("#json;jsons");
-         if (!optionsarr.length) optionsarr = GetDivOptionAsArray("#opt;opts");
-         if (!style.length) style = GetDivOptionAsArray("#style");
-         if (status===null) status = gui_div.attr("status");
-         if (gui_div.attr("nofloat")) this.float_browser_disabled = true;
-
-         if (monitor === null) monitor = gui_div.attr("monitor");
-
-         if (!browser_kind) {
-            if (gui_div.attr("float")) browser_kind = "float"; else
-            if (gui_div.attr("fix")) browser_kind = "fix";
-         }
-
-         if (this.no_select===null) this.no_select = gui_div.attr("noselect");
-         if (gui_div.attr('files_monitoring')) this.files_monitoring = true;
-
-         prereq = gui_div.attr("prereq") || "";
-
-         var user = gui_div.attr("load");
-         if ((typeof user=='string') && (user.length>0)) prereq += ";io;2d;load:" + user;
-
-         if (!layout) layout = gui_div.attr("layout");
-      } else {
-         var load = JSROOT.GetUrlOption("load", url);
-         if (load) prereq += ";io;2d;load:" + load;
+      function GetOption(opt) {
+         var res = JSROOT.GetUrlOption(opt, url);
+         if ((res===null) && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt)) res = gui_div.attr(opt);
+         return res;
       }
 
-      if (expanditems.length==0 && (JSROOT.GetUrlOption("expand", url)=="")) expanditems.push("");
+      function GetOptionAsArray(opt) {
+         var res = JSROOT.GetUrlOptionAsArray(opt, url);
+         if (res.length>0 || !gui_div || gui_div.empty()) return res;
+         while (opt.length>0) {
+            var separ = opt.indexOf(";");
+            var part = separ>0 ? opt.substr(0, separ) : opt;
+            if (separ>0) opt = opt.substr(separ+1); else opt = "";
 
-      if (typeof filesdir === 'string') {
+            var canarray = true;
+            if (part[0]=='#') { part = part.substr(1); canarray = false; }
+            if (part==='files') continue; // special case for normal UI
+
+            if (!gui_div.node().hasAttribute(part)) continue;
+
+            var val = gui_div.attr(part);
+
+            if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
+            else if (val!==null) res.push(val);
+         }
+         return res;
+      }
+
+      var hpainter = this,
+          prereq = GetOption('prereq') || "",
+          filesdir = JSROOT.GetUrlOption("path", url) || "", // path used in normal gui
+          filesarr = GetOptionAsArray("#file;files"),
+          localfile = GetOption("localfile"),
+          jsonarr = GetOptionAsArray("#json;jsons"),
+          expanditems = GetOptionAsArray("expand"),
+          itemsarr = GetOptionAsArray("#item;items"),
+          optionsarr = GetOptionAsArray("#opt;opts"),
+          monitor = GetOption("monitoring"),
+          layout = GetOption("layout"),
+          style = GetOptionAsArray("#style"),
+          status = GetOption("status"),
+          browser_kind = GetOption("browser");
+
+      if (GetOption("float")!==null) browser_kind='float'; else
+      if (GetOption("fix")!==null) browser_kind='fix';
+
+      this.no_select = GetOption("noselect");
+
+      if (GetOption('files_monitoring')!==null) this.files_monitoring = true;
+
+      var load = GetOption("load");
+      if (load) prereq += ";io;2d;load:" + load;
+
+      if (expanditems.length==0 && (GetOption("expand")==="")) expanditems.push("");
+
+      if (filesdir) {
          for (var i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
          for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
-      if ((itemsarr.length==0) && JSROOT.GetUrlOption("item", url)=="") itemsarr.push("");
+      if ((itemsarr.length==0) && GetOption("item")==="") itemsarr.push("");
 
       if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
@@ -10739,7 +10719,6 @@
          }
       }
 
-      if (JSROOT.GetUrlOption('files_monitoring', url)!=null) this.files_monitoring = true;
       if (status==="no") status = null; else
       if (status==="off") { this.status_disabled = true; status = null; } else
       if (status!==null) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 25; }
@@ -10748,21 +10727,20 @@
       if (!browser_kind) browser_kind = "fix"; else
       if (browser_kind==="no") browser_kind = ""; else
       if (browser_kind==="off") { browser_kind = ""; status = null; this.exclude_browser = true; }
-      if (JSROOT.GetUrlOption("nofloat",url)!==null) this.float_browser_disabled = true;
+      if (GetOption("nofloat")!==null) this.float_browser_disabled = true;
 
       if (this.start_without_browser) browser_kind = "";
 
       if (status || browser_kind) prereg = "jq2d;" + prereq;
 
-      this.PrepareGuiDiv(gui_div, this.disp_kind);
+      this._topname = GetOption("topname");
+
+      if (gui_div)
+         this.PrepareGuiDiv(gui_div, this.disp_kind);
 
       function OpenAllFiles(res) {
-         if (browser_kind) {
-            hpainter.CreateBrowser(browser_kind); browser_kind = "";
-         }
-         if (status) {
-            hpainter.CreateStatusLine(status,"toggle"); status = null;
-         }
+         if (browser_kind) { hpainter.CreateBrowser(browser_kind); browser_kind = ""; }
+         if (status) { hpainter.CreateStatusLine(status,"toggle"); status = null; }
          if (jsonarr.length>0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
@@ -10827,20 +10805,17 @@
          btns.style('position',"absolute").style("left","7px").style("top","7px");
          if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
 
+         JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
+                            .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
+
          if (!this.float_browser_disabled)
             JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float browser")
                                .style("margin","3px").on("click", this.CreateBrowser.bind(this, "float", true));
-
-         JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
-                            .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
 
          if (!this.status_disabled)
             JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
                                .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 25, "toggle"));
       }
-
-      this._topname = JSROOT.GetUrlOption("topname") || myDiv.attr("topname");
-      // this.SetDivId(id + "_browser");
 
       this.SetDisplay(layout, this.gui_div + "_drawing");
    }
