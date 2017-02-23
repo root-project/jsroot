@@ -37,8 +37,13 @@
               
               selector.Terminate = function(res) {
                  // function called when processing finishes
-                 if (!res || (cnt===0)) res = "Fail to process TTree";
-                                   else res = 'MeanPX = ' +  (sumpx/cnt).toFixed(4) + '  MeanPY = ' + (sumpy/cnt).toFixed(4);
+                 if (!res || (cnt===0)) { 
+                    res = "Fail to process TTree"; 
+                 } else {
+                    var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
+                    res = 'MeanPX = ' + meanpx.toFixed(4) + '  MeanPY = ' + meanpy.toFixed(4);
+                 } 
+                                   
                  document.getElementById('p_ready').innerHTML = res;
               }
               
@@ -56,4 +61,3 @@
 </body>
 
 </html>
-

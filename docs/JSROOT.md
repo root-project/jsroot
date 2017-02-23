@@ -296,7 +296,7 @@ Following draw options could be specified (separated by semicolon or ';'):
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:  
 
-- [file=rootgeom.root&item=simple1;1/Nodes/REPLICA_1](https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1;1/Nodes/REPLICA_1)
+- [file=rootgeom.root&item=simple1/TOP/REPLICA_1](https://root.cern/js/latest/?file=../files/geom/rootgeom.root&item=simple1/TOP/REPLICA_1)
 
 Or one can use simple selection syntax (work only with first-level volumes):
  
@@ -305,8 +305,7 @@ Or one can use simple selection syntax (work only with first-level volumes):
 Syntax uses '+' sign to enable visibility flag of specified volume and '-' sign to disable visibility.
 One could use wildcard symbol like '+TUBE1*'.  
 
-Another way to configure visibility flags is usage of ROOT macros, used to display geometry in ROOT itself.
-Example of such macro can be found in root tutorials. Typically it looks like:
+Another way to configure visibility flags is usage of ROOT macros, which typically looks like:
 
      {
       TGeoManager::Import("http://root.cern/files/alice2.root");
@@ -320,6 +319,8 @@ Example of such macro can be found in root tutorials. Typically it looks like:
       new TBrowser;
     }
   
+Example of such macro can be found in root tutorials. 
+
 From provided macro only following calls will be executed in JSROOT:
 
    * `gGeoManager->DefaultColors()`
@@ -393,17 +394,22 @@ In the `<div>` element with "simpleGUI" id one can specify many custom parameter
 
 ## Reading local ROOT files 
 
-Due to security reasons it is not allowed to access arbitrary files from local file system.
-For instance, for the Chrome browser one could use "--allow-file-access-from-files" option when starting browser
-
-In modern browsers JSROOT can use HTML5 FileReader functionality to access local files.
-Major limitation here - user should interactively select files for reading.
+JSROOT can read files from local file system using HTML5 FileReader functionality.
+Main limitation here - user should interactively select files for reading.
 There is button __"..."__ on the main JSROOT page, which starts file selection dialog. 
 Or one could invoke such dialog with "localfile" parameter in URL string.
 
 -  <https://root.cern/js/latest/?localfile>
 
-If valid ROOT file is selected, JSROOT will be able to normally read content of such file. 
+If valid ROOT file is selected, JSROOT will be able to normally read content of such file.
+In some browsers due to security settings automatic popup of file dialog is forbidden, therefore
+one may need to press button explicitely.  
+
+For debuging purposes one can install JSROOT on local file system and let read ROOT files from the same location. Like:
+
+   - <file://home/user/jsroot/index.htm?file=hsimple.root&item=hpx>
+
+But this works only with Firefox.
 
   
 
@@ -441,8 +447,8 @@ The parameter value is the update interval in milliseconds.
 ### JSON file-based monitoring
 
 Solid file-based monitoring (without integration of THttpServer into application) can be
-implemented in JSON format. There is the TBufferJSON class, which is capable to 
-convert any ROOT object (beside TTree) into JSON. Any ROOT application can use such class to
+implemented in JSON format. There is the [TBufferJSON](https://root.cern/doc/master/classTBufferJSON.html) class, 
+which is capable to convert any (beside TTree) ROOT object into JSON. Any ROOT application can use such class to
 create JSON files for selected objects and write such files in a directory,
 which can be accessed via web server. Then one can use JSROOT to read such files and display objects in a web browser.
 
@@ -469,24 +475,14 @@ therefore there is no guarantee that the file content is not changed/replaced be
 
 If somebody still wants to use monitoring of data from ROOT files, could try link like:
 
-- <https://root.cern/js/latest/index.htm?nobrowser&file=../files/hsimple.root+&item=hpx;1&monitoring=2000>
+- <https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root+&item=hpx;1&monitoring=2000>
 
 In this particular case, the histogram is not changing.
 
 
-## Stand-alone usage of JSROOT
-
-Even without any server-side application, JSROOT provides nice ROOT-like graphics,
-which could be used in arbitrary HTML pages.
-There is [example page](https://root.cern/js/latest/demo/th2.htm),
-where a 2-D histogram is artificially generated and displayed.
-Details about the JSROOT API can be found in the next chapters.
-
-
 ## JSROOT API
 
-JSROOT can be downloaded from <https://github.com/linev/jsroot>. 
-It also provided with each ROOT distribution in `etc/http/scripts/` sub-folder. 
+JSROOT can be used in arbitrary HTML pages and disaplay data, produced without ROOT-based applications. 
 
 Many different examples of JSROOT API usage can be found on [JSROOT API examples](https://root.cern/js/latest/api.htm) page.
 
@@ -527,7 +523,7 @@ When JSROOT installed with bower package manager, one could re-use basic librari
 
     <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
 
-Bower support will be automatically enabled when script path conatin "bower_components/jsroot/" string.
+Bower support will be automatically enabled when script path conatin __"bower_components/jsroot/"__ string.
  
 
 
@@ -538,14 +534,13 @@ THttpServer provides a JSON representation for every registered object with an u
 
     http://your_root_server:8080/Canvases/c1/root.json
 
-Such JSON representation generated using the [TBufferJSON](https://root.cern/root/html/TBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
+Such JSON representation generated using the [TBufferJSON](https://root.cern/doc/master/classTBufferJSON.html) class. One could create JSON file for any ROOT object directly, just writing in the code:
 
     ...
     obj->SaveAs("file.json");
     ...
 
-To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class.
-JSROOT provides a special method to create such class and properly handle it in different browsers.
+To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class. JSROOT provides a special method to create such object and properly handle it in different browsers.
 For receiving JSON from a server one could use following code:
 
     var req = JSROOT.NewHttpRequest("http://your_root_server:8080/Canvases/c1/root.json", 'object', userCallback);
@@ -572,6 +567,14 @@ One could use the JSROOT.draw function:
     JSROOT.draw("drawing", obj, "colz");
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
+
+Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/linev/jsroot/blob/master/demo/read_json.htm): 
+
+    var filename = "https://root.cern/js/files/th2ul.json.gz";
+    JSROOT.NewHttpRequest(filename, 'object', function(obj) {
+       JSROOT.draw("drawing", obj, "lego");
+    }).send();
+
 One is also able to update the drawing with a new version of the object:
 
     // after some interval request object again
@@ -606,13 +609,9 @@ For example, reading an object from a file and displaying it will look like:
           JSROOT.draw("drawing", obj, "colz");
        });
     });
-    
-Similar example with JSON file:
 
-    var filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.NewHttpRequest(filename, 'object', function(obj) {
-       JSROOT.draw("drawing", obj, "lego");
-    }).send(null);
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_file.htm)
+   
 
 
 ### TTree API
@@ -639,19 +638,31 @@ To get access to selected branches, one should use TSelector class:
           selector.AddBranch("px"); 
           selector.AddBranch("py");
           
-          selector.Process = function() {
-             // function called for every read event
-             console.log(this.tgtobj.px, this.tgtobj.py); 
+          var cnt = 0, sumpx = 0, sumpy = 0;
+              
+          selector.Begin = function() {
+             // function called before reading of TTree starts
           }
-          
+              
+          selector.Process = function() {
+             // function called for every entry
+             sumpx += this.tgtobj.px;
+             sumpy += this.tgtobj.py;
+             cnt++;
+          }
+              
           selector.Terminate = function(res) {
-             // function called when processing finishes 
+             if (!res || (cnt===0)) return;
+             var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
+             console.log('Results', meanpx, meanpy);
           }
           
           tree.Process(selector);
        
        });
     });
+
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_tree) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_tree.htm)
 
 This examples shows how read TTree from binary file and create JSROOT.TSelector object.
 Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
