@@ -1,27 +1,29 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. New 'float' browser kind, which overlays with objects drawing
-2. Browser can be enabled after drawing already done with 'nobrowser' mode
-3. One can hide browser at any time, switching to 'nobrowser' mode
+1. New 'float' browser kind overlays with objects drawing
+2. Browser can be enabled after drawing with 'nobrowser' mode
+3. One can hide browser or switch browser kind at any time
 4. New 'horizontal' and 'vertical' layouts for object display.
    One could configure several frames, each divided on sub-frames.
    Like display=horiz231 will create three horizontal frames, 
    divided on 2,3 and 1 sub-frames.  
-5. One could enable status line with where current tooltip info will be shown  
-5. Improve enlarge functionality - now works with all layouts
-6. Do not display all canvas tool buttons by default - provide toggle button instead 
-7. Let move TAxis title, its position now similar to ROOT itself
-8. Support col0 option for TH2Poly class to suppress empty bins
-9. Support more superscript/subscript letters in normal text output
-10. Correctly handle unzoom with logx/logy scales
-11. Let disable stamp parameter in file url with "-" at the end of file name
-12. Let use quotes in the URL parameters to protect complex arguments with special symbols
-13. Introduce direct streamers - like TBasket or TRef
-   Benefit - one can add custom streamers of such kind or reuse existing
-14. Handle TMatrixTSym classes in I/O  
-15. Implement for TH3 box2, box3, glbox2, glcol draw options
-16. Correctly count TH3 statistic in TTree::Draw 
+5. One could enable status line where current tooltip info will be shown  
+6. Improve enlarge functionality - now works with all layouts
+7. Do not display all canvas tool buttons by default - provide toggle button instead 
+8. Let move TAxis title, its position now similar to ROOT graphics
+9. Support 'col0' option for TH2Poly class to suppress empty bins
+10. Implement for TH3 'box2', 'box3', 'glbox2', 'glcol' draw options
+11. Support more superscript/subscript letters in normal text output
+12. Correctly handle unzoom with logx/logy scales
+13. Let disable stamp parameter in file url with "-" sign at the end of file name
+14. Let use quotes in the URL parameters to protect complex arguments with special symbols
+15. Introduce direct streamers - like TBasket or TRef
+    Benefit - one can add custom streamers of such kind or reuse existing
+16. Handle TMatrixTSym classes in I/O  
+17. Correctly count TH3 statistic in TTree::Draw
+18. Recognize bower installation when "bower_components/jsroot/scripts" string
+    appears in the script path (#120)  
 
 
 ## Changes in 5.0.3
