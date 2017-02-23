@@ -229,13 +229,13 @@
               { opt: "glcol", file: "histpainter6.root", item: "glvoxel",  title: "draw semi-transparent boxes with color derived from bin content" }
             ],
             TTree : [
-               { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },
-               { name: "2d",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py", title: "Two-dimensional TTree::Draw" },
-               { name: "3d",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py:pz", title: "Three-dimensional TTree::Draw" },
-               { name: "dump",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px+py+pz>>dump;num:30", title: "Three-dimensional TTree::Draw" },
-               { name: "hist",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py>>hist(50,-5,5,50,-5,5)", title: "TTree::Draw into custom histogram" },
-               { name: "cut",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5", title: "TTree::Draw with cut condition" },
-               { name: "player",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5;player", title: "Enable player to let change draw expression" },
+               { name: "Draw", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },
+               { name: "2d", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py", title: "Two-dimensional TTree::Draw" },
+               { name: "3d", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py:pz", title: "Three-dimensional TTree::Draw" },
+               { name: "dump", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px+py+pz>>dump;num:30", title: "Three-dimensional TTree::Draw" },
+               { name: "hist", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py>>hist(50,-5,5,50,-5,5)", title: "TTree::Draw into custom histogram" },
+               { name: "cut", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5", title: "TTree::Draw with cut condition" },
+               { name: "player", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5;player", title: "Enable player to let change draw expression" },
                { name: "lhcb2", asurl: true, file: "https://root.cern/files/lhcb2.root", item: "E;1//Event/Gen/Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
                { name: "atlas", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree", opt: "TileMuContainer_p1_TileMuObj.vector.m_phi", title: "Histogram data of tree from atlas30new.root file" },
                { name: "expr", asurl: true, file: "WJets.root", opt: "TMath::Abs(lep1_p4.M())", item: "t", title: "Use of expression and object methods" },
@@ -270,17 +270,17 @@
               { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
             ],
             TGeo : [
-              { name:"logo", file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
+              { name:"logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
               { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=vert333&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
               { name:"prim2", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[cone,coneseg,tube,tubeseg,ctub,eltu,pcon,pgon]&opts=[a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives, group 2" },
               { name:"prim3", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x2&items=[sphere,torus,parab,hype,comp]&opts=[a,a,a,a,a]", title:"Basic TGeo primitives, group 3" },
               { name:"comp", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[axis,axis,compaaxis,axis]", title:"Components of composite shape" },
-              { name:"building", file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
-              { name:"alice", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C", title: "ALICE geometry" },
-              { name:"atlas", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt_colors", title:"ATLAS geometry" },
-              { name:"cms", file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz", title: "CMS geomtery" },
-              { name:"lhcb", file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt_colors", title: "LHCb geometry" },
-              { name:"eve", json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
+              { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
+              { name:"alice", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C", title: "ALICE geometry" },
+              { name:"atlas", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt_colors", title:"ATLAS geometry" },
+              { name:"cms", asurl: true, file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz", title: "CMS geomtery" },
+              { name:"lhcb", asurl: true, file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt_colors", title: "LHCb geometry" },
+              { name:"eve", asurl: true, json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
               { name:"tracks", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz&file=" + filepath + "geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
               { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" }
             ],
@@ -428,17 +428,17 @@
               { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" }
             ],
             TGeo : [
-              { name: "atlas_cryo", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
-              { name: "atlas_simple", json: "geom/simple_atlas.json.gz" },
-              { name: "star", json: "geom/star_svtt.json.gz" },
-              { name: "hades", json: "geom/hades.json.gz" },
-              { name: "babar", json: "geom/babar_emca.json.gz" },
-              { name: "alice_simple", json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
+              { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
+              { name: "atlas_simple", asurl: true, json: "geom/simple_atlas.json.gz" },
+              { name: "star", asurl: true, json: "geom/star_svtt.json.gz" },
+              { name: "hades", asurl: true, json: "geom/hades.json.gz" },
+              { name: "babar", asurl: true, json: "geom/babar_emca.json.gz" },
+              { name: "alice_simple", asurl: true, json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
               { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
               { name: "count", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
-              { name: "tank", file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name: "lego", file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name: "cheon", file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" }
+              { name: "tank", asurl: true, file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "lego", asurl: true, file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "cheon", asurl: true, file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" }
             ],
             TGraph : [
               { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
@@ -689,13 +689,17 @@
                   
                   var prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&"; 
             
-                  if (entry.asurl)
-                     url = prefix + "file=" + filename + "&item=" + itemname;
+                  if (entry.asurl) {
+                     if (jsonname)
+                        url = prefix + 'json=' + jsonname;
+                     else   
+                         url = prefix + "file=" + filename + "&item=" + itemname;
+                  }
             
-                  if (url.length>0) 
+                  if (url) 
                      aaa.href = jsroot_path + url;
                   else
-                  if (jsonname.length>0)
+                  if (jsonname)
                      aaa.href = jsroot_path + prefix + "json=" + jsonname;
                   else
                      aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;   
