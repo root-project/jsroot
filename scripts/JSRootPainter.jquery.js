@@ -1245,7 +1245,8 @@
          }
       });
 
-      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 25;
+      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
+      var skip_height_check = (mode==='toggle') && (height === this.last_hsepar_height);
 
       this.AdjustSeparator(null, height, true);
 
@@ -1255,7 +1256,7 @@
       }
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
-      if ((mode==='toggle') && (height === this.last_hsepar_height)) this.status_layout.first_check = true; // if restored size, do not adjust height once again
+      if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
 
       var frame_titles = ['object name','object title','mouse coordiantes', 'object info'];
       for (var k=0;k<4;++k)
@@ -1282,7 +1283,7 @@
          var maxh = 0;
          for (var n=0;n<4;++n)
             maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
-         if (maxh>5) this.AdjustSeparator(null, maxh, true);
+         if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5))) this.AdjustSeparator(null, maxh, true);
       }
    }
 

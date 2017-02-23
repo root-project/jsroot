@@ -725,9 +725,9 @@
 }
 
 .jsroot_status_label {
-   margin: 2px;
+   margin: 3px;
    margin-left: 5px;
-   font-size: medium;
+   font-size: 14px;
    vertical-align: middle;
-    white-space: nowrap;
+   white-space: nowrap;
 }
