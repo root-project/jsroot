@@ -2556,16 +2556,9 @@
    JSROOT.TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
-      if (!JSROOT.Painter.ShowStatus) return;
-
       var obj = this.GetObject();
-      if (!obj) return;
 
-      //var pnt = null, can = this.svg_canvas();
-      //if (!can.empty()) {
-      //   pnt = d3.mouse(can.node());
-      //   pnt = { x: pnt[0], y: pnt[1] };
-      // }
+      if (!obj || !JSROOT.Painter.ShowStatus) return;
 
       JSROOT.Painter.ShowStatus(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
@@ -3232,7 +3225,7 @@
       var layer = this.svg_layer("stat_layer"),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
-      if (JSROOT.Painter.ShowStatus) {
+      if (JSROOT.Painter.ShowStatus && (this.enlarge_main('state')!=='on')) {
          hintsg.remove();
 
          var title = "", name = "", coordinates = "", info = "";

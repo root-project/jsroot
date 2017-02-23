@@ -103,11 +103,11 @@
          this.tt.style.left = (l + 3) + 'px';
       };
 
-      this.show = function(v, mouse_pos) {
+      this.show = function(v, mouse_pos, ignore_status) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
 
-         if (JSROOT.Painter.ShowStatus) {
+         if (JSROOT.Painter.ShowStatus && !ignore_status) {
             this.hide();
 
             var name = "", title = "", coord = "", info = "";
@@ -133,21 +133,10 @@
 
          if (this.tt === null) {
             this.tt = document.createElement('div');
-            this.tt.setAttribute('class', 'jsroot');
-            var t = document.createElement('div');
-            t.setAttribute('class', 'tt3d_border');
+            this.tt.setAttribute('class', 'jsroot_tt3d_main');
             this.cont = document.createElement('div');
-            this.cont.setAttribute('class', 'tt3d_cont');
-            var b = document.createElement('div');
-            b.setAttribute('class', 'tt3d_border');
-            this.tt.appendChild(t);
+            this.cont.setAttribute('class', 'jsroot_tt3d_cont');
             this.tt.appendChild(this.cont);
-            this.tt.appendChild(b);
-            this.tt.style.opacity = 1;
-            this.tt.style.filter = 'alpha(opacity=1)';
-            this.tt.style.position = 'absolute';
-            this.tt.style.display = 'block';
-            this.tt.style.overflow = 'hidden';
             this.parent.appendChild(this.tt);
          }
 
@@ -371,16 +360,16 @@
             return;
          }
 
-         var mouse = this.GetMousePos(evnt, {});
          evnt.preventDefault();
 
-         var intersects = this.GetIntersects(mouse);
-
-         var tip = this.ProcessMouseMove(intersects);
+         var mouse = this.GetMousePos(evnt, {}),
+             intersects = this.GetIntersects(mouse),
+             tip = this.ProcessMouseMove(intersects);
 
          this.cursor_changed = false;
          if (tip) {
-            this.tooltip.show(tip, mouse);
+            var ignore_status = (this.painter && this.painter.enlarge_main && this.painter.enlarge_main('state')==='on');
+            this.tooltip.show(tip, mouse, ignore_status);
             this.tooltip.pos(evnt)
          } else {
             this.tooltip.hide();

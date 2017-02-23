@@ -348,14 +348,15 @@
   tooltip style for 3d drawings
   --------------------------------------------------*/
 
-.jsroot .tt3d_border {
+.jsroot_tt3d_main {
+    opacity: 1;
+    filter: alpha(opacity=1);
+    position: absolute;
     display: block;
-    height: 5px;
-    margin-left: 5px;
     overflow: hidden;
+    z-index: 101;
 }
-
-.jsroot .tt3d_cont {
+.jsroot_tt3d_cont {
     display: block;
     padding: 2px 12px 3px 7px;
     margin-left: 5px;
