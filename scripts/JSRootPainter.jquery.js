@@ -468,6 +468,9 @@
       }
 
       this.addItemHtml(hitem, d3cont, "update");
+
+      if (this.browser_kind === "float")
+         this.AdjustFloatBrowserSize(null, true);
    }
 
    JSROOT.HierarchyPainter.prototype.UpdateBackground = function(hitem, scroll_into_view) {
@@ -824,20 +827,29 @@
           .css('left', left+'px').css('top', top+'px');
    }
 
-   JSROOT.HierarchyPainter.prototype.AdjustFloatBrowserSize = function(jmain) {
-      if (!jmain) return;
+   JSROOT.HierarchyPainter.prototype.AdjustFloatBrowserSize = function(jmain, onlycheckmax) {
+      if (!jmain) {
+         if (!this.gui_div) return;
+         jmain = $("#" + this.gui_div + " .jsroot_browser");
+      }
+      if (!jmain.length) return;
 
       var area = jmain.find(".jsroot_browser_area"),
           cont = jmain.find(".jsroot_browser_hierarchy"),
           chld = cont.children(":first");
+
+      if (onlycheckmax) {
+         if (area.parent().innerHeight() - 10 < area.innerHeight())
+            area.css('bottom', '0px').css('top','0px');
+         return;
+      }
 
       if (!chld.length) return;
 
       var h1 = cont.innerHeight(),
           h2 = chld.innerHeight();
 
-      if ((h2!==undefined) && (h2<h1*0.7))
-         area.css('bottom', ''); // .css('height', (cont.offset().top + h2 + 10) + 'px');
+      if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
    }
 
    JSROOT.HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
