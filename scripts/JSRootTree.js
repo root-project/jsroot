@@ -1964,8 +1964,8 @@
       // now calculate entries range
 
       handle.firstentry = handle.lastentry = 0;
-      for (var nn = 0; nn < selector.branches.length; ++nn) {
-         var branch = selector.branches[nn], e1 = branch.fFirstEntry;
+      for (var nn = 0; nn < handle.arr.length; ++nn) {
+         var branch = handle.arr[nn].branch, e1 = branch.fFirstEntry;
          if (e1 === undefined) e1 = (branch.fBasketBytes[0] ? branch.fBasketEntry[0] : 0);
          handle.firstentry = Math.max(handle.firstentry, e1);
          handle.lastentry = (nn===0) ? (e1 + branch.fEntries) : Math.min(handle.lastentry, e1 + branch.fEntries);
