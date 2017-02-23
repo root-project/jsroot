@@ -53,6 +53,13 @@
       this.canvas = canvas; // we need canvas to recalculate mouse events
       this.abspos = !prnt;
 
+      this.check_parent = function(prnt) {
+         if (prnt && (this.parent !== prnt)) {
+            this.hide();
+            this.parent = prnt;
+         }
+      }
+
       this.pos = function(e) {
          // method used to define position of next tooltip
          // event is delivered from canvas,
@@ -149,7 +156,7 @@
          }
       };
 
-      this.hide  = function() {
+      this.hide = function() {
          if (this.tt !== null)
             this.parent.removeChild(this.tt);
 
@@ -368,7 +375,10 @@
 
          this.cursor_changed = false;
          if (tip) {
-            var ignore_status = (this.painter && this.painter.enlarge_main && this.painter.enlarge_main('state')==='on');
+            var ignore_status = ((typeof this.painter.enlarge_main=='function') && (this.painter.enlarge_main('state')==='on'));
+
+            this.tooltip.check_parent(this.painter.select_main().node());
+
             this.tooltip.show(tip, mouse, ignore_status);
             this.tooltip.pos(evnt)
          } else {
