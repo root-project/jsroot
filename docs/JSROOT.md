@@ -397,17 +397,17 @@ In the `<div>` element with "simpleGUI" id one can specify many custom parameter
 JSROOT can read files from local file system using HTML5 FileReader functionality.
 Main limitation here - user should interactively select files for reading.
 There is button __"..."__ on the main JSROOT page, which starts file selection dialog. 
-Or one could invoke such dialog with "localfile" parameter in URL string.
-
--  <https://root.cern/js/latest/?localfile>
-
 If valid ROOT file is selected, JSROOT will be able to normally read content of such file.
-In some browsers due to security settings automatic popup of file dialog is forbidden, therefore
-one may need to press button explicitely.  
+
+One could try to invoke such dialog with "localfile" parameter in URL string:
+
+   - <https://root.cern/js/latest/?localfile>
+
+It could happen, that due to security limitations automatic popup will be blocked.  
 
 For debuging purposes one can install JSROOT on local file system and let read ROOT files from the same location. Like:
 
-   - <file://home/user/jsroot/index.htm?file=hsimple.root&item=hpx>
+   - <file:///home/user/jsroot/index.htm?file=hsimple.root&item=hpx>
 
 But this works only with Firefox.
 
