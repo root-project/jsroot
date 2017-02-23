@@ -7,12 +7,15 @@ It is the successor of the JSRootIO project.
 
 ## Installing JSROOT
 
-In most practical cases it is not necessary to install JSROOT on the local computer - it can be used directly from project web sites <https://root.cern/js/> and <http://jsroot.gsi.de/>. Developers repository for JSROOT code situated on <https://github.com/linev/jsroot/>.
+In most practical cases it is not necessary to install JSROOT - it can be used directly from project web sites <https://root.cern/js/> and <http://jsroot.gsi.de/>. 
 
-In rare cases one need to install JSROOT on separate web server - for such case one could use provided packages from <https://github.com/linev/jsroot/releases>. 
+When required, there are following alternatives to install JSROOT on other web servers:
 
-One could use JSROOT directly from local file system. If source code was unpacked in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
-
+   - download and unpack [provided](https://github.com/linev/jsroot/releases) packages (recommended)
+   - use [bower](https://bower.io/) package manager and invoke `bower install jsroot`  
+   - clone master branch from [repository](https://github.com/linev/jsroot/)
+ 
+One could use JSROOT directly from local file system. If source code was unpacked/checked-out in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
 
 
 ## Drawing objects in JSROOT
@@ -29,15 +32,19 @@ To automate files loading and objects drawing, one can provide number of URL par
 - opt - drawing option for the item
 - items - array of items name 
 - opts - array of drawing options for the items 
-- layout - can be 'simple', 'flex', 'collapsible', 'tabs' or 'gridNxM' where N and M integer values
-- nobrowser - do not display file browser
+- layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
+- browser - layout of the browser 'float', 'fix', 'no', 'off'  
+- nobrowser - do not display file browser (same as browser=no)
+- float - display floating browser (same as browser=float)
+- status - configure status line 'no' (default), 'off' (completely disable), 'size' 
 - load - name of extra JavaScript to load
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
 - paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
 - interactive - enable/disable interactive functions 0-disable all, 1-enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
-- style - name of TStyle object to define global JSROOT style 
+- style - name of TStyle object to define global JSROOT style
+- toolbar - show canvas tool buttons 'off', 'on' and 'popup'
 
 For instance:
 
@@ -45,14 +52,27 @@ For instance:
 - <https://root.cern/js/latest/?file=../files/hsimple.root&nobrowser&item=hpxpy;1&opt=colz>
 - <https://root.cern/js/latest/?file=../files/hsimple.root&noselect&layout=grid2x2&item=hprof;1>
 
+Following layouts are supported:
+
+  - simple - available space used for single object (default)
+  - [collapsible](https://root.cern/js/latest/api.htm#url_syntax_collapsible_layout) - fix-sized canvas group behind each other and can be collapsed individually
+  - [flex](https://root.cern/js/latest/api.htm#url_syntax_flexible_layout) - creates as many frames as necessary, each can be individually moved/enlarged
+  - [tabs](https://root.cern/js/latest/api.htm#url_syntax_tabs_layout) - tabs widget 
+  - [gridNxM](https://root.cern/js/latest/api.htm#url_syntax_grid_layout) - fixed-size grid with NxM frames
+  - gridiNxM - grid with NxM frames with possibility to adjust frames sizes 
+  - vertN - N frames sorted in vertical direction (like gridi1xN)
+  - horizN - N frames sorted in horizontal direction (like gridiNx1)
+  - [vert121](https://root.cern//js/latest/api.htm#url_syntax_veritcal_layout) - 3 frames sorted in vertical direction, second frame divided on two sub-frames
+  - [horiz32_12](https://root.cern//js/latest/api.htm#url_syntax_horizontal_layout) - 2 horizontal frames with 3 and 2 subframes, and 1/3 and 2/3 as relative size
+
 When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`. 
 
-Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.   
+Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.
 
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:
 
     <iframe width="700" height="400" 
-            src="https://root.cern/js/latest/index.htm?nobrowser&file=../files/hsimple.root&item=hpxpy;1&opt=colz">
+            src="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=hpxpy&opt=colz">
     </iframe>
 
 
@@ -238,6 +258,7 @@ Following parameters are supported:
   - "maxrange" - maximal number of ranges in single HTTP request 
   - "accum" - number of accumulated values before creating histogram
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
+  - "hbins" - number of bins on each histogram axis 
   - "drawopt" - drawing option for produced histogram
   
 Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
@@ -352,24 +373,22 @@ To enable CORS on Apache web server, hosting ROOT files, one should add followin
 
 More details about configuring of CORS headers can be found [here](https://developer.mozilla.org/en/http_access_control).
 
-Other solution - copy all JSROOT files to the location where the data files are located.
-In such case one could use the server with its default settings.
+Alternative - enable CORS requests in the browser. It can be easily done with [CORS Everywhere plugin](https://addons.mozilla.org/de/firefox/addon/cors-everywhere/) for the Firefox browser or [Allow CORS plugin](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?hl=en) for the Chrome browser.
 
-A simple case is to copy only the top index.htm file on the server and specify the full path to JSRootCore.js script like:
+
+Next solution - install JSROOT on the server hosting ROOT files. In such configuration JSROOT does not issue CORS requests, therefore server and browsers can be used with their default settings. A simplified variant of such solution - copy only the top index.htm file from JSROOT package and specify the full path to JSRootCore.js script like:
 
     ...
     <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.js?gui"></script>
     ...
 
-In such case one can also specify a custom files list:
+In the `<div>` element with "simpleGUI" id one can specify many custom parameters, which are allowed in the URL string:
 
     ...
-     <div id="simpleGUI" path="files/subdir" files="userfile1.root;subdir/usefile2.root">
+     <div id="simpleGUI" path="files/path" files="userfile1.root;subdir/usefile2.root">
        loading scripts ...
      </div>
     ...
-
-In such `<div>` element one could put most parameters which are allowed in the URL string (like item, file, opt and so on)
 
 
 ## Reading local ROOT files 
@@ -502,7 +521,14 @@ For instance, to load functionality with normal 2D graphics and binary ROOT file
 
     <script type="text/javascript" src="https://root.cern/js/latest/scripts/JSRootCore.min.js?2d&io"></script>
 
-One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly. 
+One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
+
+When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:   
+
+    <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
+
+Bower support will be automatically enabled when script path conatin "bower_components/jsroot/" string.
+ 
 
 
 ### Use of JSON

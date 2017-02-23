@@ -180,7 +180,7 @@
               { name: "lego", opt: "lego2,pal50" },
               { opt: "X+Y+" },
               { opt: "inspect", title: "universal object inspector, can be used for any class" },
-              { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[two_axis,draw_e1,draw_e34,draw_bar,draw_text]", title:"several TH1 examples from THistPainter documentation" }
+              { name:"docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert32&items=[two_axis,draw_e1,draw_bar,draw_e34,draw_text]", title:"several TH1 examples from THistPainter documentation" }
             ],
             TH2 : [
               { opt: "", file: "hsimple.root", item: "hpxpy;1" },
@@ -214,23 +214,28 @@
             ],
             TH2Poly : [
                { name: "honeycomb", file: "th2poly.root", item: "honeycomb;1", opt: "l,col" },
-               { opt: "lego", item: "boxes;1" },
+               { opt: "lego", file: "th2poly.root", item: "boxes;1" },
+               { opt: "col0z", title: "suppress empty bins with 0 option" },
                { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
                { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
             ],
             TH3 : [
               { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
-              { name: "box", file: "histpainter6.root", item: "draw_th3_box;1", opt: "" },
-              { opt: "box1", file: "glbox.root", item: "h31;1" },
+              { opt: "box", file: "histpainter6.root", item: "draw_th3_box;1/h3box" },
+              { name: "box2", file: "hsimple.root", item: "ntuple", opt: "px:py:pz;hbins:15;drawopt:box2", title: "use colors" },
+              { name: "box3", file: "hsimple.root", item: "ntuple", opt: "px:py:pz;hbins:15;drawopt:box3", title: "use colors" },
+              { opt: "glbox1", file: "glbox.root", item: "h31;1", title: "draw spheres" },
+              { opt: "glbox2", title: "draw spheres with color derived from bin content" },
+              { opt: "glcol", file: "histpainter6.root", item: "glvoxel",  title: "draw semi-transparent boxes with color derived from bin content" }
             ],
             TTree : [
-               { name: "Draw",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },
-               { name: "2d",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py", title: "Two-dimensional TTree::Draw" },
-               { name: "3d",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py:pz", title: "Three-dimensional TTree::Draw" },
-               { name: "dump",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px+py+pz>>dump;num:30", title: "Three-dimensional TTree::Draw" },
-               { name: "hist",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py>>hist(50,-5,5,50,-5,5)", title: "TTree::Draw into custom histogram" },
-               { name: "cut",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5", title: "TTree::Draw with cut condition" },
-               { name: "player",  asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5;player", title: "Enable player to let change draw expression" },
+               { name: "Draw", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px", title: "Histogram data of TBranch object" },
+               { name: "2d", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py", title: "Two-dimensional TTree::Draw" },
+               { name: "3d", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py:pz", title: "Three-dimensional TTree::Draw" },
+               { name: "dump", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px+py+pz>>dump;num:30", title: "Three-dimensional TTree::Draw" },
+               { name: "hist", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py>>hist(50,-5,5,50,-5,5)", title: "TTree::Draw into custom histogram" },
+               { name: "cut", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5", title: "TTree::Draw with cut condition" },
+               { name: "player", asurl: true, file: "hsimple.root", item: "ntuple", opt: "px:py::pz>5;player", title: "Enable player to let change draw expression" },
                { name: "lhcb2", asurl: true, file: "https://root.cern/files/lhcb2.root", item: "E;1//Event/Gen/Header/m_evtNumber", title: "Histogram data of sub-sub-branches from lhcb2.root file" },
                { name: "atlas", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree", opt: "TileMuContainer_p1_TileMuObj.vector.m_phi", title: "Histogram data of tree from atlas30new.root file" },
                { name: "expr", asurl: true, file: "WJets.root", opt: "TMath::Abs(lep1_p4.M())", item: "t", title: "Use of expression and object methods" },
@@ -265,17 +270,17 @@
               { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
             ],
             TGeo : [
-              { name:"logo", file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
-              { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
+              { name:"logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
+              { name:"prim", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=vert333&items=[box,para,arb8,trap,gtra,trd1,trd2,xtru]&opts=[a,a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
               { name:"prim2", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x3&items=[cone,coneseg,tube,tubeseg,ctub,eltu,pcon,pgon]&opts=[a,a,a,a,a,a,a,a]", title:"Basic TGeo primitives, group 2" },
               { name:"prim3", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid3x2&items=[sphere,torus,parab,hype,comp]&opts=[a,a,a,a,a]", title:"Basic TGeo primitives, group 3" },
               { name:"comp", url: "?nobrowser&file=" + filepath + "geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[axis,axis,compaaxis,axis]", title:"Components of composite shape" },
-              { name:"building", file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
-              { name:"alice", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C", title: "ALICE geometry" },
-              { name:"atlas", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt_colors", title:"ATLAS geometry" },
-              { name:"cms", file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz", title: "CMS geomtery" },
-              { name:"lhcb", file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt_colors", title: "LHCb geometry" },
-              { name:"eve", json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
+              { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
+              { name:"alice", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C", title: "ALICE geometry" },
+              { name:"atlas", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt_colors", title:"ATLAS geometry" },
+              { name:"cms", asurl: true, file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz", title: "CMS geomtery" },
+              { name:"lhcb", asurl: true, file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt_colors", title: "LHCb geometry" },
+              { name:"eve", asurl: true, json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
               { name:"tracks", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz&file=" + filepath + "geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
               { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" }
             ],
@@ -288,7 +293,7 @@
               { opt:"LP" },
               { opt:"B" },
               { opt:"B1" },
-              { name:"docu", url: "?nobrowser&file=" + filepath + "graph.root+&layout=grid3x3&items=[c1,c47,c4,c48,c41,c42,c43,c44,c45]", title:"several canvas from TGraph documentation page" }
+              { name:"docu", url: "?nobrowser&file=" + filepath + "graph.root+&layout=vert333&items=[c1,c47,c4,c48,c41,c42,c43,c44,c45]", title:"several canvas from TGraph documentation page" }
             ],
             TGraphErrors : [
               { opt:"", file: "graph.root", item: "GraphErrors;1" },
@@ -347,7 +352,7 @@
          
          var extra = {
             TH1: [
-              { name:"docu_zero", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&style=style_zero&items=[draw_zero2,draw_zero1,draw_bar]", title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
+              { name:"docu_zero", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert21&style=style_zero&items=[draw_bar,draw_zero2,draw_zero1]", title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
               { name: "varbins", file: "hbins.root", item: "SpectraPions;1" },
               { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
               { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
@@ -362,16 +367,16 @@
               { name: "candle", file: "candleplot.root", item: "c1;1" },
               { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
               { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
-              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_th2e,draw_scat, draw_arr, draw_box, draw_box1, draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
-              { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
-              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid3x2&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
-              { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
-              { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
-              { name: "docu_poly", url: "?nobrowser&file=" + filepath + "histpainter6.root+&layout=grid2x2&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" },
+              { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert33&items=[draw_th2e,draw_scat,draw_arr,draw_box,draw_box1,draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
+              { name: "docu_col", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
+              { name: "docu_cont", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert33&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
+              { name: "docu_lego", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
+              { name: "docu_surf", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
               { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" }
             ],
             TH2Poly : [
-               { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" }
+               { name: "germany", url: "?nobrowser&file=" + filepath + "th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
+               { name: "docu", url: "?nobrowser&file=" + filepath + "histpainter6.root&layout=vert22&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
             ],
             TH3 : [
                { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
@@ -423,17 +428,17 @@
               { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" }
             ],
             TGeo : [
-              { name: "atlas_cryo", file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
-              { name: "atlas_simple", json: "geom/simple_atlas.json.gz" },
-              { name: "star", json: "geom/star_svtt.json.gz" },
-              { name: "hades", json: "geom/hades.json.gz" },
-              { name: "babar", json: "geom/babar_emca.json.gz" },
-              { name: "alice_simple", json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
+              { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
+              { name: "atlas_simple", asurl: true, json: "geom/simple_atlas.json.gz" },
+              { name: "star", asurl: true, json: "geom/star_svtt.json.gz" },
+              { name: "hades", asurl: true, json: "geom/hades.json.gz" },
+              { name: "babar", asurl: true, json: "geom/babar_emca.json.gz" },
+              { name: "alice_simple", asurl: true, json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
               { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
               { name: "count", file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "count", title: "Count volume in large geomtery" },
-              { name: "tank", file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name: "lego", file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
-              { name: "cheon", file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" }
+              { name: "tank", asurl: true, file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "lego", asurl: true, file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
+              { name: "cheon", asurl: true, file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" }
             ],
             TGraph : [
               { name:"twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
@@ -446,7 +451,7 @@
               { name:"folder", url: "?file=" + filepath + "folders.root&expand=RsnMgr;1/input/0/2/10", title: "TFolder class" },
               { name:"task", url: "?file=" + filepath + "tasks.root&expand=run;1", title: "TTask class" },
               { name:"alitask", url: "?file=" + filepath + "alitasks.root&expand=RsnMgr;1/input/1/3/9", title: "AliRoot TTask classes" },
-              { name:"aliQA", url: "?file=" + filepath + "QAresults_barrel.root&expand=TPC_PerformanceQA/TPCQA;1", title: "Alice QA file" },
+              { name:"aliQA", asurl: "browser", file: "QAresults_barrel.root", item: "TPC_PerformanceQA/TPCQA;1/AliPerformanceTPC", opt: "inspect", title: "Objects from Alice QA file" },
               { name: "roofit", url: "?nobrowser&file=https://root.cern/files/stressRooFit_v534_ref.root&layout=grid2x2&items=[rf101_plot2,rf201_plot1,rf310_plot2,rf708_plot6]", title: "Several RooFit plots (still some classes not work)" },
               { name:"ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O" }
             ]
@@ -588,7 +593,7 @@
                   hpainter.SetDisplay(layout,"right-div");
                }
                
-               hpainter.StartGUI(null, RunBigTest, null, url); 
+               hpainter.StartGUI(null, RunBigTest, url); 
             } else   
             if (jsonname.length > 0) {
                testfile = testobj = null;
@@ -684,13 +689,17 @@
                   
                   var prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&"; 
             
-                  if (entry.asurl)
-                     url = prefix + "file=" + filename + "&item=" + itemname;
+                  if (entry.asurl) {
+                     if (jsonname)
+                        url = prefix + 'json=' + jsonname;
+                     else   
+                         url = prefix + "file=" + filename + "&item=" + itemname;
+                  }
             
-                  if (url.length>0) 
+                  if (url) 
                      aaa.href = jsroot_path + url;
                   else
-                  if (jsonname.length>0)
+                  if (jsonname)
                      aaa.href = jsroot_path + prefix + "json=" + jsonname;
                   else
                      aaa.href = jsroot_path + prefix + "file=" + filename + "&item=" + itemname;   
