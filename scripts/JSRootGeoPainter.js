@@ -1485,6 +1485,13 @@
 
       this._camera.updateProjectionMatrix();
 
+      if (this.options.project) {
+         switch (this.options.project) {
+            case 'x': this._camera.position.set(3*Math.max(sizey,sizez), 0, 0); break
+            case 'y': this._camera.position.set(0, 3*Math.max(sizex,sizez), 0); break
+            case 'z': this._camera.position.set(0, 0, 3*Math.max(sizex,sizey)); break
+         }
+      } else
       if (this.options._yup) {
          this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
       } else {
