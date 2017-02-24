@@ -1,5 +1,12 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Implement dropping of TTree object on the geometry drawing.
+   This automatically invokes extract_geo_tracks() function, which
+   should extract TGeoTracks from provided TTree.
+   Example can be found in demo/alice_esd.js and in api.htm.
+
+
 ## Changes in 5.1.0
 1. New 'float' browser kind overlays with objects drawing
 2. Browser can be enabled after drawing with 'nobrowser' mode

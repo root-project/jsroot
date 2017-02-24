@@ -1699,6 +1699,31 @@
 
    JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt, call_back) {
 
+      if (obj && (obj.$kind==='TTree')) {
+         // drop tree means function call which must extract tracks from provided tree
+
+         var funcname = "extract_geo_tracks";
+
+         if (opt && opt.indexOf("$")>0) {
+            funcname = opt.substr(0, opt.indexOf("$"));
+            opt = opt.substr(opt.indexOf("$")+1);
+         }
+
+         var func = JSROOT.findFunction(funcname);
+
+         if (!func) return JSROOT.CallBack(call_back);
+
+         var geo_painter = this;
+
+         return func(obj, opt, function(tracks) {
+            if (tracks) {
+               geo_painter.drawExtras(tracks);
+               geo_painter.Render3D(100);
+            }
+            JSROOT.CallBack(call_back); // finally callback
+         });
+
+      } else
       if (this.drawExtras(obj, itemname, true)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
          this.Render3D(100);
@@ -1807,9 +1832,13 @@
             if (this.drawExtras(sobj, sname, add_objects)) isany = true;
          }
       } else
+      if (obj._typename === 'TGeoTrack') {
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         isany = this.drawGeoTrack(obj, itemname);
+      } else
       if (obj._typename === 'TEveTrack') {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
-         isany = this.drawTrack(obj, itemname);
+         isany = this.drawEveTrack(obj, itemname);
       } else
       if (obj._typename === 'TEvePointSet') {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
@@ -1843,15 +1872,45 @@
       return extras;
    }
 
+   JSROOT.TGeoPainter.prototype.drawGeoTrack = function(track, itemname) {
+      if (!track || !track.fNpoints) return false;
 
-   JSROOT.TGeoPainter.prototype.drawTrack = function(track, itemname) {
-      if (!track) return false;
-      if (track.fN <= 0) return false;
+      var track_width = track.fLineWidth || 1,
+          track_color = JSROOT.Painter.root_colors[track.fLineColor] || "rgb(255,0,255)";
 
-      var track_width = track.fLineWidth;
+      if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-      var track_color = JSROOT.Painter.root_colors[track.fLineColor];
-      if (track_color == undefined) track_color = "rgb(255,0,255)";
+      var buf = new Float32Array((track.fNpoints-1)*6), pos = 0;
+
+      for (var k=0;k<track.fNpoints-1;++k) {
+         buf[pos]   = track.fPoints[k*3];
+         buf[pos+1] = track.fPoints[k*3+1];
+         buf[pos+2] = track.fPoints[k*3+2];
+         buf[pos+3] = track.fPoints[k*3+3];
+         buf[pos+4] = track.fPoints[k*3+4];
+         buf[pos+5] = track.fPoints[k*3+5];
+         pos+=6;
+      }
+
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+      var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
+      var line = new THREE.LineSegments(geom, lineMaterial);
+
+      line.geo_name = itemname;
+      line.geo_object = track;
+      if (!JSROOT.browser.isWin) line.hightlightLineWidth = track_width*3;
+
+      this.getExtrasContainer().add(line);
+
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawEveTrack = function(track, itemname) {
+      if (!track || (track.fN <= 0)) return false;
+
+      var track_width = track.fLineWidth || 1,
+          track_color = JSROOT.Painter.root_colors[track.fLineColor] || "rgb(255,0,255)";
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
