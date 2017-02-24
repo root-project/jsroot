@@ -10934,7 +10934,7 @@
          if (item._childs.length == 0) delete item._childs;
       }
 
-      painter.select_main().style('overflow','auto');
+      // painter.select_main().style('overflow','auto');
 
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
@@ -10961,7 +10961,7 @@
       if ((typeof obj.fName === 'string') && (obj.fName.length>0))
          painter.h._name = obj.fName;
 
-      painter.select_main().style('overflow','auto');
+      // painter.select_main().style('overflow','auto');
 
       painter.fill_context = function(menu, hitem) {
          var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');

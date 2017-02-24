@@ -343,8 +343,8 @@
 
       if ('_value' in hitem) {
          var d3p = d3line.append("p");
-         if ('_vclass' in hitem) d3btns.attr('class', hitem._vclass);
-         if (!hitem._isopen) d3btns.html(hitem._value);
+         if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
+         if (!hitem._isopen) d3p.html(hitem._value);
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
@@ -396,7 +396,10 @@
 
       var d3elem = this.select_main();
 
-      d3elem.html(""); // clear html - most simple way
+      d3elem.html("")
+            .style('overflow','hidden') // clear html - most simple way
+            .style('display','flex')
+            .style('flex-direction','column');
 
       var h = this, factcmds = [], status_item = null;
       this.ForEach(function(item) {
@@ -408,39 +411,22 @@
       if ((this.h == null) || d3elem.empty())
          return JSROOT.CallBack(callback);
 
-      var d3btns;
+      if (factcmds.length) {
+         var fastbtns = d3elem.append("div").attr("class","jsroot");
+         for (var n=0;n<factcmds.length;++n) {
+            var btn = fastbtns.append("button")
+                       .text("")
+                       .attr("class",'fast_command')
+                       .attr("item", this.itemFullName(factcmds[n]))
+                       .attr("title", factcmds[n]._title)
+                       .on("click", function() { h.ExecuteCommand(d3.select(this).attr("item"), this); } );
 
-      if (this.browser_buttons) {
-         d3btns = d3.select(this.browser_buttons).select("p");
-         if (d3btns.empty()) d3btns = d3.select(this.browser_buttons).append("p");
-                        else d3btns.html("");
-      } else {
-         d3btns = delem.append("p").style("margin-bottom","3px").style("margin-top",0);
-
-      }
-      d3btns.attr("class", "jsroot");
-
-      var maindiv =
-         d3elem.append("div")
-               .attr("class", "jsroot")
-               .style('font-size', this.with_icons ? "12px" : "15px");
-
-      if (this.background) // case of object inspector and streamer infos display
-         maindiv.style("background-color", this.background)
-                .style('margin', '2px').style('padding', '2px');
-
-      for (var n=0;n<factcmds.length;++n) {
-         var btn = maindiv.append("button")
-                    .text("")
-                    .attr("class",'fast_command')
-                    .attr("item", this.itemFullName(factcmds[n]))
-                    .attr("title", factcmds[n]._title)
-                    .on("click", function() { h.ExecuteCommand(d3.select(this).attr("item"), this); } );
-
-         if ('_icon' in factcmds[n])
-            btn.append('img').attr("src", factcmds[n]._icon);
+            if ('_icon' in factcmds[n])
+               btn.append('img').attr("src", factcmds[n]._icon);
+         }
       }
 
+      var d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
       d3btns.append("a").attr("class", "h_button").text("open all")
             .attr("title","open all items in the browser").on("click", h.toggleOpenState.bind(h,true));
       d3btns.append("text").text(" | ");
@@ -458,6 +444,17 @@
          d3btns.append("a").attr("class", "h_button").text("clear")
                .attr("title","clear all drawn objects").on("click", h.clear.bind(h,false));
       }
+
+      var maindiv =
+         d3elem.append("div")
+               .attr("class", "jsroot")
+               .style('font-size', this.with_icons ? "12px" : "15px")
+               .style("overflow","auto")
+               .style("flex","1");
+
+      if (this.background) // case of object inspector and streamer infos display
+         maindiv.style("background-color", this.background)
+                .style('margin', '2px').style('padding', '2px');
 
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
@@ -1078,8 +1075,6 @@
          guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
                   + '</div>';
 
-      guiCode += '<div class="jsroot_browser_buttons"></div>';
-
       guiCode += "</div>";
 
       guiCode += '<div id="' + this.gui_div + '_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
@@ -1161,8 +1156,6 @@
       }
 
       this.SetDivId(this.gui_div + '_browser_hierarchy');
-
-      this.browser_buttons = main.select('.jsroot_browser_buttons').node();
 
       if (update_html) {
          this.RefreshHtml();
