@@ -172,9 +172,12 @@
               { name: "Adopt colors", url: "demo/adopt_colors.htm", title: "Read set of ROOT colors before display of the object", src: true },
               { name: "File hierarchy", url: "demo/file_hierarchy.htm", title: "Use HierarchyPainter to display file objects hiararchy", src: true },
               { name: "Zooming", url: "demo/zoom_handler.htm", title: "Redefine Zoom function to make synchronous zooming in other histogram", src: true },
-              { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
-              { name: "Read tree", url: "demo/read_tree.htm", title: "Read data from TTree using TSelector class", src: true },
-              { name: "User tree", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&load=demo/gaudi.js", title : "Example of user custom streamer for reading TTree data (Gaudi)", src: "demo/gaudi.js" }
+              { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" }
+            ],
+            'TTree': [
+               { name: "TSelector", url: "demo/read_tree.htm", title: "Simple example of reading TTree using TSelector class", src: true, syn: "custom_html_read_tree" },
+               { name: "User class", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&load=demo/gaudi.js", title : "Example of user custom streamer for reading TTree data (Gaudi)", src: "demo/gaudi.js", syn: "custom_html_user_tree" },
+               { name: "Extract tracks", url: "index.htm?files=[https://root.cern/files/alice_ESDgeometry.root,https://root.cern/files/alice_ESDs.root]&item=[[0]/Gentle;1,[1]/esdTree;1]&load=demo/alice_esd.js", title : "Extract tracks from the custom tree", src: "demo/alice_esd.js" }
             ],
             'httpserver.C' : [
               { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C' },
@@ -245,9 +248,8 @@
                
                var lines = res.split("\n");
                for (var k=0;k<lines.length;++k) {
-                  var pre = document.createElement( 'pre' );
-                  
-                  pre.textContent = lines[k];
+                  var pre = document.createElement('pre');
+                  pre.textContent = lines[k] || " ";
                   srcviewer.appendChild(pre);
                }
                srcviewer.focus();
@@ -309,7 +311,7 @@
                   content.appendChild( saaa );
                   SetSourceListener(saaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
                   
-                  if (window.location.hash == "#" + shortname + "_src") {
+                  if ((window.location.hash == "#" + shortname + "_src") || (entry.syn && window.location.hash == "#" + entry.syn + "_src")) {
                      saaa.focus();
                      ProcessSourceClick(((entry.src===true) ? url : entry.src));
                   }
@@ -317,7 +319,7 @@
                  
                content.appendChild(document.createElement('br'));
                
-              if (window.location.hash == "#" + shortname) {
+              if ((window.location.hash == "#" + shortname) || (entry.syn && window.location.hash == "#" + entry.syn)) {
                  aaa.focus();
                  ProcessClick(url);
               }
