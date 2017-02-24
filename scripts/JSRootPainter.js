@@ -9474,7 +9474,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
-      if (this.divid == null) return JSROOT.CallBack(callback);
+      if (!this.divid) return JSROOT.CallBack(callback);
       var hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
           hpainter.RefreshHtml(callback);

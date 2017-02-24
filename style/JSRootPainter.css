@@ -650,10 +650,14 @@
    opacity: 0.3;
 }
 
+.jsroot_browser_buttons {
+   margin-top:3px;
+}
+
 .jsroot_browser_hierarchy {
 	overflow:auto;
 	flex:1;
-	margin-top:5px;
+	margin-top:2px;
 }
 
 .jsroot_status_area {
