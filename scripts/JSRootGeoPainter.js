@@ -1183,9 +1183,9 @@
             obj3d.add(mesh);
 
             if (this.options._debug || this.options._full) {
-               var helper = new THREE.WireframeHelper(mesh);
-               helper.material.color.set(prop.fillcolor);
-               helper.material.linewidth = ('fVolume' in nodeobj) ? nodeobj.fVolume.fLineWidth : 1;
+               var wfg = new THREE.WireframeGeometry( mesh.geometry ),
+                   wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: (nodeobj && nodeobj.fVolume) ? nodeobj.fVolume.fLineWidth : 1  } ),
+                   helper = new THREE.LineSegments(wfg, wfm);
                obj3d.add(helper);
             }
 
