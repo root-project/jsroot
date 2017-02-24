@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "5.1.0 23/02/2017";
+   JSROOT.version = "dev 24/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1376,6 +1376,12 @@
          case 'TGeoNodeMatrix':
             JSROOT.Create("TGeoNode", obj);
             JSROOT.extend(obj, { fMatrix: null });
+            break;
+         case 'TGeoTrack':
+            JSROOT.Create("TObject", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.Create("TAttMarker", obj);
+            JSROOT.extend(obj, { fGeoAtt:0, fNpoints: 0, fPoints: [] });
             break;
       }
 
