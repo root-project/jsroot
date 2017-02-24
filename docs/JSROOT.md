@@ -662,7 +662,7 @@ To get access to selected branches, one should use TSelector class:
        });
     });
 
-Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_tree) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_tree.htm)
+Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_tree.htm)
 
 This examples shows how read TTree from binary file and create JSROOT.TSelector object.
 Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
