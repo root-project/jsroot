@@ -10079,7 +10079,7 @@
 
       if (hitem) {
          // item marked as it cannot be expanded, also top item cannot be changed
-         if ((hitem._more === false) || !hitem._parent) return JSROOT.CallBack(call_back);
+         if ((hitem._more === false) || (!hitem._parent && hitem._childs)) return JSROOT.CallBack(call_back);
 
          if (hitem._childs && hitem._isopen) {
             hitem._isopen = false;
