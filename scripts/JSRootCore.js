@@ -1119,6 +1119,8 @@
           requirements = "io;2d;",
           simplegui = document.getElementById('simpleGUI');
 
+      if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
+
       if (simplegui) {
          debugout = 'simpleGUI';
          if ((JSROOT.GetUrlOption('json')!=null) &&
@@ -1895,8 +1897,6 @@
 
       if ( typeof define === "function" && define.amd )
          return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
-
-      if (JSROOT.GetUrlOption('libs')!=null) JSROOT.use_full_libs = true;
 
       var prereq = "";
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
