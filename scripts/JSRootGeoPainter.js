@@ -1697,14 +1697,14 @@
    }
 
 
-   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem) {
+   JSROOT.TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt, call_back) {
 
       if (this.drawExtras(obj, itemname, true)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
          this.Render3D(100);
       }
 
-      return null;
+      JSROOT.CallBack(call_back);
    }
 
    JSROOT.TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {

@@ -9698,28 +9698,25 @@
       if (opt===undefined) opt = "";
 
       function drop_callback(drop_painter) {
-         if (drop_painter) drop_painter.SetItemName(itemname);
+         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname);
          JSROOT.CallBack(call_back);
       }
 
       h.get(itemname, function(item, obj) {
-         if (obj) {
-            var dummy = new JSROOT.TObjectPainter();
+         if (!obj) JSROOT.CallBack(call_back);
 
-            dummy.SetDivId(divid, -1);
-            var main_painter = dummy.main_painter(true);
+         var dummy = new JSROOT.TObjectPainter();
+         dummy.SetDivId(divid, -1);
+         var main_painter = dummy.main_painter(true);
 
-            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-               main_painter.PerformDrop(obj, itemname, item);
-            else
-            if (main_painter && main_painter.accept_drops) {
-               return JSROOT.draw(divid, obj, "same " + opt, drop_callback);
-            } else {
-               h.CleanupFrame(divid);
-               return JSROOT.draw(divid, obj, opt, drop_callback);
-            }
-         }
-         JSROOT.CallBack(call_back);
+         if (main_painter && (typeof main_painter.PerformDrop === 'function'))
+            return main_painter.PerformDrop(obj, itemname, item, opt, drop_callback);
+
+         if (main_painter && main_painter.accept_drops)
+            return JSROOT.draw(divid, obj, "same " + opt, drop_callback);
+
+         h.CleanupFrame(divid);
+         return JSROOT.draw(divid, obj, opt, drop_callback);
       });
 
       return true;
