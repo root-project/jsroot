@@ -10044,10 +10044,8 @@
          if (handle && handle.expand) {
             JSROOT.AssertPrerequisites(handle.prereq, function() {
                _item._expand = JSROOT.findFunction(handle.expand);
-               if (_item._expand)
-                  DoExpandItem(_item, _obj, _name);
-               else
-                  delete _item._expand;
+               if (_item._expand) return DoExpandItem(_item, _obj, _name);
+               JSROOT.CallBack(call_back);
             });
             return true;
          }
@@ -10083,13 +10081,13 @@
       }
 
       if (hitem) {
-         // item marked as it cannot be expanded
-         if (hitem._more === false) return JSROOT.CallBack(call_back);
+         // item marked as it cannot be expanded, also top item cannot be changed
+         if ((hitem._more === false) || !hitem._parent) return JSROOT.CallBack(call_back);
 
          if (hitem._childs && hitem._isopen) {
             hitem._isopen = false;
             if (!silent) hpainter.UpdateTreeNode(hitem, d3cont);
-            return;
+            return JSROOT.CallBack(call_back);
          }
 
          if (hitem._obj && DoExpandItem(hitem, hitem._obj, itemname)) return;
