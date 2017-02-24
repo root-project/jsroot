@@ -196,6 +196,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
+                   project: '',
                    clipx: false, clipy: false, clipz: false, ssao: false,
                    script_name: "", transparancy: 1, autoRotate: false };
 
@@ -265,6 +266,10 @@
       if (check("clipz")) res.clipz = true;
       if (check("clip")) res.clipx = res.clipy = res.clipz = true;
 
+      if (check("projx")) res.project = 'x';
+      if (check("projy")) res.project = 'y';
+      if (check("projz")) res.project = 'z';
+
       if (check("dflt_colors")) this.SetRootDefaultColors();
       if (check("ssao")) res.ssao = true;
 
@@ -281,7 +286,7 @@
 
       if (check("count")) res._count = true;
 
-      res.transparancy = checkval('transp', 100)/100;
+      res.transparancy = checkval('transp',100)/100;
 
       if (check("axis") || check("a")) { res._axis = true; res._yup = false; }
 
@@ -1113,7 +1118,7 @@
 
          if (this.drawing_stage === 7) {
             // building shapes
-            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
+            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500, this.options.project);
             if (res.done) {
                this.drawing_stage = 8;
             } else {
@@ -1172,7 +1177,18 @@
             var mesh;
 
             if (obj3d.matrixWorld.determinant() > -0.9) {
-               mesh = new THREE.Mesh( shape.geom, prop.material );
+
+               if (this.options.project) {
+                  var geom2 = JSROOT.GEO.projectGeometry(shape.geom, obj3d.matrixWorld, this.options.project);
+                  if (JSROOT.GEO.numGeometryFaces(geom2)===0) continue;
+
+                  var m2 = new THREE.Matrix4();
+                  m2.getInverse(obj3d.matrixWorld);
+                  geom2.applyMatrix(m2);
+                  mesh = new THREE.Mesh( geom2, prop.material );
+               } else {
+                  mesh = new THREE.Mesh( shape.geom, prop.material );
+               }
             } else {
                mesh = this.createFlippedMesh(obj3d, shape, prop.material);
             }

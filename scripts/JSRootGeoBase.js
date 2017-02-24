@@ -376,7 +376,6 @@
       }
    }
 
-
    JSROOT.GEO.GeometryCreator.prototype.Create = function() {
       if (this.nfaces !== this.indx/9)
          console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
@@ -389,7 +388,7 @@
 
    // ================================================================================
 
-   // same methods as GeometryCreator, but this different implementation
+   // same methods as GeometryCreator, but with different implementation
 
    JSROOT.GEO.PolygonsCreator = function() {
       this.polygons = [];
@@ -590,15 +589,13 @@
    }
 
    /** @memberOf JSROOT.GEO */
-   JSROOT.GEO.createCubeBuffer = function( shape, faces_limit) {
+   JSROOT.GEO.createCubeBuffer = function(shape, faces_limit) {
 
       if (faces_limit < 0) return 12;
 
       var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
       var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
-
-      // var creator = new JSROOT.GEO.GeometryCreator(12);
 
       creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
 
@@ -2653,7 +2650,6 @@
       return matrix;
    }
 
-
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
@@ -2708,6 +2704,22 @@
 
    }
 
+   /** @memberOf JSROOT.GEO */
+   JSROOT.GEO.projectGeometry = function(geom, matrix, projection) {
+      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
+
+      var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
+
+      shape['fD'+projection.toUpperCase()] = 1;
+
+      var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
+
+      var bsp2 = new ThreeBSP.Geometry(geom2, null, 0);
+
+      bsp1.direct_intersect(bsp2);
+
+      return bsp1.toBufferGeometry();
+   }
 
    /**
     * Creates geometry model for the provided shape
@@ -2753,9 +2765,7 @@
                                           else place = " at: " + place;
          }
          JSROOT.GEO.warn(shape._typename + " err: " + e.message + place);
-
       }
-
 
       return limit < 0 ? 0 : null;
    }
@@ -3557,7 +3567,6 @@
 
       return newlst;
    }
-
 
    JSROOT.GEO.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
 
