@@ -1216,11 +1216,42 @@
          return true;
       }
 
+      if (this.drawing_stage === 10) {
+         var obj = this.GetObject();
+         if (!obj || !obj.$geo_painter) {
+            console.warn('MAIN PAINTER DISAPPER');
+            this.drawing_stage = 0;
+            return false;
+         }
+
+         // wait when  main painter is ready
+         if (!obj.$geo_painter._drawing_ready) return 1;
+
+         var pthis = this;
+
+         obj.$geo_painter._toplevel.traverse(function(node) {
+            if (!(node instanceof THREE.Mesh) || !node.stack) return;
+
+            // var info = pthis._clones.ResolveStack(entry.stack, true);
+
+            var geom2 = JSROOT.GEO.projectGeometry(node.geometry, node.parent.matrixWorld, pthis.options.project);
+
+            var mesh2 = new THREE.Mesh( geom2, node.material );
+
+            pthis._toplevel.add(mesh2);
+
+            mesh2.stack = node.stack;
+         });
+
+         this.drawing_log = "Building done";
+         this.drawing_stage = 0;
+         return false;
+      }
+
+
       console.log('never come here');
 
       return false;
-
-
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -1368,9 +1399,15 @@
       this._last_render_tm = this._startm;
       this._last_render_meshes = 0;
       this.drawing_stage = 1;
+      this._drawing_ready = false;
       this.drawing_log = "collect visible";
       this._num_meshes = 0;
       this._num_faces = 0;
+
+      if (this.options.project && !this._clones_owner) {
+         this.drawing_stage = 10;
+         this.drawing_log = "wait for main painter";
+      }
 
       delete this._last_manifest;
       delete this._last_hidden; // clear list of hidden objects
@@ -2160,7 +2197,7 @@
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      var xhr = JSROOT.NewHttpRequest(script_name, "text", function(res) {
+      JSROOT.NewHttpRequest(script_name, "text", function(res) {
          if (!res || (res.length==0))
             return JSROOT.CallBack(call_back, draw_obj, name_prefix);
 
@@ -2205,30 +2242,41 @@
             JSROOT.CallBack(call_back, draw_obj, name_prefix);
          }
 
-      });
-
-      xhr.send(null);
+      }).send();
    }
 
    JSROOT.TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
-      var tm1 = new Date().getTime();
 
-      this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+      if (this.options.project && draw_obj.$geo_painter && draw_obj.$geo_painter._clones) {
 
-      this._clones.name_prefix = name_prefix;
+         this._clones_owner = false;
+         this._clones = null;
+         this._clones = draw_obj.$geo_painter._clones;
 
-      var uniquevis = this._clones.MarkVisisble(true);
-      if (uniquevis <= 0)
-         uniquevis = this._clones.MarkVisisble(false);
-      else
-         uniquevis = this._clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
+         console.log('Reuse clones', this._clones.nodes.length,'from main painter');
+      } else {
 
-      var tm2 = new Date().getTime();
+         var tm1 = new Date().getTime();
 
-      console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
+         this._clones_owner = true;
 
-      if (this.options._count)
-         return this.drawCount(uniquevis, tm2-tm1);
+         this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+
+         this._clones.name_prefix = name_prefix;
+
+         var uniquevis = this._clones.MarkVisisble(true);
+         if (uniquevis <= 0)
+            uniquevis = this._clones.MarkVisisble(false);
+         else
+            uniquevis = this._clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
+
+         var tm2 = new Date().getTime();
+
+         console.log('Creating clones', this._clones.nodes.length, 'takes', tm2-tm1, 'uniquevis', uniquevis);
+
+         if (this.options._count)
+            return this.drawCount(uniquevis, tm2-tm1);
+      }
 
       // this is limit for the visible faces, number of volumes does not matter
       this.options.maxlimit = (this._webgl ? 200000 : 100000) * this.options.more;
@@ -2532,7 +2580,9 @@
       }
 
       if (this._draw_nodes_again)
-         this.startDrawGeometry(); // relaunch drawing
+         return this.startDrawGeometry(); // relaunch drawing
+
+      this._drawing_ready = true; // indicate that drawing is completed
    }
 
    JSROOT.TGeoPainter.prototype.Cleanup = function(first_time) {
@@ -2581,9 +2631,11 @@
       this._toplevel = null;
       this._camera = null;
 
-      if (this._clones) this._clones.Cleanup(this._draw_nodes, this._build_shapes);
+      if (this._clones && this._clones_owner) this._clones.Cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
+      delete this._clones_owner;
       delete this._draw_nodes;
+      delete this._drawing_ready;
       delete this._build_shapes;
       delete this._new_draw_nodes;
 
