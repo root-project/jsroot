@@ -23,11 +23,6 @@
 
    ThreeBSP.Geometry = function( geometry, transfer_matrix, nodeid ) {
       // Convert THREE.Geometry to ThreeBSP
-      var i, _length_i,
-         face, vertex, /* faceVertexUvs, uvs, */
-         polygon,
-         polygons = [],
-         tree;
 
       if ( geometry instanceof THREE.Geometry ) {
          this.matrix = null; // new THREE.Matrix4; not create matrix when do not needed
@@ -42,12 +37,13 @@
          return this;
       } else if ( geometry instanceof THREE.BufferGeometry ) {
          var pos_buf = geometry.getAttribute('position').array,
-             norm_buf = geometry.getAttribute('normal').array;
+             norm_buf = geometry.getAttribute('normal').array,
+             polygons = [];
 
          for (var i=0; i < pos_buf.length; i+=9) {
-            polygon = new ThreeBSP.Polygon;
+            var polygon = new ThreeBSP.Polygon;
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
+            var vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
             if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
             polygon.vertices.push( vertex );
 
@@ -68,9 +64,7 @@
          return this;
 
       } else if (geometry.polygons && (geometry.polygons[0] instanceof ThreeBSP.Polygon)) {
-         polygons = geometry.polygons;
-
-         // console.log('create from direct polygons size ' + polygons.length);
+         var polygons = geometry.polygons;
 
          for (var i=0;i<polygons.length;++i) {
             var polygon = polygons[i];
@@ -89,7 +83,11 @@
          throw 'ThreeBSP: Given geometry is unsupported';
       }
 
-      for ( i = 0, _length_i = geometry.faces.length; i < _length_i; ++i ) {
+      var polygons = [],
+          nfaces = geometry.faces.length,
+          face, polygon, vertex;
+
+      for (var i = 0; i < nfaces; ++i ) {
          face = geometry.faces[i];
          // faceVertexUvs = geometry.faceVertexUvs[0][i];
          polygon = new ThreeBSP.Polygon;
@@ -581,14 +579,13 @@
       }
    }
 
-   ThreeBSP.Vertex = function( x, y, z, nx,ny, nz /* normal , uv */ ) {
+   ThreeBSP.Vertex = function(x, y, z, nx, ny, nz) {
       this.x = x;
       this.y = y;
       this.z = z;
       this.nx = nx;
       this.ny = ny;
       this.nz = nz;
-      // this.uv = uv || new THREE.Vector2;
    }
 
    ThreeBSP.Vertex.prototype.setnormal = function ( nx, ny, nz ) {
@@ -645,16 +642,16 @@
    }
 
    ThreeBSP.Vertex.prototype.dot = function( vertex ) {
-      return this.x * vertex.x + this.y * vertex.y + this.z * vertex.z;
+      return this.x*vertex.x + this.y*vertex.y + this.z*vertex.z;
    }
 
    ThreeBSP.Vertex.prototype.diff = function( vertex ) {
       var dx = (this.x - vertex.x),
           dy = (this.y - vertex.y),
           dz = (this.z - vertex.z),
-          len2 = this.x * this.x + this.y * this.y + this.z * this.z;
+          len2 = this.x*this.x + this.y*this.y + this.z*this.z;
 
-      return (dx*dx+dy*dy+dz*dz) / (len2>0 ? len2 : 1e-10);
+      return (dx*dx + dy*dy + dz*dz) / (len2>0 ? len2 : 1e-10);
    }
 
 /*
@@ -703,6 +700,8 @@
       return this;
    }
 
+
+
    ThreeBSP.Node = function( polygons, nodeid ) {
       this.polygons = [];
       this.front = this.back = undefined;
@@ -710,6 +709,9 @@
       if ( !(polygons instanceof Array) || polygons.length === 0 ) return;
 
       this.divider = polygons[0].clone();
+
+      if (ThreeBSP.debug)
+         console.log('divider normal', this.divider.normal, 'w', this.divider.w);
 
       var polygon_count = polygons.length,
           front = [], back = [];

@@ -1732,6 +1732,8 @@
 
    }
 
+   JSROOT.GEO.debug = 0;
+
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.projectGeometry = function(geom, matrix, projection) {
       var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
@@ -1742,7 +1744,9 @@
 
       var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
 
+      //if (JSROOT.GEO.debug++ === 1) ThreeBSP.debug = true;
       var bsp2 = new ThreeBSP.Geometry(geom2, null, 0);
+      //delete ThreeBSP.debug;
 
       bsp1.direct_intersect(bsp2);
 
