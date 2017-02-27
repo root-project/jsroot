@@ -1736,11 +1736,25 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.projectGeometry = function(geom, matrix, projection) {
+
+      if (!geom.boundingBox) geom.computeBoundingBox();
+
+      var box = geom.boundingBox.clone();
+
+      box.applyMatrix4(matrix);
+
+      if (((box.min[projection]>0) && (box.max[projection]>0)) ||
+          ((box.min[projection]<0) && (box.max[projection]<0))) {
+         return null; // not interesting
+      }
+
       var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
 
       var method = 2;
 
-      if (method === 0) {
+      if (false) {
+
+         // original simple method
 
          var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
          shape['fD'+projection.toUpperCase()] = 1;
@@ -1749,6 +1763,7 @@
          bsp1.direct_intersect(bsp2);
          return bsp1.toBufferGeometry();
       }
+
 
       if (JSROOT.GEO.debug++ < 10) ThreeBSP.debug = true;
 

@@ -1151,11 +1151,11 @@
 
                var geom2 = JSROOT.GEO.projectGeometry(shape.geom, info.matrix, this.options.project);
 
-               var mesh = new THREE.Mesh( geom2, prop.material );
-
-               this._toplevel.add(mesh);
-
-               mesh.stack = entry.stack;
+               if (geom2) {
+                  var mesh = new THREE.Mesh( geom2, prop.material );
+                  this._toplevel.add(mesh);
+                  mesh.stack = entry.stack;
+               }
 
                continue;
             }
@@ -1235,6 +1235,8 @@
             // var info = pthis._clones.ResolveStack(entry.stack, true);
 
             var geom2 = JSROOT.GEO.projectGeometry(node.geometry, node.parent.matrixWorld, pthis.options.project);
+
+            if (!geom2) return;
 
             var mesh2 = new THREE.Mesh( geom2, node.material );
 
