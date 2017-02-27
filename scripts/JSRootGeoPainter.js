@@ -1177,26 +1177,30 @@
             var mesh;
 
             if (obj3d.matrixWorld.determinant() > -0.9) {
-
-               if (this.options.project) {
-                  var geom2 = JSROOT.GEO.projectGeometry(shape.geom, obj3d.matrixWorld, this.options.project);
-                  if (JSROOT.GEO.numGeometryFaces(geom2)===0) continue;
-
-                  var m2 = new THREE.Matrix4();
-                  m2.getInverse(obj3d.matrixWorld);
-                  geom2.applyMatrix(m2);
-                  mesh = new THREE.Mesh( geom2, prop.material );
-               } else {
-                  mesh = new THREE.Mesh( shape.geom, prop.material );
-               }
+               mesh = new THREE.Mesh( shape.geom, prop.material );
             } else {
                mesh = this.createFlippedMesh(obj3d, shape, prop.material);
+            }
+
+            if (this.options.project) {
+               geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, obj3d.matrixWorld, this.options.project);
+
+               mesh = new THREE.Mesh( geom2, prop.material );
+
+               this._toplevel.add(mesh);
+
+               //var m2 = new THREE.Matrix4();
+               //m2.getInverse(obj3d.matrixWorld);
+               //geom2.applyMatrix(m2);
+
+               //mesh.geometry = geom2;
+            } else {
+               obj3d.add(mesh);
             }
 
             // keep full stack of nodes
             mesh.stack = entry.stack;
 
-            obj3d.add(mesh);
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),
