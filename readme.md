@@ -1,8 +1,8 @@
 #JavaScript ROOT
 
-JavaScript ROOT provides interactive ROOT-like graphics in the web browsers. 
-Data can be read and displayed from binary and JSON ROOT files. 
-JSROOT implements user interface for THttpServer class.   
+JavaScript ROOT provides interactive ROOT-like graphics in the web browsers.
+Data can be read and displayed from binary and JSON ROOT files.
+JSROOT implements user interface for THttpServer class.
 
 <a href="https://root.cern/js/latest/?nobrowser&file=../files/hsimple.root&item=ntuple;1&opt=px:py::pz%3E4"><img src="http://jsroot.gsi.de/files/img/ttree.png" align="left" hspace="10" vspace="6" alt="TTree::Draw()" title="2-dimensional TTree::Draw with cut options"></a>
 <a href="https://root.cern/js/latest/?nobrowser&file=../files/histpainter6.root&item=draw_hstack;1"><img src="http://jsroot.gsi.de/files/img/thstack.png" align="left" hspace="10" vspace="6" alt="THStack" title="Several varians of THStack drawing"></a>
@@ -20,14 +20,14 @@ JSROOT implements user interface for THttpServer class.
 
 Project web pages:
 
-[https://root.cern/js/](https://root.cern/js/) 
+[https://root.cern/js/](https://root.cern/js/)
 
 [http://jsroot.gsi.de](http://jsroot.gsi.de/)
 
 
 # Documentation
 
-JavaScript ROOT [tutorial](docs/JSROOT.md) 
+JavaScript ROOT [tutorial](docs/JSROOT.md)
 
 THttpServer [tutorial](docs/HttpServer.md)
 
