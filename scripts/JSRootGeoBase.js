@@ -1738,19 +1738,25 @@
    JSROOT.GEO.projectGeometry = function(geom, matrix, projection) {
       var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
 
-      var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
+      var method = 2;
 
-      shape['fD'+projection.toUpperCase()] = 1;
+      if (method === 0) {
 
-      var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
+         var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
+         shape['fD'+projection.toUpperCase()] = 1;
+         var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
+         var bsp2 = new ThreeBSP.Geometry(geom2, null, 0);
+         bsp1.direct_intersect(bsp2);
+         return bsp1.toBufferGeometry();
+      }
 
-      //if (JSROOT.GEO.debug++ === 1) ThreeBSP.debug = true;
-      var bsp2 = new ThreeBSP.Geometry(geom2, null, 0);
-      //delete ThreeBSP.debug;
+      if (JSROOT.GEO.debug++ < 10) ThreeBSP.debug = true;
 
-      bsp1.direct_intersect(bsp2);
+      var bsp2 = ThreeBSP.CreateNormal(projection);
 
-      return bsp1.toBufferGeometry();
+      bsp1.cut_from_plane(bsp2);
+
+      return bsp2.toBufferGeometry();
    }
 
    /**

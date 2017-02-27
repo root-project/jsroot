@@ -287,15 +287,56 @@
       var a = this.tree,
           b = other_tree.tree;
 
+      if (ThreeBSP.debug) console.log('do invert and clip a', a.polygons.length, b.polygons.length);
       a.invert();
       b.clipTo( a );
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
+      if (ThreeBSP.debug) console.log('before build', a.polygons.length, b.polygons.length);
       a.build( b.collectPolygons([]) );
       a.invert();
+      if (ThreeBSP.debug) console.log('after', a.polygons.length, b.polygons.length);
       return this;
    }
+
+   ThreeBSP.CreateNormal = function(axis_name) {
+      // create geometry to make cut on specified axis
+
+      var vert1 = new ThreeBSP.Vertex(-20000,  10000, 0, 0, 0, 1),
+          vert2 = new ThreeBSP.Vertex( 10000,  10000, 0, 0, 0, 1),
+          vert3 = new ThreeBSP.Vertex( 10000, -20000, 0, 0, 0, 1);
+
+      var vertices = [vert1, vert3, vert2];
+
+      var polygon = new ThreeBSP.Polygon(vertices);
+      polygon.calculateProperties();
+
+      var polygons = [polygon];
+
+      var node = new ThreeBSP.Node(polygons);
+
+      return new ThreeBSP.Geometry(node);
+   }
+
+
+   ThreeBSP.Geometry.prototype.cut_from_plane = function( other_tree ) {
+      // just cut peaces from second geometry, which just simple plane
+
+      var a = this.tree,
+          b = other_tree.tree;
+
+      a.invert();
+      b.clipTo( a );
+
+/*      b.invert();
+      b.clipTo(a);
+      b.invert();
+      */
+
+      return this;
+   }
+
 
    ThreeBSP.Geometry.prototype.toGeometry = function() {
       var i, j,
@@ -307,7 +348,6 @@
          vertice_dict = {},
          vertex_idx_a, vertex_idx_b, vertex_idx_c,
          vertex, face;
-      //   verticeUvs;
 
       for ( i = 0; i < polygon_count; ++i ) {
          polygon = polygons[i];
@@ -700,7 +740,7 @@
       return this;
    }
 
-
+   // ================================================================================================
 
    ThreeBSP.Node = function( polygons, nodeid ) {
       this.polygons = [];
@@ -709,9 +749,6 @@
       if ( !(polygons instanceof Array) || polygons.length === 0 ) return;
 
       this.divider = polygons[0].clone();
-
-      if (ThreeBSP.debug)
-         console.log('divider normal', this.divider.normal, 'w', this.divider.w);
 
       var polygon_count = polygons.length,
           front = [], back = [];
