@@ -303,9 +303,25 @@
    ThreeBSP.CreateNormal = function(axis_name) {
       // create geometry to make cut on specified axis
 
-      var vert1 = new ThreeBSP.Vertex(-20000,  10000, 0, 0, 0, 1),
-          vert2 = new ThreeBSP.Vertex( 10000,  10000, 0, 0, 0, 1),
-          vert3 = new ThreeBSP.Vertex( 10000, -20000, 0, 0, 0, 1);
+      var vert1, vert2, vert3, size = 10000;
+
+      switch(axis_name) {
+         case "x":
+            vert1 = new ThreeBSP.Vertex(0,-2*size,   size, 1, 0, 0),
+            vert2 = new ThreeBSP.Vertex(0,   size,   size, 1, 0, 0),
+            vert3 = new ThreeBSP.Vertex(0,   size,-2*size, 1, 0, 0);
+            break;
+         case "y":
+            vert1 = new ThreeBSP.Vertex(-2*size,  0,   size, 0, 1, 0),
+            vert3 = new ThreeBSP.Vertex(   size,  0,   size, 0, 1, 0),
+            vert2 = new ThreeBSP.Vertex(   size,  0,-2*size, 0, 1, 0);
+            break;
+         case "z":
+            vert1 = new ThreeBSP.Vertex(-2*size,    size, 0, 0, 0, 1),
+            vert2 = new ThreeBSP.Vertex(   size,    size, 0, 0, 0, 1),
+            vert3 = new ThreeBSP.Vertex(   size, -2*size, 0, 0, 0, 1);
+            break;
+      }
 
       var vertices = [vert1, vert3, vert2];
 
@@ -320,7 +336,7 @@
    }
 
 
-   ThreeBSP.Geometry.prototype.cut_from_plane = function( other_tree ) {
+   ThreeBSP.Geometry.prototype.cut_from_plane = function( other_tree) {
       // just cut peaces from second geometry, which just simple plane
 
       var a = this.tree,
@@ -328,11 +344,6 @@
 
       a.invert();
       b.clipTo( a );
-
-/*      b.invert();
-      b.clipTo(a);
-      b.invert();
-      */
 
       return this;
    }
