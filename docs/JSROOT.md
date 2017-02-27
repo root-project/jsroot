@@ -673,4 +673,3 @@ As second parameter of tree.Process() function one could provide object with arg
 
     var args = { numentries: 1000, firstentry: 500 };
     tree.Process(selector, args);
-
