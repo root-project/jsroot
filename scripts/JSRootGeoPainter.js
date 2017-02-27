@@ -755,6 +755,8 @@
 
       this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
+      if (this.options.project) this._controls.enableRotate = false;
+
       this._controls.ContextMenu = this.OrbitContext.bind(this);
 
       this._controls.ProcessMouseMove = function(intersects) {
@@ -1118,7 +1120,7 @@
 
          if (this.drawing_stage === 7) {
             // building shapes
-            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500, this.options.project);
+            var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
                this.drawing_stage = 8;
             } else {
@@ -1151,8 +1153,33 @@
                continue;
             }
 
-            var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
+            var nodeobj = this._clones.origin[entry.nodeid];
+            var clone = this._clones.nodes[entry.nodeid];
+            var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
 
+            this._num_meshes++;
+            this._num_faces += shape.nfaces;
+
+            if (this.options.project) {
+               // make projection
+
+               var info = this._clones.ResolveStack(entry.stack, true);
+
+               var geom2 = JSROOT.GEO.projectGeometry(shape.geom, info.matrix, this.options.project);
+
+               prop.material.side = THREE.DoubleSide;
+
+               var mesh = new THREE.Mesh( geom2, prop.material );
+
+               this._toplevel.add(mesh);
+
+               mesh.stack = entry.stack;
+
+               continue;
+            }
+
+
+            var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
 /*
             var info = this._clones.ResolveStack(entry.stack, true), ndiff = 0;
             for (var n=0;n<16;++n) {
@@ -1162,13 +1189,6 @@
             }
             if (ndiff>0) console.log('Mismatch for ' + info.name, info.matrix.elements, obj3d.matrixWorld.elements);
 */
-
-            var nodeobj = this._clones.origin[entry.nodeid];
-            var clone = this._clones.nodes[entry.nodeid];
-            var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
-
-            this._num_meshes++;
-            this._num_faces += shape.nfaces;
 
             prop.material.wireframe = this.options.wireframe;
 
@@ -1182,25 +1202,10 @@
                mesh = this.createFlippedMesh(obj3d, shape, prop.material);
             }
 
-            if (this.options.project) {
-               geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, obj3d.matrixWorld, this.options.project);
-
-               mesh = new THREE.Mesh( geom2, prop.material );
-
-               this._toplevel.add(mesh);
-
-               //var m2 = new THREE.Matrix4();
-               //m2.getInverse(obj3d.matrixWorld);
-               //geom2.applyMatrix(m2);
-
-               //mesh.geometry = geom2;
-            } else {
-               obj3d.add(mesh);
-            }
+            obj3d.add(mesh);
 
             // keep full stack of nodes
             mesh.stack = entry.stack;
-
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),
