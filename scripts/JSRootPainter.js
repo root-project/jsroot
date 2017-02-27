@@ -9873,7 +9873,7 @@
       // now check that items can be displayed
       for (var n = items.length-1; n>=0; --n) {
          var hitem = h.Find(items[n]);
-         if ((hitem==null) || h.canDisplay(hitem, options[n])) continue;
+         if (!hitem || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
          h.expand(items[n], null, null, true);
          items.splice(n, 1);
@@ -9883,13 +9883,18 @@
 
       if (items.length == 0) return JSROOT.CallBack(call_back);
 
-      var frame_names = [];
+      var frame_names = new Array(items.length), items_wait = new Array(items.length);
       for (var n=0; n<items.length;++n) {
+         items_wait[n] = false;
          var fname = items[n], k = 0;
+         if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
+
          while (frame_names.indexOf(fname)>=0)
             fname = items[n] + "_" + k++;
-         frame_names.push(fname);
+         frame_names[n] = fname;
       }
+
+      var DisplayCallback, DropNextItem; // two functions, aka forward declarations
 
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back);
@@ -9901,7 +9906,7 @@
                options[i] += "::_display_on_frame_::"+frame_names[i];
             }
 
-         function DropNextItem(indx, painter) {
+         DropNextItem = function(indx, painter) {
             if (painter && dropitems[indx] && (dropitems[indx].length>0))
                return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(this, indx, painter));
 
@@ -9909,22 +9914,34 @@
 
             if (!call_back) return;
 
-            for (var cnt = 0; cnt < items.length; ++cnt)
-               if ((items[cnt]!==null) || (dropitems[cnt]!==null))  return;
+            var isany = false;
+
+            for (var cnt = 0; cnt < items.length; ++cnt) {
+               if (dropitems[cnt]) isany = true;
+               if (items[cnt]===null) continue; // ignore completed item
+               isany = true;
+               if (items_wait[cnt] && items.indexOf(items[cnt])===cnt) {
+                  items_wait[cnt] = false;
+                  h.display(items[cnt], options[cnt], DisplayCallback.bind(h,cnt));
+               }
+            }
 
             // only when items drawn and all sub-items dropped, one could perform call-back
-            JSROOT.CallBack(call_back);
-            call_back = null;
+            if (!isany) {
+               JSROOT.CallBack(call_back);
+               call_back = null;
+            }
          }
 
-         function DisplayCallback(indx, painter, itemname) {
+         DisplayCallback = function(indx, painter, itemname) {
             items[indx] = null; // mark item as ready
             DropNextItem(indx, painter);
          }
 
-         // We start display of all items parallel
+         // We start display of all items parallel, but only if they are not the same
          for (var i = 0; i < items.length; ++i)
-            h.display(items[i], options[i], DisplayCallback.bind(this,i));
+            if (!items_wait[i])
+               h.display(items[i], options[i], DisplayCallback.bind(h,i));
       });
    }
 
