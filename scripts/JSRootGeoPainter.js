@@ -196,7 +196,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
-                   project: '',
+                   project: '', is_main: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
                    script_name: "", transparancy: 1, autoRotate: false };
 
@@ -232,71 +232,55 @@
          this.ModifyVisisbility(name, sign);
       }
 
-      opt = opt.toLowerCase();
+      var d = new JSROOT.DrawOptions(opt);
 
-      function check(name) {
-         var indx = opt.indexOf(name);
-         if (indx<0) return false;
-         opt = opt.substr(0, indx) + opt.substr(indx+name.length);
-         return true;
-      }
+      if (d.check("MAIN")) res.is_main = true;
 
-      function checkval(name, dflt) {
-         var indx = opt.indexOf(name);
-         if (indx<0) return dflt;
-         opt = opt.substr(0, indx) + opt.substr(indx+name.length);
-         var indx2 = indx;
-         while ((indx2<opt.length) && (opt[indx2].match(/[0-9]/))) indx2++;
-         if (indx2>indx) dflt = parseInt(opt.substr(indx, indx2-indx));
-         opt = opt.substr(0,indx) + opt.substr(indx2);
-         return dflt;
-      }
+      if (d.check("MORE3")) res.more = 3;
+      if (d.check("MORE")) res.more = 2;
+      if (d.check("ALL")) res.more = 100;
 
-      if (check("more3")) res.more = 3;
-      if (check("more")) res.more = 2;
-      if (check("all")) res.more = 100;
+      if (d.check("CONTROLS") || d.check("CTRL")) res.show_controls = true;
 
-      if (check("invx") || check("invertx")) res.scale.x = -1;
+      if (d.check("CLIPXYZ")) res.clipx = res.clipy = res.clipz = true;
+      if (d.check("CLIPX")) res.clipx = true;
+      if (d.check("CLIPY")) res.clipy = true;
+      if (d.check("CLIPZ")) res.clipz = true;
+      if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
 
-      if (check("controls") || check("ctrl")) res.show_controls = true;
+      if (d.check("PROJX")) res.project = 'x';
+      if (d.check("PROJY")) res.project = 'y';
+      if (d.check("PROJZ")) res.project = 'z';
 
-      if (check("clipxyz")) res.clipx = res.clipy = res.clipz = true;
-      if (check("clipx")) res.clipx = true;
-      if (check("clipy")) res.clipy = true;
-      if (check("clipz")) res.clipz = true;
-      if (check("clip")) res.clipx = res.clipy = res.clipz = true;
+      if (d.check("DFLT_COLORS")) this.SetRootDefaultColors();
+      if (d.check("SSAO")) res.ssao = true;
 
-      if (check("projx")) res.project = 'x';
-      if (check("projy")) res.project = 'y';
-      if (check("projz")) res.project = 'z';
+      if (d.check("NOWORKER")) res.use_worker = -1;
+      if (d.check("WORKER")) res.use_worker = 1;
 
-      if (check("dflt_colors")) this.SetRootDefaultColors();
-      if (check("ssao")) res.ssao = true;
+      if (d.check("HIGHLIGHT")) res.highlight = true;
 
-      if (check("noworker")) res.use_worker = -1;
-      if (check("worker")) res.use_worker = 1;
+      if (d.check("WIRE")) res.wireframe = true;
+      if (d.check("ROTATE")) res.autoRotate = true;
 
-      if (check("highlight")) res.highlight = true;
+      if (d.check("INVX") || d.check("INVERTX")) res.scale.x = -1;
+      if (d.check("INVY") || d.check("INVERTY")) res.scale.y = -1;
+      if (d.check("INVZ") || d.check("INVERTZ")) res.scale.z = -1;
 
-      if (check("wire")) res.wireframe = true;
-      if (check("rotate")) res.autoRotate = true;
+      if (d.check("COUNT")) res._count = true;
 
-      if (check("invy")) res.scale.y = -1;
-      if (check("invz")) res.scale.z = -1;
+      if (d.check('TRANSP',true))
+         res.transparancy = d.partAsInt(0,100)/100;
 
-      if (check("count")) res._count = true;
+      if (d.check("AXIS") || d.check("A")) { res._axis = true; res._yup = false; }
 
-      res.transparancy = checkval('transp',100)/100;
-
-      if (check("axis") || check("a")) { res._axis = true; res._yup = false; }
-
-      if (check("d")) res._debug = true;
-      if (check("g")) res._grid = true;
-      if (check("b")) res._bound = true;
-      if (check("w")) res.wireframe = true;
-      if (check("f")) res._full = true;
-      if (check("y")) res._yup = true;
-      if (check("z")) res._yup = false;
+      if (d.check("D")) res._debug = true;
+      if (d.check("G")) res._grid = true;
+      if (d.check("B")) res._bound = true;
+      if (d.check("W")) res.wireframe = true;
+      if (d.check("F")) res._full = true;
+      if (d.check("Y")) res._yup = true;
+      if (d.check("Z")) res._yup = false;
 
       return res;
    }
@@ -1166,8 +1150,6 @@
                var info = this._clones.ResolveStack(entry.stack, true);
 
                var geom2 = JSROOT.GEO.projectGeometry(shape.geom, info.matrix, this.options.project);
-
-               prop.material.side = THREE.DoubleSide;
 
                var mesh = new THREE.Mesh( geom2, prop.material );
 
@@ -2271,23 +2253,6 @@
       this.startDrawGeometry(true);
    }
 
-   JSROOT.TGeoPainter.prototype.DrawGeometry = function(opt, divid) {
-      if (typeof opt !== 'string') opt = "";
-
-      this._webgl = JSROOT.Painter.TestWebGL();
-
-      this.options = this.decodeOptions(opt);
-
-      if (!('_yup' in this.options))
-         this.options._yup = this.svg_canvas().empty();
-
-      // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
-
-      this.checkScript(this.options.script_name, this.prepareObjectDraw.bind(this));
-
-      return this;
-   }
-
    JSROOT.TGeoPainter.prototype.continueDraw = function() {
 
       // nothing to do - exit
@@ -2593,7 +2558,7 @@
             this._datgui.destroy();
 
          var obj = this.GetObject();
-         if (obj) delete obj._painter;
+         if (obj && this.options.is_main && (obj.$geo_painter===this)) delete obj.$geo_painter;
 
          if (this._worker) this._worker.terminate();
 
@@ -2735,13 +2700,27 @@
          obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (obj) {
-         JSROOT.extend(this, new JSROOT.TGeoPainter(obj,is_manager));
-         this.SetDivId(divid, 5);
-         return this.DrawGeometry(opt, divid);
-      }
+      if (!obj) return this.DrawingReady();
 
-      return this.DrawingReady();
+      JSROOT.extend(this, new JSROOT.TGeoPainter(obj, is_manager));
+
+      this.SetDivId(divid, 5);
+
+      this._webgl = JSROOT.Painter.TestWebGL();
+
+      this.options = this.decodeOptions(opt);
+
+      if (this.options._yup === undefined)
+         this.options._yup = this.svg_canvas().empty();
+
+      if (this.options.is_main && !obj.$geo_painter)
+         obj.$geo_painter = this;
+
+      // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
+
+      this.checkScript(this.options.script_name, this.prepareObjectDraw.bind(this));
+
+      return this;
    }
 
    /// keep for backwards compatibility
