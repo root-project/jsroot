@@ -92,12 +92,12 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 24/02/2017";
+   JSROOT.version = "dev 28/02/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script
-   JSROOT.bower_dir = ""; // when specified, use standard libs from bower location
+   JSROOT.bower_dir = null; // when specified, use standard libs from bower location
 
    JSROOT.id_counter = 0;
 
@@ -843,7 +843,7 @@
       }
 
       if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename; else
-      if (isbower && JSROOT.bower_dir) filename = JSROOT.bower_dir + filename;
+      if (isbower && (JSROOT.bower_dir!==null)) filename = JSROOT.bower_dir + filename;
 
       var element = null;
 
@@ -920,7 +920,7 @@
 
       var ext = jsroot.source_min ? ".min" : "",
           need_jquery = false,
-          use_bower = (jsroot.bower_dir.length > 0),
+          use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
           extrafiles = "", // scripts for direct loadin
           modules = [];  // modules used for require.js
@@ -1918,7 +1918,7 @@
          if (bower.length>0) JSROOT.bower_dir = bower; else
             if (JSROOT.source_dir.indexOf("jsroot/") == JSROOT.source_dir.length - 7)
                JSROOT.bower_dir = JSROOT.source_dir.substr(0, JSROOT.source_dir.length - 7);
-         if (JSROOT.bower_dir.length > 0) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
+         if (JSROOT.bower_dir !== null) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
       }
 
       if ((prereq.length>0) || (onload!=null))
