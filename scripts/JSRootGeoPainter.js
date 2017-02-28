@@ -934,6 +934,8 @@
       mesh.scale.copy(flip);
       mesh.updateMatrix();
 
+      mesh._flippedMesh = true;
+
       return mesh;
    }
 
@@ -1146,23 +1148,6 @@
             this._num_meshes++;
             this._num_faces += shape.nfaces;
 
-            /*if (this.options.project) {
-               // make projection
-
-               var info = this._clones.ResolveStack(entry.stack, true);
-
-               var geom2 = JSROOT.GEO.projectGeometry(shape.geom, info.matrix, this.options.project);
-
-               if (geom2) {
-                  var mesh = new THREE.Mesh( geom2, prop.material );
-                  toplevel.add(mesh);
-                  mesh.stack = entry.stack;
-               }
-
-               continue;
-            }*/
-
-
             var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
 
             prop.material.wireframe = this.options.wireframe;
@@ -1276,18 +1261,20 @@
          this.options.projectPos = mean;
       }
 
-      toplevel.traverse(function(node) {
-         if (!(node instanceof THREE.Mesh) || !node.stack) return;
+      toplevel.traverse(function(mesh) {
+         if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         var geom2 = JSROOT.GEO.projectGeometry(node.geometry, node.parent.matrixWorld, pthis.options.project, pthis.options.projectPos);
+         if (mesh._flippedMesh) return;
+
+         var geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, pthis.options.project, pthis.options.projectPos);
 
          if (!geom2) return;
 
-         var mesh2 = new THREE.Mesh( geom2, node.material );
+         var mesh2 = new THREE.Mesh( geom2, mesh.material );
 
          pthis._toplevel.add(mesh2);
 
-         mesh2.stack = node.stack;
+         mesh2.stack = mesh.stack;
       });
 
       return true;
