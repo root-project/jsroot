@@ -483,14 +483,8 @@
       }
 
       appearance.add(this.options, 'highlight').name('Highlight Selection').onChange( function (value) {
-         if (value === false) {
-            if (painter._selected.mesh !== null) {
-               painter._selected.mesh.material.color = painter._selected.originalColor;
-               painter.Render3D(0);
-               painter._selected.mesh = null;
-            }
-         }
-      });
+         if (!value) painter.HighlightMesh(null);
+     });
 
       appearance.add(this.options, 'transparancy', 0.0, 1.0)
                      .listen().onChange(this.changeGlobalTransparancy.bind(this));
@@ -724,6 +718,37 @@
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
 
+   JSROOT.TGeoPainter.prototype.HighlightMesh = function(active_mesh, color) {
+      if (!this.options.highlight) active_mesh = null;
+
+      var curr_mesh = this._selected_mesh;
+
+      if (curr_mesh === active_mesh) return;
+
+      if (curr_mesh !== null) {
+         curr_mesh.material.color = curr_mesh.originalColor;
+         delete curr_mesh.originalColor;
+         if (curr_mesh.normalLineWidth)
+            curr_mesh.material.linewidth = curr_mesh.normalLineWidth;
+         if (curr_mesh.normalMarkerSize)
+            curr_mesh.material.size = curr_mesh.normalMarkerSize;
+      }
+
+      this._selected_mesh = active_mesh;
+
+      if (active_mesh !== null) {
+         active_mesh.originalColor = active_mesh.material.color;
+         active_mesh.material.color = new THREE.Color( color || 0xffaa33 );
+
+         if (active_mesh.hightlightLineWidth)
+            active_mesh.material.linewidth = active_mesh.hightlightLineWidth;
+         if (active_mesh.highlightMarkerSize)
+            active_mesh.material.size = active_mesh.highlightMarkerSize;
+      }
+
+      this.Render3D(0);
+   }
+
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls) return;
@@ -738,42 +763,16 @@
 
       this._controls.ProcessMouseMove = function(intersects) {
 
-         var tooltip = null, resolve = null;
+         var active_mesh = null;
 
-         if (painter.options.highlight) {
-
-            if (painter._selected.mesh !== null) {
-               painter._selected.mesh.material.color = painter._selected.originalColor;
-               if (painter._selected.mesh.hightlightLineWidth)
-                  painter._selected.mesh.material.linewidth = painter._selected.mesh.hightlightLineWidth/3;
-               if (painter._selected.mesh.highlightMarkerSize)
-                  painter._selected.mesh.material.size = painter._selected.mesh.highlightMarkerSize/3;
-            }
-
-            if (intersects.length > 0) {
-               painter._selected.mesh = intersects[0].object;
-               painter._selected.originalColor = painter._selected.mesh.material.color;
-               painter._selected.mesh.material.color = new THREE.Color( 0xffaa33 );
-               if (painter._selected.mesh.hightlightLineWidth)
-                  painter._selected.mesh.material.linewidth = painter._selected.mesh.hightlightLineWidth;
-               if (painter._selected.mesh.highlightMarkerSize)
-                  painter._selected.mesh.material.size = painter._selected.mesh.highlightMarkerSize;
-               painter.Render3D(0);
-
-               if (intersects[0].object.stack) {
-                  tooltip = painter.GetStackFullName(intersects[0].object.stack);
-                  if (tooltip) resolve = painter.ResolveStack(intersects[0].object.stack);
-               }
-               else if (intersects[0].object.geo_name)
-                  tooltip = intersects[0].object.geo_name;
-            }
+         // try to find mesh from intersections
+         for (var k=0;!active_mesh && (k<intersects.length);++k) {
+            if (!intersects[k].object) continue;
+            if (intersects[k].object.geo_object || intersects[k].object.stack)
+               active_mesh = intersects[k].object;
          }
 
-         if (intersects.length === 0 && painter._selected.mesh !== null) {
-            painter._selected.mesh.material.color = painter._selected.originalColor;
-            painter.Render3D(0);
-            painter._selected.mesh = null;
-         }
+         painter.HighlightMesh(active_mesh);
 
          var names = [];
 
@@ -791,9 +790,18 @@
             painter.ActiavteInBrowser(names);
          }
 
+         var tooltip = null, resolve = null;
+
+         if (active_mesh && active_mesh.stack) {
+            tooltip = painter.GetStackFullName(active_mesh.stack);
+            if (tooltip) resolve = painter.ResolveStack(active_mesh.stack);
+         } else
+         if (active_mesh && active_mesh.geo_name)
+            tooltip = active_mesh.geo_name;
+
          if (!resolve || !resolve.obj) return tooltip;
 
-        return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, line: tooltip };
+         return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, line: tooltip };
       }
 
       this._controls.ProcessMouseLeave = function() {
@@ -1316,7 +1324,7 @@
       this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       this._scene.add( this._camera );
 
-      this._selected = {mesh:null, originalColor:null};
+      this._selected_mesh = null;
 
       this._overall_size = 10;
 
@@ -1845,23 +1853,10 @@
          return false;
       });
       if (mesh && on) {
-         painter._selected.mesh = mesh;
-         painter._selected.originalColor = mesh.material.color;
-         painter._selected.originalSize = mesh.material.size;
-         painter._selected.originalLineWidth = mesh.material.linewidth;
-         painter._selected.mesh.material.color = new THREE.Color( 0x00ff00 );
-         painter._selected.mesh.material.size *= 2;
-         painter._selected.mesh.material.linewidth *= 2;
+         painter.HighlightMesh(mesh, 0x00ff00);
+      } else {
+         painter.HighlightMesh(null);
       }
-      else if (painter._selected.mesh) {
-         if (painter._selected.originalColor)
-            painter._selected.mesh.material.color = painter._selected.originalColor;
-         if (painter._selected.originalSize)
-            painter._selected.mesh.material.size = painter._selected.originalSize;
-         if (painter._selected.originalLineWidth)
-            painter._selected.mesh.material.linewidth = painter._selected.originalLineWidth;
-      }
-      painter.Render3D(0);
    }
 
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
@@ -1992,7 +1987,10 @@
 
       line.geo_name = itemname;
       line.geo_object = track;
-      if (!JSROOT.browser.isWin) line.hightlightLineWidth = track_width*3;
+      if (!JSROOT.browser.isWin) {
+         line.hightlightLineWidth = track_width*3;
+         line.normalLineWidth = track_width;
+      }
 
       this.getExtrasContainer().add(line);
 
@@ -2026,7 +2024,10 @@
 
       line.geo_name = itemname;
       line.geo_object = track;
-      if (!JSROOT.browser.isWin) line.hightlightLineWidth = track_width*3;
+      if (!JSROOT.browser.isWin) {
+         line.hightlightLineWidth = track_width*3;
+         line.normalLineWidth = track_width;
+      }
 
       this.getExtrasContainer().add(line);
 
@@ -2096,11 +2097,11 @@
          var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
          mesh = new THREE.Points(geom, material);
          mesh.highlightMarkerSize = hit_size*3;
+         mesh.normalMarkerSize = hit_size;
       } else {
          // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
          var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
          mesh = new THREE.Mesh(geom, material);
-
       }
       mesh.geo_name = itemname;
       mesh.geo_object = hit;
@@ -2675,6 +2676,7 @@
       this._toplevel = null;
       this._full_geom = null;
       this._camera = null;
+      this._selected_mesh = null;
 
       if (this._clones && this._clones_owner) this._clones.Cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
