@@ -1735,7 +1735,7 @@
    JSROOT.GEO.debug = 0;
 
    /** @memberOf JSROOT.GEO */
-   JSROOT.GEO.projectGeometry = function(geom, matrix, projection) {
+   JSROOT.GEO.projectGeometry = function(geom, matrix, projection, position) {
 
       if (!geom.boundingBox) geom.computeBoundingBox();
 
@@ -1743,8 +1743,10 @@
 
       box.applyMatrix4(matrix);
 
-      if (((box.min[projection]>0) && (box.max[projection]>0)) ||
-          ((box.min[projection]<0) && (box.max[projection]<0))) {
+      if (!position) position = 0;
+
+      if (((box.min[projection]>position) && (box.max[projection]>position)) ||
+          ((box.min[projection]<position) && (box.max[projection]<position))) {
          return null; // not interesting
       }
 
@@ -1763,7 +1765,7 @@
 
       if (JSROOT.GEO.debug++ < 10) ThreeBSP.debug = true;
 
-      var bsp2 = ThreeBSP.CreateNormal(projection);
+      var bsp2 = ThreeBSP.CreateNormal(projection, position);
 
       bsp1.cut_from_plane(bsp2);
 

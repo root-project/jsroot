@@ -499,14 +499,21 @@
       return control;
    }
 
-   JSROOT.Painter.DisposeThreejsObject = function(obj) {
+   JSROOT.Painter.DisposeThreejsObject = function(obj, only_childs) {
       if (!obj) return;
 
       if (obj.children) {
          for (var i = 0; i < obj.children.length; i++)
             JSROOT.Painter.DisposeThreejsObject(obj.children[i]);
-         obj.children = undefined;
       }
+
+      if (only_childs) {
+         obj.children = [];
+         return;
+      }
+
+      obj.children = undefined;
+
       if (obj.geometry) {
          obj.geometry.dispose();
          obj.geometry = undefined;

@@ -5,6 +5,9 @@
    This automatically invokes extract_geo_tracks() function, which
    should extract TGeoTracks from provided TTree.
    Example can be found in demo/alice_esd.js and in api.htm.
+2. Implement projection of geometry on given plane.
+   One could reuse drawing of geometry in other div (should be drawn with main option).
+   In control GUI one could change position of the projection plane    
 
 
 ## Changes in 5.1.0

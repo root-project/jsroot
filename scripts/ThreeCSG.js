@@ -300,26 +300,26 @@
       return this;
    }
 
-   ThreeBSP.CreateNormal = function(axis_name) {
+   ThreeBSP.CreateNormal = function(axis_name, pos) {
       // create geometry to make cut on specified axis
 
       var vert1, vert2, vert3, size = 10000;
 
       switch(axis_name) {
          case "x":
-            vert1 = new ThreeBSP.Vertex(0,-2*size,   size, 1, 0, 0),
-            vert2 = new ThreeBSP.Vertex(0,   size,   size, 1, 0, 0),
-            vert3 = new ThreeBSP.Vertex(0,   size,-2*size, 1, 0, 0);
+            vert1 = new ThreeBSP.Vertex(pos,-2*size,   size, 1, 0, 0),
+            vert2 = new ThreeBSP.Vertex(pos,   size,   size, 1, 0, 0),
+            vert3 = new ThreeBSP.Vertex(pos,   size,-2*size, 1, 0, 0);
             break;
          case "y":
-            vert1 = new ThreeBSP.Vertex(-2*size,  0,   size, 0, 1, 0),
-            vert3 = new ThreeBSP.Vertex(   size,  0,   size, 0, 1, 0),
-            vert2 = new ThreeBSP.Vertex(   size,  0,-2*size, 0, 1, 0);
+            vert1 = new ThreeBSP.Vertex(-2*size,  pos,   size, 0, 1, 0),
+            vert3 = new ThreeBSP.Vertex(   size,  pos,   size, 0, 1, 0),
+            vert2 = new ThreeBSP.Vertex(   size,  pos,-2*size, 0, 1, 0);
             break;
          case "z":
-            vert1 = new ThreeBSP.Vertex(-2*size,    size, 0, 0, 0, 1),
-            vert2 = new ThreeBSP.Vertex(   size,    size, 0, 0, 0, 1),
-            vert3 = new ThreeBSP.Vertex(   size, -2*size, 0, 0, 0, 1);
+            vert1 = new ThreeBSP.Vertex(-2*size,    size, pos, 0, 0, 1),
+            vert2 = new ThreeBSP.Vertex(   size,    size, pos, 0, 0, 1),
+            vert3 = new ThreeBSP.Vertex(   size, -2*size, pos, 0, 0, 1);
             break;
       }
 

@@ -420,60 +420,53 @@
 
       this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
 
-      // Clipping Options
+      if (this.options.project) {
 
-      var bound = new THREE.Box3().setFromObject(this._toplevel);
-      bound.expandByVector(bound.getSize().multiplyScalar(0.01));
+         var bound = new THREE.Box3().setFromObject(this.GetProjectionSource());
+         bound.expandByVector(bound.getSize().multiplyScalar(0.01));
 
-      var clipFolder = this._datgui.addFolder('Clipping');
+         var axis = this.options.project;
 
-      var toggleX = clipFolder.add(this, 'enableX').name('Enable X').listen();
-      toggleX.onChange( function (value) {
-         painter.enableX = value;
-         painter._enableSSAO = value ? false : painter._enableSSAO;
-         painter.updateClipping();
-      });
+         if (this.options.projectPos === undefined)
+            this.options.projectPos = (bound.min[axis] + bound.max[axis])/2;
 
-      if (this.clipX === 0)
-         this.clipX = (bound.min.x+bound.max.x)/2;
-      var xclip = clipFolder.add(this, 'clipX', bound.min.x, bound.max.x).name('X Position');
+         this._datgui.add(this.options, 'projectPos', bound.min[axis], bound.max[axis]).name(axis.toUpperCase() + ' projection')
+           .onChange(function (value) {
+              painter.startDrawGeometry();
+              //console.log('Change projection', value, painter.options.projectPos);
+           });
 
-      xclip.onChange( function (value) {
-         painter.clipX = value;
-         if (painter.enableX) painter.updateClipping();
-      });
+      } else {
+         // Clipping Options
 
-      var toggleY = clipFolder.add(this, 'enableY').name('Enable Y').listen();
-      toggleY.onChange( function (value) {
-         painter.enableY = value;
-         painter._enableSSAO = value ? false : painter._enableSSAO;
-         painter.updateClipping();
-      });
+         var bound = new THREE.Box3().setFromObject(this._toplevel);
+         bound.expandByVector(bound.getSize().multiplyScalar(0.01));
 
-      if (this.clipY === 0)
-         this.clipY = (bound.min.y + bound.max.y)/2;
-      var yclip = clipFolder.add(this, 'clipY', bound.min.y, bound.max.y).name('Y Position');
+         var clipFolder = this._datgui.addFolder('Clipping');
 
-      yclip.onChange( function (value) {
-         painter.clipY = value;
-         if (painter.enableY) painter.updateClipping();
-      });
+         for (var naxis=0;naxis<3;++naxis) {
+            var axis = !naxis ? "x" : ((naxis===1) ? "y" : "z"),
+                  axisC = axis.toUpperCase();
 
-      var toggleZ = clipFolder.add(this, 'enableZ').name('Enable Z').listen();
-      toggleZ.onChange( function (value) {
-         painter.enableZ = value;
-         painter._enableSSAO = value ? false : painter._enableSSAO;
-         painter.updateClipping();
-      });
+            clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
+            .listen() // react if option changed outside
+            .onChange( function (value) {
+               painter._enableSSAO = value ? false : painter._enableSSAO;
+               painter.updateClipping();
+            });
 
-      if (this.clipZ === 0)
-         this.clipZ = (bound.min.z + bound.max.z) / 2;
-      var zclip = clipFolder.add(this, 'clipZ', bound.min.z, bound.max.z).name('Z Position');
+            var clip = "clip" + axisC;
+            if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
 
-      zclip.onChange( function (value) {
-         painter.clipZ = value;
-         if (painter.enableZ) painter.updateClipping();
-      });
+            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis]).name(axisC + ' Position')
+            .onChange(function (value) {
+               if (painter[this.enbale_flag]) painter.updateClipping();
+            });
+
+            item.enbale_flag = "enable"+axisC;
+         }
+
+      }
 
       // Appearance Options
 
@@ -1214,52 +1207,82 @@
          return true;
       }
 
-      if (this.drawing_stage === 10) {
+      if (this.drawing_stage === 9) {
+         // wait for main painter to be ready
 
-         var toplevel = null, pthis = this;
-
-         if (this._clones_owner) {
-            toplevel = this._full_geom;
-         } else {
-
-            var obj = this.GetObject();
-
-            if (!obj || !obj.$geo_painter) {
-               console.warn('MAIN PAINTER DISAPPER');
-               this.drawing_stage = 0;
-               return false;
-            }
-
-            // wait when  main painter is ready
-            if (!obj.$geo_painter._drawing_ready) return 1;
-            toplevel = obj.$geo_painter._toplevel;
+         var obj = this.GetObject();
+         if (!obj || !obj.$geo_painter) {
+            console.warn('MAIN PAINTER DISAPPER');
+            this.drawing_stage = 0;
+            return false;
          }
+         if (!obj.$geo_painter._drawing_ready) return 1;
 
-         toplevel.traverse(function(node) {
-            if (!(node instanceof THREE.Mesh) || !node.stack) return;
+         this.drawing_stage = 10; // just do projection
+      }
 
-            // var info = pthis._clones.ResolveStack(entry.stack, true);
-
-            var geom2 = JSROOT.GEO.projectGeometry(node.geometry, node.parent.matrixWorld, pthis.options.project);
-
-            if (!geom2) return;
-
-            var mesh2 = new THREE.Mesh( geom2, node.material );
-
-            pthis._toplevel.add(mesh2);
-
-            mesh2.stack = node.stack;
-         });
-
+      if (this.drawing_stage === 10) {
+         this.DoProjection();
          this.drawing_log = "Building done";
          this.drawing_stage = 0;
          return false;
       }
 
-
-      console.log('never come here');
+      console.error('never come here stage = ' + this.drawing_stage);
 
       return false;
+   }
+
+   JSROOT.TGeoPainter.prototype.GetProjectionSource = function() {
+      if (this._clones_owner)
+         return this._full_geom;
+      var obj = this.GetObject();
+      if (!obj || !obj.$geo_painter) {
+         console.warn('MAIN PAINTER DISAPPER');
+         return null;
+      }
+      if (!obj.$geo_painter._drawing_ready) {
+         console.warn('MAIN PAINTER NOT READY WHEN DO PROJECTION');
+         return null;
+      }
+      return obj.$geo_painter._toplevel;
+   }
+
+   JSROOT.TGeoPainter.prototype.DoProjection = function() {
+      var toplevel = this.GetProjectionSource(), pthis = this;
+
+      if (!toplevel) return false;
+
+      JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
+
+      var axis = this.options.project;
+
+      if (this.options.projectPos === undefined) {
+
+         var bound = new THREE.Box3().setFromObject(toplevel),
+             min = bound.min[this.options.project], max = bound.max[this.options.project],
+             mean = (min+max)/2;
+
+         if ((min<0) && (max>0) && (Math.abs(mean) < 0.2*Math.max(-min,max))) mean = 0; // if middle is around 0, use 0
+
+         this.options.projectPos = mean;
+      }
+
+      toplevel.traverse(function(node) {
+         if (!(node instanceof THREE.Mesh) || !node.stack) return;
+
+         var geom2 = JSROOT.GEO.projectGeometry(node.geometry, node.parent.matrixWorld, pthis.options.project, pthis.options.projectPos);
+
+         if (!geom2) return;
+
+         var mesh2 = new THREE.Mesh( geom2, node.material );
+
+         pthis._toplevel.add(mesh2);
+
+         mesh2.stack = node.stack;
+      });
+
+      return true;
    }
 
    JSROOT.TGeoPainter.prototype.SameMaterial = function(node1, node2) {
@@ -1423,7 +1446,7 @@
             }
 
          } else {
-            this.drawing_stage = 10;
+            this.drawing_stage = 9;
             this.drawing_log = "wait for main painter";
          }
       }
