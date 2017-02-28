@@ -1115,7 +1115,8 @@
 
          // final stage, create all meshes
 
-         var tm0 = new Date().getTime(), ready = true;
+         var tm0 = new Date().getTime(), ready = true,
+             toplevel = this.options.project ? this._full_geom : this._toplevel;
 
          for (var n=0; n<this._draw_nodes.length;++n) {
             var entry = this._draw_nodes[n];
@@ -1133,7 +1134,7 @@
 
             if (!shape.geom || (shape.nfaces === 0)) {
                // node is visible, but shape does not created
-               this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+               this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
                continue;
             }
 
@@ -1144,7 +1145,7 @@
             this._num_meshes++;
             this._num_faces += shape.nfaces;
 
-            if (this.options.project) {
+            /*if (this.options.project) {
                // make projection
 
                var info = this._clones.ResolveStack(entry.stack, true);
@@ -1153,24 +1154,15 @@
 
                if (geom2) {
                   var mesh = new THREE.Mesh( geom2, prop.material );
-                  this._toplevel.add(mesh);
+                  toplevel.add(mesh);
                   mesh.stack = entry.stack;
                }
 
                continue;
-            }
+            }*/
 
 
-            var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
-/*
-            var info = this._clones.ResolveStack(entry.stack, true), ndiff = 0;
-            for (var n=0;n<16;++n) {
-               var v1 = info.matrix.elements[n], v2 = obj3d.matrixWorld.elements[n];
-               mean = Math.abs(v1+v2)/2;
-               if ((mean > 1e-5) && (Math.abs(v2-v1)/mean > 1e-6)) ndiff++;
-            }
-            if (ndiff>0) console.log('Mismatch for ' + info.name, info.matrix.elements, obj3d.matrixWorld.elements);
-*/
+            var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
 
             prop.material.wireframe = this.options.wireframe;
 
@@ -1206,6 +1198,12 @@
          }
 
          if (ready) {
+            if (this.options.project) {
+               this.drawing_log = "Build projection";
+               this.drawing_stage = 10;
+               return true;
+            }
+
             this.drawing_log = "Building done";
             this.drawing_stage = 0;
             return false;
@@ -1217,19 +1215,27 @@
       }
 
       if (this.drawing_stage === 10) {
-         var obj = this.GetObject();
-         if (!obj || !obj.$geo_painter) {
-            console.warn('MAIN PAINTER DISAPPER');
-            this.drawing_stage = 0;
-            return false;
+
+         var toplevel = null, pthis = this;
+
+         if (this._clones_owner) {
+            toplevel = this._full_geom;
+         } else {
+
+            var obj = this.GetObject();
+
+            if (!obj || !obj.$geo_painter) {
+               console.warn('MAIN PAINTER DISAPPER');
+               this.drawing_stage = 0;
+               return false;
+            }
+
+            // wait when  main painter is ready
+            if (!obj.$geo_painter._drawing_ready) return 1;
+            toplevel = obj.$geo_painter._toplevel;
          }
 
-         // wait when  main painter is ready
-         if (!obj.$geo_painter._drawing_ready) return 1;
-
-         var pthis = this;
-
-         obj.$geo_painter._toplevel.traverse(function(node) {
+         toplevel.traverse(function(node) {
             if (!(node instanceof THREE.Mesh) || !node.stack) return;
 
             // var info = pthis._clones.ResolveStack(entry.stack, true);
@@ -1406,9 +1412,20 @@
       this._num_meshes = 0;
       this._num_faces = 0;
 
-      if (this.options.project && !this._clones_owner) {
-         this.drawing_stage = 10;
-         this.drawing_log = "wait for main painter";
+      if (this.options.project) {
+         if (this._clones_owner) {
+            if (this._full_geom) {
+               this.drawing_stage = 10;
+               this.drawing_log = "build projection";
+
+            } else {
+               this._full_geom = new THREE.Object3D();
+            }
+
+         } else {
+            this.drawing_stage = 10;
+            this.drawing_log = "wait for main painter";
+         }
       }
 
       delete this._last_manifest;
@@ -2597,6 +2614,8 @@
 
          JSROOT.Painter.DisposeThreejsObject(this._scene);
 
+         JSROOT.Painter.DisposeThreejsObject(this._full_geom);
+
          if (this._tcontrols)
             this._tcontrols.dispose();
 
@@ -2631,6 +2650,7 @@
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
+      this._full_geom = null;
       this._camera = null;
 
       if (this._clones && this._clones_owner) this._clones.Cleanup(this._draw_nodes, this._build_shapes);

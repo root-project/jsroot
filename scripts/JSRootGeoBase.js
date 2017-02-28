@@ -1750,12 +1750,8 @@
 
       var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
 
-      var method = 2;
-
       if (false) {
-
          // original simple method
-
          var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
          shape['fD'+projection.toUpperCase()] = 1;
          var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
