@@ -21,7 +21,7 @@
 
    // if (!ThreeBSP) ThreeBSP = {};
 
-   ThreeBSP.Geometry = function( geometry, transfer_matrix, nodeid ) {
+   ThreeBSP.Geometry = function( geometry, transfer_matrix, nodeid, flippedMesh ) {
       // Convert THREE.Geometry to ThreeBSP
 
       if ( geometry instanceof THREE.Geometry ) {
@@ -38,22 +38,22 @@
       } else if ( geometry instanceof THREE.BufferGeometry ) {
          var pos_buf = geometry.getAttribute('position').array,
              norm_buf = geometry.getAttribute('normal').array,
-             polygons = [];
+             polygons = [], polygon, vert1, vert2, vert3;
 
          for (var i=0; i < pos_buf.length; i+=9) {
-            var polygon = new ThreeBSP.Polygon;
+            polygon = new ThreeBSP.Polygon;
 
-            var vertex = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
+            vert1 = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
+            if (transfer_matrix) vert1.applyMatrix4(transfer_matrix);
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
+            vert2 = new ThreeBSP.Vertex( pos_buf[i+3], pos_buf[i+4], pos_buf[i+5], norm_buf[i+3], norm_buf[i+4], norm_buf[i+5]);
+            if (transfer_matrix) vert2.applyMatrix4(transfer_matrix);
 
-            vertex = new ThreeBSP.Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
-            if (transfer_matrix) vertex.applyMatrix4(transfer_matrix);
-            polygon.vertices.push( vertex );
+            vert3 = new ThreeBSP.Vertex( pos_buf[i+6], pos_buf[i+7], pos_buf[i+8], norm_buf[i+6], norm_buf[i+7], norm_buf[i+8]);
+            if (transfer_matrix) vert3.applyMatrix4(transfer_matrix);
+
+            if (flippedMesh) polygon.vertices.push( vert1, vert3, vert2 );
+                        else polygon.vertices.push( vert1, vert2, vert3 );
 
             polygon.calculateProperties();
             polygons.push( polygon );

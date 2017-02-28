@@ -1735,7 +1735,7 @@
    JSROOT.GEO.debug = 0;
 
    /** @memberOf JSROOT.GEO */
-   JSROOT.GEO.projectGeometry = function(geom, matrix, projection, position) {
+   JSROOT.GEO.projectGeometry = function(geom, matrix, projection, position, flippedMesh) {
 
       if (!geom.boundingBox) geom.computeBoundingBox();
 
@@ -1750,7 +1750,7 @@
          return null; // not interesting
       }
 
-      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0);
+      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh);
 
       if (false) {
          // original simple method

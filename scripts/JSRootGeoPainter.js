@@ -1264,9 +1264,7 @@
       toplevel.traverse(function(mesh) {
          if (!(mesh instanceof THREE.Mesh) || !mesh.stack) return;
 
-         if (mesh._flippedMesh) return;
-
-         var geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, pthis.options.project, pthis.options.projectPos);
+         var geom2 = JSROOT.GEO.projectGeometry(mesh.geometry, mesh.parent.matrixWorld, pthis.options.project, pthis.options.projectPos, mesh._flippedMesh);
 
          if (!geom2) return;
 
