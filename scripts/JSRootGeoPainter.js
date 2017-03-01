@@ -708,7 +708,7 @@
       var frustum = JSROOT.GEO.CreateFrustum(matrix);
 
       // check if overall bounding box seen
-      if (!frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel)))
+      if (!frustum.CheckBox(this.getGeomBoundingBox(this._toplevel)))
          this.startDrawGeometry();
    }
 
@@ -991,7 +991,7 @@
             frustum = JSROOT.GEO.CreateFrustum(matrix);
 
             // check if overall bounding box seen
-            if (frustum.CheckBox(new THREE.Box3().setFromObject(this._toplevel))) {
+            if (frustum.CheckBox(this.getGeomBoundingBox(this._toplevel))) {
                matrix = null; // not use camera for the moment
                frustum = null;
             }
@@ -1552,7 +1552,7 @@
       var extras = this.getExtrasContainer('get');
       if (extras) this._toplevel.remove(extras);
 
-      var box = new THREE.Box3().setFromObject(this._toplevel);
+      var box = this.getGeomBoundingBox(this._toplevel);
 
       if (extras) this._toplevel.add(extras);
 
@@ -1632,15 +1632,15 @@
 
       var box = new THREE.Box3();
       if (focus === undefined) {
-         box.setFromObject(this._toplevel);
+         box = this.getGeomBoundingBox(this._toplevel);
       } else if (focus instanceof THREE.Mesh) {
          box.setFromObject(focus);
       } else {
-         var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix);
-         var node = focus.node;
-         var halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
-         box.min = center.clone().sub(halfDelta) ;
-         box.max = center.clone().add(halfDelta) ;
+         var center = new THREE.Vector3().setFromMatrixPosition(focus.matrix),
+             node = focus.node,
+             halfDelta = new THREE.Vector3( node.fDX, node.fDY, node.fDZ ).multiplyScalar(0.5);
+         box.min = center.clone().sub(halfDelta);
+         box.max = center.clone().add(halfDelta);
       }
 
       var sizex = box.max.x - box.min.x,
@@ -1676,7 +1676,7 @@
 
       if (autoClip) {
 
-         var topBox = new THREE.Box3().setFromObject(this._toplevel);
+         var topBox = this.getGeomBoundingBox(this._toplevel);
 
          this.clipX = this.enableX ? this.clipX : topBox.min.x;
          this.clipY = this.enableY ? this.clipY : topBox.min.y;
