@@ -430,8 +430,7 @@
 
       if (this.options.project) {
 
-         var bound = new THREE.Box3().setFromObject(this.GetProjectionSource());
-         bound.expandByVector(bound.getSize().multiplyScalar(0.01));
+         var bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01);
 
          var axis = this.options.project;
 
@@ -447,8 +446,7 @@
       } else {
          // Clipping Options
 
-         var bound = new THREE.Box3().setFromObject(this._toplevel);
-         bound.expandByVector(bound.getSize().multiplyScalar(0.01));
+         var bound = this.getGeomBoundingBox(this._toplevel,0.01);
 
          var clipFolder = this._datgui.addFolder('Clipping');
 
@@ -1239,7 +1237,7 @@
       }
 
       if (this.drawing_stage === 10) {
-         this.DoProjection();
+         this.doProjection();
          this.drawing_log = "Building done";
          this.drawing_stage = 0;
          return false;
@@ -1250,7 +1248,7 @@
       return false;
    }
 
-   JSROOT.TGeoPainter.prototype.GetProjectionSource = function() {
+   JSROOT.TGeoPainter.prototype.getProjectionSource = function() {
       if (this._clones_owner)
          return this._full_geom;
       if (!this._main_painter) {
@@ -1264,8 +1262,23 @@
       return this._main_painter._toplevel;
    }
 
-   JSROOT.TGeoPainter.prototype.DoProjection = function() {
-      var toplevel = this.GetProjectionSource(), pthis = this;
+   JSROOT.TGeoPainter.prototype.getGeomBoundingBox = function(topitem, scalar) {
+      var box3 = new THREE.Box3();
+
+      box3.makeEmpty();
+
+      topitem.traverse(function(mesh) {
+         if ((mesh instanceof THREE.Mesh) && mesh.stack) box3.expandByObject(mesh);
+      });
+
+      if (scalar !== undefined) box3.expandByVector(box3.getSize().multiplyScalar(scalar));
+
+      return box3;
+   }
+
+
+   JSROOT.TGeoPainter.prototype.doProjection = function() {
+      var toplevel = this.getProjectionSource(), pthis = this;
 
       if (!toplevel) return false;
 
@@ -1275,7 +1288,7 @@
 
       if (this.options.projectPos === undefined) {
 
-         var bound = new THREE.Box3().setFromObject(toplevel),
+         var bound = this.getGeomBoundingBox(toplevel),
              min = bound.min[this.options.project], max = bound.max[this.options.project],
              mean = (min+max)/2;
 
