@@ -11,6 +11,7 @@
 3. On of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
+4. Let change background color of geo drawing
 
 
 ## Changes in 5.1.0

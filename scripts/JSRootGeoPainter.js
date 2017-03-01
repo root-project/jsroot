@@ -198,7 +198,7 @@
                    highlight: false, select_in_view: false,
                    project: '', is_main: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
-                   script_name: "", transparancy: 1, autoRotate: false };
+                   script_name: "", transparancy: 1, autoRotate: false, background: 'white' };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -235,6 +235,14 @@
       var d = new JSROOT.DrawOptions(opt);
 
       if (d.check("MAIN")) res.is_main = true;
+
+      if (d.check('BLACK')) res.background = "black";
+
+      if (d.check('BKGR_', true)) {
+         if (d.partAsInt(1)>0) res.background = JSROOT.Painter.root_colors[d.partAsInt()]; else
+         for (var col=0;col<8;++col)
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) res.background = JSROOT.Painter.root_colors[col];
+      }
 
       if (d.check("MORE3")) res.more = 3;
       if (d.check("MORE")) res.more = 2;
@@ -766,7 +774,6 @@
 
       if (active_mesh !== null) {
          active_mesh.originalColor = active_mesh.material.color;
-         console.log(this.GetItemName(), 'remember color', active_mesh.originalColor);
          active_mesh.material.color = new THREE.Color( color || 0xffaa33 );
 
          if (active_mesh.hightlightLineWidth)
@@ -1338,7 +1345,7 @@
                                                   preserveDrawingBuffer: true }) :
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio(pixel_ratio);
-      this._renderer.setClearColor(0xffffff, 1);
+      this._renderer.setClearColor(this.options.background, 1);
       this._renderer.setSize(w, h);
       this._renderer.localClippingEnabled = true;
 
