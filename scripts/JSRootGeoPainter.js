@@ -256,9 +256,9 @@
       if (d.check("CLIPZ")) res.clipz = true;
       if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
 
-      if (d.check("PROJX")) res.project = 'x';
-      if (d.check("PROJY")) res.project = 'y';
-      if (d.check("PROJZ")) res.project = 'z';
+      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
+      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
+      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
 
       if (d.check("DFLT_COLORS")) this.SetRootDefaultColors();
       if (d.check("SSAO")) res.ssao = true;
@@ -1450,6 +1450,7 @@
       this.drawing_log = "collect visible";
       this._num_meshes = 0;
       this._num_faces = 0;
+      this._selected_mesh = null;
 
       if (this.options.project) {
          if (this._clones_owner) {
