@@ -1729,10 +1729,7 @@
       }
 
       return return_bsp ? { polygons: bsp1.toPolygons() } : bsp1.toBufferGeometry();
-
    }
-
-   JSROOT.GEO.debug = 0;
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.projectGeometry = function(geom, matrix, projection, position, flippedMesh) {
@@ -1745,27 +1742,24 @@
 
       if (!position) position = 0;
 
-      if (((box.min[projection]>position) && (box.max[projection]>position)) ||
-          ((box.min[projection]<position) && (box.max[projection]<position))) {
+      if (((box.min[projection]>=position) && (box.max[projection]>=position)) ||
+          ((box.min[projection]<=position) && (box.max[projection]<=position))) {
          return null; // not interesting
       }
 
-      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh);
+      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh),
+          sizex = 2*Math.max(Math.abs(box.min.x), Math.abs(box.max.x)),
+          sizey = 2*Math.max(Math.abs(box.min.y), Math.abs(box.max.y)),
+          sizez = 2*Math.max(Math.abs(box.min.z), Math.abs(box.max.z)),
+          size = 10000;
 
-      if (false) {
-         // original simple method
-         var shape = { fDX:1e6, fDY: 1e6, fDZ: 1e6 };
-         shape['fD'+projection.toUpperCase()] = 1;
-         var geom2 = JSROOT.GEO.createCubeBuffer(shape, 0);
-         var bsp2 = new ThreeBSP.Geometry(geom2, null, 0);
-         bsp1.direct_intersect(bsp2);
-         return bsp1.toBufferGeometry();
+      switch (projection) {
+         case "x": size = Math.max(sizey,sizez); break;
+         case "y": size = Math.max(sizex,sizez); break;
+         case "z": size = Math.max(sizex,sizey); break;
       }
 
-
-      if (JSROOT.GEO.debug++ < 10) ThreeBSP.debug = true;
-
-      var bsp2 = ThreeBSP.CreateNormal(projection, position);
+      var bsp2 = ThreeBSP.CreateNormal(projection, position, size);
 
       bsp1.cut_from_plane(bsp2);
 

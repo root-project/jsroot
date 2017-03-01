@@ -287,50 +287,45 @@
       var a = this.tree,
           b = other_tree.tree;
 
-      if (ThreeBSP.debug) console.log('do invert and clip a', a.polygons.length, b.polygons.length);
       a.invert();
       b.clipTo( a );
       b.invert();
       a.clipTo( b );
       b.clipTo( a );
-      if (ThreeBSP.debug) console.log('before build', a.polygons.length, b.polygons.length);
       a.build( b.collectPolygons([]) );
       a.invert();
-      if (ThreeBSP.debug) console.log('after', a.polygons.length, b.polygons.length);
       return this;
    }
 
-   ThreeBSP.CreateNormal = function(axis_name, pos) {
+   ThreeBSP.CreateNormal = function(axis_name, pos, size) {
       // create geometry to make cut on specified axis
 
-      var vert1, vert2, vert3, size = 10000;
+      var vert1, vert2, vert3;
+
+      if (!size || (size<10000)) size = 10000;
 
       switch(axis_name) {
          case "x":
-            vert1 = new ThreeBSP.Vertex(pos,-2*size,   size, 1, 0, 0),
-            vert2 = new ThreeBSP.Vertex(pos,   size,   size, 1, 0, 0),
-            vert3 = new ThreeBSP.Vertex(pos,   size,-2*size, 1, 0, 0);
+            vert1 = new ThreeBSP.Vertex(pos, -3*size,    size, 1, 0, 0),
+            vert3 = new ThreeBSP.Vertex(pos,    size,    size, 1, 0, 0),
+            vert2 = new ThreeBSP.Vertex(pos,    size, -3*size, 1, 0, 0);
             break;
          case "y":
-            vert1 = new ThreeBSP.Vertex(-2*size,  pos,   size, 0, 1, 0),
-            vert3 = new ThreeBSP.Vertex(   size,  pos,   size, 0, 1, 0),
-            vert2 = new ThreeBSP.Vertex(   size,  pos,-2*size, 0, 1, 0);
+            vert1 = new ThreeBSP.Vertex(-3*size,  pos,    size, 0, 1, 0),
+            vert2 = new ThreeBSP.Vertex(   size,  pos,    size, 0, 1, 0),
+            vert3 = new ThreeBSP.Vertex(   size,  pos, -3*size, 0, 1, 0);
             break;
          case "z":
-            vert1 = new ThreeBSP.Vertex(-2*size,    size, pos, 0, 0, 1),
-            vert2 = new ThreeBSP.Vertex(   size,    size, pos, 0, 0, 1),
-            vert3 = new ThreeBSP.Vertex(   size, -2*size, pos, 0, 0, 1);
+            vert1 = new ThreeBSP.Vertex(-3*size,    size, pos, 0, 0, 1),
+            vert3 = new ThreeBSP.Vertex(   size,    size, pos, 0, 0, 1),
+            vert2 = new ThreeBSP.Vertex(   size, -3*size, pos, 0, 0, 1);
             break;
       }
 
-      var vertices = [vert1, vert3, vert2];
-
-      var polygon = new ThreeBSP.Polygon(vertices);
+      var polygon = new ThreeBSP.Polygon([vert1, vert2, vert3]);
       polygon.calculateProperties();
 
-      var polygons = [polygon];
-
-      var node = new ThreeBSP.Node(polygons);
+      var node = new ThreeBSP.Node([polygon]);
 
       return new ThreeBSP.Geometry(node);
    }
