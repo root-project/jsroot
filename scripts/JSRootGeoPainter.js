@@ -1808,8 +1808,8 @@
             }
             JSROOT.CallBack(call_back); // finally callback
          });
+      }
 
-      } else
       if (this.drawExtras(obj, itemname, true)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
          this.Render3D(100);
@@ -1953,15 +1953,19 @@
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-      var buf = new Float32Array((track.fNpoints-1)*6), pos = 0;
+      var buf = new Float32Array((track.fNpoints-1)*6),
+          pos = 0, projv = this.options.projectPos,
+          projx = (this.options.project === "x"),
+          projy = (this.options.project === "y"),
+          projz = (this.options.project === "z");
 
       for (var k=0;k<track.fNpoints-1;++k) {
-         buf[pos]   = track.fPoints[k*3];
-         buf[pos+1] = track.fPoints[k*3+1];
-         buf[pos+2] = track.fPoints[k*3+2];
-         buf[pos+3] = track.fPoints[k*3+3];
-         buf[pos+4] = track.fPoints[k*3+4];
-         buf[pos+5] = track.fPoints[k*3+5];
+         buf[pos]   = projx ? projv : track.fPoints[k*3];
+         buf[pos+1] = projy ? projv : track.fPoints[k*3+1];
+         buf[pos+2] = projz ? projv : track.fPoints[k*3+2];
+         buf[pos+3] = projx ? projv : track.fPoints[k*3+3];
+         buf[pos+4] = projy ? projv : track.fPoints[k*3+4];
+         buf[pos+5] = projz ? projv : track.fPoints[k*3+5];
          pos+=6;
       }
 
@@ -1990,15 +1994,19 @@
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-      var buf = new Float32Array((track.fN-1)*6), pos = 0;
+      var buf = new Float32Array((track.fN-1)*6), pos = 0,
+          projv = this.options.projectPos,
+          projx = (this.options.project === "x"),
+          projy = (this.options.project === "y"),
+          projz = (this.options.project === "z");
 
       for (var k=0;k<track.fN-1;++k) {
-         buf[pos]   = track.fP[k*3];
-         buf[pos+1] = track.fP[k*3+1];
-         buf[pos+2] = track.fP[k*3+2];
-         buf[pos+3] = track.fP[k*3+3];
-         buf[pos+4] = track.fP[k*3+4];
-         buf[pos+5] = track.fP[k*3+5];
+         buf[pos]   = projx ? projv : track.fP[k*3];
+         buf[pos+1] = projy ? projv : track.fP[k*3+1];
+         buf[pos+2] = projz ? projv : track.fP[k*3+2];
+         buf[pos+3] = projx ? projv : track.fP[k*3+3];
+         buf[pos+4] = projy ? projv : track.fP[k*3+4];
+         buf[pos+5] = projz ? projv : track.fP[k*3+5];
          pos+=6;
       }
 
@@ -2020,18 +2028,21 @@
    }
 
    JSROOT.TGeoPainter.prototype.drawHit = function(hit, itemname) {
-      if (!hit) return false;
-      if (hit.fN <= 0) return false;
+      if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
-      var hit_size = 25.0 * hit.fMarkerSize;
-      var hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor];
+      var hit_size = 25.0 * hit.fMarkerSize,
+          hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor],
+          use_points = this._webgl,
+          size = hit.fN-1, step = 1, scale = hit_size*0.3,
+          indicies = JSROOT.Painter.Box_Indexes,
+          normals = JSROOT.Painter.Box_Normals,
+          vertices = JSROOT.Painter.Box_Vertices,
+          lll = 0, pos, norm,
+          projv = this.options.projectPos,
+          projx = (this.options.project === "x"),
+          projy = (this.options.project === "y"),
+          projz = (this.options.project === "z");
 
-      var use_points = this._webgl,
-      size = hit.fN-1, step = 1, scale = hit_size*0.3,
-      indicies = JSROOT.Painter.Box_Indexes,
-      normals = JSROOT.Painter.Box_Normals,
-      vertices = JSROOT.Painter.Box_Vertices,
-      lll = 0, pos, norm;
 
       if (use_points) {
          pos = new Float32Array(size*3);
@@ -2047,9 +2058,9 @@
 
       for (var i=0;i<size;i+=step) {
 
-         var x = hit.fP[i*3],
-         y = hit.fP[i*3+1],
-         z = hit.fP[i*3+2];
+         var x = projx ? projv : hit.fP[i*3],
+             y = projy ? projv : hit.fP[i*3+1],
+             z = projz ? projv : hit.fP[i*3+2];
 
          if (use_points) {
             pos[lll]   = x;
@@ -2583,7 +2594,11 @@
 
       // if extra object where append, redraw them at the end
       this.getExtrasContainer("delete"); // delete old container
-      this.drawExtras(this._extraObjects);
+
+      var extras = this._extraObjects;
+      if (this.GetObject() && this.GetObject().$geo_painter)
+         extras = this.GetObject().$geo_painter._extraObjects;
+      this.drawExtras(extras);
 
       this.Render3D(0, true);
 
