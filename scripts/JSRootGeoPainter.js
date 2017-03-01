@@ -763,41 +763,30 @@
 
       this._controls.ProcessMouseMove = function(intersects) {
 
-         var active_mesh = null;
+         var active_mesh = null, tooltip = null, resolve = null, names = [];
 
          // try to find mesh from intersections
-         for (var k=0;!active_mesh && (k<intersects.length);++k) {
-            if (!intersects[k].object) continue;
-            if (intersects[k].object.geo_object || intersects[k].object.stack)
-               active_mesh = intersects[k].object;
+         for (var k=0;k<intersects.length;++k) {
+            var obj = intersects[k].object, info = null;
+            if (!obj) continue;
+            if (obj.geo_object) info = obj.geo_name; else
+            if (obj.stack) info = painter.GetStackFullName(obj.stack);
+            if (info===null) continue;
+            names.push(info);
+
+            if (!active_mesh) {
+               active_mesh = obj;
+               tooltip = info;
+               if (active_mesh.stack) resolve = painter.ResolveStack(active_mesh.stack);
+            }
          }
 
          painter.HighlightMesh(active_mesh);
 
-         var names = [];
-
          if (painter.options.update_browser) {
-            if (painter.options.highlight) {
-               if (tooltip !== null) names.push(tooltip);
-            } else {
-               for (var n=0;n<intersects.length;++n) {
-                  var obj = intersects[n].object;
-                  if (obj.geo_name) names.push(obj.geo_name); else
-                  if (obj.stack) names.push(painter.GetStackFullName(obj.stack));
-               }
-            }
-
+            if (painter.options.highlight && tooltip) names = [ tooltip ];
             painter.ActiavteInBrowser(names);
          }
-
-         var tooltip = null, resolve = null;
-
-         if (active_mesh && active_mesh.stack) {
-            tooltip = painter.GetStackFullName(active_mesh.stack);
-            if (tooltip) resolve = painter.ResolveStack(active_mesh.stack);
-         } else
-         if (active_mesh && active_mesh.geo_name)
-            tooltip = active_mesh.geo_name;
 
          if (!resolve || !resolve.obj) return tooltip;
 
@@ -2042,7 +2031,6 @@
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
           projz = (this.options.project === "z");
-
 
       if (use_points) {
          pos = new Float32Array(size*3);
