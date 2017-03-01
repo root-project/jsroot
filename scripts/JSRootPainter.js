@@ -10159,25 +10159,21 @@
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
-      JSROOT.NewHttpRequest(filepath,'object', function(res) {
-         if (res == null) return JSROOT.CallBack(call_back);
+      JSROOT.NewHttpRequest(filepath, 'object', function(res) {
+         if (!res) return JSROOT.CallBack(call_back);
          var h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
-         if ('fTitle' in res) h1._title = res.fTitle;
+         if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
-            if ('_jsontmp' in item) {
-               //var res = item._jsontmp;
-               //delete item._jsontmp;
+            if (item._jsontmp)
                return JSROOT.CallBack(callback, item, item._jsontmp);
-            }
             JSROOT.NewHttpRequest(item._jsonfile, 'object', function(res) {
                item._jsontmp = res;
-               return JSROOT.CallBack(callback, item, item._jsontmp);
-            }).send(null);
+               JSROOT.CallBack(callback, item, item._jsontmp);
+            }).send();
          }
          if (pthis.h == null) pthis.h = h1; else
          if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
-            var h0 = pthis.h;
-            var topname = ('_jsonfile' in h0) ? "Files" : "Items";
+            var h0 = pthis.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
             pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
@@ -10226,8 +10222,7 @@
          if (pthis.h._kind == 'TopFolder') {
             pthis.h._childs.push(h1);
          }  else {
-            var h0 = pthis.h;
-            var topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            var h0 = pthis.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
             pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
