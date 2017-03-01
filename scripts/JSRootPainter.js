@@ -9889,14 +9889,25 @@
       if (items.length == 0) return JSROOT.CallBack(call_back);
 
       var frame_names = new Array(items.length), items_wait = new Array(items.length);
-      for (var n=0; n<items.length;++n) {
-         items_wait[n] = false;
+      for (var n=0; n < items.length;++n) {
+         items_wait[n] = 0;
          var fname = items[n], k = 0;
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
 
          while (frame_names.indexOf(fname)>=0)
             fname = items[n] + "_" + k++;
          frame_names[n] = fname;
+      }
+
+      // now check if several same items present - select only one for the drawing
+      // if draw option includes 'main', such item will be drawn first
+      for (var n=0; n<items.length;++n) {
+         if (items_wait[n] !== 0) continue;
+         var found_main = n;
+         for (var k=0; k<items.length;++k)
+            if ((items[n]===items[k]) && (options[k].indexOf('main')>=0)) found_main = k;
+         for (var k=0; k<items.length;++k)
+            if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
 
       h.CreateDisplay(function(mdi) {
