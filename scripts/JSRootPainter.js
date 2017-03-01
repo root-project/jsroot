@@ -9599,7 +9599,6 @@
       }
 
       function display_callback(respainter) {
-
          if (!updating) JSROOT.progress();
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
@@ -9703,7 +9702,7 @@
       }
 
       h.get(itemname, function(item, obj) {
-         if (!obj) JSROOT.CallBack(call_back);
+         if (!obj) return JSROOT.CallBack(call_back);
 
          var dummy = new JSROOT.TObjectPainter();
          dummy.SetDivId(divid, -1);
@@ -9848,6 +9847,9 @@
                var pos = dropitems[i][j].indexOf("_same_");
                if ((pos>0) && (h.Find(dropitems[i][j])==null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
+
+               elem = h.Find({ name: dropitems[i][j], check_keys: true });
+               if (elem) dropitems[i][j] = h.itemFullName(elem);
             }
 
             if ((options[i][0] == "[") && (options[i][options[i].length-1] == "]")) {
@@ -9868,6 +9870,9 @@
          var pos = items[i].indexOf("_same_");
          if ((pos>0) && !h.Find(items[i]) && (i>0))
             items[i] = items[i].substr(0,pos) + items[0].substr(pos);
+
+         elem = h.Find({ name: items[i], check_keys: true });
+         if (elem) items[i] = h.itemFullName(elem);
       }
 
       // now check that items can be displayed
@@ -9894,8 +9899,6 @@
          frame_names[n] = fname;
       }
 
-      var DisplayCallback, DropNextItem; // two functions, aka forward declarations
-
       h.CreateDisplay(function(mdi) {
          if (!mdi) return JSROOT.CallBack(call_back);
 
@@ -9906,13 +9909,12 @@
                options[i] += "::_display_on_frame_::"+frame_names[i];
             }
 
-         DropNextItem = function(indx, painter) {
+         function DropNextItem(indx, painter) {
             if (painter && dropitems[indx] && (dropitems[indx].length>0))
-               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(this, indx, painter));
+               return h.dropitem(dropitems[indx].shift(), painter.divid, dropopts[indx].shift(), DropNextItem.bind(h, indx, painter));
 
             dropitems[indx] = null; // mark that all drop items are processed
-
-            if (!call_back) return;
+            items[indx] = null; // mark item as ready
 
             var isany = false;
 
@@ -9922,26 +9924,21 @@
                isany = true;
                if (items_wait[cnt] && items.indexOf(items[cnt])===cnt) {
                   items_wait[cnt] = false;
-                  h.display(items[cnt], options[cnt], DisplayCallback.bind(h,cnt));
+                  h.display(items[cnt], options[cnt], DropNextItem.bind(h,cnt));
                }
             }
 
             // only when items drawn and all sub-items dropped, one could perform call-back
-            if (!isany) {
+            if (!isany && call_back) {
                JSROOT.CallBack(call_back);
                call_back = null;
             }
          }
 
-         DisplayCallback = function(indx, painter, itemname) {
-            items[indx] = null; // mark item as ready
-            DropNextItem(indx, painter);
-         }
-
          // We start display of all items parallel, but only if they are not the same
          for (var i = 0; i < items.length; ++i)
             if (!items_wait[i])
-               h.display(items[i], options[i], DisplayCallback.bind(h,i));
+               h.display(items[i], options[i], DropNextItem.bind(h,i));
       });
    }
 
@@ -11652,10 +11649,10 @@
       if (!handle.func) return completeDraw(null);
 
       function performDraw() {
-         if ((painter===null) && ('painter_kind' in handle))
+         if (!painter && ('painter_kind' in handle))
             painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
-         if (painter==null)
+         if (!painter)
             painter = handle.func(divid, obj, opt);
          else
             painter = handle.func.bind(painter)(divid, obj, opt, painter);
@@ -11698,15 +11695,14 @@
          var func = JSROOT.findFunction(funcname);
          if (!func) {
             alert('Fail to find function ' + funcname + ' after loading ' + prereq);
-         } else {
-            handle.func = func; // remember function once it found
-
-            if (performDraw() !== painter)
-               alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
+            return completeDraw(null);
          }
-      });
 
-      return completeDraw(painter);
+         handle.func = func; // remember function once it found
+
+         if (performDraw() !== painter)
+            alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
+      });
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
