@@ -2312,16 +2312,13 @@
 
    JSROOT.TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
-      if (this.options.project && draw_obj.$geo_painter && draw_obj.$geo_painter._clones) {
-
-         this._main_painter = draw_obj.$geo_painter;
-         this._main_painter._slave_painters.push(this); // register ourself to main painter
+      if (this._main_painter) {
 
          this._clones_owner = false;
          this._clones = null;
          this._clones = this._main_painter._clones;
 
-         console.log('Reuse clones', this._clones.nodes.length,'from main painter');
+         console.log('Reuse clones', this._clones.nodes.length, 'from main painter');
       } else {
 
          var tm1 = new Date().getTime();
@@ -2688,7 +2685,10 @@
          delete this._animating;
 
          var obj = this.GetObject();
-         if (obj && this.options.is_main && (obj.$geo_painter===this)) delete obj.$geo_painter;
+         if (obj && this.options.is_main) {
+            if (obj.$geo_painter===this) delete obj.$geo_painter; else
+            if (obj.fVolume && obj.fVolume.$geo_painter===this) delete obj.fVolume.$geo_painter;
+         }
 
          if (this._main_painter) {
             var pos = this._main_painter._slave_painters.indexOf(this);
@@ -2802,7 +2802,7 @@
    }
 
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
-      if (obj === null) return null;
+      if (!obj) return null;
 
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
@@ -2837,7 +2837,7 @@
 
       if (!obj && shape)
          obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
-                   { fTrans: null, fShape: shape, fRGBA: [ 0, 1, 0, 1], fElements: null, fRnrSelf: true });
+                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
       if (!obj) return this.DrawingReady();
 
@@ -2854,6 +2854,11 @@
 
       if (this.options.is_main && !obj.$geo_painter)
          obj.$geo_painter = this;
+
+      if (!this.options.is_main && this.options.project && obj.$geo_painter) {
+         this._main_painter = obj.$geo_painter;
+         this._main_painter._slave_painters.push(this);
+      }
 
       // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
 
