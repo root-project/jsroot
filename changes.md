@@ -8,6 +8,9 @@
 2. Implement projection of geometry on given plane.
    One could reuse drawing of geometry in other div (should be drawn with main option).
    In control GUI one could change position of the projection plane    
+3. On of the TGeo drawing can be assigned as main. When same object drawn next time,
+   its drawing will be derived from the main. Useful for geometry projections.
+   Also all tracks and hits will be imported from main drawing.
 
 
 ## Changes in 5.1.0

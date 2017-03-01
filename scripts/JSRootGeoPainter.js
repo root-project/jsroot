@@ -718,8 +718,36 @@
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
 
-   JSROOT.TGeoPainter.prototype.HighlightMesh = function(active_mesh, color) {
-      if (!this.options.highlight) active_mesh = null;
+   JSROOT.TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_stack, no_recursive) {
+
+      if (!this.options.highlight) {
+         active_mesh = null;
+      } else
+      if (geo_object) {
+         var extras = this.getExtrasContainer();
+         if (extras && extras.children)
+            for (var k=0;k<extras.children.length;++k)
+               if (extras.children[k].geo_object === geo_object) { active_mesh = extras.children[k]; break; }
+      } else
+      if (geo_stack && this._toplevel) {
+         this._toplevel.traverse(function(mesh) {
+            if ((mesh instanceof THREE.Mesh) && (mesh.stack===geo_stack)) active_mesh = mesh;
+         });
+      }
+
+      if (!no_recursive) {
+         // check all other painters
+
+         if (active_mesh) {
+            if (!geo_object) geo_object = active_mesh.geo_object;
+            if (!geo_stack) geo_stack = active_mesh.stack;
+         }
+
+         var lst = !this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]);
+
+         for (var k=0;k<lst.length;++k)
+            if (lst[k]!==this) lst[k].HighlightMesh(null, color, geo_object, geo_stack, true);
+      }
 
       var curr_mesh = this._selected_mesh;
 
@@ -738,6 +766,7 @@
 
       if (active_mesh !== null) {
          active_mesh.originalColor = active_mesh.material.color;
+         console.log(this.GetItemName(), 'remember color', active_mesh.originalColor);
          active_mesh.material.color = new THREE.Color( color || 0xffaa33 );
 
          if (active_mesh.hightlightLineWidth)
@@ -1192,13 +1221,12 @@
       if (this.drawing_stage === 9) {
          // wait for main painter to be ready
 
-         var obj = this.GetObject();
-         if (!obj || !obj.$geo_painter) {
+         if (!this._main_painter) {
             console.warn('MAIN PAINTER DISAPPER');
             this.drawing_stage = 0;
             return false;
          }
-         if (!obj.$geo_painter._drawing_ready) return 1;
+         if (!this._main_painter._drawing_ready) return 1;
 
          this.drawing_stage = 10; // just do projection
       }
@@ -1218,16 +1246,15 @@
    JSROOT.TGeoPainter.prototype.GetProjectionSource = function() {
       if (this._clones_owner)
          return this._full_geom;
-      var obj = this.GetObject();
-      if (!obj || !obj.$geo_painter) {
+      if (!this._main_painter) {
          console.warn('MAIN PAINTER DISAPPER');
          return null;
       }
-      if (!obj.$geo_painter._drawing_ready) {
+      if (!this._main_painter._drawing_ready) {
          console.warn('MAIN PAINTER NOT READY WHEN DO PROJECTION');
          return null;
       }
-      return obj.$geo_painter._toplevel;
+      return this._main_painter._toplevel;
    }
 
    JSROOT.TGeoPainter.prototype.DoProjection = function() {
@@ -1257,7 +1284,7 @@
 
          if (!geom2) return;
 
-         var mesh2 = new THREE.Mesh( geom2, mesh.material );
+         var mesh2 = new THREE.Mesh( geom2, mesh.material.clone() );
 
          pthis._toplevel.add(mesh2);
 
@@ -1820,17 +1847,7 @@
       if (!hitem._obj || (hitem._obj._typename !== "TEveTrack" &&
           hitem._obj._typename !== "TEvePointSet")) return;
 
-      // Be aware, that item name is real name in browser (with potentially cycle number in the name)
-      // One can use object to identify which track should be highlighted
-      painter.getExtrasContainer().children.some(function(node, index) {
-         if (node.geo_object === obj) { mesh = node; return true; }
-         return false;
-      });
-      if (mesh && on) {
-         painter.HighlightMesh(mesh, 0x00ff00);
-      } else {
-         painter.HighlightMesh(null);
-      }
+      painter.HighlightMesh(null, 0x00ff00, on ? obj : null);
    }
 
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
@@ -2276,9 +2293,12 @@
 
       if (this.options.project && draw_obj.$geo_painter && draw_obj.$geo_painter._clones) {
 
+         this._main_painter = draw_obj.$geo_painter;
+         this._main_painter._slave_painters.push(this); // register ourself to main painter
+
          this._clones_owner = false;
          this._clones = null;
-         this._clones = draw_obj.$geo_painter._clones;
+         this._clones = this._main_painter._clones;
 
          console.log('Reuse clones', this._clones.nodes.length,'from main painter');
       } else {
@@ -2583,9 +2603,7 @@
       // if extra object where append, redraw them at the end
       this.getExtrasContainer("delete"); // delete old container
 
-      var extras = this._extraObjects;
-      if (this.GetObject() && this.GetObject().$geo_painter)
-         extras = this.GetObject().$geo_painter._extraObjects;
+      var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
       this.drawExtras(extras);
 
       this.Render3D(0, true);
@@ -2640,9 +2658,6 @@
          if (this._datgui)
             this._datgui.destroy();
 
-         var obj = this.GetObject();
-         if (obj && this.options.is_main && (obj.$geo_painter===this)) delete obj.$geo_painter;
-
          if (this._worker) this._worker.terminate();
 
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
@@ -2650,7 +2665,23 @@
          delete this.options;
 
          delete this._animating;
+
+         var obj = this.GetObject();
+         if (obj && this.options.is_main && (obj.$geo_painter===this)) delete obj.$geo_painter;
+
+         if (this._main_painter) {
+            var pos = this._main_painter._slave_painters.indexOf(this);
+            if (pos>=0) this._main_painter._slave_painters.splice(pos,1);
+         }
+
+         for (var k=0;k<this._slave_painters.length;++k) {
+            var slave = this._slave_painters[k];
+            if (slave && (slave._main_painter===this)) slave._main_painter = null;
+         }
       }
+
+      this._main_painter = null;
+      this._slave_painters = []; // include ourself into slaves
 
       if (this._renderer) {
          if (this._renderer.dispose) this._renderer.dispose();
