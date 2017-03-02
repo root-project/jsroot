@@ -413,10 +413,11 @@
          this.focusCamera();
          this.Render3D();
       });
-      menu.addchk(this.options.autoRotate, "Autorotate", function() {
-         this.options.autoRotate = !this.options.autoRotate;
-         this.autorotate(2.5);
-      });
+      if (!this.options.project)
+         menu.addchk(this.options.autoRotate, "Autorotate", function() {
+            this.options.autoRotate = !this.options.autoRotate;
+            this.autorotate(2.5);
+         });
       menu.addchk(this.options.select_in_view, "Select in view", function() {
          this.options.select_in_view = !this.options.select_in_view;
          if (this.options.select_in_view) this.startDrawGeometry();
@@ -2695,7 +2696,7 @@
             this.options.highlight = (this.first_render_tm < 1000);
 
          // if rotation was enabled, do it
-         if (this.options.autoRotate) this.autorotate(2.5);
+         if (this.options.autoRotate && !this.options.project) this.autorotate(2.5);
 
          if (this.options.show_controls) this.showControlOptions(true);
 
