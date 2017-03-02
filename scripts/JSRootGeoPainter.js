@@ -19,12 +19,12 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
 
-      if ((typeof dat == 'undefined') || (typeof dat.gui == 'undefined'))
+      if (typeof dat == 'undefined')
          throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
 
-      factory( d3, JSROOT, THREE, dat );
+      factory( d3, JSROOT, THREE );
    }
-} (function( d3, JSROOT, THREE, dat ) {
+} (function( d3, JSROOT, THREE ) {
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
