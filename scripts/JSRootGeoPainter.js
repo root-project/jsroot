@@ -161,15 +161,16 @@
          icon: JSROOT.ToolbarIcons.question,
          click: function() {
 
-            var evnt = d3.event;
-
             d3.event.preventDefault();
             d3.event.stopPropagation();
 
-            JSROOT.Painter.createMenu(painter, function(menu) {
-               menu.painter.FillContextMenu(menu);
-               menu.show(evnt);
-            });
+            var evnt = d3.event;
+
+            if (!JSROOT.Painter.closeMenu())
+               JSROOT.Painter.createMenu(painter, function(menu) {
+                  menu.painter.FillContextMenu(menu);
+                  menu.show(evnt);
+               });
          }
       });
 

@@ -140,9 +140,9 @@
    }
 
    JSROOT.Painter.closeMenu = function(menuname) {
-      if (!menuname) menuname = 'root_ctx_menu';
-      var x = document.getElementById(menuname);
-      if (x) x.parentNode.removeChild(x);
+      var x = document.getElementById(menuname || 'root_ctx_menu');
+      if (x) { x.parentNode.removeChild(x); return true; }
+      return false;
    }
 
    JSROOT.Painter.readStyleFromURL = function(url) {
@@ -4363,7 +4363,6 @@
          pthis.FillContextMenu(menu);
 
          pthis.FillObjectExecMenu(menu, function() { menu.show(evnt); });
-
       }); // end menu creation
    }
 
@@ -4552,10 +4551,12 @@
 
       if (funcname == "PadContextMenus") {
 
-         var pthis = this, evnt = d3.event;
-
          d3.event.preventDefault();
          d3.event.stopPropagation();
+
+         if (JSROOT.Painter.closeMenu()) return;
+
+         var pthis = this, evnt = d3.event;
 
          JSROOT.Painter.createMenu(pthis, function(menu) {
             menu.add("header:Menus");
