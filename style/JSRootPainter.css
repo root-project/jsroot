@@ -536,6 +536,7 @@
 }
 
 /* stylesheet for embedded toolbar buttons */
+ 
 .jsroot .svg_toolbar_btn {
     fill: steelblue;
     cursor: pointer;

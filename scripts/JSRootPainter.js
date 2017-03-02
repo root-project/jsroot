@@ -10829,7 +10829,8 @@
       if (!this.exclude_browser) {
          var br = myDiv.append("div").classed("jsroot_browser", true);
 
-         var btns = br.append("div").classed("jsroot_browser_btns", true);
+         var btns = br.append("div").classed("jsroot_browser_btns", true)
+                                    .classed("jsroot", true);
 
          btns.style('position',"absolute").style("left","7px").style("top","7px");
          if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
