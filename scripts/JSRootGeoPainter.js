@@ -146,6 +146,13 @@
          }
       }];
 
+      buttonList.push({
+         name: 'control',
+         title: 'Toggle control UI',
+         icon: JSROOT.ToolbarIcons.rect,
+         click: function() { painter.showControlOptions('toggle'); }
+      });
+
       if (JSROOT.gStyle.ContextMenu)
       buttonList.push({
          name: 'menu',
@@ -417,9 +424,11 @@
    }
 
    JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
+      if (on==='toggle') on = !this._datgui;
 
       if (this._datgui) {
          if (on) return;
+         d3.select(this._datgui.domElement).remove();
          this._datgui.destroy();
          delete this._datgui;
          return;
@@ -428,7 +437,16 @@
 
       var painter = this;
 
-      this._datgui = new dat.GUI({ width: Math.min(650, painter._renderer.domElement.width / 2) });
+      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, painter._renderer.domElement.width / 2) });
+
+      var main = this.select_main();
+      if (main.style('position')=='static') main.style('position','relative');
+
+      d3.select(this._datgui.domElement)
+               .style('position','absolute')
+               .style('top',0).style('right',0);
+
+      main.node().appendChild(this._datgui.domElement);
 
       if (this.options.project) {
 
