@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 28/02/2017";
+   JSROOT.version = "dev 2/03/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1009,10 +1009,10 @@
       if (kind.indexOf("geom;")>=0) {
          mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
                       "$$$scripts/JSRootGeoBase" + ext + ".js;" +
-                      "$$$scripts/JSRootGeoPainter" + ext + ".js;" +
-                      "$$$scripts/dat.gui.min.js;";
+                      "&&&scripts/dat.gui.min.js;" +
+                      "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter', 'dat.gui');
+         modules.push('ThreeCSG', 'JSRootGeoBase', 'dat.gui', 'JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
