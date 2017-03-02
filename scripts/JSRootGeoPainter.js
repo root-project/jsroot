@@ -1657,6 +1657,8 @@
 
    JSROOT.TGeoPainter.prototype.focusCamera = function( focus, clip ) {
 
+      if (this.options.project) return this.adjustCameraPosition();
+
       var autoClip = clip === undefined ? false : clip;
 
       var box = new THREE.Box3();
@@ -2636,8 +2638,6 @@
             this.enableZ = this.options.clipz;
             this.updateClipping(true); // only set clip panels, do not render
          }
-
-         if (this.options.show_controls) this.showControlOptions(true);
       }
 
       if (this.options.transparancy!==1)
@@ -2666,7 +2666,6 @@
 
       this.addTransformControl();
 
-
       if (call_ready) {
 
          // after first draw check if highlight can be enabled
@@ -2675,6 +2674,8 @@
 
          // if rotation was enabled, do it
          if (this.options.autoRotate) this.autorotate(2.5);
+
+         if (this.options.show_controls) this.showControlOptions(true);
 
          this.DrawingReady();
       }
