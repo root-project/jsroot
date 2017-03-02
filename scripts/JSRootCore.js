@@ -1007,12 +1007,12 @@
       }
 
       if (kind.indexOf("geom;")>=0) {
-         mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
+         mainfiles += (use_bower ? "###dat.gui" : "&&&scripts") + "/dat.gui.min.js;"+
+                      "$$$scripts/ThreeCSG" + ext + ".js;" +
                       "$$$scripts/JSRootGeoBase" + ext + ".js;" +
-                      "&&&scripts/dat.gui.min.js;" +
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";
-         modules.push('ThreeCSG', 'JSRootGeoBase', 'dat.gui', 'JSRootGeoPainter');
+         modules.push('dat.gui', 'ThreeCSG', 'JSRootGeoBase', 'JSRootGeoPainter');
       }
 
       if (kind.indexOf("mathjax;")>=0) {
