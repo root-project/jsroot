@@ -32,7 +32,8 @@
    if (typeof JSROOT.GEO !== 'object')
       console.error('JSROOT.GEO namespace is not defined')
 
-   JSROOT.Toolbar = function(container, buttons) {
+   JSROOT.Toolbar = function(container, buttons, bright) {
+      this.bright = bright;
       if ((container !== undefined) && (typeof container.append == 'function'))  {
          this.element = container.append("div").attr('class','jsroot');
          this.addButtons(buttons);
@@ -70,7 +71,7 @@
          throw new Error('must provide button \'click\' function in button config');
 
       var button = group.append('a')
-                        .attr('class','toolbar-btn')
+                        .attr('class', this.bright ? 'toolbar-btn-bright' : 'toolbar-btn')
                         .attr('rel', 'tooltip')
                         .attr('data-title', title)
                         .on('click', config.click);
@@ -172,7 +173,7 @@
          }
       });
 
-      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList] );
+      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], (this.options.background === "black"));
    }
 
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
