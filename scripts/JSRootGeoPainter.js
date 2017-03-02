@@ -260,7 +260,7 @@
       if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
       if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
 
-      if (d.check("DFLT_COLORS")) this.SetRootDefaultColors();
+      if (d.check("DFLT_COLORS") || d.check("DFLT")) this.SetRootDefaultColors();
       if (d.check("SSAO")) res.ssao = true;
 
       if (d.check("NOWORKER")) res.use_worker = -1;
