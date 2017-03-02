@@ -77,7 +77,17 @@
                         .on('click', config.click);
 
       this.createIcon(button, config.icon || JSROOT.ToolbarIcons.question);
-   };
+   }
+
+
+   JSROOT.Toolbar.prototype.changeBrightness = function(bright) {
+      this.bright = bright;
+      if (!this.element) return;
+
+      this.element.selectAll(bright ? '.toolbar-btn' : ".toolbar-btn-bright")
+                  .attr("class", !bright ? 'toolbar-btn' : "toolbar-btn-bright");
+   }
+
 
    JSROOT.Toolbar.prototype.createIcon = function(button, thisIcon) {
       var size = thisIcon.size || 512,
@@ -174,7 +184,9 @@
          }
       });
 
-      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], (this.options.background === "black"));
+      var bkgr = new THREE.Color(this.options.background);
+
+      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], bkgr.getHex() < 0x400000);
    }
 
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
@@ -209,7 +221,7 @@
                    highlight: false, select_in_view: false,
                    project: '', is_main: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
-                   script_name: "", transparancy: 1, autoRotate: false, background: 'white' };
+                   script_name: "", transparancy: 1, autoRotate: false, background: '#FFFFFF' };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -247,12 +259,14 @@
 
       if (d.check("MAIN")) res.is_main = true;
 
-      if (d.check('BLACK')) res.background = "black";
+      if (d.check('BLACK')) res.background = "#000000";
 
       if (d.check('BKGR_', true)) {
-         if (d.partAsInt(1)>0) res.background = JSROOT.Painter.root_colors[d.partAsInt()]; else
+         var bckgr = null;
+         if (d.partAsInt(1)>0) bckgr = JSROOT.Painter.root_colors[d.partAsInt()]; else
          for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) res.background = JSROOT.Painter.root_colors[col];
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) bckgr = JSROOT.Painter.root_colors[col];
+         if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
       }
 
       if (d.check("MORE3")) res.more = 3;
@@ -487,10 +501,11 @@
             var clip = "clip" + axisC;
             if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
 
-            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis]).name(axisC + ' Position')
-            .onChange(function (value) {
-               if (painter[this.enbale_flag]) painter.updateClipping();
-            });
+            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis])
+                   .name(axisC + ' Position')
+                   .onChange(function (value) {
+                     if (painter[this.enbale_flag]) painter.updateClipping();
+                    });
 
             item.enbale_flag = "enable"+axisC;
          }
@@ -511,15 +526,22 @@
          }).listen();
       }
 
-      appearance.add(this.options, 'highlight').name('Highlight Selection').onChange( function (value) {
+      appearance.add(this.options, 'highlight').name('Highlight Selection').listen().onChange( function (value) {
          if (!value) painter.HighlightMesh(null);
      });
 
       appearance.add(this.options, 'transparancy', 0.0, 1.0)
                      .listen().onChange(this.changeGlobalTransparancy.bind(this));
 
-      appearance.add(this.options, 'wireframe').name('Wireframe').onChange( function (value) {
+      appearance.add(this.options, 'wireframe').name('Wireframe').listen().onChange( function (value) {
          painter.changeWireFrame(painter._scene, painter.options.wireframe);
+      });
+
+      appearance.addColor(this.options, 'background').name('Background').onChange( function() {
+          painter._renderer.setClearColor(painter.options.background, 1);
+          painter.Render3D(0);
+          var bkgr = new THREE.Color(painter.options.background);
+          painter._toolbar.changeBrightness(bkgr.getHex() < 0x400000);
       });
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
