@@ -7,11 +7,9 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'ThreeCSG.js');
 
-      ThreeBSP = {};
-
-      factory(THREE, ThreeBSP );
+      ThreeBSP = factory(THREE);
    }
-} (function( THREE, ThreeBSP ) {
+} (function( THREE ) {
 
    var EPSILON = 1e-5,
        COPLANAR = 0,
@@ -19,7 +17,7 @@
        BACK = 2,
        SPANNING = 3;
 
-   // if (!ThreeBSP) ThreeBSP = {};
+   var ThreeBSP = {};
 
    ThreeBSP.Geometry = function( geometry, transfer_matrix, nodeid, flippedMesh ) {
       // Convert THREE.Geometry to ThreeBSP

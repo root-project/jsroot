@@ -19,7 +19,6 @@
       factory(JSROOT, THREE, ThreeBSP);
    }
 } (function( JSROOT, THREE, ThreeBSP ) {
-   // === functions to create THREE.Geometry for TGeo shapes ========================
 
    /** @namespace JSROOT.GEO */
    /// Holder of all TGeo-related functions and classes
