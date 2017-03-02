@@ -11708,7 +11708,11 @@
 
          if (performDraw() !== painter)
             alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
+
+         completeDraw(painter);
       });
+
+      return painter;
    }
 
    /** @fn JSROOT.redraw(divid, obj, opt)
