@@ -1227,10 +1227,17 @@
       var render_to = this.select_main(),
           rect = render_to.node().getBoundingClientRect();
 
+      function GetStyleValue(name) {
+         var value = render_to.style(name);
+         if (!value) return 0;
+         value = parseFloat(value.replace("px",""));
+         return isNaN(value) ? 0 : value;
+      }
+
       // this is size where canvas should be rendered
       return {
-         width: Math.round(rect.width - this.GetStyleValue(render_to, 'padding-left') - this.GetStyleValue(render_to, 'padding-right')),
-         height: Math.round(rect.height - this.GetStyleValue(render_to, 'padding-top') - this.GetStyleValue(render_to, 'padding-bottom'))
+         width: Math.round(rect.width - GetStyleValue('padding-left') - GetStyleValue('padding-right')),
+         height: Math.round(rect.height - GetStyleValue('padding-top') - GetStyleValue('padding-bottom'))
       };
    }
 
@@ -1261,13 +1268,6 @@
    JSROOT.TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
       // check if it makes sense to zoom inside specified axis range
       return false;
-   }
-
-   JSROOT.TBasePainter.prototype.GetStyleValue = function(select, name) {
-      var value = select.style(name);
-      if (!value) return 0;
-      value = parseFloat(value.replace("px",""));
-      return isNaN(value) ? 0 : value;
    }
 
    // ==============================================================================
@@ -3990,6 +3990,7 @@
 
          if ((w<=0) && (h<=0)) {
             svg.attr("visibility", "hidden");
+            console.warn("Hide canvas while geometry has negative dimension w=",w," h=",h);
             return false;
          } else {
             svg.attr("visibility", "visible");
@@ -4064,6 +4065,7 @@
 
       if ((w<=0) || (h<=0)) {
          svg.attr("visibility", "hidden");
+         console.warn("Hide canvas while geometry has negative dimension w=",w," h=",h);
          w = 200; h = 100; // just to complete drawing
       } else {
          svg.attr("visibility", "visible");
