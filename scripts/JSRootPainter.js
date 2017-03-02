@@ -1621,7 +1621,7 @@
          var main = this.select_main().node();
          if (main !== null) {
             main.appendChild(canv);
-            canv['painter'] = this;
+            canv.painter = this;
          }
 
          return;

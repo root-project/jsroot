@@ -1381,8 +1381,15 @@
                         new THREE.CanvasRenderer({antialias : true });
       this._renderer.setPixelRatio(pixel_ratio);
       this._renderer.setClearColor(this.options.background, 1);
-      this._renderer.setSize(w, h);
+      this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
+
+      if (this._fit_main_area) {
+         this._renderer.domElement.style.width = "100%";
+         this._renderer.domElement.style.height = "100%";
+         var main = this.select_main();
+         if (main.style('position')=='static') main.style('position','relative');
+      }
 
       this._animating = false;
 
@@ -2375,6 +2382,9 @@
 
       var size = this.size_for_3d();
 
+      this._fit_main_area = (size.can3d===-1);
+         // use direct positioning as main element, can adjust
+
       this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
 
       this.add_3d_canvas(size, this._renderer.domElement);
@@ -2785,7 +2795,7 @@
       this._camera.aspect = this._scene_width / this._scene_height;
       this._camera.updateProjectionMatrix();
 
-      this._renderer.setSize( this._scene_width, this._scene_height );
+      this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
 
       this.Render3D();
 
