@@ -383,8 +383,7 @@
          if (!this.options.update_browser) this.ActiavteInBrowser([]);
       });
       menu.addchk(this.options.show_controls, "Show Controls", function() {
-         this.options.show_controls = !this.options.show_controls;
-         this.showControlOptions(this.options.show_controls);
+         this.showControlOptions('toggle');
       });
       menu.addchk(this.TestAxisVisibility, "Show axes", function() {
          this.toggleAxisDraw();
@@ -428,6 +427,8 @@
    JSROOT.TGeoPainter.prototype.showControlOptions = function(on) {
       if (on==='toggle') on = !this._datgui;
 
+      this.options.show_controls = on;
+
       if (this._datgui) {
          if (on) return;
          d3.select(this._datgui.domElement).remove();
@@ -459,10 +460,10 @@
          if (this.options.projectPos === undefined)
             this.options.projectPos = (bound.min[axis] + bound.max[axis])/2;
 
-         this._datgui.add(this.options, 'projectPos', bound.min[axis], bound.max[axis]).name(axis.toUpperCase() + ' projection')
-           .onChange(function (value) {
-              painter.startDrawGeometry();
-              //console.log('Change projection', value, painter.options.projectPos);
+         this._datgui.add(this.options, 'projectPos', bound.min[axis], bound.max[axis])
+             .name(axis.toUpperCase() + ' projection')
+             .onChange(function (value) {
+               painter.startDrawGeometry();
            });
 
       } else {
@@ -1499,7 +1500,6 @@
             if (this._full_geom) {
                this.drawing_stage = 10;
                this.drawing_log = "build projection";
-
             } else {
                this._full_geom = new THREE.Object3D();
             }
@@ -2636,6 +2636,8 @@
             this.enableZ = this.options.clipz;
             this.updateClipping(true); // only set clip panels, do not render
          }
+
+         if (this.options.show_controls) this.showControlOptions(true);
       }
 
       if (this.options.transparancy!==1)
@@ -2664,7 +2666,6 @@
 
       this.addTransformControl();
 
-      this.showControlOptions(this.options.show_controls);
 
       if (call_ready) {
 
