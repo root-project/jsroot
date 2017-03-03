@@ -3988,14 +3988,13 @@
 
          var oldw = svg.property('draw_width'), oldh = svg.property('draw_height');
 
-         if ((w<=lmt) && (h<=lmt)) {
-            svg.attr("visibility", "hidden");
+         if ((w<=lmt) || (h<=lmt)) {
             console.warn("Hide canvas while div geometry too small w=",w," h=",h);
+            svg.style("display", "none");
             return false;
          } else {
-            svg.attr("visibility", "visible");
-            svg.select(".canvas_fillrect")
-               .call(this.fillatt.func);
+            svg.style("display", null)
+               .select(".canvas_fillrect").call(this.fillatt.func);
          }
 
          if (check_resize == 1) {
@@ -4068,11 +4067,11 @@
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
 
       if ((w<=lmt) || (h<=lmt)) {
-         svg.attr("visibility", "hidden");
+         svg.style("display", "none");
          console.warn("Hide canvas while geometry too small w=",w," h=",h);
          w = 200; h = 100; // just to complete drawing
       } else {
-         svg.attr("visibility", "visible");
+         svg.style("display", null);
       }
 
       svg.attr("x", 0)
