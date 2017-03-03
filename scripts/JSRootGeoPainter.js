@@ -186,7 +186,7 @@
 
       var bkgr = new THREE.Color(this.options.background);
 
-      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], bkgr.getHex() < 0x400000);
+      this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], (bkgr.r + bkgr.g + bkgr.b) < 1);
    }
 
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
@@ -542,7 +542,7 @@
           painter._renderer.setClearColor(painter.options.background, 1);
           painter.Render3D(0);
           var bkgr = new THREE.Color(painter.options.background);
-          painter._toolbar.changeBrightness(bkgr.getHex() < 0x400000);
+          painter._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       });
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
@@ -2626,7 +2626,13 @@
    }
 
    JSROOT.TGeoPainter.prototype.testGeomChanges = function() {
+      if (this._main_painter) {
+         console.warn('Get testGeomChanges call for slave painter');
+         return this._main_painter.testGeomChanges();
+      }
       this.startDrawGeometry();
+      for (var k=0;k<this._slave_painters.length;++k)
+         this._slave_painters[k].startDrawGeometry();
    }
 
    JSROOT.TGeoPainter.prototype.toggleAxisDraw = function(force_on) {
@@ -2759,7 +2765,7 @@
       }
 
       this._main_painter = null;
-      this._slave_painters = []; // include ourself into slaves
+      this._slave_painters = [];
 
       if (this._renderer) {
          if (this._renderer.dispose) this._renderer.dispose();

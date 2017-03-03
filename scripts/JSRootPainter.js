@@ -9606,7 +9606,7 @@
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
             respainter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
-            if (item) item._painter = respainter;
+            if (item && !item._painter) item._painter = respainter;
          }
          JSROOT.CallBack(call_back, respainter || painter, itemname);
       }
@@ -10614,7 +10614,7 @@
       // we remove all painters references from items
       if (lst && (lst.length>0))
          this.ForEach(function(item) {
-            if (item._painter && lst.indexOf(item._painter)>0) delete item._painter;
+            if (item._painter && lst.indexOf(item._painter)>=0) delete item._painter;
          });
    }
 
