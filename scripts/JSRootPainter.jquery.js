@@ -1478,6 +1478,7 @@
             .toggleClass("ui-accordion-content-active").slideToggle(0);
 
       return $("#" + hid).attr('frame_title', title).css('overflow','hidden')
+                         .attr('can_resize','height') // inform JSROOT that it can resize height of the
                          .css('position','relative') // this required for correct positioning of 3D canvas in WebKit
                          .get(0);
     }

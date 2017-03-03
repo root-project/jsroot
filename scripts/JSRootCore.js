@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 2/03/2017";
+   JSROOT.version = "dev 3/03/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1361,7 +1361,7 @@
             JSROOT.extend(obj, { fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                                  fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                                  fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
-                                 fCw: 800, fCh : 500, fCatt: JSROOT.Create("TAttCanvas"),
+                                 fCw: 500, fCh: 300, fCatt: JSROOT.Create("TAttCanvas"),
                                  kMoveOpaque: true, kResizeOpaque: true, fHighLightColor: 5,
                                  fBatch: true, kShowEventStatus: false, kAutoExec: true, kMenuBar: true });
             break;

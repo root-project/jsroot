@@ -3975,7 +3975,7 @@
       var render_to = this.select_main(),
           rect = this.main_visible_rect(),
           w = rect.width, h = rect.height, // this is size where canvas should be rendered
-          factor = null, svg = null;
+          factor = null, svg = null, lmt = 5;
 
       if (new_size && new_size.width && new_size.height) {
          w = new_size.width;
@@ -3988,9 +3988,9 @@
 
          var oldw = svg.property('draw_width'), oldh = svg.property('draw_height');
 
-         if ((w<=0) && (h<=0)) {
+         if ((w<=lmt) && (h<=lmt)) {
             svg.attr("visibility", "hidden");
-            console.warn("Hide canvas while geometry has negative dimension w=",w," h=",h);
+            console.warn("Hide canvas while div geometry too small w=",w," h=",h);
             return false;
          } else {
             svg.attr("visibility", "visible");
@@ -4018,21 +4018,25 @@
             }
 
       } else {
+         if (((h <= lmt) || (w <= lmt)) && render_to.attr('can_resize')) {
+            // if zero size and can_resize attribute set, change container size
 
-         if ((h < 10) && (w > 0)) {
-            // set aspect ratio for the place, where object will be drawn
+            if (w>lmt) {
+               factor = 0.66;
 
-            factor = 0.66;
-
-            // for TCanvas reconstruct ratio between width and height
-            if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
-               factor = this.pad.fCh / this.pad.fCw;
-               if ((factor < 0.1) || (factor > 10)) factor = 0.66;
+               // for TCanvas reconstruct ratio between width and height
+               if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
+                  factor = this.pad.fCh / this.pad.fCw;
+                  if ((factor < 0.1) || (factor > 10)) factor = 0.66;
+               }
+               h = Math.round(w * factor);
+               render_to.style('height', h+'px');
+            } else
+            if ((render_to.attr('can_resize') !== 'height') && (render_to.attr('can_resize') !== 'false')) {
+               if (this.pad) { w = this.pad.fCw || 200; h = this.pad.fCh || 100; }
+               if ((w<=lmt) || (h<=lmt) || isNaN(w) || isNaN(h)) { w = 200; h = 100; }
+               render_to.style('width', w+'px').style('height', h+'px');
             }
-
-            h = Math.round(w * factor);
-
-            render_to.style('height', h+'px');
          }
 
          svg = this.select_main()
@@ -4063,9 +4067,9 @@
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
 
-      if ((w<=0) || (h<=0)) {
+      if ((w<=lmt) || (h<=lmt)) {
          svg.attr("visibility", "hidden");
-         console.warn("Hide canvas while geometry has negative dimension w=",w," h=",h);
+         console.warn("Hide canvas while geometry too small w=",w," h=",h);
          w = 200; h = 100; // just to complete drawing
       } else {
          svg.attr("visibility", "visible");
