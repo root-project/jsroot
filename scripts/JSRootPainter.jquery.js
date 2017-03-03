@@ -1455,10 +1455,10 @@
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     var sub = $(this).next();
-                     sub.attr('frame_active', sub.is(":hidden") ? "false" : "true");
-                     JSROOT.resize(sub.attr('id'));
-                     return false;
+                     var sub = $(this).next(), hide_drawing = sub.is(":hidden");
+                     sub.attr('frame_active', hide_drawing ? "false" : "true")
+                        .css('display', hide_drawing ? 'none' : '');
+                     if (!hide_drawing) JSROOT.resize(sub.attr('id'));
                   })
             .next()
             .addClass("ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom")
