@@ -579,6 +579,15 @@
              dflt_expand = (this.default_by_click === "expand"),
              drawopt = "";
 
+         if (can_draw === 'check_parent') {
+            can_draw = undefined;
+            var prnt = hitem._parent;
+            while (prnt) {
+               if (prnt._painter) { can_draw = false; break; }
+               prnt = prnt._parent;
+            }
+         }
+
          if (d3.event.shiftKey) {
             drawopt = (handle && handle.shift) ? handle.shift : "inspect";
             if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
@@ -603,7 +612,7 @@
             return this.expand(itemname, null, d3cont);
 
          // cannot draw, but can inspect ROOT objects
-         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect)
+         if ((typeof hitem._kind === "string") && (hitem._kind.indexOf("ROOT.")===0) && sett.inspect && (can_draw!==false))
             return this.display(itemname, "inspect");
 
          if (!hitem._childs || (hitem === this.h)) return;

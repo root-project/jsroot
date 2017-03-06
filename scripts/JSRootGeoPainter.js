@@ -3045,7 +3045,8 @@
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
-         _get: JSROOT.GEO.getBrowserItem
+         _get: JSROOT.GEO.getBrowserItem,
+         _can_draw: "check_parent"
       };
 
       var volume, shape, subnodes, iseve = false;
