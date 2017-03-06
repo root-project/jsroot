@@ -1106,6 +1106,12 @@
 
       this.AccessTopPainter(false);
       this.divid = null;
+
+      if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
+
+      delete this._hitemname;
+      delete this._hdrawopt;
+      delete this._hpainter;
    }
 
    JSROOT.TBasePainter.prototype.DrawingReady = function(res_painter) {
@@ -1250,11 +1256,13 @@
       this.AccessTopPainter(true);
    }
 
-   JSROOT.TBasePainter.prototype.SetItemName = function(name, opt) {
+   JSROOT.TBasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
                                else delete this._hitemname;
       // only upate draw option, never delete. null specified when update drawing
       if (typeof opt === 'string') this._hdrawopt = opt;
+
+      this._hpainter = hpainter;
    }
 
    JSROOT.TBasePainter.prototype.GetItemName = function() {
@@ -1314,8 +1322,8 @@
       return (typeof arg === 'object') && (this.draw_object._typename === arg._typename);
    }
 
-   JSROOT.TObjectPainter.prototype.SetItemName = function(name, opt) {
-      JSROOT.TBasePainter.prototype.SetItemName.call(this, name, opt);
+   JSROOT.TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
+      JSROOT.TBasePainter.prototype.SetItemName.call(this, name, opt, hpainter);
       if (this.no_default_title || (name=="")) return;
       var can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
@@ -9608,7 +9616,7 @@
          if (!updating) JSROOT.progress();
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
-            respainter.SetItemName(itemname, updating ? null : drawopt); // mark painter as created from hierarchy
+            respainter.SetItemName(itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
          JSROOT.CallBack(call_back, respainter || painter, itemname);
@@ -9703,7 +9711,7 @@
       if (opt===undefined) opt = "";
 
       function drop_callback(drop_painter) {
-         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname);
+         if (drop_painter && (typeof drop_painter === 'object')) drop_painter.SetItemName(itemname, null, h);
          JSROOT.CallBack(call_back);
       }
 
@@ -10574,6 +10582,12 @@
 
    JSROOT.HierarchyPainter.prototype.GetLayout = function() {
       return this.disp_kind;
+   }
+
+   JSROOT.HierarchyPainter.prototype.ClearPainter = function(obj_painter) {
+      this.ForEach(function(item) {
+         if (item._painter === obj_painter) delete item._painter;
+      });
    }
 
    JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {

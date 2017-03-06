@@ -585,10 +585,9 @@
          }
          if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
 
-         if ((can_draw === 'check_parent') && !drawopt) {
-            can_draw = undefined;
-            for (var pitem = hitem; pitem; pitem = pitem._parent) {
-               if (pitem._painter) { can_draw = false; break; }
+         if (!drawopt) {
+            for (var pitem = hitem._parent; pitem; pitem = pitem._parent) {
+               if (pitem._painter) { can_draw = false; if (can_expand===undefined) can_expand = false; break; }
             }
          }
 
@@ -1880,7 +1879,7 @@
       player.draw_first = true;
 
       player.ConfigureOnline = function(itemname, url, askey, root_version) {
-         this.SetItemName(itemname);
+         this.SetItemName(itemname, "", this);
          this.url = url;
          this.root_version = root_version;
          this.askey = askey;

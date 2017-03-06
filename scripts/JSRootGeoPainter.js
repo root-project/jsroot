@@ -323,13 +323,13 @@
 
       if (typeof names == 'string') names = [ names ];
 
-      if (JSROOT.hpainter) {
+      if (this._hpainter) {
          // show browser if it not visible
-         JSROOT.hpainter.actiavte(names, force);
+         this._hpainter.actiavte(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
          if (!this.options.update_browser)
-            setTimeout(function() { JSROOT.hpainter.actiavte([]); }, 2000);
+            setTimeout(this._hpainter.activate.bind(this._hpainter, []), 2000);
       }
    }
 
@@ -681,11 +681,11 @@
 
                   if (resolve.obj && (resolve.node.kind === 0) && resolve.obj.fVolume) {
                      JSROOT.GEO.SetBit(resolve.obj.fVolume, JSROOT.GEO.BITS.kVisThis, false);
-                     JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, JSROOT.hpainter);
+                     JSROOT.GEO.updateBrowserIcons(resolve.obj.fVolume, this._hpainter);
                   } else
                   if (resolve.obj && (resolve.node.kind === 1)) {
                      resolve.obj.fRnrSelf = false;
-                     JSROOT.GEO.updateBrowserIcons(resolve.obj, JSROOT.hpainter);
+                     JSROOT.GEO.updateBrowserIcons(resolve.obj, this._hpainter);
                   }
                   // intersects[arg].object.visible = false;
                   // this.Render3D();
@@ -3045,8 +3045,7 @@
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
-         _get: JSROOT.GEO.getBrowserItem,
-         _can_draw: "check_parent"
+         _get: JSROOT.GEO.getBrowserItem
       };
 
       var volume, shape, subnodes, iseve = false;
