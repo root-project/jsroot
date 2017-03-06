@@ -11380,6 +11380,8 @@
 
       d3.select(frame).attr('frame_title', title);
 
+      JSROOT.cleanup(frame);
+
       return frame;
    }
 
