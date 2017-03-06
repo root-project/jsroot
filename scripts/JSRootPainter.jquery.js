@@ -579,20 +579,18 @@
              dflt_expand = (this.default_by_click === "expand"),
              drawopt = "";
 
-         if (can_draw === 'check_parent') {
-            can_draw = undefined;
-            var prnt = hitem._parent;
-            while (prnt) {
-               if (prnt._painter) { can_draw = false; break; }
-               prnt = prnt._parent;
-            }
-         }
-
          if (d3.event.shiftKey) {
             drawopt = (handle && handle.shift) ? handle.shift : "inspect";
             if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
          }
          if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
+
+         if ((can_draw === 'check_parent') && !drawopt) {
+            can_draw = undefined;
+            for (var pitem = hitem; pitem; pitem = pitem._parent) {
+               if (pitem._painter) { can_draw = false; break; }
+            }
+         }
 
          if (hitem._childs) can_expand = false;
 
