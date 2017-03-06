@@ -4017,7 +4017,7 @@
             }
 
       } else {
-         if (((h <= lmt) || (w <= lmt)) && render_to.attr('can_resize')) {
+         if (((h <= lmt) || (w <= lmt)) && render_to.attr('can_resize') && (render_to.attr('can_resize') !== 'false')) {
             // if zero size and can_resize attribute set, change container size
 
             if (w>lmt) {
@@ -4031,7 +4031,7 @@
                h = Math.round(w * factor);
                render_to.style('height', h+'px');
             } else
-            if ((render_to.attr('can_resize') !== 'height') && (render_to.attr('can_resize') !== 'false')) {
+            if (render_to.attr('can_resize') !== 'height') {
                if (this.pad) { w = this.pad.fCw || 200; h = this.pad.fCh || 100; }
                if ((w<=lmt) || (h<=lmt) || isNaN(w) || isNaN(h)) { w = 200; h = 100; }
                render_to.style('width', w+'px').style('height', h+'px');
