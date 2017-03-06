@@ -1311,6 +1311,12 @@
    JSROOT.TGeoPainter.prototype.getGeomBoundingBox = function(topitem, scalar) {
       var box3 = new THREE.Box3();
 
+      if (!topitem) {
+         box3.min.x = box3.min.y = box3.min.z = -1;
+         box3.max.x = box3.max.y = box3.max.z = 1;
+         return box3;
+      }
+
       box3.makeEmpty();
 
       topitem.traverse(function(mesh) {
@@ -2762,6 +2768,12 @@
             var slave = this._slave_painters[k];
             if (slave && (slave._main_painter===this)) slave._main_painter = null;
          }
+      }
+
+      for (var k in this._slave_painters) {
+         var slave = this._slave_painters[k];
+         slave._main_painter = null;
+         if (slave._clones === this._clones) slave._clones = null;
       }
 
       this._main_painter = null;
