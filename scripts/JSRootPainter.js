@@ -9635,7 +9635,7 @@
 
          if (updating) {
             drawopt = drawopt.substr(7);
-            if ((item==null) || ('_doing_update' in item)) return display_callback();
+            if (!item || item._doing_update) return display_callback();
             item._doing_update = true;
          }
 
@@ -9650,12 +9650,14 @@
 
          if (!updating) JSROOT.progress("Loading " + itemname);
 
-         h.get(itemname, function(item, obj) {
+         h.get(itemname, function(resitem, obj) {
 
             if (!updating) JSROOT.progress();
 
+            if (!item) item = resitem;
+
             if (updating && item) delete item._doing_update;
-            if (obj==null) return display_callback();
+            if (!obj) return display_callback();
 
             if (!updating) JSROOT.progress("Drawing " + itemname);
 
