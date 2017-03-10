@@ -71,8 +71,6 @@
                      .attr("viewBox", "0 0 512 512")
                      .style("overflow","hidden");
 
-           svg.append("svg:title").text(title);
-
            if ('recs' in btn) {
               var rec = {};
               for (var n=0;n<btn.recs.length;++n) {
@@ -87,7 +85,8 @@
 
            //  special rect to correctly get mouse events for whole button area
            svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
-              .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill");
+              .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill")
+              .append("svg:title").text(title);
 
            return svg;
       }
