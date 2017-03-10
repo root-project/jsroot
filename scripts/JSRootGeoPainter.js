@@ -630,7 +630,7 @@
                   menu.add("Hide", n, function(indx) {
                      var mesh = intersects[indx].object;
                      mesh.visible = false; // just disable mesh
-                     if (mesh.geo_object) mesh.geo_object._hidden_via_menu = true; // and hide object for further redraw
+                     if (mesh.geo_object) mesh.geo_object.$hidden_via_menu = true; // and hide object for further redraw
                      menu.painter.Render3D();
                   });
 
@@ -1920,15 +1920,14 @@
 
       if (!this.options) return; // protection for cleaned-up painter
 
-      var painter = this, obj = hitem._obj, mesh = null;
+      var obj = hitem._obj;
       if (this.options._debug)
-         console.log('Mouse over', on, itemname, (hitem._obj ? hitem._obj._typename : "---"));
+         console.log('Mouse over', on, itemname, (obj ? obj._typename : "---"));
 
       // let's highlight tracks and hits only for the time being
-      if (!hitem._obj || (hitem._obj._typename !== "TEveTrack" &&
-          hitem._obj._typename !== "TEvePointSet")) return;
+      if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet")) return;
 
-      painter.HighlightMesh(null, 0x00ff00, on ? obj : null);
+      this.HighlightMesh(null, 0x00ff00, on ? obj : null);
    }
 
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
@@ -1943,24 +1942,30 @@
 
       this._extraObjects.Add(obj, itemname);
 
-      delete obj._hidden_via_menu; // remove previous hidden property
+      delete obj.$hidden_via_menu; // remove previous hidden property
 
       return true;
    }
 
-   JSROOT.TGeoPainter.prototype.ExtraObjectVisible = function(itemname, toggle) {
+   JSROOT.TGeoPainter.prototype.ExtraObjectVisible = function(hpainter, hitem, toggle) {
       if (!this._extraObjects) return;
 
-      var indx = this._extraObjects.opt.indexOf(itemname);
+      var itemname = hpainter.itemFullName(hitem),
+          indx = this._extraObjects.opt.indexOf(itemname);
+
+      if ((indx<0) && hitem._obj) {
+         indx = this._extraObjects.arr.indexOf(hitem._obj);
+         // workaround - if object found, replace its name
+         if (indx>=0) this._extraObjects.opt[indx] = itemname;
+      }
 
       if (indx < 0) return;
 
-      var obj = this._extraObjects.arr[indx];
-
-      var res = obj._hidden_via_menu ? false : true;
+      var obj = this._extraObjects.arr[indx],
+          res = obj.$hidden_via_menu ? false : true;
 
       if (toggle) {
-         obj._hidden_via_menu = res; res = !res;
+         obj.$hidden_via_menu = res; res = !res;
 
          var mesh = null;
          // either found painted object or just draw once again
@@ -1980,7 +1985,7 @@
       if (!obj || obj._typename===undefined) return false;
 
       // if object was hidden via menu, do not redraw it with next draw call
-      if (!add_objects && obj._hidden_via_menu) return false;
+      if (!add_objects && obj.$hidden_via_menu) return false;
 
       var isany = false;
 
@@ -3315,7 +3320,7 @@
       var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
       if (!drawitem) return false;
 
-      var newstate = drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem), true);
+      var newstate = drawitem._painter.ExtraObjectVisible(hpainter, hitem, true);
 
       // return true means browser should update icon for the item
       return (newstate!==undefined) ? true : false;
@@ -3355,7 +3360,7 @@
       if (icon.length>0) {
          var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
          if (drawitem)
-            if (drawitem._painter.ExtraObjectVisible(hpainter.itemFullName(hitem)))
+            if (drawitem._painter.ExtraObjectVisible(hpainter, hitem))
                icon += " geovis_this";
       }
       return icon;
