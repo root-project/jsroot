@@ -1930,6 +1930,12 @@
       this.HighlightMesh(null, 0x00ff00, on ? obj : null);
    }
 
+   JSROOT.TGeoPainter.prototype.clearExtras = function() {
+      this.getExtrasContainer("delete");
+      delete this._extraObjects; // workaround, later will be normal function
+      this.Render3D();
+   }
+
    JSROOT.TGeoPainter.prototype.addExtra = function(obj, itemname) {
 
       // register extra objects like tracks or hits
