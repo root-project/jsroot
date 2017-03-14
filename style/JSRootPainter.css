@@ -686,3 +686,18 @@
    vertical-align: middle;
    white-space: nowrap;
 }
+
+.jsroot .canvas_menu {
+	 float: left;
+    display: block;
+    text-align: center;
+    padding: 0px 5px;
+    text-decoration: none;
+    font-size: 17px;
+    margin: 2px;
+}
+
+.jsroot .canvas_menu:hover {
+    background-color: #ddd;
+    color: black;
+}

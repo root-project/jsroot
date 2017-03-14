@@ -157,9 +157,9 @@
             .menu({
                items: "> :not(.ui-widget-header)",
                select: function( event, ui ) {
-                  var arg = ui.item.attr('arg');
-                  var cnt = ui.item.attr('cnt');
-                  var func = cnt ? pthis.funcs[cnt] : null;
+                  var arg = ui.item.attr('arg'),
+                      cnt = ui.item.attr('cnt'),
+                      func = cnt ? pthis.funcs[cnt] : null;
                   pthis.remove();
                   if (typeof func == 'function') {
                      if ('painter' in menu)

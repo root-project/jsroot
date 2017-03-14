@@ -1226,23 +1226,24 @@
       return false;
    }
 
+   JSROOT.TBasePainter.prototype.GetStyleValue = function(elem, name) {
+      if (!elem || elem.empty()) return 0;
+      var value = elem.style(name);
+      if (!value || (typeof value !== 'string')) return 0;
+      value = parseFloat(value.replace("px",""));
+      return isNaN(value) ? 0 : Math.round(value);
+   }
+
    JSROOT.TBasePainter.prototype.main_visible_rect = function() {
       // return rect with width/height which correspond to the visible area of drawing region
 
-      var render_to = this.select_main(),
-          rect = render_to.node().getBoundingClientRect();
-
-      function GetStyleValue(name) {
-         var value = render_to.style(name);
-         if (!value) return 0;
-         value = parseFloat(value.replace("px",""));
-         return isNaN(value) ? 0 : value;
-      }
+      var elem = this.select_main(),
+          rect = elem.node().getBoundingClientRect();
 
       // this is size where canvas should be rendered
       return {
-         width: Math.round(rect.width - GetStyleValue('padding-left') - GetStyleValue('padding-right')),
-         height: Math.round(rect.height - GetStyleValue('padding-top') - GetStyleValue('padding-bottom'))
+         width: Math.round(rect.width - this.GetStyleValue(elem,'padding-left') - this.GetStyleValue(elem,'padding-right')),
+         height: Math.round(rect.height - this.GetStyleValue(elem,'padding-top') - this.GetStyleValue(elem,'padding-bottom'))
       };
    }
 
@@ -3977,12 +3978,42 @@
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
    }
 
+   JSROOT.TPadPainter.prototype.ShowCanvasMenu = function(name) {
+      d3.event.stopPropagation(); // disable main context menu
+      d3.event.preventDefault();  // disable browser context menu
+
+      var evnt = d3.event;
+
+      function HandleClick(arg) { console.log('click', arg); }
+
+      JSROOT.Painter.createMenu(this, function(menu) {
+         menu.add("Item1", 'arg1', HandleClick);
+         menu.add("Item2", 'arg2', HandleClick);
+         menu.add("Item3", 'arg3', HandleClick);
+         menu.show(evnt);
+      });
+   }
+
+   JSROOT.TPadPainter.prototype.CreateCanvasMenu = function() {
+      var header = this.select_main().select(".canvas_header");
+
+      header.html("").style('background','grey');
+
+      var items = ['File','Edit','View','Options','Tools','Help'];
+      var painter = this;
+      for (var k in items) {
+         var elem = header.append("p").attr("class","canvas_menu").text(items[k]);
+         if (items[k]=='Help') elem.style('float','right');
+         elem.on('click', this.ShowCanvasMenu.bind(this, items[k]));
+      }
+   }
+
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
       var render_to = this.select_main(),
           rect = this.main_visible_rect(),
           w = rect.width, h = rect.height, // this is size where canvas should be rendered
-          factor = null, svg = null, lmt = 5;
+          factor = null, svg = null, header = null, footer = null, lmt = 5;
 
       if (new_size && new_size.width && new_size.height) {
          w = new_size.width;
@@ -3990,6 +4021,14 @@
       }
 
       if (check_resize > 0) {
+
+         header = render_to.select(".canvas_header");
+         footer = render_to.select(".canvas_footer");
+
+         var fullh = h,
+             extrah = this.GetStyleValue(header,'height') + this.GetStyleValue(footer,'height');
+
+         h = fullh - extrah;
 
          svg = this.svg_canvas();
 
@@ -4012,8 +4051,9 @@
 
          if (factor != null) {
             // if canvas was resize when created, resize height also now
-            h = Math.round(w * factor);
+            fullh = Math.round(w * factor);
             render_to.style('height', h+'px');
+            h = fullh - extrah;
          }
 
          if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
@@ -4024,6 +4064,7 @@
             }
 
       } else {
+
          if (((h <= lmt) || (w <= lmt)) && render_to.attr('can_resize') && (render_to.attr('can_resize') !== 'false')) {
             // if zero size and can_resize attribute set, change container size
 
@@ -4045,14 +4086,28 @@
             }
          }
 
-         svg = this.select_main()
-             .html("")
-             .append("svg")
+         var maindiv = this.select_main()
+                           .html("")
+                           .append("div")
+                           .attr("class","jsroot")
+                           .style('display','flex')
+                           .style('flex-direction','column')
+                           .style('width','100%')
+                           .style('height','100%');
+
+         header = maindiv.append("div").attr('class','canvas_header').style('width','100%');
+         //header.append('a').text("File");
+
+         svg = maindiv.append("svg")
+             .attr('flex',1) // use all available vertical space in the parent div
              .attr("class", "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
+
+         footer = maindiv.append("div").attr('class','canvas_footer').style('width','100%');
+         //footer.append('a').text("Place for status line");
 
          svg.append("svg:title").text("ROOT canvas");
          svg.append("svg:rect").attr("class","canvas_fillrect")
@@ -4068,6 +4123,9 @@
 
          if (JSROOT.gStyle.ContextMenu)
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
+
+         if (this._websocket)
+            this.CreateCanvasMenu();
       }
 
       if (!this.fillatt || !this.fillatt.changed)
@@ -4365,14 +4423,11 @@
          evnt = d3.event;
       }
 
-      var pthis = this;
+      JSROOT.Painter.createMenu(this, function(menu) {
 
-      JSROOT.Painter.createMenu(function(menu) {
-         menu.painter = pthis; // set as this in callbacks
+         menu.painter.FillContextMenu(menu);
 
-         pthis.FillContextMenu(menu);
-
-         pthis.FillObjectExecMenu(menu, function() { menu.show(evnt); });
+         menu.painter.FillObjectExecMenu(menu, function() { menu.show(evnt); });
       }); // end menu creation
    }
 
@@ -4731,6 +4786,8 @@
       if (!pad) return;
 
       var d = new JSROOT.DrawOptions(opt);
+
+      if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOGX')) pad.fLogx = 1;
@@ -10918,13 +10975,12 @@
          if (!drawing) return;
          var func = JSROOT.findFunction('GetCachedObject');
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
-         if (obj!=null) hpainter['_cached_draw_object'] = obj;
-         var opt = JSROOT.GetUrlOption("opt");
+         if (obj) hpainter._cached_draw_object = obj;
+         var opt = JSROOT.GetUrlOption("opt") || "";
 
-         hpainter.display("", opt, function(obj_painter) {
-            if (JSROOT.GetUrlOption("websocket")!==null)
-               obj_painter.OpenWebsocket();
-         });
+         if (JSROOT.GetUrlOption("websocket")!==null) opt+=";websocket";
+
+         hpainter.display("", opt);
       });
    }
 
