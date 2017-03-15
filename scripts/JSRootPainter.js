@@ -3987,10 +3987,47 @@
       function HandleClick(arg) { console.log('click', arg); }
 
       JSROOT.Painter.createMenu(this, function(menu) {
-         menu.add("Item1", 'arg1', HandleClick);
-         menu.add("Item2", 'arg2', HandleClick);
-         menu.add("Item3", 'arg3', HandleClick);
-         menu.show(evnt);
+
+         switch(name) {
+            case "File": {
+               menu.add("Close canvas", HandleClick);
+               menu.add("separator");
+               var ext = ["ps","eps","pdf","tex","gif","jpg","png","C","root"];
+               menu.add("sub:Save");
+               for (var k in ext) menu.add("canvas."+ext[k], HandleClick);
+               menu.add("endsub:");
+               menu.add("separator");
+               menu.add("Interrupt", HandleClick);
+               menu.add("separator");
+               menu.add("Quit ROOT", HandleClick);
+               break;
+            }
+            case "Edit":
+               menu.add("Clear pad", HandleClick);
+               menu.add("Clear canvas", HandleClick);
+               break;
+            case "View":
+               menu.add("Event status", HandleClick);
+               menu.add("Tooltip info", HandleClick);
+               break;
+            case "Options":
+               menu.addchk(true,"Statistic", "arg1", HandleClick);
+               menu.addchk(true,"Histogram title", "arg2", HandleClick);
+               menu.addchk(false,"Fit parameters", "arg3", HandleClick);
+               break;
+            case "Tools":
+               menu.add("Inspector", HandleClick);
+               break;
+            case "Help":
+               menu.add("header:Basic help on...");
+               menu.add("Canvas", HandleClick);
+               menu.add("Menu", HandleClick);
+               menu.add("Browser", HandleClick);
+               menu.add("separator");
+               menu.add("About ROOT", HandleClick);
+               break;
+         }
+         if (menu.size()>0) menu.show(evnt);
       });
    }
 
