@@ -3,6 +3,7 @@
 ## Changes in 5.1.x
 1. Fix - invoke callback in JSROOT.draw() at proper time 
 2. Fix - support TGeoHMatrix, produced after GDML conversion
+3. Fix - support also TGeoScale and TGeoGenTrans matrixes 
 
 
 ## Changes in 5.1.0
