@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.1.x
+1. Fix - invoke callback in JSROOT.draw() at proper time 
+2. Fix - support TGeoHMatrix, produced after GDML conversion
+
+
 ## Changes in 5.1.0
 1. New 'float' browser kind overlays with objects drawing
 2. Browser can be enabled after drawing with 'nobrowser' mode
