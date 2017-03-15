@@ -108,7 +108,7 @@
       if (kind === 1) {
          // special handling for EVE nodes
 
-         var prop = { name: node.fName, nname: node.fName, shape: node.fShape, material: null, chlds: null };
+         var prop = { name: JSROOT.GEO.ObjectName(node), nname: JSROOT.GEO.ObjectName(node), shape: node.fShape, material: null, chlds: null };
 
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
@@ -132,7 +132,7 @@
 
       var volume = node.fVolume;
 
-      var prop = { name: volume.fName, nname: node.fName, volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+      var prop = { name: JSROOT.GEO.ObjectName(volume), nname: JSROOT.GEO.ObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
 
       if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
@@ -2031,9 +2031,11 @@
        else
           chlds = obj.fElements ? obj.fElements.arr : null;
 
-       if (chlds !== null)
+       if (chlds !== null) {
+          JSROOT.GEO.CheckDuplicates(obj, chlds);
           for (var i = 0; i < chlds.length; ++i)
              this.CreateClones(chlds[i], sublevel+1, kind);
+       }
 
        if (sublevel > 1) return;
 
@@ -2280,9 +2282,9 @@
             if (this.origin) {
                res.obj = this.origin[res.id];
 
-               if (res.obj.fName!=="") {
+               if (res.obj.fName) {
                   if (res.name.length>0) res.name += "/";
-                  res.name += res.obj.fName;
+                  res.name += JSROOT.GEO.ObjectName(res.obj);
                }
             }
 
@@ -2300,16 +2302,16 @@
           currid = 0, stack = [],
           top = this.origin[0];
 
-      if (!top || (top.fName!==names[0])) return null;
+      if (!top || (JSROOT.GEO.ObjectName(top)!==names[0])) return null;
 
       for (var n=1;n<names.length;++n) {
          var node = this.nodes[currid];
          if (!node.chlds) return null;
 
          for (var k=0;k<node.chlds.length;++k) {
-            var chldid = node.chlds[k];
-            var obj = this.origin[chldid];
-            if (obj && (obj.fName === names[n])) { stack.push(k); currid = chldid; break; }
+            var chldid = node.chlds[k],
+                obj = this.origin[chldid];
+            if (obj && (JSROOT.GEO.ObjectName(obj) === names[n])) { stack.push(k); currid = chldid; break; }
          }
 
          // no new entry - not found stack
@@ -2659,6 +2661,35 @@
 
       return res;
    }
+
+   JSROOT.GEO.ObjectName = function(obj) {
+      if (!obj || !obj.fName) return "";
+      return obj.fName + (obj.$geo_suffix ? obj.$geo_suffix : "");
+   }
+
+   JSROOT.GEO.CheckDuplicates = function(parent, chlds) {
+      if (parent) {
+         if (parent.$geo_checked) return;
+         parent.$geo_checked = true;
+      }
+
+      var names = [], cnts = [], obj = null;
+      for (var k=0;k<chlds.length;++k) {
+         chld = chlds[k];
+         if (!chld || !chld.fName) continue;
+         if (!chld.$geo_suffix) {
+            var indx = names.indexOf(chld.fName);
+            if (indx>=0) {
+               var cnt = cnts[indx] || 1;
+               while(names.indexOf(chld.fName+"#"+cnt)>=0) ++cnt;
+               chld.$geo_suffix = "#" + cnt;
+               cnts[indx] = cnt+1;
+            }
+         }
+         names.push(JSROOT.GEO.ObjectName(chld));
+      }
+   }
+
 
    return JSROOT;
 

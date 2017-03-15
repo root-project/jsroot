@@ -3064,7 +3064,7 @@
    JSROOT.GEO.createItem = function(node, obj, name) {
       var sub = {
          _kind: "ROOT." + obj._typename,
-         _name: name ? name : obj.fName,
+         _name: name ? name : JSROOT.GEO.ObjectName(obj),
          _title: obj.fTitle,
          _parent: node,
          _geoobj: obj,
@@ -3170,6 +3170,8 @@
          if (!('arr' in lst)) return false;
 
          node._childs = [];
+
+         JSROOT.GEO.CheckDuplicates(null, lst.arr);
 
          for (var n in lst.arr)
             JSROOT.GEO.createItem(node, lst.arr[n]);
@@ -3415,6 +3417,8 @@
       }
 
       if (!subnodes) return false;
+
+      JSROOT.GEO.CheckDuplicates(obj, subnodes);
 
       for (var i=0;i<subnodes.length;++i)
          JSROOT.GEO.createItem(parent, subnodes[i]);
