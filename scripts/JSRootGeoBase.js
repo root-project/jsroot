@@ -1560,7 +1560,7 @@
 
       if (matrix === null) return null;
 
-      var translation_matrix = null, rotation_matrix = null;
+      var translation_matrix = null, rotation_matrix = null, scale = null;
 
       if (matrix._typename == 'TGeoTranslation') {
          translation_matrix = matrix.fTranslation;
@@ -1573,8 +1573,13 @@
          if (matrix.fRotation !== null)
             rotation_matrix = matrix.fRotation.fRotationMatrix;
       }
+      else if (matrix._typename == 'TGeoHMatrix') {
+         translation_matrix = matrix.fTranslation;
+         rotation_matrix = matrix.fRotationMatrix;
+         scale = matrix.fScale;
+      }
       else if (matrix._typename !== 'TGeoIdentity') {
-      //   console.log('unsupported matrix ' + matrix._typename);
+         console.warn('unsupported matrix ' + matrix._typename);
       }
 
       if ((translation_matrix === null) && (rotation_matrix === null)) return null;
@@ -1589,6 +1594,9 @@
 
       if (translation_matrix !== null)
          res.setPosition(new THREE.Vector3(translation_matrix[0], translation_matrix[1], translation_matrix[2]));
+
+      if (scale !== null)
+         res.scale(new THREE.Vector3(scale[0], scale[1], scale[2]));
 
       return res;
    }
