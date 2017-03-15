@@ -3979,12 +3979,19 @@
    }
 
    JSROOT.TPadPainter.prototype.ShowCanvasMenu = function(name) {
+
       d3.event.stopPropagation(); // disable main context menu
       d3.event.preventDefault();  // disable browser context menu
 
       var evnt = d3.event;
 
-      function HandleClick(arg) { console.log('click', arg); }
+      function HandleClick(arg) {
+         if (!this._websocket) return;
+         console.log('click', arg);
+
+         if (arg=="Interrupt") { this._websocket.send("GEXE:gROOT->SetInterrupt()"); }
+         if (arg=="Quit ROOT") { this._websocket.send("GEXE:gApplication->Terminate(0)"); }
+      }
 
       JSROOT.Painter.createMenu(this, function(menu) {
 
@@ -3992,6 +3999,7 @@
             case "File": {
                menu.add("Close canvas", HandleClick);
                menu.add("separator");
+               menu.add("Save PNG", HandleClick);
                var ext = ["ps","eps","pdf","tex","gif","jpg","png","C","root"];
                menu.add("sub:Save");
                for (var k in ext) menu.add("canvas."+ext[k], HandleClick);
