@@ -214,7 +214,8 @@
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
       var res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: false, _count: false, wireframe: false,
+                  _full: false, _axis: false, _axis_center: false,
+                  _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1),
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
@@ -304,6 +305,8 @@
 
       if (d.check('TRANSP',true))
          res.transparancy = d.partAsInt(0,100)/100;
+
+      if (d.check("AXISCENTER") || d.check("AC")) { res._axis = true; res._axis_center = true; }
 
       if (d.check("AXIS") || d.check("A")) res._axis = true;
 
@@ -2674,13 +2677,29 @@
       this.getExtrasContainer('delete', 'axis');
       var container = this.getExtrasContainer('create', 'axis');
 
-      var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z));
+      var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
+          names = ['x','y','z'], center = [0,0,0];
 
-      console.log('min/max y', box.max.y, box.min.y);
+      if (this.options._axis_center)
+         for (var naxis=0;naxis<3;++naxis) {
+            var name = names[naxis];
+            if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
+            center[naxis] = (box.min[name] + box.max[name])/2;
+         }
 
       for (var naxis=0;naxis<3;++naxis) {
 
-         var buf = new Float32Array(6), axiscol, lbl;
+         var buf = new Float32Array(6), axiscol, name = names[naxis];
+
+         function Convert(value) {
+            var range = box.max[name] - box.min[name];
+            if (range<2) return value.toFixed(3);
+            if (Math.abs(value)>1e5) return value.toExponential(3);
+            return Math.round(value).toString();
+         }
+
+         var lbl = Convert(box.max[name]);
+
          buf[0] = box.min.x;
          buf[1] = box.min.y;
          buf[2] = box.min.z;
@@ -2690,10 +2709,14 @@
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; axiscol = "red"; lbl = Math.round(box.max.x); if (this.options._yup) lbl = "X "+lbl; else lbl+=" X"; break;
-           case 1: buf[4] = box.max.y; axiscol = "green"; lbl = Math.round(box.max.y); if (this.options._yup) lbl+=" Y"; else lbl = "Y " + lbl; break;
-           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl = Math.round(box.max.z) + " Z"; break;
+           case 0: buf[3] = box.max.x; axiscol = "red"; if (this.options._yup) lbl = "X "+lbl; else lbl+=" X"; break;
+           case 1: buf[4] = box.max.y; axiscol = "green"; if (this.options._yup) lbl+=" Y"; else lbl = "Y " + lbl; break;
+           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl += " Z"; break;
          }
+
+         if (this.options._axis_center)
+            for (var k=0;k<6;++k)
+               if ((k % 3) !== naxis) buf[k] = center[k%3];
 
          var geom = new THREE.BufferGeometry();
          geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
@@ -2727,20 +2750,14 @@
 
          container.add(mesh);
 
-         switch (naxis) {
-            case 0: lbl = Math.round(box.min.x); break;
-            case 1: lbl = Math.round(box.min.y); break;
-            case 2: lbl = Math.round(box.min.z); break;
-         }
-
-         text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
+         text3d = new THREE.TextGeometry(Convert(box.min[name]), { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
 
          mesh = new THREE.Mesh(text3d, textMaterial);
          textbox = new THREE.Box3().setFromObject(mesh);
 
-         mesh.translateX(box.min.x);
-         mesh.translateY(box.min.y);
-         mesh.translateZ(box.min.z);
+         mesh.translateX(buf[0]);
+         mesh.translateY(buf[1]);
+         mesh.translateZ(buf[2]);
 
          if (this.options._yup) {
             switch (naxis) {
