@@ -1065,7 +1065,7 @@
             +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
             +'<input type="button" value="..." class="gui_fileBtn" style="min-width:3em;padding:3px;margin-left:5px;margin-right:5px;" title="select local file for reading"/><br/>'
             +'</div>'
-            +'<p id="gui_fileCORS"><small><a href="https://github.com/linev/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
+            +'<p id="gui_fileCORS"><small><a href="https://github.com/root-project/jsroot/blob/master/docs/JSROOT.md#reading-root-files-from-other-servers">Read docu</a>'
             +' how to open files from other servers.</small></p>'
             +'<div style="display:flex;flex-direction:row">'
             +'<input style="padding:3px;margin-right:5px;"'
