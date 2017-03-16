@@ -1802,9 +1802,9 @@
          } else
          if (drag_ui && drag_ui.offset) {
             if (handle.vertical)
-               pos = (drag_ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100;
+               pos = Math.round((drag_ui.offset.top+2-$(this).parent().offset().top)/$(this).parent().innerHeight()*100);
             else
-               pos = (drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100;
+               pos = Math.round((drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100);
          }
 
          var diff = handle.groups[id].position - pos;
@@ -1812,7 +1812,7 @@
          if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
 
          // do not change if size too small
-         if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size + diff) < 5) return;
+         if (Math.min(handle.groups[id-1].size-diff, handle.groups[id].size+diff) < 5) return;
 
          handle.groups[id-1].size -= diff;
          handle.groups[id].size += diff;
@@ -1820,12 +1820,12 @@
 
          function SetGroupSize(prnt, grid) {
             var name = handle.vertical ? 'height' : 'width',
-                size = handle.groups[grid].size.toFixed(1)+'%';
+                size = handle.groups[grid].size+'%';
             prnt.children("[groupid='"+grid+"']").css(name, size)
                 .children(".jsroot_separator").css(name, size);
          }
 
-         $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos.toFixed(1)+"% - 2px)");
+         $(this).css(handle.vertical ? 'top' : 'left', "calc("+pos+"% - 2px)");
 
          SetGroupSize($(this).parent(), id-1);
          SetGroupSize($(this).parent(), id);
