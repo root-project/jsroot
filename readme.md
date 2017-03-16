@@ -1,4 +1,4 @@
-#JavaScript ROOT
+# JavaScript ROOT
 
 JavaScript ROOT provides interactive ROOT-like graphics in the web browsers. 
 Data can be read and displayed from binary and JSON ROOT files. 
@@ -40,5 +40,5 @@ JavaScript ROOT [changelog](changes.md)
 
 [JSROOT API examples](https://root.cern/js/latest/api.htm)
 
-[UI](http://rawgit.com/linev/jsroot/master/index.htm?path=http://jsroot.gsi.de/files/) and [examples](http://rawgit.com/linev/jsroot/master/docs/examples.htm) via rawgit.com
+[UI](http://rawgit.com/root-project/jsroot/master/index.htm?path=http://jsroot.gsi.de/files/) and [examples](http://rawgit.com/root-project/jsroot/master/docs/examples.htm) via rawgit.com
 

@@ -11,10 +11,10 @@ In most practical cases it is not necessary to install JSROOT - it can be used d
 
 When required, there are following alternatives to install JSROOT on other web servers:
 
-   - download and unpack [provided](https://github.com/linev/jsroot/releases) packages (recommended)
-   - use [bower](https://bower.io/) package manager and invoke `bower install jsroot`  
-   - clone master branch from [repository](https://github.com/linev/jsroot/)
- 
+   - download and unpack [provided](https://github.com/root-project/jsroot/releases) packages (recommended)
+   - use [bower](https://bower.io/) package manager and invoke `bower install jsroot`
+   - clone master branch from [repository](https://github.com/root-project/jsroot/)
+
 One could use JSROOT directly from local file system. If source code was unpacked/checked-out in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
 
 
@@ -568,7 +568,8 @@ One could use the JSROOT.draw function:
 
 The first argument is the id of the HTML div element, where drawing will be performed. The second argument is the object to draw and the third one is the drawing option.
 
-Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/linev/jsroot/blob/master/demo/read_json.htm): 
+
+Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
     var filename = "https://root.cern/js/files/th2ul.json.gz";
     JSROOT.NewHttpRequest(filename, 'object', function(obj) {
@@ -610,8 +611,8 @@ For example, reading an object from a file and displaying it will look like:
        });
     });
 
-Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_file.htm)
-   
+
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
 
 
 ### TTree API
@@ -662,7 +663,8 @@ To get access to selected branches, one should use TSelector class:
        });
     });
 
-Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_tree) and [source code](https://github.com/linev/jsroot/blob/master/demo/read_tree.htm)
+
+Here is [running example](https://root.cern/js/latest/api.htm#ttree_tselector) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_tree.htm)
 
 This examples shows how read TTree from binary file and create JSROOT.TSelector object.
 Logically it is similar to original TSelector class - for every read entry TSelector::Process() method is called.
