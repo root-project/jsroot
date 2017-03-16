@@ -4064,11 +4064,13 @@
                menu.addchk(fp && fp.tooltip_allowed, "Tooltip info", function() { if (fp) fp.tooltip_allowed = !fp.tooltip_allowed; });
                break;
             }
-            case "Options":
-               menu.addchk(true,"Statistic", "arg1", HandleClick);
-               menu.addchk(true,"Histogram title", "arg2", HandleClick);
-               menu.addchk(false,"Fit parameters", "arg3", HandleClick);
+            case "Options": {
+               var main = menu.painter.main_painter();
+               menu.addchk(main && main.ToggleStat('only-check'), "Statistic", function() { if (main) main.ToggleStat(); });
+               menu.addchk(main && main.ToggleTitle('only-check'), "Histogram title",  function() { if (main) main.ToggleTitle(); });
+               menu.addchk(main && main.ToggleStat('fitpar-check'), "Fit parameters", function() { if (main) main.ToggleStat('fitpar-toggle'); });
                break;
+            }
             case "Tools":
                menu.add("Inspector", HandleClick);
                break;
@@ -6513,6 +6515,13 @@
       }
    }
 
+   JSROOT.THistPainter.prototype.ToggleTitle = function(arg) {
+      if (!this.is_main_painter()) return false;
+      if (arg==='only-check') return !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+      this.histo.InvertBit(JSROOT.TH1StatusBits.kNoTitle);
+      this.DrawTitle();
+   }
+
    JSROOT.THistPainter.prototype.DrawTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
@@ -6529,6 +6538,7 @@
          pavetext.Clear();
          if (draw_title)
             pavetext.AddText(this.histo.fTitle);
+         if (tpainter) tpainter.Redraw();
       } else
       if (draw_title && !tpainter && (this.histo.fTitle.length > 0)) {
          pavetext = JSROOT.Create("TPaveText");
@@ -6544,8 +6554,10 @@
 
       var stat = this.FindStat(), statpainter = null;
 
+      if (!arg) arg = "";
+
       if (stat == null) {
-         if (arg=='only-check') return false;
+         if (arg.indexOf('-check')>0) return false;
          // when statbox created first time, one need to draw it
          stat = this.CreateStat();
       } else {
@@ -6553,6 +6565,15 @@
       }
 
       if (arg=='only-check') return statpainter ? statpainter.Enabled : false;
+
+      if (arg=='fitpar-check') return stat ? stat.fOptFit : false;
+
+      if (arg=='fitpar-toggle') {
+         if (!stat) return false;
+         stat.fOptFit = stat.fOptFit ? 0 : 1111; // for websocket command should be send to server
+         if (statpainter) statpainter.Redraw();
+         return true;
+      }
 
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
