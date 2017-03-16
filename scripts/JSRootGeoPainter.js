@@ -214,7 +214,7 @@
 
    JSROOT.TGeoPainter.prototype.decodeOptions = function(opt) {
       var res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis:false, _count:false, wireframe: false,
+                  _full: false, _axis: false, _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1),
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
@@ -305,7 +305,7 @@
       if (d.check('TRANSP',true))
          res.transparancy = d.partAsInt(0,100)/100;
 
-      if (d.check("AXIS") || d.check("A")) { res._axis = true; res._yup = false; }
+      if (d.check("AXIS") || d.check("A")) res._axis = true;
 
       if (d.check("D")) res._debug = true;
       if (d.check("G")) res._grid = true;
@@ -2676,6 +2676,8 @@
 
       var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z));
 
+      console.log('min/max y', box.max.y, box.min.y);
+
       for (var naxis=0;naxis<3;++naxis) {
 
          var buf = new Float32Array(6), axiscol, lbl;
@@ -2688,9 +2690,9 @@
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; axiscol = "red"; lbl = "X"; break;
-           case 1: buf[4] = box.max.y; axiscol = "green"; lbl = "Y"; break;
-           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl = "Z"; break;
+           case 0: buf[3] = box.max.x; axiscol = "red"; lbl = Math.round(box.max.x); if (this.options._yup) lbl = "X "+lbl; else lbl+=" X"; break;
+           case 1: buf[4] = box.max.y; axiscol = "green"; lbl = Math.round(box.max.y); if (this.options._yup) lbl+=" Y"; else lbl = "Y " + lbl; break;
+           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl = Math.round(box.max.z) + " Z"; break;
          }
 
          var geom = new THREE.BufferGeometry();
@@ -2703,10 +2705,56 @@
          var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
          var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
          var mesh = new THREE.Mesh(text3d, textMaterial);
+         var textbox = new THREE.Box3().setFromObject(mesh);
+
          mesh.translateX(buf[3]);
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
-         mesh.rotateX(Math.PI/2);
+
+         if (this.options._yup) {
+            switch (naxis) {
+               case 0: mesh.rotateY(Math.PI); mesh.translateX(-textbox.max.x - text_size*0.5); mesh.translateY(-textbox.max.y/2);  break;
+               case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 2: mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+           }
+         } else {
+            switch (naxis) {
+               case 0: mesh.rotateX(Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
+               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            }
+         }
+
+         container.add(mesh);
+
+         switch (naxis) {
+            case 0: lbl = Math.round(box.min.x); break;
+            case 1: lbl = Math.round(box.min.y); break;
+            case 2: lbl = Math.round(box.min.z); break;
+         }
+
+         text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
+
+         mesh = new THREE.Mesh(text3d, textMaterial);
+         textbox = new THREE.Box3().setFromObject(mesh);
+
+         mesh.translateX(box.min.x);
+         mesh.translateY(box.min.y);
+         mesh.translateZ(box.min.z);
+
+         if (this.options._yup) {
+            switch (naxis) {
+               case 0: mesh.rotateY(Math.PI); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(-textbox.max.x-text_size*0.5); break;
+               case 2: mesh.rotateY(-Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            }
+         } else {
+            switch (naxis) {
+               case 0: mesh.rotateX(Math.PI/2); mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 1: mesh.rotateX(Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(text_size*0.5); break;
+               case 2: mesh.rotateX(Math.PI/2); mesh.rotateZ(Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+            }
+         }
 
          container.add(mesh);
       }
