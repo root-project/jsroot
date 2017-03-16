@@ -1287,7 +1287,7 @@
       this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
       if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
 
-      var frame_titles = ['object name','object title','mouse coordiantes', 'object info'];
+      var frame_titles = ['object name','object title','mouse coordiantes','object info'];
       for (var k=0;k<4;++k)
          d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");

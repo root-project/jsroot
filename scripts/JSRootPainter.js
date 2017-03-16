@@ -2561,14 +2561,21 @@
       return menu.size() > 0;
    }
 
+   JSROOT.TObjectPainter.prototype.GetShowStatusFunc = function() {
+      var pp = this.pad_painter();
+
+      if (pp && (typeof pp.ShowStatus === 'function')) return pp.ShowStatus;
+
+      return JSROOT.Painter.ShowStatus;
+   }
+
    JSROOT.TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
-      var obj = this.GetObject();
+      var obj = this.GetObject(),
+          func = this.GetShowStatusFunc();
 
-      if (!obj || !JSROOT.Painter.ShowStatus) return;
-
-      JSROOT.Painter.ShowStatus(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
+      if (obj && func) func(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
 
 
@@ -3231,9 +3238,10 @@
       }
 
       var layer = this.svg_layer("stat_layer"),
-          hintsg = layer.select(".objects_hints"); // group with all tooltips
+          hintsg = layer.select(".objects_hints"), // group with all tooltips
+          status_func = this.GetShowStatusFunc();
 
-      if (JSROOT.Painter.ShowStatus && (this.enlarge_main('state')!=='on')) {
+      if (status_func && (this.enlarge_main('state')!=='on')) {
          hintsg.remove();
 
          var title = "", name = "", coordinates = "", info = "";
@@ -3261,7 +3269,7 @@
             if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
          }
 
-         return JSROOT.Painter.ShowStatus(name, title, info, coordinates);
+         return status_func(name, title, info, coordinates);
       }
 
       // end of closing tooltips
@@ -3978,6 +3986,42 @@
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
    }
 
+   JSROOT.TPadPainter.prototype.ToggleEventStatus = function() {
+      // when function called, jquery should be already loaded
+
+      this.has_event_status = !this.has_event_status;
+      if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
+      var footer = this.select_main().select(".canvas_footer");
+      if (!this.has_event_status) {
+         footer.html("");
+         delete this.status_layout;
+         delete this.ShowStatus;
+         delete this.ShowStatusFunc;
+         return;
+      }
+
+      if (!footer.attr("id")) footer.attr("id","jsroot_canvas_status_line");
+
+      this.status_layout = new JSROOT.GridDisplay("jsroot_canvas_status_line", 'horiz4_1213');
+
+      var frame_titles = ['object name','object title','mouse coordiantes','object info'];
+      for (var k=0;k<4;++k)
+         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+           .append("label").attr("class","jsroot_status_label");
+
+      this.ShowStatusFunc = function(name, title, info, coordinates) {
+         if (!this.status_layout) return;
+         $(this.status_layout.GetFrame(0)).children('label').text(name || "");
+         $(this.status_layout.GetFrame(1)).children('label').text(title || "");
+         $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
+         $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+      }
+
+      this.ShowStatus = this.ShowStatusFunc.bind(this);
+
+      this.ShowStatus("canvas","title","info","");
+   }
+
    JSROOT.TPadPainter.prototype.ShowCanvasMenu = function(name) {
 
       d3.event.stopPropagation(); // disable main context menu
@@ -4014,10 +4058,12 @@
                menu.add("Clear pad", HandleClick);
                menu.add("Clear canvas", HandleClick);
                break;
-            case "View":
-               menu.add("Event status", HandleClick);
-               menu.add("Tooltip info", HandleClick);
+            case "View": {
+               menu.addchk(menu.painter.has_event_status, "Event status", menu.painter.ToggleEventStatus.bind(menu.painter));
+               var fp = menu.painter.frame_painter();
+               menu.addchk(fp && fp.tooltip_allowed, "Tooltip info", function() { if (fp) fp.tooltip_allowed = !fp.tooltip_allowed; });
                break;
+            }
             case "Options":
                menu.addchk(true,"Statistic", "arg1", HandleClick);
                menu.addchk(true,"Histogram title", "arg2", HandleClick);
@@ -4042,7 +4088,7 @@
    JSROOT.TPadPainter.prototype.CreateCanvasMenu = function() {
       var header = this.select_main().select(".canvas_header");
 
-      header.html("").style('background','grey');
+      header.html("").style('background','lightgrey');
 
       var items = ['File','Edit','View','Options','Tools','Help'];
       var painter = this;
@@ -7278,7 +7324,9 @@
    JSROOT.THistPainter.prototype.ShowAxisStatus = function(axis_name) {
       // method called normally when mouse enter main object element
 
-      if (!JSROOT.Painter.ShowStatus) return;
+      var status_func = this.GetShowStatusFunc();
+
+      if (!status_func) return;
 
       var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
 
@@ -7293,8 +7341,8 @@
 
       var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
 
-      JSROOT.Painter.ShowStatus(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
-                                m[0].toFixed(0)+","+ m[1].toFixed(0));
+      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
+                  m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
    JSROOT.THistPainter.prototype.AddInteractive = function() {
