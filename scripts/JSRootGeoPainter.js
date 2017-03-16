@@ -484,7 +484,7 @@
       } else {
          // Clipping Options
 
-         var bound = this.getGeomBoundingBox(this._toplevel,0.01);
+         var bound = this.getGeomBoundingBox(this._toplevel, 0.01);
 
          var clipFolder = this._datgui.addFolder('Clipping');
 
@@ -1603,16 +1603,22 @@
       if (!without_render) this.Render3D(0);
    }
 
+   JSROOT.TGeoPainter.prototype.getGeomBox = function() {
+      var extras = this.getExtrasContainer('collect');
+
+      var box = this.getGeomBoundingBox(this._toplevel);
+
+      if (extras)
+         for (var k=0;k<extras.length;++k) this._toplevel.add(extras[k]);
+
+      return box;
+   }
+
    JSROOT.TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
       if (!this._toplevel) return;
 
-      var extras = this.getExtrasContainer('get');
-      if (extras) this._toplevel.remove(extras);
-
       var box = this.getGeomBoundingBox(this._toplevel);
-
-      if (extras) this._toplevel.add(extras);
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
@@ -2019,13 +2025,22 @@
       return isany;
    }
 
-   JSROOT.TGeoPainter.prototype.getExtrasContainer = function(action) {
+   JSROOT.TGeoPainter.prototype.getExtrasContainer = function(action, name) {
       if (!this._toplevel) return null;
 
-      var extras = null;
+      if (!name) name = "tracks";
+
+      var extras = null, lst = [];
       for (var n=0;n<this._toplevel.children.length;++n) {
          var chld = this._toplevel.children[n];
-         if (chld._extras) { extras = chld; break; }
+         if (!chld._extras) continue;
+         if (action==='collect') { lst.push(chld); continue; }
+         if (chld._extras === name) { extras = chld; break; }
+      }
+
+      if (action==='collect') {
+         for (var k=0;k<lst.length;++k) this._toplevel.remove(lst[k]);
+         return lst;
       }
 
       if (action==="delete") {
@@ -2036,7 +2051,7 @@
 
       if ((action!=="get") && !extras) {
          extras = new THREE.Object3D();
-         extras._extras = true;
+         extras._extras = name;
          this._toplevel.add(extras);
       }
 
@@ -2652,15 +2667,72 @@
          this._slave_painters[k].startDrawGeometry();
    }
 
-   JSROOT.TGeoPainter.prototype.toggleAxisDraw = function(force_on) {
-      if (this.TestAxisVisibility!==undefined) {
-         if (force_on) return; // we want axis - we have axis
-         this.TestAxisVisibility(null, this._toplevel);
+   JSROOT.TGeoPainter.prototype.drawSimpleAxis = function() {
+
+      var box = this.getGeomBoundingBox(this._toplevel);
+
+      this.getExtrasContainer('delete', 'axis');
+      var container = this.getExtrasContainer('create', 'axis');
+
+      var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z));
+
+      for (var naxis=0;naxis<3;++naxis) {
+
+         var buf = new Float32Array(6), axiscol, lbl;
+         buf[0] = box.min.x;
+         buf[1] = box.min.y;
+         buf[2] = box.min.z;
+
+         buf[3] = box.min.x;
+         buf[4] = box.min.y;
+         buf[5] = box.min.z;
+
+         switch (naxis) {
+           case 0: buf[3] = box.max.x; axiscol = "red"; lbl = "X"; break;
+           case 1: buf[4] = box.max.y; axiscol = "green"; lbl = "Y"; break;
+           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl = "Z"; break;
+         }
+
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
+         var lineMaterial = new THREE.LineBasicMaterial({ color: axiscol });
+         var line = new THREE.LineSegments(geom, lineMaterial);
+
+         container.add(line);
+
+         var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
+         var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
+         var mesh = new THREE.Mesh(text3d, textMaterial);
+         mesh.translateX(buf[3]);
+         mesh.translateY(buf[4]);
+         mesh.translateZ(buf[5]);
+         mesh.rotateX(Math.PI/2);
+
+         container.add(mesh);
+      }
+
+      this.TestAxisVisibility = function(camera, toplevel) {
+         if (!camera) {
+            this.getExtrasContainer('delete', 'axis');
+            delete this.TestAxisVisibility;
+            this.Render3D();
+            return;
+         }
+      }
+   }
+
+   JSROOT.TGeoPainter.prototype.toggleAxisDraw = function(force_draw) {
+      if (this.TestAxisVisibility) {
+         if (!force_draw)
+           this.TestAxisVisibility(null, this._toplevel);
       } else {
-         var axis = JSROOT.Create("TNamed");
-         axis._typename = "TAxis3D";
-         axis._main = this;
-         JSROOT.draw(this.divid, axis); // it will include drawing of
+
+         this.drawSimpleAxis();
+
+         //var axis = JSROOT.Create("TNamed");
+         //axis._typename = "TAxis3D";
+         //axis._main = this;
+         //JSROOT.draw(this.divid, axis); // it will include drawing of
       }
    }
 
@@ -2691,10 +2763,7 @@
 
       this.completeScene();
 
-      if (this.options._axis) {
-         this.options._axis = false;
-         this.toggleAxisDraw();
-      }
+      if (this.options._axis) this.toggleAxisDraw(true);
 
       this._scene.overrideMaterial = null;
 
@@ -2968,10 +3037,10 @@
       painter.Draw3DAxis = function() {
          var main = this.main_painter();
 
-         if ((main === null) && ('_main' in this.GetObject()))
+         if (!main && ('_main' in this.GetObject()))
             main = this.GetObject()._main; // simple workaround to get geo painter
 
-         if ((main === null) || (main._toplevel === undefined))
+         if (!main || !main._toplevel)
             return console.warn('no geo object found for 3D axis drawing');
 
          var box = new THREE.Box3().setFromObject(main._toplevel);
