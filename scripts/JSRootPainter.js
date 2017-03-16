@@ -2363,7 +2363,7 @@
          console.log('execute method ' + arg);
 
          if (this._websocket)
-            this._websocket.send('EXEC'+arg);
+            this._websocket.send('EXEC:'+arg);
       }
 
       function DoFillMenu(_menu, _call_back, items) {
@@ -6767,8 +6767,13 @@
          if (this.swap_xy && axis==="y") kind = this["x_kind"];
          if (kind === "labels") return;
       }
-      pad["fLog" + axis] = curr ? 0 : 1;
-      obj.RedrawPad();
+      var pp = this.pad_painter();
+      if (pp && pp._websocket) {
+         pp._websocket.send("EXEC:SetLog" + axis + (curr ? "(0)" : "(1)"));
+      } else {
+         pad["fLog" + axis] = curr ? 0 : 1;
+         obj.RedrawPad();
+      }
    }
 
    JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
