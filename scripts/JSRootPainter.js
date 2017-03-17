@@ -4251,7 +4251,13 @@
 
       } else {
 
+         if (this._websocket)
+            this.CreateCanvasMenu();
+
          var render_to = this.select_main();
+
+         if (render_to.style('position')=='static')
+            render_to.style('position','relative');
 
          svg = render_to.append("svg")
              .attr("class", "jsroot root_canvas")
@@ -4274,9 +4280,6 @@
 
          if (JSROOT.gStyle.ContextMenu)
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
-
-         if (this._websocket)
-            this.CreateCanvasMenu();
 
          factor = 0.66;
          if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
@@ -9669,6 +9672,7 @@
 
       var top = this.h, itemname = "";
 
+      if (arg === null) return null; else
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
       if (typeof arg == 'object') { itemname = arg.name; if ('top' in arg) top = arg.top; } else
          return null;
@@ -9852,6 +9856,7 @@
           painter = null,
           updating = false,
           item = null,
+          display_itemname = itemname,
           frame_name = itemname,
           marker = "::_display_on_frame_::",
           p = drawopt ? drawopt.indexOf(marker) : -1;
@@ -9865,20 +9870,20 @@
          if (!updating) JSROOT.progress();
 
          if (respainter && (typeof respainter === 'object') && (typeof respainter.SetItemName === 'function')) {
-            respainter.SetItemName(itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
+            respainter.SetItemName(display_itemname, updating ? null : drawopt, h); // mark painter as created from hierarchy
             if (item && !item._painter) item._painter = respainter;
          }
-         JSROOT.CallBack(call_back, respainter || painter, itemname);
+         JSROOT.CallBack(call_back, respainter || painter, display_itemname);
       }
 
       h.CreateDisplay(function(mdi) {
 
          if (!mdi) return display_callback();
 
-         item = h.Find(itemname);
+         item = h.Find(display_itemname);
 
          if (item && ('_player' in item))
-            return h.player(itemname, drawopt, display_callback);
+            return h.player(display_itemname, drawopt, display_callback);
 
          updating = (typeof(drawopt)=='string') && (drawopt.indexOf("update:")==0);
 
@@ -9897,9 +9902,9 @@
             drawopt = drawopt.slice(0, pos);
          }
 
-         if (!updating) JSROOT.progress("Loading " + itemname);
+         if (!updating) JSROOT.progress("Loading " + display_itemname);
 
-         h.get(itemname, function(resitem, obj) {
+         h.get(display_itemname, function(resitem, obj) {
 
             if (!updating) JSROOT.progress();
 
@@ -9908,13 +9913,13 @@
             if (updating && item) delete item._doing_update;
             if (!obj) return display_callback();
 
-            if (!updating) JSROOT.progress("Drawing " + itemname);
+            if (!updating) JSROOT.progress("Drawing " + display_itemname);
 
             if (divid.length > 0)
                return (updating ? JSROOT.redraw : JSROOT.draw)(divid, obj, drawopt, display_callback);
 
             mdi.ForEachPainter(function(p, frame) {
-               if (p.GetItemName() != itemname) return;
+               if (p.GetItemName() != display_itemname) return;
                // verify that object was drawn with same option as specified now (if any)
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                mdi.ActivateFrame(frame);
@@ -9930,7 +9935,7 @@
             if (painter) return display_callback();
 
             if (updating) {
-               JSROOT.console("something went wrong - did not found painter when doing update of " + itemname);
+               JSROOT.console("something went wrong - did not found painter when doing update of " + display_itemname);
                return display_callback();
             }
 
@@ -9941,7 +9946,7 @@
             JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt, display_callback);
 
             if (JSROOT.gStyle.DragAndDrop)
-               h.enable_dropping(frame, itemname);
+               h.enable_dropping(frame, display_itemname);
 
          }, drawopt);
       });
