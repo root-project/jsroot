@@ -1176,12 +1176,14 @@
       var use_enlarge = res.property('use_enlarge'),
           layout = res.property('layout');
 
-      if (layout) {
+      if (layout && (layout !=="simple")) {
          switch(is_direct) {
             case 'header': res = res.select(".canvas_header"); break;
             case 'footer': res = res.select(".canvas_footer"); break;
             default: res = res.select(".canvas_main");
          }
+      } else {
+         if (typeof is_direct === 'string') return d3.select(null);
       }
 
       // one could redirect here
@@ -1195,11 +1197,11 @@
       kind = kind || "simple";
 
       // first extract all childs
-      var main = this.select_main(),
-          origin = this.select_main('origin'),
-          lst = [];
+      var origin = this.select_main('origin');
+      if (origin.property('layout') === kind) return false;
 
-      if (origin.property('layout') === kind) return;
+      var main = this.select_main(), lst = [];
+
       while (main.node().firstChild)
          lst.push(main.node().removeChild(main.node().firstChild));
 
@@ -1232,25 +1234,24 @@
 
       // now append all childs to the newmain
       for (var k=0;k<lst.length;++k)
-         main.append(lst[k]);
+         main.node().appendChild(lst[k]);
 
       origin.property('layout', kind);
+
+      return lst.length > 0; // return true when layout changed and there are elements inside
    }
 
    JSROOT.TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
       // function checks if geometry of main div changed
       // returns size of area when main div is drawn
-
-      // take into account layout and enlarge functionality
+      // take into account enlarge state
 
       var enlarge = this.enlarge_main('state'),
-          has_layout = false,
           main_origin = this.select_main('origin'),
           main = this.select_main(),
           lmt = 5; // minimal size
 
       if (enlarge !== 'on') {
-         has_layout = main_origin.property('layout');
          if (new_size && new_size.width && new_size.height)
             main_origin.style('width',new_size.width+"px")
                        .style('height',new_size.height+"px");
@@ -4109,37 +4110,45 @@
    JSROOT.TPadPainter.prototype.ToggleEventStatus = function() {
       // when function called, jquery should be already loaded
 
+      if (this.enlarge_main('state')==='on') return;
+
       this.has_event_status = !this.has_event_status;
       if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
-      var footer = this.select_main().select(".canvas_footer");
+
+      var resized = this.layout_main(this.has_event_status || this._websocket ? "canvas" : "simple");
+
+      var footer = this.select_main('footer');
+
       if (!this.has_event_status) {
          footer.html("");
          delete this.status_layout;
          delete this.ShowStatus;
          delete this.ShowStatusFunc;
-         return;
+      } else {
+
+         if (!footer.attr("id")) footer.attr("id","jsroot_canvas_status_line");
+
+         this.status_layout = new JSROOT.GridDisplay("jsroot_canvas_status_line", 'horiz4_1213');
+
+         var frame_titles = ['object name','object title','mouse coordiantes','object info'];
+         for (var k=0;k<4;++k)
+            d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+            .append("label").attr("class","jsroot_status_label");
+
+         this.ShowStatusFunc = function(name, title, info, coordinates) {
+            if (!this.status_layout) return;
+            $(this.status_layout.GetFrame(0)).children('label').text(name || "");
+            $(this.status_layout.GetFrame(1)).children('label').text(title || "");
+            $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
+            $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+         }
+
+         this.ShowStatus = this.ShowStatusFunc.bind(this);
+
+         this.ShowStatus("canvas","title","info","");
       }
 
-      if (!footer.attr("id")) footer.attr("id","jsroot_canvas_status_line");
-
-      this.status_layout = new JSROOT.GridDisplay("jsroot_canvas_status_line", 'horiz4_1213');
-
-      var frame_titles = ['object name','object title','mouse coordiantes','object info'];
-      for (var k=0;k<4;++k)
-         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
-           .append("label").attr("class","jsroot_status_label");
-
-      this.ShowStatusFunc = function(name, title, info, coordinates) {
-         if (!this.status_layout) return;
-         $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-         $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-         $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-         $(this.status_layout.GetFrame(3)).children('label').text(info || "");
-      }
-
-      this.ShowStatus = this.ShowStatusFunc.bind(this);
-
-      this.ShowStatus("canvas","title","info","");
+      if (resized) this.CheckCanvasResize(); // redraw with resize
    }
 
    JSROOT.TPadPainter.prototype.ShowCanvasMenu = function(name) {
@@ -4208,7 +4217,12 @@
    }
 
    JSROOT.TPadPainter.prototype.CreateCanvasMenu = function() {
-      var header = this.select_main().select(".canvas_header");
+
+      if (this.enlarge_main('state')==='on') return;
+
+      this.layout_main("canvas");
+
+      var header = this.select_main('header');
 
       header.html("").style('background','lightgrey');
 
@@ -4228,6 +4242,7 @@
       if (check_resize > 0) {
 
          svg = this.svg_canvas();
+
          factor = svg.property('height_factor');
 
          rect = this.check_main_resize(check_resize, null, factor);
@@ -4235,16 +4250,6 @@
          if (!rect.changed) return false;
 
       } else {
-
-         factor = 0.66;
-         if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
-            factor = this.pad.fCh / this.pad.fCw;
-            if ((factor < 0.1) || (factor > 10)) factor = 0.66;
-         }
-
-         this.layout_main("canvas");
-
-         rect = this.check_main_resize(2, new_size, factor);
 
          var render_to = this.select_main();
 
@@ -4272,6 +4277,14 @@
 
          if (this._websocket)
             this.CreateCanvasMenu();
+
+         factor = 0.66;
+         if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
+            factor = this.pad.fCh / this.pad.fCw;
+            if ((factor < 0.1) || (factor > 10)) factor = 0.66;
+         }
+
+         rect = this.check_main_resize(2, new_size, factor);
       }
 
       if (!this.fillatt || !this.fillatt.changed)
@@ -4548,6 +4561,8 @@
       }
 
       menu.add("separator");
+
+      menu.addchk(this.has_event_status, "Event status", this.ToggleEventStatus.bind(this));
 
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
          menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
