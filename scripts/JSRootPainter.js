@@ -2464,8 +2464,8 @@
 
       conn.onclose = function() {
          console.log('websocket closed');
-
          delete pthis._websocket;
+         window.close(); // close window when socked disapper
       }
 
       conn.onerror = function (err) {
