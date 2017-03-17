@@ -1164,34 +1164,151 @@
    }
 
    JSROOT.TBasePainter.prototype.select_main = function(is_direct) {
-      // return d3.select for main element, defined with divid
+      // return d3.select for main element for drawing, defined with divid
+      // if main element was layout, returns main element inside layout
 
       if (!this.divid) return d3.select(null);
       var id = this.divid;
       if ((typeof id == "string") && (id[0]!='#')) id = "#" + id;
       var res = d3.select(id);
+      if (res.empty() || (is_direct==='origin')) return res;
 
-      if (is_direct || res.empty()) return res;
+      var use_enlarge = res.property('use_enlarge'),
+          layout = res.property('layout');
+
+      if (layout) {
+         switch(is_direct) {
+            case 'header': res = res.select(".canvas_header"); break;
+            case 'footer': res = res.select(".canvas_footer"); break;
+            default: res = res.select(".canvas_main");
+         }
+      }
 
       // one could redirect here
-      if (res.property('use_enlarge')) return d3.select("#jsroot_enlarge_div");
+      if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
 
       return res;
+   }
+
+   JSROOT.TBasePainter.prototype.layout_main = function(kind) {
+
+      kind = kind || "simple";
+
+      // first extract all childs
+      var main = this.select_main(),
+          origin = this.select_main('origin'),
+          lst = [];
+
+      if (origin.property('layout') === kind) return;
+      while (main.node().firstChild)
+         lst.push(main.node().removeChild(main.node().firstChild));
+
+      if (kind === "simple") {
+         // simple layout - nothing inside
+         origin.html("");
+         main = origin;
+      } else {
+
+         // now create all necessary divs
+
+         var maindiv = origin.html("")
+                          .append("div")
+                          .attr("class","jsroot")
+                          .style('display','flex')
+                          .style('flex-direction','column')
+                          .style('width','100%')
+                          .style('height','100%');
+
+         var header = maindiv.append("div").attr('class','canvas_header').style('width','100%');
+
+         main = maindiv.append("div")
+                       .style('flex',1) // use all available vertical space in the parent div
+                       .style('width','100%')
+                       .style("position","relative") // one should use absolute position for
+                       .attr("class", "canvas_main");
+
+         var footer = maindiv.append("div").attr('class','canvas_footer').style('width','100%');
+      }
+
+      // now append all childs to the newmain
+      for (var k=0;k<lst.length;++k)
+         main.append(lst[k]);
+
+      origin.property('layout', kind);
+   }
+
+   JSROOT.TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
+      // function checks if geometry of main div changed
+      // returns size of area when main div is drawn
+
+      // take into account layout and enlarge functionality
+
+      var enlarge = this.enlarge_main('state'),
+          has_layout = false,
+          main_origin = this.select_main('origin'),
+          main = this.select_main(),
+          lmt = 5; // minimal size
+
+      if (enlarge !== 'on') {
+         has_layout = main_origin.property('layout');
+         if (new_size && new_size.width && new_size.height)
+            main_origin.style('width',new_size.width+"px")
+                       .style('height',new_size.height+"px");
+      }
+
+      var rect_origin = this.get_visible_rect(main_origin, true);
+
+      var can_resize = main_origin.attr('can_resize'),
+          do_resize = false;
+
+      if (can_resize == "height")
+         if (height_factor && Math.abs(rect_origin.width*height_factor - rect_origin.height) > 0.1*rect_origin.width) do_resize = true;
+
+      if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
+           can_resize && can_resize !== 'false') do_resize = true;
+
+      if (do_resize && (enlarge !== 'on')) {
+          // if zero size and can_resize attribute set, change container size
+
+         if (rect_origin.width > lmt) {
+            height_factor = height_factor || 0.66;
+            main_origin.style('height', Math.round(rect_origin.width * height_factor)+'px');
+         } else
+         if (can_resize !== 'height') {
+            main_origin.style('width', '200px').style('height', '100px');
+         }
+      }
+
+      var rect = this.get_visible_rect(main),
+          old_h = main.property('draw_height'), old_w = main.property('draw_width');
+
+      rect.changed = false;
+
+      if (old_h && old_w && (old_h>0) && (old_w>0)) {
+         if ((old_h !== rect.height) || (old_w !== rect.width))
+            if ((check_level>1) || (rect.width/old_w<0.66) || (rect.width/old_w>1.5) ||
+                  (rect.height/old_h<0.66) && (rect.height/old_h>1.5)) rect.changed = true;
+      } else {
+         rect.changed = true;
+      }
+
+      return rect;
    }
 
    JSROOT.TBasePainter.prototype.enlarge_main = function(action) {
       // action can be:  true, false, 'toggle', 'state', 'verify'
       // if action not specified, just return possibility to enlarge main div
 
-      var main = this.select_main(true);
+      var main = this.select_main(true),
+          origin = this.select_main('origin');
 
-      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (main.property('can_enlarge')===false)) return false;
+      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge')===false)) return false;
 
       if (action===undefined) return true;
 
       if (action==='verify') return true;
 
-      var state = main.property('use_enlarge') ? "on" : "off";
+      var state = origin.property('use_enlarge') ? "on" : "off";
 
       if (action === 'state') return state;
 
@@ -1209,7 +1326,7 @@
          while (main.node().childNodes.length > 0)
             enlarge.node().appendChild(main.node().firstChild);
 
-         main.property('use_enlarge', true);
+         origin.property('use_enlarge', true);
 
          return true;
       }
@@ -1219,7 +1336,7 @@
             main.node().appendChild(enlarge.node().firstChild);
 
          enlarge.remove();
-         main.property('use_enlarge', false);
+         origin.property('use_enlarge', false);
          return true;
       }
 
@@ -1234,17 +1351,19 @@
       return isNaN(value) ? 0 : Math.round(value);
    }
 
-   JSROOT.TBasePainter.prototype.main_visible_rect = function() {
+   JSROOT.TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
       // return rect with width/height which correspond to the visible area of drawing region
 
-      var elem = this.select_main(),
-          rect = elem.node().getBoundingClientRect();
+      var rect = elem.node().getBoundingClientRect(),
+          res = { width: Math.round(rect.width), height: Math.round(rect.height) };
 
-      // this is size where canvas should be rendered
-      return {
-         width: Math.round(rect.width - this.GetStyleValue(elem,'padding-left') - this.GetStyleValue(elem,'padding-right')),
-         height: Math.round(rect.height - this.GetStyleValue(elem,'padding-top') - this.GetStyleValue(elem,'padding-bottom'))
-      };
+      if (!fullsize) {
+         // this is size exclude padding area
+         res.width -= this.GetStyleValue(elem,'padding-left') + this.GetStyleValue(elem,'padding-right');
+         res.height -= this.GetStyleValue(elem,'padding-top') - this.GetStyleValue(elem,'padding-bottom');
+      }
+
+      return res;
    }
 
    JSROOT.TBasePainter.prototype.SetDivId = function(divid) {
@@ -1491,6 +1610,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function(pad_name) {
+      var sel = this.svg_pad(pad_name);
       var res = this.svg_pad(pad_name).property("draw_width");
       return isNaN(res) ? 0 : res;
    }
@@ -1553,7 +1673,7 @@
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
-         var rect = this.main_visible_rect();
+         var rect = this.get_visible_rect(this.select_main());
 
          if ((rect.height<10) && (rect.width>10)) {
             rect.height = Math.round(0.66*rect.width);
@@ -4103,104 +4223,37 @@
 
    JSROOT.TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
-      var render_to = this.select_main(),
-          rect = this.main_visible_rect(),
-          w = rect.width, h = rect.height, // this is size where canvas should be rendered
-          factor = null, svg = null, header = null, footer = null, lmt = 5;
-
-      if (new_size && new_size.width && new_size.height) {
-         w = new_size.width;
-         h = new_size.height;
-      }
+      var factor = null, svg = null, lmt = 5, rect = null;
 
       if (check_resize > 0) {
 
-         header = render_to.select(".canvas_header");
-         footer = render_to.select(".canvas_footer");
-
-         var fullh = h,
-             extrah = this.GetStyleValue(header,'height') + this.GetStyleValue(footer,'height');
-
-         h = fullh - extrah;
-
          svg = this.svg_canvas();
-
-         var oldw = svg.property('draw_width'), oldh = svg.property('draw_height');
-
-         if ((w<=lmt) || (h<=lmt)) {
-            console.warn("Hide canvas while div geometry too small w=",w," h=",h);
-            svg.style("display", "none");
-            return false;
-         } else {
-            svg.style("display", null)
-               .select(".canvas_fillrect").call(this.fillatt.func);
-         }
-
-         if (check_resize == 1) {
-            if ((oldw == w) && (oldh == h)) return false;
-         }
-
          factor = svg.property('height_factor');
 
-         if (factor != null) {
-            // if canvas was resize when created, resize height also now
-            fullh = Math.round(w * factor);
-            render_to.style('height', h+'px');
-            h = fullh - extrah;
-         }
+         rect = this.check_main_resize(check_resize, null, factor);
 
-         if ((check_resize==1) && (oldw>0) && (oldh>0) && !svg.property('redraw_by_resize'))
-            if ((w/oldw>0.66) && (w/oldw<1.5) && (h/oldh>0.66) && (h/oldh<1.5)) {
-               // not significant change in actual sizes, keep as it is
-               // let browser scale SVG without our help
-               return false;
-            }
+         if (!rect.changed) return false;
 
       } else {
 
-         if (((h <= lmt) || (w <= lmt)) && render_to.attr('can_resize') && (render_to.attr('can_resize') !== 'false')) {
-            // if zero size and can_resize attribute set, change container size
-
-            if (w>lmt) {
-               factor = 0.66;
-
-               // for TCanvas reconstruct ratio between width and height
-               if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
-                  factor = this.pad.fCh / this.pad.fCw;
-                  if ((factor < 0.1) || (factor > 10)) factor = 0.66;
-               }
-               h = Math.round(w * factor);
-               render_to.style('height', h+'px');
-            } else
-            if (render_to.attr('can_resize') !== 'height') {
-               if (this.pad) { w = this.pad.fCw || 200; h = this.pad.fCh || 100; }
-               if ((w<=lmt) || (h<=lmt) || isNaN(w) || isNaN(h)) { w = 200; h = 100; }
-               render_to.style('width', w+'px').style('height', h+'px');
-            }
+         factor = 0.66;
+         if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
+            factor = this.pad.fCh / this.pad.fCw;
+            if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
 
-         var maindiv = this.select_main()
-                           .html("")
-                           .append("div")
-                           .attr("class","jsroot")
-                           .style('display','flex')
-                           .style('flex-direction','column')
-                           .style('width','100%')
-                           .style('height','100%');
+         this.layout_main("canvas");
 
-         header = maindiv.append("div").attr('class','canvas_header').style('width','100%');
-         //header.append('a').text("File");
+         rect = this.check_main_resize(2, new_size, factor);
 
-         svg = maindiv.append("svg")
-             .attr('flex',1) // use all available vertical space in the parent div
+         var render_to = this.select_main();
+
+         svg = render_to.append("svg")
              .attr("class", "jsroot root_canvas")
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null) // this is custom property
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
-
-         footer = maindiv.append("div").attr('class','canvas_footer').style('width','100%');
-         //footer.append('a').text("Place for status line");
 
          svg.append("svg:title").text("ROOT canvas");
          svg.append("svg:rect").attr("class","canvas_fillrect")
@@ -4224,33 +4277,39 @@
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
 
-      if ((w<=lmt) || (h<=lmt)) {
+      if ((rect.width<=lmt) || (rect.height<=lmt)) {
          svg.style("display", "none");
-         console.warn("Hide canvas while geometry too small w=",w," h=",h);
-         w = 200; h = 100; // just to complete drawing
+         console.warn("Hide canvas while geometry too small w=",rect.width," h=",rect.height);
+         rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
          svg.style("display", null);
       }
 
       svg.attr("x", 0)
          .attr("y", 0)
-         .attr("width", "100%")
-         .attr("height", "100%")
-         .attr("viewBox", "0 0 " + w + " " + h)
+         .style("width", "100%")
+         .style("height", "100%")
+         .style("position", "absolute")
+         .style("left", 0)
+         .style("top", 0)
+         .style("right", 0)
+         .style("bottom", 0);
+
+      svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
          .property('draw_x', 0)
          .property('draw_y', 0)
-         .property('draw_width', w)
-         .property('draw_height', h);
+         .property('draw_width', rect.width)
+         .property('draw_height', rect.height);
 
       svg.select(".canvas_fillrect")
-         .attr("width",w)
-         .attr("height",h)
+         .attr("width",rect.width)
+         .attr("height",rect.height)
          .call(this.fillatt.func);
 
       this.svg_layer("btns_layer")
-          .attr("transform","translate(2," + (h-this.ButtonSize(1.25)) + ")")
+          .attr("transform","translate(2," + (rect.height - this.ButtonSize(1.25)) + ")")
           .attr("display", svg.property("pad_enlarged") ? "none" : null); // hide buttons when sub-pad is enlarged
 
       return true;
