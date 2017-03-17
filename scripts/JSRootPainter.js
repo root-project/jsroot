@@ -9752,6 +9752,8 @@
       // get object item with specified name
       // depending from provided option, same item can generate different object types
 
+      if (arg===null) return JSROOT.CallBack(call_back, null, null);
+
       var itemname, item, hpainter = this;
 
       if (typeof arg === 'string') {
