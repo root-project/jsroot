@@ -2725,6 +2725,17 @@
 
          container.add(line);
 
+         if (center[naxis]===0) {
+            geom = new THREE.SphereBufferGeometry(text_size*0.25);
+            var material = new THREE.MeshBasicMaterial({ color: axiscol });
+            var mesh = new THREE.Mesh(geom, material);
+            mesh.translateX((naxis===0) ? center[0] : buf[0]);
+            mesh.translateY((naxis===1) ? center[1] : buf[1]);
+            mesh.translateZ((naxis===2) ? center[2] : buf[2]);
+            container.add(mesh);
+         }
+
+
          var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
          var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: text_size, height: 0, curveSegments: 5 });
          var mesh = new THREE.Mesh(text3d, textMaterial);
