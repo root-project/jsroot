@@ -12,6 +12,7 @@
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
 4. Let change background color of geo drawing
+5. One can change web browser title, providing &title="any string" in URL  
 
 
 ## Changes in 5.1.0

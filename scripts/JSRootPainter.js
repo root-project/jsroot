@@ -10981,7 +10981,8 @@
           layout = GetOption("layout"),
           style = GetOptionAsArray("#style"),
           status = GetOption("status"),
-          browser_kind = GetOption("browser");
+          browser_kind = GetOption("browser"),
+          title = GetOption("title");
 
       if (GetOption("float")!==null) browser_kind='float'; else
       if (GetOption("fix")!==null) browser_kind='fix';
@@ -10989,6 +10990,8 @@
       this.no_select = GetOption("noselect");
 
       if (GetOption('files_monitoring')!==null) this.files_monitoring = true;
+
+      if (title) document.title = title;
 
       var load = GetOption("load");
       if (load) prereq += ";io;2d;load:" + load;

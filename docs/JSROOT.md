@@ -32,6 +32,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - opt - drawing option for the item
 - items - array of items name
 - opts - array of drawing options for the items
+- title - set browser title  
 - layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - browser - layout of the browser 'float', 'fix', 'no', 'off'
 - nobrowser - do not display file browser (same as browser=no)
