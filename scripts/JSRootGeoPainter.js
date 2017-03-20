@@ -2734,7 +2734,7 @@
 
          var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
 
-         if (center[naxis]===0)
+         if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
            if (!this.options._axis_center || (naxis===0)) {
                geom = new THREE.SphereBufferGeometry(text_size*0.25);
                mesh = new THREE.Mesh(geom, textMaterial);
