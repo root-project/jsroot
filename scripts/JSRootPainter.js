@@ -1324,6 +1324,17 @@
                        .append("div")
                        .attr("id","jsroot_enlarge_div");
 
+         var rect1 = this.get_visible_rect(main),
+             rect2 = this.get_visible_rect(enlarge);
+
+         // if new enlarge area not big enough, do not do it
+         if ((rect2.width<=rect1.width) || (rect2.height<=rect1.height))
+            if (rect2.width*rect2.height < rect1.width*rect1.height) {
+               console.log('Enlarged area ' +rect2.width+"x"+rect2.height+' smaller then original drawing ' + rect1.width+"x"+rect1.height);
+               enlarge.remove();
+               return false;
+            }
+
          while (main.node().childNodes.length > 0)
             enlarge.node().appendChild(main.node().firstChild);
 
