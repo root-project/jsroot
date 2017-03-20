@@ -164,6 +164,13 @@
          click: function() { painter.showControlOptions('toggle'); }
       });
 
+      buttonList.push({
+         name: 'enlarge',
+         title: 'Emlarge geometry drawing',
+         icon: JSROOT.ToolbarIcons.circle,
+         click: function() { painter.ToggleEnlarge(); }
+      });
+
       if (JSROOT.gStyle.ContextMenu)
       buttonList.push({
          name: 'menu',
@@ -3000,6 +3007,18 @@
 
       return true;
    }
+
+   JSROOT.TGeoPainter.prototype.ToggleEnlarge = function() {
+
+      if (d3.event) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation();
+      }
+
+      if (this.enlarge_main('toggle'))
+        this.CheckResize();
+   }
+
 
    JSROOT.TGeoPainter.prototype.ownedByTransformControls = function(child) {
       var obj = child.parent;

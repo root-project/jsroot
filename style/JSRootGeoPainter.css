@@ -255,7 +255,7 @@
 .jsroot .toolbar-group a {
     position: relative;
     font-size: 16px;
-    padding: 3px 4px;
+    padding: 3px 1px;
     cursor: pointer;
     line-height: normal;
     box-sizing: border-box;
@@ -274,7 +274,6 @@
 .jsroot .toolbar-btn path:hover {
     fill: rgba(0, 22, 72, 0.5);
 }
-
 
 .jsroot .toolbar-btn-bright path {
     fill: rgba(255, 224, 160, 0.2);
