@@ -4137,9 +4137,7 @@
          delete this.ShowStatusFunc;
       } else {
 
-         if (!footer.attr("id")) footer.attr("id","jsroot_canvas_status_line");
-
-         this.status_layout = new JSROOT.GridDisplay("jsroot_canvas_status_line", 'horiz4_1213');
+         this.status_layout = new JSROOT.GridDisplay(footer.node(), 'horizx4_1213');
 
          var frame_titles = ['object name','object title','mouse coordiantes','object info'];
          for (var k=0;k<4;++k)
@@ -11305,11 +11303,15 @@
    // JSROOT.MDIDisplay - class to manage multiple document interface for drawings
 
    JSROOT.MDIDisplay = function(frameid) {
+      JSROOT.TBasePainter.call(this);
       this.frameid = frameid;
-      d3.select("#"+this.frameid).property('mdi', this);
+      this.SetDivId(frameid);
+      this.select_main().property('mdi', this);
       this.CleanupFrame = JSROOT.cleanup; // use standard cleanup function by default
       this.active_frame_title = ""; // keep title of active frame
    }
+
+   JSROOT.MDIDisplay.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    JSROOT.MDIDisplay.prototype.BeforeCreateFrame = function(title) {
 
@@ -11385,7 +11387,7 @@
 
       this.ForEachFrame(this.CleanupFrame);
 
-      d3.select("#"+this.frameid).html("").property('mdi', null);
+      this.select_main().html("").property('mdi', null);
    }
 
    JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
@@ -11398,7 +11400,7 @@
 
       this.ActivateFrame(frame);
 
-      return JSROOT.redraw(d3.select(frame).attr("id"), obj, drawopt);
+      return JSROOT.redraw(frame, obj, drawopt);
    }
 
 
@@ -11468,7 +11470,7 @@
       this.use_separarators = !kind || (kind.indexOf("x")<0);
       this.simple_layout = false;
 
-      d3.select("#"+frameid).style('overflow','hidden');
+      this.select_main().style('overflow','hidden');
 
       if (kind === "simple") {
          this.simple_layout = true;
@@ -11551,7 +11553,7 @@
       if (sizes && (sizes.length!==num)) sizes = undefined;
 
       if (!this.simple_layout)
-         this.CreateGroup(this, d3.select("#"+this.frameid), num, arr, sizes);
+         this.CreateGroup(this, this.select_main(), num, arr, sizes);
    }
 
    JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
@@ -11567,11 +11569,11 @@
       }
 
       for (var cnt = 0; cnt<num; ++cnt) {
-         var group = { id: cnt, frameid: '', position: 0, size: sizes[cnt] };
+         var group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
          if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          group.position0 = group.position;
 
-         if (!childs || !childs[cnt] || childs[cnt]<2) group.frameid = this.frameid + "_" + this.framecnt++;
+         if (!childs || !childs[cnt] || childs[cnt]<2) group.drawid = this.framecnt++;
 
          handle.groups.push(group);
 
@@ -11582,10 +11584,13 @@
          else
             elem.style('float', 'left').style('width',group.size+'%').style('height','100%');
 
-         if (group.frameid)
-            elem.attr('id',group.frameid).classed('jsroot_newgrid', true);
-         else
+         if (group.drawid>=0) {
+            elem.classed('jsroot_newgrid', true);
+            if (typeof this.frameid === 'string')
+               elem.attr('id', this.frameid + "_" + group.drawid);
+         } else {
             elem.style('display','flex').style('flex-direction', handle.vertical ? "row" : "column");
+         }
 
          if (childs && (childs[cnt]>1)) {
             group.vertical = !handle.vertical;
@@ -11601,7 +11606,7 @@
    }
 
    JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var main = d3.select('#' + this.frameid);
+      var main = this.select_main();
 
       if (this.simple_layout)
          userfunc(main.node());
@@ -11612,7 +11617,7 @@
    }
 
    JSROOT.GridDisplay.prototype.GetActiveFrame = function() {
-      if (this.simple_layout) return d3.select('#' + this.frameid).node();
+      if (this.simple_layout) return this.select_main().node();
 
       var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found) return found;
@@ -11629,7 +11634,7 @@
    }
 
    JSROOT.GridDisplay.prototype.GetFrame = function(id) {
-      var main = d3.select('#' + this.frameid);
+      var main = this.select_main();
       if (this.simple_layout) return main.node();
       var res = null;
       main.selectAll('.jsroot_newgrid').each(function() {
