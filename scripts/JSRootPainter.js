@@ -3382,8 +3382,6 @@
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       if (status_func) {
-         hintsg.remove();
-
          var title = "", name = "", coordinates = "", info = "";
          if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
          var hint = null, best_dist2 = 1e10, best_hint = null;
@@ -3409,11 +3407,11 @@
             if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
          }
 
-         return status_func(name, title, info, coordinates);
+         status_func(name, title, info, coordinates);
       }
 
       // end of closing tooltips
-      if (!pnt || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
+      if (!pnt || disable_tootlips || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
          hintsg.remove();
          return;
       }

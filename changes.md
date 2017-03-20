@@ -13,6 +13,9 @@
    Also all tracks and hits will be imported from main drawing.
 4. Let change background color of geo drawing
 5. One can change web browser title, providing &title="any string" in URL  
+6. Introduce event status line, which is similar to ROOT TCanvas
+   Shown information similar to output in tooltip.
+   One can enable both tooltips and status line at the same time
 
 
 ## Changes in 5.1.0
