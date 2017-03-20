@@ -1284,7 +1284,7 @@
          return id;
       }
 
-      this.status_layout = new JSROOT.GridDisplay(id, 'horiz4_1213');
+      this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
       if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
 
       var frame_titles = ['object name','object title','mouse coordiantes','object info'];

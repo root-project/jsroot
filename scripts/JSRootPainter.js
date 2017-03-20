@@ -2695,20 +2695,25 @@
    }
 
    JSROOT.TObjectPainter.prototype.GetShowStatusFunc = function() {
-      var pp = this.pad_painter();
+      // return function used to display object status
+      // automatically disabled when drawing is enlarged - status line will be inisible
 
-      if (pp && (typeof pp.ShowStatus === 'function')) return pp.ShowStatus;
+      var pp = this.pad_painter(), res = JSROOT.Painter.ShowStatus;
 
-      return JSROOT.Painter.ShowStatus;
+      if (pp && (typeof pp.ShowStatus === 'function')) res = pp.ShowStatus;
+
+      if (res && (this.enlarge_main('state')==='on')) res = null;
+
+      return res;
    }
 
    JSROOT.TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
       var obj = this.GetObject(),
-          func = this.GetShowStatusFunc();
+          status_func = this.GetShowStatusFunc();
 
-      if (obj && func) func(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
+      if (obj && status_func) status_func(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
 
 
@@ -3323,8 +3328,6 @@
 
       if (enabled !== undefined) this.tooltip_enabled = enabled;
 
-      if ((pnt === undefined) || !this.tooltip_allowed || !this.tooltip_enabled) pnt = null;
-
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           height = this.frame_height(),
@@ -3333,7 +3336,12 @@
           frame_x = this.frame_x(),
           pp = this.pad_painter(true),
           maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
-          font = JSROOT.Painter.getFontDetails(160, textheight);
+          font = JSROOT.Painter.getFontDetails(160, textheight),
+          status_func = this.GetShowStatusFunc(),
+          disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
+
+      if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
+      if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
 
       // collect tooltips from pad painter - it has list of all drawn objects
       if (pp) hints = pp.GetTooltips(pnt);
@@ -3371,10 +3379,9 @@
       }
 
       var layer = this.svg_layer("stat_layer"),
-          hintsg = layer.select(".objects_hints"), // group with all tooltips
-          status_func = this.GetShowStatusFunc();
+          hintsg = layer.select(".objects_hints"); // group with all tooltips
 
-      if (status_func && (this.enlarge_main('state')!=='on')) {
+      if (status_func) {
          hintsg.remove();
 
          var title = "", name = "", coordinates = "", info = "";
@@ -3406,7 +3413,7 @@
       }
 
       // end of closing tooltips
-      if ((pnt === null) || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
+      if (!pnt || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
          hintsg.remove();
          return;
       }
@@ -8722,6 +8729,12 @@
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(findbin) };
 
+      if (pnt.disabled) {
+         // case when tooltip should not highlight bin
+
+         ttrect.remove();
+         res.changed = true;
+      } else
       if (show_rect) {
 
          if (ttrect.empty())

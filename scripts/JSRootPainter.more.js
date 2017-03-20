@@ -1973,7 +1973,7 @@
    }
 
    JSROOT.TGraphPainter.prototype.ProcessTooltip = function(pnt) {
-      if (pnt === null) {
+      if (!pnt) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
@@ -2040,6 +2040,13 @@
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(d, true) };
+
+      if (pnt.disabled) {
+         // tooltip disabled - only return info
+         ttrect.remove();
+         return res;
+      }
+
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (best.exact) res.exact = true;
@@ -2117,6 +2124,11 @@
                   x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
                   color1: this.lineatt.color,
                   lines: this.TooltipText(bestbin, true) };
+
+      if (pnt.disabled) {
+         ttbin.remove();
+         return res;
+      }
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
@@ -4633,17 +4645,23 @@
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:path")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+         if (pnt.disabled) {
+            ttrect.remove();
+            res.changed = true;
+         } else {
 
-         res.changed = ttrect.property("current_bin") !== foundindx;
+            if (ttrect.empty())
+               ttrect = this.draw_g.append("svg:path")
+                            .attr("class","tooltip_bin h1bin")
+                            .style("pointer-events","none");
 
-         if (res.changed)
-            ttrect.attr("d", this.CreatePolyBin(pmain, bin))
-                  .style("opacity", "0.7")
-                  .property("current_bin", foundindx);
+            res.changed = ttrect.property("current_bin") !== foundindx;
+
+            if (res.changed)
+                  ttrect.attr("d", this.CreatePolyBin(pmain, bin))
+                        .style("opacity", "0.7")
+                        .property("current_bin", foundindx);
+         }
 
          if (this.IsUserTooltipCallback() && res.changed)
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
@@ -4677,21 +4695,26 @@
                      color2: this.fillatt ? this.fillatt.color : 'blue',
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:rect")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+         if (pnt.disabled) {
+            ttrect.remove();
+            res.changed = true;
+         } else {
 
-         res.changed = ttrect.property("current_bin") !== i;
+            if (ttrect.empty())
+               ttrect = this.draw_g.append("svg:rect")
+                                   .attr("class","tooltip_bin h1bin")
+                                   .style("pointer-events","none");
 
-         if (res.changed)
-            ttrect.attr("x", p.x1)
-                  .attr("width", p.x2-p.x1)
-                  .attr("y", p.yy1)
-                  .attr("height", p.yy2- p.yy1)
-                  .style("opacity", "0.7")
-                  .property("current_bin", i);
+            res.changed = ttrect.property("current_bin") !== i;
 
+            if (res.changed)
+               ttrect.attr("x", p.x1)
+                     .attr("width", p.x2-p.x1)
+                     .attr("y", p.yy1)
+                     .attr("height", p.yy2- p.yy1)
+                     .style("opacity", "0.7")
+                     .property("current_bin", i);
+         }
 
          if (this.IsUserTooltipCallback() && res.changed) {
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
@@ -4700,8 +4723,8 @@
          }
 
          return res;
-
       }
+
 
       var i, j, find = 0, binz = 0, colindx = null;
 
@@ -4736,20 +4759,25 @@
 
       if (this.options.Color > 0) res.color2 = this.GetPalette()[colindx];
 
-      if (ttrect.empty())
-         ttrect = this.draw_g.append("svg:rect")
-                             .attr("class","tooltip_bin h1bin")
-                             .style("pointer-events","none");
+      if (pnt.disabled) {
+         ttrect.remove();
+         res.changed = true;
+      } else {
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:rect")
+                                .attr("class","tooltip_bin h1bin")
+                                .style("pointer-events","none");
 
-      res.changed = ttrect.property("current_bin") !== i*10000 + j;
+         res.changed = ttrect.property("current_bin") !== i*10000 + j;
 
-      if (res.changed)
-         ttrect.attr("x", h.grx[i])
-               .attr("width", h.grx[i+1] - h.grx[i])
-               .attr("y", h.gry[j+1])
-               .attr("height", h.gry[j] - h.gry[j+1])
-               .style("opacity", "0.7")
-               .property("current_bin", i*10000 + j);
+         if (res.changed)
+            ttrect.attr("x", h.grx[i])
+                  .attr("width", h.grx[i+1] - h.grx[i])
+                  .attr("y", h.gry[j+1])
+                  .attr("height", h.gry[j] - h.gry[j+1])
+                  .style("opacity", "0.7")
+                  .property("current_bin", i*10000 + j);
+      }
 
       if (this.IsUserTooltipCallback() && res.changed) {
          this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
