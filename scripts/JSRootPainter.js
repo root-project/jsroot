@@ -1103,6 +1103,7 @@
    JSROOT.TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
 
+      this.layout_main('simple');
       this.AccessTopPainter(false);
       this.divid = null;
 
