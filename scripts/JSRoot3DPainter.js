@@ -110,23 +110,9 @@
          this.tt.style.left = (l + 3) + 'px';
       };
 
-      this.show = function(v, mouse_pos, ignore_status) {
+      this.show = function(v, mouse_pos, status_func) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
-
-         if (JSROOT.Painter.ShowStatus && !ignore_status) {
-            this.hide();
-
-            var name = "", title = "", coord = "", info = "";
-            if (mouse_pos) coord = mouse_pos.x.toFixed(0)+ "," + mouse_pos.y.toFixed(0);
-            if (typeof v=="string") info = v; else {
-               name = v.name; title = v.title;
-               if (v.line) info = v.line; else
-               if (v.lines) { info = v.lines.slice(1).join(' '); name = v.lines[0]; }
-            }
-
-            return JSROOT.Painter.ShowStatus(name, title, info, coord);
-         }
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {
             if (v.only_status) return this.hide();
@@ -372,15 +358,26 @@
 
          var mouse = this.GetMousePos(evnt, {}),
              intersects = this.GetIntersects(mouse),
-             tip = this.ProcessMouseMove(intersects);
+             tip = this.ProcessMouseMove(intersects),
+             status_func = this.painter.GetShowStatusFunc();
+
+
+         if (tip && status_func) {
+            var name = "", title = "", coord = "", info = "";
+            if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
+            if (typeof tip == "string") info = tip; else {
+               name = tip.name; title = tip.title;
+               if (tip.line) info = tip.line; else
+               if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }
+            }
+            status_func(name, title, info, coord);
+         }
 
          this.cursor_changed = false;
-         if (tip) {
-            var ignore_status = ((typeof this.painter.enlarge_main=='function') && (this.painter.enlarge_main('state')==='on'));
-
+         if (tip && painter.tooltip_allowed) {
             this.tooltip.check_parent(this.painter.select_main().node());
 
-            this.tooltip.show(tip, mouse, ignore_status);
+            this.tooltip.show(tip, mouse);
             this.tooltip.pos(evnt)
          } else {
             this.tooltip.hide();
@@ -660,7 +657,7 @@
 
          painter.BinHighlight3D(tip, mesh);
 
-         if (!tip && zoom_mesh && painter.Get3DZoomCoord && painter.tooltip_allowed) {
+         if (!tip && zoom_mesh && painter.Get3DZoomCoord) {
             var pnt = zoom_mesh.GlobalIntersect(this.raycaster),
                 axis_name = zoom_mesh.zoom,
                 axis_value = painter.Get3DZoomCoord(pnt, axis_name);
@@ -681,7 +678,7 @@
             return hint;
          }
 
-         return (painter.tooltip_allowed && tip && tip.lines) ? tip : "";
+         return (tip && tip.lines) ? tip : "";
       }
 
       this.control.ProcessMouseLeave = function() {
