@@ -583,14 +583,14 @@
                
                if (nobrowser !== null) {
                   // return RunBigTest(0);
+                  document.getElementById('viewer').innerHTML = "";
                   hpainter = new JSROOT.HierarchyPainter('root', null);
                   hpainter.SetDisplay(layout, "viewer");
                } else {
-                  var guiCode = "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>"     
-                              + '<div id="browser"></div></div>'
-                              + '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
-                  document.getElementById('viewer').innerHTML = guiCode; 
-                  // d3.select("#viewer").html(guiCode);
+                  document.getElementById('viewer').innerHTML = 
+                      "<div id='left-div' style='float:left; width:25%; overflow:auto; height:100%;'>" +     
+                      '<div id="browser"></div></div>' + 
+                      '<div id="right-div" style="float:right; width:73%; height:100%;"></div>';
 
                   hpainter = new JSROOT.HierarchyPainter('root', 'browser');
                   hpainter.SetDisplay(layout,"right-div");
