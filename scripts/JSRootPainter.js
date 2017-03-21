@@ -5966,13 +5966,12 @@
             histo.fBinEntries = obj.fBinEntries;
          }
 
-         if (obj.fFunctions)
+         if (obj.fFunctions && !this.options.Same && this.options.Func)
             for (var n=0;n<obj.fFunctions.arr.length;++n) {
                var func = obj.fFunctions.arr[n];
-               if ((func._typename == "TPaveStats") && (func.fName == 'stats')) {
-                  var funcpainter = this.FindPainterFor(null,'stats');
-                  if (funcpainter) funcpainter.UpdateObject(func);
-               }
+               if (!func || !func._typename || !func.fName) continue;
+               var funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+               if (funcpainter) funcpainter.UpdateObject(func);
             }
       }
 
