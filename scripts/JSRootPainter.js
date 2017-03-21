@@ -2747,10 +2747,10 @@
          if (!pobj) continue;
 
          if (selobj && (pobj === selobj)) return painters[n];
-
-         if (selname && (pobj.fName === selname)) return painters[n];
-
-         if (seltype && (pobj._typename === seltype)) return painters[n];
+         if (!selname && !seltype) continue;
+         if (selname && (pobj.fName !== selname)) continue;
+         if (seltype && (pobj._typename !== seltype)) continue;
+         return painters[n];
       }
 
       return null;
