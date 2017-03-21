@@ -4507,17 +4507,12 @@
    }
 
    JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
-      if ((this.pad===null) || (indx >= this.pad.fPrimitives.arr.length))
+      if (!this.pad || (indx >= this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);
 
-      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx],  this.pad.fPrimitives.opt[indx]);
-
-      if (pp === null) return this.DrawPrimitive(indx+1, callback);
-
-      pp._primitive = true; // mark painter as belonging to primitives
-      pp.WhenReady(this.DrawPrimitive.bind(this, indx+1, callback));
+      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], this.DrawPrimitive.bind(this, indx+1, callback));
+      if (pp) pp._primitive = true; // mark painter as belonging to primitives
    }
-
 
    JSROOT.TPadPainter.prototype.GetTooltips = function(pnt) {
       var painters = [], hints = [];

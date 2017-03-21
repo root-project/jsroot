@@ -2245,16 +2245,11 @@
 
       var graph = this.GetObject();
 
-      if ((graph.fFunctions === null) || (indx >= graph.fFunctions.arr.length))
+      if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      var func = graph.fFunctions.arr[indx];
-      var opt = graph.fFunctions.opt[indx];
-
-      var painter = JSROOT.draw(this.divid, func, opt);
-      if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
-
-      this.DrawNextFunction(indx+1, callback);
+      JSROOT.draw(this.divid, graph.fFunctions.arr[indx], graph.fFunctions.opt[indx],
+                  this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
@@ -2446,13 +2441,8 @@
          if ((mgraph.fFunctions == null) || (indx >= mgraph.fFunctions.arr.length))
             return JSROOT.CallBack(callback);
 
-         var func = mgraph.fFunctions.arr[indx],
-             opt = mgraph.fFunctions.opt[indx];
-
-         var painter = JSROOT.draw(this.divid, func, opt);
-         if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
-
-         this.DrawNextFunction(indx+1, callback);
+         JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx],
+                     this.DrawNextFunction.bind(this, indx+1, callback));
       }
 
       this.DrawNextGraph = function(indx, opt) {
