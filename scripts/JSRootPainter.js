@@ -6829,10 +6829,8 @@
             do_draw = (func._typename !== "TPaletteAxis");
       }
 
-      if (do_draw) {
-         var painter = JSROOT.draw(this.divid, func, opt);
-         if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
-      }
+      if (do_draw)
+         return JSROOT.draw(this.divid, func, opt, this.DrawNextFunction.bind(this, indx+1, callback));
 
       this.DrawNextFunction(indx+1, callback);
    }
