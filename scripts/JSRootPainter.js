@@ -1199,7 +1199,7 @@
 
       // first extract all childs
       var origin = this.select_main('origin');
-      if (origin.property('layout') === kind) return false;
+      if (origin.empty() || (origin.property('layout') === kind)) return false;
 
       var main = this.select_main(), lst = [];
 
