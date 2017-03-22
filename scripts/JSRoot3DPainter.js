@@ -374,7 +374,7 @@
          }
 
          this.cursor_changed = false;
-         if (tip && painter.tooltip_allowed) {
+         if (tip && this.painter.tooltip_allowed) {
             this.tooltip.check_parent(this.painter.select_main().node());
 
             this.tooltip.show(tip, mouse);

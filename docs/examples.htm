@@ -283,7 +283,8 @@
               { name:"lhcb", asurl: true, file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt", title: "LHCb geometry" },
               { name:"eve", asurl: true, json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
               { name:"tracks", url: "?nobrowser&json=" + filepath + "geom/evegeoshape.json.gz&file=" + filepath + "geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
-              { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" }
+              { name:"tracks+hits", url: "?nobrowser&json=" + filepath + "geom/simple_alice.json.gz&file=" + filepath + "geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" },
+              { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root," + filepath + "geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz;black,projx;black]", title: "Simple ALICE geometry and two projections" }
             ],
             TGraph : [
               { opt:"", file: "graph.root", item: "Graph;1" },
@@ -440,7 +441,6 @@
               { name: "tank", asurl: true, file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
               { name: "lego", asurl: true, file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
               { name: "cheon", asurl: true, file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" },
-              { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root," + filepath + "geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz,projx]", title: "Simple ALICE geometry and two projections" },
               { name: "proj2", url: "?nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root," + filepath + "geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz,projx,main;black]", title: "Place main drawing not on the first place" }
             ],
             TGraph : [
