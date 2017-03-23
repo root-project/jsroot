@@ -7,12 +7,12 @@
    Example can be found in demo/alice_esd.js and in api.htm.
 2. Implement projection of geometry on given plane.
    One could reuse drawing of geometry in other div (should be drawn with main option).
-   In control GUI one could change position of the projection plane    
+   In control GUI one could change position of the projection plane
 3. On of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
 4. Let change background color of geo drawing
-5. One can change web browser title, providing &title="any string" in URL  
+5. One can change web browser title, providing &title="any string" in URL
 6. Introduce event status line, which is similar to ROOT TCanvas
    Shown information similar to output in tooltip.
    One can enable both tooltips and status line at the same time
