@@ -20,7 +20,7 @@
 
    <script type='text/javascript'>
 
-      var cnt = 0;
+      var cnt = 0, drawing_ready = true;
 
       function CreateLegendEntry(obj, lbl) {
          var entry = JSROOT.Create("TLegendEntry"); 
@@ -31,6 +31,8 @@
       }
 
       function updateGUI() {
+         if (!drawing_ready) return;
+         
         // this is just generation of graph
          var npoints = 20;
          var xpts = [], ypts = [];
@@ -72,7 +74,7 @@
          mgraph.fHistogram = h1;
 
          var leg = JSROOT.Create("TLegend");
-         leg.fName = "graphs_legend";
+         // leg.fName = "graphs_legend";
          JSROOT.extend(leg, { fX1NDC: 0.2, fY1NDC:0.75, fX2NDC: 0.6, fY2NDC:0.9 });
 
          leg.fPrimitives.Add(CreateLegendEntry(graph1, "Math.sin " + cnt));
@@ -83,8 +85,10 @@
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
-
-         JSROOT.redraw('object_draw', mgraph);
+         
+         drawing_ready = false;
+         
+         JSROOT.redraw('object_draw', mgraph, "", function() { drawing_ready = true; });
       }
 
       updateGUI();
