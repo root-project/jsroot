@@ -72,6 +72,7 @@
          mgraph.fHistogram = h1;
 
          var leg = JSROOT.Create("TLegend");
+         leg.fName = "graphs_legend";
          JSROOT.extend(leg, { fX1NDC: 0.2, fY1NDC:0.75, fX2NDC: 0.6, fY2NDC:0.9 });
 
          leg.fPrimitives.Add(CreateLegendEntry(graph1, "Math.sin " + cnt));

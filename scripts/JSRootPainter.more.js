@@ -2309,10 +2309,18 @@
             if (this.firstpainter.UpdateObject(histo)) isany = true;
          }
 
-         for (var i = 0; i <  graphs.arr.length; ++i) {
+         for (var i = 0; i < graphs.arr.length; ++i) {
             if (i<this.painters.length)
                if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
          }
+
+         if (obj.fFunctions)
+            for (var i = 0; i < obj.fFunctions.arr.length; ++i) {
+               var func = obj.fFunctions.arr[i];
+               if (!func || !func._typename || !func.fName) continue;
+               var funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+               if (funcpainter) funcpainter.UpdateObject(func);
+            }
 
          return isany;
       }
@@ -2438,7 +2446,7 @@
 
          var mgraph = this.GetObject();
 
-         if ((mgraph.fFunctions == null) || (indx >= mgraph.fFunctions.arr.length))
+         if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
             return JSROOT.CallBack(callback);
 
          JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx],
