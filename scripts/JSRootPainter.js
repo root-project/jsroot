@@ -4039,6 +4039,11 @@
          pave.fOptStat = obj.fOptStat;
          pave.fOptFit = obj.fOptFit;
          return true;
+      } else
+      if (obj._typename === 'TLegend') {
+         pave.fPrimitives = obj.fPrimitives;
+         pave.fNColumns = obj.fNColumns;
+         return true;
       }
 
       return false;
@@ -6206,20 +6211,24 @@
          histo.fTitle = obj.fTitle;
          histo.fMinimum = obj.fMinimum;
          histo.fMaximum = obj.fMaximum;
-         histo.fXaxis.fTitle = obj.fXaxis.fTitle;
-         histo.fYaxis.fTitle = obj.fYaxis.fTitle;
-         histo.fZaxis.fTitle = obj.fZaxis.fTitle;
+         function CopyAxis(tgt,src) {
+            tgt.fTitle = src.fTitle;
+            tgt.fLabels = src.fLabels;
+         }
+         CopyAxis(histo.fXaxis, obj.fXaxis);
+         CopyAxis(histo.fYaxis, obj.fYaxis);
+         CopyAxis(histo.fZaxis, obj.fZaxis);
          if (!this.main_painter().zoom_changed_interactive) {
-            function CopyAxis(tgt,src) {
+            function CopyZoom(tgt,src) {
                tgt.fXmin = src.fXmin;
                tgt.fXmax = src.fXmax;
                tgt.fFirst = src.fFirst;
                tgt.fLast = src.fLast;
                tgt.fBits = src.fBits;
             }
-            CopyAxis(histo.fXaxis, obj.fXaxis);
-            CopyAxis(histo.fYaxis, obj.fYaxis);
-            CopyAxis(histo.fZaxis, obj.fZaxis);
+            CopyZoom(histo.fXaxis, obj.fXaxis);
+            CopyZoom(histo.fYaxis, obj.fYaxis);
+            CopyZoom(histo.fZaxis, obj.fZaxis);
          }
          histo.fSumw2 = obj.fSumw2;
 
