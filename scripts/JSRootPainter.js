@@ -6187,28 +6187,39 @@
          histo.fTsumw = obj.fTsumw;
          histo.fTsumwx = obj.fTsumwx;
          histo.fTsumwx2 = obj.fTsumwx2;
-         if (this.Dimension() == 2) {
+         histo.fXaxis.fNbins = obj.fXaxis.fNbins;
+         if (this.Dimension() > 1) {
             histo.fTsumwy = obj.fTsumwy;
             histo.fTsumwy2 = obj.fTsumwy2;
             histo.fTsumwxy = obj.fTsumwxy;
+            histo.fYaxis.fNbins = obj.fYaxis.fNbins;
+            if (this.Dimension() > 2) {
+               histo.fTsumwz = obj.fTsumwz;
+               histo.fTsumwz2 = obj.fTsumwz2;
+               histo.fTsumwxz = obj.fTsumwxz;
+               histo.fTsumwyz = obj.fTsumwyz;
+               histo.fZaxis.fNbins = obj.fZaxis.fNbins;
+            }
          }
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
          histo.fTitle = obj.fTitle;
          histo.fMinimum = obj.fMinimum;
          histo.fMaximum = obj.fMaximum;
-         histo.fXaxis.fNbins = obj.fXaxis.fNbins;
+         histo.fXaxis.fTitle = obj.fXaxis.fTitle;
+         histo.fYaxis.fTitle = obj.fYaxis.fTitle;
+         histo.fZaxis.fTitle = obj.fZaxis.fTitle;
          if (!this.main_painter().zoom_changed_interactive) {
-            histo.fXaxis.fXmin = obj.fXaxis.fXmin;
-            histo.fXaxis.fXmax = obj.fXaxis.fXmax;
-            histo.fXaxis.fFirst = obj.fXaxis.fFirst;
-            histo.fXaxis.fLast = obj.fXaxis.fLast;
-            histo.fXaxis.fBits = obj.fXaxis.fBits;
-            histo.fYaxis.fXmin = obj.fYaxis.fXmin;
-            histo.fYaxis.fXmax = obj.fYaxis.fXmax;
-            histo.fYaxis.fFirst = obj.fYaxis.fFirst;
-            histo.fYaxis.fLast = obj.fYaxis.fLast;
-            histo.fYaxis.fBits = obj.fYaxis.fBits;
+            function CopyAxis(tgt,src) {
+               tgt.fXmin = src.fXmin;
+               tgt.fXmax = src.fXmax;
+               tgt.fFirst = src.fFirst;
+               tgt.fLast = src.fLast;
+               tgt.fBits = src.fBits;
+            }
+            CopyAxis(histo.fXaxis, obj.fXaxis);
+            CopyAxis(histo.fYaxis, obj.fYaxis);
+            CopyAxis(histo.fZaxis, obj.fZaxis);
          }
          histo.fSumw2 = obj.fSumw2;
 
