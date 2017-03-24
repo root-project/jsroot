@@ -2762,6 +2762,37 @@
 
       opt.res_mesh = opt.res_faces = 0;
 
+      var shape = null;
+
+      if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
+         shape = obj; obj = null;
+      } else
+      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+         shape = obj.fShape;
+      } else
+      if (obj._typename === "TEveGeoShapeExtract") {
+         shape = obj.fShape;
+      } else
+      if (obj._typename === 'TGeoManager') {
+         obj = obj.fMasterVolume;
+         JSROOT.GEO.SetBit(obj, JSROOT.GEO.BITS.kVisThis, false);
+         shape = obj.fShape;
+      } else
+      if ('fVolume' in obj) {
+         if (obj.fVolume) shape = obj.fVolume.fShape;
+      } else {
+         obj = null;
+      }
+
+      if (opt.composite && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode)
+         obj = JSROOT.GEO.buildCompositeVolume(shape);
+
+      if (!obj && shape)
+         obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
+                   { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
+
+      if (!obj) return null;
+
       if (obj._typename.indexOf('TGeoVolume') === 0)
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
@@ -2774,13 +2805,9 @@
       else
          uniquevis = clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
 
-      console.log('Unique visible', uniquevis);
-
       var numvis = clones.MarkVisisble();
 
-      console.log('Numvis', numvis);
-
-      var frustum = null
+      var frustum = null;
 
       // collect visisble nodes
       var res = clones.CollectVisibles(opt.numfaces, frustum, opt.numnodes);
