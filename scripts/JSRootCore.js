@@ -1535,13 +1535,17 @@
          m.evalPar = function(x, y) {
             if (! ('_func' in this) || (this._title !== this.fTitle)) {
 
-              var _func = this.fTitle, isformula = false;
+              var _func = this.fTitle, isformula = false, pprefix = "[";
               if (_func === "gaus") _func = "gaus(0)";
-              if (this.fFormula && typeof this.fFormula.fFormula == "string")
+              if (this.fFormula && typeof this.fFormula.fFormula == "string") {
                  if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
-                    isformula = true;
+                    isformula = true; pprefix = "p[";
                     _func = this.fFormula.fFormula.substr(21);
+                 } else {
+                    _func = this.fFormula.fFormula;
+                    pprefix = "[p";
                  }
+              }
 
               if ('formulas' in this)
                  for (var i=0;i<this.formulas.length;++i)
@@ -1563,7 +1567,7 @@
                               .replace(/ROOT::Math::/g, 'this._math.');
               }
               for (var i=0;i<this.fNpar;++i) {
-                 var parname = (isformula ? "p[" : "[") + i + "]";
+                 var parname = pprefix + i + "]";
                  while(_func.indexOf(parname) != -1)
                     _func = _func.replace(parname, '('+this.GetParValue(i)+')');
               }
