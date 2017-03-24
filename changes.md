@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.1.x
+1. Fix - support newest TFormula in TF1 (#127)
+2. Fix - ignore NaN value in saved TF1 buffer
+
+
 ## Changes in 5.1.1
 1. Fix - invoke callback in JSROOT.draw() at proper time
 2. Fix - support TGeoHMatrix, produced after GDML conversion
