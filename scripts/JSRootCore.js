@@ -1913,7 +1913,7 @@
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
       if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
       if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
-      if (JSROOT.GetUrlOption('geo', src)!=null) prereq += "geo;";
+      if (JSROOT.GetUrlOption('geom', src)!=null) prereq += "geom;";
       if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
