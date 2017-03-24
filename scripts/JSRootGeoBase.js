@@ -2690,6 +2690,158 @@
       }
    }
 
+   JSROOT.GEO.createFlippedMesh = function(parent, shape, material) {
+      // when transformation matrix includes one or several invertion of axis,
+      // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
+
+      var flip =  new THREE.Vector3(1,1,-1);
+
+      if (shape.geomZ === undefined) {
+
+         if (shape.geom.type == 'BufferGeometry') {
+
+            var pos = shape.geom.getAttribute('position').array,
+                norm = shape.geom.getAttribute('normal').array,
+                len = pos.length, n, shift = 0,
+                newpos = new Float32Array(len),
+                newnorm = new Float32Array(len);
+
+            // we should swap second and third point in each face
+            for (n=0; n<len; n+=3) {
+               newpos[n]   = pos[n+shift];
+               newpos[n+1] = pos[n+1+shift];
+               newpos[n+2] = -pos[n+2+shift];
+
+               newnorm[n]   = norm[n+shift];
+               newnorm[n+1] = norm[n+1+shift];
+               newnorm[n+2] = -norm[n+2+shift];
+
+               shift+=3; if (shift===6) shift=-3; // values 0,3,-3
+            }
+
+            shape.geomZ = new THREE.BufferGeometry();
+            shape.geomZ.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
+            shape.geomZ.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
+            // normals are calculated with normal geometry and correctly scaled
+            // geom.computeVertexNormals();
+
+         } else {
+
+            shape.geomZ = shape.geom.clone();
+
+            shape.geomZ.scale(flip.x, flip.y, flip.z);
+
+            var face, d;
+            for (var n=0;n<shape.geomZ.faces.length;++n) {
+               face = geom.faces[n];
+               d = face.b; face.b = face.c; face.c = d;
+            }
+
+            // normals are calculated with normal geometry and correctly scaled
+            // geom.computeFaceNormals();
+         }
+      }
+
+      var mesh = new THREE.Mesh( shape.geomZ, material );
+      mesh.scale.copy(flip);
+      mesh.updateMatrix();
+
+      mesh._flippedMesh = true;
+
+      return mesh;
+   }
+
+   JSROOT.GEO.Build = function(obj, opt, call_back) {
+      // function can be used to build three.js model for TGeo object
+
+      if (!obj) return;
+
+      if (!opt) opt = {};
+      if (!opt.numfaces) opt.numfaces = 100000;
+      if (!opt.numnodes) opt.numnodes = 1000;
+
+      opt.res_mesh = opt.res_faces = 0;
+
+      if (obj._typename.indexOf('TGeoVolume') === 0)
+         obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
+
+      var clones = new JSROOT.GEO.ClonedNodes(obj);
+
+      var uniquevis = clones.MarkVisisble(true);
+
+      if (uniquevis <= 0)
+         uniquevis = clones.MarkVisisble(false);
+      else
+         uniquevis = clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
+
+      console.log('Unique visible', uniquevis);
+
+      var numvis = clones.MarkVisisble();
+
+      console.log('Numvis', numvis);
+
+      var frustum = null
+
+      // collect visisble nodes
+      var res = clones.CollectVisibles(opt.numfaces, frustum, opt.numnodes);
+
+      var draw_nodes = res.lst;
+
+      // collect shapes
+      var shapes = clones.CollectShapes(draw_nodes);
+
+      clones.BuildShapes(shapes, opt.numfaces);
+
+      var toplevel = new THREE.Object3D();
+
+      for (var n=0; n < draw_nodes.length;++n) {
+         var entry = draw_nodes[n];
+         if (entry.done) continue;
+
+         var shape = shapes[entry.shapeid];
+         if (!shape.ready) {
+            console.warn('shape marked as not ready when should');
+            break;
+         }
+         entry.done = true;
+         shape.used = true; // indicate that shape was used in building
+
+         if (!shape.geom || (shape.nfaces === 0)) {
+            // node is visible, but shape does not created
+            clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
+            continue;
+         }
+
+         var nodeobj = clones.origin[entry.nodeid];
+         var clone = clones.nodes[entry.nodeid];
+         var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
+
+         opt.res_mesh++;
+         opt.res_faces += shape.nfaces;
+
+         var obj3d = clones.CreateObject3D(entry.stack, toplevel, opt);
+
+         prop.material.wireframe = opt.wireframe;
+
+         prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
+
+         var mesh = null;
+
+         if (obj3d.matrixWorld.determinant() > -0.9) {
+            mesh = new THREE.Mesh( shape.geom, prop.material );
+         } else {
+            mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
+         }
+
+         if (mesh)
+            obj3d.add(mesh);
+      }
+
+      JSROOT.CallBack(call_back, toplevel);
+
+      return toplevel;
+   }
+
 
    return JSROOT;
 

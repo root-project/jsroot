@@ -958,69 +958,6 @@
       this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
    }
 
-
-   JSROOT.TGeoPainter.prototype.createFlippedMesh = function(parent, shape, material) {
-      // when transformation matrix includes one or several invertion of axis,
-      // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
-
-      var flip =  new THREE.Vector3(1,1,-1);
-
-      if (shape.geomZ === undefined) {
-
-         if (shape.geom.type == 'BufferGeometry') {
-
-            var pos = shape.geom.getAttribute('position').array,
-                norm = shape.geom.getAttribute('normal').array,
-                len = pos.length, n, shift = 0,
-                newpos = new Float32Array(len),
-                newnorm = new Float32Array(len);
-
-            // we should swap second and third point in each face
-            for (n=0; n<len; n+=3) {
-               newpos[n]   = pos[n+shift];
-               newpos[n+1] = pos[n+1+shift];
-               newpos[n+2] = -pos[n+2+shift];
-
-               newnorm[n]   = norm[n+shift];
-               newnorm[n+1] = norm[n+1+shift];
-               newnorm[n+2] = -norm[n+2+shift];
-
-               shift+=3; if (shift===6) shift=-3; // values 0,3,-3
-            }
-
-            shape.geomZ = new THREE.BufferGeometry();
-            shape.geomZ.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
-            shape.geomZ.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
-            // normals are calculated with normal geometry and correctly scaled
-            // geom.computeVertexNormals();
-
-         } else {
-
-            shape.geomZ = shape.geom.clone();
-
-            shape.geomZ.scale(flip.x, flip.y, flip.z);
-
-            var face, d;
-            for (var n=0;n<shape.geomZ.faces.length;++n) {
-               face = geom.faces[n];
-               d = face.b; face.b = face.c; face.c = d;
-            }
-
-            // normals are calculated with normal geometry and correctly scaled
-            // geom.computeFaceNormals();
-         }
-      }
-
-      var mesh = new THREE.Mesh( shape.geomZ, material );
-      mesh.scale.copy(flip);
-      mesh.updateMatrix();
-
-      mesh._flippedMesh = true;
-
-      return mesh;
-   }
-
-
    JSROOT.TGeoPainter.prototype.nextDrawAction = function() {
       // return false when nothing todo
       // return true if one could perform next action immediately
@@ -1240,7 +1177,7 @@
             if (obj3d.matrixWorld.determinant() > -0.9) {
                mesh = new THREE.Mesh( shape.geom, prop.material );
             } else {
-               mesh = this.createFlippedMesh(obj3d, shape, prop.material);
+               mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
             }
 
             obj3d.add(mesh);
