@@ -975,8 +975,9 @@
                var xx = xmin + dx*n;
                // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
                if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
+               var yy = tf1.fSave[n];
 
-               res.push({ x: xx, y: tf1.fSave[n] });
+               if (!isNaN(yy)) res.push({ x : xx, y : yy });
             }
             return res;
          }
