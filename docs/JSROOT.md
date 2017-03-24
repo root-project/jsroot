@@ -674,3 +674,24 @@ As second parameter of tree.Process() function one could provide object with arg
 
     var args = { numentries: 1000, firstentry: 500 };
     tree.Process(selector, args);
+
+
+### TGeo API
+
+Any supported TGeo object can be drawn with normal JSROOR.draw() function.
+
+If necessary, one can create three.js model for supported object directly and use such model
+separately. This can be done with the function:
+
+    var opt = { numfaces: 100000};
+    var obj3d = JSROOT.GEO.Build(obj, opt);
+    scene.add( obj3d );
+
+Following options can be specified:
+
+   - numfaces - approximate maximal number of faces in three.js model (default 100000)
+   - numnodes - approximate maximal number of meshes in three.js model (default 1000)
+   - doubleside - use double-side material (default only front side is set)
+   - wireframe - show wireframe for created materials (default - off)
+
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm)
