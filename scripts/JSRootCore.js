@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/03/2017";
+   JSROOT.version = "dev 24/03/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1589,7 +1589,12 @@
 
               if (isformula) {
                  _func = _func.replace(/x\[0\]/g,"x");
-                 this._func = new Function("x", _func).bind(this);
+                 if (this._typename==="TF2") {
+                    _func = _func.replace(/x\[1\]/g,"y");
+                    this._func = new Function("x", "y", _func).bind(this);
+                 } else {
+                    this._func = new Function("x", _func).bind(this);
+                 }
               } else
               if (this._typename==="TF2")
                  this._func = new Function("x", "y", "return " + _func).bind(this);
