@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-      <!-- https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometries.html -->
+      <!-- as prototype used: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometries.html -->
 		<title>three.js model for TGeo object</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
@@ -16,32 +16,49 @@
 	</head>
 	<body>
 
-      <!-- use three.js from threejs.org -->
-
+      <!-- use three.js from JSROOT -->
 		<!-- script src="https://threejs.org/build/three.js"></script-->
 
-		<!--  script src="https://threejs.org/examples/js/Detector.js"></script-->
+		<script src="https://threejs.org/examples/js/Detector.js"></script>
 		<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
       
-      <script src="../scripts/JSRootCore.js?2d&geom&onload=init" type="text/javascript"></script>
+      <script src="../scripts/JSRootCore.js?geom&onload=init" type="text/javascript"></script>
 
 		<script>
 
-			// if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
 			var container, stats;
 
-			var camera, scene, renderer;
+			var camera, scene, renderer, geom_size = 400, dummy = null;
+			
+			function add_geometry(obj) {
+			   
+			   // options for building three.js model 
+			   var opt = { numfaces: 100000, numnodes: 1000 };
+
+            // function demonstrate creation of three.js model 
+            var obj3d = JSROOT.GEO.Build(obj, opt);
+            
+            if (!obj3d) return;
+            scene.remove( dummy );
+            scene.add( obj3d );
+               
+            var box3 = new THREE.Box3().setFromObject(obj3d);
+               
+            geom_size = box3.getSize().length();
+               
+            camera.far = geom_size*5; 
+            camera.updateProjectionMatrix();
+			}
 
 			function init() {
-			   
-			   console.log('CALL INIT');
 
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.y = 400;
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, geom_size*5 );
+				camera.position.y = geom_size;
 
 				scene = new THREE.Scene();
 				scene.add( new THREE.AmbientLight( 0x404040 ) );
@@ -49,13 +66,31 @@
 				var light = new THREE.DirectionalLight( 0xffffff );
 				light.position.set( 0, 1, 0 );
 				scene.add( light );
+				
+				// ------------------- reading geometry object --------------------------
+				
+				var filename = JSROOT.GetUrlOption("file") || "https://root.cern/js/files/geom/simple_alice.json.gz";
+				
+				// filename = "https://root.cern/files/tank.root";
+				
+				if (filename.indexOf(".root")>0) {
+				   // load geometry from ROOT file
+				   var itemname = JSROOT.GetUrlOption("item") || "geom";
+				   JSROOT.OpenFile(filename, function(file) {
+				      file.ReadObject(itemname, add_geometry);
+				   });
+				} else {
+				   // load geometry from JSON as object
+   		      JSROOT.NewHttpRequest(filename, 'object', add_geometry).send();
+				}
 
+            // ------------------- end of reading geometry object --------------------------
+				
+				// dummy object, seen in the beginning
 				var material = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
-
-
-				var object = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
+				dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
 				// object.position.set( 200, 0, 200 );
-				scene.add( object );
+				scene.add( dummy );
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -67,7 +102,6 @@
 				container.appendChild( stats.dom );
 
 				//
-
 				window.addEventListener( 'resize', onWindowResize, false );
 
             animate();
@@ -97,8 +131,9 @@
 
 				var timer = Date.now() * 0.0001;
 
-				camera.position.x = Math.cos( timer ) * 800;
-				camera.position.z = Math.sin( timer ) * 800;
+				camera.position.x = Math.cos( timer )*2*geom_size;
+				camera.position.z = Math.sin( timer )*2*geom_size;
+				camera.position.y = geom_size;
 
 				camera.lookAt( scene.position );
 
