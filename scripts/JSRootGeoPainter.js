@@ -299,6 +299,7 @@
       if (d.check("NOWORKER")) res.use_worker = -1;
       if (d.check("WORKER")) res.use_worker = 1;
 
+      if (d.check("NOHIGHLIGHT") || d.check("NOHIGH")) res.highlight = 0;
       if (d.check("HIGHLIGHT")) res.highlight = true;
 
       if (d.check("WIRE")) res.wireframe = true;

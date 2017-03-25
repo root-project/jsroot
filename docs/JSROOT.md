@@ -289,6 +289,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - more3 - show 3 times more volumes as usual
    - all - try to display all geometry volumes (may lead to browser hanging)
    - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
+   - nohighlight - disable volumes highlighting (can be activated via context menu)
    - macro:name.C - invoke ROOT configuration macro
    - dflt - set default volumes colors as TGeoManager::DefaultColors() does
    - transpXY - set global transparency value (XY is number between 1 and 99)
