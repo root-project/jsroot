@@ -1182,10 +1182,10 @@
             }
 
             obj3d.add(mesh);
-            
+
             // keep full stack of nodes
             mesh.stack = entry.stack;
-            
+
             // specify rendering order, required for transparancy handling
             if (obj3d.$jsroot_depth !== undefined)
                mesh.renderOrder = this._clones.maxdepth - obj3d.$jsroot_depth;

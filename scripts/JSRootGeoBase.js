@@ -2025,7 +2025,7 @@
 
        obj._refid = this.origin.length;
        this.origin.push(obj);
-       if (sublevel>this.maxdepth) this.maxdepth = sublevel; 
+       if (sublevel>this.maxdepth) this.maxdepth = sublevel;
 
        var chlds = null;
        if (kind===0)
@@ -2348,7 +2348,7 @@
 
          if (obj3d) {
             three_prnt = obj3d;
-            if (obj3d.$jsroot_drawable) draw_depth++; 
+            if (obj3d.$jsroot_drawable) draw_depth++;
             continue;
          }
 
@@ -2399,11 +2399,11 @@
          return null;
       }
 
-      if (three_prnt) { 
+      if (three_prnt) {
          three_prnt.$jsroot_drawable = true;
          three_prnt.$jsroot_depth = draw_depth;
       }
-      
+
       return three_prnt;
    }
 
@@ -2874,7 +2874,7 @@
          if (obj3d.$jsroot_depth !== undefined)
             mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
          else
-            mesh.renderOrder = clones.maxdepth - entry.stack.length; 
+            mesh.renderOrder = clones.maxdepth - entry.stack.length;
       }
 
       JSROOT.CallBack(call_back, toplevel);
