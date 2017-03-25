@@ -16,7 +16,7 @@
 6. Introduce event status line, which is similar to ROOT TCanvas
    Shown information similar to output in tooltip.
    One can enable both tooltips and status line at the same time
-7. Introduce JSROOT.GEO.Build function to create three.js model for
+7. Introduce JSROOT.GEO.build function to create three.js model for
    any supported TGeo class. Such model can be inserted in any three.js scene
    independent from normal JSROOT drawings
 

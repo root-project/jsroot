@@ -685,7 +685,7 @@ If necessary, one can create three.js model for supported object directly and us
 separately. This can be done with the function:
 
     var opt = { numfaces: 100000};
-    var obj3d = JSROOT.GEO.Build(obj, opt);
+    var obj3d = JSROOT.GEO.build(obj, opt);
     scene.add( obj3d );
 
 Following options can be specified:

@@ -2753,7 +2753,7 @@
       return mesh;
    }
 
-   JSROOT.GEO.Build = function(obj, opt, call_back) {
+   JSROOT.GEO.build = function(obj, opt, call_back) {
       // function can be used to build three.js model for TGeo object
 
       if (!obj) return;
