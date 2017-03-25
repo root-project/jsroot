@@ -2872,7 +2872,7 @@
          obj3d.add(mesh);
          // specify rendering order, required for transparancy handling
          if (obj3d.$jsroot_depth !== undefined)
-            mesh.renderOrder = this._clones.maxdepth - obj3d.$jsroot_depth;
+            mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
          else
             mesh.renderOrder = clones.maxdepth - entry.stack.length; 
       }
