@@ -2862,8 +2862,10 @@
             mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
          }
 
-         if (mesh)
+         if (mesh) {
             obj3d.add(mesh);
+            mesh.renderOrder = clones.maxdepth - entry.stack.length; // order of transparancy handling
+         }
       }
 
       JSROOT.CallBack(call_back, toplevel);
