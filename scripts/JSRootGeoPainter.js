@@ -1185,7 +1185,12 @@
             
             // keep full stack of nodes
             mesh.stack = entry.stack;
-            mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparancy handling
+            
+            // specify rendering order, required for transparancy handling
+            if (obj3d.$jsroot_depth !== undefined)
+               mesh.renderOrder = this._clones.maxdepth - obj3d.$jsroot_depth;
+            else
+               mesh.renderOrder = this._clones.maxdepth - entry.stack.length;
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),

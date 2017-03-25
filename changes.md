@@ -19,6 +19,7 @@
 7. Introduce JSROOT.GEO.build function to create three.js model for
    any supported TGeo class. Such model can be inserted in any three.js scene
    independent from normal JSROOT drawings
+8. Improve rendering of TGeo model with transparency.
 
 
 ## Changes in 5.1.0

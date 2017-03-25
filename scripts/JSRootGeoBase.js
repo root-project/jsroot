@@ -2326,8 +2326,9 @@
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
+      // also set renderOrder, required to handle transperancy
 
-      var node = this.nodes[0], three_prnt = toplevel,
+      var node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = (typeof options == 'object') || (options==='force');
 
       for(var lvl=0; lvl<=stack.length; ++lvl) {
@@ -2347,6 +2348,7 @@
 
          if (obj3d) {
             three_prnt = obj3d;
+            if (obj3d.$jsroot_drawable) draw_depth++; 
             continue;
          }
 
@@ -2397,6 +2399,11 @@
          return null;
       }
 
+      if (three_prnt) { 
+         three_prnt.$jsroot_drawable = true;
+         three_prnt.$jsroot_depth = draw_depth;
+      }
+      
       return three_prnt;
    }
 
@@ -2862,10 +2869,12 @@
             mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
          }
 
-         if (mesh) {
-            obj3d.add(mesh);
-            mesh.renderOrder = clones.maxdepth - entry.stack.length; // order of transparancy handling
-         }
+         obj3d.add(mesh);
+         // specify rendering order, required for transparancy handling
+         if (obj3d.$jsroot_depth !== undefined)
+            mesh.renderOrder = this._clones.maxdepth - obj3d.$jsroot_depth;
+         else
+            mesh.renderOrder = clones.maxdepth - entry.stack.length; 
       }
 
       JSROOT.CallBack(call_back, toplevel);
