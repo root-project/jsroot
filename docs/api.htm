@@ -310,7 +310,7 @@
                   saaa.textContent = " (src)";
                   saaa.title = "Click to see source of the example";
                   var github = "https://github.com/root-project/jsroot/blob/"; 
-                  if (JSROOT.source_dir.indexOf("/dev/scripts")>0) github+="dev/"; else github+="master/"; 
+                  if (JSROOT.source_dir.indexOf("/dev/")>0) github+="dev/"; else github+="master/"; 
                   saaa.href = github + ((entry.src===true) ? url : entry.src);
                   content.appendChild( saaa );
                   SetSourceListener(saaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
