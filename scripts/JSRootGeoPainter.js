@@ -1891,7 +1891,7 @@
          console.log('Mouse over', on, itemname, (obj ? obj._typename : "---"));
 
       // let's highlight tracks and hits only for the time being
-      if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet")) return;
+      if (!obj || (obj._typename !== "TEveTrack" && obj._typename !== "TEvePointSet" && obj._typename !== "TPolyMarker3D")) return;
 
       this.HighlightMesh(null, 0x00ff00, on ? obj : null);
    }
@@ -1977,7 +1977,7 @@
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawEveTrack(obj, itemname);
       } else
-      if (obj._typename === 'TEvePointSet') {
+      if ((obj._typename === 'TEvePointSet') || (obj._typename === "TPolyMarker3D")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawHit(obj, itemname);
       }
@@ -3478,7 +3478,8 @@
    JSROOT.GEO.getBrowserIcon = function(hitem, hpainter) {
       var icon = "";
       if (hitem._kind == 'ROOT.TEveTrack') icon = 'img_evetrack'; else
-      if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints';
+      if (hitem._kind == 'ROOT.TEvePointSet') icon = 'img_evepoints'; else
+      if (hitem._kind == 'ROOT.TPolyMarker3D') icon = 'img_evepoints';
       if (icon.length>0) {
          var drawitem = JSROOT.GEO.findItemWithPainter(hitem);
          if (drawitem)

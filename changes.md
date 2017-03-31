@@ -21,6 +21,7 @@
    independent from normal JSROOT drawings.
 8. Improve rendering of TGeo model with transparency.
 9. Let specify initial zoom factor for geometry like opt=zoom50.
+10. Support also TPolyMarker3D class in geo painter.
 
 
 ## Changes in 5.1.0
