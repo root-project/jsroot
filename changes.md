@@ -11,15 +11,16 @@
 3. On of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
-4. Let change background color of geo drawing
-5. One can change web browser title, providing &title="any string" in URL
-6. Introduce event status line, which is similar to ROOT TCanvas
+4. Let change background color of geo drawing.
+5. One can change web browser title, providing &title="any string" in URL.
+6. Introduce event status line, which is similar to ROOT TCanvas.
    Shown information similar to output in tooltip.
-   One can enable both tooltips and status line at the same time
+   One can enable both tooltips and status line at the same time.
 7. Introduce JSROOT.GEO.build function to create three.js model for
    any supported TGeo class. Such model can be inserted in any three.js scene
-   independent from normal JSROOT drawings
+   independent from normal JSROOT drawings.
 8. Improve rendering of TGeo model with transparency.
+9. Let specify initial zoom factor for geometry like opt=zoom50.
 
 
 ## Changes in 5.1.0

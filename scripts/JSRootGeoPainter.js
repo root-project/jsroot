@@ -223,7 +223,7 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: false, _axis_center: false,
                   _count: false, wireframe: false,
-                   scale: new THREE.Vector3(1,1,1),
+                   scale: new THREE.Vector3(1,1,1), zoom: 1.0,
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
@@ -266,6 +266,8 @@
       var d = new JSROOT.DrawOptions(opt);
 
       if (d.check("MAIN")) res.is_main = true;
+
+      if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
 
       if (d.check('BLACK')) res.background = "#000000";
 
@@ -1605,17 +1607,19 @@
 
       this._camera.updateProjectionMatrix();
 
+      var k = 2*this.options.zoom;
+
       if (this.options.project) {
          switch (this.options.project) {
-            case 'x': this._camera.position.set(3*Math.max(sizey,sizez), 0, 0); break
-            case 'y': this._camera.position.set(0, 3*Math.max(sizex,sizez), 0); break
-            case 'z': this._camera.position.set(0, 0, 3*Math.max(sizex,sizey)); break
+            case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break
+            case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break
+            case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break
          }
       } else
       if (this.options._yup) {
-         this._camera.position.set(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
+         this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
-         this._camera.position.set(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
+         this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
       }
 
       this._lookat = new THREE.Vector3(midx, midy, midz);

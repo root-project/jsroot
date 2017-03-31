@@ -293,6 +293,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - macro:name.C - invoke ROOT configuration macro
    - dflt - set default volumes colors as TGeoManager::DefaultColors() does
    - transpXY - set global transparency value (XY is number between 1 and 99)
+   - zoomFACTOR - set initial zoom factor (FACTOR is integer value from 1 to 10000, default is 100)
    - rotate - enable automatic rotation of the geometry
 
 
