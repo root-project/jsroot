@@ -2197,14 +2197,14 @@
       if (vislvl === undefined) {
          vislvl = 99999;
          if (!arg) arg = {};
-         arg.stack = new Int32Array(100); // current stack
+         arg.stack = new Array(100); // current stack
          arg.nodeid = 0;
          arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
          arg.CopyStack = function(factor) {
-            var entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Int32Array(this.last) };
+            var entry = { nodeid: this.nodeid, seqid: this.counter, stack: (this.last>10) ? new Int32Array(this.last) : new Array(this.last) };
             if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be build as first
-            for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1];
+            for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
             return entry;
          }
 
@@ -2238,8 +2238,8 @@
 
       if ((node.depth !== undefined) && (vislvl > node.depth)) vislvl = node.depth;
 
-      if (arg.last > arg.stack.length - 2)
-         throw 'stack capacity is not enough ' + arg.stack.length;
+      //if (arg.last > arg.stack.length - 2)
+      //   throw 'ScanVisible: stack capacity ' + arg.stack.length + ' is not enough';
 
       if (node.chlds && (node.numvischld > 0)) {
          var currid = arg.counter, numvischld = 0;
