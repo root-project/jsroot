@@ -441,10 +441,11 @@
    }
 
    ThreeBSP.Geometry.prototype.toBufferGeometry = function() {
-      var i, j,
-         polygons = this.toPolygons(),
-         polygon_count = polygons.length,
-         buf_size = 0;
+      return ThreeBSP.CreateBufferGeometry(this.toPolygons());
+   }
+
+   ThreeBSP.CreateBufferGeometry = function(polygons) {
+      var i, j, polygon_count = polygons.length, buf_size = 0;
 
       for ( i = 0; i < polygon_count; ++i )
          buf_size += (polygons[i].vertices.length - 2) * 9;

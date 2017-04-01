@@ -25,7 +25,7 @@
    JSROOT.GEO = {
          GradPerSegm: 6,     // grad per segment in cylined/spherical symetry shapes
          CompressComp: true,  // use faces compression in composite shapes
-         CompLimit: 12        // maximal number of components in composite shape
+         CompLimit: 20        // maximal number of components in composite shape
     };
 
    /** @memberOf JSROOT.GEO */
@@ -1243,9 +1243,8 @@
 
          } else {
             // let three.js calculate our faces
-            //console.log('trinagulate ' + shape.fName);
+            // console.log('trinagulate polygon ' + shape.fShapeId);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
-            //console.log('trinagulate done ' + cut_faces.length);
          }
          numfaces += cut_faces.length*2;
       }
@@ -1350,6 +1349,7 @@
       for (var vert = 0; vert < shape.fNvert; ++vert)
          pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
+      // console.log('trinagulate Xtru ' + shape.fShapeId);
       var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
       if (faces.length < pnts.length-2) {
          JSROOT.GEO.warn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
@@ -1699,7 +1699,7 @@
       if ((faces_limit === -1) || (faces_limit === 0))  {
          var cnt = JSROOT.GEO.CountNumShapes(shape);
 
-         if (cnt > JSROOT.GEO.CompLimit) {
+         if ((cnt > JSROOT.GEO.CompLimit) && false) {
             JSROOT.GEO.warn("composite shape " + shape.fShapeId + " has " + cnt + " components, replace by most left");
             while (shape.fNode && shape.fNode.fLeft) shape = shape.fNode.fLeft;
             return JSROOT.GEO.createGeometry(shape, faces_limit);
@@ -1715,23 +1715,38 @@
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
       // seems to be, IE has smaller stack for functions calls and ThreeCSG fails with large shapes
-      if (faces_limit === 0) faces_limit = (JSROOT.browser && JSROOT.browser.isIE) ? 7000 : 10000;
+      if (faces_limit === 0) faces_limit = (JSROOT.browser && JSROOT.browser.isIE) ? 2000 : 4000;
                         else return_bsp = true;
 
       if (matrix1 && (matrix1.determinant() < -0.9))
-         JSROOT.GEO.warn('Axis reflection in composite shape - not supported');
+         JSROOT.GEO.warn('Axis reflection in left composite shape - not supported');
 
       if (matrix2 && (matrix2.determinant() < -0.9))
-         JSROOT.GEO.warn('Axis reflections in composite shape - not supported');
+         JSROOT.GEO.warn('Axis reflections in right composite shape - not supported');
 
-      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit/2);
+      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit);
 
-      geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit/2);
+      var n1 = JSROOT.GEO.numGeometryFaces(geom1), n2 = 0;
+      if (geom1._exceed_limit) n1 += faces_limit;
 
-      if (geom1 instanceof THREE.Geometry) geom1.computeVertexNormals();
+      if (n1 < faces_limit) {
+         geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit);
+         n2 = JSROOT.GEO.numGeometryFaces(geom2);
+      }
+
+      if (n1 + n2 >= faces_limit) {
+         if (geom1.polygons) {
+            geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
+            n1 = JSROOT.GEO.numGeometryFaces(geom1);
+         }
+         if (matrix1) geom1.applyMatrix(matrix1);
+         // if (!geom1._exceed_limit) console.log('reach faces limit', faces_limit, 'got', n1, n2);
+         geom1._exceed_limit = true;
+         return geom1;
+      }
+
       bsp1 = new ThreeBSP.Geometry(geom1, matrix1, JSROOT.GEO.CompressComp ? 0 : undefined);
 
-      if (geom2 instanceof THREE.Geometry) geom2.computeVertexNormals();
       bsp2 = new ThreeBSP.Geometry(geom2, matrix2, bsp1.maxid);
 
       // take over maxid from both geometries
