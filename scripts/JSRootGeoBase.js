@@ -1696,15 +1696,24 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
+      /*
       if ((faces_limit === -1) || (faces_limit === 0))  {
          var cnt = JSROOT.GEO.CountNumShapes(shape);
 
-         if ((cnt > JSROOT.GEO.CompLimit) && false) {
+         if (cnt > JSROOT.GEO.CompLimit) {
             JSROOT.GEO.warn("composite shape " + shape.fShapeId + " has " + cnt + " components, replace by most left");
-            while (shape.fNode && shape.fNode.fLeft) shape = shape.fNode.fLeft;
-            return JSROOT.GEO.createGeometry(shape, faces_limit);
+            var matrix = new THREE.Matrix4();
+            while (shape.fNode && shape.fNode.fLeft) {
+               var m1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
+               if (m1) matrix.multiply(m1);
+               shape = shape.fNode.fLeft;
+            }
+            var res = JSROOT.GEO.createGeometry(shape, faces_limit);
+            if (res && (faces_limit===0)) res.applyMatrix(matrix);
+            return res;
          }
       }
+      */
 
       if (faces_limit < 0)
          return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -10) +
