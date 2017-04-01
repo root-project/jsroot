@@ -22,6 +22,8 @@
 8. Improve rendering of TGeo model with transparency.
 9. Let specify initial zoom factor for geometry like opt=zoom50.
 10. Support also TPolyMarker3D class in geo painter.
+11. Implement TGeoScaledShape.
+12. Limit complexity of composite shape. If it has too many components, only most left is used.
 
 
 ## Changes in 5.1.0

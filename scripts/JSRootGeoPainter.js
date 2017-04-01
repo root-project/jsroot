@@ -1806,12 +1806,6 @@
 
       var painter = this, nshapes = 0;
 
-      function CountNumShapes(shape) {
-         if (!shape) return 0;
-         if (shape._typename!=='TGeoCompositeShape') return 1;
-         return CountNumShapes(shape.fNode.fLeft) + CountNumShapes(shape.fNode.fRight);
-      }
-
       var arg = {
          cnt: [],
          func: function(node) {
@@ -1820,7 +1814,7 @@
             else
                this.cnt[this.last]++;
 
-            nshapes += CountNumShapes(painter._clones.GetNodeShape(node.id));
+            nshapes += JSROOT.GEO.CountNumShapes(painter._clones.GetNodeShape(node.id));
 
             return true;
          }

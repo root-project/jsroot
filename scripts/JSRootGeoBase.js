@@ -24,7 +24,8 @@
    /// Holder of all TGeo-related functions and classes
    JSROOT.GEO = {
          GradPerSegm: 6,     // grad per segment in cylined/spherical symetry shapes
-         CompressComp: true  // use faces compression in composite shapes
+         CompressComp: true,  // use faces compression in composite shapes
+         CompLimit: 12        // maximal number of components in composite shape
     };
 
    /** @memberOf JSROOT.GEO */
@@ -166,6 +167,12 @@
       }
 
       return prop;
+   }
+
+   JSROOT.GEO.CountNumShapes = function(shape) {
+      if (!shape) return 0;
+      if (shape._typename!=='TGeoCompositeShape') return 1;
+      return JSROOT.GEO.CountNumShapes(shape.fNode.fLeft) + JSROOT.GEO.CountNumShapes(shape.fNode.fRight);
    }
 
    // ==========================================================================
@@ -1689,9 +1696,19 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
 
+      if ((faces_limit === -1) || (faces_limit === 0))  {
+         var cnt = JSROOT.GEO.CountNumShapes(shape);
+
+         if (cnt > JSROOT.GEO.CompLimit) {
+            JSROOT.GEO.warn("composite shape " + shape.fShapeId + " has " + cnt + " components, replace by most left");
+            while (shape.fNode && shape.fNode.fLeft) shape = shape.fNode.fLeft;
+            return JSROOT.GEO.createGeometry(shape, faces_limit);
+         }
+      }
+
       if (faces_limit < 0)
-         return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -1) +
-                JSROOT.GEO.createGeometry(shape.fNode.fRight, -1);
+         return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -10) +
+                JSROOT.GEO.createGeometry(shape.fNode.fRight, -10);
 
       var geom1, geom2, bsp1, bsp2, return_bsp = false,
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
@@ -1811,8 +1828,7 @@
             case "TGeoShapeAssembly": break;
             case "TGeoScaledShape": {
                var res = JSROOT.GEO.createGeometry(shape.fShape, limit);
-               // console.log('Creating TGeoScaledShape', limit, res);
-               if (shape.fScale && (limit>=0) && res && (typeof res.scale === 'function'))
+               if (shape.fScale && (limit>=0) && (typeof res === 'object') && (typeof res.scale === 'function'))
                   res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
                return res;
             }
