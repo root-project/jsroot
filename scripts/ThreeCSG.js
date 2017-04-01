@@ -66,9 +66,10 @@
 
          for (var i=0;i<polygons.length;++i) {
             var polygon = polygons[i];
-            if (transfer_matrix)
+            if (transfer_matrix) {
                for (var n=0;n<polygon.vertices.length;++n)
                   polygon.vertices[n].applyMatrix4(transfer_matrix);
+            }
 
             polygon.calculateProperties();
          }
@@ -407,6 +408,23 @@
 
       }
       return geometry;
+   }
+
+   ThreeBSP.Geometry.prototype.scale = function(x,y,z) {
+      // try to scale as THREE.BufferGeometry
+      var polygons = this.tree.collectPolygons([]);
+
+      for (var i = 0; i < polygons.length; ++i) {
+         var polygon = polygons[i];
+         for (var k=0; k < polygon.vertices.length; ++k) {
+            var v = polygon.vertices[k];
+            v.x *= x;
+            v.y *= y;
+            v.z *= z;
+         }
+         delete polygon.normal;
+         polygon.calculateProperties();
+      }
    }
 
    ThreeBSP.Geometry.prototype.toPolygons = function() {

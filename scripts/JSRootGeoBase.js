@@ -1809,6 +1809,14 @@
             case "TGeoHype": return JSROOT.GEO.createHypeBuffer( shape, limit );
             case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
+            case "TGeoScaledShape": {
+               var res = JSROOT.GEO.createGeometry(shape.fShape, limit);
+               // console.log('Creating TGeoScaledShape', limit, res);
+               if (shape.fScale && (limit>=0) && res && (typeof res.scale === 'function'))
+                  res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
+               return res;
+            }
+            default: JSROOT.GEO.warn('unsupported shape type ' + shape._typename);
          }
       } catch(e) {
          var place = "";
