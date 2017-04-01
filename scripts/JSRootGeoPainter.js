@@ -1804,6 +1804,14 @@
       // need to fill cached value line numvischld
       this._clones.ScanVisible();
 
+      var painter = this, nshapes = 0;
+
+      function CountNumShapes(shape) {
+         if (!shape) return 0;
+         if (shape._typename!=='TGeoCompositeShape') return 1;
+         return CountNumShapes(shape.fNode.fLeft) + CountNumShapes(shape.fNode.fRight);
+      }
+
       var arg = {
          cnt: [],
          func: function(node) {
@@ -1811,6 +1819,9 @@
                this.cnt[this.last] = 1;
             else
                this.cnt[this.last]++;
+
+            nshapes += CountNumShapes(painter._clones.GetNodeShape(node.id));
+
             return true;
          }
       };
@@ -1820,6 +1831,7 @@
       var tm2 = new Date().getTime();
 
       res += 'Total visible nodes: ' + numvis + '<br/>';
+      res += 'Total shapes: ' + nshapes + '<br/>';
 
       for (var lvl=0;lvl<arg.cnt.length;++lvl) {
          if (arg.cnt[lvl] !== undefined)
@@ -1832,17 +1844,16 @@
 
       var elem = this.select_main().style('overflow', 'auto').html(res);
 
-      var painter = this;
-
       setTimeout(function() {
          arg.domatrix = true;
          tm1 = new Date().getTime();
          numvis = painter._clones.ScanVisible(arg);
          tm2 = new Date().getTime();
          elem.append("p").text("Time to scan with matrix: " + (tm2-tm1) + "ms");
+         painter.DrawingReady();
       }, 100);
 
-      return this.DrawingReady();
+      return this;
    }
 
 
