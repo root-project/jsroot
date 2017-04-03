@@ -1734,6 +1734,7 @@
          JSROOT.GEO.warn('Axis reflections in right composite shape - not supported');
 
       geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit);
+      if (!geom1) return null;
 
       var n1 = JSROOT.GEO.numGeometryFaces(geom1), n2 = 0;
       if (geom1._exceed_limit) n1 += faces_limit;
@@ -1743,7 +1744,7 @@
          n2 = JSROOT.GEO.numGeometryFaces(geom2);
       }
 
-      if (n1 + n2 >= faces_limit) {
+      if ((n1 + n2 >= faces_limit) || !geom2) {
          if (geom1.polygons) {
             geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
             n1 = JSROOT.GEO.numGeometryFaces(geom1);
