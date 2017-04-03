@@ -1188,11 +1188,9 @@
             // keep full stack of nodes
             mesh.stack = entry.stack;
 
-            // specify rendering order, required for transparancy handling
-            if (obj3d.$jsroot_depth !== undefined)
-               mesh.renderOrder = this._clones.maxdepth - obj3d.$jsroot_depth;
-            else
-               mesh.renderOrder = this._clones.maxdepth - entry.stack.length;
+            // set initial render order, when camera moves, one could refine it
+            mesh.$jsroot_order = mesh.renderOrder =
+               this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),
@@ -1420,7 +1418,6 @@
       this._pointLight = new THREE.PointLight(0xefefef, 1);
       this._camera.add( this._pointLight );
       this._pointLight.position.set(10, 10, 10);
-      //*/
 
       // Default Settings
 
@@ -2474,6 +2471,90 @@
       this.completeDraw(true);
    }
 
+   JSROOT.TGeoPainter.prototype.SortMeshes = function(origin, raycast, arr, baseorder) {
+      // resort meshes using reycaster and camera position
+      // idea to identify meshes which are in front or behind
+
+
+      // first calculate distance to the camera
+      // it gives preliminary order of volumes
+
+      for (var i=0;i<arr.length;++i) {
+         var mesh = arr[i];
+
+         var center = mesh.$jsroot_center;
+         if (!center) {
+            var box3 = new THREE.Box3();
+            box3.expandByObject(mesh);
+            center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
+            mesh.$jsroot_center = center;
+         }
+         mesh.$jsroot_distance = origin.distanceTo(center);
+      }
+
+      arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
+
+      var resort = new Array(arr.length);
+
+      for (var i=0;i<arr.length;++i) {
+         arr[i].$jsroot_index = i;
+         resort[i] = arr[i];
+      }
+
+      for (var i=0;i<arr.length;++i) {
+         var mesh = arr[i];
+
+         var direction = mesh.$jsroot_center.clone().sub(origin).normalize();
+
+         raycast.set( origin, direction );
+
+         var intersects = raycast.intersectObjects(arr, false); // only plain array
+
+         // now push first object in intersects to the front
+         for (var k1=0;k1<intersects.length-1;++k1) {
+            var mesh1 = intersects[k1].object, besti = mesh1.$jsroot_index, bestk = k1;
+            for (var k2=k1+1;k2<intersects.length;++k2) {
+               var mesh2 = intersects[k2].object, i2 = mesh2.$jsroot_index;
+               if (i2 < besti) { besti = i2; bestk = k2; }
+            }
+            if (k1 !== bestk) {
+               var i2 = mesh1.$jsroot_index, i1 = besti;
+               for (var ii=i2;ii>i1;--ii) {
+                  resort[ii] = resort[ii-1];
+                  resort[ii].$jsroot_index = ii;
+               }
+               resort[i1] = mesh1; mesh1.$jsroot_index = i1;
+            }
+         }
+      }
+
+      for (var i=0;i<resort.length;++i) {
+         resort[i].renderOrder = baseorder - i;
+      }
+
+   }
+
+   JSROOT.TGeoPainter.prototype.TestCameraPosition = function() {
+
+      this._camera.updateMatrixWorld();
+      var origin = this._camera.position.clone();
+
+      var arr = [];
+
+      var raycast = new THREE.Raycaster();
+
+      this._toplevel.traverse( function (mesh) {
+         if (mesh.$jsroot_order === undefined) return;
+
+         if (mesh.$jsroot_order !== 2) return;
+
+         arr.push(mesh);
+      });
+
+
+      this.SortMeshes(origin, raycast, arr, 10000);
+   }
+
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {
       if (!this._renderer) {
          console.warn('renderer object not exists - check code');
@@ -2490,6 +2571,9 @@
 
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this._camera, this._toplevel);
+
+
+         this.TestCameraPosition();
 
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO) {
