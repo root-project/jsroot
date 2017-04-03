@@ -2475,6 +2475,10 @@
       // resort meshes using reycaster and camera position
       // idea to identify meshes which are in front or behind
 
+      if (arr.length>300) {
+         // too many of them, just set basic level and exit
+         for (var i=0;i<arr.length;++i) arr[i].renderOrder = baseorder;
+      }
 
       // first calculate distance to the camera
       // it gives preliminary order of volumes
@@ -2544,15 +2548,19 @@
       var raycast = new THREE.Raycaster();
 
       this._toplevel.traverse( function (mesh) {
-         if (mesh.$jsroot_order === undefined) return;
 
-         if (mesh.$jsroot_order !== 2) return;
+         var order = mesh.$jsroot_order;
 
-         arr.push(mesh);
+         if (order === undefined) return;
+
+         if (arr[order]===undefined) arr[order] = [];
+
+         arr[order].push(mesh);
       });
 
-
-      this.SortMeshes(origin, raycast, arr, 10000);
+      for (var k=0;k<arr.length;++k)
+         if (arr[k]!==undefined)
+            this.SortMeshes(origin, raycast, arr[k], k*10000);
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {
