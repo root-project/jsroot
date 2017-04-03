@@ -1963,7 +1963,7 @@
 
       var isany = false;
 
-      if (obj._typename === "TList") {
+      if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
          if (!obj.arr) return false;
          for (var n=0;n<obj.arr.length;++n) {
             var sobj = obj.arr[n];
@@ -3360,6 +3360,17 @@
       }
 
       if (!node._childs) node._childs = [];
+
+      if (!sub._name)
+         if (typeof node._name === 'string') {
+            sub._name = node._name;
+            if (sub._name.lastIndexOf("s")===sub._name.length-1)
+               sub._name = sub._name.substr(0, sub._name.length-1);
+            sub._name += "_" + node._childs.length;
+         } else {
+            sub._name = "item_" + node._childs.length;
+         }
+
       node._childs.push(sub);
 
       return sub;
@@ -3614,7 +3625,7 @@
       if (ismanager) {
          JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
          JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
-         JSROOT.GEO.createList(parent, obj.fTracks, "fTracks", "list of tracks");
+         JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
 
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          JSROOT.GEO.createItem(parent, obj.fMasterVolume);

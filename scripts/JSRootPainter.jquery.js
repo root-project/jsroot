@@ -334,7 +334,7 @@
       if ('_fullname' in hitem)
          element_title += "  fullname: " + hitem._fullname;
 
-      if (element_title.length === 0)
+      if (!element_title)
          element_title = element_name;
 
       d3a.attr('title', element_title)
@@ -836,7 +836,7 @@
 
       if (this.browser_visible) {
          var area = jmain.find(".jsroot_browser_area"),
-             off0 = jmain.offset(), off1 = area.offset(); 
+             off0 = jmain.offset(), off1 = area.offset();
          top = off1.top - off0.top + 7;
          left = off1.left - off0.left + area.innerWidth() - 27;
       }
