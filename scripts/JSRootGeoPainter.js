@@ -2490,14 +2490,18 @@
       for (var i=0;i<arr.length;++i) {
          var mesh = arr[i];
 
-         var center = mesh.$jsroot_center;
+         var center = mesh.$jsroot_center,
+             box3 = mesh.$jsroot_box3;
+
          if (!center) {
-            var box3 = new THREE.Box3();
+            box3 = new THREE.Box3();
             box3.expandByObject(mesh);
             center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
             mesh.$jsroot_center = center;
+            mesh.$jsroot_box3 = box3;
          }
-         mesh.$jsroot_distance = origin.distanceTo(center);
+         mesh.$jsroot_distance = Math.min(origin.distanceTo(center), origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+         // mesh.$jsroot_distance = origin.distanceTo(center);
       }
 
       arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
@@ -2512,17 +2516,34 @@
       for (var i=0;i<arr.length;++i) {
          var mesh = arr[i];
 
+         //var name = this._clones.ResolveStack(mesh.stack).name;
+         //var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
+
          var direction = mesh.$jsroot_center.clone().sub(origin).normalize();
 
          raycast.set( origin, direction );
 
          var intersects = raycast.intersectObjects(arr, false); // only plain array
 
+         var unique = [];
+
+         for (var k1=0;k1<intersects.length;++k1)
+            if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
+
+         intersects = unique;
+
+         //if (debug) {
+         //  console.log(name, 'intersects', intersects.length);
+         //   for (var k1=0;k1<intersects.length;++k1)
+         //      console.log('    ', k1, '  ', this._clones.ResolveStack(intersects[k1].stack).name);
+         //}
+
+
          // now push first object in intersects to the front
          for (var k1=0;k1<intersects.length-1;++k1) {
-            var mesh1 = intersects[k1].object, besti = mesh1.$jsroot_index, bestk = k1;
+            var mesh1 = intersects[k1], besti = mesh1.$jsroot_index, bestk = k1;
             for (var k2=k1+1;k2<intersects.length;++k2) {
-               var mesh2 = intersects[k2].object, i2 = mesh2.$jsroot_index;
+               var mesh2 = intersects[k2], i2 = mesh2.$jsroot_index;
                if (i2 < besti) { besti = i2; bestk = k2; }
             }
             if (k1 !== bestk) {
@@ -2534,9 +2555,27 @@
                resort[i1] = mesh1; mesh1.$jsroot_index = i1;
             }
          }
+
+
+         //if (debug) {
+         //   console.log('STATE AFTER RESORT');
+         //   for (var i=0;i<resort.length;++i) {
+         //      var name = this._clones.ResolveStack(resort[i].stack).name;
+         //      if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+         //        console.log('   ', i, name);
+         //   }
+         // }
+
       }
 
+      //console.log('order', baseorder);
+
       for (var i=0;i<resort.length;++i) {
+
+         //var name = this._clones.ResolveStack(resort[i].stack).name;
+         //if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+         //  console.log(i,name);
+
          resort[i].renderOrder = baseorder - i;
       }
 
