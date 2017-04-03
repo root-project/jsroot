@@ -2476,7 +2476,9 @@
       // resort meshes using reycaster and camera position
       // idea to identify meshes which are in front or behind
 
-      // console.log('SORT', baseorder, arr.length);
+      var mydebug = false;
+
+      if (mydebug) console.log('SORT', baseorder, arr.length);
 
       if (arr.length>300) {
          // too many of them, just set basic level and exit
@@ -2500,7 +2502,27 @@
             mesh.$jsroot_center = center;
             mesh.$jsroot_box3 = box3;
          }
-         mesh.$jsroot_distance = Math.min(origin.distanceTo(center), origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+
+         var dist = Math.min(origin.distanceTo(center), origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+
+         var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
+         dist = Math.min(dist, origin.distanceTo(pnt));
+         pnt.set(box3.min.x, box3.max.y, box3.min.z)
+         dist = Math.min(dist, origin.distanceTo(pnt));
+         pnt.set(box3.max.x, box3.min.y, box3.min.z)
+         dist = Math.min(dist, origin.distanceTo(pnt));
+
+         pnt.set(box3.max.x, box3.max.y, box3.min.z)
+         dist = Math.min(dist, origin.distanceTo(pnt));
+
+         pnt.set(box3.max.x, box3.min.y, box3.max.z)
+         dist = Math.min(dist, origin.distanceTo(pnt));
+
+         pnt.set(box3.min.x, box3.max.y, box3.max.z)
+         dist = Math.min(dist, origin.distanceTo(pnt));
+
+         mesh.$jsroot_distance = dist;
+
          // mesh.$jsroot_distance = origin.distanceTo(center);
       }
 
@@ -2513,11 +2535,12 @@
          resort[i] = arr[i];
       }
 
-      for (var i=0;i<arr.length;++i) {
+      // if (false)
+      for (var i=arr.length-1;i>=0;--i) {
          var mesh = arr[i];
 
-         //var name = this._clones.ResolveStack(mesh.stack).name;
-         //var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
+         var name = this._clones.ResolveStack(mesh.stack).name;
+         var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
 
          var direction = mesh.$jsroot_center.clone().sub(origin).normalize();
 
@@ -2532,51 +2555,46 @@
 
          intersects = unique;
 
-         //if (debug) {
-         //  console.log(name, 'intersects', intersects.length);
-         //   for (var k1=0;k1<intersects.length;++k1)
-         //      console.log('    ', k1, '  ', this._clones.ResolveStack(intersects[k1].stack).name);
-         //}
+         if (debug && mydebug) {
+            console.log(name, 'intersects', intersects.length);
+            for (var k1=0;k1<intersects.length;++k1)
+               console.log('    ', intersects[k1].$jsroot_index, '  ', this._clones.ResolveStack(intersects[k1].stack).name);
+         }
 
 
          // now push first object in intersects to the front
          for (var k1=0;k1<intersects.length-1;++k1) {
-            var mesh1 = intersects[k1], besti = mesh1.$jsroot_index, bestk = k1;
-            for (var k2=k1+1;k2<intersects.length;++k2) {
-               var mesh2 = intersects[k2], i2 = mesh2.$jsroot_index;
-               if (i2 < besti) { besti = i2; bestk = k2; }
+            var mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+                i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
+            if (i1<i2) continue;
+            for (var ii=i2;ii<i1;++ii) {
+               resort[ii] = resort[ii+1];
+               resort[ii].$jsroot_index = ii;
             }
-            if (k1 !== bestk) {
-               var i2 = mesh1.$jsroot_index, i1 = besti;
-               for (var ii=i2;ii>i1;--ii) {
-                  resort[ii] = resort[ii-1];
-                  resort[ii].$jsroot_index = ii;
-               }
-               resort[i1] = mesh1; mesh1.$jsroot_index = i1;
-            }
+            resort[i1] = mesh2;
+            mesh2.$jsroot_index = i1;
          }
 
 
-         //if (debug) {
-         //   console.log('STATE AFTER RESORT');
-         //   for (var i=0;i<resort.length;++i) {
-         //      var name = this._clones.ResolveStack(resort[i].stack).name;
-         //      if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-         //        console.log('   ', i, name);
-         //   }
-         // }
+         if (debug && mydebug) {
+            console.log('STATE AFTER INTERSECT');
+            for (var ii=0;ii<resort.length;++ii) {
+               var name = this._clones.ResolveStack(resort[ii].stack).name;
+               if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+                 console.log('   ', ii, name);
+            }
+         }
 
       }
 
-      //console.log('order', baseorder);
-
       for (var i=0;i<resort.length;++i) {
 
-         //var name = this._clones.ResolveStack(resort[i].stack).name;
-         //if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-         //  console.log(i,name);
-
          resort[i].renderOrder = baseorder - i;
+
+         if (!mydebug) continue;
+         var name = this._clones.ResolveStack(resort[i].stack).name;
+         if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+           console.log(i,name);
       }
 
    }
