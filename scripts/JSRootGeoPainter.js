@@ -1582,7 +1582,7 @@
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
 
-      this._overall_size = 2 * Math.max( sizex, sizey, sizez);
+      this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
       this._scene.fog.near = this._overall_size * 2;
       this._camera.near = this._overall_size / 350;
@@ -2475,9 +2475,12 @@
       // resort meshes using reycaster and camera position
       // idea to identify meshes which are in front or behind
 
+      // console.log('SORT', baseorder, arr.length);
+
       if (arr.length>300) {
          // too many of them, just set basic level and exit
          for (var i=0;i<arr.length;++i) arr[i].renderOrder = baseorder;
+         return;
       }
 
       // first calculate distance to the camera
@@ -2543,6 +2546,14 @@
       this._camera.updateMatrixWorld();
       var origin = this._camera.position.clone();
 
+      if (this._last_camera_position) {
+         // if camera position does not changed a lot, ignore such change
+         var dist = this._last_camera_position.distanceTo(origin);
+         if (dist < (this._overall_size || 1000)/1e4) return;
+      }
+
+      this._last_camera_position = origin; // remember current camera position
+
       var arr = [];
 
       var raycast = new THREE.Raycaster();
@@ -2553,14 +2564,16 @@
 
          if (order === undefined) return;
 
+         if (!mesh.material || !mesh.material.transparent) return;
+
          if (arr[order]===undefined) arr[order] = [];
 
          arr[order].push(mesh);
       });
 
-      for (var k=0;k<arr.length;++k)
-         if (arr[k]!==undefined)
-            this.SortMeshes(origin, raycast, arr[k], k*10000);
+      for (var order=0;order<arr.length;++order)
+         if (arr[order]!==undefined)
+            this.SortMeshes(origin, raycast, arr[order], order*10000);
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {
