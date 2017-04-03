@@ -2028,19 +2028,20 @@
 
       if (JSROOT.browser.isWin) track_width = 1; // not supported on windows
 
-      var buf = new Float32Array((track.fNpoints-1)*6),
+      var npoints = Math.round(track.fNpoints/4),
+          buf = new Float32Array((npoints-1)*6),
           pos = 0, projv = this.options.projectPos,
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
           projz = (this.options.project === "z");
 
-      for (var k=0;k<track.fNpoints-1;++k) {
-         buf[pos]   = projx ? projv : track.fPoints[k*3];
-         buf[pos+1] = projy ? projv : track.fPoints[k*3+1];
-         buf[pos+2] = projz ? projv : track.fPoints[k*3+2];
-         buf[pos+3] = projx ? projv : track.fPoints[k*3+3];
-         buf[pos+4] = projy ? projv : track.fPoints[k*3+4];
-         buf[pos+5] = projz ? projv : track.fPoints[k*3+5];
+      for (var k=0;k<npoints-1;++k) {
+         buf[pos]   = projx ? projv : track.fPoints[k*4];
+         buf[pos+1] = projy ? projv : track.fPoints[k*4+1];
+         buf[pos+2] = projz ? projv : track.fPoints[k*4+2];
+         buf[pos+3] = projx ? projv : track.fPoints[k*4+4];
+         buf[pos+4] = projy ? projv : track.fPoints[k*4+5];
+         buf[pos+5] = projz ? projv : track.fPoints[k*4+6];
          pos+=6;
       }
 
