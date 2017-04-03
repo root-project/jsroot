@@ -2564,7 +2564,7 @@
 
          if (order === undefined) return;
 
-         if (!mesh.material || !mesh.material.transparent) return;
+         // if (!mesh.material || !mesh.material.transparent) return;
 
          if (arr[order]===undefined) arr[order] = [];
 
