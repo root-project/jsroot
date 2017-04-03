@@ -120,15 +120,19 @@
     * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
     */
 
-   JSROOT.TGeoPainter = function( obj, is_manager ) {
+   JSROOT.TGeoPainter = function( obj ) {
+
+      if (obj && (obj._typename === "TGeoManager")) {
+         this.geo_manager = obj;
+         obj = obj.fMasterVolume;
+      }
+
       if (obj && (obj._typename.indexOf('TGeoVolume') === 0))
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       JSROOT.TObjectPainter.call(this, obj);
 
       this.no_default_title = true; // do not set title to main DIV
-
-      this.is_geo_manager = is_manager; // only in manager name of top volume used in the item name
 
       this.Cleanup(true);
    }
@@ -196,11 +200,15 @@
       this._toolbar = new JSROOT.Toolbar( this.select_main(), [buttonList], (bkgr.r + bkgr.g + bkgr.b) < 1);
    }
 
+   JSROOT.TGeoPainter.prototype.GetGeometry = function() {
+      return this.GetObject();
+   }
+
    JSROOT.TGeoPainter.prototype.ModifyVisisbility = function(name, sign) {
-      if (JSROOT.GEO.NodeKind(this.GetObject()) !== 0) return;
+      if (JSROOT.GEO.NodeKind(this.GetGeometry()) !== 0) return;
 
       if (name == "")
-         return JSROOT.GEO.SetBit(this.GetObject().fVolume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
+         return JSROOT.GEO.SetBit(this.GetGeometry().fVolume, JSROOT.GEO.BITS.kVisThis, (sign === "+"));
 
       var regexp, exact = false;
 
@@ -227,7 +235,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, select_in_view: false,
-                   project: '', is_main: false,
+                   project: '', is_main: false, tracks: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
                    script_name: "", transparancy: 1, autoRotate: false, background: '#FFFFFF' };
 
@@ -266,6 +274,8 @@
       var d = new JSROOT.DrawOptions(opt);
 
       if (d.check("MAIN")) res.is_main = true;
+
+      if (d.check("TRACKS")) res.tracks = true;
 
       if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
 
@@ -867,6 +877,10 @@
             if (obj.geo_object) info = obj.geo_name; else
             if (obj.stack) info = painter.GetStackFullName(obj.stack);
             if (info===null) continue;
+
+            if (info.indexOf("<prnt>")==0)
+               info = painter.GetItemName() + info.substr(6);
+
             names.push(info);
 
             if (!active_mesh) {
@@ -2187,9 +2201,9 @@
       var first_level = false, res = null;
 
       if (!prnt) {
-         prnt = this.GetObject();
+         prnt = this.GetGeometry();
          if (!prnt && (JSROOT.GEO.NodeKind(prnt)!==0)) return null;
-         itemname = this.is_geo_manager ? prnt.fName : "";
+         itemname = this.geo_manager ? prnt.fName : "";
          first_level = true;
          volumes = [];
       } else {
@@ -2262,9 +2276,9 @@
 
    JSROOT.TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
-      var painter = this, draw_obj = this.GetObject(), name_prefix = "";
+      var painter = this, draw_obj = this.GetGeometry(), name_prefix = "";
 
-      if (this.is_geo_manager) name_prefix = draw_obj.fName;
+      if (this.geo_manager) name_prefix = draw_obj.fName;
 
       if (!script_name || (script_name.length<3) || (JSROOT.GEO.NodeKind(draw_obj)!==0))
          return JSROOT.CallBack(call_back, draw_obj, name_prefix);
@@ -2521,9 +2535,10 @@
          pnt.set(box3.min.x, box3.max.y, box3.max.z)
          dist = Math.min(dist, origin.distanceTo(pnt));
 
+
          mesh.$jsroot_distance = dist;
 
-         // mesh.$jsroot_distance = origin.distanceTo(center);
+//         mesh.$jsroot_distance = origin.distanceTo(center);
       }
 
       arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
@@ -2550,8 +2565,10 @@
 
          var unique = [];
 
-         for (var k1=0;k1<intersects.length;++k1)
+         for (var k1=0;k1<intersects.length;++k1) {
             if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
+            // if (intersects[k1].object === mesh) break; // trace until object itself
+         }
 
          intersects = unique;
 
@@ -2957,6 +2974,8 @@
             this.enableZ = this.options.clipz;
             this.updateClipping(true); // only set clip panels, do not render
          }
+         if (this.options.tracks && this.geo_manager && this.geo_manager.fTracks)
+            this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
       if (this.options.transparancy!==1)
@@ -3034,7 +3053,7 @@
 
          delete this._animating;
 
-         var obj = this.GetObject();
+         var obj = this.GetGeometry();
          if (obj && this.options.is_main) {
             if (obj.$geo_painter===this) delete obj.$geo_painter; else
             if (obj.fVolume && obj.fVolume.$geo_painter===this) delete obj.fVolume.$geo_painter;
@@ -3187,9 +3206,8 @@
          shape = obj.fShape;
       } else
       if (obj._typename === 'TGeoManager') {
-         obj = obj.fMasterVolume;
-         JSROOT.GEO.SetBit(obj, JSROOT.GEO.BITS.kVisThis, false);
-         shape = obj.fShape;
+         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
+         shape = obj.fMasterVolume.fShape;
          is_manager = true;
       } else
       if ('fVolume' in obj) {

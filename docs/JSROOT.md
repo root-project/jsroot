@@ -295,6 +295,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - transpXY - set global transparency value (XY is number between 1 and 99)
    - zoomFACTOR - set initial zoom factor (FACTOR is integer value from 1 to 10000, default is 100)
    - rotate - enable automatic rotation of the geometry
+   - tracks - show tracks from TGeoManager
 
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:
