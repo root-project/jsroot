@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 24/03/2017";
+   JSROOT.version = "dev 4/04/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -988,6 +988,7 @@
            mainfiles += "###threejs/build/three.min.js;" +
                         "###threejs/examples/js/renderers/Projector.js;" +
                         "###threejs/examples/js/renderers/CanvasRenderer.js;" +
+                        "###threejs/examples/js/renderers/SVGRenderer.js;" +
                         "###threejs/examples/js/controls/OrbitControls.js;" +
                         "###threejs/examples/js/controls/TransformControls.js;" +
                         "###threejs/examples/js/shaders/CopyShader.js;" +
