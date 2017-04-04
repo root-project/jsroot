@@ -584,7 +584,7 @@
          return;
       }
 
-      this.usesvg = false; // only for debug, interactivity does not work
+      this.usesvg = false; // only for debug, interactivity does not work, can be used later for batch image production
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
@@ -2637,6 +2637,15 @@
    }
 
    JSROOT.Painter.Render3D = function(tmout) {
+      if (tmout === -1111) {
+         // special handling for SVG renderer
+
+         var rrr = new THREE.SVGRenderer({ antialias : true, alpha: true });
+         rrr.setSize(this.scene_width, this.scene_height);
+         rrr.render(this.scene, this.camera);
+         return rrr.domElement;
+      }
+
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if (tmout <= 0) {

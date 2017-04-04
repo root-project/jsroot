@@ -1540,7 +1540,7 @@
    JSROOT.TObjectPainter.prototype.svg_pad = function(pad_name) {
       var c = this.svg_canvas();
       if (pad_name === undefined) pad_name = this.pad_name;
-      if ((pad_name.length > 0) && !c.empty())
+      if (pad_name && !c.empty())
          c = c.select(".subpads_layer").select("[pad=" + pad_name + ']');
       return c;
    }
@@ -1658,7 +1658,7 @@
       // 0 - no embedding, 3D drawing take full size of canvas
       // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
       // 2 - normall embedding via ForeginObject, works only with Firefox
-      // 3 - normal embedding of SVG canvas, should work for all browsers
+      // 3 - normal embedding of SVG canvas, should work for all browsers (only for debug purposes)
 
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
@@ -1667,7 +1667,8 @@
    }
 
    JSROOT.TObjectPainter.prototype.access_3d_kind = function(new_value) {
-      var svg = this.svg_pad();
+
+      var svg = this.svg_pad(this.this_pad_name);
       if (svg.empty()) return -1;
 
       // returns kind of currently created 3d canvas
@@ -1681,8 +1682,8 @@
 
       if (can3d === undefined) can3d = this.embed_3d();
 
-      var pad = this.svg_pad(),
-          clname = "draw3d_" + (this.pad_name || 'canvas');
+      var pad = this.svg_pad(this.this_pad_name),
+          clname = "draw3d_" + (this.this_pad_name || this.pad_name || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
@@ -1698,9 +1699,9 @@
       }
 
       var elem = pad;
-      if (can3d == 0) elem = this.svg_canvas();
+      if (can3d === 0) elem = this.svg_canvas();
 
-      var size = { x: 0, y: 0, width: 100, height:100, clname: clname, can3d: can3d };
+      var size = { x: 0, y: 0, width: 100, height: 100, clname: clname, can3d: can3d };
 
       if (this.frame_painter()!==null) {
          elem = this.svg_frame();
@@ -1718,8 +1719,8 @@
          size.height = Math.round(size.height*(1- JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
       }
 
-      var pw = this.pad_width(), x2 = pw - size.x -size.width,
-          ph = this.pad_height(), y2 = ph - size.y -size.height;
+      var pw = this.pad_width(this.this_pad_name), x2 = pw - size.x - size.width,
+          ph = this.pad_height(this.this_pad_name), y2 = ph - size.y - size.height;
 
       if ((x2 >= 0) && (y2 >= 0)) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
@@ -1730,7 +1731,7 @@
       }
 
       if (can3d === 1)
-         this.CalcAbsolutePosition(this.svg_pad(), size);
+         this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), size);
 
       return size;
    }
@@ -1745,11 +1746,11 @@
          d3.select(this.svg_canvas().node().nextSibling).remove(); // remove html5 canvas
          this.svg_canvas().style('display', null); // show SVG canvas
       } else {
-         if (this.svg_pad().empty()) return;
+         if (this.svg_pad(this.this_pad_name).empty()) return;
 
          this.apply_3d_size(size).remove();
 
-         this.svg_frame().style('display', null);
+         this.svg_frame().style('display', null);  // clear display property
       }
    }
 
@@ -1776,7 +1777,7 @@
 
          this.svg_canvas().node().parentNode.appendChild(canv); // add directly
       } else {
-         if (this.svg_pad().empty()) return;
+         if (this.svg_pad(this.this_pad_name).empty()) return;
 
          // first hide normal frame
          this.svg_frame().style('display', 'none');
@@ -1801,6 +1802,7 @@
          if (onlyget) return elem;
 
          if (size.can3d === 3) {
+            // this is SVG mode, used only for debugging
 
             if (elem.empty())
                elem = layer.append("g").attr("class", size.clname);
@@ -1861,10 +1863,10 @@
 
 
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
-   JSROOT.TObjectPainter.prototype.main_painter = function(not_store) {
+   JSROOT.TObjectPainter.prototype.main_painter = function(not_store, pad_name) {
       var res = this.main;
       if (!res) {
-         var svg_p = this.svg_pad();
+         var svg_p = this.svg_pad(pad_name);
          if (svg_p.empty()) {
             res = this.AccessTopPainter();
          } else {
@@ -4122,7 +4124,7 @@
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.TPadPainter.prototype.ForEachPainterInPad = function(userfunc) {
+   JSROOT.TPadPainter.prototype.ForEachPainterInPad = function(userfunc, onlypadpainters) {
 
       userfunc(this);
 
@@ -4130,9 +4132,9 @@
          var sub =  this.painters[k];
 
          if (typeof sub.ForEachPainterInPad === 'function')
-            sub.ForEachPainterInPad(userfunc);
+            sub.ForEachPainterInPad(userfunc, onlypadpainters);
          else
-            userfunc(sub);
+         if (!onlypadpainters) userfunc(sub);
       }
    }
 
@@ -4777,29 +4779,60 @@
 
       if (elem.empty()) return;
 
-      var main = this.main_painter(),
-          can3d = this.access_3d_kind();
+      var painter = full_canvas ? this.pad_painter() : this;
 
-      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
-         var canvas = main.renderer.domElement;
-         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immedaitely
-         var dataUrl = canvas.toDataURL("image/png");
-         dataUrl.replace("image/png", "image/octet-stream");
-         var link = document.createElement('a');
-         if (typeof link.download === 'string') {
-            document.body.appendChild(link); //Firefox requires the link to be in the body
-            link.download = filename;
-            link.href = dataUrl;
-            link.click();
-            document.body.removeChild(link); //remove the link when done
-         }
-      } else {
-         JSROOT.AssertPrerequisites("savepng", function() {
-            elem.selectAll(".btns_layer").style("display","none");
-            saveSvgAsPng(elem.node(), filename);
-            elem.selectAll(".btns_layer").style("display","");
-         });
-      }
+      document.body.style.cursor = 'wait';
+
+      painter.ForEachPainterInPad(function(pp) {
+
+         var main = pp.main_painter(true, pp.this_pad_name);
+         if (!main || (typeof main.Render3D !== 'function')) return;
+
+         var can3d = main.access_3d_kind();
+         if ((can3d !== 1) && (can3d !== 2)) return;
+
+         var sz = main.size_for_3d(3); // get size for SVG canvas
+
+         var svg3d = main.Render3D(-1111); // render SVG
+
+         //var rrr = new THREE.SVGRenderer({ antialias : true, alpha: true });
+         //rrr.setSize(sz.width, sz.height);
+         //rrr.render(main.scene, main.camera);
+
+         var svg = d3.select(svg3d);
+
+         var layer = main.svg_layer("special_layer");
+         group = layer.append("g")
+                      .attr("class","temp_saveaspng")
+                      .attr("transform", "translate(" + sz.x + "," + sz.y + ")");
+         group.node().appendChild(svg3d);
+      }, true);
+
+//      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
+           // this was saving of image buffer from 3D render
+//         var canvas = main.renderer.domElement;
+//         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immedaitely
+//         var dataUrl = canvas.toDataURL("image/png");
+//         dataUrl.replace("image/png", "image/octet-stream");
+//         var link = document.createElement('a');
+//         if (typeof link.download === 'string') {
+//            document.body.appendChild(link); //Firefox requires the link to be in the body
+//            link.download = filename;
+//            link.href = dataUrl;
+//            link.click();
+//            document.body.removeChild(link); //remove the link when done
+//         }
+//      } else
+      JSROOT.AssertPrerequisites("savepng", function() {
+
+         elem.selectAll(".btns_layer").style("display","none");
+         saveSvgAsPng(elem.node(), filename);
+         elem.selectAll(".btns_layer").style("display","");
+
+         elem.selectAll(".temp_saveaspng").remove();
+
+         document.body.style.cursor = 'auto';
+      });
    }
 
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {

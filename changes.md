@@ -24,6 +24,8 @@
 10. Support also TPolyMarker3D class in geo painter.
 11. Implement TGeoScaledShape.
 12. Limit complexity of composite shape. If it has too many components, only most left is used.
+13. When produce canvas or pad screenshot, render 3D objects with SVGRenderer.
+    Allows to combine 2D and 3D objects in same PNG image
 
 
 ## Changes in 5.1.0
