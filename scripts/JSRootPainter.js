@@ -1658,6 +1658,7 @@
       // 0 - no embedding, 3D drawing take full size of canvas
       // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
       // 2 - normall embedding via ForeginObject, works only with Firefox
+      // 3 - normal embedding of SVG canvas, should work for all browsers
 
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
@@ -1754,7 +1755,7 @@
 
    JSROOT.TObjectPainter.prototype.add_3d_canvas = function(size, canv) {
 
-      if ((canv == null) || (size.can3d < -1)) return;
+      if (!canv || (size.can3d < -1)) return;
 
       if (size.can3d === -1) {
          // case when 3D object drawn without canvas
@@ -1799,15 +1800,25 @@
          elem = layer.select("." + size.clname);
          if (onlyget) return elem;
 
-         if (elem.empty())
-            elem = layer.append("foreignObject").attr("class", size.clname);
+         if (size.can3d === 3) {
 
-         elem.attr('x', size.x)
-             .attr('y', size.y)
-             .attr('width', size.width)
-             .attr('height', size.height)
-             .attr('viewBox', "0 0 " + size.width + " " + size.height)
-             .attr('preserveAspectRatio','xMidYMid');
+            if (elem.empty())
+               elem = layer.append("g").attr("class", size.clname);
+
+            elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
+
+         } else {
+
+            if (elem.empty())
+               elem = layer.append("foreignObject").attr("class", size.clname);
+
+            elem.attr('x', size.x)
+                .attr('y', size.y)
+                .attr('width', size.width)
+                .attr('height', size.height)
+                .attr('viewBox', "0 0 " + size.width + " " + size.height)
+                .attr('preserveAspectRatio','xMidYMid');
+         }
 
       } else {
          var prnt = this.svg_canvas().node().parentNode;

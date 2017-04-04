@@ -584,7 +584,9 @@
          return;
       }
 
-      var sz = this.size_for_3d();
+      this.usesvg = false; // only for debug, interactivity does not work
+
+      var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
@@ -615,8 +617,12 @@
 
       this.webgl = JSROOT.Painter.TestWebGL();
 
-      this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                   new THREE.CanvasRenderer({ antialias : true, alpha: true });
+      if (this.usesvg)
+         this.renderer = new THREE.SVGRenderer({ antialias : true, alpha: true });
+      else
+         this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                                      new THREE.CanvasRenderer({ antialias : true, alpha: true });
+
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
