@@ -237,7 +237,8 @@
                    highlight: false, select_in_view: false,
                    project: '', is_main: false, tracks: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
-                   script_name: "", transparancy: 1, autoRotate: false, background: '#FFFFFF' };
+                   script_name: "", transparancy: 1, autoRotate: false, background: '#FFFFFF',
+                   depthMethod: "box" };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -276,6 +277,11 @@
       if (d.check("MAIN")) res.is_main = true;
 
       if (d.check("TRACKS")) res.tracks = true;
+
+      if (d.check("DEPTHRAY") || d.check("DRAY")) res.depthMethod = "ray";
+      if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
+      if (d.check("DEPTHPNT") || d.check("DPNT")) res.depthMethod = "pnt";
+      if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "";
 
       if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
 
@@ -432,7 +438,7 @@
       menu.addchk(this.options.highlight, "Highlight volumes", function() {
          this.options.highlight = !this.options.highlight;
       });
-      menu.addchk(this.options.wireframe, "Reset camera position", function() {
+      menu.add("Reset camera position", function() {
          this.focusCamera();
          this.Render3D();
       });
@@ -1202,9 +1208,12 @@
             // keep full stack of nodes
             mesh.stack = entry.stack;
 
-            // set initial render order, when camera moves, one could refine it
-            mesh.$jsroot_order = mesh.renderOrder =
-               this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
+            // keep hierarchy level
+            mesh.$jsroot_order = obj3d.$jsroot_depth;
+
+            // set initial render order, when camera moves, one must refine it
+            //mesh.$jsroot_order = mesh.renderOrder =
+            //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),
@@ -1548,6 +1557,7 @@
             obj.material.needsUpdate = true;
         }
       });
+
       this.bothSides = both_sides;
    }
 
@@ -2486,136 +2496,6 @@
       this.completeDraw(true);
    }
 
-   JSROOT.TGeoPainter.prototype.SortMeshes = function(origin, raycast, arr, baseorder) {
-      // resort meshes using reycaster and camera position
-      // idea to identify meshes which are in front or behind
-
-      var mydebug = false;
-
-      if (mydebug) console.log('SORT', baseorder, arr.length);
-
-      if (arr.length>300) {
-         // too many of them, just set basic level and exit
-         for (var i=0;i<arr.length;++i) arr[i].renderOrder = baseorder;
-         return;
-      }
-
-      // first calculate distance to the camera
-      // it gives preliminary order of volumes
-
-      for (var i=0;i<arr.length;++i) {
-         var mesh = arr[i];
-
-         var center = mesh.$jsroot_center,
-             box3 = mesh.$jsroot_box3;
-
-         if (!center) {
-            box3 = new THREE.Box3();
-            box3.expandByObject(mesh);
-            center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
-            mesh.$jsroot_center = center;
-            mesh.$jsroot_box3 = box3;
-         }
-
-         var dist = Math.min(origin.distanceTo(center), origin.distanceTo(box3.min), origin.distanceTo(box3.max));
-
-         var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
-         dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.min.x, box3.max.y, box3.min.z)
-         dist = Math.min(dist, origin.distanceTo(pnt));
-         pnt.set(box3.max.x, box3.min.y, box3.min.z)
-         dist = Math.min(dist, origin.distanceTo(pnt));
-
-         pnt.set(box3.max.x, box3.max.y, box3.min.z)
-         dist = Math.min(dist, origin.distanceTo(pnt));
-
-         pnt.set(box3.max.x, box3.min.y, box3.max.z)
-         dist = Math.min(dist, origin.distanceTo(pnt));
-
-         pnt.set(box3.min.x, box3.max.y, box3.max.z)
-         dist = Math.min(dist, origin.distanceTo(pnt));
-
-
-         mesh.$jsroot_distance = dist;
-
-//         mesh.$jsroot_distance = origin.distanceTo(center);
-      }
-
-      arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
-
-      var resort = new Array(arr.length);
-
-      for (var i=0;i<arr.length;++i) {
-         arr[i].$jsroot_index = i;
-         resort[i] = arr[i];
-      }
-
-      // if (false)
-      for (var i=arr.length-1;i>=0;--i) {
-         var mesh = arr[i];
-
-         var name = this._clones.ResolveStack(mesh.stack).name;
-         var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
-
-         var direction = mesh.$jsroot_center.clone().sub(origin).normalize();
-
-         raycast.set( origin, direction );
-
-         var intersects = raycast.intersectObjects(arr, false); // only plain array
-
-         var unique = [];
-
-         for (var k1=0;k1<intersects.length;++k1) {
-            if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
-            // if (intersects[k1].object === mesh) break; // trace until object itself
-         }
-
-         intersects = unique;
-
-         if (debug && mydebug) {
-            console.log(name, 'intersects', intersects.length);
-            for (var k1=0;k1<intersects.length;++k1)
-               console.log('    ', intersects[k1].$jsroot_index, '  ', this._clones.ResolveStack(intersects[k1].stack).name);
-         }
-
-
-         // now push first object in intersects to the front
-         for (var k1=0;k1<intersects.length-1;++k1) {
-            var mesh1 = intersects[k1], mesh2 = intersects[k1+1],
-                i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
-            if (i1<i2) continue;
-            for (var ii=i2;ii<i1;++ii) {
-               resort[ii] = resort[ii+1];
-               resort[ii].$jsroot_index = ii;
-            }
-            resort[i1] = mesh2;
-            mesh2.$jsroot_index = i1;
-         }
-
-
-         if (debug && mydebug) {
-            console.log('STATE AFTER INTERSECT');
-            for (var ii=0;ii<resort.length;++ii) {
-               var name = this._clones.ResolveStack(resort[ii].stack).name;
-               if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-                 console.log('   ', ii, name);
-            }
-         }
-
-      }
-
-      for (var i=0;i<resort.length;++i) {
-
-         resort[i].renderOrder = baseorder - i;
-
-         if (!mydebug) continue;
-         var name = this._clones.ResolveStack(resort[i].stack).name;
-         if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-           console.log(i,name);
-      }
-
-   }
-
    JSROOT.TGeoPainter.prototype.TestCameraPosition = function() {
 
       this._camera.updateMatrixWorld();
@@ -2629,26 +2509,7 @@
 
       this._last_camera_position = origin; // remember current camera position
 
-      var arr = [];
-
-      var raycast = new THREE.Raycaster();
-
-      this._toplevel.traverse( function (mesh) {
-
-         var order = mesh.$jsroot_order;
-
-         if (order === undefined) return;
-
-         // if (!mesh.material || !mesh.material.transparent) return;
-
-         if (arr[order]===undefined) arr[order] = [];
-
-         arr[order].push(mesh);
-      });
-
-      for (var order=0;order<arr.length;++order)
-         if (arr[order]!==undefined)
-            this.SortMeshes(origin, raycast, arr[order], order*10000);
+      JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
    }
 
    JSROOT.TGeoPainter.prototype.Render3D = function(tmout, measure) {

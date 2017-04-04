@@ -296,6 +296,10 @@ Following draw options could be specified (separated by semicolon or ';'):
    - zoomFACTOR - set initial zoom factor (FACTOR is integer value from 1 to 10000, default is 100)
    - rotate - enable automatic rotation of the geometry
    - tracks - show tracks from TGeoManager
+   - depthray - calculate rendering order using raytracing (extensive calculations)
+   - depthbox - use distance to nearest point from bounding box for rendering order (default)
+   - depthpnt - use distance to shape center as rendering order
+   - depthdflt - let three.js to calculate rendering order
 
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:

@@ -2809,6 +2809,215 @@
       return mesh;
    }
 
+
+   JSROOT.GEO.produceRenderOrder = function(toplevel, origin, method, clones) {
+      // function scans throug hierarchy of objects and try to set renderOrder
+      // algorithm is not perfect, but better then nothing
+
+      var raycast = new THREE.Raycaster();
+
+      function traverse(obj, lvl, arr) {
+         // traverse hierarchy and extract all childs of given level
+         // if (obj.$jsroot_depth===undefined) return;
+
+         if (!obj.children) return;
+
+         for (var k=0;k<obj.children.length;++k) {
+            var chld = obj.children[k];
+            if (chld.$jsroot_order === lvl) arr.push(chld); else
+            if ((obj.$jsroot_depth===undefined) || (obj.$jsroot_depth < lvl)) traverse(chld, lvl, arr);
+         }
+      }
+
+      function sort(arr, minorder, maxorder) {
+         // resort meshes using reycaster and camera position
+         // idea to identify meshes which are in front or behind
+
+         var mydebug = false; // (clones!==null);
+
+         if (mydebug) console.log('SORT', minorder, maxorder, arr.length);
+
+         if (arr.length>300) {
+            // too many of them, just set basic level and exit
+            for (var i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
+            return false;
+         }
+
+         // first calculate distance to the camera
+         // it gives preliminary order of volumes
+
+         for (var i=0;i<arr.length;++i) {
+            var mesh = arr[i];
+
+            var center = mesh.$jsroot_center,
+                box3 = mesh.$jsroot_box3;
+
+            if (!center) {
+               box3 = new THREE.Box3();
+               box3.expandByObject(mesh);
+               center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
+               mesh.$jsroot_center = center;
+               mesh.$jsroot_box3 = box3;
+            }
+
+            var dist = origin.distanceTo(center);
+
+            if (method !== "pnt") {
+               dist = Math.min(dist, origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+
+               var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
+               dist = Math.min(dist, origin.distanceTo(pnt));
+               pnt.set(box3.min.x, box3.max.y, box3.min.z)
+               dist = Math.min(dist, origin.distanceTo(pnt));
+               pnt.set(box3.max.x, box3.min.y, box3.min.z)
+               dist = Math.min(dist, origin.distanceTo(pnt));
+
+               pnt.set(box3.max.x, box3.max.y, box3.min.z)
+               dist = Math.min(dist, origin.distanceTo(pnt));
+
+               pnt.set(box3.max.x, box3.min.y, box3.max.z)
+               dist = Math.min(dist, origin.distanceTo(pnt));
+
+               pnt.set(box3.min.x, box3.max.y, box3.max.z)
+               dist = Math.min(dist, origin.distanceTo(pnt));
+            }
+
+            mesh.$jsroot_distance = dist;
+         }
+
+         arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
+
+         var resort = new Array(arr.length);
+
+         for (var i=0;i<arr.length;++i) {
+            arr[i].$jsroot_index = i;
+            resort[i] = arr[i];
+         }
+
+         if (method==="ray")
+         for (var i=arr.length-1;i>=0;--i) {
+            var mesh = arr[i];
+
+            var name = clones ? clones.ResolveStack(mesh.stack).name : "";
+            var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
+
+            var direction = mesh.$jsroot_center.clone();
+
+            for(var ntry=0; ntry<2;++ntry) {
+
+               direction.sub(origin).normalize();
+
+               raycast.set( origin, direction );
+
+               var intersects = raycast.intersectObjects(arr, false); // only plain array
+
+               var unique = [];
+
+               for (var k1=0;k1<intersects.length;++k1) {
+                  if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
+                  // if (intersects[k1].object === mesh) break; // trace until object itself
+               }
+
+               intersects = unique;
+
+               if ((intersects.indexOf(mesh)<0) && (ntry>0))
+                  console.log('MISS', clones ? clones.ResolveStack(mesh.stack).name : "???");
+
+               if ((intersects.indexOf(mesh)>=0) || (ntry>0)) break;
+
+               var pos = mesh.geometry.attributes.position.array;
+
+               direction = new THREE.Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
+
+               direction.applyMatrix4(mesh.matrixWorld);
+
+               // console.log(direction, mesh.$jsroot_center);
+            }
+
+            if (debug && mydebug && clones) {
+               console.log(name, 'intersects', intersects.length);
+               for (var k1=0;k1<intersects.length;++k1)
+                  console.log('    ', intersects[k1].$jsroot_index, '  ', clones.ResolveStack(intersects[k1].stack).name);
+            }
+
+
+            // now push first object in intersects to the front
+            for (var k1=0;k1<intersects.length-1;++k1) {
+               var mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+                   i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
+               if (i1<i2) continue;
+               for (var ii=i2;ii<i1;++ii) {
+                  resort[ii] = resort[ii+1];
+                  resort[ii].$jsroot_index = ii;
+               }
+               resort[i1] = mesh2;
+               mesh2.$jsroot_index = i1;
+            }
+
+
+            if (debug && mydebug && clones) {
+               console.log('STATE AFTER INTERSECT');
+               for (var ii=0;ii<resort.length;++ii) {
+                  var name = clones.ResolveStack(resort[ii].stack).name;
+                  if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+                    console.log('   ', ii, name);
+               }
+            }
+
+         }
+
+         for (var i=0;i<resort.length;++i) {
+            resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
+            if (!mydebug || !clones) continue;
+            var name = clones.ResolveStack(resort[i].stack).name;
+            if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
+              console.log(i,name);
+         }
+
+         return true;
+      }
+
+      function process(obj, lvl, minorder, maxorder) {
+         var arr = [], did_sort = false;
+
+         traverse(obj, lvl, arr);
+
+         if (!arr.length) return;
+
+         // console.log('traverse', lvl, 'arr.length', arr.length, 'range', minorder, maxorder);
+
+         if (minorder === maxorder) {
+            for (var k=0;k<arr.length;++k)
+               arr[k].renderOrder = minorder;
+         } else {
+           did_sort = sort(arr, minorder, maxorder);
+           if (!did_sort) minorder = maxorder = (minorder + maxorder) / 2;
+         }
+
+         for (var k=0;k<arr.length;++k) {
+            var next = arr[k].parent, min = minorder, max = maxorder;
+
+            if (did_sort) {
+               max = arr[k].renderOrder;
+               min = max - (maxorder - minorder) / (arr.length + 2);
+            }
+
+            process(next, lvl+1, min, max);
+         }
+      }
+
+      if (!method || method==="default") {
+         toplevel.traverse(function(mesh) {
+            delete mesh.renderOrder;
+         });
+         return;
+      }
+
+
+      process(toplevel, 0, 1, 1000000);
+
+   }
+
    JSROOT.GEO.build = function(obj, opt, call_back) {
       // function can be used to build three.js model for TGeo object
 
@@ -2920,10 +3129,10 @@
 
          obj3d.add(mesh);
          // specify rendering order, required for transparancy handling
-         if (obj3d.$jsroot_depth !== undefined)
-            mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
-         else
-            mesh.renderOrder = clones.maxdepth - entry.stack.length;
+         //if (obj3d.$jsroot_depth !== undefined)
+         //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
+         //else
+         //   mesh.renderOrder = clones.maxdepth - entry.stack.length;
       }
 
       JSROOT.CallBack(call_back, toplevel);
