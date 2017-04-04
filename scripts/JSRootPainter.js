@@ -2856,21 +2856,20 @@
 
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
       if (!draw_g) draw_g = this.draw_g;
-      var pthis = this;
 
-      var svgs = null;
+      var pthis = this, svgs = null;
 
       if (draw_g.property('mathjax_use')) {
          draw_g.property('mathjax_use', false);
 
-         var missing = false;
+         var missing = 0;
          svgs = draw_g.selectAll(".math_svg");
 
          svgs.each(function() {
             var fo_g = d3.select(this);
             if (fo_g.node().parentNode !== draw_g.node()) return;
             var entry = fo_g.property('_element');
-            if (d3.select(entry).select("svg").empty()) missing = true;
+            if (d3.select(entry).select("svg").empty()) missing++;
          });
 
          // is any svg missing we should wait until drawing is really finished
@@ -2883,7 +2882,16 @@
          }
       }
 
-      if (svgs==null) svgs = draw_g.selectAll(".math_svg");
+      if (!svgs) svgs = draw_g.selectAll(".math_svg");
+
+      var missing = 0;
+      svgs.each(function() {
+         var fo_g = d3.select(this);
+         if (fo_g.node().parentNode !== draw_g.node()) return;
+         var entry = fo_g.property('_element');
+         if (d3.select(entry).select("svg").empty()) missing++;
+      });
+      if (missing) console.warn('STILL SVG MISSING', missing);
 
       // adjust font size (if there are normal text)
       var painter = this,
@@ -9097,17 +9105,18 @@
       // (re) set painter to first child element
       this.SetDivId(this.divid);
 
-      if (mathjax) {
-         if (this['loading_mathjax']) return;
-         this['loading_mathjax'] = true;
-         var painter = this;
-         JSROOT.AssertPrerequisites('mathjax', function() {
-            painter['loading_mathjax'] = false;
-            if (typeof MathJax == 'object') {
-               MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
-            }
-         });
-      }
+      if (!mathjax) return;
+
+      var painter = this;
+      if (painter.loading_mathjax) return;
+
+      painter.loading_mathjax = true;
+      JSROOT.AssertPrerequisites('mathjax', function() {
+         delete painter.loading_mathjax;
+         if (typeof MathJax == 'object') {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
+         }
+      });
    }
 
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {
