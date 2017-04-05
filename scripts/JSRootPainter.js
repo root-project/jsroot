@@ -2904,14 +2904,14 @@
          font.size = Math.floor(font.size/f);
          if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
             font.size = draw_g.property('max_font_size');
-         draw_g.call(font.func);
+         //draw_g.call(font.func);
          font_size = font.size;
       } else {
-         if (!draw_g.property('normaltext_use') && JSROOT.browser.isFirefox && (font.size<20)) {
-            // workaround for firefox, where mathjax has problem when font size too small
-            font.size = 20;
-            draw_g.call(font.func);
-         }
+         //if (!draw_g.property('normaltext_use') && JSROOT.browser.isFirefox && (font.size<20)) {
+         //   // workaround for firefox, where mathjax has problem when font size too small
+         //   font.size = 20;
+         //   draw_g.call(font.func);
+         //}
       }
 
 
@@ -2930,21 +2930,38 @@
             return;
          }
 
+         function transform(value) {
+            if (!value || (typeof value !== "string")) return null;
+            if (value.indexOf("ex")!==value.length-2) return null;
+            value = parseFloat(value.substr(0, value.length-2));
+            return isNaN(value) ? null : value*font_size*0.5;
+         }
+
          vvv.remove();
          document.body.removeChild(entry);
 
+         var width = transform(vvv.attr("width")),
+             height = transform(vvv.attr("height")),
+             valign = vvv.attr("style"), box = null;
+
+         if (valign && valign.indexOf("vertical-align:")==0 && valign.indexOf("ex;")==valign.length-3) {
+            valign = transform(valign.substr(16, valign.length-17));
+         } else {
+            valign = null;
+         }
+
+         if (width && height)
+            vvv.attr("width", width).attr('height', height).attr("style",null);
+
+         fo_g.property('_valign', valign);
+
          fo_g.append(function() { return vvv.node(); });
 
-         var box = painter.GetBoundarySizes(fo_g.node());
+         if (!box) box = painter.GetBoundarySizes(fo_g.node());
 
-         if (fo_g.property('_scale')) {
+         if (fo_g.property('_scale'))
             svg_factor = Math.max(svg_factor, 1.05*box.width / fo_g.property('_width'),
                                               1.05*box.height / fo_g.property('_height'));
-         } else
-         if ((box.height > 3) && (font_size > 1.2*box.height)) {
-            // workaround for Firefox, where SVG output does not correspond to font size
-            svg_factor = Math.max(svg_factor, 1.2*box.height / font_size);
-         }
       });
 
       svgs.each(function() {
@@ -2952,23 +2969,27 @@
          // only direct parent
          if (fo_g.node().parentNode !== draw_g.node()) return;
 
-         if (svg_factor > 0.) {
-            var m = fo_g.select("svg"); // MathJax svg
-            var mw = m.attr("width"), mh = m.attr("height");
-            if ((typeof mw == 'string') && (typeof mh == 'string') && (mw.indexOf("ex") > 0) && (mh.indexOf("ex") > 0)) {
-               mw = parseFloat(mw.substr(0,mw.length-2));
-               mh = parseFloat(mh.substr(0,mh.length-2));
-               if ((mw>0) && (mh>0)) {
-                  m.attr("width", (mw/svg_factor).toFixed(2)+"ex");
-                  m.attr("height", (mh/svg_factor).toFixed(2)+"ex");
-               }
-            } else {
-               JSROOT.console('Fail to downscale MathJax output');
+         var valign = fo_g.property('_valign'),
+             m = fo_g.select("svg"), // MathJax svg
+             mw = parseFloat(m.attr("width")),
+             mh = parseFloat(m.attr("height"));
+
+         if (!isNaN(mh) && !isNaN(mw)) {
+            if (svg_factor > 0.) {
+               mw = mw/svg_factor;
+               mh = mh/svg_factor;
+               m.attr("width", mw).attr("height", mh);
             }
+         } else {
+            var box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
+            mw = box.width; mh = box.height;
          }
 
-         var box = painter.GetBoundarySizes(fo_g.node()), // sizes before rotation
-             align = fo_g.property('_align'),
+         if ((svg_factor > 0.) && valign) valign = valign/svg_factor;
+
+         if (valign===null) valign = (font_size - mh)/2;
+
+         var align = fo_g.property('_align'),
              rotate = fo_g.property('_rotate'),
              fo_w = fo_g.property('_width'),
              fo_h = fo_g.property('_height'),
@@ -2984,11 +3005,13 @@
 
          if (!fo_g.property('_scale')) fo_w = fo_h = 0;
 
-         if (align[0] == 'middle') tr[nx] += sign.x*(fo_w - box.width)/2; else
-         if (align[0] == 'end')    tr[nx] += sign.x*(fo_w - box.width);
+         if (align[0] == 'middle') tr[nx] += sign.x*(fo_w - mw)/2; else
+         if (align[0] == 'end')    tr[nx] += sign.x*(fo_w - mw);
 
-         if (align[1] == 'middle') tr[ny] += sign.y*(fo_h - box.height)/2; else
-         if (align[1] == 'bottom') tr[ny] += sign.y*(fo_h - box.height);
+         if (align[1] == 'middle') tr[ny] += sign.y*(fo_h - mh)/2; else
+         if (align[1] == 'bottom') tr[ny] += sign.y*(fo_h - mh); else
+         if (align[1] == 'bottom-base') tr[ny] += sign.y*(fo_h - mh - valign);
+
 
          var trans = "translate("+tr.x+","+tr.y+")";
          if (rotate!==0) trans += " rotate("+rotate+",0,0)";
@@ -3018,7 +3041,7 @@
          if ((align_arg / 10) >= 3) align[0] = 'end'; else
          if ((align_arg / 10) >= 2) align[0] = 'middle';
          if ((align_arg % 10) == 0) align[1] = 'bottom'; else
-         if ((align_arg % 10) == 1) align[1] = 'bottom'; else
+         if ((align_arg % 10) == 1) align[1] = 'bottom-base'; else
          if ((align_arg % 10) == 3) align[1] = 'top';
       }
 
@@ -3045,7 +3068,7 @@
          }
 
          if (h>0) {
-            if (align[1] == 'bottom') pos_y = (y + h).toFixed(1); else
+            if (align[1].indexOf('bottom')===0) pos_y = (y + h).toFixed(1); else
             if (align[1] == 'top') pos_dy = ".8em"; else {
                pos_y = (y + h/2 + 1).toFixed(1);
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
