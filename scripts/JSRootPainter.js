@@ -3126,11 +3126,8 @@
 
       var element = document.createElement("p");
 
-      var globalid = "jsroot_mathjax_" + JSROOT.id_counter++;
-
       d3.select(element).style('visibility',"hidden").style('overflow',"hidden").style('position',"absolute")
                         .style("font-size",font.size+'px').style("font-family",font.name)
-                        .attr("id", globalid)
                         .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 
@@ -3141,9 +3138,9 @@
 
       JSROOT.AssertPrerequisites('mathjax', function() {
 
-         MathJax.Hub.Typeset(globalid, ["FinishMathjax", painter, draw_g, fo_g, globalid]);
+         MathJax.Hub.Typeset(element, ["FinishMathjax", painter, draw_g, fo_g]);
 
-         MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g, globalid]); // repeat once again, while Typeset not always invoke callback
+         MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
       });
 
       return 0;
