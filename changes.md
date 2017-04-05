@@ -26,6 +26,8 @@
 12. Limit complexity of composite shape. If it has too many components, only most left is used.
 13. When produce canvas or pad screenshot, render 3D objects with SVGRenderer.
     Allows to combine 2D and 3D objects in same PNG image
+14. Improve MathJax.js output. It scales correctly in Firefox, makes correct alignment
+    and works significantly faster.
 
 
 ## Changes in 5.1.0

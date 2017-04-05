@@ -2826,7 +2826,8 @@
 
       draw_g.call(font.func);
 
-      draw_g.property('text_font', font)
+      draw_g.property('draw_text_completed', false)
+            .property('text_font', font)
             .property('mathjax_use', false)
             .property('normaltext_use', false)
             .property('text_factor', 0.)
@@ -2857,10 +2858,16 @@
    JSROOT.TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
       if (!draw_g) draw_g = this.draw_g;
 
-      var pthis = this, svgs = null;
+      if (draw_g.property('draw_text_completed')) {
+         JSROOT.CallBack(call_ready);
+         return draw_g.property('max_text_width');
+      }
+
+      if (call_ready) draw_g.property('text_callback', call_ready);
+
+      var svgs = null;
 
       if (draw_g.property('mathjax_use')) {
-         draw_g.property('mathjax_use', false);
 
          var missing = 0;
          svgs = draw_g.selectAll(".math_svg");
@@ -2868,30 +2875,23 @@
          svgs.each(function() {
             var fo_g = d3.select(this);
             if (fo_g.node().parentNode !== draw_g.node()) return;
-            var entry = fo_g.property('_element');
-            if (d3.select(entry).select("svg").empty()) missing++;
+            if (fo_g.select("svg").empty()) missing++;
          });
 
          // is any svg missing we should wait until drawing is really finished
-         if (missing) {
-            JSROOT.AssertPrerequisites('mathjax', function() {
-               if (typeof MathJax == 'object')
-                  MathJax.Hub.Queue(["FinishTextDrawing", pthis, draw_g, call_ready]);
-            });
-            return null;
-         }
+         if (missing) return;
       }
 
-      if (!svgs) svgs = draw_g.selectAll(".math_svg");
+      //if (!svgs) svgs = draw_g.selectAll(".math_svg");
 
-      var missing = 0;
-      svgs.each(function() {
-         var fo_g = d3.select(this);
-         if (fo_g.node().parentNode !== draw_g.node()) return;
-         var entry = fo_g.property('_element');
-         if (d3.select(entry).select("svg").empty()) missing++;
-      });
-      if (missing) console.warn('STILL SVG MISSING', missing);
+      //var missing = 0;
+      //svgs.each(function() {
+      //   var fo_g = d3.select(this);
+      //   if (fo_g.node().parentNode !== draw_g.node()) return;
+      //   var entry = fo_g.property('_element');
+      //   if (d3.select(entry).select("svg").empty()) missing++;
+      //});
+      //if (missing) console.warn('STILL SVG MISSING', missing);
 
       // adjust font size (if there are normal text)
       var painter = this,
@@ -2902,9 +2902,9 @@
 
       if ((f>0) && ((f<0.9) || (f>1.))) {
          font.size = Math.floor(font.size/f);
-         if (draw_g.property('max_font_size') && (font.size>draw_g.property('max_font_size')))
+         if (draw_g.property('max_font_size') && (font.size > draw_g.property('max_font_size')))
             font.size = draw_g.property('max_font_size');
-         //draw_g.call(font.func);
+         draw_g.call(font.func);
          font_size = font.size;
       } else {
          //if (!draw_g.property('normaltext_use') && JSROOT.browser.isFirefox && (font.size<20)) {
@@ -2914,19 +2914,15 @@
          //}
       }
 
-
-      // first remove dummy divs and check scaling coefficient
+      // first analyze all MathJax SVG and repair width/height attributes
+      if (svgs)
       svgs.each(function() {
          var fo_g = d3.select(this);
          if (fo_g.node().parentNode !== draw_g.node()) return;
-         var entry = fo_g.property('_element'),
-             rotate = fo_g.property('_rotate');
 
-         fo_g.property('_element', null);
-
-         var vvv = d3.select(entry).select("svg");
+         var vvv = fo_g.select("svg");
          if (vvv.empty()) {
-            JSROOT.console('MathJax SVG ouptut error');
+            console.log('MathJax SVG ouptut error');
             return;
          }
 
@@ -2936,9 +2932,6 @@
             value = parseFloat(value.substr(0, value.length-2));
             return isNaN(value) ? null : value*font_size*0.5;
          }
-
-         vvv.remove();
-         document.body.removeChild(entry);
 
          var width = transform(vvv.attr("width")),
              height = transform(vvv.attr("height")),
@@ -2955,8 +2948,6 @@
 
          fo_g.property('_valign', valign);
 
-         fo_g.append(function() { return vvv.node(); });
-
          if (!box) box = painter.GetBoundarySizes(fo_g.node());
 
          if (fo_g.property('_scale'))
@@ -2964,6 +2955,7 @@
                                               1.05*box.height / fo_g.property('_height'));
       });
 
+      if (svgs)
       svgs.each(function() {
          var fo_g = d3.select(this);
          // only direct parent
@@ -3021,6 +3013,11 @@
 
       // now hidden text after rescaling can be shown
       draw_g.selectAll('.hidden_text').attr('opacity', '1').classed('hidden_text',false);
+
+      if (!call_ready) call_ready = draw_g.property('text_callback');
+
+      draw_g.property('draw_text_completed', true)
+            .property('text_callback', null);
 
       // if specified, call ready function
       JSROOT.CallBack(call_ready);
@@ -3128,21 +3125,52 @@
                        .property('_align', align);
 
       var element = document.createElement("p");
+
+      var globalid = "jsroot_mathjax_" + JSROOT.id_counter++;
+
       d3.select(element).style('visibility',"hidden").style('overflow',"hidden").style('position',"absolute")
                         .style("font-size",font.size+'px').style("font-family",font.name)
+                        .attr("id", globalid)
                         .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
       document.body.appendChild(element);
 
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
 
+      var painter = this;
+
       JSROOT.AssertPrerequisites('mathjax', function() {
-         if (typeof MathJax == 'object')
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, element]);
+
+         MathJax.Hub.Typeset(globalid, ["FinishMathjax", painter, draw_g, fo_g, globalid]);
+
+         MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g, globalid]); // repeat once again, while Typeset not always invoke callback
       });
 
       return 0;
    }
+
+   JSROOT.TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, id) {
+      // function should be called when processing of element is completed
+
+      // console.log('FinishMathjax', id);
+
+      if (fo_g.node().parentNode !== draw_g.node()) return;
+      var entry = fo_g.property('_element');
+      if (!entry) return;
+
+      var vvv = d3.select(entry).select("svg");
+      if (vvv.empty()) return; // not yet finished
+
+      fo_g.property('_element', null);
+
+      vvv.remove();
+      document.body.removeChild(entry);
+
+      fo_g.append(function() { return vvv.node(); });
+
+      this.FinishTextDrawing(draw_g); // check if all other elements are completed
+   }
+
 
    // ===========================================================
 
