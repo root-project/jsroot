@@ -2462,6 +2462,18 @@
          var d = e.data;
          if (typeof d != 'string') return console.log("msg",d);
 
+         if (d.substr(0,4)=='SNAP') {
+            var snap = JSROOT.parse(d.substr(4));
+
+            if (typeof pthis.RedrawSnap === 'function') {
+               pthis.RedrawSnap(snap, function() {
+                  conn.send('READY'); // send ready message back
+               });
+            } else {
+               conn.send('READY'); // send ready message back
+            }
+
+         } else
          if (d.substr(0,4)=='JSON') {
             var obj = JSROOT.parse(d.substr(4));
             // console.log("get JSON ", d.length-4, obj._typename);
@@ -4529,7 +4541,7 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
-      if (!can) return;
+      if (!can || !can.fPrimitives) return;
 
       for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
          var obj = can.fPrimitives.arr[i];
@@ -4745,7 +4757,7 @@
    }
 
    JSROOT.TPadPainter.prototype.UpdateObject = function(obj) {
-      if (!obj || !('fPrimitives' in obj)) return false;
+      if (!obj) return false;
 
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
@@ -4776,6 +4788,8 @@
       var fp = this.frame_painter();
       if (fp) fp.UpdateAttributes(!fp.modified_NDC);
 
+      if (!obj.fPrimitives) return false;
+
       var isany = false, p = 0;
       for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
          while (p < this.painters.length) {
@@ -4788,6 +4802,38 @@
 
       return isany;
    }
+
+   JSROOT.TPadPainter.prototype.RedrawSnap = function(snap, call_back) {
+      // for the canvas snapshot constains list of objects or SCG commands
+
+      // just extract first object and draw it
+
+      if (!snap || !snap.arr) return;
+
+      var first = snap.arr[0].fSnapshot;
+
+      if (!this.has_snap) {
+         this.has_snap = true;
+
+         // just take complete list and draw it
+         var primitives = first.fPrimitives;
+
+         first.fPrimitives = null;
+
+         this.UpdateObject(first); // update only object attributes
+
+         console.log('DRAW SNAP FOR THE FIRST TIME')
+         console.log('SNAP', snap);
+
+         this.DrawPrimitive(0, call_back);
+
+      } else {
+         this.RedrawObject(first);
+         JSROOT.CallBack(call_back);
+      }
+
+   }
+
 
    JSROOT.TPadPainter.prototype.ItemContextMenu = function(name) {
        var rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
@@ -5108,6 +5154,9 @@
 
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
+
+      // when websocket is configured, full object will be reconstructed from websocket
+      if (painter._websocket) return painter.DrawingReady();
 
       painter.DrawPrimitive(0, function() { painter.DrawingReady(); });
       return painter;
