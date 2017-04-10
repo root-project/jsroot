@@ -4803,35 +4803,121 @@
       return isany;
    }
 
-   JSROOT.TPadPainter.prototype.RedrawSnap = function(snap, call_back) {
-      // for the canvas snapshot constains list of objects or SCG commands
+   JSROOT.TPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
+      // function called when drawing next snapshot from the list
+      // it is also used as callback for drawing of previous snap
 
-      // just extract first object and draw it
+      // console.log('Draw next snap', indx);
+
+      if (objpainter && lst && lst.arr[indx]) {
+         // keep snap id in painter, will be used for the
+         if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
+         objpainter.snapid = lst.arr[indx].fObjectID;
+      }
+
+      ++indx; // change to the next snap
+
+      if (!lst || indx >= lst.arr.length) return JSROOT.CallBack(call_back, this);
+
+      var snap = lst.arr[indx], painter = null;
+
+      // first find existing painter for the object
+      for (var k=0; k<this.painters.length; ++k) {
+         if (this.painters[k].snapid === snap.fObjectID) { painter = this.painters[k]; break;  }
+      }
+
+      // function which should be called when drawing of next item finished
+      var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
+
+      if (painter) {
+         if (typeof painter.RedrawSnap==='function')
+            return painter.RedrawSnap(snap, draw_callback);
+
+         if (snap.fKind === 1) { // object itself
+            if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
+            return draw_callback(painter); // call next
+         }
+
+         if (snap.fKind === 2)
+            console.log('MISSING UPDATE of SVG drawing');
+
+         return draw_callback(painter); // call next
+      }
+
+      // here the case of normal drawing, can be improved
+      if (snap.fKind === 1)
+         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
+
+      if (snap.fKind === 2)
+         console.log('MISSING DRAWING of SVG list');
+
+      draw_callback(null);
+   }
+
+
+   JSROOT.TPadPainter.prototype.RedrawSnap = function(snap, call_back) {
+      // for the canvas snapshot constains list of objects
+      // as first entry, graphical properties of canvas itself is provided
+      // in ROOT6 it also includes primitives, but we ignore them
 
       if (!snap || !snap.arr) return;
 
       var first = snap.arr[0].fSnapshot;
+      first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
+
+      // console.log('REDRAW SNAP');
 
       if (!this.has_snap) {
+         // first time getting snap, create all gui elements first
+
          this.has_snap = true;
 
-         // just take complete list and draw it
-         var primitives = first.fPrimitives;
+         this.draw_object = first;
+         this.pad = first;
 
-         first.fPrimitives = null;
+         this.CreateCanvasSvg(0);
+         this.SetDivId(this.divid);  // now add to painters list
 
-         this.UpdateObject(first); // update only object attributes
+         this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+         if (JSROOT.gStyle.ContextMenu)
+            this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
 
-         console.log('DRAW SNAP FOR THE FIRST TIME')
-         console.log('SNAP', snap);
+         if (this.enlarge_main('verify'))
+            this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-         this.DrawPrimitive(0, call_back);
+         JSROOT.Painter.drawFrame(this.divid, null);
 
-      } else {
-         this.RedrawObject(first);
-         JSROOT.CallBack(call_back);
+         this.DrawNextSnap(snap, 0, call_back);
+
+         return;
+
       }
 
+      this.UpdateObject(first); // update only object attributes
+
+      // apply all changes in the object (pad or canvas)
+      if (this.iscan) {
+         this.CreateCanvasSvg(2);
+      } else {
+         this.CreatePadSvg(true);
+      }
+
+      // find and remove painters which no longer exists in the list
+      for (var k=0;k<this.painters.length;++k) {
+         var sub = this.painters[k];
+         if (sub.snapid===undefined) continue; // look only for painters with snapid
+
+         for (var i=1;i<snap.arr.length;++i)
+            if (snap.arr[i].fObjectID === sub.snapid) { sub = null; break; }
+
+         if (sub) {
+            // remove painter which does not found in the list of snaps
+            this.painters.splice(k--,1);
+            sub.Cleanup(); // cleanup such painter
+         }
+      }
+
+      this.DrawNextSnap(snap, 0, call_back, null); // update all snaps after each other
    }
 
 
@@ -5154,9 +5240,6 @@
 
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
-
-      // when websocket is configured, full object will be reconstructed from websocket
-      if (painter._websocket) return painter.DrawingReady();
 
       painter.DrawPrimitive(0, function() { painter.DrawingReady(); });
       return painter;
@@ -10408,6 +10491,31 @@
       });
    }
 
+
+   JSROOT.HierarchyPainter.prototype.displayWebCanvas = function(itemname) {
+      // this is special functionality for the TWebCanvas from ROOT6
+      // it gets all information from websocket
+
+
+      this.CreateDisplay(function(mdi) {
+
+         if (!mdi) return;
+
+         var frame = mdi.FindFrame("WebCanvas", true);
+         d3.select(frame).html("");
+         mdi.ActivateFrame(frame);
+
+
+         var painter = new JSROOT.TPadPainter(null, true);
+
+         painter.SetDivId(d3.select(frame).attr("id"), -1); // just assign id, nothing else is happens
+
+         painter.OpenWebsocket(); // when connection activated, ROOT must send new instance of the canvas
+
+      });
+
+   }
+
    JSROOT.HierarchyPainter.prototype.reload = function() {
       var hpainter = this;
       if ('_online' in this.h)
@@ -11359,6 +11467,10 @@
 
       hpainter.StartGUI(myDiv, function() {
          if (!drawing) return;
+
+         if (JSROOT.GetUrlOption("webcanvas")!==null)
+            return hpainter.displayWebCanvas("");
+
          var func = JSROOT.findFunction('GetCachedObject');
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
          if (obj) hpainter._cached_draw_object = obj;
