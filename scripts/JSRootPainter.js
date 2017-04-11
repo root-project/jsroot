@@ -2490,7 +2490,7 @@
          } else
          if (d.substr(0,4)=='MENU') {
             var lst = JSROOT.parse(d.substr(4));
-            console.log("get MENUS ", typeof lst, lst.length, d.length-4);
+            console.log("get MENUS ", typeof lst, 'nitems', lst.length, d.length-4);
             conn.send('READY'); // send ready message back
             if (typeof pthis._getmenu_callback == 'function')
                pthis._getmenu_callback(lst);
@@ -2514,45 +2514,50 @@
 
    JSROOT.TObjectPainter.prototype.FillObjectExecMenu = function(menu, call_back) {
 
-      if (!('_websocket' in this) || ('_getmenu_callback' in this))
+      var canvp = this.pad_painter();
+
+      if (!this.snapid || !canvp || !canvp._websocket || canvp._getmenu_callback)
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         console.log('execute method ' + arg);
+         console.log('execute method ' + arg + ' for object ' + this.snapid);
 
-         if (this._websocket)
-            this._websocket.send('EXEC:'+arg);
+         var canvp = this.pad_painter();
+
+         if (canvp && canvp._websocket && this.snapid)
+            canvp._websocket.send('OBJEXEC:' + this.snapid + ":" + arg);
       }
 
       function DoFillMenu(_menu, _call_back, items) {
 
-        // avoid multiple call of the callback after timeout
-        if (!this._getmenu_callback) return;
-        delete this._getmenu_callback;
+         // avoid multiple call of the callback after timeout
+         if (!canvp._getmenu_callback) return;
+         delete canvp._getmenu_callback;
 
-        if (items && items.length) {
-           _menu.add("separator");
-           _menu.add("sub:Online");
+         if (items && items.length) {
+            _menu.add("separator");
+            _menu.add("sub:Online");
 
-           for (var n=0;n<items.length;++n) {
-              var item = items[n];
-              if ('chk' in item)
-                 _menu.addchk(item.chk, item.name, item.exec, DoExecMenu);
-              else
-                 _menu.add(item.name, item.exec, DoExecMenu);
-           }
+            for (var n=0;n<items.length;++n) {
+               var item = items[n];
+               if ('chk' in item)
+                  _menu.addchk(item.chk, item.name, item.exec, DoExecMenu);
+               else
+                  _menu.add(item.name, item.exec, DoExecMenu);
+            }
 
-           _menu.add("endsub:");
-        }
+            _menu.add("endsub:");
+         }
 
-        JSROOT.CallBack(_call_back);
-     }
+         JSROOT.CallBack(_call_back);
+      }
 
-     this._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
 
-     this._websocket.send('GETMENU'); // request menu items
+      canvp._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
 
-     setTimeout(this._getmenu_callback, 2000); // set timeout to avoid menu hanging
+      canvp._websocket.send('GETMENU:' + this.snapid); // request menu items for given painter
+
+      setTimeout(canvp._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
 
    JSROOT.TObjectPainter.prototype.DeleteAtt = function() {
@@ -4867,10 +4872,10 @@
 
       // console.log('REDRAW SNAP');
 
-      if (!this.has_snap) {
+      if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         this.has_snap = true;
+         this.snapid = snap.arr[0].fObjectID;
 
          this.draw_object = first;
          this.pad = first;
@@ -7882,13 +7887,13 @@
          if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
             domenu = fp.FillContextMenu(menu);
 
-         if (domenu) {
-            // suppress any running zomming
-            menu.painter.SwitchTooltip(false);
-            menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
-         }
+         if (domenu)
+            menu.painter.FillObjectExecMenu(menu, function() {
+                // suppress any running zomming
+                menu.painter.SwitchTooltip(false);
+                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
+            });
 
-         delete menu.painter.ctx_menu_evnt; // delete temporary variable
       });  // end menu creation
    }
 
@@ -11444,6 +11449,8 @@
 
          painter.OpenWebsocket(); // when connection activated, ROOT must send new instance of the canvas
 
+         JSROOT.RegisterForResize(painter);
+
          return;
       }
 
@@ -11943,7 +11950,7 @@
       // handle can be function or object with CheckResize function
       // one could specify delay after which resize event will be handled
 
-      if ((handle===null) || (handle === undefined)) return;
+      if (!handle) return;
 
       var myInterval = null, myDelay = delay ? delay : 300;
 
