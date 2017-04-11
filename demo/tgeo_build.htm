@@ -145,6 +145,9 @@
                object.rotation.y = timer * 2.5;
 
             }
+            
+            // set rendering order for transparent volumes, create with JSROOT
+            JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
 
             renderer.render( scene, camera );
 
