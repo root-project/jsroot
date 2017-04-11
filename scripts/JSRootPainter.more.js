@@ -4911,6 +4911,66 @@
       return this;
    }
 
+   // =========================================================================================
+
+   JSROOT.Painter.drawWebPainting = function(divid, obj, opt) {
+
+      this.UpdateObject = function(obj) {
+         if (!this.MatchObjectType(obj)) return false;
+         this.draw_object = obj;
+         return true;
+      }
+
+      this.Redraw = function() {
+         var obj = this.GetObject(), attr = null, indx = 0, lineatt = null, fillatt = null;
+         if (!obj || !obj.fOper) return;
+
+         this.RecreateDrawG(true, "special_layer");
+
+         for (var k=0;k<obj.fOper.arr.length;++k) {
+            switch (obj.fOper.opt[k]) {
+               case "attr":
+                  attr = obj.fOper.arr[k];
+                  lineatt = fillatt = null;
+                  continue;
+               case "box": {
+                  var x1 = obj.fBuf[indx], y1 = obj.fBuf[indx+1], x2 = obj.fBuf[indx+2], y2 = obj.fBuf[indx+3];
+                  indx += 4;
+
+                  // if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+                  if (!fillatt) fillatt = this.createAttFill(attr);
+
+                  x1 = this.AxisToSvg("x", x1);
+                  x2 = this.AxisToSvg("x", x2);
+                  y1 = this.AxisToSvg("y", y1);
+                  y2 = this.AxisToSvg("y", y2);
+
+                  this.draw_g
+                     .append("svg:rect")
+                     .attr("x", Math.min(x1,x2))
+                     .attr("y", Math.min(y1,y2))
+                     .attr("width", Math.abs(x2-x1))
+                     .attr("height", Math.abs(y1-y2))
+                     // .call(lineatt.func)
+                     .call(fillatt.func);
+
+                  continue;
+               }
+               default:
+                  console.log('unsupported operation', obj.fOper.opt[k]);
+            }
+         }
+      }
+
+      this.SetDivId(divid);
+
+      this.options = opt;
+
+      this.Redraw();
+
+      return this.DrawingReady();
+   }
+
    return JSROOT.Painter;
 
 }));

@@ -4842,8 +4842,10 @@
             return draw_callback(painter); // call next
          }
 
-         if (snap.fKind === 2)
-            console.log('MISSING UPDATE of SVG drawing');
+         if (snap.fKind === 2) { // update SVG
+            if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
+            return draw_callback(painter); // call next
+         }
 
          return draw_callback(painter); // call next
       }
@@ -4851,12 +4853,12 @@
       // here the case of normal drawing, can be improved
       if (snap.fKind === 1) {
          var obj = snap.fSnapshot;
-         if (obj) obj.$snapid = snap.fObjectID; // mark object itself
+         if (obj) obj.$snapid = snap.fObjectID; // mark object itself, workaround for stats drawing
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
 
       if (snap.fKind === 2)
-         console.log('MISSING DRAWING of SVG list');
+         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
 
       draw_callback(null);
    }
@@ -12028,6 +12030,7 @@
    JSROOT.addDrawFunc({ name: "TMultiGraph", icon: "img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon: 'img_question', func: JSROOT.Painter.drawStreamerInfo });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
+   JSROOT.addDrawFunc({ name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
    JSROOT.addDrawFunc({ name: "TF2", icon: "img_tf2", prereq: "math;more2d", func: "JSROOT.Painter.drawTF2" });
