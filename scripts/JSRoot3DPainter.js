@@ -2731,6 +2731,8 @@
 
          main.Render3D();
 
+         main.UpdateStatWebCanvas();
+
          this.AddKeysHandler();
       }
 
@@ -2783,6 +2785,8 @@
          this.Draw3DBins();
 
          main.Render3D();
+
+         this.UpdateStatWebCanvas();
 
          this.AddKeysHandler();
       }
@@ -3743,6 +3747,7 @@
          this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
          this.Render3D();
+         this.UpdateStatWebCanvas();
          this.AddKeysHandler();
 
       }
@@ -3861,7 +3866,7 @@
 
       this.Redraw();
 
-      if (JSROOT.gStyle.AutoStat && this.create_canvas) {
+      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid)) {
          var stats = this.CreateStat(histo.$custom_stat);
          if (stats) JSROOT.draw(this.divid, stats, "");
       }

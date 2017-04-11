@@ -2830,8 +2830,7 @@
 
    JSROOT.TObjectPainter.prototype.Redraw = function() {
       // basic method, should be reimplemented in all derived objects
-      // for the case when drawing should be repeated, probably with different
-      // options
+      // for the case when drawing should be repeated
    }
 
    JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
@@ -4850,8 +4849,11 @@
       }
 
       // here the case of normal drawing, can be improved
-      if (snap.fKind === 1)
-         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
+      if (snap.fKind === 1) {
+         var obj = snap.fSnapshot;
+         if (obj) obj.$snapid = snap.fObjectID; // mark object itself
+         return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
+      }
 
       if (snap.fKind === 2)
          console.log('MISSING DRAWING of SVG list');
@@ -4923,6 +4925,8 @@
       }
 
       this.DrawNextSnap(snap, 0, call_back, null); // update all snaps after each other
+
+      // show we redraw all other painters without snapid?
    }
 
 
@@ -6891,6 +6895,15 @@
 
          JSROOT.Painter.drawPaveText(this.divid, pavetext);
       }
+   }
+
+   JSROOT.THistPainter.prototype.UpdateStatWebCanvas = function() {
+      if (!this.snapid) return;
+
+      var stat = this.FindStat(),
+          statpainter = this.FindPainterFor(stat);
+
+      if (statpainter && !statpainter.snapid) statpainter.Redraw();
    }
 
    JSROOT.THistPainter.prototype.ToggleStat = function(arg) {
@@ -9123,6 +9136,7 @@
       this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
+      this.UpdateStatWebCanvas();
       this.AddInteractive();
       JSROOT.CallBack(call_back);
    }
@@ -9184,7 +9198,7 @@
 
       painter.ScanContent();
 
-      if (JSROOT.gStyle.AutoStat && painter.create_canvas)
+      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid))
          painter.CreateStat(histo.$custom_stat);
 
       painter.CallDrawFunc(function() {

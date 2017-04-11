@@ -4830,6 +4830,8 @@
 
       this.DrawTitle();
 
+      this.UpdateStatWebCanvas();
+
       this.AddInteractive();
 
       JSROOT.CallBack(call_back);
@@ -4892,7 +4894,7 @@
       this.ScanContent();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas /* && !this.IsTH2Poly()*/)
+      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid) /* && !this.IsTH2Poly()*/)
          this.CreateStat(histo.$custom_stat);
 
       this.CallDrawFunc(function() {
