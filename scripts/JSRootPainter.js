@@ -10491,31 +10491,6 @@
       });
    }
 
-
-   JSROOT.HierarchyPainter.prototype.displayWebCanvas = function(itemname) {
-      // this is special functionality for the TWebCanvas from ROOT6
-      // it gets all information from websocket
-
-
-      this.CreateDisplay(function(mdi) {
-
-         if (!mdi) return;
-
-         var frame = mdi.FindFrame("WebCanvas", true);
-         d3.select(frame).html("");
-         mdi.ActivateFrame(frame);
-
-
-         var painter = new JSROOT.TPadPainter(null, true);
-
-         painter.SetDivId(d3.select(frame).attr("id"), -1); // just assign id, nothing else is happens
-
-         painter.OpenWebsocket(); // when connection activated, ROOT must send new instance of the canvas
-
-      });
-
-   }
-
    JSROOT.HierarchyPainter.prototype.reload = function() {
       var hpainter = this;
       if ('_online' in this.h)
@@ -11458,6 +11433,21 @@
 
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
 
+
+      if (drawing && (JSROOT.GetUrlOption("webcanvas")!==null)) {
+
+         console.log('Start web painter directly');
+
+         var painter = new JSROOT.TPadPainter(null, true);
+
+         painter.SetDivId(myDiv.attr("id"), -1); // just assign id, nothing else is happens
+
+         painter.OpenWebsocket(); // when connection activated, ROOT must send new instance of the canvas
+
+         return;
+      }
+
+
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 
       hpainter.is_online = online;
@@ -11467,9 +11457,6 @@
 
       hpainter.StartGUI(myDiv, function() {
          if (!drawing) return;
-
-         if (JSROOT.GetUrlOption("webcanvas")!==null)
-            return hpainter.displayWebCanvas("");
 
          var func = JSROOT.findFunction('GetCachedObject');
          var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
