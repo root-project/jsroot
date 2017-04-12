@@ -1576,10 +1576,9 @@
 
    /** Converts pad x or y coordinate into NDC value */
    JSROOT.TObjectPainter.prototype.ConvertToNDC = function(axis, value, isndc) {
+      if (isndc) return value;
       var pad = this.root_pad();
-      if (isndc == null) isndc = false;
-
-      if (isndc || (pad==null)) return value;
+      if (!pad) return value;
 
       if (axis=="y") {
          if (pad.fLogy)
@@ -1595,15 +1594,12 @@
     *  which could be used directly for drawing in the pad.
     *  Parameters: axis should be "x" or "y", value to convert
     *  Always return rounded values */
-   JSROOT.TObjectPainter.prototype.AxisToSvg = function(axis, value) {
+   JSROOT.TObjectPainter.prototype.AxisToSvg = function(axis, value, isndc) {
       var main = this.main_painter();
-      if (main) {
+      if (main && !isndc) {
          // this is frame coordinates
          value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
-         // if used pad coordiantes, we should
-         // if (pad_coordinates)
-         //   value += (axis=="y") ? main.frame_y() : main.frame_x();
       } else {
          value = this.ConvertToNDC(axis, value);
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
@@ -3201,18 +3197,18 @@
    }
 
    JSROOT.TFramePainter.prototype.UpdateAttributes = function(force) {
-      var root_pad = this.root_pad(),
+      var pad = this.root_pad(),
           tframe = this.GetObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
-         if (!root_pad) {
+         if (!pad) {
             JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          } else {
             JSROOT.extend(this, {
-               fX1NDC: root_pad.fLeftMargin,
-               fX2NDC: 1 - root_pad.fRightMargin,
-               fY1NDC: root_pad.fBottomMargin,
-               fY2NDC: 1 - root_pad.fTopMargin
+               fX1NDC: pad.fLeftMargin,
+               fX2NDC: 1 - pad.fRightMargin,
+               fY1NDC: pad.fBottomMargin,
+               fY2NDC: 1 - pad.fTopMargin
             });
          }
       }
@@ -3221,8 +3217,8 @@
          if (tframe)
             this.fillatt = this.createAttFill(tframe);
          else
-         if (root_pad)
-            this.fillatt = this.createAttFill(null, root_pad.fFrameFillStyle, root_pad.fFrameFillColor);
+         if (pad)
+            this.fillatt = this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor);
          else
             this.fillatt = this.createAttFill(null, 1001, 0);
 
@@ -3232,6 +3228,24 @@
 
       if (this.lineatt === undefined)
          this.lineatt = JSROOT.Painter.createAttLine(tframe ? tframe : 'black');
+   }
+
+   JSROOT.TFramePainter.prototype.SizeChanged = function() {
+      // function called at the end of resize of frame
+      // One should apply changes to the pad
+
+      var pad = this.root_pad(),
+          main = this.main_painter();
+
+      if (pad) {
+         pad.fLeftMargin = this.fX1NDC;
+         pad.fRightMargin = 1 - this.fX2NDC;
+         pad.fBottomMargin = this.fY1NDC;
+         pad.fTopMargin = 1 - this.fY2NDC;
+         if (main) main.SetRootPadRange(pad);
+      }
+
+      this.RedrawPad();
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -3297,7 +3311,7 @@
               .attr("viewBox", "0 0 " + w + " " + h);
 
       this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
-                     redraw: this.RedrawPad.bind(this) });
+                     redraw: this.SizeChanged.bind(this) });
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
@@ -3401,7 +3415,6 @@
 
       return true;
    }
-
 
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
@@ -6725,6 +6738,38 @@
       } else {
          this.gry = this.y;
       }
+
+      this.SetRootPadRange(pad);
+   }
+
+   /** Set selected range back to TPad object */
+   JSROOT.THistPainter.prototype.SetRootPadRange = function(pad) {
+      if (!pad) return;
+
+      if (this.logx) {
+         pad.fUxmin = JSROOT.log10(this.scale_xmin);
+         pad.fUxmax = JSROOT.log10(this.scale_xmax);
+      } else {
+         pad.fUxmin = this.scale_xmin;
+         pad.fUxmax = this.scale_xmax;
+      }
+      if (this.logy) {
+         pad.fUymin = JSROOT.log10(this.scale_ymin);
+         pad.fUymax = JSROOT.log10(this.scale_ymax);
+      } else {
+         pad.fUymin = this.scale_ymin;
+         pad.fUymax = this.scale_ymax;
+      }
+
+      var rx = pad.fUxmax - pad.fUxmin,
+          mx = 1 - pad.fLeftMargin - pad.fRightMargin,
+          ry = pad.fUymax - pad.fUymin,
+          my = 1 - pad.fBottomMargin - pad.fTopMargin;
+
+      pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
+      pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
+      pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
+      pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
    }
 
    JSROOT.THistPainter.prototype.DrawGrids = function() {

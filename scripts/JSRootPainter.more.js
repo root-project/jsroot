@@ -4933,26 +4933,47 @@
                   attr = obj.fOper.arr[k];
                   lineatt = fillatt = null;
                   continue;
+               case "rect":
                case "box": {
-                  var x1 = obj.fBuf[indx], y1 = obj.fBuf[indx+1], x2 = obj.fBuf[indx+2], y2 = obj.fBuf[indx+3];
+                  var x1 = this.AxisToSvg("x", obj.fBuf[indx]),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx+1]),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx+2]),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx+3]);
                   indx += 4;
 
-                  // if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
-                  if (!fillatt) fillatt = this.createAttFill(attr);
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
 
-                  x1 = this.AxisToSvg("x", x1);
-                  x2 = this.AxisToSvg("x", x2);
-                  y1 = this.AxisToSvg("y", y1);
-                  y2 = this.AxisToSvg("y", y2);
-
-                  this.draw_g
+                  var rect = this.draw_g
                      .append("svg:rect")
                      .attr("x", Math.min(x1,x2))
                      .attr("y", Math.min(y1,y2))
                      .attr("width", Math.abs(x2-x1))
                      .attr("height", Math.abs(y1-y2))
-                     // .call(lineatt.func)
-                     .call(fillatt.func);
+                     .call(lineatt.func);
+
+                  if (obj.fOper.opt[k] === "box") {
+                     if (!fillatt) fillatt = this.createAttFill(attr);
+                     rect.call(fillatt.func);
+                  }
+                  continue;
+               }
+               case "line":
+               case "linendc": {
+                  var isndc = (obj.fOper.opt[k]==="linendc"),
+                      x1 = this.AxisToSvg("x", obj.fBuf[indx], isndc),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx+1], isndc),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx+2], isndc),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx+3], isndc);
+
+                  indx += 4;
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+
+                  console.log(obj.fOper.opt[k], x1, y1, x2, y2, lineatt.color);
+
+
+                  this.draw_g
+                      .append("svg:line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+                      .call(lineatt.func);
 
                   continue;
                }
