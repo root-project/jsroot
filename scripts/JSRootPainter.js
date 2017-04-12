@@ -1601,7 +1601,7 @@
          value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
       } else {
-         value = this.ConvertToNDC(axis, value);
+         if (!isndc) value = this.ConvertToNDC(axis, value);
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
       return Math.round(value);

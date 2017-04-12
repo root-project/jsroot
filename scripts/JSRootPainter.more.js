@@ -4927,16 +4927,18 @@
       }
 
       this.Redraw = function() {
-         var obj = this.GetObject(), attr = null, indx = 0, lineatt = null, fillatt = null;
+         var obj = this.GetObject(), attr = null, indx = 0,
+             lineatt = null, fillatt = null, markeratt = null;
          if (!obj || !obj.fOper) return;
 
          this.RecreateDrawG(true, "special_layer");
 
          for (var k=0;k<obj.fOper.arr.length;++k) {
-            switch (obj.fOper.opt[k]) {
+            var oper = obj.fOper.opt[k];
+            switch (oper) {
                case "attr":
                   attr = obj.fOper.arr[k];
-                  lineatt = fillatt = null;
+                  lineatt = fillatt = markeratt = null;
                   continue;
                case "rect":
                case "box": {
@@ -4956,7 +4958,7 @@
                      .attr("height", Math.abs(y1-y2))
                      .call(lineatt.func);
 
-                  if (obj.fOper.opt[k] === "box") {
+                  if (oper === "box") {
                      if (!fillatt) fillatt = this.createAttFill(attr);
                      rect.call(fillatt.func);
                   }
@@ -4964,7 +4966,8 @@
                }
                case "line":
                case "linendc": {
-                  var isndc = (obj.fOper.opt[k]==="linendc"),
+
+                  var isndc = (oper==="linendc"),
                       x1 = this.AxisToSvg("x", obj.fBuf[indx], isndc),
                       y1 = this.AxisToSvg("y", obj.fBuf[indx+1], isndc),
                       x2 = this.AxisToSvg("x", obj.fBuf[indx+2], isndc),
@@ -4973,18 +4976,62 @@
                   indx += 4;
                   if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
 
-                  console.log(obj.fOper.opt[k], x1, y1, x2, y2, lineatt.color);
-
-
                   this.draw_g
                       .append("svg:line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
                       .call(lineatt.func);
 
                   continue;
                }
+               case "polyline":
+               case "polylinendc":
+               case "fillarea": {
+
+                  var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
+
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+
+                  for (var n=0;n<npoints;++n)
+                     cmd += ((n>0) ? "L" : "M") +
+                            this.AxisToSvg("x", obj.fBuf[indx++], false) + "," +
+                            this.AxisToSvg("y", obj.fBuf[indx++], false);
+
+                  if (oper == "fillarea") cmd+="Z";
+                  var path = this.draw_g
+                          .append("svg:path")
+                          .attr("d", cmd)
+                          .call(lineatt.func);
+
+                  if (oper == "fillarea") {
+                     if (!fillatt) fillatt = this.createAttFill(attr);
+                     path.call(fillatt.func);
+                  }
+
+                  continue;
+               }
+
+               case "polymarker": {
+                  var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
+
+                  if (!markeratt) markeratt = JSROOT.Painter.createAttMarker(attr);
+
+                  markeratt.reset_pos();
+                  for (var n=0;n<npoints;++n)
+                     cmd += markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
+                                             this.AxisToSvg("y", obj.fBuf[indx++], false));
+
+                  if (cmd)
+                     this.draw_g.append("svg:path").attr("d", cmd).call(markeratt.func);
+
+                  continue;
+               }
+
+
                default:
-                  console.log('unsupported operation', obj.fOper.opt[k]);
+                  console.log('unsupported operation', oper);
             }
+
+
+
          }
       }
 
