@@ -563,10 +563,10 @@
          // create svg:g container for ellipse drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x = this.AxisToSvg("x", ellipse.fX1),
-             y = this.AxisToSvg("y", ellipse.fY1),
-             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
-             ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2);
+         var x = this.AxisToSvg("x", ellipse.fX1, false),
+             y = this.AxisToSvg("y", ellipse.fY1, false),
+             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
+             ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
 
          if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
@@ -615,17 +615,19 @@
 
       this.Redraw = function() {
          var line = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(line);
+             lineatt = JSROOT.Painter.createAttLine(line),
+             kLineNDC = JSROOT.BIT(14),
+             isndc = line.TestBit(kLineNDC);
 
          // create svg:g container for line drawing
          this.RecreateDrawG(true, "text_layer");
 
          this.draw_g
              .append("svg:line")
-             .attr("x1", this.AxisToSvg("x", line.fX1))
-             .attr("y1", this.AxisToSvg("y", line.fY1))
-             .attr("x2", this.AxisToSvg("x", line.fX2))
-             .attr("y2", this.AxisToSvg("y", line.fY2))
+             .attr("x1", this.AxisToSvg("x", line.fX1, isndc))
+             .attr("y1", this.AxisToSvg("y", line.fY1, isndc))
+             .attr("x2", this.AxisToSvg("x", line.fX2, isndc))
+             .attr("y2", this.AxisToSvg("y", line.fY2, isndc))
              .call(lineatt.func);
       }
 
@@ -643,17 +645,18 @@
       this.Redraw = function() {
          var polyline = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(polyline),
-             fillatt = this.createAttFill(polyline);
+             fillatt = this.createAttFill(polyline),
+             kPolyLineNDC = JSROOT.BIT(14),
+             isndc = polyline.TestBit(kPolyLineNDC),
+             cmd = "";
 
          // create svg:g container for polyline drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var cmd = "M";
-         for (var n=0;n<=polyline.fLastPoint;++n) {
-            if (n>0) cmd += "L";
-            cmd += this.AxisToSvg("x", polyline.fX[n]) + "," +
-                   this.AxisToSvg("y", polyline.fY[n]);
-         }
+         for (var n=0;n<=polyline.fLastPoint;++n)
+            cmd += ((n>0) ? "L" : "M") +
+                   this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
+                   this.AxisToSvg("y", polyline.fY[n], isndc);
          if (fillatt.color!=='none') cmd+="Z";
 
          this.draw_g
@@ -682,10 +685,10 @@
          // create svg:g container for box drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x1 = this.AxisToSvg("x", box.fX1),
-             x2 = this.AxisToSvg("x", box.fX2),
-             y1 = this.AxisToSvg("y", box.fY1),
-             y2 = this.AxisToSvg("y", box.fY2);
+         var x1 = this.AxisToSvg("x", box.fX1, false),
+             x2 = this.AxisToSvg("x", box.fX2, false),
+             y1 = this.AxisToSvg("y", box.fY1, false),
+             y2 = this.AxisToSvg("y", box.fY2, false);
 
          // if box filled, contor line drawn only with "L" draw option:
          if ((fillatt.color != 'none') && !this.draw_line) lineatt.color = "none";
@@ -715,13 +718,15 @@
 
       this.Redraw = function() {
          var marker = this.GetObject(),
-             att = JSROOT.Painter.createAttMarker(marker);
+             att = JSROOT.Painter.createAttMarker(marker),
+             kMarkerNDC = JSROOT.BIT(14),
+             isndc = marker.TestBit(kMarkerNDC);
 
          // create svg:g container for box drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x = this.AxisToSvg("x", marker.fX),
-             y = this.AxisToSvg("y", marker.fY);
+         var x = this.AxisToSvg("x", marker.fX, isndc),
+             y = this.AxisToSvg("y", marker.fY, isndc);
 
          var path = att.create(x,y);
 
@@ -754,10 +759,10 @@
          // create svg:g container for line drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x1 = this.AxisToSvg("x", arrow.fX1),
-             y1 = this.AxisToSvg("y", arrow.fY1),
-             x2 = this.AxisToSvg("x", arrow.fX2),
-             y2 = this.AxisToSvg("y", arrow.fY2),
+         var x1 = this.AxisToSvg("x", arrow.fX1, false),
+             y1 = this.AxisToSvg("y", arrow.fY1, false),
+             x2 = this.AxisToSvg("x", arrow.fX2, false),
+             y2 = this.AxisToSvg("y", arrow.fY2, false),
              right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
              left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
              m_start = null, m_mid = null, m_end = null, defs = null,
@@ -840,7 +845,7 @@
          if (m_end) path.style("marker-end","url(#" + m_end + ")");
       }
 
-      if (!('arrowcnt' in JSROOT.Painter)) JSROOT.Painter.arrowcnt = 0;
+      if (!JSROOT.Painter.arrowcnt) JSROOT.Painter.arrowcnt = 1;
 
       this.Redraw(); // actual drawing
       return this.DrawingReady();
