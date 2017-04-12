@@ -4942,11 +4942,10 @@
                   continue;
                case "rect":
                case "box": {
-                  var x1 = this.AxisToSvg("x", obj.fBuf[indx]),
-                      y1 = this.AxisToSvg("y", obj.fBuf[indx+1]),
-                      x2 = this.AxisToSvg("x", obj.fBuf[indx+2]),
-                      y2 = this.AxisToSvg("y", obj.fBuf[indx+3]);
-                  indx += 4;
+                  var x1 = this.AxisToSvg("x", obj.fBuf[indx++]),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx++]),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx++]),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx++]);
 
                   if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
 
@@ -4968,12 +4967,11 @@
                case "linendc": {
 
                   var isndc = (oper==="linendc"),
-                      x1 = this.AxisToSvg("x", obj.fBuf[indx], isndc),
-                      y1 = this.AxisToSvg("y", obj.fBuf[indx+1], isndc),
-                      x2 = this.AxisToSvg("x", obj.fBuf[indx+2], isndc),
-                      y2 = this.AxisToSvg("y", obj.fBuf[indx+3], isndc);
+                      x1 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx++], isndc),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  indx += 4;
                   if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
 
                   this.draw_g
@@ -5025,12 +5023,28 @@
                   continue;
                }
 
+               case "text":
+               case "textndc": {
+                  var isndc = (oper==="textndc"),
+                      xx = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      yy = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+
+                  if (attr) {
+                     var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
+
+                     this.StartTextDrawing(attr.fTextFont, height);
+
+                     // todo - correct support of angle
+                     this.DrawText(attr.fTextAlign, xx, yy, 0, 0, obj.fOper.arr[k].fString, JSROOT.Painter.root_colors[attr.fTextColor]);
+
+                     this.FinishTextDrawing();
+                  }
+                  continue;
+               }
 
                default:
                   console.log('unsupported operation', oper);
             }
-
-
 
          }
       }
