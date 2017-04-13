@@ -108,8 +108,7 @@
     return decodeURIComponent(data);
   }
 
-  function svgAsDataUri(el, options, cb) {
-    options = options || {};
+  function svgAsDataSVG(el, options, cb) {
     options.scale = options.scale || 1;
     var xmlns = "http://www.w3.org/2000/xmlns/";
 
@@ -120,7 +119,7 @@
       if(el.tagName == 'svg') {
         width = options.width || getDimension(el, clone, 'width');
         height = options.height || getDimension(el, clone, 'height');
-      } else if(el.getBBox) {
+      } else if (el.getBBox) {
         var box = el.getBBox();
 
         // SL - use other coordinates if single element is cloned
@@ -154,26 +153,29 @@
 
       outer.appendChild(clone);
 
-      var css = styles(el, options.selectorRemap);
-      var s = document.createElement('style');
-      s.setAttribute('type', 'text/css');
-      s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
-      var defs = document.createElement('defs');
-      defs.appendChild(s);
-      clone.insertBefore(defs, clone.firstChild);
-
-      var svg = doctype + outer.innerHTML;
-      var uri = 'data:image/svg+xml;base64,' + window.btoa(reEncode(svg));
-      if (cb) {
-        cb(uri);
+      if (options.useGlobalStyle) {
+         // SL: make it optional, JSROOT graphics does not uses global document styles
+         var css = styles(el, options.selectorRemap);
+         var s = document.createElement('style');
+         s.setAttribute('type', 'text/css');
+         s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
+         var defs = document.createElement('defs');
+         defs.appendChild(s);
+         clone.insertBefore(defs, clone.firstChild);
       }
+
+      cb(outer.innerHTML);
+
     });
   }
 
   JSROOT.saveSvgAsPng = function(el, options, call_back) {
      options = options || {};
 
-     svgAsDataUri(el, options, function(uri) {
+     svgAsDataSVG(el, options, function(svg) {
+
+        if (options.result==="svg") return JSROOT.CallBack(call_back, svg);
+
         var image = new Image();
         image.onload = function() {
            if (options.result==="image") return JSROOT.CallBack(call_back, image);
@@ -201,7 +203,7 @@
            a.click();
         }
 
-        image.src = uri;
+        image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
     });
   }
 
