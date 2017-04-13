@@ -2504,12 +2504,11 @@
             console.log('GET REQUEST FOR FILE', fname, id);
 
             var painter = pthis.FindSnap(id);
-            if (!painter) return;
-
-            painter.SaveAsPng(painter.iscan, fname, function(res) {
-               console.log('IMAGE CREATED - WHAT ELSE?');
-
-            });
+            if (painter)
+               painter.SaveAsPng(painter.iscan, "image.svg", function(res) {
+                  console.log('SVG IMAGE CREATED', res ? res.length : "");
+                  if (res) conn.send("GETIMG:" + fname + ":" + res);
+               });
 
          } else {
             console.log("msg",d);
@@ -5082,7 +5081,7 @@
       elem.selectAll(".btns_layer").style("display","none");
 
       var options = { name: filename };
-      if (call_back) options.result = "canvas";
+      if (call_back) options.result = "svg";
 
       JSROOT.saveSvgAsPng(elem.node(), options , function(res) {
 
