@@ -2490,6 +2490,27 @@
             conn.send('READY'); // send ready message back
             if (typeof pthis._getmenu_callback == 'function')
                pthis._getmenu_callback(lst);
+         } else
+         if (d.substr(0,7)=='GETIMG:') {
+
+            console.log('d',d);
+
+            d = d.substr(7);
+            var p = d.indexOf(":"),
+                id = d.substr(0,p),
+                fname = d.substr(p+1);
+            conn.send('READY'); // send ready message back
+
+            console.log('GET REQUEST FOR FILE', fname, id);
+
+            var painter = pthis.FindSnap(id);
+            if (!painter) return;
+
+            painter.SaveAsPng(painter.iscan, fname, function(res) {
+               console.log('IMAGE CREATED - WHAT ELSE?');
+
+            });
+
          } else {
             console.log("msg",d);
          }
@@ -2503,7 +2524,7 @@
 
       conn.onerror = function (err) {
          console.log("err",err);
-         conn.close();
+         // conn.close();
       }
    }
 
@@ -3408,12 +3429,16 @@
       menu.add("Save as frame.png", function(arg) {
          var top = this.svg_frame();
          if (!top.empty())
-            JSROOT.AssertPrerequisites("savepng", function() {
-               saveSvgAsPng(top.node(), "frame.png");
-            });
+            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
       });
 
       return true;
+   }
+
+   JSROOT.saveSvgAsPng = function(el, options, call_back) {
+      JSROOT.AssertPrerequisites("savepng", function() {
+         JSROOT.saveSvgAsPng(el, options, call_back);
+      });
    }
 
    JSROOT.TFramePainter.prototype.IsTooltipShown = function() {
@@ -4876,6 +4901,23 @@
       draw_callback(null);
    }
 
+   JSROOT.TPadPainter.prototype.FindSnap = function(snapid) {
+
+      if (this.snapid === snapid) return this;
+
+      if (!this.painters) return null;
+
+      for (var k=0;k<this.painters.length;++k) {
+         var sub = this.painters[k];
+
+         if (typeof sub.FindSnap === 'function') sub = sub.FindSnap(snapid);
+         else if (sub.snapid !== snapid) sub = null;
+
+         if (sub) return sub;
+      }
+
+      return null;
+   }
 
    JSROOT.TPadPainter.prototype.RedrawSnap = function(snap, call_back) {
       // for the canvas snapshot constains list of objects
@@ -4980,7 +5022,7 @@
 
    }
 
-   JSROOT.TPadPainter.prototype.SaveAsPng = function(full_canvas, filename) {
+   JSROOT.TPadPainter.prototype.SaveAsPng = function(full_canvas, filename, call_back) {
       if (!filename) {
          filename = this.this_pad_name;
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
@@ -5035,16 +5077,24 @@
 //            document.body.removeChild(link); //remove the link when done
 //         }
 //      } else
-      JSROOT.AssertPrerequisites("savepng", function() {
 
-         elem.selectAll(".btns_layer").style("display","none");
-         saveSvgAsPng(elem.node(), filename);
+
+      elem.selectAll(".btns_layer").style("display","none");
+
+      var options = { name: filename };
+      if (call_back) options.result = "canvas";
+
+      JSROOT.saveSvgAsPng(elem.node(), options , function(res) {
+
          elem.selectAll(".btns_layer").style("display","");
 
          elem.selectAll(".temp_saveaspng").remove();
 
          document.body.style.cursor = 'auto';
+
+         if (call_back) JSROOT.CallBack(call_back, res);
       });
+
    }
 
    JSROOT.TPadPainter.prototype.PadButtonClick = function(funcname) {
