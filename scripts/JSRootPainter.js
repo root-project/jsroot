@@ -1524,8 +1524,8 @@
 
       // set attributes for debugging
       if (this.draw_object!==null) {
-         this.draw_g.attr('objname', this.draw_object.fName || "name");
-         this.draw_g.attr('objtype', this.draw_object._typename || "type");
+         this.draw_g.attr('objname', encodeURI(this.draw_object.fName || "name"));
+         this.draw_g.attr('objtype', encodeURI(this.draw_object._typename || "type"));
       }
 
       return this.draw_g;
