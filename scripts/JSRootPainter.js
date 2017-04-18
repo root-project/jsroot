@@ -2686,6 +2686,11 @@
          menu.add("endsub:");
          menu.add("endsub:");
       }
+
+      menu.add("Remove", function() {
+         this.RemoveDrawG();
+      });
+
    }
 
    JSROOT.TObjectPainter.prototype.TextAttContextMenu = function(menu, prefix) {
@@ -5084,6 +5089,8 @@
       if (call_back) options.result = "svg";
 
       JSROOT.saveSvgAsPng(elem.node(), options , function(res) {
+
+         if (res===null) console.warn('problem when produce image');
 
          elem.selectAll(".btns_layer").style("display","");
 

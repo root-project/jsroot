@@ -203,6 +203,10 @@
            a.click();
         }
 
+        image.onerror = function(arg) {
+           JSROOT.CallBack(call_back, null);
+        }
+
         image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
     });
   }
