@@ -5,6 +5,7 @@
 2. Fix - ignore NaN value in saved TF1 buffer
 3. Fix - correctly treat transparancy in geo painter
 4. Fix - disable useFontCache for SVG mathjax output
+5. Fix - produce PNG image for objects with special symbols in names
 
 
 ## Changes in 5.1.1
