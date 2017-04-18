@@ -2427,23 +2427,89 @@
    }
 
 
+   JSROOT.LongPollSocket = function(addr) {
+
+      this.path = addr;
+      this.connid = null;
+      this.req = null;
+
+      this.nextrequest = function(data, kind) {
+         var url = this.path;
+         if (kind === "connect") {
+            url+="?connect"; this.connid="connect";
+         } else
+         if (kind === "close") {
+            if ((this.connid===null) || (this.connid==="close")) return;
+            url+="?connection="+this.connid + "&close";
+            this.connid="close";
+         } else
+         if ((this.connid===null) || (typeof this.connid!=='number')) {
+            return console.error("No connection");
+         } else {
+            url+="?connection="+this.connid;
+            if (kind==="dummy") url+="&dummy";
+         }
+
+         this.req = JSROOT.NewHttpRequest(url, (data ? "posttext" : "text"), this.processreq.bind(this));
+         this.req.send(data);
+      }
+
+      this.processreq = function(res) {
+         if (res===null) {
+            if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
+            // if (typeof this.onclose === 'function') this.onclose();
+            this.connid = null;
+            return;
+         }
+         this.req = null;
+         if (this.connid==="connect") {
+            this.connid = parseInt(res);
+            console.log('Get new connection with id', this.connid);
+            if (typeof this.onopen == 'function') this.onopen();
+         } else
+         if (this.connid==="close") {
+            if (typeof this.onclose == 'function') this.onclose();
+            return;
+         } else {
+            if (typeof this.onmessage==='function')
+               this.onmessage({ data: res });
+         }
+         if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
+      }
+
+      this.send = function(str) { this.nextrequest(str); }
+
+      this.close = function() { this.nextrequest("", "close"); }
+
+      this.nextrequest("","connect");
+
+      return this;
+   }
+
+
    JSROOT.TObjectPainter.prototype.OpenWebsocket = function() {
       // create websocket for current object (canvas)
       // via websocket one recieved many extra information
 
       delete this._websocket;
 
-      var path = window.location.href;
-      path = path.replace("http://", "ws://");
-      path = path.replace("https://", "wss://");
-      var pos = path.indexOf("draw.htm");
-      if (pos < 0) return;
+      var path = window.location.href, conn = null;
 
-      path = path.substr(0,pos) + "root.websocket";
-
-      console.log('open websocket ' + path);
-
-      var conn = new WebSocket(path);
+      if (true) {
+         path = path.replace("http://", "ws://");
+         path = path.replace("https://", "wss://");
+         var pos = path.indexOf("draw.htm");
+         if (pos < 0) return;
+         path = path.substr(0,pos) + "root.websocket";
+         console.log('open websocket ' + path);
+         conn = new WebSocket(path);
+      } else {
+         var pos = path.indexOf("draw.htm");
+         if (pos < 0) return;
+         path = path.substr(0,pos) + "root.longpoll";
+         console.log('open longpoll ' + path);
+         conn = JSROOT.LongPollSocket(path);
+      }
 
       this._websocket = conn;
 
@@ -2511,7 +2577,7 @@
                });
 
          } else {
-            console.log("msg",d);
+            if (d) console.log("urecognized msg",d);
          }
       }
 
@@ -2686,11 +2752,6 @@
          menu.add("endsub:");
          menu.add("endsub:");
       }
-
-      menu.add("Remove", function() {
-         this.RemoveDrawG();
-      });
-
    }
 
    JSROOT.TObjectPainter.prototype.TextAttContextMenu = function(menu, prefix) {

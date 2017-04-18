@@ -684,7 +684,7 @@
 
       var pthis = this, method = "GET";
       if (kind === "head") method = "HEAD"; else
-      if (kind === "multi") method = "POST";
+      if ((kind === "multi") || (kind==="posttext")) method = "POST";
 
       xhr.onreadystatechange = function() {
 
@@ -709,6 +709,7 @@
 
          switch(kind) {
             case "xml": return callback(xhr.responseXML);
+            case "posttext":
             case "text": return callback(xhr.responseText);
             case "object": return callback(pthis.parse(xhr.responseText));
             case "multi": return callback(pthis.parse_multi(xhr.responseText));
