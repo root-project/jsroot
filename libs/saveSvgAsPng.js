@@ -151,6 +151,12 @@
         height
       ].join(" "));
 
+      if (options.removeClass) {
+         var lst = clone.querySelectorAll("." + options.removeClass);
+         for (var k=0; k < (lst ? lst.length : 0); ++k)
+            lst[k].parentNode.removeChild(lst[k]);
+      }
+
       outer.appendChild(clone);
 
       if (options.useGlobalStyle) {
@@ -173,6 +179,10 @@
      options = options || {};
 
      svgAsDataSVG(el, options, function(svg) {
+
+        // replace string like url(&quot;#jsroot_marker_1&quot;) with url(#jsroot_marker_1)
+        // second variant is the only one, supported in SVG files
+        svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
 
         if (options.result==="svg") return JSROOT.CallBack(call_back, svg);
 

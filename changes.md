@@ -28,6 +28,7 @@
     Allows to combine 2D and 3D objects in same PNG image
 14. Improve MathJax.js output. It scales correctly in Firefox, makes correct alignment
     and works significantly faster.
+15. When creating image in SVG format, correctly convert url("#id") references 
 
 
 ## Changes in 5.1.0

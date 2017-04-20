@@ -5144,16 +5144,12 @@
 //      } else
 
 
-      elem.selectAll(".btns_layer").style("display","none");
-
-      var options = { name: filename };
+      var options = { name: filename, removeClass: "btns_layer" };
       if (call_back) options.result = "svg";
 
       JSROOT.saveSvgAsPng(elem.node(), options , function(res) {
 
          if (res===null) console.warn('problem when produce image');
-
-         elem.selectAll(".btns_layer").style("display","");
 
          elem.selectAll(".temp_saveaspng").remove();
 
