@@ -566,7 +566,11 @@
             }
             
             if (entry.url) url = entry.url; else
-            if (entry.asurl) url = ((entry.asurl === "browser") ? "?" : "?nobrowser&") + "file=" + filename + "&item=" + itemname + "&opt=" + opt;
+            if (entry.asurl) {
+               url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
+               url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
+               url += itemname + "&opt=" + opt;
+            }
             
             // console.log('KEY ', keyid, 'opt', opt);
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
