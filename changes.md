@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 5.1.x
+## Changes in 5.1.2
 1. Fix - support newest TFormula in TF1 (#127)
 2. Fix - ignore NaN value in saved TF1 buffer
 3. Fix - correctly treat transparancy in geo painter
