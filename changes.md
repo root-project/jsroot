@@ -29,6 +29,7 @@
 14. Improve MathJax.js output. It scales correctly in Firefox, makes correct alignment
     and works significantly faster.
 15. When creating image in SVG format, correctly convert url("#id") references 
+16. Use latest three.js r85
 
 
 ## Changes in 5.1.0
