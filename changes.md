@@ -3,7 +3,7 @@
 ## Changes in 5.1.2
 1. Fix - support newest TFormula in TF1 (#127)
 2. Fix - ignore NaN value in saved TF1 buffer
-3. Fix - correctly treat transparancy in geo painter
+3. Fix - correctly treat transparency in geo painter
 4. Fix - disable useFontCache for SVG mathjax output
 5. Fix - produce PNG image for objects with special symbols in names
 
