@@ -3126,40 +3126,31 @@
 
    JSROOT.GEO.getBoundingBox = function(node, box3) {
 
+      // extract code of Box3.expandByObject
+      // Major difference - do not traverse hierarchy
+
       if (!node || !node.geometry) return box3;
 
       if (!box3) { box3 = new THREE.Box3(); box3.makeEmpty(); }
 
       node.updateMatrixWorld();
 
-      var v1 = new THREE.Vector3();
-
-      var geometry = node.geometry;
+      var v1 = new THREE.Vector3(),
+          geometry = node.geometry;
 
       if ( geometry.isGeometry ) {
-
          var vertices = geometry.vertices;
-
-         for ( i = 0, l = vertices.length; i < l; i ++ ) {
-
+         for (var i = 0, l = vertices.length; i < l; i ++ ) {
             v1.copy( vertices[ i ] );
             v1.applyMatrix4( node.matrixWorld );
-
             box3.expandByPoint( v1 );
-
          }
-
       } else if ( geometry.isBufferGeometry ) {
-
          var attribute = geometry.attributes.position;
-
          if ( attribute !== undefined ) {
-
-            for ( i = 0, l = attribute.count; i < l; i ++ ) {
-
+            for (var i = 0, l = attribute.count; i < l; i ++ ) {
                // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
                v1.fromBufferAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
-
                box3.expandByPoint( v1 );
             }
          }
