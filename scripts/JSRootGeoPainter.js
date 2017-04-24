@@ -282,7 +282,7 @@
       if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
       if (d.check("DEPTHPNT") || d.check("DPNT")) res.depthMethod = "pnt";
       if (d.check("DEPTHSIZE") || d.check("DSIZE")) res.depthMethod = "size";
-      if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "";
+      if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "dflt";
 
       if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
 

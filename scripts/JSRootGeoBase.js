@@ -2864,45 +2864,40 @@
          // it gives preliminary order of volumes
 
          for (var i=0;i<arr.length;++i) {
-            var mesh = arr[i];
-
-            var center = mesh.$jsroot_center,
+            var mesh = arr[i],
                 box3 = mesh.$jsroot_box3;
 
-            if (!center) {
-               box3 = new THREE.Box3();
-               box3.expandByObject(mesh);
-               center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
-               mesh.$jsroot_center = center;
-               mesh.$jsroot_box3 = box3;
-            }
+            if (!box3)
+               mesh.$jsroot_box3 = box3 = new THREE.Box3().expandByObject(mesh);
 
             if (method === 'size') {
-               mesh.$jsroot_distance = 1 * box3.max.distanceTo(box3.min);
+               mesh.$jsroot_distance = box3.max.distanceTo(box3.min);
                continue;
             }
 
-            var dist = origin.distanceTo(center);
-
-            if (method !== "pnt") {
-               dist = Math.min(dist, origin.distanceTo(box3.min), origin.distanceTo(box3.max));
-
-               var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
-               dist = Math.min(dist, origin.distanceTo(pnt));
-               pnt.set(box3.min.x, box3.max.y, box3.min.z)
-               dist = Math.min(dist, origin.distanceTo(pnt));
-               pnt.set(box3.max.x, box3.min.y, box3.min.z)
-               dist = Math.min(dist, origin.distanceTo(pnt));
-
-               pnt.set(box3.max.x, box3.max.y, box3.min.z)
-               dist = Math.min(dist, origin.distanceTo(pnt));
-
-               pnt.set(box3.max.x, box3.min.y, box3.max.z)
-               dist = Math.min(dist, origin.distanceTo(pnt));
-
-               pnt.set(box3.min.x, box3.max.y, box3.max.z)
-               dist = Math.min(dist, origin.distanceTo(pnt));
+            if (method === "pnt") {
+               var center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
+               mesh.$jsroot_distance = origin.distanceTo(center);
+               continue;
             }
+
+            var dist = Math.min(dist, origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+
+            var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
+            dist = Math.min(dist, origin.distanceTo(pnt));
+            pnt.set(box3.min.x, box3.max.y, box3.min.z)
+            dist = Math.min(dist, origin.distanceTo(pnt));
+            pnt.set(box3.max.x, box3.min.y, box3.min.z)
+            dist = Math.min(dist, origin.distanceTo(pnt));
+
+            pnt.set(box3.max.x, box3.max.y, box3.min.z)
+            dist = Math.min(dist, origin.distanceTo(pnt));
+
+            pnt.set(box3.max.x, box3.min.y, box3.max.z)
+            dist = Math.min(dist, origin.distanceTo(pnt));
+
+            pnt.set(box3.min.x, box3.max.y, box3.max.z)
+            dist = Math.min(dist, origin.distanceTo(pnt));
 
             mesh.$jsroot_distance = dist;
          }
@@ -2918,9 +2913,9 @@
 
          if (method==="ray")
          for (var i=arr.length-1;i>=0;--i) {
-            var mesh = arr[i];
-
-            var direction = mesh.$jsroot_center.clone();
+            var mesh = arr[i],
+                box3 = mesh.$jsroot_box3,
+                direction = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
 
             for(var ntry=0; ntry<2;++ntry) {
 
@@ -2966,8 +2961,11 @@
 
          }
 
-         for (var i=0;i<resort.length;++i)
+         for (var i=0;i<resort.length;++i) {
             resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
+            delete resort[i].$jsroot_index;
+            delete resort[i].$jsroot_distance;
+         }
 
          return true;
       }
