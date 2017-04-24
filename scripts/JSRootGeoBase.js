@@ -2877,6 +2877,11 @@
                mesh.$jsroot_box3 = box3;
             }
 
+            if (method === 'size') {
+               mesh.$jsroot_distance = 1 * box3.max.distanceTo(box3.min);
+               continue;
+            }
+
             var dist = origin.distanceTo(center);
 
             if (method !== "pnt") {
@@ -2994,7 +2999,7 @@
          }
       }
 
-      if (!method || method==="default")
+      if (!method || (method==="dflt"))
          setdefaults(toplevel);
       else
          process(toplevel, 0, 1, 1000000);

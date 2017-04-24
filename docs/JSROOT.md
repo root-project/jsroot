@@ -296,10 +296,11 @@ Following draw options could be specified (separated by semicolon or ';'):
    - zoomFACTOR - set initial zoom factor (FACTOR is integer value from 1 to 10000, default is 100)
    - rotate - enable automatic rotation of the geometry
    - tracks - show tracks from TGeoManager
-   - depthray - calculate rendering order using raytracing (extensive calculations)
-   - depthbox - use distance to nearest point from bounding box for rendering order (default)
-   - depthpnt - use distance to shape center as rendering order
-   - depthdflt - let three.js to calculate rendering order
+   - dray - calculate rendering order using raytracing (extensive calculations)
+   - dbox - use distance to nearest point from bounding box for rendering order (default)
+   - dpnt - use distance to shape center as rendering order
+   - dsize - use volume size as rendering order
+   - ddflt - let three.js to calculate rendering order
 
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:
@@ -360,6 +361,15 @@ Either one do it interactively by drag and drop, or superimpose drawing with `+`
 
 - [item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits](https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits)
 
+
+There is a problem of correct rendering of transparent volumes. To solve problem in general is very expensive 
+(in terms of computing power), therefore several approximation solution can be applied: 
+   * **dpnt**: distance from camera view to the volume center used as rendering order
+   * **dbox**: distance to nearest point from bonding box used as rendering order (**default**)
+   * **dsize**: volume size is used as rendreing order, can be used for centered volumes with many shells around
+   * **dray**: use raycasting to sort volumes in order they appear along rays, comming out of camera point
+   * **ddflt**: default three.js method for rendering transparent volumes       
+For different geometries different methods can be applied. In any case, all opaque volumes rendered first. 
 
 
 ## Reading ROOT files from other servers
@@ -701,4 +711,11 @@ Following options can be specified:
    - doubleside - use double-side material (default only front side is set)
    - wireframe - show wireframe for created materials (default - off)
 
-Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm)
+When transparent volumes appeared in the model, one could use JSROOT.GEO.produceRenderOrder() function
+to correctly set rendering order. It should be used as:
+
+    JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
+    
+Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.    
+
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm).
