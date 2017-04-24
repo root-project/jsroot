@@ -2868,16 +2868,15 @@
                 box3 = mesh.$jsroot_box3;
 
             if (!box3)
-               mesh.$jsroot_box3 = box3 = new THREE.Box3().expandByObject(mesh);
+               mesh.$jsroot_box3 = box3 = JSROOT.GEO.getBoundingBox(mesh);
 
             if (method === 'size') {
-               mesh.$jsroot_distance = box3.max.distanceTo(box3.min);
+               mesh.$jsroot_distance = box3.getSize();
                continue;
             }
 
             if (method === "pnt") {
-               var center = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
-               mesh.$jsroot_distance = origin.distanceTo(center);
+               mesh.$jsroot_distance = origin.distanceTo(box3.getCenter());
                continue;
             }
 
@@ -2915,7 +2914,7 @@
          for (var i=arr.length-1;i>=0;--i) {
             var mesh = arr[i],
                 box3 = mesh.$jsroot_box3,
-                direction = new THREE.Vector3((box3.min.x+box3.max.x)/2, (box3.min.y+box3.max.y)/2, (box3.min.z+box3.max.z)/2);
+                direction = box3.getCenter();
 
             for(var ntry=0; ntry<2;++ntry) {
 
@@ -3123,6 +3122,50 @@
       JSROOT.CallBack(call_back, toplevel);
 
       return toplevel;
+   }
+
+   JSROOT.GEO.getBoundingBox = function(node, box3) {
+
+      if (!node || !node.geometry) return box3;
+
+      if (!box3) { box3 = new THREE.Box3(); box3.makeEmpty(); }
+
+      node.updateMatrixWorld();
+
+      var v1 = new THREE.Vector3();
+
+      var geometry = node.geometry;
+
+      if ( geometry.isGeometry ) {
+
+         var vertices = geometry.vertices;
+
+         for ( i = 0, l = vertices.length; i < l; i ++ ) {
+
+            v1.copy( vertices[ i ] );
+            v1.applyMatrix4( node.matrixWorld );
+
+            box3.expandByPoint( v1 );
+
+         }
+
+      } else if ( geometry.isBufferGeometry ) {
+
+         var attribute = geometry.attributes.position;
+
+         if ( attribute !== undefined ) {
+
+            for ( i = 0, l = attribute.count; i < l; i ++ ) {
+
+               // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
+               v1.fromBufferAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
+
+               box3.expandByPoint( v1 );
+            }
+         }
+      }
+
+      return box3;
    }
 
 
