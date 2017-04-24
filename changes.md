@@ -19,7 +19,9 @@
 7. Introduce JSROOT.GEO.build function to create three.js model for
    any supported TGeo class. Such model can be inserted in any three.js scene
    independent from normal JSROOT drawings.
-8. Improve rendering of TGeo model with transparency.
+8. Improve rendering of geometries with transparency. Use EVE approach, when transparent
+   objects rendered after opaque and without writing depth buffer. Provide different
+   methods to produce render order for transparent objects.
 9. Let specify initial zoom factor for geometry like opt=zoom50.
 10. Support also TPolyMarker3D class in geo painter.
 11. Implement TGeoScaledShape.

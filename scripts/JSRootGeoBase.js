@@ -123,7 +123,7 @@
             prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0. } );
+                             overdraw: 0., depthWrite: !_transparent } );
             prop.material.alwaysTransparent = _transparent;
             prop.material.inherentOpacity = _opacity;
          }
@@ -161,9 +161,13 @@
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0. } );
+                              overdraw: 0., depthWrite: !_transparent } );
          prop.material.alwaysTransparent = _transparent;
          prop.material.inherentOpacity = _opacity;
+
+         //console.log('opacity', _opacity, 'transp', _transparent);
+         //console.log('material', prop.material);
+
       }
 
       return prop;
@@ -2816,6 +2820,14 @@
 
       var raycast = new THREE.Raycaster();
 
+      function setdefaults(top) {
+         if (!top) return;
+         top.traverse(function(obj) {
+            obj.renderOrder = 0;
+            if (obj.material) obj.material.depthWrite = true; // by default depthWriting enabled
+         });
+      }
+
       function traverse(obj, lvl, arr) {
          // traverse hierarchy and extract all childs of given level
          // if (obj.$jsroot_depth===undefined) return;
@@ -2824,7 +2836,16 @@
 
          for (var k=0;k<obj.children.length;++k) {
             var chld = obj.children[k];
-            if (chld.$jsroot_order === lvl) arr.push(chld); else
+            if (chld.$jsroot_order === lvl) {
+               if (chld.material) {
+                  if (chld.material.transparent) {
+                     chld.material.depthWrite = false; // disable depth writing for transparent
+                     arr.push(chld);
+                  } else {
+                     setdefaults(chld);
+                  }
+               }
+            } else
             if ((obj.$jsroot_depth===undefined) || (obj.$jsroot_depth < lvl)) traverse(chld, lvl, arr);
          }
       }
@@ -3006,16 +3027,10 @@
          }
       }
 
-      if (!method || method==="default") {
-         toplevel.traverse(function(mesh) {
-            delete mesh.renderOrder;
-         });
-         return;
-      }
-
-
-      process(toplevel, 0, 1, 1000000);
-
+      if (!method || method==="default")
+         setdefaults(toplevel);
+      else
+         process(toplevel, 0, 1, 1000000);
    }
 
    JSROOT.GEO.build = function(obj, opt, call_back) {
