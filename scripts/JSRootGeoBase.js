@@ -2854,10 +2854,6 @@
          // resort meshes using reycaster and camera position
          // idea to identify meshes which are in front or behind
 
-         var mydebug = false; // (clones!==null);
-
-         if (mydebug) console.log('SORT', minorder, maxorder, arr.length);
-
          if (arr.length>300) {
             // too many of them, just set basic level and exit
             for (var i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
@@ -2919,9 +2915,6 @@
          for (var i=arr.length-1;i>=0;--i) {
             var mesh = arr[i];
 
-            var name = clones ? clones.ResolveStack(mesh.stack).name : "";
-            var debug = ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0));
-
             var direction = mesh.$jsroot_center.clone();
 
             for(var ntry=0; ntry<2;++ntry) {
@@ -2951,16 +2944,7 @@
                direction = new THREE.Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
 
                direction.applyMatrix4(mesh.matrixWorld);
-
-               // console.log(direction, mesh.$jsroot_center);
             }
-
-            if (debug && mydebug && clones) {
-               console.log(name, 'intersects', intersects.length);
-               for (var k1=0;k1<intersects.length;++k1)
-                  console.log('    ', intersects[k1].$jsroot_index, '  ', clones.ResolveStack(intersects[k1].stack).name);
-            }
-
 
             // now push first object in intersects to the front
             for (var k1=0;k1<intersects.length-1;++k1) {
@@ -2975,25 +2959,10 @@
                mesh2.$jsroot_index = i1;
             }
 
-
-            if (debug && mydebug && clones) {
-               console.log('STATE AFTER INTERSECT');
-               for (var ii=0;ii<resort.length;++ii) {
-                  var name = clones.ResolveStack(resort[ii].stack).name;
-                  if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-                    console.log('   ', ii, name);
-               }
-            }
-
          }
 
-         for (var i=0;i<resort.length;++i) {
+         for (var i=0;i<resort.length;++i)
             resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
-            if (!mydebug || !clones) continue;
-            var name = clones.ResolveStack(resort[i].stack).name;
-            if ((name.indexOf('B077_1')>0) || (name.indexOf('TDGN_1')>0) || (name.indexOf('ITSD_1')>0))
-              console.log(i,name);
-         }
 
          return true;
       }
@@ -3004,8 +2973,6 @@
          traverse(obj, lvl, arr);
 
          if (!arr.length) return;
-
-         // console.log('traverse', lvl, 'arr.length', arr.length, 'range', minorder, maxorder);
 
          if (minorder === maxorder) {
             for (var k=0;k<arr.length;++k)
