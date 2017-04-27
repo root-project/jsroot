@@ -84,9 +84,6 @@
    } else
    if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
       // detect Node.js
-
-      console.log('try with node.js')
-
       factory(exports);
 
       exports.nodejs = true; // mark JSROOT as used with Node.js

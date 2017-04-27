@@ -864,7 +864,7 @@
 
          if (JSROOT.nodejs) {
             var options = this.PrepareNodeJSOptions('HEAD'),
-                http = require('http') ;
+                http = require(options.$protocol) ;
 
             http.request(options, function(resp) {
                if (!resp.headers['accept-ranges'])
@@ -895,9 +895,9 @@
    }
 
    JSROOT.TFile.prototype.PrepareNodeJSOptions = function(meth) {
-      var options = { /*_protocol: 'http',*/ method: meth || 'GET' }, url = this.fURL;
-      if (url.indexOf("https://")==0) { /* options._protocol = "https"; */ url = url.substr(8); } else
-      if (url.indexOf("http://")==0) { /* options._protocol = "http"; */ url = url.substr(7); };
+      var options = { $protocol: 'http', method: meth || 'GET' }, url = this.fURL;
+      if (url.indexOf("https://")==0) { options.$protocol = "https"; url = url.substr(8); } else
+      if (url.indexOf("http://")==0) { options.$protocol = "http";  url = url.substr(7); };
 
       var pp = url.indexOf("/");
       if (pp<0) throw new Error('Not found / in the URL ' + this.fURL);
@@ -952,7 +952,8 @@
 
          if (JSROOT.nodejs) {
             var options = file.PrepareNodeJSOptions('GET'),
-                http = require('http');
+                http = require(options.$protocol);
+
             if (file.fAcceptRanges)
                options.headers = { "Range" : ranges };
 
