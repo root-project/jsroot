@@ -1,37 +1,40 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Implement dropping of TTree object on the geometry drawing.
+1. Basic JSROOT functionality can be used in Node.js:
+       var jsroot = require("path/to/JSRootCore.js");
+   One could parse ROOT JSON and read binary ROOT files    
+2. Implement dropping of TTree object on the geometry drawing.
    This automatically invokes extract_geo_tracks() function, which
    should extract TGeoTracks from provided TTree.
    Example can be found in demo/alice_esd.js and in api.htm.
-2. Implement projection of geometry on given plane.
+3. Implement projection of geometry on given plane.
    One could reuse drawing of geometry in other div (should be drawn with main option).
    In control GUI one could change position of the projection plane
-3. On of the TGeo drawing can be assigned as main. When same object drawn next time,
+4. On of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
-4. Let change background color of geo drawing.
-5. One can change web browser title, providing &title="any string" in URL.
-6. Introduce event status line, which is similar to ROOT TCanvas.
+5. Let change background color of geo drawing.
+6. One can change web browser title, providing &title="any string" in URL.
+7. Introduce event status line, which is similar to ROOT TCanvas.
    Shown information similar to output in tooltip.
    One can enable both tooltips and status line at the same time.
-7. Introduce JSROOT.GEO.build function to create three.js model for
+8. Introduce JSROOT.GEO.build function to create three.js model for
    any supported TGeo class. Such model can be inserted in any three.js scene
    independent from normal JSROOT drawings.
-8. Improve rendering of geometries with transparency. Use EVE approach, when transparent
+9. Improve rendering of geometries with transparency. Use EVE approach, when transparent
    objects rendered after opaque and without writing depth buffer. Provide different
    methods to produce render order for transparent objects.
-9. Let specify initial zoom factor for geometry like opt=zoom50.
-10. Support also TPolyMarker3D class in geo painter.
-11. Implement TGeoScaledShape.
-12. Limit complexity of composite shape. If it has too many components, only most left is used.
-13. When produce canvas or pad screenshot, render 3D objects with SVGRenderer.
+10. Let specify initial zoom factor for geometry like opt=zoom50.
+11. Support also TPolyMarker3D class in geo painter.
+12. Implement TGeoScaledShape.
+13. Limit complexity of composite shape. If it has too many components, only most left is used.
+14. When produce canvas or pad screenshot, render 3D objects with SVGRenderer.
     Allows to combine 2D and 3D objects in same PNG image
-14. Improve MathJax.js output. It scales correctly in Firefox, makes correct alignment
+15. Improve MathJax.js output. It scales correctly in Firefox, makes correct alignment
     and works significantly faster.
-15. When creating image in SVG format, correctly convert url("#id") references 
-16. Use latest three.js r85
+16. When creating image in SVG format, correctly convert url("#id") references 
+17. Use latest three.js r85
 
 
 ## Changes in 5.1.0

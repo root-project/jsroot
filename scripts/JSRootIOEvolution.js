@@ -5,6 +5,11 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'rawinflate'], factory );
+   } else
+   if (global && (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+      require("./rawinflate.min.js");
+
+      factory(require("./JSRootCore.js"));
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error("JSROOT I/O requires JSRootCore.js", "JSRootIOEvolution.js");
@@ -159,7 +164,7 @@
          var fmt = "uncknown", off = 0, HDRSIZE = 9;
 
          if (curr + HDRSIZE >= totallen) {
-            if (!noalert) alert("Error R__unzip: header size exceeds buffer size");
+            if (!noalert) JSROOT.alert("Error R__unzip: header size exceeds buffer size");
             return null;
          }
 
@@ -169,7 +174,7 @@
 
          /*   C H E C K   H E A D E R   */
          if ((fmt !== "new") && (fmt !== "old")) {
-            if (!noalert) alert("R__unzip: " + fmt + " zlib format is not supported!");
+            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " zlib format is not supported!");
             return null;
          }
 
@@ -188,7 +193,7 @@
       }
 
       if (fullres !== tgtsize) {
-         if (!noalert) alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);
+         if (!noalert) JSROOT.alert("R__unzip: fail to unzip data expects " + tgtsize + " , got " + fullres);
          return null;
       }
 
@@ -604,9 +609,8 @@
          var clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
          classInfo.name = this.GetMappedClass(clTag);
 
-         if (classInfo.name === -1) {
-            alert("Did not found class with tag " + clTag);
-         }
+         if (classInfo.name === -1)
+            JSROOT.alert("Did not found class with tag " + clTag);
       }
 
       return classInfo;
@@ -1332,7 +1336,7 @@
          var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
          if (buf.substring(0, 4) !== 'root') {
-            alert("NOT A ROOT FILE! " + file.fURL);
+            JSROOT.alert("NOT A ROOT FILE! " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
          }
          buf.shift(4);
@@ -2207,6 +2211,69 @@
       reader.readAsArrayBuffer(file.slice(place[0], place[0]+place[1]));
    }
 
+   // =============================================================
+
+   JSROOT.TNodejsFile = function(filename, newfile_callback) {
+      JSROOT.TFile.call(this, null);
+      this.fUseStampPar = false;
+      this.fEND = 0;
+      this.fFullURL = filename;
+      this.fURL = filename;
+      this.fFileName = filename;
+
+      var pthis = this;
+
+      pthis.fs = require('fs');
+
+      pthis.fs.open(filename, 'r', function(status, fd) {
+          if (status) {
+              console.log(status.message);
+              return JSROOT.CallBack(newfile_callback, null);
+          }
+          var stats = pthis.fs.fstatSync(fd);
+
+          pthis.fEND = stats.size;
+
+          pthis.fd = fd;
+
+          // return JSROOT.CallBack(newfile_callback, pthis);
+
+          pthis.ReadKeys(newfile_callback);
+
+          //var buffer = new Buffer(100);
+          //fs.read(fd, buffer, 0, 100, 0, function(err, num) {
+          //    console.log(buffer.toString('utf8', 0, num));
+          //});
+      });
+      return this;
+   }
+
+   JSROOT.TNodejsFile.prototype = Object.create(JSROOT.TFile.prototype);
+
+   JSROOT.TNodejsFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
+
+      if (filename)
+         throw new Error("Cannot access other local file "+filename);
+
+      if (!this.fs || !this.fd)
+         throw new Error("File is not opened " + this.fFileName);
+
+      var cnt = 0, blobs = [], file = this;
+
+      function readfunc(err, bytesRead, buf) {
+
+         var res = new DataView(buf.buffer, buf.byteOffset, place[cnt+1]);
+         if (place.length===2) return result_callback(res);
+
+         blobs.push(res);
+         cnt+=2;
+         if (cnt >= place.length) return result_callback(blobs);
+         file.fs.read(file.fd, new Buffer(place[cnt+1]), 0, place[cnt+1], place[cnt], readfunc);
+      }
+
+      file.fs.read(file.fd, new Buffer(place[1]), 0, place[1], place[0], readfunc);
+   }
+
    // =========================================
 
 
@@ -2830,13 +2897,17 @@
    }
 
    JSROOT.OpenFile = function(filename, callback) {
+
+      if (JSROOT.nodejs)
+         return new JSROOT.TNodejsFile(filename, callback);
+
       if (typeof filename === 'object'  && filename.size && filename.name)
          return new JSROOT.TLocalFile(filename, callback);
 
       return new JSROOT.TFile(filename, callback);
    }
 
-   JSROOT.IO.NativeArray = ('Float64Array' in window);
+   JSROOT.IO.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));
 
    JSROOT.IO.ProduceCustomStreamers();
 

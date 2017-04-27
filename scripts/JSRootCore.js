@@ -81,6 +81,14 @@
       if (!require.specified("jsroot"))
          define('jsroot', [], jsroot);
 
+   } else
+   if (global && (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+      // detect Node.js
+
+      factory(exports);
+
+      exports.nodejs = true; // mark JSROOT as used with Node.js
+
    } else {
 
       if (typeof JSROOT != 'undefined')
@@ -92,7 +100,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 21/04/2017";
+   JSROOT.version = "dev 27/04/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -255,6 +263,13 @@
       else
       if ((typeof console != 'undefined') && (typeof console.log == 'function'))
          console.log(value);
+   }
+
+   // wrapper for alert, throw Error in Node.js
+   JSROOT.alert = function(msg) {
+      if (this.nodeis) throw new Error(msg);
+      if (typeof alert === 'function') alert(msg);
+      else JSROOT.console('ALERT: ' + msg);
    }
 
    /// Should be used to reintroduce objects references, produced by TBufferJSON
@@ -769,7 +784,7 @@
          JSROOT.CallBack(callback);
       }
 
-      if ((urllist==null) || (urllist.length==0))
+      if (!urllist)
          return completeLoad();
 
       var filename = urllist, separ = filename.indexOf(";"),
@@ -798,6 +813,13 @@
       if (filename.indexOf("###")===0) {
          isbower = true;
          filename = filename.slice(3);
+      }
+
+      if (JSROOT.nodejs) {
+         console.log('load', filename);
+         if ((filename.indexOf("scripts/")===0) && (filename.indexOf(".js")>0))
+            require("." + filename.substr(7));
+         return completeLoad();
       }
 
       var font_suffix = filename.indexOf('.typeface.json');
