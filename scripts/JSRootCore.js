@@ -82,8 +82,10 @@
          define('jsroot', [], jsroot);
 
    } else
-   if (global && (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
       // detect Node.js
+
+      console.log('try with node.js')
 
       factory(exports);
 

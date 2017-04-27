@@ -6,9 +6,8 @@
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'd3'], factory );
    } else
-   if (global && (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
 
-      console.log('loading painters via node.js');
       factory(require("./JSRootCore.js"), require("./d3.min.js"));
    } else {
 
