@@ -5,6 +5,11 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'd3'], factory );
+   } else
+   if (global && (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+
+      console.log('loading painters via node.js');
+      factory(require("./JSRootCore.js"), require("./d3.min.js"));
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -1366,6 +1371,9 @@
 
    JSROOT.TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
       // return rect with width/height which correspond to the visible area of drawing region
+
+      if (JSROOT.nodejs)
+         return { width : parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
       var rect = elem.node().getBoundingClientRect(),
           res = { width: Math.round(rect.width), height: Math.round(rect.height) };
@@ -5287,7 +5295,7 @@
    JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
 
       // do not add buttons when not allowed
-      if (!JSROOT.gStyle.ToolBar) return;
+      if (!JSROOT.gStyle.ToolBar || JSROOT.nodejs) return;
 
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (group.empty()) return;
@@ -7888,7 +7896,7 @@
    JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
+      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter() || JSROOT.nodejs) return;
 
       var svg = this.svg_frame();
 
@@ -7938,7 +7946,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || !this.is_main_painter()) return;
+      if (this.keys_handler || !this.is_main_painter() || !window) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
@@ -12381,7 +12389,6 @@
 
    /** @fn JSROOT.draw(divid, obj, opt, callback)
     * Draw object in specified HTML element with given draw options  */
-
    JSROOT.draw = function(divid, obj, opt, callback) {
 
       function completeDraw(painter) {
@@ -12510,6 +12517,38 @@
       return JSROOT.draw(divid, obj, opt, callback);
    }
 
+   JSROOT.MakeSVG = function(obj, opt, callback) {
+
+      if (!JSROOT.nodejs) {
+         console.log('SVG can be created only from Node.js');
+         JSROOT.CallBack(callback);
+      }
+
+      var jsdom = require('jsdom');
+
+      jsdom.env({
+           html:'',
+           features:{ QuerySelector:true }, //you need query selector for D3 to work
+           done:function(errors, window) {
+
+        window.d3 = d3.select(window.document); //get d3 into the dom
+
+        var main = window.d3.select('body')
+                    .append('div').attr("width", "1200").attr("height", "800");
+
+        JSROOT.draw(main.node(), obj, opt, function(painter) {
+
+           var svg = main.html();
+
+           // replace string like url(&quot;#jsroot_marker_1&quot;) with url(#jsroot_marker_1)
+           // second variant is the only one, supported in SVG files
+           svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
+
+           JSROOT.CallBack(callback, svg);
+        });
+      }});
+   }
+
    // Check resize of drawn element
    // As first argument divid one should use same argment as for the drawing
    // As second argument, one could specify "true" value to force redrawing of
@@ -12547,6 +12586,7 @@
    // previous message will be overwritten
    // if no argument specified, any shown messages will be removed
    JSROOT.progress = function(msg, tmout) {
+      if (JSROOT.nodejs || !document) return;
       var id = "jsroot_progressbox",
           box = d3.select("#"+id);
 

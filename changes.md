@@ -3,7 +3,7 @@
 ## Changes in dev
 1. Basic JSROOT functionality can be used in Node.js:
        var jsroot = require("path/to/JSRootCore.js");
-   One could parse ROOT JSON and read binary ROOT files    
+   One could parse ROOT JSON, read binary ROOT files and produce SVG.    
 2. Implement dropping of TTree object on the geometry drawing.
    This automatically invokes extract_geo_tracks() function, which
    should extract TGeoTracks from provided TTree.

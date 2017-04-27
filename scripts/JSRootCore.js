@@ -816,9 +816,10 @@
       }
 
       if (JSROOT.nodejs) {
-         console.log('load', filename);
-         if ((filename.indexOf("scripts/")===0) && (filename.indexOf(".js")>0))
+         if ((filename.indexOf("scripts/")===0) && (filename.indexOf(".js")>0)) {
+            console.log('load', filename);
             require("." + filename.substr(7));
+         }
          return completeLoad();
       }
 
@@ -1129,6 +1130,12 @@
    JSROOT.redraw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.redraw(divid, obj, opt, callback);
+      });
+   }
+
+   JSROOT.MakeSVG = function(obj, opt, callback) {
+      JSROOT.AssertPrerequisites("2d", function() {
+         JSROOT.MakeSVG(obj, opt, callback);
       });
    }
 
