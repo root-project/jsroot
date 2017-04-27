@@ -12517,36 +12517,48 @@
       return JSROOT.draw(divid, obj, opt, callback);
    }
 
-   JSROOT.MakeSVG = function(obj, opt, callback) {
+   /** @fn JSROOT.MakeSVG(args, callback)
+    * Create SVG for specified args.object and args.option
+    * One could provide args.width and args.height as size options.
+    * As callback arguemnt one gets SVG code */
+   JSROOT.MakeSVG = function(args, callback) {
 
-      if (!JSROOT.nodejs) {
-         console.log('SVG can be created only from Node.js');
-         JSROOT.CallBack(callback);
+      if (!args) args = {};
+
+      if (!args.object) return JSROOT.CallBack(callback, null);
+
+      function build(main) {
+
+         main.attr("width", args.width || 1200).attr("height", args.height || 800);
+
+         main.style("width", main.attr("width")+"px").style("height", main.attr("height")+"px");
+
+         JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
+
+            var svg = main.html();
+
+            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
+
+            main.remove();
+
+            JSROOT.CallBack(callback, svg);
+         });
       }
 
-      var jsdom = require('jsdom');
+      if (JSROOT.nodejs) {
+         var jsdom = require('jsdom');
+         jsdom.env({
+            html:'',
+            features:{ QuerySelector:true }, //you need query selector for D3 to work
+            done:function(errors, window) {
 
-      jsdom.env({
-           html:'',
-           features:{ QuerySelector:true }, //you need query selector for D3 to work
-           done:function(errors, window) {
+               window.d3 = d3.select(window.document); //get d3 into the dom
 
-        window.d3 = d3.select(window.document); //get d3 into the dom
-
-        var main = window.d3.select('body')
-                    .append('div').attr("width", "1200").attr("height", "800");
-
-        JSROOT.draw(main.node(), obj, opt, function(painter) {
-
-           var svg = main.html();
-
-           // replace string like url(&quot;#jsroot_marker_1&quot;) with url(#jsroot_marker_1)
-           // second variant is the only one, supported in SVG files
-           svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
-
-           JSROOT.CallBack(callback, svg);
-        });
-      }});
+               build(window.d3.select('body').append('div'));
+            }});
+      } else {
+         build(d3.select(window.document).append("div").style("visible", "hidden"));
+      }
    }
 
    // Check resize of drawn element

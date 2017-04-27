@@ -1133,9 +1133,9 @@
       });
    }
 
-   JSROOT.MakeSVG = function(obj, opt, callback) {
+   JSROOT.MakeSVG = function(args, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.MakeSVG(obj, opt, callback);
+         JSROOT.MakeSVG(args, callback);
       });
    }
 
