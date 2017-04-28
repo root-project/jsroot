@@ -6,7 +6,7 @@
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'rawinflate'], factory );
    } else
-   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
       require("./rawinflate.min.js");
 
       factory(require("./JSRootCore.js"));
@@ -908,13 +908,6 @@
       pp = options.host.indexOf(":");
       if (pp>0) { optiont.port = parseInt(options.host.substr(pp+1)); options.host = options.host.substr(0, pp); }
 
-//    options.headers = [];
-//      options.headers['Accept'] = '*/*';
-//      options.headers['Accept-Encoding'] = 'gzip, deflate, sdch';
-//      options.headers['Accept-Language'] = 'en-US,en;q=0.8';
-//      options.headers['User-Agent'] = 'Mozilla/5.0';
-//      options.headers['Content-Type'] = 'text/plain';
-//
       return options;
    }
 
@@ -966,7 +959,7 @@
                });
                resp.on('end', function() {
 
-                  // create binary array ourself - not supported
+                  // create binary array ourself - not supported by http.request
                   var ab = new ArrayBuffer(blob.length);
                   var view = new Uint8Array(ab);
                   for (var k=0;k<blob.length;++k)

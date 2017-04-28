@@ -82,12 +82,13 @@
          define('jsroot', [], jsroot);
 
    } else
-   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
-      // detect Node.js
+   if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
+      // processing with Node.js or CommonJS
+
       factory(exports);
 
-      exports.nodejs = true; // mark JSROOT as used with Node.js
-
+      //  mark JSROOT as used with Node.js
+      exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
    } else {
 
       if (typeof JSROOT != 'undefined')
@@ -99,7 +100,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 27/04/2017";
+   JSROOT.version = "dev 28/04/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -638,16 +639,14 @@
 
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
-      if (typeof window[name] == 'function') return window[name];
       if ((typeof name !== 'string') || (name.indexOf(".") < 0)) return null;
+      var names = name.split('.'), elem = null;
+      if (typeof window === 'object') elem = window;
+      if (names[0]==='JSROOT') { elem = this; names.shift(); }
 
-      var names = name.split('.'), elem = window;
       for (var n=0;n<names.length;++n) {
-         if ((n==0) && (names[0]==='JSROOT'))
-            elem = this;
-         else
-            elem = elem[names[n]];
-         if (!elem) return null;
+         if (!elem || (typeof elem !== 'object')) return null;
+         elem = elem[names[n]];
       }
 
       return (typeof elem == 'function') ? elem : null;

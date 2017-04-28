@@ -9,7 +9,7 @@
       // AMD. Register as an anonymous module.
       define( ['JSRootCore'], factory );
    } else
-   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
        factory(require("./JSRootCore.js"));
    } else {
       if (typeof JSROOT == 'undefined')

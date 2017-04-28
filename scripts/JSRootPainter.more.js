@@ -7,7 +7,7 @@
       // AMD. Register as an anonymous module.
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
    } else
-   if ((typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]')) {
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
        factory(require("./JSRootCore.js"), require("./d3.min.js"), require("./JSRootMath.js"));
    } else {
 
