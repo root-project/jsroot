@@ -639,7 +639,7 @@
 
       this.first_render_tm = 0;
       this.enable_hightlight = false;
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0) && !JSROOT.nodejs;
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
 
       if (JSROOT.nodejs) return;
 

@@ -7,7 +7,9 @@
       define( ['JSRootCore', 'd3'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"), require("./d3.min.js"));
+      var jsroot = require("./JSRootCore.js");
+      factory(jsroot, require("./d3.min.js"));
+      if (jsroot.nodejs) jsroot.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -5294,7 +5296,7 @@
    JSROOT.TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
 
       // do not add buttons when not allowed
-      if (!JSROOT.gStyle.ToolBar || JSROOT.nodejs) return;
+      if (!JSROOT.gStyle.ToolBar) return;
 
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (group.empty()) return;
@@ -7895,7 +7897,7 @@
    JSROOT.THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter() || JSROOT.nodejs) return;
+      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
       var svg = this.svg_frame();
 
