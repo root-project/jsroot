@@ -2,6 +2,7 @@
   "name": "jsroot",
   "version": "5.2.0",
   "description": "JavaScript ROOT",
+  "homepage": "https://root.cern/js/",
   "main": "./scripts/JSRootCore.js",
   "contributors": [
     {
