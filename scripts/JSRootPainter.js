@@ -61,8 +61,7 @@
                 'M483.885,136.845H28.782c-15.708,0-28.451,12.741-28.451,28.451c0,15.711,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.74,28.451-28.451C512.331,149.586,499.599,136.845,483.885,136.845z' +
                 'M483.885,273.275H28.782c-15.708,0-28.451,12.731-28.451,28.452c0,15.707,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.744,28.451-28.451C512.337,286.007,499.599,273.275,483.885,273.275z' +
                 'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
-                },
-
+      },
       circle: { path: "M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0" },
       three_circles: { path: "M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 " },
       diamand: { path: "M256,0L384,256L256,511L128,256z" },
@@ -12546,7 +12545,12 @@
          });
       }
 
-      if (JSROOT.nodejs) {
+      if (!JSROOT.nodejs) {
+         build(d3.select(window.document).append("div").style("visible", "hidden"));
+      } else
+      if (JSROOT.nodejs_document) {
+         build(JSROOT.nodejs_window.d3.select('body').append('div'));
+      } else {
          var jsdom = require('jsdom');
          jsdom.env({
             html:'',
@@ -12554,12 +12558,11 @@
             done:function(errors, window) {
 
                window.d3 = d3.select(window.document); //get d3 into the dom
+               JSROOT.nodejs_window = window;
                JSROOT.nodejs_document = window.document; // used with three.js
 
                build(window.d3.select('body').append('div'));
             }});
-      } else {
-         build(d3.select(window.document).append("div").style("visible", "hidden"));
       }
    }
 
