@@ -1,0 +1,26 @@
+{
+  "name": "jsroot",
+  "version": "5.1.2",
+  "description": "JavaScript ROOT",
+  "main": "./scripts/JSRootCore.js",
+  "contributors": [
+    {
+      "name": "Bertrand Bellenot",
+      "email": "bertrand.bellenot@cern.ch"
+    },
+    {
+      "name": "Sergey Linev",
+      "email": "s.linev@gsi.de"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^3.1.2"
+  },
+  "repository" : { "type" : "git" , "url" : "https://github.com/root-project/jsroot.git" },
+  "files": [
+    "scripts/*",
+    "style/*",
+    "/LICENSE"
+   ]
+}
