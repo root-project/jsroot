@@ -643,7 +643,7 @@
 
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
-      if ((typeof name !== 'string') || (name.indexOf(".") < 0)) return null;
+      if (typeof name !== 'string') return null;
       var names = name.split('.'), elem = null;
       if (typeof window === 'object') elem = window;
       if (names[0]==='JSROOT') { elem = this; names.shift(); }
