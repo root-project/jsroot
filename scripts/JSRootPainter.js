@@ -7,8 +7,6 @@
       define( ['JSRootCore', 'd3'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-      console.log('in painter', typeof module);
-
       factory(require("./JSRootCore.js"), require("./d3.min.js"));
    } else {
 
@@ -1662,8 +1660,9 @@
       // 0 - no embedding, 3D drawing take full size of canvas
       // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
       // 2 - normall embedding via ForeginObject, works only with Firefox
-      // 3 - normal embedding of SVG canvas, should work for all browsers (only for debug purposes)
+      // 3 - embedding 3D drawing as SVG canvas, requires SVG renderer
 
+      if (JSROOT.nodejs) return 3;
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
@@ -1806,7 +1805,7 @@
          if (onlyget) return elem;
 
          if (size.can3d === 3) {
-            // this is SVG mode, used only for debugging
+            // this is SVG mode
 
             if (elem.empty())
                elem = layer.append("g").attr("class", size.clname);
@@ -7946,7 +7945,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || !this.is_main_painter() || !window) return;
+      if (this.keys_handler || !this.is_main_painter() || JSROOT.nodejs || (typeof window == 'undefined')) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
@@ -12553,6 +12552,7 @@
             done:function(errors, window) {
 
                window.d3 = d3.select(window.document); //get d3 into the dom
+               JSROOT.nodejs_document = window.document; // used with three.js
 
                build(window.d3.select('body').append('div'));
             }});

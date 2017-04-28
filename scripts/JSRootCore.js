@@ -644,10 +644,8 @@
       if (typeof window === 'object') elem = window;
       if (names[0]==='JSROOT') { elem = this; names.shift(); }
 
-      for (var n=0;n<names.length;++n) {
-         if (!elem || (typeof elem !== 'object')) return null;
+      for (var n=0;elem && (n<names.length);++n)
          elem = elem[names[n]];
-      }
 
       return (typeof elem == 'function') ? elem : null;
    }

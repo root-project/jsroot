@@ -4,24 +4,27 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['d3', 'JSRootPainter', 'threejs', 'threejs_all'], factory );
+      define( ['JSRootPainter', 'd3', 'threejs', 'threejs_all'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      factory(require("./JSRootCore.js"), require("./d3.min.js"), require("./three.min.js"), require("./three.extra.min.js"));
    } else {
 
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRoot3DPainter.js');
 
       if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.v3.js', 'JSRoot3DPainter.js');
-
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
+         throw new Error('This extension requires d3.js', 'JSRoot3DPainter.js');
 
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
-      factory(d3, JSROOT, THREE);
+      factory(JSROOT, d3, THREE);
    }
-} (function(d3, JSROOT, THREE) {
+} (function(JSROOT, d3, THREE) {
+
+   if (typeof JSROOT.Painter != 'object')
+      throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
    JSROOT.Painter.TestWebGL = function() {
       // return true if WebGL should be used
@@ -584,7 +587,7 @@
          return;
       }
 
-      this.usesvg = false; // only for debug, interactivity does not work, can be used later for batch image production
+      this.usesvg = JSROOT.nodejs; // SVG used in batch mode
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
@@ -615,13 +618,13 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
-      this.webgl = JSROOT.Painter.TestWebGL();
-
-      if (this.usesvg)
-         this.renderer = new THREE.SVGRenderer({ antialias : true, alpha: true });
-      else
+      if (this.usesvg) {
+         this.renderer = new THREE.SVGRenderer({ antialias: true, alpha: true });
+      } else {
+         this.webgl = JSROOT.Painter.TestWebGL();
          this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
                                       new THREE.CanvasRenderer({ antialias : true, alpha: true });
+      }
 
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
@@ -636,7 +639,9 @@
 
       this.first_render_tm = 0;
       this.enable_hightlight = false;
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0) && !JSROOT.nodejs;
+
+      if (JSROOT.nodejs) return;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
@@ -2640,7 +2645,7 @@
       if (tmout === -1111) {
          // special handling for SVG renderer
 
-         var rrr = new THREE.SVGRenderer({ antialias : true, alpha: true });
+         var rrr = new THREE.SVGRenderer({ antialias: true, alpha: true });
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
          return rrr.domElement;
@@ -2648,7 +2653,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if (tmout <= 0) {
+      if ((tmout <= 0) || this.usesvg) {
          if ('render_tmout' in this)
             clearTimeout(this.render_tmout);
 
