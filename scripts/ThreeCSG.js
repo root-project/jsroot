@@ -2,7 +2,7 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( [ 'threejs' ], factory );
-   }
+   } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
       factory(require("./three.min.js"), exports);
    } else {
@@ -10,13 +10,12 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'ThreeCSG.js');
 
-      ThreeBSP = factory(THREE, {});
+      ThreeBSP = factory(THREE);
    }
-} (function( THREE,  ThreeBSP) {
+} (function( THREE) {
 
-   if (typeof ThreeBSP == 'undefined') ThreeBSP = {};
-
-   var EPSILON = 1e-5,
+   var ThreeBSP = {},
+       EPSILON = 1e-5,
        COPLANAR = 0,
        FRONT = 1,
        BACK = 2,

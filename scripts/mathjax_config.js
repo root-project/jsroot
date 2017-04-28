@@ -6,4 +6,7 @@ MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
    VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
    VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
 });
-MathJax.Ajax.loadComplete(JSROOT.source_dir + "scripts/mathjax_config.js");
+if (typeof JSROOT == 'undefined')
+   MathJax.Ajax.loadComplete("scripts/mathjax_config.js");
+else
+   MathJax.Ajax.loadComplete(JSROOT.source_dir + "scripts/mathjax_config.js");

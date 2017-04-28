@@ -7,18 +7,18 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      var jsroot = factory({});
-
-      var dir = jsroot.source_dir + "scripts/", ext = jsroot.source_min ? ".min" : "";
-
-      var paths = {
+      var jsroot = factory({})
+          dir = jsroot.source_dir + "scripts/",
+          ext = jsroot.source_min ? ".min" : "",
+          norjs = (typeof requirejs=='undefined'),
+          paths = {
             'd3'                   : dir+'d3.min',
             'jquery'               : dir+'jquery.min',
             'jquery-ui'            : dir+'jquery-ui.min',
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate.min',
-            'MathJax'              : 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+            'MathJax'              : 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG,&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng.min',
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
@@ -36,50 +36,54 @@
             'JSRootGeoPainter'     : dir+'JSRootGeoPainter'+ext
          };
 
-      var cfg_paths;
-      if ((requirejs.s!==undefined) && (requirejs.s.contexts !== undefined) && ((requirejs.s.contexts._!==undefined) &&
-           requirejs.s.contexts._.config!==undefined)) cfg_paths = requirejs.s.contexts._.config.paths;
-                                                 else console.warn("Require.js paths changed - please contact JSROOT developers");
+      if (norjs) {
+         // just define locations
+         paths['MathJax'] = 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG,'+dir+'mathjax_config.js&amp;delayStartupUntil=configured';
 
-      // check if modules are already loaded
-      for (var module in paths)
-         if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
-            delete paths[module];
+         require({ paths: paths });
+      } else {
+         var cfg_paths;
+         if ((requirejs.s!==undefined) && (requirejs.s.contexts !== undefined) && ((requirejs.s.contexts._!==undefined) &&
+               requirejs.s.contexts._.config!==undefined)) cfg_paths = requirejs.s.contexts._.config.paths;
+         else console.warn("Require.js paths changed - please contact JSROOT developers");
 
-      // configure all dependencies
-      requirejs.config({
-        paths: paths,
-        shim: {
-         'jqueryui-mousewheel': { deps: ['jquery-ui'] },
-         'jqueryui-touch-punch': { deps: ['jquery-ui'] },
-         'threejs_all': { deps: [ 'threejs'] },
-         'ThreeCSG' : { deps: [ 'threejs'] },
-         'MathJax': {
-             exports: 'MathJax',
-             init: function () {
-                MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }, SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
-                MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
-                   var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
-                   VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
-                   VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
-                   VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
-                   VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
-                });
-                MathJax.Hub.Startup.onload();
-                return MathJax;
+         // check if modules are already loaded
+         for (var module in paths)
+            if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
+               delete paths[module];
+
+         // configure all dependencies
+         requirejs.config({
+            paths: paths,
+            shim: {
+               'jqueryui-mousewheel': { deps: ['jquery-ui'] },
+               'jqueryui-touch-punch': { deps: ['jquery-ui'] },
+               'MathJax': {
+                  exports: 'MathJax',
+                  init: function () {
+                     MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }, SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
+                     MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
+                        var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+                        VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+                        VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+                        VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
+                        VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
+                     });
+                     MathJax.Hub.Startup.onload();
+                     return MathJax;
+                  }
              }
-          }
-       }
-      });
+            }
+         });
+      }
 
-      // AMD. Register as an anonymous module.
       define( jsroot );
 
-      if (!require.specified("JSRootCore"))
-          define('JSRootCore', [], jsroot);
+      if (norjs || !require.specified("JSRootCore"))
+         define('JSRootCore', [], jsroot);
 
-      if (!require.specified("jsroot"))
-         define('jsroot', [], jsroot);
+     if (norjs || !require.specified("jsroot"))
+        define('jsroot', [], jsroot);
 
    } else
    if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
