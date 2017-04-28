@@ -17,6 +17,7 @@
   "dependencies": {
     "jsdom": "^3.1.2"
   },
+  "repository" : { "type" : "git" , "url" : "https://github.com/root-project/jsroot.git" },
   "files": [
     "scripts/*",
     "style/*",
