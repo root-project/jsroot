@@ -1028,8 +1028,9 @@
       }
 
       if (kind.indexOf("geom;")>=0) {
-         mainfiles += (use_bower ? "###dat.gui" : "&&&scripts") + "/dat.gui.min.js;"+
-                      "$$$scripts/ThreeCSG" + ext + ".js;" +
+         if (!JSROOT.nodjs && (typeof window !='undefined'))
+            mainfiles += (use_bower ? "###dat.gui" : "&&&scripts") + "/dat.gui.min.js;";
+         mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
                       "$$$scripts/JSRootGeoBase" + ext + ".js;" +
                       "$$$scripts/JSRootGeoPainter" + ext + ".js;";
          extrafiles += "$$$style/JSRootGeoPainter" + ext + ".css;";

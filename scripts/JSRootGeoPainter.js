@@ -4,7 +4,12 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( [ 'd3', 'JSRootPainter', 'threejs', 'dat.gui', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
+      define( [ 'JSRootPainter', 'd3', 'threejs', 'dat.gui', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      var jsroot = require("./JSRootCore.js");
+      if (!jsroot.nodejs && (typeof window != 'undefined')) require("./dat.gui.min.js");
+      factory(jsroot, require("./d3.min.js"), require("./three.min.js"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"));
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -22,9 +27,9 @@
       if (typeof dat == 'undefined')
          throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
 
-      factory( d3, JSROOT, THREE );
+      factory( JSROOT, d3, THREE );
    }
-} (function( d3, JSROOT, THREE ) {
+} (function( JSROOT, d3, THREE ) {
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
@@ -140,7 +145,7 @@
    JSROOT.TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    JSROOT.TGeoPainter.prototype.CreateToolbar = function(args) {
-      if (this._toolbar) return;
+      if (this._toolbar || this._usesvg) return;
       var painter = this;
       var buttonList = [{
          name: 'toImage',
@@ -861,7 +866,7 @@
 
    JSROOT.TGeoPainter.prototype.addOrbitControls = function() {
 
-      if (this._controls) return;
+      if (this._controls || this._usesvg) return;
 
       var painter = this;
 
@@ -1363,7 +1368,7 @@
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
     }
 
-   JSROOT.TGeoPainter.prototype.createScene = function(webgl, w, h, pixel_ratio) {
+   JSROOT.TGeoPainter.prototype.createScene = function(usesvg, webgl, w, h) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 1, 10000);
@@ -1385,11 +1390,15 @@
 
       this._scene.add(this._toplevel);
 
-      this._renderer = webgl ?
-                        new THREE.WebGLRenderer({ antialias : true, logarithmicDepthBuffer: false,
-                                                  preserveDrawingBuffer: true }) :
-                        new THREE.CanvasRenderer({antialias : true });
-      this._renderer.setPixelRatio(pixel_ratio);
+      if (usesvg) {
+         this._renderer = new THREE.SVGRenderer({ antialias: true, alpha: true });
+      } else {
+         this._renderer = webgl ?
+                           new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: false,
+                                                     preserveDrawingBuffer: true }) :
+                           new THREE.CanvasRenderer({ antialias: true });
+         this._renderer.setPixelRatio(window.devicePixelRatio);
+      }
       this._renderer.setClearColor(this.options.background, 1);
       this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
@@ -2425,12 +2434,12 @@
       // activate worker
       if (this.options.use_worker > 0) this.startWorker();
 
-      var size = this.size_for_3d();
+      var size = this.size_for_3d(this._usesvg ? 3 : undefined);
 
       this._fit_main_area = (size.can3d===-1);
          // use direct positioning as main element, can adjust
 
-      this.createScene(this._webgl, size.width, size.height, window.devicePixelRatio);
+      this.createScene(this._usesvg, this._webgl, size.width, size.height);
 
       this.add_3d_canvas(size, this._renderer.domElement);
 
@@ -2521,7 +2530,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if (tmout <= 0) {
+      if ((tmout <= 0) || this._usesvg) {
          if ('render_tmout' in this)
             clearTimeout(this.render_tmout);
 
@@ -3093,7 +3102,9 @@
 
       this.SetDivId(divid, 5);
 
-      this._webgl = JSROOT.Painter.TestWebGL();
+      this._usesvg = JSROOT.nodejs;
+
+      this._webgl = !this._usesvg && JSROOT.Painter.TestWebGL();
 
       this.options = this.decodeOptions(opt);
 

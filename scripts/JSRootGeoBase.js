@@ -5,6 +5,9 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      factory(require("./JSRootCore.js"), require("./three.min.js"), require("./ThreeCSG.js"));
    } else {
 
       if (typeof JSROOT == 'undefined')
