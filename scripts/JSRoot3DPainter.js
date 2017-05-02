@@ -32,6 +32,20 @@
 
    // ========================== temporary here, later move to three.extra.js =============================
 
+
+   THREE.RenderableFaceNew = function () {
+      // compact form with plain array for all important attributes
+
+      this.id = 0;
+      this.z = 0;
+      this.renderOrder = 0;
+      this.arr = new Float32Array(6+3); // 6 positionScreen + 3 normalModel + 9 positionWorld
+
+   };
+
+
+   var gdebug = false;
+
    THREE.ProjectorNew = function () {
 
       var _object, _objectCount, _objectPool = [], _objectPoolLength = 0,
@@ -39,6 +53,7 @@
          _face, _faceCount, _facePool = [], _facePoolLength = 0,
          _line, _lineCount, _linePool = [], _linePoolLength = 0,
          _sprite, _spriteCount, _spritePool = [], _spritePoolLength = 0,
+         _vertex1, _vertex2, _vertex3, _debug = 0,
 
          _renderData = { objects: [], lights: [], elements: [] },
 
@@ -86,7 +101,7 @@
 
       //
 
-      var RenderList = function () {
+      var RenderListNew = function () {
 
          var normals = [];
          var colors = [];
@@ -219,9 +234,15 @@
 
          function pushTriangle( a, b, c ) {
 
-            var v1 = _vertexPool[ a ];
-            var v2 = _vertexPool[ b ];
-            var v3 = _vertexPool[ c ];
+            var v1 = _vertexPool[ a ],
+                v2 = _vertexPool[ b ],
+                v3 = _vertexPool[ c ];
+
+            if (gdebug && (_faceCount<1480)) {
+               console.log('VERT', v1.position.x.toFixed(4), v1.position.y.toFixed(4), v1.position.z.toFixed(4));
+               console.log('VERT', v2.position.x.toFixed(4), v2.position.y.toFixed(4), v2.position.z.toFixed(4));
+               console.log('VERT', v3.position.x.toFixed(4), v3.position.y.toFixed(4), v3.position.z.toFixed(4));
+            }
 
             if ( checkTriangleVisibility( v1, v2, v3 ) === false ) return;
 
@@ -235,6 +256,12 @@
                _face.v3.copy( v3 );
                _face.z = ( v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
+
+
+               if (gdebug && (_faceCount<1480)) console.log(_faceCount, 'PUSH ', _face.z.toFixed(4),
+                     v1.positionScreen.x.toFixed(4), v1.positionScreen.y.toFixed(4),
+                     v2.positionScreen.x.toFixed(4), v2.positionScreen.y.toFixed(4),
+                     v3.positionScreen.x.toFixed(4), v3.positionScreen.y.toFixed(4));
 
                // use first vertex normal as face normal
 
@@ -262,6 +289,79 @@
 
          }
 
+         function pushTriangleNew(pos, norm, ia, ib, ic ) {
+            if (!_vertex1) {
+               _vertex1 = getNextVertexInPool();
+               _vertex2 = getNextVertexInPool();
+               _vertex3 = getNextVertexInPool();
+            }
+
+            _vertex1.position.set( pos[ia], pos[ia+1], pos[ia+2]);
+            projectVertex( _vertex1 );
+
+            _vertex2.position.set( pos[ib], pos[ib+1], pos[ib+2]);
+            projectVertex( _vertex2 );
+
+            _vertex3.position.set( pos[ic], pos[ic+1], pos[ic+2]);
+            projectVertex( _vertex3 );
+
+            _debug++;
+
+            if (gdebug && (_debug<20)) {
+               console.log("VERT", pos[ia].toFixed(4), pos[ia+1].toFixed(4), pos[ia+2].toFixed(4));
+               console.log("VERT", pos[ib].toFixed(4), pos[ib+1].toFixed(4), pos[ib+2].toFixed(4));
+               console.log("VERT", pos[ic].toFixed(4), pos[ic+1].toFixed(4), pos[ic+2].toFixed(4));
+            }
+
+            //if (_debug < 50) console.log('create new triangle');
+
+            if ( checkTriangleVisibility( _vertex1, _vertex2, _vertex3 ) === false ) return;
+
+            //if (_debug < 50)
+            //   console.log('checked visibility', _vertex1.positionScreen.z, _vertex2.positionScreen.z, _vertex3.positionScreen.z, 'cull', checkBackfaceCulling( _vertex1, _vertex2, _vertex3 ));
+
+            if ( material.side === THREE.DoubleSide || checkBackfaceCulling( _vertex1, _vertex2, _vertex3 ) === true )
+              {
+
+               _face = new THREE.RenderableFaceNew();
+
+               _face.id = object.id;
+               _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
+               _face.renderOrder = object.renderOrder;
+
+
+               if (gdebug && (_debug<20)) console.log('PUSH ', _face.z.toFixed(4),
+                     _vertex1.positionScreen.x.toFixed(4), _vertex1.positionScreen.y.toFixed(4),
+                     _vertex2.positionScreen.x.toFixed(4), _vertex2.positionScreen.y.toFixed(4),
+                     _vertex3.positionScreen.x.toFixed(4), _vertex3.positionScreen.y.toFixed(4));
+
+
+
+
+               _face.arr[0] = _vertex1.positionScreen.x;
+               _face.arr[1] = _vertex1.positionScreen.y;
+               _face.arr[2] = _vertex2.positionScreen.x;
+               _face.arr[3] = _vertex2.positionScreen.y;
+               _face.arr[4] = _vertex3.positionScreen.x;
+               _face.arr[5] = _vertex3.positionScreen.y;
+
+               // use first vertex normal as face normal, can improve later
+               _face.arr[6] = norm[ia];
+               _face.arr[7] = norm[ia+1];
+               _face.arr[8] = norm[ia+2];
+
+               // TODO: copy positionWorld for some special materials
+
+               _face.material = object.material;
+
+               _renderData.elements.push( _face );
+
+               //if (_debug < 50)
+               //   console.log('add to render data', _renderData.elements.length);
+            }
+
+         }
+
          return {
             setObject: setObject,
             projectVertex: projectVertex,
@@ -272,12 +372,13 @@
             pushColor: pushColor,
             pushUv: pushUv,
             pushLine: pushLine,
-            pushTriangle: pushTriangle
+            pushTriangle: pushTriangle,
+            pushTriangleNew: pushTriangleNew
          };
 
       };
 
-      var renderList = new RenderList();
+      var renderList = new RenderListNew();
 
       function projectObject( object ) {
 
@@ -361,18 +462,19 @@
 
          //
 
-         var objects = _renderData.objects;
+         var objects = _renderData.objects, _debug2 = 0;
 
          for ( var o = 0, ol = objects.length; o < ol; o ++ ) {
 
-            var object = objects[ o ].object;
-            var geometry = object.geometry;
+            var object = objects[ o ].object,
+                geometry = object.geometry;
 
             renderList.setObject( object );
 
             _modelMatrix = object.matrixWorld;
 
             _vertexCount = 0;
+            _vertex1 = _vertex2 = _vertex3 = null;
 
             if ( object instanceof THREE.Mesh ) {
 
@@ -384,6 +486,36 @@
                   if ( attributes.position === undefined ) continue;
 
                   var positions = attributes.position.array;
+
+                  // if (++_debug2 < 10) console.log(_debug2, 'Process bufgeometry', !!attributes.normal, !!attributes.uv, groups ? groups.length : '-1');
+
+                  // gdebug = (_debug2 === 1);
+
+                  if (attributes.normal && !attributes.uv && groups.length==0) {
+                     // try to cover most important usecase
+
+                     var normals = attributes.normal.array;
+
+                     if ( geometry.index !== null ) {
+                        // with index
+                        var indices = geometry.index.array;
+
+                        for ( var i = 0, l = indices.length; i < l; i += 3 ) {
+                           renderList.pushTriangleNew(positions, normals, indices[ i ], indices[ i + 1 ], indices[ i + 2 ] );
+                        }
+
+                     } else {
+
+                         // without index
+                         for ( var i = 0, l = positions.length; i < l; i += 9 ) {
+                           renderList.pushTriangleNew(positions, normals, i, i + 3, i + 6 );
+                        }
+                     }
+
+                     continue;
+                  }
+
+
 
                   for ( var i = 0, l = positions.length; i < l; i += 3 ) {
 
@@ -421,6 +553,9 @@
 
                      if ( groups.length > 0 ) {
 
+                        if (gdebug) console.log('WITH GROUPS');
+
+
                         for ( var g = 0; g < groups.length; g ++ ) {
 
                            var group = groups[ g ];
@@ -435,6 +570,8 @@
 
                      } else {
 
+                        if (gdebug) console.log('WITH INDEXES');
+
                         for ( var i = 0, l = indices.length; i < l; i += 3 ) {
 
                            renderList.pushTriangle( indices[ i ], indices[ i + 1 ], indices[ i + 2 ] );
@@ -444,6 +581,8 @@
                      }
 
                   } else {
+
+                     if (gdebug) console.log('DIRECT');
 
                      for ( var i = 0, l = positions.length / 3; i < l; i += 3 ) {
 
@@ -950,7 +1089,7 @@
 
       var _this = this,
       _renderData, _elements, _lights,
-      _projector = new THREE.Projector(),
+      _projector = new THREE.ProjectorNew(),
       _svg = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
       _svgWidth, _svgHeight, _svgWidthHalf, _svgHeightHalf,
 
@@ -1101,7 +1240,31 @@
 
             _elemBox.makeEmpty();
 
-            if ( element instanceof THREE.RenderableSprite ) {
+            if ( element instanceof THREE.RenderableFaceNew ) {
+
+               //if (e < 2000) console.log('check new face');
+
+
+               element.arr[0] *= _svgWidthHalf;
+               element.arr[1] *= -_svgHeightHalf;
+               element.arr[2] *= _svgWidthHalf;
+               element.arr[3] *= -_svgHeightHalf;
+               element.arr[4] *= _svgWidthHalf;
+               element.arr[5] *= -_svgHeightHalf;
+
+               _elemBox.min.x = Math.min(element.arr[0], element.arr[2], element.arr[4]);
+               _elemBox.max.x = Math.max(element.arr[0], element.arr[2], element.arr[4]);
+               _elemBox.min.y = Math.min(element.arr[1], element.arr[3], element.arr[5]);
+               _elemBox.max.y = Math.max(element.arr[1], element.arr[3], element.arr[5]);
+
+               if ( _clipBox.intersectsBox( _elemBox ) === true ) {
+
+                  //if (e < 2000) console.log('render new face');
+
+                  renderFace3New( element, material );
+               }
+
+            } else  if ( element instanceof THREE.RenderableSprite ) {
 
                _v1 = element;
                _v1.x *= _svgWidthHalf; _v1.y *= - _svgHeightHalf;
@@ -1332,6 +1495,62 @@
          } else if ( material instanceof THREE.MeshNormalMaterial ) {
 
             _normal.copy( element.normalModel ).applyMatrix3( _normalViewMatrix );
+
+            _color.setRGB( _normal.x, _normal.y, _normal.z ).multiplyScalar( 0.5 ).addScalar( 0.5 );
+
+         }
+
+         if ( material.wireframe ) {
+
+            _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + _color.getStyle() + '; stroke-width: ' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.wireframeLinecap + '; stroke-linejoin: ' + material.wireframeLinejoin );
+
+         } else {
+
+            _svgNode.setAttribute( 'style', 'fill: ' + _color.getStyle() + '; fill-opacity: ' + material.opacity );
+
+         }
+
+         _svg.appendChild( _svgNode );
+
+      }
+
+      function renderFace3New( element, material ) {
+
+         _this.info.render.vertices += 3;
+         _this.info.render.faces ++;
+
+         _svgNode = getPathNode( _pathCount ++ );
+         _svgNode.setAttribute( 'd', 'M ' + element.arr[0] + ' ' + element.arr[1] + ' L ' + element.arr[2] + ' ' + element.arr[3] + ' L ' + element.arr[4] + ' ' + element.arr[5] + 'z' );
+
+         if ( material instanceof THREE.MeshBasicMaterial ) {
+
+            _color.copy( material.color );
+
+            //if ( material.vertexColors === THREE.FaceColors ) {
+            //   _color.multiply( element.color );
+            // }
+
+         } else if ( material instanceof THREE.MeshLambertMaterial || material instanceof THREE.MeshPhongMaterial ) {
+
+            _diffuseColor.copy( material.color );
+
+            //if ( material.vertexColors === THREE.FaceColors ) {
+            //   _diffuseColor.multiply( element.color );
+            //}
+
+            _color.copy( _ambientLight );
+
+            throw new Error('Not yet supported material kinds');
+
+            _centroid.copy( v1.positionWorld ).add( v2.positionWorld ).add( v3.positionWorld ).divideScalar( 3 );
+
+            calculateLight( _lights, _centroid, element.normalModel, _color );
+
+            _color.multiply( _diffuseColor ).add( material.emissive );
+
+         } else if ( material instanceof THREE.MeshNormalMaterial ) {
+
+            _normal.set(element.arr[6], element.arr[7], element.arr[8] ).applyMatrix3( _normalViewMatrix );
 
             _color.setRGB( _normal.x, _normal.y, _normal.z ).multiplyScalar( 0.5 ).addScalar( 0.5 );
 
