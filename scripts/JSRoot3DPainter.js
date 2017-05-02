@@ -335,9 +335,6 @@
                      _vertex2.positionScreen.x.toFixed(4), _vertex2.positionScreen.y.toFixed(4),
                      _vertex3.positionScreen.x.toFixed(4), _vertex3.positionScreen.y.toFixed(4));
 
-
-
-
                _face.arr[0] = _vertex1.positionScreen.x;
                _face.arr[1] = _vertex1.positionScreen.y;
                _face.arr[2] = _vertex2.positionScreen.x;
@@ -1520,7 +1517,7 @@
          _this.info.render.faces ++;
 
          _svgNode = getPathNode( _pathCount ++ );
-         _svgNode.setAttribute( 'd', 'M ' + element.arr[0] + ' ' + element.arr[1] + ' L ' + element.arr[2] + ' ' + element.arr[3] + ' L ' + element.arr[4] + ' ' + element.arr[5] + 'z' );
+         _svgNode.setAttribute( 'd', 'M ' + Math.round(element.arr[0]) + ' ' + Math.round(element.arr[1]) + ' L ' + Math.round(element.arr[2]) + ' ' + Math.round(element.arr[3]) + ' L ' + Math.round(element.arr[4]) + ' ' + Math.round(element.arr[5]) + 'z');
 
          if ( material instanceof THREE.MeshBasicMaterial ) {
 
