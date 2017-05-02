@@ -12527,13 +12527,22 @@
 
       if (!args.object) return JSROOT.CallBack(callback, null);
 
+      if (!args.width) args.width = 1200;
+      if (!args.height) args.height = 800;
+
       function build(main) {
 
-         main.attr("width", args.width || 1200).attr("height", args.height || 800);
+         main.attr("width", args.width).attr("height", args.height);
 
-         main.style("width", main.attr("width")+"px").style("height", main.attr("height")+"px");
+         main.style("width", args.width+"px").style("height", args.height+"px");
 
          JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
+
+            main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
+                              .attr("width", args.width)
+                              .attr("height", args.height)
+                              .attr("style", "").attr("style", null)
+                              .attr("class", null).attr("x", null).attr("y", null);
 
             var svg = main.html();
 
