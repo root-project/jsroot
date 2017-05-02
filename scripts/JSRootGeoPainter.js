@@ -2016,7 +2016,12 @@
       if ((obj._typename === 'TEvePointSet') || (obj._typename === "TPolyMarker3D")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawHit(obj, itemname);
+      } else
+      if (obj._typename === "TEveGeoShapeExtract") {
+         if (add_objects && !this.addExtra(obj, itemname)) return false;
+         isany = this.drawExtraShape(obj, itemname);
       }
+
 
       return isany;
    }
@@ -2213,6 +2218,18 @@
 
       this.getExtrasContainer().add(mesh);
 
+      return true;
+   }
+
+   JSROOT.TGeoPainter.prototype.drawExtraShape = function(obj, itemname)
+   {
+      var toplevel = JSROOT.GEO.build(obj);
+      if (!toplevel) return false;
+
+      toplevel.geo_name = itemname;
+      toplevel.geo_object = obj;
+
+      this.getExtrasContainer().add(toplevel);
       return true;
    }
 
