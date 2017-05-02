@@ -1239,9 +1239,6 @@
 
             if ( element instanceof THREE.RenderableFaceNew ) {
 
-               //if (e < 2000) console.log('check new face');
-
-
                element.arr[0] *= _svgWidthHalf;
                element.arr[1] *= -_svgHeightHalf;
                element.arr[2] *= _svgWidthHalf;
@@ -1255,8 +1252,6 @@
                _elemBox.max.y = Math.max(element.arr[1], element.arr[3], element.arr[5]);
 
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
-
-                  //if (e < 2000) console.log('render new face');
 
                   renderFace3New( element, material );
                }
@@ -1517,7 +1512,8 @@
          _this.info.render.faces ++;
 
          _svgNode = getPathNode( _pathCount ++ );
-         _svgNode.setAttribute( 'd', 'M ' + Math.round(element.arr[0]) + ' ' + Math.round(element.arr[1]) + ' L ' + Math.round(element.arr[2]) + ' ' + Math.round(element.arr[3]) + ' L ' + Math.round(element.arr[4]) + ' ' + Math.round(element.arr[5]) + 'z');
+         // TODO: use diff
+         _svgNode.setAttribute( 'd', 'M' + Math.round(element.arr[0]) + ',' + Math.round(element.arr[1]) + 'L' + Math.round(element.arr[2]) + ',' + Math.round(element.arr[3]) + 'L' + Math.round(element.arr[4]) + ',' + Math.round(element.arr[5]) + 'z');
 
          if ( material instanceof THREE.MeshBasicMaterial ) {
 
