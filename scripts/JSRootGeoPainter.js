@@ -2141,7 +2141,7 @@
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
       var hit_size = 25.0 * hit.fMarkerSize,
-          hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor],
+          hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
           use_points = this._webgl,
           size = hit.fN-1, step = 1, scale = hit_size*0.3,
           indicies = JSROOT.Painter.Box_Indexes,
