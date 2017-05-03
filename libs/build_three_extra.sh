@@ -10,6 +10,8 @@ src=/d/three.js-r85
 rm -rf $tgt
 touch $tgt
 
+echo Producing $tgt from $src
+
 cat ./three.extra_head.js >> $tgt
 cat ${src}/examples/fonts/helvetiker_regular.typeface.json >> $tgt
 echo "" >> $tgt 
@@ -62,5 +64,7 @@ echo "" >> $tgt
 
 echo "" >> $tgt
 echo "}));" >> $tgt
+
+echo Producing three.extra.min.js
 
 java -jar /d/yuicompressor-2.4.8.jar $tgt -o ../scripts/three.extra.min.js

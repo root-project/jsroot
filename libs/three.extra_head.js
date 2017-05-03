@@ -32,9 +32,16 @@
       this.z = 0;
       this.renderOrder = 0;
       this.arr = new Float32Array(6+3); // 6 positionScreen + 3 normalModel + 9 positionWorld
-
    };
 
+   THREE.RenderableLineNew = function () {
+      // compact form with plain array for all important attributes
+
+      this.id = 0;
+      this.z = 0;
+      this.renderOrder = 0;
+      this.x1 = this.y1 = this.x2 = this.y2 = 0;
+   };
 
    var gdebug = false;
 
@@ -224,6 +231,45 @@
 
          }
 
+         function pushLineNew(pos, ia, ib) {
+            if (!_vertex1) _vertex1 = getNextVertexInPool();
+            if (!_vertex2) _vertex2 = getNextVertexInPool();
+
+            _vertex1.position.set( pos[ia], pos[ia+1], pos[ia+2]);
+            _vertex2.position.set( pos[ib], pos[ib+1], pos[ib+2]);
+
+            _vertex1.positionScreen.copy( _vertex1.position ).applyMatrix4( _modelViewProjectionMatrix );
+            _vertex2.positionScreen.copy( _vertex2.position ).applyMatrix4( _modelViewProjectionMatrix );
+
+            if ( clipLine( _vertex1.positionScreen, _vertex2.positionScreen ) === true ) {
+
+               // Perform the perspective divide
+               _vertex1.positionScreen.multiplyScalar( 1 / _vertex1.positionScreen.w );
+               _vertex2.positionScreen.multiplyScalar( 1 / _vertex2.positionScreen.w );
+
+               _line = new THREE.RenderableLineNew();
+               _line.id = object.id;
+               _line.x1 = _vertex1.positionScreen.x;
+               _line.y1 = _vertex1.positionScreen.y;
+               _line.x2 = _vertex2.positionScreen.x;
+               _line.y2 = _vertex2.positionScreen.y;
+               _line.z = Math.max( _vertex1.positionScreen.z, _vertex2.positionScreen.z );
+               _line.renderOrder = object.renderOrder;
+
+               _line.material = object.material;
+
+               // TODO: copy individual vertex colors, not used in JSROOT
+               //if ( object.material.vertexColors === THREE.VertexColors ) {
+                  // _line.vertexColors[ 0 ].fromArray( colors, a * 3 );
+                  // _line.vertexColors[ 1 ].fromArray( colors, b * 3 );
+               //}
+
+               _renderData.elements.push( _line );
+            }
+
+         }
+
+
          function pushTriangle( a, b, c ) {
 
             var v1 = _vertexPool[ a ],
@@ -282,11 +328,9 @@
          }
 
          function pushTriangleNew(pos, norm, ia, ib, ic ) {
-            if (!_vertex1) {
-               _vertex1 = getNextVertexInPool();
-               _vertex2 = getNextVertexInPool();
-               _vertex3 = getNextVertexInPool();
-            }
+            if (!_vertex1) _vertex1 = getNextVertexInPool();
+            if (!_vertex2) _vertex2 = getNextVertexInPool();
+            if (!_vertex3) _vertex3 = getNextVertexInPool();
 
             _vertex1.position.set( pos[ia], pos[ia+1], pos[ia+2]);
             projectVertex( _vertex1 );
@@ -1248,7 +1292,23 @@
                   renderFace3New( element, material );
                }
 
-            } else  if ( element instanceof THREE.RenderableSprite ) {
+            } else if (element instanceof THREE.RenderableLineNew) {
+               element.x1 *= _svgWidthHalf; element.y1 *= - _svgHeightHalf;
+               element.x2 *= _svgWidthHalf; element.y2 *= - _svgHeightHalf;
+
+               _elemBox.min.x = Math.min(element.x1, element.x2);
+               _elemBox.max.x = Math.max(element.x1, element.x2);
+               _elemBox.min.y = Math.min(element.y1, element.y2);
+               _elemBox.max.y = Math.max(element.y1, element.y2);
+
+               if ( _clipBox.intersectsBox( _elemBox ) === true ) {
+
+                  renderLineNew( element, material );
+
+               }
+
+            } else
+            if ( element instanceof THREE.RenderableSprite ) {
 
                _v1 = element;
                _v1.x *= _svgWidthHalf; _v1.y *= - _svgHeightHalf;
@@ -1418,6 +1478,25 @@
          }
 
          _svg.appendChild( _svgNode );
+
+      }
+
+      function renderLineNew( element, material ) {
+
+         _svgNode = getLineNode( _lineCount ++ );
+
+         _svgNode.setAttribute( 'x1', element.x1 );
+         _svgNode.setAttribute( 'y1', element.y1 );
+         _svgNode.setAttribute( 'x2', element.x2 );
+         _svgNode.setAttribute( 'y2', element.y2 );
+
+         if ( material instanceof THREE.LineBasicMaterial ) {
+
+            _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
+
+            _svg.appendChild( _svgNode );
+
+         }
 
       }
 
@@ -1619,7 +1698,5 @@
 
    // ===============================================================
 
-
-
-   // Small initialisation part for THREE fonts
+   // Small initialisation part for used THREE font
    JSROOT.threejs_font_helvetiker_regular = new THREE.Font(
