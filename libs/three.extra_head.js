@@ -366,7 +366,6 @@
                _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
 
-
                if (gdebug && (_debug<20)) console.log('PUSH ', _face.z.toFixed(4),
                      _vertex1.positionScreen.x.toFixed(4), _vertex1.positionScreen.y.toFixed(4),
                      _vertex2.positionScreen.x.toFixed(4), _vertex2.positionScreen.y.toFixed(4),
@@ -550,6 +549,8 @@
                      continue;
                   }
 
+                  throw new Error('HERE');
+
 
 
                   for ( var i = 0, l = positions.length; i < l; i += 3 ) {
@@ -691,53 +692,27 @@
 
                      }
 
-                     _face = getNextFaceInPool();
+                     _face = new THREE.RenderableFaceNew();
 
                      _face.id = object.id;
-                     _face.v1.copy( v1 );
-                     _face.v2.copy( v2 );
-                     _face.v3.copy( v3 );
+                     _face.arr[0] = v1.positionScreen.x;
+                     _face.arr[1] = v1.positionScreen.y;
+                     _face.arr[2] = v2.positionScreen.x;
+                     _face.arr[3] = v2.positionScreen.y;
+                     _face.arr[4] = v3.positionScreen.x;
+                     _face.arr[5] = v3.positionScreen.y;
 
-                     _face.normalModel.copy( face.normal );
+                     // use first vertex normal as face normal, can improve later
 
+                     var normalModel = face.normal.clone();
                      if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
-
-                        _face.normalModel.negate();
-
+                        normalModel.negate();
                      }
+                     normalModel.applyMatrix3( _normalMatrix ).normalize();
 
-                     _face.normalModel.applyMatrix3( _normalMatrix ).normalize();
-
-                     var faceVertexNormals = face.vertexNormals;
-
-                     for ( var n = 0, nl = Math.min( faceVertexNormals.length, 3 ); n < nl; n ++ ) {
-
-                        var normalModel = _face.vertexNormalsModel[ n ];
-                        normalModel.copy( faceVertexNormals[ n ] );
-
-                        if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
-
-                           normalModel.negate();
-
-                        }
-
-                        normalModel.applyMatrix3( _normalMatrix ).normalize();
-
-                     }
-
-                     _face.vertexNormalsLength = faceVertexNormals.length;
-
-                     var vertexUvs = faceVertexUvs[ f ];
-
-                     if ( vertexUvs !== undefined ) {
-
-                        for ( var u = 0; u < 3; u ++ ) {
-
-                           _face.uvs[ u ].copy( vertexUvs[ u ] );
-
-                        }
-
-                     }
+                     _face.arr[6] = normalModel.x;
+                     _face.arr[7] = normalModel.y;
+                     _face.arr[8] = normalModel.z;
 
                      _face.color = face.color;
                      _face.material = material;
@@ -746,7 +721,6 @@
                      _face.renderOrder = object.renderOrder;
 
                      _renderData.elements.push( _face );
-
                   }
 
                }
@@ -1284,12 +1258,18 @@
             } else
             if ( element instanceof THREE.RenderableSprite ) {
 
+               console.log('ignore THREE.RenderableSprite');
+               continue;
+
                _v1 = element;
                _v1.x *= _svgWidthHalf; _v1.y *= - _svgHeightHalf;
 
                renderSprite( _v1, element, material );
 
             } else if ( element instanceof THREE.RenderableLine ) {
+
+               console.log('ignore THREE.RenderableLine');
+               continue;
 
                _v1 = element.v1; _v2 = element.v2;
 
@@ -1305,6 +1285,9 @@
                }
 
             } else if ( element instanceof THREE.RenderableFace ) {
+
+               console.log('ignore THREE.RenderableFace');
+               continue;
 
                _v1 = element.v1; _v2 = element.v2; _v3 = element.v3;
 
@@ -1457,14 +1440,10 @@
 
       function renderLineNew( element, material ) {
 
-         _svgNode = getLineNode( _lineCount ++ );
-
-         _svgNode.setAttribute( 'x1', Math.round(element.x1) );
-         _svgNode.setAttribute( 'y1', Math.round(element.y1) );
-         _svgNode.setAttribute( 'x2', Math.round(element.x2) );
-         _svgNode.setAttribute( 'y2', Math.round(element.y2) );
-
          if ( material instanceof THREE.LineBasicMaterial ) {
+
+            _svgNode = getPathNode( _pathCount ++ );
+            _svgNode.setAttribute( 'd', 'M' + Math.round(element.x1) + ',' + Math.round(element.y1) + 'L' + Math.round(element.x2) + ',' + Math.round(element.y2));
 
             // many attributes are useless for the single line - suppress them
             // _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
@@ -1476,7 +1455,6 @@
             _svgNode.setAttribute( 'style', style);
 
             _svg.appendChild( _svgNode );
-
          }
 
       }
