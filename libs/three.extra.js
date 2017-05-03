@@ -829,9 +829,7 @@
          }
 
          if ( sortElements === true ) {
-
             _renderData.elements.sort( painterSort );
-
          }
 
          return _renderData;
@@ -1206,7 +1204,7 @@
 
             if ( material === undefined || material.opacity === 0 ) continue;
 
-            _elemBox.makeEmpty();
+            // _elemBox.makeEmpty();
 
             if ( element instanceof THREE.RenderableFaceNew ) {
 
@@ -1216,30 +1214,33 @@
                element.y2 *= -_svgHeightHalf;
                element.x3 *= _svgWidthHalf;
                element.y3 *= -_svgHeightHalf;
+               renderFace3New( element, material );
+               continue;
 
+               // non-useful code, all projections already checked against frustum
                _elemBox.min.x = Math.min(element.x1, element.x2, element.x3);
                _elemBox.max.x = Math.max(element.x1, element.x2, element.x3);
                _elemBox.min.y = Math.min(element.y1, element.y2, element.y3);
                _elemBox.max.y = Math.max(element.y1, element.y2, element.y3);
 
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
-
                   renderFace3New( element, material );
                }
 
             } else if (element instanceof THREE.RenderableLineNew) {
                element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
                element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
+               renderLineNew( element, material );
+               continue;
 
+               // non-useful code, all projections already checked against frustum
                _elemBox.min.x = Math.min(element.x1, element.x2);
                _elemBox.max.x = Math.max(element.x1, element.x2);
                _elemBox.min.y = Math.min(element.y1, element.y2);
                _elemBox.max.y = Math.max(element.y1, element.y2);
 
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
-
                   renderLineNew( element, material );
-
                }
 
             } else
