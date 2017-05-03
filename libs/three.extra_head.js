@@ -31,7 +31,7 @@
       this.id = 0;
       this.z = 0;
       this.renderOrder = 0;
-      this.arr = new Float32Array(6+3); // 6 positionScreen + 3 normalModel + 9 positionWorld
+      this.x1 = this.y1 = this.x2 = this.y2 = this.x3 = this.y3;
    };
 
    THREE.RenderableLineNew = function () {
@@ -340,12 +340,12 @@
                _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
 
-               _face.arr[0] = _vertex1.positionScreen.x;
-               _face.arr[1] = _vertex1.positionScreen.y;
-               _face.arr[2] = _vertex2.positionScreen.x;
-               _face.arr[3] = _vertex2.positionScreen.y;
-               _face.arr[4] = _vertex3.positionScreen.x;
-               _face.arr[5] = _vertex3.positionScreen.y;
+               _face.x1 = _vertex1.positionScreen.x;
+               _face.y1 = _vertex1.positionScreen.y;
+               _face.x2 = _vertex2.positionScreen.x;
+               _face.y2 = _vertex2.positionScreen.y;
+               _face.x3 = _vertex3.positionScreen.x;
+               _face.y3 = _vertex3.positionScreen.y;
 
                // TODO: copy positionWorld for some special materials
 
@@ -680,12 +680,12 @@
                      _face = new THREE.RenderableFaceNew();
 
                      _face.id = object.id;
-                     _face.arr[0] = v1.positionScreen.x;
-                     _face.arr[1] = v1.positionScreen.y;
-                     _face.arr[2] = v2.positionScreen.x;
-                     _face.arr[3] = v2.positionScreen.y;
-                     _face.arr[4] = v3.positionScreen.x;
-                     _face.arr[5] = v3.positionScreen.y;
+                     _face.x1 = v1.positionScreen.x;
+                     _face.y1 = v1.positionScreen.y;
+                     _face.x2 = v2.positionScreen.x;
+                     _face.y2 = v2.positionScreen.y;
+                     _face.x3 = v3.positionScreen.x;
+                     _face.y3 = v3.positionScreen.y;
 
                      // use first vertex normal as face normal, can improve later
 
@@ -1210,17 +1210,17 @@
 
             if ( element instanceof THREE.RenderableFaceNew ) {
 
-               element.arr[0] *= _svgWidthHalf;
-               element.arr[1] *= -_svgHeightHalf;
-               element.arr[2] *= _svgWidthHalf;
-               element.arr[3] *= -_svgHeightHalf;
-               element.arr[4] *= _svgWidthHalf;
-               element.arr[5] *= -_svgHeightHalf;
+               element.x1 *= _svgWidthHalf;
+               element.y1 *= -_svgHeightHalf;
+               element.x2 *= _svgWidthHalf;
+               element.y2 *= -_svgHeightHalf;
+               element.x3 *= _svgWidthHalf;
+               element.y3 *= -_svgHeightHalf;
 
-               _elemBox.min.x = Math.min(element.arr[0], element.arr[2], element.arr[4]);
-               _elemBox.max.x = Math.max(element.arr[0], element.arr[2], element.arr[4]);
-               _elemBox.min.y = Math.min(element.arr[1], element.arr[3], element.arr[5]);
-               _elemBox.max.y = Math.max(element.arr[1], element.arr[3], element.arr[5]);
+               _elemBox.min.x = Math.min(element.x1, element.x2, element.x3);
+               _elemBox.max.x = Math.max(element.x1, element.x2, element.x3);
+               _elemBox.min.y = Math.min(element.y1, element.y2, element.y3);
+               _elemBox.max.y = Math.max(element.y1, element.y2, element.y3);
 
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
 
@@ -1625,9 +1625,9 @@
 
          checkCurrentPath(style);
 
-         svg_position(Math.round(element.arr[0]), Math.round(element.arr[1]));
-         svg_line(Math.round(element.arr[2]), Math.round(element.arr[3]));
-         svg_line(Math.round(element.arr[4]), Math.round(element.arr[5]));
+         svg_position(Math.round(element.x1), Math.round(element.y1));
+         svg_line(Math.round(element.x2), Math.round(element.y2));
+         svg_line(Math.round(element.x3), Math.round(element.y3));
          svg_close();
       }
 
