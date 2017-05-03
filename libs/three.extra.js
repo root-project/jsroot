@@ -54,9 +54,10 @@
          _sprite, _spriteCount, _spritePool = [], _spritePoolLength = 0,
          _vertex1, _vertex2, _vertex3, _debug = 0,
 
-         _renderData = { objects: [], lights: [], elements: [] },
+         _renderData = { objects: [], /*lights: [],*/ elements: [] },
 
          _vector3 = new THREE.Vector3(),
+         _normal = new THREE.Vector3(),
          _vector4 = new THREE.Vector4(),
 
          _clipBox = new THREE.Box3( new THREE.Vector3( - 1, - 1, - 1 ), new THREE.Vector3( 1, 1, 1 ) ),
@@ -277,12 +278,6 @@
                 v2 = _vertexPool[ b ],
                 v3 = _vertexPool[ c ];
 
-            if (gdebug && (_faceCount<1480)) {
-               console.log('VERT', v1.position.x.toFixed(4), v1.position.y.toFixed(4), v1.position.z.toFixed(4));
-               console.log('VERT', v2.position.x.toFixed(4), v2.position.y.toFixed(4), v2.position.z.toFixed(4));
-               console.log('VERT', v3.position.x.toFixed(4), v3.position.y.toFixed(4), v3.position.z.toFixed(4));
-            }
-
             if ( checkTriangleVisibility( v1, v2, v3 ) === false ) return;
 
             if ( material.side === THREE.DoubleSide || checkBackfaceCulling( v1, v2, v3 ) === true ) {
@@ -295,12 +290,6 @@
                _face.v3.copy( v3 );
                _face.z = ( v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
-
-
-               if (gdebug && (_faceCount<1480)) console.log(_faceCount, 'PUSH ', _face.z.toFixed(4),
-                     v1.positionScreen.x.toFixed(4), v1.positionScreen.y.toFixed(4),
-                     v2.positionScreen.x.toFixed(4), v2.positionScreen.y.toFixed(4),
-                     v3.positionScreen.x.toFixed(4), v3.positionScreen.y.toFixed(4));
 
                // use first vertex normal as face normal
 
@@ -325,10 +314,9 @@
                _renderData.elements.push( _face );
 
             }
-
          }
 
-         function pushTriangleNew(pos, norm, ia, ib, ic ) {
+         function pushTriangleNew(pos, norm, ia, ib, ic, calculateFaceColor ) {
             if (!_vertex1) _vertex1 = getNextVertexInPool();
             if (!_vertex2) _vertex2 = getNextVertexInPool();
             if (!_vertex3) _vertex3 = getNextVertexInPool();
@@ -342,34 +330,15 @@
             _vertex3.position.set( pos[ic], pos[ic+1], pos[ic+2]);
             projectVertex( _vertex3 );
 
-            _debug++;
-
-            if (gdebug && (_debug<20)) {
-               console.log("VERT", pos[ia].toFixed(4), pos[ia+1].toFixed(4), pos[ia+2].toFixed(4));
-               console.log("VERT", pos[ib].toFixed(4), pos[ib+1].toFixed(4), pos[ib+2].toFixed(4));
-               console.log("VERT", pos[ic].toFixed(4), pos[ic+1].toFixed(4), pos[ic+2].toFixed(4));
-            }
-
-            //if (_debug < 50) console.log('create new triangle');
-
             if ( checkTriangleVisibility( _vertex1, _vertex2, _vertex3 ) === false ) return;
 
-            //if (_debug < 50)
-            //   console.log('checked visibility', _vertex1.positionScreen.z, _vertex2.positionScreen.z, _vertex3.positionScreen.z, 'cull', checkBackfaceCulling( _vertex1, _vertex2, _vertex3 ));
-
-            if ( material.side === THREE.DoubleSide || checkBackfaceCulling( _vertex1, _vertex2, _vertex3 ) === true )
-              {
+            if ( material.side === THREE.DoubleSide || checkBackfaceCulling( _vertex1, _vertex2, _vertex3 ) === true ) {
 
                _face = new THREE.RenderableFaceNew();
 
                _face.id = object.id;
                _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
-
-               if (gdebug && (_debug<20)) console.log('PUSH ', _face.z.toFixed(4),
-                     _vertex1.positionScreen.x.toFixed(4), _vertex1.positionScreen.y.toFixed(4),
-                     _vertex2.positionScreen.x.toFixed(4), _vertex2.positionScreen.y.toFixed(4),
-                     _vertex3.positionScreen.x.toFixed(4), _vertex3.positionScreen.y.toFixed(4));
 
                _face.arr[0] = _vertex1.positionScreen.x;
                _face.arr[1] = _vertex1.positionScreen.y;
@@ -378,14 +347,15 @@
                _face.arr[4] = _vertex3.positionScreen.x;
                _face.arr[5] = _vertex3.positionScreen.y;
 
-               // use first vertex normal as face normal, can improve later
-               _face.arr[6] = norm[ia];
-               _face.arr[7] = norm[ia+1];
-               _face.arr[8] = norm[ia+2];
-
                // TODO: copy positionWorld for some special materials
 
                _face.material = object.material;
+               _face.color = calculateFaceColor(object.material, _vertex1, _vertex2, _vertex3, null, function() {
+                  // normal required only for color calculation for some materials
+                  _normal.set(norm[ia], norm[ia+1], norm[ia+2]);
+                  _normal.applyMatrix3( normalMatrix ).normalize();
+                  return _normal;
+               });
 
                _renderData.elements.push( _face );
 
@@ -420,7 +390,7 @@
 
          if ( object instanceof THREE.Light ) {
 
-            _renderData.lights.push( object );
+            // _renderData.lights.push( object );
 
          } else if ( object instanceof THREE.Mesh || object instanceof THREE.Line || object instanceof THREE.Points ) {
 
@@ -463,7 +433,22 @@
 
       }
 
-      this.projectScene = function ( scene, camera, sortObjects, sortElements ) {
+      this.extractLights = function (scene) {
+         // make extra function to extract lights before projecting scene
+         // lights used for colors calculations of some materials
+
+         var lights = [];
+
+         scene.traverse(function(object) {
+            if ( object.visible === false ) return;
+            if ( object instanceof THREE.Light ) lights.push(object);
+         });
+
+         return lights;
+      }
+
+
+      this.projectScene = function ( scene, camera, sortObjects, sortElements, calculateFaceColor ) {
 
          _faceCount = 0;
          _lineCount = 0;
@@ -484,7 +469,7 @@
          _objectCount = 0;
 
          _renderData.objects.length = 0;
-         _renderData.lights.length = 0;
+         // _renderData.lights.length = 0;
 
          projectObject( scene );
 
@@ -535,14 +520,14 @@
                         var indices = geometry.index.array;
 
                         for ( var i = 0, l = indices.length; i < l; i += 3 ) {
-                           renderList.pushTriangleNew(positions, normals, indices[ i ], indices[ i + 1 ], indices[ i + 2 ] );
+                           renderList.pushTriangleNew(positions, normals, indices[ i ], indices[ i + 1 ], indices[ i + 2 ], calculateFaceColor );
                         }
 
                      } else {
 
                          // without index
                          for ( var i = 0, l = positions.length; i < l; i += 9 ) {
-                           renderList.pushTriangleNew(positions, normals, i, i + 3, i + 6 );
+                           renderList.pushTriangleNew(positions, normals, i, i + 3, i + 6, calculateFaceColor );
                         }
                      }
 
@@ -704,18 +689,16 @@
 
                      // use first vertex normal as face normal, can improve later
 
-                     var normalModel = face.normal.clone();
-                     if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
-                        normalModel.negate();
-                     }
-                     normalModel.applyMatrix3( _normalMatrix ).normalize();
-
-                     _face.arr[6] = normalModel.x;
-                     _face.arr[7] = normalModel.y;
-                     _face.arr[8] = normalModel.z;
-
-                     _face.color = face.color;
                      _face.material = material;
+                     _face.color = calculateFaceColor(material, v1, v2, v3, face, function() {
+                        // normal required only for color calculation for some materials
+                        _normal.copy(face.normal);
+                        if ( visible === false && ( side === THREE.BackSide || side === THREE.DoubleSide ) ) {
+                           _normal.negate();
+                        }
+                        _normal.applyMatrix3( normalMatrix ).normalize();
+                        return _normal;
+                     });
 
                      _face.z = ( v1.positionScreen.z + v2.positionScreen.z + v3.positionScreen.z ) / 3;
                      _face.renderOrder = object.renderOrder;
@@ -1204,13 +1187,15 @@
          _viewMatrix.copy( camera.matrixWorldInverse.getInverse( camera.matrixWorld ) );
          _viewProjectionMatrix.multiplyMatrices( camera.projectionMatrix, _viewMatrix );
 
-         _renderData = _projector.projectScene( scene, camera, this.sortObjects, this.sortElements );
+         // extract lights before projecting scene
+         _lights = _projector.extractLights ( scene );
+         calculateLights( _lights );
+
+         _renderData = _projector.projectScene( scene, camera, this.sortObjects, this.sortElements, calculateFaceColor );
          _elements = _renderData.elements;
-         _lights = _renderData.lights;
 
          _normalViewMatrix.getNormalMatrix( camera.matrixWorldInverse );
 
-         calculateLights( _lights );
 
          _curr_style = ""; _curr_path = ""; _num_same = 0; _curr_svg_x = null; _curr_svg_y = null;
 
@@ -1574,59 +1559,69 @@
 
       }
 
-      function renderFace3New( element, material ) {
-
-         _this.info.render.vertices += 3;
-         _this.info.render.faces ++;
-
-         // TODO: use diff
+      function calculateFaceColor(material, v1,v2,v3, element, getNormalModel) {
+         // make special function, which is provided to projector
+         // try to calculate face color when do projection
+         // most of normals are not interesting at all
 
          if ( material instanceof THREE.MeshBasicMaterial ) {
 
-            _color.copy( material.color );
+            if (( material.vertexColors === THREE.FaceColors ) && element) {
+               _color.copy( material.color );
+               _color.multiply( element.color );
+               return _color.getStyle();
+            }
 
-            //if ( material.vertexColors === THREE.FaceColors ) {
-            //   _color.multiply( element.color );
-            // }
+            return undefined; // means material color
 
          } else if ( material instanceof THREE.MeshLambertMaterial || material instanceof THREE.MeshPhongMaterial ) {
 
             _diffuseColor.copy( material.color );
 
-            //if ( material.vertexColors === THREE.FaceColors ) {
-            //   _diffuseColor.multiply( element.color );
-            //}
+            if (( material.vertexColors === THREE.FaceColors ) && element) {
+               _diffuseColor.multiply( element.color );
+            }
 
             _color.copy( _ambientLight );
 
-            throw new Error('Not yet supported material kinds');
-
             _centroid.copy( v1.positionWorld ).add( v2.positionWorld ).add( v3.positionWorld ).divideScalar( 3 );
 
-            calculateLight( _lights, _centroid, element.normalModel, _color );
+            calculateLight( _lights, _centroid, getNormalModel(), _color );
 
             _color.multiply( _diffuseColor ).add( material.emissive );
 
+            return _color.getStyle();
+
          } else if ( material instanceof THREE.MeshNormalMaterial ) {
 
-            _normal.set(element.arr[6], element.arr[7], element.arr[8] ).applyMatrix3( _normalViewMatrix );
+            _normal.copy( getNormalModel() ).applyMatrix3( _normalViewMatrix );
 
             _color.setRGB( _normal.x, _normal.y, _normal.z ).multiplyScalar( 0.5 ).addScalar( 0.5 );
 
+            return _color.getStyle();
          }
+         return undefined; // use material color by default
+      }
+
+      function renderFace3New( element, material ) {
+
+         _this.info.render.vertices += 3;
+         _this.info.render.faces ++;
+
+         var col = element.color;
+         if (!col) col = material.color.getStyle();
 
          var style = "";
 
          if ( material.wireframe ) {
 
-            style = 'fill:none;stroke:' + _color.getStyle() + ';stroke-width:' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + ';stroke-linecap:' + material.wireframeLinecap + ';stroke-linejoin:' + material.wireframeLinejoin;
+            style = 'fill:none;stroke:' + col + ';stroke-width:' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + ';stroke-linecap:' + material.wireframeLinecap + ';stroke-linejoin:' + material.wireframeLinejoin;
 
          } else {
 
-            style = 'fill:' + _color.getStyle();
+            style = 'fill:' + col;
             if (material.opacity!==1) style+=';fill-opacity:' + material.opacity.toFixed(3);
          }
-
 
          checkCurrentPath(style);
 

@@ -104,7 +104,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 28/04/2017";
+   JSROOT.version = "dev 3/05/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -170,6 +170,7 @@
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,
+         SVGRenderer : true, // if true, use own SVG renderer, which is faster, but has some limitations
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL

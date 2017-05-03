@@ -623,7 +623,9 @@
       this.scene.add( this.camera );
 
       if (this.usesvg) {
-         this.renderer = new THREE.SVGRendererNew({ antialias: true, alpha: true });
+         this.renderer = JSROOT.gStyle.SVGRenderer ?
+                           new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
+                           new THREE.SVGRenderer({ antialias: true, alpha: true });
       } else {
          this.webgl = JSROOT.Painter.TestWebGL();
          this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
@@ -2648,8 +2650,9 @@
    JSROOT.Painter.Render3D = function(tmout) {
       if (tmout === -1111) {
          // special handling for SVG renderer
-
-         var rrr = new THREE.SVGRendererNew({ antialias: true, alpha: true });
+         var rrr = JSROOT.gStyle.SVGRenderer ?
+                      new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
+                      new THREE.SVGRenderer({ antialias: true, alpha: true });
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
          return rrr.domElement;
