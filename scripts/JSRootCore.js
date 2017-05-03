@@ -92,7 +92,7 @@
       factory(exports);
 
       //  mark JSROOT as used with Node.js
-      exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
+      exports.BatchMode = exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
    } else {
 
       if (typeof JSROOT != 'undefined')
@@ -112,6 +112,7 @@
    JSROOT.bower_dir = null; // when specified, use standard libs from bower location
 
    JSROOT.id_counter = 0;
+   JSROOT.BatchMode = false; // when true, disables all kind of interactive features
 
    // JSROOT.use_full_libs = true;
 

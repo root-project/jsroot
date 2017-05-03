@@ -1194,16 +1194,16 @@
 
          _normalViewMatrix.getNormalMatrix( camera.matrixWorldInverse );
 
-
          _curr_style = ""; _curr_path = ""; _num_same = 0; _curr_svg_x = null; _curr_svg_y = null;
 
          for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
-            var element = _elements[ e ];
-            var material = element.material;
+            var element = _elements[ e ],
+                material = element.material;
 
             if ( material === undefined || material.opacity === 0 ) continue;
 
+            // disable _elemBox check, while all checks already done
             // _elemBox.makeEmpty();
 
             if ( element instanceof THREE.RenderableFaceNew ) {

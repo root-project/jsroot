@@ -3118,7 +3118,7 @@
 
       this.SetDivId(divid, 5);
 
-      this._usesvg = JSROOT.nodejs;
+      this._usesvg = JSROOT.BatchMode;
 
       this._webgl = !this._usesvg && JSROOT.Painter.TestWebGL();
 

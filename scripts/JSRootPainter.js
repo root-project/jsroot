@@ -1663,7 +1663,7 @@
       // 2 - normall embedding via ForeginObject, works only with Firefox
       // 3 - embedding 3D drawing as SVG canvas, requires SVG renderer
 
-      if (JSROOT.nodejs) return 3;
+      if (JSROOT.BatchMode) return 3;
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
@@ -3875,15 +3875,18 @@
       if (this.fillatt === undefined)
          this.fillatt = this.createAttFill(pt);
 
-      this.draw_g.append("rect")
+      var rect =
+         this.draw_g.append("rect")
           .attr("x", 0)
           .attr("y", 0)
           .attr("width", width)
           .attr("height", height)
-          .style("pointer-events", "visibleFill")
           .call(this.fillatt.func)
-          .call(this.lineatt.func)
-          .on("mouseenter", this.ShowObjectStatus.bind(this));
+          .call(this.lineatt.func);
+
+      if (!JSROOT.BatchMode)
+         rect.style("pointer-events", "visibleFill")
+             .on("mouseenter", this.ShowObjectStatus.bind(this))
 
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, arg);
@@ -4483,10 +4486,13 @@
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
          svg.append("svg:title").text("ROOT canvas");
-         svg.append("svg:rect").attr("class","canvas_fillrect")
-                               .attr("x",0).attr("y",0).style("pointer-events", "visibleFill")
-                               .on("dblclick", this.EnlargePad.bind(this))
-                               .on("mouseenter", this.ShowObjectStatus.bind(this));
+         var frect = svg.append("svg:rect").attr("class","canvas_fillrect")
+                               .attr("x",0).attr("y",0);
+         if (!JSROOT.BatchMode)
+            frect.style("pointer-events", "visibleFill")
+                 .on("dblclick", this.EnlargePad.bind(this))
+                 .on("mouseenter", this.ShowObjectStatus.bind(this))
+
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
          svg.append("svg:g").attr("class","special_layer");
@@ -4608,9 +4614,8 @@
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
-         svg_rect = svg_pad.append("svg:rect")
-                           .attr("class", "root_pad_border")
-                           .attr("pointer-events", "visibleFill"); // get events also for not visisble rect
+         svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
+
          svg_pad.append("svg:g").attr("class","root_frame");
          svg_pad.append("svg:g").attr("class","special_layer");
          svg_pad.append("svg:g").attr("class","text_layer");
@@ -4620,8 +4625,10 @@
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
 
-         svg_rect.on("dblclick", this.EnlargePad.bind(this))
-                 .on("mouseenter", this.ShowObjectStatus.bind(this));
+         if (!JSROOT.BatchMode)
+            svg_rect.attr("pointer-events", "visibleFill") // get events also for not visisble rect
+                    .on("dblclick", this.EnlargePad.bind(this))
+                    .on("mouseenter", this.ShowObjectStatus.bind(this));
 
          if (!this.fillatt || !this.fillatt.changed)
             this.fillatt = this.createAttFill(this.pad, 1001, 0);
@@ -7946,7 +7953,7 @@
    }
 
    JSROOT.THistPainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || !this.is_main_painter() || JSROOT.nodejs || (typeof window == 'undefined')) return;
+      if (this.keys_handler || !this.is_main_painter() || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
@@ -12612,7 +12619,7 @@
    // previous message will be overwritten
    // if no argument specified, any shown messages will be removed
    JSROOT.progress = function(msg, tmout) {
-      if (JSROOT.nodejs || !document) return;
+      if (JSROOT.BatchMode || !document) return;
       var id = "jsroot_progressbox",
           box = d3.select("#"+id);
 

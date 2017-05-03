@@ -591,7 +591,7 @@
          return;
       }
 
-      this.usesvg = JSROOT.nodejs; // SVG used in batch mode
+      this.usesvg = JSROOT.BatchMode; // SVG used in batch mode
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
@@ -647,7 +647,7 @@
       this.enable_hightlight = false;
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
 
-      if (JSROOT.nodejs) return;
+      if (JSROOT.BatchMode) return;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
