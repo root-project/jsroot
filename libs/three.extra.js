@@ -1463,9 +1463,9 @@
             // many attributes are useless for the single line - suppress them
             // _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
 
-            var style = 'fill: none; stroke: ' + material.color.getStyle();
-            if (material.linewidth!==1) style+='; stroke-width: ' + material.linewidth;
-            if (material.opacity!==1) style += '; stroke-opacity: ' + material.opacity;
+            var style = 'fill:none;stroke:' + material.color.getStyle();
+            if (material.linewidth!==1) style+=';stroke-width:' + material.linewidth;
+            if (material.opacity!==1) style += ';stroke-opacity:' + material.opacity.toFixed(3);
 
             var path = 'M' + Math.round(element.x1) + ',' + Math.round(element.y1) + 'L' + Math.round(element.x2) + ',' + Math.round(element.y2);
 
@@ -1610,11 +1610,12 @@
 
          if ( material.wireframe ) {
 
-            style = 'fill: none; stroke: ' + _color.getStyle() + '; stroke-width: ' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.wireframeLinecap + '; stroke-linejoin: ' + material.wireframeLinejoin;
+            style = 'fill:none;stroke:' + _color.getStyle() + ';stroke-width:' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + ';stroke-linecap:' + material.wireframeLinecap + ';stroke-linejoin:' + material.wireframeLinejoin;
 
          } else {
 
-            style = 'fill: ' + _color.getStyle() + '; fill-opacity: ' + material.opacity;
+            style = 'fill:' + _color.getStyle();
+            if (material.opacity!==1) style+=';fill-opacity:' + material.opacity.toFixed(3);
          }
 
          if (_curr_style === style) {
