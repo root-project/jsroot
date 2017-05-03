@@ -12543,6 +12543,8 @@
 
          main.style("width", args.width+"px").style("height", args.height+"px");
 
+         JSROOT.svg_workaround = undefined;
+
          JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
 
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
@@ -12552,6 +12554,9 @@
                               .attr("class", null).attr("x", null).attr("y", null);
 
             var svg = main.html();
+
+            if (JSROOT.svg_workaround)
+               svg = svg.replace(/\<path jsroot\=\"specialid\"\>\<\/path\>/g, JSROOT.svg_workaround);
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
 

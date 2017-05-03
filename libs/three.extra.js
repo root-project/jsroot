@@ -43,8 +43,6 @@
       this.x1 = this.y1 = this.x2 = this.y2 = 0;
    };
 
-   var gdebug = false;
-
    THREE.ProjectorNew = function () {
 
       var _object, _objectCount, _objectPool = [], _objectPoolLength = 0,
@@ -52,7 +50,7 @@
          _face, _faceCount, _facePool = [], _facePoolLength = 0,
          _line, _lineCount, _linePool = [], _linePoolLength = 0,
          _sprite, _spriteCount, _spritePool = [], _spritePoolLength = 0,
-         _vertex1, _vertex2, _vertex3, _debug = 0,
+         _vertex1, _vertex2, _vertex3, _projector = this,
 
          _renderData = { objects: [], /*lights: [],*/ elements: [] },
 
@@ -250,10 +248,10 @@
 
                _line = new THREE.RenderableLineNew();
                _line.id = object.id;
-               _line.x1 = _vertex1.positionScreen.x;
-               _line.y1 = _vertex1.positionScreen.y;
-               _line.x2 = _vertex2.positionScreen.x;
-               _line.y2 = _vertex2.positionScreen.y;
+               _line.x1 = _vertex1.positionScreen.x * _projector._svgWidthHalf;
+               _line.y1 = _vertex1.positionScreen.y * -_projector._svgHeightHalf;
+               _line.x2 = _vertex2.positionScreen.x * _projector._svgWidthHalf;
+               _line.y2 = _vertex2.positionScreen.y * -_projector._svgHeightHalf;
 
                _line.z = Math.max( _vertex1.positionScreen.z, _vertex2.positionScreen.z );
                _line.renderOrder = object.renderOrder;
@@ -340,12 +338,12 @@
                _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
 
-               _face.x1 = _vertex1.positionScreen.x;
-               _face.y1 = _vertex1.positionScreen.y;
-               _face.x2 = _vertex2.positionScreen.x;
-               _face.y2 = _vertex2.positionScreen.y;
-               _face.x3 = _vertex3.positionScreen.x;
-               _face.y3 = _vertex3.positionScreen.y;
+               _face.x1 = _vertex1.positionScreen.x * _projector._svgWidthHalf;
+               _face.y1 = _vertex1.positionScreen.y * -_projector._svgHeightHalf;
+               _face.x2 = _vertex2.positionScreen.x * _projector._svgWidthHalf;
+               _face.y2 = _vertex2.positionScreen.y * -_projector._svgHeightHalf;
+               _face.x3 = _vertex3.positionScreen.x * _projector._svgWidthHalf;
+               _face.y3 = _vertex3.positionScreen.y * -_projector._svgHeightHalf;
 
                // TODO: copy positionWorld for some special materials
 
@@ -358,9 +356,6 @@
                });
 
                _renderData.elements.push( _face );
-
-               //if (_debug < 50)
-               //   console.log('add to render data', _renderData.elements.length);
             }
 
          }
@@ -479,9 +474,7 @@
 
          }
 
-         //
-
-         var objects = _renderData.objects, _debug2 = 0;
+         var objects = _renderData.objects;
 
          for ( var o = 0, ol = objects.length; o < ol; o ++ ) {
 
@@ -505,10 +498,6 @@
                   if ( attributes.position === undefined ) continue;
 
                   var positions = attributes.position.array;
-
-                  // if (++_debug2 < 10) console.log(_debug2, 'Process bufgeometry', !!attributes.normal, !!attributes.uv, groups ? groups.length : '-1');
-
-                  // gdebug = (_debug2 === 1);
 
                   if (attributes.normal && !attributes.uv && groups.length==0) {
                      // try to cover most important usecase
@@ -680,12 +669,12 @@
                      _face = new THREE.RenderableFaceNew();
 
                      _face.id = object.id;
-                     _face.x1 = v1.positionScreen.x;
-                     _face.y1 = v1.positionScreen.y;
-                     _face.x2 = v2.positionScreen.x;
-                     _face.y2 = v2.positionScreen.y;
-                     _face.x3 = v3.positionScreen.x;
-                     _face.y3 = v3.positionScreen.y;
+                     _face.x1 = v1.positionScreen.x * _projector._svgWidthHalf;
+                     _face.y1 = v1.positionScreen.y * -_projector._svgHeightHalf;
+                     _face.x2 = v2.positionScreen.x * _projector._svgWidthHalf;
+                     _face.y2 = v2.positionScreen.y * -_projector._svgHeightHalf;
+                     _face.x3 = v3.positionScreen.x * _projector._svgWidthHalf;
+                     _face.y3 = v3.positionScreen.y * -_projector._svgHeightHalf;
 
                      // use first vertex normal as face normal, can improve later
 
@@ -1078,7 +1067,7 @@
 
       _svgPathPool = [], _svgLinePool = [], _svgRectPool = [],
       _svgNode, _pathCount = 0, _lineCount = 0, _rectCount = 0,
-      _quality = 1, _curr_style, _curr_path, _num_same, _curr_svg_x, _curr_svg_y;
+      _quality = 1, _curr_style, _curr_path, _curr_buff,  _curr_svg_x, _curr_svg_y;
 
       this.domElement = _svg;
 
@@ -1189,12 +1178,17 @@
          _lights = _projector.extractLights ( scene );
          calculateLights( _lights );
 
+         _projector._svgWidthHalf = _svgWidthHalf;
+         _projector._svgHeightHalf = _svgHeightHalf;
+
          _renderData = _projector.projectScene( scene, camera, this.sortObjects, this.sortElements, calculateFaceColor );
          _elements = _renderData.elements;
 
          _normalViewMatrix.getNormalMatrix( camera.matrixWorldInverse );
 
-         _curr_style = ""; _curr_path = ""; _num_same = 0; _curr_svg_x = null; _curr_svg_y = null;
+         _curr_style = ""; _curr_path = ""; _curr_svg_x = null; _curr_svg_y = null; _curr_buff = "";
+
+         var tm1 = new Date().getTime();
 
          for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
@@ -1208,12 +1202,12 @@
 
             if ( element instanceof THREE.RenderableFaceNew ) {
 
-               element.x1 *= _svgWidthHalf;
-               element.y1 *= -_svgHeightHalf;
-               element.x2 *= _svgWidthHalf;
-               element.y2 *= -_svgHeightHalf;
-               element.x3 *= _svgWidthHalf;
-               element.y3 *= -_svgHeightHalf;
+               //element.x1 *= _svgWidthHalf;
+               //element.y1 *= -_svgHeightHalf;
+               //element.x2 *= _svgWidthHalf;
+               //element.y2 *= -_svgHeightHalf;
+               //element.x3 *= _svgWidthHalf;
+               //element.y3 *= -_svgHeightHalf;
                renderFace3New( element, material );
                continue;
 
@@ -1228,8 +1222,8 @@
                }
 
             } else if (element instanceof THREE.RenderableLineNew) {
-               element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
-               element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
+               //element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
+               //element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
                renderLineNew( element, material );
                continue;
 
@@ -1303,9 +1297,11 @@
 
          }
 
-         checkCurrentPath();
+         checkCurrentPath(undefined, true);
 
-         console.log('Num same', _num_same, 'total', _elements.length);
+         var tm2 = new Date().getTime();
+
+         console.log('Create all SVG elements', tm2-tm1, 'len', _curr_buff.length);
 
          scene.traverseVisible( function ( object ) {
 
@@ -1430,19 +1426,30 @@
 
       }
 
-      function checkCurrentPath(new_style) {
-
-         if (_curr_style==new_style) _num_same++; else {
+      function checkCurrentPath(new_style, complete) {
+         if (_curr_style!=new_style) {
             if (_curr_path && _curr_style) {
-               _svgNode = getPathNode( _pathCount ++ );
-               _svgNode.setAttribute('d', _curr_path);
-               _svgNode.setAttribute('style', _curr_style);
-               _svg.appendChild( _svgNode );
+               if (!JSROOT.nodejs) {
+                  _svgNode = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
+                  _svgNode.setAttribute('d', _curr_path);
+                  _svgNode.setAttribute('style', _curr_style);
+                  _svg.appendChild( _svgNode );
+               } else {
+                  _curr_buff += "<path style='" + _curr_style + "' d='" + _curr_path + "'/>";
+               }
             }
             _curr_path = "";
             _curr_style = new_style;
             _curr_svg_x = null;
             _curr_svg_y = null;
+         }
+
+         if (complete && JSROOT.nodejs) {
+            console.log("Create specialid entry");
+            _svgNode = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
+            _svgNode.setAttribute('jsroot', "specialid");
+            _svg.appendChild( _svgNode );
+            JSROOT.svg_workaround = _curr_buff;
          }
       }
 
