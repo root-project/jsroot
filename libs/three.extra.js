@@ -761,73 +761,23 @@
 
                   if ( attributes.position !== undefined ) {
 
-                     var positions = attributes.position.array,
-                         use_new = true;
+                     var positions = attributes.position.array;
 
-                     if (use_new) {
-                        if ( geometry.index !== null ) {
+                     if ( geometry.index !== null ) {
 
-                           var indices = geometry.index.array;
+                        var indices = geometry.index.array;
 
-                           for ( var i = 0, l = indices.length; i < l; i += 2 ) {
-                              renderList.pushLineNew(positions,  indices[ i ]*3, indices[ i + 1 ]*3 );
-                           }
-
-                        } else {
-
-                           var step = object instanceof THREE.LineSegments ? 6 : 3;
-
-                           for ( var i = 0, l = positions.length - 3; i < l; i += step ) {
-
-                              renderList.pushLineNew( positions, i, i + 3 );
-
-                           }
-
+                        for ( var i = 0, l = indices.length; i < l; i += 2 ) {
+                           renderList.pushLineNew(positions,  indices[ i ]*3, indices[ i + 1 ]*3 );
                         }
+
                      } else {
 
-                        for ( var i = 0, l = positions.length; i < l; i += 3 ) {
+                        var step = object instanceof THREE.LineSegments ? 6 : 3;
 
-                           renderList.pushVertex( positions[ i ], positions[ i + 1 ], positions[ i + 2 ] );
-
+                        for ( var i = 0, l = positions.length - 3; i < l; i += step ) {
+                           renderList.pushLineNew( positions, i, i + 3 );
                         }
-
-                        if ( attributes.color !== undefined ) {
-
-                           var colors = attributes.color.array;
-
-                           for ( var i = 0, l = colors.length; i < l; i += 3 ) {
-
-                              renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
-
-                           }
-
-                        }
-
-                        if ( geometry.index !== null ) {
-
-                           var indices = geometry.index.array;
-
-                           for ( var i = 0, l = indices.length; i < l; i += 2 ) {
-
-                              renderList.pushLine( indices[ i ], indices[ i + 1 ] );
-
-                           }
-
-                        } else {
-
-                           var step = object instanceof THREE.LineSegments ? 2 : 1;
-
-                           console.log('old create line', positions.length, step);
-
-                           for ( var i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
-
-                              renderList.pushLine( i, i + 1 );
-
-                           }
-
-                        }
-
                      }
 
                   }
@@ -835,6 +785,8 @@
                } else if ( geometry instanceof THREE.Geometry ) {
 
                   var vertices = object.geometry.vertices;
+
+                  console.log('create line from geometry', vertices.length);
 
                   if ( vertices.length === 0 ) continue;
 
@@ -861,23 +813,29 @@
                         _clippedVertex1PositionScreen.multiplyScalar( 1 / _clippedVertex1PositionScreen.w );
                         _clippedVertex2PositionScreen.multiplyScalar( 1 / _clippedVertex2PositionScreen.w );
 
-                        _line = getNextLineInPool();
+                        _line = new THREE.RenderableLineNew();
+
+                        console.log('create line');
 
                         _line.id = object.id;
-                        _line.v1.positionScreen.copy( _clippedVertex1PositionScreen );
-                        _line.v2.positionScreen.copy( _clippedVertex2PositionScreen );
+
+                        _line.x1 = _clippedVertex1PositionScreen.x;
+                        _line.y1 = _clippedVertex1PositionScreen.y;
+                        _line.x2 = _clippedVertex2PositionScreen.x;
+                        _line.y2 = _clippedVertex2PositionScreen.y;
 
                         _line.z = Math.max( _clippedVertex1PositionScreen.z, _clippedVertex2PositionScreen.z );
                         _line.renderOrder = object.renderOrder;
 
                         _line.material = object.material;
 
-                        if ( object.material.vertexColors === THREE.VertexColors ) {
+                        _line.debug = true;
 
-                           _line.vertexColors[ 0 ].copy( object.geometry.colors[ v ] );
-                           _line.vertexColors[ 1 ].copy( object.geometry.colors[ v - 1 ] );
-
-                        }
+                        // TODO: use vertex colors for the future
+                        //if ( object.material.vertexColors === THREE.VertexColors ) {
+                        //   _line.vertexColors[ 0 ].copy( object.geometry.colors[ v ] );
+                        //   _line.vertexColors[ 1 ].copy( object.geometry.colors[ v - 1 ] );
+                        //}
 
                         _renderData.elements.push( _line );
 
@@ -1323,7 +1281,11 @@
                _elemBox.min.y = Math.min(element.y1, element.y2);
                _elemBox.max.y = Math.max(element.y1, element.y2);
 
+               if (element.debug) console.log('found line', element.x1, element.y1, element.x2, element.y2);
+
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
+
+                  if (element.debug) console.log('draw line');
 
                   renderLineNew( element, material );
 
@@ -1507,10 +1469,10 @@
 
          _svgNode = getLineNode( _lineCount ++ );
 
-         _svgNode.setAttribute( 'x1', element.x1 );
-         _svgNode.setAttribute( 'y1', element.y1 );
-         _svgNode.setAttribute( 'x2', element.x2 );
-         _svgNode.setAttribute( 'y2', element.y2 );
+         _svgNode.setAttribute( 'x1', Math.round(element.x1) );
+         _svgNode.setAttribute( 'y1', Math.round(element.y1) );
+         _svgNode.setAttribute( 'x2', Math.round(element.x2) );
+         _svgNode.setAttribute( 'y2', Math.round(element.y2) );
 
          if ( material instanceof THREE.LineBasicMaterial ) {
 
