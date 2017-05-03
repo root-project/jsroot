@@ -253,6 +253,7 @@
                _line.y1 = _vertex1.positionScreen.y;
                _line.x2 = _vertex2.positionScreen.x;
                _line.y2 = _vertex2.positionScreen.y;
+
                _line.z = Math.max( _vertex1.positionScreen.z, _vertex2.positionScreen.z );
                _line.renderOrder = object.renderOrder;
 
@@ -264,7 +265,7 @@
                   // _line.vertexColors[ 1 ].fromArray( colors, b * 3 );
                //}
 
-               _renderData.elements.push( _line );
+              _renderData.elements.push( _line );
             }
 
          }
@@ -405,6 +406,7 @@
             pushColor: pushColor,
             pushUv: pushUv,
             pushLine: pushLine,
+            pushLineNew: pushLineNew,
             pushTriangle: pushTriangle,
             pushTriangleNew: pushTriangleNew
          };
@@ -586,9 +588,6 @@
 
                      if ( groups.length > 0 ) {
 
-                        if (gdebug) console.log('WITH GROUPS');
-
-
                         for ( var g = 0; g < groups.length; g ++ ) {
 
                            var group = groups[ g ];
@@ -603,8 +602,6 @@
 
                      } else {
 
-                        if (gdebug) console.log('WITH INDEXES');
-
                         for ( var i = 0, l = indices.length; i < l; i += 3 ) {
 
                            renderList.pushTriangle( indices[ i ], indices[ i + 1 ], indices[ i + 2 ] );
@@ -614,8 +611,6 @@
                      }
 
                   } else {
-
-                     if (gdebug) console.log('DIRECT');
 
                      for ( var i = 0, l = positions.length / 3; i < l; i += 3 ) {
 
@@ -766,43 +761,70 @@
 
                   if ( attributes.position !== undefined ) {
 
-                     var positions = attributes.position.array;
+                     var positions = attributes.position.array,
+                         use_new = true;
 
-                     for ( var i = 0, l = positions.length; i < l; i += 3 ) {
+                     if (use_new) {
+                        if ( geometry.index !== null ) {
 
-                        renderList.pushVertex( positions[ i ], positions[ i + 1 ], positions[ i + 2 ] );
+                           var indices = geometry.index.array;
 
-                     }
+                           for ( var i = 0, l = indices.length; i < l; i += 2 ) {
+                              renderList.pushLineNew(positions,  indices[ i ]*3, indices[ i + 1 ]*3 );
+                           }
 
-                     if ( attributes.color !== undefined ) {
+                        } else {
 
-                        var colors = attributes.color.array;
+                           var step = object instanceof THREE.LineSegments ? 6 : 3;
 
-                        for ( var i = 0, l = colors.length; i < l; i += 3 ) {
+                           for ( var i = 0, l = positions.length - 3; i < l; i += step ) {
 
-                           renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
+                              renderList.pushLineNew( positions, i, i + 3 );
 
-                        }
-
-                     }
-
-                     if ( geometry.index !== null ) {
-
-                        var indices = geometry.index.array;
-
-                        for ( var i = 0, l = indices.length; i < l; i += 2 ) {
-
-                           renderList.pushLine( indices[ i ], indices[ i + 1 ] );
+                           }
 
                         }
-
                      } else {
 
-                        var step = object instanceof THREE.LineSegments ? 2 : 1;
+                        for ( var i = 0, l = positions.length; i < l; i += 3 ) {
 
-                        for ( var i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
+                           renderList.pushVertex( positions[ i ], positions[ i + 1 ], positions[ i + 2 ] );
 
-                           renderList.pushLine( i, i + 1 );
+                        }
+
+                        if ( attributes.color !== undefined ) {
+
+                           var colors = attributes.color.array;
+
+                           for ( var i = 0, l = colors.length; i < l; i += 3 ) {
+
+                              renderList.pushColor( colors[ i ], colors[ i + 1 ], colors[ i + 2 ] );
+
+                           }
+
+                        }
+
+                        if ( geometry.index !== null ) {
+
+                           var indices = geometry.index.array;
+
+                           for ( var i = 0, l = indices.length; i < l; i += 2 ) {
+
+                              renderList.pushLine( indices[ i ], indices[ i + 1 ] );
+
+                           }
+
+                        } else {
+
+                           var step = object instanceof THREE.LineSegments ? 2 : 1;
+
+                           console.log('old create line', positions.length, step);
+
+                           for ( var i = 0, l = ( positions.length / 3 ) - 1; i < l; i += step ) {
+
+                              renderList.pushLine( i, i + 1 );
+
+                           }
 
                         }
 
