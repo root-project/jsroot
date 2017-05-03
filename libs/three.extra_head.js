@@ -786,8 +786,6 @@
 
                   var vertices = object.geometry.vertices;
 
-                  console.log('create line from geometry', vertices.length);
-
                   if ( vertices.length === 0 ) continue;
 
                   v1 = getNextVertexInPool();
@@ -1468,7 +1466,14 @@
 
          if ( material instanceof THREE.LineBasicMaterial ) {
 
-            _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
+            // many attributes are useless for the single line - suppress them
+            // _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
+
+            var style = 'fill: none; stroke: ' + material.color.getStyle();
+            if (material.linewidth!==1) style+='; stroke-width: ' + material.linewidth;
+            if (material.opacity!==1) style += '; stroke-opacity: ' + material.opacity;
+
+            _svgNode.setAttribute( 'style', style);
 
             _svg.appendChild( _svgNode );
 

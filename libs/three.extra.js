@@ -786,8 +786,6 @@
 
                   var vertices = object.geometry.vertices;
 
-                  console.log('create line from geometry', vertices.length);
-
                   if ( vertices.length === 0 ) continue;
 
                   v1 = getNextVertexInPool();
@@ -815,8 +813,6 @@
 
                         _line = new THREE.RenderableLineNew();
 
-                        console.log('create line');
-
                         _line.id = object.id;
 
                         _line.x1 = _clippedVertex1PositionScreen.x;
@@ -828,8 +824,6 @@
                         _line.renderOrder = object.renderOrder;
 
                         _line.material = object.material;
-
-                        _line.debug = true;
 
                         // TODO: use vertex colors for the future
                         //if ( object.material.vertexColors === THREE.VertexColors ) {
@@ -1281,11 +1275,7 @@
                _elemBox.min.y = Math.min(element.y1, element.y2);
                _elemBox.max.y = Math.max(element.y1, element.y2);
 
-               if (element.debug) console.log('found line', element.x1, element.y1, element.x2, element.y2);
-
                if ( _clipBox.intersectsBox( _elemBox ) === true ) {
-
-                  if (element.debug) console.log('draw line');
 
                   renderLineNew( element, material );
 
@@ -1476,7 +1466,14 @@
 
          if ( material instanceof THREE.LineBasicMaterial ) {
 
-            _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
+            // many attributes are useless for the single line - suppress them
+            // _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
+
+            var style = 'fill: none; stroke: ' + material.color.getStyle();
+            if (material.linewidth!==1) style+='; stroke-width: ' + material.linewidth;
+            if (material.opacity!==1) style += '; stroke-opacity: ' + material.opacity;
+
+            _svgNode.setAttribute( 'style', style);
 
             _svg.appendChild( _svgNode );
 
