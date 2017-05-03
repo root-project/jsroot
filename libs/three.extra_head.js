@@ -1097,7 +1097,7 @@
 
       _svgPathPool = [], _svgLinePool = [], _svgRectPool = [],
       _svgNode, _pathCount = 0, _lineCount = 0, _rectCount = 0,
-      _quality = 1;
+      _quality = 1, _curr_style, _curr_path, _num_same;
 
       this.domElement = _svg;
 
@@ -1212,6 +1212,8 @@
 
          calculateLights( _lights );
 
+         _curr_style = ""; _curr_path = ""; _num_same = 0;
+
          for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
             var element = _elements[ e ];
@@ -1241,8 +1243,8 @@
                }
 
             } else if (element instanceof THREE.RenderableLineNew) {
-               element.x1 *= _svgWidthHalf; element.y1 *= - _svgHeightHalf;
-               element.x2 *= _svgWidthHalf; element.y2 *= - _svgHeightHalf;
+               element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
+               element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
 
                _elemBox.min.x = Math.min(element.x1, element.x2);
                _elemBox.max.x = Math.max(element.x1, element.x2);
@@ -1314,6 +1316,10 @@
             }
 
          }
+
+         closeCurrentPath();
+
+         console.log('Num same', _num_same, 'total', _elements.length);
 
          scene.traverseVisible( function ( object ) {
 
@@ -1438,12 +1444,21 @@
 
       }
 
+      function closeCurrentPath() {
+
+         if (_curr_path && _curr_style) {
+            _svgNode = getPathNode( _pathCount ++ );
+            _svgNode.setAttribute('d', _curr_path);
+            _svgNode.setAttribute('style', _curr_style);
+            _svg.appendChild( _svgNode );
+         }
+
+         _curr_style = ""; _curr_path = "";
+      }
+
       function renderLineNew( element, material ) {
 
          if ( material instanceof THREE.LineBasicMaterial ) {
-
-            _svgNode = getPathNode( _pathCount ++ );
-            _svgNode.setAttribute( 'd', 'M' + Math.round(element.x1) + ',' + Math.round(element.y1) + 'L' + Math.round(element.x2) + ',' + Math.round(element.y2));
 
             // many attributes are useless for the single line - suppress them
             // _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + material.color.getStyle() + '; stroke-width: ' + material.linewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.linecap + '; stroke-linejoin: ' + material.linejoin );
@@ -1452,9 +1467,21 @@
             if (material.linewidth!==1) style+='; stroke-width: ' + material.linewidth;
             if (material.opacity!==1) style += '; stroke-opacity: ' + material.opacity;
 
-            _svgNode.setAttribute( 'style', style);
+            var path = 'M' + Math.round(element.x1) + ',' + Math.round(element.y1) + 'L' + Math.round(element.x2) + ',' + Math.round(element.y2);
 
-            _svg.appendChild( _svgNode );
+            if (_curr_style === style) {
+               _curr_path += path;
+               _num_same++;
+            } else {
+               closeCurrentPath();
+               _curr_style = style;
+               _curr_path = path;
+            }
+
+            //_svgNode = getPathNode( _pathCount ++ );
+            //_svgNode.setAttribute( 'd', path);
+            //_svgNode.setAttribute( 'style', style);
+            //_svg.appendChild( _svgNode );
          }
 
       }
@@ -1541,9 +1568,9 @@
          _this.info.render.vertices += 3;
          _this.info.render.faces ++;
 
-         _svgNode = getPathNode( _pathCount ++ );
          // TODO: use diff
-         _svgNode.setAttribute( 'd', 'M' + Math.round(element.arr[0]) + ',' + Math.round(element.arr[1]) + 'L' + Math.round(element.arr[2]) + ',' + Math.round(element.arr[3]) + 'L' + Math.round(element.arr[4]) + ',' + Math.round(element.arr[5]) + 'z');
+
+         var path = 'M' + Math.round(element.arr[0]) + ',' + Math.round(element.arr[1]) + 'L' + Math.round(element.arr[2]) + ',' + Math.round(element.arr[3]) + 'L' + Math.round(element.arr[4]) + ',' + Math.round(element.arr[5]) + 'z';
 
          if ( material instanceof THREE.MeshBasicMaterial ) {
 
@@ -1579,17 +1606,30 @@
 
          }
 
+         var style = "";
+
          if ( material.wireframe ) {
 
-            _svgNode.setAttribute( 'style', 'fill: none; stroke: ' + _color.getStyle() + '; stroke-width: ' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.wireframeLinecap + '; stroke-linejoin: ' + material.wireframeLinejoin );
+            style = 'fill: none; stroke: ' + _color.getStyle() + '; stroke-width: ' + material.wireframeLinewidth + '; stroke-opacity: ' + material.opacity + '; stroke-linecap: ' + material.wireframeLinecap + '; stroke-linejoin: ' + material.wireframeLinejoin;
 
          } else {
 
-            _svgNode.setAttribute( 'style', 'fill: ' + _color.getStyle() + '; fill-opacity: ' + material.opacity );
-
+            style = 'fill: ' + _color.getStyle() + '; fill-opacity: ' + material.opacity;
          }
 
-         _svg.appendChild( _svgNode );
+         if (_curr_style === style) {
+            _curr_path += path;
+            _num_same++;
+         } else {
+            closeCurrentPath();
+            _curr_style = style;
+            _curr_path = path;
+         }
+
+         //_svgNode = getPathNode( _pathCount ++ );
+         //_svgNode.setAttribute( 'd', path);
+         //_svgNode.setAttribute( 'style', style);
+         //_svg.appendChild( _svgNode );
 
       }
 
