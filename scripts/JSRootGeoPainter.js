@@ -466,9 +466,8 @@
                if (!node.material.alwaysTransparent) {
                   node.material.transparent = value !== 1.0;
                }
-               node.material.opacity = Math.min(value * value, node.material.inherentOpacity);
+               node.material.opacity = Math.min(value, node.material.inherentOpacity);
             }
-
          }
       });
       if (!skip_render) this.Render3D(0);
