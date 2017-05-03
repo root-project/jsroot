@@ -1097,7 +1097,7 @@
 
       _svgPathPool = [], _svgLinePool = [], _svgRectPool = [],
       _svgNode, _pathCount = 0, _lineCount = 0, _rectCount = 0,
-      _quality = 1, _curr_style, _curr_path, _num_same;
+      _quality = 1, _curr_style, _curr_path, _num_same, _curr_svg_x, _curr_svg_y;
 
       this.domElement = _svg;
 
@@ -1212,7 +1212,7 @@
 
          calculateLights( _lights );
 
-         _curr_style = ""; _curr_path = ""; _num_same = 0;
+         _curr_style = ""; _curr_path = ""; _num_same = 0; _curr_svg_x = null; _curr_svg_y = null;
 
          for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
@@ -1317,7 +1317,7 @@
 
          }
 
-         closeCurrentPath();
+         checkCurrentPath();
 
          console.log('Num same', _num_same, 'total', _elements.length);
 
@@ -1444,16 +1444,38 @@
 
       }
 
-      function closeCurrentPath() {
+      function checkCurrentPath(new_style) {
 
-         if (_curr_path && _curr_style) {
-            _svgNode = getPathNode( _pathCount ++ );
-            _svgNode.setAttribute('d', _curr_path);
-            _svgNode.setAttribute('style', _curr_style);
-            _svg.appendChild( _svgNode );
+         if (_curr_style==new_style) _num_same++; else {
+            if (_curr_path && _curr_style) {
+               _svgNode = getPathNode( _pathCount ++ );
+               _svgNode.setAttribute('d', _curr_path);
+               _svgNode.setAttribute('style', _curr_style);
+               _svg.appendChild( _svgNode );
+            }
+            _curr_path = "";
+            _curr_style = new_style;
+            _curr_svg_x = null;
+            _curr_svg_y = null;
          }
+      }
 
-         _curr_style = ""; _curr_path = "";
+      function svg_position(x,y) {
+         _curr_path += "M"+x+","+y;
+         _curr_svg_x = x;
+         _curr_svg_y = y;
+      }
+
+      function svg_line(x,y) {
+         if (_curr_svg_x === x) _curr_path += "v" + (y-_curr_svg_y); else
+         if (_curr_svg_y === y) _curr_path += "h" + (x-_curr_svg_x); else
+              _curr_path += "l"+(x-_curr_svg_x)+","+(y-_curr_svg_y);
+         _curr_svg_x = x;
+         _curr_svg_y = y;
+      }
+
+      function svg_close() {
+         _curr_path += "Z";
       }
 
       function renderLineNew( element, material ) {
@@ -1467,21 +1489,10 @@
             if (material.linewidth!==1) style+=';stroke-width:' + material.linewidth;
             if (material.opacity!==1) style += ';stroke-opacity:' + material.opacity.toFixed(3);
 
-            var path = 'M' + Math.round(element.x1) + ',' + Math.round(element.y1) + 'L' + Math.round(element.x2) + ',' + Math.round(element.y2);
+            checkCurrentPath(style);
 
-            if (_curr_style === style) {
-               _curr_path += path;
-               _num_same++;
-            } else {
-               closeCurrentPath();
-               _curr_style = style;
-               _curr_path = path;
-            }
-
-            //_svgNode = getPathNode( _pathCount ++ );
-            //_svgNode.setAttribute( 'd', path);
-            //_svgNode.setAttribute( 'style', style);
-            //_svg.appendChild( _svgNode );
+            svg_position(Math.round(element.x1),Math.round(element.y1));
+            svg_line(Math.round(element.x2),Math.round(element.y2));
          }
 
       }
@@ -1570,8 +1581,6 @@
 
          // TODO: use diff
 
-         var path = 'M' + Math.round(element.arr[0]) + ',' + Math.round(element.arr[1]) + 'L' + Math.round(element.arr[2]) + ',' + Math.round(element.arr[3]) + 'L' + Math.round(element.arr[4]) + ',' + Math.round(element.arr[5]) + 'z';
-
          if ( material instanceof THREE.MeshBasicMaterial ) {
 
             _color.copy( material.color );
@@ -1618,20 +1627,13 @@
             if (material.opacity!==1) style+=';fill-opacity:' + material.opacity.toFixed(3);
          }
 
-         if (_curr_style === style) {
-            _curr_path += path;
-            _num_same++;
-         } else {
-            closeCurrentPath();
-            _curr_style = style;
-            _curr_path = path;
-         }
 
-         //_svgNode = getPathNode( _pathCount ++ );
-         //_svgNode.setAttribute( 'd', path);
-         //_svgNode.setAttribute( 'style', style);
-         //_svg.appendChild( _svgNode );
+         checkCurrentPath(style);
 
+         svg_position(Math.round(element.arr[0]), Math.round(element.arr[1]));
+         svg_line(Math.round(element.arr[2]), Math.round(element.arr[3]));
+         svg_line(Math.round(element.arr[4]), Math.round(element.arr[5]));
+         svg_close();
       }
 
       function getLineNode( id ) {
