@@ -35,6 +35,7 @@
     and works significantly faster.
 16. When creating image in SVG format, correctly convert url("#id") references 
 17. Use latest three.js r85
+18. Fix 'transpXY' URL parameter handling - it was used as opacity, but opacity=1-transperancy 
 
 
 ## Changes in 5.1.0

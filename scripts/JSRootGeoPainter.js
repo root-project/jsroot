@@ -242,7 +242,7 @@
                    highlight: false, select_in_view: false,
                    project: '', is_main: false, tracks: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
-                   script_name: "", transparancy: 1, autoRotate: false, background: '#FFFFFF',
+                   script_name: "", transparancy: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "box" };
 
       var _opt = JSROOT.GetUrlOption('_grid');
@@ -337,6 +337,9 @@
 
       if (d.check('TRANSP',true))
          res.transparancy = d.partAsInt(0,100)/100;
+
+      if (d.check('OPACITY',true))
+         res.transparancy = 1 - d.partAsInt(0,100)/100;
 
       if (d.check("AXISCENTER") || d.check("AC")) { res._axis = true; res._axis_center = true; }
 
@@ -459,7 +462,8 @@
       });
    }
 
-   JSROOT.TGeoPainter.prototype.changeGlobalTransparancy = function(value, skip_render) {
+   JSROOT.TGeoPainter.prototype.changeGlobalTransparancy = function(transparency, skip_render) {
+      var value = 1 - transparency;
       this._toplevel.traverse( function (node) {
          if (node instanceof THREE.Mesh) {
             if (node.material.alwaysTransparent !== undefined) {
@@ -2865,7 +2869,7 @@
             this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
-      if (this.options.transparancy!==1)
+      if (this.options.transparancy!==0)
          this.changeGlobalTransparancy(this.options.transparancy, true);
 
       this.completeScene();
