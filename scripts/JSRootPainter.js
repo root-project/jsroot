@@ -215,7 +215,9 @@
    }
 
    /** Function that generates all root colors */
-   JSROOT.Painter.root_colors = function() {
+   JSROOT.Painter.root_colors = [];
+
+   JSROOT.Painter.createRootColors = function() {
       var colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89,212,84)','rgb(89,84,217)', 'white'];
       colorMap[110] = 'white';
 
@@ -239,8 +241,8 @@
          }
       }
 
-      return colorMap;
-   }();
+      JSROOT.Painter.root_colors = colorMap;
+   }
 
    JSROOT.Painter.MakeColorRGB = function(col) {
       if ((col==null) || (col._typename != 'TColor')) return null;
@@ -12659,6 +12661,8 @@
          setTimeout(JSROOT.progress.bind(JSROOT,'',-1), tmout);
       }
    }
+
+   JSROOT.Painter.createRootColors();
 
    return JSROOT;
 
