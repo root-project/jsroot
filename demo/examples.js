@@ -18,7 +18,7 @@ examples_main = {
      { name: "lego", opt: "lego2,pal50" },
      { opt: "X+Y+" },
      { opt: "inspect", title: "universal object inspector, can be used for any class" },
-     { name:"docu", url: "?nobrowser&file=$$$histpainter6.root&layout=vert32&items=[two_axis,draw_e1,draw_bar,draw_e34,draw_text]", title:"several TH1 examples from THistPainter documentation" }
+     { name: "docu", file: "histpainter6.root", layout: "vert32", items: ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], title:"several TH1 examples from THistPainter documentation" }
    ],
    TH2 : [
      { opt: "", file: "hsimple.root", item: "hpxpy;1", random: true },

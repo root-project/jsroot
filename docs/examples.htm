@@ -273,6 +273,12 @@
             }
             
             if (entry.url) url = entry.url.replace(/\$\$\$/g, filepath); else
+            if (entry.items) {
+               url = "?nobrowser&file=" + filename;
+               if (entry.layout) url += "&layout=" + entry.layout;
+               url += "&items=[" + entry.items.join(",") + "]";
+               if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
+            } else
             if (entry.asurl) {
                url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
@@ -379,8 +385,8 @@
             
                   var shortname = key.toLowerCase().replace(" ","_");
                   
-                  jsonname = ""; url = "";
-                  
+                  jsonname = ""; url = ""; 
+
                   if ('url' in entry) {
                      url = entry.url.replace(/\$\$\$/g,filepath);
                   } else 
@@ -392,7 +398,13 @@
                         url = ""; filename = entry.file;
                         if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
                      }
-                     if ('item' in entry) { url = ""; itemname = entry.item; } 
+                     if ('item' in entry) { url = ""; itemname = entry.item; } else 
+                     if ('items' in entry) {
+                        url = "?nobrowser&file=" + filename;
+                        if (entry.layout) url += "&layout=" + entry.layout;
+                        url += "&items=[" + entry.items.join(",") + "]";
+                        if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
+                     }
                   }
 
                   var opt = ('opt' in entry) ? entry.opt : "";
