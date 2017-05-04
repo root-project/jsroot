@@ -727,20 +727,26 @@
 
    JSROOT.TDirectory.prototype.GetKey = function(keyname, cycle, call_back) {
       // retrieve a key by its name and cycle in the list of keys
-      for (var i=0; i < this.fKeys.length; ++i) {
-         if (this.fKeys[i].fName == keyname && this.fKeys[i].fCycle == cycle) {
-            JSROOT.CallBack(call_back, this.fKeys[i]);
-            return this.fKeys[i];
-         }
+
+      var bestkey = null;
+      for (var i = 0; i < this.fKeys.length; ++i) {
+         var key = this.fKeys[i];
+         if (!key || (key.fName!==keyname)) continue;
+         if (key.fCycle == cycle) { bestkey = key; break; }
+         if ((cycle === 1) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+      }
+      if (bestkey) {
+         JSROOT.CallBack(call_back, bestkey);
+         return bestkey;
       }
 
       var pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         var dirname = keyname.substr(0, pos);
-         var subname = keyname.substr(pos+1);
+         var dirname = keyname.substr(0, pos),
+             subname = keyname.substr(pos+1),
+             dirkey = this.GetKey(dirname, 1);
 
-         var dirkey = this.GetKey(dirname, 1);
          if ((dirkey!==null) && (typeof call_back == 'function') &&
               (dirkey.fClassName.indexOf("TDirectory")==0)) {
 
@@ -1112,20 +1118,25 @@
       // retrieve a key by its name and cycle in the list of keys
       // one should call_back when keys must be read first from the directory
 
-      for (var i=0; i < this.fKeys.length; ++i) {
-         if (this.fKeys[i].fName === keyname && this.fKeys[i].fCycle === cycle) {
-            JSROOT.CallBack(getkey_callback, this.fKeys[i]);
-            return this.fKeys[i];
-         }
+      var bestkey = null;
+      for (var i = 0; i < this.fKeys.length; ++i) {
+         var key = this.fKeys[i];
+         if (!key || (key.fName!==keyname)) continue;
+         if (key.fCycle == cycle) { bestkey = key; break; }
+         if ((cycle === 1) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+      }
+      if (bestkey) {
+         JSROOT.CallBack(getkey_callback, bestkey);
+         return bestkey;
       }
 
       var pos = keyname.lastIndexOf("/");
       // try to handle situation when object name contains slashed (bad practice anyway)
       while (pos > 0) {
-         var dirname = keyname.substr(0, pos);
-         var subname = keyname.substr(pos+1);
+         var dirname = keyname.substr(0, pos),
+             subname = keyname.substr(pos+1),
+             dir = this.GetDir(dirname);
 
-         var dir = this.GetDir(dirname);
          if (dir!=null) return dir.GetKey(subname, cycle, getkey_callback);
 
          var dirkey = this.GetKey(dirname, 1);
@@ -1196,7 +1207,7 @@
 
       if ((typeof cycle != 'number') || (cycle<0)) cycle = 1;
       // remove leading slashes
-      while ((obj_name.length>0) && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
+      while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
 
       var file = this;
 
