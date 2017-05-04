@@ -703,6 +703,11 @@
 
       this.monitoring = args.monitoring;
 
+      if (args.dump) {
+         this.dump_values = true;
+         args.reallocate_objects = true;
+      }
+
       if (this.dump_values) {
 
          this.hist = []; // array of dump objects
@@ -2349,7 +2354,6 @@
       var top_search = false, search = name, res = null;
 
       if (lst===undefined) {
-
          top_search = true;
          lst = this.fBranches;
          var pos = search.indexOf("[");
