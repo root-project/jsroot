@@ -733,6 +733,14 @@
             return callback(null);
          }
 
+         if (JSROOT.nodejs && (method == "GET") && (kind === "object") &&
+             (xhr.responseType = 'arraybuffer') && (xhr.getResponseHeader("content-encoding")=="gzip")) {
+            // special handling of gzipped JSON objects in Node.js
+            var zlib = require('zlib'),
+                str = zlib.unzipSync(Buffer.from(xhr.response));
+            return callback(pthis.parse(str));
+         }
+
          switch(kind) {
             case "xml": return callback(xhr.responseXML);
             case "posttext":
@@ -770,6 +778,9 @@
             xhr.overrideMimeType("text/plain; charset=x-user-defined");
          }
       }
+
+      if (JSROOT.nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0))
+         xhr.responseType = 'arraybuffer';
 
       return xhr;
    }
