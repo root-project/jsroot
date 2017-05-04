@@ -103,7 +103,7 @@ examples_main = {
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
      { name:"subpad", url: "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
-     { name:"legend", url: "?nobrowser&file=$$$legends.root&item=legends;1&mathjax", title: "TCanvas with TLegend, use MathJax.js"  },
+     { name:"legend", asurl: true, file: "legends.root", item: "legends;1", mathjax: true, title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
    ],

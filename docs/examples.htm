@@ -283,6 +283,7 @@
                url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
                url += itemname + "&opt=" + opt;
+               if (entry.mathjax) url += "&mathjax"; 
             }
             
             // console.log('KEY ', keyid, 'opt', opt);
@@ -426,7 +427,8 @@
                      if (jsonname)
                         url = prefix + 'json=' + jsonname;
                      else   
-                         url = prefix + "file=" + filename + "&item=" + itemname;
+                        url = prefix + "file=" + filename + "&item=" + itemname;
+                     if (entry.mathjax) url += "&mathjax";
                   }
             
                   if (url) 
