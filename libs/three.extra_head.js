@@ -50,7 +50,9 @@
          _face, _faceCount, _facePool = [], _facePoolLength = 0,
          _line, _lineCount, _linePool = [], _linePoolLength = 0,
          _sprite, _spriteCount, _spritePool = [], _spritePoolLength = 0,
-         _vertex1, _vertex2, _vertex3,
+         _vertex1 = new THREE.RenderableVertex(),
+         _vertex2 = new THREE.RenderableVertex(),
+         _vertex3 = new THREE.RenderableVertex(),
 
          _renderData = { objects: [], /*lights: [],*/ elements: [] },
 
@@ -231,9 +233,6 @@
          }
 
          function pushLineNew(pos, ia, ib) {
-            if (!_vertex1) _vertex1 = getNextVertexInPool();
-            if (!_vertex2) _vertex2 = getNextVertexInPool();
-
             _vertex1.position.set( pos[ia], pos[ia+1], pos[ia+2]);
             _vertex2.position.set( pos[ib], pos[ib+1], pos[ib+2]);
 
@@ -315,10 +314,6 @@
          }
 
          function pushTriangleNew(pos, norm, ia, ib, ic, calculateFaceColor ) {
-            if (!_vertex1) _vertex1 = getNextVertexInPool();
-            if (!_vertex2) _vertex2 = getNextVertexInPool();
-            if (!_vertex3) _vertex3 = getNextVertexInPool();
-
             _vertex1.position.set( pos[ia], pos[ia+1], pos[ia+2]);
             projectVertex( _vertex1 );
 
@@ -486,7 +481,6 @@
             _modelMatrix = object.matrixWorld;
 
             _vertexCount = 0;
-            _vertex1 = _vertex2 = _vertex3 = null;
 
             if ( object instanceof THREE.Mesh ) {
 
@@ -818,7 +812,10 @@
          }
 
          if ( sortElements === true ) {
+            //var tm1 = new Date().getTime();
             _renderData.elements.sort( painterSort );
+            //var tm2 = new Date().getTime();
+            //console.log('SORT time', tm2-tm1);
          }
 
          return _renderData;
@@ -1185,7 +1182,7 @@
 
          _curr_style = ""; _curr_path = ""; _curr_svg_x = null; _curr_svg_y = null; _curr_buff = "";
 
-         var tm1 = new Date().getTime();
+         //var tm1 = new Date().getTime();
 
          for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
@@ -1296,9 +1293,8 @@
 
          checkCurrentPath(undefined, true);
 
-         var tm2 = new Date().getTime();
-
-         console.log('Create all SVG elements', tm2-tm1, 'len', _curr_buff.length);
+         //var tm2 = new Date().getTime();
+         //console.log('Create all SVG elements', tm2-tm1, 'len', _curr_buff.length);
 
          scene.traverseVisible( function ( object ) {
 
@@ -1443,7 +1439,6 @@
 
          if (complete && JSROOT.nodejs) {
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            console.log("jsroot_svg_workaround");
             _svgNode = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
             _svgNode.setAttribute('jsroot_svg_workaround', JSROOT.svg_workaround.length);
             _svg.appendChild( _svgNode );
