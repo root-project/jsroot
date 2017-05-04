@@ -1435,7 +1435,7 @@
                   _svgNode.setAttribute('style', _curr_style);
                   _svg.appendChild( _svgNode );
                } else {
-                  _curr_buff += "<path style='" + _curr_style + "' d='" + _curr_path + "'/>";
+                  _curr_buff += '<path style="' + _curr_style + '" d="' + _curr_path + '"/>';
                }
             }
             _curr_path = "";
@@ -1445,11 +1445,12 @@
          }
 
          if (complete && JSROOT.nodejs) {
-            console.log("Create specialid entry");
-            _svgNode = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
-            _svgNode.setAttribute('jsroot', "specialid");
+            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+            console.log("jsroot_svg_workaround");
+            _svgNode = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            _svgNode.setAttribute('jsroot_svg_workaround', JSROOT.svg_workaround.length);
             _svg.appendChild( _svgNode );
-            JSROOT.svg_workaround = _curr_buff;
+            JSROOT.svg_workaround.push(_curr_buff);
          }
       }
 

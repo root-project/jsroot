@@ -12555,8 +12555,11 @@
 
             var svg = main.html();
 
-            if (JSROOT.svg_workaround)
-               svg = svg.replace(/\<path jsroot\=\"specialid\"\>\<\/path\>/g, JSROOT.svg_workaround);
+            if (JSROOT.svg_workaround) {
+               for (var k=0;k<JSROOT.svg_workaround.length;++k)
+                 svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
+               JSROOT.svg_workaround = undefined;
+            }
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
 
