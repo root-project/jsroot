@@ -728,12 +728,13 @@
    JSROOT.TDirectory.prototype.GetKey = function(keyname, cycle, call_back) {
       // retrieve a key by its name and cycle in the list of keys
 
+      if (typeof cycle != 'number') cycle = -1;
       var bestkey = null;
       for (var i = 0; i < this.fKeys.length; ++i) {
          var key = this.fKeys[i];
          if (!key || (key.fName!==keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
-         if ((cycle === 1) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey) {
          JSROOT.CallBack(call_back, bestkey);
@@ -745,7 +746,7 @@
       while (pos > 0) {
          var dirname = keyname.substr(0, pos),
              subname = keyname.substr(pos+1),
-             dirkey = this.GetKey(dirname, 1);
+             dirkey = this.GetKey(dirname);
 
          if ((dirkey!==null) && (typeof call_back == 'function') &&
               (dirkey.fClassName.indexOf("TDirectory")==0)) {
@@ -1118,12 +1119,13 @@
       // retrieve a key by its name and cycle in the list of keys
       // one should call_back when keys must be read first from the directory
 
+      if (typeof cycle != 'number') cycle = -1;
       var bestkey = null;
       for (var i = 0; i < this.fKeys.length; ++i) {
          var key = this.fKeys[i];
          if (!key || (key.fName!==keyname)) continue;
          if (key.fCycle == cycle) { bestkey = key; break; }
-         if ((cycle === 1) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
+         if ((cycle < 0) && (!bestkey || (key.fCycle > bestkey.fCycle))) bestkey = key;
       }
       if (bestkey) {
          JSROOT.CallBack(getkey_callback, bestkey);
@@ -1139,7 +1141,7 @@
 
          if (dir!=null) return dir.GetKey(subname, cycle, getkey_callback);
 
-         var dirkey = this.GetKey(dirname, 1);
+         var dirkey = this.GetKey(dirname);
          if ((dirkey !== null) && (getkey_callback != null) &&
              (dirkey.fClassName.indexOf("TDirectory")==0)) {
 
@@ -1197,7 +1199,7 @@
       // One could specify cycle number in the object name or as separate argument
       // Last argument should be callback function, while data reading from file is asynchron
 
-      if (typeof cycle == 'function') { user_call_back = cycle; cycle = 1; }
+      if (typeof cycle == 'function') { user_call_back = cycle; cycle = -1; }
 
       var pos = obj_name.lastIndexOf(";");
       if (pos>0) {
@@ -1205,7 +1207,7 @@
          obj_name = obj_name.slice(0, pos);
       }
 
-      if ((typeof cycle != 'number') || (cycle<0)) cycle = 1;
+      if (typeof cycle != 'number') cycle = -1;
       // remove leading slashes
       while (obj_name.length && (obj_name[0] == "/")) obj_name = obj_name.substr(1);
 
