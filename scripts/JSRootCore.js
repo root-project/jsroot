@@ -712,8 +712,6 @@
 
       xhr.onreadystatechange = function() {
 
-         if (JSROOT.nodejs) console.log('Ready state changed', xhr.readyState, xhr.status);
-
          if (xhr.did_abort) return;
 
          if ((xhr.readyState === 2) && xhr.expected_size) {

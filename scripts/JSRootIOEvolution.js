@@ -861,23 +861,6 @@
          this.ReadKeys(newfile_callback);
       } else {
          var file = this;
-
-         if (JSROOT.nodejs) {
-            var options = this.PrepareNodeJSOptions('HEAD'),
-                http = require(options.$protocol) ;
-
-            http.request(options, function(resp) {
-               if (!resp.headers['accept-ranges'])
-                  file.fAcceptRanges = false;
-
-               var len = resp.headers['content-length'];
-               if (len) file.fEND = parseInt(len);
-                   else file.fAcceptRanges = false;
-
-               file.ReadKeys(newfile_callback);
-            }).end();
-
-         } else
          JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
             if (res==null)
                return JSROOT.CallBack(newfile_callback, null);
@@ -892,23 +875,6 @@
       }
 
       return this;
-   }
-
-   JSROOT.TFile.prototype.PrepareNodeJSOptions = function(meth) {
-      var options = { $protocol: 'http', method: meth || 'GET' }, url = this.fURL;
-      if (url.indexOf("https://")==0) { options.$protocol = "https"; url = url.substr(8); } else
-      if (url.indexOf("http://")==0) { options.$protocol = "http";  url = url.substr(7); };
-
-      var pp = url.indexOf("/");
-      if (pp<0) throw new Error('Not found / in the URL ' + this.fURL);
-
-      options.host = url.substr(0,pp);
-      options.path = url.substr(pp);
-
-      pp = options.host.indexOf(":");
-      if (pp>0) { optiont.port = parseInt(options.host.substr(pp+1)); options.host = options.host.substr(0, pp); }
-
-      return options;
    }
 
    JSROOT.TFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
@@ -942,63 +908,30 @@
          }
          if (last-first>2) totalsz += (last-first)*60; // for multi-range ~100 bytes/per request
 
+         var xhr = JSROOT.NewHttpRequest(fullurl, "buf", read_callback);
 
-         if (JSROOT.nodejs) {
-            var options = file.PrepareNodeJSOptions('GET'),
-                http = require(options.$protocol);
-
-            if (file.fAcceptRanges)
-               options.headers = { "Range" : ranges };
-
-            var xhr = http.request(options, function(resp) {
-               resp.setEncoding('binary');
-               var blob = null;
-               resp.on('data', function(chunk){
-                  if (!blob) blob = chunk;
-                        else blob += chunk;
-               });
-               resp.on('end', function() {
-
-                  // create binary array ourself - not supported by http.request
-                  var ab = new ArrayBuffer(blob.length);
-                  var view = new Uint8Array(ab);
-                  for (var k=0;k<blob.length;++k)
-                     view[k] = blob.charCodeAt(k);
-                  var huk = { hdrs: resp.headers, getResponseHeader: function(name) { return this.hdrs[name.toLowerCase()]; }  }
-
-                  read_callback.call(huk, ab);
-               });
-            });
-
-            xhr.end();
-
-         } else {
-
-            var xhr = JSROOT.NewHttpRequest(fullurl, "buf", read_callback);
-
-            if (file.fAcceptRanges) {
-               xhr.setRequestHeader("Range", ranges);
-               xhr.expected_size = Math.max(Math.round(1.1*totalsz), totalsz+200); // 200 if offset for the potential gzip
-            }
-
-            if (progress_callback && (typeof xhr.addEventListener === 'function')) {
-               var sum1 = 0, sum2 = 0, sum_total = 0;
-               for (var n=1;n<place.length;n+=2) {
-                  sum_total+=place[n];
-                  if (n<first) sum1+=place[n];
-                  if (n<last) sum2+=place[n];
-               }
-               if (!sum_total) sum_total = 1;
-
-               var progress_offest = sum1/sum_total, progress_this = (sum2-sum1)/sum_total;
-               xhr.addEventListener("progress", function updateProgress(oEvent) {
-                  if (oEvent.lengthComputable)
-                     progress_callback(progress_offest + progress_this*oEvent.loaded/oEvent.total);
-               });
-            }
-
-            xhr.send(null);
+         if (file.fAcceptRanges) {
+            xhr.setRequestHeader("Range", ranges);
+            xhr.expected_size = Math.max(Math.round(1.1*totalsz), totalsz+200); // 200 if offset for the potential gzip
          }
+
+         if (progress_callback && (typeof xhr.addEventListener === 'function')) {
+            var sum1 = 0, sum2 = 0, sum_total = 0;
+            for (var n=1;n<place.length;n+=2) {
+               sum_total+=place[n];
+               if (n<first) sum1+=place[n];
+               if (n<last) sum2+=place[n];
+            }
+            if (!sum_total) sum_total = 1;
+
+            var progress_offest = sum1/sum_total, progress_this = (sum2-sum1)/sum_total;
+            xhr.addEventListener("progress", function updateProgress(oEvent) {
+               if (oEvent.lengthComputable)
+                  progress_callback(progress_offest + progress_this*oEvent.loaded/oEvent.total);
+            });
+         }
+
+         xhr.send(null);
       }
 
       read_callback = function(res) {
@@ -2963,16 +2896,8 @@
    }
 
    JSROOT.OpenFile = function(filename, callback) {
-
-      if (JSROOT.nodejs) {
-         if (filename.indexOf("file://")==0)
-            return new JSROOT.TNodejsFile(filename.substr(7), callback);
-
-         if ((filename.indexOf("http://")==0) || (filename.indexOf("https://")==0))
-            return new JSROOT.TFile(filename, callback); // use normal file, has special handler inside
-
-         return new JSROOT.TNodejsFile(filename, callback);
-      }
+      if (JSROOT.nodejs && filename.indexOf("file://")==0)
+          return new JSROOT.TNodejsFile(filename.substr(7), callback);
 
       if (typeof filename === 'object'  && filename.size && filename.name)
          return new JSROOT.TLocalFile(filename, callback);
