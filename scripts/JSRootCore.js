@@ -104,7 +104,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "dev 3/05/2017";
+   JSROOT.version = "dev 4/05/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -692,7 +692,14 @@
       // Request will be set as this pointer in the callback
       // If failed, request returns null
 
-      var xhr = new XMLHttpRequest();
+
+      var xhr = null;
+      if (JSROOT.nodejs) {
+         var nodejs_class = require("xhr2");
+         xhr = new nodejs_class();
+      } else {
+         xhr = new XMLHttpRequest();
+      }
 
       function callback(res) {
          // we set pointer on request when calling callback
@@ -704,6 +711,8 @@
       if ((kind === "multi") || (kind==="posttext")) method = "POST";
 
       xhr.onreadystatechange = function() {
+
+         if (JSROOT.nodejs) console.log('Ready state changed', xhr.readyState, xhr.status);
 
          if (xhr.did_abort) return;
 
