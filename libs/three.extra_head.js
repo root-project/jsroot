@@ -50,7 +50,7 @@
          _face, _faceCount, _facePool = [], _facePoolLength = 0,
          _line, _lineCount, _linePool = [], _linePoolLength = 0,
          _sprite, _spriteCount, _spritePool = [], _spritePoolLength = 0,
-         _vertex1, _vertex2, _vertex3, _projector = this,
+         _vertex1, _vertex2, _vertex3,
 
          _renderData = { objects: [], /*lights: [],*/ elements: [] },
 
@@ -248,10 +248,10 @@
 
                _line = new THREE.RenderableLineNew();
                _line.id = object.id;
-               _line.x1 = _vertex1.positionScreen.x * _projector._svgWidthHalf;
-               _line.y1 = _vertex1.positionScreen.y * -_projector._svgHeightHalf;
-               _line.x2 = _vertex2.positionScreen.x * _projector._svgWidthHalf;
-               _line.y2 = _vertex2.positionScreen.y * -_projector._svgHeightHalf;
+               _line.x1 = _vertex1.positionScreen.x;
+               _line.y1 = _vertex1.positionScreen.y;
+               _line.x2 = _vertex2.positionScreen.x;
+               _line.y2 = _vertex2.positionScreen.y;
 
                _line.z = Math.max( _vertex1.positionScreen.z, _vertex2.positionScreen.z );
                _line.renderOrder = object.renderOrder;
@@ -338,12 +338,12 @@
                _face.z = ( _vertex1.positionScreen.z + _vertex2.positionScreen.z + _vertex3.positionScreen.z ) / 3;
                _face.renderOrder = object.renderOrder;
 
-               _face.x1 = _vertex1.positionScreen.x * _projector._svgWidthHalf;
-               _face.y1 = _vertex1.positionScreen.y * -_projector._svgHeightHalf;
-               _face.x2 = _vertex2.positionScreen.x * _projector._svgWidthHalf;
-               _face.y2 = _vertex2.positionScreen.y * -_projector._svgHeightHalf;
-               _face.x3 = _vertex3.positionScreen.x * _projector._svgWidthHalf;
-               _face.y3 = _vertex3.positionScreen.y * -_projector._svgHeightHalf;
+               _face.x1 = _vertex1.positionScreen.x;
+               _face.y1 = _vertex1.positionScreen.y;
+               _face.x2 = _vertex2.positionScreen.x;
+               _face.y2 = _vertex2.positionScreen.y;
+               _face.x3 = _vertex3.positionScreen.x;
+               _face.y3 = _vertex3.positionScreen.y;
 
                // TODO: copy positionWorld for some special materials
 
@@ -669,12 +669,12 @@
                      _face = new THREE.RenderableFaceNew();
 
                      _face.id = object.id;
-                     _face.x1 = v1.positionScreen.x * _projector._svgWidthHalf;
-                     _face.y1 = v1.positionScreen.y * -_projector._svgHeightHalf;
-                     _face.x2 = v2.positionScreen.x * _projector._svgWidthHalf;
-                     _face.y2 = v2.positionScreen.y * -_projector._svgHeightHalf;
-                     _face.x3 = v3.positionScreen.x * _projector._svgWidthHalf;
-                     _face.y3 = v3.positionScreen.y * -_projector._svgHeightHalf;
+                     _face.x1 = v1.positionScreen.x;
+                     _face.y1 = v1.positionScreen.y;
+                     _face.x2 = v2.positionScreen.x;
+                     _face.y2 = v2.positionScreen.y;
+                     _face.x3 = v3.positionScreen.x;
+                     _face.y3 = v3.positionScreen.y;
 
                      // use first vertex normal as face normal, can improve later
 
@@ -1178,9 +1178,6 @@
          _lights = _projector.extractLights ( scene );
          calculateLights( _lights );
 
-         _projector._svgWidthHalf = _svgWidthHalf;
-         _projector._svgHeightHalf = _svgHeightHalf;
-
          _renderData = _projector.projectScene( scene, camera, this.sortObjects, this.sortElements, calculateFaceColor );
          _elements = _renderData.elements;
 
@@ -1202,12 +1199,12 @@
 
             if ( element instanceof THREE.RenderableFaceNew ) {
 
-               //element.x1 *= _svgWidthHalf;
-               //element.y1 *= -_svgHeightHalf;
-               //element.x2 *= _svgWidthHalf;
-               //element.y2 *= -_svgHeightHalf;
-               //element.x3 *= _svgWidthHalf;
-               //element.y3 *= -_svgHeightHalf;
+               element.x1 *= _svgWidthHalf;
+               element.y1 *= -_svgHeightHalf;
+               element.x2 *= _svgWidthHalf;
+               element.y2 *= -_svgHeightHalf;
+               element.x3 *= _svgWidthHalf;
+               element.y3 *= -_svgHeightHalf;
                renderFace3New( element, material );
                continue;
 
@@ -1222,8 +1219,8 @@
                }
 
             } else if (element instanceof THREE.RenderableLineNew) {
-               //element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
-               //element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
+               element.x1 *= _svgWidthHalf; element.y1 *= -_svgHeightHalf;
+               element.x2 *= _svgWidthHalf; element.y2 *= -_svgHeightHalf;
                renderLineNew( element, material );
                continue;
 
