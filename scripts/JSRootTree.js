@@ -6,8 +6,10 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'JSRootIOEvolution', 'JSRootMath'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      factory(require("./JSRootCore.js"), require("./JSRootIOEvolution.js"), require("./JSRootMath.js"));
    } else {
-
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootTree.js');
 
@@ -739,7 +741,7 @@
    JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
 
-      if ((document === undefined) || (JSROOT.progress===undefined)) return;
+      if (typeof document == 'undefined' || !JSROOT.progress) return;
 
       if ((value===undefined) || isNaN(value)) return JSROOT.progress();
 
