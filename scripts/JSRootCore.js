@@ -770,14 +770,7 @@
 
       xhr.open(method, url, true);
 
-      if ((kind == "bin") || (kind == "buf")) {
-         if ('responseType' in xhr) {
-            xhr.responseType = 'arraybuffer';
-         } else {
-            //XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-            xhr.overrideMimeType("text/plain; charset=x-user-defined");
-         }
-      }
+      if ((kind == "bin") || (kind == "buf")) xhr.responseType = 'arraybuffer';
 
       if (JSROOT.nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0))
          xhr.responseType = 'arraybuffer';
