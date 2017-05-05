@@ -181,6 +181,10 @@
                { name: "User class", url: "index.htm?file=https://root.cern/files/markus.root&item=_Event;1/Refs&opt=dump&load=demo/gaudi.js", title : "Example of user custom streamer for reading TTree data (Gaudi)", src: "demo/gaudi.js", syn: "custom_html_user_tree" },
                { name: "Extract tracks", url: "index.htm?files=[https://root.cern/files/alice_ESDgeometry.root,https://root.cern/files/alice_ESDs.root]&item=[[0]/Gentle;1,[1]/esdTree;1]&load=demo/alice_esd.js", title : "Extract tracks from the custom tree", src: "demo/alice_esd.js" }
             ],
+            'Node.js': [
+               { name: "Create SVG", title: "Example how to read object from ROOT file and create SVG", src: "demo/node/makesvg.js"  },
+               { name: "Testing", title : "Test suite to test JSROOT functionality with Node.js", src: "https://github.com/linev/jsroot-test/" }
+             ],
             'httpserver.C' : [
               { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C' },
               { name: "Default page", url: "httpserver.C/", title : "Default HTML page of running httpserver.C macro (snapshot)" },
@@ -296,22 +300,37 @@
                
                var shortname = MakeShortName(key, entry.name);
             
-               var url = entry.url;
-               
-               var aaa = document.createElement( 'a' );
-                   aaa.textContent = entry.name;
-                   aaa.href = jsroot_path + url;
-               if ('title' in entry) aaa.title = entry.title; 
-               content.appendChild( aaa );
-               SetListener(aaa, shortname, url);
+               var url = entry.url, srcurl = "";
+
+               if (url) {               
+                  var aaa = document.createElement( 'a' );
+                  aaa.textContent = entry.name;
+                  aaa.href = jsroot_path + url;
+                  if ('title' in entry) aaa.title = entry.title; 
+                  content.appendChild( aaa );
+                  SetListener(aaa, shortname, url);
+               }
                  
                if ('src' in entry) {
-                  var saaa = document.createElement( 'a' );
-                  saaa.textContent = " (src)";
-                  saaa.title = "Click to see source of the example";
+                  
                   var github = "https://github.com/root-project/jsroot/blob/"; 
-                  if (JSROOT.source_dir.indexOf("/dev/")>0) github+="dev/"; else github+="master/"; 
-                  saaa.href = github + ((entry.src===true) ? url : entry.src);
+                  if (JSROOT.source_dir.indexOf("/dev/")>0) github+="dev/"; else github+="master/";
+                  if (entry.src===true) srcurl = github + url; else
+                  if (entry.src.indexOf("http")===0) srcurl = entry.src; else
+                               srcurl = github + entry.src;
+
+                  
+                  var saaa = document.createElement( 'a' );
+                  
+                  if (url) {
+                     saaa.textContent = " (src)";
+                     saaa.title = "Click to see source of the example";
+                  } else {
+                     saaa.textContent = entry.name;
+                     saaa.title = entry.title;
+                  }
+                  
+                  saaa.href = srcurl;
                   content.appendChild( saaa );
                   SetSourceListener(saaa, shortname + "_src", ((entry.src===true) ? url : entry.src));
                   

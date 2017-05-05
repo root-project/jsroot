@@ -719,3 +719,29 @@ to correctly set rendering order. It should be used as:
 Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.    
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm).
+
+
+### Use with Node.js
+
+Starting from version 5.2.0, JSROOT can be used in Node.js. To install it, use:
+
+    [shell] npm install jsroot
+    
+To use in the Node.js scripts, one should add following line:
+
+     var jsroot = require('jsroot');
+     
+Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
+create SVG output. For example, open create SVG image with lego plot, one should do:
+
+    var jsroot = require("jsroot");
+    var fs = require("fs");
+
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+        file.ReadObject("hpx;1", function(obj) {
+            jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
+                fs.writeFileSync("lego2.svg", svg);
+            });
+        });
+     });               
+ 
