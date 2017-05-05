@@ -173,9 +173,9 @@ examples_main = {
       { opt:"err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
    ],
    TLatex : [
-     { name:"text", url: "?nobrowser&file=$$$latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]", title: "Without MathJax.js rendering" },
-     { name:"latex", url: "?nobrowser&file=$$$latex.root&layout=grid2x2&items=[lva,ex1,ex2,ex3]&mathjax", title: "With MathJax.js rendering" },
-     { name:"math", url: "?nobrowser&file=$$$latex.root&item=math;1", title: "TMathText drawn always with MathJax.js rendering" }
+     { name:"text", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Without MathJax.js rendering" },
+     { name:"latex", file: "latex.root", layout: "grid2x2", mathjax: true, items: ['lva','ex1','ex2','ex3'], title: "Without MathJax.js rendering" },
+     { name:"math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
    ],
    Misc : [
      { name: "ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },

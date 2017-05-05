@@ -278,6 +278,7 @@
                if (entry.layout) url += "&layout=" + entry.layout;
                url += "&items=[" + entry.items.join(",") + "]";
                if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
+               if (entry.mathjax) url += "&mathjax";
             } else
             if (entry.asurl) {
                url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
@@ -405,6 +406,7 @@
                         if (entry.layout) url += "&layout=" + entry.layout;
                         url += "&items=[" + entry.items.join(",") + "]";
                         if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
+                        if (entry.mathjax) url += "&mathjax";
                      }
                   }
 

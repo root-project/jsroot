@@ -3250,23 +3250,24 @@
          if ((mtext.indexOf("\\(")==0) && (mtext.lastIndexOf("\\)")==mtext.length-2))
             mtext = mtext.substr(2,mtext.length-4);
 
-         var painter = this;
-
          JSROOT.nodejs_mathjax.typeset({
+            jsroot_painter: this,
+            jsroot_drawg: draw_g,
+            jsroot_fog: fo_g,
             ex: font.size,
             math: mtext,
             useFontCache: false,
             useGlobalCache: false,
             format: "TeX", // "TeX", "inline-TeX", "MathML"
-            svg: true, //  svg:true,
-          }, function (data) {
-
+            svg: true //  svg:true,
+          }, function (data, opt) {
              if (!data.errors) {
-                fo_g.html(data.svg);
-                painter.FinishTextDrawing(draw_g);
+                opt.jsroot_fog.html(data.svg);
              } else {
-                console.log('MathJax error');
+                console.log('MathJax error', opt.math);
+                opt.jsroot_fog.html("<svg></svg>");
              }
+             opt.jsroot_painter.FinishTextDrawing(opt.jsroot_drawg);
           });
 
          return 0;
@@ -4333,8 +4334,8 @@
 
       painter.Redraw();
 
-      // drawing ready handled in special painters
-      if (!this.PaveDrawFunc) { console.log('Call drawing ready here'); painter.DrawingReady(); }
+      // drawing ready handled in special painters, if not exists - drawing is done
+      if (!this.PaveDrawFunc) painter.DrawingReady();
 
       return painter;
    }
