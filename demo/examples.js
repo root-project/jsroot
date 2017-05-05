@@ -21,7 +21,7 @@ examples_main = {
      { name: "docu", file: "histpainter6.root", layout: "vert32", items: ["two_axis","draw_e1","draw_bar","draw_e34","draw_text"], title:"several TH1 examples from THistPainter documentation" }
    ],
    TH2 : [
-     { opt: "", file: "hsimple.root", item: "hpxpy;1", random: true },
+     { opt: "", file: "hsimple.root", item: "hpxpy;1" },
      { opt: "col" },
      { opt: "colpal77", title: "example how color palette 77 can be used for drawing" },
      { opt: "colz", title: "color draw with palette" },
@@ -46,7 +46,7 @@ examples_main = {
      { opt: "lego3", title: "lego3 plot - lego1 without border lines" },
      { opt: "lego4", title: "lego4 plot - lego2 without border lines" },
      { opt: "text", title: "draw bins content as text, can be combined with col, box or scat options" },
-     { opt: "scat", title: "scatter plot (used as default draw option)", random: true },
+     { opt: "scat", title: "scatter plot (used as default draw option)" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" }
    ],

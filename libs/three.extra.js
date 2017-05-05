@@ -1478,7 +1478,7 @@
 
          var style = "fill:black";
 
-         if ( material instanceof THREE.SpriteMaterial )
+         if (( material instanceof THREE.SpriteMaterial ) || ( material instanceof THREE.PointsMaterial ))
             style = 'fill:' + material.color.getStyle();
 
          checkCurrentPath(style);
