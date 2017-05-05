@@ -798,6 +798,18 @@
 
                   }
 
+               } else if ( geometry instanceof THREE.BufferGeometry ) {
+
+                  var attributes = geometry.attributes;
+
+                  if ( attributes.position !== undefined ) {
+                     var positions = attributes.position.array;
+                     for ( var i = 0, l = positions.length; i < l; i += 3 ) {
+                        _vector4.set( positions[i], positions[i+1], positions[i+2], 1 );
+                        _vector4.applyMatrix4( _modelViewProjectionMatrix );
+                        pushPoint( _vector4, object, camera );
+                     }
+                  }
                }
 
             } else if ( object instanceof THREE.Sprite ) {
@@ -850,6 +862,7 @@
          }
 
       }
+
 
       // Pools
 
@@ -1234,13 +1247,10 @@
             } else
             if ( element instanceof THREE.RenderableSprite ) {
 
-               console.log('ignore THREE.RenderableSprite');
-               continue;
-
                _v1 = element;
                _v1.x *= _svgWidthHalf; _v1.y *= - _svgHeightHalf;
 
-               renderSprite( _v1, element, material );
+               renderSpriteNew( _v1, element, material );
 
             } else if ( element instanceof THREE.RenderableLine ) {
 
@@ -1464,6 +1474,24 @@
          _curr_path += "Z";
       }
 
+      function renderSpriteNew( v1, element, material ) {
+
+         var style = "fill:black";
+
+         if ( material instanceof THREE.SpriteMaterial )
+            style = 'fill:' + material.color.getStyle();
+
+         checkCurrentPath(style);
+
+         var scaleX = Math.max(1, Math.round(element.scale.x * _svgWidthHalf)),
+             scaleY = Math.max(1, Math.round(element.scale.y * _svgHeightHalf));
+
+         svg_position(Math.round(v1.x - ( scaleX * 0.5 )),Math.round(v1.y - ( scaleY * 0.5 )));
+
+         _curr_path += "h"+scaleX+"v"+scaleY+"h-"+scaleX+"z";
+      }
+
+
       function renderLineNew( element, material ) {
 
          if ( material instanceof THREE.LineBasicMaterial ) {
@@ -1480,7 +1508,6 @@
             svg_position(Math.round(element.x1),Math.round(element.y1));
             svg_line(Math.round(element.x2),Math.round(element.y2));
          }
-
       }
 
       function renderLine( v1, v2, element, material ) {
