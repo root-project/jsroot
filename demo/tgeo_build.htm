@@ -131,8 +131,8 @@
 
             var timer = Date.now() * 0.0001;
 
-            camera.position.x = Math.cos( timer )*2*geom_size;
-            camera.position.z = Math.sin( timer )*2*geom_size;
+            camera.position.x = Math.cos( timer )*geom_size;
+            camera.position.z = Math.sin( timer )*geom_size;
             camera.position.y = geom_size;
 
             camera.lookAt( scene.position );
