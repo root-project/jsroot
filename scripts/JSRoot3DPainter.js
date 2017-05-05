@@ -3003,7 +3003,7 @@
          // try to define scale-down factor
          if ((JSROOT.gStyle.OptimizeDraw > 0) && !main.webgl) {
             var numselected = CountSelected(main.scale_zmin, main.scale_zmax),
-            sizelimit = main.webgl ? 50000 : 5000;
+                sizelimit = main.webgl ? 50000 : 5000;
 
             if (numselected > sizelimit) {
                step = Math.floor(numselected / sizelimit);
@@ -3035,7 +3035,7 @@
                 err = null, ierr = 0;
 
             if (this.options.Markers)
-               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
+               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl || main.usesvg, scale/3);
 
             if (this.options.Error)
                err = new Float32Array(size*6*3);
@@ -3138,18 +3138,24 @@
 
       this.options = this.DecodeOptions(opt);
 
-      if (this.main_painter() == null) {
-         if (gr.fHistogram == null)
-            gr.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram2D(divid, gr.fHistogram, "lego");
-         this.ownhisto = true;
+      if (this.main_painter()) {
+         this.SetDivId(divid);
+         this.Redraw();
+         return this.DrawingReady();
       }
 
-      this.SetDivId(divid);
+      if (gr.fHistogram == null)
+         gr.fHistogram = this.CreateHistogram();
 
-      this.Redraw();
+      JSROOT.draw(divid, gr.fHistogram, "lego", (function() {
+         this.ownhisto = true;
+         this.SetDivId(divid);
+         this.Redraw();
+         return this.DrawingReady();
+      }).bind(this));
 
-      return this.DrawingReady();
+      return this;
+
    }
 
    // ==============================================================================
@@ -3385,7 +3391,7 @@
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 10000)) return false;
 
-      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
+      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl || main.usesvg, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
 
       for (i = i1; i < i2; ++i) {
@@ -3916,7 +3922,7 @@
          }
 
          var size = Math.floor(numselect/step),
-             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, main.size_xy3d/100),
+             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl || main.usesvg, main.size_xy3d/100),
              index = new Int32Array(size),
              select = 0, icnt = 0;
 

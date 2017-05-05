@@ -800,6 +800,7 @@
 
                } else if ( geometry instanceof THREE.BufferGeometry ) {
 
+
                   var attributes = geometry.attributes;
 
                   if ( attributes.position !== undefined ) {
