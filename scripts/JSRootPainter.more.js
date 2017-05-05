@@ -2506,6 +2506,8 @@
 
       this.SetDivId(divid, 2);
 
+      this.AssignFinishPave(); // do it once again while this is changed
+
       this.DrawLegendItems = function(w, h) {
 
          var legend = this.GetObject(),
@@ -2603,14 +2605,14 @@
          }
 
          // rescale after all entries are shown
-         this.FinishTextDrawing();
+         this.FinishTextDrawing(null, this.FinishPave);
       }
 
       this.PaveDrawFunc = this.DrawLegendItems;
 
       this.Redraw();
 
-      return this.DrawingReady();
+      return this;
    }
 
    // ===========================================================================

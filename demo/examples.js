@@ -132,7 +132,7 @@ examples_main = {
      { opt:"LP" },
      { opt:"B" },
      { opt:"B1" },
-     { name:"docu", url: "?nobrowser&file=$$$graph.root+&layout=vert333&items=[c1,c47,c4,c48,c41,c42,c43,c44,c45]", title:"several canvas from TGraph documentation page" }
+     { name:"docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" }
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },

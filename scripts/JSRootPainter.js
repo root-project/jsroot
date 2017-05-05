@@ -1122,6 +1122,7 @@
 
    JSROOT.TBasePainter.prototype.DrawingReady = function(res_painter) {
       // function should be called by the painter when first drawing is completed
+
       this._ready_called_ = true;
       if (this._ready_callback_ !== undefined) {
          if (!this._return_res_painter) res_painter = this;
@@ -2971,7 +2972,7 @@
          return draw_g.property('max_text_width');
       }
 
-      if (call_ready) draw_g.property('text_callback', call_ready);
+      if (call_ready) draw_g.node().text_callback = call_ready;
 
       var svgs = null;
 
@@ -3122,10 +3123,10 @@
       // now hidden text after rescaling can be shown
       draw_g.selectAll('.hidden_text').attr('opacity', '1').classed('hidden_text',false);
 
-      if (!call_ready) call_ready = draw_g.property('text_callback');
+      if (!call_ready) call_ready = draw_g.node().text_callback;
+      draw_g.node().text_callback = null;
 
-      draw_g.property('draw_text_completed', true)
-            .property('text_callback', null);
+      draw_g.property('draw_text_completed', true);
 
       // if specified, call ready function
       JSROOT.CallBack(call_ready);
@@ -3219,9 +3220,9 @@
 
       if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
 
-      var font = draw_g.property('text_font');
-
-      var fo_g = draw_g.append("svg:g")
+      var mtext = JSROOT.Painter.translateMath(label, latex_kind, tcolor),
+          font = draw_g.property('text_font'),
+          fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
                        .property('_x',x) // used for translation later
@@ -3232,14 +3233,52 @@
                        .property('_rotate', rotate)
                        .property('_align', align);
 
+      draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
+
+      if (JSROOT.nodejs) {
+         // special handling for Node.js
+
+         if (!JSROOT.nodejs_mathjax) {
+            JSROOT.nodejs_mathjax = require("mathjax-node");
+            JSROOT.nodejs_mathjax.config({
+               TeX: { extensions: ["color.js"] },
+               SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false }
+            });
+            JSROOT.nodejs_mathjax.start();
+         }
+
+         if ((mtext.indexOf("\\(")==0) && (mtext.lastIndexOf("\\)")==mtext.length-2))
+            mtext = mtext.substr(2,mtext.length-4);
+
+         var painter = this;
+
+         JSROOT.nodejs_mathjax.typeset({
+            ex: font.size,
+            math: mtext,
+            useFontCache: false,
+            useGlobalCache: false,
+            format: "TeX", // "TeX", "inline-TeX", "MathML"
+            svg: true, //  svg:true,
+          }, function (data) {
+
+             if (!data.errors) {
+                fo_g.html(data.svg);
+                painter.FinishTextDrawing(draw_g);
+             } else {
+                console.log('MathJax error');
+             }
+          });
+
+         return 0;
+      }
+
       var element = document.createElement("p");
 
       d3.select(element).style('visibility',"hidden").style('overflow',"hidden").style('position',"absolute")
                         .style("font-size",font.size+'px').style("font-family",font.name)
-                        .html('<mtext>' + JSROOT.Painter.translateMath(label, latex_kind, tcolor) + '</mtext>');
+                        .html('<mtext>' + mtext + '</mtext>');
       document.body.appendChild(element);
 
-      draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
       fo_g.property('_element', element);
 
       var painter = this;
@@ -3256,8 +3295,6 @@
 
    JSROOT.TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, id) {
       // function should be called when processing of element is completed
-
-      // console.log('FinishMathjax', id);
 
       if (fo_g.node().parentNode !== draw_g.node()) return;
       var entry = fo_g.property('_element');
@@ -3804,9 +3841,23 @@
       this.Enabled = true;
       this.UseContextMenu = true;
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
+      this.FirstRun = 1; // counter required to correctly complete drawing
+      this.AssignFinishPave();
    }
 
    JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   JSROOT.TPavePainter.prototype.AssignFinishPave = function() {
+      function func() {
+         // function used to signal drawing ready, required when text drawing posponed due to mathjax
+         if (this.FirstRun <= 0) return;
+         this.FirstRun--;
+         if (this.FirstRun!==0) return;
+         delete this.FinishPave; // no need for that callback
+         this.DrawingReady();
+      }
+      this.FinishPave = func.bind(this);
+   }
 
    JSROOT.TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
@@ -3886,12 +3937,15 @@
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
-      if (!JSROOT.BatchMode)
-         rect.style("pointer-events", "visibleFill")
-             .on("mouseenter", this.ShowObjectStatus.bind(this))
-
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, arg);
+
+      if (JSROOT.BatchMode) return;
+
+      // here all kind of interactive settings
+
+      rect.style("pointer-events", "visibleFill")
+          .on("mouseenter", this.ShowObjectStatus.bind(this))
 
       this.AddDrag({ obj: pt, minwidth: 10, minheight: 20,
                      redraw: this.DrawPave.bind(this),
@@ -3910,7 +3964,7 @@
 
       this.DrawText(pave.fTextAlign, 0, 0, width, height, pave.fLabel, JSROOT.Painter.root_colors[pave.fTextColor]);
 
-      this.FinishTextDrawing();
+      this.FinishTextDrawing(null, this.FinishPave);
    }
 
    JSROOT.TPavePainter.prototype.DrawPaveText = function(width, height, refill) {
@@ -3924,7 +3978,10 @@
           num_cols = 0,
           nlines = pt.fLines.arr.length,
           lines = [],
-          maxlen = 0;
+          maxlen = 0,
+          draw_header = (pt.fLabel.length>0) && !this.IsStats();
+
+      if (draw_header) this.FirstRun++; // increment finish counter
 
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
@@ -3995,7 +4052,7 @@
          }
       }
 
-      var maxtw = this.FinishTextDrawing();
+      this.FinishTextDrawing(undefined, this.FinishPave);
 
       if ((lwidth > 0) && has_head) {
          this.draw_g.append("svg:line")
@@ -4024,7 +4081,7 @@
                         .call(this.lineatt.func);
       }
 
-      if ((pt.fLabel.length>0) && !this.IsStats()) {
+      if (draw_header) {
          var x = Math.round(width*0.25),
              y = Math.round(-height*0.02),
              w = Math.round(width*0.5),
@@ -4044,7 +4101,7 @@
 
          this.DrawText(22, x, y, w, h, pt.fLabel, tcolor, 1, lbl_g);
 
-         this.FinishTextDrawing(lbl_g);
+         this.FinishTextDrawing(lbl_g, this.FinishPave);
 
          this.UseTextColor = true;
       }
@@ -4276,7 +4333,10 @@
 
       painter.Redraw();
 
-      return painter.DrawingReady();
+      // drawing ready handled in special painters
+      if (!this.PaveDrawFunc) { console.log('Call drawing ready here'); painter.DrawingReady(); }
+
+      return painter;
    }
 
    // ===========================================================================
