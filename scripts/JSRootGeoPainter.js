@@ -1033,7 +1033,7 @@
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
-         var need_worker = (numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5));
+         var need_worker = !JSROOT.BatchMode && ((numvis > 10000) || (matrix && (this._clones.ScanVisible() > 1e5)));
 
          // worker does not work when starting from file system
          if (need_worker && JSROOT.source_dir.indexOf("file://")==0) {
@@ -1394,7 +1394,9 @@
       this._scene.add(this._toplevel);
 
       if (usesvg) {
-         this._renderer = new THREE.SVGRenderer({ antialias: true, alpha: true });
+         this._renderer = JSROOT.gStyle.SVGRenderer ?
+                             new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
+                             new THREE.SVGRenderer({ antialias: true, alpha: true });
       } else {
          this._renderer = webgl ?
                            new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: false,

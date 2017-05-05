@@ -12,10 +12,11 @@
 
       ThreeBSP = factory(THREE);
    }
-} (function( THREE) {
+} (function(THREE, ThreeBSP) {
 
-   var ThreeBSP = {},
-       EPSILON = 1e-5,
+   if (!ThreeBSP) ThreeBSP = {};
+
+   var EPSILON = 1e-5,
        COPLANAR = 0,
        FRONT = 1,
        BACK = 2,
