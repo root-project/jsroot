@@ -3157,7 +3157,8 @@
       if (latex_kind<2)
          if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
 
-      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!==2)) || (latex_kind<1);
+      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!==2)) || (latex_kind<1),
+          font = draw_g.property('text_font');
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
@@ -3202,7 +3203,10 @@
 
          draw_g.property('normaltext_use', true);
 
-         var box = this.GetBoundarySizes(txt.node());
+         // workaround for Node.js - use primitive estimation of textbox size
+         // later can be done with Node.js (via SVG) or with alternative implementation of jsdom
+         var box = JSROOT.nodejs ? { height: Math.round(font.size*1.2), width: Math.round(label.length*font.size*0.4) }
+                                 : this.GetBoundarySizes(txt.node());
 
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
@@ -3221,7 +3225,6 @@
       if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
 
       var mtext = JSROOT.Painter.translateMath(label, latex_kind, tcolor),
-          font = draw_g.property('text_font'),
           fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
