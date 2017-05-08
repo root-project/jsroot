@@ -2824,11 +2824,13 @@
 
       if (this.webgl) {
          this.pos = new Float32Array(size*3);
+         this.geom = new THREE.BufferGeometry();
+         this.geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+         this.indx = 0;
       } else {
-         this.pos = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
-         this.norm = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
+         // only plain geometry supported by canvasrenderer
+         this.geom = new THREE.Geometry();
       }
-      this.indx = 0;
    }
 
    JSROOT.Painter.PointsCreator.prototype.AddPoint = function(x,y,z) {
@@ -2837,47 +2839,20 @@
          this.pos[this.indx+1] = y;
          this.pos[this.indx+2] = z;
          this.indx+=3;
-         return;
-      }
-
-      var indicies = JSROOT.Painter.Box_Indexes,
-          normals = JSROOT.Painter.Box_Normals,
-          vertices = JSROOT.Painter.Box_Vertices;
-
-      for (var k=0,nn=-3;k<indicies.length;++k) {
-         var vert = vertices[indicies[k]];
-         this.pos[this.indx]   = x + (vert.x - 0.5)*this.scale;
-         this.pos[this.indx+1] = y + (vert.y - 0.5)*this.scale;
-         this.pos[this.indx+2] = z + (vert.z - 0.5)*this.scale;
-
-         if (k%6===0) nn+=3;
-         this.norm[this.indx] = normals[nn];
-         this.norm[this.indx+1] = normals[nn+1];
-         this.norm[this.indx+2] = normals[nn+2];
-
-         this.indx+=3;
+      } else {
+         this.geom.vertices.push(new THREE.Vector3( x, y, z ));
       }
    }
 
-   JSROOT.Painter.PointsCreator.prototype.CreateMesh = function(mcolor) {
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-      if (this.norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+   JSROOT.Painter.PointsCreator.prototype.CreatePoints = function(mcolor) {
+      // only plain geometry and sprite material is supported by CanvasRenderer, but it cannot be scaled
 
-      var mesh = null;
+      var material = this.webgl ? new THREE.PointsMaterial( { size: 3*this.scale, color: mcolor || 'black' } )
+                                : new THREE.SpriteMaterial( { color: mcolor || 'black' } );
 
-      if (this.webgl) {
-         var material = new THREE.PointsMaterial( { size: 3*this.scale, color: mcolor } );
-         mesh = new THREE.Points(geom, material);
-         mesh.nvertex = 1;
-      } else {
-         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-         var material = new THREE.MeshBasicMaterial( { color: mcolor, shading: THREE.SmoothShading  } );
-         mesh = new THREE.Mesh(geom, material);
-         mesh.nvertex = JSROOT.Painter.Box_Indexes.length;
-      }
-
-      return mesh;
+      var pnts = new THREE.Points(this.geom, material);
+      pnts.nvertex = 1;
+      return pnts;
    }
 
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
@@ -3003,7 +2978,7 @@
          // try to define scale-down factor
          if ((JSROOT.gStyle.OptimizeDraw > 0) && !main.webgl) {
             var numselected = CountSelected(main.scale_zmin, main.scale_zmax),
-                sizelimit = main.webgl ? 50000 : 5000;
+                sizelimit = 50000;
 
             if (numselected > sizelimit) {
                step = Math.floor(numselected / sizelimit);
@@ -3116,7 +3091,7 @@
                   fcolor = palette[indx];
                }
 
-               var mesh = pnts.CreateMesh(fcolor);
+               var mesh = pnts.CreatePoints(fcolor);
 
                main.toplevel.add(mesh);
 
@@ -3389,7 +3364,7 @@
       }
 
       // too many pixels - use box drawing
-      if (numpixels > (main.webgl ? 100000 : 10000)) return false;
+      if (numpixels > (main.webgl ? 100000 : 30000)) return false;
 
       var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl || main.usesvg, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
@@ -3416,7 +3391,7 @@
          }
       }
 
-      var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[histo.fMarkerColor]);
+      var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[histo.fMarkerColor]);
       main.toplevel.add(mesh);
 
       mesh.bins = bins;
@@ -3907,7 +3882,7 @@
 
          if (!main  || !('renderer' in main)) return;
 
-         var step = 1, sizelimit = main.webgl ? 50000 : 5000, numselect = 0;
+         var step = 1, sizelimit = 50000, numselect = 0;
 
          for (var i=0;i<poly.fP.length;i+=3) {
             if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
@@ -3942,7 +3917,7 @@
             pnts.AddPoint(main.grx(poly.fP[i]), main.gry(poly.fP[i+1]), main.grz(poly.fP[i+2]));
          }
 
-         var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[poly.fMarkerColor]);
+         var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[poly.fMarkerColor]);
 
          main.toplevel.add(mesh);
 
