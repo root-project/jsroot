@@ -3044,7 +3044,7 @@
 
          var width = transform(vvv.attr("width")),
              height = transform(vvv.attr("height")),
-             valign = vvv.attr("style"), box = null;
+             valign = vvv.attr("style");
 
          if (valign && valign.indexOf("vertical-align:")==0 && valign.indexOf("ex;")==valign.length-3) {
             valign = transform(valign.substr(16, valign.length-17));
@@ -3052,16 +3052,20 @@
             valign = null;
          }
 
-         if (width && height)
-            vvv.attr("width", width).attr('height', height).attr("style",null);
+         width = (!width || (width<=0.5)) ? 1 : Math.round(width);
+         height = (!height || (height<=0.5)) ? 1 : Math.round(height);
+
+         vvv.attr("width", width).attr('height', height).attr("style",null);
 
          fo_g.property('_valign', valign);
 
-         if (!box) box = painter.GetBoundarySizes(fo_g.node());
+         if (!JSROOT.nodejs) {
+            var box = painter.GetBoundarySizes(fo_g.node());
+            width = 1.05*box.width; height = 1.05*box.height;
+         }
 
          if (fo_g.property('_scale'))
-            svg_factor = Math.max(svg_factor, 1.05*box.width / fo_g.property('_width'),
-                                              1.05*box.height / fo_g.property('_height'));
+            svg_factor = Math.max(svg_factor, width / fo_g.property('_width'), height / fo_g.property('_height'));
       });
 
       if (svgs)
@@ -3072,18 +3076,19 @@
 
          var valign = fo_g.property('_valign'),
              m = fo_g.select("svg"), // MathJax svg
-             mw = parseFloat(m.attr("width")),
-             mh = parseFloat(m.attr("height"));
+             mw = parseInt(m.attr("width")),
+             mh = parseInt(m.attr("height"));
 
          if (!isNaN(mh) && !isNaN(mw)) {
             if (svg_factor > 0.) {
                mw = mw/svg_factor;
                mh = mh/svg_factor;
-               m.attr("width", mw).attr("height", mh);
+               m.attr("width", Math.round(mw)).attr("height", Math.round(mh));
             }
          } else {
             var box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
-            mw = box.width; mh = box.height;
+            mw = box.width || mw || 100;
+            mh = box.height || mh || 10;
          }
 
          if ((svg_factor > 0.) && valign) valign = valign/svg_factor;
@@ -3112,7 +3117,6 @@
          if (align[1] == 'middle') tr[ny] += sign.y*(fo_h - mh)/2; else
          if (align[1] == 'bottom') tr[ny] += sign.y*(fo_h - mh); else
          if (align[1] == 'bottom-base') tr[ny] += sign.y*(fo_h - mh - valign);
-
 
          var trans = "translate("+tr.x+","+tr.y+")";
          if (rotate!==0) trans += " rotate("+rotate+",0,0)";
