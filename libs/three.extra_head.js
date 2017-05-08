@@ -1479,17 +1479,22 @@
 
          var style = "fill:black";
 
-         if (( material instanceof THREE.SpriteMaterial ) || ( material instanceof THREE.PointsMaterial ))
+         if (( material.isSpriteMaterial || material.isPointsMaterial ))
             style = 'fill:' + material.color.getStyle();
 
          checkCurrentPath(style);
 
-         var scaleX = Math.max(1, Math.round(element.scale.x * _svgWidthHalf)),
-             scaleY = Math.max(1, Math.round(element.scale.y * _svgHeightHalf));
+         var scaleX = element.scale.x * _svgWidthHalf,
+             scaleY = element.scale.y * _svgHeightHalf;
+
+         if (material.isPointsMaterial) {
+            scaleX *= material.size;
+            scaleY *= material.size;
+         }
 
          svg_position(Math.round(v1.x - ( scaleX * 0.5 )),Math.round(v1.y - ( scaleY * 0.5 )));
 
-         _curr_path += "h"+scaleX+"v"+scaleY+"h-"+scaleX+"z";
+         _curr_path += "h"+Math.round(scaleX)+"v"+Math.round(scaleY)+"h"+Math.round(-scaleX)+"z";
       }
 
 

@@ -2819,6 +2819,7 @@
 
    JSROOT.Painter.PointsCreator = function(size, iswebgl, scale) {
       if (iswebgl === undefined) iswebgl = true;
+      this.realwebgl = iswebgl;
       this.webgl = iswebgl;
       this.scale = scale || 1.;
 
@@ -2847,8 +2848,7 @@
    JSROOT.Painter.PointsCreator.prototype.CreatePoints = function(mcolor) {
       // only plain geometry and sprite material is supported by CanvasRenderer, but it cannot be scaled
 
-      var material = this.webgl ? new THREE.PointsMaterial( { size: 3*this.scale, color: mcolor || 'black' } )
-                                : new THREE.SpriteMaterial( { color: mcolor || 'black' } );
+      var material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1)*this.scale, color: mcolor || 'black' } );
 
       var pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
@@ -2991,6 +2991,7 @@
             levels = [main.scale_zmin, main.scale_zmax],
             scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
 
+         if (main.usesvg) scale*=0.3;
 
          if (this.options.Color) {
             levels = main.GetContour();
@@ -3010,7 +3011,7 @@
                 err = null, ierr = 0;
 
             if (this.options.Markers)
-               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl || main.usesvg, scale/3);
+               pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
 
             if (this.options.Error)
                err = new Float32Array(size*6*3);
@@ -3366,7 +3367,7 @@
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000)) return false;
 
-      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl || main.usesvg, main.size_xy3d/200),
+      var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
 
       for (i = i1; i < i2; ++i) {
@@ -3897,7 +3898,7 @@
          }
 
          var size = Math.floor(numselect/step),
-             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl || main.usesvg, main.size_xy3d/100),
+             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, main.size_xy3d/100),
              index = new Int32Array(size),
              select = 0, icnt = 0;
 
