@@ -105,7 +105,8 @@
              jsroot_path = "./",
              demo_path = "demo/",
              filepath = "../files/",
-             use_requirejs = false;
+             use_requirejs = false,
+             extra_opts = ""; // extra options like webgl=no
 
          var icon = document.createElement("link");
          icon.setAttribute('src', "img/RootIcon.ico");
@@ -116,6 +117,9 @@
             use_requirejs = true;
             document.title += ' (with require.js)';
          }
+         
+         if (window.location.search.indexOf("nowebgl")>0)
+            extra_opts = "&webgl=0";
          
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
@@ -195,9 +199,12 @@
                   viewer.id = "viewer_frame";
                   document.getElementById('viewer').appendChild(viewer);
                }
-               viewer.src = jsroot_path + durl + (opt.length>0 ? ("&opt=" + opt) : "");
+               viewer.src = jsroot_path + durl + (opt.length>0 ? ("&opt=" + opt) : "") + extra_opts;
                viewer.focus();
              } else {
+                
+                JSROOT.gStyle.NoWebGL = (extra_opts.indexOf("webgl=0")>=0);
+                
                 document.getElementById('viewer').innerHTML = "";
                 document.getElementById('viewer').style['background-color'] = "";
                 
@@ -286,6 +293,8 @@
                url += itemname + "&opt=" + opt;
                if (entry.mathjax) url += "&mathjax"; 
             }
+            
+            JSROOT.gStyle.NoWebGL = (extra_opts.indexOf("webgl=0")>=0); // disbale wbgl
             
             // console.log('KEY ', keyid, 'opt', opt);
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);
@@ -443,6 +452,8 @@
             
                   if (opt != "")
                      aaa.href += "&opt=" + opt;
+                  
+                  if (extra_opts) aaa.href += extra_opts;
                      
                   if ('title' in entry) {
                      aaa.title = entry.title;
