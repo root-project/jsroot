@@ -2461,8 +2461,14 @@
             if (kind==="dummy") url+="&dummy";
          }
 
-         this.req = JSROOT.NewHttpRequest(url, (data ? "posttext" : "text"), this.processreq.bind(this));
-         this.req.send(data);
+         if (data) {
+            var post = "&post=";
+            for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
+            url += post;
+         }
+
+         this.req = JSROOT.NewHttpRequest(url, "text", this.processreq.bind(this));
+         this.req.send();
       }
 
       this.processreq = function(res) {
