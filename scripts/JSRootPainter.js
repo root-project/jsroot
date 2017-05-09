@@ -2498,7 +2498,7 @@
    }
 
 
-   JSROOT.TObjectPainter.prototype.OpenWebsocket = function() {
+   JSROOT.TObjectPainter.prototype.OpenWebsocket = function(use_longpoll) {
       // create websocket for current object (canvas)
       // via websocket one recieved many extra information
 
@@ -2506,7 +2506,7 @@
 
       var path = window.location.href, conn = null;
 
-      if (true) {
+      if (!use_longpoll) {
          path = path.replace("http://", "ws://");
          path = path.replace("https://", "wss://");
          var pos = path.indexOf("draw.htm");
@@ -11698,7 +11698,7 @@
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
 
 
-      if (drawing && (JSROOT.GetUrlOption("webcanvas")!==null)) {
+      if (drawing && ((JSROOT.GetUrlOption("webcanvas")!==null) || (JSROOT.GetUrlOption("longpollcanvas")!==null))) {
 
          console.log('Start web painter directly');
 
@@ -11706,7 +11706,7 @@
 
          painter.SetDivId(myDiv.attr("id"), -1); // just assign id, nothing else is happens
 
-         painter.OpenWebsocket(); // when connection activated, ROOT must send new instance of the canvas
+         painter.OpenWebsocket(JSROOT.GetUrlOption("longpollcanvas")!==null); // when connection activated, ROOT must send new instance of the canvas
 
          JSROOT.RegisterForResize(painter);
 
