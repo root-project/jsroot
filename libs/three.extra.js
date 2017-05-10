@@ -1653,8 +1653,17 @@
 
          } else {
 
-            style = 'fill:' + col;
-            if (material.opacity!==1) style+=';fill-opacity:' + material.opacity.toFixed(3);
+            var opacity = "1";
+            if (material.opacity!==1) {
+               opacity = material.opacity.toFixed(3);
+               while (opacity[opacity.length-1]=='0') opacity = opacity.substr(0,opacity.length-1);
+            }
+
+            if (opacity==="1") style = 'fill:' + col; else
+            if ((col.indexOf("rgb(")==0) && (col[col.length-1]==")")) {
+              style = "fill:rgba(" + col.substr(4, col.length-5) + "," + opacity + ")";
+            } else
+              style='fill:'+col+';fill-opacity:' + opacity;
          }
 
          checkCurrentPath(style);
