@@ -2447,12 +2447,13 @@
       this.nextrequest = function(data, kind) {
          var url = this.path;
          if (kind === "connect") {
-            url+="?connect"; this.connid="connect";
+            url+="?connect";
+            this.connid = "connect";
          } else
          if (kind === "close") {
             if ((this.connid===null) || (this.connid==="close")) return;
             url+="?connection="+this.connid + "&close";
-            this.connid="close";
+            this.connid = "close";
          } else
          if ((this.connid===null) || (typeof this.connid!=='number')) {
             return console.error("No connection");
@@ -2462,33 +2463,45 @@
          }
 
          if (data) {
+            // special workaround to avoid POST request, which is not supported in WebEngine
             var post = "&post=";
             for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
             url += post;
          }
 
-         this.req = JSROOT.NewHttpRequest(url, "text", this.processreq.bind(this));
-         this.req.send();
+         var req = JSROOT.NewHttpRequest(url, "text", function(res) {
+            if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+            if (this.handle.req === this) {
+               this.handle.req = null; // get response for existing dummy request
+               if (res == "<<nope>>") res = "";
+            }
+            this.handle.processreq(res);
+         });
+
+         req.handle = this;
+         if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
+         req.send();
       }
 
       this.processreq = function(res) {
+
          if (res===null) {
             if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
             // if (typeof this.onclose === 'function') this.onclose();
             this.connid = null;
             return;
          }
-         this.req = null;
+
          if (this.connid==="connect") {
             this.connid = parseInt(res);
-            console.log('Get new connection with id', this.connid);
+            console.log('Get new longpoll connection with id ' + this.connid);
             if (typeof this.onopen == 'function') this.onopen();
          } else
          if (this.connid==="close") {
             if (typeof this.onclose == 'function') this.onclose();
             return;
          } else {
-            if (typeof this.onmessage==='function')
+            if ((typeof this.onmessage==='function') && res)
                this.onmessage({ data: res });
          }
          if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
@@ -2605,7 +2618,7 @@
       }
 
       conn.onerror = function (err) {
-         console.log("err",err);
+         console.log("err "+err);
          // conn.close();
       }
    }
