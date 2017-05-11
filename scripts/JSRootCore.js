@@ -57,8 +57,8 @@
             paths: paths,
             shim: {
                'jqueryui-mousewheel': { deps: ['jquery-ui'] },
-               'jqueryui-touch-punch': { deps: ['jquery-ui'] },
-               'MathJax': {
+               'jqueryui-touch-punch': { deps: ['jquery-ui'] }
+/*               'MathJax': {
                   exports: 'MathJax',
                   init: function () {
                      MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }, SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
@@ -72,7 +72,7 @@
                      MathJax.Hub.Startup.onload();
                      return MathJax;
                   }
-             }
+             } */
             }
          });
       }
@@ -1028,10 +1028,11 @@
       if (kind.indexOf("mathjax;")>=0) {
          if (typeof MathJax == 'undefined') {
             mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://root.cern/js/mathjax/latest/MathJax.js") +
-                         "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
+//                         "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
+                           "?config=TeX-AMS-MML_SVG&delayStartupUntil=configured";
+            modules.push('MathJax');
          }
          if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
-         modules.push('MathJax');
       }
 
       if (kind.indexOf("simple;")>=0) {

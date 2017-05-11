@@ -3314,6 +3314,21 @@
 
       JSROOT.AssertPrerequisites('mathjax', function() {
 
+         if (!JSROOT.mathjax_configured) {
+            MathJax.Hub.Config({ TeX: { extensions: ["color.js"] },
+                                 SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
+            MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
+               var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+               VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+               VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+               VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
+               VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
+            });
+
+            MathJax.Hub.Configured();
+            JSROOT.mathjax_configured = true;
+         }
+
          MathJax.Hub.Typeset(element, ["FinishMathjax", painter, draw_g, fo_g]);
 
          MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
