@@ -13,7 +13,7 @@
   "main": [ 
      "scripts/JSRootCore.js",
      "scripts/rawinflate.min.js", 
-     "scripts/JSRootIOEvolution.js", 
+     "scripts/JSRootIOEvolution.js" 
   ],
   "moduleType": [
     "globals",
