@@ -13,7 +13,18 @@
   "main": [ 
      "scripts/JSRootCore.js",
      "scripts/rawinflate.min.js", 
-     "scripts/JSRootIOEvolution.js" 
+     "scripts/JSRootIOEvolution.js",
+     "scripts/JSRootMath.js",
+     "scripts/JSRootTree.js",
+     "scripts/JSRootPainter.js",
+     "scripts/JSRootPainter.more.js",
+     "scripts/JSRootPainter.jquery.js",
+     "scripts/saveSvgAsPng.min.js",
+     "scripts/JSRoot3DPainter.js",
+     "scripts/three.extra.min.js",
+     "scripts/ThreeCSG.js",
+     "scripts/JSRootGeoBase.js",
+     "scripts/JSRootGeoPainter.js"
   ],
   "moduleType": [
     "globals",
