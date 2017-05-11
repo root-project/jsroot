@@ -3317,13 +3317,9 @@
 
          if (!JSROOT.mathjax_configured) {
 
-            if (!MathJax.Ajax.config.root) MathJax.Ajax.config.root = "./bower_components/MathJax/"
-
             MathJax.Hub.Config({ jax: ["input/TeX", "output/SVG"],
                                  TeX: { extensions: ["color.js"] },
                                  SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
-
-            console.log('ROOT', MathJax.Ajax.config.root);
 
             MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
                var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
@@ -3334,6 +3330,7 @@
             });
 
             MathJax.Hub.Configured();
+
             JSROOT.mathjax_configured = true;
          }
 

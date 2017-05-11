@@ -38,7 +38,7 @@
 
       if (norjs) {
          // just define locations
-         paths['MathJax'] = 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG,'+dir+'mathjax_config.js&amp;delayStartupUntil=configured';
+         paths['MathJax'] = 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured';
 
          require({ paths: paths });
       } else {
