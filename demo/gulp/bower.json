@@ -14,15 +14,7 @@
   },
   "overrides": {
      "MathJax": {
-        "main" : [
-           "MathJax.js",
-           "config/TeX-AMS-MML_SVG-full.js",
-           "extensions/TeX/color.js",
-           "jax/output/SVG/jax.js",
-           "jax/output/SVG/fonts/TeX/fontdata.js",
-           "jax/output/SVG/fonts/TeX/Main/**/*.js",
-           "jax/output/SVG/fonts/TeX/SansSerif/**/*.js"
-        ]
+        "main" : [ ]
      },
      "jsroot": {
         "main": [ 
