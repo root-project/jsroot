@@ -543,6 +543,8 @@ When JSROOT installed with bower package manager, one could re-use basic librari
 
 Bower support will be automatically enabled when script path conatin __"bower_components/jsroot/"__ string.
 
+One also could use bower and gulp to produce single script with all libraries included.  
+This is shown in the example <https://github.com/root-project/jsroot/tree/master/demo/gulp>
 
 
 ### Use of JSON

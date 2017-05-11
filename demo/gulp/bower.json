@@ -1,0 +1,57 @@
+{
+  "name": "gulp-jsroot-example",
+  "author": [
+    "Sergey Linev"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/root-project/jsrootr.git"
+  },
+  "description": "Example of building lib.js with gulp for JavaScript ROOT",
+  "main": "example.htm",
+  "dependencies": {
+    "jsroot": "https://github.com/root-project/jsroot.git#dev"
+  },
+  "overrides": {
+     "MathJax": {
+        "main" : [
+           "MathJax.js",
+           "config/TeX-AMS-MML_SVG-full.js",
+           "extensions/TeX/color.js",
+           "jax/output/SVG/jax.js",
+           "jax/output/SVG/fonts/TeX/fontdata.js",
+           "jax/output/SVG/fonts/TeX/Main/**/*.js",
+           "jax/output/SVG/fonts/TeX/SansSerif/**/*.js"
+        ]
+     },
+     "jsroot": {
+        "main": [ 
+           "scripts/JSRootCore.js",
+           "scripts/rawinflate.min.js", 
+           "scripts/JSRootIOEvolution.js",
+           "scripts/JSRootMath.js",
+           "scripts/JSRootTree.js",
+           "scripts/JSRootPainter.js",
+           "scripts/JSRootPainter.more.js",
+           "scripts/JSRootPainter.jquery.js",
+           "scripts/saveSvgAsPng.min.js",
+           "scripts/JSRoot3DPainter.js",
+           "scripts/three.extra.min.js",
+           "scripts/ThreeCSG.js",
+           "scripts/JSRootGeoBase.js",
+           "scripts/JSRootGeoPainter.js",
+           "style/JSRootPainter.css",
+           "style/JSRootGeoPainter.css",
+           "style/jquery-ui.css"
+         ]
+      }
+  },
+  "keywords": [
+    "jsroot",
+    "gulp"
+  ],
+  "ignore": [
+    "*.md"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "gulp-jsroot-example",
+  "version": "0.1.0",
+  "dependencies": {
+    "gulp": "^3.9.1",
+    "gulp-util": "^3.0.8",
+    "main-bower-files" : "*",
+    "gulp-concat" : "*",
+    "gulp-less" : "*",
+    "gulp-sourcemaps" : "*",
+    "gulp-filter" : "*",
+    "gulp-rename"  : "*",
+    "gulp-uglify" : "*",
+    "gulp-minify-css" : "*",
+    "gulp-flatten" : "*",
+    "gulp-notify" : "*"
+  }
+}
