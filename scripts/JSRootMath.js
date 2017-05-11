@@ -23,6 +23,8 @@
 } (function(JSROOT) {
    // math methods for Javascript ROOT
 
+   JSROOT.sources.push("math");
+
    JSROOT.Math = {};
 
    /** @memberOf JSROOT.Math */

@@ -31,6 +31,8 @@
    }
 } (function( JSROOT, d3, THREE ) {
 
+   JSROOT.sources.push("geom");
+
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 

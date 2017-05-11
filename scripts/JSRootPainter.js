@@ -25,6 +25,8 @@
    }
 } (function(JSROOT, d3) {
 
+   JSROOT.sources.push("2d");
+
    // do it here while require.js does not provide method to load css files
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootPainter.css');

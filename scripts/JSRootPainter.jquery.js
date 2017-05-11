@@ -27,6 +27,8 @@
    }
 } (function($, myui, d3, JSROOT) {
 
+   JSROOT.sources.push("jq2d");
+
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/jquery-ui.css');
 

@@ -25,6 +25,8 @@
    }
 } (function(JSROOT, d3, THREE, THREE_MORE, document) {
 
+   JSROOT.sources.push("3d");
+
    if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
    if (typeof JSROOT.Painter != 'object')

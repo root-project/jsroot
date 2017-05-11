@@ -110,6 +110,7 @@
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script
    JSROOT.bower_dir = null; // when specified, use standard libs from bower location
+   JSROOT.sources = ['core']; // indicates which major sources were loaded
 
    JSROOT.id_counter = 0;
    JSROOT.BatchMode = false; // when true, disables all kind of interactive features
@@ -836,26 +837,6 @@
          return completeLoad();
       }
 
-      var font_suffix = filename.indexOf('.typeface.json');
-      if (font_suffix > 0) {
-         var fontid = 'threejs_font_' + filename.slice(filename.lastIndexOf('/')+1, font_suffix);
-         if (typeof JSROOT[fontid] !== 'undefined') return completeLoad();
-
-         if ((typeof THREE === 'undefined') || (typeof THREE.FontLoader === 'undefined')) {
-            console.log('fail to load',filename,'no (proper) three.js found');
-            return completeLoad();
-         }
-
-         JSROOT.progress("loading " + filename + " ...");
-
-         var loader = new THREE.FontLoader();
-         loader.load( filename, function ( response ) {
-            JSROOT[fontid] = response;
-            completeLoad();
-         } );
-         return;
-      }
-
       var isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
@@ -962,21 +943,24 @@
           extrafiles = "", // scripts for direct loadin
           modules = [];  // modules used for require.js
 
-      if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0)) {
-         mainfiles += "&&&scripts/rawinflate.min.js;" +
-                      "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-         modules.push('rawinflate','JSRootIOEvolution');
-      }
+      if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0))
+         if (jsroot.sources.indexOf("io")<0) {
+            mainfiles += "&&&scripts/rawinflate.min.js;" +
+                         "$$$scripts/JSRootIOEvolution" + ext + ".js;";
+            modules.push('rawinflate','JSRootIOEvolution');
+         }
 
-      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0)) {
-         mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
-         modules.push('JSRootMath');
-      }
+      if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0))
+         if (jsroot.sources.indexOf("math")<0) {
+            mainfiles += '$$$scripts/JSRootMath' + ext + ".js;";
+            modules.push('JSRootMath');
+         }
 
-      if (kind.indexOf('tree;')>=0) {
-         mainfiles += "$$$scripts/JSRootTree" + ext + ".js;";
-         modules.push('JSRootTree');
-      }
+      if (kind.indexOf('tree;')>=0)
+         if (jsroot.sources.indexOf("tree")<0) {
+            mainfiles += "$$$scripts/JSRootTree" + ext + ".js;";
+            modules.push('JSRootTree');
+         }
 
       if ((kind.indexOf('2d;')>=0) || (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
          if (jsroot._test_d3_ === undefined) {
@@ -997,54 +981,41 @@
                jsroot._test_d3_ = 4;
             }
          }
-         modules.push('JSRootPainter');
-         mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
-         extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
+         if (jsroot.sources.indexOf("2d")<0) {
+            modules.push('JSRootPainter');
+            mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
+            extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
+         }
       }
 
-      if (kind.indexOf('savepng;')>=0) {
+      if ((kind.indexOf('savepng;')>=0) && (jsroot.sources.indexOf("savepng")<0)) {
          modules.push('saveSvgAsPng');
          mainfiles += '&&&scripts/saveSvgAsPng.min.js;';
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
-      if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0)) {
-         mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
-         modules.push('JSRootPainter.more');
-      }
+      if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0))
+         if (jsroot.sources.indexOf("more2d")<0) {
+            mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
+            modules.push('JSRootPainter.more');
+         }
 
-      if (kind.indexOf('jq2d;')>=0) {
+      if ((kind.indexOf('jq2d;')>=0) && (jsroot.sources.indexOf("jq2d")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
          modules.push('JSRootPainter.jquery');
          need_jquery = true;
       }
 
-      if ((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
-         if (use_bower) {
-           mainfiles += "###threejs/build/three.min.js;" +
-                        "###threejs/examples/js/renderers/Projector.js;" +
-                        "###threejs/examples/js/renderers/CanvasRenderer.js;" +
-                        "###threejs/examples/js/renderers/SVGRenderer.js;" +
-                        "###threejs/examples/js/controls/OrbitControls.js;" +
-                        "###threejs/examples/js/controls/TransformControls.js;" +
-                        "###threejs/examples/js/shaders/CopyShader.js;" +
-                        "###threejs/examples/js/postprocessing/EffectComposer.js;" +
-                        "###threejs/examples/js/postprocessing/MaskPass.js;" +
-                        "###threejs/examples/js/postprocessing/RenderPass.js;" +
-                        "###threejs/examples/js/postprocessing/ShaderPass.js;" +
-                        "###threejs/examples/js/shaders/SSAOShader.js;"
-           extrafiles += "###threejs/examples/fonts/helvetiker_regular.typeface.json;";
-         } else {
-            mainfiles += "&&&scripts/three.min.js;" +
-                         "&&&scripts/three.extra.min.js;";
-         }
+      if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
+         mainfiles += (use_bower ? "###threejs/build/" : "&&&scripts/") + "three.min.js;" +
+                       "&&&scripts/three.extra.min.js;";
          modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
 
-      if (kind.indexOf("geom;")>=0) {
+      if ((kind.indexOf("geom;")>=0) && (jsroot.sources.indexOf("geom")<0)) {
          if (!JSROOT.nodjs && (typeof window !='undefined'))
             mainfiles += (use_bower ? "###dat.gui" : "&&&scripts") + "/dat.gui.min.js;";
          mainfiles += "$$$scripts/ThreeCSG" + ext + ".js;" +
@@ -1086,7 +1057,7 @@
             modules.push('jqueryui-touch-punch');
          }
 
-         modules.splice(0,0, 'jquery', 'jquery-ui', 'jqueryui-mousewheel');
+         modules.splice(0, 0, 'jquery', 'jquery-ui', 'jqueryui-mousewheel');
          mainfiles = lst_jq + mainfiles;
 
          jsroot.load_jquery = true;
