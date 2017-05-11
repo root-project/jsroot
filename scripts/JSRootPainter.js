@@ -3315,7 +3315,8 @@
       JSROOT.AssertPrerequisites('mathjax', function() {
 
          if (!JSROOT.mathjax_configured) {
-            MathJax.Hub.Config({ TeX: { extensions: ["color.js"] },
+            MathJax.Hub.Config({ jax: ["input/TeX", "output/SVG"],
+                                 TeX: { extensions: ["color.js"] },
                                  SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
             MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
                var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;

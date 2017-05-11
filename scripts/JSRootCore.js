@@ -58,21 +58,6 @@
             shim: {
                'jqueryui-mousewheel': { deps: ['jquery-ui'] },
                'jqueryui-touch-punch': { deps: ['jquery-ui'] }
-/*               'MathJax': {
-                  exports: 'MathJax',
-                  init: function () {
-                     MathJax.Hub.Config({ TeX: { extensions: ["color.js"] }, SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
-                     MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
-                        var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
-                        VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
-                        VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
-                        VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
-                        VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
-                     });
-                     MathJax.Hub.Startup.onload();
-                     return MathJax;
-                  }
-             } */
             }
          });
       }
@@ -1028,7 +1013,6 @@
       if (kind.indexOf("mathjax;")>=0) {
          if (typeof MathJax == 'undefined') {
             mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://root.cern/js/mathjax/latest/MathJax.js") +
-//                         "?config=TeX-AMS-MML_SVG," + jsroot.source_dir + "scripts/mathjax_config.js;";
                            "?config=TeX-AMS-MML_SVG&delayStartupUntil=configured";
             modules.push('MathJax');
          }
