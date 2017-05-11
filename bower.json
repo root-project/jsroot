@@ -10,10 +10,14 @@
      "url": "git://github.com/root-project/jsrootr.git"
   },
   "description": "JavaScript ROOT library",
-  "main": "scripts/JSRootCore.js",
+  "main": [ 
+     "scripts/JSRootCore.js",
+     "scripts/rawinflate.min.js", 
+     "scripts/JSRootIOEvolution.js", 
+  ],
   "moduleType": [
-    "amd",
     "globals",
+    "amd",
     "node"
   ],
   "dependencies": {
