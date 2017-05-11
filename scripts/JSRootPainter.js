@@ -3317,7 +3317,7 @@
 
          if (!JSROOT.mathjax_configured) {
 
-            console.log('ROOT', MathJax.Ajax.config.root);
+            if (!MathJax.Ajax.config.root) MathJax.Ajax.config.root = "./bower_components/MathJax/"
 
             MathJax.Hub.Config({ jax: ["input/TeX", "output/SVG"],
                                  TeX: { extensions: ["color.js"] },
