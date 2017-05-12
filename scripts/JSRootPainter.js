@@ -3315,25 +3315,6 @@
 
       JSROOT.AssertPrerequisites('mathjax', function() {
 
-         if (!JSROOT.mathjax_configured) {
-
-            MathJax.Hub.Config({ jax: ["input/TeX", "output/SVG"],
-                                 TeX: { extensions: ["color.js"] },
-                                 SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
-
-            MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
-               var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
-               VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
-               VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
-               VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
-               VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
-            });
-
-            MathJax.Hub.Configured();
-
-            JSROOT.mathjax_configured = true;
-         }
-
          MathJax.Hub.Typeset(element, ["FinishMathjax", painter, draw_g, fo_g]);
 
          MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
@@ -9554,59 +9535,46 @@
 
    // ================= painter of raw text ========================================
 
-   JSROOT.RawTextPainter = function(txt) {
-      JSROOT.TBasePainter.call(this);
-      this.txt = txt;
-      return this;
-   }
-
-   JSROOT.RawTextPainter.prototype = Object.create( JSROOT.TBasePainter.prototype );
-
-   JSROOT.RawTextPainter.prototype.RedrawObject = function(obj) {
-      this.txt = obj;
-      this.Draw();
-      return true;
-   }
-
-   JSROOT.RawTextPainter.prototype.Draw = function() {
-      var txt = this.txt.value;
-      if (txt==null) txt = "<undefined>";
-
-      var mathjax = 'mathjax' in this.txt;
-
-      if (!mathjax && !('as_is' in this.txt)) {
-         var arr = txt.split("\n"); txt = "";
-         for (var i = 0; i < arr.length; ++i)
-            txt += "<pre>" + arr[i] + "</pre>";
-      }
-
-      var frame = this.select_main();
-      var main = frame.select("div");
-      if (main.empty())
-         main = frame.append("div").style('max-width','100%').style('max-height','100%').style('overflow','auto');
-
-      main.html(txt);
-
-      // (re) set painter to first child element
-      this.SetDivId(this.divid);
-
-      if (!mathjax) return;
-
-      var painter = this;
-      if (painter.loading_mathjax) return;
-
-      painter.loading_mathjax = true;
-      JSROOT.AssertPrerequisites('mathjax', function() {
-         delete painter.loading_mathjax;
-         if (typeof MathJax == 'object') {
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, frame.node()]);
-         }
-      });
-   }
 
    JSROOT.Painter.drawRawText = function(divid, txt, opt) {
-      var painter = new JSROOT.RawTextPainter(txt);
+
+      var painter = new JSROOT.TBasePainter();
+      painter.txt = txt;
       painter.SetDivId(divid);
+
+      painter.RedrawObject = function(obj) {
+         this.txt = obj;
+         this.Draw();
+         return true;
+      }
+
+      painter.Draw = function() {
+         var txt = this.txt.value;
+         if (typeof txt != 'string') txt = "<undefined>";
+
+         var mathjax = this.txt.mathjax || (JSROOT.gStyle.MathJax>1);
+
+         if (!mathjax && !('as_is' in this.txt)) {
+            var arr = txt.split("\n"); txt = "";
+            for (var i = 0; i < arr.length; ++i)
+               txt += "<pre>" + arr[i] + "</pre>";
+         }
+
+         var frame = this.select_main(),
+              main = frame.select("div");
+         if (main.empty())
+            main = frame.append("div").style('max-width','100%').style('max-height','100%').style('overflow','auto');
+         main.html(txt);
+
+         // (re) set painter to first child element
+         this.SetDivId(this.divid);
+
+         if (mathjax)
+            JSROOT.AssertPrerequisites('mathjax', function() {
+               MathJax.Hub.Typeset(frame.node());
+            });
+      }
+
       painter.Draw();
       return painter.DrawingReady();
    }

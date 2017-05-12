@@ -917,6 +917,15 @@
          if (jsroot.doing_assert.length > 1) return;
       }
 
+      function normal_callback() {
+         var req = jsroot.doing_assert.shift();
+         for (var n=0;n<req.modules.length;++n)
+            jsroot.ready_modules.push(req.modules[n]);
+         jsroot.CallBack(req._callback);
+         jsroot.AssertPrerequisites('__next__');
+      }
+
+
       jsroot.doing_assert[0].running = true;
 
       if (kind[kind.length-1]!=";") kind+=";";
@@ -926,7 +935,8 @@
           use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
           extrafiles = "", // scripts for direct loadin
-          modules = [];  // modules used for require.js
+          modules = [],  // modules used for require.js
+          load_callback = normal_callback;
 
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0))
          if (jsroot.sources.indexOf("io")<0) {
@@ -1015,6 +1025,24 @@
             mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://root.cern/js/mathjax/latest/MathJax.js") +
                            "?config=TeX-AMS-MML_SVG&delayStartupUntil=configured";
             modules.push('MathJax');
+
+            load_callback = function() {
+               MathJax.Hub.Config({ jax: ["input/TeX", "output/SVG"],
+                  TeX: { extensions: ["color.js"] },
+                  SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
+
+               MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
+                  var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+                  VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+                  VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+                  VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
+                  VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif");
+               });
+
+               MathJax.Hub.Configured();
+
+               normal_callback();
+            }
          }
          if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
       }
@@ -1051,14 +1079,6 @@
       var pos = kind.indexOf("user:");
       if (pos<0) pos = kind.indexOf("load:");
       if (pos>=0) extrafiles += kind.slice(pos+5);
-
-      function load_callback() {
-         var req = jsroot.doing_assert.shift();
-         for (var n=0;n<req.modules.length;++n)
-            jsroot.ready_modules.push(req.modules[n]);
-         jsroot.CallBack(req._callback);
-         jsroot.AssertPrerequisites('__next__');
-      }
 
       // check if modules already loaded
       for (var n=modules.length-1;n>=0;--n)
