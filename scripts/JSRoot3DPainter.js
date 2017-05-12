@@ -4,24 +4,33 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['d3', 'JSRootPainter', 'threejs', 'threejs_all'], factory );
+      define( ['JSRootPainter', 'd3', 'threejs', 'threejs_all'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      var jsroot = require("./JSRootCore.js");
+      factory(jsroot, require("./d3.min.js"), require("./three.min.js"), require("./three.extra.min.js"),
+              jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRoot3DPainter.js');
 
       if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.v3.js', 'JSRoot3DPainter.js');
-
-      if (typeof JSROOT.Painter != 'object')
-         throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
+         throw new Error('This extension requires d3.js', 'JSRoot3DPainter.js');
 
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
-      factory(d3, JSROOT, THREE);
+      factory(JSROOT, d3, THREE);
    }
-} (function(d3, JSROOT, THREE) {
+} (function(JSROOT, d3, THREE, THREE_MORE, document) {
+
+   JSROOT.sources.push("3d");
+
+   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
+
+   if (typeof JSROOT.Painter != 'object')
+      throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
    JSROOT.Painter.TestWebGL = function() {
       // return true if WebGL should be used
@@ -110,23 +119,9 @@
          this.tt.style.left = (l + 3) + 'px';
       };
 
-      this.show = function(v, mouse_pos, ignore_status) {
+      this.show = function(v, mouse_pos, status_func) {
          // if (JSROOT.gStyle.Tooltip <= 0) return;
          if (!v || (v==="")) return this.hide();
-
-         if (JSROOT.Painter.ShowStatus && !ignore_status) {
-            this.hide();
-
-            var name = "", title = "", coord = "", info = "";
-            if (mouse_pos) coord = mouse_pos.x.toFixed(0)+ "," + mouse_pos.y.toFixed(0);
-            if (typeof v=="string") info = v; else {
-               name = v.name; title = v.title;
-               if (v.line) info = v.line; else
-               if (v.lines) { info = v.lines.slice(1).join(' '); name = v.lines[0]; }
-            }
-
-            return JSROOT.Painter.ShowStatus(name, title, info, coord);
-         }
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {
             if (v.only_status) return this.hide();
@@ -196,6 +191,7 @@
       control.scene = scene;
       control.renderer = renderer;
       control.raycaster = new THREE.Raycaster();
+      control.raycaster.linePrecision = 10;
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
       control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
       control.block_mousemove = false; // when true, tooltip or cursor will not react on mouse move
@@ -371,15 +367,26 @@
 
          var mouse = this.GetMousePos(evnt, {}),
              intersects = this.GetIntersects(mouse),
-             tip = this.ProcessMouseMove(intersects);
+             tip = this.ProcessMouseMove(intersects),
+             status_func = this.painter.GetShowStatusFunc();
+
+
+         if (tip && status_func) {
+            var name = "", title = "", coord = "", info = "";
+            if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
+            if (typeof tip == "string") info = tip; else {
+               name = tip.name; title = tip.title;
+               if (tip.line) info = tip.line; else
+               if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }
+            }
+            status_func(name, title, info, coord);
+         }
 
          this.cursor_changed = false;
-         if (tip) {
-            var ignore_status = ((typeof this.painter.enlarge_main=='function') && (this.painter.enlarge_main('state')==='on'));
-
+         if (tip && this.painter.tooltip_allowed) {
             this.tooltip.check_parent(this.painter.select_main().node());
 
-            this.tooltip.show(tip, mouse, ignore_status);
+            this.tooltip.show(tip, mouse);
             this.tooltip.pos(evnt)
          } else {
             this.tooltip.hide();
@@ -499,14 +506,21 @@
       return control;
    }
 
-   JSROOT.Painter.DisposeThreejsObject = function(obj) {
+   JSROOT.Painter.DisposeThreejsObject = function(obj, only_childs) {
       if (!obj) return;
 
       if (obj.children) {
          for (var i = 0; i < obj.children.length; i++)
             JSROOT.Painter.DisposeThreejsObject(obj.children[i]);
-         obj.children = undefined;
       }
+
+      if (only_childs) {
+         obj.children = [];
+         return;
+      }
+
+      obj.children = undefined;
+
       if (obj.geometry) {
          obj.geometry.dispose();
          obj.geometry = undefined;
@@ -579,7 +593,9 @@
          return;
       }
 
-      var sz = this.size_for_3d();
+      this.usesvg = JSROOT.BatchMode; // SVG used in batch mode
+
+      var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
@@ -608,10 +624,16 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
-      this.webgl = JSROOT.Painter.TestWebGL();
+      if (this.usesvg) {
+         this.renderer = JSROOT.gStyle.SVGRenderer ?
+                           new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
+                           new THREE.SVGRenderer({ antialias: true, alpha: true });
+      } else {
+         this.webgl = JSROOT.Painter.TestWebGL();
+         this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
+                                      new THREE.CanvasRenderer({ antialias : true, alpha: true });
+      }
 
-      this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                   new THREE.CanvasRenderer({ antialias : true, alpha: true });
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
@@ -626,6 +648,8 @@
       this.first_render_tm = 0;
       this.enable_hightlight = false;
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+
+      if (JSROOT.BatchMode) return;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
@@ -652,7 +676,7 @@
 
          painter.BinHighlight3D(tip, mesh);
 
-         if (!tip && zoom_mesh && painter.Get3DZoomCoord && painter.tooltip_allowed) {
+         if (!tip && zoom_mesh && painter.Get3DZoomCoord) {
             var pnt = zoom_mesh.GlobalIntersect(this.raycaster),
                 axis_name = zoom_mesh.zoom,
                 axis_value = painter.Get3DZoomCoord(pnt, axis_name);
@@ -673,7 +697,7 @@
             return hint;
          }
 
-         return (painter.tooltip_allowed && tip && tip.lines) ? tip : "";
+         return (tip && tip.lines) ? tip : "";
       }
 
       this.control.ProcessMouseLeave = function() {
@@ -2626,9 +2650,19 @@
    }
 
    JSROOT.Painter.Render3D = function(tmout) {
+      if (tmout === -1111) {
+         // special handling for SVG renderer
+         var rrr = JSROOT.gStyle.SVGRenderer ?
+                      new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
+                      new THREE.SVGRenderer({ antialias: true, alpha: true });
+         rrr.setSize(this.scene_width, this.scene_height);
+         rrr.render(this.scene, this.camera);
+         return rrr.domElement;
+      }
+
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if (tmout <= 0) {
+      if ((tmout <= 0) || this.usesvg) {
          if ('render_tmout' in this)
             clearTimeout(this.render_tmout);
 
@@ -2711,6 +2745,8 @@
 
          main.Render3D();
 
+         main.UpdateStatWebCanvas();
+
          this.AddKeysHandler();
       }
 
@@ -2764,6 +2800,8 @@
 
          main.Render3D();
 
+         this.UpdateStatWebCanvas();
+
          this.AddKeysHandler();
       }
 
@@ -2783,16 +2821,19 @@
 
    JSROOT.Painter.PointsCreator = function(size, iswebgl, scale) {
       if (iswebgl === undefined) iswebgl = true;
+      this.realwebgl = iswebgl;
       this.webgl = iswebgl;
       this.scale = scale || 1.;
 
       if (this.webgl) {
          this.pos = new Float32Array(size*3);
+         this.geom = new THREE.BufferGeometry();
+         this.geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+         this.indx = 0;
       } else {
-         this.pos = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
-         this.norm = new Float32Array(JSROOT.Painter.Box_Indexes.length*3*size);
+         // only plain geometry supported by canvasrenderer
+         this.geom = new THREE.Geometry();
       }
-      this.indx = 0;
    }
 
    JSROOT.Painter.PointsCreator.prototype.AddPoint = function(x,y,z) {
@@ -2801,47 +2842,19 @@
          this.pos[this.indx+1] = y;
          this.pos[this.indx+2] = z;
          this.indx+=3;
-         return;
-      }
-
-      var indicies = JSROOT.Painter.Box_Indexes,
-          normals = JSROOT.Painter.Box_Normals,
-          vertices = JSROOT.Painter.Box_Vertices;
-
-      for (var k=0,nn=-3;k<indicies.length;++k) {
-         var vert = vertices[indicies[k]];
-         this.pos[this.indx]   = x + (vert.x - 0.5)*this.scale;
-         this.pos[this.indx+1] = y + (vert.y - 0.5)*this.scale;
-         this.pos[this.indx+2] = z + (vert.z - 0.5)*this.scale;
-
-         if (k%6===0) nn+=3;
-         this.norm[this.indx] = normals[nn];
-         this.norm[this.indx+1] = normals[nn+1];
-         this.norm[this.indx+2] = normals[nn+2];
-
-         this.indx+=3;
+      } else {
+         this.geom.vertices.push(new THREE.Vector3( x, y, z ));
       }
    }
 
-   JSROOT.Painter.PointsCreator.prototype.CreateMesh = function(mcolor) {
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-      if (this.norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+   JSROOT.Painter.PointsCreator.prototype.CreatePoints = function(mcolor) {
+      // only plain geometry and sprite material is supported by CanvasRenderer, but it cannot be scaled
 
-      var mesh = null;
+      var material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1)*this.scale, color: mcolor || 'black' } );
 
-      if (this.webgl) {
-         var material = new THREE.PointsMaterial( { size: 3*this.scale, color: mcolor } );
-         mesh = new THREE.Points(geom, material);
-         mesh.nvertex = 1;
-      } else {
-         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-         var material = new THREE.MeshBasicMaterial( { color: mcolor, shading: THREE.SmoothShading  } );
-         mesh = new THREE.Mesh(geom, material);
-         mesh.nvertex = JSROOT.Painter.Box_Indexes.length;
-      }
-
-      return mesh;
+      var pnts = new THREE.Points(this.geom, material);
+      pnts.nvertex = 1;
+      return pnts;
    }
 
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
@@ -2967,7 +2980,7 @@
          // try to define scale-down factor
          if ((JSROOT.gStyle.OptimizeDraw > 0) && !main.webgl) {
             var numselected = CountSelected(main.scale_zmin, main.scale_zmax),
-            sizelimit = main.webgl ? 50000 : 5000;
+                sizelimit = 50000;
 
             if (numselected > sizelimit) {
                step = Math.floor(numselected / sizelimit);
@@ -2980,6 +2993,7 @@
             levels = [main.scale_zmin, main.scale_zmax],
             scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
 
+         if (main.usesvg) scale*=0.3;
 
          if (this.options.Color) {
             levels = main.GetContour();
@@ -3080,7 +3094,7 @@
                   fcolor = palette[indx];
                }
 
-               var mesh = pnts.CreateMesh(fcolor);
+               var mesh = pnts.CreatePoints(fcolor);
 
                main.toplevel.add(mesh);
 
@@ -3102,18 +3116,24 @@
 
       this.options = this.DecodeOptions(opt);
 
-      if (this.main_painter() == null) {
-         if (gr.fHistogram == null)
-            gr.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram2D(divid, gr.fHistogram, "lego");
-         this.ownhisto = true;
+      if (this.main_painter()) {
+         this.SetDivId(divid);
+         this.Redraw();
+         return this.DrawingReady();
       }
 
-      this.SetDivId(divid);
+      if (gr.fHistogram == null)
+         gr.fHistogram = this.CreateHistogram();
 
-      this.Redraw();
+      JSROOT.draw(divid, gr.fHistogram, "lego", (function() {
+         this.ownhisto = true;
+         this.SetDivId(divid);
+         this.Redraw();
+         return this.DrawingReady();
+      }).bind(this));
 
-      return this.DrawingReady();
+      return this;
+
    }
 
    // ==============================================================================
@@ -3347,7 +3367,7 @@
       }
 
       // too many pixels - use box drawing
-      if (numpixels > (main.webgl ? 100000 : 10000)) return false;
+      if (numpixels > (main.webgl ? 100000 : 30000)) return false;
 
       var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
@@ -3374,7 +3394,7 @@
          }
       }
 
-      var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[histo.fMarkerColor]);
+      var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[histo.fMarkerColor]);
       main.toplevel.add(mesh);
 
       mesh.bins = bins;
@@ -3723,6 +3743,7 @@
          this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
          this.Render3D();
+         this.UpdateStatWebCanvas();
          this.AddKeysHandler();
 
       }
@@ -3841,7 +3862,7 @@
 
       this.Redraw();
 
-      if (JSROOT.gStyle.AutoStat && this.create_canvas) {
+      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid)) {
          var stats = this.CreateStat(histo.$custom_stat);
          if (stats) JSROOT.draw(this.divid, stats, "");
       }
@@ -3864,7 +3885,7 @@
 
          if (!main  || !('renderer' in main)) return;
 
-         var step = 1, sizelimit = main.webgl ? 50000 : 5000, numselect = 0;
+         var step = 1, sizelimit = 50000, numselect = 0;
 
          for (var i=0;i<poly.fP.length;i+=3) {
             if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
@@ -3899,7 +3920,7 @@
             pnts.AddPoint(main.grx(poly.fP[i]), main.gry(poly.fP[i+1]), main.grz(poly.fP[i+2]));
          }
 
-         var mesh = pnts.CreateMesh(JSROOT.Painter.root_colors[poly.fMarkerColor]);
+         var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[poly.fMarkerColor]);
 
          main.toplevel.add(mesh);
 

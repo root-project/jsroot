@@ -20,9 +20,11 @@
 
    <script type='text/javascript'>
 
-      var cnt = 0;
+      var cnt = 0, drawing_ready = true;
 
       function updateGUI() {
+         if (!drawing_ready) return;
+         
         // this is just generation of graph
          var npoints = 20;
          var xpts=[];
@@ -54,8 +56,9 @@
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
-         
-         JSROOT.redraw('object_draw', mgraph);
+
+         drawing_ready = false;
+         JSROOT.redraw('object_draw', mgraph, "", function() { drawing_ready = true; });
       }
       
       updateGUI();

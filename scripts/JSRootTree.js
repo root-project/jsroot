@@ -6,8 +6,10 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'JSRootIOEvolution', 'JSRootMath'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      factory(require("./JSRootCore.js"), require("./JSRootIOEvolution.js"), require("./JSRootMath.js"));
    } else {
-
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootTree.js');
 
@@ -18,6 +20,8 @@
       factory(JSROOT);
    }
 } (function(JSROOT) {
+
+   JSROOT.sources.push("tree");
 
    JSROOT.BranchType = { kLeafNode: 0, kBaseClassNode: 1, kObjectNode: 2, kClonesNode: 3,
                          kSTLNode: 4, kClonesMemberNode: 31, kSTLMemberNode: 41 };
@@ -701,6 +705,11 @@
 
       this.monitoring = args.monitoring;
 
+      if (args.dump) {
+         this.dump_values = true;
+         args.reallocate_objects = true;
+      }
+
       if (this.dump_values) {
 
          this.hist = []; // array of dump objects
@@ -739,7 +748,7 @@
    JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
 
-      if ((document === undefined) || (JSROOT.progress===undefined)) return;
+      if (typeof document == 'undefined' || !JSROOT.progress) return;
 
       if ((value===undefined) || isNaN(value)) return JSROOT.progress();
 
@@ -2347,7 +2356,6 @@
       var top_search = false, search = name, res = null;
 
       if (lst===undefined) {
-
          top_search = true;
          lst = this.fBranches;
          var pos = search.indexOf("[");

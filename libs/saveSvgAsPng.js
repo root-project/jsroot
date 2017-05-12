@@ -1,5 +1,15 @@
-(function() {
-  var out$ = typeof exports != 'undefined' && exports || this;
+(function( factory ) {
+   if ( typeof define === "function" && define.amd ) {
+      define( ['JSRootPainter'], factory );
+   } else {
+      if (typeof JSROOT == 'undefined')
+         throw new Error('JSROOT is not defined', 'saveSvgAsPng.js');
+
+      factory(JSROOT);
+   }
+} (function(JSROOT) {
+
+  JSROOT.sources.push("savepng");
 
   var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
 
@@ -100,8 +110,7 @@
     return decodeURIComponent(data);
   }
 
-  out$.svgAsDataUri = function(el, options, cb) {
-    options = options || {};
+  function svgAsDataSVG(el, options, cb) {
     options.scale = options.scale || 1;
     var xmlns = "http://www.w3.org/2000/xmlns/";
 
@@ -112,7 +121,7 @@
       if(el.tagName == 'svg') {
         width = options.width || getDimension(el, clone, 'width');
         height = options.height || getDimension(el, clone, 'height');
-      } else if(el.getBBox) {
+      } else if (el.getBBox) {
         var box = el.getBBox();
 
         // SL - use other coordinates if single element is cloned
@@ -144,55 +153,76 @@
         height
       ].join(" "));
 
+      if (options.removeClass) {
+         var lst = clone.querySelectorAll("." + options.removeClass);
+         for (var k=0; k < (lst ? lst.length : 0); ++k)
+            lst[k].parentNode.removeChild(lst[k]);
+      }
+
       outer.appendChild(clone);
 
-      var css = styles(el, options.selectorRemap);
-      var s = document.createElement('style');
-      s.setAttribute('type', 'text/css');
-      s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
-      var defs = document.createElement('defs');
-      defs.appendChild(s);
-      clone.insertBefore(defs, clone.firstChild);
-
-      var svg = doctype + outer.innerHTML;
-      var uri = 'data:image/svg+xml;base64,' + window.btoa(reEncode(svg));
-      if (cb) {
-        cb(uri);
+      if (options.useGlobalStyle) {
+         // SL: make it optional, JSROOT graphics does not uses global document styles
+         var css = styles(el, options.selectorRemap);
+         var s = document.createElement('style');
+         s.setAttribute('type', 'text/css');
+         s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
+         var defs = document.createElement('defs');
+         defs.appendChild(s);
+         clone.insertBefore(defs, clone.firstChild);
       }
+
+      cb(outer.innerHTML);
+
     });
   }
 
-  out$.svgAsPngUri = function(el, options, cb) {
-    out$.svgAsDataUri(el, options, function(uri) {
-      var image = new Image();
-      image.onload = function() {
-        var canvas = document.createElement('canvas');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        var context = canvas.getContext('2d');
-        if(options && options.backgroundColor){
-          context.fillStyle = options.backgroundColor;
-          context.fillRect(0, 0, canvas.width, canvas.height);
+  JSROOT.saveSvgAsPng = function(el, options, call_back) {
+     options = options || {};
+
+     svgAsDataSVG(el, options, function(svg) {
+
+        // replace string like url(&quot;#jsroot_marker_1&quot;) with url(#jsroot_marker_1)
+        // second variant is the only one, supported in SVG files
+        svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
+
+        if (options.result==="svg") return JSROOT.CallBack(call_back, svg);
+
+        var image = new Image();
+        image.onload = function() {
+           if (options.result==="image") return JSROOT.CallBack(call_back, image);
+
+           var canvas = document.createElement('canvas');
+           canvas.width = image.width;
+           canvas.height = image.height;
+           var context = canvas.getContext('2d');
+           if(options && options.backgroundColor){
+              context.fillStyle = options.backgroundColor;
+              context.fillRect(0, 0, canvas.width, canvas.height);
+           }
+           context.drawImage(image, 0, 0);
+
+           if (options.result==="canvas") return JSROOT.CallBack(call_back, canvas);
+
+           var a = document.createElement('a');
+           a.download = options.name || "file.png";
+           a.href = canvas.toDataURL('image/png');
+           document.body.appendChild(a);
+           a.addEventListener("click", function(e) {
+              a.parentNode.removeChild(a);
+              JSROOT.CallBack(call_back, true);
+           });
+           a.click();
         }
-        context.drawImage(image, 0, 0);
-        var a = document.createElement('a');
-        cb(canvas.toDataURL('image/png'));
-      }
-      image.src = uri;
+
+        image.onerror = function(arg) {
+           JSROOT.CallBack(call_back, null);
+        }
+
+        image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
     });
   }
 
-  out$.saveSvgAsPng = function(el, name, options) {
-    options = options || {};
-    out$.svgAsPngUri(el, options, function(uri) {
-      var a = document.createElement('a');
-      a.download = name;
-      a.href = uri;
-      document.body.appendChild(a);
-      a.addEventListener("click", function(e) {
-        a.parentNode.removeChild(a);
-      });
-      a.click();
-    });
-  }
-})();
+   return JSROOT.Painter;
+
+}));

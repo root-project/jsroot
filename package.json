@@ -1,7 +1,8 @@
 {
   "name": "jsroot",
-  "version": "5.1.2",
+  "version": "5.2.0",
   "description": "JavaScript ROOT",
+  "homepage": "https://root.cern/js/",
   "main": "./scripts/JSRootCore.js",
   "contributors": [
     {
@@ -15,7 +16,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "jsdom": "^3.1.2"
+    "jsdom": "^3.1.2",
+    "xhr2": "*",
+    "mathjax-node": "^1.0.0" 
   },
   "repository" : { "type" : "git" , "url" : "https://github.com/root-project/jsroot.git" },
   "files": [

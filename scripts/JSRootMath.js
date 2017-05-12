@@ -8,6 +8,9 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+       factory(require("./JSRootCore.js"));
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error("This extension requires JSRootCore.js", "JSRootMath.js");
@@ -19,6 +22,8 @@
    }
 } (function(JSROOT) {
    // math methods for Javascript ROOT
+
+   JSROOT.sources.push("math");
 
    JSROOT.Math = {};
 

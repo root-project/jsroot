@@ -5,7 +5,10 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['d3', 'JSRootPainter', 'JSRootMath'], factory );
+      define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+       factory(require("./JSRootCore.js"), require("./d3.min.js"), require("./JSRootMath.js"));
    } else {
 
       if (typeof d3 != 'object')
@@ -18,9 +21,11 @@
          throw new Error('JSROOT.Painter not defined', 'JSRootPainter.more.js');
 
       // Browser globals
-      factory(d3, JSROOT);
+      factory(JSROOT, d3);
    }
-} (function(d3, JSROOT) {
+} (function(JSROOT, d3) {
+
+   JSROOT.sources.push("more2d");
 
    JSROOT.ToolbarIcons.th2color = {
        recs: [{x:0,y:256,w:13,h:39,f:'rgb(38,62,168)'},{x:13,y:371,w:39,h:39},{y:294,h:39},{y:256,h:39},{y:218,h:39},{x:51,y:410,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:90,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294},{y:256,h:39,f:'rgb(16,100,220)'},{y:218,h:39},{y:179,h:39,f:'rgb(22,82,205)'},{y:141,h:39},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:0,h:27},{x:128,y:448,w:39,h:39},{y:410},{y:371,h:39},{y:333,h:39,f:'rgb(22,82,205)'},{y:294,f:'rgb(20,129,214)'},{y:256,h:39,f:'rgb(9,157,204)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(20,129,214)'},{y:141,h:39,f:'rgb(16,100,220)'},{y:102,h:39,f:'rgb(22,82,205)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{y:0,h:27},{x:166,y:486,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(82,186,146)'},{y:256,h:39,f:'rgb(179,189,101)'},{y:218,h:39,f:'rgb(116,189,129)'},{y:179,h:39,f:'rgb(82,186,146)'},{y:141,h:39,f:'rgb(14,143,209)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:205,y:486,w:39,h:14},{y:448,h:39},{y:410},{y:371,h:39,f:'rgb(16,100,220)'},{y:333,h:39,f:'rgb(9,157,204)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(244,198,59)'},{y:218,h:39},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(13,167,195)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(22,82,205)'},{y:26,h:39,f:'rgb(38,62,168)'},{x:243,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(30,175,179)'},{y:294,f:'rgb(209,187,89)'},{y:256,h:39,f:'rgb(251,230,29)'},{y:218,h:39,f:'rgb(249,249,15)'},{y:179,h:39,f:'rgb(226,192,75)'},{y:141,h:39,f:'rgb(30,175,179)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:282,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(18,114,217)'},{y:333,h:39,f:'rgb(14,143,209)'},{y:294,f:'rgb(149,190,113)'},{y:256,h:39,f:'rgb(226,192,75)'},{y:218,h:39,f:'rgb(244,198,59)'},{y:179,h:39,f:'rgb(149,190,113)'},{y:141,h:39,f:'rgb(9,157,204)'},{y:102,h:39,f:'rgb(18,114,217)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:320,y:448,w:39,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39,f:'rgb(20,129,214)'},{y:294,f:'rgb(46,183,164)'},{y:256,h:39},{y:218,h:39,f:'rgb(82,186,146)'},{y:179,h:39,f:'rgb(9,157,204)'},{y:141,h:39,f:'rgb(20,129,214)'},{y:102,h:39,f:'rgb(16,100,220)'},{y:64,f:'rgb(38,62,168)'},{y:26,h:39},{x:358,y:448,h:39},{y:410},{y:371,h:39,f:'rgb(22,82,205)'},{y:333,h:39},{y:294,f:'rgb(16,100,220)'},{y:256,h:39,f:'rgb(20,129,214)'},{y:218,h:39,f:'rgb(14,143,209)'},{y:179,h:39,f:'rgb(18,114,217)'},{y:141,h:39,f:'rgb(22,82,205)'},{y:102,h:39,f:'rgb(38,62,168)'},{y:64},{y:26,h:39},{x:397,y:448,w:39,h:39},{y:371,h:39},{y:333,h:39},{y:294,f:'rgb(22,82,205)'},{y:256,h:39},{y:218,h:39},{y:179,h:39,f:'rgb(38,62,168)'},{y:141,h:39},{y:102,h:39},{y:64},{y:26,h:39},{x:435,y:410,h:39},{y:371,h:39},{y:333,h:39},{y:294},{y:256,h:39},{y:218,h:39},{y:179,h:39},{y:141,h:39},{y:102,h:39},{y:64},{x:474,y:256,h:39},{y:179,h:39}]
@@ -563,10 +568,10 @@
          // create svg:g container for ellipse drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x = this.AxisToSvg("x", ellipse.fX1),
-             y = this.AxisToSvg("y", ellipse.fY1),
-             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
-             ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2);
+         var x = this.AxisToSvg("x", ellipse.fX1, false),
+             y = this.AxisToSvg("y", ellipse.fY1, false),
+             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
+             ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
 
          if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
@@ -615,17 +620,19 @@
 
       this.Redraw = function() {
          var line = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(line);
+             lineatt = JSROOT.Painter.createAttLine(line),
+             kLineNDC = JSROOT.BIT(14),
+             isndc = line.TestBit(kLineNDC);
 
          // create svg:g container for line drawing
          this.RecreateDrawG(true, "text_layer");
 
          this.draw_g
              .append("svg:line")
-             .attr("x1", this.AxisToSvg("x", line.fX1))
-             .attr("y1", this.AxisToSvg("y", line.fY1))
-             .attr("x2", this.AxisToSvg("x", line.fX2))
-             .attr("y2", this.AxisToSvg("y", line.fY2))
+             .attr("x1", this.AxisToSvg("x", line.fX1, isndc))
+             .attr("y1", this.AxisToSvg("y", line.fY1, isndc))
+             .attr("x2", this.AxisToSvg("x", line.fX2, isndc))
+             .attr("y2", this.AxisToSvg("y", line.fY2, isndc))
              .call(lineatt.func);
       }
 
@@ -643,17 +650,18 @@
       this.Redraw = function() {
          var polyline = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(polyline),
-             fillatt = this.createAttFill(polyline);
+             fillatt = this.createAttFill(polyline),
+             kPolyLineNDC = JSROOT.BIT(14),
+             isndc = polyline.TestBit(kPolyLineNDC),
+             cmd = "";
 
          // create svg:g container for polyline drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var cmd = "M";
-         for (var n=0;n<=polyline.fLastPoint;++n) {
-            if (n>0) cmd += "L";
-            cmd += this.AxisToSvg("x", polyline.fX[n]) + "," +
-                   this.AxisToSvg("y", polyline.fY[n]);
-         }
+         for (var n=0;n<=polyline.fLastPoint;++n)
+            cmd += ((n>0) ? "L" : "M") +
+                   this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
+                   this.AxisToSvg("y", polyline.fY[n], isndc);
          if (fillatt.color!=='none') cmd+="Z";
 
          this.draw_g
@@ -682,10 +690,10 @@
          // create svg:g container for box drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x1 = this.AxisToSvg("x", box.fX1),
-             x2 = this.AxisToSvg("x", box.fX2),
-             y1 = this.AxisToSvg("y", box.fY1),
-             y2 = this.AxisToSvg("y", box.fY2);
+         var x1 = this.AxisToSvg("x", box.fX1, false),
+             x2 = this.AxisToSvg("x", box.fX2, false),
+             y1 = this.AxisToSvg("y", box.fY1, false),
+             y2 = this.AxisToSvg("y", box.fY2, false);
 
          // if box filled, contor line drawn only with "L" draw option:
          if ((fillatt.color != 'none') && !this.draw_line) lineatt.color = "none";
@@ -715,13 +723,15 @@
 
       this.Redraw = function() {
          var marker = this.GetObject(),
-             att = JSROOT.Painter.createAttMarker(marker);
+             att = JSROOT.Painter.createAttMarker(marker),
+             kMarkerNDC = JSROOT.BIT(14),
+             isndc = marker.TestBit(kMarkerNDC);
 
          // create svg:g container for box drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x = this.AxisToSvg("x", marker.fX),
-             y = this.AxisToSvg("y", marker.fY);
+         var x = this.AxisToSvg("x", marker.fX, isndc),
+             y = this.AxisToSvg("y", marker.fY, isndc);
 
          var path = att.create(x,y);
 
@@ -754,10 +764,10 @@
          // create svg:g container for line drawing
          this.RecreateDrawG(true, "text_layer");
 
-         var x1 = this.AxisToSvg("x", arrow.fX1),
-             y1 = this.AxisToSvg("y", arrow.fY1),
-             x2 = this.AxisToSvg("x", arrow.fX2),
-             y2 = this.AxisToSvg("y", arrow.fY2),
+         var x1 = this.AxisToSvg("x", arrow.fX1, false),
+             y1 = this.AxisToSvg("y", arrow.fY1, false),
+             x2 = this.AxisToSvg("x", arrow.fX2, false),
+             y2 = this.AxisToSvg("y", arrow.fY2, false),
              right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
              left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
              m_start = null, m_mid = null, m_end = null, defs = null,
@@ -840,7 +850,7 @@
          if (m_end) path.style("marker-end","url(#" + m_end + ")");
       }
 
-      if (!('arrowcnt' in JSROOT.Painter)) JSROOT.Painter.arrowcnt = 0;
+      if (!JSROOT.Painter.arrowcnt) JSROOT.Painter.arrowcnt = 1;
 
       this.Redraw(); // actual drawing
       return this.DrawingReady();
@@ -1982,7 +1992,7 @@
    }
 
    JSROOT.TGraphPainter.prototype.ProcessTooltip = function(pnt) {
-      if (pnt === null) {
+      if (!pnt) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          return null;
@@ -2049,6 +2059,13 @@
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(d, true) };
+
+      if (pnt.disabled) {
+         // tooltip disabled - only return info
+         ttrect.remove();
+         return res;
+      }
+
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (best.exact) res.exact = true;
@@ -2126,6 +2143,11 @@
                   x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
                   color1: this.lineatt.color,
                   lines: this.TooltipText(bestbin, true) };
+
+      if (pnt.disabled) {
+         ttbin.remove();
+         return res;
+      }
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
@@ -2242,16 +2264,11 @@
 
       var graph = this.GetObject();
 
-      if ((graph.fFunctions === null) || (indx >= graph.fFunctions.arr.length))
+      if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      var func = graph.fFunctions.arr[indx];
-      var opt = graph.fFunctions.opt[indx];
-
-      var painter = JSROOT.draw(this.divid, func, opt);
-      if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
-
-      this.DrawNextFunction(indx+1, callback);
+      JSROOT.draw(this.divid, graph.fFunctions.arr[indx], graph.fFunctions.opt[indx],
+                  this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
@@ -2311,10 +2328,18 @@
             if (this.firstpainter.UpdateObject(histo)) isany = true;
          }
 
-         for (var i = 0; i <  graphs.arr.length; ++i) {
+         for (var i = 0; i < graphs.arr.length; ++i) {
             if (i<this.painters.length)
                if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
          }
+
+         if (obj.fFunctions)
+            for (var i = 0; i < obj.fFunctions.arr.length; ++i) {
+               var func = obj.fFunctions.arr[i];
+               if (!func || !func._typename || !func.fName) continue;
+               var funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+               if (funcpainter) funcpainter.UpdateObject(func);
+            }
 
          return isany;
       }
@@ -2440,16 +2465,11 @@
 
          var mgraph = this.GetObject();
 
-         if ((mgraph.fFunctions == null) || (indx >= mgraph.fFunctions.arr.length))
+         if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
             return JSROOT.CallBack(callback);
 
-         var func = mgraph.fFunctions.arr[indx],
-             opt = mgraph.fFunctions.opt[indx];
-
-         var painter = JSROOT.draw(this.divid, func, opt);
-         if (painter) return painter.WhenReady(this.DrawNextFunction.bind(this, indx+1, callback));
-
-         this.DrawNextFunction(indx+1, callback);
+         JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx],
+                     this.DrawNextFunction.bind(this, indx+1, callback));
       }
 
       this.DrawNextGraph = function(indx, opt) {
@@ -2487,6 +2507,8 @@
       JSROOT.extend(this, new JSROOT.TPavePainter(obj));
 
       this.SetDivId(divid, 2);
+
+      this.AssignFinishPave(); // do it once again while this is changed
 
       this.DrawLegendItems = function(w, h) {
 
@@ -2585,14 +2607,14 @@
          }
 
          // rescale after all entries are shown
-         this.FinishTextDrawing();
+         this.FinishTextDrawing(null, this.FinishPave);
       }
 
       this.PaveDrawFunc = this.DrawLegendItems;
 
       this.Redraw();
 
-      return this.DrawingReady();
+      return this;
    }
 
    // ===========================================================================
@@ -4642,17 +4664,23 @@
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:path")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+         if (pnt.disabled) {
+            ttrect.remove();
+            res.changed = true;
+         } else {
 
-         res.changed = ttrect.property("current_bin") !== foundindx;
+            if (ttrect.empty())
+               ttrect = this.draw_g.append("svg:path")
+                            .attr("class","tooltip_bin h1bin")
+                            .style("pointer-events","none");
 
-         if (res.changed)
-            ttrect.attr("d", this.CreatePolyBin(pmain, bin))
-                  .style("opacity", "0.7")
-                  .property("current_bin", foundindx);
+            res.changed = ttrect.property("current_bin") !== foundindx;
+
+            if (res.changed)
+                  ttrect.attr("d", this.CreatePolyBin(pmain, bin))
+                        .style("opacity", "0.7")
+                        .property("current_bin", foundindx);
+         }
 
          if (this.IsUserTooltipCallback() && res.changed)
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
@@ -4686,21 +4714,26 @@
                      color2: this.fillatt ? this.fillatt.color : 'blue',
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
-         if (ttrect.empty())
-            ttrect = this.draw_g.append("svg:rect")
-                                .attr("class","tooltip_bin h1bin")
-                                .style("pointer-events","none");
+         if (pnt.disabled) {
+            ttrect.remove();
+            res.changed = true;
+         } else {
 
-         res.changed = ttrect.property("current_bin") !== i;
+            if (ttrect.empty())
+               ttrect = this.draw_g.append("svg:rect")
+                                   .attr("class","tooltip_bin h1bin")
+                                   .style("pointer-events","none");
 
-         if (res.changed)
-            ttrect.attr("x", p.x1)
-                  .attr("width", p.x2-p.x1)
-                  .attr("y", p.yy1)
-                  .attr("height", p.yy2- p.yy1)
-                  .style("opacity", "0.7")
-                  .property("current_bin", i);
+            res.changed = ttrect.property("current_bin") !== i;
 
+            if (res.changed)
+               ttrect.attr("x", p.x1)
+                     .attr("width", p.x2-p.x1)
+                     .attr("y", p.yy1)
+                     .attr("height", p.yy2- p.yy1)
+                     .style("opacity", "0.7")
+                     .property("current_bin", i);
+         }
 
          if (this.IsUserTooltipCallback() && res.changed) {
             this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
@@ -4709,8 +4742,8 @@
          }
 
          return res;
-
       }
+
 
       var i, j, find = 0, binz = 0, colindx = null;
 
@@ -4745,20 +4778,25 @@
 
       if (this.options.Color > 0) res.color2 = this.GetPalette()[colindx];
 
-      if (ttrect.empty())
-         ttrect = this.draw_g.append("svg:rect")
-                             .attr("class","tooltip_bin h1bin")
-                             .style("pointer-events","none");
+      if (pnt.disabled) {
+         ttrect.remove();
+         res.changed = true;
+      } else {
+         if (ttrect.empty())
+            ttrect = this.draw_g.append("svg:rect")
+                                .attr("class","tooltip_bin h1bin")
+                                .style("pointer-events","none");
 
-      res.changed = ttrect.property("current_bin") !== i*10000 + j;
+         res.changed = ttrect.property("current_bin") !== i*10000 + j;
 
-      if (res.changed)
-         ttrect.attr("x", h.grx[i])
-               .attr("width", h.grx[i+1] - h.grx[i])
-               .attr("y", h.gry[j+1])
-               .attr("height", h.gry[j] - h.gry[j+1])
-               .style("opacity", "0.7")
-               .property("current_bin", i*10000 + j);
+         if (res.changed)
+            ttrect.attr("x", h.grx[i])
+                  .attr("width", h.grx[i+1] - h.grx[i])
+                  .attr("y", h.gry[j+1])
+                  .attr("height", h.gry[j] - h.gry[j+1])
+                  .style("opacity", "0.7")
+                  .property("current_bin", i*10000 + j);
+      }
 
       if (this.IsUserTooltipCallback() && res.changed) {
          this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
@@ -4803,6 +4841,8 @@
       if (pp) pp.DrawPave();
 
       this.DrawTitle();
+
+      this.UpdateStatWebCanvas();
 
       this.AddInteractive();
 
@@ -4866,7 +4906,7 @@
       this.ScanContent();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && this.create_canvas /* && !this.IsTH2Poly()*/)
+      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid) /* && !this.IsTH2Poly()*/)
          this.CreateStat(histo.$custom_stat);
 
       this.CallDrawFunc(function() {
@@ -4881,6 +4921,148 @@
       }.bind(this));
 
       return this;
+   }
+
+   // =========================================================================================
+
+   JSROOT.Painter.drawWebPainting = function(divid, obj, opt) {
+
+      this.UpdateObject = function(obj) {
+         if (!this.MatchObjectType(obj)) return false;
+         this.draw_object = obj;
+         return true;
+      }
+
+      this.Redraw = function() {
+         var obj = this.GetObject(), attr = null, indx = 0,
+             lineatt = null, fillatt = null, markeratt = null;
+         if (!obj || !obj.fOper) return;
+
+         this.RecreateDrawG(true, "special_layer");
+
+         for (var k=0;k<obj.fOper.arr.length;++k) {
+            var oper = obj.fOper.opt[k];
+            switch (oper) {
+               case "attr":
+                  attr = obj.fOper.arr[k];
+                  lineatt = fillatt = markeratt = null;
+                  continue;
+               case "rect":
+               case "box": {
+                  var x1 = this.AxisToSvg("x", obj.fBuf[indx++]),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx++]),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx++]),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx++]);
+
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+
+                  var rect = this.draw_g
+                     .append("svg:rect")
+                     .attr("x", Math.min(x1,x2))
+                     .attr("y", Math.min(y1,y2))
+                     .attr("width", Math.abs(x2-x1))
+                     .attr("height", Math.abs(y1-y2))
+                     .call(lineatt.func);
+
+                  if (oper === "box") {
+                     if (!fillatt) fillatt = this.createAttFill(attr);
+                     rect.call(fillatt.func);
+                  }
+                  continue;
+               }
+               case "line":
+               case "linendc": {
+
+                  var isndc = (oper==="linendc"),
+                      x1 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      y1 = this.AxisToSvg("y", obj.fBuf[indx++], isndc),
+                      x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+
+                  this.draw_g
+                      .append("svg:line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
+                      .call(lineatt.func);
+
+                  continue;
+               }
+               case "polyline":
+               case "polylinendc":
+               case "fillarea": {
+
+                  var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
+
+                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+
+                  for (var n=0;n<npoints;++n)
+                     cmd += ((n>0) ? "L" : "M") +
+                            this.AxisToSvg("x", obj.fBuf[indx++], false) + "," +
+                            this.AxisToSvg("y", obj.fBuf[indx++], false);
+
+                  if (oper == "fillarea") cmd+="Z";
+                  var path = this.draw_g
+                          .append("svg:path")
+                          .attr("d", cmd)
+                          .call(lineatt.func);
+
+                  if (oper == "fillarea") {
+                     if (!fillatt) fillatt = this.createAttFill(attr);
+                     path.call(fillatt.func);
+                  }
+
+                  continue;
+               }
+
+               case "polymarker": {
+                  var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
+
+                  if (!markeratt) markeratt = JSROOT.Painter.createAttMarker(attr);
+
+                  markeratt.reset_pos();
+                  for (var n=0;n<npoints;++n)
+                     cmd += markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
+                                             this.AxisToSvg("y", obj.fBuf[indx++], false));
+
+                  if (cmd)
+                     this.draw_g.append("svg:path").attr("d", cmd).call(markeratt.func);
+
+                  continue;
+               }
+
+               case "text":
+               case "textndc": {
+                  var isndc = (oper==="textndc"),
+                      xx = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
+                      yy = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+
+                  if (attr) {
+                     var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
+
+                     this.StartTextDrawing(attr.fTextFont, height);
+
+                     // todo - correct support of angle
+                     this.DrawText(attr.fTextAlign, xx, yy, 0, 0, obj.fOper.arr[k].fString, JSROOT.Painter.root_colors[attr.fTextColor]);
+
+                     this.FinishTextDrawing();
+                  }
+                  continue;
+               }
+
+               default:
+                  console.log('unsupported operation', oper);
+            }
+
+         }
+      }
+
+      this.SetDivId(divid);
+
+      this.options = opt;
+
+      this.Redraw();
+
+      return this.DrawingReady();
    }
 
    return JSROOT.Painter;

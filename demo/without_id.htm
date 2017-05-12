@@ -7,15 +7,13 @@
 
    <title>Example how element pointer can be used</title>
 
-   <script src="../scripts/JSRootCore.min.js?2d&onload=createGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.min.js" type="text/javascript"></script>
 
    <script type='text/javascript'>
-      function createGUI() {
-         // here demonstrated that div can be used without id attribute
-         JSROOT.NewHttpRequest("hpx.json", 'object', function(obj) {
-            JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
-         }).send();
-      }
+      // here demonstrated that div can be used without id attribute
+      JSROOT.NewHttpRequest("hpx.json", 'object', function(obj) {
+         JSROOT.draw(document.getElementsByTagName("div")[0], obj, "hist");
+      }).send();
    </script>
 </head>
 

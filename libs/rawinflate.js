@@ -10,8 +10,10 @@
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
       define( ['JSRootCore'], factory );
+   } else
+   if (typeof exports === 'object' && typeof module !== 'undefined') {
+      factory(require("./JSRootCore.js"));
    } else {
-
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'rawinflate.js');
 
