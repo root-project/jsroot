@@ -3231,8 +3231,8 @@
 
          // workaround for Node.js - use primitive estimation of textbox size
          // later can be done with Node.js (via SVG) or with alternative implementation of jsdom
-         var box = JSROOT.nodejs ? { height: Math.round(font.size*1.2), width: Math.round(label.length*font.size*0.4) }
-                                 : this.GetBoundarySizes(txt.node());
+         var box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
+                    { height: Math.round(font.size*1.2), width: Math.round(label.length*font.size*0.4) };
 
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
@@ -5989,8 +5989,8 @@
       }
 
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
-         var pos = Math.round(this.func(handle.major[nmajor]));
-         var lbl = this.format(handle.major[nmajor], true);
+         var pos = Math.round(this.func(handle.major[nmajor])),
+             lbl = this.format(handle.major[nmajor], true);
          if (lbl === null) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
@@ -6008,10 +6008,11 @@
              .attr("dy", (side > 0) ? ".7em" : "-.3em")
              .style("text-anchor", "middle");
 
-         var tsize = this.GetBoundarySizes(t.node());
-         var space_before = (nmajor > 0) ? (pos - last) : (vertical ? h/2 : w/2);
-         var space_after = (nmajor < handle.major.length-1) ? (Math.round(this.func(handle.major[nmajor+1])) - pos) : space_before;
-         var space = Math.min(Math.abs(space_before), Math.abs(space_after));
+         var tsize = !JSROOT.nodejs ? this.GetBoundarySizes(t.node()) :
+                      { height: Math.round(labelfont.size*1.2), width: Math.round(lbl.length*labelfont.size*0.4) },
+             space_before = (nmajor > 0) ? (pos - last) : (vertical ? h/2 : w/2),
+             space_after = (nmajor < handle.major.length-1) ? (Math.round(this.func(handle.major[nmajor+1])) - pos) : space_before,
+             space = Math.min(Math.abs(space_before), Math.abs(space_after));
 
          if (vertical) {
 
@@ -6053,7 +6054,6 @@
                .style("dominant-baseline", "middle")
                .attr("dy", "-.5em")
                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
-
 
      if ((textscale>0) && (textscale<1.)) {
         // rotate X lables if they are too big
