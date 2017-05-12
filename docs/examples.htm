@@ -286,12 +286,14 @@
                url += "&items=[" + entry.items.join(",") + "]";
                if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                if (entry.mathjax) url += "&mathjax";
+               if (entry.style) url += "&style=" + entry.style;
             } else
             if (entry.asurl) {
                url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
                url += itemname + "&opt=" + opt;
                if (entry.mathjax) url += "&mathjax"; 
+               if (entry.style) url += "&style=" + entry.style;
             }
             
             JSROOT.gStyle.NoWebGL = (extra_opts.indexOf("webgl=0")>=0); // disbale wbgl
@@ -416,6 +418,7 @@
                         url += "&items=[" + entry.items.join(",") + "]";
                         if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                         if (entry.mathjax) url += "&mathjax";
+                        if (entry.style) url += "&style=" + entry.style;
                      }
                   }
 
@@ -434,14 +437,15 @@
                   
                   var prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&"; 
             
-                  if (entry.asurl) {
+                  if (entry.asurl || entry.mathjax) {
                      if (jsonname)
                         url = prefix + 'json=' + jsonname;
                      else   
                         url = prefix + "file=" + filename + "&item=" + itemname;
+                     if (entry.style) url += "&style=" + entry.style;
                      if (entry.mathjax) url += "&mathjax";
                   }
-            
+
                   if (url) 
                      aaa.href = jsroot_path + url;
                   else
@@ -452,7 +456,7 @@
             
                   if (opt != "")
                      aaa.href += "&opt=" + opt;
-                  
+
                   if (extra_opts) aaa.href += extra_opts;
                      
                   if ('title' in entry) {

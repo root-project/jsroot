@@ -1,4 +1,4 @@
-#Packaging of JSROOT code with gulp
+# Packaging of JSROOT code with gulp
 
 This example shows how all JSROOT sources can be 
 merged togther with all dependend libraries. 
