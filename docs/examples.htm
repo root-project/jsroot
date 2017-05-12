@@ -437,7 +437,7 @@
                   
                   var prefix = (entry.asurl === "browser") ? "?" : "?nobrowser&"; 
             
-                  if (entry.asurl || entry.mathjax) {
+                  if (entry.asurl) {
                      if (jsonname)
                         url = prefix + 'json=' + jsonname;
                      else   
