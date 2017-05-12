@@ -1812,7 +1812,8 @@
          last = new Date();
          painter.Render3D(0);
       }
-      animate();
+
+      if (!this._usesvg) animate();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -2903,10 +2904,11 @@
          if (this.options.highlight === false)
             this.options.highlight = (this.first_render_tm < 1000);
 
-         // if rotation was enabled, do it
-         if (this.options.autoRotate && !this.options.project) this.autorotate(2.5);
-
-         if (this.options.show_controls) this.showControlOptions(true);
+         if (!this._usesvg) {
+            // if rotation was enabled, do it
+            if (this.options.autoRotate && !this.options.project) this.autorotate(2.5);
+            if (this.options.show_controls) this.showControlOptions(true);
+         }
 
          this.DrawingReady();
       }
