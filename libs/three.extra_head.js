@@ -493,7 +493,7 @@
 
                   var positions = attributes.position.array;
 
-                  if (attributes.normal && !attributes.uv && groups.length==0) {
+                  if (attributes.normal && groups.length==0) {
                      // try to cover most important usecase
 
                      var normals = attributes.normal.array;
@@ -516,6 +516,10 @@
 
                      continue;
                   }
+
+                  console.log('Normal', !!attributes.normal);
+                  console.log('UV', !!attributes.uv);
+                  console.log('GROUPS', groups.length);
 
                   throw new Error('HERE');
 

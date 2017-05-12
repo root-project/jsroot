@@ -15,16 +15,16 @@ examples_more = {
      { name: "candle", file: "candleplot.root", item: "c1;1" },
      { name: "box_same", json: "hbox_same.json.gz", title: "several histograms, drawn with box same opitons" },
      { name: "col_same", json: "hcol_same.json.gz", title: "several histograms, drawn with col same opitons" },
-     { name: "docu", url: "?nobrowser&file=$$$histpainter6.root&layout=vert33&items=[draw_th2e,draw_scat,draw_arr,draw_box,draw_box1,draw_boxsame]", title:"several TH2 examples from THistPainter documentation page" },
-     { name: "docu_col", url: "?nobrowser&file=$$$histpainter6.root&layout=grid2x2&items=[draw_col,draw_col1, draw_colr, draw_text2d]", title:"several TH2 COL examples from THistPainter documentation page" },
-     { name: "docu_cont", url: "?nobrowser&file=$$$histpainter6.root&layout=vert33&items=[draw_contz,draw_cont1z,draw_cont2,draw_cont3,draw_cont4z,draw_contlst1]", title:"several TH2 CONT examples from THistPainter documentation page" },
-     { name: "docu_lego", url: "?nobrowser&file=$$$histpainter6.root&layout=grid2x2&items=[draw_lego,draw_lego1,draw_lego3,draw_lego2]", title:"several TH2 LEGO examples from THistPainter documentation page" },
-     { name: "docu_surf", url: "?nobrowser&file=$$$histpainter6.root&layout=grid4x2&items=[draw_surf,draw_surf1,draw_surf2,draw_surf3,draw_surf4,draw_surf5,draw_surf7,draw_surf2_cont1]", title: "several TH2 SURF examples from THistPainter documentation page" },
+     { name: "docu", file: "histpainter6.root", layout: "vert33", items: ['draw_th2e','draw_scat','draw_arr','draw_box','draw_box1','draw_boxsame'], title:"several TH2 examples from THistPainter documentation page" },
+     { name: "docu_col", file: "histpainter6.root", layout: "grid2x2", items: ['draw_col','draw_col1', 'draw_colr', 'draw_text2d'], title:"several TH2 COL examples from THistPainter documentation page" },
+     { name: "docu_cont", file: "histpainter6.root", layout: "vert33", items: ['draw_contz','draw_cont1z', 'draw_cont2', 'draw_cont3', 'draw_cont4z', 'draw_contlst1'], title:"several TH2 CONT examples from THistPainter documentation page" },
+     { name: "docu_lego", file: "histpainter6.root", layout: "grid2x2", items: ['draw_lego', 'draw_lego1', 'draw_lego3', 'draw_lego2'], title: "several TH2 LEGO examples from THistPainter documentation page" },
+     { name: "docu_surf", file: "histpainter6.root", layout: "grid4x2", items: ['draw_surf', 'draw_surf1', 'draw_surf2', 'draw_surf3', 'draw_surf4', 'draw_surf5', 'draw_surf7', 'draw_surf2_cont1'], title: "several TH2 SURF examples from THistPainter documentation page" },
      { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
-      { name: "docu", url: "?nobrowser&file=$$$histpainter6.root&layout=vert22&items=[draw_poly1,draw_poly2,draw_poly3]", title: "several TH2Poly examples from THistPainter documentation page" }
+      { name: "docu", file: "histpainter6.root", layout: "vert22", items: ['draw_poly1', 'draw_poly2', 'draw_poly3'], title: "several TH2Poly examples from THistPainter documentation page" }
    ],
    TH3 : [
       { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
@@ -38,11 +38,11 @@ examples_more = {
       { name: "index", asurl: true, file: "tree99.root", item: "T;1", opt: "ex3.fInt[ex3.fSize-2]", title: "Use branch value as index in another branch draw" },
       { name: "cms2", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events", opt:"recoPhotons_photons__RECO.obj[].pt_", title: "cms2.root file, example of draw subelement of the branch" },
       { name: "brobj", asurl: true, file: "https://root.cern/files/mods.root", item: "MODS/Particles", opt: "dump",  title: "TObjectBranch, appears in older ROOT files" },
-      { name: "bits", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks.fBits>>bits(32);num:5000", title: "Special 1-D histogram kind with bits values" },
+      { name: "bits", asurl: true, large: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks.fBits>>bits(32);num:5000", title: "Special 1-D histogram kind with bits values" },
       { name: "tbits", asurl: true, file: "https://root.cern/files/event/event_0.root", item: "EventTree;2", opt: "event.fTriggerBits", title: "Special handling for TBits object" },
       { name: "tbits2", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTriggerBits", title: "TBits object splitted on the subbranches" },
-      { name: "tbits3", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks[].fTriggerBits;num:200", title: "TBits from tracks array, read complete track object (slower)" },
-      { name: "tbits4", asurl: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks.fTriggerBits;num:200", title: "TBits from tracks array, read only TBits sub-branches (faster)" },
+      { name: "tbits3", asurl: true, large: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks[].fTriggerBits;num:200", title: "TBits from tracks array, read complete track object (slower)" },
+      { name: "tbits4", asurl: true, large: true, file: "https://root.cern/files/Event100000.root", item: "T", opt: "event.fTracks.fTriggerBits;num:200", title: "TBits from tracks array, read only TBits sub-branches (faster)" },
       { name: "vect_pair", asurl: true, file: "test_cmssw_10000.root", item:"Events", opt:"recoBeamHaloSummary_BeamHaloSummary__RECO.obj.problematicStrips.cellTowerIds.;dump;first:7900;num:100", title: "CMS-SW events, vector of pair<> objects, store pair version even for empty vector" },
       { name: "SLT_kStream", asurl: true, file: "https://root.cern/files/atlas30new.root", item: "CollectionTree/Rec::TrackParticleContainer_tlp1_MooreTrackParticles/m_hepSymMatrices/m_matrix_val", opt: "dump", title: "Branch with vector<float> (kStreamer) inside of STL container" },
       { name: "branch_base", asurl: true, file: "https://root.cern/files/cms2.root", item: "Events", opt: "GenEventInfoProduct_generator__HLT.>>dump;num:100", title: "Object with empty base class" },
