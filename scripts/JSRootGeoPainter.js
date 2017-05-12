@@ -1814,7 +1814,7 @@
          painter.Render3D(0);
       }
 
-      if (!this._usesvg) animate();
+      if (this._webgl) animate();
    }
 
    JSROOT.TGeoPainter.prototype.completeScene = function() {
@@ -2545,7 +2545,7 @@
 
       this._last_camera_position = origin; // remember current camera position
 
-      if (!this._usesvg)
+      if (this._webgl)
          JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
    }
 
@@ -2905,11 +2905,9 @@
          if (this.options.highlight === false)
             this.options.highlight = (this.first_render_tm < 1000);
 
-         if (!this._usesvg) {
-            // if rotation was enabled, do it
-            if (this.options.autoRotate && !this.options.project) this.autorotate(2.5);
-            if (this.options.show_controls) this.showControlOptions(true);
-         }
+         // if rotation was enabled, do it
+         if (this._webgl && this.options.autoRotate && !this.options.project) this.autorotate(2.5);
+         if (!this._usesvg && this.options.show_controls) this.showControlOptions(true);
 
          this.DrawingReady();
       }
