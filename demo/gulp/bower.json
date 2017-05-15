@@ -1,16 +1,10 @@
 {
   "name": "gulp-jsroot-example",
-  "author": [
-    "Sergey Linev"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/root-project/jsrootr.git"
-  },
+  "author": "Sergey Linev",
   "description": "Example of building lib.js with gulp for JavaScript ROOT",
   "main": "example.htm",
   "dependencies": {
-    "jsroot": "https://github.com/root-project/jsroot.git#dev"
+    "jsroot": "^5.2.0"
   },
   "overrides": {
      "MathJax": {
