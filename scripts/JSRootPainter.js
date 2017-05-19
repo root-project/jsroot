@@ -3192,18 +3192,18 @@
       if (use_normal_text) {
          if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x.toFixed(1), pos_y = y.toFixed(1), pos_dy = "", middleline = false;
+         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
-            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(1); else
-            if (align[0]=="end") pos_x = (x+w).toFixed(1);
+            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(0); else
+            if (align[0]=="end") pos_x = (x+w).toFixed(0);
          }
 
          if (h>0) {
-            if (align[1].indexOf('bottom')===0) pos_y = (y + h).toFixed(1); else
+            if (align[1].indexOf('bottom')===0) pos_y = (y+h).toFixed(0); else
             if (align[1] == 'top') pos_dy = ".8em"; else {
-               pos_y = (y + h/2 + 1).toFixed(1);
+               pos_y = (y + h/2 + 1).toFixed(0);
                if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
             }
          } else {
@@ -4087,9 +4087,9 @@
       if ((lwidth > 0) && has_head) {
          this.draw_g.append("svg:line")
                     .attr("x1", 0)
-                    .attr("y1", stepy.toFixed(1))
+                    .attr("y1", stepy.toFixed(0))
                     .attr("x2", width)
-                    .attr("y2", stepy.toFixed(1))
+                    .attr("y2", stepy.toFixed(0))
                     .call(this.lineatt.func);
       }
 
@@ -4097,16 +4097,16 @@
          for (var nrow = first_stat; nrow < nlines; ++nrow)
             this.draw_g.append("svg:line")
                        .attr("x1", 0)
-                       .attr("y1", (nrow * stepy).toFixed(1))
+                       .attr("y1", (nrow * stepy).toFixed(0))
                        .attr("x2", width)
-                       .attr("y2", (nrow * stepy).toFixed(1))
+                       .attr("y2", (nrow * stepy).toFixed(0))
                        .call(this.lineatt.func);
 
          for (var ncol = 0; ncol < num_cols - 1; ++ncol)
             this.draw_g.append("svg:line")
-                        .attr("x1", (width / num_cols * (ncol + 1)).toFixed(1))
+                        .attr("x1", (width / num_cols * (ncol + 1)).toFixed(0))
                         .attr("y1", (first_stat * stepy).toFixed(1))
-                        .attr("x2", (width / num_cols * (ncol + 1)).toFixed(1))
+                        .attr("x2", (width / num_cols * (ncol + 1)).toFixed(0))
                         .attr("y2", height)
                         .call(this.lineatt.func);
       }
@@ -12642,7 +12642,8 @@
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
                      .replace(/ class=\"\w*\"/g,"")                                // remove all classes
-                     .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,""); // remove all empty groups
+                     .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
+                     .replace(/<g><\/g>/g,"");                                     // remove all empty groups
 
             main.remove();
 
