@@ -12642,6 +12642,8 @@
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
 
+            svg = svg.replace(/ class=\"\w*\"/g,"");
+
             main.remove();
 
             JSROOT.CallBack(callback, svg);
