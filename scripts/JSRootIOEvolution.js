@@ -2911,8 +2911,13 @@
    }
 
    JSROOT.OpenFile = function(filename, callback) {
-      if (JSROOT.nodejs && filename.indexOf("file://")==0)
-          return new JSROOT.TNodejsFile(filename.substr(7), callback);
+      if (JSROOT.nodejs) {
+         if (filename.indexOf("file://")==0)
+            return new JSROOT.TNodejsFile(filename.substr(7), callback);
+
+         if (filename.indexOf("http")!==0)
+            return new JSROOT.TNodejsFile(filename, callback);
+      }
 
       if (typeof filename === 'object'  && filename.size && filename.name)
          return new JSROOT.TLocalFile(filename, callback);
