@@ -1632,7 +1632,6 @@
    }
 
    JSROOT.TObjectPainter.prototype.pad_width = function(pad_name) {
-      var sel = this.svg_pad(pad_name);
       var res = this.svg_pad(pad_name).property("draw_width");
       return isNaN(res) ? 0 : res;
    }
@@ -1643,22 +1642,22 @@
    }
 
    JSROOT.TObjectPainter.prototype.frame_x = function() {
-      var res = parseInt(this.svg_frame().attr("x"));
+      var res = this.svg_frame().property("draw_x");
       return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.frame_y = function() {
-      var res = parseInt(this.svg_frame().attr("y"));
+      var res = this.svg_frame().property("draw_y");
       return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.frame_width = function() {
-      var res = parseInt(this.svg_frame().attr("width"));
+      var res = this.svg_frame().property("draw_width");
       return isNaN(res) ? 0 : res;
    }
 
    JSROOT.TObjectPainter.prototype.frame_height = function() {
-      var res = parseInt(this.svg_frame().attr("height"));
+      var res = this.svg_frame().property("draw_height");
       return isNaN(res) ? 0 : res;
    }
 
@@ -3449,13 +3448,12 @@
          this.draw_g.append('svg:g').attr('class','upper_layer');
       }
 
-      // simple way to access painter via frame container
-      this.draw_g.property('frame_painter', this);
-
-      this.draw_g.attr("x", lm)
-             .attr("y", tm)
-             .attr("width", w)
-             .attr("height", h)
+      this.draw_g
+     //        .attr("x", lm)
+     //        .attr("y", tm)
+     //        .attr("width", w)
+     //        .attr("height", h)
+             .property('frame_painter', this) // simple way to access painter via frame container
              .property('draw_x', lm)
              .property('draw_y', tm)
              .property('draw_width', w)
@@ -3473,13 +3471,18 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
-                     redraw: this.SizeChanged.bind(this) });
-
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
-      if (JSROOT.gStyle.Tooltip === 0)
+      if ((JSROOT.gStyle.Tooltip === 0) || JSROOT.BatchMode)
          return tooltip_rect.remove();
+
+      this.draw_g.attr("x", lm)
+                 .attr("y", tm)
+                 .attr("width", w)
+                 .attr("height", h);
+
+      this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                     redraw: this.SizeChanged.bind(this) });
 
       var painter = this;
 
@@ -3934,13 +3937,7 @@
       // container used to recalculate coordinates
       this.RecreateDrawG(true, this.IsStats() ? "stat_layer" : "text_layer");
 
-      // position and size required only for drag functions
-      this.draw_g
-           .attr("x", pos_x)
-           .attr("y", pos_y)
-           .attr("width", width)
-           .attr("height", height)
-           .attr("transform", "translate(" + pos_x + "," + pos_y + ")");
+      this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
       // add shadow decoration before main rect
       if ((lwidth > 1) && (pt.fShadowColor > 0))
@@ -3959,11 +3956,8 @@
          this.fillatt = this.createAttFill(pt);
 
       var rect =
-         this.draw_g.append("rect")
-          .attr("x", 0)
-          .attr("y", 0)
-          .attr("width", width)
-          .attr("height", height)
+         this.draw_g.append("svg:path")
+          .attr("d", "M0,0h"+width+"v"+height+"h-"+width+"z")
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
@@ -3976,6 +3970,12 @@
 
       rect.style("pointer-events", "visibleFill")
           .on("mouseenter", this.ShowObjectStatus.bind(this))
+
+      // position and size required only for drag functions
+      this.draw_g.attr("x", pos_x)
+                 .attr("y", pos_y)
+                 .attr("width", width)
+                 .attr("height", height);
 
       this.AddDrag({ obj: pt, minwidth: 10, minheight: 20,
                      redraw: this.DrawPave.bind(this),
@@ -4084,32 +4084,19 @@
 
       this.FinishTextDrawing(undefined, this.FinishPave);
 
-      if ((lwidth > 0) && has_head) {
-         this.draw_g.append("svg:line")
-                    .attr("x1", 0)
-                    .attr("y1", stepy.toFixed(0))
-                    .attr("x2", width)
-                    .attr("y2", stepy.toFixed(0))
-                    .call(this.lineatt.func);
-      }
+      var lpath = "";
+
+      if ((lwidth > 0) && has_head)
+         lpath += "M0," + Math.round(stepy) + "h" + width;
 
       if ((first_stat > 0) && (num_cols > 1)) {
          for (var nrow = first_stat; nrow < nlines; ++nrow)
-            this.draw_g.append("svg:line")
-                       .attr("x1", 0)
-                       .attr("y1", (nrow * stepy).toFixed(0))
-                       .attr("x2", width)
-                       .attr("y2", (nrow * stepy).toFixed(0))
-                       .call(this.lineatt.func);
-
+            lpath += "M0," + Math.round(nrow * stepy) + "h" + width;
          for (var ncol = 0; ncol < num_cols - 1; ++ncol)
-            this.draw_g.append("svg:line")
-                        .attr("x1", (width / num_cols * (ncol + 1)).toFixed(0))
-                        .attr("y1", (first_stat * stepy).toFixed(1))
-                        .attr("x2", (width / num_cols * (ncol + 1)).toFixed(0))
-                        .attr("y2", height)
-                        .call(this.lineatt.func);
+            lpath += "M" + Math.round(width / num_cols * (ncol + 1)) + "," + Math.round(first_stat * stepy) + "V" + height;
       }
+
+      if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
 
       if (draw_header) {
          var x = Math.round(width*0.25),
@@ -4119,11 +4106,8 @@
 
          var lbl_g = this.draw_g.append("svg:g");
 
-         lbl_g.append("rect")
-               .attr("x", x)
-               .attr("y", y)
-               .attr("width", w)
-               .attr("height", h)
+         lbl_g.append("svg:path")
+               .attr("d", "M" + x + "," + y + "h" + w + "v" + h + "h-" + w + "z")
                .call(this.fillatt.func)
                .call(this.lineatt.func);
 
@@ -6274,7 +6258,7 @@
              Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
              GLBox: 0, GLColor: 0,
              System: JSROOT.Painter.Coord.kCARTESIAN,
-             AutoColor : 0, NoStat : 0, AutoZoom : false,
+             AutoColor: 0, NoStat: 0, AutoZoom: false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
              Optimize: JSROOT.gStyle.OptimizeDraw,
              minimum: -1111, maximum: -1111 },
