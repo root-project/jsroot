@@ -12640,9 +12640,9 @@
                JSROOT.svg_workaround = undefined;
             }
 
-            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)");
-
-            svg = svg.replace(/ class=\"\w*\"/g,"");
+            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
+                     .replace(/ class=\"\w*\"/g,"")                                // remove all classes
+                     .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,""); // remove all empty groups
 
             main.remove();
 
