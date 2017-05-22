@@ -626,8 +626,16 @@
 
       if (this.usesvg) {
          this.renderer = JSROOT.gStyle.SVGRenderer ?
-                           new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
-                           new THREE.SVGRenderer({ antialias: true, alpha: true });
+                           new THREE.SVGRendererNew() :
+                           new THREE.SVGRenderer({ precision: 0, astext: true });
+         if (this.renderer.outerHTML !== undefined) {
+            // this is indication of new three.js functionality
+            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+            this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            this.renderer.workaround_id = JSROOT.svg_workaround.length;
+            this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
+            JSROOT.svg_workaround[this.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+         }
       } else {
          this.webgl = JSROOT.Painter.TestWebGL();
          this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
@@ -2651,12 +2659,19 @@
 
    JSROOT.Painter.Render3D = function(tmout) {
       if (tmout === -1111) {
-         // special handling for SVG renderer
+         // special handling for direct SVG renderer
+         // probably, here one can use canvas renderer - after modifications
          var rrr = JSROOT.gStyle.SVGRenderer ?
-                      new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
-                      new THREE.SVGRenderer({ antialias: true, alpha: true });
+                      new THREE.SVGRendererNew() :
+                      new THREE.SVGRenderer({ precision: 0, astext: true });
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
+         if (rrr.outerHTML) {
+            // use text mode, it is faster
+            var d = document.createElement('div');
+            d.innerHTML = rrr.outerHTML;
+            return d.childNodes[0];
+         }
          return rrr.domElement;
       }
 
@@ -2685,6 +2700,10 @@
             this.enable_hightlight = (this.first_render_tm < 1200) && this.tooltip_allowed;
             console.log('First render tm = ' + this.first_render_tm);
          }
+
+         // when using SVGrenderer producint text output, provide result
+         if (this.renderer.workaround_id !== undefined)
+            JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.outerHTML;
 
          return;
       }

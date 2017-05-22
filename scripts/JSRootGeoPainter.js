@@ -941,7 +941,7 @@
    JSROOT.TGeoPainter.prototype.addTransformControl = function() {
       if (this._tcontrols) return;
 
-      if (! this.options._debug && !this.options._grid ) return;
+      if ( !this.options._debug && !this.options._grid ) return;
 
       // FIXME: at the moment THREE.TransformControls is bogus in three.js, should be fixed and check again
       //return;
@@ -1398,8 +1398,17 @@
 
       if (usesvg) {
          this._renderer = JSROOT.gStyle.SVGRenderer ?
-                             new THREE.SVGRendererNew({ antialias: true, alpha: true }) :
-                             new THREE.SVGRenderer({ antialias: true, alpha: true });
+                             new THREE.SVGRendererNew() :
+                             new THREE.SVGRenderer( { precision: 0, astext: true } );
+         if (this._renderer.outerHTML !== undefined) {
+            // this is indication of new three.js functionality
+            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+            var doc = (typeof document === 'undefined') ? JSROOT.nodejs_document : document;
+            this._renderer.domElement = doc.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            this._renderer.workaround_id = JSROOT.svg_workaround.length;
+            this._renderer.domElement.setAttribute('jsroot_svg_workaround', this._renderer.workaround_id);
+            JSROOT.svg_workaround[this._renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+         }
       } else {
          this._renderer = webgl ?
                            new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: false,
@@ -1411,7 +1420,7 @@
       this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
 
-      if (this._fit_main_area) {
+      if (this._fit_main_area && !usesvg) {
          this._renderer.domElement.style.width = "100%";
          this._renderer.domElement.style.height = "100%";
          var main = this.select_main();
@@ -2566,7 +2575,6 @@
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this._camera, this._toplevel);
 
-
          this.TestCameraPosition();
 
          // do rendering, most consuming time
@@ -2591,6 +2599,10 @@
             this.first_render_tm = this.last_render_tm;
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
+
+         // when using SVGrenderer producint text output, provide result
+         if (this._renderer.workaround_id !== undefined)
+            JSROOT.svg_workaround[this._renderer.workaround_id] = this._renderer.outerHTML;
 
          return;
       }
