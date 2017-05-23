@@ -1263,19 +1263,33 @@
          ticks.push(0, 0, grz, (is_major ? ticklen : ticklen * 0.6), 0, grz);
       }
 
+      function computeLineDistances(arr) {
+         var v1 = new THREE.Vector3(arr[0], arr[1], arr[2]),
+             v2 = new THREE.Vector3(),
+             res = new Array(arr.length/3), d = 0;
+         res[0] = 0;
+         for (var n=3; n<arr.length; n+=3) {
+            var next = (n % 6 === 0) ? v1 : v2; // alternate vertices to calculate distance to previous
+            next.set(arr[n],arr[n+1],arr[n+2]);
+            d += v2.distanceTo( v1 );
+            res[n/3] = d;
+         }
+         return res;
+      }
 
       if (zgridx && (zgridx.length > 0)) {
 
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
 
-         //var geom =  new THREE.BufferGeometry();
-         //geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridx), 3 ) );
-         var geom =  new THREE.Geometry();
-         for(i = 0; i < zgridx.length; i += 3 ){
-            geom.vertices.push( new THREE.Vector3( zgridx[i], zgridx[i+1], zgridx[i+2]) );
-         }
-         geom.computeLineDistances();
+         var geom =  new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.Float32BufferAttribute( zgridx, 3 ) );
+         geom.addAttribute( 'lineDistance', new THREE.Float32BufferAttribute ( computeLineDistances( zgridx ), 1 ) );
+         //var geom =  new THREE.Geometry();
+         //for(i = 0; i < zgridx.length; i += 3 ){
+         //   geom.vertices.push( new THREE.Vector3( zgridx[i], zgridx[i+1], zgridx[i+2]) );
+         //}
+         //geom.computeLineDistances();
 
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(0,grmaxy,0);
@@ -1295,13 +1309,14 @@
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
 
-         //var geom =  new THREE.BufferGeometry();
-         //geom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(zgridy), 3 ) );
-         var geom =  new THREE.Geometry();
-         for(i = 0; i < zgridy.length; i += 3 ){
-            geom.vertices.push( new THREE.Vector3( zgridy[i], zgridy[i+1], zgridy[i+2]) );
-         }
-         geom.computeLineDistances();
+         var geom =  new THREE.BufferGeometry();
+         geom.addAttribute( 'position', new THREE.Float32BufferAttribute( zgridy, 3 ) );
+         geom.addAttribute( 'lineDistance', new THREE.Float32BufferAttribute ( computeLineDistances( zgridy ), 1 ) );
+         //var geom =  new THREE.Geometry();
+         //for(i = 0; i < zgridy.length; i += 3 ){
+         //   geom.vertices.push( new THREE.Vector3( zgridy[i], zgridy[i+1], zgridy[i+2]) );
+         //}
+         //geom.computeLineDistances();
 
          var lines = new THREE.LineSegments(geom, material);
          lines.position.set(grmaxx,0, 0);
