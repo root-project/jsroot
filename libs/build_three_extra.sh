@@ -7,8 +7,8 @@ tgt=three.extra.js
 
 src=/d/three.js-r85
 #src=/home/linev/git/threejs
-src2=/d/three.js-r85
-#src2=/home/linev/git/threejs
+#src2=/d/three.js-r85
+src2=/home/linev/git/threejs
 
 rm -rf $tgt
 touch $tgt

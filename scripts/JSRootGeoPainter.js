@@ -2102,10 +2102,9 @@
          pos+=6;
       }
 
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-      var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
-      var line = new THREE.LineSegments(geom, lineMaterial);
+      var geom = JSROOT.Painter.createLineGeometry(buf, true),
+          lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+          line = new THREE.LineSegments(geom, lineMaterial);
 
       line.geo_name = itemname;
       line.geo_object = track;
@@ -2143,10 +2142,9 @@
          pos+=6;
       }
 
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-      var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width });
-      var line = new THREE.LineSegments(geom, lineMaterial);
+      var geom = JSROOT.Painter.createLineGeometry(buf,true),
+          lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
+          line = new THREE.LineSegments(geom, lineMaterial);
 
       line.geo_name = itemname;
       line.geo_object = track;
@@ -2770,10 +2768,9 @@
             for (var k=0;k<6;++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
-         var geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', new THREE.BufferAttribute( buf, 3 ) );
-         var lineMaterial = new THREE.LineBasicMaterial({ color: axiscol });
-         var mesh = new THREE.LineSegments(geom, lineMaterial);
+         var geom = JSROOT.Painter.createLineGeometry( buf, true ),
+             lineMaterial = new THREE.LineBasicMaterial({ color: axiscol }),
+             mesh = new THREE.LineSegments(geom, lineMaterial);
 
          container.add(mesh);
 
