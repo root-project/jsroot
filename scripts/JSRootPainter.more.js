@@ -3304,8 +3304,12 @@
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
-      // used to enable/disable stat box
-      this.draw_content = this.gmaxbin > 0;
+      if (this.options.Axis > 0) { // Paint histogram axis only
+         this.draw_content = false;
+      } else {
+         // used to enable/disable stat box
+         this.draw_content = this.gmaxbin > 0;
+      }
    }
 
    JSROOT.TH2Painter.prototype.CountStat = function(cond) {
@@ -4493,6 +4497,7 @@
           this.options.Contour + this.options.Arrow + this.options.Candle.length == 0)
          this.options.Scat = 1;
 
+      if (this.draw_content)
       if (this.IsTH2Poly())
          handle = this.DrawPolyBinsColor(w, h);
       else
