@@ -781,41 +781,47 @@
       }
    }
 
-   JSROOT.Painter.createLineGeometry = function(arr, index, material) {
+   JSROOT.Painter.createLineSegments = function(arr, material, index) {
       // prepare geometry for THREE.LineSegments
       // If required, calculate lineDistance attribute for dashed geometries
 
-      var geom = new THREE.BufferGeometry();
+      var geom = new THREE.BufferGeometry(),
+          only_geometry = (index === 'geometry');
+      if (only_geometry) index = null;
+
       geom.addAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
       if (index) geom.setIndex(  new THREE.BufferAttribute(index, 1) );
-      if (!material || !material.isLineDashedMaterial) return geom;
 
-      var v1 = new THREE.Vector3(),
-          v2 = new THREE.Vector3(),
-          d = 0, distances = null;
+      if (material.isLineDashedMaterial) {
 
-      if (index) {
-         distances = new Float32Array(index.length);
-         for (var n=0; n<index.length; n+=2) {
-            var i1 = index[n], i2 = index[n+1];
-            v1.set(arr[i1],arr[i1+1],arr[i1+2]);
-            v2.set(arr[i2],arr[i2+1],arr[i2+2]);
-            distances[n] = d;
-            d += v2.distanceTo( v1 );
-            distances[n+1] = d;
+         var v1 = new THREE.Vector3(),
+             v2 = new THREE.Vector3(),
+             d = 0, distances = null;
+
+         if (index) {
+            distances = new Float32Array(index.length);
+            for (var n=0; n<index.length; n+=2) {
+               var i1 = index[n], i2 = index[n+1];
+               v1.set(arr[i1],arr[i1+1],arr[i1+2]);
+               v2.set(arr[i2],arr[i2+1],arr[i2+2]);
+               distances[n] = d;
+               d += v2.distanceTo( v1 );
+               distances[n+1] = d;
+            }
+         } else {
+            distances = new Float32Array(arr.length/3);
+            for (var n=0; n<arr.length; n+=6) {
+               v1.set(arr[n],arr[n+1],arr[n+2]);
+               v2.set(arr[n+3],arr[n+4],arr[n+5]);
+               distances[n/3] = d;
+               d += v2.distanceTo( v1 );
+               distances[n/3+1] = d;
+            }
          }
-      } else {
-          distances = new Float32Array(arr.length/3);
-          for (var n=0; n<arr.length; n+=6) {
-            v1.set(arr[n],arr[n+1],arr[n+2]);
-            v2.set(arr[n+3],arr[n+4],arr[n+5]);
-            distances[n/3] = d;
-            d += v2.distanceTo( v1 );
-            distances[n/3+1] = d;
-         }
+         geom.addAttribute( 'lineDistance', new THREE.BufferAttribute(distances, 1) );
       }
-      geom.addAttribute( 'lineDistance', new THREE.BufferAttribute(distances, 1) );
-      return geom;
+
+      return only_geometry ? geom : new THREE.LineSegments(geom, material);
    }
 
    JSROOT.Painter.HPainter_DrawXYZ = function(toplevel, opts) {
@@ -954,7 +960,6 @@
          var lbl = this.x_handle.format(xticks.tick, true, true);
          if (xticks.last_major()) lbl = "x"; else
             if (lbl === null) { is_major = false; lbl = ""; }
-
 
          if (is_major && lbl && (lbl.length>0)) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
@@ -1109,13 +1114,12 @@
          return mesh;
       }
 
-      var ticksgeom = JSROOT.Painter.createLineGeometry( ticks );
-
       var xcont = new THREE.Object3D();
       xcont.position.set(0, grminy, grminz)
       xcont.rotation.x = 1/4*Math.PI;
       xcont.xyid = 2;
-      xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      var xtickslines = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
+      xcont.add(xtickslines);
 
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
@@ -1138,7 +1142,7 @@
       xcont = new THREE.Object3D();
       xcont.position.set(0, grmaxy, grminz);
       xcont.rotation.x = 3/4*Math.PI;
-      xcont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+      xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
       lbls.forEach(function(lbl) {
          var m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
@@ -1210,13 +1214,14 @@
       ggg2 = new THREE.BufferGeometry().fromGeometry(ggg2);
     */
 
-      ticksgeom = JSROOT.Painter.createLineGeometry( ticks );
-
       if (!opts.use_y_for_z) {
+
+         var yticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
+
          var ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
          ycont.rotation.y = -1/4*Math.PI;
-         ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         ycont.add(yticksline);
          //ycont.add(new THREE.Mesh(ggg1, textMaterial));
 
          lbls.forEach(function(lbl) {
@@ -1239,7 +1244,7 @@
          ycont = new THREE.Object3D();
          ycont.position.set(grmaxx, 0, grminz);
          ycont.rotation.y = -3/4*Math.PI;
-         ycont.add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
          //ycont.add(new THREE.Mesh(ggg2, textMaterial));
          lbls.forEach(function(lbl) {
             var m = new THREE.Matrix4();
@@ -1304,24 +1309,18 @@
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
 
-         var geom = JSROOT.Painter.createLineGeometry(zgridx, null, material);
-         //var geom =  new THREE.Geometry();
-         //for(i = 0; i < zgridx.length; i += 3 ){
-         //   geom.vertices.push( new THREE.Vector3( zgridx[i], zgridx[i+1], zgridx[i+2]) );
-         //}
-         //geom.computeLineDistances();
+         var lines1 = JSROOT.Painter.createLineSegments(zgridx, material);
 
-         var lines = new THREE.LineSegments(geom, material);
-         lines.position.set(0,grmaxy,0);
-         lines.grid = 2; // mark as grid
-         lines.visible = false;
-         top.add(lines);
+         lines1.position.set(0,grmaxy,0);
+         lines1.grid = 2; // mark as grid
+         lines1.visible = false;
+         top.add(lines1);
 
-         lines = new THREE.LineSegments(geom, material);
-         lines.position.set(0,grminy,0);
-         lines.grid = 4; // mark as grid
-         lines.visible = false;
-         top.add(lines);
+         var lines2 = new THREE.LineSegments(lines1.geometry, material);
+         lines2.position.set(0,grminy,0);
+         lines2.grid = 4; // mark as grid
+         lines2.visible = false;
+         top.add(lines2);
       }
 
       if (zgridy && (zgridy.length > 0)) {
@@ -1329,24 +1328,18 @@
          // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
          var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
 
-         var geom = JSROOT.Painter.createLineGeometry( zgridy, null, material );
-         //var geom =  new THREE.Geometry();
-         //for(i = 0; i < zgridy.length; i += 3 ){
-         //   geom.vertices.push( new THREE.Vector3( zgridy[i], zgridy[i+1], zgridy[i+2]) );
-         //}
-         //geom.computeLineDistances();
+         var lines1 = JSROOT.Painter.createLineSegments( zgridy, material );
 
-         var lines = new THREE.LineSegments(geom, material);
-         lines.position.set(grmaxx,0, 0);
-         lines.grid = 3; // mark as grid
-         lines.visible = false;
-         top.add(lines);
+         lines1.position.set(grmaxx,0, 0);
+         lines1.grid = 3; // mark as grid
+         lines1.visible = false;
+         top.add(lines1);
 
-         lines = new THREE.LineSegments(geom, material);
-         lines.position.set(grminx, 0, 0);
-         lines.grid = 1; // mark as grid
-         lines.visible = false;
-         top.add(lines);
+         var lines2 = new THREE.LineSegments(lines1.geometry, material);
+         lines2.position.set(grminx, 0, 0);
+         lines2.grid = 1; // mark as grid
+         lines2.visible = false;
+         top.add(lines2);
       }
 
 
@@ -1365,9 +1358,8 @@
       ggg = new THREE.BufferGeometry().fromGeometry(ggg);
 */
 
-      ticksgeom = JSROOT.Painter.createLineGeometry( ticks );
 
-      var zcont = [];
+      var zcont = [], zticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
          //zcont[n].add(new THREE.Mesh(ggg, textMaterial));
@@ -1383,7 +1375,7 @@
             zcont[n].add(mesh);
          });
 
-         zcont[n].add(new THREE.LineSegments(ticksgeom, lineMaterial));
+         zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
          if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size_z3d, opts.use_y_for_z));
 
          zcont[n].zid = n + 2;
@@ -1406,35 +1398,35 @@
       // for TAxis3D do not show final cube
       if (this.size_z3d === 0) return;
 
-      var linex = JSROOT.Painter.createLineGeometry( [grminx, 0, 0, grmaxx, 0, 0] );
+      var linex_geom = JSROOT.Painter.createLineSegments( [grminx, 0, 0, grmaxx, 0, 0], lineMaterial, 'geometry');
       for(var n=0;n<2;++n) {
-         var line = new THREE.LineSegments(linex, lineMaterial);
+         var line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
          line.xyboxid = 2; line.bottom = (n == 0);
          top.add(line);
 
-         line = new THREE.LineSegments(linex, lineMaterial);
+         line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grmaxy, (n===0) ? grminz : grmaxz);
          line.xyboxid = 4; line.bottom = (n == 0);
          top.add(line);
       }
 
-      var liney = JSROOT.Painter.createLineGeometry( [0, grminy,0, 0, grmaxy, 0] );
+      var liney_geom = JSROOT.Painter.createLineSegments( [0, grminy,0, 0, grmaxy, 0], lineMaterial, 'geometry' );
       for(var n=0;n<2;++n) {
-         var line = new THREE.LineSegments(liney, lineMaterial);
+         var line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
          line.xyboxid = 3; line.bottom = (n == 0);
          top.add(line);
 
-         line = new THREE.LineSegments(liney, lineMaterial);
+         line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grmaxx, 0, (n===0) ? grminz : grmaxz);
          line.xyboxid = 1; line.bottom = (n == 0);
          top.add(line);
       }
 
-      var linez = JSROOT.Painter.createLineGeometry( [0, 0, grminz, 0, 0, grmaxz] );
+      var linez_geom = JSROOT.Painter.createLineSegments( [0, 0, grminz, 0, 0, grmaxz], lineMaterial, 'geometry' );
       for(var n=0;n<4;++n) {
-         var line = new THREE.LineSegments(linez, lineMaterial);
+         var line = new THREE.LineSegments(linez_geom, lineMaterial);
          line.zboxid = zcont[n].zid;
          line.position.copy(zcont[n].position);
          top.add(line);
@@ -1616,12 +1608,11 @@
        }
 
        // create lines
-       var geometry = JSROOT.Painter.createLineGeometry(lpos),
-           lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
-           material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+       var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
+           material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) }),
+           line = JSROOT.Painter.createLineSegments(lpos, material);
 
        if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
-       var line = new THREE.LineSegments(geometry, material);
 
        line.painter = this;
        line.intersect_index = binindx;
@@ -2005,16 +1996,11 @@
       }
 
       // create boxes
-      geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( lpositions, 3 ) );
-      if (uselineindx)
-         geometry.setIndex(new THREE.BufferAttribute(lindicies, 1));
-
       var lcolor = JSROOT.Painter.root_colors[histo.fLineColor];
-
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
       if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
-      var line = new THREE.LineSegments(geometry, material);
+
+      var line = JSROOT.Painter.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
       /*
       line.painter = this;
@@ -2380,11 +2366,10 @@
          if (nsegments*6 !== lindx)
             console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
-         var geometry = JSROOT.Painter.createLineGeometry(lpos),
-             lcolor = JSROOT.Painter.root_colors[histo.fLineColor],
+         var lcolor = JSROOT.Painter.root_colors[histo.fLineColor],
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
          if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
-         var line = new THREE.LineSegments(geometry, material);
+         var line = JSROOT.Painter.createLineSegments(lpos, material);
          line.painter = this;
          main.toplevel.add(line);
       }
@@ -2400,8 +2385,7 @@
          else
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(JSROOT.Painter.root_colors[histo.fLineColor]) });
 
-         var geometry = JSROOT.Painter.createLineGeometry(grid, null, material);
-         var line = new THREE.LineSegments(geometry, material);
+         var line = JSROOT.Painter.createLineSegments(grid, material);
          line.painter = this;
          main.toplevel.add(line);
       }
@@ -3103,11 +3087,10 @@
             }
 
             if (err) {
-               var geometry = JSROOT.Painter.createLineGeometry(err),
-                   lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
+               var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
                    material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
                if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
-               var errmesh = new THREE.LineSegments(geometry, material);
+               var errmesh = JSROOT.Painter.createLineSegments(err, material);
                main.toplevel.add(errmesh);
 
                errmesh.graph = graph;
@@ -3750,27 +3733,16 @@
          this.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            var helper_geom = null; // new THREE.BufferGeometry();
+            var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
+                helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
+                lines = null;
 
             if (helper_kind[nseq] === 1) {
                // reuse positions from the mesh - only special index was created
-               //helper_geom.setIndex(  new THREE.BufferAttribute(helper_indexes[nseq], 1) );
-               //helper_geom.addAttribute( 'position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
-
-               helper_geom = JSROOT.Painter.createLineGeometry( bin_verts[nseq], helper_indexes[nseq] );
-
-               console.log('create with index');
+               lines = JSROOT.Painter.createLineSegments( bin_verts[nseq], helper_material, helper_indexes[nseq] );
             } else {
-
-               helper_geom = JSROOT.Painter.createLineGeometry( helper_positions[nseq] );
-
-               //helper_geom.addAttribute( 'position', new THREE.BufferAttribute( helper_positions[nseq], 3 ) );
-               console.log('create without index');
+               lines = JSROOT.Painter.createLineSegments( helper_positions[nseq], helper_material );
             }
-
-            var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
-                helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
-                lines = new THREE.LineSegments(helper_geom, helper_material );
 
             this.toplevel.add(lines);
          }
