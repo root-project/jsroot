@@ -781,13 +781,11 @@
       }
    }
 
-   JSROOT.Painter.createLineSegments = function(arr, material, index) {
+   JSROOT.Painter.createLineSegments = function(arr, material, index, only_geometry) {
       // prepare geometry for THREE.LineSegments
       // If required, calculate lineDistance attribute for dashed geometries
 
-      var geom = new THREE.BufferGeometry(),
-          only_geometry = (index === 'geometry');
-      if (only_geometry) index = null;
+      var geom = new THREE.BufferGeometry();
 
       geom.addAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
       if (index) geom.setIndex(  new THREE.BufferAttribute(index, 1) );
@@ -1398,7 +1396,7 @@
       // for TAxis3D do not show final cube
       if (this.size_z3d === 0) return;
 
-      var linex_geom = JSROOT.Painter.createLineSegments( [grminx, 0, 0, grmaxx, 0, 0], lineMaterial, 'geometry');
+      var linex_geom = JSROOT.Painter.createLineSegments( [grminx, 0, 0, grmaxx, 0, 0], lineMaterial, null, true);
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -1411,7 +1409,7 @@
          top.add(line);
       }
 
-      var liney_geom = JSROOT.Painter.createLineSegments( [0, grminy,0, 0, grmaxy, 0], lineMaterial, 'geometry' );
+      var liney_geom = JSROOT.Painter.createLineSegments( [0, grminy,0, 0, grmaxy, 0], lineMaterial, null, true );
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -1424,7 +1422,7 @@
          top.add(line);
       }
 
-      var linez_geom = JSROOT.Painter.createLineSegments( [0, 0, grminz, 0, 0, grmaxz], lineMaterial, 'geometry' );
+      var linez_geom = JSROOT.Painter.createLineSegments( [0, 0, grminz, 0, 0, grmaxz], lineMaterial, null, true );
       for(var n=0;n<4;++n) {
          var line = new THREE.LineSegments(linez_geom, lineMaterial);
          line.zboxid = zcont[n].zid;
