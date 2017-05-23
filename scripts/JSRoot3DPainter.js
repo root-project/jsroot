@@ -962,7 +962,7 @@
       });
 */
       var ticksgeom = new THREE.BufferGeometry();
-      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+      ticksgeom.addAttribute( 'position', new THREE.Float32BufferAttribute(ticks, 3 ) );
 
       this.Get3DZoomCoord = function(point, kind) {
          // return axis coordinate from intersecetion point with axis geometry
@@ -1174,7 +1174,7 @@
     */
 
       var ticksgeom = new THREE.BufferGeometry();
-      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+      ticksgeom.addAttribute( 'position', new THREE.Float32BufferAttribute( ticks, 3 ) );
 
       if (!opts.use_y_for_z) {
          var ycont = new THREE.Object3D();
@@ -1348,7 +1348,7 @@
 */
 
       var ticksgeom = new THREE.BufferGeometry();
-      ticksgeom.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array(ticks), 3 ) );
+      ticksgeom.addAttribute( 'position', new THREE.Float32BufferAttribute( ticks, 3 ) );
 
       // ticks = new THREE.BufferGeometry().fromGeometry(ticks);
 
@@ -1392,7 +1392,7 @@
       if (this.size_z3d === 0) return;
 
       var linex = new THREE.BufferGeometry();
-      linex.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([grminx, 0, 0, grmaxx, 0, 0]), 3 ) );
+      linex.addAttribute( 'position', new THREE.Float32BufferAttribute( [grminx, 0, 0, grmaxx, 0, 0] , 3 ) );
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(linex, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -1406,7 +1406,7 @@
       }
 
       var liney = new THREE.BufferGeometry();
-      liney.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, grminy,0, 0, grmaxy, 0]), 3 ) );
+      liney.addAttribute( 'position', new THREE.Float32BufferAttribute( [0, grminy,0, 0, grmaxy, 0], 3 ) );
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(liney, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -1420,7 +1420,7 @@
       }
 
       var linez = new THREE.BufferGeometry();
-      linez.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array([0, 0, grminz, 0, 0, grmaxz]), 3 ) );
+      linez.addAttribute( 'position', new THREE.Float32BufferAttribute( [0, 0, grminz, 0, 0, grmaxz], 3 ) );
       for(var n=0;n<4;++n) {
          var line = new THREE.LineSegments(linez, lineMaterial);
          line.zboxid = zcont[n].zid;
