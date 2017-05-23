@@ -2102,7 +2102,7 @@
          pos+=6;
       }
 
-      var geom = JSROOT.Painter.createLineGeometry(buf, true),
+      var geom = JSROOT.Painter.createLineGeometry(buf),
           lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = new THREE.LineSegments(geom, lineMaterial);
 
@@ -2142,7 +2142,7 @@
          pos+=6;
       }
 
-      var geom = JSROOT.Painter.createLineGeometry(buf,true),
+      var geom = JSROOT.Painter.createLineGeometry(buf),
           lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = new THREE.LineSegments(geom, lineMaterial);
 
@@ -2768,7 +2768,7 @@
             for (var k=0;k<6;++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
-         var geom = JSROOT.Painter.createLineGeometry( buf, true ),
+         var geom = JSROOT.Painter.createLineGeometry( buf ),
              lineMaterial = new THREE.LineBasicMaterial({ color: axiscol }),
              mesh = new THREE.LineSegments(geom, lineMaterial);
 
