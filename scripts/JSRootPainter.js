@@ -5031,7 +5031,7 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      console.log('Draw next snap', indx);
+      // console.log('Draw next snap', indx);
 
       if (objpainter && lst && lst.arr[indx]) {
          // keep snap id in painter, will be used for the
