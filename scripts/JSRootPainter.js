@@ -2525,30 +2525,47 @@
 
       delete this._websocket;
 
-      var path = window.location.href, conn = null;
-
+      var path = window.location.href;
+      
       if (!use_longpoll) {
          path = path.replace("http://", "ws://");
          path = path.replace("https://", "wss://");
          var pos = path.indexOf("draw.htm");
          if (pos < 0) return;
          path = path.substr(0,pos) + "root.websocket";
-         console.log('open websocket ' + path);
-         conn = new WebSocket(path);
+         console.log('configure websocket ' + path);
+         // conn = new WebSocket(path);
       } else {
          var pos = path.indexOf("draw.htm");
          if (pos < 0) return;
          path = path.substr(0,pos) + "root.longpoll";
-         console.log('open longpoll ' + path);
-         conn = JSROOT.LongPollSocket(path);
+         console.log('configure longpoll ' + path);
+         // conn = JSROOT.LongPollSocket(path);
       }
 
-      this._websocket = conn;
+      // this._websocket = conn;
+      this._use_longpoll = use_longpoll;
+      this._websocket_opened = false;
+      this._websocket_path = path;
 
       var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
-
+      
+      function retry_open() {
+    	 console.log("try again"); 
+    	  
+    	 if (pthis._websocket_opened) return;
+    	 if (pthis._websocket) pthis._websocket.close();
+    	 delete pthis._websocket;
+    	    	 
+    	 var conn = pthis._use_longpoll 
+	      ? JSROOT.LongPollSocket(pthis._websocket_path) 
+			      : new WebSocket(pthis._websocket_path);
+    	 
+    	 pthis._websocket = conn;
+     
       conn.onopen = function() {
          console.log('websocket initialized');
+         pthis._websocket_opened = true;
          conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big peace)
       }
 
@@ -2609,20 +2626,29 @@
                });
 
          } else {
-            if (d) console.log("urecognized msg",d);
+            if (d) console.log("unrecognized msg",d);
          }
       }
 
       conn.onclose = function() {
          console.log('websocket closed');
          delete pthis._websocket;
-         window.close(); // close window when socked disapper
+         if (pthis._websocket_opened) {
+        	 pthis._websocket_opened = false;
+        	 window.close(); // close window when socked disapper   	 
+         }
       }
 
       conn.onerror = function (err) {
          console.log("err "+err);
          // conn.close();
       }
+      
+      setTimeout(3000, retry_open); // after 3 seconds try again
+      
+      } // retry_open
+      
+      retry_open(); // call for the first time
    }
 
 
@@ -5005,7 +5031,7 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      // console.log('Draw next snap', indx);
+      console.log('Draw next snap', indx);
 
       if (objpainter && lst && lst.arr[indx]) {
          // keep snap id in painter, will be used for the
@@ -11699,7 +11725,7 @@
 
          painter.SetDivId(myDiv.attr("id"), -1); // just assign id, nothing else is happens
 
-         painter.OpenWebsocket(JSROOT.GetUrlOption("longpollcanvas")!==null); // when connection activated, ROOT must send new instance of the canvas
+         painter.OpenWebsocket(JSROOT.GetUrlOption("longpollcanvas")!==null || true); // when connection activated, ROOT must send new instance of the canvas
 
          JSROOT.RegisterForResize(painter);
 
