@@ -2644,11 +2644,13 @@
          // conn.close();
       }
       
-      setTimeout(3000, retry_open); // after 3 seconds try again
+      setTimeout(retry_open, 10000); // after 3 seconds try again
       
       } // retry_open
       
-      retry_open(); // call for the first time
+      console.log("firt timeout");
+      setTimeout(retry_open, 100); // after short timeout
+      // retry_open(); // call for the first time
    }
 
 
@@ -11725,7 +11727,7 @@
 
          painter.SetDivId(myDiv.attr("id"), -1); // just assign id, nothing else is happens
 
-         painter.OpenWebsocket(JSROOT.GetUrlOption("longpollcanvas")!==null || true); // when connection activated, ROOT must send new instance of the canvas
+         painter.OpenWebsocket(JSROOT.GetUrlOption("longpollcanvas")!==null); // when connection activated, ROOT must send new instance of the canvas
 
          JSROOT.RegisterForResize(painter);
 
