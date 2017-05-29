@@ -2525,42 +2525,37 @@
 
       delete this._websocket;
 
-      var path = window.location.href;
-      
-      if (!use_longpoll) {
-         path = path.replace("http://", "ws://");
-         path = path.replace("https://", "wss://");
-         var pos = path.indexOf("draw.htm");
-         if (pos < 0) return;
-         path = path.substr(0,pos) + "root.websocket";
-         console.log('configure websocket ' + path);
-         // conn = new WebSocket(path);
-      } else {
-         var pos = path.indexOf("draw.htm");
-         if (pos < 0) return;
-         path = path.substr(0,pos) + "root.longpoll";
-         console.log('configure longpoll ' + path);
-         // conn = JSROOT.LongPollSocket(path);
-      }
-
       // this._websocket = conn;
       this._use_longpoll = use_longpoll;
       this._websocket_opened = false;
-      this._websocket_path = path;
 
       var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
       
-      function retry_open() {
+      function retry_open(first_time) {
     	 console.log("try again"); 
     	  
     	 if (pthis._websocket_opened) return;
     	 if (pthis._websocket) pthis._websocket.close();
     	 delete pthis._websocket;
+         
+         var path = window.location.href, conn = null;
+      
+         if (!pthis._use_longpoll && first_time) {
+            path = path.replace("http://", "ws://");
+            path = path.replace("https://", "wss://");
+            var pos = path.indexOf("draw.htm");
+            if (pos < 0) return;
+            path = path.substr(0,pos) + "root.websocket";
+            console.log('configure websocket ' + path);
+            conn = new WebSocket(path);
+         } else {
+            var pos = path.indexOf("draw.htm");
+            if (pos < 0) return;
+            path = path.substr(0,pos) + "root.longpoll";
+            console.log('configure longpoll ' + path);
+            conn = JSROOT.LongPollSocket(path);
+         }
     	    	 
-    	 var conn = pthis._use_longpoll 
-	      ? JSROOT.LongPollSocket(pthis._websocket_path) 
-			      : new WebSocket(pthis._websocket_path);
-    	 
     	 pthis._websocket = conn;
      
       conn.onopen = function() {
@@ -2644,12 +2639,11 @@
          // conn.close();
       }
       
-      setTimeout(retry_open, 10000); // after 3 seconds try again
+      setTimeout(retry_open, 3000); // after 3 seconds try again
       
       } // retry_open
       
-      console.log("firt timeout");
-      setTimeout(retry_open, 100); // after short timeout
+      retry_open(true); // after short timeout
       // retry_open(); // call for the first time
    }
 
