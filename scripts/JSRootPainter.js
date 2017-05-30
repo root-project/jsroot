@@ -5150,6 +5150,9 @@
 
       if (snap.arr.length === 1) {
          console.log("Pad is empty - clean everything");
+         var svg_p = this.svg_pad();
+         if (svg_p && !svg_p.empty())
+            svg_p.property('mainpainter', null);
          for (var k=0;k<this.painters.length;++k)
             this.painters[k].Cleanup();
          this.painters = [];
