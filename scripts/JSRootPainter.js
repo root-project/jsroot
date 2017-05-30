@@ -4564,6 +4564,8 @@
 
       if (check_resize > 0) {
 
+         if (this._fixed_size) return false;
+
          svg = this.svg_canvas();
 
          factor = svg.property('height_factor');
@@ -4613,7 +4615,12 @@
             if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
 
-         rect = this.check_main_resize(2, new_size, factor);
+         if (this._fixed_size) {
+            render_to.style("overflow","auto");
+            rect = { width: this.pad.fCw, height: this.pad.fCh };
+         } else {
+            rect = this.check_main_resize(2, new_size, factor);
+         }
       }
 
       if (!this.fillatt || !this.fillatt.changed)
@@ -4627,15 +4634,23 @@
          svg.style("display", null);
       }
 
-      svg.attr("x", 0)
-         .attr("y", 0)
-         .style("width", "100%")
-         .style("height", "100%")
-         .style("position", "absolute")
-         .style("left", 0)
-         .style("top", 0)
-         .style("right", 0)
-         .style("bottom", 0);
+      if (this._fixed_size) {
+         svg.attr("x", 0)
+            .attr("y", 0)
+            .attr("width", rect.width)
+            .attr("height", rect.height)
+            .style("position", "absolute");
+      } else {
+        svg.attr("x", 0)
+           .attr("y", 0)
+           .style("width", "100%")
+           .style("height", "100%")
+           .style("position", "absolute")
+           .style("left", 0)
+           .style("top", 0)
+           .style("right", 0)
+           .style("bottom", 0);
+      }
 
       svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
@@ -5120,6 +5135,7 @@
 
          this.draw_object = first;
          this.pad = first;
+         this._fixed_size = true;
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
