@@ -5044,12 +5044,20 @@
                   if (attr) {
                      var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
 
-                     this.StartTextDrawing(attr.fTextFont, height);
+                     var group = this.draw_g.append("svg:g");
+
+                     this.StartTextDrawing(attr.fTextFont, height, group);
+
+                     var angle = attr.fTextAngle;
+                     angle -= Math.floor(angle/360) * 360;
+                     if (angle>0) angle = -360 + angle; // rotation angle in ROOT and SVG has different meaning
+
+                     var enable_latex = 0; // 0-off, 1 - when make sense, 2 - always
 
                      // todo - correct support of angle
-                     this.DrawText(attr.fTextAlign, xx, yy, 0, 0, obj.fOper.arr[k].fString, JSROOT.Painter.root_colors[attr.fTextColor]);
+                     this.DrawText(attr.fTextAlign, xx, yy, 0, angle, obj.fOper.arr[k].fString, JSROOT.Painter.root_colors[attr.fTextColor], enable_latex, group);
 
-                     this.FinishTextDrawing();
+                     this.FinishTextDrawing(group);
                   }
                   continue;
                }
