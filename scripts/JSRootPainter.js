@@ -2537,9 +2537,9 @@
     	 if (pthis._websocket_opened) return;
     	 if (pthis._websocket) pthis._websocket.close();
     	 delete pthis._websocket;
-         
+
          var path = window.location.href, conn = null;
-      
+
          if (!pthis._use_longpoll && first_time) {
             path = path.replace("http://", "ws://");
             path = path.replace("https://", "wss://");
@@ -3430,6 +3430,12 @@
       }
 
       this.RedrawPad();
+   }
+
+   JSROOT.TFramePainter.prototype.Cleanup = function() {
+      if (this.draw_g) this.draw_g.selectAll("*").remove();
+      this.draw_g = null;
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
    JSROOT.TFramePainter.prototype.Redraw = function() {
@@ -5107,8 +5113,6 @@
       var first = snap.arr[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
 
-      // console.log('REDRAW SNAP');
-
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
@@ -5142,6 +5146,14 @@
          this.CreateCanvasSvg(2);
       } else {
          this.CreatePadSvg(true);
+      }
+
+      if (snap.arr.length === 1) {
+         console.log("Pad is empty - clean everything");
+         for (var k=0;k<this.painters.length;++k)
+            this.painters[k].Cleanup();
+         this.painters = [];
+         return JSROOT.CallBack(call_back, this);
       }
 
       // find and remove painters which no longer exists in the list
