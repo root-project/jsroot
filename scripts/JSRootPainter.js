@@ -2037,7 +2037,7 @@
 
          if (!defs.select("."+id).empty()) return true;
 
-         var patt = defs.append('svg:pattern').attr("id", id).attr("class",id).attr("patternUnits","userSpaceOnUse");
+         var patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse");
 
          switch (this.pattern) {
            case 3001:
@@ -4402,10 +4402,14 @@
    JSROOT.TPadPainter.prototype.Cleanup = function() {
       // cleanup only pad itself, all child elements will be collected and cleanup separately
 
-      var svg_p = this.svg_pad();
-      if (svg_p) {
+      for (var k=0;k<this.painters.length;++k)
+         this.painters[k].Cleanup();
+
+      var svg_p = this.svg_pad(this.this_pad_name);
+      if (!svg_p.empty()) {
          svg_p.property('pad_painter', null);
          svg_p.property('mainpainter', null);
+         if (!this.iscan) svg_p.remove();
       }
 
       this.painters = [];
@@ -4750,11 +4754,12 @@
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visisble rect
                     .on("dblclick", this.EnlargePad.bind(this))
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
+      }
 
-         if (!this.fillatt || !this.fillatt.changed)
-            this.fillatt = this.createAttFill(this.pad, 1001, 0);
-         if (!this.lineatt || !this.lineatt.changed)
-            this.lineatt = JSROOT.Painter.createAttLine(this.pad);
+      if (!this.fillatt || !this.fillatt.changed)
+         this.fillatt = this.createAttFill(this.pad, 1001, 0);
+      if (!this.lineatt || !this.lineatt.changed) {
+         this.lineatt = JSROOT.Painter.createAttLine(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
@@ -5078,8 +5083,10 @@
       var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
 
       if (painter) {
-         if (typeof painter.RedrawSnap === 'function')
+         if (typeof painter.RedrawSnap === 'function') {
+            console.log("Redraw snaps for pad", painter.this_pad_name);
             return painter.RedrawSnap(snap, draw_callback);
+         }
 
          if (snap.fKind === 1) { // object itself
             if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
@@ -5095,6 +5102,7 @@
       }
 
       if (subpad) {
+
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
          var padpainter = new JSROOT.TPadPainter(subpad, false);
@@ -5111,6 +5119,9 @@
             if (JSROOT.gStyle.ContextMenu)
               padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
          }
+
+         console.log("Create new subpad", padpainter.this_pad_name);
+
 
          // we select current pad, where all drawing is performed
          var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
@@ -5221,8 +5232,8 @@
       }
 
       if (!isanyfound) {
-         console.log("Clean everything in the canvas");
-         var svg_p = this.svg_pad();
+         console.log("Clean everything", this.this_pad_name);
+         var svg_p = this.svg_pad(this.this_pad_name);
          if (svg_p && !svg_p.empty())
             svg_p.property('mainpainter', null);
          for (var k=0;k<this.painters.length;++k)
