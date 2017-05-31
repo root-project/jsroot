@@ -1339,9 +1339,9 @@
              rect2 = this.get_visible_rect(enlarge);
 
          // if new enlarge area not big enough, do not do it
-         if ((rect2.width<=rect1.width) || (rect2.height<=rect1.height))
+         if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
             if (rect2.width*rect2.height < rect1.width*rect1.height) {
-               console.log('Enlarged area ' +rect2.width+"x"+rect2.height+' smaller then original drawing ' + rect1.width+"x"+rect1.height);
+               console.log('Enlarged area ' + rect2.width+"x"+rect2.height + ' smaller then original drawing ' + rect1.width+"x"+rect1.height);
                enlarge.remove();
                return false;
             }
@@ -4570,7 +4570,7 @@
 
       if (check_resize > 0) {
 
-         if (this._fixed_size) return false;
+         if (this._fixed_size) return (check_resize > 1); // flag used to force re-drawing of all subpads
 
          svg = this.svg_canvas();
 
@@ -4688,7 +4688,8 @@
       var svg_can = this.svg_canvas(),
           pad_enlarged = svg_can.property("pad_enlarged");
 
-      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw())) {
+      if (this.iscan || !this.has_canvas || (!pad_enlarged && !this.HasObjectsToDraw() && !this.painters)) {
+         if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlarge_main('toggle')) return;
          if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null);
       } else {
@@ -4704,7 +4705,7 @@
          }
       }
 
-      this.CheckResize({force:true});
+      this.CheckResize({ force: true });
    }
 
    JSROOT.TPadPainter.prototype.CreatePadSvg = function(only_resize) {
