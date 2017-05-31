@@ -5093,6 +5093,11 @@
       if (snap.fKind === 1) {
          var obj = snap.fSnapshot;
          if (obj) obj.$snapid = snap.fObjectID; // mark object itself, workaround for stats drawing
+
+         // TODO: frame should be created in histogram painters
+         if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty())
+            JSROOT.Painter.drawFrame(this.divid, null);
+
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
 
@@ -5149,8 +5154,6 @@
          if (this.enlarge_main('verify'))
             this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-         JSROOT.Painter.drawFrame(this.divid, null);
-
          this.DrawNextSnap(snap, 0, call_back);
 
          return;
@@ -5166,16 +5169,7 @@
          this.CreatePadSvg(true);
       }
 
-      if (snap.arr.length === 1) {
-         console.log("Pad is empty - clean everything");
-         var svg_p = this.svg_pad();
-         if (svg_p && !svg_p.empty())
-            svg_p.property('mainpainter', null);
-         for (var k=0;k<this.painters.length;++k)
-            this.painters[k].Cleanup();
-         this.painters = [];
-         return JSROOT.CallBack(call_back, this);
-      }
+      var isanyfound = false;
 
       // find and remove painters which no longer exists in the list
       for (var k=0;k<this.painters.length;++k) {
@@ -5183,13 +5177,23 @@
          if (sub.snapid===undefined) continue; // look only for painters with snapid
 
          for (var i=1;i<snap.arr.length;++i)
-            if (snap.arr[i].fObjectID === sub.snapid) { sub = null; break; }
+            if (snap.arr[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
          }
+      }
+
+      if (!isanyfound) {
+         console.log("Clean everything in the canvas");
+         var svg_p = this.svg_pad();
+         if (svg_p && !svg_p.empty())
+            svg_p.property('mainpainter', null);
+         for (var k=0;k<this.painters.length;++k)
+            this.painters[k].Cleanup();
+         this.painters = [];
       }
 
       this.DrawNextSnap(snap, 0, call_back, null); // update all snaps after each other
