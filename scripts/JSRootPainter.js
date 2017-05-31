@@ -1621,8 +1621,8 @@
    }
 
    /** This is SVG element with current frame */
-   JSROOT.TObjectPainter.prototype.svg_frame = function() {
-      return this.svg_pad().select(".root_frame");
+   JSROOT.TObjectPainter.prototype.svg_frame = function(pad_name) {
+      return this.svg_pad(pad_name).select(".root_frame");
    }
 
    JSROOT.TObjectPainter.prototype.frame_painter = function() {
@@ -2573,7 +2573,7 @@
 
             if (typeof pthis.RedrawSnap === 'function') {
                pthis.RedrawSnap(snap, function() {
-                  var reply = pthis.GetPadRanges();
+                  var reply = pthis.GetAllRanges();
                   console.log("ranges", reply);
                   conn.send(reply ? 'RREADY:' + reply : "READY" ); // send ready message back
                });
@@ -5050,7 +5050,7 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      if (objpainter && lst && lst.arr[indx]) {
+      if (objpainter && lst && lst.arr[indx] && (typeof objpainter.snapid === 'undefined')) {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
          objpainter.snapid = lst.arr[indx].fObjectID;
@@ -5067,7 +5067,7 @@
          objid = snap.arr[0].fObjectID;
       }
 
-      console.log('Draw next snap', snap._typename, "id", objid, "subpad", !!subpad);
+      // console.log('Draw next snap', snap._typename, "id", objid, "subpad", !!subpad);
 
       // first find existing painter for the object
       for (var k=0; k<this.painters.length; ++k) {
@@ -5095,7 +5095,6 @@
       }
 
       if (subpad) {
-         console.log("Drawing subpad", subpad.fName);
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
          var padpainter = new JSROOT.TPadPainter(subpad, false);
@@ -5131,7 +5130,7 @@
          if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty())
             JSROOT.Painter.drawFrame(this.divid, null);
 
-         console.log("drawing object", obj._typename);
+         // console.log("drawing object", obj._typename);
 
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
@@ -5236,18 +5235,33 @@
       // show we redraw all other painters without snapid?
    }
 
+   JSROOT.TPadPainter.prototype.GetAllRanges = function() {
+      var res = "";
+
+      if (this.snapid) {
+         res = this.GetPadRanges();
+         if (res) res = "id=" + this.snapid + ":" + res + ";";
+      }
+
+      for (var k=0;k<this.painters.length;++k)
+         if (typeof this.painters[k].GetAllRanges == "function")
+            res += this.painters[k].GetAllRanges();
+
+      return res;
+   }
 
    JSROOT.TPadPainter.prototype.GetPadRanges = function() {
       // function returns actual ranges in the pad, which can be applied to the server
-      var main = this.main_painter();
+      var main = this.main_painter(true, this.this_pad_name),
+          p = this.svg_pad(this.this_pad_name),
+          f = this.svg_frame(this.this_pad_name);
+
       if (!main) return "";
 
       var res1 = main.scale_xmin + ":" +
                  main.scale_xmax + ":" +
                  main.scale_ymin + ":" +
                  main.scale_ymax;
-
-      var f = this.svg_frame(), p = this.svg_pad();
 
       if (f.empty() || p.empty()) return res1 + ":" + res1;
 
