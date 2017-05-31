@@ -5050,8 +5050,6 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      // console.log('Draw next snap', indx);
-
       if (objpainter && lst && lst.arr[indx]) {
          // keep snap id in painter, will be used for the
          if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
@@ -5062,18 +5060,25 @@
 
       if (!lst || indx >= lst.arr.length) return JSROOT.CallBack(call_back, this);
 
-      var snap = lst.arr[indx], painter = null;
+      var snap = lst.arr[indx], painter = null, subpad = null, objid = snap.fObjectID;
+
+      if (!objid && snap._typename=="TList") {
+         subpad = snap.arr[0].fSnapshot;
+         objid = snap.arr[0].fObjectID;
+      }
+
+      console.log('Draw next snap', snap._typename, "id", objid, "subpad", !!subpad);
 
       // first find existing painter for the object
       for (var k=0; k<this.painters.length; ++k) {
-         if (this.painters[k].snapid === snap.fObjectID) { painter = this.painters[k]; break;  }
+         if (this.painters[k].snapid === objid) { painter = this.painters[k]; break;  }
       }
 
       // function which should be called when drawing of next item finished
       var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
 
       if (painter) {
-         if (typeof painter.RedrawSnap==='function')
+         if (typeof painter.RedrawSnap === 'function')
             return painter.RedrawSnap(snap, draw_callback);
 
          if (snap.fKind === 1) { // object itself
@@ -5089,6 +5094,34 @@
          return draw_callback(painter); // call next
       }
 
+      if (subpad) {
+         console.log("Drawing subpad", subpad.fName);
+         subpad.fPrimitives = null; // clear primitives, they just because of I/O
+
+         var padpainter = new JSROOT.TPadPainter(subpad, false);
+         padpainter.DecodeOptions(snap.arr[0].fOption);
+         padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
+         padpainter.snapid = objid;
+
+         padpainter.CreatePadSvg();
+
+         if (padpainter.MatchObjectType("TPad") && snap.arr.length > 1) {
+            padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+            padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+
+            if (JSROOT.gStyle.ContextMenu)
+              padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+         }
+
+         // we select current pad, where all drawing is performed
+         var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+         padpainter.DrawNextSnap(snap, 0, function() {
+            padpainter.CurrentPadName(prev_name);
+            draw_callback(padpainter);
+         });
+         return;
+      }
+
       // here the case of normal drawing, can be improved
       if (snap.fKind === 1) {
          var obj = snap.fSnapshot;
@@ -5097,6 +5130,8 @@
          // TODO: frame should be created in histogram painters
          if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty())
             JSROOT.Painter.drawFrame(this.divid, null);
+
+         console.log("drawing object", obj._typename);
 
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
