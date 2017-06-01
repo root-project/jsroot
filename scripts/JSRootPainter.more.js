@@ -695,7 +695,7 @@
              y1 = this.AxisToSvg("y", box.fY1, false),
              y2 = this.AxisToSvg("y", box.fY2, false);
 
-         // if box filled, contor line drawn only with "L" draw option:
+         // if box filled, contour line drawn only with "L" draw option:
          if ((fillatt.color != 'none') && !this.draw_line) lineatt.color = "none";
 
          this.draw_g
@@ -1416,7 +1416,7 @@
          if (!this.nostack)
             this.nostack = ! this.BuildStack();
 
-         // if any histogram appears with precalculated errors, use E for all histograms
+         // if any histogram appears with pre-calculated errors, use E for all histograms
          if (!this.nostack && this.haserrors && !d.check("HIST")) opt+= " E";
 
          // order used to display histograms in stack direct - true, reverse - false
@@ -1869,7 +1869,7 @@
          // first and last bins
          switch (drawbins.length) {
             case 0: break;
-            case 1: drawbins[0].width = w/4; break; // patalogic case of single bin
+            case 1: drawbins[0].width = w/4; break; // pathologic case of single bin
             case 2: drawbins[0].width = drawbins[1].width = (drawbins[1].grx1-drawbins[0].grx1)/2; break;
             default:
                drawbins[0].width = drawbins[1].width;
@@ -1941,7 +1941,7 @@
 
          this.error_size = lw;
 
-         lw = Math.floor((this.lineatt.width-1)/2); // one shoud take into account half of end-cup line width
+         lw = Math.floor((this.lineatt.width-1)/2); // one should take into account half of end-cup line width
          nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); })
              .append("svg:path")
              .call(this.lineatt.func)
@@ -2070,7 +2070,7 @@
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
-      res.menu_dist = 3; // distance alwyas fixed
+      res.menu_dist = 3; // distance always fixed
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -2178,7 +2178,7 @@
       res.changed = ttbin.property("current_bin") !== bestbin;
 
       if (res.changed) {
-         ttbin.selectAll("*").remove(); // first delete all childs
+         ttbin.selectAll("*").remove(); // first delete all children
          ttbin.property("current_bin", bestbin);
 
          if (ismark) {
@@ -2773,7 +2773,7 @@
          }
 
          function startRectSel() {
-            // ignore when touch selection is actiavated
+            // ignore when touch selection is activated
             if (doing_zoom) return;
             doing_zoom = true;
 
@@ -3627,7 +3627,7 @@
       var histo = this.GetObject(),
           kMAXCONTOUR = 404,
           kMAXCOUNT = 400,
-      // arguemnts used in he PaintContourLine
+      // arguments used in he PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
           itarr = new Int32Array(2*kMAXCONTOUR),
@@ -4148,7 +4148,7 @@
             if ((absz === 0) || (absz < absmin)) continue;
 
             zdiff = uselogz ? ((absz>0) ? Math.log(absz) - logmin : 0) : (absz - absmin);
-            // area of the box should be propotional to absolute bin content
+            // area of the box should be proportional to absolute bin content
             zdiff = 0.5 * ((zdiff < 0) ? 1 : (1 - Math.sqrt(zdiff * xyfactor)));
             // avoid oversized bins
             if (zdiff < 0) zdiff = 0;
@@ -4227,7 +4227,7 @@
           pmain = this.main_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt;
 
-      // candle option coded into string, which comes after candle indentifier
+      // candle option coded into string, which comes after candle identifier
       // console.log('Draw candle plot with option', this.options.Candle);
 
       var bars = "", markers = "";
@@ -4259,7 +4259,7 @@
             if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = this.GetBinY(j + 0.5); // Lower whisker
             if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = this.GetBinY(j + 0.5); // Lower edge of box
             if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = this.GetBinY(j + 0.5); //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = this.GetBinY(j + 0.5); //Uppeder edge of box
+            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = this.GetBinY(j + 0.5); //Upper edge of box
             if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = this.GetBinY(j + 0.5); // Upper whisker
             counter += cont;
             y = this.GetBinY(j + 0.5); // center of y bin coordinate
@@ -4272,7 +4272,7 @@
 
 //       console.log('Whisker before ' + pnt.whiskerm + '/' + pnt.whiskerp);
 
-         //Whsikers cannot exceed 1.5*iqr from box
+         //Whiskers cannot exceed 1.5*iqr from box
          if ((pnt.m25y-1.5*pnt.iqr) > pnt.whsikerm)  {
             pnt.whiskerm = pnt.m25y-1.5*pnt.iqr;
          }
@@ -4617,7 +4617,7 @@
           ttrect = this.draw_g.select(".tooltip_bin");
 
       if (h.poly) {
-         // process toolltips from TH2Poly
+         // process tooltips from TH2Poly
 
          var pmain = this.main_painter(),
              realx, realy, foundindx = -1;
