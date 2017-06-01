@@ -3435,7 +3435,14 @@
    }
 
    JSROOT.TFramePainter.prototype.Cleanup = function() {
-      if (this.draw_g) this.draw_g.selectAll("*").remove();
+      if (this.draw_g) {
+         this.draw_g.selectAll("*").remove();
+         this.draw_g.on("mousedown", null)
+                    .on("dblclick", null)
+                    .on("wheel", null)
+                    .on("contextmenu", null)
+                    .property('interactive_set', null);
+      }
       this.draw_g = null;
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
@@ -8159,8 +8166,9 @@
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
          }
-         if (JSROOT.gStyle.ZoomWheel)
+         if (JSROOT.gStyle.ZoomWheel) {
             svg.on("wheel", this.mouseWheel.bind(this));
+         }
       }
 
       if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch) || JSROOT.gStyle.ContextMenu))
