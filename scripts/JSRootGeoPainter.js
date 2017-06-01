@@ -177,7 +177,7 @@
 
       buttonList.push({
          name: 'enlarge',
-         title: 'Emlarge geometry drawing',
+         title: 'Enlarge geometry drawing',
          icon: JSROOT.ToolbarIcons.circle,
          click: function() { painter.ToggleEnlarge(); }
       });
@@ -244,7 +244,7 @@
                    highlight: false, select_in_view: false,
                    project: '', is_main: false, tracks: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
-                   script_name: "", transparancy: 0, autoRotate: false, background: '#FFFFFF',
+                   script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "box" };
 
       var _opt = JSROOT.GetUrlOption('_grid');
@@ -338,10 +338,10 @@
       if (d.check("COUNT")) res._count = true;
 
       if (d.check('TRANSP',true))
-         res.transparancy = d.partAsInt(0,100)/100;
+         res.transparency = d.partAsInt(0,100)/100;
 
       if (d.check('OPACITY',true))
-         res.transparancy = 1 - d.partAsInt(0,100)/100;
+         res.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check("AXISCENTER") || d.check("AC")) { res._axis = true; res._axis_center = true; }
 
@@ -464,7 +464,7 @@
       });
    }
 
-   JSROOT.TGeoPainter.prototype.changeGlobalTransparancy = function(transparency, skip_render) {
+   JSROOT.TGeoPainter.prototype.changeGlobalTransparency = function(transparency, skip_render) {
       var value = 1 - transparency;
       this._toplevel.traverse( function (node) {
          if (node instanceof THREE.Mesh) {
@@ -571,8 +571,8 @@
          if (!value) painter.HighlightMesh(null);
      });
 
-      appearance.add(this.options, 'transparancy', 0.0, 1.0)
-                     .listen().onChange(this.changeGlobalTransparancy.bind(this));
+      appearance.add(this.options, 'transparency', 0.0, 1.0)
+                     .listen().onChange(this.changeGlobalTransparency.bind(this));
 
       appearance.add(this.options, 'wireframe').name('Wireframe').listen().onChange( function (value) {
          painter.changeWireFrame(painter._scene, painter.options.wireframe);
@@ -730,7 +730,7 @@
                   // intersects[arg].object.visible = false;
                   // this.Render3D();
 
-                  this.testGeomChanges();// while many volumes may disapper, recheck all of them
+                  this.testGeomChanges();// while many volumes may disappear, recheck all of them
                });
 
                if (many) menu.add("endsub:");
@@ -1218,7 +1218,7 @@
 
             // keep full stack of nodes
             mesh.stack = entry.stack;
-            mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparancy handling
+            mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
 
             // keep hierarchy level
             mesh.$jsroot_order = obj3d.$jsroot_depth;
@@ -1478,7 +1478,7 @@
                                 depthTest: true
                               };
 
-      // Smooth Lighting Shader (Screen Space Ambient Occulsion)
+      // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
       this._enableSSAO = this.options.ssao;
@@ -2596,7 +2596,7 @@
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
 
-         // when using SVGrenderer producint text output, provide result
+         // when using SVGrenderer producing text output, provide result
          if (this._renderer.workaround_id !== undefined)
             JSROOT.svg_workaround[this._renderer.workaround_id] = this._renderer.outerHTML;
 
@@ -2882,8 +2882,8 @@
             this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
-      if (this.options.transparancy!==0)
-         this.changeGlobalTransparancy(this.options.transparancy, true);
+      if (this.options.transparency!==0)
+         this.changeGlobalTransparency(this.options.transparency, true);
 
       this.completeScene();
 
