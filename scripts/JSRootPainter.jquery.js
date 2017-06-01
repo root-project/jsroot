@@ -642,7 +642,7 @@
    }
 
    JSROOT.HierarchyPainter.prototype.direct_contextmenu = function(elem) {
-      // this is alterntaive context menu, used in the object inspector
+      // this is alternative context menu, used in the object inspector
 
       d3.event.preventDefault();
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');
@@ -1290,7 +1290,7 @@
       this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
       if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
 
-      var frame_titles = ['object name','object title','mouse coordiantes','object info'];
+      var frame_titles = ['object name','object title','mouse coordinates','object info'];
       for (var k=0;k<4;++k)
          d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");

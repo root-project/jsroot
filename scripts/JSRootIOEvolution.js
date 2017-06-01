@@ -163,7 +163,7 @@
 
       while (fullres < tgtsize) {
 
-         var fmt = "uncknown", off = 0, HDRSIZE = 9;
+         var fmt = "unknown", off = 0, HDRSIZE = 9;
 
          if (curr + HDRSIZE >= totallen) {
             if (!noalert) JSROOT.alert("Error R__unzip: header size exceeds buffer size");
@@ -210,7 +210,7 @@
       this.arr = arr;
       this.o = pos || 0;
       this.fFile = file;
-      this.length = length || (arr ? arr.byteLength : 0); // use size of arrayview, blob buffer can be much bigger
+      this.length = length || (arr ? arr.byteLength : 0); // use size of array view, blob buffer can be much bigger
       this.ClearObjectMap();
       this.fTagOffset = 0;
       this.last_read_version = 0;
@@ -261,7 +261,7 @@
       if (bytecnt & JSROOT.IO.kByteCountMask)
          ver.bytecnt = bytecnt - JSROOT.IO.kByteCountMask - 2; // one can check between Read version and end of streamer
       else
-         this.o -= 4; // rollback read bytes, this is old buffer without bytecount
+         this.o -= 4; // rollback read bytes, this is old buffer without byte count
 
       this.last_read_version = ver.val = this.ntoi2();
       this.last_read_checksum = 0;
@@ -689,7 +689,7 @@
       // method can be used to reconstruct ROOT object from binary buffer
       // Buffer can be requested from online server with request like:
       //   http://localhost:8080/Files/job1.root/hpx/root.bin
-      // One also requires buffer with streamer infos, reqeusted with command
+      // One also requires buffer with streamer infos, requested with command
       //   http://localhost:8080/StreamerInfo/root.bin
       // And one should provide class name of the object
       //
@@ -832,7 +832,7 @@
       this.fURL = url;
       this.fAcceptRanges = true; // when disabled ('+' at the end of file name), complete file content read with single operation
       this.fUseStampPar = "stamp="+(new Date).getTime(); // use additional time stamp parameter for file name to avoid browser caching problem
-      this.fFileContent = null; // this can be full or parial content of the file (if ranges are not supported or if 1K header read from file)
+      this.fFileContent = null; // this can be full or partial content of the file (if ranges are not supported or if 1K header read from file)
                                 // stored as TBuffer instance
       this.fMaxRanges = 200; // maximal number of file ranges requested at once
       this.fDirectories = [];
@@ -892,7 +892,7 @@
          return result_callback(this.fFileContent.extract(place));
 
       var file = this, fileurl = file.fURL,
-          first = 0, last = 0, blobs = [], read_callback; // array of requested segemnts
+          first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
       if (filename && (typeof filename === 'string') && (filename.length>0)) {
          var pos = fileurl.lastIndexOf("/");
@@ -964,7 +964,7 @@
 
          if (!res) {
             if ((first===0) && (last > 2) && (file.fMaxRanges>1)) {
-               // server return no response with multirequest - try to decrease ranges count or fail
+               // server return no response with multi request - try to decrease ranges count or fail
 
                if (last/2 > 200) file.fMaxRanges = 200; else
                if (last/2 > 50) file.fMaxRanges = 50; else
@@ -2008,7 +2008,7 @@
             }
 
             if (!member.readelem) {
-               JSROOT.console('failed to crteate streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
+               JSROOT.console('failed to create streamer for element ' + member.typename  + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
                member.func = function(buf,obj) {
                   var ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
@@ -2825,7 +2825,7 @@
 
          var n = buf.ntou4(), streamer = null, ver = this.stl_version;
 
-         if (n===0) return []; // for empty vector no need to search splitted streamers
+         if (n===0) return []; // for empty vector no need to search split streamers
 
          if (n>1000000) {
             throw new Error('member-wise streaming of ' + this.conttype + " num " + n + ' member ' + this.name);
@@ -2847,7 +2847,7 @@
          for (i=0;i<n;++i)
             res[i] = { _typename: this.conttype }; // create objects
          if (!streamer) {
-            console.error('Fail to create splitted streamer for', this.conttype, 'need to read ', n, 'objects version', ver );
+            console.error('Fail to create split streamer for', this.conttype, 'need to read ', n, 'objects version', ver );
          } else {
             for (k=0;k<streamer.length;++k) {
                member = streamer[k];
