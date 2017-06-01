@@ -5075,8 +5075,6 @@
 
       var snap = lst[indx], painter = null, subpad = null, objid = snap.fObjectID;
 
-      console.log("Snap", snap._typename, "id", objid);
-
       if ((snap._typename == "TPadWebSnapshot" || snap._typename == "TPadSnapshot") && snap.fPrimitives) {
          subpad = snap.fPrimitives[0].fSnapshot;
          objid = snap.fPrimitives[0].fObjectID;
@@ -5094,7 +5092,6 @@
 
       if (painter) {
          if (typeof painter.RedrawPadSnap === 'function') {
-            console.log("Redraw snaps for pad", painter.this_pad_name);
             return painter.RedrawPadSnap(snap, draw_callback);
          }
 
@@ -5184,14 +5181,10 @@
       // as first entry, graphical properties of canvas itself is provided
       // in ROOT6 it also includes primitives, but we ignore them
 
-      console.log("RedrawPadSnap");
-
       if (!snap || !snap.fPrimitives) return;
 
       var first = snap.fPrimitives[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
-
-      console.log("start with pad", first.fName);
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
@@ -5201,6 +5194,9 @@
          this.draw_object = first;
          this.pad = first;
          this._fixed_size = true;
+
+         // case of ROOT7 with always dummy TPad as first entry
+         if (!first.fCw || !first.fCh) this._fixed_size = false;
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
