@@ -2841,7 +2841,7 @@
 
    JSROOT.TObjectPainter.prototype.GetShowStatusFunc = function() {
       // return function used to display object status
-      // automatically disabled when drawing is enlarged - status line will be inisible
+      // automatically disabled when drawing is enlarged - status line will be invisible
 
       var pp = this.pad_painter(), res = JSROOT.Painter.ShowStatus;
 
@@ -2879,7 +2879,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
-      // try to find painter for sepcified object
+      // try to find painter for specified object
       // can be used to find painter for some special objects, registered as
       // histogram functions
 
@@ -2949,7 +2949,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
-      // we need to preserve font to be able rescle at the end
+      // we need to preserve font to be able rescale at the end
 
       if (!draw_g) draw_g = this.draw_g;
 
@@ -2973,7 +2973,7 @@
    }
 
    JSROOT.TObjectPainter.prototype.GetBoundarySizes = function(elem) {
-      // getBBox does not work in mozilla when object is not displayed or not visisble :(
+      // getBBox does not work in mozilla when object is not displayed or not visible :(
       // getBoundingClientRect() returns wrong sizes for MathJax
       // are there good solution?
 
@@ -3620,7 +3620,7 @@
             hints[n] = null; continue;
          }
 
-         // check if fully duplicated hint already exsits
+         // check if fully duplicated hint already exists
          for (var k=0;k<n;++k) {
             var hprev = hints[k], diff = false;
             if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
@@ -3726,8 +3726,8 @@
          hintsg.selectAll("*").remove();
       }
 
-      var curry = 10, // normal y coordiante
-          gapy = 10, // y coordiante, taking into account all gaps
+      var curry = 10, // normal y coordinate
+          gapy = 10,  // y coordinate, taking into account all gaps
           gapminx = -1111, gapmaxx = -1111;
 
       function FindPosInGap(y) {
@@ -4374,7 +4374,7 @@
    JSROOT.TPadPainter = function(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.pad = pad;
-      this.iscan = iscan; // indicate if workign with canvas
+      this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
       if (!this.iscan && (pad !== null) && ('fName' in pad))
          this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
@@ -4441,7 +4441,7 @@
 
          this.status_layout = new JSROOT.GridDisplay(footer.node(), 'horizx4_1213');
 
-         var frame_titles = ['object name','object title','mouse coordiantes','object info'];
+         var frame_titles = ['object name','object title','mouse coordinates','object info'];
          for (var k=0;k<4;++k)
             d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
             .append("label").attr("class","jsroot_status_label");
@@ -4718,7 +4718,7 @@
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
 
          if (!JSROOT.BatchMode)
-            svg_rect.attr("pointer-events", "visibleFill") // get events also for not visisble rect
+            svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", this.EnlargePad.bind(this))
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
 
@@ -4921,7 +4921,7 @@
          showsubitems = this.CreatePadSvg(true);
       }
 
-      // even sub-pad is not visisble, we should redraw sub-sub-pads to hide them as well
+      // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
          var sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
@@ -5092,7 +5092,7 @@
    }
 
    JSROOT.TPadPainter.prototype.RedrawSnap = function(snap, call_back) {
-      // for the canvas snapshot constains list of objects
+      // for the canvas snapshot contains list of objects
       // as first entry, graphical properties of canvas itself is provided
       // in ROOT6 it also includes primitives, but we ignore them
 
@@ -5237,7 +5237,7 @@
 //      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
            // this was saving of image buffer from 3D render
 //         var canvas = main.renderer.domElement;
-//         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immedaitely
+//         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
 //         var dataUrl = canvas.toDataURL("image/png");
 //         dataUrl.replace("image/png", "image/octet-stream");
 //         var link = document.createElement('a');
@@ -5917,7 +5917,7 @@
             h1 = Math.round(tickSize/2);
 
          if (handle.kind == 1) {
-            // if not showing lables, not show large tick
+            // if not showing labels, not show large tick
             if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
@@ -6037,7 +6037,7 @@
                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
 
      if ((textscale>0) && (textscale<1.)) {
-        // rotate X lables if they are too big
+        // rotate X labels if they are too big
         if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
            label_g.selectAll("text").each(function() {
               var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
@@ -6821,7 +6821,7 @@
    }
 
    JSROOT.THistPainter.prototype.CreateXY = function() {
-      // here we create x,y objects which maps our physical coordnates into pixels
+      // here we create x,y objects which maps our physical coordinates into pixels
       // while only first painter really need such object, all others just reuse it
       // following functions are introduced
       //    this.GetBin[X/Y]  return bin coordinate
@@ -6953,7 +6953,7 @@
          this.gry = function(val) { return this.y(this.ConvertY(val)); }
       } else
       if (this.logy) {
-         // make protecttion for log
+         // make protection for log
          this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
       } else {
          this.gry = this.y;
@@ -7200,7 +7200,7 @@
 
       if (statpainter) {
          statpainter.Enabled = !statpainter.Enabled;
-         // when stat box is drawed, it always can be draw individualy while it
+         // when stat box is drawn, it always can be drawn individually while it
          // should be last for colz RedrawPad is used
          statpainter.Redraw();
          return statpainter.Enabled;
@@ -7217,7 +7217,7 @@
    }
 
    JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
-      // be aware - here indexs starts from 0
+      // be aware - here indexes starts from 0
       var indx = 0, obj = this.main_painter();
       if (!obj) obj = this;
       var nbin = this['nbins'+axis];
@@ -7385,7 +7385,7 @@
       function UzoomMinMax(ndim, hist) {
          if (painter.Dimension()!==ndim) return false;
          if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
-         if (!painter.draw_content) return false; // if not drawin content, not change min/max
+         if (!painter.draw_content) return false; // if not drawing content, not change min/max
          painter.options.minimum = painter.options.maximum = -1111;
          painter.ScanContent(true); // to reset ymin/ymax
          return true;
@@ -7559,7 +7559,7 @@
    }
 
    JSROOT.THistPainter.prototype.startRectSel = function() {
-      // ignore when touch selection is actiavated
+      // ignore when touch selection is activated
 
       if (this.zoom_kind > 100) return;
 
@@ -8007,7 +8007,7 @@
       this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
       this.zoom_rect = null;
       this.zoom_origin = null;  // original point where zooming started
-      this.zoom_curr = null;    // current point for zomming
+      this.zoom_curr = null;    // current point for zooming
       this.touch_cnt = 0;
 
       if (JSROOT.gStyle.Zooming) {
@@ -8163,13 +8163,13 @@
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
          var domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
-         // fill frame menu by default - or append frame elements when actiavted in the frame corner
+         // fill frame menu by default - or append frame elements when activated in the frame corner
          if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
             domenu = fp.FillContextMenu(menu);
 
          if (domenu)
             menu.painter.FillObjectExecMenu(menu, function() {
-                // suppress any running zomming
+                // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
                 menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
             });
@@ -8296,9 +8296,9 @@
             main.tooltip_allowed = !main.tooltip_allowed;
          });
 
-         menu.addchk(main.enable_hightlight, 'Hightlight bins', function() {
-            main.enable_hightlight = !main.enable_hightlight;
-            if (!main.enable_hightlight && main.BinHighlight3D) main.BinHighlight3D(null);
+         menu.addchk(main.enable_highlight, 'Highlight bins', function() {
+            main.enable_highlight = !main.enable_highlight;
+            if (!main.enable_highlight && main.BinHighlight3D) main.BinHighlight3D(null);
          });
 
          menu.addchk(main.options.FrontBox, 'Front box', function() {
@@ -9497,7 +9497,7 @@
              use_pad = true, latex_kind = 0, fact = 1.;
 
          if (text.TestBit(JSROOT.BIT(14))) {
-            // NDC coordiantes
+            // NDC coordinates
             pos_x = pos_x * w;
             pos_y = (1 - pos_y) * h;
          } else
@@ -10060,7 +10060,7 @@
 
                file.ReadObject(itemname, function(obj) {
 
-                  // if object was read even when item didnot exist try to reconstruct new hierarchy
+                  // if object was read even when item did not exist try to reconstruct new hierarchy
                   if ((item==null) && (obj!=null)) {
                      // first try to found last read directory
                      var d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
@@ -10198,7 +10198,7 @@
          }
 
          if (arg.force) {
-             // if didnot found element with given name we just generate it
+             // if did not found element with given name we just generate it
              if (top._childs === undefined) top._childs = [];
              pos = fullname.indexOf("/");
              var child = { _name: ((pos < 0) ? fullname : fullname.substr(0, pos)) };
@@ -11826,7 +11826,7 @@
          if (sett.opts)
             menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;
-               var obj = hitem._obj, divid = this.divid; // need to remember while many references will be removed (inluding _obj)
+               var obj = hitem._obj, divid = this.divid; // need to remember while many references will be removed (including _obj)
                JSROOT.cleanup(divid);
                JSROOT.draw(divid, obj, arg);
             });
@@ -11868,14 +11868,14 @@
 
    JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
       // method dedicated to iterate over existing panels
-      // provided userfunc is called with arguemnts (frame)
+      // provided userfunc is called with arguments (frame)
 
       console.warn("ForEachFrame not implemented in MDIDisplay");
    }
 
    JSROOT.MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
       // method dedicated to iterate over existing panles
-      // provided userfunc is called with arguemnts (painter, frame)
+      // provided userfunc is called with arguments (painter, frame)
 
       this.ForEachFrame(function(frame) {
          var dummy = new JSROOT.TObjectPainter();
@@ -12533,7 +12533,7 @@
       if ((handle.painter_kind === undefined) && (prereq.length > 0))
          handle.painter_kind = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
 
-      // try to find function without prerequisisties
+      // try to find function without prerequisites
       var func = JSROOT.findFunction(funcname);
       if (func) {
           handle.func = func; // remember function once it is found
@@ -12554,7 +12554,7 @@
          handle.func = func; // remember function once it found
 
          if (performDraw() !== painter)
-            alert('Painter function ' + funcname + ' do not follow rules of dynamicaly loaded painters');
+            alert('Painter function ' + funcname + ' do not follow rules of dynamically loaded painters');
       });
 
       return painter;
@@ -12606,7 +12606,7 @@
    /** @fn JSROOT.MakeSVG(args, callback)
     * Create SVG for specified args.object and args.option
     * One could provide args.width and args.height as size options.
-    * As callback arguemnt one gets SVG code */
+    * As callback argument one gets SVG code */
    JSROOT.MakeSVG = function(args, callback) {
 
       if (!args) args = {};
@@ -12670,7 +12670,7 @@
    }
 
    // Check resize of drawn element
-   // As first argument divid one should use same argment as for the drawing
+   // As first argument divid one should use same argument as for the drawing
    // As second argument, one could specify "true" value to force redrawing of
    // the element even after minimal resize of the element
    // Or one just supply object with exact sizes like { width:300, height:200, force:true };
