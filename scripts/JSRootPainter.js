@@ -5073,27 +5073,17 @@
 
       if (!lst || indx >= lst.length) return JSROOT.CallBack(call_back, this);
 
-      var snap = lst[indx], painter = null, subpad = null, objid = snap.fObjectID;
-
-      if ((snap._typename == "TPadWebSnapshot" || snap._typename == "TPadSnapshot") && snap.fPrimitives) {
-         subpad = snap.fPrimitives[0].fSnapshot;
-         objid = snap.fPrimitives[0].fObjectID;
-      }
-
-      // console.log('Draw next snap', snap._typename, "id", objid, "subpad", !!subpad);
+      var snap = lst[indx], painter = null;
 
       // first find existing painter for the object
       for (var k=0; k<this.painters.length; ++k) {
-         if (this.painters[k].snapid === objid) { painter = this.painters[k]; break;  }
+         if (this.painters[k].snapid === snap.fObjectID) { painter = this.painters[k]; break;  }
       }
 
       // function which should be called when drawing of next item finished
       var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
 
       if (painter) {
-         if (typeof painter.RedrawPadSnap === 'function') {
-            return painter.RedrawPadSnap(snap, draw_callback);
-         }
 
          if (snap.fKind === 1) { // object itself
             if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
@@ -5105,17 +5095,25 @@
             return draw_callback(painter); // call next
          }
 
+         if (snap.fKind === 3) { // subpad
+            return painter.RedrawPadSnap(snap, draw_callback);
+         }
+
          return draw_callback(painter); // call next
       }
 
-      if (subpad) {
+      if (snap.fKind === 3) { // subpad
+
+         if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
+
+         var subpad = snap.fPrimitives[0].fSnapshot;
 
          subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
          var padpainter = new JSROOT.TPadPainter(subpad, false);
          padpainter.DecodeOptions(snap.fPrimitives[0].fOption);
          padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
-         padpainter.snapid = objid;
+         padpainter.snapid = snap.fObjectID;
 
          padpainter.CreatePadSvg();
 
@@ -5127,7 +5125,7 @@
               padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
          }
 
-         console.log("Create new subpad", padpainter.this_pad_name);
+         // console.log("Create new subpad", padpainter.this_pad_name);
 
          // we select current pad, where all drawing is performed
          var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
@@ -5182,6 +5180,9 @@
       // in ROOT6 it also includes primitives, but we ignore them
 
       if (!snap || !snap.fPrimitives) return;
+
+      // VERY BAD, NEED TO BE FIXED IN TBufferJSON
+      if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
 
       var first = snap.fPrimitives[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
@@ -5250,7 +5251,15 @@
          this.painters = [];
       }
 
-      this.DrawNextSnap(snap.fPrimitives, 0, call_back, null); // update all snaps after each other
+      var padpainter = this,
+           prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+
+      padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+          padpainter.CurrentPadName(prev_name);
+          call_back(padpainter);
+      });
+
+      // this.DrawNextSnap(snap.fPrimitives, 0, call_back, null); // update all snaps after each other
 
       // show we redraw all other painters without snapid?
    }
