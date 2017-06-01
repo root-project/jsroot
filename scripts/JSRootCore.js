@@ -148,7 +148,7 @@
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
          DragAndDrop : true,  // enables drag and drop functionality
          ToolBar : 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
-         CanEnlarge : true,  // if drawing inside particular div can be enrlarged on full window
+         CanEnlarge : true,  // if drawing inside particular div can be enlarged on full window
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat : true,
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
@@ -161,9 +161,9 @@
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
-         HierarchyLimit : 250,   // how many items shown on one level of hierarhcy
+         HierarchyLimit : 250,   // how many items shown on one level of hierarchy
 
-         // these are TStyle attributes, which can be chenged via URL 'style' parameter
+         // these are TStyle attributes, which can be changed via URL 'style' parameter
 
          fPadBottomMargin : 0.1,
          fPadTopMargin : 0.1,
@@ -567,7 +567,7 @@
          res.push(val); return res;
       }
 
-      // try to split ourself, checking quotes and brackes
+      // try to split ourself, checking quotes and brackets
       var nbr = 0, nquotes = 0, ndouble = 0, last = 1;
 
       for (var indx = 1; indx < val.length; ++indx) {
@@ -891,7 +891,7 @@
       // 'more2d'  extra 2d graphic (TH2, TGraph)
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
-      //   'jq2d'  jQuery-dependend part of 2d graphic
+      //   'jq2d'  jQuery-dependent part of 2d graphic
       //     '3d'  histograms 3d graphic
       //   'geom'  TGeo support
       // 'simple'  for basic user interface
@@ -934,7 +934,7 @@
           need_jquery = false,
           use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
-          extrafiles = "", // scripts for direct loadin
+          extrafiles = "", // scripts for direct loading
           modules = [],  // modules used for require.js
           load_callback = normal_callback;
 
@@ -1109,7 +1109,7 @@
 
    // function can be used to draw supported ROOT classes,
    // required functionality will be loaded automatically
-   // if painter pointer required, one should load '2d' functionlity itself
+   // if painter pointer required, one should load '2d' functionality itself
    // or use callback function which provides painter pointer as first argument
    JSROOT.draw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
@@ -1640,7 +1640,7 @@
       }
 
       if ((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) {
-         // check if point inside figure specified by the TGrpah
+         // check if point inside figure specified by the TGraph
          m.IsInside = function(xp,yp) {
             var i, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
 
@@ -1672,7 +1672,7 @@
             return Math.sqrt(Math.abs(this.fArray[bin]));
          };
          m.setBinContent = function(bin, content) {
-            // Set bin content - only trival case, without expansion
+            // Set bin content - only trivial case, without expansion
             this.fEntries++;
             this.fTsumw = 0;
             if ((bin>=0) && (bin<this.fArray.length))

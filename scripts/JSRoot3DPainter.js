@@ -1003,7 +1003,7 @@
 */
 
       this.Get3DZoomCoord = function(point, kind) {
-         // return axis coordinate from intersecetion point with axis geometry
+         // return axis coordinate from intersection point with axis geometry
          var pos = point[kind], min = this['scale_'+kind+'min'], max = this['scale_'+kind+'max'];
 
          if (kind==="z") pos = pos/2/this.size_z3d;
@@ -2704,7 +2704,7 @@
             console.log('First render tm = ' + this.first_render_tm);
          }
 
-         // when using SVGrenderer producint text output, provide result
+         // when using SVGrenderer producing text output, provide result
          if (this.renderer.workaround_id !== undefined)
             JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.outerHTML;
 
@@ -3402,7 +3402,7 @@
                       biny = this.GetBinY(j+Math.random()),
                       binz = this.GetBinZ(k+Math.random());
 
-                  // remeber bin index for tooltip
+                  // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
                   pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
@@ -3635,7 +3635,7 @@
 
                binz = this.GetBinZ(k+0.5); grz = this.grz(binz);
 
-               // remeber bin index for tooltip
+               // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
 
                var vvv = nbins * buffer_size, bin_v = bin_verts[nseq], bin_n = bin_norms[nseq];
