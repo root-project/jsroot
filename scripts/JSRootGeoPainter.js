@@ -916,7 +916,10 @@
 
          if (!resolve || !resolve.obj) return tooltip;
 
-         return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, line: tooltip };
+         var lines = JSROOT.GEO.provideInfo(resolve.obj);
+         lines.unshift(tooltip);
+
+         return { name: resolve.obj.fName, title: resolve.obj.fTitle || resolve.obj._typename, lines: lines };
       }
 
       this._controls.ProcessMouseLeave = function() {

@@ -126,7 +126,9 @@
          if (v && (typeof v =='object') && (v.lines || v.line)) {
             if (v.only_status) return this.hide();
 
-            if (v.line) { v = v.line; } else {
+            if (v.line) {
+               v = v.line;
+            } else {
                var res = v.lines[0];
                for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
                v = res;
@@ -370,11 +372,12 @@
              tip = this.ProcessMouseMove(intersects),
              status_func = this.painter.GetShowStatusFunc();
 
-
          if (tip && status_func) {
             var name = "", title = "", coord = "", info = "";
             if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
-            if (typeof tip == "string") info = tip; else {
+            if (typeof tip == "string") {
+               info = tip;
+            } else {
                name = tip.name; title = tip.title;
                if (tip.line) info = tip.line; else
                if (tip.lines) { info = tip.lines.slice(1).join(' '); name = tip.lines[0]; }

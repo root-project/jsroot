@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Provide shape parameters in TGeo tooltips
+
+
 ## Changes in 5.2.0
 1. Basic JSROOT functionality can be used in Node.js:
        var jsroot = require("path/to/JSRootCore.js");

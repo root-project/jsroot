@@ -1879,6 +1879,85 @@
       return limit < 0 ? 0 : null;
    }
 
+   /** Provides info about geo object, used for tooltip info */
+   JSROOT.GEO.provideInfo = function(obj) {
+      var info = [], shape = null;
+
+      if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
+      if (obj.fShape !== undefined) shape = obj.fShape; else
+      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) shape = obj;
+
+      if (!shape) {
+         info.push(obj._typename);
+         return info;
+      }
+
+      var sz = Math.max(shape.fDX, shape.fDY, shape.fDZ);
+      var useexp = (sz>1e7) || (sz<1e-7);
+
+      function conv(v) {
+         if (v===undefined) return "???";
+         if ((v==Math.round(v) && v<1e7)) return Math.round(v);
+         return useexp ? v.toExponential(4) : v.toPrecision(7);
+      }
+
+      info.push(shape._typename);
+
+      info.push("DX="+conv(shape.fDX) + " DY="+conv(shape.fDY) + " DZ="+conv(shape.fDZ));
+
+      switch (shape._typename) {
+         case "TGeoBBox": break;
+         case "TGeoPara": info.push("Alpha=" + shape.fAlpha + " Phi=" + shape.fPhi + " Theta=" + shape.fTheta); break;
+         case "TGeoTrd2": info.push("Dy1=" + conv(shape.fDy1) + " Dy2=" + conv(shape.fDy1));
+         case "TGeoTrd1": info.push("Dx1=" + conv(shape.fDx1) + " Dx2=" + conv(shape.fDx1)); break;
+         case "TGeoArb8": break;
+         case "TGeoTrap": break;
+         case "TGeoGtra": break;
+         case "TGeoSphere":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+            info.push("Theta1=" + shape.fTheta1 + " Theta2=" + shape.fTheta2);
+            break;
+         case "TGeoConeSeg":
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         case "TGeoCone":
+            info.push("Rmin1=" + conv(shape.fRmin1) + " Rmax1=" + conv(shape.fRmax1));
+            info.push("Rmin2=" + conv(shape.fRmin2) + " Rmax2=" + conv(shape.fRmax2));
+            break;
+         case "TGeoCtub":
+         case "TGeoTubeSeg":
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         case "TGeoEltu":
+         case "TGeoTube":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            break;
+         case "TGeoTorus":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("Phi1=" + shape.fPhi1 + " Dphi=" + shape.fDphi);
+            break;
+         case "TGeoPcon":
+         case "TGeoPgon": break;
+         case "TGeoXtru": break;
+         case "TGeoParaboloid":
+            info.push("Rlo=" + conv(shape.fRlo) + " Rhi=" + conv(shape.fRhi));
+            info.push("A=" + conv(shape.fA) + " B=" + conv(shape.fB));
+            break;
+         case "TGeoHype":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("StIn=" + conv(shape.fStIn) + " StOut=" + conv(shape.fStOut));
+            break;
+         case "TGeoCompositeShape": break;
+         case "TGeoShapeAssembly": break;
+         case "TGeoScaledShape":
+            info = JSROOT.GEO.provideInfo(shape.fShape);
+            if (shape.fScale)
+               info.unshift('Scale X=' + shape.fScale.fScale[0] + " Y=" + shape.fScale.fScale[1] + " Z=" + shape.fScale.fScale[2]);
+            break;
+      }
+
+      return info;
+   }
+
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
       var cameraProjectionMatrix = new THREE.Matrix4();
