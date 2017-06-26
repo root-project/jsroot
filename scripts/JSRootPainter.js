@@ -4385,9 +4385,7 @@
       painter.Redraw();
 
       // drawing ready handled in special painters, if not exists - drawing is done
-      if (!this.PaveDrawFunc) painter.DrawingReady();
-
-      return painter;
+      return this.PaveDrawFunc ? painter.DrawingReady() : painter;
    }
 
    // ===========================================================================
@@ -12716,8 +12714,10 @@
 
          handle.func = func; // remember function once it found
 
-         if (performDraw() !== painter)
-            alert('Painter function ' + funcname + ' do not follow rules of dynamically loaded painters');
+         performDraw();
+
+         //if (performDraw() !== painter)
+         //   alert('Painter function ' + funcname + ' do not follow rules of dynamically loaded painters');
       });
 
       return painter;

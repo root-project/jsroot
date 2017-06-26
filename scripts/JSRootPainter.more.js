@@ -4845,7 +4845,6 @@
       this.DrawBins();
 
       // redraw palette till the end when contours are available
-      // if (pp) pp.WhenReady( function() { pp.DrawPave(); });
       if (pp) pp.DrawPave();
 
       this.DrawTitle();
@@ -4891,33 +4890,33 @@
 
    JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
       // create painter and add it to canvas
-      JSROOT.extend(this, new JSROOT.TH2Painter(histo));
+      var painter = new JSROOT.TH2Painter(histo);
 
-      this.SetDivId(divid, 1);
+      painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
-      this.options = this.DecodeOptions(opt);
+      painter.options = painter.DecodeOptions(opt);
 
-      if (this.IsTH2Poly()) {
-         if (this.options.Lego) this.options.Lego = 12; else// and lego always 12
-         if (!this.options.Color) this.options.Color = 1; // default color
+      if (painter.IsTH2Poly()) {
+         if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
+         if (!painter.options.Color) painter.options.Color = 1; // default color
       }
 
-      this._show_empty_bins = false; // this.MatchObjectType('TProfile2D');
+      painter._show_empty_bins = false;
 
-      this._can_move_colz = true;
+      painter._can_move_colz = true;
 
       // special case for root 3D drawings - user range is wired
-      if ((this.options.Contour !==14) && !this.options.Lego && !this.options.Surf)
-         this.CheckPadRange();
+      if ((painter.options.Contour !==14) && !painter.options.Lego && !painter.options.Surf)
+         painter.CheckPadRange();
 
-      this.ScanContent();
+      painter.ScanContent();
 
       // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid) /* && !this.IsTH2Poly()*/)
-         this.CreateStat(histo.$custom_stat);
+      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid) /* && !this.IsTH2Poly()*/)
+         painter.CreateStat(histo.$custom_stat);
 
-      this.CallDrawFunc(function() {
+      painter.CallDrawFunc(function() {
          this.DrawNextFunction(0, function() {
             if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
                if (this.options.AutoZoom) this.AutoZoom();
@@ -4925,10 +4924,9 @@
             this.FillToolbar();
             this.DrawingReady();
          }.bind(this));
+      }.bind(painter));
 
-      }.bind(this));
-
-      return this;
+      return painter;
    }
 
    // =========================================================================================

@@ -3865,29 +3865,27 @@
    }
 
    JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
-      // when called, *this* set to painter instance
-
       // create painter and add it to canvas
-      JSROOT.extend(this, new JSROOT.TH3Painter(histo));
+      var painter = new JSROOT.TH3Painter(histo);
 
-      this.SetDivId(divid, 4);
+      painter.SetDivId(divid, 4);
 
-      this.options = this.DecodeOptions(opt);
+      painter.options = painter.DecodeOptions(opt);
 
-      this.CheckPadRange();
+      painter.CheckPadRange();
 
-      this.ScanContent();
+      painter.ScanContent();
 
-      this.Redraw();
+      painter.Redraw();
 
-      if (JSROOT.gStyle.AutoStat && (this.create_canvas || histo.$snapid)) {
-         var stats = this.CreateStat(histo.$custom_stat);
-         if (stats) JSROOT.draw(this.divid, stats, "");
+      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid)) {
+         var stats = painter.CreateStat(histo.$custom_stat);
+         if (stats) JSROOT.draw(painter.divid, stats, "");
       }
 
-      this.FillToolbar();
+      painter.FillToolbar();
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    // ===================================================================
