@@ -557,9 +557,11 @@
 
    JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var ellipse = this.GetObject();
 
          if(!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(ellipse);
@@ -585,18 +587,16 @@
 
          // here svg:path is used to draw more complex figure
 
-         var ct = Math.cos(Math.PI*ellipse.fTheta/180.);
-         var st = Math.sin(Math.PI*ellipse.fTheta/180.);
-
-         var dx1 =  rx * Math.cos(ellipse.fPhimin*Math.PI/180.);
-         var dy1 =  ry * Math.sin(ellipse.fPhimin*Math.PI/180.);
-         var x1 =  dx1*ct - dy1*st;
-         var y1 = -dx1*st - dy1*ct;
-
-         var dx2 = rx * Math.cos(ellipse.fPhimax*Math.PI/180.);
-         var dy2 = ry * Math.sin(ellipse.fPhimax*Math.PI/180.);
-         var x2 =  dx2*ct - dy2*st;
-         var y2 = -dx2*st - dy2*ct;
+         var ct = Math.cos(Math.PI*ellipse.fTheta/180),
+            st = Math.sin(Math.PI*ellipse.fTheta/180),
+            dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
+            dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
+            x1 =  dx1*ct - dy1*st,
+            y1 = -dx1*st - dy1*ct,
+            dx2 = rx * Math.cos(ellipse.fPhimax*Math.PI/180),
+            dy2 = ry * Math.sin(ellipse.fPhimax*Math.PI/180),
+            x2 =  dx2*ct - dy2*st,
+            y2 = -dx2*st - dy2*ct;
 
          this.draw_g
             .attr("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")")
@@ -608,17 +608,19 @@
             .call(this.lineatt.func).call(this.fillatt.func);
       }
 
-      this.Redraw(); // actual drawing
-      return this.DrawingReady();
+      painter.Redraw(); // actual drawing
+      return painter.DrawingReady();
    }
 
    // =============================================================================
 
    JSROOT.Painter.drawLine = function(divid, obj, opt) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var line = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(line),
              kLineNDC = JSROOT.BIT(14),
@@ -636,18 +638,20 @@
              .call(lineatt.func);
       }
 
-      this.Redraw(); // actual drawing
+      painter.Redraw(); // actual drawing
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    // =============================================================================
 
    JSROOT.Painter.drawPolyLine = function(divid, obj, opt) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var polyline = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(polyline),
              fillatt = this.createAttFill(polyline),
@@ -671,9 +675,9 @@
              .call(fillatt.func);
       }
 
-      this.Redraw(); // actual drawing
+      painter.Redraw(); // actual drawing
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    // =============================================================================
@@ -750,9 +754,11 @@
 
    JSROOT.Painter.drawArrow = function(divid, obj, opt) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var arrow = this.GetObject();
          if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
          if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
@@ -776,7 +782,7 @@
          if (oo.indexOf("<")==0) {
             var closed = (oo.indexOf("<|") == 0);
             if (!defs) defs = this.draw_g.append("defs");
-            m_start = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
+            m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
             var beg = defs.append("svg:marker")
                 .attr("id", m_start)
                 .attr("markerWidth", wsize.toFixed(1))
@@ -801,7 +807,7 @@
          if (midkind > 0) {
             var closed = midkind > 10;
             if (!defs) defs = this.draw_g.append("defs");
-            m_mid = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
+            m_mid = "jsroot_arrowmarker_" + JSROOT.id_counter++;
 
             var mid = defs.append("svg:marker")
               .attr("id", m_mid)
@@ -822,7 +828,7 @@
          if (oo.lastIndexOf(">") == len-1) {
             var closed = (oo.lastIndexOf("|>") == len-2) && (len>1);
             if (!defs) defs = this.draw_g.append("defs");
-            m_end = "jsroot_arrowmarker_" +  JSROOT.Painter.arrowcnt++;
+            m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
             var end = defs.append("svg:marker")
               .attr("id", m_end)
               .attr("markerWidth", wsize.toFixed(1))
@@ -850,10 +856,8 @@
          if (m_end) path.style("marker-end","url(#" + m_end + ")");
       }
 
-      if (!JSROOT.Painter.arrowcnt) JSROOT.Painter.arrowcnt = 1;
-
-      this.Redraw(); // actual drawing
-      return this.DrawingReady();
+      painter.Redraw(); // actual drawing
+      return painter.DrawingReady();
    }
 
    // =================================================================================

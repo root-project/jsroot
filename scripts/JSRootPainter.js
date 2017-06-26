@@ -6344,7 +6344,6 @@
       return painter.DrawingReady();
    }
 
-
    // =============================================================
 
    JSROOT.THistPainter = function(histo) {
