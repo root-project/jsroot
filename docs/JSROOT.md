@@ -595,6 +595,13 @@ Here is complete [running example](https://root.cern/js/latest/api.htm#custom_ht
        JSROOT.draw("drawing", obj, "lego");
     }).send();
 
+In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
+call back (forth argument) like: 
+
+    JSROOT.draw("drawing", obj, "colz", function(painter) {
+       console.log('Object type in painter', painter.GetObject()._typename);
+    });
+
 One is also able to update the drawing with a new version of the object:
 
     // after some interval request object again

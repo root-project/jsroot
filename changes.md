@@ -3,6 +3,8 @@
 ## Changes in dev
 1. Provide shape parameters in TGeo tooltips
 2. Let inspect selected TGeoNode
+3. Change in JSROOT.draw functionality. Now valid painter instance can be only obtained via call-back
+   function - forth argument of JSROOT.draw() function. 
 
 
 ## Changes in 5.2.0
