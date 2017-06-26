@@ -2283,28 +2283,33 @@
                   this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
-   JSROOT.Painter.drawGraph = function(divid, graph, opt) {
-      JSROOT.extend(this, new JSROOT.TGraphPainter(graph));
-
-      this.options = this.DecodeOptions(opt);
-
-      this.SetDivId(divid, -1); // just to get access to existing elements
-
-      this.CreateBins();
-
-      if (this.main_painter() == null) {
-         if (graph.fHistogram == null)
-            graph.fHistogram = this.CreateHistogram();
-         JSROOT.Painter.drawHistogram1D(divid, graph.fHistogram, this.options.Axis);
-         this.ownhisto = true;
-      }
-
+   JSROOT.TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
+      if (hpainter) this.ownhisto = true;
       this.SetDivId(divid);
       this.DrawBins();
-
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
-
       return this;
+   }
+
+   JSROOT.Painter.drawGraph = function(divid, graph, opt) {
+
+      var painter = new JSROOT.TGraphPainter(graph);
+
+      painter.options = painter.DecodeOptions(opt);
+
+      painter.SetDivId(divid, -1); // just to get access to existing elements
+
+      painter.CreateBins();
+
+      if (!painter.main_painter()) {
+         if (!graph.fHistogram)
+            graph.fHistogram = painter.CreateHistogram();
+         JSROOT.draw(divid, graph.fHistogram, painter.options.Axis, painter.PerformDrawing.bind(painter, divid));
+      } else {
+         painter.PerformDrawing(divid);
+      }
+
+      return painter;
    }
 
    // =============================================================
