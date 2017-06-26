@@ -666,6 +666,9 @@
 
                menu.add("Browse", itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
 
+               if (menu.painter._hpainter)
+                  menu.add("Inspect", itemname, function(arg) { this._hpainter.display(itemname, "inspect"); });
+
                if (obj.geo_name) {
                   menu.add("Hide", n, function(indx) {
                      var mesh = intersects[indx].object;

@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Provide shape parameters in TGeo tooltips
+2. Let inspect selected TGeoNode
 
 
 ## Changes in 5.2.0
