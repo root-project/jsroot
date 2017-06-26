@@ -2672,7 +2672,9 @@
       // just envelope for real TTree::Draw method which do the main job
       // Can be also used for the branch and leaf object
 
-      var tree = obj, args = opt, painter = this;
+      var painter = new JSROOT.TObjectPainter(obj);
+
+      var tree = obj, args = opt;
 
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
@@ -2718,11 +2720,11 @@
 
       if (!tree) {
          console.error('No TTree object available for TTree::Draw');
-         return this.DrawingReady();
+         return painter.DrawingReady();
       }
 
-      var callback = this.DrawingReady.bind(this);
-      this._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
+      var callback = painter.DrawingReady.bind(painter);
+      painter._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
 
       JSROOT.cleanup(divid);
 
@@ -2751,9 +2753,8 @@
          });
       });
 
-      return this;
+      return painter;
    }
-
 
    return JSROOT;
 
