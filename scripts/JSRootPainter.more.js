@@ -876,6 +876,9 @@
    // =================================================================================
 
    JSROOT.Painter.drawTF2 = function(divid, func, opt) {
+      // TF2 always drawn via temporary TH2 object,
+      // therefore there is no special painter class
+
       var hist = null, npx = 0, npy = 0, nsave = 1,
           d = new JSROOT.DrawOptions(opt);
 
@@ -946,287 +949,295 @@
       if (d.opt === "SAME") opt = "cont2 same";
       else opt = d.opt;
 
-      return JSROOT.Painter.drawHistogram2D.call(this, divid, hist, opt);
+      return JSROOT.Painter.drawHistogram2D(divid, hist, opt);
    };
 
 
    // ===================================================================================
 
-   JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
+   JSROOT.TF1Painter = function(tf1) {
+      JSROOT.TObjectPainter.call(this, tf1);
       this.bins = null;
+   }
 
-      this.Eval = function(x) {
-         return this.GetObject().evalPar(x);
+   JSROOT.TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   JSROOT.TF1Painter.prototype.Eval = function(x) {
+      return this.GetObject().evalPar(x);
+   }
+
+   JSROOT.TF1Painter.prototype.CreateBins = function(ignore_zoom) {
+      var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
+
+      if ((main!==null) && !ignore_zoom)  {
+         if (main.zoom_xmin !== main.zoom_xmax) {
+            gxmin = main.zoom_xmin;
+            gxmax = main.zoom_xmax;
+         } else {
+            gxmin = main.xmin;
+            gxmax = main.xmax;
+         }
       }
 
-      this.CreateBins = function(ignore_zoom) {
-         var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
+      if ((tf1.fSave.length > 0) && !this.nosave) {
+         // in the case where the points have been saved, useful for example
+         // if we don't have the user's function
+         var np = tf1.fSave.length - 2,
+             xmin = tf1.fSave[np],
+             xmax = tf1.fSave[np+1],
+             dx = (xmax - xmin) / (np-1),
+             res = [];
 
-         if ((main!==null) && !ignore_zoom)  {
-            if (main.zoom_xmin !== main.zoom_xmax) {
-               gxmin = main.zoom_xmin;
-               gxmax = main.zoom_xmax;
-            } else {
-               gxmin = main.xmin;
-               gxmax = main.xmax;
-            }
-         }
+         for (var n=0; n < np; ++n) {
+            var xx = xmin + dx*n;
+            // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
+            if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
+            var yy = tf1.fSave[n];
 
-         if ((tf1.fSave.length > 0) && !this.nosave) {
-            // in the case where the points have been saved, useful for example
-            // if we don't have the user's function
-            var np = tf1.fSave.length - 2,
-                xmin = tf1.fSave[np],
-                xmax = tf1.fSave[np+1],
-                dx = (xmax - xmin) / (np-1),
-                res = [];
-
-            for (var n=0; n < np; ++n) {
-               var xx = xmin + dx*n;
-               // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
-               if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
-               var yy = tf1.fSave[n];
-
-               if (!isNaN(yy)) res.push({ x : xx, y : yy });
-            }
-            return res;
-         }
-
-         var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false, pad = this.root_pad();
-
-         if (gxmin !== gxmax) {
-            if (gxmin > xmin) xmin = gxmin;
-            if (gxmax < xmax) xmax = gxmax;
-         }
-
-         if ((main!==null) && main.logx && (xmin>0) && (xmax>0)) {
-            logx = true;
-            xmin = Math.log(xmin);
-            xmax = Math.log(xmax);
-         }
-
-         var np = Math.max(tf1.fNpx, 101),
-            dx = (xmax - xmin) / (np - 1),
-            res = [];
-
-         for (var n=0; n < np; n++) {
-            var xx = xmin + n*dx;
-            if (logx) xx = Math.exp(xx);
-            var yy = this.Eval(xx);
             if (!isNaN(yy)) res.push({ x : xx, y : yy });
          }
          return res;
       }
 
-      this.CreateDummyHisto = function() {
+      var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false, pad = this.root_pad();
 
-         var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
-             bins = this.CreateBins(true);
-
-         if ((bins!==null) && (bins.length > 0)) {
-
-            xmin = xmax = bins[0].x;
-            ymin = ymax = bins[0].y;
-
-            bins.forEach(function(bin) {
-               xmin = Math.min(bin.x, xmin);
-               xmax = Math.max(bin.x, xmax);
-               ymin = Math.min(bin.y, ymin);
-               ymax = Math.max(bin.y, ymax);
-            });
-
-            if (ymax > 0.0) ymax *= 1.05;
-            if (ymin < 0.0) ymin *= 1.05;
-         }
-
-         var histo = JSROOT.Create("TH1I"),
-             tf1 = this.GetObject();
-
-         histo.fName = tf1.fName + "_hist";
-         if (tf1.fTitle.indexOf(';')!==0) {
-            var array = tf1.fTitle.split(';');
-            histo.fTitle = array[0];
-            if (array.length>1)
-               histo.fXaxis.fTitle = array[1];
-            if (array.length>2)
-               histo.fYaxis.fTitle = array[2];
-         }
-         else histo.fTitle = tf1.fTitle;
-
-         histo.fXaxis.fXmin = xmin;
-         histo.fXaxis.fXmax = xmax;
-         histo.fYaxis.fXmin = ymin;
-         histo.fYaxis.fXmax = ymax;
-
-         return histo;
+      if (gxmin !== gxmax) {
+         if (gxmin > xmin) xmin = gxmin;
+         if (gxmax < xmax) xmax = gxmax;
       }
 
-      this.ProcessTooltipFunc = function(pnt) {
-         var cleanup = false;
-
-         if ((pnt === null) || (this.bins===null)) {
-            cleanup = true;
-         } else
-         if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
-            cleanup = true;
-         }
-
-         if (cleanup) {
-            if (this.draw_g !== null)
-               this.draw_g.select(".tooltip_bin").remove();
-            return null;
-         }
-
-         var min = 100000, best = -1, bin;
-
-         for(var n=0; n<this.bins.length; ++n) {
-            bin = this.bins[n];
-            var dist = Math.abs(bin.grx - pnt.x);
-            if (dist < min) { min = dist; best = n; }
-         }
-
-         bin = this.bins[best];
-
-         var gbin = this.draw_g.select(".tooltip_bin"),
-             radius = this.lineatt.width + 3;
-
-         if (gbin.empty())
-            gbin = this.draw_g.append("svg:circle")
-                              .attr("class","tooltip_bin")
-                              .style("pointer-events","none")
-                              .attr("r", radius)
-                              .call(this.lineatt.func)
-                              .call(this.fillatt.func);
-
-         var res = { name: this.GetObject().fName,
-                     title: this.GetObject().fTitle,
-                     x: bin.grx,
-                     y: bin.gry,
-                     color1: this.lineatt.color,
-                     color2: this.fillatt.color,
-                     lines: [],
-                     exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
-
-         res.changed = gbin.property("current_bin") !== best;
-         res.menu = res.exact;
-         res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
-
-         if (res.changed)
-            gbin.attr("cx", bin.grx)
-                .attr("cy", bin.gry)
-                .property("current_bin", best);
-
-         var name = this.GetTipName();
-         if (name.length > 0) res.lines.push(name);
-
-         var pmain = this.main_painter();
-         if (pmain!==null)
-            res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
-
-         return res;
+      if ((main!==null) && main.logx && (xmin>0) && (xmax>0)) {
+         logx = true;
+         xmin = Math.log(xmin);
+         xmax = Math.log(xmax);
       }
 
-      this.Redraw = function() {
+      var np = Math.max(tf1.fNpx, 101),
+         dx = (xmax - xmin) / (np - 1),
+         res = [];
 
-         var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
+      for (var n=0; n < np; n++) {
+         var xx = xmin + n*dx;
+         if (logx) xx = Math.exp(xx);
+         var yy = this.Eval(xx);
+         if (!isNaN(yy)) res.push({ x : xx, y : yy });
+      }
+      return res;
+   }
 
-         this.RecreateDrawG(false, "main_layer");
+   JSROOT.TF1Painter.prototype.CreateDummyHisto = function() {
 
-         // recalculate drawing bins when necessary
-         this.bins = this.CreateBins(false);
+      var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
+          bins = this.CreateBins(true);
 
-         var pthis = this;
-         var pmain = this.main_painter();
-         var name = this.GetTipName("\n");
+      if ((bins!==null) && (bins.length > 0)) {
 
-         if (!this.lineatt)
-            this.lineatt = JSROOT.Painter.createAttLine(tf1);
-         this.lineatt.used = false;
-         if (!this.fillatt)
-            this.fillatt = this.createAttFill(tf1, undefined, undefined, 1);
-         this.fillatt.used = false;
+         xmin = xmax = bins[0].x;
+         ymin = ymax = bins[0].y;
 
-         var n, bin;
-         // first calculate graphical coordinates
-         for(n=0; n<this.bins.length; ++n) {
-            bin = this.bins[n];
-            //bin.grx = Math.round(pmain.grx(bin.x));
-            //bin.gry = Math.round(pmain.gry(bin.y));
-            bin.grx = pmain.grx(bin.x);
-            bin.gry = pmain.gry(bin.y);
-         }
+         bins.forEach(function(bin) {
+            xmin = Math.min(bin.x, xmin);
+            xmax = Math.max(bin.x, xmax);
+            ymin = Math.min(bin.y, ymin);
+            ymax = Math.max(bin.y, ymax);
+         });
 
-         if (this.bins.length > 2) {
-
-            var h0 = h;  // use maximal frame height for filling
-            if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
-               h0 = Math.round(pmain.gry(0));
-               if ((h0 > h) || (h0 < 0)) h0 = h;
-            }
-
-            var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
-
-            if (this.lineatt.color != "none")
-               this.draw_g.append("svg:path")
-                  .attr("class", "line")
-                  .attr("d", path.path)
-                  .style("fill", "none")
-                  .call(this.lineatt.func);
-
-            if (this.fillatt.color != "none")
-               this.draw_g.append("svg:path")
-                  .attr("class", "area")
-                  .attr("d", path.path + path.close)
-                  .style("stroke", "none")
-                  .call(this.fillatt.func);
-         }
-
-         delete this.ProcessTooltip;
-
-        if (JSROOT.gStyle.Tooltip > 0)
-           this.ProcessTooltip = this.ProcessTooltipFunc;
+         if (ymax > 0.0) ymax *= 1.05;
+         if (ymin < 0.0) ymin *= 1.05;
       }
 
-      this.CanZoomIn = function(axis,min,max) {
-         if (axis!=="x") return false;
+      var histo = JSROOT.Create("TH1I"),
+          tf1 = this.GetObject();
 
-         var tf1 = this.GetObject();
+      histo.fName = tf1.fName + "_hist";
+      if (tf1.fTitle.indexOf(';')!==0) {
+         var array = tf1.fTitle.split(';');
+         histo.fTitle = array[0];
+         if (array.length>1)
+            histo.fXaxis.fTitle = array[1];
+         if (array.length>2)
+            histo.fYaxis.fTitle = array[2];
+      }
+      else histo.fTitle = tf1.fTitle;
 
-         if (tf1.fSave.length > 0) {
-            // in the case where the points have been saved, useful for example
-            // if we don't have the user's function
-            var nb_points = tf1.fNpx;
+      histo.fXaxis.fXmin = xmin;
+      histo.fXaxis.fXmax = xmax;
+      histo.fYaxis.fXmin = ymin;
+      histo.fYaxis.fXmax = ymax;
 
-            var xmin = tf1.fSave[nb_points + 1];
-            var xmax = tf1.fSave[nb_points + 2];
+      return histo;
+   }
 
-            return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
-         }
+   JSROOT.TF1Painter.prototype.ProcessTooltipFunc = function(pnt) {
+      var cleanup = false;
 
-         // if function calculated, one always could zoom inside
-         return true;
+      if ((pnt === null) || (this.bins===null)) {
+         cleanup = true;
+      } else
+      if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
+         cleanup = true;
       }
 
-      this.PerformDraw = function() {
-         if (this.main_painter() === null) {
-            var histo = this.CreateDummyHisto();
-            JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
-         }
-
-         this.SetDivId(this.divid);
-         this.Redraw();
-         return this.DrawingReady();
+      if (cleanup) {
+         if (this.draw_g !== null)
+            this.draw_g.select(".tooltip_bin").remove();
+         return null;
       }
 
-      this.SetDivId(divid, -1);
+      var min = 100000, best = -1, bin;
+
+      for(var n=0; n<this.bins.length; ++n) {
+         bin = this.bins[n];
+         var dist = Math.abs(bin.grx - pnt.x);
+         if (dist < min) { min = dist; best = n; }
+      }
+
+      bin = this.bins[best];
+
+      var gbin = this.draw_g.select(".tooltip_bin"),
+          radius = this.lineatt.width + 3;
+
+      if (gbin.empty())
+         gbin = this.draw_g.append("svg:circle")
+                           .attr("class","tooltip_bin")
+                           .style("pointer-events","none")
+                           .attr("r", radius)
+                           .call(this.lineatt.func)
+                           .call(this.fillatt.func);
+
+      var res = { name: this.GetObject().fName,
+                  title: this.GetObject().fTitle,
+                  x: bin.grx,
+                  y: bin.gry,
+                  color1: this.lineatt.color,
+                  color2: this.fillatt.color,
+                  lines: [],
+                  exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
+
+      res.changed = gbin.property("current_bin") !== best;
+      res.menu = res.exact;
+      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
+
+      if (res.changed)
+         gbin.attr("cx", bin.grx)
+             .attr("cy", bin.gry)
+             .property("current_bin", best);
+
+      var name = this.GetTipName();
+      if (name.length > 0) res.lines.push(name);
+
+      var pmain = this.main_painter();
+      if (pmain!==null)
+         res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
+
+      return res;
+   }
+
+   JSROOT.TF1Painter.prototype.Redraw = function() {
+
+      var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
+
+      this.RecreateDrawG(false, "main_layer");
+
+      // recalculate drawing bins when necessary
+      this.bins = this.CreateBins(false);
+
+      var pthis = this;
+      var pmain = this.main_painter();
+      var name = this.GetTipName("\n");
+
+      if (!this.lineatt)
+         this.lineatt = JSROOT.Painter.createAttLine(tf1);
+      this.lineatt.used = false;
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(tf1, undefined, undefined, 1);
+      this.fillatt.used = false;
+
+      var n, bin;
+      // first calculate graphical coordinates
+      for(n=0; n<this.bins.length; ++n) {
+         bin = this.bins[n];
+         //bin.grx = Math.round(pmain.grx(bin.x));
+         //bin.gry = Math.round(pmain.gry(bin.y));
+         bin.grx = pmain.grx(bin.x);
+         bin.gry = pmain.gry(bin.y);
+      }
+
+      if (this.bins.length > 2) {
+
+         var h0 = h;  // use maximal frame height for filling
+         if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
+            h0 = Math.round(pmain.gry(0));
+            if ((h0 > h) || (h0 < 0)) h0 = h;
+         }
+
+         var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
+
+         if (this.lineatt.color != "none")
+            this.draw_g.append("svg:path")
+               .attr("class", "line")
+               .attr("d", path.path)
+               .style("fill", "none")
+               .call(this.lineatt.func);
+
+         if (this.fillatt.color != "none")
+            this.draw_g.append("svg:path")
+               .attr("class", "area")
+               .attr("d", path.path + path.close)
+               .style("stroke", "none")
+               .call(this.fillatt.func);
+      }
+
+      delete this.ProcessTooltip;
+
+     if (JSROOT.gStyle.Tooltip > 0)
+        this.ProcessTooltip = this.ProcessTooltipFunc;
+   }
+
+   JSROOT.TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
+      if (axis!=="x") return false;
+
+      var tf1 = this.GetObject();
+
+      if (tf1.fSave.length > 0) {
+         // in the case where the points have been saved, useful for example
+         // if we don't have the user's function
+         var nb_points = tf1.fNpx;
+
+         var xmin = tf1.fSave[nb_points + 1];
+         var xmax = tf1.fSave[nb_points + 2];
+
+         return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
+      }
+
+      // if function calculated, one always could zoom inside
+      return true;
+   }
+
+   JSROOT.TF1Painter.prototype.PerformDraw = function() {
+      if (this.main_painter() === null) {
+         var histo = this.CreateDummyHisto();
+         JSROOT.Painter.drawHistogram1D(this.divid, histo, "AXIS");
+      }
+
+      this.SetDivId(this.divid);
+      this.Redraw();
+      return this.DrawingReady();
+   }
+
+   JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
+
+      var painter = new JSROOT.TF1Painter(tf1);
+
+      painter.SetDivId(divid, -1);
       var d = new JSROOT.DrawOptions(opt);
-      this.nosave = d.check('NOSAVE');
+      painter.nosave = d.check('NOSAVE');
 
       if (JSROOT.Math !== undefined)
-         return this.PerformDraw();
+         return painter.PerformDraw();
 
-      JSROOT.AssertPrerequisites("math", this.PerformDraw.bind(this));
-      return this;
+      JSROOT.AssertPrerequisites("math", painter.PerformDraw.bind(painter));
+      return painter;
    }
 
    // ====================================================================
@@ -4952,13 +4963,15 @@
 
    JSROOT.Painter.drawWebPainting = function(divid, obj, opt) {
 
-      this.UpdateObject = function(obj) {
+      var painter = new JSROOT.TObjectPainter(obj);
+
+      painter.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
          this.draw_object = obj;
          return true;
       }
 
-      this.Redraw = function() {
+      painter.Redraw = function() {
          var obj = this.GetObject(), attr = null, indx = 0,
              lineatt = null, fillatt = null, markeratt = null;
          if (!obj || !obj.fOper) return;
@@ -5089,13 +5102,13 @@
          }
       }
 
-      this.SetDivId(divid);
+      painter.SetDivId(divid);
 
-      this.options = opt;
+      painter.options = opt;
 
-      this.Redraw();
+      painter.Redraw();
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    return JSROOT.Painter;
