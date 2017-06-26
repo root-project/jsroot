@@ -1453,6 +1453,7 @@
       delete this.lineatt;
       delete this.markeratt;
       delete this.bins;
+      delete this._drawopt;
 
       JSROOT.TBasePainter.prototype.Cleanup.call(this);
    }
@@ -9645,52 +9646,44 @@
 
    // =====================================================================================
 
-   JSROOT.Painter.drawText = function(divid, text) {
-      var painter = new JSROOT.TObjectPainter(text);
-      painter.SetDivId(divid, 2);
+   JSROOT.Painter.drawText = function() {
+      var text = this.GetObject(),
+          w = this.pad_width(), h = this.pad_height(),
+          pos_x = text.fX, pos_y = text.fY,
+          tcolor = JSROOT.Painter.root_colors[text.fTextColor],
+          use_pad = true, latex_kind = 0, fact = 1.;
 
-      painter.Redraw = function() {
-         var text = this.GetObject(),
-             w = this.pad_width(), h = this.pad_height(),
-             pos_x = text.fX, pos_y = text.fY,
-             tcolor = JSROOT.Painter.root_colors[text.fTextColor],
-             use_pad = true, latex_kind = 0, fact = 1.;
-
-         if (text.TestBit(JSROOT.BIT(14))) {
-            // NDC coordinates
-            pos_x = pos_x * w;
-            pos_y = (1 - pos_y) * h;
-         } else
-         if (this.main_painter() !== null) {
-            w = this.frame_width(); h = this.frame_height(); use_pad = false;
-            pos_x = this.main_painter().grx(pos_x);
-            pos_y = this.main_painter().gry(pos_y);
-         } else
-         if (this.root_pad() !== null) {
-            pos_x = this.ConvertToNDC("x", pos_x) * w;
-            pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
-         } else {
-            text.fTextAlign = 22;
-            pos_x = w/2;
-            pos_y = h/2;
-            if (text.fTextSize === 0) text.fTextSize = 0.05;
-            if (text.fTextColor === 0) text.fTextColor = 1;
-         }
-
-         this.RecreateDrawG(use_pad, use_pad ? "text_layer" : "upper_layer");
-
-         if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-         if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
-
-         this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
-
-         this.DrawText(text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, text.fTitle, tcolor, latex_kind);
-
-         this.FinishTextDrawing();
+      if (text.TestBit(JSROOT.BIT(14))) {
+         // NDC coordinates
+         pos_x = pos_x * w;
+         pos_y = (1 - pos_y) * h;
+      } else
+      if (this.main_painter() !== null) {
+         w = this.frame_width(); h = this.frame_height(); use_pad = false;
+         pos_x = this.main_painter().grx(pos_x);
+         pos_y = this.main_painter().gry(pos_y);
+      } else
+      if (this.root_pad() !== null) {
+         pos_x = this.ConvertToNDC("x", pos_x) * w;
+         pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
+      } else {
+         text.fTextAlign = 22;
+         pos_x = w/2;
+         pos_y = h/2;
+         if (text.fTextSize === 0) text.fTextSize = 0.05;
+         if (text.fTextColor === 0) text.fTextColor = 1;
       }
 
-      painter.Redraw();
-      return painter.DrawingReady();
+      this.RecreateDrawG(use_pad, use_pad ? "text_layer" : "upper_layer");
+
+      if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
+      if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+
+      this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
+
+      this.DrawText(text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, text.fTitle, tcolor, latex_kind);
+
+      this.FinishTextDrawing();
    }
 
    // ================= painter of raw text ========================================
@@ -12419,9 +12412,9 @@
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveStats", icon: "img_pavetext", func: JSROOT.Painter.drawPaveText });
    JSROOT.addDrawFunc({ name: "TPaveLabel", icon: "img_pavelabel", func: JSROOT.Painter.drawPaveText });
-   JSROOT.addDrawFunc({ name: "TLatex", icon: "img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TMathText", icon: "img_text", func: JSROOT.Painter.drawText });
-   JSROOT.addDrawFunc({ name: "TText", icon: "img_text", func: JSROOT.Painter.drawText });
+   JSROOT.addDrawFunc({ name: "TLatex", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
+   JSROOT.addDrawFunc({ name: "TMathText", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
+   JSROOT.addDrawFunc({ name: "TText", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same", ctrl: "l" });
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;same", expand_item: "fBins", theonly: true });
@@ -12446,16 +12439,16 @@
    JSROOT.addDrawFunc({ name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
    JSROOT.addDrawFunc({ name: "TF2", icon: "img_tf2", prereq: "math;more2d", func: "JSROOT.Painter.drawTF2" });
-   JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse" });
-   JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine" });
-   JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow" });
-   JSROOT.addDrawFunc({ name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine" });
+   JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse", direct: true });
+   JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine", direct: true });
+   JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow", direct: true });
+   JSROOT.addDrawFunc({ name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine", direct: true });
    JSROOT.addDrawFunc({ name: "TGaxis", icon: "img_graph", func: JSROOT.drawGaxis });
    JSROOT.addDrawFunc({ name: "TLegend", icon: "img_pavelabel", prereq: "more2d", func: "JSROOT.Painter.drawLegend" });
-   JSROOT.addDrawFunc({ name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
-   JSROOT.addDrawFunc({ name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
-   JSROOT.addDrawFunc({ name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox" });
-   JSROOT.addDrawFunc({ name: "TMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawMarker" });
+   JSROOT.addDrawFunc({ name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });
+   JSROOT.addDrawFunc({ name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });
+   JSROOT.addDrawFunc({ name: "TSliderBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });
+   JSROOT.addDrawFunc({ name: "TMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawMarker", direct: true });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt:";more;all;count;projx;projz;dflt", ctrl: "dflt" });
    JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;dflt", ctrl: "dflt"  });
    JSROOT.addDrawFunc({ name: "TGeoManager", icon: 'img_histo3d', prereq: "geom", expand: "JSROOT.GEO.expandObject", func: "JSROOT.Painter.drawGeoObject", opt: ";more;all;count;projx;projz;dflt", dflt: "expand", ctrl: "dflt" });
@@ -12662,13 +12655,17 @@
       if (!handle.func) return completeDraw(null);
 
       function performDraw() {
-         if (!painter && ('painter_kind' in handle))
-            painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
-         if (!painter)
+         if (handle.direct) {
+            painter = new JSROOT.TObjectPainter(obj);
+            painter.SetDivId(divid, 2);
+            painter.Redraw = handle.func;
+            painter._drawopt = opt;
+            painter.Redraw();
+            painter.DrawingReady();
+         } else {
             painter = handle.func(divid, obj, opt);
-         else
-            painter = handle.func.bind(painter)(divid, obj, opt, painter);
+         }
 
          return completeDraw(painter);
       }
@@ -12688,11 +12685,6 @@
 
       if (funcname.length === 0) return completeDraw(null);
 
-      // special handling for painters, which should be loaded via extra scripts
-      // such painter get extra last argument - pointer on dummy painter object
-      if ((handle.painter_kind === undefined) && (prereq.length > 0))
-         handle.painter_kind = (funcname.indexOf("JSROOT.Painter")==0) ? "object" : "base";
-
       // try to find function without prerequisites
       var func = JSROOT.findFunction(funcname);
       if (func) {
@@ -12701,8 +12693,6 @@
       }
 
       if (prereq.length === 0) return completeDraw(null);
-
-      painter = (handle.painter_kind == "base") ? new JSROOT.TBasePainter() : new JSROOT.TObjectPainter(obj);
 
       JSROOT.AssertPrerequisites(prereq, function() {
          var func = JSROOT.findFunction(funcname);
@@ -12714,9 +12704,6 @@
          handle.func = func; // remember function once it found
 
          performDraw();
-
-         //if (performDraw() !== painter)
-         //   alert('Painter function ' + funcname + ' do not follow rules of dynamically loaded painters');
       });
 
       return painter;

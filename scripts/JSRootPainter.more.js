@@ -554,314 +554,250 @@
 
    // ==============================================================================
 
+   JSROOT.Painter.drawEllipse = function() {
 
-   JSROOT.Painter.drawEllipse = function(divid, obj, opt) {
+      var ellipse = this.GetObject();
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      if(!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(ellipse);
+      if (!this.fillatt) this.fillatt = this.createAttFill(ellipse);
 
-      painter.SetDivId(divid, 2);
+      // create svg:g container for ellipse drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.Redraw = function() {
-         var ellipse = this.GetObject();
+      var x = this.AxisToSvg("x", ellipse.fX1, false),
+          y = this.AxisToSvg("y", ellipse.fY1, false),
+          rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
+          ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
 
-         if(!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(ellipse);
-         if (!this.fillatt) this.fillatt = this.createAttFill(ellipse);
-
-         // create svg:g container for ellipse drawing
-         this.RecreateDrawG(true, "text_layer");
-
-         var x = this.AxisToSvg("x", ellipse.fX1, false),
-             y = this.AxisToSvg("y", ellipse.fY1, false),
-             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
-             ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
-
-         if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
+      if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
-            this.draw_g
-                .append("svg:ellipse")
-                .attr("cx", x).attr("cy", y)
-                .attr("rx", rx).attr("ry", ry)
-                .call(this.lineatt.func).call(this.fillatt.func);
-            return;
-         }
-
-         // here svg:path is used to draw more complex figure
-
-         var ct = Math.cos(Math.PI*ellipse.fTheta/180),
-            st = Math.sin(Math.PI*ellipse.fTheta/180),
-            dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
-            dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
-            x1 =  dx1*ct - dy1*st,
-            y1 = -dx1*st - dy1*ct,
-            dx2 = rx * Math.cos(ellipse.fPhimax*Math.PI/180),
-            dy2 = ry * Math.sin(ellipse.fPhimax*Math.PI/180),
-            x2 =  dx2*ct - dy2*st,
-            y2 = -dx2*st - dy2*ct;
-
-         this.draw_g
-            .attr("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")")
-            .append("svg:path")
-            .attr("d", "M 0,0" +
-                       " L " + x1.toFixed(1) + "," + y1.toFixed(1) +
-                       " A " + rx.toFixed(1) + " " + ry.toFixed(1) + " " + -ellipse.fTheta.toFixed(1) + " 1 0 " + x2.toFixed(1) + "," + y2.toFixed(1) +
-                       " L 0,0 Z")
-            .call(this.lineatt.func).call(this.fillatt.func);
+         this.draw_g.append("svg:ellipse")
+                    .attr("cx", x).attr("cy", y)
+                    .attr("rx", rx).attr("ry", ry)
+                    .call(this.lineatt.func).call(this.fillatt.func);
+         return;
       }
 
-      painter.Redraw(); // actual drawing
-      return painter.DrawingReady();
+      // here svg:path is used to draw more complex figure
+
+      var ct = Math.cos(Math.PI*ellipse.fTheta/180),
+          st = Math.sin(Math.PI*ellipse.fTheta/180),
+          dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
+          dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
+          x1 =  dx1*ct - dy1*st,
+          y1 = -dx1*st - dy1*ct,
+          dx2 = rx * Math.cos(ellipse.fPhimax*Math.PI/180),
+          dy2 = ry * Math.sin(ellipse.fPhimax*Math.PI/180),
+          x2 =  dx2*ct - dy2*st,
+          y2 = -dx2*st - dy2*ct;
+
+      this.draw_g
+         .attr("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")")
+         .append("svg:path")
+         .attr("d", "M 0,0" +
+                    " L " + x1.toFixed(1) + "," + y1.toFixed(1) +
+                    " A " + rx.toFixed(1) + " " + ry.toFixed(1) + " " + -ellipse.fTheta.toFixed(1) + " 1 0 " + x2.toFixed(1) + "," + y2.toFixed(1) +
+                    " L 0,0 Z")
+         .call(this.lineatt.func).call(this.fillatt.func);
    }
 
    // =============================================================================
 
-   JSROOT.Painter.drawLine = function(divid, obj, opt) {
+   JSROOT.Painter.drawLine = function() {
+      var line = this.GetObject(),
+          lineatt = JSROOT.Painter.createAttLine(line),
+          kLineNDC = JSROOT.BIT(14),
+          isndc = line.TestBit(kLineNDC);
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      // create svg:g container for line drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.SetDivId(divid, 2);
-
-      painter.Redraw = function() {
-         var line = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(line),
-             kLineNDC = JSROOT.BIT(14),
-             isndc = line.TestBit(kLineNDC);
-
-         // create svg:g container for line drawing
-         this.RecreateDrawG(true, "text_layer");
-
-         this.draw_g
-             .append("svg:line")
-             .attr("x1", this.AxisToSvg("x", line.fX1, isndc))
-             .attr("y1", this.AxisToSvg("y", line.fY1, isndc))
-             .attr("x2", this.AxisToSvg("x", line.fX2, isndc))
-             .attr("y2", this.AxisToSvg("y", line.fY2, isndc))
-             .call(lineatt.func);
-      }
-
-      painter.Redraw(); // actual drawing
-
-      return painter.DrawingReady();
+      this.draw_g
+          .append("svg:line")
+          .attr("x1", this.AxisToSvg("x", line.fX1, isndc))
+          .attr("y1", this.AxisToSvg("y", line.fY1, isndc))
+          .attr("x2", this.AxisToSvg("x", line.fX2, isndc))
+          .attr("y2", this.AxisToSvg("y", line.fY2, isndc))
+          .call(lineatt.func);
    }
 
    // =============================================================================
 
-   JSROOT.Painter.drawPolyLine = function(divid, obj, opt) {
+   JSROOT.Painter.drawPolyLine = function() {
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      var polyline = this.GetObject(),
+          lineatt = JSROOT.Painter.createAttLine(polyline),
+          fillatt = this.createAttFill(polyline),
+          kPolyLineNDC = JSROOT.BIT(14),
+          isndc = polyline.TestBit(kPolyLineNDC),
+          cmd = "";
 
-      painter.SetDivId(divid, 2);
+      // create svg:g container for polyline drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.Redraw = function() {
-         var polyline = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(polyline),
-             fillatt = this.createAttFill(polyline),
-             kPolyLineNDC = JSROOT.BIT(14),
-             isndc = polyline.TestBit(kPolyLineNDC),
-             cmd = "";
+      for (var n=0;n<=polyline.fLastPoint;++n)
+         cmd += ((n>0) ? "L" : "M") +
+                this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
+                this.AxisToSvg("y", polyline.fY[n], isndc);
 
-         // create svg:g container for polyline drawing
-         this.RecreateDrawG(true, "text_layer");
+      if (fillatt.color!=='none') cmd+="Z";
 
-         for (var n=0;n<=polyline.fLastPoint;++n)
-            cmd += ((n>0) ? "L" : "M") +
-                   this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
-                   this.AxisToSvg("y", polyline.fY[n], isndc);
-         if (fillatt.color!=='none') cmd+="Z";
-
-         this.draw_g
-             .append("svg:path")
-             .attr("d", cmd)
-             .call(lineatt.func)
-             .call(fillatt.func);
-      }
-
-      painter.Redraw(); // actual drawing
-
-      return painter.DrawingReady();
+      this.draw_g
+          .append("svg:path")
+          .attr("d", cmd)
+          .call(lineatt.func)
+          .call(fillatt.func);
    }
 
    // =============================================================================
 
    JSROOT.Painter.drawBox = function(divid, obj, opt) {
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      var box = this.GetObject(),
+          draw_line = (typeof this._drawopt == 'string') && (this._drawopt.toUpperCase().indexOf("L")>=0),
+          lineatt = JSROOT.Painter.createAttLine(box),
+          fillatt = this.createAttFill(box);
 
-      painter.SetDivId(divid, 2);
+      // create svg:g container for box drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.Redraw = function() {
-         var box = this.GetObject(),
-             lineatt = JSROOT.Painter.createAttLine(box),
-             fillatt = this.createAttFill(box);
+      var x1 = this.AxisToSvg("x", box.fX1, false),
+          x2 = this.AxisToSvg("x", box.fX2, false),
+          y1 = this.AxisToSvg("y", box.fY1, false),
+          y2 = this.AxisToSvg("y", box.fY2, false);
 
-         // create svg:g container for box drawing
-         this.RecreateDrawG(true, "text_layer");
+      // if box filled, contour line drawn only with "L" draw option:
+      if ((fillatt.color != 'none') && !draw_line) lineatt.color = "none";
 
-         var x1 = this.AxisToSvg("x", box.fX1, false),
-             x2 = this.AxisToSvg("x", box.fX2, false),
-             y1 = this.AxisToSvg("y", box.fY1, false),
-             y2 = this.AxisToSvg("y", box.fY2, false);
-
-         // if box filled, contour line drawn only with "L" draw option:
-         if ((fillatt.color != 'none') && !this.draw_line) lineatt.color = "none";
-
-         this.draw_g
-             .append("svg:rect")
-             .attr("x", Math.min(x1,x2))
-             .attr("y", Math.min(y1,y2))
-             .attr("width", Math.abs(x2-x1))
-             .attr("height", Math.abs(y1-y2))
-             .call(lineatt.func)
-             .call(fillatt.func);
-      }
-
-      painter.draw_line = (typeof opt=='string') && (opt.toUpperCase().indexOf("L")>=0);
-
-      painter.Redraw(); // actual drawing
-
-      return painter.DrawingReady();
+      this.draw_g
+          .append("svg:rect")
+          .attr("x", Math.min(x1,x2))
+          .attr("y", Math.min(y1,y2))
+          .attr("width", Math.abs(x2-x1))
+          .attr("height", Math.abs(y1-y2))
+          .call(lineatt.func)
+          .call(fillatt.func);
    }
 
    // =============================================================================
 
-   JSROOT.Painter.drawMarker = function(divid, obj) {
+   JSROOT.Painter.drawMarker = function() {
+      var marker = this.GetObject(),
+          att = JSROOT.Painter.createAttMarker(marker),
+          kMarkerNDC = JSROOT.BIT(14),
+          isndc = marker.TestBit(kMarkerNDC);
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      // create svg:g container for box drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.SetDivId(divid, 2);
+      var x = this.AxisToSvg("x", marker.fX, isndc),
+          y = this.AxisToSvg("y", marker.fY, isndc),
+          path = att.create(x,y);
 
-      painter.Redraw = function() {
-         var marker = this.GetObject(),
-             att = JSROOT.Painter.createAttMarker(marker),
-             kMarkerNDC = JSROOT.BIT(14),
-             isndc = marker.TestBit(kMarkerNDC);
-
-         // create svg:g container for box drawing
-         this.RecreateDrawG(true, "text_layer");
-
-         var x = this.AxisToSvg("x", marker.fX, isndc),
-             y = this.AxisToSvg("y", marker.fY, isndc);
-
-         var path = att.create(x,y);
-
-         if (path && path.length > 0)
-            this.draw_g.append("svg:path")
-                .attr("d", path)
-                .call(att.func);
-      }
-
-      painter.Redraw(); // actual drawing
-
-      return painter.DrawingReady();
+      if (path && path.length > 0)
+         this.draw_g.append("svg:path")
+             .attr("d", path)
+             .call(att.func);
    }
 
    // ======================================================================================
 
-   JSROOT.Painter.drawArrow = function(divid, obj, opt) {
+   JSROOT.Painter.drawArrow = function() {
+      var arrow = this.GetObject();
+      if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
+      if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
+      if (wsize<3) wsize = 3;
+      var hsize = wsize * Math.tan(arrow.fAngle/2 * (Math.PI/180));
 
-      painter.SetDivId(divid, 2);
+      // create svg:g container for line drawing
+      this.RecreateDrawG(true, "text_layer");
 
-      painter.Redraw = function() {
-         var arrow = this.GetObject();
-         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
-         if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
+      var x1 = this.AxisToSvg("x", arrow.fX1, false),
+          y1 = this.AxisToSvg("y", arrow.fY1, false),
+          x2 = this.AxisToSvg("x", arrow.fX2, false),
+          y2 = this.AxisToSvg("y", arrow.fY2, false),
+          right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
+          left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
+          m_start = null, m_mid = null, m_end = null, defs = null,
+          oo = arrow.fOption, len = oo.length;
 
-         var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
-         if (wsize<3) wsize = 3;
-         var hsize = wsize * Math.tan(arrow.fAngle/2 * (Math.PI/180));
-
-         // create svg:g container for line drawing
-         this.RecreateDrawG(true, "text_layer");
-
-         var x1 = this.AxisToSvg("x", arrow.fX1, false),
-             y1 = this.AxisToSvg("y", arrow.fY1, false),
-             x2 = this.AxisToSvg("x", arrow.fX2, false),
-             y2 = this.AxisToSvg("y", arrow.fY2, false),
-             right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
-             left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
-             m_start = null, m_mid = null, m_end = null, defs = null,
-             oo = arrow.fOption, len = oo.length;
-
-         if (oo.indexOf("<")==0) {
-            var closed = (oo.indexOf("<|") == 0);
-            if (!defs) defs = this.draw_g.append("defs");
-            m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
-            var beg = defs.append("svg:marker")
-                .attr("id", m_start)
-                .attr("markerWidth", wsize.toFixed(1))
-                .attr("markerHeight", (hsize*2).toFixed(1))
-                .attr("refX", "0")
-                .attr("refY", hsize.toFixed(1))
-                .attr("orient", "auto")
-                .attr("markerUnits", "userSpaceOnUse")
-                .append("svg:path")
-                .style("fill","none")
-                .attr("d", left_arrow + (closed ? " Z" : ""))
-                .call(this.lineatt.func);
-            if (closed) beg.call(this.fillatt.func);
-         }
-
-         var midkind = 0;
-         if (oo.indexOf("->-")>=0)  midkind = 1; else
-         if (oo.indexOf("-|>-")>=0) midkind = 11; else
-         if (oo.indexOf("-<-")>=0) midkind = 2; else
-         if (oo.indexOf("-<|-")>=0) midkind = 12;
-
-         if (midkind > 0) {
-            var closed = midkind > 10;
-            if (!defs) defs = this.draw_g.append("defs");
-            m_mid = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-
-            var mid = defs.append("svg:marker")
-              .attr("id", m_mid)
-              .attr("markerWidth", wsize.toFixed(1))
-              .attr("markerHeight", (hsize*2).toFixed(1))
-              .attr("refX", (wsize*0.5).toFixed(1))
-              .attr("refY", hsize.toFixed(1))
-              .attr("orient", "auto")
-              .attr("markerUnits", "userSpaceOnUse")
-              .append("svg:path")
-              .style("fill","none")
-              .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) +
-                         ((midkind > 10) ? " Z" : ""))
-              .call(this.lineatt.func);
-            if (midkind > 10) mid.call(this.fillatt.func);
-         }
-
-         if (oo.lastIndexOf(">") == len-1) {
-            var closed = (oo.lastIndexOf("|>") == len-2) && (len>1);
-            if (!defs) defs = this.draw_g.append("defs");
-            m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-            var end = defs.append("svg:marker")
-              .attr("id", m_end)
-              .attr("markerWidth", wsize.toFixed(1))
-              .attr("markerHeight", (hsize*2).toFixed(1))
-              .attr("refX", wsize.toFixed(1))
-              .attr("refY", hsize.toFixed(1))
-              .attr("orient", "auto")
-              .attr("markerUnits", "userSpaceOnUse")
-              .append("svg:path")
-              .style("fill","none")
-              .attr("d", right_arrow + (closed ? " Z" : ""))
-              .call(this.lineatt.func);
-            if (closed) end.call(this.fillatt.func);
-         }
-
-         var path = this.draw_g
-             .append("svg:path")
-             .attr("d",  "M" + x1 + "," + y1 +
-                      ((m_mid == null) ? "" : "L" + (x1/2+x2/2).toFixed(1) + "," + (y1/2+y2/2).toFixed(1)) +
-                        " L" + x2 + "," + y2)
-             .call(this.lineatt.func);
-
-         if (m_start) path.style("marker-start","url(#" + m_start + ")");
-         if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
-         if (m_end) path.style("marker-end","url(#" + m_end + ")");
+      if (oo.indexOf("<")==0) {
+         var closed = (oo.indexOf("<|") == 0);
+         if (!defs) defs = this.draw_g.append("defs");
+         m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
+         var beg = defs.append("svg:marker")
+                       .attr("id", m_start)
+                       .attr("markerWidth", wsize.toFixed(1))
+                       .attr("markerHeight", (hsize*2).toFixed(1))
+                       .attr("refX", "0")
+                       .attr("refY", hsize.toFixed(1))
+                       .attr("orient", "auto")
+                       .attr("markerUnits", "userSpaceOnUse")
+                       .append("svg:path")
+                       .style("fill","none")
+                       .attr("d", left_arrow + (closed ? " Z" : ""))
+                       .call(this.lineatt.func);
+         if (closed) beg.call(this.fillatt.func);
       }
 
-      painter.Redraw(); // actual drawing
-      return painter.DrawingReady();
+      var midkind = 0;
+      if (oo.indexOf("->-")>=0)  midkind = 1; else
+      if (oo.indexOf("-|>-")>=0) midkind = 11; else
+      if (oo.indexOf("-<-")>=0) midkind = 2; else
+      if (oo.indexOf("-<|-")>=0) midkind = 12;
+
+      if (midkind > 0) {
+         var closed = midkind > 10;
+         if (!defs) defs = this.draw_g.append("defs");
+         m_mid = "jsroot_arrowmarker_" + JSROOT.id_counter++;
+
+         var mid = defs.append("svg:marker")
+                      .attr("id", m_mid)
+                      .attr("markerWidth", wsize.toFixed(1))
+                      .attr("markerHeight", (hsize*2).toFixed(1))
+                      .attr("refX", (wsize*0.5).toFixed(1))
+                      .attr("refY", hsize.toFixed(1))
+                      .attr("orient", "auto")
+                      .attr("markerUnits", "userSpaceOnUse")
+                      .append("svg:path")
+                      .style("fill","none")
+                      .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) +
+                            ((midkind > 10) ? " Z" : ""))
+                            .call(this.lineatt.func);
+         if (midkind > 10) mid.call(this.fillatt.func);
+      }
+
+      if (oo.lastIndexOf(">") == len-1) {
+         var closed = (oo.lastIndexOf("|>") == len-2) && (len>1);
+         if (!defs) defs = this.draw_g.append("defs");
+         m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
+         var end = defs.append("svg:marker")
+                       .attr("id", m_end)
+                       .attr("markerWidth", wsize.toFixed(1))
+                       .attr("markerHeight", (hsize*2).toFixed(1))
+                       .attr("refX", wsize.toFixed(1))
+                       .attr("refY", hsize.toFixed(1))
+                       .attr("orient", "auto")
+                       .attr("markerUnits", "userSpaceOnUse")
+                       .append("svg:path")
+                       .style("fill","none")
+                       .attr("d", right_arrow + (closed ? " Z" : ""))
+                       .call(this.lineatt.func);
+         if (closed) end.call(this.fillatt.func);
+      }
+
+      var path = this.draw_g
+           .append("svg:path")
+           .attr("d",  "M" + x1 + "," + y1 +
+                       ((m_mid == null) ? "" : "L" + (x1/2+x2/2).toFixed(1) + "," + (y1/2+y2/2).toFixed(1)) +
+                       " L" + x2 + "," + y2)
+            .call(this.lineatt.func);
+
+      if (m_start) path.style("marker-start","url(#" + m_start + ")");
+      if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
+      if (m_end) path.style("marker-end","url(#" + m_end + ")");
    }
 
    // =================================================================================
