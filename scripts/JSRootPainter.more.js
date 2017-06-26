@@ -1368,7 +1368,14 @@
          return res;
       }
 
-      this.DrawNextHisto = function(indx, opt, mm) {
+      this.DrawNextHisto = function(indx, opt, mm, subp) {
+         if (mm === "callback") {
+            mm = null; // just misuse min/max argument to indicate callback
+            if (indx<0) this.firstpainter = subp;
+                   else this.painters.push(subp);
+            indx++;
+         }
+
          var stack = this.GetObject(),
              hist = stack.fHistogram, hopt = "",
              hlst = this.nostack ? stack.fHists : stack.fStack,
@@ -1391,12 +1398,7 @@
          // also used to provide tooltips
          if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
-         var subp = JSROOT.draw(this.divid, hist, hopt);
-
-         if (indx<0) this.firstpainter = subp;
-                else this.painters.push(subp);
-
-         subp.WhenReady(this.DrawNextHisto.bind(this, indx+1, opt));
+         JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
       }
 
       this.drawStack = function(opt) {
@@ -2472,18 +2474,17 @@
                      this.DrawNextFunction.bind(this, indx+1, callback));
       }
 
-      this.DrawNextGraph = function(indx, opt) {
+      this.DrawNextGraph = function(indx, opt, subp) {
+         if (subp) this.painters.push(subp);
+
          var graphs = this.GetObject().fGraphs;
 
          // at the end of graphs drawing draw functions (if any)
          if (indx >= graphs.arr.length)
             return this.DrawNextFunction(0, this.DrawingReady.bind(this));
 
-         var drawopt = graphs.opt[indx];
-         if ((drawopt==null) || (drawopt == "")) drawopt = opt;
-         var subp = JSROOT.draw(this.divid, graphs.arr[indx], drawopt);
-         this.painters.push(subp);
-         subp.WhenReady(this.DrawNextGraph.bind(this, indx+1, opt));
+         JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt,
+                     this.DrawNextGraph.bind(this, indx+1, opt));
       }
 
       if (opt == null) opt = "";
@@ -3064,6 +3065,8 @@
       if (pal_painter === null) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          var prev = this.CurrentPadName(this.pad_name);
+         // CAUTION!!! This is very special place where return value of JSROOT.draw is allowed
+         // while palette drawing is in same script. Normally callback should be used
          pal_painter = JSROOT.draw(this.divid, pal, arg);
          this.CurrentPadName(prev);
       } else {

@@ -2530,10 +2530,10 @@
       this._websocket_opened = false;
 
       var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
-      
+
       function retry_open(first_time) {
-    	 console.log("try again"); 
-    	  
+    	 console.log("try again");
+
     	 if (pthis._websocket_opened) return;
     	 if (pthis._websocket) pthis._websocket.close();
     	 delete pthis._websocket;
@@ -2555,9 +2555,9 @@
             console.log('configure longpoll ' + path);
             conn = JSROOT.LongPollSocket(path);
          }
-    	    	 
+
     	 pthis._websocket = conn;
-     
+
       conn.onopen = function() {
          console.log('websocket initialized');
          pthis._websocket_opened = true;
@@ -2632,7 +2632,7 @@
          delete pthis._websocket;
          if (pthis._websocket_opened) {
         	 pthis._websocket_opened = false;
-        	 window.close(); // close window when socked disapper   	 
+        	 window.close(); // close window when socked disapper
          }
       }
 
@@ -2640,11 +2640,11 @@
          console.log("err "+err);
          // conn.close();
       }
-      
+
       setTimeout(retry_open, 3000); // after 3 seconds try again
-      
+
       } // retry_open
-      
+
       retry_open(true); // after short timeout
       // retry_open(); // call for the first time
    }
@@ -4848,12 +4848,13 @@
       return false;
    }
 
-   JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback) {
+   JSROOT.TPadPainter.prototype.DrawPrimitive = function(indx, callback, ppainter) {
+      if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
+
       if (!this.pad || (indx >= this.pad.fPrimitives.arr.length))
          return JSROOT.CallBack(callback);
 
-      var pp = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], this.DrawPrimitive.bind(this, indx+1, callback));
-      if (pp) pp._primitive = true; // mark painter as belonging to primitives
+      JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], this.DrawPrimitive.bind(this, indx+1, callback));
    }
 
    JSROOT.TPadPainter.prototype.GetTooltips = function(pnt) {
