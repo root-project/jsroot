@@ -3134,34 +3134,34 @@
          obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-      if (!obj) return this.DrawingReady();
+      if (!obj) return null;
 
-      JSROOT.extend(this, new JSROOT.TGeoPainter(obj, is_manager));
+      var painter = new JSROOT.TGeoPainter(obj, is_manager);
 
-      this.SetDivId(divid, 5);
+      painter.SetDivId(divid, 5);
 
-      this._usesvg = JSROOT.BatchMode;
+      painter._usesvg = JSROOT.BatchMode;
 
-      this._webgl = !this._usesvg && JSROOT.Painter.TestWebGL();
+      painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
-      this.options = this.decodeOptions(opt);
+      painter.options = painter.decodeOptions(opt);
 
-      if (this.options._yup === undefined)
-         this.options._yup = this.svg_canvas().empty();
+      if (painter.options._yup === undefined)
+         painter.options._yup = painter.svg_canvas().empty();
 
-      if (this.options.is_main && !obj.$geo_painter)
-         obj.$geo_painter = this;
+      if (painter.options.is_main && !obj.$geo_painter)
+         obj.$geo_painter = painter;
 
-      if (!this.options.is_main && this.options.project && obj.$geo_painter) {
-         this._main_painter = obj.$geo_painter;
-         this._main_painter._slave_painters.push(this);
+      if (!painter.options.is_main && painter.options.project && obj.$geo_painter) {
+         painter._main_painter = obj.$geo_painter;
+         painter._main_painter._slave_painters.push(painter);
       }
 
       // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
 
-      this.checkScript(this.options.script_name, this.prepareObjectDraw.bind(this));
+      painter.checkScript(painter.options.script_name, painter.prepareObjectDraw.bind(painter));
 
-      return this;
+      return painter;
    }
 
    /// keep for backwards compatibility

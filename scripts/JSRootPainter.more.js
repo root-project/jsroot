@@ -684,9 +684,11 @@
 
    JSROOT.Painter.drawBox = function(divid, obj, opt) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var box = this.GetObject(),
              lineatt = JSROOT.Painter.createAttLine(box),
              fillatt = this.createAttFill(box);
@@ -712,20 +714,22 @@
              .call(fillatt.func);
       }
 
-      this.draw_line = (typeof opt=='string') && (opt.toUpperCase().indexOf("L")>=0);
+      painter.draw_line = (typeof opt=='string') && (opt.toUpperCase().indexOf("L")>=0);
 
-      this.Redraw(); // actual drawing
+      painter.Redraw(); // actual drawing
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    // =============================================================================
 
    JSROOT.Painter.drawMarker = function(divid, obj) {
 
-      this.SetDivId(divid, 2);
+      var painter = new JSROOT.TObjectPainter(obj);
 
-      this.Redraw = function() {
+      painter.SetDivId(divid, 2);
+
+      painter.Redraw = function() {
          var marker = this.GetObject(),
              att = JSROOT.Painter.createAttMarker(marker),
              kMarkerNDC = JSROOT.BIT(14),
@@ -745,9 +749,9 @@
                 .call(att.func);
       }
 
-      this.Redraw(); // actual drawing
+      painter.Redraw(); // actual drawing
 
-      return this.DrawingReady();
+      return painter.DrawingReady();
    }
 
    // ======================================================================================
@@ -2541,13 +2545,13 @@
 
    JSROOT.Painter.drawLegend = function(divid, obj, opt) {
 
-      JSROOT.extend(this, new JSROOT.TPavePainter(obj));
+      var painter = new JSROOT.TPavePainter(obj);
 
-      this.SetDivId(divid, 2);
+      painter.SetDivId(divid, 2);
 
-      this.AssignFinishPave(); // do it once again while this is changed
+      painter.AssignFinishPave(); // do it once again while this is changed
 
-      this.DrawLegendItems = function(w, h) {
+      painter.PaveDrawFunc = function(w, h) {
 
          var legend = this.GetObject(),
              nlines = legend.fPrimitives.arr.length,
@@ -2647,11 +2651,9 @@
          this.FinishTextDrawing(null, this.FinishPave);
       }
 
-      this.PaveDrawFunc = this.DrawLegendItems;
+      painter.Redraw();
 
-      this.Redraw();
-
-      return this;
+      return painter;
    }
 
    // ===========================================================================
