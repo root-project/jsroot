@@ -1231,268 +1231,278 @@
 
    // ====================================================================
 
+
+   JSROOT.THStackPainter = function(stack) {
+      JSROOT.TObjectPainter.call(this, stack);
+
+      this.nostack = false;
+      this.firstpainter = null;
+      this.painters = []; // keep painters to be able update objects
+   }
+
+
+   JSROOT.THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   JSROOT.THStackPainter.prototype.Cleanup = function() {
+      delete this.firstpainter;
+      delete this.painters;
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
+   JSROOT.THStackPainter.prototype.HasErrors = function(hist) {
+      if (hist.fSumw2 && (hist.fSumw2.length > 0))
+         for (var n=0;n<hist.fSumw2.length;++n)
+            if (hist.fSumw2[n] > 0) return true;
+      return false;
+   }
+
+   JSROOT.THStackPainter.prototype.BuildStack = function() {
+      //  build sum of all histograms
+      //  Build a separate list fStack containing the running sum of all histograms
+
+      var stack = this.GetObject();
+      if (!stack.fHists) return false;
+      var nhists = stack.fHists.arr.length;
+      if (nhists <= 0) return false;
+      var lst = JSROOT.Create("TList");
+      lst.Add(JSROOT.clone(stack.fHists.arr[0]));
+      this.haserrors = this.HasErrors(stack.fHists.arr[0]);
+      for (var i=1;i<nhists;++i) {
+         var hnext = JSROOT.clone(stack.fHists.arr[i]);
+         var hprev = lst.arr[i-1];
+
+         if ((hnext.fNbins != hprev.fNbins) ||
+             (hnext.fXaxis.fXmin != hprev.fXaxis.fXmin) ||
+             (hnext.fXaxis.fXmax != hprev.fXaxis.fXmax)) {
+            JSROOT.console("When drawing THStack, cannot sum-up histograms " + hnext.fName + " and " + hprev.fName);
+            delete hnext;
+            lst.Clear();
+            delete lst;
+            return false;
+         }
+
+         this.haserrors = this.haserrors || this.HasErrors(stack.fHists.arr[i]);
+
+         // trivial sum of histograms
+         for (var n = 0; n < hnext.fArray.length; ++n)
+            hnext.fArray[n] += hprev.fArray[n];
+
+         lst.Add(hnext);
+      }
+      stack.fStack = lst;
+      return true;
+   }
+
+   JSROOT.THStackPainter.prototype.GetHistMinMax = function(hist, witherr) {
+      var res = { min : 0, max : 0 },
+          domin = true, domax = true;
+      if (hist.fMinimum !== -1111) {
+         res.min = hist.fMinimum;
+         domin = false;
+      }
+      if (hist.fMaximum !== -1111) {
+         res.max = hist.fMaximum;
+         domax = false;
+      }
+
+      if (!domin && !domax) return res;
+
+      var i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
+
+      if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         i1 = hist.fXaxis.fFirst;
+         i2 = hist.fXaxis.fLast;
+      }
+
+      if (hist._typename.indexOf("TH2")===0) {
+         j2 = hist.fYaxis.fNbins;
+         if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+            j1 = hist.fYaxis.fFirst;
+            j2 = hist.fYaxis.fLast;
+         }
+      }
+      for (var j=j1; j<=j2;++j)
+         for (var i=i1; i<=i2;++i) {
+            var val = hist.getBinContent(i, j),
+                err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
+            if (domin && (first || (val-err < res.min))) res.min = val-err;
+            if (domax && (first || (val+err > res.max))) res.max = val+err;
+            first = false;
+        }
+
+      return res;
+   }
+
+   JSROOT.THStackPainter.prototype.GetMinMax = function(iserr) {
+      var res = { min : 0, max : 0 },
+          stack = this.GetObject();
+
+      if (this.nostack) {
+         for (var i = 0; i < stack.fHists.arr.length; ++i) {
+            var resh = this.GetHistMinMax(stack.fHists.arr[i], iserr);
+            if (i==0) res = resh; else {
+               if (resh.min < res.min) res.min = resh.min;
+               if (resh.max > res.max) res.max = resh.max;
+            }
+         }
+
+         if (stack.fMaximum != -1111)
+            res.max = stack.fMaximum;
+         else
+            res.max *= 1.05;
+
+         if (stack.fMinimum != -1111) res.min = stack.fMinimum;
+      } else {
+         res.min = this.GetHistMinMax(stack.fStack.arr[0], iserr).min;
+         res.max = this.GetHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max * 1.05;
+      }
+
+      var pad = this.root_pad();
+      if (pad && pad.fLogy) {
+         if (res.min<0) res.min = res.max * 1e-4;
+      }
+
+      return res;
+   }
+
+   JSROOT.THStackPainter.prototype.DrawNextHisto = function(indx, opt, mm, subp) {
+      if (mm === "callback") {
+         mm = null; // just misuse min/max argument to indicate callback
+         if (indx<0) this.firstpainter = subp;
+                else this.painters.push(subp);
+         indx++;
+      }
+
+      var stack = this.GetObject(),
+          hist = stack.fHistogram, hopt = "",
+          hlst = this.nostack ? stack.fHists : stack.fStack,
+          nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
+
+      if (indx>=nhists) return this.DrawingReady();
+
+      if (indx>=0) {
+         rindx = this.horder ? indx : nhists-indx-1;
+         hist = hlst.arr[rindx];
+         hopt = hlst.opt[rindx] || hist.fOption || opt;
+         if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
+         hopt += " same";
+      } else {
+         hopt = (opt || "") + " axis";
+         if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
+      }
+
+      // special handling of stacked histograms - set $baseh object for correct drawing
+      // also used to provide tooltips
+      if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
+
+      JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
+   }
+
+   JSROOT.THStackPainter.prototype.drawStack = function(opt) {
+
+      var pad = this.root_pad(),
+          stack = this.GetObject(),
+          histos = stack.fHists,
+          nhists = histos.arr.length,
+          d = new JSROOT.DrawOptions(opt),
+          lsame = d.check("SAME");
+
+      this.nostack = d.check("NOSTACK");
+
+      opt = d.opt; // use remaining draw options for histogram draw
+
+      // when building stack, one could fail to sum up histograms
+      if (!this.nostack)
+         this.nostack = ! this.BuildStack();
+
+      // if any histogram appears with pre-calculated errors, use E for all histograms
+      if (!this.nostack && this.haserrors && !d.check("HIST")) opt+= " E";
+
+      // order used to display histograms in stack direct - true, reverse - false
+      this.dolego = d.check("LEGO");
+      this.horder = this.nostack || this.dolego;
+
+      var mm = this.GetMinMax(d.check("E"));
+
+      var histo = stack.fHistogram;
+
+      if (!histo) {
+
+         // compute the min/max of each axis
+         var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
+         for (var i = 0; i < nhists; ++i) {
+            var h = histos.arr[i];
+            if (i == 0 || h.fXaxis.fXmin < xmin)
+               xmin = h.fXaxis.fXmin;
+            if (i == 0 || h.fXaxis.fXmax > xmax)
+               xmax = h.fXaxis.fXmax;
+            if (i == 0 || h.fYaxis.fXmin < ymin)
+               ymin = h.fYaxis.fXmin;
+            if (i == 0 || h.fYaxis.fXmax > ymax)
+               ymax = h.fYaxis.fXmax;
+         }
+
+         var h = stack.fHists.arr[0];
+         stack.fHistogram = histo = JSROOT.CreateHistogram("TH1I", h.fXaxis.fNbins);
+         histo.fName = h.fName;
+         histo.fXaxis = JSROOT.clone(h.fXaxis);
+         histo.fYaxis = JSROOT.clone(h.fYaxis);
+         histo.fXaxis.fXmin = xmin;
+         histo.fXaxis.fXmax = xmax;
+         histo.fYaxis.fXmin = ymin;
+         histo.fYaxis.fXmax = ymax;
+      }
+      histo.fTitle = stack.fTitle;
+
+      if (pad && pad.fLogy) {
+         if (mm.max<=0) mm.max = 1;
+         if (mm.min<=0) mm.min = 1e-4*mm.max;
+         var kmin = 1/(1 + 0.5*JSROOT.log10(mm.max / mm.min)),
+             kmax = 1 + 0.2*JSROOT.log10(mm.max / mm.min);
+         mm.min*=kmin;
+         mm.max*=kmax;
+      }
+
+      this.DrawNextHisto(!lsame ? -1 : 0, opt, mm);
+      return this;
+   }
+
+   JSROOT.THStackPainter.prototype.UpdateObject = function(obj) {
+      if (!this.MatchObjectType(obj)) return false;
+
+      var isany = false;
+      if (this.firstpainter)
+         if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
+
+      var harr = this.nostack ? obj.fHists.arr : obj.fStack.arr,
+          nhists = Math.min(harr.length, this.painters.length);
+
+      for (var i = 0; i < nhists; ++i) {
+         var hist = harr[this.horder ? i : nhists - i - 1];
+         if (this.painters[i].UpdateObject(hist)) isany = true;
+      }
+
+      return isany;
+   }
+
+
    JSROOT.Painter.drawHStack = function(divid, stack, opt) {
       // paint the list of histograms
       // By default, histograms are shown stacked.
       // - the first histogram is paint
       // - then the sum of the first and second, etc
 
-      // 'this' pointer set to created painter instance
-      this.nostack = false;
-      this.firstpainter = null;
-      this.painters = []; // keep painters to be able update objects
+      var painter = new JSROOT.THStackPainter(stack);
 
-      this.SetDivId(divid, -1); // it maybe no element to set divid
+      painter.SetDivId(divid, -1); // it maybe no element to set divid
 
-      if (!stack.fHists || (stack.fHists.arr.length == 0)) return this.DrawingReady();
+      if (!stack.fHists || (stack.fHists.arr.length == 0)) return painter.DrawingReady();
 
-      this.Cleanup = function() {
-         delete this.firstpainter;
-         delete this.painters;
-         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
-      }
+      painter.drawStack(opt);
 
-      this.HasErrors = function(hist) {
-         if (hist.fSumw2 && (hist.fSumw2.length > 0))
-            for (var n=0;n<hist.fSumw2.length;++n)
-               if (hist.fSumw2[n] > 0) return true;
-         return false;
-      }
+      painter.SetDivId(divid); // only when first histogram drawn, we could assign divid
 
-      this.BuildStack = function() {
-         //  build sum of all histograms
-         //  Build a separate list fStack containing the running sum of all histograms
-
-         var stack = this.GetObject();
-         if (!stack.fHists) return false;
-         var nhists = stack.fHists.arr.length;
-         if (nhists <= 0) return false;
-         var lst = JSROOT.Create("TList");
-         lst.Add(JSROOT.clone(stack.fHists.arr[0]));
-         this.haserrors = this.HasErrors(stack.fHists.arr[0]);
-         for (var i=1;i<nhists;++i) {
-            var hnext = JSROOT.clone(stack.fHists.arr[i]);
-            var hprev = lst.arr[i-1];
-
-            if ((hnext.fNbins != hprev.fNbins) ||
-                (hnext.fXaxis.fXmin != hprev.fXaxis.fXmin) ||
-                (hnext.fXaxis.fXmax != hprev.fXaxis.fXmax)) {
-               JSROOT.console("When drawing THStack, cannot sum-up histograms " + hnext.fName + " and " + hprev.fName);
-               delete hnext;
-               lst.Clear();
-               delete lst;
-               return false;
-            }
-
-            this.haserrors = this.haserrors || this.HasErrors(stack.fHists.arr[i]);
-
-            // trivial sum of histograms
-            for (var n = 0; n < hnext.fArray.length; ++n)
-               hnext.fArray[n] += hprev.fArray[n];
-
-            lst.Add(hnext);
-         }
-         stack.fStack = lst;
-         return true;
-      }
-
-      this.GetHistMinMax = function(hist, witherr) {
-         var res = { min : 0, max : 0 },
-             domin = true, domax = true;
-         if (hist.fMinimum !== -1111) {
-            res.min = hist.fMinimum;
-            domin = false;
-         }
-         if (hist.fMaximum !== -1111) {
-            res.max = hist.fMaximum;
-            domax = false;
-         }
-
-         if (!domin && !domax) return res;
-
-         var i1 = 1, i2 = hist.fXaxis.fNbins, j1 = 1, j2 = 1, first = true;
-
-         if (hist.fXaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-            i1 = hist.fXaxis.fFirst;
-            i2 = hist.fXaxis.fLast;
-         }
-
-         if (hist._typename.indexOf("TH2")===0) {
-            j2 = hist.fYaxis.fNbins;
-            if (hist.fYaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-               j1 = hist.fYaxis.fFirst;
-               j2 = hist.fYaxis.fLast;
-            }
-         }
-         for (var j=j1; j<=j2;++j)
-            for (var i=i1; i<=i2;++i) {
-               var val = hist.getBinContent(i, j),
-                   err = witherr ? hist.getBinError(hist.getBin(i,j)) : 0;
-               if (domin && (first || (val-err < res.min))) res.min = val-err;
-               if (domax && (first || (val+err > res.max))) res.max = val+err;
-               first = false;
-           }
-
-         return res;
-      }
-
-      this.GetMinMax = function(iserr) {
-         var res = { min : 0, max : 0 },
-             stack = this.GetObject();
-
-         if (this.nostack) {
-            for (var i = 0; i < stack.fHists.arr.length; ++i) {
-               var resh = this.GetHistMinMax(stack.fHists.arr[i], iserr);
-               if (i==0) res = resh; else {
-                  if (resh.min < res.min) res.min = resh.min;
-                  if (resh.max > res.max) res.max = resh.max;
-               }
-            }
-
-            if (stack.fMaximum != -1111)
-               res.max = stack.fMaximum;
-            else
-               res.max *= 1.05;
-
-            if (stack.fMinimum != -1111) res.min = stack.fMinimum;
-         } else {
-            res.min = this.GetHistMinMax(stack.fStack.arr[0], iserr).min;
-            res.max = this.GetHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max * 1.05;
-         }
-
-         var pad = this.root_pad();
-         if (pad && pad.fLogy) {
-            if (res.min<0) res.min = res.max * 1e-4;
-         }
-
-         return res;
-      }
-
-      this.DrawNextHisto = function(indx, opt, mm, subp) {
-         if (mm === "callback") {
-            mm = null; // just misuse min/max argument to indicate callback
-            if (indx<0) this.firstpainter = subp;
-                   else this.painters.push(subp);
-            indx++;
-         }
-
-         var stack = this.GetObject(),
-             hist = stack.fHistogram, hopt = "",
-             hlst = this.nostack ? stack.fHists : stack.fStack,
-             nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
-
-         if (indx>=nhists) return this.DrawingReady();
-
-         if (indx>=0) {
-            rindx = this.horder ? indx : nhists-indx-1;
-            hist = hlst.arr[rindx];
-            hopt = hlst.opt[rindx] || hist.fOption || opt;
-            if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
-            hopt += " same";
-         } else {
-            hopt = (opt || "") + " axis";
-            if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
-         }
-
-         // special handling of stacked histograms - set $baseh object for correct drawing
-         // also used to provide tooltips
-         if ((rindx > 0) && !this.nostack) hist.$baseh = hlst.arr[rindx - 1];
-
-         JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
-      }
-
-      this.drawStack = function(opt) {
-
-         var pad = this.root_pad(),
-             stack = this.GetObject(),
-             histos = stack.fHists,
-             nhists = histos.arr.length,
-             d = new JSROOT.DrawOptions(opt),
-             lsame = d.check("SAME");
-
-         this.nostack = d.check("NOSTACK");
-
-         opt = d.opt; // use remaining draw options for histogram draw
-
-         // when building stack, one could fail to sum up histograms
-         if (!this.nostack)
-            this.nostack = ! this.BuildStack();
-
-         // if any histogram appears with pre-calculated errors, use E for all histograms
-         if (!this.nostack && this.haserrors && !d.check("HIST")) opt+= " E";
-
-         // order used to display histograms in stack direct - true, reverse - false
-         this.dolego = d.check("LEGO");
-         this.horder = this.nostack || this.dolego;
-
-         var mm = this.GetMinMax(d.check("E"));
-
-         var histo = stack.fHistogram;
-
-         if (!histo) {
-
-            // compute the min/max of each axis
-            var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-            for (var i = 0; i < nhists; ++i) {
-               var h = histos.arr[i];
-               if (i == 0 || h.fXaxis.fXmin < xmin)
-                  xmin = h.fXaxis.fXmin;
-               if (i == 0 || h.fXaxis.fXmax > xmax)
-                  xmax = h.fXaxis.fXmax;
-               if (i == 0 || h.fYaxis.fXmin < ymin)
-                  ymin = h.fYaxis.fXmin;
-               if (i == 0 || h.fYaxis.fXmax > ymax)
-                  ymax = h.fYaxis.fXmax;
-            }
-
-            var h = stack.fHists.arr[0];
-            stack.fHistogram = histo = JSROOT.CreateHistogram("TH1I", h.fXaxis.fNbins);
-            histo.fName = h.fName;
-            histo.fXaxis = JSROOT.clone(h.fXaxis);
-            histo.fYaxis = JSROOT.clone(h.fYaxis);
-            histo.fXaxis.fXmin = xmin;
-            histo.fXaxis.fXmax = xmax;
-            histo.fYaxis.fXmin = ymin;
-            histo.fYaxis.fXmax = ymax;
-         }
-         histo.fTitle = stack.fTitle;
-
-         if (pad && pad.fLogy) {
-            if (mm.max<=0) mm.max = 1;
-            if (mm.min<=0) mm.min = 1e-4*mm.max;
-            var kmin = 1/(1 + 0.5*JSROOT.log10(mm.max / mm.min)),
-                kmax = 1 + 0.2*JSROOT.log10(mm.max / mm.min);
-            mm.min*=kmin;
-            mm.max*=kmax;
-         }
-
-         this.DrawNextHisto(!lsame ? -1 : 0, opt, mm);
-         return this;
-      }
-
-      this.UpdateObject = function(obj) {
-         if (!this.MatchObjectType(obj)) return false;
-
-         var isany = false;
-         if (this.firstpainter)
-            if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
-
-         var harr = this.nostack ? obj.fHists.arr : obj.fStack.arr,
-             nhists = Math.min(harr.length, this.painters.length);
-
-         for (var i = 0; i < nhists; ++i) {
-            var hist = harr[this.horder ? i : nhists - i - 1];
-            if (this.painters[i].UpdateObject(hist)) isany = true;
-         }
-
-         return isany;
-      }
-
-      this.drawStack(opt);
-
-      this.SetDivId(divid); // only when first histogram drawn, we could assign divid
-
-      return this;
+      return painter;
    }
 
    // =======================================================================
