@@ -4120,7 +4120,7 @@
 
          menu.addchk(main.enable_highlight, 'Highlight bins', function() {
             main.enable_highlight = !main.enable_highlight;
-            if (!main.enable_highlight && main.BinHighlight3D) main.BinHighlight3D(null);
+            if (!main.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
          });
 
          menu.addchk(main.options.FrontBox, 'Front box', function() {
