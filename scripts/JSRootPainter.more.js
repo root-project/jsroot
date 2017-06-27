@@ -27,7 +27,7 @@
 
    JSROOT.sources.push("more2d");
 
-   JSROOT.Painter.drawText = function() {
+   function drawText() {
       var text = this.GetObject(),
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
@@ -69,7 +69,8 @@
 
    // =====================================================================================
 
-   JSROOT.Painter.drawLine = function() {
+   function drawLine() {
+
       var line = this.GetObject(),
           lineatt = JSROOT.Painter.createAttLine(line),
           kLineNDC = JSROOT.BIT(14),
@@ -89,7 +90,7 @@
 
    // =============================================================================
 
-   JSROOT.Painter.drawPolyLine = function() {
+   function drawPolyLine() {
 
       var polyline = this.GetObject(),
           lineatt = JSROOT.Painter.createAttLine(polyline),
@@ -117,7 +118,7 @@
 
    // ==============================================================================
 
-   JSROOT.Painter.drawEllipse = function() {
+   function drawEllipse() {
 
       var ellipse = this.GetObject();
 
@@ -166,7 +167,7 @@
 
    // =============================================================================
 
-   JSROOT.Painter.drawBox = function(divid, obj, opt) {
+   function drawBox(divid, obj, opt) {
 
       var box = this.GetObject(),
           draw_line = (typeof this._drawopt == 'string') && (this._drawopt.toUpperCase().indexOf("L")>=0),
@@ -196,7 +197,7 @@
 
    // =============================================================================
 
-   JSROOT.Painter.drawMarker = function() {
+   function drawMarker() {
       var marker = this.GetObject(),
           att = JSROOT.Painter.createAttMarker(marker),
           kMarkerNDC = JSROOT.BIT(14),
@@ -217,7 +218,7 @@
 
    // ======================================================================================
 
-   JSROOT.Painter.drawArrow = function() {
+   function drawArrow() {
       var arrow = this.GetObject();
       if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
       if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
@@ -317,7 +318,7 @@
 
    // =================================================================================
 
-   JSROOT.Painter.drawRooPlot = function(divid, plot, opt) {
+   function drawRooPlot(divid, plot, opt) {
 
       var painter = new JSROOT.TObjectPainter(plot), cnt = -1;
 
@@ -334,18 +335,18 @@
 
    // ===================================================================================
 
-   JSROOT.TF1Painter = function(tf1) {
+   function TF1Painter(tf1) {
       JSROOT.TObjectPainter.call(this, tf1);
       this.bins = null;
    }
 
-   JSROOT.TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TF1Painter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TF1Painter.prototype.Eval = function(x) {
+   TF1Painter.prototype.Eval = function(x) {
       return this.GetObject().evalPar(x);
    }
 
-   JSROOT.TF1Painter.prototype.CreateBins = function(ignore_zoom) {
+   TF1Painter.prototype.CreateBins = function(ignore_zoom) {
       var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
 
       if ((main!==null) && !ignore_zoom)  {
@@ -404,7 +405,7 @@
       return res;
    }
 
-   JSROOT.TF1Painter.prototype.CreateDummyHisto = function() {
+   TF1Painter.prototype.CreateDummyHisto = function() {
 
       var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
           bins = this.CreateBins(true);
@@ -447,7 +448,7 @@
       return histo;
    }
 
-   JSROOT.TF1Painter.prototype.ProcessTooltipFunc = function(pnt) {
+   TF1Painter.prototype.ProcessTooltipFunc = function(pnt) {
       var cleanup = false;
 
       if ((pnt === null) || (this.bins===null)) {
@@ -512,7 +513,7 @@
       return res;
    }
 
-   JSROOT.TF1Painter.prototype.Redraw = function() {
+   TF1Painter.prototype.Redraw = function() {
 
       var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
 
@@ -573,7 +574,7 @@
         this.ProcessTooltip = this.ProcessTooltipFunc;
    }
 
-   JSROOT.TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
+   TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
       if (axis!=="x") return false;
 
       var tf1 = this.GetObject();
@@ -593,7 +594,7 @@
       return true;
    }
 
-   JSROOT.TF1Painter.prototype.PerformDraw = function() {
+   TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
          var histo = this.CreateDummyHisto(), pthis = this;
          JSROOT.draw(this.divid, histo, "AXIS", function(hpainter) {
@@ -611,7 +612,7 @@
 
    JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
 
-      var painter = new JSROOT.TF1Painter(tf1);
+      var painter = new TF1Painter(tf1);
 
       painter.SetDivId(divid, -1);
       var d = new JSROOT.DrawOptions(opt);
@@ -626,7 +627,7 @@
 
    // =======================================================================
 
-   JSROOT.TGraphPainter = function(graph) {
+   function TGraphPainter(graph) {
       JSROOT.TObjectPainter.call(this, graph);
       this.ownhisto = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
@@ -638,13 +639,13 @@
                          this.is_bent || graph._typename.match(/^RooHist/);
    }
 
-   JSROOT.TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TGraphPainter.prototype.Redraw = function() {
+   TGraphPainter.prototype.Redraw = function() {
       this.DrawBins();
    }
 
-   JSROOT.TGraphPainter.prototype.DecodeOptions = function(opt) {
+   TGraphPainter.prototype.DecodeOptions = function(opt) {
 
       var d = new JSROOT.DrawOptions(opt);
 
@@ -694,7 +695,7 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.CreateBins = function() {
+   TGraphPainter.prototype.CreateBins = function() {
       var gr = this.GetObject();
       if (!gr) return;
 
@@ -742,7 +743,7 @@
       }
    }
 
-   JSROOT.TGraphPainter.prototype.CreateHistogram = function() {
+   TGraphPainter.prototype.CreateHistogram = function() {
       // bins should be created
 
       var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
@@ -775,7 +776,7 @@
       return histo;
    }
 
-   JSROOT.TGraphPainter.prototype.OptimizeBins = function(filter_func) {
+   TGraphPainter.prototype.OptimizeBins = function(filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       var selbins = null;
@@ -801,7 +802,7 @@
       return optbins;
    }
 
-   JSROOT.TGraphPainter.prototype.TooltipText = function(d, asarray) {
+   TGraphPainter.prototype.TooltipText = function(d, asarray) {
       var pmain = this.main_painter(), lines = [];
 
       lines.push(this.GetTipName());
@@ -823,7 +824,7 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.DrawBins = function() {
+   TGraphPainter.prototype.DrawBins = function() {
 
       this.RecreateDrawG(false, "main_layer");
 
@@ -1120,7 +1121,7 @@
       }
    }
 
-   JSROOT.TGraphPainter.prototype.ProcessTooltip = function(pnt) {
+   TGraphPainter.prototype.ProcessTooltip = function(pnt) {
       if (!pnt) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
@@ -1219,7 +1220,7 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
+   TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
 
       if (this.bins === null) return null;
 
@@ -1346,7 +1347,7 @@
       return res;
    }
 
-   JSROOT.TGraphPainter.prototype.UpdateObject = function(obj) {
+   TGraphPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
       // if our own histogram was used as axis drawing, we need update histogram  as well
@@ -1362,7 +1363,7 @@
       return true;
    }
 
-   JSROOT.TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
+   TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
       // allow to zoom TGraph only when at least one point in the range
 
       var gr = this.GetObject();
@@ -1374,7 +1375,7 @@
       return false;
    }
 
-   JSROOT.TGraphPainter.prototype.ButtonClick = function(funcname) {
+   TGraphPainter.prototype.ButtonClick = function(funcname) {
 
       if (funcname !== "ToggleZoom") return false;
 
@@ -1388,7 +1389,7 @@
       return true;
    }
 
-   JSROOT.TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
+   TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
       var graph = this.GetObject();
@@ -1400,7 +1401,7 @@
                   this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
-   JSROOT.TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
+   TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
       if (hpainter) this.ownhisto = true;
       this.SetDivId(divid);
       this.DrawBins();
@@ -1410,7 +1411,7 @@
 
    JSROOT.Painter.drawGraph = function(divid, graph, opt) {
 
-      var painter = new JSROOT.TGraphPainter(graph);
+      var painter = new TGraphPainter(graph);
 
       painter.options = painter.DecodeOptions(opt);
 
@@ -1431,21 +1432,21 @@
 
    // =============================================================
 
-   JSROOT.TMultiGraphPainter = function(mgraph) {
+   function TMultiGraphPainter(mgraph) {
       JSROOT.TObjectPainter.call(this, mgraph);
       this.firstpainter = null;
       this.autorange = false;
       this.painters = []; // keep painters to be able update objects
    }
 
-   JSROOT.TMultiGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TMultiGraphPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TMultiGraphPainter.prototype.Cleanup = function() {
+   TMultiGraphPainter.prototype.Cleanup = function() {
       this.painters = [];
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.TMultiGraphPainter.prototype.UpdateObject = function(obj) {
+   TMultiGraphPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
       var mgraph = this.GetObject(),
@@ -1478,7 +1479,7 @@
       return isany;
    }
 
-   JSROOT.TMultiGraphPainter.prototype.ComputeGraphRange = function(res, gr) {
+   TMultiGraphPainter.prototype.ComputeGraphRange = function(res, gr) {
       // Compute the x/y range of the points in this graph
       if (gr.fNpoints == 0) return;
       if (res.first) {
@@ -1495,14 +1496,14 @@
       return res;
    }
 
-   JSROOT.TMultiGraphPainter.prototype.padtoX = function(pad, x) {
+   TMultiGraphPainter.prototype.padtoX = function(pad, x) {
       // Convert x from pad to X.
       if (pad.fLogx && (x < 50))
          return Math.exp(2.302585092994 * x);
       return x;
    }
 
-   JSROOT.TMultiGraphPainter.prototype.ScanGraphsRange = function(graphs, histo, pad) {
+   TMultiGraphPainter.prototype.ScanGraphsRange = function(graphs, histo, pad) {
       var mgraph = this.GetObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
@@ -1582,7 +1583,7 @@
       return histo;
    }
 
-   JSROOT.TMultiGraphPainter.prototype.DrawAxis = function(callback) {
+   TMultiGraphPainter.prototype.DrawAxis = function(callback) {
       // draw special histogram
 
       var mgraph = this.GetObject(),
@@ -1593,7 +1594,7 @@
       JSROOT.draw(this.divid, histo, "AXIS", callback);
    }
 
-   JSROOT.TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
+   TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
       var mgraph = this.GetObject();
@@ -1605,7 +1606,7 @@
                   this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
-   JSROOT.TMultiGraphPainter.prototype.DrawNextGraph = function(indx, opt, subp) {
+   TMultiGraphPainter.prototype.DrawNextGraph = function(indx, opt, subp) {
       if (subp) this.painters.push(subp);
 
       var graphs = this.GetObject().fGraphs;
@@ -1620,7 +1621,7 @@
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
 
-      var painter = new JSROOT.TMultiGraphPainter(mgraph);
+      var painter = new TMultiGraphPainter(mgraph);
 
       painter.SetDivId(divid, -1); // it may be no element to set divid
 
@@ -1644,7 +1645,7 @@
 
    // =========================================================================================
 
-   JSROOT.Painter.drawWebPainting = function(divid, obj, opt) {
+   function drawWebPainting(divid, obj, opt) {
 
       var painter = new JSROOT.TObjectPainter(obj);
 
@@ -1793,6 +1794,21 @@
 
       return painter.DrawingReady();
    }
+
+
+   JSROOT.Painter.drawText = drawText;
+   JSROOT.Painter.drawLine = drawLine;
+   JSROOT.Painter.drawPolyLine = drawPolyLine;
+   JSROOT.Painter.drawArrow = drawArrow;
+   JSROOT.Painter.drawEllipse = drawEllipse;
+   JSROOT.Painter.drawBox = drawBox;
+   JSROOT.Painter.drawMarker = drawMarker;
+   JSROOT.Painter.drawWebPainting = drawWebPainting;
+   JSROOT.Painter.drawRooPlot = drawRooPlot;
+
+   JSROOT.TF1Painter = TF1Painter;
+   JSROOT.TGraphPainter = TGraphPainter;
+   JSROOT.TMultiGraphPainter = TMultiGraphPainter;
 
    return JSROOT;
 
