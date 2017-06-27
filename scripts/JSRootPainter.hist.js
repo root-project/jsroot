@@ -751,7 +751,7 @@
 
    // =======================================================================
 
-   JSROOT.TAxisPainter = function(axis, embedded) {
+   function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
       this.embedded = embedded; // indicate that painter embedded into the histo painter
@@ -769,9 +769,9 @@
       this.invert_side = false;
    }
 
-   JSROOT.TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TAxisPainter.prototype.Cleanup = function() {
+   TAxisPainter.prototype.Cleanup = function() {
 
       this.ticks = [];
       this.func = null;
@@ -781,7 +781,7 @@
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
+   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
       this.name = name;
       this.kind = kind;
       this.func = func;
@@ -792,7 +792,7 @@
       this.scale_max = smax;
    }
 
-   JSROOT.TAxisPainter.prototype.CreateFormatFuncs = function() {
+   TAxisPainter.prototype.CreateFormatFuncs = function() {
 
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis');
@@ -910,7 +910,7 @@
       }
    }
 
-   JSROOT.TAxisPainter.prototype.CreateTicks = function(only_major_as_array) {
+   TAxisPainter.prototype.CreateTicks = function(only_major_as_array) {
       // function used to create array with minor/middle/major ticks
 
       var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
@@ -976,14 +976,14 @@
       return handle;
    }
 
-   JSROOT.TAxisPainter.prototype.IsCenterLabels = function() {
+   TAxisPainter.prototype.IsCenterLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
       var axis = this.GetObject();
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
-   JSROOT.TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
       var pthis = this,  drag_rect = null, prefix = "", drag_move,
@@ -1068,7 +1068,7 @@
       title_g.style("cursor", "move").call(drag_move);
    }
 
-   JSROOT.TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
+   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
@@ -1349,7 +1349,7 @@
       }
    }
 
-   JSROOT.TAxisPainter.prototype.Redraw = function() {
+   TAxisPainter.prototype.Redraw = function() {
 
       var gaxis = this.GetObject(),
           x1 = this.AxisToSvg("x", gaxis.fX1),
@@ -1409,7 +1409,7 @@
    // ============================================================
 
    // base class for all objects, derived from TPave
-   JSROOT.TPavePainter = function(pave) {
+   function TPavePainter(pave) {
       JSROOT.TObjectPainter.call(this, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
@@ -1418,9 +1418,9 @@
       this.AssignFinishPave();
    }
 
-   JSROOT.TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TPavePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.TPavePainter.prototype.AssignFinishPave = function() {
+   TPavePainter.prototype.AssignFinishPave = function() {
       function func() {
          // function used to signal drawing ready, required when text drawing posponed due to mathjax
          if (this.FirstRun <= 0) return;
@@ -1432,7 +1432,7 @@
       this.FinishPave = func.bind(this);
    }
 
-   JSROOT.TPavePainter.prototype.DrawPave = function(arg) {
+   TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
       this.UseTextColor = false;
@@ -1525,7 +1525,7 @@
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
    }
 
-   JSROOT.TPavePainter.prototype.DrawPaveLabel = function(width, height) {
+   TPavePainter.prototype.DrawPaveLabel = function(width, height) {
       this.UseTextColor = true;
 
       var pave = this.GetObject();
@@ -1537,7 +1537,7 @@
       this.FinishTextDrawing(null, this.FinishPave);
    }
 
-   JSROOT.TPavePainter.prototype.DrawPaveText = function(width, height, refill) {
+   TPavePainter.prototype.DrawPaveText = function(width, height, refill) {
 
       if (refill && this.IsStats()) this.FillStatistic();
 
@@ -1661,7 +1661,7 @@
       }
    }
 
-   JSROOT.TPavePainter.prototype.Format = function(value, fmt) {
+   TPavePainter.prototype.Format = function(value, fmt) {
       // method used to convert value to string according specified format
       // format can be like 5.4g or 4.2e or 6.4f
       if (!fmt) fmt = "stat";
@@ -1695,7 +1695,7 @@
       return res;
    }
 
-   JSROOT.TPavePainter.prototype.FillContextMenu = function(menu) {
+   TPavePainter.prototype.FillContextMenu = function(menu) {
       var pave = this.GetObject();
 
       menu.add("header: " + pave._typename + "::" + pave.fName);
@@ -1784,7 +1784,7 @@
       return menu.size() > 0;
    }
 
-   JSROOT.TPavePainter.prototype.ShowContextMenu = function(evnt) {
+   TPavePainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
          d3.event.stopPropagation(); // disable main context menu
          d3.event.preventDefault();  // disable browser context menu
@@ -1799,11 +1799,11 @@
       }); // end menu creation
    }
 
-   JSROOT.TPavePainter.prototype.IsStats = function() {
+   TPavePainter.prototype.IsStats = function() {
       return this.MatchObjectType('TPaveStats');
    }
 
-   JSROOT.TPavePainter.prototype.FillStatistic = function() {
+   TPavePainter.prototype.FillStatistic = function() {
       var pave = this.GetObject(), main = this.main_painter();
 
       if (pave.fName !== "stats") return false;
@@ -1825,7 +1825,7 @@
       return true;
    }
 
-   JSROOT.TPavePainter.prototype.UpdateObject = function(obj) {
+   TPavePainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
       var pave = this.GetObject();
@@ -1861,7 +1861,7 @@
       return false;
    }
 
-   JSROOT.TPavePainter.prototype.Redraw = function() {
+   TPavePainter.prototype.Redraw = function() {
       // if pavetext artificially disabled, do not redraw it
 
       this.DrawPave(true);
@@ -2008,7 +2008,7 @@
 
    // =============================================================
 
-   JSROOT.THistPainter = function(histo) {
+   function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
       this.shrink_frame_left = 0.;
@@ -2023,21 +2023,21 @@
       this.zoom_changed_interactive = 0;
    }
 
-   JSROOT.THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.THistPainter.prototype.IsDummyHisto = function() {
+   THistPainter.prototype.IsDummyHisto = function() {
       return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
-   JSROOT.THistPainter.prototype.IsTProfile = function() {
+   THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
    }
 
-   JSROOT.THistPainter.prototype.IsTH2Poly = function() {
+   THistPainter.prototype.IsTH2Poly = function() {
       return this.histo && this.histo._typename.match(/^TH2Poly/);
    }
 
-   JSROOT.THistPainter.prototype.Cleanup = function() {
+   THistPainter.prototype.Cleanup = function() {
       if (this.keys_handler) {
          window.removeEventListener( 'keydown', this.keys_handler, false );
          this.keys_handler = null;
@@ -2076,7 +2076,7 @@
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.THistPainter.prototype.Dimension = function() {
+   THistPainter.prototype.Dimension = function() {
       if (!this.histo) return 0;
       if (this.histo._typename.indexOf("TH2")==0) return 2;
       if (this.histo._typename.indexOf("TProfile2D")==0) return 2;
@@ -2084,7 +2084,7 @@
       return 1;
    }
 
-   JSROOT.THistPainter.prototype.DecodeOptions = function(opt, interactive) {
+   THistPainter.prototype.DecodeOptions = function(opt, interactive) {
 
       /* decode string 'opt' and fill the option structure */
       var option = { Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
@@ -2354,7 +2354,7 @@
       return option;
    }
 
-   JSROOT.THistPainter.prototype.GetAutoColor = function(col) {
+   THistPainter.prototype.GetAutoColor = function(col) {
       if (this.options.AutoColor<=0) return col;
 
       var id = this.options.AutoColor;
@@ -2362,7 +2362,7 @@
       return JSROOT.Painter.root_colors[id];
    }
 
-   JSROOT.THistPainter.prototype.ScanContent = function(when_axis_changed) {
+   THistPainter.prototype.ScanContent = function(when_axis_changed) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
@@ -2371,7 +2371,7 @@
       alert("HistPainter.prototype.ScanContent not implemented");
    }
 
-   JSROOT.THistPainter.prototype.CheckPadRange = function() {
+   THistPainter.prototype.CheckPadRange = function() {
 
       if (!this.is_main_painter()) return;
 
@@ -2448,7 +2448,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.CheckHistDrawAttributes = function() {
+   THistPainter.prototype.CheckHistDrawAttributes = function() {
 
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
@@ -2464,7 +2464,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.UpdateObject = function(obj) {
+   THistPainter.prototype.UpdateObject = function(obj) {
 
       var histo = this.GetObject();
 
@@ -2551,7 +2551,7 @@
       return true;
    }
 
-   JSROOT.THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
+   THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
 
@@ -2641,7 +2641,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.CreateXY = function() {
+   THistPainter.prototype.CreateXY = function() {
       // here we create x,y objects which maps our physical coordinates into pixels
       // while only first painter really need such object, all others just reuse it
       // following functions are introduced
@@ -2784,7 +2784,7 @@
    }
 
    /** Set selected range back to TPad object */
-   JSROOT.THistPainter.prototype.SetRootPadRange = function(pad) {
+   THistPainter.prototype.SetRootPadRange = function(pad) {
       if (!pad) return;
 
       if (this.logx) {
@@ -2813,7 +2813,7 @@
       pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
    }
 
-   JSROOT.THistPainter.prototype.DrawGrids = function() {
+   THistPainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
 
@@ -2865,11 +2865,11 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.DrawBins = function() {
+   THistPainter.prototype.DrawBins = function() {
       alert("HistPainter.DrawBins not implemented");
    }
 
-   JSROOT.THistPainter.prototype.AxisAsText = function(axis, value) {
+   THistPainter.prototype.AxisAsText = function(axis, value) {
       if (axis == "x") {
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
@@ -2893,7 +2893,7 @@
       return value.toPrecision(4);
    }
 
-   JSROOT.THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
+   THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter()) return;
@@ -2950,14 +2950,14 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.ToggleTitle = function(arg) {
+   THistPainter.prototype.ToggleTitle = function(arg) {
       if (!this.is_main_painter()) return false;
       if (arg==='only-check') return !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
       this.histo.InvertBit(JSROOT.TH1StatusBits.kNoTitle);
       this.DrawTitle();
    }
 
-   JSROOT.THistPainter.prototype.DrawTitle = function() {
+   THistPainter.prototype.DrawTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
       if (!this.is_main_painter()) return;
@@ -2985,7 +2985,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.UpdateStatWebCanvas = function() {
+   THistPainter.prototype.UpdateStatWebCanvas = function() {
       if (!this.snapid) return;
 
       var stat = this.FindStat(),
@@ -2994,7 +2994,7 @@
       if (statpainter && !statpainter.snapid) statpainter.Redraw();
    }
 
-   JSROOT.THistPainter.prototype.ToggleStat = function(arg) {
+   THistPainter.prototype.ToggleStat = function(arg) {
 
       var stat = this.FindStat(), statpainter = null;
 
@@ -3032,12 +3032,12 @@
       return true;
    }
 
-   JSROOT.THistPainter.prototype.IsAxisZoomed = function(axis) {
+   THistPainter.prototype.IsAxisZoomed = function(axis) {
       var obj = this.main_painter() || this;
       return obj['zoom_'+axis+'min'] !== obj['zoom_'+axis+'max'];
    }
 
-   JSROOT.THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
+   THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexes starts from 0
       var indx = 0, obj = this.main_painter();
       if (!obj) obj = this;
@@ -3077,7 +3077,7 @@
       return indx;
    }
 
-   JSROOT.THistPainter.prototype.FindStat = function() {
+   THistPainter.prototype.FindStat = function() {
       if (this.histo.fFunctions !== null)
          for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
             var func = this.histo.fFunctions.arr[i];
@@ -3089,7 +3089,7 @@
       return null;
    }
 
-   JSROOT.THistPainter.prototype.CreateStat = function(opt_stat) {
+   THistPainter.prototype.CreateStat = function(opt_stat) {
 
       if (!this.draw_content || !this.is_main_painter()) return null;
 
@@ -3135,7 +3135,7 @@
       return stats;
    }
 
-   JSROOT.THistPainter.prototype.AddFunction = function(obj, asfirst) {
+   THistPainter.prototype.AddFunction = function(obj, asfirst) {
       var histo = this.GetObject();
       if (!histo || !obj) return;
 
@@ -3149,7 +3149,7 @@
 
    }
 
-   JSROOT.THistPainter.prototype.FindFunction = function(type_name) {
+   THistPainter.prototype.FindFunction = function(type_name) {
       var funcs = this.GetObject().fFunctions;
       if (funcs === null) return null;
 
@@ -3159,7 +3159,7 @@
       return null;
    }
 
-   JSROOT.THistPainter.prototype.DrawNextFunction = function(indx, callback) {
+   THistPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
       if (this.options.Same || !this.options.Func || !this.histo.fFunctions ||
@@ -3188,7 +3188,7 @@
       this.DrawNextFunction(indx+1, callback);
    }
 
-   JSROOT.THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
+   THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
 
       if (!this.histo) return false;
 
@@ -3219,7 +3219,7 @@
       return res;
    }
 
-   JSROOT.THistPainter.prototype.ToggleLog = function(axis) {
+   THistPainter.prototype.ToggleLog = function(axis) {
       var obj = this.main_painter(), pad = this.root_pad();
       if (!obj) obj = this;
       var curr = pad["fLog" + axis];
@@ -3239,7 +3239,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+   THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
@@ -3340,7 +3340,7 @@
       return changed;
    }
 
-   JSROOT.THistPainter.prototype.Unzoom = function(dox, doy, doz) {
+   THistPainter.prototype.Unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
@@ -3360,7 +3360,7 @@
 
    }
 
-   JSROOT.THistPainter.prototype.clearInteractiveElements = function() {
+   THistPainter.prototype.clearInteractiveElements = function() {
       JSROOT.Painter.closeMenu();
       if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
@@ -3369,7 +3369,7 @@
       this.SwitchTooltip(true);
    }
 
-   JSROOT.THistPainter.prototype.mouseDoubleClick = function() {
+   THistPainter.prototype.mouseDoubleClick = function() {
       d3.event.preventDefault();
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
@@ -3379,7 +3379,7 @@
       this.Unzoom(kind);
    }
 
-   JSROOT.THistPainter.prototype.startRectSel = function() {
+   THistPainter.prototype.startRectSel = function() {
       // ignore when touch selection is activated
 
       if (this.zoom_kind > 100) return;
@@ -3426,7 +3426,7 @@
       d3.event.stopPropagation();
    }
 
-   JSROOT.THistPainter.prototype.moveRectSel = function() {
+   THistPainter.prototype.moveRectSel = function() {
 
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
@@ -3454,7 +3454,7 @@
                     .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
    }
 
-   JSROOT.THistPainter.prototype.endRectSel = function() {
+   THistPainter.prototype.endRectSel = function() {
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       d3.event.preventDefault();
@@ -3498,7 +3498,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.startTouchZoom = function() {
+   THistPainter.prototype.startTouchZoom = function() {
       // in case when zooming was started, block any other kind of events
       if (this.zoom_kind != 0) {
          d3.event.preventDefault();
@@ -3584,7 +3584,7 @@
                        .on("touchend.zoomRect", this.endTouchSel.bind(this));
    }
 
-   JSROOT.THistPainter.prototype.moveTouchSel = function() {
+   THistPainter.prototype.moveTouchSel = function() {
       if (this.zoom_kind < 100) return;
 
       d3.event.preventDefault();
@@ -3617,7 +3617,7 @@
       d3.event.stopPropagation();
    }
 
-   JSROOT.THistPainter.prototype.endTouchSel = function() {
+   THistPainter.prototype.endTouchSel = function() {
 
       this.svg_frame().on("touchcancel", null)
                       .on("touchend", null);
@@ -3675,7 +3675,7 @@
       d3.event.stopPropagation();
    }
 
-   JSROOT.THistPainter.prototype.AllowDefaultYZooming = function() {
+   THistPainter.prototype.AllowDefaultYZooming = function() {
       // return true if default Y zooming should be enabled
       // it is typically for 2-Dim histograms or
       // when histogram not draw, defined by other painters
@@ -3694,7 +3694,7 @@
       return false;
    }
 
-   JSROOT.THistPainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
+   THistPainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
 
       item.min = item.max = undefined;
       item.changed = false;
@@ -3769,7 +3769,7 @@
       item.changed = ((item.min !== undefined) && (item.max !== undefined));
    }
 
-   JSROOT.THistPainter.prototype.mouseWheel = function() {
+   THistPainter.prototype.mouseWheel = function() {
       d3.event.stopPropagation();
 
       d3.event.preventDefault();
@@ -3789,7 +3789,7 @@
       if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
-   JSROOT.THistPainter.prototype.ShowAxisStatus = function(axis_name) {
+   THistPainter.prototype.ShowAxisStatus = function(axis_name) {
       // method called normally when mouse enter main object element
 
       var status_func = this.GetShowStatusFunc();
@@ -3813,7 +3813,7 @@
                   m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
-   JSROOT.THistPainter.prototype.AddInteractive = function() {
+   THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
@@ -3866,7 +3866,7 @@
       svg.property('interactive_set', true);
    }
 
-   JSROOT.THistPainter.prototype.AddKeysHandler = function() {
+   THistPainter.prototype.AddKeysHandler = function() {
       if (this.keys_handler || !this.is_main_painter() || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
@@ -3874,7 +3874,7 @@
       window.addEventListener('keydown', this.keys_handler, false);
    }
 
-   JSROOT.THistPainter.prototype.ProcessKeyPress = function(evnt) {
+   THistPainter.prototype.ProcessKeyPress = function(evnt) {
 
       var main = this.select_main();
       if (main.empty()) return;
@@ -3933,7 +3933,7 @@
       return true; // just process any key press
    }
 
-   JSROOT.THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
+   THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
@@ -4000,7 +4000,7 @@
    }
 
 
-   JSROOT.THistPainter.prototype.ChangeUserRange = function(arg) {
+   THistPainter.prototype.ChangeUserRange = function(arg) {
       var taxis = this.histo['f'+arg+"axis"];
       if (!taxis) return;
 
@@ -4023,7 +4023,7 @@
       this.Redraw();
    }
 
-   JSROOT.THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
+   THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
@@ -4162,7 +4162,7 @@
       return true;
    }
 
-   JSROOT.THistPainter.prototype.ButtonClick = function(funcname) {
+   THistPainter.prototype.ButtonClick = function(funcname) {
       if (!this.is_main_painter()) return false;
       switch(funcname) {
          case "ToggleZoom":
@@ -4183,7 +4183,7 @@
       return false;
    }
 
-   JSROOT.THistPainter.prototype.FillToolbar = function() {
+   THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
@@ -4196,7 +4196,7 @@
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
-   JSROOT.THistPainter.prototype.Get3DToolTip = function(indx) {
+   THistPainter.prototype.Get3DToolTip = function(indx) {
       var tip = { bin: indx, name: this.GetObject().fName, title: this.GetObject().fTitle };
       switch (this.Dimension()) {
          case 1:
@@ -4225,7 +4225,7 @@
       return tip;
    }
 
-   JSROOT.THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
 
       if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
       this.fContour = [];
@@ -4267,7 +4267,7 @@
       return this.fContour;
    }
 
-   JSROOT.THistPainter.prototype.GetContour = function() {
+   THistPainter.prototype.GetContour = function() {
       if (this.fContour) return this.fContour;
 
       var main = this.main_painter();
@@ -4312,7 +4312,7 @@
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
 
-   JSROOT.THistPainter.prototype.getContourIndex = function(zc) {
+   THistPainter.prototype.getContourIndex = function(zc) {
       // return contour index, which corresponds to the z content value
 
       var cntr = this.GetContour();
@@ -4337,7 +4337,7 @@
       return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
 
-   JSROOT.THistPainter.prototype.getIndexColor = function(index, asindx) {
+   THistPainter.prototype.getIndexColor = function(index, asindx) {
       if (index < 0) return null;
 
       var cntr = this.GetContour();
@@ -4348,7 +4348,7 @@
       return asindx ? theColor : palette[theColor];
    }
 
-   JSROOT.THistPainter.prototype.getValueColor = function(zc, asindx) {
+   THistPainter.prototype.getValueColor = function(zc, asindx) {
 
       var index = this.getContourIndex(zc);
 
@@ -4361,13 +4361,13 @@
       return asindx ? theColor : palette[theColor];
    }
 
-   JSROOT.THistPainter.prototype.GetPalette = function(force) {
+   THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force)
          this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
       return this.fPalette;
    }
 
-   JSROOT.THistPainter.prototype.FillPaletteMenu = function(menu) {
+   THistPainter.prototype.FillPaletteMenu = function(menu) {
 
       var curr = this.options.Palette;
       if ((curr===null) || (curr===0)) curr = JSROOT.gStyle.Palette;
@@ -4405,7 +4405,7 @@
       menu.add("endsub:");
    }
 
-   JSROOT.THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
+   THistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
       // only when create new palette, one could change frame size
 
       if (!this.is_main_painter()) return null;
@@ -4497,7 +4497,7 @@
       return pal_painter;
    }
 
-   JSROOT.THistPainter.prototype.ToggleColz = function() {
+   THistPainter.prototype.ToggleColz = function() {
       if (this.options.Zscale > 0) {
          this.options.Zscale = 0;
       } else {
@@ -4507,7 +4507,7 @@
       this.DrawColorPalette(this.options.Zscale > 0, false, true);
    }
 
-   JSROOT.THistPainter.prototype.PrepareColorDraw = function(args) {
+   THistPainter.prototype.PrepareColorDraw = function(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
@@ -4594,16 +4594,15 @@
       return res;
    }
 
-
    // ======= TH1 painter================================================
 
-   JSROOT.TH1Painter = function(histo) {
-      JSROOT.THistPainter.call(this, histo);
+   function TH1Painter(histo) {
+      THistPainter.call(this, histo);
    }
 
-   JSROOT.TH1Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+   TH1Painter.prototype = Object.create(THistPainter.prototype);
 
-   JSROOT.TH1Painter.prototype.ScanContent = function(when_axis_changed) {
+   TH1Painter.prototype.ScanContent = function(when_axis_changed) {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
@@ -4715,7 +4714,7 @@
       }
    }
 
-   JSROOT.TH1Painter.prototype.CountStat = function(cond) {
+   TH1Painter.prototype.CountStat = function(cond) {
       var profile = this.IsTProfile(),
           left = this.GetSelectIndex("x", "left"),
           right = this.GetSelectIndex("x", "right"),
@@ -4767,7 +4766,7 @@
       return res;
    }
 
-   JSROOT.TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (!this.histo) return false;
 
       var pave = stat.GetObject(),
@@ -4872,7 +4871,7 @@
       return true;
    }
 
-   JSROOT.TH1Painter.prototype.DrawBars = function(width, height) {
+   TH1Painter.prototype.DrawBars = function(width, height) {
 
       this.RecreateDrawG(false, "main_layer");
 
@@ -4944,7 +4943,7 @@
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
    }
 
-   JSROOT.TH1Painter.prototype.DrawFilledErrors = function(width, height) {
+   TH1Painter.prototype.DrawFilledErrors = function(width, height) {
       this.RecreateDrawG(false, "main_layer");
 
       var left = this.GetSelectIndex("x", "left", -1),
@@ -4980,7 +4979,7 @@
                  .call(this.fillatt.func);
    }
 
-   JSROOT.TH1Painter.prototype.DrawBins = function() {
+   TH1Painter.prototype.DrawBins = function() {
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
@@ -5263,7 +5262,7 @@
 
    }
 
-   JSROOT.TH1Painter.prototype.GetBinTips = function(bin) {
+   TH1Painter.prototype.GetBinTips = function(bin) {
       var tips = [],
           name = this.GetTipName(),
           pmain = this.main_painter(),
@@ -5303,7 +5302,7 @@
       return tips;
    }
 
-   JSROOT.TH1Painter.prototype.ProcessTooltip = function(pnt) {
+   TH1Painter.prototype.ProcessTooltip = function(pnt) {
       if ((pnt === null) || !this.draw_content || (this.options.Lego > 0) || (this.options.Surf > 0)) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
@@ -5539,7 +5538,7 @@
    }
 
 
-   JSROOT.TH1Painter.prototype.FillHistContextMenu = function(menu) {
+   TH1Painter.prototype.FillHistContextMenu = function(menu) {
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
@@ -5556,7 +5555,7 @@
       });
    }
 
-   JSROOT.TH1Painter.prototype.AutoZoom = function() {
+   TH1Painter.prototype.AutoZoom = function() {
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
           dist = right - left;
@@ -5581,7 +5580,7 @@
          this.Zoom(this.GetBinX(left), this.GetBinX(right));
    }
 
-   JSROOT.TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
+   TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
       if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
 
       if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
@@ -5590,7 +5589,7 @@
       return false;
    }
 
-   JSROOT.TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
+   TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
       var is3d = (this.options.Lego > 0) ? true : false,
           main = this.main_painter();
 
@@ -5606,7 +5605,7 @@
    }
 
 
-   JSROOT.TH1Painter.prototype.Draw2D = function(call_back) {
+   TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
 
@@ -5628,14 +5627,14 @@
       JSROOT.CallBack(call_back);
    }
 
-   JSROOT.TH1Painter.prototype.Draw3D = function(call_back) {
+   TH1Painter.prototype.Draw3D = function(call_back) {
       this.mode3d = true;
       JSROOT.AssertPrerequisites('hist3d', function() {
          this.Draw3D(call_back);
       }.bind(this));
    }
 
-   JSROOT.TH1Painter.prototype.Redraw = function(resize) {
+   TH1Painter.prototype.Redraw = function(resize) {
       this.CallDrawFunc(null, resize);
    }
 
@@ -5672,23 +5671,23 @@
 
    // ==================== painter for TH2 histograms ==============================
 
-   JSROOT.TH2Painter = function(histo) {
-      JSROOT.THistPainter.call(this, histo);
+   function TH2Painter(histo) {
+      THistPainter.call(this, histo);
       this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
    }
 
-   JSROOT.TH2Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+   TH2Painter.prototype = Object.create(THistPainter.prototype);
 
-   JSROOT.TH2Painter.prototype.Cleanup = function() {
+   TH2Painter.prototype.Cleanup = function() {
       delete this.fCustomContour;
       delete this.tt_handle;
 
-      JSROOT.THistPainter.prototype.Cleanup.call(this);
+      THistPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.TH2Painter.prototype.FillHistContextMenu = function(menu) {
+   TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
       menu.add("Auto zoom-in", this.AutoZoom);
 
@@ -5705,8 +5704,8 @@
          this.FillPaletteMenu(menu);
    }
 
-   JSROOT.TH2Painter.prototype.ButtonClick = function(funcname) {
-      if (JSROOT.THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
+   TH2Painter.prototype.ButtonClick = function(funcname) {
+      if (THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
 
       if (this !== this.main_painter()) return false;
 
@@ -5744,8 +5743,8 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.FillToolbar = function() {
-      JSROOT.THistPainter.prototype.FillToolbar.call(this);
+   TH2Painter.prototype.FillToolbar = function() {
+      THistPainter.prototype.FillToolbar.call(this);
 
       var pp = this.pad_painter(true);
       if (pp===null) return;
@@ -5756,7 +5755,7 @@
       pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
    }
 
-   JSROOT.TH2Painter.prototype.ToggleColor = function() {
+   TH2Painter.prototype.ToggleColor = function() {
 
       var toggle = true;
 
@@ -5778,7 +5777,7 @@
       // this.DrawColorPalette((this.options.Color > 0) && (this.options.Zscale > 0));
    }
 
-   JSROOT.TH2Painter.prototype.AutoZoom = function() {
+   TH2Painter.prototype.AutoZoom = function() {
       if (this.IsTH2Poly()) return; // not implemented
 
       var i1 = this.GetSelectIndex("x", "left", -1),
@@ -5827,7 +5826,7 @@
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
 
-   JSROOT.TH2Painter.prototype.ScanContent = function(when_axis_changed) {
+   TH2Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy) return;
@@ -5881,7 +5880,7 @@
       }
    }
 
-   JSROOT.TH2Painter.prototype.CountStat = function(cond) {
+   TH2Painter.prototype.CountStat = function(cond) {
       var histo = this.GetObject(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
@@ -6002,7 +6001,7 @@
       return res;
    }
 
-   JSROOT.TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (this.GetObject() === null) return false;
 
       var pave = stat.GetObject(),
@@ -6064,7 +6063,7 @@
       return true;
    }
 
-   JSROOT.TH2Painter.prototype.DrawBinsColor = function(w,h) {
+   TH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
@@ -6109,7 +6108,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
+   TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
       var histo = this.GetObject(),
           kMAXCONTOUR = 404,
           kMAXCOUNT = 400,
@@ -6324,7 +6323,7 @@
       }
    }
 
-   JSROOT.TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
+   TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var handle = this.PrepareColorDraw({ rounding: false, extra: 100 });
 
       // initialize contour
@@ -6378,7 +6377,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
+   TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
       var cmd = "", ngr, ngraphs = 1, gr = null;
 
       if (bin.fPoly._typename=='TMultiGraph')
@@ -6416,7 +6415,7 @@
       return cmd;
    }
 
-   JSROOT.TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
+   TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
       var histo = this.GetObject(),
           pmain = this.main_painter(),
           colPaths = [],
@@ -6464,7 +6463,7 @@
       return { poly: true };
    }
 
-   JSROOT.TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
+   TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
           i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
 
@@ -6522,7 +6521,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.DrawBinsArrow = function(w, h) {
+   TH2Painter.prototype.DrawBinsArrow = function(w, h) {
       var histo = this.GetObject(),
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co;
@@ -6592,7 +6591,7 @@
    }
 
 
-   JSROOT.TH2Painter.prototype.DrawBinsBox = function(w,h) {
+   TH2Painter.prototype.DrawBinsBox = function(w,h) {
 
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
@@ -6706,7 +6705,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.DrawCandle = function(w,h) {
+   TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
           pad = this.root_pad(),
@@ -6826,7 +6825,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.DrawBinsScatter = function(w,h) {
+   TH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
@@ -6963,7 +6962,7 @@
       return handle;
    }
 
-   JSROOT.TH2Painter.prototype.DrawBins = function() {
+   TH2Painter.prototype.DrawBins = function() {
 
       this.CheckHistDrawAttributes();
 
@@ -7007,7 +7006,7 @@
       this.tt_handle = handle;
    }
 
-   JSROOT.TH2Painter.prototype.GetBinTips = function (i, j) {
+   TH2Painter.prototype.GetBinTips = function (i, j) {
       var lines = [], pmain = this.main_painter();
 
       lines.push(this.GetTipName());
@@ -7036,7 +7035,7 @@
       return lines;
    }
 
-   JSROOT.TH2Painter.prototype.GetCandleTips = function(p) {
+   TH2Painter.prototype.GetCandleTips = function(p) {
       var lines = [], main = this.main_painter();
 
       lines.push(this.GetTipName());
@@ -7051,7 +7050,7 @@
       return lines;
    }
 
-   JSROOT.TH2Painter.prototype.ProvidePolyBinHints = function(binindx, realx, realy) {
+   TH2Painter.prototype.ProvidePolyBinHints = function(binindx, realx, realy) {
 
       var bin = this.histo.fBins.arr[binindx],
           pmain = this.main_painter(),
@@ -7091,7 +7090,7 @@
       return lines;
    }
 
-   JSROOT.TH2Painter.prototype.ProcessTooltip = function(pnt) {
+   TH2Painter.prototype.ProcessTooltip = function(pnt) {
       if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
@@ -7294,7 +7293,7 @@
       return res;
    }
 
-   JSROOT.TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
+   TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
       if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
 
@@ -7305,7 +7304,7 @@
       return false;
    }
 
-   JSROOT.TH2Painter.prototype.Draw2D = function(call_back, resize) {
+   TH2Painter.prototype.Draw2D = function(call_back, resize) {
 
       this.mode3d = false;
 
@@ -7335,14 +7334,14 @@
       JSROOT.CallBack(call_back);
    }
 
-   JSROOT.TH2Painter.prototype.Draw3D = function(call_back) {
+   TH2Painter.prototype.Draw3D = function(call_back) {
       this.mode3d = true;
       JSROOT.AssertPrerequisites('hist3d', function() {
          this.Draw3D(call_back);
       }.bind(this));
    }
 
-   JSROOT.TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
+   TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
       var main = this.main_painter(), is3d = false;
 
       if ((this.options.Contour > 0) && (main !== this)) is3d = main.mode3d; else
@@ -7361,7 +7360,7 @@
       this[funcname](callback, resize);
    }
 
-   JSROOT.TH2Painter.prototype.Redraw = function(resize) {
+   TH2Painter.prototype.Redraw = function(resize) {
       this.CallDrawFunc(null, resize);
    }
 
@@ -7409,7 +7408,7 @@
 
    // ====================================================================
 
-   JSROOT.THStackPainter = function(stack) {
+   function THStackPainter(stack) {
       JSROOT.TObjectPainter.call(this, stack);
 
       this.nostack = false;
@@ -7417,22 +7416,22 @@
       this.painters = []; // keep painters to be able update objects
    }
 
-   JSROOT.THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   JSROOT.THStackPainter.prototype.Cleanup = function() {
+   THStackPainter.prototype.Cleanup = function() {
       delete this.firstpainter;
       delete this.painters;
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   JSROOT.THStackPainter.prototype.HasErrors = function(hist) {
+   THStackPainter.prototype.HasErrors = function(hist) {
       if (hist.fSumw2 && (hist.fSumw2.length > 0))
          for (var n=0;n<hist.fSumw2.length;++n)
             if (hist.fSumw2[n] > 0) return true;
       return false;
    }
 
-   JSROOT.THStackPainter.prototype.BuildStack = function() {
+   THStackPainter.prototype.BuildStack = function() {
       //  build sum of all histograms
       //  Build a separate list fStack containing the running sum of all histograms
 
@@ -7469,7 +7468,7 @@
       return true;
    }
 
-   JSROOT.THStackPainter.prototype.GetHistMinMax = function(hist, witherr) {
+   THStackPainter.prototype.GetHistMinMax = function(hist, witherr) {
       var res = { min : 0, max : 0 },
           domin = true, domax = true;
       if (hist.fMinimum !== -1111) {
@@ -7509,7 +7508,7 @@
       return res;
    }
 
-   JSROOT.THStackPainter.prototype.GetMinMax = function(iserr) {
+   THStackPainter.prototype.GetMinMax = function(iserr) {
       var res = { min : 0, max : 0 },
           stack = this.GetObject();
 
@@ -7541,7 +7540,7 @@
       return res;
    }
 
-   JSROOT.THStackPainter.prototype.DrawNextHisto = function(indx, opt, mm, subp) {
+   THStackPainter.prototype.DrawNextHisto = function(indx, opt, mm, subp) {
       if (mm === "callback") {
          mm = null; // just misuse min/max argument to indicate callback
          if (indx<0) this.firstpainter = subp;
@@ -7574,7 +7573,7 @@
       JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
    }
 
-   JSROOT.THStackPainter.prototype.drawStack = function(opt) {
+   THStackPainter.prototype.drawStack = function(opt) {
 
       var pad = this.root_pad(),
           stack = this.GetObject(),
@@ -7643,7 +7642,7 @@
       return this;
    }
 
-   JSROOT.THStackPainter.prototype.UpdateObject = function(obj) {
+   THStackPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
       var isany = false;
@@ -7760,6 +7759,13 @@
 
       return JSROOT.Painter.drawHistogram2D(divid, hist, opt);
    }
+
+   JSROOT.TPavePainter = TPavePainter;
+   JSROOT.TAxisPainter = TAxisPainter;
+   JSROOT.THistPainter = THistPainter;
+   JSROOT.TH1Painter = TH1Painter;
+   JSROOT.TH2Painter = TH2Painter;
+   JSROOT.THStackPainter = THStackPainter;
 
    return JSROOT;
 

@@ -28,7 +28,7 @@
 
    // ===================== hierarchy scanning functions ==================================
 
-   JSROOT.Painter.FolderHierarchy = function(item, obj) {
+   function FolderHierarchy(item, obj) {
 
       if ((obj==null) || !('fFolders' in obj) || (obj.fFolders==null)) return false;
 
@@ -47,13 +47,13 @@
       return true;
    }
 
-   JSROOT.Painter.TaskHierarchy = function(item, obj) {
+   function TaskHierarchy(item, obj) {
       // function can be used for different derived classes
       // we show not only child tasks, but all complex data members
 
       if ((obj==null) || !('fTasks' in obj) || (obj.fTasks==null)) return false;
 
-      JSROOT.Painter.ObjectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
+      ObjectHierarchy(item, obj, { exclude: ['fTasks', 'fName'] } );
 
       if ((obj.fTasks.arr.length===0) && (item._childs.length==0)) { item._more = false; return true; }
 
@@ -70,7 +70,7 @@
       return true;
    }
 
-   JSROOT.Painter.ListHierarchy = function(folder, lst) {
+   function ListHierarchy(folder, lst) {
       if (!JSROOT.IsRootCollection(lst)) return false;
 
       if ((lst.arr === undefined) || (lst.arr.length === 0)) {
@@ -153,7 +153,7 @@
       return true;
    }
 
-   JSROOT.Painter.KeysHierarchy = function(folder, keys, file, dirname) {
+   function KeysHierarchy(folder, keys, file, dirname) {
 
       if (keys === undefined) return false;
 
@@ -184,12 +184,12 @@
                item._more = true;
                item._expand = function(node, obj) {
                   // one can get expand call from child objects - ignore them
-                  return JSROOT.Painter.KeysHierarchy(node, obj.fKeys);
+                  return KeysHierarchy(node, obj.fKeys);
                }
             } else {
                // remove cycle number - we have already directory
                item._name = key.fName;
-               JSROOT.Painter.KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
+               KeysHierarchy(item, dir.fKeys, file, dirname + key.fName + "/");
             }
          } else
          if ((key.fClassName == 'TList') && (key.fName == 'StreamerInfo')) {
@@ -205,7 +205,7 @@
       return true;
    }
 
-   JSROOT.Painter.ObjectHierarchy = function(top, obj, args) {
+   function ObjectHierarchy(top, obj, args) {
       if (!top || (obj===null)) return false;
 
       top._childs = [];
@@ -359,7 +359,7 @@
                } else {
                   item._value = "[...]";
                   item._more = true;
-                  item._expand = JSROOT.Painter.ObjectHierarchy;
+                  item._expand = ObjectHierarchy;
                   item._obj = fld;
                }
             } else
@@ -367,7 +367,7 @@
                item._title = 'DataView len=' + fld.byteLength;
                item._value = "[...]";
                item._more = true;
-               item._expand = JSROOT.Painter.ObjectHierarchy;
+               item._expand = ObjectHierarchy;
                item._obj = fld;
             }  else
             if (proto === "[object Date]") {
@@ -452,7 +452,9 @@
 
    JSROOT.hpainter = null; // global pointer
 
-   JSROOT.HierarchyPainter = function(name, frameid, backgr) {
+   // HierarchyPainter
+
+   function HierarchyPainter(name, frameid, backgr) {
       JSROOT.TBasePainter.call(this);
       this.name = name;
       this.h = null; // hierarchy
@@ -467,9 +469,9 @@
          JSROOT.hpainter = this;
    }
 
-   JSROOT.HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
+   HierarchyPainter.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
-   JSROOT.HierarchyPainter.prototype.Cleanup = function() {
+   HierarchyPainter.prototype.Cleanup = function() {
       // clear drawing and browser
       this.clear(true);
 
@@ -479,7 +481,7 @@
          JSROOT.hpainter = null;
    }
 
-   JSROOT.HierarchyPainter.prototype.FileHierarchy = function(file) {
+   HierarchyPainter.prototype.FileHierarchy = function(file) {
       var painter = this;
 
       var folder = {
@@ -517,11 +519,11 @@
                         if (dir) {
                            d.last._name = d.last._keyname;
                            var dirname = painter.itemFullName(d.last, fff);
-                           JSROOT.Painter.KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
+                           KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
                         // reconstruct full file hierarchy
-                        JSROOT.Painter.KeysHierarchy(fff, file.fKeys, file, "");
+                        KeysHierarchy(fff, file.fKeys, file, "");
                      }
                      item = painter.Find({name:itemname, top: fff});
                   }
@@ -542,12 +544,12 @@
          }
       };
 
-      JSROOT.Painter.KeysHierarchy(folder, file.fKeys, file, "");
+      KeysHierarchy(folder, file.fKeys, file, "");
 
       return folder;
    }
 
-   JSROOT.HierarchyPainter.prototype.ForEach = function(callback, top) {
+   HierarchyPainter.prototype.ForEach = function(callback, top) {
 
       if (top==null) top = this.h;
       if ((top==null) || (typeof callback != 'function')) return;
@@ -563,7 +565,7 @@
       each_item(top);
    }
 
-   JSROOT.HierarchyPainter.prototype.Find = function(arg) {
+   HierarchyPainter.prototype.Find = function(arg) {
       // search item in the hierarchy
       // One could specify simply item name or object with following arguments
       //   name:  item to search
@@ -668,7 +670,7 @@
       return find_in_hierarchy(top, itemname);
    }
 
-   JSROOT.HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
+   HierarchyPainter.prototype.itemFullName = function(node, uptoparent, compact) {
 
       if (node && node._kind ==='TopFolder') return "__top_folder__";
 
@@ -688,7 +690,7 @@
       return res;
    }
 
-   JSROOT.HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
+   HierarchyPainter.prototype.ExecuteCommand = function(itemname, callback) {
       // execute item marked as 'Command'
       // If command requires additional arguments, they could be specified as extra arguments
       // Or they will be requested interactive
@@ -726,7 +728,7 @@
       }).send();
    }
 
-   JSROOT.HierarchyPainter.prototype.RefreshHtml = function(callback) {
+   HierarchyPainter.prototype.RefreshHtml = function(callback) {
       if (!this.divid) return JSROOT.CallBack(callback);
       var hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
@@ -734,7 +736,7 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.get = function(arg, call_back, options) {
+   HierarchyPainter.prototype.get = function(arg, call_back, options) {
       // get object item with specified name
       // depending from provided option, same item can generate different object types
 
@@ -791,17 +793,17 @@
       JSROOT.CallBack(call_back, item, null);
    }
 
-   JSROOT.HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
+   HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.draw(divid, obj, drawopt);
    }
 
-   JSROOT.HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
+   HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
       // just envelope, one should be able to redefine it for sub-classes
       return JSROOT.redraw(divid, obj, drawopt);
    }
 
-   JSROOT.HierarchyPainter.prototype.player = function(itemname, option, call_back) {
+   HierarchyPainter.prototype.player = function(itemname, option, call_back) {
       var item = this.Find(itemname);
 
       if (!item || !('_player' in item)) return JSROOT.CallBack(call_back, null);
@@ -823,7 +825,7 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
+   HierarchyPainter.prototype.canDisplay = function(item, drawopt) {
       if (!item) return false;
       if ('_player' in item) return true;
       if (item._can_draw === true) return true;
@@ -832,14 +834,14 @@
       return handle && (('func' in handle) || ('draw_field' in handle));
    }
 
-   JSROOT.HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
+   HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
       var mdi = this.GetDisplay();
       if (!mdi) return false;
 
       return mdi.FindFrame(itemname) !== null;
    }
 
-   JSROOT.HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
+   HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
       var h = this,
           painter = null,
           updating = false,
@@ -940,15 +942,15 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
+   HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
       // here is not defined - implemented with jquery
    }
 
-   JSROOT.HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
+   HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
       // here is not defined - implemented with jquery
    }
 
-   JSROOT.HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
+   HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
       var h = this;
 
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
@@ -979,7 +981,7 @@
       return true;
    }
 
-   JSROOT.HierarchyPainter.prototype.updateItems = function(items) {
+   HierarchyPainter.prototype.updateItems = function(items) {
       // argument is item name or array of string with items name
       // only already drawn items will be update with same draw option
 
@@ -1004,7 +1006,7 @@
    }
 
 
-   JSROOT.HierarchyPainter.prototype.updateAll = function(only_auto_items, only_items) {
+   HierarchyPainter.prototype.updateAll = function(only_auto_items, only_items) {
       // method can be used to fetch new objects and update all existing drawings
       // if only_auto_items specified, only automatic items will be updated
 
@@ -1052,7 +1054,7 @@
          this.displayAll(allitems, options);
    }
 
-   JSROOT.HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
+   HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
 
       if ((items == null) || (items.length == 0)) return JSROOT.CallBack(call_back);
 
@@ -1211,7 +1213,7 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.reload = function() {
+   HierarchyPainter.prototype.reload = function() {
       var hpainter = this;
       if ('_online' in this.h)
          this.OpenOnline(this.h._online, function() {
@@ -1219,11 +1221,11 @@
          });
    }
 
-   JSROOT.HierarchyPainter.prototype.UpdateTreeNode = function() {
+   HierarchyPainter.prototype.UpdateTreeNode = function() {
       // dummy function, will be redefined when jquery part loaded
    }
 
-   JSROOT.HierarchyPainter.prototype.actiavte = function(items, force) {
+   HierarchyPainter.prototype.actiavte = function(items, force) {
       // activate (select) specified item
       // if force specified, all required sub-levels will be opened
 
@@ -1305,7 +1307,7 @@
       find_next();
    }
 
-   JSROOT.HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
+   HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
       var hpainter = this, hitem = this.Find(itemname);
 
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
@@ -1345,7 +1347,7 @@
             }
          }
 
-         if (_obj && JSROOT.Painter.ObjectHierarchy(_item, _obj)) {
+         if (_obj && ObjectHierarchy(_item, _obj)) {
             _item._isopen = true;
             if (_item._parent && !_item._parent._isopen) {
                _item._parent._isopen = true; // also show parent
@@ -1386,7 +1388,7 @@
 
    }
 
-   JSROOT.HierarchyPainter.prototype.GetTopOnlineItem = function(item) {
+   HierarchyPainter.prototype.GetTopOnlineItem = function(item) {
       if (item!=null) {
          while ((item!=null) && (!('_online' in item))) item = item._parent;
          return item;
@@ -1399,7 +1401,7 @@
    }
 
 
-   JSROOT.HierarchyPainter.prototype.ForEachJsonFile = function(call_back) {
+   HierarchyPainter.prototype.ForEachJsonFile = function(call_back) {
       if (this.h==null) return;
       if ('_jsonfile' in this.h)
          return JSROOT.CallBack(call_back, this.h);
@@ -1411,7 +1413,7 @@
          }
    }
 
-   JSROOT.HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
+   HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
       var isfileopened = false;
       this.ForEachJsonFile(function(item) { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
@@ -1439,7 +1441,7 @@
       }).send(null);
    }
 
-   JSROOT.HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
+   HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
       if (this.h==null) return;
       if ((this.h._kind == "ROOT.TFile") && (this.h._file!=null))
          return JSROOT.CallBack(call_back, this.h);
@@ -1452,7 +1454,7 @@
          }
    }
 
-   JSROOT.HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
+   HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
       // first check that file with such URL already opened
 
       var isfileopened = false;
@@ -1488,7 +1490,7 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.ApplyStyle = function(style, call_back) {
+   HierarchyPainter.prototype.ApplyStyle = function(style, call_back) {
       if (!style)
          return JSROOT.CallBack(call_back);
 
@@ -1515,7 +1517,7 @@
       return JSROOT.CallBack(call_back);
    }
 
-   JSROOT.HierarchyPainter.prototype.GetFileProp = function(itemname) {
+   HierarchyPainter.prototype.GetFileProp = function(itemname) {
       var item = this.Find(itemname);
       if (item == null) return null;
 
@@ -1541,7 +1543,7 @@
          obj._typename = 'TStreamerInfoList';
    }
 
-   JSROOT.HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
+   HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
       if (typeof item == "string") item = this.Find(item);
       var prnt = item;
@@ -1549,11 +1551,11 @@
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
    }
 
-   JSROOT.HierarchyPainter.prototype.isOnlineItem = function(item) {
+   HierarchyPainter.prototype.isOnlineItem = function(item) {
       return this.GetOnlineItemUrl(item)!==null;
    }
 
-   JSROOT.HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
+   HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
       // method used to request object from the http server
 
       var url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
@@ -1641,7 +1643,7 @@
       return false;
    }
 
-   JSROOT.HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
+   HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
       var painter = this;
 
       function AdoptHierarchy(result) {
@@ -1707,7 +1709,7 @@
       JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', AdoptHierarchy).send(null);
    }
 
-   JSROOT.HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
+   HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
       var item = this.Find(itemname);
       if (!item) return null;
 
@@ -1727,7 +1729,7 @@
       return null;
    }
 
-   JSROOT.HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
+   HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
 
       var painter = this,
           node = this.Find(itemname),
@@ -1765,12 +1767,12 @@
          menu.add("Player", function() { painter.player(itemname); });
    }
 
-   JSROOT.HierarchyPainter.prototype.Adopt = function(h) {
+   HierarchyPainter.prototype.Adopt = function(h) {
       this.h = h;
       this.RefreshHtml();
    }
 
-   JSROOT.HierarchyPainter.prototype.SetMonitoring = function(interval, flag) {
+   HierarchyPainter.prototype.SetMonitoring = function(interval, flag) {
 
       if (interval!==undefined) {
          this._monitoring_on = false;
@@ -1794,20 +1796,20 @@
       this._monitoring_handle = setInterval(this.updateAll.bind(this, "monitoring"),  this._monitoring_interval);
    }
 
-   JSROOT.HierarchyPainter.prototype.MonitoringInterval = function(val) {
+   HierarchyPainter.prototype.MonitoringInterval = function(val) {
       // returns interval
       return ('_monitoring_interval' in this) ? this._monitoring_interval : 3000;
    }
 
-   JSROOT.HierarchyPainter.prototype.EnableMonitoring = function(on) {
+   HierarchyPainter.prototype.EnableMonitoring = function(on) {
       this._monitoring_on = on;
    }
 
-   JSROOT.HierarchyPainter.prototype.IsMonitoring = function() {
+   HierarchyPainter.prototype.IsMonitoring = function() {
       return this._monitoring_on;
    }
 
-   JSROOT.HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
+   HierarchyPainter.prototype.SetDisplay = function(layout, frameid) {
 
       if ((frameid==null) && (typeof layout == 'object')) {
          this.disp = layout;
@@ -1824,17 +1826,17 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.GetLayout = function() {
+   HierarchyPainter.prototype.GetLayout = function() {
       return this.disp_kind;
    }
 
-   JSROOT.HierarchyPainter.prototype.ClearPainter = function(obj_painter) {
+   HierarchyPainter.prototype.ClearPainter = function(obj_painter) {
       this.ForEach(function(item) {
          if (item._painter === obj_painter) delete item._painter;
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.clear = function(withbrowser) {
+   HierarchyPainter.prototype.clear = function(withbrowser) {
       if (this.disp) {
          this.disp.Reset();
          delete this.disp;
@@ -1863,11 +1865,11 @@
       }
    }
 
-   JSROOT.HierarchyPainter.prototype.GetDisplay = function() {
+   HierarchyPainter.prototype.GetDisplay = function() {
       return ('disp' in this) ? this.disp : null;
    }
 
-   JSROOT.HierarchyPainter.prototype.CleanupFrame = function(divid) {
+   HierarchyPainter.prototype.CleanupFrame = function(divid) {
       // hook to perform extra actions when frame is cleaned
 
       var lst = JSROOT.cleanup(divid);
@@ -1879,7 +1881,7 @@
          });
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateDisplay = function(callback) {
+   HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
       if ('disp' in this) {
          if ((this.disp.NumDraw() > 0) || (this.disp_kind == "custom")) return JSROOT.CallBack(callback, this.disp);
@@ -1893,7 +1895,7 @@
 
       if ((this.disp_kind == "simple") ||
           (this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0))
-           this.disp = new JSROOT.GridDisplay(this.disp_frameid, this.disp_kind);
+           this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
       else
          return JSROOT.AssertPrerequisites('jq2d', this.CreateDisplay.bind(this,callback));
 
@@ -1903,7 +1905,7 @@
       JSROOT.CallBack(callback, this.disp);
    }
 
-   JSROOT.HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
+   HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
       // function should update object drawings for other painters
       var mdi = this.disp, handle = null, isany = false;
       if (!mdi) return false;
@@ -1920,11 +1922,11 @@
       return isany;
    }
 
-   JSROOT.HierarchyPainter.prototype.CheckResize = function(size) {
+   HierarchyPainter.prototype.CheckResize = function(size) {
       if (this.disp) this.disp.CheckMDIResize(null, size);
    }
 
-   JSROOT.HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
+   HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
 
       function GetOption(opt) {
          var res = JSROOT.GetUrlOption(opt, url);
@@ -2083,7 +2085,7 @@
       else OpenAllFiles();
    }
 
-   JSROOT.HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
+   HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
       this.gui_div = myDiv.attr('id');
 
       myDiv.append("div").attr("id",this.gui_div + "_drawing")
@@ -2114,7 +2116,7 @@
       this.SetDisplay(layout, this.gui_div + "_drawing");
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
+   HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
       if (!this.gui_div) return;
 
       var hpainter = this;
@@ -2123,7 +2125,7 @@
       });
    }
 
-   JSROOT.HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
+   HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
       if (!this.gui_div) return;
 
       var hpainter = this;
@@ -2285,9 +2287,9 @@
 
       if (JSROOT.IsRootCollection(obj)) {
          painter.h._name = obj.name || obj._typename;
-         JSROOT.Painter.ListHierarchy(painter.h, obj);
+         ListHierarchy(painter.h, obj);
       } else {
-         JSROOT.Painter.ObjectHierarchy(painter.h, obj);
+         ObjectHierarchy(painter.h, obj);
       }
       painter.RefreshHtml(function() {
          painter.SetDivId(divid);
@@ -2299,9 +2301,9 @@
 
    // ================================================================
 
-   // JSROOT.MDIDisplay - class to manage multiple document interface for drawings
+   // MDIDisplay - class to manage multiple document interface for drawings
 
-   JSROOT.MDIDisplay = function(frameid) {
+   function MDIDisplay(frameid) {
       JSROOT.TBasePainter.call(this);
       this.frameid = frameid;
       this.SetDivId(frameid);
@@ -2310,21 +2312,21 @@
       this.active_frame_title = ""; // keep title of active frame
    }
 
-   JSROOT.MDIDisplay.prototype = Object.create(JSROOT.TBasePainter.prototype);
+   MDIDisplay.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
-   JSROOT.MDIDisplay.prototype.BeforeCreateFrame = function(title) {
+   MDIDisplay.prototype.BeforeCreateFrame = function(title) {
 
       this.active_frame_title = title;
    }
 
-   JSROOT.MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+   MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
       // method dedicated to iterate over existing panels
       // provided userfunc is called with arguments (frame)
 
       console.warn("ForEachFrame not implemented in MDIDisplay");
    }
 
-   JSROOT.MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
+   MDIDisplay.prototype.ForEachPainter = function(userfunc, only_visible) {
       // method dedicated to iterate over existing panles
       // provided userfunc is called with arguments (painter, frame)
 
@@ -2335,13 +2337,13 @@
       }, only_visible);
    }
 
-   JSROOT.MDIDisplay.prototype.NumDraw = function() {
+   MDIDisplay.prototype.NumDraw = function() {
       var cnt = 0;
       this.ForEachFrame(function() { ++cnt; });
       return cnt;
    }
 
-   JSROOT.MDIDisplay.prototype.FindFrame = function(searchtitle, force) {
+   MDIDisplay.prototype.FindFrame = function(searchtitle, force) {
       var found_frame = null;
 
       this.ForEachFrame(function(frame) {
@@ -2355,15 +2357,15 @@
       return found_frame;
    }
 
-   JSROOT.MDIDisplay.prototype.ActivateFrame = function(frame) {
+   MDIDisplay.prototype.ActivateFrame = function(frame) {
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
-   JSROOT.MDIDisplay.prototype.GetActiveFrame = function() {
+   MDIDisplay.prototype.GetActiveFrame = function() {
       return this.FindFrame(this.active_frame_title);
    }
 
-   JSROOT.MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
+   MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
       var resized_frame = null;
 
@@ -2380,7 +2382,7 @@
       });
    }
 
-   JSROOT.MDIDisplay.prototype.Reset = function() {
+   MDIDisplay.prototype.Reset = function() {
 
       this.active_frame_title = "";
 
@@ -2389,7 +2391,7 @@
       this.select_main().html("").property('mdi', null);
    }
 
-   JSROOT.MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
+   MDIDisplay.prototype.Draw = function(title, obj, drawopt) {
       // draw object with specified options
       if (!obj) return;
 
@@ -2405,20 +2407,20 @@
 
    // ==================================================
 
-   JSROOT.CustomDisplay = function() {
+   function CustomDisplay() {
       JSROOT.MDIDisplay.call(this, "dummy");
       this.frames = {}; // array of configured frames
    }
 
-   JSROOT.CustomDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+   CustomDisplay.prototype = Object.create(MDIDisplay.prototype);
 
-   JSROOT.CustomDisplay.prototype.AddFrame = function(divid, itemname) {
+   CustomDisplay.prototype.AddFrame = function(divid, itemname) {
       if (!(divid in this.frames)) this.frames[divid] = "";
 
       this.frames[divid] += (itemname + ";");
    }
 
-   JSROOT.CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+   CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var ks = Object.keys(this.frames);
       for (var k = 0; k < ks.length; ++k) {
          var node = d3.select("#"+ks[k]);
@@ -2427,7 +2429,7 @@
       }
    }
 
-   JSROOT.CustomDisplay.prototype.CreateFrame = function(title) {
+   CustomDisplay.prototype.CreateFrame = function(title) {
 
       this.BeforeCreateFrame(title);
 
@@ -2440,8 +2442,8 @@
       return null;
    }
 
-   JSROOT.CustomDisplay.prototype.Reset = function() {
-      JSROOT.MDIDisplay.prototype.Reset.call(this);
+   CustomDisplay.prototype.Reset = function() {
+      MDIDisplay.prototype.Reset.call(this);
       this.ForEachFrame(function(frame) {
          d3.select(frame).html("");
       });
@@ -2449,7 +2451,7 @@
 
    // ================================================
 
-   JSROOT.GridDisplay = function(frameid, kind, kind2) {
+   function GridDisplay(frameid, kind, kind2) {
       // following kinds are supported
       //  vertical or horizontal - only first letter matters, defines basic orientation
       //   'x' in the name disable interactive separators
@@ -2555,9 +2557,9 @@
          this.CreateGroup(this, this.select_main(), num, arr, sizes);
    }
 
-   JSROOT.GridDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
+   GridDisplay.prototype = Object.create(MDIDisplay.prototype);
 
-   JSROOT.GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
+   GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
       if (!sizes) sizes = new Array(num);
       var sum1 = 0, sum2 = 0;
       for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
@@ -2604,7 +2606,7 @@
             this.CreateSeparator(handle, main, handle.groups[cnt]);
    }
 
-   JSROOT.GridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+   GridDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
       var main = this.select_main();
 
       if (this.simple_layout)
@@ -2615,10 +2617,10 @@
       });
    }
 
-   JSROOT.GridDisplay.prototype.GetActiveFrame = function() {
+   GridDisplay.prototype.GetActiveFrame = function() {
       if (this.simple_layout) return this.select_main().node();
 
-      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      var found = MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found) return found;
 
       this.ForEachFrame(function(frame) {
@@ -2628,11 +2630,11 @@
       return found;
    }
 
-   JSROOT.GridDisplay.prototype.ActivateFrame = function(frame) {
+   GridDisplay.prototype.ActivateFrame = function(frame) {
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
-   JSROOT.GridDisplay.prototype.GetFrame = function(id) {
+   GridDisplay.prototype.GetFrame = function(id) {
       var main = this.select_main();
       if (this.simple_layout) return main.node();
       var res = null;
@@ -2642,11 +2644,11 @@
       return res;
    }
 
-   JSROOT.GridDisplay.prototype.NumGridFrames = function() {
+   GridDisplay.prototype.NumGridFrames = function() {
       return this.framecnt;
    }
 
-   JSROOT.GridDisplay.prototype.CreateFrame = function(title) {
+   GridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
       var frame = this.GetFrame(this.getcnt);
@@ -2659,6 +2661,22 @@
 
       return frame;
    }
+
+
+   // export all functions and classes
+
+   JSROOT.Painter.FolderHierarchy = FolderHierarchy;
+   JSROOT.Painter.ObjectHierarchy = ObjectHierarchy;
+   JSROOT.Painter.TaskHierarchy = TaskHierarchy;
+   JSROOT.Painter.ListHierarchy = ListHierarchy;
+   JSROOT.Painter.KeysHierarchy = KeysHierarchy;
+
+   JSROOT.HierarchyPainter = HierarchyPainter;
+
+   JSROOT.MDIDisplay = MDIDisplay;
+   JSROOT.CustomDisplay = CustomDisplay;
+   JSROOT.GridDisplay = GridDisplay;
+
 
    return JSROOT;
 

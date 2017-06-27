@@ -891,13 +891,14 @@
       //     'io'  TFile functionality
       //   'tree'  TTree support
       //     '2d'  basic 2d graphic (TCanvas)
+      //     '3d'  basic 3d graphic (three.js)
       //   'hist'  histograms 2d graphic
+      // 'hist3d'  histograms 3d graphic
       // 'more2d'  extra 2d graphic (TGraph, TF1)
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
       // 'hierarchy' hierarchy browser
       //   'jq2d'  jQuery-dependent part of hierarchy
-      //     '3d'  histograms 3d graphic
       //   'geom'  TGeo support
       // 'simple'  for basic user interface
       //  'load:'  list of user-specific scripts at the end of kind string
