@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['jquery', 'jquery-ui', 'd3', 'JSRootPainter'], factory );
+      define( ['jquery', 'jquery-ui', 'd3', 'JSRootPainter', 'JSRootPainter.hierarchy'], factory );
    } else {
 
       if (typeof jQuery == 'undefined')

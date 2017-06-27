@@ -31,6 +31,7 @@
             'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
             'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
+            'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
@@ -894,7 +895,8 @@
       // 'more2d'  extra 2d graphic (TGraph, TF1)
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
-      //   'jq2d'  jQuery-dependent part of 2d graphic
+      // 'hierarchy' hierarchy browser
+      //   'jq2d'  jQuery-dependent part of hierarchy
       //     '3d'  histograms 3d graphic
       //   'geom'  TGeo support
       // 'simple'  for basic user interface
@@ -1002,6 +1004,11 @@
             mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
             modules.push('JSRootPainter.more');
          }
+
+      if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hierarchy' + ext + ".js;";
+         modules.push('JSRootPainter.hierarchy');
+      }
 
       if ((kind.indexOf('jq2d;')>=0) && (jsroot.sources.indexOf("jq2d")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
@@ -1149,7 +1156,7 @@
 
       var debugout = null,
           nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
-          requirements = "io;2d;",
+          requirements = "io;2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
       if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
@@ -1161,15 +1168,15 @@
              (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
       } else
-      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
-      if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
+      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;hierarchy;"; } else
+      if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;hierarchy;"; nobrowser = true; }
 
       if (user_scripts == 'check_existing_elements') {
          user_scripts = null;
          if (debugout == null) return;
       }
 
-      if (!nobrowser) requirements += 'jq2d;simple;';
+      if (!nobrowser) requirements += '2d;hierarchy;jq2d;simple;';
 
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
       if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
