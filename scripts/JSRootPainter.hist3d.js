@@ -4,11 +4,11 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['JSRootPainter.hist', 'd3', 'threejs', 'threejs_all'], factory );
+      define( [ 'JSRootCore', 'd3', 'JSRootPainter.hist', 'threejs', 'threejs_all'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-      var jsroot = require("./JSRootPainter.hist.js");
-      factory(jsroot, require("./d3.min.js"), require("./three.min.js"), require("./three.extra.min.js"),
+      var jsroot = require("./JSRootCore.js");
+      factory(jsroot, require("./d3.min.js"), require("./JSRootPainter.hist.js"), require("./three.min.js"), require("./three.extra.min.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 
@@ -22,16 +22,16 @@
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
       // Browser globals
-      factory(JSROOT, d3, THREE);
+      factory(JSROOT, d3, JSROOT, THREE, THREE);
    }
-} (function(JSROOT, d3, THREE, THREE_MORE, document) {
+} (function(JSROOT, d3, __DUMMY__, THREE, THREE_MORE, document) {
 
    JSROOT.sources.push("hist3d");
 
    if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
-   if (typeof JSROOT.Painter != 'object')
-      throw new Error('JSROOT.Painter is not defined', 'JSRootPainter.hist3d.js');
+   if (typeof JSROOT.THistPainter === 'undefined')
+      throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
    JSROOT.THistPainter.prototype.Create3DScene = function(arg) {
 

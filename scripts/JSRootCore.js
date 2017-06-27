@@ -1000,11 +1000,10 @@
          modules.push('JSRootPainter.hist');
       }
 
-      if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0))
-         if (jsroot.sources.indexOf("more2d")<0) {
-            mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
-            modules.push('JSRootPainter.more');
-         }
+      if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
+         modules.push('JSRootPainter.more');
+      }
 
       if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hierarchy' + ext + ".js;";

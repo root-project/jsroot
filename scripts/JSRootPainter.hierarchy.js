@@ -4,10 +4,10 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       // AMD. Register as an anonymous module.
-      define( ['JSRootPainter', 'd3'], factory );
+      define( ['JSRootCore', 'd3', 'JSRootPainter'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootCore.js"), require("./d3.min.js"));
+       factory(require("./JSRootCore.js"), require("./d3.min.js"), require("./JSRootPainter.js"));
    } else {
 
       if (typeof d3 != 'object')
