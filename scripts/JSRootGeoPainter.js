@@ -3167,49 +3167,6 @@
    /// keep for backwards compatibility
    JSROOT.Painter.drawGeometry = JSROOT.Painter.drawGeoObject;
 
-   // ===================================================================================
-
-   JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
-
-      var painter = new JSROOT.TObjectPainter(axis);
-
-      if (!('_main' in axis))
-         painter.SetDivId(divid);
-
-      painter.Draw3DAxis = function() {
-         var main = this.main_painter();
-
-         if (!main && ('_main' in this.GetObject()))
-            main = this.GetObject()._main; // simple workaround to get geo painter
-
-         if (!main || !main._toplevel)
-            return console.warn('no geo object found for 3D axis drawing');
-
-         var box = new THREE.Box3().setFromObject(main._toplevel);
-
-         this.xmin = box.min.x; this.xmax = box.max.x;
-         this.ymin = box.min.y; this.ymax = box.max.y;
-         this.zmin = box.min.z; this.zmax = box.max.z;
-
-         // use min/max values directly as graphical coordinates
-         this.size_xy3d = this.size_z3d =  0;
-
-         this.DrawXYZ = JSROOT.Painter.HPainter_DrawXYZ;
-
-         this.DrawXYZ(main._toplevel);
-
-         main.adjustCameraPosition();
-
-         main.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
-
-         main.Render3D();
-      }
-
-      painter.Draw3DAxis();
-
-      return painter.DrawingReady();
-   }
-
    // ===============================================================================
 
    JSROOT.GEO.buildCompositeVolume = function(comp, side) {
@@ -3650,7 +3607,6 @@
    }
 
    JSROOT.addDrawFunc({ name: "TGeoVolumeAssembly", icon: 'img_geoassembly', func: JSROOT.Painter.drawGeoObject, expand: JSROOT.GEO.expandObject, opt: ";more;all;count" });
-   JSROOT.addDrawFunc({ name: "TAxis3D", func: JSROOT.Painter.drawAxis3D });
    JSROOT.addDrawFunc({ name: "TEvePointSet", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
    JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
 

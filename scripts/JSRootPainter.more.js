@@ -27,6 +27,48 @@
 
    JSROOT.sources.push("more2d");
 
+   JSROOT.Painter.drawText = function() {
+      var text = this.GetObject(),
+          w = this.pad_width(), h = this.pad_height(),
+          pos_x = text.fX, pos_y = text.fY,
+          tcolor = JSROOT.Painter.root_colors[text.fTextColor],
+          use_pad = true, latex_kind = 0, fact = 1.;
+
+      if (text.TestBit(JSROOT.BIT(14))) {
+         // NDC coordinates
+         pos_x = pos_x * w;
+         pos_y = (1 - pos_y) * h;
+      } else
+      if (this.main_painter() !== null) {
+         w = this.frame_width(); h = this.frame_height(); use_pad = false;
+         pos_x = this.main_painter().grx(pos_x);
+         pos_y = this.main_painter().gry(pos_y);
+      } else
+      if (this.root_pad() !== null) {
+         pos_x = this.ConvertToNDC("x", pos_x) * w;
+         pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
+      } else {
+         text.fTextAlign = 22;
+         pos_x = w/2;
+         pos_y = h/2;
+         if (text.fTextSize === 0) text.fTextSize = 0.05;
+         if (text.fTextColor === 0) text.fTextColor = 1;
+      }
+
+      this.RecreateDrawG(use_pad, use_pad ? "text_layer" : "upper_layer");
+
+      if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
+      if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+
+      this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
+
+      this.DrawText(text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, text.fTitle, tcolor, latex_kind);
+
+      this.FinishTextDrawing();
+   }
+
+   // =====================================================================================
+
    JSROOT.Painter.drawLine = function() {
       var line = this.GetObject(),
           lineatt = JSROOT.Painter.createAttLine(line),
@@ -1867,6 +1909,6 @@
       return painter.DrawingReady();
    }
 
-   return JSROOT.Painter;
+   return JSROOT;
 
 }));
