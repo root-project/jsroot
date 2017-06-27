@@ -5308,10 +5308,10 @@
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" });
    JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
-   JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
+   JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "hist3d", func: "JSROOT.Painter.drawPolyMarker3D" });
    JSROOT.addDrawFunc({ name: "TGraphPolargram" }); // just dummy entry to avoid drawing of this object
-   JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "more2d;3d", func: "JSROOT.Painter.drawGraph2D", opt:";P;PCOL"});
-   JSROOT.addDrawFunc({ name: "TGraph2DErrors", icon:"img_graph", prereq: "more2d;3d", func: "JSROOT.Painter.drawGraph2D", opt:";P;PCOL;ERR"});
+   JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt:";P;PCOL"});
+   JSROOT.addDrawFunc({ name: "TGraph2DErrors", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt:";P;PCOL;ERR"});
    JSROOT.addDrawFunc({ name: /^TGraph/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt:";L;P"});
    JSROOT.addDrawFunc({ name: "TCutG", sameas: "TGraph" });
    JSROOT.addDrawFunc({ name: /^RooHist/, sameas: "TGraph" });

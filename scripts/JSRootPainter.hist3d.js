@@ -326,9 +326,9 @@
       } else {
          changed = true;
 
-         var indicies = JSROOT.Painter.Box_Indexes,
-             normals = JSROOT.Painter.Box_Normals,
-             vertices = JSROOT.Painter.Box_Vertices,
+         var indicies = JSROOT.Painter.Box3D.Indexes,
+             normals = JSROOT.Painter.Box3D.Normals,
+             vertices = JSROOT.Painter.Box3D.Vertices,
              pos, norm,
              color = new THREE.Color(tip.color ? tip.color : 0xFF0000),
              opacity = tip.opacity || 1;
@@ -1006,10 +1006,10 @@
 
       // Perform TH1/TH2 lego plot with BufferGeometry
 
-      var vertices = JSROOT.Painter.Box_Vertices,
-          indicies = JSROOT.Painter.Box_Indexes,
-          vnormals = JSROOT.Painter.Box_Normals,
-          segments = JSROOT.Painter.Box_Segments,
+      var vertices = JSROOT.Painter.Box3D.Vertices,
+          indicies = JSROOT.Painter.Box3D.Indexes,
+          vnormals = JSROOT.Painter.Box3D.Normals,
+          segments = JSROOT.Painter.Box3D.Segments,
           // reduced line segments
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
@@ -2237,15 +2237,15 @@
 
    // ==============================================================================
 
-   JSROOT.TH3Painter = function(histo) {
+   function TH3Painter(histo) {
       JSROOT.THistPainter.call(this, histo);
 
       this.mode3d = true;
    }
 
-   JSROOT.TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
+   TH3Painter.prototype = Object.create(JSROOT.THistPainter.prototype);
 
-   JSROOT.TH3Painter.prototype.ScanContent = function(when_axis_changed) {
+   TH3Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
@@ -2282,7 +2282,7 @@
       this.CreateAxisFuncs(true, true);
    }
 
-   JSROOT.TH3Painter.prototype.CountStat = function() {
+   TH3Painter.prototype.CountStat = function() {
       var histo = this.GetObject(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
@@ -2352,7 +2352,7 @@
       return res;
    }
 
-   JSROOT.TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
       if (this.GetObject()===null) return false;
 
       var pave = stat.GetObject(),
@@ -2402,7 +2402,7 @@
       return true;
    }
 
-   JSROOT.TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
+   TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
       var lines = [], pmain = this.main_painter();
 
       lines.push(this.GetTipName());
@@ -2431,7 +2431,7 @@
       return lines;
    }
 
-   JSROOT.TH3Painter.prototype.Draw3DScatter = function() {
+   TH3Painter.prototype.Draw3DScatter = function() {
       // try to draw 3D histogram as scatter plot
       // if too many points, box will be displayed
 
@@ -2520,7 +2520,7 @@
       return true;
    }
 
-   JSROOT.TH3Painter.prototype.Draw3DBins = function() {
+   TH3Painter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
 
@@ -2577,9 +2577,9 @@
 
       } else {
 
-         var indicies = JSROOT.Painter.Box_Indexes,
-             normals = JSROOT.Painter.Box_Normals,
-             vertices = JSROOT.Painter.Box_Vertices;
+         var indicies = JSROOT.Painter.Box3D.Indexes,
+             normals = JSROOT.Painter.Box3D.Normals,
+             vertices = JSROOT.Painter.Box3D.Vertices;
 
          buffer_size = indicies.length*3;
          single_bin_verts = new Float32Array(buffer_size);
@@ -2683,10 +2683,10 @@
          bin_tooltips[nseq] = new Int32Array(nbins);
 
          if (helper_kind[nseq]===1)
-            helper_indexes[nseq] = new Uint16Array(nbins * JSROOT.Painter.Box_MeshSegments.length);
+            helper_indexes[nseq] = new Uint16Array(nbins * JSROOT.Painter.Box3D.MeshSegments.length);
 
          if (helper_kind[nseq]===2)
-            helper_positions[nseq] = new Float32Array(nbins * JSROOT.Painter.Box_Segments.length * 3);
+            helper_positions[nseq] = new Float32Array(nbins * JSROOT.Painter.Box3D.Segments.length * 3);
       }
 
       var binx, grx, biny, gry, binz, grz;
@@ -2731,7 +2731,7 @@
 
                if (helper_kind[nseq]===1) {
                   // reuse vertices created for the mesh
-                  var helper_segments = JSROOT.Painter.Box_MeshSegments;
+                  var helper_segments = JSROOT.Painter.Box3D.MeshSegments;
                   vvv = nbins * helper_segments.length;
                   var shift = Math.round(nbins * buffer_size/3),
                       helper_i = helper_indexes[nseq];
@@ -2740,11 +2740,11 @@
                }
 
                if (helper_kind[nseq]===2) {
-                  var helper_segments = JSROOT.Painter.Box_Segments,
+                  var helper_segments = JSROOT.Painter.Box3D.Segments,
                       helper_p = helper_positions[nseq];
                   vvv = nbins * helper_segments.length * 3;
                   for (var n=0;n<helper_segments.length;++n, vvv+=3) {
-                     var vert = JSROOT.Painter.Box_Vertices[helper_segments[n]];
+                     var vert = JSROOT.Painter.Box3D.Vertices[helper_segments[n]];
                      helper_p[vvv]   = grx + (vert.x-0.5)*scalex*wei;
                      helper_p[vvv+1] = gry + (vert.y-0.5)*scaley*wei;
                      helper_p[vvv+2] = grz + (vert.z-0.5)*scalez*wei;
@@ -2825,7 +2825,7 @@
       }
    }
 
-   JSROOT.TH3Painter.prototype.Redraw = function(resize) {
+   TH3Painter.prototype.Redraw = function(resize) {
       if (resize) {
 
          if (this.Resize3D()) this.Render3D();
@@ -2843,7 +2843,7 @@
       this.DrawTitle();
    }
 
-   JSROOT.TH3Painter.prototype.FillToolbar = function() {
+   TH3Painter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
       if (pp===null) return;
 
@@ -2852,7 +2852,7 @@
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
    }
 
-   JSROOT.TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
+   TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
 
       if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
@@ -2864,7 +2864,7 @@
       return false;
    }
 
-   JSROOT.TH3Painter.prototype.AutoZoom = function() {
+   TH3Painter.prototype.AutoZoom = function() {
       var i1 = this.GetSelectIndex("x", "left"),
           i2 = this.GetSelectIndex("x", "right"),
           j1 = this.GetSelectIndex("y", "left"),
@@ -2926,7 +2926,7 @@
    }
 
 
-   JSROOT.TH3Painter.prototype.FillHistContextMenu = function(menu) {
+   TH3Painter.prototype.FillHistContextMenu = function(menu) {
 
       var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
 
@@ -2962,6 +2962,385 @@
 
       return painter.DrawingReady();
    }
+
+   // ===========================================================================================
+
+   function TGraph2DPainter(graph) {
+      JSROOT.TObjectPainter.call(this, graph);
+   }
+
+   TGraph2DPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TGraph2DPainter.prototype.DecodeOptions = function(opt) {
+      var d = new JSROOT.DrawOptions(opt);
+
+      var res = { Color: d.check("COL"),
+                  Error: d.check("ERR") && this.MatchObjectType("TGraph2DErrors"),
+                  Markers: d.check("P") };
+
+      if (!res.Markers && !res.Error) res.Markers = true;
+      if (!res.Markers) res.Color = false;
+
+      return res;
+   }
+
+   TGraph2DPainter.prototype.CreateHistogram = function() {
+      var gr = this.GetObject();
+
+      var xmin = gr.fX[0], xmax = xmin,
+          ymin = gr.fY[0], ymax = ymin,
+          zmin = gr.fZ[0], zmax = zmin;
+
+      for (var p = 0; p < gr.fNpoints;++p) {
+
+         var x = gr.fX[p], y = gr.fY[p], z = gr.fZ[p],
+             errx = this.options.Error ? gr.fEX[p] : 0,
+             erry = this.options.Error ? gr.fEY[p] : 0,
+             errz = this.options.Error ? gr.fEZ[p] : 0;
+
+         xmin = Math.min(xmin, x-errx);
+         xmax = Math.max(xmax, x+errx);
+         ymin = Math.min(ymin, y-erry);
+         ymax = Math.max(ymax, y+erry);
+         zmin = Math.min(zmin, z-errz);
+         zmax = Math.max(zmax, z+errz);
+      }
+
+      if (xmin >= xmax) xmax = xmin+1;
+      if (ymin >= ymax) ymax = ymin+1;
+      if (zmin >= zmax) zmax = zmin+1;
+      var dx = (xmax-xmin)*0.02, dy = (ymax-ymin)*0.02, dz = (zmax-zmin)*0.02,
+          uxmin = xmin - dx, uxmax = xmax + dx,
+          uymin = ymin - dy, uymax = ymax + dy,
+          uzmin = zmin - dz, uzmax = zmax + dz;
+
+      if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.98;
+      if ((uxmax>0) && (xmax<=0)) uxmax = 0;
+
+      if ((uymin<0) && (ymin>=0)) uymin = ymin*0.98;
+      if ((uymax>0) && (ymax<=0)) uymax = 0;
+
+      if ((uzmin<0) && (zmin>=0)) uzmin = zmin*0.98;
+      if ((uzmax>0) && (zmax<=0)) uzmax = 0;
+
+      var graph = this.GetObject();
+
+      if (graph.fMinimum != -1111) uzmin = graph.fMinimum;
+      if (graph.fMaximum != -1111) uzmax = graph.fMaximum;
+
+      var histo = JSROOT.CreateHistogram("TH2I", 10, 10);
+      histo.fName = graph.fName + "_h";
+      histo.fTitle = graph.fTitle;
+      histo.fXaxis.fXmin = uxmin;
+      histo.fXaxis.fXmax = uxmax;
+      histo.fYaxis.fXmin = uymin;
+      histo.fYaxis.fXmax = uymax;
+      histo.fZaxis.fXmin = uzmin;
+      histo.fZaxis.fXmax = uzmax;
+      histo.fMinimum = uzmin;
+      histo.fMaximum = uzmax;
+      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      return histo;
+   }
+
+   TGraph2DPainter.prototype.Graph2DTooltip = function(intersect) {
+      var indx = Math.floor(intersect.index / this.nvertex);
+      if ((indx<0) || (indx >= this.index.length)) return null;
+
+      indx = this.index[indx];
+
+      var p = this.painter,
+          grx = p.grx(this.graph.fX[indx]),
+          gry = p.gry(this.graph.fY[indx]),
+          grz = p.grz(this.graph.fZ[indx]),
+          tip = { info: this.tip_name + "<br/>" +
+                "pnt: " + indx + "<br/>" +
+                "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
+                "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
+                "z: " + p.z_handle.format(this.graph.fZ[indx]) };
+
+      tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+      tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+      tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+      tip.color = this.tip_color;
+
+      return tip;
+   }
+
+   TGraph2DPainter.prototype.Redraw = function() {
+
+      var main = this.main_painter(),
+          graph = this.GetObject(),
+          step = 1;
+
+      if (!graph || !main  || !('renderer' in main)) return;
+
+      function CountSelected(zmin, zmax) {
+         var cnt = 0;
+         for (var i=0; i < graph.fNpoints; ++i) {
+            if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+                  (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+                  (graph.fZ[i] < zmin) || (graph.fZ[i] >= zmax)) continue;
+
+            ++cnt;
+         }
+         return cnt;
+      }
+
+      // try to define scale-down factor
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && !main.webgl) {
+         var numselected = CountSelected(main.scale_zmin, main.scale_zmax),
+             sizelimit = 50000;
+
+         if (numselected > sizelimit) {
+            step = Math.floor(numselected / sizelimit);
+            if (step <= 2) step = 2;
+         }
+      }
+
+      var markeratt = JSROOT.Painter.createAttMarker(graph),
+         palette = null,
+         levels = [main.scale_zmin, main.scale_zmax],
+         scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
+
+      if (main.usesvg) scale*=0.3;
+
+      if (this.options.Color) {
+         levels = main.GetContour();
+         palette = main.GetPalette();
+      }
+
+      for (var lvl=0;lvl<levels.length-1;++lvl) {
+
+         var lvl_zmin = Math.max(levels[lvl], main.scale_zmin),
+             lvl_zmax = Math.min(levels[lvl+1], main.scale_zmax);
+
+         if (lvl_zmin >= lvl_zmax) continue;
+
+         var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
+             pnts = null, select = 0,
+             index = new Int32Array(size), icnt = 0,
+             err = null, ierr = 0;
+
+         if (this.options.Markers)
+            pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
+
+         if (this.options.Error)
+            err = new Float32Array(size*6*3);
+
+         for (var i=0; i < graph.fNpoints; ++i) {
+            if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
+                (graph.fY[i] < main.scale_ymin) || (graph.fY[i] > main.scale_ymax) ||
+                (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax)) continue;
+
+            if (step > 1) {
+               select = (select+1) % step;
+               if (select!==0) continue;
+            }
+
+            index[icnt++] = i; // remember point index for tooltip
+
+            var x = main.grx(graph.fX[i]),
+                y = main.gry(graph.fY[i]),
+                z = main.grz(graph.fZ[i]);
+
+            if (pnts) pnts.AddPoint(x,y,z);
+
+            if (err) {
+               err[ierr]   = main.grx(graph.fX[i] - graph.fEX[i]);
+               err[ierr+1] = y;
+               err[ierr+2] = z;
+               err[ierr+3] = main.grx(graph.fX[i] + graph.fEX[i]);
+               err[ierr+4] = y;
+               err[ierr+5] = z;
+               ierr+=6;
+               err[ierr]   = x;
+               err[ierr+1] = main.gry(graph.fY[i] - graph.fEY[i]);
+               err[ierr+2] = z;
+               err[ierr+3] = x;
+               err[ierr+4] = main.gry(graph.fY[i] + graph.fEY[i]);
+               err[ierr+5] = z;
+               ierr+=6;
+               err[ierr]   = x;
+               err[ierr+1] = y;
+               err[ierr+2] = main.grz(graph.fZ[i] - graph.fEZ[i]);
+               err[ierr+3] = x;
+               err[ierr+4] = y;
+               err[ierr+5] = main.grz(graph.fZ[i] + graph.fEZ[i]);;
+               ierr+=6;
+            }
+
+         }
+
+         if (err) {
+            var lcolor = JSROOT.Painter.root_colors[this.GetObject().fLineColor],
+                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+            if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+            var errmesh = JSROOT.Painter.createLineSegments(err, material);
+            main.toplevel.add(errmesh);
+
+            errmesh.graph = graph;
+            errmesh.index = index;
+            errmesh.painter = main;
+            errmesh.scale0 = 0.7*scale;
+            errmesh.tip_name = this.GetTipName();
+            errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+            errmesh.nvertex = 6;
+
+            errmesh.tooltip = this.Graph2DTooltip;
+         }
+
+         if (pnts) {
+
+            var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
+
+            if (palette) {
+               var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
+               if (indx >= palette.length) indx = palette.length-1;
+               fcolor = palette[indx];
+            }
+
+            var mesh = pnts.CreatePoints(fcolor);
+
+            main.toplevel.add(mesh);
+
+            mesh.graph = graph;
+            mesh.index = index;
+            mesh.painter = main;
+            mesh.scale0 = 0.3*scale;
+            mesh.tip_name = this.GetTipName();
+            mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+
+            mesh.tooltip = this.Graph2DTooltip;
+         }
+      }
+
+      main.Render3D(100); // set large timeout to be able draw other points
+   }
+
+   JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
+
+      var painter = new JSROOT.TGraph2DPainter(gr);
+
+      painter.SetDivId(divid, -1); // just to get access to existing elements
+
+      painter.options = painter.DecodeOptions(opt);
+
+      if (painter.main_painter()) {
+         painter.SetDivId(divid);
+         painter.Redraw();
+         return painter.DrawingReady();
+      }
+
+      if (!gr.fHistogram)
+         gr.fHistogram = painter.CreateHistogram();
+
+      JSROOT.draw(divid, gr.fHistogram, "lego;axis", function(hpainter) {
+         painter.ownhisto = true;
+         painter.SetDivId(divid);
+         painter.Redraw();
+         return painter.DrawingReady();
+      });
+
+      return painter;
+   }
+
+   // ===================================================================
+
+   JSROOT.Painter.drawPolyMarker3D = function(divid, poly, opt) {
+
+      var painter = new JSROOT.TObjectPainter(poly);
+
+      painter.SetDivId(divid);
+
+      painter.Redraw = function() {
+
+         var main = this.main_painter();
+
+         if (!main  || !('renderer' in main)) return;
+
+         var step = 1, sizelimit = 50000, numselect = 0;
+
+         for (var i=0;i<poly.fP.length;i+=3) {
+            if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
+                (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
+                (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
+            ++numselect;
+         }
+
+         if ((JSROOT.gStyle.OptimizeDraw > 0) && (numselect > sizelimit)) {
+            step = Math.floor(numselect/sizelimit);
+            if (step <= 2) step = 2;
+         }
+
+         var size = Math.floor(numselect/step),
+             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, main.size_xy3d/100),
+             index = new Int32Array(size),
+             select = 0, icnt = 0;
+
+         for (var i=0; i < poly.fP.length;i+=3) {
+
+            if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
+                (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
+                (poly.fP[i+2] < main.scale_zmin) || (poly.fP[i+2] > main.scale_zmax)) continue;
+
+            if (step > 1) {
+               select = (select+1) % step;
+               if (select!==0) continue;
+            }
+
+            index[icnt++] = i;
+
+            pnts.AddPoint(main.grx(poly.fP[i]), main.gry(poly.fP[i+1]), main.grz(poly.fP[i+2]));
+         }
+
+         var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[poly.fMarkerColor]);
+
+         main.toplevel.add(mesh);
+
+         mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         mesh.poly = poly;
+         mesh.painter = main;
+         mesh.scale0 = 0.7*pnts.scale;
+         mesh.index = index;
+
+         mesh.tooltip = function(intersect) {
+            var indx = Math.floor(intersect.index / this.nvertex);
+            if ((indx<0) || (indx >= this.index.length)) return null;
+
+            indx = this.index[indx];
+
+            var p = this.painter;
+
+            var tip = { info: "bin: " + indx/3 + "<br/>" +
+                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
+                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
+                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
+
+            var grx = p.grx(this.poly.fP[indx]),
+                gry = p.gry(this.poly.fP[indx+1]),
+                grz = p.grz(this.poly.fP[indx+2]);
+
+            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
+            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
+            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+
+            tip.color = this.tip_color;
+
+            return tip;
+         }
+
+         main.Render3D(100); // set large timeout to be able draw other points
+      }
+
+      painter.Redraw();
+
+      return painter.DrawingReady();
+   }
+
+   JSROOT.TH3Painter = TH3Painter;
+   JSROOT.TGraph2DPainter = TGraph2DPainter;
 
    return JSROOT;
 }));
