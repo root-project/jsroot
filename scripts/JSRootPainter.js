@@ -9116,14 +9116,14 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
    JSROOT.addDrawFunc({ name: "TMathText", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
    JSROOT.addDrawFunc({ name: "TText", icon: "img_text", func: JSROOT.Painter.drawText, direct: true });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", func: JSROOT.Painter.drawHistogram1D, opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same", ctrl: "l" });
-   JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", func: JSROOT.Painter.drawHistogram1D, opt:";E0;E1;E2;p;hist"});
-   JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;same", expand_item: "fBins", theonly: true });
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same", ctrl: "l" });
+   JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";E0;E1;E2;p;hist"});
+   JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "more2d", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
-   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" });
-   JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "more2d", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
+   JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" });
+   JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
    JSROOT.addDrawFunc({ name: "TPolyMarker3D", icon: 'img_histo3d', prereq: "3d", func: "JSROOT.Painter.drawPolyMarker3D" });
    JSROOT.addDrawFunc({ name: "TGraphPolargram" }); // just dummy entry to avoid drawing of this object
    JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "more2d;3d", func: "JSROOT.Painter.drawGraph2D", opt:";P;PCOL"});
@@ -9135,7 +9135,7 @@
    JSROOT.addDrawFunc({ name: "RooPlot", icon: "img_canvas", prereq: "more2d", func: "JSROOT.Painter.drawRooPlot" });
    JSROOT.addDrawFunc({ name: "TMultiGraph", icon: "img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon: 'img_question', func: JSROOT.Painter.drawStreamerInfo });
-   JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "more2d", func: "JSROOT.Painter.drawPaletteAxis" });
+   JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "hist", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
