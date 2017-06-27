@@ -1585,7 +1585,7 @@
       if (opt == null) opt = "";
       opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
 
-      if ((opt.indexOf("A") >= 0) || !this.main_painter()) {
+      if ((opt.indexOf("A") >= 0) || !painter.main_painter()) {
          opt = opt.replace("A","");
          painter.DrawAxis(function(hpainter) {
             painter.firstpainter = hpainter;

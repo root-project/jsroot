@@ -992,7 +992,7 @@
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
-      if ((kind.indexOf('hist;')>=0) && (jsroot.sources.indexOf("hist")<0)) {
+      if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
          modules.push('JSRootPainter.hist');
       }
