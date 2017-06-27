@@ -28,6 +28,8 @@
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
+            'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
@@ -887,8 +889,9 @@
       // one could specify kind of requirements
       //     'io'  TFile functionality
       //   'tree'  TTree support
-      //     '2d'  basic 2d graphic (TCanvas, TH1)
-      // 'more2d'  extra 2d graphic (TH2, TGraph)
+      //     '2d'  basic 2d graphic (TCanvas)
+      //   'hist'  histograms 2d graphic
+      // 'more2d'  extra 2d graphic (TGraph, TF1)
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
       //   'jq2d'  jQuery-dependent part of 2d graphic
@@ -924,7 +927,6 @@
          jsroot.CallBack(req._callback);
          jsroot.AssertPrerequisites('__next__');
       }
-
 
       jsroot.doing_assert[0].running = true;
 
@@ -976,7 +978,7 @@
                jsroot._test_d3_ = 4;
             }
          }
-         if (jsroot.sources.indexOf("2d")<0) {
+         if (jsroot.sources.indexOf("2d") < 0) {
             modules.push('JSRootPainter');
             mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
             extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
@@ -989,6 +991,11 @@
       }
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
+
+      if ((kind.indexOf('hist;')>=0) && (jsroot.sources.indexOf("hist")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
+         modules.push('JSRootPainter.hist');
+      }
 
       if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0))
          if (jsroot.sources.indexOf("more2d")<0) {
@@ -1008,6 +1015,11 @@
          modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
+      }
+
+      if ((kind.indexOf('hist3d;')>=0) && (jsroot.sources.indexOf("hist3d")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hist3d' + ext + ".js;";
+         modules.push('JSRootPainter.hist3d');
       }
 
       if ((kind.indexOf("geom;")>=0) && (jsroot.sources.indexOf("geom")<0)) {
