@@ -5638,7 +5638,7 @@
 
    JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
       // create painter and add it to canvas
-      var painter = new JSROOT.TH1Painter(histo);
+      var painter = new TH1Painter(histo);
 
       painter.SetDivId(divid, 1);
 
@@ -5654,11 +5654,7 @@
 
       painter.CallDrawFunc(function() {
          painter.DrawNextFunction(0, function() {
-
-            if (painter.options.Lego === 0) {
-               if (painter.options.AutoZoom) painter.AutoZoom();
-            }
-
+            if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
             painter.FillToolbar();
             painter.DrawingReady();
          });

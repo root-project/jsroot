@@ -1054,7 +1054,7 @@
 
    HierarchyPainter.prototype.displayAll = function(items, options, call_back) {
 
-      if ((items == null) || (items.length == 0)) return JSROOT.CallBack(call_back);
+      if (!items || (items.length == 0)) return JSROOT.CallBack(call_back);
 
       var h = this;
 
