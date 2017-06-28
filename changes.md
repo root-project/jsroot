@@ -5,6 +5,8 @@
 2. Let inspect selected TGeoNode
 3. Change in JSROOT.draw functionality. Now valid painter instance can be only obtained via call-back
    function - forth argument of JSROOT.draw() function. 
+4. Use latest three.js r86 with improved Projector and CanvasRenderer
+   Still use own SVGRenderer which supported direct text dump
 
 
 ## Changes in 5.2.0
