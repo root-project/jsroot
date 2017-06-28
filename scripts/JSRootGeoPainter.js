@@ -2164,27 +2164,21 @@
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
-      var hit_size = (this._webgl ? 25 : 8) * hit.fMarkerSize,
-          hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
+      var hit_size = 8*hit.fMarkerSize,
           size = hit.fN-1,
           projv = this.options.projectPos,
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
           projz = (this.options.project === "z"),
-          lll = 0,
-          pos = new Float32Array(size*3);
+          pnts = new JSROOT.Painter.PointsCreator(size, this._webgl, hit_size);
 
-      for (var i=0;i<size;i++,lll+=3) {
-         pos[lll]   = projx ? projv : hit.fP[i*3];
-         pos[lll+1] = projy ? projv : hit.fP[i*3+1];
-         pos[lll+2] = projz ? projv : hit.fP[i*3+2];
-      }
+      for (var i=0;i<size;i++)
+         pnts.AddPoint(projx ? projv : hit.fP[i*3],
+                       projy ? projv : hit.fP[i*3+1],
+                       projz ? projv : hit.fP[i*3+2]);
 
-      var geom = new THREE.BufferGeometry(), mesh;
-      geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+      var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)");
 
-      var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-      mesh = new THREE.Points(geom, material);
       mesh.highlightMarkerSize = hit_size*3;
       mesh.normalMarkerSize = hit_size;
 
@@ -2196,8 +2190,7 @@
       return true;
    }
 
-   TGeoPainter.prototype.drawExtraShape = function(obj, itemname)
-   {
+   TGeoPainter.prototype.drawExtraShape = function(obj, itemname) {
       var toplevel = JSROOT.GEO.build(obj);
       if (!toplevel) return false;
 
