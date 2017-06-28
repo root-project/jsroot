@@ -92,7 +92,7 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "refactor 27/06/2017";
+   JSROOT.version = "refactor 28/06/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1155,33 +1155,29 @@
 
       var debugout = null,
           nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
-          requirements = "io;2d;hierarchy;",
+          requirements = "2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
       if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
 
       if (simplegui) {
          debugout = 'simpleGUI';
-         if ((JSROOT.GetUrlOption('json')!=null) &&
-             (JSROOT.GetUrlOption('file')==null) &&
-             (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
+         if (JSROOT.GetUrlOption('file') || JSROOT.GetUrlOption('files')) requirements += "io;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
-      } else
-      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;hierarchy;"; } else
-      if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;hierarchy;"; nobrowser = true; }
+      } else if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI';
+      } else if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; nobrowser = true;
+      } else requirements += "io;";
 
       if (user_scripts == 'check_existing_elements') {
          user_scripts = null;
          if (debugout == null) return;
       }
 
-      if (!nobrowser) requirements += '2d;hierarchy;jq2d;simple;';
+      if (!nobrowser) requirements += 'jq2d;';
 
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
+      if (!user_scripts) user_scripts = JSROOT.GetUrlOption("autoload") || JSROOT.GetUrlOption("load");
 
-      if (user_scripts != null)
-         requirements += "load:" + user_scripts + ";";
+      if (user_scripts) requirements += "load:" + user_scripts + ";";
 
       JSROOT.AssertPrerequisites(requirements, function() {
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
@@ -1950,7 +1946,9 @@
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
       if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
-      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
+      if (JSROOT.GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
+      if (JSROOT.GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
+      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";
       if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
       if (JSROOT.GetUrlOption('geom', src)!=null) prereq += "geom;";
       if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";

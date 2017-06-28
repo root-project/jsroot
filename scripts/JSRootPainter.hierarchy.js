@@ -2675,7 +2675,6 @@
    JSROOT.CustomDisplay = CustomDisplay;
    JSROOT.GridDisplay = GridDisplay;
 
-
    return JSROOT;
 
 }));
