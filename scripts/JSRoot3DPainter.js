@@ -673,38 +673,26 @@
    // ==============================================================================
 
    JSROOT.Painter.PointsCreator = function(size, iswebgl, scale) {
-      if (iswebgl === undefined) iswebgl = true;
-      this.realwebgl = iswebgl;
-      this.webgl = iswebgl;
+      this.webgl = (iswebgl === undefined) ? true : iswebgl;
       this.scale = scale || 1.;
 
-      if (this.webgl) {
-         this.pos = new Float32Array(size*3);
-         this.geom = new THREE.BufferGeometry();
-         this.geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-         this.indx = 0;
-      } else {
-         // only plain geometry supported by canvasrenderer
-         this.geom = new THREE.Geometry();
-      }
+      this.pos = new Float32Array(size*3);
+      this.geom = new THREE.BufferGeometry();
+      this.geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      this.indx = 0;
    }
 
    JSROOT.Painter.PointsCreator.prototype.AddPoint = function(x,y,z) {
-      if (this.webgl) {
-         this.pos[this.indx]   = x;
-         this.pos[this.indx+1] = y;
-         this.pos[this.indx+2] = z;
-         this.indx+=3;
-      } else {
-         this.geom.vertices.push(new THREE.Vector3( x, y, z ));
-      }
+      this.pos[this.indx]   = x;
+      this.pos[this.indx+1] = y;
+      this.pos[this.indx+2] = z;
+      this.indx+=3;
    }
 
    JSROOT.Painter.PointsCreator.prototype.CreatePoints = function(mcolor) {
       // only plain geometry and sprite material is supported by CanvasRenderer, but it cannot be scaled
 
-      var material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1)*this.scale, color: mcolor || 'black' } );
-
+      var material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
       var pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
       return pnts;

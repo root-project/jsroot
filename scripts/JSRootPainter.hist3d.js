@@ -2478,7 +2478,6 @@
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
 
                   pnts.AddPoint(main.grx(binx), main.gry(biny), main.grz(binz));
-
                }
             }
          }
