@@ -2164,74 +2164,30 @@
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
-      var hit_size = 25.0 * hit.fMarkerSize,
+      var hit_size = (this._webgl ? 25 : 8) * hit.fMarkerSize,
           hit_color = JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
-          use_points = this._webgl,
-          size = hit.fN-1, step = 1, scale = hit_size*0.3,
-          indicies = JSROOT.Painter.Box3D.Indexes,
-          normals = JSROOT.Painter.Box3D.Normals,
-          vertices = JSROOT.Painter.Box3D.Vertices,
-          lll = 0, pos, norm,
+          size = hit.fN-1,
           projv = this.options.projectPos,
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
-          projz = (this.options.project === "z");
+          projz = (this.options.project === "z"),
+          lll = 0,
+          pos = new Float32Array(size*3);
 
-      if (use_points) {
-         pos = new Float32Array(size*3);
-         norm = null;
-      } else {
-         // TODO: provide support of POINTS directly in the CanvasRenderer
-
-         if (size > 1000) { step = Math.floor(size/500); if (step<2) step = 2; }
-
-         pos = new Float32Array(indicies.length*3*Math.floor(size/step));
-         norm = new Float32Array(indicies.length*3*Math.floor(size/step));
-      }
-
-      for (var i=0;i<size;i+=step) {
-
-         var x = projx ? projv : hit.fP[i*3],
-             y = projy ? projv : hit.fP[i*3+1],
-             z = projz ? projv : hit.fP[i*3+2];
-
-         if (use_points) {
-            pos[lll]   = x;
-            pos[lll+1] = y;
-            pos[lll+2] = z;
-            lll+=3;
-            continue;
-         }
-
-         for (var k=0,nn=-3;k<indicies.length;++k) {
-            var vert = vertices[indicies[k]];
-            pos[lll]   = x + (vert.x-0.5)*scale;
-            pos[lll+1] = y + (vert.y-0.5)*scale;
-            pos[lll+2] = z + (vert.z-0.5)*scale;
-
-            if (k%6===0) nn+=3;
-            norm[lll] = normals[nn];
-            norm[lll+1] = normals[nn+1];
-            norm[lll+2] = normals[nn+2];
-
-            lll+=3;
-         }
+      for (var i=0;i<size;i++,lll+=3) {
+         pos[lll]   = projx ? projv : hit.fP[i*3];
+         pos[lll+1] = projy ? projv : hit.fP[i*3+1];
+         pos[lll+2] = projz ? projv : hit.fP[i*3+2];
       }
 
       var geom = new THREE.BufferGeometry(), mesh;
       geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-      if (norm) geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
-      if (use_points) {
-         var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
-         mesh = new THREE.Points(geom, material);
-         mesh.highlightMarkerSize = hit_size*3;
-         mesh.normalMarkerSize = hit_size;
-      } else {
-         // var material = new THREE.MeshPhongMaterial({ color : fcolor, specular : 0x4f4f4f});
-         var material = new THREE.MeshBasicMaterial( { color: hit_color, shading: THREE.SmoothShading  } );
-         mesh = new THREE.Mesh(geom, material);
-      }
+      var material = new THREE.PointsMaterial( { size: hit_size, color: hit_color } );
+      mesh = new THREE.Points(geom, material);
+      mesh.highlightMarkerSize = hit_size*3;
+      mesh.normalMarkerSize = hit_size;
+
       mesh.geo_name = itemname;
       mesh.geo_object = hit;
 
