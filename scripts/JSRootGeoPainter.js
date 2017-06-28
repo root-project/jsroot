@@ -1405,9 +1405,7 @@
       this._scene.add(this._toplevel);
 
       if (usesvg) {
-         this._renderer = JSROOT.gStyle.SVGRenderer ?
-                             new THREE.SVGRendererNew() :
-                             new THREE.SVGRenderer( { precision: 0, astext: true } );
+         this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
          if (this._renderer.outerHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];

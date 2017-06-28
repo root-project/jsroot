@@ -115,9 +115,7 @@
       this.scene.add( this.camera );
 
       if (this.usesvg) {
-         this.renderer = JSROOT.gStyle.SVGRenderer ?
-                           new THREE.SVGRendererNew() :
-                           new THREE.SVGRenderer({ precision: 0, astext: true });
+         this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
          if (this.renderer.outerHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
@@ -216,9 +214,7 @@
       if (tmout === -1111) {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
-         var rrr = JSROOT.gStyle.SVGRenderer ?
-                      new THREE.SVGRendererNew() :
-                      new THREE.SVGRenderer({ precision: 0, astext: true });
+         var rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
          if (rrr.outerHTML) {
