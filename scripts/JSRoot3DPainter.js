@@ -3,7 +3,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( ['JSRootPainter', 'd3', 'threejs', 'threejs_all'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {

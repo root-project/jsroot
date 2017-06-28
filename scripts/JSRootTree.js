@@ -4,7 +4,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( ['JSRootCore', 'JSRootIOEvolution', 'JSRootMath'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -16,7 +15,6 @@
       if (typeof JSROOT.IO != 'object')
          throw new Error('JSROOT.IO not defined', 'JSRootTree.js');
 
-      // Browser globals
       factory(JSROOT);
    }
 } (function(JSROOT) {

@@ -3,7 +3,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {

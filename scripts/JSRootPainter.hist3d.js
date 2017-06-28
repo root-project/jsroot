@@ -3,7 +3,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( [ 'JSRootCore', 'd3', 'JSRootPainter.hist', 'threejs', 'threejs_all'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -21,7 +20,6 @@
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRoot3DPainter.js');
 
-      // Browser globals
       factory(JSROOT, d3, JSROOT, THREE, THREE);
    }
 } (function(JSROOT, d3, __DUMMY__, THREE, THREE_MORE, document) {

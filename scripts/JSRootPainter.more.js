@@ -4,7 +4,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -20,7 +19,6 @@
       if (typeof JSROOT.Painter != 'object')
          throw new Error('JSROOT.Painter not defined', 'JSRootPainter.more.js');
 
-      // Browser globals
       factory(JSROOT, d3);
    }
 } (function(JSROOT, d3) {
