@@ -385,7 +385,7 @@
    // This is simple replacement of jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src) {
-      if ((src === null) || (typeof src !== 'object')) return src;
+      if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
 
       for (var k in src)
