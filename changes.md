@@ -5,7 +5,8 @@
 2. Let inspect selected TGeoNode
 3. Change in JSROOT.draw functionality. Now valid painter instance can be only obtained via call-back
    function - forth argument of JSROOT.draw() function. 
-4. Use latest three.js r86 with improved Projector and CanvasRenderer
+4. Refactor JSROOT scripts structure - extract histograms and hierarchy painters into separate scripts 
+5. Use latest three.js r86 with improved Projector and CanvasRenderer
    Still use own SVGRenderer which supported direct text dump
 
 
