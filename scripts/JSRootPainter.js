@@ -2611,12 +2611,12 @@
                 fname = d.substr(p+1);
             conn.send('READY'); // send ready message back
 
-            console.log('GET REQUEST FOR FILE', fname, id);
+            console.log('GET REQUEST FOR SVG FILE', fname, id);
 
             var painter = pthis.FindSnap(id);
             if (painter)
                painter.SaveAsPng(painter.iscan, "image.svg", function(res) {
-                  console.log('SVG IMAGE CREATED', res ? res.length : "");
+                  console.log('SVG IMAGE CREATED', res ? res.length : "<error>");
                   if (res) conn.send("GETIMG:" + fname + ":" + res);
                });
 
@@ -2676,10 +2676,10 @@
 
             for (var n=0;n<items.length;++n) {
                var item = items[n];
-               if ('chk' in item)
-                  _menu.addchk(item.chk, item.name, item.exec, DoExecMenu);
+               if (item.fChecked < 0)
+                  _menu.add(item.fName, item.fExec, DoExecMenu);
                else
-                  _menu.add(item.name, item.exec, DoExecMenu);
+                  _menu.addchk(item.fChecked > 0, item.fName, item.fExec, DoExecMenu);
             }
 
             _menu.add("endsub:");
