@@ -1574,6 +1574,12 @@
                     _func = this.fFormula.fFormula;
                     pprefix = "[p";
                  }
+                 if (this.fFormula.fClingParameters && this.fFormula.fParams) {
+                    for (var i=0;i<this.fFormula.fParams.length;++i) {
+                       var regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g');
+                       _func = _func.replace(regex, this.fFormula.fClingParameters[this.fFormula.fParams[i].second]);
+                    }
+                 }
               }
 
               if ('formulas' in this)
