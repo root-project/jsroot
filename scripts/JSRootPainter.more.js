@@ -1430,6 +1430,82 @@
 
    // =============================================================
 
+   function TEfficiencyPainter(eff) {
+      JSROOT.TObjectPainter.call(this, eff);
+   }
+
+   TEfficiencyPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TEfficiencyPainter.prototype.GetEfficiency = function(bin) {
+      var obj = this.GetObject(),
+          total = obj.fTotalHistogram.getBinContent(bin),
+          passed = obj.fPassedHistogram.getBinContent(bin);
+
+      return total ? passed/total : 0;
+   }
+
+   TEfficiencyPainter.prototype.GetEfficiencyErrorLow = function(bin) {
+      var obj = this.GetObject(),
+          total = obj.fTotalHistogram.getBinContent(bin),
+          passed = obj.fPassedHistogram.getBinContent(bin),
+          eff = this.GetEfficiency(bin);
+
+      return 1;
+   }
+
+   TEfficiencyPainter.prototype.GetEfficiencyErrorUp = function(bin) {
+      var obj = this.GetObject(),
+          total = obj.fTotalHistogram.getBinContent(bin),
+          passed = obj.fPassedHistogram.getBinContent(bin),
+          eff = this.GetEfficiency(bin);
+
+      return 1;
+   }
+
+   TEfficiencyPainter.prototype.CreateGraph = function() {
+      var gr = JSROOT.Create('TGraphAsymmErrors');
+      gr.fName = "eff_graph";
+      return gr;
+   }
+
+   TEfficiencyPainter.prototype.FillGraph = function(gr, opt) {
+      var eff = this.GetObject(),
+          npoints = eff.fTotalHistogram.fXaxis.fNbins,
+          option = opt.toLowerCase(),
+          plot0Bins = false, j = 0;
+      if (option.indexOf("e0")>=0) plot0Bins = true;
+      for (var n=0;n<npoints;++n) {
+         if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
+         gr.fX[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
+         gr.fY[j] = this.GetEfficiency(n+1);
+         gr.fEXlow[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1) - eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+1);
+         gr.fEXhigh[j] = eff.fTotalHistogram.fXaxis.GetBinLowEdge(n+2) - eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
+         gr.fEYlow[j] = this.GetEfficiencyErrorLow(n+1);
+         gr.fEYhigh[j] = this.GetEfficiencyErrorUp(n+1);
+         ++j;
+      }
+      gr.fNpoints = j;
+   }
+
+   JSROOT.Painter.drawEfficiency = function(divid, eff, opt) {
+
+      var painter = new TEfficiencyPainter(eff);
+      painter.options = opt;
+
+      var gr = painter.CreateGraph();
+      painter.FillGraph(gr, opt);
+
+      JSROOT.draw(divid, gr, opt, function() {
+         painter.SetDivId(divid);
+         painter.DrawingReady();
+      });
+
+      return painter;
+   }
+
+
+   // =============================================================
+
    function TMultiGraphPainter(mgraph) {
       JSROOT.TObjectPainter.call(this, mgraph);
       this.firstpainter = null;
