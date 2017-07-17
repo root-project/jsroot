@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.2.1
+1. Fix - correctly handle new TF1 parameter coding convention (#132)
+2. Fix - Check if pad name can be used as element id (#133)
+
+
 ## Changes in 5.2.0
 1. Basic JSROOT functionality can be used in Node.js:
        var jsroot = require("path/to/JSRootCore.js");
