@@ -9,6 +9,7 @@
 5. Use latest three.js r86 with improved Projector and CanvasRenderer
    Still use own SVGRenderer which supported direct text dump
 6. Provide text info when geometry drawing takes too long 
+7. Preliminary support of TEfficiency
 
 
 ## Changes in 5.2.0

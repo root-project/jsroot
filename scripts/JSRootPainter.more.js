@@ -1432,6 +1432,7 @@
 
    function TEfficiencyPainter(eff) {
       JSROOT.TObjectPainter.call(this, eff);
+      this.fBoundary = 'Normal';
    }
 
    TEfficiencyPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1444,13 +1445,38 @@
       return total ? passed/total : 0;
    }
 
+/**  implementing of  beta_quantile requires huge number of functions in JSRootMath.js
+
+   TEfficiencyPainter.prototype.ClopperPearson = function(total,passed,level,bUpper) {
+      var alpha = (1.0 - level) / 2;
+      if(bUpper)
+         return ((passed == total) ? 1.0 : JSROOT.Math.beta_quantile(1 - alpha,passed + 1,total-passed));
+      else
+         return ((passed == 0) ? 0.0 : JSROOT.Math.beta_quantile(alpha,passed,total-passed+1.0));
+   }
+*/
+
+   TEfficiencyPainter.prototype.Normal = function(total,passed,level,bUpper) {
+      if (total == 0) return bUpper ? 1 : 0;
+
+      var alpha = (1.0 - level)/2,
+          average = passed / total,
+          sigma = Math.sqrt(average * (1 - average) / total),
+         delta = JSROOT.Math.normal_quantile(1 - alpha,sigma);
+
+      if(bUpper)
+         return ((average + delta) > 1) ? 1.0 : (average + delta);
+
+      return ((average - delta) < 0) ? 0.0 : (average - delta);
+   }
+
    TEfficiencyPainter.prototype.GetEfficiencyErrorLow = function(bin) {
       var obj = this.GetObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin),
           eff = this.GetEfficiency(bin);
 
-      return 1;
+      return eff - this[this.fBoundary](total,passed, obj.fConfLevel, false);
    }
 
    TEfficiencyPainter.prototype.GetEfficiencyErrorUp = function(bin) {
@@ -1459,7 +1485,7 @@
           passed = obj.fPassedHistogram.getBinContent(bin),
           eff = this.GetEfficiency(bin);
 
-      return 1;
+      return this[this.fBoundary]( total, passed, obj.fConfLevel, true) - eff;
    }
 
    TEfficiencyPainter.prototype.CreateGraph = function() {
@@ -1488,6 +1514,8 @@
    }
 
    JSROOT.Painter.drawEfficiency = function(divid, eff, opt) {
+
+      if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
       var painter = new TEfficiencyPainter(eff);
       painter.options = opt;
