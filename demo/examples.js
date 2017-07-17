@@ -94,10 +94,11 @@ examples_main = {
      { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" }
    ],
    TF1 : [
-     { name:"hist+func", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
-     { name:"canv", opt: "", file: "danilo6.root", item: "canvas;1" },
-     { name:"ff2", file: "ff2.root", item: "c1Dia;1" },
-     { name:"ff3", file: "ff3.root", item: "c1Dia;1" }
+     { name: "hist+func", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
+     { name: "canv", opt: "", file: "danilo6.root", item: "canvas;1" },
+     { name: "sum", opt: "", file: "tf1new.root", item: "c1;1", title: "newest version of ROOT with new coding rules for the functions parameters" },
+     { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
+     { name: "ff3", file: "ff3.root", item: "c1Dia;1" }
    ],
    TCanvas : [
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
