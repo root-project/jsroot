@@ -2676,10 +2676,10 @@
 
             for (var n=0;n<items.length;++n) {
                var item = items[n];
-               if (item.fChecked < 0)
+               if ((item.fChecked === undefined) || (item.fChecked < 0))
                   _menu.add(item.fName, item.fExec, DoExecMenu);
                else
-                  _menu.addchk(item.fChecked > 0, item.fName, item.fExec, DoExecMenu);
+                  _menu.addchk(item.fChecked, item.fName, item.fExec, DoExecMenu);
             }
 
             _menu.add("endsub:");
