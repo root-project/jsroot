@@ -7,7 +7,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      var jsroot = factory({})
+      var jsroot = factory({}),
           dir = jsroot.source_dir + "scripts/",
           ext = jsroot.source_min ? ".min" : "",
           norjs = (typeof requirejs=='undefined'),
