@@ -95,14 +95,6 @@
 
    JSROOT.version = "dev 20/07/2017";
 
-   if (window && ('cefQuery' in window)) {
-      console.log('DETECT cefQuery!!!');
-      window.cefQuery({ request: 'init_jsroot_done',
-                        persistent: false,
-                        onSuccess: function(response) { console.log("CEF: " + response); },
-                        onFailure: function(error_code, error_message) { console.log("CEF_ERR: " + error_code); } });
-   }
-
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script
@@ -111,6 +103,17 @@
 
    JSROOT.id_counter = 0;
    JSROOT.BatchMode = false; // when true, disables all kind of interactive features
+
+   if (window && ('cefQuery' in window)) {
+      console.log('DETECT cefQuery!!!');
+      window.cefQuery({ request: 'init_jsroot_done',
+                        persistent: false,
+                        onSuccess: function(response) { console.log("CEF: " + response); },
+                        onFailure: function(error_code, error_message) { console.log("CEF_ERR: " + error_code); } });
+
+      JSROOT.BatchMode = true;
+   }
+
 
    // JSROOT.use_full_libs = true;
 

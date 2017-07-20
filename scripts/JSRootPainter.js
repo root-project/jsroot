@@ -2530,31 +2530,31 @@
       var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
 
       function retry_open(first_time) {
-    	 console.log("try again");
 
-    	 if (pthis._websocket_opened) return;
-    	 if (pthis._websocket) pthis._websocket.close();
-    	 delete pthis._websocket;
+      if (pthis._websocket_opened) return;
+      console.log("try open wensocket again");
+      if (pthis._websocket) pthis._websocket.close();
+      delete pthis._websocket;
 
-         var path = window.location.href, conn = null;
+      var path = window.location.href, conn = null;
 
-         if (!pthis._use_longpoll && first_time) {
-            path = path.replace("http://", "ws://");
-            path = path.replace("https://", "wss://");
-            var pos = path.indexOf("draw.htm");
-            if (pos < 0) return;
-            path = path.substr(0,pos) + "root.websocket";
-            console.log('configure websocket ' + path);
-            conn = new WebSocket(path);
-         } else {
-            var pos = path.indexOf("draw.htm");
-            if (pos < 0) return;
-            path = path.substr(0,pos) + "root.longpoll";
-            console.log('configure longpoll ' + path);
-            conn = JSROOT.LongPollSocket(path);
-         }
+      if (!pthis._use_longpoll && first_time) {
+         path = path.replace("http://", "ws://");
+         path = path.replace("https://", "wss://");
+         var pos = path.indexOf("draw.htm");
+         if (pos < 0) return;
+         path = path.substr(0,pos) + "root.websocket";
+         console.log('configure websocket ' + path);
+         conn = new WebSocket(path);
+      } else {
+         var pos = path.indexOf("draw.htm");
+         if (pos < 0) return;
+         path = path.substr(0,pos) + "root.longpoll";
+         console.log('configure longpoll ' + path);
+         conn = JSROOT.LongPollSocket(path);
+      }
 
-    	 pthis._websocket = conn;
+      pthis._websocket = conn;
 
       conn.onopen = function() {
          console.log('websocket initialized');
@@ -2572,8 +2572,8 @@
             if (typeof pthis.RedrawPadSnap === 'function') {
                pthis.RedrawPadSnap(snap, function() {
                   var reply = pthis.GetAllRanges();
-                  console.log("ranges", reply);
-                  conn.send(reply ? 'RREADY:' + reply : "READY" ); // send ready message back
+                  if (reply) console.log("ranges: " + reply);
+                  conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
                });
             } else {
                conn.send('READY'); // send ready message back
@@ -2600,6 +2600,18 @@
             conn.send('READY'); // send ready message back
             if (typeof pthis._getmenu_callback == 'function')
                pthis._getmenu_callback(lst);
+         } else
+         if (d.substr(0,4)=='SVG:') {
+            var fname = d.substr(4);
+            console.log('get request for SVG image ' + fname);
+
+            var res = "<svg>anything_else</svg>";
+
+            if (pthis.CreateSvg) res = pthis.CreateSvg();
+
+            console.log('SVG size = ' + res.length);
+
+            conn.send("DONEIMG:" + fname + ":" + res);
          } else
          if (d.substr(0,7)=='GETIMG:') {
 
@@ -2629,8 +2641,8 @@
          console.log('websocket closed');
          delete pthis._websocket;
          if (pthis._websocket_opened) {
-        	 pthis._websocket_opened = false;
-        	 window.close(); // close window when socked disapper
+            pthis._websocket_opened = false;
+            window.close(); // close window when socked disapper
          }
       }
 
@@ -4178,6 +4190,8 @@
            .style("bottom", 0);
       }
 
+      console.log('CANVAS SVG width = ' + rect.width + " height= " + rect.height);
+
       svg.attr("viewBox", "0 0 " + rect.width + " " + rect.height)
          .attr("preserveAspectRatio", "none")  // we do not preserve relative ratio
          .property('height_factor', factor)
@@ -4867,6 +4881,26 @@
              setTimeout(menu.show.bind(menu, evnt), 50);
        });
 
+   }
+
+   TPadPainter.prototype.CreateSvg = function() {
+      var main = this.svg_canvas();
+
+      var svg = main.html();
+
+      svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
+               .replace(/ class=\"\w*\"/g,"")                                // remove all classes
+               .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
+               .replace(/<g><\/g>/g,"");                                     // remove all empty groups
+
+
+
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"' +
+            ' viewBox="0 0 ' + main.property('draw_width') + ' ' + main.property('draw_height') + '"' +
+            ' width="' + main.property('draw_width') + '"' +
+            ' height="' + main.property('draw_height') + '">' + svg + '</svg>';
+
+       return svg;
    }
 
    TPadPainter.prototype.SaveAsPng = function(full_canvas, filename, call_back) {
