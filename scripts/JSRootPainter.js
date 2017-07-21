@@ -2512,19 +2512,98 @@
 
       this.close = function() { this.nextrequest("", "close"); }
 
+      this.nextrequest("", "connect");
+
+      return this;
+   }
+
+   JSROOT.CefQuerySocket = function(addr) {
+
+      this.path = addr;
+      this.connid = null;
+      this.req = null;
+
+      this.nextrequest = function(data, kind) {
+         var url = this.path;
+         if (kind === "connect") {
+            url+="?connect";
+            this.connid = "connect";
+         } else
+         if (kind === "close") {
+            if ((this.connid===null) || (this.connid==="close")) return;
+            url+="?connection="+this.connid + "&close";
+            this.connid = "close";
+         } else
+         if ((this.connid===null) || (typeof this.connid!=='number')) {
+            return console.error("No connection");
+         } else {
+            url+="?connection="+this.connid;
+            if (kind==="dummy") url+="&dummy";
+         }
+
+         if (data) {
+            // special workaround to avoid POST request, which is not supported in WebEngine
+            var post = "&post=";
+            for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
+            url += post;
+         }
+
+         var req = JSROOT.NewHttpRequest(url, "text", function(res) {
+            if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+            if (this.handle.req === this) {
+               this.handle.req = null; // get response for existing dummy request
+               if (res == "<<nope>>") res = "";
+            }
+            this.handle.processreq(res);
+         });
+
+         req.handle = this;
+         if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
+         req.send();
+      }
+
+      this.processreq = function(res) {
+
+         if (res===null) {
+            if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
+            // if (typeof this.onclose === 'function') this.onclose();
+            this.connid = null;
+            return;
+         }
+
+         if (this.connid==="connect") {
+            this.connid = parseInt(res);
+            console.log('Get new longpoll connection with id ' + this.connid);
+            if (typeof this.onopen == 'function') this.onopen();
+         } else
+         if (this.connid==="close") {
+            if (typeof this.onclose == 'function') this.onclose();
+            return;
+         } else {
+            if ((typeof this.onmessage==='function') && res)
+               this.onmessage({ data: res });
+         }
+         if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
+      }
+
+      this.send = function(str) { this.nextrequest(str); }
+
+      this.close = function() { this.nextrequest("", "close"); }
+
       this.nextrequest("","connect");
 
       return this;
    }
 
-   TObjectPainter.prototype.OpenWebsocket = function(use_longpoll) {
+
+   TObjectPainter.prototype.OpenWebsocket = function(socket_kind) {
       // create websocket for current object (canvas)
       // via websocket one recieved many extra information
 
       delete this._websocket;
 
       // this._websocket = conn;
-      this._use_longpoll = use_longpoll;
+      this._websocket_kind = socket_kind;
       this._websocket_opened = false;
 
       var pthis = this, sum1 = 0, sum2 = 0, cnt = 0;
@@ -2538,7 +2617,14 @@
 
       var path = window.location.href, conn = null;
 
-      if (!pthis._use_longpoll && first_time) {
+      if (pthis._websocket_kind == 'cefquery') {
+         var pos = path.indexOf("draw.htm");
+         if (pos < 0) return;
+         path = path.substr(0,pos) + "root.cefquery";
+         console.log('configure cefquery ' + path);
+         conn = new JSROOT.CefQuerySocket(path);
+      } else
+      if ((pthis._websocket_kind !== 'longpoll') && first_time) {
          path = path.replace("http://", "ws://");
          path = path.replace("https://", "wss://");
          var pos = path.indexOf("draw.htm");
@@ -2551,8 +2637,10 @@
          if (pos < 0) return;
          path = path.substr(0,pos) + "root.longpoll";
          console.log('configure longpoll ' + path);
-         conn = JSROOT.LongPollSocket(path);
+         conn = new JSROOT.LongPollSocket(path);
       }
+
+      if (!conn) return;
 
       pthis._websocket = conn;
 
