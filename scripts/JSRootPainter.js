@@ -2517,73 +2517,64 @@
       return this;
    }
 
-   JSROOT.CefQuerySocket = function(addr) {
+   JSROOT.Cef3QuerySocket = function(addr) {
+      // make very similar to longpoll
+      // create persistent CEF requests which could be use from client application at eny time
+
+      if (!window || !('cefQuery' in window)) return null;
 
       this.path = addr;
       this.connid = null;
-      this.req = null;
 
       this.nextrequest = function(data, kind) {
-         var url = this.path;
+         var req = { request: "", persistent: false };
          if (kind === "connect") {
-            url+="?connect";
+            req.request = "connect";
+            req.persistent = true; // this initial request will be used for all messages from the server
             this.connid = "connect";
          } else
          if (kind === "close") {
             if ((this.connid===null) || (this.connid==="close")) return;
-            url+="?connection="+this.connid + "&close";
+            req.request = this.connid + '::close';
             this.connid = "close";
          } else
          if ((this.connid===null) || (typeof this.connid!=='number')) {
             return console.error("No connection");
          } else {
-            url+="?connection="+this.connid;
-            if (kind==="dummy") url+="&dummy";
+            req.request = this.connid + '::post';
+            if (data) req.request += "::" + data;
          }
 
-         if (data) {
-            // special workaround to avoid POST request, which is not supported in WebEngine
-            var post = "&post=";
-            for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
-            url += post;
-         }
+         if (!req.request) return console.error("No CEF request");
 
-         var req = JSROOT.NewHttpRequest(url, "text", function(res) {
-            if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
-            if (this.handle.req === this) {
-               this.handle.req = null; // get response for existing dummy request
-               if (res == "<<nope>>") res = "";
-            }
-            this.handle.processreq(res);
-         });
+         req.request = this.path + "::" + req.request; // URL always preceed any command
 
-         req.handle = this;
-         if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
-         req.send();
+         req.onSuccess = this.onSuccess.bind(this);
+         req.onFailure = this.onFailure.bind(this);
+
+         window.cefQuery(req); // equvalent to req.send
       }
 
-      this.processreq = function(res) {
+      this.onFailure = function(error_code, error_message) {
+         console.log("CEF_ERR: " + error_code);
+         if (typeof this.onerror === 'function') this.onerror("failure with connid " + (this.connid || "---"));
+         this.connid = null;
+      };
 
-         if (res===null) {
-            if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
-            // if (typeof this.onclose === 'function') this.onclose();
-            this.connid = null;
-            return;
-         }
+      this.onSuccess = function(response) {
+         if (!response) return; // normal situation when request does not send any reply
 
          if (this.connid==="connect") {
-            this.connid = parseInt(res);
-            console.log('Get new longpoll connection with id ' + this.connid);
+            this.connid = parseInt(response);
+            console.log('Get new CEF connection with id ' + this.connid);
             if (typeof this.onopen == 'function') this.onopen();
          } else
          if (this.connid==="close") {
             if (typeof this.onclose == 'function') this.onclose();
-            return;
          } else {
-            if ((typeof this.onmessage==='function') && res)
-               this.onmessage({ data: res });
+            if ((typeof this.onmessage==='function') && response)
+               this.onmessage({ data: response });
          }
-         if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
       }
 
       this.send = function(str) { this.nextrequest(str); }
@@ -2601,6 +2592,8 @@
       // via websocket one recieved many extra information
 
       delete this._websocket;
+
+      if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
 
       // this._websocket = conn;
       this._websocket_kind = socket_kind;
@@ -2620,9 +2613,11 @@
       if (pthis._websocket_kind == 'cefquery') {
          var pos = path.indexOf("draw.htm");
          if (pos < 0) return;
-         path = path.substr(0,pos) + "root.cefquery";
+         path = path.substr(0,pos);
+
+         if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
          console.log('configure cefquery ' + path);
-         conn = new JSROOT.CefQuerySocket(path);
+         conn = new JSROOT.Cef3QuerySocket(path);
       } else
       if ((pthis._websocket_kind !== 'longpoll') && first_time) {
          path = path.replace("http://", "ws://");
@@ -2647,7 +2642,7 @@
       conn.onopen = function() {
          console.log('websocket initialized');
          pthis._websocket_opened = true;
-         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big peace)
+         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big piece)
       }
 
       conn.onmessage = function (e) {
