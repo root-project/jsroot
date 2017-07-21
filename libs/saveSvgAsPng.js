@@ -18,11 +18,9 @@
   }
 
   function inlineImages(el, callback) {
-    var images = el.querySelectorAll('image');
-    var left = images.length;
-    if (left == 0) {
-      callback();
-    }
+    var images = el.querySelectorAll('image'),
+        left = images.length;
+    if (left == 0) return callback();
     for (var i = 0; i < images.length; i++) {
       (function(image) {
         var href = image.getAttributeNS("http://www.w3.org/1999/xlink", "href");
@@ -32,9 +30,9 @@
             return;
           }
         }
-        var canvas = document.createElement('canvas');
-        var ctx = canvas.getContext('2d');
-        var img = new Image();
+        var canvas = document.createElement('canvas'),
+            ctx = canvas.getContext('2d'),
+            img = new Image();
         href = href || image.getAttribute('href');
         img.src = href;
         img.onload = function() {
@@ -59,8 +57,7 @@
   }
 
   function styles(el, selectorRemap) {
-    var css = "";
-    var sheets = document.styleSheets;
+    var css = "", sheets = document.styleSheets;
     for (var i = 0; i < sheets.length; i++) {
       try {
         var rules = sheets[i].cssRules;
@@ -115,9 +112,9 @@
     var xmlns = "http://www.w3.org/2000/xmlns/";
 
     inlineImages(el, function() {
-      var outer = document.createElement("div");
-      var clone = el.cloneNode(true);
-      var width, height;
+      var outer = document.createElement("div"),
+          clone = el.cloneNode(true),
+          width, height;
       if(el.tagName == 'svg') {
         width = options.width || getDimension(el, clone, 'width');
         height = options.height || getDimension(el, clone, 'height');
@@ -146,12 +143,7 @@
       clone.setAttributeNS(xmlns, "xmlns:xlink", "http://www.w3.org/1999/xlink");
       clone.setAttribute("width", width * options.scale);
       clone.setAttribute("height", height * options.scale);
-      clone.setAttribute("viewBox", [
-        options.left || 0,
-        options.top || 0,
-        width,
-        height
-      ].join(" "));
+      clone.setAttribute("viewBox", [options.left || 0, options.top || 0, width, height].join(" "));
 
       if (options.removeClass) {
          var lst = clone.querySelectorAll("." + options.removeClass);
@@ -163,11 +155,11 @@
 
       if (options.useGlobalStyle) {
          // SL: make it optional, JSROOT graphics does not uses global document styles
-         var css = styles(el, options.selectorRemap);
-         var s = document.createElement('style');
+         var css = styles(el, options.selectorRemap),
+             s = document.createElement('style'),
+             defs = document.createElement('defs');
          s.setAttribute('type', 'text/css');
          s.innerHTML = "<![CDATA[\n" + css + "\n]]>";
-         var defs = document.createElement('defs');
          defs.appendChild(s);
          clone.insertBefore(defs, clone.firstChild);
       }
