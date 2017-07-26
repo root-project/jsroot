@@ -10,6 +10,7 @@
    Still use own SVGRenderer which supported direct text dump
 6. Provide text info when geometry drawing takes too long 
 7. Preliminary support of TEfficiency
+8. Automatic title positioning of vertical axis when fTitleOffset==0
 
 
 ## Changes in 5.2.0
