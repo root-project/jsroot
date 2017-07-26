@@ -97,6 +97,7 @@
       }
    };
 
+   // ==========================================================================================
 
    JSROOT.DrawOptions = function(opt) {
       this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
@@ -2439,7 +2440,7 @@
    }
 
 
-   JSROOT.LongPollSocket = function(addr) {
+   var LongPollSocket = function(addr) {
 
       this.path = addr;
       this.connid = null;
@@ -2517,7 +2518,7 @@
       return this;
    }
 
-   JSROOT.Cef3QuerySocket = function(addr) {
+   var Cef3QuerySocket = function(addr) {
       // make very similar to longpoll
       // create persistent CEF requests which could be use from client application at eny time
 
@@ -2617,7 +2618,7 @@
 
          if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
          console.log('configure cefquery ' + path);
-         conn = new JSROOT.Cef3QuerySocket(path);
+         conn = new Cef3QuerySocket(path);
       } else
       if ((pthis._websocket_kind !== 'longpoll') && first_time) {
          path = path.replace("http://", "ws://");
@@ -2632,7 +2633,7 @@
          if (pos < 0) return;
          path = path.substr(0,pos) + "root.longpoll";
          console.log('configure longpoll ' + path);
-         conn = new JSROOT.LongPollSocket(path);
+         conn = new LongPollSocket(path);
       }
 
       if (!conn) return;
@@ -2642,95 +2643,16 @@
       conn.onopen = function() {
          console.log('websocket initialized');
          pthis._websocket_opened = true;
-         conn.send('READY'); // indicate that we are ready to recieve JSON code (or any other big piece)
+         if (typeof pthis.OnWebsocketOpened == 'function')
+            pthis.OnWebsocketOpened(conn);
       }
 
       conn.onmessage = function (e) {
-         var d = e.data;
-         if (typeof d != 'string') return console.log("msg",d);
+         var msg = e.data;
+         if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
-         if (d.substr(0,4)=='SNAP') {
-            var snap = JSROOT.parse(d.substr(4));
-
-            if (typeof pthis.RedrawPadSnap === 'function') {
-               pthis.RedrawPadSnap(snap, function() {
-                  var reply = pthis.GetAllRanges();
-                  if (reply) console.log("ranges: " + reply);
-                  conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
-               });
-            } else {
-               conn.send('READY'); // send ready message back
-            }
-
-         } else
-         if (d.substr(0,4)=='JSON') {
-            var obj = JSROOT.parse(d.substr(4));
-            // console.log("get JSON ", d.length-4, obj._typename);
-            var tm1 = new Date().getTime();
-            pthis.RedrawObject(obj);
-            var tm2 = new Date().getTime();
-            sum1+=1;
-            sum2+=(tm2-tm1);
-            if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
-
-            conn.send('READY'); // send ready message back
-            // if (++cnt > 10) conn.close();
-
-         } else
-         if (d.substr(0,4)=='MENU') {
-            var lst = JSROOT.parse(d.substr(4));
-            console.log("get MENUS ", typeof lst, 'nitems', lst.length, d.length-4);
-            conn.send('READY'); // send ready message back
-            if (typeof pthis._getmenu_callback == 'function')
-               pthis._getmenu_callback(lst);
-         } else
-         if (d.substr(0,4)=='SVG:') {
-            var fname = d.substr(4);
-            console.log('get request for SVG image ' + fname);
-
-            var res = "<svg>anything_else</svg>";
-
-            if (pthis.CreateSvg) res = pthis.CreateSvg();
-
-            console.log('SVG size = ' + res.length);
-
-            conn.send("DONESVG:" + fname + ":" + res);
-         } else
-         if (d.substr(0,4)=='PNG:') {
-            var fname = d.substr(4);
-            console.log('get request for PNG image ' + fname);
-
-            pthis.ProduceImage(true, 'any.png', function(can) {
-               var res = can.toDataURL('image/png');
-               console.log('PNG size = ' + res.length);
-               var separ = res.indexOf("base64,");
-               if (separ>0)
-                  conn.send("DONEPNG:" + fname + ":" + res.substr(separ+7));
-               else
-                  conn.send("DONEPNG:" + fname);
-            });
-
-         } else
-
-         if (d.substr(0,7)=='GETIMG:') {
-            // obsolete, can be removed
-
-            console.log('d',d);
-
-            d = d.substr(7);
-            var p = d.indexOf(":"),
-                id = d.substr(0,p),
-                fname = d.substr(p+1);
-            conn.send('READY'); // send ready message back
-
-            console.log('GET REQUEST FOR SVG FILE', fname, id);
-
-            var painter = pthis.FindSnap(id);
-            if (!painter) console.log('not find snap ' + id);
-
-         } else {
-            if (d) console.log("unrecognized msg",d);
-         }
+         if (typeof pthis.OnWebsocketMsg == 'function')
+            pthis.OnWebsocketMsg(conn, msg);
       }
 
       conn.onclose = function() {
@@ -2738,7 +2660,8 @@
          delete pthis._websocket;
          if (pthis._websocket_opened) {
             pthis._websocket_opened = false;
-            window.close(); // close window when socked disapper
+            if (typeof pthis.OnWebsocketClosed == 'function')
+               pthis.OnWebsocketClosed();
          }
       }
 
@@ -4891,6 +4814,80 @@
       // show we redraw all other painters without snapid?
    }
 
+   TPadPainter.prototype.OnWebsocketOpened = function(conn) {
+      // indicate that we are ready to recieve any following commands
+      conn.send('READY');
+   }
+
+   TPadPainter.prototype.OnWebsocketMsg = function(conn, msg) {
+
+      if (msg.substr(0,4)=='SNAP') {
+         var snap = JSROOT.parse(msg.substr(4));
+
+         if (typeof this.RedrawPadSnap === 'function') {
+            var pthis = this;
+            this.RedrawPadSnap(snap, function() {
+               var reply = pthis.GetAllRanges();
+               if (reply) console.log("ranges: " + reply);
+               conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
+            });
+         } else {
+            conn.send('READY'); // send ready message back
+         }
+
+      } else if (msg.substr(0,4)=='JSON') {
+         var obj = JSROOT.parse(msg.substr(4));
+         // console.log("get JSON ", msg.length-4, obj._typename);
+         var tm1 = new Date().getTime();
+         this.RedrawObject(obj);
+         var tm2 = new Date().getTime();
+         sum1+=1;
+         sum2+=(tm2-tm1);
+         if (sum1>10) { console.log('Redraw ', Math.round(sum2/sum1)); sum1=sum2=0; }
+
+         conn.send('READY'); // send ready message back
+         // if (++cnt > 10) conn.close();
+
+      } else if (msg.substr(0,4)=='MENU') {
+         var lst = JSROOT.parse(msg.substr(4));
+         console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
+         conn.send('READY'); // send ready message back
+         if (typeof this._getmenu_callback == 'function')
+            this._getmenu_callback(lst);
+      } else if (msg.substr(0,4)=='SVG:') {
+         var fname = msg.substr(4);
+         console.log('get request for SVG image ' + fname);
+
+         var res = "<svg>anything_else</svg>";
+
+         if (this.CreateSvg) res = this.CreateSvg();
+
+         console.log('SVG size = ' + res.length);
+
+         conn.send("DONESVG:" + fname + ":" + res);
+      } else if (msg.substr(0,4)=='PNG:') {
+         var fname = msg.substr(4);
+         console.log('get request for PNG image ' + fname);
+
+         this.ProduceImage(true, 'any.png', function(can) {
+            var res = can.toDataURL('image/png');
+            console.log('PNG size = ' + res.length);
+            var separ = res.indexOf("base64,");
+            if (separ>0)
+               conn.send("DONEPNG:" + fname + ":" + res.substr(separ+7));
+            else
+               conn.send("DONEPNG:" + fname);
+         });
+
+      } else {
+         console.log("unrecognized msg " + msg);
+      }
+   }
+
+   TPadPainter.prototype.OnWebsocketClosed = function() {
+      if (window) window.close(); // close window when socket disapper
+   }
+
    TPadPainter.prototype.GetAllRanges = function() {
       var res = "";
 
@@ -5921,6 +5918,9 @@
    }
 
    JSROOT.Painter.createRootColors();
+
+   JSROOT.LongPollSocket = LongPollSocket;
+   JSROOT.Cef3QuerySocket = Cef3QuerySocket;
 
    JSROOT.TBasePainter = TBasePainter;
    JSROOT.TObjectPainter = TObjectPainter;
