@@ -4810,8 +4810,25 @@
 
    TPadPainter.prototype.OnWebsocketMsg = function(conn, msg) {
 
-      if (msg.substr(0,4)=='SNAP') {
-         var snap = JSROOT.parse(msg.substr(4));
+      if (msg.substr(0,5)=='SNAP:') {
+
+         msg = msg.substr(5);
+         var p1 = msg.indexOf(":"),
+             snapid = msg.substr(0,p1),
+             snap = JSROOT.parse(msg.substr(p1+1));
+
+         if (typeof this.RedrawPadSnap === 'function') {
+            var pthis = this;
+            this.RedrawPadSnap(snap, function() {
+               conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
+            });
+         } else {
+            conn.send('READY'); // send ready message back
+         }
+      } else if (msg.substr(0,4)=='SNAP') {
+         // older version, used with ROOT6 implementation, should be removed soon
+
+         var snap = JSROOT.parse(msg.substr(p1+1));
 
          if (typeof this.RedrawPadSnap === 'function') {
             var pthis = this;
