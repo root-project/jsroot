@@ -3,6 +3,7 @@
 ## Changes in 5.2.1
 1. Fix - correctly handle new TF1 parameter coding convention (#132)
 2. Fix - Check if pad name can be used as element id (#133)
+3. Fix - adjust title position for vertical axis with fTitleOffset==0
 
 
 ## Changes in 5.2.0
