@@ -2576,6 +2576,16 @@
       return this;
    }
 
+   TObjectPainter.prototype.WindowCloseHanlder = function() {
+      if (this._websocket && this._websocket_opened) {
+         console.log('CLOSE WEBSOCKET WHEN WINDOW CLOSED');
+         this._websocket_opened = false;
+         this._websocket.close();
+         delete this._websocket;
+         if (typeof this.OnWebsocketClosed == 'function')
+            this.OnWebsocketClosed();
+      }
+   }
 
    TObjectPainter.prototype.OpenWebsocket = function(socket_kind) {
       // create websocket for current object (canvas)

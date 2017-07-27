@@ -2173,6 +2173,8 @@
          if (painter.batch_mode) JSROOT.BatchMode = true;
                             else JSROOT.RegisterForResize(painter);
 
+         if (window) window.onunload = painter.WindowCloseHanlder.bind(painter);
+
          return;
       }
 
