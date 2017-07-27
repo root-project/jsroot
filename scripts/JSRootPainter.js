@@ -2516,6 +2516,7 @@
       this.path = addr;
       this.connid = null;
 
+
       this.nextrequest = function(data, kind) {
          var req = { request: "", persistent: false };
          if (kind === "connect") {
@@ -2542,7 +2543,9 @@
          req.onSuccess = this.onSuccess.bind(this);
          req.onFailure = this.onFailure.bind(this);
 
-         window.cefQuery(req); // equvalent to req.send
+         this.cefid = window.cefQuery(req); // equvalent to req.send
+
+         return this;
       }
 
       this.onFailure = function(error_code, error_message) {
@@ -2569,16 +2572,19 @@
 
       this.send = function(str) { this.nextrequest(str); }
 
-      this.close = function() { this.nextrequest("", "close"); }
+      this.close = function() {
+         this.nextrequest("", "close");
+         if (this.cefid) window.cefQueryCancel(this.cefid);
+         delete this.cefid;
+      }
 
       this.nextrequest("","connect");
 
       return this;
    }
 
-   TObjectPainter.prototype.WindowCloseHanlder = function() {
+   TObjectPainter.prototype.CloseWebsocket = function() {
       if (this._websocket && this._websocket_opened) {
-         console.log('CLOSE WEBSOCKET WHEN WINDOW CLOSED');
          this._websocket_opened = false;
          this._websocket.close();
          delete this._websocket;
@@ -4902,6 +4908,12 @@
 
    TPadPainter.prototype.OnWebsocketClosed = function() {
       if (window) window.close(); // close window when socket disapper
+   }
+
+   TPadPainter.prototype.WindowBeforeUnloadHanlder = function() {
+      // when window closed, close socket
+      this.CloseWebsocket();
+      return null; // one could block close, but not now
    }
 
    TPadPainter.prototype.GetAllRanges = function() {
