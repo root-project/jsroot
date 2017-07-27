@@ -4860,30 +4860,30 @@
          conn.send('READY'); // send ready message back
          if (typeof this._getmenu_callback == 'function')
             this._getmenu_callback(lst);
-      } else if (msg.substr(0,4)=='SVG:') {
-         var fname = msg.substr(4);
-         console.log('get request for SVG image ' + fname);
-
-         var res = "<svg>anything_else</svg>";
-
-         if (this.CreateSvg) res = this.CreateSvg();
-
-         console.log('SVG size = ' + res.length);
-
-         conn.send("DONESVG:" + fname + ":" + res);
-      } else if (msg.substr(0,4)=='PNG:') {
-         var fname = msg.substr(4);
-         console.log('get request for PNG image ' + fname);
-
-         this.ProduceImage(true, 'any.png', function(can) {
-            var res = can.toDataURL('image/png');
-            console.log('PNG size = ' + res.length);
-            var separ = res.indexOf("base64,");
-            if (separ>0)
-               conn.send("DONEPNG:" + fname + ":" + res.substr(separ+7));
-            else
-               conn.send("DONEPNG:" + fname);
-         });
+      } else if (msg.substr(0,4)=='CMD:') {
+         msg = msg.substr(4);
+         var p1 = msg.indexOf(":"),
+             cmdid = msg.substr(0,p1),
+             cmd = msg.substr(p1+1),
+             reply = "REPLY:" + cmdid + ":";
+         if (cmd == "SVG") {
+            var res = "";
+            if (this.CreateSvg) res = this.CreateSvg();
+            console.log('SVG size = ' + res.length);
+            conn.send(reply + res);
+         } else if (cmd == "PNG") {
+            this.ProduceImage(true, 'any.png', function(can) {
+               var res = can.toDataURL('image/png'),
+                   separ = res.indexOf("base64,");
+               if (separ>0)
+                  conn.send(reply + res.substr(separ+7));
+               else
+                  conn.send(reply);
+            });
+         } else {
+            console.log('Urecognized command ' + cmd);
+            conn.send(reply);
+         }
 
       } else {
          console.log("unrecognized msg " + msg);
