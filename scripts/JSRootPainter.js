@@ -4826,8 +4826,10 @@
 
    TPadPainter.prototype.OnWebsocketMsg = function(conn, msg) {
 
-      if (msg.substr(0,5)=='SNAP:') {
-
+      if (msg == "CLOSE") {
+         this.OnWebsocketClosed();
+         this.CloseWebsocket(true);
+      } else if (msg.substr(0,5)=='SNAP:') {
          msg = msg.substr(5);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
