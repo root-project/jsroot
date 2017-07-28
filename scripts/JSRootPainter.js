@@ -4045,10 +4045,13 @@
 
       function HandleClick(arg) {
          if (!this._websocket) return;
-         console.log('click', arg);
 
-         if (arg=="Interrupt") { this._websocket.send("GEXE:gROOT->SetInterrupt()"); }
-         if (arg=="Quit ROOT") { this._websocket.send("GEXE:gApplication->Terminate(0)"); }
+         switch (arg) {
+            case "Close canvas": this.OnWebsocketClosed(); this.CloseWebsocket(true); break;
+            case "Interrupt": this._websocket.send("GEXE:gROOT->SetInterrupt()"); break;
+            case "Quit ROOT": this._websocket.send("GEXE:gApplication->Terminate(0)"); break;
+            default: console.log('click', arg);
+         }
       }
 
       JSROOT.Painter.createMenu(this, function(menu) {
