@@ -4887,16 +4887,12 @@
          if (cmd == "SVG") {
             var res = "";
             if (this.CreateSvg) res = this.CreateSvg();
-            console.log('SVG size = ' + res.length);
             conn.send(reply + res);
          } else if (cmd == "PNG") {
             this.ProduceImage(true, 'any.png', function(can) {
                var res = can.toDataURL('image/png'),
                    separ = res.indexOf("base64,");
-               if (separ>0)
-                  conn.send(reply + res.substr(separ+7));
-               else
-                  conn.send(reply);
+               conn.send(reply + ((separ>0) ? res.substr(separ+7) : ""));
             });
          } else {
             console.log('Urecognized command ' + cmd);
