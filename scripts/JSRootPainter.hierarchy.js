@@ -2168,7 +2168,7 @@
                //   text: "Hello World"
                //}).placeAt(myDiv.attr("id"));
                new JSROOT.sap.ui.xmlview({
-                  viewName: "sap.ui.jsroot.Canvas"
+                  viewName: "sap.ui.jsroot.view.Canvas"
                }).placeAt(myDiv.attr("id"));
                console.log('CREATING VIEW');
             });
