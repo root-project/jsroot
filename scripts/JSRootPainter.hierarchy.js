@@ -2167,12 +2167,12 @@
                //new JSROOT.sap.m.Text({
                //   text: "Hello World"
                //}).placeAt(myDiv.attr("id"));
-               //new JSROOT.sap.ui.xmlview({
-               //   viewName: "sap.ui.jsroot.view.Canvas"
-               //}).placeAt(myDiv.attr("id"));
-               new JSROOT.sap.ui.core.ComponentContainer({
-                  name : "sap.ui.jsroot"
+               new JSROOT.sap.ui.xmlview({
+                  viewName: "sap.ui.jsroot.view.Canvas"
                }).placeAt(myDiv.attr("id"));
+               //new JSROOT.sap.ui.core.ComponentContainer({
+               //   name : "sap.ui.jsroot"
+               //}).placeAt(myDiv.attr("id"));
 
                console.log('CREATING VIEW with component container');
             });
