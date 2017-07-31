@@ -47,17 +47,18 @@
    // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js
    element.setAttribute('src', "https://openui5.hana.ondemand.com/resources/sap-ui-core-nojQuery.js");
 //   element.setAttribute('data-sap-ui-trace', "true");
-   element.setAttribute('data-sap-ui-libs', "sap.m,sap.ui.table,sap.ui.commons,sap.tnt");
+   element.setAttribute('data-sap-ui-libs', "sap.m");
 //   element.setAttribute('data-sap-ui-areas', "uiArea1");
 
    element.setAttribute('data-sap-ui-theme', 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    element.setAttribute('data-sap-ui-preload', 'async');
+   // for the moment specify path in the THttpServer, later can adjust for offline case
+   element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "/jsrootsys/openui5/" }');
 
    element.setAttribute('data-sap-ui-evt-oninit', "JSROOT.completeUI5Loading()");
 
    document.getElementsByTagName("head")[0].appendChild(element);
-
 
 
    JSROOT.Painter.createMenu = function(painter, maincallback) {

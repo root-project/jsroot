@@ -2155,13 +2155,25 @@
 
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
 
-      var socket_kind = null;
+      var socket_kind = null, use_openui = true;
       if (JSROOT.GetUrlOption("webcanvas")!==null) socket_kind = "websocket"; else
       if (JSROOT.GetUrlOption("longpollcanvas")!==null) socket_kind = "longpoll"; else
       if (JSROOT.GetUrlOption("cef_canvas")!==null) socket_kind = "cefquery";
       if (JSROOT.GetUrlOption("qt5")!==null) JSROOT.browser.qt5 = true;
 
       if (drawing && socket_kind) {
+         if (use_openui) {
+            return JSROOT.AssertPrerequisites('openui5', function() {
+               //new JSROOT.sap.m.Text({
+               //   text: "Hello World"
+               //}).placeAt(myDiv.attr("id"));
+               new JSROOT.sap.ui.xmlview({
+                  viewName: "sap.ui.jsroot.Canvas"
+               }).placeAt(myDiv.attr("id"));
+               console.log('CREATING VIEW');
+            });
+         };
+
 
          var painter = new JSROOT.TPadPainter(null, true);
 
