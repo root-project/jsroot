@@ -13,9 +13,9 @@ sap.ui.define([
 		},
 
 		getCanvasPainter : function(also_without_websocket) {
-         var elem = this.byId("jsroot_canvas");
+         var elem = this.getView().byId("jsroot_canvas");
 
-         //console.log('typeof ', typeof elem, typeof elem.oController);
+         // console.log('typeof ', typeof elem, typeof elem.oController);
 
          if (!elem || !elem.oController || !elem.oController.canvas_painter) return null;
 
@@ -50,6 +50,25 @@ sap.ui.define([
          MessageToast.show("Action triggered on item: " + name);
 		},
 
+		onCloseCanvasPress : function() {
+		   var p = this.getCanvasPainter();
+         if (p) {
+            p.OnWebsocketClosed();
+            p.CloseWebsocket(true);
+         }
+		},
+
+		onInterruptPress : function() {
+		   var p = this.getCanvasPainter();
+         if (p) p._websocket.send("GEXE:gROOT->SetInterrupt()");
+		},
+
+		onQuitRootPress : function() {
+		   var p = this.getCanvasPainter();
+         if (p) p._websocket.send("GEXE:gApplication->Terminate(0)");
+		},
+
+
 		ShowCanvasStatus : function (text1,text2,text3,text4) {
 		   this.getView().byId("FooterLbl1").setText(text1);
 		   this.getView().byId("FooterLbl2").setText(text2);
@@ -68,7 +87,9 @@ sap.ui.define([
 
          switch (name) {
             case "Editor":  break;
-            case "Toolbar":  break;
+            case "Toolbar":
+               this._Page.setShowSubHeader(new_state)
+               break;
             case "Event statusbar":
                this._Page.setShowFooter(new_state);
                if (new_state) {

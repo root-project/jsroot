@@ -2155,7 +2155,7 @@
 
       myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
 
-      var socket_kind = null, use_openui = false;
+      var socket_kind = null, use_openui = true;
       if (JSROOT.GetUrlOption("webcanvas")!==null) socket_kind = "websocket"; else
       if (JSROOT.GetUrlOption("longpollcanvas")!==null) socket_kind = "longpoll"; else
       if (JSROOT.GetUrlOption("cef_canvas")!==null) socket_kind = "cefquery";
