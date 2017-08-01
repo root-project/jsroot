@@ -1,11 +1,12 @@
 sap.ui.define([
 	'jquery.sap.global',
 	'sap/ui/core/Fragment',
+   'sap/ui/core/HTML',
 	'sap/ui/core/mvc/Controller',
 	'sap/ui/model/json/JSONModel',
 	'sap/m/Popover',
 	'sap/m/Button'
-], function (jQuery, Fragment, Controller, JSONModel, Popover, Button) {
+], function (jQuery, Fragment, sapHTML, Controller, JSONModel, Popover, Button) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
@@ -259,6 +260,23 @@ sap.ui.define([
 			this.getView().setModel(this.model);
 
 			this._setToggleButtonTooltip(!sap.ui.Device.system.desktop);
+
+			// add HTML content
+			var oHtml = new sapHTML({
+			   content: "<h3>Creating JSROOT graphics</h3>",
+			   onInit: function() {
+			      console.log('Init HTML control');
+			   },
+		       afterRendering: function() {
+		          if (sapHTML.prototype.afterRendering) {
+		             sapHTML.prototype.afterRendering.apply(this, arguments);
+		          }
+		          console.log('after rendering');
+	        }
+
+			});
+		   // oHtml.setContent("<h1>This is the simple</h1>",true);
+		   this.getView().byId("root1").addContent(oHtml);
 		},
 
 		onItemSelect : function(oEvent) {

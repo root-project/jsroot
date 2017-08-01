@@ -1,6 +1,7 @@
 <core:View height="100%"
 		   xmlns:core="sap.ui.core"
 		   xmlns="sap.m"
+		   xmlns:mvc="sap.ui.core.mvc"
 		   xmlns:tnt="sap.tnt"
 		   xmlns:html="http://www.w3.org/1999/xhtml"
 		   xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"

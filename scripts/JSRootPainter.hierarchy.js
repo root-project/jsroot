@@ -2174,7 +2174,7 @@
                //   name : "sap.ui.jsroot"
                //}).placeAt(myDiv.attr("id"));
 
-               console.log('CREATING VIEW with component container');
+               console.log('CREATING VIEW with canvas');
             });
          };
 
