@@ -2162,7 +2162,24 @@
       if (JSROOT.GetUrlOption("qt5")!==null) JSROOT.browser.qt5 = true;
 
       if (drawing && socket_kind) {
-         if (use_openui) {
+
+         var painter = new JSROOT.TPadPainter(null, true);
+         painter.plain_layout = painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
+         if (painter.batch_mode) JSROOT.BatchMode = true;
+
+         if (window) {
+            window.onbeforeunload = painter.WindowBeforeUnloadHanlder.bind(painter);
+            if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
+         }
+
+         if (use_openui && !painter.batch_mode) {
+
+            painter.plain_layout = true;
+
+            painter._configured_socket_kind = socket_kind;
+
+            JSROOT.openui5_canvas_painter = painter;
+
             return JSROOT.AssertPrerequisites('openui5', function() {
                //new JSROOT.sap.m.Text({
                //   text: "Hello World"
@@ -2178,22 +2195,11 @@
             });
          };
 
-
-         var painter = new JSROOT.TPadPainter(null, true);
-
          painter.SetDivId(myDiv.attr("id"), -1); // just assign id, nothing else is happens
 
          painter.OpenWebsocket(socket_kind); // when connection activated, ROOT must send new instance of the canvas
 
-         painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
-
-         if (painter.batch_mode) JSROOT.BatchMode = true;
-                            else JSROOT.RegisterForResize(painter);
-
-         if (window) {
-            window.onbeforeunload = painter.WindowBeforeUnloadHanlder.bind(painter);
-            if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
-         }
+         if (!painter.batch_mode) JSROOT.RegisterForResize(painter);
 
          return;
       }

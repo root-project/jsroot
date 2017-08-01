@@ -2,24 +2,30 @@
     	height="100%"
     	controllerName="sap.ui.jsroot.controller.Canvas"
     	xmlns:mvc="sap.ui.core.mvc"
+    	xmlns:l="sap.ui.layout"
     	xmlns="sap.m">
-   	<Page
-   	   title=""
-    		class="sapUiContentPadding"
-    		showNavButton="false" >
+   	<Page title="" showNavButton="false" showFooter="false" >
     		<headerContent>
-    			<Toolbar>
-    				<SearchField />
-    			</Toolbar>
-    			<Button icon="sap-icon://action" tooltip="Share" />
+	         <OverflowToolbar id="otb1">
+	             <Button text="File" type="Transparent"></Button>
+ 	             <Button text="Edit" type="Transparent"></Button>
+	             <Button text="View" type="Transparent"></Button>
+	             <Button text="Options" type="Transparent"></Button>
+	             <Button text="Tools" type="Transparent"></Button>
+	             <ToolbarSpacer />
+	             <Button text="Help" type="Transparent"></Button>
+	         </OverflowToolbar>
     		</headerContent>
     		<subHeader>
     		</subHeader>
     		<content>
-			   <mvc:XMLView viewName="sap.ui.jsroot.view.Panel"/>
+    		  <!-- l:HorizontalLayout -->
+			     <mvc:XMLView id="jsroot_canvas" viewName="sap.ui.jsroot.view.Panel"/>
+    		  <!-- /l:HorizontalLayout -->
     		</content>
     		<footer>
-    			<Toolbar>
+    		   <Label text="Label A (required)" labelFor="otb2"/>
+    			<Toolbar id="otb2">
     				<ToolbarSpacer/>
     				<Button text="Accept" type="Accept" />
     				<Button text="Reject" type="Reject" />

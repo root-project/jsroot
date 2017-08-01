@@ -3997,7 +3997,7 @@
    TPadPainter.prototype.ToggleEventStatus = function() {
       // when function called, jquery should be already loaded
 
-      if (this.enlarge_main('state')==='on') return;
+      if ((this.enlarge_main('state')==='on') || this.plain_layout) return;
 
       this.has_event_status = !this.has_event_status;
       if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
@@ -4141,7 +4141,7 @@
 
       } else {
 
-         if (this._websocket)
+         if (this._websocket && !this.plain_layout)
             this.CreateCanvasMenu();
 
          var render_to = this.select_main();

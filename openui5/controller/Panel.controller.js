@@ -17,6 +17,13 @@ sap.ui.define([
          console.log('On after rendering', view.getWidth(), view.getHeight());
          var dom = view.getDomRef();
          console.log('DOM ', dom);
+
+         if (this.canvas_painter && this.canvas_painter._configured_socket_kind) {
+            this.canvas_painter.SetDivId(dom, -1);
+            this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
+            delete this.canvas_painter._configured_socket_kind;
+         }
+
        },
 
        onBeforeRendering: function() {
@@ -30,7 +37,10 @@ sap.ui.define([
         },
 
        onInit : function() {
-          console.log('INIT PANEL DONE');
+
+          this.canvas_painter = JSROOT.openui5_canvas_painter;
+          delete JSROOT.openui5_canvas_painter;
+          console.log('INIT PANEL DONE', typeof this.canvas_painter);
       }
    });
 
