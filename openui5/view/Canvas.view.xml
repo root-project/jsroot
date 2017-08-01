@@ -7,7 +7,27 @@
    	<Page title="" showNavButton="false" showFooter="false" >
     		<headerContent>
 	         <OverflowToolbar id="otb1">
-	             <Button text="File" type="Transparent"></Button>
+	            <MenuButton text="File">
+                  <menu>
+                     <Menu itemSelected="onMenuAction">
+                       <items>
+                        <MenuItem text="Open" icon="sap-icon://open-folder" />
+                        <MenuItem text="Close canvas" icon="sap-icon://decline" />
+                        <MenuItem text="Save" startsSection="true" icon="sap-icon://save">
+                          <items>
+                            <MenuItem text="Canvas.png"/>
+                            <MenuItem text="Canvas.svg"/>
+                            <MenuItem text="Canvas.jpg"/>
+                          </items>
+                        </MenuItem>
+                        <MenuItem text="Save as ..." icon="sap-icon://save" />
+                        <MenuItem text="Interrupt" startsSection="true" icon="sap-icon://stop" />
+                        <MenuItem text="Quit ROOT" icon="sap-icon://system-exit" />
+                         
+                      </items>
+                     </Menu>
+                  </menu>
+                </MenuButton>
  	             <Button text="Edit" type="Transparent"></Button>
 	             <Button text="View" type="Transparent"></Button>
 	             <Button text="Options" type="Transparent"></Button>
