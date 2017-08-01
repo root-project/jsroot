@@ -4036,6 +4036,12 @@
       if (resized) this.CheckCanvasResize(); // redraw with resize
    }
 
+
+   TPadPainter.prototype.SetTooltipAllowed = function(on) {
+      var fp = this.frame_painter();
+      fp.tooltip_allowed = !!on;
+   }
+
    TPadPainter.prototype.ShowCanvasMenu = function(name) {
 
       d3.event.stopPropagation(); // disable main context menu

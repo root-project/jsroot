@@ -8,9 +8,26 @@ sap.ui.define([
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
 		onInit : function() {
-		   console.log('On Canvas controller init')
+		   console.log('On Canvas controller init');
+		   this._Page = this.getView().byId("CanvasMainPage");
 		},
-		onMenuAction : function (oEvent) {
+
+		getCanvasPainter : function(also_without_websocket) {
+         var elem = this.byId("jsroot_canvas");
+
+         //console.log('typeof ', typeof elem, typeof elem.oController);
+
+         if (!elem || !elem.oController || !elem.oController.canvas_painter) return null;
+
+         var p = elem.oController.canvas_painter;
+
+         if (!also_without_websocket && !p._websocket) return null;
+
+         return p;
+
+		},
+
+		onFileMenuAction : function (oEvent) {
          //var oItem = oEvent.getParameter("item"),
          //    sItemPath = "";
          //while (oItem instanceof sap.m.MenuItem) {
@@ -19,19 +36,10 @@ sap.ui.define([
          //}
          //sItemPath = sItemPath.substr(0, sItemPath.lastIndexOf(" > "));
 
+		   var p = this.getCanvasPainter();
+		   if (!p) return;
+
 		   var name = oEvent.getParameter("item").getText();
-
-         var elem = this.byId("jsroot_canvas");
-
-         //console.log('typeof ', typeof elem, typeof elem.oController);
-
-         if (!elem || !elem.oController || !elem.oController.canvas_painter) return;
-
-         var p = elem.oController.canvas_painter;
-
-         if (!p._websocket) return;
-
-         console.log('Execute ' + name);
 
          switch (name) {
             case "Close canvas": p.OnWebsocketClosed(); p.CloseWebsocket(true); break;
@@ -40,10 +48,42 @@ sap.ui.define([
          }
 
          MessageToast.show("Action triggered on item: " + name);
+		},
 
-         //var obj = jQuery("#jsroot_canvas").control();
-         //console.log('typeof ', typeof obj, obj);
-         //if (obj) console.log('typeof painter', typeof obj.canvas_painter);
+		ShowCanvasStatus : function (text1,text2,text3,text4) {
+		   this.getView().byId("FooterLbl1").setText(text1);
+		   this.getView().byId("FooterLbl2").setText(text2);
+		   this.getView().byId("FooterLbl3").setText(text3);
+		   this.getView().byId("FooterLbl4").setText(text4);
+		},
+
+		onViewMenuAction : function (oEvent) {
+         var p = this.getCanvasPainter(true);
+         if (!p) return;
+
+         var item = oEvent.getParameter("item"),
+             name = item.getText();
+
+         var new_state = !item.getIcon();
+
+         switch (name) {
+            case "Editor":  break;
+            case "Toolbar":  break;
+            case "Event statusbar":
+               this._Page.setShowFooter(new_state);
+               if (new_state) {
+                  p.ShowStatus = this.ShowCanvasStatus.bind(this);
+               } else {
+                  delete p.ShowStatus;
+               }
+               break;
+            case "Tooltip info": p.SetTooltipAllowed(new_state); break;
+            default: return;
+         }
+
+         item.setIcon(new_state ? "sap-icon://accept" : "");
+
+         // MessageToast.show("Action triggered on item: " + name);
 		}
 
 	});

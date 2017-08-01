@@ -4,12 +4,12 @@
     	xmlns:mvc="sap.ui.core.mvc"
     	xmlns:l="sap.ui.layout"
     	xmlns="sap.m">
-   	<Page title="" showNavButton="false" showFooter="false" >
+   	<Page title="" showNavButton="false" showFooter="false" id="CanvasMainPage" >
     		<headerContent>
 	         <OverflowToolbar id="otb1">
 	            <MenuButton text="File">
                   <menu>
-                     <Menu itemSelected="onMenuAction">
+                     <Menu itemSelected="onFileMenuAction">
                        <items>
                         <MenuItem text="Open" icon="sap-icon://open-folder" />
                         <MenuItem text="Close canvas" icon="sap-icon://decline" />
@@ -28,8 +28,22 @@
                      </Menu>
                   </menu>
                 </MenuButton>
- 	             <Button text="Edit" type="Transparent"></Button>
-	             <Button text="View" type="Transparent"></Button>
+                <Button text="Edit" type="Transparent"></Button>
+                <MenuButton text="View" type="Transparent">
+                  <menu>
+                     <Menu itemSelected="onViewMenuAction">
+                       <items>
+                        <MenuItem text="Editor" />
+                        <MenuItem text="Toolbar"/>
+                        <MenuItem text="Event statusbar"/>
+                        <MenuItem text="Tooltip info" icon="sap-icon://accept"/>
+                        <MenuItem text="Colors" startsSection="true" />
+                        <MenuItem text="Fonts"/>
+                        <MenuItem text="Markers"/>
+                      </items>
+                     </Menu>
+                  </menu>
+                </MenuButton>
 	             <Button text="Options" type="Transparent"></Button>
 	             <Button text="Tools" type="Transparent"></Button>
 	             <ToolbarSpacer />
@@ -44,14 +58,12 @@
     		  <!-- /l:HorizontalLayout -->
     		</content>
     		<footer>
-    		   <Label text="Label A (required)" labelFor="otb2"/>
-    			<Toolbar id="otb2">
-    				<ToolbarSpacer/>
-    				<Button text="Accept" type="Accept" />
-    				<Button text="Reject" type="Reject" />
-    				<Button text="Edit" />
-    				<Button text="Delete" />
-    			</Toolbar>
+    			<OverflowToolbar>
+       		   <Label text="Label 1" id="FooterLbl1"/>
+       		   <Label text="Label 2" id="FooterLbl2"/>
+       		   <Label text="Label 3" id="FooterLbl3"/>
+       		   <Label text="Label 4" id="FooterLbl4"/>
+    			</OverflowToolbar>
     		</footer>
     	</Page>
 </mvc:View>
