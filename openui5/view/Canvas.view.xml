@@ -104,7 +104,7 @@
 									 horizontal="false"
 									 vertical="true"
 									 height="100%">
-						<Text text="This is the root page"></Text>
+					   <mvc:XMLView viewName="sap.ui.jsroot.view.Panel"/>		 
 					</ScrollContainer>
 					<ScrollContainer id="page1"
 									 horizontal="false"

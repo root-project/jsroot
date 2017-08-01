@@ -1,0 +1,6 @@
+<core:View
+   xmlns:core="sap.ui.core"
+	xmlns="sap.m"
+   controllerName="sap.ui.jsroot.controller.Panel"
+   height="100%">
+</core:View>

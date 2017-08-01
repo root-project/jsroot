@@ -261,6 +261,7 @@ sap.ui.define([
 
 			this._setToggleButtonTooltip(!sap.ui.Device.system.desktop);
 
+			/*
 			// add HTML content
 			var oHtml = new sapHTML({
 			   content: "<h3>Creating JSROOT graphics</h3>",
@@ -277,6 +278,7 @@ sap.ui.define([
 			});
 		   // oHtml.setContent("<h1>This is the simple</h1>",true);
 		   this.getView().byId("root1").addContent(oHtml);
+		   */
 		},
 
 		onItemSelect : function(oEvent) {
