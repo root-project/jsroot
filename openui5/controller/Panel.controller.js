@@ -3,7 +3,7 @@ sap.ui.define([
 ], function (Controller) {
    "use strict";
 
-   console.log('READ Panel.controller.js', typeof sapHTML);
+   console.log('READ Panel.controller.js');
 
    var res = Controller.extend("sap.ui.jsroot.controller.Panel", {
 

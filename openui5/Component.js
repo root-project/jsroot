@@ -6,7 +6,7 @@ sap.ui.define([
        metadata : {
          rootView: "sap.ui.jsroot.view.Canvas",
          dependencies : {
-            libs : [ "sap.m", "sap.tnt" ]
+            libs : [ "sap.m" ]
          },
          config : {
             sample : {

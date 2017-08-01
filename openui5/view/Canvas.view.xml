@@ -1,131 +1,32 @@
-<core:View height="100%"
-		   xmlns:core="sap.ui.core"
-		   xmlns="sap.m"
-		   xmlns:mvc="sap.ui.core.mvc"
-		   xmlns:tnt="sap.tnt"
-		   xmlns:html="http://www.w3.org/1999/xhtml"
-		   xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
-		   controllerName="sap.ui.jsroot.controller.Canvas">
-	<tnt:ToolPage id="toolPage">
-		<tnt:header>
-			<tnt:ToolHeader>
-				<Button id="sideNavigationToggleButton"
-						icon="sap-icon://menu2"
-						type="Transparent"
-						press="onSideNavButtonPress">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="NeverOverflow" />
-					</layoutData>
-				</Button>
-				<ToolbarSpacer width="20px" />
-				<Button text="File" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Edit" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="View" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Navigate" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Code" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Refactor" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Run" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<Button text="Tools" type="Transparent">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="Low" />
-					</layoutData>
-				</Button>
-				<tnt:ToolHeaderUtilitySeparator />
-				<ToolbarSpacer>
-					<layoutData>
-						<OverflowToolbarLayoutData priority="NeverOverflow" minWidth="20px" />
-					</layoutData>
-				</ToolbarSpacer>
-				<Button text="Alan Smith" type="Transparent" press="handleUserNamePress">
-					<layoutData>
-						<OverflowToolbarLayoutData priority="NeverOverflow" />
-					</layoutData>
-				</Button>
+<mvc:View
+    	height="100%"
+    	controllerName="sap.ui.jsroot.controller.Canvas"
+    	xmlns:mvc="sap.ui.core.mvc"
+    	xmlns="sap.m">
+   	<Page
+   	   title=""
+    		class="sapUiContentPadding"
+    		showNavButton="false" >
+    		<headerContent>
+    			<Toolbar>
+    				<SearchField />
+    			</Toolbar>
+    			<Button icon="sap-icon://action" tooltip="Share" />
+    		</headerContent>
+    		<subHeader>
+    		</subHeader>
+    		<content>
+			   <mvc:XMLView viewName="sap.ui.jsroot.view.Panel"/>
+    		</content>
+    		<footer>
+    			<Toolbar>
+    				<ToolbarSpacer/>
+    				<Button text="Accept" type="Accept" />
+    				<Button text="Reject" type="Reject" />
+    				<Button text="Edit" />
+    				<Button text="Delete" />
+    			</Toolbar>
+    		</footer>
+    	</Page>
+</mvc:View>
 
-			</tnt:ToolHeader>
-		</tnt:header>
-		<tnt:sideContent>
-			<tnt:SideNavigation expanded="true"
-								itemSelect="onItemSelect">
-				<tnt:NavigationList items="{path: '/navigation'}">
-					<tnt:NavigationListItem text="{title}"
-											icon="{icon}"
-											enabled="{enabled}"
-											expanded="{expanded}"
-											items="{items}"
-											key="{key}">
-						<tnt:NavigationListItem text="{title}"
-												key="{key}"
-												enabled="{enabled}">
-						</tnt:NavigationListItem>
-					</tnt:NavigationListItem>
-				</tnt:NavigationList>
-				<tnt:fixedItem>
-					<tnt:NavigationList items="{path: '/fixedNavigation'}">
-						<tnt:NavigationListItem text="{title}"
-												icon="{icon}">
-						</tnt:NavigationListItem>
-					</tnt:NavigationList>
-				</tnt:fixedItem>
-			</tnt:SideNavigation>
-		</tnt:sideContent>
-		<tnt:mainContents>
-			<NavContainer id="pageContainer">
-				<pages>
-					<ScrollContainer id="root1"
-									 horizontal="false"
-									 vertical="true"
-									 height="100%">
-					   <mvc:XMLView viewName="sap.ui.jsroot.view.Panel"/>		 
-					</ScrollContainer>
-					<ScrollContainer id="page1"
-									 horizontal="false"
-									 vertical="true"
-									 height="100%">
-						<Text text="This is the first page"></Text>
-					</ScrollContainer>
-					<ScrollContainer id="page2"
-									 horizontal="false"
-									 vertical="true"
-									 height="100%">
-						<Text text="Nothing important"></Text>
-					</ScrollContainer>
-					<ScrollContainer id="root2"
-									 horizontal="false"
-									 vertical="true"
-									 height="100%">
-						<Text text="This is the root page of the second element"></Text>
-					</ScrollContainer>
-				</pages>
-			</NavContainer>
-		</tnt:mainContents>
-	</tnt:ToolPage>
-</core:View>
