@@ -64,6 +64,160 @@
 
 
    JSROOT.Painter.createMenu = function(painter, maincallback) {
+
+      var menu = { painter: painter,  element: null, cnt: 1, stack: [], items: [], separ: false };
+
+      JSROOT.sap.ui.define([ 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem'], function(sapMenu, sapMenuItem) {
+
+         menu.add = function(name, arg, func) {
+            if (name == "separator") { this.separ = true; return; }
+
+            if (name.indexOf("header:")==0)
+               return this.items.push(new sapMenuItem("", { text: name.substr(7), enabled: false }));
+
+            if (name=="endsub:") {
+               var last = this.stack.pop();
+               last._item.setSubmenu(new sapMenu("", { items: this.items }));
+               this.items = last._items;
+               return;
+            }
+
+            var issub = false, checked = null;
+            if (name.indexOf("sub:")==0) {
+               name = name.substr(4);
+               issub = true;
+            }
+
+            if (typeof arg == 'function') { func = arg; arg = name;  }
+
+            // if ((arg==null) || (typeof arg != 'string')) arg = name;
+
+            if (name.indexOf("chk:")==0) { name = name.substr(4); checked = true; } else
+            if (name.indexOf("unk:")==0) { name = name.substr(4); checked = false; }
+
+            var item = new sapMenuItem("", { text: name, enabled: true, startsSection: this.separ });
+            if (checked) item.setIcon("sap-icon://accept");
+
+            this.separ = false;
+            this.items.push(item);
+
+            if (issub) {
+               this.stack.push({ _items: this.items, _item: item });
+               this.items = [];
+            }
+
+            item.menu_cnt = this.cnt;
+            item.menu_arg = arg; // keep call-back
+            if (typeof func == 'function') item.menu_func = func; // keep call-back function
+
+            this.cnt++;
+         }
+
+         menu.addchk = function(flag, name, arg, func) {
+            return this.add((flag ? "chk:" : "unk:") + name, arg, func);
+         }
+
+         menu.size = function() { return this.cnt-1; }
+
+         menu.addDrawMenu = function(menu_name, opts, call_back) {
+            if (!opts) opts = [];
+            if (opts.length==0) opts.push("");
+
+            var without_sub = false;
+            if (menu_name.indexOf("nosub:")==0) {
+               without_sub = true;
+               menu_name = menu_name.substr(6);
+            }
+
+            if (opts.length === 1) {
+               if (opts[0]==='inspect') menu_name = menu_name.replace("Draw", "Inspect");
+               return this.add(menu_name, opts[0], call_back);
+            }
+
+            if (!without_sub) this.add("sub:" + menu_name, opts[0], call_back);
+
+            for (var i=0;i<opts.length;++i) {
+               var name = opts[i];
+               if (name=="") name = '&lt;dflt&gt;';
+
+               var group = i+1;
+               if ((opts.length>5) && (name.length>0)) {
+                  // check if there are similar options, which can be grouped once again
+                  while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
+               }
+
+               if (without_sub) name = menu_name + " " + name;
+
+               if (group < i+2) {
+                  this.add(name, opts[i], call_back);
+               } else {
+                  this.add("sub:" + name, opts[i], call_back);
+                  for (var k=i+1;k<group;++k)
+                     this.add(opts[k], opts[k], call_back);
+                  this.add("endsub:");
+                  i = group-1;
+               }
+            }
+            if (!without_sub) this.add("endsub:");
+         }
+
+         menu.remove = function() {
+
+            if (this.remove_bind) {
+               document.body.removeEventListener('click', this.remove_bind);
+               this.remove_bind = null;
+            }
+
+            if (this.element) {
+               this.element.destroy();
+               if (this.close_callback) this.close_callback();
+            }
+
+            this.element = null;
+         }
+
+         menu.remove_bind = menu.remove.bind(menu);
+
+         menu.show = function(event, close_callback) {
+            this.remove();
+
+            if (typeof close_callback == 'function') this.close_callback = close_callback;
+
+            var old = sap.ui.getCore().byId("root_context_menu");
+            if (old) old.destroy();
+
+            document.body.addEventListener('click', this.remove_bind);
+
+            this.element = new sapMenu("root_context_menu", { items: this.items });
+
+            // this.element.attachClosed({}, this.remove, this);
+
+            this.element.attachItemSelect(null, this.menu_item_select, this);
+
+            var eDock = sap.ui.core.Popup.Dock;
+            // var oButton = oEvent.getSource();
+            this.element.open(false, null, eDock.BeginTop, eDock.BeginTop, null, event.clientX + " " + event.clientY);
+         }
+
+         menu.menu_item_select = function(oEvent) {
+            var item = oEvent.getParameter("item");
+            if (!item || !item.menu_func) return;
+            // console.log('select item', item.getText());
+            if (this.painter)
+               item.menu_func.bind(this.painter)(item.menu_arg);
+            else
+               item.menu_func(item.menu_arg);
+         }
+
+         JSROOT.CallBack(maincallback, menu);
+      });
+
+      return menu;
+   }
+
+
+
+   JSROOT.Painter.createMenuOld = function(painter, maincallback) {
       var menuname = 'root_ctx_menu';
 
       if (!maincallback && typeof painter==='function') { maincallback = painter; painter = null; }
