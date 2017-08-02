@@ -24,6 +24,8 @@
    }
 } (function(JSROOT, d3) {
 
+   "use strict";
+
    JSROOT.sources.push("2d");
 
    // do it here while require.js does not provide method to load css files

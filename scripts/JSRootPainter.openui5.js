@@ -26,6 +26,8 @@
    }
 } (function($, myui, d3, JSROOT) {
 
+   "use strict";
+
    JSROOT.sources.push("openui5");
 
    var load_callback = JSROOT.complete_script_load;

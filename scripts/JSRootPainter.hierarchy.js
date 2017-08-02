@@ -22,6 +22,8 @@
    }
 } (function(JSROOT, d3) {
 
+   "use strict";
+
    JSROOT.sources.push("hierarchy");
 
    // ===================== hierarchy scanning functions ==================================
@@ -2024,7 +2026,7 @@
 
       if (this.start_without_browser) browser_kind = "";
 
-      if (status || browser_kind) prereg = "jq2d;" + prereq;
+      if (status || browser_kind) prereq = "jq2d;" + prereq;
 
       this._topname = GetOption("topname");
 
