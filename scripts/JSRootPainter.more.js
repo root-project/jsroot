@@ -3870,7 +3870,7 @@
             }
 
             var cmd = "M" + xp[iminus] + "," + yp[iminus];
-            for (i = iminus+1;i<=iplus;++i)
+            for (var i=iminus+1;i<=iplus;++i)
                cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
             if (fillcolor !== 'none') cmd += "Z";
 

@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.2.2
+1. Fix several problems, discovered by "use strict" directive
+
+
 ## Changes in 5.2.1
 1. Fix - correctly handle new TF1 parameter coding convention (#132)
 2. Fix - Check if pad name can be used as element id (#133)
