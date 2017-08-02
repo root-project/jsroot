@@ -2584,6 +2584,20 @@
       return this;
    }
 
+   TObjectPainter.prototype.SendWebsocket = function(msg) {
+      if (!this._websocket) return false;
+      this._websocket.send(msg);
+      if (this._websocket_kind !== "websocket") return true;
+      if (this._websocket_timer) clearTimeout(this._websocket_timer);
+      this._websocket_timer = setTimeout(this.KeepAliveWebsocket.bind(this), 10000);
+      return true;
+   }
+
+   TObjectPainter.prototype.KeepAliveWebsocket = function() {
+      delete this._websocket_timer;
+      this.SendWebsocket("KEEPALIVE");
+   }
+
    TObjectPainter.prototype.CloseWebsocket = function(force) {
       if (this._websocket && this._websocket_state > 0) {
          this._websocket_state = force ? -1 : 0; // -1 prevent socket from reopening
@@ -2697,7 +2711,7 @@
          var canvp = this.pad_painter();
 
          if (canvp && canvp._websocket && this.snapid)
-            canvp._websocket.send('OBJEXEC:' + this.snapid + ":" + arg);
+            canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + arg);
       }
 
       function DoFillMenu(_menu, _call_back, items) {
@@ -2727,7 +2741,7 @@
 
       canvp._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
 
-      canvp._websocket.send('GETMENU:' + this.snapid); // request menu items for given painter
+      canvp.SendWebsocket('GETMENU:' + this.snapid); // request menu items for given painter
 
       setTimeout(canvp._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
@@ -4054,8 +4068,8 @@
 
          switch (arg) {
             case "Close canvas": this.OnWebsocketClosed(); this.CloseWebsocket(true); break;
-            case "Interrupt": this._websocket.send("GEXE:gROOT->SetInterrupt()"); break;
-            case "Quit ROOT": this._websocket.send("GEXE:gApplication->Terminate(0)"); break;
+            case "Interrupt": this.SendWebsocket("GEXE:gROOT->SetInterrupt()"); break;
+            case "Quit ROOT": this.SendWebsocket("GEXE:gApplication->Terminate(0)"); break;
             default: console.log('click', arg);
          }
       }
@@ -4830,7 +4844,7 @@
 
    TPadPainter.prototype.OnWebsocketOpened = function(conn) {
       // indicate that we are ready to recieve any following commands
-      conn.send('READY');
+      this.SendWebsocket('READY');
    }
 
    TPadPainter.prototype.OnWebsocketMsg = function(conn, msg) {

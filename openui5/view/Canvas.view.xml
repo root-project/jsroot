@@ -7,6 +7,7 @@
    	<Page title="" showNavButton="false" showFooter="false" showSubHeader="false" id="CanvasMainPage" >
     		<headerContent>
 	         <OverflowToolbar id="otb1">
+	            <Button icon="sap-icon://system-exit" type="Transparent" tooltip="Quit ROOT session" press="onQuitRootPress"/>
 	            <MenuButton text="File">
                   <menu>
                      <Menu itemSelected="onFileMenuAction">
@@ -55,7 +56,7 @@
     		     <Button icon="sap-icon://open-folder" type="Transparent" />
     		     <Button icon="sap-icon://decline" type="Transparent" press="onCloseCanvasPress"/>
               <Button icon="sap-icon://stop" type="Transparent" press="onInterruptPress"/>
-              <Button icon="sap-icon://system-exit" type="Transparent" press="onQuitRootPress"/>
+              <Button icon="sap-icon://system-exit" type="Transparent" tooltip="Quit ROOT session" press="onQuitRootPress"/>
     		  </OverflowToolbar>
     		</subHeader>
     		<content>

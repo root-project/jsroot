@@ -42,10 +42,9 @@ sap.ui.define([
        },
 
        onInit : function() {
-
           this.canvas_painter = JSROOT.openui5_canvas_painter;
           delete JSROOT.openui5_canvas_painter;
-          console.log('INIT PANEL DONE', typeof this.canvas_painter);
+          console.log('INIT JSROOT PANEL DONE', typeof this.canvas_painter);
           ResizeHandler.register(this.getView(), this.onResize.bind(this));
       }
    });

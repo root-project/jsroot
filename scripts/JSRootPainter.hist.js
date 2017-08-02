@@ -3241,7 +3241,7 @@
       }
       var pp = this.pad_painter();
       if (pp && pp._websocket) {
-         pp._websocket.send("EXEC:SetLog" + axis + (curr ? "(0)" : "(1)"));
+         pp.SendWebsocket("EXEC:SetLog" + axis + (curr ? "(0)" : "(1)"));
       } else {
          pad["fLog" + axis] = curr ? 0 : 1;
          obj.RedrawPad();

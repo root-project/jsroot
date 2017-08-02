@@ -45,7 +45,9 @@
    element.setAttribute('type', "text/javascript");
    element.setAttribute('id', "sap-ui-bootstrap");
    // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js
-   element.setAttribute('src', "https://openui5.hana.ondemand.com/resources/sap-ui-core-nojQuery.js");
+   element.setAttribute('src', "https://openui5.hana.ondemand.com/resources/sap-ui-core-nojQuery.js"); // latest openui5 version
+   // element.setAttribute('src', "/currentdir/openui5/resources/sap-ui-core-nojQuery.js"); // can be used with THttpServer
+   // element.setAttribute('src', "https://openui5.hana.ondemand.com/1.38.21/resources/sap-ui-core-nojQuery.js"); // some previous version
 //   element.setAttribute('data-sap-ui-trace', "true");
    element.setAttribute('data-sap-ui-libs', "sap.m");
 //   element.setAttribute('data-sap-ui-areas', "uiArea1");
