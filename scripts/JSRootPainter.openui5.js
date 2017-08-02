@@ -67,7 +67,8 @@
 
       var menu = { painter: painter,  element: null, cnt: 1, stack: [], items: [], separ: false };
 
-      JSROOT.sap.ui.define([ 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem'], function(sapMenu, sapMenuItem) {
+      JSROOT.sap.ui.define([ 'sap/ui/unified/Menu', 'sap/ui/unified/MenuItem', 'sap/ui/unified/MenuItemBase' ],
+                            function(sapMenu, sapMenuItem, sapMenuItemBase) {
 
          menu.add = function(name, arg, func) {
             if (name == "separator") { this.separ = true; return; }
@@ -95,10 +96,26 @@
             if (name.indexOf("chk:")==0) { name = name.substr(4); checked = true; } else
             if (name.indexOf("unk:")==0) { name = name.substr(4); checked = false; }
 
-            var item = new sapMenuItem("", { text: name, enabled: true, startsSection: this.separ });
+            var item = new sapMenuItem("", { });
+
+            if (!issub && (name.indexOf("<svg")==0)) {
+               item.custom_html = name;
+               item.render = function(oRM, oItem, oMenu) {
+                  oRM.write("<div");
+                  oRM.writeControlData(oItem);
+                  oRM.writeClasses();
+                  oRM.write(">");
+                  oRM.write(oItem.custom_html);
+                  oRM.write("</div>");
+               }
+            } else {
+               item.setText(name);
+               if (this.separ) item.setStartsSection(true);
+               this.separ = false;
+            }
+
             if (checked) item.setIcon("sap-icon://accept");
 
-            this.separ = false;
             this.items.push(item);
 
             if (issub) {
@@ -106,9 +123,10 @@
                this.items = [];
             }
 
-            item.menu_cnt = this.cnt;
-            item.menu_arg = arg; // keep call-back
-            if (typeof func == 'function') item.menu_func = func; // keep call-back function
+            if (typeof func == 'function') {
+               item.menu_func = func; // keep call-back function
+               item.menu_arg = arg; // keep call-back argument
+            }
 
             this.cnt++;
          }
@@ -202,6 +220,8 @@
          menu.menu_item_select = function(oEvent) {
             var item = oEvent.getParameter("item");
             if (!item || !item.menu_func) return;
+            // console.log('select item arg', item.menu_arg);
+
             // console.log('select item', item.getText());
             if (this.painter)
                item.menu_func.bind(this.painter)(item.menu_arg);
