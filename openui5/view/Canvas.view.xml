@@ -60,9 +60,20 @@
     		  </OverflowToolbar>
     		</subHeader>
     		<content>
-    		  <!-- l:HorizontalLayout -->
-			     <mvc:XMLView id="jsroot_canvas" viewName="sap.ui.jsroot.view.Panel"/>
-    		  <!-- /l:HorizontalLayout -->
+    			<l:Splitter orientation="Horizontal" id="MainAreaSplitter">
+    			   <!-- 
+		         <Button height="100%" width="100%" text="Content 1">
+			         <layoutData><l:SplitterLayoutData size="300px" /></layoutData>
+		         </Button>
+		          -->
+		         <mvc:XMLView id="jsroot_canvas" width="100%" height="100%" viewName="sap.ui.jsroot.view.Panel">
+		         </mvc:XMLView>
+		         <!-- 
+		         <Button height="100%" width="100%" text="Content 2">
+			          <layoutData><l:SplitterLayoutData size="auto" /></layoutData>
+		         </Button>
+		          -->
+	         </l:Splitter>
     		</content>
     		<footer>
     			<OverflowToolbar>

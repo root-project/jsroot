@@ -1,9 +1,10 @@
 sap.ui.define([
    'jquery.sap.global',
 	'sap/ui/core/mvc/Controller',
-   'sap/m/MessageToast'
-
-], function (jQuery, Controller, MessageToast) {
+   'sap/m/MessageToast',
+   'sap/ui/commons/Button',
+   'sap/ui/layout/SplitterLayoutData'
+], function (jQuery, Controller, MessageToast, Button, SplitterLayoutData) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
@@ -15,8 +16,6 @@ sap.ui.define([
 		getCanvasPainter : function(also_without_websocket) {
          var elem = this.getView().byId("jsroot_canvas");
 
-         // console.log('typeof ', typeof elem, typeof elem.oController);
-
          if (!elem || !elem.oController || !elem.oController.canvas_painter) return null;
 
          var p = elem.oController.canvas_painter;
@@ -24,7 +23,6 @@ sap.ui.define([
          if (!also_without_websocket && !p._websocket) return null;
 
          return p;
-
 		},
 
 		onFileMenuAction : function (oEvent) {
@@ -86,7 +84,30 @@ sap.ui.define([
          var new_state = !item.getIcon();
 
          switch (name) {
-            case "Editor":  break;
+            case "Editor":
+
+               var split = this.getView().byId("MainAreaSplitter");
+
+               if (new_state) {
+                  var oLd = new SplitterLayoutData({
+                     resizable : true,
+                     size      : "250px",
+                     maxSize   : "500px"
+                  });
+
+                  var oContent = new Button({
+                     width: "100%",
+                     height: "100%",
+                     text : "GED placeholder",
+                     layoutData: oLd
+                  });
+
+                  split.insertContentArea(oContent, 0);
+               } else {
+                  split.removeContentArea(split.getContentAreas()[0]);
+               }
+
+               break;
             case "Toolbar":
                this._Page.setShowSubHeader(new_state)
                break;
