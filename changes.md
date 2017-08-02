@@ -709,7 +709,7 @@
    in ROOT repository
 
 ### March 2014
-1. Introduce JSROOT.TBuffer class, which plays similar role
+1. Introduce TBuffer class, which plays similar role
    as TBuffer in native ROOT I/O. Simplifies I/O logic,
    reduce duplication of code in many places, fix errors.
    Main advantage - one could try to keep code synchronous with C++.

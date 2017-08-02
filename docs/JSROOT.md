@@ -625,7 +625,7 @@ To correctly cleanup JSROOT drawings from HTML element, one should call:
 
 ### File API
 
-JSROOT defines the JSROOT.TFile class, which can be used to access binary ROOT files.
+JSROOT defines the TFile class, which can be used to access binary ROOT files.
 One should always remember that all I/O operations are asynchronous in JSROOT.
 Therefore, callback functions are used to react when the I/O operation completed.
 For example, reading an object from a file and displaying it will look like:
