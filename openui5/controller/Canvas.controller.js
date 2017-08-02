@@ -129,28 +129,6 @@ sap.ui.define([
          item.setIcon(new_state ? "sap-icon://accept" : "");
 
          // MessageToast.show("Action triggered on item: " + name);
-		},
-
-		onMenuTesting : function(oEvent) {
-
-		   var old = sap.ui.getCore().byId("root_context_menu");
-		   if (old) old.destroy();
-
-		   var items = [];
-
-		   items.push(new MenuItem("", { text : "Header", enabled: false }));
-		   items.push(new MenuItem("", { text : "Item 1" }));
-         items.push(new MenuItem("", { text : "Item 2", icon: "sap-icon://accept" }));
-         items.push(new MenuItem("", { text : "Item 3", startsSection: true }));
-		   var mm = new Menu("root_context_menu", { items: items });
-
-		   //mm.onClose = function() { this.destroy(); } // automatically
-		   //mm.attachClosed({}, mm.onClose)
-
-		   var eDock = sap.ui.core.Popup.Dock;
-		   var oButton = oEvent.getSource();
-         mm.open(false, null, eDock.BeginTop, eDock.BeginTop, null, "50 50");
-
 		}
 
 	});

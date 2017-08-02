@@ -8,7 +8,6 @@
     		<headerContent>
 	         <OverflowToolbar id="otb1">
 	            <Button icon="sap-icon://system-exit" type="Transparent" tooltip="Quit ROOT session" press="onQuitRootPress"/>
-	            <Button icon="sap-icon://stop" type="Transparent" tooltip="MenuTesting" press="onMenuTesting"/>
 	            <MenuButton text="File">
                   <menu>
                      <Menu itemSelected="onFileMenuAction">
