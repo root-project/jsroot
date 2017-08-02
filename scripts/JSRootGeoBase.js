@@ -2818,7 +2818,7 @@
 
       var names = [], cnts = [], obj = null;
       for (var k=0;k<chlds.length;++k) {
-         chld = chlds[k];
+         var chld = chlds[k];
          if (!chld || !chld.fName) continue;
          if (!chld.$geo_suffix) {
             var indx = names.indexOf(chld.fName);

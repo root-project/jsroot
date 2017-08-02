@@ -715,9 +715,6 @@
 
    // ctor
    JSROOT.TDirectory = function(file, dirname, cycle) {
-      if (! (this instanceof arguments.callee) )
-         throw new Error("you must use new to instantiate this class", "JSROOT.TDirectory.ctor");
-
       this.fFile = file;
       this._typename = "TDirectory";
       this.dir_name = dirname;
@@ -789,8 +786,6 @@
 
          file.fDirectories.push(dir);
 
-         delete buf;
-
          JSROOT.CallBack(readkeys_callback, dir);
       });
    }
@@ -822,9 +817,6 @@
 
    // ctor
    JSROOT.TFile = function(url, newfile_callback) {
-      if (! (this instanceof arguments.callee) )
-         throw new Error("you must use new to instantiate this class", "JSROOT.TFile.ctor");
-
       this._typename = "TFile";
       this.fEND = 0;
       this.fFullURL = url;
@@ -1383,7 +1375,7 @@
             return JSROOT.CallBack(readkeys_callback, null);
 
          // extra check to prevent reading of corrupted data
-         if (!file.fNbytesName || this.fNbytesName > 100000) {
+         if (!file.fNbytesName || file.fNbytesName > 100000) {
             JSROOT.console("Init : cannot read directory info of file " + file.fURL);
             return JSROOT.CallBack(readkeys_callback, null);
          }
@@ -1437,13 +1429,8 @@
 
                   return JSROOT.CallBack(readkeys_callback, file);
                });
-
-               delete buf5;
-               delete buf4;
             });
-            delete buf3;
          });
-         delete buf;
       });
    };
 
