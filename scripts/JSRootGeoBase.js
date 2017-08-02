@@ -22,6 +22,8 @@
    }
 } (function( JSROOT, THREE, ThreeBSP ) {
 
+   "use strict";
+
    /** @namespace JSROOT.GEO */
    /// Holder of all TGeo-related functions and classes
    JSROOT.GEO = {

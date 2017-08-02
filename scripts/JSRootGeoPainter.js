@@ -30,6 +30,8 @@
    }
 } (function( JSROOT, d3, THREE ) {
 
+   "use strict";
+
    JSROOT.sources.push("geom");
 
    if ( typeof define === "function" && define.amd )

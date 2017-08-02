@@ -23,6 +23,8 @@
    }
 } (function(JSROOT) {
 
+   "use strict";
+
    JSROOT.sources.push("io");
 
    JSROOT.IO = {
