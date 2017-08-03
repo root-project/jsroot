@@ -19,6 +19,8 @@
    }
 } (function(JSROOT, THREE, document) {
 
+   "use strict";
+
    if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
    // ===============================================================
