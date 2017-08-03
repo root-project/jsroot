@@ -5375,17 +5375,16 @@
       switch(action) {
          case 'enable': is_visible = true; break;
          case 'enterbtn': return; // do nothing, just cleanup timeout
-         case 'timeout': isvisible = false; break;
-         case 'toggle': {
-            state = !state; btn.property('buttons_state', state);
+         case 'timeout': is_visible = false; break;
+         case 'toggle':
+            state = !state;
+            btn.property('buttons_state', state);
             is_visible = state;
             break;
-         }
          case 'disable':
-         case 'leavebtn': {
+         case 'leavebtn':
             if (state) return;
             return btn.property('timout_handler', setTimeout(this.toggleButtonsVisibility.bind(this,'timeout'),500));
-         }
       }
 
       group.selectAll('svg').each(function() {
