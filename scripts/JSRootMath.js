@@ -696,11 +696,9 @@
             if (mm >= 0) return Math.sqrt(mm);
             return -Math.sqrt(-mm);
          }
-         m.Perp2 = Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;}
+         m.Perp2 = m.Pt2 = function() { return this.fX*this.fX + this.fY*this.fY;}
       }
    }
-
-
 
    return JSROOT;
 
