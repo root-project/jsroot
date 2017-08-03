@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in 5.2.2
-1. Fix several problems, discovered by "use strict" directive
+1. Fix several problems, discovered with "use strict" directive
 
 
 ## Changes in 5.2.1
