@@ -5229,7 +5229,7 @@
       switch(action) {
          case 'enable': is_visible = true; break;
          case 'enterbtn': return; // do nothing, just cleanup timeout
-         case 'timeout': isvisible = false; break;
+         case 'timeout': is_visible = false; break;
          case 'toggle': {
             state = !state; btn.property('buttons_state', state);
             is_visible = state;
