@@ -940,10 +940,8 @@
       return ((str === "1x10") ? "10" : str) + exp;
    }
 
-   Painter.translateLaTeX = function(_string) {
-      var str = _string, i;
-
-      var lstr = str.match(/\^{(.*?)}/gi);
+   Painter.translateLaTeX = function(str) {
+      var i, lstr = str.match(/\^{(.*?)}/gi);
       if (lstr)
          for (i = 0; i < lstr.length; ++i)
             str = str.replace(lstr[i], Painter.translateSuperscript(lstr[i].substr(2, lstr[i].length-3)));
@@ -958,7 +956,7 @@
          for (i = 0; i < lstr.length; ++i)
             str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
 
-      for (i = 0; i < Painter.symbols_map.length; ++i)
+      for (i in Painter.symbols_map)
          str = str.replace(new RegExp(i,'g'), Painter.symbols_map[i]);
 
       // simple workaround for simple #splitline{first_line}{second_line}
