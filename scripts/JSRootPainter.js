@@ -5082,13 +5082,11 @@
          //rrr.setSize(sz.width, sz.height);
          //rrr.render(main.scene, main.camera);
 
-         var svg = d3.select(svg3d);
-
-         var layer = main.svg_layer("special_layer");
-         group = layer.append("g")
-                      .attr("class","temp_saveaspng")
-                      .attr("transform", "translate(" + sz.x + "," + sz.y + ")");
-         group.node().appendChild(svg3d);
+          main.svg_layer("special_layer")      // select layer
+              .append("g")                     // create special group
+              .attr("class","temp_saveaspng")
+              .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
+              .node().appendChild(svg3d);      // add code
       }, true);
 
 //      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
