@@ -45,7 +45,7 @@
 
       function HLStoRGB(h, l, s) {
          var r, g, b;
-         if (s < 1e-300) {
+         if (s < 1e-100) {
             r = g = b = l; // achromatic
          } else {
             function hue2rgb(p, q, t) {
@@ -53,22 +53,22 @@
                if (t > 1) t -= 1;
                if (t < 1 / 6) return p + (q - p) * 6 * t;
                if (t < 1 / 2) return q;
-               if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+               if (t < 2 / 3) return p + (q - p) * (2/3 - t) * 6;
                return p;
             }
-            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            var p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1 / 3);
+            var q = (l < 0.5) ? l * (1 + s) : l + s - l * s,
+                p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
             g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1 / 3);
+            b = hue2rgb(p, q, h - 1/3);
          }
-         return 'rgb(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ')';
+         return 'rgb(' + Math.round(r*255) + ',' + Math.round(g*255) + ',' + Math.round(b*255) + ')';
       }
 
       var palette = [], saturation = 1, lightness = 0.5, maxHue = 280, minHue = 0, maxPretty = 50;
       for (var i = 0; i < maxPretty; ++i) {
-         var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360.0;
-         var rgbval = HLStoRGB(hue, lightness, saturation);
+         var hue = (maxHue - (i + 1) * ((maxHue - minHue) / maxPretty)) / 360,
+             rgbval = HLStoRGB(hue, lightness, saturation);
          palette.push(rgbval);
       }
       return palette;
@@ -77,7 +77,7 @@
    JSROOT.Painter.CreateGrayPalette = function() {
       var palette = [];
       for (var i = 0; i < 50; ++i) {
-         var code = Math.round((i+2)/60 * 255 );
+         var code = Math.round((i+2)/60*255);
          palette.push('rgb('+code+','+code+','+code+')');
       }
       return palette;
