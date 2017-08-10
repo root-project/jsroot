@@ -1983,7 +1983,7 @@
 
             // Draw Polymarker
             if (lopt.indexOf('p') != -1) {
-               var marker = (painter && painter.markeratt) ? painter.markeratt : JSROOT.Painter.createAttMarker(o_marker);
+               var marker = (painter && painter.markeratt) ? painter.markeratt : new JSROOT.TAttMarkerHandler(o_marker);
                this.draw_g
                    .append("svg:path")
                    .attr("d", marker.create((x0 + tpos_x)/2, mid_y))
@@ -5051,7 +5051,7 @@
       if (show_markers) {
          // draw markers also when e2 option was specified
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(this.histo, this.options.Mark - 20);
+            this.markeratt = new JSROOT.TAttMarkerHandler(this.histo, this.options.Mark - 20);
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
@@ -6739,7 +6739,7 @@
       // create attribute only when necessary
       if (!this.markeratt) {
          if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
-         this.markeratt = JSROOT.Painter.createAttMarker(histo, 5);
+         this.markeratt = new JSROOT.TAttMarkerHandler(histo, 5);
       }
 
       // reset absolution position for markers
@@ -6855,7 +6855,7 @@
          // one can use direct drawing of scatter plot without any patterns
 
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(histo);
+            this.markeratt = new JSROOT.TAttMarkerHandler(histo);
 
          this.markeratt.reset_pos();
 
@@ -6922,18 +6922,18 @@
          }
       }
 
-      var layer = this.svg_frame().select('.main_layer');
-      var defs = layer.select("defs");
+      var layer = this.svg_frame().select('.main_layer'),
+          defs = layer.select("defs");
       if (defs.empty() && (colPaths.length>0))
          defs = layer.insert("svg:defs",":first-child");
 
       if (!this.markeratt)
-         this.markeratt = JSROOT.Painter.createAttMarker(histo);
+         this.markeratt = new JSROOT.TAttMarkerHandler(histo);
 
       for (colindx=0;colindx<colPaths.length;++colindx)
         if ((colPaths[colindx] !== undefined) && (colindx<this.fContour.length)) {
-           var pattern_class = "scatter_" + colindx;
-           var pattern = defs.select('.'+pattern_class);
+           var pattern_class = "scatter_" + colindx,
+               pattern = defs.select('.' + pattern_class);
            if (pattern.empty())
               pattern = defs.append('svg:pattern')
                             .attr("class", pattern_class)

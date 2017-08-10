@@ -608,71 +608,88 @@
       }
    }
 
-   /** Function returns the ready to use marker for drawing */
-   Painter.createAttMarker = function(attmarker, style) {
-
+   function TAttMarkerHandler(attmarker, style) {
       var marker_color = Painter.root_colors[attmarker.fMarkerColor];
-
       if (!style || (style<0)) style = attmarker.fMarkerStyle;
 
-      var res = { x0: 0, y0: 0, color: marker_color, style: style, size: 8, scale: 1, stroke: true, fill: true, marker: "",  ndig: 0, used: true, changed: false };
+      this.x0 = this.y0 = 0;
+      this.color = marker_color;
+      this.style = style;
+      this.size = 8;
+      this.scale = 1;
+      this.stroke = true;
+      this.fill = true;
+      this.marker = "";
+      this.ndig = 0;
+      this.used = true;
+      this.changed = false;
 
-      res.Change = function(color, style, size) {
+      this.func = this.Apply.bind(this);
 
-         this.changed = true;
+      this.Change(marker_color, style, attmarker.fMarkerSize);
 
-         if (color!==undefined) this.color = color;
-         if ((style!==undefined) && (style>=0)) this.style = style;
-         if (size!==undefined) this.size = size; else size = this.size;
+      this.changed = false;
+   }
 
-         this.x0 = this.y0 = 0;
+   TAttMarkerHandler.prototype.reset_pos = function() {
+      this.lastx = this.lasty = null;
+   }
 
-         this.reset_pos = function() {
-            this.lastx = this.lasty = null;
+   TAttMarkerHandler.prototype.create = function(x,y) {
+      return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+   }
+
+   TAttMarkerHandler.prototype.Change = function(color, style, size) {
+      this.changed = true;
+
+      if (color!==undefined) this.color = color;
+      if ((style!==undefined) && (style>=0)) this.style = style;
+      if (size!==undefined) this.size = size; else size = this.size;
+
+      this.x0 = this.y0 = 0;
+
+      if ((this.style === 1) || (this.style === 777)) {
+         this.fill = false;
+         this.marker = "h1";
+         this.size = 1;
+
+         // use special create function to handle relative position movements
+         this.create = function(x,y) {
+            var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
+            var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
+            this.lastx = xx+1; this.lasty = yy;
+            return (m2.length < m1.length) ? m2 : m1;
          }
 
-         if ((this.style === 1) || (this.style === 777)) {
-            this.fill = false;
-            this.marker = "h1";
-            this.size = 1;
+         this.reset_pos();
+         return true;
+      }
 
-            // use special create function to handle relative position movements
-            this.create = function(x,y) {
-               var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
-               var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
-               this.lastx = xx+1; this.lasty = yy;
-               return (m2.length < m1.length) ? m2 : m1;
-            }
+      var marker_kind = ((this.style > 0) && (this.style < Painter.root_markers.length)) ? Painter.root_markers[this.style] : 100;
+      var shape = marker_kind % 100;
 
-            this.reset_pos();
-            return true;
-         }
+      this.fill = (marker_kind>=100);
 
-         var marker_kind = ((this.style > 0) && (this.style < Painter.root_markers.length)) ? Painter.root_markers[this.style] : 100;
-         var shape = marker_kind % 100;
+      switch(this.style) {
+         case 1: this.size = 1; this.scale = 1; break;
+         case 6: this.size = 2; this.scale = 1; break;
+         case 7: this.size = 3; this.scale = 1; break;
+         default: this.size = size; this.scale = 8;
+      }
 
-         this.fill = (marker_kind>=100);
+      size = this.size*this.scale;
 
-         switch(this.style) {
-            case 1: this.size = 1; this.scale = 1; break;
-            case 6: this.size = 2; this.scale = 1; break;
-            case 7: this.size = 3; this.scale = 1; break;
-            default: this.size = size; this.scale = 8;
-         }
+      this.ndig = (size>7) ? 0 : ((size>2) ? 1 : 2);
+      if (shape == 6) this.ndig++;
+      var half = (size/2).toFixed(this.ndig), full = size.toFixed(this.ndig);
 
-         size = this.size*this.scale;
-
-         this.ndig = (size>7) ? 0 : ((size>2) ? 1 : 2);
-         if (shape == 6) this.ndig++;
-         var half = (size/2).toFixed(this.ndig), full = size.toFixed(this.ndig);
-
-         switch(shape) {
+      switch(shape) {
          case 0: // circle
             this.x0 = -size/2;
             this.marker = "a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
             break;
          case 1: // cross
-            var d = (size/3).toFixed(res.ndig);
+            var d = (size/3).toFixed(this.ndig);
             this.x0 = this.y0 = size/6;
             this.marker = "h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
             break;
@@ -694,10 +711,10 @@
             break;
          case 6: // star
             this.y0 = -size/2;
-            this.marker = "l" + (size/3).toFixed(res.ndig)+","+full +
-                         "l-"+ (5/6*size).toFixed(res.ndig) + ",-" + (5/8*size).toFixed(res.ndig) +
+            this.marker = "l" + (size/3).toFixed(this.ndig)+","+full +
+                         "l-"+ (5/6*size).toFixed(this.ndig) + ",-" + (5/8*size).toFixed(this.ndig) +
                          "h" + full +
-                         "l-" + (5/6*size).toFixed(res.ndig) + "," + (5/8*size).toFixed(res.ndig) + "z";
+                         "l-" + (5/6*size).toFixed(this.ndig) + "," + (5/8*size).toFixed(this.ndig) + "z";
             break;
          case 7: // asterisk
             this.x0 = this.y0 = -size/2;
@@ -717,29 +734,15 @@
             this.x0 = -size/2;
             this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
             break;
-         }
-
-         this.create = function(x,y) {
-            return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
-         }
-
-         return true;
       }
 
-      res.Apply = function(selection) {
-         selection.style('stroke', this.stroke ? this.color : "none");
-         selection.style('fill', this.fill ? this.color : "none");
-      }
-
-      res.func = res.Apply.bind(res);
-
-      res.Change(marker_color, style, attmarker.fMarkerSize);
-
-      res.changed = false;
-
-      return res;
+      return true;
    }
 
+   TAttMarkerHandler.prototype.Apply = function(selection) {
+      selection.style('stroke', this.stroke ? this.color : "none");
+      selection.style('fill', this.fill ? this.color : "none");
+   }
 
    function TAttLineHandler(attline, borderw, can_excl) {
       var color = 'black', _width = 0, style = 0;
@@ -949,6 +952,11 @@
       patt.selectAll('rect').style("fill",line_color);
 
       return true;
+   }
+
+   /** Function returns the ready to use marker for drawing */
+   Painter.createAttMarker = function(attmarker, style) {
+      return new TAttMarkerHandler(attmarker, style);
    }
 
    Painter.createAttLine = function(attline, borderw, can_excl) {
@@ -5992,6 +6000,7 @@
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.TAttLineHandler = TAttLineHandler;
    JSROOT.TAttFillHandler = TAttFillHandler;
+   JSROOT.TAttMarkerHandler = TAttMarkerHandler;
    JSROOT.TBasePainter = TBasePainter;
    JSROOT.TObjectPainter = TObjectPainter;
    JSROOT.TFramePainter = TFramePainter;

@@ -199,7 +199,7 @@
 
    function drawMarker() {
       var marker = this.GetObject(),
-          att = JSROOT.Painter.createAttMarker(marker),
+          att = new JSROOT.TAttMarkerHandler(marker),
           kMarkerNDC = JSROOT.BIT(14),
           isndc = marker.TestBit(kMarkerNDC);
 
@@ -1091,7 +1091,7 @@
              path = "", n, pnt, grx, gry;
 
          if (!this.markeratt)
-            this.markeratt = JSROOT.Painter.createAttMarker(graph, this.options.Mark - 100);
+            this.markeratt = new JSROOT.TAttMarkerHandler(graph, this.options.Mark - 100);
          else
             this.markeratt.Change(undefined, this.options.Mark - 100);
 
@@ -1843,7 +1843,7 @@
                case "polymarker": {
                   var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
 
-                  if (!markeratt) markeratt = JSROOT.Painter.createAttMarker(attr);
+                  if (!markeratt) markeratt = new JSROOT.TAttMarkerHandler(attr);
 
                   markeratt.reset_pos();
                   for (var n=0;n<npoints;++n)

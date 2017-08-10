@@ -3096,7 +3096,7 @@
          }
       }
 
-      var markeratt = JSROOT.Painter.createAttMarker(graph),
+      var markeratt = new JSROOT.TAttMarkerHandler(graph),
          palette = null,
          levels = [main.scale_zmin, main.scale_zmax],
          scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
