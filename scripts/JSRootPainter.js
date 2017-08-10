@@ -1474,11 +1474,11 @@
    }
 
    TObjectPainter.prototype.GetTipName = function(append) {
-      var res = this.GetItemName();
+      var res = this.GetItemName(), obj = this.GetObject();
       if (res===null) res = "";
-      if ((res.length === 0) && ('fName' in this.GetObject()))
+      if ((res.length === 0) && obj && obj.fName)
          res = this.GetObject().fName;
-      if (res.lenght > 20) res = res.substr(0,17)+"...";
+      if (res.lenght > 20) res = res.substr(0,17) + "...";
       if ((res.length > 0) && (append!==undefined)) res += append;
       return res;
    }
@@ -3944,6 +3944,27 @@
       hintsg.property('startx', posx);
    }
 
+   TFramePainter.prototype.ProcessFrameClick = function(pnt) {
+      // function called when frame is clicked and object selection can be performed
+      // such event can be used to select
+
+      var pp = this.pad_painter(true);
+      if (!pp) return;
+
+      pnt.painters = true; // provide painters reference in the hints
+      // pnt.disabled = true; // do not invoke graphics
+
+      // collect tooltips from pad painter - it has list of all drawn objects
+      var hints = pp.GetTooltips(pnt), exact = null;
+      for (var k=0; (k<hints.length) && !exact; ++k)
+         if (hints[k] && hints[k].exact) exact = hints[k];
+      //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
+      //      else console.log('Click frame', pnt);
+
+      if (typeof pp.SelectObjectPainter == 'function')
+         pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
+   }
+
    Painter.drawFrame = function(divid, obj) {
       var p = new TFramePainter(obj);
       p.SetDivId(divid, 2);
@@ -4445,7 +4466,7 @@
       painters.forEach(function(obj) {
          var hint = obj.ProcessTooltip(pnt);
          hints.push(hint);
-         if (hint && pnt.painters) hint.painter = obj;
+         if (hint && pnt && pnt.painters) hint.painter = obj;
       });
 
       return hints;

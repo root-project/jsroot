@@ -3473,12 +3473,9 @@
       d3.select(window).on("mousemove.zoomRect", null)
                        .on("mouseup.zoomRect", null);
 
-      var m = d3.mouse(this.svg_frame().node());
-
+      var m = d3.mouse(this.svg_frame().node()), changed = [true, true];
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
-
-      var changed = [true, true];
 
       switch (this.zoom_kind) {
          case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
@@ -3501,12 +3498,27 @@
          isany = true;
       }
 
+      var kind = this.zoom_kind, pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
+
       this.clearInteractiveElements();
 
       if (isany) {
          this.zoom_changed_interactive = 2;
          this.Zoom(xmin, xmax, ymin, ymax);
+      } else {
+         switch (kind) {
+            case 1: {
+               var fp = this.frame_painter();
+               if (fp) fp.ProcessFrameClick(pnt);
+               break;
+            }
+            case 2: console.log('Click X axis'); break;
+            case 3: console.log('Click Y axis'); break;
+         }
       }
+
+      this.zoom_kind = 0;
+
    }
 
    THistPainter.prototype.startTouchZoom = function() {

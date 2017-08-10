@@ -2,7 +2,7 @@ sap.ui.define([
    'jquery.sap.global',
 	'sap/ui/core/mvc/Controller',
    'sap/m/MessageToast',
-   'sap/ui/commons/Button',
+   'sap/ui/commons/Button', // should be replaced with sap/m/Button, used due to layout testing
    'sap/ui/layout/SplitterLayoutData',
    'sap/ui/unified/Menu',
    'sap/ui/unified/MenuItem'
@@ -77,6 +77,20 @@ sap.ui.define([
 		   this.getView().byId("FooterLbl4").setText(text4);
 		},
 
+		SelectPainter : function(painter, pnt) {
+		   var obj = painter.GetObject();
+
+		   var split = this.getView().byId("MainAreaSplitter");
+
+         if (split) {
+	          var area0 = split.getContentAreas()[0];
+
+	          if (area0) area0.setText("select " + (obj ? obj._typename : painter.GetTipName()));
+	       }
+
+         console.log('Select painter', obj ? obj._typename : painter.GetTipName());
+		},
+
 		onViewMenuAction : function (oEvent) {
          var p = this.getCanvasPainter(true);
          if (!p) return;
@@ -98,16 +112,19 @@ sap.ui.define([
                      maxSize   : "500px"
                   });
 
-                  var oContent = new Button({
+                  var oContent = new Button("GedButton", {
                      width: "100%",
                      height: "100%",
-                     text : "GED placeholder",
+                     text: "GED placeholder",
                      layoutData: oLd
                   });
 
                   split.insertContentArea(oContent, 0);
+                  p.SelectObjectPainter = this.SelectPainter.bind(this);
+
                } else {
                   split.removeContentArea(split.getContentAreas()[0]);
+                  delete p.SelectObjectPainter;
                }
 
                break;
