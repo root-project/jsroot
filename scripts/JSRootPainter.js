@@ -2139,8 +2139,8 @@
 
       var pthis = this;
 
-      var rect_width = function() { return Number(pthis.draw_g.attr("width")); };
-      var rect_height = function() { return Number(pthis.draw_g.attr("height")); };
+      function rect_width() { return Number(pthis.draw_g.attr("width")); }
+      function rect_height() { return Number(pthis.draw_g.attr("height")); }
 
       var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1, drag_tm = null;
 
@@ -2280,11 +2280,18 @@
 
                d3.event.sourceEvent.preventDefault();
 
-               if (complete_drag() === false)
-                  if(callback['ctxmenu'] && ((new Date()).getTime() - drag_tm.getTime() > 600)) {
+               if (complete_drag() === false) {
+                  var spent = (new Date()).getTime() - drag_tm.getTime();
+                  if(callback.ctxmenu && (spent > 600)) {
                      var rrr = resize_corner2.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
+                  } else if (callback.canselect && (spent <= 600)) {
+                     var pp = pthis.pad_painter();
+                     if (pp && typeof pp.SelectObjectPainter == 'function')
+                        pp.SelectObjectPainter(pthis);
                   }
+
+               }
             });
 
       drag_resize

@@ -14,6 +14,8 @@ sap.ui.define([
 		onInit : function() {
 		   console.log('On Canvas controller init');
 		   this._Page = this.getView().byId("CanvasMainPage");
+
+		   this.toggleGetEditor(true);
 		},
 
 		getCanvasPainter : function(also_without_websocket) {
@@ -91,6 +93,35 @@ sap.ui.define([
          console.log('Select painter', obj ? obj._typename : painter.GetTipName());
 		},
 
+		toggleGetEditor : function(new_state) {
+         var split = this.getView().byId("MainAreaSplitter"),
+             p = this.getCanvasPainter(true);
+
+         if (!p || !split) return;
+
+         if (new_state) {
+            var oLd = new SplitterLayoutData({
+               resizable : true,
+               size      : "250px",
+               maxSize   : "500px"
+            });
+
+            var oContent = new Button("GedButton", {
+               width: "100%",
+               height: "100%",
+               text: "GED placeholder",
+               layoutData: oLd
+            });
+
+            split.insertContentArea(oContent, 0);
+            p.SelectObjectPainter = this.SelectPainter.bind(this);
+
+         } else {
+            split.removeContentArea(split.getContentAreas()[0]);
+            delete p.SelectObjectPainter;
+         }
+		},
+
 		onViewMenuAction : function (oEvent) {
          var p = this.getCanvasPainter(true);
          if (!p) return;
@@ -102,31 +133,7 @@ sap.ui.define([
 
          switch (name) {
             case "Editor":
-
-               var split = this.getView().byId("MainAreaSplitter");
-
-               if (new_state) {
-                  var oLd = new SplitterLayoutData({
-                     resizable : true,
-                     size      : "250px",
-                     maxSize   : "500px"
-                  });
-
-                  var oContent = new Button("GedButton", {
-                     width: "100%",
-                     height: "100%",
-                     text: "GED placeholder",
-                     layoutData: oLd
-                  });
-
-                  split.insertContentArea(oContent, 0);
-                  p.SelectObjectPainter = this.SelectPainter.bind(this);
-
-               } else {
-                  split.removeContentArea(split.getContentAreas()[0]);
-                  delete p.SelectObjectPainter;
-               }
-
+               this.toggleGetEditor(new_state);
                break;
             case "Toolbar":
                this._Page.setShowSubHeader(new_state)

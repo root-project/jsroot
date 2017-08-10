@@ -1528,7 +1528,7 @@
                  .attr("width", width)
                  .attr("height", height);
 
-      this.AddDrag({ obj: pt, minwidth: 10, minheight: 20,
+      this.AddDrag({ obj: pt, minwidth: 10, minheight: 20, canselect: true,
                      redraw: this.DrawPave.bind(this),
                      ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
@@ -3507,13 +3507,20 @@
          this.Zoom(xmin, xmax, ymin, ymax);
       } else {
          switch (kind) {
-            case 1: {
+            case 1:
                var fp = this.frame_painter();
                if (fp) fp.ProcessFrameClick(pnt);
                break;
-            }
-            case 2: console.log('Click X axis'); break;
-            case 3: console.log('Click Y axis'); break;
+            case 2:
+               var pp = this.pad_painter();
+               if (typeof pp.SelectObjectPainter == 'function')
+                  pp.SelectObjectPainter(this.x_handle);
+               break;
+            case 3:
+               var pp = this.pad_painter();
+               if (typeof pp.SelectObjectPainter == 'function')
+                  pp.SelectObjectPainter(this.y_handle);
+               break;
          }
       }
 
