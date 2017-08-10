@@ -72,7 +72,7 @@
    function drawLine() {
 
       var line = this.GetObject(),
-          lineatt = JSROOT.Painter.createAttLine(line),
+          lineatt = new JSROOT.TAttLineHandler(line),
           kLineNDC = JSROOT.BIT(14),
           isndc = line.TestBit(kLineNDC);
 
@@ -93,7 +93,7 @@
    function drawPolyLine() {
 
       var polyline = this.GetObject(),
-          lineatt = JSROOT.Painter.createAttLine(polyline),
+          lineatt = new JSROOT.TAttLineHandler(polyline),
           fillatt = this.createAttFill(polyline),
           kPolyLineNDC = JSROOT.BIT(14),
           isndc = polyline.TestBit(kPolyLineNDC),
@@ -122,7 +122,7 @@
 
       var ellipse = this.GetObject();
 
-      if(!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(ellipse);
+      if(!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(ellipse);
       if (!this.fillatt) this.fillatt = this.createAttFill(ellipse);
 
       // create svg:g container for ellipse drawing
@@ -171,7 +171,7 @@
 
       var box = this.GetObject(),
           draw_line = (typeof this._drawopt == 'string') && (this._drawopt.toUpperCase().indexOf("L")>=0),
-          lineatt = JSROOT.Painter.createAttLine(box),
+          lineatt = new JSROOT.TAttLineHandler(box),
           fillatt = this.createAttFill(box);
 
       // create svg:g container for box drawing
@@ -220,7 +220,7 @@
 
    function drawArrow() {
       var arrow = this.GetObject();
-      if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(arrow);
+      if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
       if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
       var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
@@ -527,7 +527,7 @@
       var name = this.GetTipName("\n");
 
       if (!this.lineatt)
-         this.lineatt = JSROOT.Painter.createAttLine(tf1);
+         this.lineatt = new JSROOT.TAttLineHandler(tf1);
       this.lineatt.used = false;
       if (!this.fillatt)
          this.fillatt = this.createAttFill(tf1, undefined, undefined, 1);
@@ -836,7 +836,7 @@
           excl_width = 0;
 
       if (!this.lineatt)
-         this.lineatt = JSROOT.Painter.createAttLine(graph, undefined, true);
+         this.lineatt = new JSROOT.TAttLineHandler(graph, undefined, true);
       if (!this.fillatt)
          this.fillatt = this.createAttFill(graph, undefined, undefined, 1);
       this.fillatt.used = false;
@@ -1780,7 +1780,7 @@
                       x2 = this.AxisToSvg("x", obj.fBuf[indx++]),
                       y2 = this.AxisToSvg("y", obj.fBuf[indx++]);
 
-                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+                  if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
 
                   var rect = this.draw_g
                      .append("svg:rect")
@@ -1805,7 +1805,7 @@
                       x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
                       y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+                  if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
 
                   this.draw_g
                       .append("svg:line").attr("x1", x1).attr("y1", y1).attr("x2", x2).attr("y2", y2)
@@ -1819,7 +1819,7 @@
 
                   var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
 
-                  if (!lineatt) lineatt = JSROOT.Painter.createAttLine(attr);
+                  if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
 
                   for (var n=0;n<npoints;++n)
                      cmd += ((n>0) ? "L" : "M") +

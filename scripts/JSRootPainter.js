@@ -740,7 +740,8 @@
       return res;
    }
 
-   Painter.createAttLine = function(attline, borderw, can_excl) {
+
+   function TAttLineHandler(attline, borderw, can_excl) {
       var color = 'black', _width = 0, style = 0;
       if (typeof attline == 'string') {
          color = attline;
@@ -757,59 +758,56 @@
 
       if (borderw!==undefined) _width = borderw;
 
-      var line = {
-          used: true, // can mark object if it used or not,
-          color: color,
-          width: _width,
-          dash: Painter.root_line_styles[style]
-      };
-
-      if (_width==0) line.color = 'none';
-
+      this.used = true; // can mark object if it used or not,
+      this.color = (_width==0) ? 'none' : color;
+      this.width = _width;
+      this.dash = Painter.root_line_styles[style];
       if (can_excl) {
-         line.excl_side = 0;
-         line.excl_width = 0;
-         if (Math.abs(line.width) > 99) {
+         this.excl_side = 0;
+         this.excl_width = 0;
+         if (Math.abs(this.width) > 99) {
             // exclusion graph
-            line.excl_side = (line.width < 0) ? -1 : 1;
-            line.excl_width = Math.floor(line.width / 100) * 5;
-            line.width = line.width % 100; // line width
-         }
-
-         line.ChangeExcl = function(side,width) {
-            if (width !== undefined) this.excl_width = width;
-            if (side !== undefined) {
-               this.excl_side = side;
-               if ((this.excl_width===0) && (this.excl_side!==0)) this.excl_width = 20;
-            }
-            this.changed = true;
+            this.excl_side = (this.width < 0) ? -1 : 1;
+            this.excl_width = Math.floor(this.width / 100) * 5;
+            this.width = this.width % 100; // line width
          }
       }
 
       // if custom color number used, use lightgrey color to show lines
-      if ((line.color === undefined) && (line.width>0))
-         line.color = 'lightgrey';
+      if ((this.color === undefined) && (this.width > 0))
+         this.color = 'lightgrey';
 
-      line.Apply = function(selection) {
-         this.used = true;
-         if (this.color=='none') {
-            selection.style('stroke',null).style('stroke-width',null).style('stroke-dasharray',null);
-         } else {
-            selection.style('stroke',this.color).style('stroke-width',this.width);
-            if (this.dash && (this.dash.length>0)) selection.style('stroke-dasharray',this.dash);
-         }
+      this.func = this.Apply.bind(this);
+   }
+
+   TAttLineHandler.prototype.ChangeExcl = function(side,width) {
+      if (width !== undefined) this.excl_width = width;
+      if (side !== undefined) {
+         this.excl_side = side;
+         if ((this.excl_width===0) && (this.excl_side!==0)) this.excl_width = 20;
       }
+      this.changed = true;
+   }
 
-      line.Change = function(color, width, dash) {
-         if (color !== undefined) this.color = color;
-         if (width !== undefined) this.width = width;
-         if (dash !== undefined) this.dash = dash;
-         this.changed = true;
+   TAttLineHandler.prototype.Apply = function(selection) {
+      this.used = true;
+      if (this.color=='none') {
+         selection.style('stroke',null).style('stroke-width',null).style('stroke-dasharray',null);
+      } else {
+         selection.style('stroke',this.color).style('stroke-width',this.width);
+         if (this.dash && (this.dash.length>0)) selection.style('stroke-dasharray',this.dash);
       }
+   }
 
-      line.func = line.Apply.bind(line);
+   TAttLineHandler.prototype.Change = function(color, width, dash) {
+      if (color !== undefined) this.color = color;
+      if (width !== undefined) this.width = width;
+      if (dash !== undefined) this.dash = dash;
+      this.changed = true;
+   }
 
-      return line;
+   Painter.createAttLine = function(attline, borderw, can_excl) {
+      return new TAttLineHandler(attline, borderw, can_excl);
    }
 
    Painter.clearCuts = function(chopt) {
@@ -3461,7 +3459,7 @@
       }
 
       if (this.lineatt === undefined)
-         this.lineatt = JSROOT.Painter.createAttLine(tframe ? tframe : 'black');
+         this.lineatt = new TAttLineHandler(tframe ? tframe : 'black');
    }
 
    TFramePainter.prototype.SizeChanged = function() {
@@ -4362,7 +4360,7 @@
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.pad, 1001, 0);
       if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = JSROOT.Painter.createAttLine(this.pad);
+         this.lineatt = new TAttLineHandler(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
@@ -5988,6 +5986,7 @@
    JSROOT.LongPollSocket = LongPollSocket;
    JSROOT.Cef3QuerySocket = Cef3QuerySocket;
    JSROOT.DrawOptions = DrawOptions;
+   JSROOT.TAttLineHandler = TAttLineHandler;
    JSROOT.TBasePainter = TBasePainter;
    JSROOT.TObjectPainter = TObjectPainter;
    JSROOT.TFramePainter = TFramePainter;

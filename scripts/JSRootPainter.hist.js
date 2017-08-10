@@ -1086,11 +1086,11 @@
       if (this.invert_side) second_shift = -second_shift;
 
       if (is_gaxis) {
-         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis);
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
          scaling_size = (vertical ? pad_w : pad_h);
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
-         if (!this.lineatt) this.lineatt = JSROOT.Painter.createAttLine(axis.fAxisColor, 1);
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
          scaling_size = (vertical ? w : h);
          tickSize = Math.round(axis.fTickLength * scaling_size);
       }
@@ -1502,7 +1502,7 @@
             .style("stroke-width", "1px");
 
       if (this.lineatt === undefined)
-         this.lineatt = JSROOT.Painter.createAttLine(pt, lwidth>0 ? 1 : 0);
+         this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
       if (this.fillatt === undefined)
          this.fillatt = this.createAttFill(pt);
 
@@ -1967,7 +1967,7 @@
 
             // Draw line
             if (lopt.indexOf('l') != -1) {
-               var lineatt = (painter && painter.lineatt) ? painter.lineatt : JSROOT.Painter.createAttLine(o_line)
+               var lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
                this.draw_g.append("svg:line")
                   .attr("x1", x0 + padding_x)
                   .attr("y1", mid_y)
@@ -2465,7 +2465,7 @@
          this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
 
       if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = JSROOT.Painter.createAttLine(this.histo);
+         this.lineatt = new JSROOT.TAttLineHandler(this.histo);
          var main = this.main_painter();
 
          if (main) {
@@ -6367,8 +6367,8 @@
 
             switch(painter.options.Contour) {
                case 1: break;
-               case 11: fillcolor = 'none'; lineatt = JSROOT.Painter.createAttLine(icol); break;
-               case 12: fillcolor = 'none'; lineatt = JSROOT.Painter.createAttLine({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
+               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler(icol); break;
+               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
                case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
                case 14: break;
             }
