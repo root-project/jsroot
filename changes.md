@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.2.4
+1. Fix in marker attributes handling - can mix different attributes 
+
+
 ## Changes in 5.2.2
 1. Fix several problems, discovered with "use strict" directive
 
