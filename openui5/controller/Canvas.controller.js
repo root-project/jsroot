@@ -87,7 +87,7 @@ sap.ui.define([
          if (split) {
 	          var area0 = split.getContentAreas()[0];
 
-	          if (area0) area0.setText("select " + (obj ? obj._typename : painter.GetTipName()));
+	          // if (area0) area0.setText("select " + (obj ? obj._typename : painter.GetTipName()));
 	       }
 
          console.log('Select painter', obj ? obj._typename : painter.GetTipName());
@@ -106,12 +106,17 @@ sap.ui.define([
                maxSize   : "500px"
             });
 
-            var oContent = new Button("GedButton", {
-               width: "100%",
-               height: "100%",
-               text: "GED placeholder",
+            var oContent = sap.ui.xmlview({
+               viewName : "sap.ui.jsroot.view.Ged",
                layoutData: oLd
             });
+
+//            var oContent = new Button("GedButton", {
+//               width: "100%",
+//               height: "100%",
+//               text: "GED placeholder",
+//               layoutData: oLd
+//            });
 
             split.insertContentArea(oContent, 0);
             p.SelectObjectPainter = this.SelectPainter.bind(this);

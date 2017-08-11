@@ -1,7 +1,6 @@
 sap.ui.define([
    'sap/ui/core/mvc/Controller',
-   'sap/ui/core/ResizeHandler',
-
+   'sap/ui/core/ResizeHandler'
 ], function (Controller, ResizeHandler) {
    "use strict";
 
