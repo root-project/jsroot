@@ -5,7 +5,7 @@
   	xmlns="sap.m">
   	<Page
   		id="ged_page"
-  		header="GED"
+  		title="GED"
       showHeader="true" >
     	<footer>
     	   <Bar>

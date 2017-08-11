@@ -111,15 +111,18 @@ sap.ui.define([
                layoutData: oLd
             });
 
+            var ctrl = oContent.getController();
+            p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl);
+
 //            var oContent = new Button("GedButton", {
 //               width: "100%",
 //               height: "100%",
 //               text: "GED placeholder",
 //               layoutData: oLd
 //            });
+//          p.SelectObjectPainter = this.SelectPainter.bind(this);
 
             split.insertContentArea(oContent, 0);
-            p.SelectObjectPainter = this.SelectPainter.bind(this);
 
          } else {
             split.removeContentArea(split.getContentAreas()[0]);
