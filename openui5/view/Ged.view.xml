@@ -7,6 +7,7 @@
   		id="ged_page"
   		title="GED"
       showHeader="true" >
+<!-- 
     	<footer>
     	   <Bar>
     			<contentRight>
@@ -16,5 +17,6 @@
     			</contentRight>
     		</Bar>
     	</footer>
+ -->    	
    </Page>
 </mvc:View>

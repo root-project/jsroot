@@ -56,6 +56,8 @@
 
    element.setAttribute('data-sap-ui-theme', 'sap_belize');
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
+   // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
+
    element.setAttribute('data-sap-ui-preload', 'async');
    // for the moment specify path in the THttpServer, later can adjust for offline case
    element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "/jsrootsys/openui5/" }');

@@ -1,6 +1,7 @@
 sap.ui.define([
-   'sap/ui/core/mvc/Controller'
-], function (Controller) {
+   'sap/ui/core/mvc/Controller',
+   'sap/ui/model/json/JSONModel'
+], function (Controller, JSONModel) {
    "use strict";
 
    console.log('READ Ged.controller.js');
@@ -13,6 +14,8 @@ sap.ui.define([
 
       onInit : function() {
          console.log('init GED editor');
+         //var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
+         //this.getView().setModel(model);
       },
 
       onExit : function() {
@@ -40,11 +43,21 @@ sap.ui.define([
          var oPage = this.getView().byId("ged_page");
          oPage.removeAllContent();
 
+         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
+         this.getView().setModel(model);
+
          var fragm = this.getFragment("TAttLine");
+         fragm.setModel(model);
          oPage.addContent(fragm);
 
+         // console.log(this.getView().getModel());
+         // console.log('fragm', fragm.getModel());
+         // console.log('line model', this.getView().byId("TAttLine").getModel());
+
          fragm = this.getFragment("TAttFill");
+         fragm.setModel(model);
          oPage.addContent(fragm);
+         //this.getView().byId("TAttFill").setModel(model);
       }
    });
 

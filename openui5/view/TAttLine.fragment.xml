@@ -4,7 +4,7 @@
     	xmlns:f="sap.ui.layout.form"
     	xmlns:core="sap.ui.core">
     	<VBox class="sapUiSmallMargin">
-    		<f:SimpleForm id="GedFragment_TAttLine"
+    		<f:SimpleForm id="TAttLine"
     			editable="false"
     			layout="ResponsiveGridLayout"
     			title="TAttLine"
@@ -23,11 +23,11 @@
     			singleContainerFullSize="false" >
     			<f:content>
     				<Label text="Style" />
-    				<Text text="{fLineStyle}" />
+    				<Text text="{/fLineStyle}" />
     				<Label text="Width" />
-    				<Text text="{fLineWidth}" />
+    				<Text text="{/fLineWidth}" />
     				<Label text="Color" />
-    				<Text text="{fLineColor}" />
+    				<Text text="{/fLineColor}" />
     			</f:content>
     		</f:SimpleForm>
     	</VBox>

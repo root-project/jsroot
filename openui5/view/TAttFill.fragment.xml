@@ -23,9 +23,9 @@
     			singleContainerFullSize="false" >
     			<f:content>
     				<Label text="Style" />
-    				<Text text="{fLineStyle}" />
+    				<Text text="{/fFillStyle}" />
     				<Label text="Color" />
-    				<Text text="{fLineColor}" />
+    				<Text text="{/fFillColor}" />
     			</f:content>
     		</f:SimpleForm>
     	</VBox>
