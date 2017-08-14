@@ -1719,6 +1719,24 @@
       if (indx >= graphs.arr.length)
          return this.DrawNextFunction(0, this.DrawingReady.bind(this));
 
+      // if there is auto colors assignment, try to provide it
+      if (this._pfc || this._plc || this._pmc) {
+         if (!this.pallette && JSROOT.Painter.GetColorPalette)
+            this.palette = JSROOT.Painter.GetColorPalette();
+         if (this.palette) {
+            var color = this.palette.calcColor(indx, graphs.arr.length+1);
+            var icolor = JSROOT.Painter.root_colors.indexOf(color);
+            if (icolor<0) {
+               icolor = JSROOT.Painter.root_colors.length;
+               JSROOT.Painter.root_colors.push(color);
+            }
+            if (this._pfc) graphs.arr[indx].fFillColor = icolor;
+            if (this._plc) graphs.arr[indx].fLineColor = icolor;
+            if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
+         }
+      }
+
+
       JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt,
                   this.DrawNextGraph.bind(this, indx+1, opt));
    }
@@ -1731,7 +1749,10 @@
 
       var d = new JSROOT.DrawOptions(opt);
       d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
-      d.check("PFC"); d.check("PLC"); d.check("PMC"); // no PFC, PLC, PMC
+
+      painter._pfc = d.check("PFC");
+      painter._plc = d.check("PLC");
+      painter._pmc = d.check("PMC");
 
       if (d.check("A") || !painter.main_painter()) {
          painter.DrawAxis(function(hpainter) {

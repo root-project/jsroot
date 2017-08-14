@@ -57,6 +57,11 @@
       return this.palette[indx];
    }
 
+   /// returns number of colors in the palette
+   ColorPalette.prototype.getLength = function() {
+      return this.palette.length;
+   }
+
    // calculate color for given i and len
    ColorPalette.prototype.calcColor = function(i,len) {
       var indx = this.calcColorIndex(i,len);
@@ -125,7 +130,7 @@
    }
 
    JSROOT.Painter.GetColorPalette = function(col,alfa) {
-      if ((col===null) || (col===0)) col = JSROOT.gStyle.Palette;
+      col = col || JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
       if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
       if (col > 112) col = 57;
