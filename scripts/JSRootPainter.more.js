@@ -1729,19 +1729,19 @@
 
       painter.SetDivId(divid, -1); // it may be no element to set divid
 
-      if (opt == null) opt = "";
-      opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
+      var d = new JSROOT.DrawOptions(opt);
+      d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
+      d.check("PFC"); d.check("PLC"); d.check("PMC"); // no PFC, PLC, PMC
 
-      if ((opt.indexOf("A") >= 0) || !painter.main_painter()) {
-         opt = opt.replace("A","");
+      if (d.check("A") || !painter.main_painter()) {
          painter.DrawAxis(function(hpainter) {
             painter.firstpainter = hpainter;
             painter.SetDivId(divid);
-            painter.DrawNextGraph(0, opt);
+            painter.DrawNextGraph(0, d.remain());
          });
       } else {
          painter.SetDivId(divid);
-         painter.DrawNextGraph(0, opt);
+         painter.DrawNextGraph(0, d.remain());
       }
 
       return painter;

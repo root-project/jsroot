@@ -106,8 +106,14 @@
       this.part = "";
    }
 
+   /// returns true if remaining options are empty
    DrawOptions.prototype.empty = function() {
       return this.opt.length === 0;
+   }
+
+   /// returns remaining part of the draw options
+   DrawOptions.prototype.remain = function() {
+      return this.opt;
    }
 
    DrawOptions.prototype.check = function(name,postpart) {
