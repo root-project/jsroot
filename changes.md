@@ -1,7 +1,8 @@
 # JSROOT changelog
 
-## Changes in 5.2.4
+## Changes in 5.2.x
 1. Fix in marker attributes handling - can mix different attributes 
+2. Fix in unzomming of log scale - https://root-forum.cern.ch/t/25889
 
 
 ## Changes in 5.2.2
