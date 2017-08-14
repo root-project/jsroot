@@ -1,19 +1,23 @@
 sap.ui.define([
    'jquery.sap.global',
 	'sap/ui/core/mvc/Controller',
+   'sap/ui/model/json/JSONModel',
    'sap/m/MessageToast',
    'sap/ui/commons/Button', // should be replaced with sap/m/Button, used due to layout testing
    'sap/ui/layout/SplitterLayoutData',
    'sap/ui/unified/Menu',
    'sap/ui/unified/MenuItem'
 
-], function (jQuery, Controller, MessageToast, Button, SplitterLayoutData, Menu, MenuItem) {
+], function (jQuery, Controller, JSONModel, MessageToast, Button, SplitterLayoutData, Menu, MenuItem) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
 		onInit : function() {
 		   console.log('On Canvas controller init');
 		   this._Page = this.getView().byId("CanvasMainPage");
+
+         var model = new JSONModel({ GedIcon: "" });
+         this.getView().setModel(model);
 
 		   this.toggleGetEditor(true);
 		},
@@ -71,7 +75,6 @@ sap.ui.define([
          if (p) p.SendWebsocket("QUIT");
 		},
 
-
 		ShowCanvasStatus : function (text1,text2,text3,text4) {
 		   this.getView().byId("FooterLbl1").setText(text1);
 		   this.getView().byId("FooterLbl2").setText(text2);
@@ -94,6 +97,9 @@ sap.ui.define([
 		},
 
 		toggleGetEditor : function(new_state) {
+
+         this.getView().getModel().setProperty("/GedIcon", new_state ? "sap-icon://accept" : "");
+
          var split = this.getView().byId("MainAreaSplitter"),
              p = this.getCanvasPainter(true);
 

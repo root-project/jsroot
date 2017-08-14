@@ -34,7 +34,7 @@
                   <menu>
                      <Menu itemSelected="onViewMenuAction">
                        <items>
-                        <MenuItem text="Editor" />
+                        <MenuItem text="Editor" icon="{/GedIcon}"/>
                         <MenuItem text="Toolbar"/>
                         <MenuItem text="Event statusbar"/>
                         <MenuItem text="Tooltip info" icon="sap-icon://accept"/>
