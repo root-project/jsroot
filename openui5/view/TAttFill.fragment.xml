@@ -28,7 +28,7 @@
     				<Label text="Style" />
     				<Text text="{/fFillStyle}" />
     				<Label text="Color" />
-    				<Text text="{/fFillColor}" />
+    				<Button text="{/fFillColor}" press="processTAttFill_Color"/>
     			</f:content>
     		</f:SimpleForm>
     	</VBox>

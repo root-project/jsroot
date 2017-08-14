@@ -51,15 +51,17 @@ sap.ui.define([
          var oPage = this.getView().byId("ged_page");
          oPage.removeAllContent();
 
-         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
+         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue', fFillStyle: 4, fFillColor: 'red'});
          model.attachPropertyChange("TLineAtt", this.modelPropertyChange, this);
+
+         console.log('prop', model.getProperty('/fLineColor'));
+
          // model.attachPropertyChange({}, function() { console.log('change here');});
 
          this.getView().setModel(model);
 
          var fragm = this.getFragment("TAttLine");
          fragm.setModel(model);
-         console.log("Fragm", fragm);
          oPage.addContent(fragm);
 
          // console.log(this.getView().getModel());
@@ -75,27 +77,48 @@ sap.ui.define([
       // TODO: special controller for each fragment
       // this is TAttLine buttons handling
 
-      processTAttLine_Style : function() {
-      },
+      makeColorDialog : function(property) {
 
-      processTAttLine_Color : function() {
          var that = this;
 
-         if (!that.colorDialog)
-            that.colorDialog = new Dialog({
+         if (!this.colorPicker)
+            this.colorPicker = new ColorPicker("colorPicker");
+
+         if (!this.colorDialog)
+            this.colorDialog = new Dialog({
                title: 'Select color',
-               content: new ColorPicker(),
+               content: this.colorPicker,
                beginButton: new Button({
-                  text: 'Close',
+                  text: 'Apply',
                   press: function () {
+                     if (that.colorPicker) {
+                        var col = that.colorPicker.getColorString();
+                        console.log('Select', col);
+                        that.getView().getModel().setProperty(that.colorProperty, col);
+                     }
                      that.colorDialog.close();
                   }
                })
             });
 
-         that.colorDialog.open();
-      }
+         this.colorProperty = property;
 
+         var col = this.getView().getModel().getProperty(property);
+
+         that.colorPicker.setColorString(col);
+         return this.colorDialog;
+      },
+
+      processTAttLine_Style : function() {
+      },
+
+      processTAttLine_Color : function() {
+         this.makeColorDialog('/fLineColor').open();
+      },
+
+      processTAttFill_Color : function() {
+         this.makeColorDialog('/fFillColor').open();
+      }
 
 
    });
