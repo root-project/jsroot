@@ -1177,9 +1177,7 @@
              fcolor = JSROOT.Painter.root_colors[rootcolor];
 
          if (palette) {
-            var indx = Math.floor((nlevel+0.99)*palette.length/(levels.length-1));
-            if (indx > palette.length-1) indx = palette.length-1;
-            fcolor = palette[indx];
+            fcolor = palette.calcColor(nlevel, levels.length);
          } else {
             if ((this.options.Lego === 1) || (rootcolor < 2)) {
                rootcolor = 1;
@@ -1929,7 +1927,7 @@
                 geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
                 geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
-                var fcolor = palette[colindx];
+                var fcolor = palette.getColor(colindx);
                 var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide, opacity: 0.5  } );
                 var mesh = new THREE.Mesh(geometry, material);
                 mesh.painter = this;
@@ -2194,7 +2192,7 @@
          geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
          geometry.computeVertexNormals();
 
-         var fcolor = this.fPalette[colindx];
+         var fcolor = this.fPalette.getColor(colindx);
          var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
          var mesh = new THREE.Mesh(geometry, material);
 
@@ -2766,7 +2764,7 @@
          all_bins_buffgeom.addAttribute('position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
          all_bins_buffgeom.addAttribute('normal', new THREE.BufferAttribute( bin_norms[nseq], 3 ) );
 
-         if (use_colors) fillcolor = this.fPalette[ncol];
+         if (use_colors) fillcolor = this.fPalette.getColor(ncol);
 
          var material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity<1) })
                                     : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity });
@@ -3190,13 +3188,8 @@
 
          if (pnts) {
 
-            var fcolor = JSROOT.Painter.root_colors[graph.fMarkerColor];
-
-            if (palette) {
-               var indx = Math.floor((lvl+0.99)*palette.length/(levels.length-1));
-               if (indx >= palette.length) indx = palette.length-1;
-               fcolor = palette[indx];
-            }
+            var fcolor = palette ? palette.calcColor(lvl, levels.length) :
+                                   JSROOT.Painter.root_colors[graph.fMarkerColor];
 
             var mesh = pnts.CreatePoints(fcolor);
 
