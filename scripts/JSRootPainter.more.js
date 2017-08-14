@@ -2486,16 +2486,14 @@
          subp.WhenReady(this.DrawNextGraph.bind(this, indx+1, opt));
       }
 
-      if (opt == null) opt = "";
-      opt = opt.toUpperCase().replace("3D","").replace("FB",""); // no 3D supported, FB not clear
+      var d = new JSROOT.DrawOptions(opt);
+      d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
+      d.check("PFC"); d.check("PLC"); d.check("PMC"); // no PFC, PLC, PMC
 
-      if ((opt.indexOf("A") >= 0) || (this.main_painter()==null)) {
-         opt = opt.replace("A","");
-         this.DrawAxis();
-      }
+      if (d.check("A") || !this.main_painter()) this.DrawAxis();
       this.SetDivId(divid);
 
-      this.DrawNextGraph(0, opt);
+      this.DrawNextGraph(0, d.opt);
 
       return this;
    }
