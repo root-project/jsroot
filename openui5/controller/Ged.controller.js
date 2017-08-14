@@ -1,7 +1,10 @@
 sap.ui.define([
    'sap/ui/core/mvc/Controller',
-   'sap/ui/model/json/JSONModel'
-], function (Controller, JSONModel) {
+   'sap/ui/model/json/JSONModel',
+   'sap/m/Dialog',
+   'sap/m/Button',
+   'sap/ui/commons/ColorPicker'
+], function (Controller, JSONModel, Dialog, Button, ColorPicker) {
    "use strict";
 
    console.log('READ Ged.controller.js');
@@ -26,7 +29,7 @@ sap.ui.define([
       getFragment : function(kind) {
           var fragm = this.gedFragments[kind];
           if (!fragm)
-             fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind);
+             fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind, this);
           return fragm;
       },
 
@@ -56,6 +59,7 @@ sap.ui.define([
 
          var fragm = this.getFragment("TAttLine");
          fragm.setModel(model);
+         console.log("Fragm", fragm);
          oPage.addContent(fragm);
 
          // console.log(this.getView().getModel());
@@ -66,7 +70,34 @@ sap.ui.define([
          fragm.setModel(model);
          oPage.addContent(fragm);
          //this.getView().byId("TAttFill").setModel(model);
+      },
+
+      // TODO: special controller for each fragment
+      // this is TAttLine buttons handling
+
+      processTAttLine_Style : function() {
+      },
+
+      processTAttLine_Color : function() {
+         var that = this;
+
+         if (!that.colorDialog)
+            that.colorDialog = new Dialog({
+               title: 'Select color',
+               content: new ColorPicker(),
+               beginButton: new Button({
+                  text: 'Close',
+                  press: function () {
+                     that.colorDialog.close();
+                  }
+               })
+            });
+
+         that.colorDialog.open();
       }
+
+
+
    });
 
    return gedCtrl;

@@ -8,32 +8,38 @@
     			editable="true"
     			layout="ResponsiveGridLayout"
     			title="TAttLine"
-    			labelSpanXL="3"
-    			labelSpanL="3"
-    			labelSpanM="3"
-    			labelSpanS="12"
+    			labelSpanXL="1"
+    			labelSpanL="2"
+    			labelSpanM="4"
+    			labelSpanS="6"
     			adjustLabelSpan="false"
-    			emptySpanXL="4"
-    			emptySpanL="4"
-    			emptySpanM="4"
+    			emptySpanXL="0"
+    			emptySpanL="0"
+    			emptySpanM="0"
     			emptySpanS="0"
-    			columnsXL="2"
-    			columnsL="2"
-    			columnsM="2"
+    			columnsXL="1"
+    			columnsL="1"
+    			columnsM="1"
+    			breakpointXL="800"
+    			breakpointL="500"
+    			breakpointM="300"
     			singleContainerFullSize="false" >
     			<f:content>
     				<Label text="Style" />
-    				<Text text="{/fLineStyle}" />
+    				<Button text="{/fLineStyle}" press="processTAttLine_Style"/>
     				<Label text="Width"/>
     				<Select id="LinewWidth" selectedKey="{/fLineWidth}">
 					  <items>
 						 <core:Item text="1" key="1"/>
 						 <core:Item text="2" key="2"/>
 						 <core:Item text="3" key="3"/>
+						 <core:Item text="4" key="4"/>
+						 <core:Item text="5" key="5"/>
+						 <core:Item text="6" key="6"/>
 					  </items>
 				   </Select>
     				<Label text="Color" />
-    				<Text text="{/fLineColor}" />
+    				<Button text="{/fLineColor}" press="processTAttLine_Color"/>
     			</f:content>
     		</f:SimpleForm>
     	</VBox>
