@@ -2708,8 +2708,6 @@
          if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
             this.scale_xmin = this.scale_xmax * 0.0001;
 
-         this.xmin_log = this.scale_xmin;
-
          this.x = d3.scaleLog();
       } else {
          this.x = d3.scaleLinear();
@@ -2766,8 +2764,6 @@
 
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
-
-         this.ymin_log = this.scale_ymin;
 
          this.y = d3.scaleLog();
       } else
@@ -3264,7 +3260,6 @@
 
       if (zoom_x) {
          var cnt = 0, main_xmin = main.xmin;
-         if (main.logx && main.xmin_log) main_xmin = main.xmin_log;
          if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
          if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
@@ -3274,7 +3269,6 @@
 
       if (zoom_y) {
          var cnt = 0, main_ymin = main.ymin;
-         if (main.logy && main.ymin_log) main_ymin = main.ymin_log;
          if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
          if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
