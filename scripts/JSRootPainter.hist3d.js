@@ -1550,14 +1550,14 @@
 
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
-      var ilevels = null, levels = null, dolines = true, docolorfaces = false, dogrid = false,
-          donormals = false;
+      var ilevels = null, levels = null, dolines = true, dogrid = false,
+          donormals = false, palette = null;
 
       switch(this.options.Surf) {
-         case 11: ilevels = this.GetContour(); docolorfaces = true; break;
+         case 11: ilevels = this.GetContour(); palette = this.GetPalette(); break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = this.GetContour(); docolorfaces = true; dolines = false; break;
+         case 17: ilevels = this.GetContour(); palette = this.GetPalette(); dolines = false; break;
          case 14: dolines = false; donormals = true; break;
          case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
@@ -1821,8 +1821,8 @@
             if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
             var fcolor, material;
-            if (docolorfaces) {
-               fcolor = this.getIndexColor(lvl);
+            if (palette) {
+               fcolor = palette.calcColor(lvl, levels.length);
             } else {
                fcolor = histo.fFillColor > 1 ? JSROOT.Painter.root_colors[histo.fFillColor] : 'white';
                if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = JSROOT.Painter.root_colors[48];
@@ -2056,7 +2056,7 @@
          bin = histo.fBins.arr[i];
          if (bin.fContent < axis_zmin) continue;
 
-         colindx = this.getValueColor(bin.fContent, true);
+         colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
 
          // check if bin outside visible range
@@ -2630,7 +2630,7 @@
 
                if (!use_colors) continue;
 
-               var colindx = this.getValueColor(bin_content, true);
+               var colindx = this.getContourColor(bin_content, true);
                if (colindx != null) {
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
@@ -2699,7 +2699,7 @@
 
                var nseq = 0;
                if (use_colors) {
-                  var colindx = this.getValueColor(bin_content, true);
+                  var colindx = this.getContourColor(bin_content, true);
                   if (colindx === null) continue;
                   nseq = cols_sequence[colindx];
                }

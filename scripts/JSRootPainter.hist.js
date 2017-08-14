@@ -655,7 +655,7 @@
             for (var i=0;i<contour.length-1;++i) {
                var z0 = z(contour[i]),
                    z1 = z(contour[i+1]),
-                   col = main.getValueColor((contour[i]+contour[i+1])/2);
+                   col = main.getContourColor((contour[i]+contour[i+1])/2);
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
@@ -4359,8 +4359,8 @@
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
 
+   /// return index from contours array, which corresponds to the content value **zc**
    THistPainter.prototype.getContourIndex = function(zc) {
-      // return contour index, which corresponds to the z content value
 
       var cntr = this.GetContour();
 
@@ -4384,32 +4384,21 @@
       return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
 
-   THistPainter.prototype.getIndexColor = function(index, asindx) {
-      if (index < 0) return null;
+   // return color from the palette, which corresponds given indx from controur table
+   THistPainter.prototype.getIndexColor = function(zindx, asindx) {
+      if (zindx < 0) return null;
 
-      var cntr = this.GetContour();
-
-      var palette = this.GetPalette();
-
-      var indx = palette.calcColorIndex(index, cntr.length);
+      var cntr = this.GetContour(),
+          palette = this.GetPalette(),
+          indx = palette.calcColorIndex(zindx, cntr.length);
 
       return asindx ? indx : palette.getColor(indx);
    }
 
-   THistPainter.prototype.getValueColor = function(zc, asindx) {
-
+   // return color from the palette, which corresponds given controur value
+   THistPainter.prototype.getContourColor = function(zc, asindx) {
       var zindx = this.getContourIndex(zc);
-
-      if (zindx < 0) return null;
-
-      var palette = this.GetPalette();
-
-      var cntr = this.GetContour();
-
-      var pindx =  palette.calcColorIndex(zindx, cntr.length);
-
-
-      return asindx ? pindx : palette.getColor(pindx);
+      return this.getIndexColor(zindx, asindx);
    }
 
    THistPainter.prototype.GetPalette = function(force) {
@@ -6120,7 +6109,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = this.getValueColor(binz, true);
+            colindx = this.getContourColor(binz, true);
             if (binz===0) {
                if (this.options.Color===11) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -6479,7 +6468,7 @@
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = this.getValueColor(bin.fContent, true);
+         colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
          if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
 
@@ -7291,7 +7280,7 @@
          if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.getValueColor(binz, true);
+            colindx = this.getContourColor(binz, true);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
