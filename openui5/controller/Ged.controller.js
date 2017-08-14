@@ -30,6 +30,11 @@ sap.ui.define([
           return fragm;
       },
 
+      modelPropertyChange : function(evnt) {
+         var pars = evnt.getParameters();
+         console.log('Model property changes', pars.path, pars.value);
+      },
+
       onObjectSelect : function(painter, obj) {
 
          if (this.currentPainter === painter) return;
@@ -44,6 +49,9 @@ sap.ui.define([
          oPage.removeAllContent();
 
          var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
+         model.attachPropertyChange({}, this.modelPropertyChange, this);
+         // model.attachPropertyChange({}, function() { console.log('change here');});
+
          this.getView().setModel(model);
 
          var fragm = this.getFragment("TAttLine");
