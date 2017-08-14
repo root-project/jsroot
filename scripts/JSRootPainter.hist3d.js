@@ -1498,11 +1498,9 @@
       var main = this.main_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
-      this.getContourIndex(0);
-
       // get levels
       var histo = this.GetObject(),
-          levels = this.fContour,
+          levels = this.GetContour(), // init contour if not exists
           palette = this.GetPalette(),
           painter = this,
           layerz = 2*main.size_z3d;
@@ -1875,10 +1873,8 @@
 
          handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
-         this.getContourIndex(0);
-
          // get levels
-         var levels = this.fContour,
+         var levels = this.GetContour(), // init contour
              palette = this.GetPalette(),
              lastcolindx = -1, layerz = 2*main.size_z3d;
 

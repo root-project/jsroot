@@ -4384,8 +4384,10 @@
       return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
 
-   // return color from the palette, which corresponds given indx from controur table
-   THistPainter.prototype.getIndexColor = function(zindx, asindx) {
+   /// return color from the palette, which corresponds given controur value
+   /// optionally one can return color index of the palette
+   THistPainter.prototype.getContourColor = function(zc, asindx) {
+      var zindx = this.getContourIndex(zc);
       if (zindx < 0) return null;
 
       var cntr = this.GetContour(),
@@ -4393,12 +4395,6 @@
           indx = palette.calcColorIndex(zindx, cntr.length);
 
       return asindx ? indx : palette.getColor(indx);
-   }
-
-   // return color from the palette, which corresponds given controur value
-   THistPainter.prototype.getContourColor = function(zc, asindx) {
-      var zindx = this.getContourIndex(zc);
-      return this.getIndexColor(zindx, asindx);
    }
 
    THistPainter.prototype.GetPalette = function(force) {
@@ -6361,11 +6357,8 @@
    TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var handle = this.PrepareColorDraw({ rounding: false, extra: 100 });
 
-      // initialize contour
-      this.getContourIndex(0);
-
       // get levels
-      var levels = this.fContour,
+      var levels = this.GetContour(),
           palette = this.GetPalette(),
           painter = this;
 
