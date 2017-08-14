@@ -53,10 +53,7 @@ sap.ui.define([
 
          var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue', fFillStyle: 4, fFillColor: 'red'});
          model.attachPropertyChange("TLineAtt", this.modelPropertyChange, this);
-
-         console.log('prop', model.getProperty('/fLineColor'));
-
-         // model.attachPropertyChange({}, function() { console.log('change here');});
+         // console.log('prop', model.getProperty('/fLineColor'));
 
          this.getView().setModel(model);
 
@@ -96,6 +93,12 @@ sap.ui.define([
                         console.log('Select', col);
                         that.getView().getModel().setProperty(that.colorProperty, col);
                      }
+                     that.colorDialog.close();
+                  }
+               }),
+               endButton: new Button({
+                  text: 'Cancel',
+                  press: function () {
                      that.colorDialog.close();
                   }
                })
