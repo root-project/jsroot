@@ -26,9 +26,18 @@
     			singleContainerFullSize="false" >
     			<f:content>
     				<Label text="Style" />
-    				<Text text="{/fFillStyle}" />
+    				<Select selectedKey="{/pattern}">
+					  <items>
+						 <core:Item text="none" key="0"/>
+						 <core:Item text="solid" key="1001"/>
+						 <core:Item text="3001" key="3001"/>
+						 <core:Item text="3002" key="3002"/>
+						 <core:Item text="3003" key="3003"/>
+						 <core:Item text="3004" key="3004"/>
+					  </items>
+				   </Select>
     				<Label text="Color" />
-    				<Button text="{/fFillColor}" press="processTAttFill_Color"/>
+    				<Button text="{/color}" press="processTAttFill_Color"/>
     			</f:content>
     		</f:SimpleForm>
     	</VBox>

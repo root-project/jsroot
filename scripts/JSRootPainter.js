@@ -770,7 +770,7 @@
       this.used = true; // can mark object if it used or not,
       this.color = (_width==0) ? 'none' : color;
       this.width = _width;
-      this.dash = Painter.root_line_styles[style];
+      this.style = style;
       if (can_excl) {
          this.excl_side = 0;
          this.excl_width = 0;
@@ -803,15 +803,16 @@
       if (this.color=='none') {
          selection.style('stroke',null).style('stroke-width',null).style('stroke-dasharray',null);
       } else {
-         selection.style('stroke',this.color).style('stroke-width',this.width);
-         if (this.dash && (this.dash.length>0)) selection.style('stroke-dasharray',this.dash);
+         selection.style('stroke', this.color)
+                  .style('stroke-width', this.width)
+                  .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
       }
    }
 
-   TAttLineHandler.prototype.Change = function(color, width, dash) {
+   TAttLineHandler.prototype.Change = function(color, width, style) {
       if (color !== undefined) this.color = color;
       if (width !== undefined) this.width = width;
-      if (dash !== undefined) this.dash = dash;
+      if (style !== undefined) this.style = style;
       this.changed = true;
    }
 
@@ -853,6 +854,20 @@
    TAttFillHandler.prototype.empty = function() {
       // return true if color not specified or fill style not specified
       return (this.color == 'none');
+   }
+
+   // method used when color or pattern were changed with OpenUi5 widgets
+   TAttFillHandler.prototype.verifyDirectChange = function(painter) {
+      if ((this.color !== 'none') && (this.pattern < 1001)) this.color = 'none';
+      var indx = this.colorindx;
+      if (this.color !== 'none') {
+         indx = JSROOT.Painter.root_colors.indexOf(this.color);
+         if (indx<0) {
+            indx = JSROOT.Painter.root_colors.length;
+            JSROOT.Painter.root_colors.push(this.color);
+         }
+      }
+      this.Change(indx, this.pattern, painter ? painter.svg_canvas() : null);
    }
 
    TAttFillHandler.prototype.Change = function(color, pattern, svg) {
@@ -2017,7 +2032,6 @@
       return elem;
    }
 
-
    /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
    TObjectPainter.prototype.main_painter = function(not_store, pad_name) {
       var res = this.main;
@@ -2110,6 +2124,14 @@
 
    TObjectPainter.prototype.createAttFill = function(attfill, pattern, color, kind) {
       return new TAttFillHandler(attfill, pattern, color, kind, this.svg_canvas());
+   }
+
+   TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
+      // function called when user interactively changes attribute in given class
+
+      console.log("Changed attribute", member_name);
+
+      this.Redraw();
    }
 
    TObjectPainter.prototype.ForEachPainter = function(userfunc) {
@@ -2793,16 +2815,17 @@
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
             id = parseInt(id);
-            if (isNaN(id) || (JSROOT.Painter.root_line_styles[id] === undefined)) return;
-            this.lineatt.Change(undefined, undefined, JSROOT.Painter.root_line_styles[id]);
+            if (isNaN(id) || !JSROOT.Painter.root_line_styles[id]) return;
+            this.lineatt.Change(undefined, undefined, id);
             this.Redraw();
          }.bind(this));
          for (var n=1;n<11;++n) {
-            var style = JSROOT.Painter.root_line_styles[n];
 
-            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + style + "'></line></svg>";
+            var dash = JSROOT.Painter.root_line_styles[n];
 
-            menu.addchk((this.lineatt.dash==style), svg, style, function(arg) { this.lineatt.Change(undefined, undefined, arg); this.Redraw(); }.bind(this));
+            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
+
+            menu.addchk((this.lineatt.style==n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.Redraw(); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");

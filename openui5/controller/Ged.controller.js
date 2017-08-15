@@ -36,10 +36,19 @@ sap.ui.define([
           return fragm;
       },
 
+      /// function called when user changes model property
+      /// data object includes _kind, _painter and _handle (optionally)
       modelPropertyChange : function(evnt, data) {
          var pars = evnt.getParameters();
-         console.log('Model property changes', pars.path, pars.value, data);
+         console.log('Model property changes', pars.path, pars.value, data._kind);
+
+         if (data._handle && (typeof data._handle.verifyDirectChange === 'function'))
+            data._handle.verifyDirectChange(data._painter);
+
+         if (data._painter && data._painter.AttributeChange)
+            data._painter.AttributeChange(data._kind, pars.path, pars.value);
       },
+
 
       onObjectSelect : function(painter, obj) {
 
@@ -49,7 +58,7 @@ sap.ui.define([
 
          var obj = painter.GetObject();
 
-         console.log('Select painter', obj ? obj._typename : painter.GetTipName());
+         // console.log('Select painter', obj ? obj._typename : painter.GetTipName());
 
          this.getView().getModel().setProperty("/SelectedClass", obj ? obj._typename : painter.GetTipName());
 
@@ -64,26 +73,29 @@ sap.ui.define([
 
          // this.getView().setModel(model);
 
-         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue' });
-         var fragm = this.getFragment("TAttLine", true);
-         model.attachPropertyChange("TAttLine", this.modelPropertyChange, this);
-         fragm.setModel(model);
-         oPage.addContent(fragm);
+         if (painter.lineatt && painter.lineatt.used) {
+            var model = new JSONModel( painter.lineatt );
+            var fragm = this.getFragment("TAttLine", true);
+            model.attachPropertyChange({ _kind: "TAttLine", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
+            fragm.setModel(model);
+            oPage.addContent(fragm);
+         }
 
          // console.log(this.getView().getModel());
          // console.log('fragm', fragm.getModel());
          // console.log('line model', this.getView().byId("TAttLine").getModel());
 
-         model = new JSONModel({ fFillStyle: 4, fFillColor: 'red' });
-         fragm = this.getFragment("TAttFill", true);
-         model.attachPropertyChange("TAttFill", this.modelPropertyChange, this);
-         fragm.setModel(model);
-         oPage.addContent(fragm);
+         if (painter.fillatt && painter.fillatt.used) {
+            var model = new JSONModel( painter.fillatt );
+            var fragm = this.getFragment("TAttFill", true);
+            model.attachPropertyChange({ _kind: "TAttFill", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
+            fragm.setModel(model);
+            oPage.addContent(fragm);
+         }
          //this.getView().byId("TAttFill").setModel(model);
       },
 
-      // TODO: special controller for each fragment
-      // this is TAttLine buttons handling
+      // TODO: special controller for each fragment?
 
       makeColorDialog : function(fragment, property) {
 
@@ -104,6 +116,7 @@ sap.ui.define([
                      if (that.colorPicker) {
                         var fragm = that.getFragment(that.colorFragment);
                         var col = that.colorPicker.getColorString();
+
                         fragm.getModel().setProperty(that.colorProperty, col);
                         fragm.getModel().firePropertyChange({ path: that.colorProperty, value: col });
                      }
@@ -125,18 +138,17 @@ sap.ui.define([
          var col = fragm.getModel().getProperty(property);
 
          that.colorPicker.setColorString(col);
-         return this.colorDialog;
+         this.colorDialog.open();
       },
 
-      processTAttLine_Style : function() {
-      },
-
+      // TODO: make it generic
       processTAttLine_Color : function() {
-         this.makeColorDialog('TAttLine', '/fLineColor').open();
+         this.makeColorDialog('TAttLine', '/color');
       },
 
+      // TODO: make it generic
       processTAttFill_Color : function() {
-         this.makeColorDialog('TAttFill', '/fFillColor').open();
+         this.makeColorDialog('TAttFill', '/color');
       }
 
 
