@@ -66,6 +66,7 @@ sap.ui.define([
 
          var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue' });
          var fragm = this.getFragment("TAttLine", true);
+         model.attachPropertyChange("TAttLine", this.modelPropertyChange, this);
          fragm.setModel(model);
          oPage.addContent(fragm);
 
@@ -75,6 +76,7 @@ sap.ui.define([
 
          model = new JSONModel({ fFillStyle: 4, fFillColor: 'red' });
          fragm = this.getFragment("TAttFill", true);
+         model.attachPropertyChange("TAttFill", this.modelPropertyChange, this);
          fragm.setModel(model);
          oPage.addContent(fragm);
          //this.getView().byId("TAttFill").setModel(model);
@@ -102,8 +104,8 @@ sap.ui.define([
                      if (that.colorPicker) {
                         var fragm = that.getFragment(that.colorFragment);
                         var col = that.colorPicker.getColorString();
-                        console.log('Select', col, 'prop', that.colorProperty, 'fragment', that.colorFragment);
                         fragm.getModel().setProperty(that.colorProperty, col);
+                        fragm.getModel().firePropertyChange({ path: that.colorProperty, value: col });
                      }
                      that.colorDialog.close();
                   }
