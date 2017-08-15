@@ -477,7 +477,7 @@
    Painter.createMenu = function(painter, maincallback) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
-      JSROOT.AssertPrerequisites('hierarchy;jq2d;openui5;', function() {
+      JSROOT.AssertPrerequisites('hierarchy;jq;', function() {
          document.body.style.cursor = 'auto';
          Painter.createMenu(painter, maincallback);
       });

@@ -67,7 +67,9 @@
    document.getElementsByTagName("head")[0].appendChild(element);
 
 
-   JSROOT.Painter.createMenu = function(painter, maincallback) {
+   // function allows to create menu with openui
+   // for the moment deactivated - can be used later
+   JSROOT.Painter.createMenuNew = function(painter, maincallback) {
 
       var menu = { painter: painter,  element: null, cnt: 1, stack: [], items: [], separ: false };
 
