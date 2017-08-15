@@ -5,7 +5,7 @@
   	xmlns="sap.m">
   	<Page
   		id="ged_page"
-  		title="GED"
+  		title="class: {/SelectedClass}"
       showHeader="true" >
 <!-- 
     	<footer>

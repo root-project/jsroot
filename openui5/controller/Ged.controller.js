@@ -17,8 +17,11 @@ sap.ui.define([
 
       onInit : function() {
          console.log('init GED editor');
+
+         var model = new JSONModel({ SelectedClass: "any" });
+
          //var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
-         //this.getView().setModel(model);
+         this.getView().setModel(model);
       },
 
       onExit : function() {
@@ -26,9 +29,9 @@ sap.ui.define([
          this.currentPainter = null; // remove cross ref
       },
 
-      getFragment : function(kind) {
+      getFragment : function(kind, force) {
           var fragm = this.gedFragments[kind];
-          if (!fragm)
+          if (!fragm && force)
              fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind, this);
           return fragm;
       },
@@ -48,16 +51,21 @@ sap.ui.define([
 
          console.log('Select painter', obj ? obj._typename : painter.GetTipName());
 
+         this.getView().getModel().setProperty("/SelectedClass", obj ? obj._typename : painter.GetTipName());
+
          var oPage = this.getView().byId("ged_page");
          oPage.removeAllContent();
 
-         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue', fFillStyle: 4, fFillColor: 'red'});
-         model.attachPropertyChange("TLineAtt", this.modelPropertyChange, this);
+         // this.getView().getModel().setProperty("TLineAtt", { fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue' });
+         // this.getView().getModel().setProperty("TFillAtt", { fFillStyle: 4, fFillColor: 'red' });
+
+         // model.attachPropertyChange("TLineAtt", this.modelPropertyChange, this);
          // console.log('prop', model.getProperty('/fLineColor'));
 
-         this.getView().setModel(model);
+         // this.getView().setModel(model);
 
-         var fragm = this.getFragment("TAttLine");
+         var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue' });
+         var fragm = this.getFragment("TAttLine", true);
          fragm.setModel(model);
          oPage.addContent(fragm);
 
@@ -65,7 +73,8 @@ sap.ui.define([
          // console.log('fragm', fragm.getModel());
          // console.log('line model', this.getView().byId("TAttLine").getModel());
 
-         fragm = this.getFragment("TAttFill");
+         model = new JSONModel({ fFillStyle: 4, fFillColor: 'red' });
+         fragm = this.getFragment("TAttFill", true);
          fragm.setModel(model);
          oPage.addContent(fragm);
          //this.getView().byId("TAttFill").setModel(model);
@@ -74,14 +83,16 @@ sap.ui.define([
       // TODO: special controller for each fragment
       // this is TAttLine buttons handling
 
-      makeColorDialog : function(property) {
+      makeColorDialog : function(fragment, property) {
 
-         var that = this;
+         var that = this, fragm = this.getFragment(fragment);
+
+         if (!fragm) return null;
 
          if (!this.colorPicker)
             this.colorPicker = new ColorPicker("colorPicker");
 
-         if (!this.colorDialog)
+         if (!this.colorDialog) {
             this.colorDialog = new Dialog({
                title: 'Select color',
                content: this.colorPicker,
@@ -89,9 +100,10 @@ sap.ui.define([
                   text: 'Apply',
                   press: function () {
                      if (that.colorPicker) {
+                        var fragm = that.getFragment(that.colorFragment);
                         var col = that.colorPicker.getColorString();
-                        console.log('Select', col);
-                        that.getView().getModel().setProperty(that.colorProperty, col);
+                        console.log('Select', col, 'prop', that.colorProperty, 'fragment', that.colorFragment);
+                        fragm.getModel().setProperty(that.colorProperty, col);
                      }
                      that.colorDialog.close();
                   }
@@ -103,10 +115,12 @@ sap.ui.define([
                   }
                })
             });
+         }
 
+         this.colorFragment = fragment;
          this.colorProperty = property;
 
-         var col = this.getView().getModel().getProperty(property);
+         var col = fragm.getModel().getProperty(property);
 
          that.colorPicker.setColorString(col);
          return this.colorDialog;
@@ -116,11 +130,11 @@ sap.ui.define([
       },
 
       processTAttLine_Color : function() {
-         this.makeColorDialog('/fLineColor').open();
+         this.makeColorDialog('TAttLine', '/fLineColor').open();
       },
 
       processTAttFill_Color : function() {
-         this.makeColorDialog('/fFillColor').open();
+         this.makeColorDialog('TAttFill', '/fFillColor').open();
       }
 
 
