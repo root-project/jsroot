@@ -763,6 +763,7 @@
       } else
       if ((attline !== undefined) && !isNaN(attline)) {
          color = Painter.root_colors[attline];
+         if (color) { _width = 1; style = 1; }
       }
 
       if (borderw!==undefined) _width = borderw;
@@ -2130,8 +2131,6 @@
       // function called when user interactively changes attribute in given class
 
       console.log("Changed attribute", member_name);
-
-      this.Redraw();
    }
 
    TObjectPainter.prototype.ForEachPainter = function(userfunc) {

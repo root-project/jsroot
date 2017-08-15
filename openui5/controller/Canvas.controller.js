@@ -118,7 +118,7 @@ sap.ui.define([
             });
 
             var ctrl = oContent.getController();
-            p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl);
+            p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl, p);
 
 //            var oContent = new Button("GedButton", {
 //               width: "100%",

@@ -28,6 +28,7 @@
     				<Label text="Style" />
     				<Select selectedKey="{/style}">
 					  <items>
+						 <core:Item text="none" key="0"/>
 						 <core:Item text="1" key="1"/>
 						 <core:Item text="2" key="2"/>
 						 <core:Item text="3" key="3"/>

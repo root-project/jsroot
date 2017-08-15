@@ -7,20 +7,14 @@ sap.ui.define([
 ], function (Controller, JSONModel, Dialog, Button, ColorPicker) {
    "use strict";
 
-   console.log('READ Ged.controller.js');
-
-   var gedCtrl = Controller.extend("sap.ui.jsroot.controller.Ged", {
+   return Controller.extend("sap.ui.jsroot.controller.Ged", {
 
       currentPainter: null,
 
       gedFragments : [],
 
       onInit : function() {
-         console.log('init GED editor');
-
          var model = new JSONModel({ SelectedClass: "any" });
-
-         //var model = new JSONModel({ fLineWidth: 1, fLineStyle: 2, fLineColor: 3, fFillStyle: 4, fFillColor: 5});
          this.getView().setModel(model);
       },
 
@@ -47,13 +41,17 @@ sap.ui.define([
 
          if (data._painter && data._painter.AttributeChange)
             data._painter.AttributeChange(data._kind, pars.path, pars.value);
+
+         if (this.currentPadPainter)
+            this.currentPadPainter.Redraw();
       },
 
 
-      onObjectSelect : function(painter, obj) {
+      onObjectSelect : function(padpainter, painter, place) {
 
          if (this.currentPainter === painter) return;
 
+         this.currentPadPainter = padpainter;
          this.currentPainter = painter;
 
          var obj = painter.GetObject();
@@ -65,15 +63,8 @@ sap.ui.define([
          var oPage = this.getView().byId("ged_page");
          oPage.removeAllContent();
 
-         // this.getView().getModel().setProperty("TLineAtt", { fLineWidth: 1, fLineStyle: 2, fLineColor: 'blue' });
-         // this.getView().getModel().setProperty("TFillAtt", { fFillStyle: 4, fFillColor: 'red' });
-
-         // model.attachPropertyChange("TLineAtt", this.modelPropertyChange, this);
-         // console.log('prop', model.getProperty('/fLineColor'));
-
-         // this.getView().setModel(model);
-
          if (painter.lineatt && painter.lineatt.used) {
+            console.log('adding line att', painter.lineatt.style);
             var model = new JSONModel( painter.lineatt );
             var fragm = this.getFragment("TAttLine", true);
             model.attachPropertyChange({ _kind: "TAttLine", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
@@ -81,18 +72,14 @@ sap.ui.define([
             oPage.addContent(fragm);
          }
 
-         // console.log(this.getView().getModel());
-         // console.log('fragm', fragm.getModel());
-         // console.log('line model', this.getView().byId("TAttLine").getModel());
-
          if (painter.fillatt && painter.fillatt.used) {
             var model = new JSONModel( painter.fillatt );
             var fragm = this.getFragment("TAttFill", true);
-            model.attachPropertyChange({ _kind: "TAttFill", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
+            model.attachPropertyChange({ _kind: "TAttFill", _painter: painter, _handle: painter.fillatt }, this.modelPropertyChange, this);
             fragm.setModel(model);
             oPage.addContent(fragm);
          }
-         //this.getView().byId("TAttFill").setModel(model);
+
       },
 
       // TODO: special controller for each fragment?
@@ -151,9 +138,6 @@ sap.ui.define([
          this.makeColorDialog('TAttFill', '/color');
       }
 
-
    });
-
-   return gedCtrl;
 
 });
