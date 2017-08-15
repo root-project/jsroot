@@ -2130,7 +2130,7 @@
    TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
       // function called when user interactively changes attribute in given class
 
-      console.log("Changed attribute", member_name);
+      // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
    TObjectPainter.prototype.ForEachPainter = function(userfunc) {
@@ -3470,6 +3470,12 @@
 
    TFramePainter.prototype = Object.create(TObjectPainter.prototype);
 
+   TFramePainter.prototype.GetTipName = function(append) {
+      var res = TObjectPainter.prototype.GetTipName.call(this) || "TFrame";
+      if (append) res+=append;
+      return res;
+   }
+
    TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
       this.fX2NDC -= shrink_right;
@@ -3578,17 +3584,12 @@
          this.draw_g.append('svg:g').attr('class','upper_layer');
       }
 
-      this.draw_g
-     //        .attr("x", lm)
-     //        .attr("y", tm)
-     //        .attr("width", w)
-     //        .attr("height", h)
-             .property('frame_painter', this) // simple way to access painter via frame container
-             .property('draw_x', lm)
-             .property('draw_y', tm)
-             .property('draw_width', w)
-             .property('draw_height', h)
-             .attr("transform", "translate(" + lm + "," + tm + ")");
+      this.draw_g.property('frame_painter', this) // simple way to access painter via frame container
+                 .property('draw_x', lm)
+                 .property('draw_y', tm)
+                 .property('draw_width', w)
+                 .property('draw_height', h)
+                 .attr("transform", "translate(" + lm + "," + tm + ")");
 
       top_rect.attr("x", 0)
               .attr("y", 0)
@@ -4191,7 +4192,6 @@
    }
 
    TPadPainter.prototype.CreateCanvasMenu = function() {
-
       if (this.enlarge_main('state')==='on') return;
 
       this.layout_main("canvas");
@@ -4207,6 +4207,12 @@
          if (items[k]=='Help') elem.style('float','right');
          elem.on('click', this.ShowCanvasMenu.bind(this, items[k]));
       }
+   }
+
+   TPadPainter.prototype.MouseClick = function() {
+      // that to do when mouse clicked on the canvas/pad
+      if (typeof this.SelectObjectPainter == 'function')
+         this.SelectObjectPainter(this);
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -4248,7 +4254,8 @@
          if (!JSROOT.BatchMode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", this.EnlargePad.bind(this))
-                 .on("mouseenter", this.ShowObjectStatus.bind(this))
+                 .on("click", this.MouseClick.bind(this))
+                 .on("mouseenter", this.ShowObjectStatus.bind(this));
 
          svg.append("svg:g").attr("class","root_frame");
          svg.append("svg:g").attr("class","subpads_layer");
@@ -4401,6 +4408,7 @@
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", this.EnlargePad.bind(this))
+                    .on("click", this.MouseClick.bind(this))
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
       }
 
@@ -4766,8 +4774,6 @@
               padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
          }
 
-         // console.log("Create new subpad", padpainter.this_pad_name);
-
          // we select current pad, where all drawing is performed
          var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
          padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
@@ -4785,8 +4791,6 @@
          // TODO: frame should be created in histogram painters
          if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty())
             JSROOT.Painter.drawFrame(this.divid, null);
-
-         // console.log("drawing object", obj._typename);
 
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
@@ -4856,7 +4860,6 @@
          this.DrawNextSnap(snap.fPrimitives, 0, call_back);
 
          return;
-
       }
 
       this.UpdateObject(first); // update only object attributes
@@ -4886,7 +4889,6 @@
       }
 
       if (!isanyfound) {
-         console.log("Clean everything", this.this_pad_name);
          var svg_p = this.svg_pad(this.this_pad_name);
          if (svg_p && !svg_p.empty())
             svg_p.property('mainpainter', null);
@@ -4896,7 +4898,7 @@
       }
 
       var padpainter = this,
-           prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+          prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
       padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
           padpainter.CurrentPadName(prev_name);
