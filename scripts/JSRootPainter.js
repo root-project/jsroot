@@ -4486,24 +4486,16 @@
    }
 
    TPadPainter.prototype.CheckColors = function(can) {
-
       var lst = can ? can.fPrimitives : null;
       if (!lst) return;
-
       for (var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
          if (!obj || (obj._typename!=="TObjArray")) continue;
-         if (obj.name == "ListOfColors") {
-            JSROOT.Painter.adoptRootColors(obj);
-            lst.arr.splice(i,1);
-            lst.opt.splice(i,1);
-            i--;
-         } else if (obj.name == "CurrentColorPalette") {
-            JSROOT.Painter.adoptColorPalette(obj);
-            lst.arr.splice(i,1);
-            lst.opt.splice(i,1);
-            i--;
-         }
+         if (obj.name == "ListOfColors") JSROOT.Painter.adoptRootColors(obj); else
+         if (obj.name == "CurrentColorPalette") JSROOT.Painter.adoptColorPalette(obj); else continue;
+         lst.arr.splice(i,1);
+         lst.opt.splice(i,1);
+         i--;
       }
    }
 
