@@ -1282,7 +1282,7 @@
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (!islines) {
-         res.color1 = JSROOT.Painter.root_colors[this.GetObject().fMarkerColor];
+         res.color1 = this.get_color(this.GetObject().fMarkerColor);
          if (!res.color2) res.color2 = res.color1;
       }
 

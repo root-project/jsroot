@@ -5054,7 +5054,7 @@
       }
 
       if (show_text) {
-         text_col = JSROOT.Painter.root_colors[this.histo.fMarkerColor];
+         text_col = this.get_color(this.histo.fMarkerColor);
          text_angle = (this.options.Text>1000) ? this.options.Text % 1000 : 0;
          text_size = 20;
 
@@ -6476,7 +6476,7 @@
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
-      var text_col = JSROOT.Painter.root_colors[histo.fMarkerColor],
+      var text_col = this.get_color(histo.fMarkerColor),
           text_angle = (this.options.Text > 1000) ? this.options.Text % 1000 : 0,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0;
