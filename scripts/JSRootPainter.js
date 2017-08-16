@@ -2659,7 +2659,6 @@
 
       if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
 
-      // this._websocket = conn;
       this._websocket_kind = socket_kind;
       this._websocket_state = 0;
 
@@ -2667,78 +2666,78 @@
 
       function retry_open(first_time) {
 
-      if (pthis._websocket_state != 0) return;
-      console.log("try open wensocket again " + pthis._websocket_state);
-      if (pthis._websocket) pthis._websocket.close();
-      delete pthis._websocket;
+         if (pthis._websocket_state != 0) return;
 
-      var path = window.location.href, conn = null;
+         if (!first_time) console.log("try open websocket again");
 
-      if (pthis._websocket_kind == 'cefquery') {
-         var pos = path.indexOf("draw.htm");
-         if (pos < 0) return;
-         path = path.substr(0,pos);
-
-         if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
-         console.log('configure cefquery ' + path);
-         conn = new Cef3QuerySocket(path);
-      } else
-      if ((pthis._websocket_kind !== 'longpoll') && first_time) {
-         path = path.replace("http://", "ws://");
-         path = path.replace("https://", "wss://");
-         var pos = path.indexOf("draw.htm");
-         if (pos < 0) return;
-         path = path.substr(0,pos) + "root.websocket";
-         console.log('configure websocket ' + path);
-         conn = new WebSocket(path);
-      } else {
-         var pos = path.indexOf("draw.htm");
-         if (pos < 0) return;
-         path = path.substr(0,pos) + "root.longpoll";
-         console.log('configure longpoll ' + path);
-         conn = new LongPollSocket(path);
-      }
-
-      if (!conn) return;
-
-      pthis._websocket = conn;
-
-      conn.onopen = function() {
-         console.log('websocket initialized');
-         pthis._websocket_state = 1;
-         if (typeof pthis.OnWebsocketOpened == 'function')
-            pthis.OnWebsocketOpened(conn);
-      }
-
-      conn.onmessage = function (e) {
-         var msg = e.data;
-         if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
-
-         if (typeof pthis.OnWebsocketMsg == 'function')
-            pthis.OnWebsocketMsg(conn, msg);
-      }
-
-      conn.onclose = function() {
+         if (pthis._websocket) pthis._websocket.close();
          delete pthis._websocket;
-         if (pthis._websocket_state > 0) {
-            console.log('websocket closed');
-            pthis._websocket_state = 0;
-            if (typeof pthis.OnWebsocketClosed == 'function')
-               pthis.OnWebsocketClosed();
+
+         var path = window.location.href, conn = null;
+
+         if (pthis._websocket_kind == 'cefquery') {
+            var pos = path.indexOf("draw.htm");
+            if (pos < 0) return;
+            path = path.substr(0,pos);
+
+            if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
+            console.log('configure cefquery ' + path);
+            conn = new Cef3QuerySocket(path);
+         } else if ((pthis._websocket_kind !== 'longpoll') && first_time) {
+            path = path.replace("http://", "ws://");
+            path = path.replace("https://", "wss://");
+            var pos = path.indexOf("draw.htm");
+            if (pos < 0) return;
+            path = path.substr(0,pos) + "root.websocket";
+            console.log('configure websocket ' + path);
+            conn = new WebSocket(path);
+         } else {
+            var pos = path.indexOf("draw.htm");
+            if (pos < 0) return;
+            path = path.substr(0,pos) + "root.longpoll";
+            console.log('configure longpoll ' + path);
+            conn = new LongPollSocket(path);
          }
-      }
 
-      conn.onerror = function (err) {
-         console.log("err "+err);
-         // conn.close();
-      }
+         if (!conn) return;
 
-      setTimeout(retry_open, 3000); // after 3 seconds try again
+         pthis._websocket = conn;
+
+         conn.onopen = function() {
+            console.log('websocket initialized');
+            pthis._websocket_state = 1;
+            if (typeof pthis.OnWebsocketOpened == 'function')
+               pthis.OnWebsocketOpened(conn);
+         }
+
+         conn.onmessage = function (e) {
+            var msg = e.data;
+            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
+
+            if (typeof pthis.OnWebsocketMsg == 'function')
+               pthis.OnWebsocketMsg(conn, msg);
+         }
+
+         conn.onclose = function() {
+            delete pthis._websocket;
+            if (pthis._websocket_state > 0) {
+               console.log('websocket closed');
+               pthis._websocket_state = 0;
+               if (typeof pthis.OnWebsocketClosed == 'function')
+                  pthis.OnWebsocketClosed();
+            }
+         }
+
+         conn.onerror = function (err) {
+            console.log("err "+err);
+            // conn.close();
+         }
+
+         setTimeout(retry_open, 3000); // after 3 seconds try again
 
       } // retry_open
 
-      retry_open(true); // after short timeout
-      // retry_open(); // call for the first time
+      retry_open(true); // call for the first time
    }
 
 
