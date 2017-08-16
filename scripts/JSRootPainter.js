@@ -1646,6 +1646,7 @@
       delete this.markeratt;
       delete this.bins;
       delete this._drawopt;
+      delete this.root_colors;
 
       TBasePainter.prototype.Cleanup.call(this);
    }
@@ -1692,12 +1693,14 @@
    }
 
    TObjectPainter.prototype.get_color = function(indx) {
-      if (!this.root_colors) {
-         var pp = this.pad_painter(); // take colors list from canvas (if available)
-         this.root_colors = pp && pp.root_colors ? pp.root_colors : JSROOT.Painter.root_colors;
+      var jsarr = this.root_colors;
+
+      if (!jsarr) {
+         var pp = this.pad_painter();
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
       }
 
-      return this.root_colors[indx];
+      return jsarr[indx];
    }
 
    TObjectPainter.prototype.CheckResize = function(arg) {
@@ -5436,7 +5439,7 @@
       this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false };
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
-      if (d.check('GCOLORS') || d.check('GCOL')) { this.options.GlobalColors = true; this.options.LocalColors = false; }
+      if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
 
       if (d.check('WHITE')) pad.fFillColor = 0;
