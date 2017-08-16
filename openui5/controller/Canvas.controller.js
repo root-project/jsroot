@@ -13,13 +13,12 @@ sap.ui.define([
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
 		onInit : function() {
-		   console.log('On Canvas controller init');
 		   this._Page = this.getView().byId("CanvasMainPage");
 
          var model = new JSONModel({ GedIcon: "" });
          this.getView().setModel(model);
 
-		   this.toggleGetEditor(true);
+		   // this.toggleGedEditor();
 		},
 
 		getCanvasPainter : function(also_without_websocket) {
@@ -96,7 +95,9 @@ sap.ui.define([
          console.log('Select painter', obj ? obj._typename : painter.GetTipName());
 		},
 
-		toggleGetEditor : function(new_state) {
+		toggleGedEditor : function() {
+
+	      var new_state = ! this.getView().getModel().getProperty("/GedIcon");
 
          this.getView().getModel().setProperty("/GedIcon", new_state ? "sap-icon://accept" : "");
 
@@ -117,18 +118,12 @@ sap.ui.define([
                layoutData: oLd
             });
 
+            split.insertContentArea(oContent, 0);
+
             var ctrl = oContent.getController();
             p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl, p);
 
-//            var oContent = new Button("GedButton", {
-//               width: "100%",
-//               height: "100%",
-//               text: "GED placeholder",
-//               layoutData: oLd
-//            });
-//          p.SelectObjectPainter = this.SelectPainter.bind(this);
-
-            split.insertContentArea(oContent, 0);
+            ctrl.onObjectSelect(p,p);
 
          } else {
             split.removeContentArea(split.getContentAreas()[0]);
@@ -147,8 +142,8 @@ sap.ui.define([
 
          switch (name) {
             case "Editor":
-               this.toggleGetEditor(new_state);
-               break;
+               this.toggleGedEditor();
+               return;
             case "Toolbar":
                this._Page.setShowSubHeader(new_state)
                break;
