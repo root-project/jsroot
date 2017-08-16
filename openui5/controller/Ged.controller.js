@@ -121,7 +121,7 @@ sap.ui.define([
 
          var col = fragm.getModel().getProperty(property);
 
-         that.colorPicker.setColorString(col);
+         this.colorPicker.setColorString(col);
          this.colorDialog.open();
       },
 
