@@ -4758,17 +4758,16 @@
    }
 
    JSROOT.TPadPainter.prototype.CheckColors = function(can) {
-      if (!can || !can.fPrimitives) return;
-
-      for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
-         var obj = can.fPrimitives.arr[i];
-         if (obj==null) continue;
-         if ((obj._typename=="TObjArray") && (obj.name == "ListOfColors")) {
-            JSROOT.Painter.adoptRootColors(obj);
-            can.fPrimitives.arr.splice(i,1);
-            can.fPrimitives.opt.splice(i,1);
-            return;
-         }
+      var lst = can ? can.fPrimitives : null;
+      if (!lst) return;
+      for (var i = 0; i < lst.arr.length; ++i) {
+         var obj = lst.arr[i];
+         if (!obj || (obj._typename!=="TObjArray")) continue;
+         if (obj.name == "ListOfColors") JSROOT.Painter.adoptRootColors(obj);
+         else if (obj.name != "CurrentColorPalette") continue;
+         lst.arr.splice(i,1);
+         lst.opt.splice(i,1);
+         i--;
       }
    }
 
