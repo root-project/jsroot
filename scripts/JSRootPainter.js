@@ -1689,6 +1689,10 @@
       return can.empty() ? null : can.property('pad_painter');
    }
 
+   TObjectPainter.prototype.get_color = function(indx) {
+      return JSROOT.Painter.root_colors[indx];
+   }
+
    TObjectPainter.prototype.CheckResize = function(arg) {
       // no painter - no resize
       var pad_painter = this.pad_painter();

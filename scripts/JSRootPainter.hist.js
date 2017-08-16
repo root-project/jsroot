@@ -1171,7 +1171,7 @@
       var last = vertical ? h : 0,
           labelsize = (axis.fLabelSize >= 1) ? axis.fLabelSize : Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h)),
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
-          label_color = JSROOT.Painter.root_colors[axis.fLabelColor],
+          label_color = this.get_color(axis.fLabelColor),
           labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size),
           label_g = axis_g.append("svg:g")
                          .attr("class","axis_labels")
@@ -1297,7 +1297,7 @@
              title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/text_scaling_size),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = JSROOT.Painter.root_colors[axis.fTitleColor],
+             title_color = this.get_color(axis.fTitleColor),
              shift_x = 0, shift_y = 0;
 
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
@@ -1497,8 +1497,8 @@
                       " v" + (-height + lwidth) + " h" + lwidth +
                       " v" + height + " h" + (-width) +
                       " v" + (-lwidth) + " Z")
-            .style("fill", JSROOT.Painter.root_colors[pt.fShadowColor])
-            .style("stroke", JSROOT.Painter.root_colors[pt.fShadowColor])
+            .style("fill", this.get_color(pt.fShadowColor))
+            .style("stroke", this.get_color(pt.fShadowColor))
             .style("stroke-width", "1px");
 
       if (this.lineatt === undefined)
@@ -1543,7 +1543,7 @@
 
       this.StartTextDrawing(pave.fTextFont, height/1.2);
 
-      this.DrawText(pave.fTextAlign, 0, 0, width, height, pave.fLabel, JSROOT.Painter.root_colors[pave.fTextColor]);
+      this.DrawText(pave.fTextAlign, 0, 0, width, height, pave.fLabel, this.get_color(pave.fTextColor));
 
       this.FinishTextDrawing(null, this.FinishPave);
    }
@@ -1553,7 +1553,7 @@
       if (refill && this.IsStats()) this.FillStatistic();
 
       var pt = this.GetObject(),
-          tcolor = JSROOT.Painter.root_colors[pt.fTextColor],
+          tcolor = this.get_color(pt.fTextColor),
           lwidth = pt.fBorderSize,
           first_stat = 0,
           num_cols = 0,
@@ -1599,7 +1599,7 @@
          for (var j = 0; j < nlines; ++j) {
             var posy = j*stepy, jcolor = tcolor;
             if (!this.UseTextColor && (j<pt.fLines.arr.length) && (pt.fLines.arr[j].fTextColor!==0))
-               jcolor = JSROOT.Painter.root_colors[pt.fLines.arr[j].fTextColor];
+               jcolor = this.get_color(pt.fLines.arr[j].fTextColor);
             if (jcolor===undefined) {
                jcolor = tcolor;
                this.UseTextColor = true;
@@ -1923,7 +1923,7 @@
 
          this.StartTextDrawing(legend.fTextFont, h / (nlines * 1.2));
 
-         var tcolor = JSROOT.Painter.root_colors[legend.fTextColor],
+         var tcolor = this.get_color(legend.fTextColor),
              column_width = Math.round(w/ncols),
              padding_x = Math.round(0.03*w/ncols),
              padding_y = Math.round(0.03*h),
@@ -2829,11 +2829,11 @@
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      var pad = this.root_pad(), h = this.frame_height(), w = this.frame_width(),
-          grid, grid_style = JSROOT.gStyle.fGridStyle, grid_color = "black";
-
-      if (JSROOT.Painter.fGridColor > 0)
-         grid_color = JSROOT.Painter.root_colors[JSROOT.Painter.fGridColor];
+      var pad = this.root_pad(),
+          h = this.frame_height(),
+          w = this.frame_width(),
+          grid, grid_style = JSROOT.gStyle.fGridStyle,
+          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
 
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
