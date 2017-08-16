@@ -5433,7 +5433,7 @@
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
-      this.options = { GlobalColors: false, LocalColors: true, IgnorePalette: false };
+      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false };
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('GCOLORS') || d.check('GCOL')) { this.options.GlobalColors = true; this.options.LocalColors = false; }

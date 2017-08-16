@@ -1526,7 +1526,7 @@
              var geometry = new THREE.BufferGeometry();
              geometry.addAttribute( 'position', new THREE.BufferAttribute( linepos, 3 ) );
 
-             var material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(histo.fLineColor)) });
+             var material = new THREE.LineBasicMaterial({ color: new THREE.Color(main.get_color(histo.fLineColor)) });
 
              var line = new THREE.Line(geometry, material);
              main.toplevel.add(line);
