@@ -4,6 +4,7 @@
 1. Fix in marker attributes handling - can mix different attributes 
 2. Fix in unzomming of log scale - https://root-forum.cern.ch/t/25889
 3. Fix in TMultiGraph painting - ignore not-supported options https://root-forum.cern.ch/t/25888
+4. Fix - correctly use fGridColor from TStyle 
 
 
 ## Changes in 5.2.2

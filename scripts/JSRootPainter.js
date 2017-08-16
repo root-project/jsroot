@@ -7008,8 +7008,8 @@
       var pad = this.root_pad(), h = this.frame_height(), w = this.frame_width(),
           grid, grid_style = JSROOT.gStyle.fGridStyle, grid_color = "black";
 
-      if (JSROOT.Painter.fGridColor > 0)
-         grid_color = JSROOT.Painter.root_colors[JSROOT.Painter.fGridColor];
+      if (JSROOT.gStyle.fGridColor > 0)
+         grid_color = JSROOT.Painter.root_colors[JSROOT.gStyle.fGridColor];
 
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
