@@ -4475,8 +4475,10 @@
       for (var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
          if (!obj || (obj._typename!=="TObjArray")) continue;
-         if (obj.name == "ListOfColors") JSROOT.Painter.adoptRootColors(obj);
-         else if (obj.name == "CurrentColorPalette") {
+         if (obj.name == "ListOfColors") {
+            if (!this.options.IgnoreColors)
+               JSROOT.Painter.adoptRootColors(obj);
+         } else if (obj.name == "CurrentColorPalette") {
             var arr = [], missing = false;
             for (var n = 0; n < obj.arr.length; ++n) {
                var par = obj.arr[n];
@@ -4485,7 +4487,7 @@
                if (col) { arr[n] = col; }
                else { console.log('Missing color with index ' + par.fVal); missing = true; }
             }
-            if (!missing) this.CanvasPalette = new ColorPalette(arr);
+            if (!missing && !this.options.IgnorePalette) this.CanvasPalette = new ColorPalette(arr);
          } else continue;
          lst.arr.splice(i,1);
          lst.opt.splice(i,1);
@@ -5412,6 +5414,11 @@
       var d = new JSROOT.DrawOptions(opt);
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
+
+      this.options = { IgnoreColors: false, IgnorePalette: false };
+
+      if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.IgnoreColors = true;
+      if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
 
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOGX')) pad.fLogx = 1;
