@@ -102,7 +102,6 @@
    }
 
    JSROOT.Painter.GetColorPalette = function(col,alfa) {
-      if (!col && this.DefaultPalette) return this.DefaultPalette;
       col = col || JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
       if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
@@ -4376,8 +4375,10 @@
    }
 
    THistPainter.prototype.GetPalette = function(force) {
-      if (!this.fPalette || force)
-         this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
+      if (!this.fPalette || force) {
+         var pp = this.options.Palette ? null : this.pad_painter();
+         this.fPalette = (pp && pp.CanvasPalette) ? pp.CanvasPalette : JSROOT.Painter.GetColorPalette(this.options.Palette);
+      }
       return this.fPalette;
    }
 

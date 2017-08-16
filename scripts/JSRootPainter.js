@@ -642,22 +642,6 @@
       return this.getColor(indx);
    }
 
-
-   Painter.adoptColorPalette = function(objarr) {
-      if (!objarr || !objarr.arr) return;
-
-      var arr = [];
-      for (var n = 0; n < objarr.arr.length; ++n) {
-         var par = objarr.arr[n];
-         if (!par || (par._typename != 'TParameter<int>')) continue;
-         var col = Painter.root_colors[par.fVal];
-         if (!col) return console.log('Missing color with index ' + par.fVal);
-         arr[n] = col;
-      }
-
-      Painter.DefaultPalette = new ColorPalette(arr);
-   }
-
    function TAttMarkerHandler(attmarker, style) {
       var marker_color = Painter.root_colors[attmarker.fMarkerColor];
       if (!style || (style<0)) style = attmarker.fMarkerStyle;
@@ -4491,8 +4475,18 @@
       for (var i = 0; i < lst.arr.length; ++i) {
          var obj = lst.arr[i];
          if (!obj || (obj._typename!=="TObjArray")) continue;
-         if (obj.name == "ListOfColors") JSROOT.Painter.adoptRootColors(obj); else
-         if (obj.name == "CurrentColorPalette") JSROOT.Painter.adoptColorPalette(obj); else continue;
+         if (obj.name == "ListOfColors") JSROOT.Painter.adoptRootColors(obj);
+         else if (obj.name == "CurrentColorPalette") {
+            var arr = [], missing = false;
+            for (var n = 0; n < obj.arr.length; ++n) {
+               var par = obj.arr[n];
+               if (!par || (par._typename != 'TParameter<int>')) continue;
+               var col = Painter.root_colors[par.fVal];
+               if (col) { arr[n] = col; }
+               else { console.log('Missing color with index ' + par.fVal); missing = true; }
+            }
+            if (!missing) this.CanvasPalette = new ColorPalette(arr);
+         } else continue;
          lst.arr.splice(i,1);
          lst.opt.splice(i,1);
          i--;
