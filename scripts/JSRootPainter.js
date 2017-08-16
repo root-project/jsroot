@@ -596,6 +596,7 @@
       return rgb;
    }
 
+   /// Use TObjArray of TColor instances, typically stored together with TCanvas primitives
    Painter.adoptRootColors = function(objarr) {
       if (!objarr || !objarr.arr) return;
 
@@ -612,6 +613,49 @@
          if (Painter.root_colors[num] != rgb)
             Painter.root_colors[num] = rgb;
       }
+   }
+
+   function ColorPalette(arr) {
+      this.palette = arr;
+   }
+
+   /// returns color index which correspond to contour index of provided length
+   ColorPalette.prototype.calcColorIndex = function(i,len) {
+      var theColor = Math.floor((i+0.99)*this.palette.length/(len-1));
+      if (theColor > this.palette.length-1) theColor = this.palette.length-1;
+      return theColor;
+   }
+
+   /// returns color with provided index
+   ColorPalette.prototype.getColor = function(indx) {
+      return this.palette[indx];
+   }
+
+   /// returns number of colors in the palette
+   ColorPalette.prototype.getLength = function() {
+      return this.palette.length;
+   }
+
+   // calculate color for given i and len
+   ColorPalette.prototype.calcColor = function(i,len) {
+      var indx = this.calcColorIndex(i,len);
+      return this.getColor(indx);
+   }
+
+
+   Painter.adoptColorPalette = function(objarr) {
+      if (!objarr || !objarr.arr) return;
+
+      var arr = [];
+      for (var n = 0; n < objarr.arr.length; ++n) {
+         var par = objarr.arr[n];
+         if (!par || (par._typename != 'TParameter<int>')) continue;
+         var col = Painter.root_colors[par.fVal];
+         if (!col) return console.log('Missing color with index ' + par.fVal);
+         arr[n] = col;
+      }
+
+      Painter.DefaultPalette = new ColorPalette(arr);
    }
 
    function TAttMarkerHandler(attmarker, style) {
@@ -4442,16 +4486,23 @@
    }
 
    TPadPainter.prototype.CheckColors = function(can) {
-      if (!can || !can.fPrimitives) return;
 
-      for (var i = 0; i < can.fPrimitives.arr.length; ++i) {
-         var obj = can.fPrimitives.arr[i];
-         if (obj==null) continue;
-         if ((obj._typename=="TObjArray") && (obj.name == "ListOfColors")) {
+      var lst = can ? can.fPrimitives : null;
+      if (!lst) return;
+
+      for (var i = 0; i < lst.arr.length; ++i) {
+         var obj = lst.arr[i];
+         if (!obj || (obj._typename!=="TObjArray")) continue;
+         if (obj.name == "ListOfColors") {
             JSROOT.Painter.adoptRootColors(obj);
-            can.fPrimitives.arr.splice(i,1);
-            can.fPrimitives.opt.splice(i,1);
-            return;
+            lst.arr.splice(i,1);
+            lst.opt.splice(i,1);
+            i--;
+         } else if (obj.name == "CurrentColorPalette") {
+            JSROOT.Painter.adoptColorPalette(obj);
+            lst.arr.splice(i,1);
+            lst.opt.splice(i,1);
+            i--;
          }
       }
    }
@@ -6041,6 +6092,7 @@
    JSROOT.LongPollSocket = LongPollSocket;
    JSROOT.Cef3QuerySocket = Cef3QuerySocket;
    JSROOT.DrawOptions = DrawOptions;
+   JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;
    JSROOT.TAttFillHandler = TAttFillHandler;
    JSROOT.TAttMarkerHandler = TAttMarkerHandler;

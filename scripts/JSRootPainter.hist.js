@@ -41,34 +41,6 @@
             "M460.293,256.149H339.237c-28.521,0-51.721,23.199-51.721,51.726v89.915c0,28.504,23.2,51.715,51.721,51.715h121.045   c28.521,0,51.721-23.199,51.721-51.715v-89.915C512.002,279.354,488.802,256.149,460.293,256.149z M465.03,397.784   c0,2.615-2.122,4.736-4.748,4.736H339.237c-2.614,0-4.747-2.121-4.747-4.736v-89.909c0-2.626,2.121-4.753,4.747-4.753h121.045 c2.615,0,4.748,2.116,4.748,4.753V397.784z"
    };
 
-   function ColorPalette(arr) {
-      this.palette = arr;
-   }
-
-   /// returns color index which correspond to contour index of provided length
-   ColorPalette.prototype.calcColorIndex = function(i,len) {
-      var theColor = Math.floor((i+0.99)*this.palette.length/(len-1));
-      if (theColor > this.palette.length-1) theColor = this.palette.length-1;
-      return theColor;
-   }
-
-   /// returns color with provided index
-   ColorPalette.prototype.getColor = function(indx) {
-      return this.palette[indx];
-   }
-
-   /// returns number of colors in the palette
-   ColorPalette.prototype.getLength = function() {
-      return this.palette.length;
-   }
-
-   // calculate color for given i and len
-   ColorPalette.prototype.calcColor = function(i,len) {
-      var indx = this.calcColorIndex(i,len);
-      return this.getColor(indx);
-   }
-
-
    JSROOT.Painter.CreateDefaultPalette = function() {
 
       function HLStoRGB(h, l, s) {
@@ -99,7 +71,7 @@
              rgbval = HLStoRGB(hue, lightness, saturation);
          palette.push(rgbval);
       }
-      return new ColorPalette(palette);
+      return new JSROOT.ColorPalette(palette);
    }
 
    JSROOT.Painter.CreateGrayPalette = function() {
@@ -108,7 +80,7 @@
          var code = Math.round((i+2)/60*255);
          palette.push('rgb('+code+','+code+','+code+')');
       }
-      return new ColorPalette(palette);
+      return new JSROOT.ColorPalette(palette);
    }
 
    JSROOT.Painter.CreateGradientColorTable = function(Stops, Red, Green, Blue, NColors, alpha) {
@@ -126,10 +98,11 @@
           }
        }
 
-       return new ColorPalette(palette);
+       return new JSROOT.ColorPalette(palette);
    }
 
    JSROOT.Painter.GetColorPalette = function(col,alfa) {
+      if (!col && this.DefaultPalette) return this.DefaultPalette;
       col = col || JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
       if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
@@ -7791,7 +7764,6 @@
       return JSROOT.Painter.drawHistogram2D(divid, hist, opt);
    }
 
-   JSROOT.ColorPalette = ColorPalette;
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.TAxisPainter = TAxisPainter;
    JSROOT.THistPainter = THistPainter;
