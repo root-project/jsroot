@@ -596,8 +596,8 @@
       return rgb;
    }
 
-   /// Use TObjArray of TColor instances, typically stored together with TCanvas primitives
-   Painter.adoptRootColors = function(objarr) {
+   // add new colors from object array
+   Painter.extendRootColors = function(jsarr, objarr) {
       if (!objarr || !objarr.arr) return;
 
       for (var n = 0; n < objarr.arr.length; ++n) {
@@ -605,14 +605,16 @@
          if (!col || (col._typename != 'TColor')) continue;
 
          var num = col.fNumber;
-         if ((num<0) || (num>4096)) continue;
+         if ((num<0) || (num>10000)) continue;
 
          var rgb = Painter.MakeColorRGB(col);
-         if (rgb == null) continue;
-
-         if (Painter.root_colors[num] != rgb)
-            Painter.root_colors[num] = rgb;
+         if (rgb && (jsarr[num] != rgb)) jsarr[num] = rgb;
       }
+   }
+
+   /// Use TObjArray of TColor instances, typically stored together with TCanvas primitives
+   Painter.adoptRootColors = function(objarr) {
+      Painter.extendRootColors(Painter.root_colors, objarr);
    }
 
    function ColorPalette(arr) {
@@ -1690,7 +1692,12 @@
    }
 
    TObjectPainter.prototype.get_color = function(indx) {
-      return JSROOT.Painter.root_colors[indx];
+      if (!this.root_colors) {
+         var pp = this.pad_painter(); // take colors list from canvas (if available)
+         this.root_colors = pp && pp.root_colors ? pp.root_colors : JSROOT.Painter.root_colors;
+      }
+
+      return this.root_colors[indx];
    }
 
    TObjectPainter.prototype.CheckResize = function(arg) {
@@ -4480,14 +4487,21 @@
          var obj = lst.arr[i];
          if (!obj || (obj._typename!=="TObjArray")) continue;
          if (obj.name == "ListOfColors") {
-            if (!this.options.IgnoreColors)
-               JSROOT.Painter.adoptRootColors(obj);
+            if (this.options.GlobalColors) // set global list of colors
+               Painter.adoptRootColors(obj);
+            if (this.options.LocalColors) {
+               // copy existing colors and extend with new values
+               this.root_colors = [];
+               for (var n=0;n<JSROOT.Painter.root_colors.length;++n)
+                  this.root_colors[n] = JSROOT.Painter.root_colors[n];
+               Painter.extendRootColors(this.root_colors, obj);
+            }
          } else if (obj.name == "CurrentColorPalette") {
-            var arr = [], missing = false;
+            var arr = [], missing = false, jsarr = this.root_colors || JSROOT.Painter.root_colors;
             for (var n = 0; n < obj.arr.length; ++n) {
                var par = obj.arr[n];
                if (!par || (par._typename != 'TParameter<int>')) continue;
-               var col = Painter.root_colors[par.fVal];
+               var col = jsarr[par.fVal];
                if (col) { arr[n] = col; }
                else { console.log('Missing color with index ' + par.fVal); missing = true; }
             }
@@ -5419,9 +5433,10 @@
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
-      this.options = { IgnoreColors: false, IgnorePalette: false };
+      this.options = { GlobalColors: false, LocalColors: true, IgnorePalette: false };
 
-      if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.IgnoreColors = true;
+      if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
+      if (d.check('GCOLORS') || d.check('GCOL')) { this.options.GlobalColors = true; this.options.LocalColors = false; }
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
 
       if (d.check('WHITE')) pad.fFillColor = 0;
