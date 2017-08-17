@@ -4506,13 +4506,14 @@
                Painter.extendRootColors(this.root_colors, obj);
             }
          } else if (obj.name == "CurrentColorPalette") {
-            var arr = [], missing = false, jsarr = this.root_colors || JSROOT.Painter.root_colors;
+            var arr = [], missing = false;
             for (var n = 0; n < obj.arr.length; ++n) {
-               var par = obj.arr[n];
-               if (!par || (par._typename != 'TParameter<int>')) continue;
-               var col = jsarr[par.fVal];
-               if (col) { arr[n] = col; }
-               else { console.log('Missing color with index ' + par.fVal); missing = true; }
+               var col = obj.arr[n];
+               if (col && (col._typename == 'TColor')) {
+                  arr[n] = Painter.MakeColorRGB(col);
+               } else {
+                  console.log('Missing color with index ' + n); missing = true;
+               }
             }
             if (!missing && !this.options.IgnorePalette) this.CanvasPalette = new ColorPalette(arr);
          } else continue;
