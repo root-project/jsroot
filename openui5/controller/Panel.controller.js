@@ -62,7 +62,7 @@ sap.ui.define([
 
           ResizeHandler.register(this.getView(), this.onResize.bind(this));
 
-          this.canvas_painter.ShowObjectInspector = this.showInspector.bind(this);
+          // this.canvas_painter.ShowObjectInspector = this.showInspector.bind(this);
       },
 
       onExit : function() {

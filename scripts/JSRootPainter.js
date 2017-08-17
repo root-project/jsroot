@@ -4103,16 +4103,12 @@
    }
 
    TPadPainter.prototype.ForEachPainterInPad = function(userfunc, onlypadpainters) {
-
       userfunc(this);
-
       for (var k = 0; k < this.painters.length; ++k) {
          var sub =  this.painters[k];
-
          if (typeof sub.ForEachPainterInPad === 'function')
             sub.ForEachPainterInPad(userfunc, onlypadpainters);
-         else
-         if (!onlypadpainters) userfunc(sub);
+         else if (!onlypadpainters) userfunc(sub);
       }
    }
 
@@ -5130,7 +5126,6 @@
       res2 += ":" + func2(y1) + ":" + func2(y2);
 
       return res1 + ":" + res2;
-
    }
 
    TPadPainter.prototype.ItemContextMenu = function(name) {
@@ -5165,7 +5160,6 @@
           if (selp.FillContextMenu(menu,selkind))
              setTimeout(menu.show.bind(menu, evnt), 50);
        });
-
    }
 
    TPadPainter.prototype.CreateSvg = function() {
@@ -5525,6 +5519,15 @@
 
       return painter;
    }
+
+
+   function TCanvasPainter(canvas) {
+      // used for online canvas painter
+      TPadPainter.call(this, canvas, true);
+   }
+
+   TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
+
 
    // ================= painter of raw text ========================================
 
@@ -6122,6 +6125,7 @@
    JSROOT.TObjectPainter = TObjectPainter;
    JSROOT.TFramePainter = TFramePainter;
    JSROOT.TPadPainter = TPadPainter;
+   JSROOT.TCanvasPainter = TCanvasPainter;
 
    return JSROOT;
 
