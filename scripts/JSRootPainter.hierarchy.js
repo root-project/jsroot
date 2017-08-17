@@ -2183,17 +2183,9 @@
             JSROOT.openui5_canvas_painter = painter;
 
             return JSROOT.AssertPrerequisites('openui5', function() {
-               //new JSROOT.sap.m.Text({
-               //   text: "Hello World"
-               //}).placeAt(myDiv.attr("id"));
                new JSROOT.sap.ui.xmlview({
                   viewName: "sap.ui.jsroot.view.Canvas"
                }).placeAt(myDiv.attr("id"));
-               //new JSROOT.sap.ui.core.ComponentContainer({
-               //   name : "sap.ui.jsroot"
-               //}).placeAt(myDiv.attr("id"));
-
-               console.log('CREATING VIEW with canvas');
             });
          };
 

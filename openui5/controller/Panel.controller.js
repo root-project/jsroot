@@ -1,26 +1,19 @@
 sap.ui.define([
    'sap/ui/core/mvc/Controller',
-   'sap/ui/core/ResizeHandler'
-], function (Controller, ResizeHandler) {
+   'sap/ui/core/ResizeHandler',
+   'sap/m/Dialog',
+   'sap/m/Button'
+], function (Controller, ResizeHandler, Dialog, Button) {
    "use strict";
 
    return Controller.extend("sap.ui.jsroot.controller.Panel", {
 
-       // preferDOM: true,
-
        onAfterRendering: function() {
-         //if (sap.HTML.prototype.onAfterRendering) {
-         //   sapHTML.prototype.onAfterRendering.apply(this, arguments);
-         //}
-         var view = this.getView();
-         var dom = view.getDomRef();
-
-         if (this.canvas_painter && this.canvas_painter._configured_socket_kind) {
-            this.canvas_painter.SetDivId(dom, -1);
-            this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
-            delete this.canvas_painter._configured_socket_kind;
-         }
-
+          if (this.canvas_painter && this.canvas_painter._configured_socket_kind) {
+             this.canvas_painter.SetDivId(this.getView().getDomRef(), -1);
+             this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
+             delete this.canvas_painter._configured_socket_kind;
+          }
        },
 
        onBeforeRendering: function() {
@@ -38,10 +31,45 @@ sap.ui.define([
              this.canvas_painter.CheckCanvasResize();
        },
 
+       showInspector : function(obj) {
+
+          if (!obj || !obj._typename) return;
+
+          var iview = new JSROOT.sap.ui.xmlview({ viewName: "sap.ui.jsroot.view.Inspector" });
+
+          iview.getController().setObject(obj);
+
+          var dlg = new Dialog({
+             title: 'Inspect: ' + obj._typename,
+             content: iview,
+             stretch: false,
+             contentWidth: "75%",
+             endButton: new Button({
+                text: 'Close',
+                press: function () {
+                   dlg.close();
+                   dlg.destroy();
+                }
+             })
+          });
+
+          dlg.open();
+       },
+
        onInit : function() {
           this.canvas_painter = JSROOT.openui5_canvas_painter;
           delete JSROOT.openui5_canvas_painter;
+
           ResizeHandler.register(this.getView(), this.onResize.bind(this));
+
+          this.canvas_painter.ShowObjectInspector = this.showInspector.bind(this);
+      },
+
+      onExit : function() {
+         if (this.canvas_painter)
+            this.canvas_painter.Cleanup();
+
+         delete this.canvas_painter;
       }
    });
 

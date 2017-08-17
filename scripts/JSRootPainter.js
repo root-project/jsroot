@@ -2975,6 +2975,15 @@
       menu.add("endsub:");
    }
 
+   TObjectPainter.prototype.ShowInpsector = function() {
+
+      var pp = this.pad_painter();
+
+      if (pp && pp.ShowObjectInspector)
+         pp.ShowObjectInspector(this.GetObject());
+      else
+         JSROOT.draw(this.divid, this.GetObject(), 'inspect');
+   }
 
    TObjectPainter.prototype.FillContextMenu = function(menu) {
 
@@ -2986,10 +2995,7 @@
 
       this.FillAttContextMenu(menu);
 
-      if (menu.size()>0)
-         menu.add('Inspect', function() {
-             JSROOT.draw(this.divid, this.GetObject(), 'inspect');
-         });
+      if (menu.size()>0) menu.add('Inspect', this.ShowInpsector);
 
       return menu.size() > 0;
    }
