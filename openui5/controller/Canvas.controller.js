@@ -5,13 +5,15 @@ sap.ui.define([
    'sap/m/MessageToast',
    'sap/m/Dialog',
    'sap/m/List',
-   'sap/m/StandardListItem',
+   'sap/m/InputListItem',
+   'sap/m/Input',
    'sap/m/Button',
+   'sap/m/Label',
    'sap/ui/layout/SplitterLayoutData',
    'sap/ui/unified/Menu',
    'sap/ui/unified/MenuItem'
 
-], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, StandardListItem, Button, SplitterLayoutData, Menu, MenuItem) {
+], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, InputListItem, Input, Button, Label, SplitterLayoutData, Menu, MenuItem) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
@@ -39,13 +41,13 @@ sap.ui.define([
 		showMethodsDialog : function(method, call_back) {
 		   var that = this;
          this.pressDialog = new Dialog({
-            title: 'class:: {/Method/fName}',
+            title: '{/Method/fClassName}::{/Method/fName}',
             content: new List({
               items: {
                  path: '/Method/fArgs',
-                 template: new StandardListItem({
-                    title: "{fName} ({fTitle})",
-                    counter: 0
+                 template: new InputListItem({
+                    label: "{fName} ({fTitle})",
+                    content: new Input({placeholder: "{fName}", value: "{fDefault}" })
                  })
               }
              }),

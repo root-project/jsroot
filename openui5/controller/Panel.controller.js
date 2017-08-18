@@ -31,40 +31,11 @@ sap.ui.define([
              this.canvas_painter.CheckCanvasResize();
        },
 
-       showInspector : function(obj) {
-
-          if (!obj || !obj._typename) return;
-
-          var iview = new JSROOT.sap.ui.xmlview({ viewName: "sap.ui.jsroot.view.Inspector" });
-
-          iview.getController().setObject(obj);
-
-          var dlg = new Dialog({
-             title: 'Inspect: ' + obj._typename,
-             content: iview,
-             stretch: false,
-             contentWidth: "75%",
-             endButton: new Button({
-                text: 'Close',
-                press: function () {
-                   dlg.close();
-                   dlg.destroy();
-                }
-             })
-          });
-
-          dlg.open();
-       },
-
        onInit : function() {
           this.canvas_painter = JSROOT.openui5_canvas_painter;
           delete JSROOT.openui5_canvas_painter;
 
           ResizeHandler.register(this.getView(), this.onResize.bind(this));
-
-          console.log('Painter in panel', !!this.canvas_painter);
-
-          // this.canvas_painter.ShowObjectInspector = this.showInspector.bind(this);
       },
 
       onExit : function() {

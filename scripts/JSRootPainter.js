@@ -1655,6 +1655,11 @@
       return this.draw_object;
    }
 
+   TObjectPainter.prototype.GetClassName = function() {
+      var res = this.draw_object ? this.draw_object._typename : "";
+      return res || "";
+   }
+
    TObjectPainter.prototype.MatchObjectType = function(arg) {
       if ((arg === undefined) || (arg === null) || (this.draw_object===null)) return false;
       if (typeof arg === 'string') return this.draw_object._typename === arg;
@@ -2792,6 +2797,8 @@
          var canvp = this.pad_painter(),
              item = this.args_menu_items[parseInt(arg)];
          if (!canvp || !item || !item.fName) return;
+
+         item.fClassName = this.GetClassName();
 
          if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes") || (item.fName == "SetFillAttributes")))
             return canvp.ActivateGed(this); // activate GED
