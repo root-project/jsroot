@@ -23,10 +23,6 @@ sap.ui.define([
          var model = new JSONModel({ GedIcon: "" });
          this.getView().setModel(model);
 
-         var canvp = this.getCanvasPainter(true);
-
-         if (canvp) canvp.canvas_controller = this;
-
 		   // this.toggleGedEditor();
 		},
 
@@ -171,44 +167,21 @@ sap.ui.define([
 		   this.getView().byId("FooterLbl4").setText(text4);
 		},
 
-		SelectPainter : function(painter, pnt) {
-		   var obj = painter.GetObject();
-
-		   var split = this.getView().byId("MainAreaSplitter");
-
-         if (split) {
-	          var area0 = split.getContentAreas()[0];
-
-	          // if (area0) area0.setText("select " + (obj ? obj._typename : painter.GetTipName()));
-	       }
-
-         console.log('Select painter', obj ? obj._typename : painter.GetTipName());
-		},
-
 		showGeEditor : function(new_state) {
-         var current_state = !! this.getView().getModel().getProperty("/GedIcon");
-
-         if (current_state != new_state) this.toggleGedEditor();
-		},
-
-		toggleGedEditor : function() {
-
-	      var new_state = ! this.getView().getModel().getProperty("/GedIcon");
-
-         this.getView().getModel().setProperty("/GedIcon", new_state ? "sap-icon://accept" : "");
-
          var p = this.getCanvasPainter(true);
-
          if (!p) return;
 
-         if (new_state) {
-            var ctrl = this.showLeftArea("Ged");
+         var ctrl = this.showLeftArea(new_state ? "Ged" : "");
+         if (new_state && ctrl) {
             p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl, p);
             ctrl.onObjectSelect(p,p);
          } else {
-            this.showLeftArea("");
             delete p.SelectObjectPainter;
          }
+		},
+
+		toggleGedEditor : function() {
+		   this.showGeEditor(this.getView().getModel().getProperty("/LeftArea") != "Ged");
 		},
 
 		showLeftArea : function(panel_name) {
@@ -222,6 +195,7 @@ sap.ui.define([
          if (curr) split.removeContentArea(split.getContentAreas()[0]);
 
          this.getView().getModel().setProperty("/LeftArea", panel_name);
+         this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
 
          if (!panel_name) return;
 

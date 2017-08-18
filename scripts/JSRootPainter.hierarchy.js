@@ -2184,6 +2184,7 @@
 
             return JSROOT.AssertPrerequisites('openui5', function() {
                new JSROOT.sap.ui.xmlview({
+                  id: "TopCanvasId",
                   viewName: "sap.ui.jsroot.view.Canvas"
                }).placeAt(myDiv.attr("id"));
             });

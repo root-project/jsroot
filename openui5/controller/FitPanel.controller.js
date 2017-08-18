@@ -15,11 +15,11 @@ sap.ui.define([
       },
 
       handleFitPress : function() {
-
       },
 
       handleClosePress : function() {
-
+         var main = sap.ui.getCore().byId("TopCanvasId");
+         if (main) main.getController().showLeftArea("");
       }
 
    });

@@ -34,7 +34,7 @@
    JSROOT.complete_script_load = null; // normal callback is intercepted - we need to instantiate openui5
 
    JSROOT.completeUI5Loading = function() {
-      console.log('complete ui5 loading', typeof sap);
+      // console.log('complete ui5 loading', typeof sap);
       JSROOT.sap = sap;
       JSROOT.CallBack(load_callback);
       load_callback = null;
@@ -319,22 +319,30 @@
    JSROOT.TCanvasPainter.prototype.ActivateGed = function(painter) {
       // function used to actiavte GED
 
-      if (!this.canvas_controller) return;
-
-      this.canvas_controller.showGeEditor(true);
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().showGeEditor(true);
 
       if (this.SelectObjectPainter) this.SelectObjectPainter(painter);
    }
 
+   JSROOT.TCanvasPainter.prototype.ActivateFitPanel = function(painter) {
+      // function used to actiavte FitPanel
+
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().showLeftArea("FitPanel");
+   }
+
+
    JSROOT.TCanvasPainter.prototype.MethodsDialog = function(painter, method) {
 
-      if (!this.canvas_controller) return;
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (!main) return;
 
       var pthis = this;
 
       method.fClassName = painter.GetClassName();
 
-      this.canvas_controller.showMethodsDialog(method, function(args) {
+      main.getController().showMethodsDialog(method, function(args) {
 
          var exec = method.fExec;
          if (args) exec = exec.substr(0,exec.length-1) + args + ')';

@@ -2801,6 +2801,9 @@
          if (item.fName == "Inspect")
             return this.ShowInpsector();
 
+         if ((item.fName == "FitPanel") && canvp.ActivateFitPanel)
+            return canvp.ActivateFitPanel(this);
+
          if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes") || (item.fName == "SetFillAttributes")))
             return canvp.ActivateGed(this); // activate GED
 
