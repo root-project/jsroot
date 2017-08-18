@@ -301,54 +301,22 @@
       return menu;
    }
 
-   JSROOT.TCanvasPainter.prototype.closeObjectInspector = function() {
-      if (!this.dialog) return;
-
-      this.dialog.close();
-      this.dialog.destroy();
-      delete this.dialog;
-   }
-
    JSROOT.TCanvasPainter.prototype.ShowObjectInspector = function(obj) {
 
       if (!obj || !obj._typename) return;
 
-      this.dialog = JSROOT.sap.ui.xmlfragment("sap.ui.jsroot.view.Inspector", this);
+      var handle = {}; // should be controller?
+      handle.closeObjectInspector = function() {
+         this.dialog.close();
+         this.dialog.destroy();
+      }
+      handle.dialog = JSROOT.sap.ui.xmlfragment("sap.ui.jsroot.view.Inspector", handle);
 
-      // use global id, should find better solution later
+      // FIXME: global id is used, should find better solution later
       var view = sap.ui.getCore().byId("object_inspector");
-
       view.getController().setObject(obj);
 
-      // console.log('access controller', cont.length, cont[0], view, view.getController());
-
-      // this.dialog.getContent();
-
-      this.dialog.open();
-
-      /*
-
-      var iview = new JSROOT.sap.ui.xmlview({ viewName: "sap.ui.jsroot.view.Inspector" });
-
-      iview.getController().setObject(obj);
-
-      var dlg = new Dialog({
-         title: 'Inspect: ' + obj._typename,
-         content: iview,
-         stretch: false,
-         contentWidth: "75%",
-         endButton: new Button({
-            text: 'Close',
-            press: function () {
-               dlg.close();
-               dlg.destroy();
-            }
-         })
-      });
-
-      dlg.open();
-
-      */
+      handle.dialog.open();
    }
 
 
