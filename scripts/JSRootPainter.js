@@ -2993,13 +2993,7 @@
    }
 
    TObjectPainter.prototype.ShowInpsector = function() {
-
-      var pp = this.pad_painter();
-
-      if (pp && pp.ShowObjectInspector)
-         pp.ShowObjectInspector(this.GetObject());
-      else
-         JSROOT.draw(this.divid, this.GetObject(), 'inspect');
+      JSROOT.draw(this.divid, this.GetObject(), 'inspect');
    }
 
    TObjectPainter.prototype.FillContextMenu = function(menu) {
