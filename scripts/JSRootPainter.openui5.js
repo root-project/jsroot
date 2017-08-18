@@ -335,11 +335,15 @@
 
       var pthis = this;
 
-      this.canvas_controller.showMethodsDialog(method, function() {
-         // invoked only when user press Ok button
-         console.log('execute method for object ' + painter.snapid);
+      this.canvas_controller.showMethodsDialog(method, function(args) {
 
-         // pthis.SendWebsocket('OBJEXEC:' + painter.snapid + ":" + arg);
+         var exec = method.fExec;
+         if (args) exec = exec.substr(0,exec.length-1) + args + ')';
+
+         // invoked only when user press Ok button
+         console.log('execute method for object ' + painter.snapid + ' exec= ' + exec);
+
+         pthis.SendWebsocket('OBJEXEC:' + painter.snapid + ":" + exec);
       });
 
    }

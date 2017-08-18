@@ -38,42 +38,81 @@ sap.ui.define([
          return (p && (p._websocket || also_without_websocket)) ? p : null;
 		},
 
+		closeMethodDialog : function(method, call_back) {
+
+         var args = "";
+
+		   if (method) {
+		      var cont = this.methodDialog.getContent();
+
+            var items = cont[0].getItems();
+
+		      console.log('ITEMS', method.fArgs.length, items.length);
+
+		      for (var k=0;k<method.fArgs.length;++k) {
+		         var arg = method.fArgs[k];
+		         var value = items[k].getContent()[0].getValue();
+
+		         if (value==="") value = arg.fDefault;
+
+		         if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+		            // check quotes,
+		            // TODO: need to make more precise checking of escape characters
+		            if (!value) value = '""';
+		            if (value[0]!='"') value = '"' + value;
+		            if (value[value.length-1] != '"') value += '"';
+		         }
+
+		         args += (k>0 ? "," : "") + value;
+		      }
+		   }
+
+         this.methodDialog.close();
+         this.methodDialog.destroy();
+         JSROOT.CallBack(call_back, args);
+		},
+
 		showMethodsDialog : function(method, call_back) {
-		   var that = this;
-         this.pressDialog = new Dialog({
-            title: '{/Method/fClassName}::{/Method/fName}',
+		   var items = [];
+
+         for (var n=0;n<method.fArgs.length;++n) {
+            var arg = method.fArgs[n];
+            arg.fValue = arg.fDefault;
+            if (arg.fValue == '\"\"') arg.fValue = "";
+            var item = new InputListItem({
+               label: arg.fName + " (" +arg.fTitle + ")",
+               content: new Input({ placeholder: arg.fName, value: arg.fValue })
+            });
+            items.push(item);
+         }
+
+         this.methodDialog = new Dialog({
+            title: method.fClassName + '::' + method.fName,
             content: new List({
-              items: {
-                 path: '/Method/fArgs',
-                 template: new InputListItem({
-                    label: "{fName} ({fTitle})",
-                    content: new Input({placeholder: "{fName}", value: "{fDefault}" })
-                 })
-              }
+                 items: items
+//              items: {
+//                 path: '/Method/fArgs',
+//                 template: new InputListItem({
+//                    label: "{fName} ({fTitle})",
+//                    content: new Input({placeholder: "{fName}", value: "{fValue}" })
+//                 })
+//              }
              }),
              beginButton: new Button({
                text: 'Cancel',
-               press: function () {
-                  that.pressDialog.close();
-                  that.pressDialog.destroy();
-               }
+               press: this.closeMethodDialog.bind(this, null, null)
              }),
              endButton: new Button({
                text: 'Ok',
-               press: function () {
-                  that.pressDialog.close();
-                  that.pressDialog.destroy();
-                  JSROOT.CallBack(call_back);
-               }
+               press: this.closeMethodDialog.bind(this, method, call_back)
              })
          });
 
-         this.getView().getModel().setProperty("/Method", method);
-
+         // this.getView().getModel().setProperty("/Method", method);
          //to get access to the global model
-         this.getView().addDependent(this.pressDialog);
+         // this.getView().addDependent(this.methodDialog);
 
-         this.pressDialog.open();
+         this.methodDialog.open();
 		},
 
 		onFileMenuAction : function (oEvent) {
