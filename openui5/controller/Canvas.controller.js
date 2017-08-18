@@ -197,34 +197,48 @@ sap.ui.define([
 
          this.getView().getModel().setProperty("/GedIcon", new_state ? "sap-icon://accept" : "");
 
-         var split = this.getView().byId("MainAreaSplitter"),
-             p = this.getCanvasPainter(true);
+         var p = this.getCanvasPainter(true);
 
-         if (!p || !split) return;
+         if (!p) return;
 
          if (new_state) {
-            var oLd = new SplitterLayoutData({
-               resizable : true,
-               size      : "250px",
-               maxSize   : "500px"
-            });
-
-            var oContent = sap.ui.xmlview({
-               viewName : "sap.ui.jsroot.view.Ged",
-               layoutData: oLd
-            });
-
-            split.insertContentArea(oContent, 0);
-
-            var ctrl = oContent.getController();
+            var ctrl = this.showLeftArea("Ged");
             p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl, p);
-
             ctrl.onObjectSelect(p,p);
-
          } else {
-            split.removeContentArea(split.getContentAreas()[0]);
+            this.showLeftArea("");
             delete p.SelectObjectPainter;
          }
+		},
+
+		showLeftArea : function(panel_name) {
+		   var curr = this.getView().getModel().getProperty("/LeftArea");
+		   if (curr == panel_name) return;
+
+         var split = this.getView().byId("MainAreaSplitter");
+         if (!split) return;
+
+         // first need to remove existing
+         if (curr) split.removeContentArea(split.getContentAreas()[0]);
+
+         this.getView().getModel().setProperty("/LeftArea", panel_name);
+
+         if (!panel_name) return;
+
+         var oLd = new SplitterLayoutData({
+            resizable : true,
+            size      : "250px",
+            maxSize   : "500px"
+         });
+
+         var oContent = sap.ui.xmlview({
+            viewName : "sap.ui.jsroot.view." + panel_name,
+            layoutData: oLd
+         });
+
+         split.insertContentArea(oContent, 0);
+
+         return oContent.getController(); // return controller of new panel
 		},
 
 		onViewMenuAction : function (oEvent) {
@@ -258,6 +272,17 @@ sap.ui.define([
          item.setIcon(new_state ? "sap-icon://accept" : "");
 
          // MessageToast.show("Action triggered on item: " + name);
+		},
+
+		onToolsMenuAction : function(oEvent) {
+         var item = oEvent.getParameter("item"),
+             name = item.getText();
+
+         if (name != "Fit panel") return;
+
+         var curr = this.getView().getModel().getProperty("/LeftArea");
+
+         this.showLeftArea(curr == "FitPanel" ? "" : "FitPanel");
 		}
 
 	});

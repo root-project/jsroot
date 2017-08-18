@@ -47,7 +47,16 @@
                   </menu>
                 </MenuButton>
 	             <Button text="Options" type="Transparent"></Button>
-	             <Button text="Tools" type="Transparent"></Button>
+	             <MenuButton text="Tools" type="Transparent">
+                  <menu>
+                     <Menu itemSelected="onToolsMenuAction">
+                       <items>
+                        <MenuItem text="Fit panel"/>
+                        <MenuItem text="Browser" enabled="false"/>
+                      </items>
+                     </Menu>
+                  </menu>
+	             </MenuButton>
 	             <ToolbarSpacer />
 	             <Button text="Help" type="Transparent"></Button>
 	         </OverflowToolbar>
