@@ -20,7 +20,7 @@ sap.ui.define([
 		onInit : function() {
 		   this._Page = this.getView().byId("CanvasMainPage");
 
-         var model = new JSONModel({ GedIcon: "" });
+         var model = new JSONModel({ GedIcon: "", StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
 
 		   // this.toggleGedEditor();
@@ -161,10 +161,11 @@ sap.ui.define([
 		},
 
 		ShowCanvasStatus : function (text1,text2,text3,text4) {
-		   this.getView().byId("FooterLbl1").setText(text1);
-		   this.getView().byId("FooterLbl2").setText(text2);
-		   this.getView().byId("FooterLbl3").setText(text3);
-		   this.getView().byId("FooterLbl4").setText(text4);
+		   var model = this.getView().getModel();
+		   model.setProperty("/StatusLbl1", text1);
+         model.setProperty("/StatusLbl2", text2);
+         model.setProperty("/StatusLbl3", text3);
+         model.setProperty("/StatusLbl4", text4);
 		},
 
 		showGeEditor : function(new_state) {
