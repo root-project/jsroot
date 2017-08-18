@@ -2789,18 +2789,19 @@
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         var canvp = this.pad_painter();
-         if (!canvp) return;
+         var canvp = this.pad_painter(),
+             item = this.args_menu_items[parseInt(arg)];
+         if (!canvp || !item || !item.fName) return;
 
-         if (canvp.ActivateGed && ((arg == "DrawPanel()") || (arg == "SetLineAttributes()") || (arg == "SetFillAttributes()")))
+         if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes") || (item.fName == "SetFillAttributes")))
             return canvp.ActivateGed(this); // activate GED
 
-         if (canvp.MethodsDialog && (arg=="Fit()"))
-            return canvp.MethodsDialog(this, {});
+         if (canvp.MethodsDialog && (item.fArgs!==undefined))
+            return canvp.MethodsDialog(this, item);
 
          if (canvp._websocket && this.snapid) {
-            console.log('execute method ' + arg + ' for object ' + this.snapid);
-            canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + arg);
+            console.log('execute method ' + item.fExec + ' for object ' + this.snapid);
+            canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + item.fExec);
          }
       }
 
@@ -2814,12 +2815,14 @@
             _menu.add("separator");
             _menu.add("sub:Online");
 
+            this.args_menu_items = items;
+
             for (var n=0;n<items.length;++n) {
                var item = items[n];
                if ((item.fChecked === undefined) || (item.fChecked < 0))
-                  _menu.add(item.fName, item.fExec, DoExecMenu);
+                  _menu.add(item.fName, n, DoExecMenu);
                else
-                  _menu.addchk(item.fChecked, item.fName, item.fExec, DoExecMenu);
+                  _menu.addchk(item.fChecked, item.fName, n, DoExecMenu);
             }
 
             _menu.add("endsub:");

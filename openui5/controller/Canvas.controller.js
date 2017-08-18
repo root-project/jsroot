@@ -39,13 +39,13 @@ sap.ui.define([
 		showMethodsDialog : function(method, call_back) {
 		   var that = this;
          this.pressDialog = new Dialog({
-            title: 'Execute',
+            title: 'class:: {/Method/fName}',
             content: new List({
               items: {
-                 path: '/MethodArgs',
+                 path: '/Method/fArgs',
                  template: new StandardListItem({
-                    title: "{Name}",
-                    counter: "{Value}"
+                    title: "{fName} ({fTitle})",
+                    counter: 0
                  })
               }
              }),
@@ -66,7 +66,7 @@ sap.ui.define([
              })
          });
 
-         this.getView().getModel().setProperty("/MethodArgs", [ {Name:"abc", Value:10}, { Name: "zdf", Value: 20} ]);
+         this.getView().getModel().setProperty("/Method", method);
 
          //to get access to the global model
          this.getView().addDependent(this.pressDialog);
