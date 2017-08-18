@@ -332,6 +332,8 @@
 
       var pthis = this;
 
+      method.fClassName = painter.GetClassName();
+
       this.canvas_controller.showMethodsDialog(method, function(args) {
 
          var exec = method.fExec;

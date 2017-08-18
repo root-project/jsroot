@@ -47,7 +47,10 @@ sap.ui.define([
 
             var items = cont[0].getItems();
 
-		      console.log('ITEMS', method.fArgs.length, items.length);
+            if (method.fArgs.length !== items.length)
+               alert('Mismatch between method description' + method.fArgs.length + ' and args list in dialog ' + items.length);
+
+		      // console.log('ITEMS', method.fArgs.length, items.length);
 
 		      for (var k=0;k<method.fArgs.length;++k) {
 		         var arg = method.fArgs[k];

@@ -2798,7 +2798,8 @@
              item = this.args_menu_items[parseInt(arg)];
          if (!canvp || !item || !item.fName) return;
 
-         item.fClassName = this.GetClassName();
+         if (item.fName == "Inspect")
+            return this.ShowInpsector();
 
          if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes") || (item.fName == "SetFillAttributes")))
             return canvp.ActivateGed(this); // activate GED
