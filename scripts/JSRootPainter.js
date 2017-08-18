@@ -2795,7 +2795,10 @@
          if (canvp.ActivateGed && ((arg == "DrawPanel()") || (arg == "SetLineAttributes()") || (arg == "SetFillAttributes()")))
             return canvp.ActivateGed(this); // activate GED
 
-         if (canvp && canvp._websocket && this.snapid) {
+         if (canvp.MethodsDialog && (arg=="Fit()"))
+            return canvp.MethodsDialog(this, {});
+
+         if (canvp._websocket && this.snapid) {
             console.log('execute method ' + arg + ' for object ' + this.snapid);
             canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + arg);
          }

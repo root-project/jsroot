@@ -327,6 +327,20 @@
       this.canvas_controller.showGeEditor(true);
 
       if (this.SelectObjectPainter) this.SelectObjectPainter(painter);
+   }
+
+   JSROOT.TCanvasPainter.prototype.MethodsDialog = function(painter, method) {
+
+      if (!this.canvas_controller) return;
+
+      var pthis = this;
+
+      this.canvas_controller.showMethodsDialog(method, function() {
+         // invoked only when user press Ok button
+         console.log('execute method for object ' + painter.snapid);
+
+         // pthis.SendWebsocket('OBJEXEC:' + painter.snapid + ":" + arg);
+      });
 
    }
 

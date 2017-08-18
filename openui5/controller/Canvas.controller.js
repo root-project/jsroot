@@ -3,12 +3,15 @@ sap.ui.define([
 	'sap/ui/core/mvc/Controller',
    'sap/ui/model/json/JSONModel',
    'sap/m/MessageToast',
-   'sap/ui/commons/Button', // should be replaced with sap/m/Button, used due to layout testing
+   'sap/m/Dialog',
+   'sap/m/List',
+   'sap/m/StandardListItem',
+   'sap/m/Button',
    'sap/ui/layout/SplitterLayoutData',
    'sap/ui/unified/Menu',
    'sap/ui/unified/MenuItem'
 
-], function (jQuery, Controller, JSONModel, MessageToast, Button, SplitterLayoutData, Menu, MenuItem) {
+], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, StandardListItem, Button, SplitterLayoutData, Menu, MenuItem) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
@@ -31,6 +34,44 @@ sap.ui.define([
          var p = elem ? elem.getController().canvas_painter : null;
 
          return (p && (p._websocket || also_without_websocket)) ? p : null;
+		},
+
+		showMethodsDialog : function(method, call_back) {
+		   var that = this;
+         this.pressDialog = new Dialog({
+            title: 'Execute',
+            content: new List({
+              items: {
+                 path: '/MethodArgs',
+                 template: new StandardListItem({
+                    title: "{Name}",
+                    counter: "{Value}"
+                 })
+              }
+             }),
+             beginButton: new Button({
+               text: 'Cancel',
+               press: function () {
+                  that.pressDialog.close();
+                  that.pressDialog.destroy();
+               }
+             }),
+             endButton: new Button({
+               text: 'Ok',
+               press: function () {
+                  that.pressDialog.close();
+                  that.pressDialog.destroy();
+                  JSROOT.CallBack(call_back);
+               }
+             })
+         });
+
+         this.getView().getModel().setProperty("/MethodArgs", [ {Name:"abc", Value:10}, { Name: "zdf", Value: 20} ]);
+
+         //to get access to the global model
+         this.getView().addDependent(this.pressDialog);
+
+         this.pressDialog.open();
 		},
 
 		onFileMenuAction : function (oEvent) {
