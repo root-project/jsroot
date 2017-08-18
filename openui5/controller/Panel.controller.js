@@ -62,6 +62,8 @@ sap.ui.define([
 
           ResizeHandler.register(this.getView(), this.onResize.bind(this));
 
+          console.log('Painter in panel', !!this.canvas_painter);
+
           // this.canvas_painter.ShowObjectInspector = this.showInspector.bind(this);
       },
 

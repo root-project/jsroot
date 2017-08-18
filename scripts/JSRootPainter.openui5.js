@@ -319,6 +319,16 @@
       handle.dialog.open();
    }
 
+   JSROOT.TCanvasPainter.prototype.ActivateGed = function(painter) {
+      // function used to actiavte GED
+
+      if (!this.canvas_controller) return;
+
+      this.canvas_controller.showGeEditor(true);
+
+      if (this.SelectObjectPainter) this.SelectObjectPainter(painter);
+
+   }
 
    return JSROOT;
 

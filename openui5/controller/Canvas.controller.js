@@ -18,19 +18,19 @@ sap.ui.define([
          var model = new JSONModel({ GedIcon: "" });
          this.getView().setModel(model);
 
+         var canvp = this.getCanvasPainter(true);
+
+         if (canvp) canvp.canvas_controller = this;
+
 		   // this.toggleGedEditor();
 		},
 
 		getCanvasPainter : function(also_without_websocket) {
          var elem = this.getView().byId("jsroot_canvas");
 
-         if (!elem || !elem.oController || !elem.oController.canvas_painter) return null;
+         var p = elem ? elem.getController().canvas_painter : null;
 
-         var p = elem.oController.canvas_painter;
-
-         if (!also_without_websocket && !p._websocket) return null;
-
-         return p;
+         return (p && (p._websocket || also_without_websocket)) ? p : null;
 		},
 
 		onFileMenuAction : function (oEvent) {
@@ -98,6 +98,12 @@ sap.ui.define([
 	       }
 
          console.log('Select painter', obj ? obj._typename : painter.GetTipName());
+		},
+
+		showGeEditor : function(new_state) {
+         var current_state = !! this.getView().getModel().getProperty("/GedIcon");
+
+         if (current_state != new_state) this.toggleGedEditor();
 		},
 
 		toggleGedEditor : function() {

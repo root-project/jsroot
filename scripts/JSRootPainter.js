@@ -2789,12 +2789,16 @@
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         console.log('execute method ' + arg + ' for object ' + this.snapid);
-
          var canvp = this.pad_painter();
+         if (!canvp) return;
 
-         if (canvp && canvp._websocket && this.snapid)
+         if (canvp.ActivateGed && ((arg == "DrawPanel()") || (arg == "SetLineAttributes()") || (arg == "SetFillAttributes()")))
+            return canvp.ActivateGed(this); // activate GED
+
+         if (canvp && canvp._websocket && this.snapid) {
+            console.log('execute method ' + arg + ' for object ' + this.snapid);
             canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + arg);
+         }
       }
 
       function DoFillMenu(_menu, _call_back, items) {
@@ -5026,7 +5030,7 @@
 
       } else if (msg.substr(0,4)=='MENU') {
          var lst = JSROOT.parse(msg.substr(4));
-         console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
+         // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
          conn.send('READY'); // send ready message back
          if (typeof this._getmenu_callback == 'function')
             this._getmenu_callback(lst);
