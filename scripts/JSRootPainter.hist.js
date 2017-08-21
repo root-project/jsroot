@@ -1567,6 +1567,7 @@
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
          var line = pt.fLines.arr[j].fTitle;
+         if (line === undefined) continue;
          lines.push(line);
          if (j>0) maxlen = Math.max(maxlen, line.length);
          if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
@@ -1575,6 +1576,8 @@
          if (parts.length > num_cols)
             num_cols = parts.length;
       }
+
+      nlines = lines.length;
 
       if ((nlines===1) && !this.IsStats() &&
           (lines[0].indexOf("#splitline{")===0) && (lines[0][lines[0].length-1]=="}")) {
