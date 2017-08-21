@@ -186,6 +186,8 @@ examples_main = {
      { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" }
+     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
+     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" }
+
    ]
  };
