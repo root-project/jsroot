@@ -4902,7 +4902,8 @@
       if (!snap || !snap.fPrimitives) return;
 
       // VERY BAD, NEED TO BE FIXED IN TBufferJSON - should be fixed now in master
-      if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
+      // Should be fixed now in ROOT
+      // if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
 
       var first = snap.fPrimitives[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
@@ -4914,7 +4915,7 @@
 
          this.draw_object = first;
          this.pad = first;
-         this._fixed_size = true;
+         // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
          if (this.batch_mode && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
@@ -5017,16 +5018,16 @@
          } else {
             conn.send('READY'); // send ready message back
          }
-      } else if (msg.substr(0,4)=='SNAP') {
-         // older version, used with ROOT6 implementation, should be removed soon
+      } else if (msg.substr(0,6)=='SNAP6:') {
+         // This is snapshot, produced with ROOT6, handled slighly different
 
-         var snap = JSROOT.parse(msg.substr(p1+1));
+         var snap = JSROOT.parse(msg.substr(6));
 
          if (typeof this.RedrawPadSnap === 'function') {
             var pthis = this;
             this.RedrawPadSnap(snap, function() {
                var reply = pthis.GetAllRanges();
-               if (reply) console.log("ranges: " + reply);
+               // if (reply) console.log("ranges: " + reply);
                conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
             });
          } else {
