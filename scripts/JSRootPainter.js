@@ -2144,6 +2144,7 @@
 
       // create TFrame element if not exists
       if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3))) {
+         console.log('Drawing frame while is_main=', is_main);
          JSROOT.Painter.drawFrame(divid, null);
          if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
@@ -4864,8 +4865,9 @@
          if (obj) obj.$snapid = snap.fObjectID; // mark object itself, workaround for stats drawing
 
          // TODO: frame should be created in histogram painters
-         if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty())
-            JSROOT.Painter.drawFrame(this.divid, null);
+         //if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty()) {
+         //   JSROOT.Painter.drawFrame(this.divid, null);
+         //}
 
          return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
       }
