@@ -17,6 +17,7 @@
 11. Implement PFC, PLC and PMC draw options for TMultiGraph
 12. Use color palette stored in the TCanvas
 13. Let ignore color "nocol" or palette "nopal" stored in the TCanvas
+14. Better support of TPaveText - lines, boxes and arbitrary text positions 
 
 
 ## Changes in 5.2.0

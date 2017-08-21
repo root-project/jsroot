@@ -1548,99 +1548,79 @@
       this.FinishTextDrawing(null, this.FinishPave);
    }
 
-   TPavePainter.prototype.DrawPaveText = function(width, height, refill) {
+   TPavePainter.prototype.DrawPaveStats = function(width, height, refill) {
+      if (refill && this.IsStats()) this.FillStatistic();
 
       if (refill && this.IsStats()) this.FillStatistic();
 
       var pt = this.GetObject(),
           tcolor = this.get_color(pt.fTextColor),
-          lwidth = pt.fBorderSize,
           first_stat = 0,
           num_cols = 0,
-          nlines = pt.fLines.arr.length,
+          nlines = 0,
           lines = [],
-          maxlen = 0,
-          draw_header = (pt.fLabel.length>0) && !this.IsStats();
+          maxlen = 0;
 
-      if (draw_header) this.FirstRun++; // increment finish counter
-
-      // adjust font size
-      for (var j = 0; j < nlines; ++j) {
-         var line = pt.fLines.arr[j].fTitle;
-         if (line === undefined) continue;
-         lines.push(line);
-         if (j>0) maxlen = Math.max(maxlen, line.length);
-         if (!this.IsStats() || (j == 0) || (line.indexOf('|') < 0)) continue;
-         if (first_stat === 0) first_stat = j;
-         var parts = line.split("|");
-         if (parts.length > num_cols)
-            num_cols = parts.length;
+      // now draw TLine and TBox objects
+      for (var j=0;j<pt.fLines.arr.length;++j) {
+         var entry = pt.fLines.arr[j];
+         if ((entry._typename=="TText") || (entry._typename=="TLatex"))
+            lines.push(entry.fTitle);
       }
 
       nlines = lines.length;
 
-      if ((nlines===1) && !this.IsStats() &&
-          (lines[0].indexOf("#splitline{")===0) && (lines[0][lines[0].length-1]=="}")) {
-            var pos = lines[0].indexOf("}{");
-            if ((pos>0) && (pos == lines[0].lastIndexOf("}{"))) {
-               lines[1] = lines[0].substr(pos+2, lines[0].length - pos - 3);
-               lines[0] = lines[0].substr(11, pos - 11);
-               nlines = 2;
-               this.UseTextColor = true;
-            }
-         }
+      // adjust font size
+      for (var j = 0; j < nlines; ++j) {
+         var line = lines[j];
+         if (j>0) maxlen = Math.max(maxlen, line.length);
+         if ((j == 0) || (line.indexOf('|') < 0)) continue;
+         if (first_stat === 0) first_stat = lines.length-1;
+         var parts = line.split("|");
+         if (parts.length > num_cols)
+            num_cols = parts.length;
+      }
 
       // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
       var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
       this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
+      this.UseTextColor = true;
+
       if (nlines == 1) {
          this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0], tcolor);
+      } else
+      for (var j = 0; j < nlines; ++j) {
+         var posy = j*stepy, jcolor = tcolor;
          this.UseTextColor = true;
-      } else {
-         for (var j = 0; j < nlines; ++j) {
-            var posy = j*stepy, jcolor = tcolor;
-            if (!this.UseTextColor && (j<pt.fLines.arr.length) && (pt.fLines.arr[j].fTextColor!==0))
-               jcolor = this.get_color(pt.fLines.arr[j].fTextColor);
-            if (jcolor===undefined) {
-               jcolor = tcolor;
-               this.UseTextColor = true;
-            }
 
-            if (this.IsStats()) {
-               if ((first_stat > 0) && (j >= first_stat)) {
-                  var parts = lines[j].split("|");
-                  for (var n = 0; n < parts.length; ++n)
-                     this.DrawText("middle",
-                                    width * n / num_cols, posy,
-                                    width/num_cols, stepy, parts[n], jcolor);
-               } else if (lines[j].indexOf('=') < 0) {
-                  if (j==0) {
-                     has_head = true;
-                     if (lines[j].length > maxlen + 5)
-                        lines[j] = lines[j].substr(0,maxlen+2) + "...";
-                  }
-                  this.DrawText((j == 0) ? "middle" : "start",
-                                 margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
-               } else {
-                  var parts = lines[j].split("="), sumw = 0;
-                  for (var n = 0; n < 2; ++n)
-                     sumw += this.DrawText((n == 0) ? "start" : "end",
-                                      margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
-                  this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
-               }
-            } else {
-               this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
+         if ((first_stat > 0) && (j >= first_stat)) {
+            var parts = lines[j].split("|");
+            for (var n = 0; n < parts.length; ++n)
+               this.DrawText("middle",
+                     width * n / num_cols, posy,
+                     width/num_cols, stepy, parts[n], jcolor);
+         } else if (lines[j].indexOf('=') < 0) {
+            if (j==0) {
+               has_head = true;
+               if (lines[j].length > maxlen + 5)
+                  lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
+            this.DrawText((j == 0) ? "middle" : "start",
+                  margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
+         } else {
+            var parts = lines[j].split("="), sumw = 0;
+            for (var n = 0; n < 2; ++n)
+               sumw += this.DrawText((n == 0) ? "start" : "end",
+                     margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
+            this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
          }
       }
 
-      this.FinishTextDrawing(undefined, this.FinishPave);
-
       var lpath = "";
 
-      if ((lwidth > 0) && has_head)
+      if ((pt.fBorderSize > 0) && has_head)
          lpath += "M0," + Math.round(stepy) + "h" + width;
 
       if ((first_stat > 0) && (num_cols > 1)) {
@@ -1651,6 +1631,141 @@
       }
 
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
+
+      this.FinishTextDrawing(undefined, this.FinishPave);
+   }
+
+   TPavePainter.prototype.DrawPaveText = function(width, height) {
+
+      var pt = this.GetObject(),
+          tcolor = this.get_color(pt.fTextColor),
+          nlines = 0,
+          lines = [],
+          can_height = this.pad_height(),
+          individual_positioning = false,
+          draw_header = (pt.fLabel.length>0);
+
+      if (draw_header) this.FirstRun++; // increment finish counter
+
+      // first check how many text lines in the list
+      for (var j=0;j<pt.fLines.arr.length;++j) {
+         var entry = pt.fLines.arr[j];
+         if ((entry._typename=="TText") || (entry._typename=="TLatex")) {
+            nlines++; // count lines
+            if ((entry.fX>0) || (entry.fY>0)) individual_positioning = true; //
+         }
+      }
+
+      var nline = 0;
+      // now draw TLine and TBox objects
+      for (var j=0;j<pt.fLines.arr.length;++j) {
+         var entry = pt.fLines.arr[j],
+             ytext = (nlines>0) ? Math.round((1-(nline-0.5)/nlines)*height) : 0;
+         switch (entry._typename) {
+            case "TText":
+            case "TLatex":
+               nline++; // just count line number
+               if (individual_positioning) {
+                  // each line should be drawn and scaled separately
+
+                  var lx = entry.fX, ly = entry.fY;
+
+                  if ((lx>0) && (lx<1)) lx = Math.round(lx*width); else lx = pt.fMargin * width;
+                  if ((ly>0) && (ly<1)) ly = Math.round((1-ly)*height); else ly = ytext;
+
+                  var jcolor = entry.fTextColor ? this.get_color(entry.fTextColor) : undefined;
+                  if (jcolor===undefined) {
+                     jcolor = tcolor;
+                     this.UseTextColor = true;
+                  }
+
+                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height);
+
+                  this.DrawText(entry.fTextAlign || pt.fTextAlign, lx, ly, 0, 0, entry.fTitle, jcolor);
+
+                  // this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, entry.fTitle, tcolor);
+
+                  this.FinishTextDrawing(undefined, this.FinishPave);
+
+
+                  this.FirstRun++;
+
+               } else {
+                  lines.push(entry); // make as before
+               }
+               break;
+            case "TLine":
+            case "TBox":
+               var lx1 = entry.fX1, lx2 = entry.fX2,
+                   ly1 = entry.fY1, ly2 = entry.fY2;
+               if (lx1!==0) lx1 = Math.round(lx1*width);
+               lx2 = lx2 ? Math.round(lx2*width) : width;
+               ly1 = ly1 ? Math.round((1-ly1)*height) : ytext;
+               ly2 = ly2 ? Math.round((1-ly2)*height) : ytext;
+               if (entry._typename == "TLine") {
+                  var lineatt = new JSROOT.TAttLineHandler(entry);
+                  this.draw_g.append("svg:line")
+                             .attr("x1", lx1)
+                             .attr("y1", ly1)
+                             .attr("x2", lx2)
+                             .attr("y2", ly2)
+                             .call(lineatt.func);
+               } else {
+                  var fillatt = this.createAttFill(entry);
+
+                  this.draw_g.append("svg:rect")
+                      .attr("x", lx1)
+                      .attr("y", ly2)
+                      .attr("width", lx2-lx1)
+                      .attr("height", ly1-ly2)
+                      .call(fillatt.func);
+               }
+               break;
+         }
+      }
+
+      if (individual_positioning) {
+         // we should call FinishPave
+         if (this.FinishPave) this.FinishPave();
+
+      } else {
+
+         var line0 = (nlines===1) ? lines[0].fTitle : "";
+
+         if ((line0.indexOf("#splitline{")===0) && (line0[line0.length-1]=="}")) {
+            var pos = line0.indexOf("}{");
+            if ((pos>0) && (pos == line0.lastIndexOf("}{"))) {
+               lines[1] = JSROOT.extend({}, lines[0]); // clone object
+               lines[1].fTitle = line0.substr(pos+2, line0.length - pos - 3);
+               lines[0].fTitle = line0.substr(11, pos - 11);
+               nlines = 2;
+               this.UseTextColor = true;
+            }
+         }
+
+         // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
+         var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
+
+         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
+
+         if (nlines == 1) {
+            this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0].fTitle, tcolor);
+            this.UseTextColor = true;
+         } else
+         for (var j = 0; j < nlines; ++j) {
+            var posy = j*stepy, jcolor = tcolor;
+            if (!this.UseTextColor && (lines[j].fTextColor!==0))
+               jcolor = this.get_color(lines[j].fTextColor);
+            if (jcolor===undefined) {
+               jcolor = tcolor;
+               this.UseTextColor = true;
+            }
+
+            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j].fTitle, jcolor);
+         }
+
+         this.FinishTextDrawing(undefined, this.FinishPave);
+      }
 
       if (draw_header) {
          var x = Math.round(width*0.25),
@@ -1894,6 +2009,8 @@
             painter.PaveDrawFunc = painter.DrawPaveLabel;
             break;
          case "TPaveStats":
+            painter.PaveDrawFunc = painter.DrawPaveStats;
+            break;
          case "TPaveText":
             painter.PaveDrawFunc = painter.DrawPaveText;
             break;
