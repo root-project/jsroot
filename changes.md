@@ -5,6 +5,7 @@
 2. Fix in unzomming of log scale - https://root-forum.cern.ch/t/25889
 3. Fix in TMultiGraph painting - ignore not-supported options https://root-forum.cern.ch/t/25888
 4. Fix - correctly use fGridColor from TStyle 
+5. Fix - prevent error when TPaveText includes TLine or TBox in list of lines
 
 
 ## Changes in 5.2.2
