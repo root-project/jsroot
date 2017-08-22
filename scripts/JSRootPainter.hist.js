@@ -2236,8 +2236,6 @@
            pad = this.root_pad(),
            need_fillcol = false;
 
-      option.DecodedOptions = d.remain();
-
       // use error plot only when any sumw2 bigger than 0
       if ((hdim===1) && (this.histo.fSumw2.length > 0))
          for (var n=0;n<this.histo.fSumw2.length;++n)
@@ -2697,7 +2695,10 @@
             }
          }
 
-         if ((opt !== undefined) && (this.options.original !== opt))
+         var changed_opt = (histo.fOpion != obj.fOption);
+         histo.fOpion = obj.fOption;
+
+         if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
             this.options = this.DecodeOptions(opt);
       }
 
