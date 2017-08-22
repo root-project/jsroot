@@ -2451,6 +2451,7 @@
       if (d.check('*H') || d.check('*')) { option.Mark = 23; option.Hist = -1; }
 
       if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
+      if (d.check('H')) option.Hist = 1;
 
       if (this.IsTH2Poly()) {
          if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
@@ -4846,7 +4847,8 @@
       // If no any draw options specified, do not try draw histogram
       if (!this.options.Bar && !this.options.Hist && !this.options.Line &&
           !this.options.Error && !this.options.Same && !this.options.Lego && !this.options.Text) {
-         this.draw_content = false;
+         if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
+                               else this.draw_content = false;
       }
       if (this.options.Axis > 0) { // Paint histogram axis only
          this.draw_content = false;
