@@ -2165,7 +2165,7 @@
 
       if (drawing && socket_kind) {
 
-         var painter = new JSROOT.TCanvasPainter(null, true);
+         var painter = new JSROOT.TCanvasPainter(null);
          painter.plain_layout = painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
          if (painter.batch_mode) JSROOT.BatchMode = true;
 
