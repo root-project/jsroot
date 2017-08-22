@@ -6,6 +6,7 @@
 3. Fix in TMultiGraph painting - ignore not-supported options https://root-forum.cern.ch/t/25888
 4. Fix - correctly use fGridColor from TStyle 
 5. Fix - prevent error when TPaveText includes TLine or TBox in list of lines
+6. Fix mistake in TProfile bin errors calculation 
 
 
 ## Changes in 5.2.2
