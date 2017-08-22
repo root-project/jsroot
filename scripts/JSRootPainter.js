@@ -4723,7 +4723,7 @@
       if (painter) {
 
          if (snap.fKind === 1) { // object itself
-            if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
+            if (painter.UpdateObject(snap.fSnapshot, snap.fOption)) painter.Redraw();
             return draw_callback(painter); // call next
          }
 

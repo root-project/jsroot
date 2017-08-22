@@ -2227,14 +2227,16 @@
              Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
              GLBox: 0, GLColor: 0,
              System: JSROOT.Painter.Coord.kCARTESIAN,
-             AutoColor: 0, NoStat: 0, AutoZoom: false,
+             AutoColor: 0, NoStat: false, AutoZoom: false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
              Optimize: JSROOT.gStyle.OptimizeDraw,
-             minimum: -1111, maximum: -1111 },
-           d = new JSROOT.DrawOptions(opt ? opt : this.histo.fOption),
+             minimum: -1111, maximum: -1111, original: opt },
+           d = new JSROOT.DrawOptions(opt || this.histo.fOption),
            hdim = this.Dimension(),
            pad = this.root_pad(),
            need_fillcol = false;
+
+      option.DecodedOptions = d.remain();
 
       // use error plot only when any sumw2 bigger than 0
       if ((hdim===1) && (this.histo.fSumw2.length > 0))
@@ -2251,7 +2253,7 @@
       if (d.check('AUTOCOL')) { option.AutoColor = 1; option.Hist = 1; }
       if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
 
-      if (d.check('NOSTAT')) option.NoStat = 1;
+      if (d.check('NOSTAT')) option.NoStat = true;
 
       var tooltip = null;
       if (d.check('NOTOOLTIP')) tooltip = false;
@@ -2598,7 +2600,7 @@
       }
    }
 
-   THistPainter.prototype.UpdateObject = function(obj) {
+   THistPainter.prototype.UpdateObject = function(obj, opt) {
 
       var histo = this.GetObject();
 
@@ -2612,6 +2614,16 @@
          // The only that could be done is update of content
 
          // this.histo = obj;
+
+         // check only stats bit, later other settings can be monitored
+         if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats) != obj.TestBit(JSROOT.TH1StatusBits.kNoStats)) {
+            histo.fBits = obj.fBits;
+
+            var statpainter = this.FindPainterFor(this.FindStat());
+            if (statpainter) statpainter.Enabled = !histo.TestBit(JSROOT.TH1StatusBits.kNoStats);
+         }
+
+         // if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats)) this.ToggleStat();
 
          histo.fFillColor = obj.fFillColor;
          histo.fFillStyle = obj.fFillStyle;
@@ -2667,13 +2679,22 @@
             histo.fBinEntries = obj.fBinEntries;
          }
 
-         if (obj.fFunctions && !this.options.Same && this.options.Func)
+         if (obj.fFunctions && !this.options.Same && this.options.Func) {
             for (var n=0;n<obj.fFunctions.arr.length;++n) {
                var func = obj.fFunctions.arr[n];
-               if (!func || !func._typename || !func.fName) continue;
-               var funcpainter = this.FindPainterFor(null, func.fName, func._typename);
-               if (funcpainter) funcpainter.UpdateObject(func);
+               if (!func || !func._typename) continue;
+               var funcpainter = func.fName ? this.FindPainterFor(null, func.fName, func._typename) : null;
+               if (funcpainter) {
+                  funcpainter.UpdateObject(func);
+               } else if ((func._typename != 'TPaletteAxis') && (func._typename != 'TPaveStats')) {
+                  console.log('Get ' + func._typename + ' in histogram functions list, need to use?');
+                  // histo.fFunctions.Add(func,"");
+               }
             }
+         }
+
+         if ((opt !== undefined) && (this.options.original !== opt))
+            this.options = this.DecodeOptions(opt);
       }
 
       if (!this.zoom_changed_interactive) this.CheckPadRange();
@@ -3307,12 +3328,12 @@
       // object will be redraw automatically
       if (func_painter === null) {
          if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
-            do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && (this.options.NoStat!=1);
+            do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
          } else
          if (func._typename === 'TF1') {
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
-            do_draw = (func._typename !== "TPaletteAxis");
+            do_draw = (func._typename !== 'TPaletteAxis');
       }
 
       if (do_draw)
