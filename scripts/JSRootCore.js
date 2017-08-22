@@ -95,7 +95,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 21/08/2017";
+   JSROOT.version = "dev 22/08/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1810,9 +1810,7 @@
             if (this.fErrorMode === EErrorType.kERRORSPREADG)
                return 1.0/Math.sqrt(sum);
             // compute variance in y (eprim2) and standard deviation in y (eprim)
-            var contsum = cont/sum;
-            var eprim2  = Math.abs(err2/sum - contsum*contsum);
-            var eprim   = Math.sqrt(eprim2);
+            var contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
             if (this.fErrorMode === EErrorType.kERRORSPREADI) {
                if (eprim != 0) return eprim/Math.sqrt(neff);
                // in case content y is an integer (so each my has an error +/- 1/sqrt(12)

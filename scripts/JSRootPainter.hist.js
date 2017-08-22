@@ -3315,8 +3315,6 @@
             do_draw = (func._typename !== "TPaletteAxis");
       }
 
-      console.log('Draw next function', indx, func._typename, do_draw);
-
       if (do_draw)
          return JSROOT.draw(this.divid, func, opt, this.DrawNextFunction.bind(this, indx+1, callback));
 
