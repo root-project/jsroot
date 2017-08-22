@@ -216,6 +216,28 @@
              .call(att.func);
    }
 
+   // =============================================================================
+
+   function drawPolyMarker() {
+      var poly = this.GetObject(),
+          att = new JSROOT.TAttMarkerHandler(poly),
+          isndc = false;
+
+      // create svg:g container for box drawing
+      this.RecreateDrawG(true, "text_layer");
+
+      var path = "";
+
+      for (var n=0;n<poly.fN;++n)
+         path += att.create(this.AxisToSvg("x", poly.fX[n], isndc),
+                            this.AxisToSvg("y", poly.fY[n], isndc));
+
+      if (path)
+         this.draw_g.append("svg:path")
+             .attr("d", path)
+             .call(att.func);
+   }
+
    // ======================================================================================
 
    function drawArrow() {
@@ -1928,6 +1950,7 @@
    JSROOT.Painter.drawEllipse = drawEllipse;
    JSROOT.Painter.drawBox = drawBox;
    JSROOT.Painter.drawMarker = drawMarker;
+   JSROOT.Painter.drawPolyMarker = drawPolyMarker;
    JSROOT.Painter.drawWebPainting = drawWebPainting;
    JSROOT.Painter.drawRooPlot = drawRooPlot;
 
