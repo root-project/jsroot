@@ -2381,6 +2381,7 @@
          if (d.part.indexOf('3')>=0) option.Color = 13;
 
          if (d.part.indexOf('Z')>=0) option.Zscale = 1;
+         if (d.part.indexOf('A')>=0) option.Axis = -1;
          if (hdim == 1) option.Hist = 1;
                    else option.Scat = 0;
       }

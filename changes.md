@@ -18,7 +18,7 @@
 12. Use color palette stored in the TCanvas
 13. Let ignore color "nocol" or palette "nopal" stored in the TCanvas
 14. Better support of TPaveText - lines, boxes and arbitrary text positions 
-15. Implement option "A" for hsitograms painters - fully disables axes drawing
+15. Implement option "A" for histograms painters - fully disables axes drawing
 
 
 ## Changes in 5.2.0

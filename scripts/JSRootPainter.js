@@ -5645,11 +5645,11 @@
    JSROOT.addDrawFunc({ name: "TLatex", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true });
    JSROOT.addDrawFunc({ name: "TMathText", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true });
    JSROOT.addDrawFunc({ name: "TText", icon: "img_text", prereq: "more2d", func: "JSROOT.Painter.drawText", direct: true });
-   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;TEXT;LEGO;same", ctrl: "l" });
-   JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";E0;E1;E2;p;hist"});
+   JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" });
+   JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", prereq: "hist", func: "JSROOT.Painter.drawHistogram1D", opt:";E0;E1;E2;p;AH;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;same", expand_item: "fBins", theonly: true });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
-   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
+   JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
    JSROOT.addDrawFunc({ name: /^TH3/, icon: 'img_histo3d', prereq: "hist3d", func: "JSROOT.Painter.drawHistogram3D", opt:";SCAT;BOX;BOX2;BOX3;GLBOX1;GLBOX2;GLCOL" });
    JSROOT.addDrawFunc({ name: "THStack", icon: "img_histo1d", prereq: "hist", func: "JSROOT.Painter.drawHStack", expand_item: "fHists" });
