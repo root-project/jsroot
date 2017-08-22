@@ -1068,7 +1068,7 @@
       title_g.style("cursor", "move").call(drag_move);
    }
 
-   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift) {
+   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing) {
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
@@ -1110,11 +1110,12 @@
          if (vertical && axis.fChopt=="+L") side = -1; else
          if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; }
 
-         axis_g.append("svg:line")
-               .attr("x1",0).attr("y1",0)
-               .attr("x1",vertical ? 0 : w)
-               .attr("y1", vertical ? h : 0)
-               .call(this.lineatt.func);
+         if (!disable_axis_drawing)
+            axis_g.append("svg:line")
+                  .attr("x1",0).attr("y1",0)
+                  .attr("x1",vertical ? 0 : w)
+                  .attr("y1", vertical ? h : 0)
+                  .call(this.lineatt.func);
       }
 
       if (transform !== undefined)
@@ -1162,10 +1163,10 @@
          lasth = h2;
       }
 
-      if (res.length > 0)
+      if ((res.length > 0) && !disable_axis_drawing)
          axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
 
-      if ((second_shift!==0) && (res2.length>0))
+      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing)
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       var last = vertical ? h : 0,
@@ -1194,7 +1195,7 @@
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
          var pos = Math.round(this.func(handle.major[nmajor])),
              lbl = this.format(handle.major[nmajor], true);
-         if (lbl === null) continue;
+         if ((lbl === null) || disable_axis_drawing) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
@@ -1248,7 +1249,7 @@
          last = pos;
      }
 
-     if (this.order!==0)
+     if ((this.order!==0) && !disable_axis_drawing)
         label_g.append("svg:text")
                .attr("fill", label_color)
                .attr("x", vertical ? labeloffset : w+5)
@@ -1258,7 +1259,7 @@
                .attr("dy", "-.5em")
                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
 
-     if ((textscale>0) && (textscale<1.)) {
+     if ((textscale>0) && (textscale<1.) && !disable_axis_drawing) {
         // rotate X labels if they are too big
         if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
            label_g.selectAll("text").each(function() {
@@ -1291,7 +1292,7 @@
             .attr("width", w).attr("height", labelfont.size + 3);
       }
 
-      if (axis.fTitle.length > 0) {
+      if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
          var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
              title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
              title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/text_scaling_size),
@@ -3051,10 +3052,13 @@
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
-      draw_horiz.DrawAxis(false, layer, w, h, draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                          false, pad.fTickx ? -h : 0);
-      draw_vertical.DrawAxis(true, layer, w, h, draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, pad.fTicky ? w : 0);
+      draw_horiz.DrawAxis(false, layer, w, h,
+                          draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                          false, pad.fTickx ? -h : 0, this.options.Axis < 0);
+
+      draw_vertical.DrawAxis(true, layer, w, h,
+                             draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                             false, pad.fTicky ? w : 0, this.options.Axis < 0);
 
       if (shrink_forbidden) return;
 
