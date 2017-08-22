@@ -160,6 +160,11 @@ sap.ui.define([
          if (p) p.SendWebsocket("QUIT");
 		},
 
+		onReloadPress : function() {
+         var p = this.getCanvasPainter();
+         if (p) p.SendWebsocket("RELOAD");
+		},
+
 		ShowCanvasStatus : function (text1,text2,text3,text4) {
 		   var model = this.getView().getModel();
 		   model.setProperty("/StatusLbl1", text1);
