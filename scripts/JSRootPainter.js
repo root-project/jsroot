@@ -2804,7 +2804,8 @@
          if ((item.fName == "FitPanel") && canvp.ActivateFitPanel)
             return canvp.ActivateFitPanel(this);
 
-         if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes") || (item.fName == "SetFillAttributes")))
+         if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes")
+               || (item.fName == "SetFillAttributes") || (item.fName == "SetMarkerAttributes")))
             return canvp.ActivateGed(this); // activate GED
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
@@ -2826,8 +2827,6 @@
             console.error('missmatch between request ' + _reqid + ' and reply ' + replyid + ' identifiers');
 
          if (items && items.length) {
-            console.log('Get menu items for ', replyid);
-
             _menu.add("separator");
             _menu.add("sub:Online");
 

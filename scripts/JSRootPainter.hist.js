@@ -4201,8 +4201,6 @@
 
    THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
-      console.log('HIST FILLCONTEXTMENU', kind);
-
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
 
