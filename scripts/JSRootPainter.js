@@ -2786,7 +2786,7 @@
       retry_open(true); // call for the first time
    }
 
-   TObjectPainter.prototype.FillObjectExecMenu = function(menu, call_back) {
+   TObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
 
       var canvp = this.pad_painter();
 
@@ -2808,25 +2808,31 @@
             return canvp.ActivateGed(this); // activate GED
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
-            return canvp.MethodsDialog(this, item);
+            return canvp.MethodsDialog(this, item, this.args_menu_id);
 
-         if (canvp._websocket && this.snapid) {
-            console.log('execute method ' + item.fExec + ' for object ' + this.snapid);
-            canvp.SendWebsocket('OBJEXEC:' + this.snapid + ":" + item.fExec);
+         if (canvp._websocket && this.args_menu_id) {
+            console.log('execute method ' + item.fExec + ' for object ' + this.args_menu_id);
+            canvp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + item.fExec);
          }
       }
 
-      function DoFillMenu(_menu, _call_back, items) {
+      function DoFillMenu(_menu, _reqid, _call_back, items, replyid) {
 
          // avoid multiple call of the callback after timeout
          if (!canvp._getmenu_callback) return;
          delete canvp._getmenu_callback;
 
+         if (_reqid !== replyid)
+            console.error('missmatch between request ' + _reqid + ' and reply ' + replyid + ' identifiers');
+
          if (items && items.length) {
+            console.log('Get menu items for ', replyid);
+
             _menu.add("separator");
             _menu.add("sub:Online");
 
             this.args_menu_items = items;
+            this.args_menu_id = replyid;
 
             for (var n=0;n<items.length;++n) {
                var item = items[n];
@@ -2842,10 +2848,12 @@
          JSROOT.CallBack(_call_back);
       }
 
+      var reqid = this.snapid;
+      if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
 
-      canvp._getmenu_callback = DoFillMenu.bind(this, menu, call_back);
+      canvp._getmenu_callback = DoFillMenu.bind(this, menu, reqid, call_back);
 
-      canvp.SendWebsocket('GETMENU:' + this.snapid); // request menu items for given painter
+      canvp.SendWebsocket('GETMENU:' + reqid); // request menu items for given painter
 
       setTimeout(canvp._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
@@ -4586,7 +4594,7 @@
 
          menu.painter.FillContextMenu(menu);
 
-         menu.painter.FillObjectExecMenu(menu, function() { menu.show(evnt); });
+         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(evnt); });
       }); // end menu creation
    }
 
@@ -5493,12 +5501,16 @@
          this.RedrawObject(obj);
          conn.send('READY'); // send ready message back
 
-      } else if (msg.substr(0,4)=='MENU') {
-         var lst = JSROOT.parse(msg.substr(4));
+      } else if (msg.substr(0,5)=='MENU:') {
+         // this is menu with exact identifier for object
+         msg = msg.substr(5);
+         var p1 = msg.indexOf(":"),
+             menuid = msg.substr(0,p1),
+             lst = JSROOT.parse(msg.substr(p1+1));
          // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
          conn.send('READY'); // send ready message back
          if (typeof this._getmenu_callback == 'function')
-            this._getmenu_callback(lst);
+            this._getmenu_callback(lst, menuid);
       } else if (msg.substr(0,4)=='CMD:') {
          msg = msg.substr(4);
          var p1 = msg.indexOf(":"),

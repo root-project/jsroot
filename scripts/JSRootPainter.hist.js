@@ -4166,7 +4166,7 @@
             domenu = fp.FillContextMenu(menu);
 
          if (domenu)
-            menu.painter.FillObjectExecMenu(menu, function() {
+            menu.painter.FillObjectExecMenu(menu, kind, function() {
                 // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
                 menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
@@ -4200,6 +4200,8 @@
    }
 
    THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
+
+      console.log('HIST FILLCONTEXTMENU', kind);
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
