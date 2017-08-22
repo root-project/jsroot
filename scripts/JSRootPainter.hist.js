@@ -2274,9 +2274,9 @@
             if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) option.histoFillColor = col;
       }
       if (d.check('LINE_', true)) {
-         if (d.partAsInt(1)>0) this.histo.fLineColor = d.partAsInt(); else
+         if (d.partAsInt(1)>0) option.histoLineColor = JSROOT.Painter.root_colors[d.partAsInt()]; else
          for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fLineColor = col;
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) option.histoLineColor = d.part;
       }
 
       if (d.check('X+')) option.AxisPos = 10;
@@ -2587,7 +2587,7 @@
          this.fillatt = this.createAttFill(this.histo, undefined, this.options.histoFillColor, 1);
 
       if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = new JSROOT.TAttLineHandler(this.histo);
+         this.lineatt = new JSROOT.TAttLineHandler(this.histo, undefined, undefined, this.options.histoLineColor);
          var main = this.main_painter();
 
          if (main) {

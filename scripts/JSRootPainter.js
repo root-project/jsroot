@@ -780,14 +780,14 @@
       selection.style('fill', this.fill ? this.color : "none");
    }
 
-   function TAttLineHandler(attline, borderw, can_excl) {
+   function TAttLineHandler(attline, borderw, can_excl, direct_line_color) {
       var color = 'black', _width = 0, style = 0;
       if (typeof attline == 'string') {
          color = attline;
          if (color!=='none') _width = 1;
       } else
       if (typeof attline == 'object') {
-         if ('fLineColor' in attline) color = Painter.root_colors[attline.fLineColor];
+         if ('fLineColor' in attline) color = direct_line_color || Painter.root_colors[attline.fLineColor];
          if ('fLineWidth' in attline) _width = attline.fLineWidth;
          if ('fLineStyle' in attline) style = attline.fLineStyle;
       } else
