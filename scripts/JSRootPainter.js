@@ -861,9 +861,9 @@
       this.changed = false;
       this.func = this.Apply.bind(this);
 
-      if ((attfill!==null) && (typeof attfill == 'object')) {
-         if ('fFillStyle' in attfill) pattern = attfill.fFillStyle;
-         if ('fFillColor' in attfill) color = attfill.fFillColor;
+      if (attfill && (typeof attfill == 'object')) {
+         if ((pattern===undefined) && ('fFillStyle' in attfill)) pattern = attfill.fFillStyle;
+         if ((color==undefined) && ('fFillColor' in attfill)) color = attfill.fFillColor;
       }
 
       this.Change(color, pattern, main_svg);
@@ -2144,7 +2144,6 @@
 
       // create TFrame element if not exists
       if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3))) {
-         console.log('Drawing frame while is_main=', is_main);
          JSROOT.Painter.drawFrame(divid, null);
          if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
@@ -4339,7 +4338,7 @@
       }
 
       if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.pad, 1001, 0);
+         this.fillatt = this.createAttFill(this.pad);
 
       if ((rect.width<=lmt) || (rect.height<=lmt)) {
          svg.style("display", "none");
@@ -4470,7 +4469,7 @@
       }
 
       if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.pad, 1001, 0);
+         this.fillatt = this.createAttFill(this.pad);
       if (!this.lineatt || !this.lineatt.changed) {
          this.lineatt = new TAttLineHandler(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';

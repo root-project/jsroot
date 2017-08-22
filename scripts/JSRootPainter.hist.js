@@ -2269,9 +2269,9 @@
       if (d.check('TICKY')) pad.fTicky = 1;
 
       if (d.check('FILL_', true)) {
-         if (d.partAsInt(1)>0) this.histo.fFillColor = d.partAsInt(); else
+         if (d.partAsInt(1)>0) option.histoFillColor = d.partAsInt(); else
          for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histo.fFillColor = col;
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) option.histoFillColor = col;
       }
       if (d.check('LINE_', true)) {
          if (d.partAsInt(1)>0) this.histo.fLineColor = d.partAsInt(); else
@@ -2584,7 +2584,7 @@
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
       if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.histo, undefined, undefined, 1);
+         this.fillatt = this.createAttFill(this.histo, undefined, this.options.histoFillColor, 1);
 
       if (!this.lineatt || !this.lineatt.changed) {
          this.lineatt = new JSROOT.TAttLineHandler(this.histo);
