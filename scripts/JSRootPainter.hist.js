@@ -2625,6 +2625,10 @@
 
          // if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats)) this.ToggleStat();
 
+         // special tratement for webcanvas - also name can be changed
+         if (this.snapid !== undefined)
+            histo.fName = obj.fName;
+
          histo.fFillColor = obj.fFillColor;
          histo.fFillStyle = obj.fFillStyle;
          histo.fLineColor = obj.fLineColor;
