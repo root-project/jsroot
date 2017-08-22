@@ -102,6 +102,6 @@ examples_more = {
      { name:"alitask", url: "?file=$$$alitasks.root&expand=RsnMgr;1/input/1/3/9", title: "AliRoot TTask classes" },
      { name:"aliQA", asurl: "browser", file: "QAresults_barrel.root", item: "TPC_PerformanceQA/TPCQA;1/AliPerformanceTPC", opt: "inspect", title: "Objects from Alice QA file" },
      { name: "roofit", file: "https://root.cern/files/stressRooFit_v534_ref.root", layout: "grid2x2", items: ['rf101_plot2','rf201_plot1','rf310_plot2','rf708_plot6'], title: "Several RooFit plots (still some classes not work)" },
-     { name:"ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O", notest: true}
+     { name:"ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", itemfield: "fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O" }
    ]
 };
