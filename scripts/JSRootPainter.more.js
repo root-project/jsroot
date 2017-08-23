@@ -828,17 +828,17 @@
       var pmain = this.main_painter(), lines = [];
 
       lines.push(this.GetTipName());
-      lines.push("x = " + pmain.AxisAsText("x", d.x));
-      lines.push("y = " + pmain.AxisAsText("y", d.y));
 
-      if (this.options.Errors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
-         lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) +
-                              "/+" + pmain.AxisAsText("x", d.exhigh));
+      if (d) {
+         lines.push("x = " + pmain.AxisAsText("x", d.x));
+         lines.push("y = " + pmain.AxisAsText("y", d.y));
 
-      if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)) )
-         lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) +
-                           "/+" + pmain.AxisAsText("y", d.eyhigh));
+         if (this.options.Errors && (pmain.x_kind=='normal') && ('exlow' in d) && ((d.exlow!=0) || (d.exhigh!=0)))
+            lines.push("error x = -" + pmain.AxisAsText("x", d.exlow) + "/+" + pmain.AxisAsText("x", d.exhigh));
 
+         if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
+            lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) + "/+" + pmain.AxisAsText("y", d.eyhigh));
+      }
       if (asarray) return lines;
 
       var res = "";
@@ -1285,7 +1285,55 @@
          if ((this.bins.length==1) && (bestdist > 3*radius)) bestbin = null;
       }
 
-      return { bin: bestbin, indx: bestindx, dist: bestdist, radius: radius };
+      if (bestbin === null) bestindx = -1;
+
+      var res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: radius };
+
+      if ((bestbin===null) && islines) {
+
+         bestdist = 10000;
+
+         function IsInside(x, x1, x2) {
+            return ((x1>=x) && (x>=x2)) || ((x1<=x) && (x<=x2));
+         }
+
+         var bin0 = this.bins[0], grx0 = pmain.grx(bin0.x), gry0, posy = 0;
+         for (n=1;n<this.bins.length;++n) {
+            bin = this.bins[n];
+            grx = pmain.grx(bin.x);
+
+            if (IsInside(pnt.x, grx0, grx)) {
+               // if inside interval, check Y distance
+               gry0 = pmain.gry(bin0.y)
+               gry = pmain.gry(bin.y);
+
+               if (Math.abs(grx - grx0) < 1) {
+                  // very close x - check only y
+                  posy = pnt.y;
+                  dist = IsInside(pnt.y, gry0, gry) ? 0 : Math.min(Math.abs(pnt.y-gry0), Math.abs(pnt.y-gry));
+               } else {
+                  posy = gry0 + (pnt.x - grx0) / (grx - grx0) * (gry - gry0);
+                  dist = Math.abs(posy - pnt.y);
+               }
+
+               if (dist < bestdist) {
+                  bestdist = dist;
+                  res.linex = pnt.x;
+                  res.liney = posy;
+               }
+            }
+
+            bin0 = bin;
+            grx0 = grx;
+         }
+
+         if (bestdist < radius*0.5) {
+            res.linedist = bestdist;
+            res.closeline = true;
+         }
+      }
+
+      return res;
    }
 
    TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
@@ -1296,7 +1344,7 @@
 
       var ttbin = this.draw_g.select(".tooltip_bin");
 
-      if (best.bin===null) {
+      if (!best.bin && !best.closeline) {
          ttbin.remove();
          return null;
       }
@@ -1306,11 +1354,17 @@
           pmain = this.main_painter();
 
       var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
-                  x: pmain.grx(best.bin.x), y: pmain.gry(best.bin.y),
+                  x: best.bin ? pmain.grx(best.bin.x) : best.linex,
+                  y: best.bin ? pmain.gry(best.bin.y) : best.liney,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(best.bin, true) };
 
-      if (pnt.disabled) {
+      if (pnt.disabled || !best.bin) {
+         if (best.closeline) {
+            res.menu = true;
+            res.menu_dist = best.linedist;
+         }
+
          ttbin.remove();
          return res;
       }
