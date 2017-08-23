@@ -38,7 +38,7 @@
                        <items>
                         <MenuItem text="Editor" icon="{/GedIcon}"/>
                         <MenuItem text="Toolbar"/>
-                        <MenuItem text="Event statusbar"/>
+                        <MenuItem text="Event statusbar" icon="{/StatusIcon}"/>
                         <MenuItem text="Tooltip info" icon="sap-icon://accept"/>
                         <MenuItem text="Colors" startsSection="true" />
                         <MenuItem text="Fonts"/>

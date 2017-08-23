@@ -20,7 +20,8 @@ sap.ui.define([
 		onInit : function() {
 		   this._Page = this.getView().byId("CanvasMainPage");
 
-         var model = new JSONModel({ GedIcon: "", StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
+         var model = new JSONModel({ GedIcon: "", StatusIcon: "",
+                                     StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
 
 		   // this.toggleGedEditor();
@@ -165,14 +166,6 @@ sap.ui.define([
          if (p) p.SendWebsocket("RELOAD");
 		},
 
-		ShowCanvasStatus : function (text1,text2,text3,text4) {
-		   var model = this.getView().getModel();
-		   model.setProperty("/StatusLbl1", text1);
-         model.setProperty("/StatusLbl2", text2);
-         model.setProperty("/StatusLbl3", text3);
-         model.setProperty("/StatusLbl4", text4);
-		},
-
 		showGeEditor : function(new_state) {
          var p = this.getCanvasPainter(true);
          if (!p) return;
@@ -221,34 +214,48 @@ sap.ui.define([
          return oContent.getController(); // return controller of new panel
 		},
 
+	   ShowCanvasStatus : function (text1,text2,text3,text4) {
+	      var model = this.getView().getModel();
+	      model.setProperty("/StatusLbl1", text1);
+	      model.setProperty("/StatusLbl2", text2);
+	      model.setProperty("/StatusLbl3", text3);
+	      model.setProperty("/StatusLbl4", text4);
+      },
+
+		isStatusShown : function() {
+		   return this._Page.getShowFooter();
+		},
+
+		toggleShowStatus : function() {
+		   var new_state = !this.isStatusShown();
+
+         this._Page.setShowFooter(new_state);
+         this.getView().getModel().setProperty("/StatusIcon", new_state ? "sap-icon://accept" : "");
+		},
+
 		onViewMenuAction : function (oEvent) {
-         var p = this.getCanvasPainter(true);
-         if (!p) return;
 
          var item = oEvent.getParameter("item"),
              name = item.getText();
 
+         if (name=="Editor") return this.toggleGedEditor();
+         if (name=="Event statusbar") return this.toggleShowStatus();
+
+
+         var p = this.getCanvasPainter(true);
+         if (!p) return;
+
          var new_state = !item.getIcon();
 
          switch (name) {
-            case "Editor":
-               this.toggleGedEditor();
-               return;
             case "Toolbar":
                this._Page.setShowSubHeader(new_state)
                break;
-            case "Event statusbar":
-               this._Page.setShowFooter(new_state);
-               if (new_state) {
-                  p.ShowStatus = this.ShowCanvasStatus.bind(this);
-               } else {
-                  delete p.ShowStatus;
-               }
+            case "Tooltip info":
+               p.SetTooltipAllowed(new_state);
                break;
-            case "Tooltip info": p.SetTooltipAllowed(new_state); break;
             default: return;
          }
-
          item.setIcon(new_state ? "sap-icon://accept" : "");
 
          // MessageToast.show("Action triggered on item: " + name);

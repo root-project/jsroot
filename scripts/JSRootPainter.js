@@ -4127,7 +4127,7 @@
    TPadPainter.prototype.ForEachPainterInPad = function(userfunc, onlypadpainters) {
       userfunc(this);
       for (var k = 0; k < this.painters.length; ++k) {
-         var sub =  this.painters[k];
+         var sub = this.painters[k];
          if (typeof sub.ForEachPainterInPad === 'function')
             sub.ForEachPainterInPad(userfunc, onlypadpainters);
          else if (!onlypadpainters) userfunc(sub);
@@ -4136,48 +4136,6 @@
 
    TPadPainter.prototype.ButtonSize = function(fact) {
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
-   }
-
-   TPadPainter.prototype.ToggleEventStatus = function() {
-      // when function called, jquery should be already loaded
-
-      if ((this.enlarge_main('state')==='on') || this.plain_layout) return;
-
-      this.has_event_status = !this.has_event_status;
-      if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
-
-      var resized = this.layout_main(this.has_event_status || this._websocket ? "canvas" : "simple");
-
-      var footer = this.select_main('footer');
-
-      if (!this.has_event_status) {
-         footer.html("");
-         delete this.status_layout;
-         delete this.ShowStatus;
-         delete this.ShowStatusFunc;
-      } else {
-
-         this.status_layout = new JSROOT.GridDisplay(footer.node(), 'horizx4_1213');
-
-         var frame_titles = ['object name','object title','mouse coordinates','object info'];
-         for (var k=0;k<4;++k)
-            d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
-            .append("label").attr("class","jsroot_status_label");
-
-         this.ShowStatusFunc = function(name, title, info, coordinates) {
-            if (!this.status_layout) return;
-            $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-            $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-            $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-            $(this.status_layout.GetFrame(3)).children('label').text(info || "");
-         }
-
-         this.ShowStatus = this.ShowStatusFunc.bind(this);
-
-         this.ShowStatus("canvas","title","info","");
-      }
-
-      if (resized) this.CheckCanvasResize(); // redraw with resize
    }
 
    TPadPainter.prototype.SetTooltipAllowed = function(on) {
@@ -4455,13 +4413,13 @@
    }
 
    TPadPainter.prototype.RemovePrimitive = function(obj) {
-      if ((this.pad===null) || (this.pad.fPrimitives === null)) return;
+      if (!this.pad || !this.pad.fPrimitives) return;
       var indx = this.pad.fPrimitives.arr.indexOf(obj);
       if (indx>=0) this.pad.fPrimitives.RemoveAt(indx);
    }
 
    TPadPainter.prototype.FindPrimitive = function(exact_obj, classname, name) {
-      if ((this.pad===null) || (this.pad.fPrimitives === null)) return null;
+      if (!this.pad || !this.pad.fPrimitives) return null;
 
       for (var i=0; i < this.pad.fPrimitives.arr.length; i++) {
          var obj = this.pad.fPrimitives.arr[i];
@@ -4483,7 +4441,7 @@
    TPadPainter.prototype.HasObjectsToDraw = function() {
       // return true if any objects beside sub-pads exists in the pad
 
-      if ((this.pad===null) || !this.pad.fPrimitives || (this.pad.fPrimitives.arr.length==0)) return false;
+      if (!this.pad || !this.pad.fPrimitives) return false;
 
       for (var n=0;n<this.pad.fPrimitives.arr.length;++n)
          if (this.pad.fPrimitives.arr[n] && this.pad.fPrimitives.arr[n]._typename != "TPad") return true;
@@ -4561,7 +4519,8 @@
 
       menu.add("separator");
 
-      menu.addchk(this.has_event_status, "Event status", this.ToggleEventStatus.bind(this));
+      if (this.ToggleEventStatus)
+         menu.addchk(this.HasEventStatus(), "Event status", this.ToggleEventStatus.bind(this));
 
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
          menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
@@ -4621,7 +4580,7 @@
 
       for (var i = 0; i < this.painters.length; ++i) {
          var obj = this.painters[i].GetObject();
-         if ((obj!==null) && (obj._typename === "TPad")) num++;
+         if (obj && (obj._typename === "TPad")) num++;
       }
 
       return num;
@@ -5410,7 +5369,7 @@
                menu.add("Clear canvas", HandleClick);
                break;
             case "View": {
-               menu.addchk(menu.painter.has_event_status, "Event status", menu.painter.ToggleEventStatus.bind(menu.painter));
+               menu.addchk(menu.painter.HasEventStatus(), "Event status", menu.painter.ToggleEventStatus.bind(menu.painter));
                var fp = menu.painter.frame_painter();
                menu.addchk(fp && fp.tooltip_allowed, "Tooltip info", function() { if (fp) fp.tooltip_allowed = !fp.tooltip_allowed; });
                break;
@@ -5528,6 +5487,52 @@
       } else {
          console.log("unrecognized msg " + msg);
       }
+   }
+
+   TCanvasPainter.prototype.HasEventStatus = function() {
+      return this.has_event_status;
+   }
+
+   TCanvasPainter.prototype.ToggleEventStatus = function() {
+      // when function called, jquery should be already loaded
+
+      if ((this.enlarge_main('state')==='on') || this.plain_layout) return;
+
+      this.has_event_status = !this.has_event_status;
+      if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
+
+      var resized = this.layout_main(this.has_event_status || this._websocket ? "canvas" : "simple");
+
+      var footer = this.select_main('footer');
+
+      if (!this.has_event_status) {
+         footer.html("");
+         delete this.status_layout;
+         delete this.ShowStatus;
+         delete this.ShowStatusFunc;
+      } else {
+
+         this.status_layout = new JSROOT.GridDisplay(footer.node(), 'horizx4_1213');
+
+         var frame_titles = ['object name','object title','mouse coordinates','object info'];
+         for (var k=0;k<4;++k)
+            d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+            .append("label").attr("class","jsroot_status_label");
+
+         this.ShowStatusFunc = function(name, title, info, coordinates) {
+            if (!this.status_layout) return;
+            $(this.status_layout.GetFrame(0)).children('label').text(name || "");
+            $(this.status_layout.GetFrame(1)).children('label').text(title || "");
+            $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
+            $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+         }
+
+         this.ShowStatus = this.ShowStatusFunc.bind(this);
+
+         this.ShowStatus("canvas","title","info","");
+      }
+
+      if (resized) this.CheckCanvasResize(); // redraw with resize
    }
 
    Painter.drawCanvas = function(divid, can, opt) {

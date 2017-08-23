@@ -95,7 +95,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 22/08/2017";
+   JSROOT.version = "dev 23/08/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
