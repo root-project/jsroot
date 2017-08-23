@@ -672,7 +672,7 @@
       var d = new JSROOT.DrawOptions(opt);
 
       var res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
-                  Errors: 0, MainError: 1, Ends: 1, Axis: "AXIS" };
+                  Errors: 0, MainError: 1, Ends: 1, Axis: "AXIS", original: opt };
 
       var graph = this.GetObject();
 
@@ -1242,12 +1242,12 @@
       return res;
    }
 
-   TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
-
+   TGraphPainter.prototype.FindBestBin = function(pnt) {
       if (this.bins === null) return null;
 
       var islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
+          bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
           pmain = this.main_painter(),
@@ -1264,6 +1264,7 @@
          if (dist < bestdist) {
             bestdist = dist;
             bestbin = bin;
+            bestindx = n;
          }
       }
 
@@ -1277,24 +1278,37 @@
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
 
-      if (!islines && !ismark && (bestdist>radius)) bestbin = null;
+      if (!islines && !ismark && (bestdist > radius)) bestbin = null;
 
       if (ismark && (bestbin!==null)) {
-         if ((pnt.nproc == 1) && (bestdist>radius)) bestbin = null; else
-         if ((this.bins.length==1) && (bestdist>3*radius)) bestbin = null;
+         if ((pnt.nproc == 1) && (bestdist > radius)) bestbin = null; else
+         if ((this.bins.length==1) && (bestdist > 3*radius)) bestbin = null;
       }
+
+      return { bin: bestbin, indx: bestindx, dist: bestdist, radius: radius };
+   }
+
+   TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
+
+      if (this.bins === null) return null;
+
+      var best = this.FindBestBin(pnt);
 
       var ttbin = this.draw_g.select(".tooltip_bin");
 
-      if (bestbin===null) {
+      if (best.bin===null) {
          ttbin.remove();
          return null;
       }
 
+      var islines = (this.draw_kind=="lines"),
+          ismark = (this.draw_kind=="mark"),
+          pmain = this.main_painter();
+
       var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
-                  x: pmain.grx(bestbin.x), y: pmain.gry(bestbin.y),
+                  x: pmain.grx(best.bin.x), y: pmain.gry(best.bin.y),
                   color1: this.lineatt.color,
-                  lines: this.TooltipText(bestbin, true) };
+                  lines: this.TooltipText(best.bin, true) };
 
       if (pnt.disabled) {
          ttbin.remove();
@@ -1315,23 +1329,23 @@
       var gry1, gry2;
 
       if (this.options.EF && islines) {
-         gry1 = pmain.gry(bestbin.y - bestbin.eylow);
-         gry2 = pmain.gry(bestbin.y + bestbin.eyhigh);
+         gry1 = pmain.gry(best.bin.y - best.bin.eylow);
+         gry2 = pmain.gry(best.bin.y + best.bin.eyhigh);
       } else {
-         gry1 = gry2 = pmain.gry(bestbin.y);
+         gry1 = gry2 = pmain.gry(best.bin.y);
       }
 
-      res.exact = (Math.abs(pnt.x - res.x) <= radius) &&
-                  ((Math.abs(pnt.y - gry1) <= radius) || (Math.abs(pnt.y - gry2) <= radius));
+      res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
+                  ((Math.abs(pnt.y - gry1) <= best.radius) || (Math.abs(pnt.y - gry2) <= best.radius));
 
       res.menu = res.exact;
       res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
 
-      res.changed = ttbin.property("current_bin") !== bestbin;
+      res.changed = ttbin.property("current_bin") !== best.bin;
 
       if (res.changed) {
          ttbin.selectAll("*").remove(); // first delete all children
-         ttbin.property("current_bin", bestbin);
+         ttbin.property("current_bin", best.bin);
 
          if (ismark) {
             ttbin.append("svg:rect")
@@ -1348,7 +1362,7 @@
                ttbin.append("svg:circle").attr("cy", gry2.toFixed(1));
 
             var elem = ttbin.selectAll("circle")
-                            .attr("r", radius)
+                            .attr("r", best.radius)
                             .attr("cx", res.x.toFixed(1));
 
             if (!islines) {
@@ -1369,19 +1383,52 @@
       return res;
    }
 
-   TGraphPainter.prototype.UpdateObject = function(obj) {
+   TGraphPainter.prototype.ExecuteMenuCommand = function(item) {
+      if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,item)) return true;
+
+      var canp = this.pad_painter(), fp = this.frame_painter();
+
+      if (item.fName == 'RemovePoint') {
+         var pnt = fp ? fp.GetLastEventPos() : null;
+
+         if (!canp || !fp || !pnt) return true; // ignore function
+
+         var best = this.FindBestBin(pnt);
+
+         if (this.args_menu_id && best.bin) {
+            var exec = "RemovePoint(" + best.indx + ")";
+            console.log('execute ' + exec + ' for object ' + this.args_menu_id);
+            canp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + exec);
+         }
+
+
+         return true; // call is processed
+      }
+
+      return false;
+   }
+
+   TGraphPainter.prototype.UpdateObject = function(obj, opt) {
       if (!this.MatchObjectType(obj)) return false;
 
-      // if our own histogram was used as axis drawing, we need update histogram  as well
-      if (this.ownhisto)
-         this.main_painter().UpdateObject(obj.fHistogram);
+      if ((opt !== undefined) && (opt != this.options.original))
+         this.options = this.DecodeOptions(opt);
 
       var graph = this.GetObject();
       // TODO: make real update of TGraph object content
+      graph.fTitle = obj.fTitle;
       graph.fX = obj.fX;
       graph.fY = obj.fY;
       graph.fNpoints = obj.fNpoints;
       this.CreateBins();
+
+      // if our own histogram was used as axis drawing, we need update histogram  as well
+      if (this.ownhisto) {
+         var main = this.main_painter();
+         if (obj.fHistogram) main.UpdateObject(obj.fHistogram);
+         main.GetObject().fTitle = graph.fTitle; // copy title
+      }
+
       return true;
    }
 

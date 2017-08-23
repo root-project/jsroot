@@ -4149,6 +4149,8 @@
             if (fp!==null) kind = "frame";
 
             if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+
+            if (fp) fp.SetLastEventPos(pnt);
          }
       }
 

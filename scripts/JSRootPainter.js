@@ -2784,6 +2784,31 @@
       retry_open(true); // call for the first time
    }
 
+   TObjectPainter.prototype.ExecuteMenuCommand = function(item) {
+      // execute selected menu command, either locally or remotely
+
+      if (item.fName == "Inspect") {
+         this.ShowInpsector();
+         return true;
+      }
+
+      var canvp = this.pad_painter();
+      if (!canvp) return false;
+
+      if ((item.fName == "FitPanel") && canvp.ActivateFitPanel) {
+         canvp.ActivateFitPanel(this);
+         return true;
+      }
+
+      if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes")
+            || (item.fName == "SetFillAttributes") || (item.fName == "SetMarkerAttributes"))) {
+         canvp.ActivateGed(this); // activate GED
+         return true;
+      }
+
+      return false;
+   }
+
    TObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
 
       var canvp = this.pad_painter();
@@ -2794,17 +2819,10 @@
       function DoExecMenu(arg) {
          var canvp = this.pad_painter(),
              item = this.args_menu_items[parseInt(arg)];
-         if (!canvp || !item || !item.fName) return;
 
-         if (item.fName == "Inspect")
-            return this.ShowInpsector();
+         if (!item || !item.fName) return;
 
-         if ((item.fName == "FitPanel") && canvp.ActivateFitPanel)
-            return canvp.ActivateFitPanel(this);
-
-         if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes")
-               || (item.fName == "SetFillAttributes") || (item.fName == "SetMarkerAttributes")))
-            return canvp.ActivateGed(this); // activate GED
+         if (this.ExecuteMenuCommand(item)) return;
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
             return canvp.MethodsDialog(this, item, this.args_menu_id);
@@ -3544,6 +3562,16 @@
    TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
       this.fX2NDC -= shrink_right;
+   }
+
+   TFramePainter.prototype.SetLastEventPos = function(pnt) {
+      // set position of last context menu event, can be
+      this.fLastEventPnt = pnt;
+   }
+
+   TFramePainter.prototype.GetLastEventPos = function() {
+      // return position of last event
+      return this.fLastEventPnt;
    }
 
    TFramePainter.prototype.UpdateAttributes = function(force) {
@@ -4531,9 +4559,9 @@
 
    TPadPainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
-
          // for debug purposes keep original context menu for small region in top-left corner
          var pos = d3.mouse(this.svg_pad(this.this_pad_name).node());
+
          if (pos && (pos.length==2) && (pos[0]>0) && (pos[0]<10) && (pos[1]>0) && pos[1]<10) return;
 
          d3.event.stopPropagation(); // disable main context menu
@@ -4544,6 +4572,9 @@
       }
 
       JSROOT.Painter.createMenu(this, function(menu) {
+
+         var fp = this.frame_painter();
+         if (fp) fp.SetLastEventPos();
 
          menu.painter.FillContextMenu(menu);
 
