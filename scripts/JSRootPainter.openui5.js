@@ -355,6 +355,11 @@
       if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
    }
 
+   JSROOT.TCanvasPainter.prototype.ShowMessage = function(msg) {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().showMessage(msg);
+   }
+
    JSROOT.TCanvasPainter.prototype.MethodsDialog = function(painter, method, menu_obj_id) {
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");

@@ -5423,6 +5423,10 @@
       });
    }
 
+   TCanvasPainter.prototype.ShowMessage = function(msg) {
+      JSROOT.progress(msg, 7000);
+   }
+
    /// function called when canvas menu item Save is called
    TCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
       var pthis = this, pnt = fname.indexOf(".");

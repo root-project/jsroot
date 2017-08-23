@@ -271,6 +271,10 @@ sap.ui.define([
          var curr = this.getView().getModel().getProperty("/LeftArea");
 
          this.showLeftArea(curr == "FitPanel" ? "" : "FitPanel");
+		},
+
+		showMessage : function(msg) {
+		   MessageToast.show(msg);
 		}
 
 	});

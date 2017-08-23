@@ -1442,22 +1442,28 @@
 
       var canp = this.pad_painter(), fp = this.frame_painter();
 
-      if (item.fName == 'RemovePoint') {
+      if ((item.fName == 'RemovePoint') || (item.fName == 'InsertPoint')) {
          var pnt = fp ? fp.GetLastEventPos() : null;
 
          if (!canp || !fp || !pnt) return true; // ignore function
 
          var best = this.FindBestBin(pnt);
 
+         if (item.fName == 'InsertPoint') {
+            var main = this.main_painter(),
+                userx = main && main.RevertX ? main.RevertX(pnt.x) : 0,
+                usery = main && main.RevertY ? main.RevertY(pnt.y) : 0;
+            canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
+         } else
          if (this.args_menu_id && best.bin) {
             var exec = "RemovePoint(" + best.indx + ")";
             console.log('execute ' + exec + ' for object ' + this.args_menu_id);
             canp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + exec);
          }
 
-
          return true; // call is processed
       }
+
 
       return false;
    }
