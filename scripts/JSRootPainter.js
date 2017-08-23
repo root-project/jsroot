@@ -3734,7 +3734,9 @@
             this.draw_g
                 .append("rect")
                 .attr("class","interactive_rect")
-                .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill")
+                .style('opacity',0)
+                .style('fill',"none")
+                .style("pointer-events","visibleFill")
                 .on('mouseenter', MouseMoveEvent)
                 .on('mousemove', MouseMoveEvent)
                 .on('mouseleave', MouseCloseEvent);

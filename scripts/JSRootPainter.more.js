@@ -473,7 +473,7 @@
    TF1Painter.prototype.ProcessTooltipFunc = function(pnt) {
       var cleanup = false;
 
-      if ((pnt === null) || (this.bins===null)) {
+      if ((pnt === null) || (this.bins === null)) {
          cleanup = true;
       } else
       if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
@@ -1387,7 +1387,7 @@
       }
 
       if (pnt.disabled || !best.bin) {
-         ttbin.remove();
+         if (!best.bin) ttbin.remove();
          return res;
       }
 
