@@ -324,7 +324,7 @@
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showGeEditor(true);
 
-      if (this.SelectObjectPainter) this.SelectObjectPainter(painter);
+      this.SelectObjectPainter(painter);
    }
 
    JSROOT.TCanvasPainter.prototype.ActivateFitPanel = function(painter) {
@@ -332,6 +332,12 @@
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showLeftArea("FitPanel");
+   }
+
+   JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(painter) {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      var ged = main ? main.getController().getGed() : null;
+      if (ged) ged.onObjectSelect(this, painter);
    }
 
    JSROOT.TCanvasPainter.prototype.HasEventStatus = function() {

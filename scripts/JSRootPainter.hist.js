@@ -3659,14 +3659,10 @@
                if (fp) fp.ProcessFrameClick(pnt);
                break;
             case 2:
-               var pp = this.pad_painter();
-               if (typeof pp.SelectObjectPainter == 'function')
-                  pp.SelectObjectPainter(this.x_handle);
+               this.pad_painter().SelectObjectPainter(this.x_handle);
                break;
             case 3:
-               var pp = this.pad_painter();
-               if (typeof pp.SelectObjectPainter == 'function')
-                  pp.SelectObjectPainter(this.y_handle);
+               this.pad_painter().SelectObjectPainter(this.y_handle);
                break;
          }
       }

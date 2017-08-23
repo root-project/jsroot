@@ -2360,9 +2360,7 @@
                      var rrr = resize_corner2.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   } else if (callback.canselect && (spent <= 600)) {
-                     var pp = pthis.pad_painter();
-                     if (pp && typeof pp.SelectObjectPainter == 'function')
-                        pp.SelectObjectPainter(pthis);
+                     pthis.pad_painter().SelectObjectPainter(pthis);
                   }
 
                }
@@ -4074,8 +4072,7 @@
       //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
       //      else console.log('Click frame', pnt);
 
-      if (typeof pp.SelectObjectPainter == 'function')
-         pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
+      pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
    }
 
    Painter.drawFrame = function(divid, obj) {
@@ -4143,10 +4140,8 @@
       fp.tooltip_allowed = !!on;
    }
 
-   TPadPainter.prototype.MouseClick = function() {
-      // that to do when mouse clicked on the canvas/pad
-      if (typeof this.SelectObjectPainter == 'function')
-         this.SelectObjectPainter(this);
+   TPadPainter.prototype.SelectObjectPainter = function(painter) {
+      // dummy function, redefined in the TCanvasPainter
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -4188,7 +4183,7 @@
          if (!JSROOT.BatchMode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", this.EnlargePad.bind(this))
-                 .on("click", this.MouseClick.bind(this))
+                 .on("click", this.SelectObjectPainter.bind(this, this))
                  .on("mouseenter", this.ShowObjectStatus.bind(this));
 
          svg.append("svg:g").attr("class","root_frame");
@@ -4342,7 +4337,7 @@
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", this.EnlargePad.bind(this))
-                    .on("click", this.MouseClick.bind(this))
+                    .on("click", this.SelectObjectPainter.bind(this, this))
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
       }
 

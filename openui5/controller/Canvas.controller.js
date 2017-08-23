@@ -167,28 +167,29 @@ sap.ui.define([
 		},
 
 		showGeEditor : function(new_state) {
-         var p = this.getCanvasPainter(true);
-         if (!p) return;
+         this.showLeftArea(new_state ? "Ged" : "");
+		},
 
-         var ctrl = this.showLeftArea(new_state ? "Ged" : "");
-         if (new_state && ctrl) {
-            p.SelectObjectPainter = ctrl.onObjectSelect.bind(ctrl, p);
-            ctrl.onObjectSelect(p,p);
-         } else {
-            delete p.SelectObjectPainter;
-         }
+		getGed : function() {
+		   if (this.getView().getModel().getProperty("/LeftArea") != "Ged") return null;
+		   var split = this.getView().byId("MainAreaSplitter");
+         return split ? split.getContentAreas()[0].getController() : null;
 		},
 
 		toggleGedEditor : function() {
-		   this.showGeEditor(this.getView().getModel().getProperty("/LeftArea") != "Ged");
+		   var new_state = this.getView().getModel().getProperty("/LeftArea") != "Ged";
+		   this.showGeEditor(new_state);
+		   var p = this.getCanvasPainter();
+		   if (new_state && p) p.SelectObjectPainter(p);
+
 		},
 
 		showLeftArea : function(panel_name) {
-		   var curr = this.getView().getModel().getProperty("/LeftArea");
-		   if (curr == panel_name) return;
-
          var split = this.getView().byId("MainAreaSplitter");
          if (!split) return;
+
+		   var curr = this.getView().getModel().getProperty("/LeftArea");
+		   if (curr == panel_name) return;
 
          // first need to remove existing
          if (curr) split.removeContentArea(split.getContentAreas()[0]);
