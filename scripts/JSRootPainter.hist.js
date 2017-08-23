@@ -3379,8 +3379,8 @@
    }
 
    THistPainter.prototype.ToggleLog = function(axis) {
-      var obj = this.main_painter(), pad = this.root_pad();
-      if (!obj) obj = this;
+      var painter = this.main_painter() || this,
+          pad = this.root_pad();
       var curr = pad["fLog" + axis];
       // do not allow log scale for labels
       if (!curr) {
@@ -3389,12 +3389,13 @@
          if (this.swap_xy && axis==="y") kind = this["x_kind"];
          if (kind === "labels") return;
       }
+
       var pp = this.pad_painter();
-      if (pp && pp._websocket) {
-         pp.SendWebsocket("EXEC:SetLog" + axis + (curr ? "(0)" : "(1)"));
+      if (pp && pp._websocket && pp.snapid) {
+         pp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
       } else {
          pad["fLog" + axis] = curr ? 0 : 1;
-         obj.RedrawPad();
+         painter.RedrawPad();
       }
    }
 
