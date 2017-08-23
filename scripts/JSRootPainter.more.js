@@ -1359,14 +1359,24 @@
                   color1: this.lineatt.color,
                   lines: this.TooltipText(best.bin, true) };
 
-      if (pnt.disabled || !best.bin) {
-         if (best.closeline) {
-            res.menu = true;
-            res.menu_dist = best.linedist;
+      var gry1, gry2;
+
+      if (best.closeline) {
+         res.menu = res.exact = true;
+         res.menu_dist = best.linedist;
+      } else if (best.bin) {
+         if (this.options.EF && islines) {
+            gry1 = pmain.gry(best.bin.y - best.bin.eylow);
+            gry2 = pmain.gry(best.bin.y + best.bin.eyhigh);
+         } else {
+            gry1 = gry2 = pmain.gry(best.bin.y);
          }
 
-         ttbin.remove();
-         return res;
+         res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
+            ((Math.abs(pnt.y - gry1) <= best.radius) || (Math.abs(pnt.y - gry2) <= best.radius));
+
+         res.menu = res.exact;
+         res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
       }
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
@@ -1376,24 +1386,14 @@
          if (!res.color2) res.color2 = res.color1;
       }
 
+      if (pnt.disabled || !best.bin) {
+         ttbin.remove();
+         return res;
+      }
+
       if (ttbin.empty())
          ttbin = this.draw_g.append("svg:g")
                              .attr("class","tooltip_bin");
-
-      var gry1, gry2;
-
-      if (this.options.EF && islines) {
-         gry1 = pmain.gry(best.bin.y - best.bin.eylow);
-         gry2 = pmain.gry(best.bin.y + best.bin.eyhigh);
-      } else {
-         gry1 = gry2 = pmain.gry(best.bin.y);
-      }
-
-      res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
-                  ((Math.abs(pnt.y - gry1) <= best.radius) || (Math.abs(pnt.y - gry2) <= best.radius));
-
-      res.menu = res.exact;
-      res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
 
       res.changed = ttbin.property("current_bin") !== best.bin;
 

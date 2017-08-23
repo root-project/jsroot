@@ -4091,7 +4091,7 @@
       if (!pp) return;
 
       pnt.painters = true; // provide painters reference in the hints
-      // pnt.disabled = true; // do not invoke graphics
+      pnt.disabled = true; // do not invoke graphics
 
       // collect tooltips from pad painter - it has list of all drawn objects
       var hints = pp.GetTooltips(pnt), exact = null;
