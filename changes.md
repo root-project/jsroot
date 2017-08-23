@@ -1,12 +1,12 @@
 # JSROOT changelog
 
-## Changes in 5.2.x
-1. Fix in marker attributes handling - can mix different attributes 
-2. Fix in unzomming of log scale - https://root-forum.cern.ch/t/25889
-3. Fix in TMultiGraph painting - ignore not-supported options https://root-forum.cern.ch/t/25888
-4. Fix - correctly use fGridColor from TStyle 
+## Changes in 5.2.3
+1. Fix - potential mix-up in marker attributes handling
+2. Fix - unzomming of log scale https://root-forum.cern.ch/t/25889
+3. Fix - ignore not-supported options in TMultiGraph https://root-forum.cern.ch/t/25888
+4. Fix - correctly use fGridColor from TStyle
 5. Fix - prevent error when TPaveText includes TLine or TBox in list of lines
-6. Fix mistake in TProfile bin errors calculation 
+6. Fix - bin errors calculations in TProfile
 
 
 ## Changes in 5.2.2
