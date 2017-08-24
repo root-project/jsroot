@@ -1212,6 +1212,9 @@
       res.bin = d;
       res.binindx = d.indx;
 
+      if (pnt.click_handler && res.exact && this.IsEditable())
+         res.click_handler = this.InvokeClickHandler.bind(this);
+
       return res;
    }
 
@@ -1464,14 +1467,14 @@
       }
    }
 
-   TGraphPainter.prototype.movePntHandler = function() {
+   TGraphPainter.prototype.movePntHandler = function(first_time) {
       var pos = d3.mouse(this.svg_frame().node());
 
       var main = this.main_painter();
       if (!main || !this.interactive_bin) return;
 
-      this.interactive_bin.x = main.RevertX(pos[0]);
-      this.interactive_bin.y = main.RevertY(pos[1]);
+      this.interactive_bin.x = main.RevertX(pos[0] + this.interactive_delta_x);
+      this.interactive_bin.y = main.RevertY(pos[1] + this.interactive_delta_y);
       this.DrawBins();
    }
 
@@ -1489,7 +1492,11 @@
       d3.select(window).on("mousemove.graphPnt", this.movePntHandler.bind(this))
                        .on("mouseup.graphPnt", this.endPntHandler.bind(this), true);
 
-      this.movePntHandler();
+      var pos = d3.mouse(this.svg_frame().node());
+      var main = this.main_painter();
+
+      this.interactive_delta_x = main ? main.x(this.interactive_bin.x)-pos[0] : 0;
+      this.interactive_delta_y = main ? main.y(this.interactive_bin.y)-pos[1] : 0;
    }
 
    TGraphPainter.prototype.ExecuteMenuCommand = function(item) {
