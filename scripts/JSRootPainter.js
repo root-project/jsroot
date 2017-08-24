@@ -4571,12 +4571,12 @@
 
          // one need to copy event, while after call back event may be changed
          evnt = d3.event;
-      }
-
-      JSROOT.Painter.createMenu(this, function(menu) {
 
          var fp = this.frame_painter();
          if (fp) fp.SetLastEventPos();
+      }
+
+      JSROOT.Painter.createMenu(this, function(menu) {
 
          menu.painter.FillContextMenu(menu);
 
