@@ -1212,7 +1212,7 @@
       res.bin = d;
       res.binindx = d.indx;
 
-      if (pnt.click_handler && res.exact && this.IsEditable())
+      if (pnt.click_handler && res.exact && this.TestEditable())
          res.click_handler = this.InvokeClickHandler.bind(this);
 
       return res;
@@ -1350,11 +1350,13 @@
       return res;
    }
 
-   TGraphPainter.prototype.IsEditable = function() {
+   TGraphPainter.prototype.TestEditable = function(toggle) {
       var obj = this.GetObject(),
           kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
-      return obj ? !obj.TestBit(kNotEditable) : false;
+      if (!obj) return false;
+      if (toggle) obj.InvertBit(kNotEditable);
+      return !obj.TestBit(kNotEditable);
    }
 
    TGraphPainter.prototype.ExtractTooltipForPath = function(pnt) {
@@ -1400,7 +1402,7 @@
          res.menu = res.exact;
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
 
-         if (pnt.click_handler && res.exact && this.IsEditable())
+         if (pnt.click_handler && res.exact && this.TestEditable())
             res.click_handler = this.InvokeClickHandler.bind(this);
       }
 
@@ -1498,6 +1500,16 @@
       this.interactive_delta_x = main ? main.x(this.interactive_bin.x)-pos[0] : 0;
       this.interactive_delta_y = main ? main.y(this.interactive_bin.y)-pos[1] : 0;
    }
+
+   TGraphPainter.prototype.FillContextMenu = function(menu) {
+      JSROOT.TObjectPainter.prototype.FillContextMenu.call(this, menu);
+
+      if (!this.snapid)
+         menu.addchk(this.TestEditable(), "Editable", this.TestEditable.bind(this, true));
+
+      return menu.size() > 0;
+   }
+
 
    TGraphPainter.prototype.ExecuteMenuCommand = function(item) {
       if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,item)) return true;
