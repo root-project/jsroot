@@ -1377,6 +1377,8 @@
 
          res.menu = res.exact;
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
+
+         if (pnt.click_handler && res.exact) { res.accept_click = true; res.bin = best.bin; }
       }
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
@@ -1435,6 +1437,33 @@
       }
 
       return res;
+   }
+
+   TGraphPainter.prototype.movePntHandler = function() {
+      var pos = d3.mouse(this.svg_frame().node());
+
+      var main = this.main_painter();
+
+      this.interactive_bin.x = main.RevertX(pos[0]);
+      this.interactive_bin.y = main.RevertY(pos[1]);
+      this.DrawBins();
+   }
+
+   TGraphPainter.prototype.endPntHandler = function() {
+      delete this.interactive_bin;
+      d3.select(window).on("mousemove.graphPnt", null)
+                       .on("mouseup.graphPnt", null);
+   }
+
+   TGraphPainter.prototype.InvokeClickHandler = function(hint) {
+      if (!hint.bin) return; //
+
+      this.interactive_bin = hint.bin;
+
+      d3.select(window).on("mousemove.graphPnt", this.movePntHandler.bind(this))
+                       .on("mouseup.graphPnt", this.endPntHandler.bind(this), true);
+
+      this.movePntHandler();
    }
 
    TGraphPainter.prototype.ExecuteMenuCommand = function(item) {

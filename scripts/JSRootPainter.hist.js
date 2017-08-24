@@ -3537,6 +3537,22 @@
       this.Unzoom(kind);
    }
 
+   THistPainter.prototype.FindAlternativeClickHandler = function(pos) {
+      var pp = this.pad_painter(true);
+      if (!pp) return false;
+
+      var pnt = { x: pos[0], y: pos[1], painters: true, disabled: true, click_handler: true };
+
+      var hints = pp.GetTooltips(pnt);
+      for (var k=0;k<hints.length;++k)
+         if (hints[k] && hints[k].accept_click && hints[k].painter) {
+            hints[k].painter.InvokeClickHandler(hints[k]);
+            return true;
+         }
+
+      return false;
+   }
+
    THistPainter.prototype.startRectSel = function() {
       // ignore when touch selection is activated
 
@@ -3547,8 +3563,12 @@
 
       d3.event.preventDefault();
 
+      var pos = d3.mouse(this.svg_frame().node());
+
+      if (this.FindAlternativeClickHandler(pos)) return;
+
       this.clearInteractiveElements();
-      this.zoom_origin = d3.mouse(this.svg_frame().node());
+      this.zoom_origin = pos;
 
       var w = this.frame_width(), h = this.frame_height();
 
