@@ -355,6 +355,16 @@
       if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
    }
 
+   JSROOT.TCanvasPainter.prototype.ShowBottomArea = function(on) {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().showBottomArea(on);
+   }
+
+   JSROOT.TCanvasPainter.prototype.DrawInBottomArea = function(obj,call_back) {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().drawInBottomArea(obj, call_back);
+   }
+
    JSROOT.TCanvasPainter.prototype.ShowMessage = function(msg) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showMessage(msg);

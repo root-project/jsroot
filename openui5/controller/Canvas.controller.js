@@ -9,16 +9,18 @@ sap.ui.define([
    'sap/m/Input',
    'sap/m/Button',
    'sap/m/Label',
+   'sap/ui/layout/Splitter',
    'sap/ui/layout/SplitterLayoutData',
    'sap/ui/unified/Menu',
    'sap/ui/unified/MenuItem'
 
-], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, InputListItem, Input, Button, Label, SplitterLayoutData, Menu, MenuItem) {
+], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, InputListItem, Input, Button, Label, Splitter, SplitterLayoutData, Menu, MenuItem) {
 	"use strict";
 
 	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
 		onInit : function() {
 		   this._Page = this.getView().byId("CanvasMainPage");
+		   this.bottomVisible = false;
 
          var model = new JSONModel({ GedIcon: "", StatusIcon: "",
                                      StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
@@ -181,7 +183,6 @@ sap.ui.define([
 		   this.showGeEditor(new_state);
 		   var p = this.getCanvasPainter();
 		   if (new_state && p) p.SelectObjectPainter(p);
-
 		},
 
 		showLeftArea : function(panel_name) {
@@ -213,6 +214,69 @@ sap.ui.define([
          split.insertContentArea(oContent, 0);
 
          return oContent.getController(); // return controller of new panel
+		},
+
+		drawInBottomArea : function(can, call_back) {
+		   var bottom = null;
+
+		   if (this.bottomVisible) {
+            var split = this.getView().byId("MainAreaSplitter");
+            var cont = split.getContentAreas();
+            var vsplit = cont[cont.length-1];
+            var vcont = vsplit.getContentAreas();
+            bottom = vcont[vcont.length-1];
+		   }
+
+         if (bottom && bottom.getController().drawCanvas)
+            bottom.getController().drawCanvas(can, call_back);
+         else
+            JSROOT.CallBack(call_back, null);
+		},
+
+		showBottomArea : function(is_on) {
+		   if (is_on===undefined) is_on = !this.bottomVisible;
+		   if (this.bottomVisible == is_on) return;
+
+         var split = this.getView().byId("MainAreaSplitter");
+
+         if (!split) return;
+
+         var cont = split.getContentAreas();
+
+         this.bottomVisible = !this.bottomVisible;
+
+         if (this.bottomVisible == false) {
+            // vertical splitter exists - toggle it
+
+            var vsplit = cont[cont.length-1];
+            var main = vsplit.removeContentArea(0);
+            vsplit.destroyContentAreas();
+            split.removeContentArea(vsplit);
+            split.addContentArea(main);
+            return;
+         }
+
+         // remove panel with normal drawing
+         split.removeContentArea(cont[cont.length-1]);
+         var vsplit = new Splitter({orientation: "Vertical"});
+
+         split.addContentArea(vsplit);
+
+         vsplit.addContentArea(cont[cont.length-1]);
+
+         var oLd = new SplitterLayoutData({
+            resizable : true,
+            size      : "200px",
+            maxSize   : "500px"
+         });
+
+         var oContent = sap.ui.xmlview({
+            viewName : "sap.ui.jsroot.view.Panel",
+            layoutData: oLd,
+            height: "100%"
+         });
+
+         vsplit.addContentArea(oContent);
 		},
 
 	   ShowCanvasStatus : function (text1,text2,text3,text4) {
@@ -265,6 +329,8 @@ sap.ui.define([
 		onToolsMenuAction : function(oEvent) {
          var item = oEvent.getParameter("item"),
              name = item.getText();
+
+         if (name == "Bottom") return this.showBottomArea();
 
          if (name != "Fit panel") return;
 

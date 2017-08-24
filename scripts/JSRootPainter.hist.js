@@ -5870,8 +5870,52 @@
       THistPainter.prototype.Cleanup.call(this);
    }
 
+   TH2Painter.prototype.ToggleXProjection = function() {
+      this.is_x_projection = !this.is_x_projection;
+
+      var canp = this.pad_painter();
+
+      if (!canp || !canp.ShowBottomArea) return;
+
+      canp.ShowBottomArea(this.is_x_projection);
+
+      if (!this.is_x_projection) {
+         delete this.xproj_hist;
+         delete this.xproj_painter;
+      }
+   }
+
+   TH2Painter.prototype.RedrawXProjection = function(j) {
+
+      if (!this.xproj_hist) {
+         this.xproj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
+         JSROOT.extend(this.xproj_hist.fXaxis, this.histo.fXaxis);
+      }
+
+      for (var i=0;i<this.nbinsx;++i)
+         this.xproj_hist.setBinContent(i+1, this.histo.getBinContent(i+1,j+1));
+
+      if (!this.xproj_painter) {
+         var canp = this.pad_painter();
+         if (canp && canp.DrawInBottomArea) {
+            var canv = JSROOT.Create("TCanvas"), pthis = this;
+            canv.fPrimitives.Add(this.xproj_hist);
+            // copy frame attributes
+            canp.DrawInBottomArea(canv, function(painter) { pthis.xproj_painter = painter; })
+         }
+      } else {
+         var hp = this.xproj_painter.FindPainterFor(this.xproj_hist);
+         if (hp) hp.UpdateObject(this.xproj_hist);
+         this.xproj_painter.RedrawPad();
+      }
+
+   }
+
    TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
+
+      menu.addchk(this.is_x_projection,"Show X projection", this.ToggleXProjection);
+
       menu.add("Auto zoom-in", this.AutoZoom);
 
       var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
@@ -7410,18 +7454,21 @@
       }
 
 
-      var i, j, find = 0, binz = 0, colindx = null;
+      var i, j, binz = 0, colindx = null;
 
-      // search bin position
+      // search bins position
       for (i = h.i1; i < h.i2; ++i)
-         if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) { ++find; break; }
+         if ((pnt.x>=h.grx[i]) && (pnt.x<=h.grx[i+1])) break;
 
-      for (j = h.j1; j <= h.j2; ++j)
-         if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) { ++find; break; }
+      for (j = h.j1; j < h.j2; ++j)
+         if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) break;
 
-      if (find === 2) {
+
+      if ((i < h.i2) && (j < h.j2)) {
          binz = histo.getBinContent(i+1,j+1);
-         if (h.hide_only_zeros) {
+         if (this.is_x_projection) {
+            colindx = 0; // just to avoid hide
+         } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
             colindx = this.getContourColor(binz, true);
@@ -7452,15 +7499,21 @@
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         res.changed = ttrect.property("current_bin") !== i*10000 + j;
+         var x1 = h.grx[i], x2 = h.grx[i+1], binid = i*10000 + j;
+         if (this.is_x_projection) { x1 = 0; x2 = this.frame_width(); binid = j*777; }
+
+         res.changed = ttrect.property("current_bin") !== binid;
 
          if (res.changed)
-            ttrect.attr("x", h.grx[i])
-                  .attr("width", h.grx[i+1] - h.grx[i])
+            ttrect.attr("x", x1)
+                  .attr("width", x2 - x1)
                   .attr("y", h.gry[j+1])
                   .attr("height", h.gry[j] - h.gry[j+1])
                   .style("opacity", "0.7")
-                  .property("current_bin", i*10000 + j);
+                  .property("current_bin", binid);
+
+         if (this.is_x_projection && res.changed)
+            this.RedrawXProjection(j);
       }
 
       if (this.IsUserTooltipCallback() && res.changed) {

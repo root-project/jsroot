@@ -54,6 +54,7 @@
                        <items>
                         <MenuItem text="Fit panel"/>
                         <MenuItem text="Browser" enabled="false"/>
+                        <MenuItem text="Bottom"/>
                       </items>
                      </Menu>
                   </menu>
