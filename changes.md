@@ -4,20 +4,20 @@
 1. Provide shape parameters in TGeo tooltips
 2. Let inspect selected TGeoNode
 3. Change in JSROOT.draw functionality. Now valid painter instance can be only obtained via call-back
-   function - forth argument of JSROOT.draw() function. 
-4. Refactor JSROOT scripts structure - extract histograms and hierarchy painters into separate scripts 
+   function - forth argument of JSROOT.draw() function.
+4. Refactor JSROOT scripts structure - extract histograms and hierarchy painters into separate scripts
 5. Use latest three.js r86 with improved Projector and CanvasRenderer
    Still use own SVGRenderer which supported direct text dump
-6. Provide text info when geometry drawing takes too long 
+6. Provide text info when geometry drawing takes too long
 7. Preliminary support of TEfficiency
 8. Automatic title positioning of vertical axis when fTitleOffset==0
 9. Optionally use openui5 for GUI functionality - like Menu creation.
    On the long run will completely replace jquery-ui widgets
-10. In all sources specify "use strict" derictive, fix several connected errors.   
+10. In all sources specify "use strict" derictive, fix several connected errors
 11. Implement PFC, PLC and PMC draw options for TMultiGraph
 12. Use color palette stored in the TCanvas
 13. Let ignore color "nocol" or palette "nopal" stored in the TCanvas
-14. Better support of TPaveText - lines, boxes and arbitrary text positions 
+14. Better support of TPaveText - lines, boxes and arbitrary text positions
 15. Implement option "A" for histograms painters - fully disables axes drawing
 16. Support drawing of TPolyMarker
 17. Implement editing of TGraph objects - moving of the graph bins
