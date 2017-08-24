@@ -2211,10 +2211,9 @@
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this;
-
-      var acc_x = 0, acc_y = 0, pad_w = 1, pad_h = 1, drag_tm = null,
-          acc_x1 = 0, acc_y1 = 0, acc_x2 = 0, acc_y2 = 0, drag_rect = null;
+      var pthis = this, drag_tm = null, drag_rect = null,
+          pad_w = 1, pad_h = 1,
+          acc_x1 = 0, acc_y1 = 0, acc_x2 = 0, acc_y2 = 0;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -2241,12 +2240,12 @@
          resize_corner_ne = this.draw_g
                                 .append("path")
                                 .attr('class','resize_corner_ne')
-                                .attr("d","M2,-2 h-15 v-5 h20 v20 h-5 Z");
+                                .attr("d","M-2,2 h-15 v-5 h20 v20 h-5 Z");
       if (resize_corner_sw.empty())
          resize_corner_sw = this.draw_g
                                 .append("path")
                                 .attr('class','resize_corner_sw')
-                                .attr("d","M-2,2 h15 v5 h-20 v-20 h5 Z");
+                                .attr("d","M2,-2 h15 v5 h-20 v-20 h5 Z");
 
       if (resize_corner_se.empty())
          resize_corner_se = this.draw_g
@@ -2254,10 +2253,10 @@
                               .attr('class','resize_corner_se')
                               .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
 
-      resize_corner_nw.style('opacity',0).style('cursor',"nw-resize");
-      resize_corner_ne.style('opacity',0).style('cursor',"ne-resize")
+      resize_corner_nw.style('opacity', 0).style('cursor',"nw-resize");
+      resize_corner_ne.style('opacity', 0).style('cursor',"ne-resize")
                       .attr("transform", "translate(" + rect_width() + "," + 0 + ")");
-      resize_corner_sw.style('opacity',0).style('cursor',"sw-resize")
+      resize_corner_sw.style('opacity', 0).style('cursor',"sw-resize")
                       .attr("transform", "translate(" + 0 + "," + rect_height() + ")");
       resize_corner_se.style('opacity',0).style('cursor',"se-resize")
                     .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
@@ -2331,7 +2330,8 @@
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
 
-            acc_x = 0; acc_y = 0;
+            acc_x1 = Number(pthis.draw_g.attr("x"));
+            acc_y1 = Number(pthis.draw_g.attr("y"));
             pad_w = pthis.pad_width() - rect_width();
             pad_h = pthis.pad_height() - rect_height();
 
@@ -2339,36 +2339,26 @@
 
             drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
                  .classed("zoom", true)
-                 .attr("x",  pthis.draw_g.attr("x"))
-                 .attr("y", pthis.draw_g.attr("y"))
+                 .attr("x", acc_x1)
+                 .attr("y", acc_y1)
                  .attr("width", rect_width())
                  .attr("height", rect_height())
                  .style("cursor", "move")
                  .style("pointer-events","none"); // let forward double click to underlying elements
           }).on("drag", function() {
-               if (drag_rect == null) return;
+               if (!drag_rect) return;
 
                d3.event.sourceEvent.preventDefault();
-
-               var x = Number(drag_rect.attr("x")), y = Number(drag_rect.attr("y")),
-                   dx = d3.event.dx, dy = d3.event.dy;
-
-               if ((acc_x<0) && (dx>0)) { acc_x+=dx; dx=0; if (acc_x>0) { dx=acc_x; acc_x=0; }}
-               if ((acc_x>0) && (dx<0)) { acc_x+=dx; dx=0; if (acc_x<0) { dx=acc_x; acc_x=0; }}
-               if ((acc_y<0) && (dy>0)) { acc_y+=dy; dy=0; if (acc_y>0) { dy=acc_y; acc_y=0; }}
-               if ((acc_y>0) && (dy<0)) { acc_y+=dy; dy=0; if (acc_y<0) { dy=acc_y; acc_y=0; }}
-
-               if (x+dx<0) { acc_x+=(x+dx); x=0; } else
-               if (x+dx>pad_w) { acc_x+=(x+dx-pad_w); x=pad_w; } else x+=dx;
-
-               if (y+dy<0) { acc_y+=(y+dy); y = 0; } else
-               if (y+dy>pad_h) { acc_y+=(y+dy-pad_h); y=pad_h; } else y+=dy;
-
-               drag_rect.attr("x", x).attr("y", y);
-
                d3.event.sourceEvent.stopPropagation();
+
+               acc_x1 += d3.event.dx;
+               acc_y1 += d3.event.dy;
+
+               drag_rect.attr("x", Math.min( Math.max(acc_x1, 0), pad_w))
+                        .attr("y", Math.min( Math.max(acc_y1, 0), pad_h));
+
           }).on(prefix+"end", function() {
-               if (drag_rect==null) return;
+               if (!drag_rect) return;
 
                d3.event.sourceEvent.preventDefault();
 
@@ -2410,7 +2400,7 @@
                          .attr("width", acc_x2 - acc_x1)
                          .attr("height", acc_y2 - acc_y1);
          }).on("drag", function() {
-            if (drag_rect == null) return;
+            if (!drag_rect) return;
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -2428,7 +2418,7 @@
             drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2-x1)).attr("height", Math.max(0, y2-y1));
 
          }).on(prefix+"end", function() {
-            if (drag_rect == null) return;
+            if (!drag_rect) return;
 
             d3.event.sourceEvent.preventDefault();
 
