@@ -1481,6 +1481,12 @@
    }
 
    TGraphPainter.prototype.endPntHandler = function() {
+      if (this.snapid && this.interactive_bin) {
+         var exec = "SetPoint(" + this.interactive_bin.indx + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
+         var canp = this.pad_painter();
+         if (canp) canp.SendWebsocket("OBJEXEC:" + this.snapid + ":" + exec);
+      }
+
       delete this.interactive_bin;
       d3.select(window).on("mousemove.graphPnt", null)
                        .on("mouseup.graphPnt", null);
