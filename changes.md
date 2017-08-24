@@ -21,6 +21,7 @@
 15. Implement option "A" for histograms painters - fully disables axes drawing
 16. Support drawing of TPolyMarker
 17. Implement editing of TGraph objects - moving of the graph bins
+18. Improve resize of frame and paves - all eight directions now supported 
 
 
 ## Changes in 5.2.0

@@ -2212,8 +2212,7 @@
       if (!JSROOT.gStyle.MoveResize) return;
 
       var pthis = this, drag_tm = null, drag_rect = null,
-          pad_w = 1, pad_h = 1,
-          acc_x1 = 0, acc_y1 = 0, acc_x2 = 0, acc_y2 = 0;
+          pad_w = 1, pad_h = 1, acc_x1 = 0, acc_y1 = 0, acc_x2 = 0, acc_y2 = 0;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -2225,41 +2224,69 @@
       function rect_width() { return Number(pthis.draw_g.attr("width")); }
       function rect_height() { return Number(pthis.draw_g.attr("height")); }
 
-      var resize_corner_nw = this.draw_g.select('.resize_corner_nw'),
-          resize_corner_ne = this.draw_g.select('.resize_corner_ne'),
-          resize_corner_sw = this.draw_g.select('.resize_corner_sw'),
-          resize_corner_se = this.draw_g.select('.resize_corner_se');
+      var resize_nw = this.draw_g.select('.resize_nw'),
+          resize_ne = this.draw_g.select('.resize_ne'),
+          resize_sw = this.draw_g.select('.resize_sw'),
+          resize_se = this.draw_g.select('.resize_se'),
+          resize_w = this.draw_g.select('.resize_w'),
+          resize_n = this.draw_g.select('.resize_n'),
+          resize_e = this.draw_g.select('.resize_e'),
+          resize_s = this.draw_g.select('.resize_s');
 
-      if (resize_corner_nw.empty())
-         resize_corner_nw = this.draw_g
-                              .append("path")
-                              .attr('class','resize_corner_nw')
+      if (resize_nw.empty())
+         resize_nw = this.draw_g.append("path")
+                              .attr('class','resize_nw')
                               .attr("d","M2,2 h15 v-5 h-20 v20 h5 Z");
 
-      if (resize_corner_ne.empty())
-         resize_corner_ne = this.draw_g
-                                .append("path")
-                                .attr('class','resize_corner_ne')
+      if (resize_ne.empty())
+         resize_ne = this.draw_g.append("path")
+                                .attr('class','resize_ne')
                                 .attr("d","M-2,2 h-15 v-5 h20 v20 h-5 Z");
-      if (resize_corner_sw.empty())
-         resize_corner_sw = this.draw_g
-                                .append("path")
-                                .attr('class','resize_corner_sw')
+      if (resize_sw.empty())
+         resize_sw = this.draw_g.append("path")
+                                .attr('class','resize_sw')
                                 .attr("d","M2,-2 h15 v5 h-20 v-20 h5 Z");
 
-      if (resize_corner_se.empty())
-         resize_corner_se = this.draw_g
-                              .append("path")
-                              .attr('class','resize_corner_se')
+      if (resize_se.empty())
+         resize_se = this.draw_g.append("path")
+                              .attr('class','resize_se')
                               .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
 
-      resize_corner_nw.style('opacity', 0).style('cursor',"nw-resize");
-      resize_corner_ne.style('opacity', 0).style('cursor',"ne-resize")
+      if (resize_w.empty())
+         resize_w = this.draw_g.append("rect")
+                        .attr('class','resize_w')
+                        .attr("x","-3").attr("y","18").attr("width","5");
+
+      if (resize_n.empty())
+         resize_n = this.draw_g.append("rect")
+                        .attr('class','resize_n')
+                        .attr("x","18").attr("y","-3").attr("height","5");
+
+      if (resize_e.empty())
+         resize_e = this.draw_g.append("rect")
+                        .attr('class','resize_e')
+                        .attr("x","-2").attr("y","18").attr("width","5");
+
+      if (resize_s.empty())
+         resize_s = this.draw_g.append("rect")
+                        .attr('class','resize_s')
+                        .attr("x","18").attr("y","-2").attr("height","5");
+
+      resize_nw.style('opacity', 0).style('cursor',"nw-resize");
+      resize_ne.style('opacity', 0).style('cursor',"ne-resize")
                       .attr("transform", "translate(" + rect_width() + "," + 0 + ")");
-      resize_corner_sw.style('opacity', 0).style('cursor',"sw-resize")
+      resize_sw.style('opacity', 0).style('cursor',"sw-resize")
                       .attr("transform", "translate(" + 0 + "," + rect_height() + ")");
-      resize_corner_se.style('opacity',0).style('cursor',"se-resize")
-                    .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
+      resize_se.style('opacity', 0).style('cursor',"se-resize")
+                      .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
+
+      resize_w.style('opacity',0).style('cursor',"w-resize").attr("height", Math.max(0, rect_height() - 2*18));
+      resize_n.style('opacity',0).style('cursor',"n-resize").attr("width", Math.max(0, rect_width() - 2*18));
+
+      resize_e.style('opacity',0).style('cursor',"e-resize").attr("height", Math.max(0, rect_height() - 2*18))
+                                                            .attr("transform", "translate(" + rect_width() + "," + 0 + ")");
+      resize_s.style('opacity',0).style('cursor',"s-resize").attr("width", Math.max(0, rect_width() - 2*18))
+                                                            .attr("transform", "translate(" + 0 + "," + rect_height() + ")");
 
       function complete_drag() {
          drag_rect.style("cursor", "auto");
@@ -2286,9 +2313,13 @@
 
          pthis.SwitchTooltip(true);
 
-         resize_corner_ne.attr("transform", "translate(" + newwidth + "," + 0 + ")");
-         resize_corner_sw.attr("transform", "translate(" + 0 + "," + newheight + ")");
-         resize_corner_se.attr("transform", "translate(" + newwidth + "," + newheight + ")");
+         resize_ne.attr("transform", "translate(" + newwidth + "," + 0 + ")");
+         resize_sw.attr("transform", "translate(" + 0 + "," + newheight + ")");
+         resize_se.attr("transform", "translate(" + newwidth + "," + newheight + ")");
+         resize_w.attr("height", Math.max(0, newheight - 2*18));
+         resize_n.attr("width", Math.max(0, newwidth - 2*18));
+         resize_e.attr("height", Math.max(0, newheight - 2*18)).attr("transform", "translate(" + newwidth + "," + 0 + ")");
+         resize_s.attr("width", Math.max(0, newwidth - 2*18)).attr("transform", "translate(" + 0 + "," + newheight + ")");
 
          if (change_size || change_pos) {
             if (change_size && ('resize' in callback)) callback.resize(newwidth, newheight);
@@ -2365,7 +2396,7 @@
                if (complete_drag() === false) {
                   var spent = (new Date()).getTime() - drag_tm.getTime();
                   if(callback.ctxmenu && (spent > 600)) {
-                     var rrr = resize_corner_se.node().getBoundingClientRect();
+                     var rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   } else if (callback.canselect && (spent <= 600)) {
                      pthis.pad_painter().SelectObjectPainter(pthis);
@@ -2407,10 +2438,14 @@
 
             var dx = d3.event.dx, dy = d3.event.dy, elem = d3.select(this);
 
-            if (elem.classed('resize_corner_nw')) { acc_x1+=dx; acc_y1+=dy; }
-            else if (elem.classed('resize_corner_ne')) { acc_x2+=dx; acc_y1+=dy; }
-            else if (elem.classed('resize_corner_sw')) { acc_x1+=dx; acc_y2+=dy; }
-            else if (elem.classed('resize_corner_se')) { acc_x2+=dx; acc_y2+=dy; }
+            if (elem.classed('resize_nw')) { acc_x1 += dx; acc_y1 += dy; }
+            else if (elem.classed('resize_ne')) { acc_x2 += dx; acc_y1 += dy; }
+            else if (elem.classed('resize_sw')) { acc_x1 += dx; acc_y2 += dy; }
+            else if (elem.classed('resize_se')) { acc_x2+=dx; acc_y2 += dy; }
+            else if (elem.classed('resize_w')) { acc_x1 += dx; }
+            else if (elem.classed('resize_n')) { acc_y1 += dy; }
+            else if (elem.classed('resize_e')) { acc_x2 += dx; }
+            else if (elem.classed('resize_s')) { acc_y2 += dy; }
 
             var x1 = Math.max(0, acc_x1), x2 = Math.min(acc_x2, pad_w),
                 y1 = Math.max(0, acc_y1), y2 = Math.min(acc_y2, pad_h);
@@ -2428,10 +2463,14 @@
       if (!callback.only_resize)
          this.draw_g.style("cursor", "move").call(drag_move);
 
-      resize_corner_nw.call(drag_resize);
-      resize_corner_ne.call(drag_resize);
-      resize_corner_sw.call(drag_resize);
-      resize_corner_se.call(drag_resize);
+      resize_nw.call(drag_resize);
+      resize_ne.call(drag_resize);
+      resize_sw.call(drag_resize);
+      resize_se.call(drag_resize);
+      resize_w.call(drag_resize);
+      resize_n.call(drag_resize);
+      resize_e.call(drag_resize);
+      resize_s.call(drag_resize);
    }
 
    TObjectPainter.prototype.startTouchMenu = function(kind) {
