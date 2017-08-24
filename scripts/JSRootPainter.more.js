@@ -1143,7 +1143,113 @@
       }
    }
 
+   TGraphPainter.prototype.ExtractTooltip = function(pnt) {
+      if (!pnt) return null;
+
+      if ((this.draw_kind=="lines") || (this.draw_kind=="path") || (this.draw_kind=="mark"))
+         return this.ExtractTooltipForPath(pnt);
+
+      if (this.draw_kind!="nodes") return null;
+
+      var width = this.frame_width(),
+          height = this.frame_height(),
+          pmain = this.main_painter(),
+          painter = this,
+          findbin = null, best_dist2 = 1e10, best = null;
+
+      this.draw_g.selectAll('.grpoint').each(function() {
+         var d = d3.select(this).datum();
+         if (d===undefined) return;
+         var dist2 = Math.pow(pnt.x - d.grx1, 2);
+         if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
+         if (dist2 >= best_dist2) return;
+
+         var rect = null;
+
+         if (d.error || d.rect || d.marker) {
+            rect = { x1: Math.min(-painter.error_size, d.grx0),
+                     x2: Math.max(painter.error_size, d.grx2),
+                     y1: Math.min(-painter.error_size, d.gry2),
+                     y2: Math.max(painter.error_size, d.gry0) };
+         } else
+         if (d.bar) {
+             rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
+
+             if (painter.options.Bar===1) {
+                var yy0 = pmain.gry(0);
+                rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
+                rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
+             }
+          } else {
+             rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
+          }
+          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
+          var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+
+          if (matchx && (matchy || (pnt.nproc > 1))) {
+             best_dist2 = dist2;
+             findbin = this;
+             best = rect;
+             best.exact = matchx && matchy;
+          }
+       });
+
+      if (findbin === null) return null;
+
+      var d = d3.select(findbin).datum();
+
+      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+                  x: d.grx1, y: d.gry1,
+                  color1: this.lineatt.color,
+                  lines: this.TooltipText(d, true),
+                  rect: best };
+
+      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
+
+      if (best.exact) res.exact = true;
+      res.menu = res.exact; // activate menu only when exactly locate bin
+      res.menu_dist = 3; // distance always fixed
+
+      return res;
+   }
+
+   TGraphPainter.prototype.ShowTooltip = function(hint) {
+
+      if (!hint) {
+         if (this.draw_g) this.draw_g.select(".tooltip_bin").remove();
+         return;
+      }
+
+      if (hint.usepath) return this.ShowTooltipForPath(hint);
+
+      var d = d3.select(this).datum();
+
+      var ttrect = this.draw_g.select(".tooltip_bin");
+
+      if (ttrect.empty())
+         ttrect = this.draw_g.append("svg:rect")
+                             .attr("class","tooltip_bin h1bin")
+                             .style("pointer-events","none");
+
+      hint.changed = ttrect.property("current_bin") !== this;
+
+      if (hint.changed)
+         ttrect.attr("x", d.grx1 + hint.rect.x1)
+               .attr("width", hint.rect.x2 - hint.rect.x1)
+               .attr("y", d.gry1 + hint.rect.y1)
+               .attr("height", hint.rect.y2 - hint.rect.y1)
+               .style("opacity", "0.3")
+               .property("current_bin", this);
+   }
+
    TGraphPainter.prototype.ProcessTooltip = function(pnt) {
+
+      var hint = this.ExtractTooltip(pnt);
+
+      if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
+
+      return hint;
+
       if (!pnt) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
@@ -1243,7 +1349,7 @@
    }
 
    TGraphPainter.prototype.FindBestBin = function(pnt) {
-      if (this.bins === null) return null;
+      if (!this.bins) return null;
 
       var islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
@@ -1341,6 +1447,115 @@
           kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
       return obj ? !obj.TestBit(kNotEditable) : false;
+   }
+
+   TGraphPainter.prototype.ExtractTooltipForPath = function(pnt) {
+
+      if (this.bins === null) return null;
+
+      var best = this.FindBestBin(pnt);
+
+      if (!best || (!best.bin && !best.closeline)) return null;
+
+      var islines = (this.draw_kind=="lines"),
+          ismark = (this.draw_kind=="mark"),
+          pmain = this.main_painter();
+
+      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+                  x: best.bin ? pmain.grx(best.bin.x) : best.linex,
+                  y: best.bin ? pmain.gry(best.bin.y) : best.liney,
+                  color1: this.lineatt.color,
+                  lines: this.TooltipText(best.bin, true),
+                  usepath: true };
+
+      res.ismark = ismark;
+      res.islines = islines;
+
+      if (best.closeline) {
+         res.menu = res.exact = true;
+         res.menu_dist = best.linedist;
+      } else if (best.bin) {
+         if (this.options.EF && islines) {
+            res.gry1 = pmain.gry(best.bin.y - best.bin.eylow);
+            res.gry2 = pmain.gry(best.bin.y + best.bin.eyhigh);
+         } else {
+            res.gry1 = res.gry2 = pmain.gry(best.bin.y);
+         }
+
+         res.bin = best.bin;
+         res.radius = best.radius;
+
+         res.exact = (Math.abs(pnt.x - res.x) <= best.radius) &&
+            ((Math.abs(pnt.y - res.gry1) <= best.radius) || (Math.abs(pnt.y - res.gry2) <= best.radius));
+
+         res.menu = res.exact;
+         res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
+
+         if (pnt.click_handler && res.exact && this.IsEditable())
+            res.click_handler = this.InvokeClickHandler.bind(this);
+      }
+
+      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
+
+      if (!islines) {
+         res.color1 = this.get_color(this.GetObject().fMarkerColor);
+         if (!res.color2) res.color2 = res.color1;
+      }
+
+      return res;
+   }
+
+   TGraphPainter.prototype.ShowTooltipForPath = function(hint) {
+
+      var ttbin = this.draw_g.select(".tooltip_bin");
+
+      if (!hint || !hint.bin) {
+         ttbin.remove();
+         return;
+      }
+
+      if (ttbin.empty())
+         ttbin = this.draw_g.append("svg:g")
+                             .attr("class","tooltip_bin");
+
+      hint.changed = ttbin.property("current_bin") !== hint.bin;
+
+      if (hint.changed) {
+         ttbin.selectAll("*").remove(); // first delete all children
+         ttbin.property("current_bin", hint.bin);
+
+         if (hint.ismark) {
+            ttbin.append("svg:rect")
+                 .attr("class","h1bin")
+                 .style("pointer-events","none")
+                 .style("opacity", "0.3")
+                 .attr("x", (hint.x - hint.radius).toFixed(1))
+                 .attr("y", (hint.y - hint.radius).toFixed(1))
+                 .attr("width", (2*hint.radius).toFixed(1))
+                 .attr("height", (2*hint.radius).toFixed(1));
+         } else {
+            ttbin.append("svg:circle").attr("cy", hint.gry1.toFixed(1))
+            if (Math.abs(hint.gry1-hint.gry2) > 1)
+               ttbin.append("svg:circle").attr("cy", hint.gry2.toFixed(1));
+
+            var elem = ttbin.selectAll("circle")
+                            .attr("r", hint.radius)
+                            .attr("cx", hint.x.toFixed(1));
+
+            if (!hint.islines) {
+               elem.style('stroke', hint.color1 == 'black' ? 'green' : 'black').style('fill','none');
+            } else {
+               if (this.options.Line)
+                  elem.call(this.lineatt.func);
+               else
+                  elem.style('stroke','black');
+               if (this.options.Fill)
+                  elem.call(this.fillatt.func);
+               else
+                  elem.style('fill','none');
+            }
+         }
+      }
    }
 
    TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
