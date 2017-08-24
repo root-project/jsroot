@@ -731,7 +731,7 @@
       this.bins = [];
 
       for (p=0;p<npoints;++p) {
-         var bin = { x: gr.fX[p], y: gr.fY[p] };
+         var bin = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
             case 1:
               bin.exlow = bin.exhigh = gr.fEX[p];
@@ -1202,13 +1202,15 @@
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(d, true),
-                  rect: best };
+                  rect: best, d3bin: findbin  };
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
       res.menu_dist = 3; // distance always fixed
+      res.bin = d;
+      res.binindx = d.indx;
 
       return res;
    }
@@ -1222,7 +1224,7 @@
 
       if (hint.usepath) return this.ShowTooltipForPath(hint);
 
-      var d = d3.select(this).datum();
+      var d = d3.select(hint.d3bin).datum();
 
       var ttrect = this.draw_g.select(".tooltip_bin");
 
@@ -1231,7 +1233,7 @@
                              .attr("class","tooltip_bin h1bin")
                              .style("pointer-events","none");
 
-      hint.changed = ttrect.property("current_bin") !== this;
+      hint.changed = ttrect.property("current_bin") !== hint.d3bin;
 
       if (hint.changed)
          ttrect.attr("x", d.grx1 + hint.rect.x1)
@@ -1239,7 +1241,7 @@
                .attr("y", d.gry1 + hint.rect.y1)
                .attr("height", hint.rect.y2 - hint.rect.y1)
                .style("opacity", "0.3")
-               .property("current_bin", this);
+               .property("current_bin", hint.d3bin);
    }
 
    TGraphPainter.prototype.ProcessTooltip = function(pnt) {
@@ -1482,6 +1484,7 @@
             res.gry1 = res.gry2 = pmain.gry(best.bin.y);
          }
 
+         res.binindx = best.indx;
          res.bin = best.bin;
          res.radius = best.radius;
 
@@ -1702,7 +1705,7 @@
 
          if (!canp || !fp || !pnt) return true; // ignore function
 
-         var best = this.FindBestBin(pnt);
+         var hint = this.ExtractTooltip(pnt);
 
          if (item.fName == 'InsertPoint') {
             var main = this.main_painter(),
@@ -1710,8 +1713,8 @@
                 usery = main && main.RevertY ? main.RevertY(pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
          } else
-         if (this.args_menu_id && best.bin) {
-            var exec = "RemovePoint(" + best.indx + ")";
+         if (this.args_menu_id && hint && (hint.binindx !== undefined)) {
+            var exec = "RemovePoint(" + hint.binindx + ")";
             console.log('execute ' + exec + ' for object ' + this.args_menu_id);
             canp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + exec);
          }
