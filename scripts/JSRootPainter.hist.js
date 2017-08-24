@@ -3545,8 +3545,8 @@
 
       var hints = pp.GetTooltips(pnt);
       for (var k=0;k<hints.length;++k)
-         if (hints[k] && hints[k].accept_click && hints[k].painter) {
-            hints[k].painter.InvokeClickHandler(hints[k]);
+         if (hints[k] && (typeof hints[k].click_handler == 'function')) {
+            hints[k].click_handler(hints[k]);
             return true;
          }
 

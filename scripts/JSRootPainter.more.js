@@ -1336,6 +1336,13 @@
       return res;
    }
 
+   TGraphPainter.prototype.IsEditable = function() {
+      var obj = this.GetObject(),
+          kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
+
+      return obj ? !obj.TestBit(kNotEditable) : false;
+   }
+
    TGraphPainter.prototype.ProcessTooltipForPath = function(pnt) {
 
       if (this.bins === null) return null;
@@ -1378,7 +1385,10 @@
          res.menu = res.exact;
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-gry1),Math.abs(pnt.y-gry2)),2));
 
-         if (pnt.click_handler && res.exact) { res.accept_click = true; res.bin = best.bin; }
+         if (pnt.click_handler && res.exact && this.IsEditable()) {
+            res.click_handler = this.InvokeClickHandler.bind(this);
+            res.bin = best.bin;
+         }
       }
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
@@ -1443,6 +1453,7 @@
       var pos = d3.mouse(this.svg_frame().node());
 
       var main = this.main_painter();
+      if (!main || !this.interactive_bin) return;
 
       this.interactive_bin.x = main.RevertX(pos[0]);
       this.interactive_bin.y = main.RevertY(pos[1]);
@@ -1505,6 +1516,7 @@
 
       var graph = this.GetObject();
       // TODO: make real update of TGraph object content
+      graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
       graph.fX = obj.fX;
       graph.fY = obj.fY;
