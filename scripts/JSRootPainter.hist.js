@@ -5910,9 +5910,11 @@
          if (this.is_projection == "X") {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
             JSROOT.extend(this.proj_hist.fXaxis, this.histo.fXaxis);
+            this.proj_hist.fTitle = "X projection";
          } else {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsy);
             JSROOT.extend(this.proj_hist.fXaxis, this.histo.fYaxis);
+            this.proj_hist.fTitle = "Y projection";
          }
       }
 
@@ -5926,15 +5928,25 @@
 
       if (!this.proj_painter) {
          var canp = this.pad_painter();
+         var canv = JSROOT.Create("TCanvas"), pthis = this, pad = this.root_pad(), drawopt;
+
+         if (this.is_projection == "X") {
+            canv.fLeftMargin = pad.fLeftMargin;
+            canv.fRightMargin = pad.fRightMargin;
+            drawopt = "fixframe";
+         } else {
+            canv.fBottomMargin = pad.fBottomMargin;
+            canv.fTopMargin = pad.fTopMargin;
+            drawopt = "rotate";
+         }
+
+         canv.fPrimitives.Add(this.proj_hist, "hist");
+
          if (canp && canp.DrawInBottomArea && canp.use_openui) {
-            var canv = JSROOT.Create("TCanvas"), pthis = this;
-            canv.fPrimitives.Add(this.proj_hist);
             // copy frame attributes
             canp.DrawInBottomArea(canv, function(painter) { pthis.proj_painter = painter; })
          } else if (canp && canp.DrawInSidePanel) {
-            var canv = JSROOT.Create("TCanvas"), pthis = this;
-            canv.fPrimitives.Add(this.proj_hist);
-            canp.DrawInSidePanel(canv, (this.is_projection == "X") ? "" : "rotate", function(painter) { pthis.proj_painter = painter; })
+            canp.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          }
       } else {
          var hp = this.proj_painter.FindPainterFor(this.proj_hist);

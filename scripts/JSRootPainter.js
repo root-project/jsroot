@@ -3658,9 +3658,12 @@
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, pp = this.pad_painter();
+          rotate = false, fixpos = false, pp = this.pad_painter();
 
-      if (pp && pp.options && pp.options.RotateFrame) rotate = true;
+      if (pp && pp.options) {
+         if (pp.options.RotateFrame) rotate = true;
+         if (pp.options.FixFrame) fixpos = true;
+      }
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.svg_frame();
@@ -3722,7 +3725,7 @@
                  .attr("width", w)
                  .attr("height", h);
 
-      if (!rotate)
+      if (!rotate && !fixpos)
          this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
                         redraw: this.SizeChanged.bind(this) });
 
@@ -5287,12 +5290,13 @@
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
-      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false };
+      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false };
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
       if (d.check('ROTATE')) this.options.RotateFrame = true;
+      if (d.check('FIXFRAME')) this.options.FixFrame = true;
 
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOGX')) pad.fLogx = 1;
