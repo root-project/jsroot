@@ -5883,6 +5883,9 @@
 
    TH2Painter.prototype.ToggleProjection = function(kind) {
 
+      delete this.proj_hist;
+      delete this.proj_painter;
+
       this.is_projection = (this.is_projection === kind) ? "" : kind;
 
       var canp = this.pad_painter();
@@ -5897,11 +5900,6 @@
          if (this.is_projection == "Y") layout = 'horiz2_13';
 
          canp.ChangeLayout(layout);
-      }
-
-      if (!this.is_projection) {
-         delete this.proj_hist;
-         delete this.proj_painter;
       }
 
    }

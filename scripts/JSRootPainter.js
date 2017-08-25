@@ -3722,8 +3722,9 @@
                  .attr("width", w)
                  .attr("height", h);
 
-      this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
-                     redraw: this.SizeChanged.bind(this) });
+      if (!rotate)
+         this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                        redraw: this.SizeChanged.bind(this) });
 
       var painter = this;
 
