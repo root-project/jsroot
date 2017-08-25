@@ -3780,7 +3780,6 @@
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
-
    TFramePainter.prototype.FillContextMenu = function(menu) {
       // fill context menu for the frame
       // it could be appended to the histogram menus

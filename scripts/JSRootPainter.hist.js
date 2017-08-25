@@ -5908,12 +5908,18 @@
          if (this.is_projection == "X") layout = 'vert2_31'; else
          if (this.is_projection == "Y") layout = 'horiz2_13';
 
-         canp.ChangeLayout(layout);
+         canp.ChangeLayout(layout, (layout!='simple') ? this.RedrawProjection.bind(this) : null);
       }
 
    }
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
+
+      if (jj2 == undefined) {
+         if (!this.tt_handle) return;
+         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
+         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
+      }
 
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
