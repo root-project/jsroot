@@ -87,6 +87,7 @@ List of supported classes and draw options:
 [*](https://root.cern/js/latest/examples.htm#th1_star),
 [l](https://root.cern/js/latest/examples.htm#th1_l),
 [lf2](https://root.cern/js/latest/examples.htm#th1_lf2),
+[a](https://root.cern/js/latest/examples.htm#th1_a),
 [e](https://root.cern/js/latest/examples.htm#th1_e),
 [e0](https://root.cern/js/latest/examples.htm#th1_e0),
 [e1](https://root.cern/js/latest/examples.htm#th1_e1),

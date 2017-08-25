@@ -70,6 +70,7 @@ examples_more = {
      { name: "higgs", file: "higgs_c.root", item: "c;1" },
      { name: "amore", file: "VertexXY.root", item: "Amore Canvas;1" },
      { name: "dual", file: "myDualCanvas.root", item: "DualCanvas;1", title: "Canvas with two subpads and double-log scale" },
+     { name: "rotate", file: "legends.root", item: "legends;1", opt: "rotate", title: "Rotation of drawings in the TFrame, for special purposes" },
      { name: "hsum", file: "hsum.root", item: "c1;1", title: "Canvas with several histos and selected user range (from hsum.C macro)" },
      { name: "sub-sub", file: "fitslicesy.root", item: "c1;1", title: "Canvas with sub-sub pads" },
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
