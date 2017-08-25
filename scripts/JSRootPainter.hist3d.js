@@ -2944,10 +2944,8 @@
 
       painter.Redraw();
 
-      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid)) {
-         var stats = painter.CreateStat(histo.$custom_stat);
-         if (stats) JSROOT.draw(painter.divid, stats, "");
-      }
+      var stats = painter.CreateStat(); // only when required
+      if (stats) JSROOT.draw(painter.divid, stats, "");
 
       painter.FillToolbar();
 

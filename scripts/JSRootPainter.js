@@ -4784,17 +4784,8 @@
       }
 
       // here the case of normal drawing, can be improved
-      if (snap.fKind === 1) {
-         var obj = snap.fSnapshot;
-         if (obj) obj.$snapid = snap.fObjectID; // mark object itself, workaround for stats drawing
-
-         // TODO: frame should be created in histogram painters
-         //if (obj._typename != "TFrame" && this.svg_frame().select(".main_layer").empty()) {
-         //   JSROOT.Painter.drawFrame(this.divid, null);
-         //}
-
-         return JSROOT.draw(this.divid, obj, snap.fOption, draw_callback);
-      }
+      if (snap.fKind === 1)
+         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
 
       if (snap.fKind === 2)
          return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);

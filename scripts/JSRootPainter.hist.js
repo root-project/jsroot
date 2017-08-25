@@ -1550,7 +1550,6 @@
    }
 
    TPavePainter.prototype.DrawPaveStats = function(width, height, refill) {
-      if (refill && this.IsStats()) this.FillStatistic();
 
       if (refill && this.IsStats()) this.FillStatistic();
 
@@ -2227,7 +2226,7 @@
              Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
              GLBox: 0, GLColor: 0, Project: "",
              System: JSROOT.Painter.Coord.kCARTESIAN,
-             AutoColor: 0, NoStat: false, AutoZoom: false,
+             AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
              Optimize: JSROOT.gStyle.OptimizeDraw,
              minimum: -1111, maximum: -1111, original: opt },
@@ -2252,6 +2251,7 @@
       if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
 
       if (d.check('NOSTAT')) option.NoStat = true;
+      if (d.check('STAT')) option.ForceStat = true;
 
       var tooltip = null;
       if (d.check('NOTOOLTIP')) tooltip = false;
@@ -2448,12 +2448,13 @@
       if (d.check('][')) { option.Off = 1; option.Hist = 1; }
       if (d.check('F')) option.Fill = 1;
 
+      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
+
       if (d.check('P0')) { option.Mark = 1; option.Hist = -1; option.Zero = 1; }
       if (d.check('P')) { option.Mark = 1; option.Hist = -1; option.Zero = 0; }
       if (d.check('Z')) option.Zscale = 1;
       if (d.check('*H') || d.check('*')) { option.Mark = 23; option.Hist = -1; }
 
-      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
       if (d.check('H')) option.Hist = 1;
 
       if (this.IsTH2Poly()) {
@@ -3164,7 +3165,7 @@
       if (stat == null) {
          if (arg.indexOf('-check')>0) return false;
          // when statbox created first time, one need to draw it
-         stat = this.CreateStat();
+         stat = this.CreateStat(true);
       } else {
          statpainter = this.FindPainterFor(stat);
       }
@@ -3250,9 +3251,13 @@
       return null;
    }
 
-   THistPainter.prototype.CreateStat = function(opt_stat) {
+   THistPainter.prototype.CreateStat = function(force) {
 
-      if (!this.draw_content || !this.is_main_painter()) return null;
+      if (!force && !this.options.ForceStat) {
+         if (this.options.NoStat || this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
+
+         if (!this.draw_content || !this.is_main_painter()) return null;
+      }
 
       this.create_stats = true;
 
@@ -3263,7 +3268,7 @@
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: opt_stat || st.fOptStat,
+                             fOptStat: this.histo.$custom_stat || st.fOptStat,
                              fOptFit: st.fOptFit,
                              fBorderSize : 1} );
 
@@ -3288,10 +3293,7 @@
 
       stats.AddText(this.histo.fName);
 
-      if (!this.histo.fFunctions)
-         this.histo.fFunctions = JSROOT.Create("TList");
-
-      this.histo.fFunctions.Add(stats,"");
+      this.AddFunction(stats);
 
       return stats;
    }
@@ -3300,7 +3302,7 @@
       var histo = this.GetObject();
       if (!histo || !obj) return;
 
-      if (histo.fFunctions == null)
+      if (!histo.fFunctions)
          histo.fFunctions = JSROOT.Create("TList");
 
       if (asfirst)
@@ -5840,8 +5842,7 @@
 
       painter.ScanContent();
 
-      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid))
-         painter.CreateStat(histo.$custom_stat);
+      painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
          painter.DrawNextFunction(0, function() {
@@ -5910,10 +5911,12 @@
          if (this.is_projection == "X") {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
             JSROOT.extend(this.proj_hist.fXaxis, this.histo.fXaxis);
+            this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsy);
             JSROOT.extend(this.proj_hist.fXaxis, this.histo.fYaxis);
+            this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
          }
       }
@@ -5940,7 +5943,7 @@
             drawopt = "rotate";
          }
 
-         canv.fPrimitives.Add(this.proj_hist, "hist");
+         canv.fPrimitives.Add(this.proj_hist, "");
 
          if (canp && canp.DrawInBottomArea && canp.use_openui) {
             // copy frame attributes
@@ -7667,9 +7670,7 @@
 
       painter.ScanContent();
 
-      // check if we need to create statbox
-      if (JSROOT.gStyle.AutoStat && (painter.create_canvas || histo.$snapid) /* && !this.IsTH2Poly()*/)
-         painter.CreateStat(histo.$custom_stat);
+      painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
          this.DrawNextFunction(0, function() {
