@@ -5900,20 +5900,24 @@
       var canp = this.pad_painter();
       if (!canp) return;
 
-      if (canp.ShowBottomArea && canp.use_openui) {
-         canp.ShowBottomArea(this.is_projection);
+      if (canp.use_openui && canp.ShowUI5ProjectionArea) {
+
+         canp.ShowUI5ProjectionArea(this.is_projection, this.RedrawProjection.bind(this));
+
       } else if (canp.ChangeLayout) {
          var layout = 'simple';
 
          if (this.is_projection == "X") layout = 'vert2_31'; else
          if (this.is_projection == "Y") layout = 'horiz2_13';
 
-         canp.ChangeLayout(layout, (layout!='simple') ? this.RedrawProjection.bind(this) : null);
+         canp.ChangeLayout(layout, this.RedrawProjection.bind(this));
       }
 
    }
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
+
+      if (!this.is_projection) return;
 
       if (jj2 == undefined) {
          if (!this.tt_handle) return;
@@ -5971,9 +5975,9 @@
 
          canv.fPrimitives.Add(this.proj_hist, "");
 
-         if (canp && canp.DrawInBottomArea && canp.use_openui) {
+         if (canp && canp.use_openui && canp.DrawInUI5ProjectionArea ) {
             // copy frame attributes
-            canp.DrawInBottomArea(canv, function(painter) { pthis.proj_painter = painter; })
+            canp.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          } else if (canp && canp.DrawInSidePanel) {
             canp.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          }

@@ -1,6 +1,6 @@
 sap.ui.define([
    'jquery.sap.global',
-	'sap/ui/core/mvc/Controller',
+   'sap/ui/core/mvc/Controller',
    'sap/ui/model/json/JSONModel',
    'sap/m/MessageToast',
    'sap/m/Dialog',
@@ -15,67 +15,67 @@ sap.ui.define([
    'sap/ui/unified/MenuItem'
 
 ], function (jQuery, Controller, JSONModel, MessageToast, Dialog, List, InputListItem, Input, Button, Label, Splitter, SplitterLayoutData, Menu, MenuItem) {
-	"use strict";
+   "use strict";
 
-	var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
-		onInit : function() {
-		   this._Page = this.getView().byId("CanvasMainPage");
-		   this.bottomVisible = false;
+   var CController = Controller.extend("sap.ui.jsroot.controller.Canvas", {
+      onInit : function() {
+         this._Page = this.getView().byId("CanvasMainPage");
+         this.bottomVisible = false;
 
          var model = new JSONModel({ GedIcon: "", StatusIcon: "",
                                      StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
 
-		   // this.toggleGedEditor();
-		},
+         // this.toggleGedEditor();
+      },
 
-		getCanvasPainter : function(also_without_websocket) {
+      getCanvasPainter : function(also_without_websocket) {
          var elem = this.getView().byId("jsroot_canvas");
 
          var p = elem ? elem.getController().canvas_painter : null;
 
          return (p && (p._websocket || also_without_websocket)) ? p : null;
-		},
+      },
 
-		closeMethodDialog : function(method, call_back) {
+      closeMethodDialog : function(method, call_back) {
 
          var args = "";
 
-		   if (method) {
-		      var cont = this.methodDialog.getContent();
+         if (method) {
+            var cont = this.methodDialog.getContent();
 
             var items = cont[0].getItems();
 
             if (method.fArgs.length !== items.length)
                alert('Mismatch between method description' + method.fArgs.length + ' and args list in dialog ' + items.length);
 
-		      // console.log('ITEMS', method.fArgs.length, items.length);
+            // console.log('ITEMS', method.fArgs.length, items.length);
 
-		      for (var k=0;k<method.fArgs.length;++k) {
-		         var arg = method.fArgs[k];
-		         var value = items[k].getContent()[0].getValue();
+            for (var k=0;k<method.fArgs.length;++k) {
+               var arg = method.fArgs[k];
+               var value = items[k].getContent()[0].getValue();
 
-		         if (value==="") value = arg.fDefault;
+               if (value==="") value = arg.fDefault;
 
-		         if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
-		            // check quotes,
-		            // TODO: need to make more precise checking of escape characters
-		            if (!value) value = '""';
-		            if (value[0]!='"') value = '"' + value;
-		            if (value[value.length-1] != '"') value += '"';
-		         }
+               if ((arg.fTitle=="Option_t*") || (arg.fTitle=="const char*")) {
+                  // check quotes,
+                  // TODO: need to make more precise checking of escape characters
+                  if (!value) value = '""';
+                  if (value[0]!='"') value = '"' + value;
+                  if (value[value.length-1] != '"') value += '"';
+               }
 
-		         args += (k>0 ? "," : "") + value;
-		      }
-		   }
+               args += (k>0 ? "," : "") + value;
+            }
+         }
 
          this.methodDialog.close();
          this.methodDialog.destroy();
          JSROOT.CallBack(call_back, args);
-		},
+      },
 
-		showMethodsDialog : function(method, call_back) {
-		   var items = [];
+      showMethodsDialog : function(method, call_back) {
+         var items = [];
 
          for (var n=0;n<method.fArgs.length;++n) {
             var arg = method.fArgs[n];
@@ -115,9 +115,9 @@ sap.ui.define([
          // this.getView().addDependent(this.methodDialog);
 
          this.methodDialog.open();
-		},
+      },
 
-		onFileMenuAction : function (oEvent) {
+      onFileMenuAction : function (oEvent) {
          //var oItem = oEvent.getParameter("item"),
          //    sItemPath = "";
          //while (oItem instanceof sap.m.MenuItem) {
@@ -126,10 +126,10 @@ sap.ui.define([
          //}
          //sItemPath = sItemPath.substr(0, sItemPath.lastIndexOf(" > "));
 
-		   var p = this.getCanvasPainter();
-		   if (!p) return;
+         var p = this.getCanvasPainter();
+         if (!p) return;
 
-		   var name = oEvent.getParameter("item").getText();
+         var name = oEvent.getParameter("item").getText();
 
          switch (name) {
             case "Close canvas": p.OnWebsocketClosed(); p.CloseWebsocket(true); break;
@@ -143,54 +143,54 @@ sap.ui.define([
          }
 
          MessageToast.show("Action triggered on item: " + name);
-		},
+      },
 
-		onCloseCanvasPress : function() {
-		   var p = this.getCanvasPainter();
+      onCloseCanvasPress : function() {
+         var p = this.getCanvasPainter();
          if (p) {
             p.OnWebsocketClosed();
             p.CloseWebsocket(true);
          }
-		},
+      },
 
-		onInterruptPress : function() {
-		   var p = this.getCanvasPainter();
+      onInterruptPress : function() {
+         var p = this.getCanvasPainter();
          if (p) p.SendWebsocket("INTERRUPT");
-		},
+      },
 
-		onQuitRootPress : function() {
-		   var p = this.getCanvasPainter();
+      onQuitRootPress : function() {
+         var p = this.getCanvasPainter();
          if (p) p.SendWebsocket("QUIT");
-		},
+      },
 
-		onReloadPress : function() {
+      onReloadPress : function() {
          var p = this.getCanvasPainter();
          if (p) p.SendWebsocket("RELOAD");
-		},
+      },
 
-		showGeEditor : function(new_state) {
+      showGeEditor : function(new_state) {
          this.showLeftArea(new_state ? "Ged" : "");
-		},
+      },
 
-		getGed : function() {
-		   if (this.getView().getModel().getProperty("/LeftArea") != "Ged") return null;
-		   var split = this.getView().byId("MainAreaSplitter");
+      getLeftController : function(name) {
+         if (this.getView().getModel().getProperty("/LeftArea") != name) return null;
+         var split = this.getView().byId("MainAreaSplitter");
          return split ? split.getContentAreas()[0].getController() : null;
-		},
+      },
 
-		toggleGedEditor : function() {
-		   var new_state = this.getView().getModel().getProperty("/LeftArea") != "Ged";
-		   this.showGeEditor(new_state);
-		   var p = this.getCanvasPainter();
-		   if (new_state && p) p.SelectObjectPainter(p);
-		},
+      toggleGedEditor : function() {
+         var new_state = this.getView().getModel().getProperty("/LeftArea") != "Ged";
+         this.showGeEditor(new_state);
+         var p = this.getCanvasPainter();
+         if (new_state && p) p.SelectObjectPainter(p);
+      },
 
-		showLeftArea : function(panel_name) {
+      showLeftArea : function(panel_name) {
          var split = this.getView().byId("MainAreaSplitter");
          if (!split) return;
 
-		   var curr = this.getView().getModel().getProperty("/LeftArea");
-		   if (curr == panel_name) return;
+         var curr = this.getView().getModel().getProperty("/LeftArea");
+         if (curr == panel_name) return;
 
          // first need to remove existing
          if (curr) split.removeContentArea(split.getContentAreas()[0]);
@@ -208,38 +208,55 @@ sap.ui.define([
 
          var oContent = sap.ui.xmlview({
             viewName : "sap.ui.jsroot.view." + panel_name,
-            layoutData: oLd
+            layoutData: oLd,
+            height: panel_name=="Panel" ? "100%" : undefined
          });
 
          split.insertContentArea(oContent, 0);
 
          return oContent.getController(); // return controller of new panel
-		},
+      },
 
-		drawInBottomArea : function(can, call_back) {
-		   var bottom = null;
+      getBottomController : function(can, call_back) {
+         if (!this.bottomVisible) return null;
+         var split = this.getView().byId("MainAreaSplitter");
+         var cont = split.getContentAreas();
+         var vsplit = cont[cont.length-1];
+         var vcont = vsplit.getContentAreas();
+         var bottom = vcont[vcont.length-1];
+         return bottom ? bottom.getController() : null;
+      },
 
-		   if (this.bottomVisible) {
-            var split = this.getView().byId("MainAreaSplitter");
-            var cont = split.getContentAreas();
-            var vsplit = cont[cont.length-1];
-            var vcont = vsplit.getContentAreas();
-            bottom = vcont[vcont.length-1];
-		   }
+      drawInProjectionArea : function(can, opt, call_back) {
+         var ctrl = this.getBottomController();
+         if (!ctrl) ctrl = this.getLeftController("Panel");
 
-         if (bottom && bottom.getController().drawCanvas)
-            bottom.getController().drawCanvas(can, call_back);
+         if (ctrl && ctrl.drawCanvas)
+            ctrl.drawCanvas(can, opt, call_back);
          else
             JSROOT.CallBack(call_back, null);
-		},
+      },
 
-		showBottomArea : function(is_on) {
-		   if (is_on===undefined) is_on = !this.bottomVisible;
-		   if (this.bottomVisible == is_on) return;
+      showProjectionArea : function(kind, call_back) {
+         var bottom = this.showBottomArea(kind == "X");
+         var left = this.showLeftArea(kind == "Y" ? "Panel" : "");
+
+         var ctrl = bottom || left;
+
+         if (!ctrl || ctrl.getView().getDomRef())
+            return JSROOT.CallBack(call_back, !!ctrl);
+
+         // FIXME: one should have much easier way to get callback when rendering done
+         ctrl.after_render_callback = call_back;
+      },
+
+      showBottomArea : function(is_on) {
+
+         if (this.bottomVisible == is_on) return this.getBottomController();
 
          var split = this.getView().byId("MainAreaSplitter");
 
-         if (!split) return;
+         if (!split) return null;
 
          var cont = split.getContentAreas();
 
@@ -253,7 +270,7 @@ sap.ui.define([
             vsplit.destroyContentAreas();
             split.removeContentArea(vsplit);
             split.addContentArea(main);
-            return;
+            return null;
          }
 
          // remove panel with normal drawing
@@ -277,28 +294,30 @@ sap.ui.define([
          });
 
          vsplit.addContentArea(oContent);
-		},
 
-	   ShowCanvasStatus : function (text1,text2,text3,text4) {
-	      var model = this.getView().getModel();
-	      model.setProperty("/StatusLbl1", text1);
-	      model.setProperty("/StatusLbl2", text2);
-	      model.setProperty("/StatusLbl3", text3);
-	      model.setProperty("/StatusLbl4", text4);
+         return oContent.getController();
       },
 
-		isStatusShown : function() {
-		   return this._Page.getShowFooter();
-		},
+      ShowCanvasStatus : function (text1,text2,text3,text4) {
+         var model = this.getView().getModel();
+         model.setProperty("/StatusLbl1", text1);
+         model.setProperty("/StatusLbl2", text2);
+         model.setProperty("/StatusLbl3", text3);
+         model.setProperty("/StatusLbl4", text4);
+      },
 
-		toggleShowStatus : function() {
-		   var new_state = !this.isStatusShown();
+      isStatusShown : function() {
+         return this._Page.getShowFooter();
+      },
+
+      toggleShowStatus : function() {
+         var new_state = !this.isStatusShown();
 
          this._Page.setShowFooter(new_state);
          this.getView().getModel().setProperty("/StatusIcon", new_state ? "sap-icon://accept" : "");
-		},
+      },
 
-		onViewMenuAction : function (oEvent) {
+      onViewMenuAction : function (oEvent) {
 
          var item = oEvent.getParameter("item"),
              name = item.getText();
@@ -324,28 +343,26 @@ sap.ui.define([
          item.setIcon(new_state ? "sap-icon://accept" : "");
 
          // MessageToast.show("Action triggered on item: " + name);
-		},
+      },
 
-		onToolsMenuAction : function(oEvent) {
+      onToolsMenuAction : function(oEvent) {
          var item = oEvent.getParameter("item"),
              name = item.getText();
-
-         if (name == "Bottom") return this.showBottomArea();
 
          if (name != "Fit panel") return;
 
          var curr = this.getView().getModel().getProperty("/LeftArea");
 
          this.showLeftArea(curr == "FitPanel" ? "" : "FitPanel");
-		},
+      },
 
-		showMessage : function(msg) {
-		   MessageToast.show(msg);
-		}
+      showMessage : function(msg) {
+         MessageToast.show(msg);
+      }
 
-	});
+   });
 
 
-	return CController;
+   return CController;
 
 });

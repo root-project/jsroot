@@ -336,7 +336,7 @@
 
    JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(painter) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      var ged = main ? main.getController().getGed() : null;
+      var ged = main ? main.getController().getLeftController("Ged") : null;
       if (ged) ged.onObjectSelect(this, painter);
    }
 
@@ -355,14 +355,14 @@
       if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
    }
 
-   JSROOT.TCanvasPainter.prototype.ShowBottomArea = function(on) {
+   JSROOT.TCanvasPainter.prototype.ShowUI5ProjectionArea = function(kind, call_back) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().showBottomArea(on);
+      if (main) main.getController().showProjectionArea(kind, call_back);
    }
 
-   JSROOT.TCanvasPainter.prototype.DrawInBottomArea = function(obj,call_back) {
+   JSROOT.TCanvasPainter.prototype.DrawInUI5ProjectionArea = function(obj, opt, call_back) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().drawInBottomArea(obj, call_back);
+      if (main) main.getController().drawInProjectionArea(obj, opt, call_back);
    }
 
    JSROOT.TCanvasPainter.prototype.ShowMessage = function(msg) {

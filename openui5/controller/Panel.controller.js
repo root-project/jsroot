@@ -7,6 +7,11 @@ sap.ui.define([
    return Controller.extend("sap.ui.jsroot.controller.Panel", {
 
       onAfterRendering: function() {
+         if (this.after_render_callback) {
+            JSROOT.CallBack(this.after_render_callback);
+            delete this.after_render_callback;
+         }
+
          if (this.canvas_painter && this.canvas_painter._configured_socket_kind) {
             this.canvas_painter.SetDivId(this.getView().getDomRef(), -1);
             this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
@@ -23,14 +28,17 @@ sap.ui.define([
          this.resize_tmout = setTimeout(this.onResizeTimeout.bind(this), 300); // minimal latency
       },
 
-      drawCanvas : function(can, call_back) {
+      drawCanvas : function(can, opt, call_back) {
          if (this.canvas_painter) {
             this.canvas_painter.Cleanup();
             delete this.canvas_painter;
          }
 
+         if (!this.getView().getDomRef()) return JSROOT.CallBack(call_back, null);
+
+
          var pthis = this;
-         JSROOT.draw(this.getView().getDomRef(), can, "", function(painter) {
+         JSROOT.draw(this.getView().getDomRef(), can, opt, function(painter) {
             pthis.canvas_painter = painter;
             JSROOT.CallBack(call_back, painter);
          });
