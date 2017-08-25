@@ -3657,7 +3657,10 @@
           lm = Math.round(width * this.fX1NDC),
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
-          h = Math.round(height * (this.fY2NDC - this.fY1NDC));
+          h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
+          rotate = false, pp = this.pad_painter();
+
+      if (pp && pp.options && pp.options.RotateFrame) rotate = true;
 
       // this is svg:g object - container for every other items belonging to frame
       this.draw_g = this.svg_frame();
@@ -3685,12 +3688,18 @@
          this.draw_g.append('svg:g').attr('class','upper_layer');
       }
 
+      var trans = "translate(" + lm + "," + tm + ")";
+      if (rotate) {
+         trans += " rotate(-90) " + "translate(" + -h + ",0)";
+         var d = w; w = h; h = d;
+      }
+
       this.draw_g.property('frame_painter', this) // simple way to access painter via frame container
                  .property('draw_x', lm)
                  .property('draw_y', tm)
                  .property('draw_width', w)
                  .property('draw_height', h)
-                 .attr("transform", "translate(" + lm + "," + tm + ")");
+                 .attr("transform", trans);
 
       top_rect.attr("x", 0)
               .attr("y", 0)
@@ -4285,8 +4294,8 @@
          .property('draw_height', rect.height);
 
       svg.select(".canvas_fillrect")
-         .attr("width",rect.width)
-         .attr("height",rect.height)
+         .attr("width", rect.width)
+         .attr("height", rect.height)
          .call(this.fillatt.func);
 
       this.svg_layer("btns_layer")
@@ -5277,11 +5286,12 @@
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
-      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false };
+      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false };
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
+      if (d.check('ROTATE')) this.options.RotateFrame = true;
 
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOGX')) pad.fLogx = 1;
@@ -5356,6 +5366,7 @@
 
       if (!sidebar.empty()) JSROOT.cleanup(sidebar.node());
 
+      this.set_layout_kind("simple"); // restore defaults
       origin.html(""); // cleanup origin
 
       if (layout_kind == 'simple') {
@@ -5370,6 +5381,7 @@
       var pthis = this;
 
       JSROOT.AssertPrerequisites("jq2d", function() {
+
          var grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
          if (layout_kind.indexOf("vert")==0) {
@@ -5389,16 +5401,14 @@
 
          pthis.set_layout_kind(layout_kind, ".central_panel");
 
-         // JSROOT.resize(main.node());
-
          JSROOT.CallBack(call_back, true);
       });
    }
 
-   TCanvasPainter.prototype.DrawInSidePanel = function(canv, call_back) {
+   TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.draw(side.node(), canv, "", call_back);
+      JSROOT.draw(side.node(), canv, opt, call_back);
    }
 
 

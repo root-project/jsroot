@@ -2585,6 +2585,7 @@
    GridDisplay.prototype = Object.create(MDIDisplay.prototype);
 
    GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
+
       if (!sizes) sizes = new Array(num);
       var sum1 = 0, sum2 = 0;
       for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);

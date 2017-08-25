@@ -2225,7 +2225,7 @@
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
              Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
-             GLBox: 0, GLColor: 0,
+             GLBox: 0, GLColor: 0, Project: "",
              System: JSROOT.Painter.Coord.kCARTESIAN,
              AutoColor: 0, NoStat: false, AutoZoom: false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
@@ -2430,8 +2430,10 @@
       if (d.check('MERCATOR')) option.Proj = 2;
       if (d.check('SINUSOIDAL')) option.Proj = 3;
       if (d.check('PARABOLIC')) option.Proj = 4;
-
       if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
+
+      if (d.check('PROJX')) option.Project = "X";
+      if (d.check('PROJY')) option.Project = "Y";
 
       if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
       if ((hdim==3) && d.check('BB')) option.BackBox = 0;
@@ -5934,7 +5936,7 @@
          } else if (canp && canp.DrawInSidePanel) {
             var canv = JSROOT.Create("TCanvas"), pthis = this;
             canv.fPrimitives.Add(this.proj_hist);
-            canp.DrawInSidePanel(canv, function(painter) { pthis.proj_painter = painter; })
+            canp.DrawInSidePanel(canv, (this.is_projection == "X") ? "" : "rotate", function(painter) { pthis.proj_painter = painter; })
          }
       } else {
          var hp = this.proj_painter.FindPainterFor(this.proj_hist);
@@ -7665,6 +7667,8 @@
                if (this.options.AutoZoom) this.AutoZoom();
             }
             this.FillToolbar();
+            if (this.options.Project && !this.mode3d)
+               this.ToggleProjection(this.options.Project);
             this.DrawingReady();
          }.bind(this));
       }.bind(painter));
