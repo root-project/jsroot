@@ -5950,16 +5950,22 @@
       }
 
       if (!this.proj_painter) {
-         var canp = this.pad_painter();
-         var canv = JSROOT.Create("TCanvas"), pthis = this, pad = this.root_pad(), drawopt;
+         var canp = this.pad_painter(), canv = JSROOT.Create("TCanvas"),
+             pthis = this, pad = this.root_pad(), drawopt;
 
          if (this.is_projection == "X") {
             canv.fLeftMargin = pad.fLeftMargin;
             canv.fRightMargin = pad.fRightMargin;
+            canv.fLogx = this.logx ? 1 : 0;
+            canv.fUxmin = this.logx ? JSROOT.log10(this.scale_xmin) : this.scale_xmin ;
+            canv.fUxmax = this.logx ? JSROOT.log10(this.scale_xmax) : this.scale_xmax;
             drawopt = "fixframe";
          } else {
             canv.fBottomMargin = pad.fBottomMargin;
             canv.fTopMargin = pad.fTopMargin;
+            canv.fLogx = this.logy ? 1 : 0;
+            canv.fUxmin = this.logy ? JSROOT.log10(this.scale_ymin) : this.scale_ymin ;
+            canv.fUxmax = this.logy ? JSROOT.log10(this.scale_ymax) : this.scale_ymax;
             drawopt = "rotate";
          }
 
