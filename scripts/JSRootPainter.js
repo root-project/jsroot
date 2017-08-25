@@ -1407,57 +1407,6 @@
       }
    }
 
-/*
-   TBasePainter.prototype.layout_main = function(kind) {
-
-      kind = kind || "simple";
-
-      // first extract all childs
-      var origin = this.select_main('origin');
-      if (origin.empty() || (origin.property('layout') === kind)) return false;
-
-      var main = this.select_main(), lst = [];
-
-      while (main.node().firstChild)
-         lst.push(main.node().removeChild(main.node().firstChild));
-
-      if (kind === "simple") {
-         // simple layout - nothing inside
-         origin.html("");
-         main = origin;
-      } else {
-
-         // now create all necessary divs
-
-         var maindiv = origin.html("")
-                          .append("div")
-                          .attr("class","jsroot")
-                          .style('display','flex')
-                          .style('flex-direction','column')
-                          .style('width','100%')
-                          .style('height','100%');
-
-         var header = maindiv.append("div").attr('class','canvas_header').style('width','100%');
-
-         main = maindiv.append("div")
-                       .style('flex',1) // use all available vertical space in the parent div
-                       .style('width','100%')
-                       .style("position","relative") // one should use absolute position for
-                       .attr("class", "canvas_main");
-
-         var footer = maindiv.append("div").attr('class','canvas_footer').style('width','100%');
-      }
-
-      // now append all childs to the newmain
-      for (var k=0;k<lst.length;++k)
-         main.node().appendChild(lst[k]);
-
-      origin.property('layout', kind);
-
-      return lst.length > 0; // return true when layout changed and there are elements inside
-   }
-*/
-
    TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
       // function checks if geometry of main div changed
       // returns size of area when main div is drawn
@@ -5423,8 +5372,13 @@
       JSROOT.AssertPrerequisites("jq2d", function() {
          var grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
-         main = d3.select(grid.GetFrame(0));
-         sidebar = d3.select(grid.GetFrame(1));
+         if (layout_kind.indexOf("vert")==0) {
+            main = d3.select(grid.GetFrame(0));
+            sidebar = d3.select(grid.GetFrame(1));
+         } else {
+            main = d3.select(grid.GetFrame(1));
+            sidebar = d3.select(grid.GetFrame(0));
+         }
 
          main.classed("central_panel", true).style('position','relative');
          sidebar.classed("side_panel", true).style('position','relative');
