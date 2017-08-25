@@ -5875,14 +5875,19 @@
 
       var canp = this.pad_painter();
 
-      if (!canp || !canp.ShowBottomArea) return;
+      if (!canp) return;
 
-      canp.ShowBottomArea(this.is_x_projection);
+      if (canp.ShowBottomArea && canp.use_openui) {
+         canp.ShowBottomArea(this.is_x_projection);
+      } else if (canp.ChangeLayout) {
+         canp.ChangeLayout(this.is_x_projection ? 'vert2_31' : 'simple');
+      }
 
       if (!this.is_x_projection) {
          delete this.xproj_hist;
          delete this.xproj_painter;
       }
+
    }
 
    TH2Painter.prototype.RedrawXProjection = function(j) {
@@ -5897,11 +5902,15 @@
 
       if (!this.xproj_painter) {
          var canp = this.pad_painter();
-         if (canp && canp.DrawInBottomArea) {
+         if (canp && canp.DrawInBottomArea && canp.use_openui) {
             var canv = JSROOT.Create("TCanvas"), pthis = this;
             canv.fPrimitives.Add(this.xproj_hist);
             // copy frame attributes
             canp.DrawInBottomArea(canv, function(painter) { pthis.xproj_painter = painter; })
+         } else if (canp && canp.DrawInSidePanel) {
+            var canv = JSROOT.Create("TCanvas"), pthis = this;
+            canv.fPrimitives.Add(this.xproj_hist);
+            canp.DrawInSidePanel(canv, function(painter) { pthis.xproj_painter = painter; })
          }
       } else {
          var hp = this.xproj_painter.FindPainterFor(this.xproj_hist);

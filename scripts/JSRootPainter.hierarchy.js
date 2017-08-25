@@ -2166,7 +2166,7 @@
       if (drawing && socket_kind) {
 
          var painter = new JSROOT.TCanvasPainter(null);
-         painter.plain_layout = painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
+         painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
          if (painter.batch_mode) JSROOT.BatchMode = true;
 
          if (window) {
@@ -2176,9 +2176,8 @@
 
          if (use_openui && !painter.batch_mode) {
 
-            painter.plain_layout = true;
-
             painter._configured_socket_kind = socket_kind;
+            painter.use_openui = true;
 
             JSROOT.openui5_canvas_painter = painter;
 

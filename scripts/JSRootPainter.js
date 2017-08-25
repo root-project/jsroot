@@ -1304,7 +1304,9 @@
    TBasePainter.prototype.Cleanup = function() {
       // generic method to cleanup painter
 
-      this.layout_main('simple');
+      var origin = this.select_main('origin');
+      if (!origin.empty()) origin.html("");
+      this.set_layout_kind('simple');
       this.AccessTopPainter(false);
       this.divid = null;
 
@@ -1368,7 +1370,7 @@
 
    TBasePainter.prototype.select_main = function(is_direct) {
       // return d3.select for main element for drawing, defined with divid
-      // if main element was layout, returns main element inside layout
+      // if main element was layouted, returns main element inside layout
 
       if (!this.divid) return d3.select(null);
       var id = this.divid;
@@ -1377,17 +1379,10 @@
       if (res.empty() || (is_direct==='origin')) return res;
 
       var use_enlarge = res.property('use_enlarge'),
-          layout = res.property('layout');
+          layout = res.property('layout') || 'simple',
+          layout_selector = (layout=='simple') ? "" : res.property('layout_selector');
 
-      if (layout && (layout !=="simple")) {
-         switch(is_direct) {
-            case 'header': res = res.select(".canvas_header"); break;
-            case 'footer': res = res.select(".canvas_footer"); break;
-            default: res = res.select(".canvas_main");
-         }
-      } else {
-         if (typeof is_direct === 'string') return d3.select(null);
-      }
+      if (layout_selector) res = res.select(layout_selector);
 
       // one could redirect here
       if (!is_direct && !res.empty() && use_enlarge) res = d3.select("#jsroot_enlarge_div");
@@ -1395,6 +1390,24 @@
       return res;
    }
 
+   TBasePainter.prototype.get_layout_kind = function() {
+      var origin = this.select_main('origin'),
+          layout = origin.empty() ? "" : origin.property('layout');
+
+      return layout || 'simple';
+   }
+
+   TBasePainter.prototype.set_layout_kind = function(kind, main_selector) {
+      // change layout settings
+      var origin = this.select_main('origin');
+      if (!origin.empty()) {
+         if (!kind) kind = 'simple';
+         origin.property('layout', kind);
+         origin.property('layout_selector', (kind!='simple') && main_selector ? main_selector : null);
+      }
+   }
+
+/*
    TBasePainter.prototype.layout_main = function(kind) {
 
       kind = kind || "simple";
@@ -1443,6 +1456,7 @@
 
       return lst.length > 0; // return true when layout changed and there are elements inside
    }
+*/
 
    TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
       // function checks if geometry of main div changed
@@ -5380,6 +5394,60 @@
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
 
+   TCanvasPainter.prototype.ChangeLayout = function(layout_kind, call_back) {
+      var current = this.get_layout_kind();
+      if (current == layout_kind) return JSROOT.CallBack(call_back, true);
+
+      var origin = this.select_main('origin'),
+          sidebar = origin.select('.side_panel'),
+          main = this.select_main(), lst = [];
+
+      while (main.node().firstChild)
+         lst.push(main.node().removeChild(main.node().firstChild));
+
+      if (!sidebar.empty()) JSROOT.cleanup(sidebar.node());
+
+      origin.html(""); // cleanup origin
+
+      if (layout_kind == 'simple') {
+         main = origin;
+         for (var k=0;k<lst.length;++k)
+            main.node().appendChild(lst[k]);
+         this.set_layout_kind(layout_kind);
+         // JSROOT.resize(main.node());
+         return JSROOT.CallBack(call_back, true);
+      }
+
+      var pthis = this;
+
+      JSROOT.AssertPrerequisites("jq2d", function() {
+         var grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
+
+         main = d3.select(grid.GetFrame(0));
+         sidebar = d3.select(grid.GetFrame(1));
+
+         main.classed("central_panel", true).style('position','relative');
+         sidebar.classed("side_panel", true).style('position','relative');
+
+         // now append all childs to the new main
+         for (var k=0;k<lst.length;++k)
+            main.node().appendChild(lst[k]);
+
+         pthis.set_layout_kind(layout_kind, ".central_panel");
+
+         // JSROOT.resize(main.node());
+
+         JSROOT.CallBack(call_back, true);
+      });
+   }
+
+   TCanvasPainter.prototype.DrawInSidePanel = function(canv, call_back) {
+      var side = this.select_main('origin').select(".side_panel");
+      if (side.empty()) return JSROOT.CallBack(call_back, null);
+      JSROOT.draw(side.node(), canv, "", call_back);
+   }
+
+
    TCanvasPainter.prototype.ShowMessage = function(msg) {
       JSROOT.progress(msg, 7000);
    }
@@ -5478,48 +5546,6 @@
 
    TCanvasPainter.prototype.HasEventStatus = function() {
       return this.has_event_status;
-   }
-
-   TCanvasPainter.prototype.ToggleEventStatus = function() {
-      // when function called, jquery should be already loaded
-
-      if ((this.enlarge_main('state')==='on') || this.plain_layout) return;
-
-      this.has_event_status = !this.has_event_status;
-      if (JSROOT.Painter.ShowStatus) this.has_event_status = false;
-
-      var resized = this.layout_main(this.has_event_status || this._websocket ? "canvas" : "simple");
-
-      var footer = this.select_main('footer');
-
-      if (!this.has_event_status) {
-         footer.html("");
-         delete this.status_layout;
-         delete this.ShowStatus;
-         delete this.ShowStatusFunc;
-      } else {
-
-         this.status_layout = new JSROOT.GridDisplay(footer.node(), 'horizx4_1213');
-
-         var frame_titles = ['object name','object title','mouse coordinates','object info'];
-         for (var k=0;k<4;++k)
-            d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
-            .append("label").attr("class","jsroot_status_label");
-
-         this.ShowStatusFunc = function(name, title, info, coordinates) {
-            if (!this.status_layout) return;
-            $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-            $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-            $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-            $(this.status_layout.GetFrame(3)).children('label').text(info || "");
-         }
-
-         this.ShowStatus = this.ShowStatusFunc.bind(this);
-
-         this.ShowStatus("canvas","title","info","");
-      }
-
-      if (resized) this.CheckCanvasResize(); // redraw with resize
    }
 
    Painter.drawCanvas = function(divid, can, opt) {
