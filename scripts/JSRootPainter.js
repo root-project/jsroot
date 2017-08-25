@@ -4237,9 +4237,6 @@
 
       } else {
 
-         if (this._websocket && !this.plain_layout)
-            this.CreateCanvasMenu();
-
          var render_to = this.select_main();
 
          if (render_to.style('position')=='static')
@@ -5382,93 +5379,6 @@
    }
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
-
-   TCanvasPainter.prototype.CreateCanvasMenu = function() {
-      // FIXME: temporary solution, should be removed
-      if (this.enlarge_main('state')==='on') return;
-
-      this.layout_main("canvas");
-
-      var header = this.select_main('header');
-
-      header.html("").style('background','lightgrey');
-
-      var items = ['File','Edit','View','Options','Tools','Help'];
-      var painter = this;
-      for (var k in items) {
-         var elem = header.append("p").attr("class","canvas_menu").text(items[k]);
-         if (items[k]=='Help') elem.style('float','right');
-         elem.on('click', this.ShowCanvasMenu.bind(this, items[k]));
-      }
-   }
-
-   TCanvasPainter.prototype.ShowCanvasMenu = function(name) {
-
-      d3.event.stopPropagation(); // disable main context menu
-      d3.event.preventDefault();  // disable browser context menu
-
-      var evnt = d3.event;
-
-      function HandleClick(arg) {
-         if (!this._websocket) return;
-
-         switch (arg) {
-            case "Close canvas": this.OnWebsocketClosed(); this.CloseWebsocket(true); break;
-            case "Interrupt": this.SendWebsocket("INTERRUPT"); break;
-            case "Quit ROOT": this.SendWebsocket("QUIT"); break;
-            default: console.log('click', arg);
-         }
-      }
-
-      JSROOT.Painter.createMenu(this, function(menu) {
-
-         switch(name) {
-            case "File": {
-               menu.add("Close canvas", HandleClick);
-               menu.add("separator");
-               menu.add("Save PNG", HandleClick);
-               var ext = ["ps","eps","pdf","tex","gif","jpg","png","C","root"];
-               menu.add("sub:Save");
-               for (var k in ext) menu.add("canvas."+ext[k], HandleClick);
-               menu.add("endsub:");
-               menu.add("separator");
-               menu.add("Interrupt", HandleClick);
-               menu.add("separator");
-               menu.add("Quit ROOT", HandleClick);
-               break;
-            }
-            case "Edit":
-               menu.add("Clear pad", HandleClick);
-               menu.add("Clear canvas", HandleClick);
-               break;
-            case "View": {
-               menu.addchk(menu.painter.HasEventStatus(), "Event status", menu.painter.ToggleEventStatus.bind(menu.painter));
-               var fp = menu.painter.frame_painter();
-               menu.addchk(fp && fp.tooltip_allowed, "Tooltip info", function() { if (fp) fp.tooltip_allowed = !fp.tooltip_allowed; });
-               break;
-            }
-            case "Options": {
-               var main = menu.painter.main_painter();
-               menu.addchk(main && main.ToggleStat('only-check'), "Statistic", function() { if (main) main.ToggleStat(); });
-               menu.addchk(main && main.ToggleTitle('only-check'), "Histogram title",  function() { if (main) main.ToggleTitle(); });
-               menu.addchk(main && main.ToggleStat('fitpar-check'), "Fit parameters", function() { if (main) main.ToggleStat('fitpar-toggle'); });
-               break;
-            }
-            case "Tools":
-               menu.add("Inspector", HandleClick);
-               break;
-            case "Help":
-               menu.add("header:Basic help on...");
-               menu.add("Canvas", HandleClick);
-               menu.add("Menu", HandleClick);
-               menu.add("Browser", HandleClick);
-               menu.add("separator");
-               menu.add("About ROOT", HandleClick);
-               break;
-         }
-         if (menu.size()>0) menu.show(evnt);
-      });
-   }
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
       JSROOT.progress(msg, 7000);
