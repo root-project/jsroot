@@ -2432,8 +2432,8 @@
       if (d.check('PARABOLIC')) option.Proj = 4;
       if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
 
-      if (d.check('PROJX')) option.Project = "X";
-      if (d.check('PROJY')) option.Project = "Y";
+      if (d.check('PROJX',true)) option.Project = "X" + d.partAsInt(0,1);
+      if (d.check('PROJY',true)) option.Project = "Y" + d.partAsInt(0,1);
 
       if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
       if ((hdim==3) && d.check('BB')) option.BackBox = 0;
@@ -5873,21 +5873,29 @@
       THistPainter.prototype.Cleanup.call(this);
    }
 
-   TH2Painter.prototype.ToggleXProjection = function() {
-      this.ToggleProjection("X");
-   }
+   TH2Painter.prototype.ToggleProjection = function(kind, width) {
 
-   TH2Painter.prototype.ToggleYProjection = function() {
-      this.ToggleProjection("Y");
-   }
+      if ((typeof kind == 'string') && (kind.length>1)) {
+          width = parseInt(kind.substr(1));
+          kind = kind[0];
+      }
 
+      if (!width) width = 1;
 
-   TH2Painter.prototype.ToggleProjection = function(kind) {
+      if (kind && (this.is_projection==kind)) {
+         if (this.projection_width === width) {
+            kind = "";
+         } else {
+            this.projection_width = width;
+            return;
+         }
+      }
 
       delete this.proj_hist;
       delete this.proj_painter;
 
       this.is_projection = (this.is_projection === kind) ? "" : kind;
+      this.projection_width = width;
 
       var canp = this.pad_painter();
       if (!canp) return;
@@ -5905,7 +5913,7 @@
 
    }
 
-   TH2Painter.prototype.RedrawProjection = function(ii, jj) {
+   TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
 
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
@@ -5922,11 +5930,17 @@
       }
 
       if (this.is_projection == "X") {
-         for (var i=0;i<this.nbinsx;++i)
-            this.proj_hist.setBinContent(i+1, this.histo.getBinContent(i+1,jj+1));
+         for (var i=0;i<this.nbinsx;++i) {
+            var sum=0;
+            for (var j=jj1;j<jj2;++j) sum+=this.histo.getBinContent(i+1,j+1);
+            this.proj_hist.setBinContent(i+1, sum);
+         }
       } else {
-         for (var j=0;j<this.nbinsy;++j)
-            this.proj_hist.setBinContent(j+1, this.histo.getBinContent(ii+1,j+1));
+         for (var j=0;j<this.nbinsy;++j) {
+            var sum = 0;
+            for (var i=ii1;i<ii2;++i) sum += this.histo.getBinContent(i+1,j+1);
+            this.proj_hist.setBinContent(j+1, sum);
+         }
       }
 
       if (!this.proj_painter) {
@@ -5962,8 +5976,13 @@
    TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
 
-      menu.addchk(this.is_projection=="X", "Show X projection", this.ToggleXProjection);
-      menu.addchk(this.is_projection=="Y", "Show Y projection", this.ToggleYProjection);
+      menu.add("sub:Projections", this.ToggleProjection);
+      var kind = this.is_projection || "";
+      if (kind) kind += this.projection_width;
+      var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10" ];
+      for (var k=0;k<kinds.length;++k)
+         menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
+      menu.add("endsub:");
 
       menu.add("Auto zoom-in", this.AutoZoom);
 
@@ -7512,7 +7531,6 @@
       for (j = h.j1; j < h.j2; ++j)
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) break;
 
-
       if ((i < h.i2) && (j < h.j2)) {
          binz = histo.getBinContent(i+1,j+1);
          if (this.is_projection) {
@@ -7548,9 +7566,31 @@
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         var x1 = h.grx[i], x2 = h.grx[i+1], y1 = h.gry[j+1], y2 = h.gry[j], binid = i*10000 + j;
-         if (this.is_projection == "X") { x1 = 0; x2 = this.frame_width(); binid = j*777; } else
-         if (this.is_projection == "Y") { y1 = 0; y2 = this.frame_height(); binid = i*555; }
+         var i1 = i, i2 = i+1,
+             j1 = j, j2 = j+1,
+             x1 = h.grx[i1], x2 = h.grx[i2],
+             y1 = h.gry[j2], y2 = h.gry[j1],
+             binid = i*10000 + j;
+
+         if (this.is_projection == "X") {
+            x1 = 0; x2 = this.frame_width();
+            if (this.projection_width > 1) {
+               var dd = (this.projection_width-1)/2;
+               if (j2+dd >= h.j2) { j2 = Math.min(Math.round(j2+dd), h.j2); j1 = Math.max(j2 - this.projection_width, h.j1); }
+                             else { j1 = Math.max(Math.round(j1-dd), h.j1); j2 = Math.min(j1 + this.projection_width, h.j2); }
+            }
+            y1 = h.gry[j2]; y2 = h.gry[j1];
+            binid = j1*777 + j2*333;
+         } else if (this.is_projection == "Y") {
+            y1 = 0; y2 = this.frame_height();
+            if (this.projection_width > 1) {
+               var dd = (this.projection_width-1)/2;
+               if (i2+dd >= h.i2) { i2 = Math.min(Math.round(i2+dd), h.i2); i1 = Math.max(i2 - this.projection_width, h.i1); }
+                             else { i1 = Math.max(Math.round(i1-dd), h.i1); i2 = Math.min(i1 + this.projection_width, h.i2); }
+            }
+            x1 = h.grx[i1], x2 = h.grx[i2],
+            binid = i1*777 + i2*333;
+         }
 
          res.changed = ttrect.property("current_bin") !== binid;
 
@@ -7563,7 +7603,7 @@
                   .property("current_bin", binid);
 
          if (this.is_projection && res.changed)
-            this.RedrawProjection(i, j);
+            this.RedrawProjection(i1, i2, j1, j2);
       }
 
       if (this.IsUserTooltipCallback() && res.changed) {
