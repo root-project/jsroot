@@ -205,7 +205,7 @@
          fOptFit : 0,
          fNumberContours : 20,
          fGridColor : 0,
-         fGridStyle : 11,
+         fGridStyle : 3,
          fGridWidth : 1,
          fFrameFillColor : 0,
          fFrameLineColor : 1,
