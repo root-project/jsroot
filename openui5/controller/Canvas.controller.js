@@ -22,7 +22,7 @@ sap.ui.define([
          this._Page = this.getView().byId("CanvasMainPage");
          this.bottomVisible = false;
 
-         var model = new JSONModel({ GedIcon: "", StatusIcon: "",
+         var model = new JSONModel({ GedIcon: "", StatusIcon: "", ToobarIcon: "",
                                      StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
 
@@ -310,12 +310,26 @@ sap.ui.define([
          return this._Page.getShowFooter();
       },
 
-      toggleShowStatus : function() {
-         var new_state = !this.isStatusShown();
+      toggleShowStatus : function(new_state) {
+         if (new_state === undefined) new_state = !this.isStatusShown();
 
          this._Page.setShowFooter(new_state);
          this.getView().getModel().setProperty("/StatusIcon", new_state ? "sap-icon://accept" : "");
       },
+
+      toggleToolBar : function(new_state) {
+
+         if (new_state === undefined) new_state = !this.getView().getModel().getProperty("/ToobarIcon");
+
+         this._Page.setShowSubHeader(new_state);
+
+         this.getView().getModel().setProperty("/ToobarIcon", new_state ? "sap-icon://accept" : "");
+      },
+
+      setShowMenu : function(new_state) {
+         this._Page.setShowHeader(new_state);
+      },
+
 
       onViewMenuAction : function (oEvent) {
 
@@ -324,6 +338,7 @@ sap.ui.define([
 
          if (name=="Editor") return this.toggleGedEditor();
          if (name=="Event statusbar") return this.toggleShowStatus();
+         if (name=="ToolBar") return this.toggleToolBar();
 
 
          var p = this.getCanvasPainter(true);
@@ -332,9 +347,6 @@ sap.ui.define([
          var new_state = !item.getIcon();
 
          switch (name) {
-            case "Toolbar":
-               this._Page.setShowSubHeader(new_state)
-               break;
             case "Tooltip info":
                p.SetTooltipAllowed(new_state);
                break;
@@ -358,7 +370,17 @@ sap.ui.define([
 
       showMessage : function(msg) {
          MessageToast.show(msg);
+      },
+
+      showSection : function(that, on) {
+         switch(that) {
+            case "Menu": this.setShowMenu(on); break;
+            case "StatusBar": this.toggleShowStatus(on); break;
+            case "Editor": this.showGeEditor(on); break;
+            case "ToolBar": this.toggleToolBar(on); break;
+         }
       }
+
 
    });
 

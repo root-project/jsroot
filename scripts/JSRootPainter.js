@@ -4669,6 +4669,8 @@
    TPadPainter.prototype.UpdateObject = function(obj) {
       if (!obj) return false;
 
+      this.pad.fBits = obj.fBits;
+
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
       this.pad.fTickx = obj.fTickx;
@@ -5520,6 +5522,7 @@
          if (typeof this.RedrawPadSnap === 'function') {
             var pthis = this;
             this.RedrawPadSnap(snap, function() {
+               pthis.ShowAllSections();
                var reply = pthis.GetAllRanges();
                // if (reply) console.log("ranges: " + reply);
                conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
@@ -5563,9 +5566,46 @@
              hist = JSROOT.parse(msg.substr(7));
          conn.send('READY'); // special message, confirm that sending is ready
          this.DrawProjection(kind, hist);
+      } else if (msg.substr(0,5)=='SHOW:') {
+         conn.send('READY'); // confirm that sending is ready
+         var that = msg.substr(5),
+             on = that[that.length-1] == '1';
+         this.ShowSection(that.substr(0,that.length-2), on);
       } else {
          console.log("unrecognized msg " + msg);
       }
+   }
+
+   TCanvasPainter.prototype.ShowSection = function(that, on) {
+      switch(that) {
+         case "Menu": break;
+         case "StatusBar": break;
+         case "Editor": break;
+         case "ToolBar": break;
+         case "ToolTips": this.SetTooltipAllowed(on); break;
+      }
+   }
+
+   JSROOT.TCanvasStatusBits = {
+      kShowEventStatus  : JSROOT.BIT(15),
+      kAutoExec         : JSROOT.BIT(16),
+      kMenuBar          : JSROOT.BIT(17),
+      kShowToolBar      : JSROOT.BIT(18),
+      kShowEditor       : JSROOT.BIT(19),
+      kMoveOpaque       : JSROOT.BIT(20),
+      kResizeOpaque     : JSROOT.BIT(21),
+      kIsGrayscale      : JSROOT.BIT(22),
+      kShowToolTips     : JSROOT.BIT(23)
+   };
+
+   TCanvasPainter.prototype.ShowAllSections = function() {
+      var can = this.GetObject();
+      if (!can) return;
+      this.ShowSection("Menu", can.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
+      this.ShowSection("StatusBar", can.TestBit(JSROOT.TCanvasStatusBits.kShowEventStatus));
+      this.ShowSection("ToolBar",  can.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
+      this.ShowSection("Editor", can.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
+      this.ShowSection("ToolTips", can.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
    }
 
    TCanvasPainter.prototype.HasEventStatus = function() {

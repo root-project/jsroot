@@ -370,6 +370,13 @@
       if (main) main.getController().showMessage(msg);
    }
 
+   JSROOT.TCanvasPainter.prototype.ShowSection = function(that, on) {
+      if (that == "ToolTips") return this.SetTooltipAllowed(on);
+
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (main) main.getController().showSection(that, on);
+   }
+
    JSROOT.TCanvasPainter.prototype.MethodsDialog = function(painter, method, menu_obj_id) {
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
