@@ -5956,6 +5956,17 @@
       return canp.DrawProjection(this.is_projection, this.proj_hist);
    }
 
+   TH2Painter.prototype.ExecuteMenuCommand = function(method, args) {
+      if (THistPainter.prototype.ExecuteMenuCommand.call(this,method, args)) return true;
+
+      if ((method.fName == 'SetShowProjectionX') || (method.fName == 'SetShowProjectionY')) {
+         this.ToggleProjection(method.fName[17], args && parseInt(args) ? parseInt(args) : 1);
+         return true;
+      }
+
+      return false;
+   }
+
    TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
 

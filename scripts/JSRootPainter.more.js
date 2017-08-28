@@ -1517,19 +1517,19 @@
    }
 
 
-   TGraphPainter.prototype.ExecuteMenuCommand = function(item) {
-      if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,item)) return true;
+   TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
+      if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
       var canp = this.pad_painter(), fp = this.frame_painter();
 
-      if ((item.fName == 'RemovePoint') || (item.fName == 'InsertPoint')) {
+      if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
          var pnt = fp ? fp.GetLastEventPos() : null;
 
          if (!canp || !fp || !pnt) return true; // ignore function
 
          var hint = this.ExtractTooltip(pnt);
 
-         if (item.fName == 'InsertPoint') {
+         if (method.fName == 'InsertPoint') {
             var main = this.main_painter(),
                 userx = main && main.RevertX ? main.RevertX(pnt.x) : 0,
                 usery = main && main.RevertY ? main.RevertY(pnt.y) : 0;

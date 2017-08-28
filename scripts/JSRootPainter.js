@@ -2792,10 +2792,10 @@
       retry_open(true); // call for the first time
    }
 
-   TObjectPainter.prototype.ExecuteMenuCommand = function(item) {
+   TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
       // execute selected menu command, either locally or remotely
 
-      if (item.fName == "Inspect") {
+      if (method.fName == "Inspect") {
          this.ShowInpsector();
          return true;
       }
@@ -2803,13 +2803,13 @@
       var canvp = this.pad_painter();
       if (!canvp) return false;
 
-      if ((item.fName == "FitPanel") && canvp.ActivateFitPanel) {
+      if ((method.fName == "FitPanel") && canvp.ActivateFitPanel) {
          canvp.ActivateFitPanel(this);
          return true;
       }
 
-      if (canvp.ActivateGed && ((item.fName == "DrawPanel") || (item.fName == "SetLineAttributes")
-            || (item.fName == "SetFillAttributes") || (item.fName == "SetMarkerAttributes"))) {
+      if (canvp.ActivateGed && ((method.fName == "DrawPanel") || (method.fName == "SetLineAttributes")
+            || (method.fName == "SetFillAttributes") || (method.fName == "SetMarkerAttributes"))) {
          canvp.ActivateGed(this); // activate GED
          return true;
       }
@@ -2830,10 +2830,10 @@
 
          if (!item || !item.fName) return;
 
-         if (this.ExecuteMenuCommand(item)) return;
-
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
             return canvp.MethodsDialog(this, item, this.args_menu_id);
+
+         if (this.ExecuteMenuCommand(item)) return;
 
          if (canvp._websocket && this.args_menu_id) {
             console.log('execute method ' + item.fExec + ' for object ' + this.args_menu_id);
@@ -5418,8 +5418,6 @@
 
    TCanvasPainter.prototype.DrawProjection = function(kind,hist) {
       if (!this.proj_painter) return; // ignore drawing if projection not configured
-
-      console.log('Draw projection', kind, hist._typename);
 
       if (this.proj_painter === 1) {
 

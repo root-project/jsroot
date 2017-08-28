@@ -383,6 +383,8 @@
 
       main.getController().showMethodsDialog(method, function(args) {
 
+         if (painter.ExecuteMenuCommand(method, args)) return;
+
          var exec = method.fExec;
          if (args) exec = exec.substr(0,exec.length-1) + args + ')';
 
