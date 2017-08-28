@@ -589,6 +589,7 @@
              height = this.pad_height(),
              axisOffset = axis.fLabelOffset * width,
              main = this.main_painter(),
+             framep = this.frame_painter(),
              zmin = 0, zmax = 100,
              contour = main.fContour;
 
@@ -644,7 +645,7 @@
                           .property("fill0", col)
                           .property("fill1", d3.rgb(col).darker(0.5).toString())
 
-               if (JSROOT.gStyle.Tooltip > 0)
+               if (framep && framep.tooltip_allowed)
                   r.on('mouseover', function() {
                      d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                   }).on('mouseout', function() {

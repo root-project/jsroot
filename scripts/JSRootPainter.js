@@ -3561,8 +3561,8 @@
 
    function TFramePainter(tframe) {
       TObjectPainter.call(this, tframe);
-      this.tooltip_enabled = true;
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
    }
 
    TFramePainter.prototype = Object.create(TObjectPainter.prototype);
@@ -3723,8 +3723,7 @@
 
       var tooltip_rect = this.draw_g.select(".interactive_rect");
 
-      if ((JSROOT.gStyle.Tooltip === 0) || JSROOT.BatchMode)
-         return tooltip_rect.remove();
+      if (JSROOT.BatchMode) return tooltip_rect.remove();
 
       this.draw_g.attr("x", lm)
                  .attr("y", tm)
@@ -3782,7 +3781,7 @@
 
       var hintsg = this.svg_layer("stat_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty() && (JSROOT.gStyle.Tooltip > 0))
+      if (!hintsg.empty() && this.tooltip_allowed)
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
@@ -3840,7 +3839,7 @@
 
    TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
-      if (JSROOT.gStyle.Tooltip < 1) return false;
+      if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
       return ! (this.svg_layer("stat_layer").select(".objects_hints").empty());
    }
 
@@ -4533,13 +4532,14 @@
       else
          menu.add("header: Canvas");
 
-      menu.addchk((JSROOT.gStyle.Tooltip > 0), "Enable tooltips (global)", function() {
-         JSROOT.gStyle.Tooltip = (JSROOT.gStyle.Tooltip === 0) ? 1 : -JSROOT.gStyle.Tooltip;
+      var framep = this.frame_painter(), tooltipon = framep && framep.tooltip_allowed;
+
+      menu.addchk(tooltipon, "Enable tooltips", function() {
          var can_painter = this;
          if (!this.iscan && this.has_canvas) can_painter = this.pad_painter();
          if (can_painter && can_painter.ForEachPainterInPad)
             can_painter.ForEachPainterInPad(function(fp) {
-               if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
+               if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = !tooltipon;
             });
       });
 
@@ -4830,7 +4830,7 @@
       // if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
 
       var first = snap.fPrimitives[0].fSnapshot;
-      first.fPrimitives = null; // primitives are not interesting, just cannot disable in IO
+      first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
@@ -5506,30 +5506,24 @@
              snapid = msg.substr(0,p1),
              snap = JSROOT.parse(msg.substr(p1+1));
 
-         if (typeof this.RedrawPadSnap === 'function') {
-            var pthis = this;
-            this.RedrawPadSnap(snap, function() {
-               conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
-            });
-         } else {
-            conn.send('READY'); // send ready message back
-         }
+         var pthis = this;
+         this.RedrawPadSnap(snap, function() {
+            conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
+         });
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6, handled slighly different
 
-         var snap = JSROOT.parse(msg.substr(6));
+         this.root6_canvas = true; // indicate that drawing of root6 canvas is peformed
 
-         if (typeof this.RedrawPadSnap === 'function') {
-            var pthis = this;
-            this.RedrawPadSnap(snap, function() {
-               pthis.ShowAllSections();
-               var reply = pthis.GetAllRanges();
-               // if (reply) console.log("ranges: " + reply);
-               conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
-            });
-         } else {
-            conn.send('READY'); // send ready message back
-         }
+         var snap = JSROOT.parse(msg.substr(6));
+         var pthis = this;
+
+         this.RedrawPadSnap(snap, function() {
+            pthis.ShowAllSectionsOnce();
+            var reply = pthis.GetAllRanges();
+            // if (reply) console.log("ranges: " + reply);
+            conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
+         });
 
       } else if (msg.substr(0,4)=='JSON') {
          var obj = JSROOT.parse(msg.substr(4));
@@ -5598,14 +5592,15 @@
       kShowToolTips     : JSROOT.BIT(23)
    };
 
-   TCanvasPainter.prototype.ShowAllSections = function() {
-      var can = this.GetObject();
-      if (!can) return;
-      this.ShowSection("Menu", can.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
-      this.ShowSection("StatusBar", can.TestBit(JSROOT.TCanvasStatusBits.kShowEventStatus));
-      this.ShowSection("ToolBar",  can.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
-      this.ShowSection("Editor", can.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
-      this.ShowSection("ToolTips", can.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
+
+   TCanvasPainter.prototype.ShowAllSectionsOnce = function() {
+      if (this._all_sections_showed) return;
+      this._all_sections_showed = true;
+      this.ShowSection("Menu", this.pad.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
+      this.ShowSection("StatusBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEventStatus));
+      this.ShowSection("ToolBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
+      this.ShowSection("Editor", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
+      this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
    }
 
    TCanvasPainter.prototype.HasEventStatus = function() {

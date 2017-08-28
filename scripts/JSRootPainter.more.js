@@ -470,7 +470,7 @@
       return histo;
    }
 
-   TF1Painter.prototype.ProcessTooltipFunc = function(pnt) {
+   TF1Painter.prototype.ProcessTooltip = function(pnt) {
       var cleanup = false;
 
       if ((pnt === null) || (this.bins === null)) {
@@ -589,11 +589,6 @@
                .style("stroke", "none")
                .call(this.fillatt.func);
       }
-
-      delete this.ProcessTooltip;
-
-     if (JSROOT.gStyle.Tooltip > 0)
-        this.ProcessTooltip = this.ProcessTooltipFunc;
    }
 
    TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
