@@ -5875,6 +5875,8 @@
 
    TH2Painter.prototype.ToggleProjection = function(kind, width) {
 
+      if (kind=="Projections") kind = "";
+
       if ((typeof kind == 'string') && (kind.length>1)) {
           width = parseInt(kind.substr(1));
           kind = kind[0];
@@ -5892,27 +5894,12 @@
       }
 
       delete this.proj_hist;
-      delete this.proj_painter;
 
       this.is_projection = (this.is_projection === kind) ? "" : kind;
       this.projection_width = width;
 
       var canp = this.pad_painter();
-      if (!canp) return;
-
-      if (canp.use_openui && canp.ShowUI5ProjectionArea) {
-
-         canp.ShowUI5ProjectionArea(this.is_projection, this.RedrawProjection.bind(this));
-
-      } else if (canp.ChangeLayout) {
-         var layout = 'simple';
-
-         if (this.is_projection == "X") layout = 'vert2_31'; else
-         if (this.is_projection == "Y") layout = 'horiz2_13';
-
-         canp.ChangeLayout(layout, this.RedrawProjection.bind(this));
-      }
-
+      if (canp) canp.ToggleProjection(this.is_projection, this.RedrawProjection.bind(this));
    }
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
@@ -5923,6 +5910,19 @@
          if (!this.tt_handle) return;
          ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
+      }
+
+      var canp = this.pad_painter();
+
+      if (canp && (this.snapid !== undefined)) {
+         // this is when projection should be created on the server side
+         var exec = "EXECANDSEND:D" + this.is_projection + "PROJ:" + this.snapid + ":";
+         if (this.is_projection == "X")
+            exec += 'ProjectionX("_projx",' + (jj1+1) + ',' + jj2 + ',"")';
+         else
+            exec += 'ProjectionY("_projy",' + (ii1+1) + ',' + ii2 + ',"")';
+         canp.SendWebsocket(exec);
+         return;
       }
 
       if (!this.proj_hist) {
@@ -5953,40 +5953,7 @@
          }
       }
 
-      if (!this.proj_painter) {
-         var canp = this.pad_painter(), canv = JSROOT.Create("TCanvas"),
-             pthis = this, pad = this.root_pad(), drawopt;
-
-         if (this.is_projection == "X") {
-            canv.fLeftMargin = pad.fLeftMargin;
-            canv.fRightMargin = pad.fRightMargin;
-            canv.fLogx = this.logx ? 1 : 0;
-            canv.fUxmin = this.logx ? JSROOT.log10(this.scale_xmin) : this.scale_xmin ;
-            canv.fUxmax = this.logx ? JSROOT.log10(this.scale_xmax) : this.scale_xmax;
-            drawopt = "fixframe";
-         } else {
-            canv.fBottomMargin = pad.fBottomMargin;
-            canv.fTopMargin = pad.fTopMargin;
-            canv.fLogx = this.logy ? 1 : 0;
-            canv.fUxmin = this.logy ? JSROOT.log10(this.scale_ymin) : this.scale_ymin ;
-            canv.fUxmax = this.logy ? JSROOT.log10(this.scale_ymax) : this.scale_ymax;
-            drawopt = "rotate";
-         }
-
-         canv.fPrimitives.Add(this.proj_hist, "");
-
-         if (canp && canp.use_openui && canp.DrawInUI5ProjectionArea ) {
-            // copy frame attributes
-            canp.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
-         } else if (canp && canp.DrawInSidePanel) {
-            canp.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
-         }
-      } else {
-         var hp = this.proj_painter.FindPainterFor(this.proj_hist);
-         if (hp) hp.UpdateObject(this.proj_hist);
-         this.proj_painter.RedrawPad();
-      }
-
+      return canp.DrawProjection(this.is_projection, this.proj_hist);
    }
 
    TH2Painter.prototype.FillHistContextMenu = function(menu) {

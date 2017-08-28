@@ -5400,6 +5400,63 @@
       });
    }
 
+   TCanvasPainter.prototype.ToggleProjection = function(kind, call_back) {
+      delete this.proj_painter;
+
+      if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
+
+      if (this.use_openui && this.ShowUI5ProjectionArea)
+         return this.ShowUI5ProjectionArea(kind, call_back);
+
+      var layout = 'simple';
+
+      if (kind == "X") layout = 'vert2_31'; else
+      if (kind == "Y") layout = 'horiz2_13';
+
+      this.ChangeLayout(layout, call_back);
+   }
+
+   TCanvasPainter.prototype.DrawProjection = function(kind,hist) {
+      if (!this.proj_painter) return; // ignore drawing if projection not configured
+
+      console.log('Draw projection', kind, hist._typename);
+
+      if (this.proj_painter === 1) {
+
+         var canv = JSROOT.Create("TCanvas"), pthis = this, pad = this.root_pad(), main = this.main_painter(), drawopt;
+
+         if (kind == "X") {
+            canv.fLeftMargin = pad.fLeftMargin;
+            canv.fRightMargin = pad.fRightMargin;
+            canv.fLogx = main.logx ? 1 : 0;
+            canv.fUxmin = main.logx ? JSROOT.log10(main.scale_xmin) : main.scale_xmin;
+            canv.fUxmax = main.logx ? JSROOT.log10(main.scale_xmax) : main.scale_xmax;
+            drawopt = "fixframe";
+         } else {
+            canv.fBottomMargin = pad.fBottomMargin;
+            canv.fTopMargin = pad.fTopMargin;
+            canv.fLogx = main.logy ? 1 : 0;
+            canv.fUxmin = main.logy ? JSROOT.log10(main.scale_ymin) : main.scale_ymin;
+            canv.fUxmax = main.logy ? JSROOT.log10(main.scale_ymax) : main.scale_ymax;
+            drawopt = "rotate";
+         }
+
+         canv.fPrimitives.Add(hist, "hist");
+
+         if (this.use_openui && this.DrawInUI5ProjectionArea ) {
+            // copy frame attributes
+            this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+         } else {
+            this.DrawInSidePanel(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
+         }
+      } else {
+         var hp = this.proj_painter.main_painter();
+         if (hp) hp.UpdateObject(hist, "hist");
+         this.proj_painter.RedrawPad();
+      }
+   }
+
+
    TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
@@ -5497,7 +5554,11 @@
             console.log('Unrecognized command ' + cmd);
             conn.send(reply);
          }
-
+      } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
+         var kind = msg[1],
+             hist = JSROOT.parse(msg.substr(7));
+         conn.send('READY'); // special message, confirm that sending is ready
+         this.DrawProjection(kind, hist);
       } else {
          console.log("unrecognized msg " + msg);
       }
