@@ -3395,9 +3395,9 @@
          if (kind === "labels") return;
       }
 
-      var pp = this.pad_painter();
-      if (pp && pp._websocket && pp.snapid) {
-         pp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
+      var pp = this.pad_painter(true), canp = this.pad_painter();
+      if (pp && pp.snapid && canp && canp._websocket) {
+         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
       } else {
          pad["fLog" + axis] = curr ? 0 : 1;
          painter.RedrawPad();

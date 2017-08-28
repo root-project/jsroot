@@ -4190,9 +4190,18 @@
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
    }
 
+   TPadPainter.prototype.IsTooltipAllowed = function() {
+      var res = undefined;
+      this.ForEachPainterInPad(function(fp) {
+         if ((res===undefined) && (fp.tooltip_allowed!==undefined)) res = fp.tooltip_allowed;
+      });
+      return res !== undefined ? res : false;
+   }
+
    TPadPainter.prototype.SetTooltipAllowed = function(on) {
-      var fp = this.frame_painter();
-      fp.tooltip_allowed = !!on;
+      this.ForEachPainterInPad(function(fp) {
+         if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = on;
+      });
    }
 
    TPadPainter.prototype.SelectObjectPainter = function(painter) {
@@ -4532,16 +4541,8 @@
       else
          menu.add("header: Canvas");
 
-      var framep = this.frame_painter(), tooltipon = framep && framep.tooltip_allowed;
-
-      menu.addchk(tooltipon, "Enable tooltips", function() {
-         var can_painter = this;
-         if (!this.iscan && this.has_canvas) can_painter = this.pad_painter();
-         if (can_painter && can_painter.ForEachPainterInPad)
-            can_painter.ForEachPainterInPad(function(fp) {
-               if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = !tooltipon;
-            });
-      });
+      var tooltipon = this.IsTooltipAllowed();
+      menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
 
       if (!this._websocket) {
 
@@ -4670,6 +4671,7 @@
       if (!obj) return false;
 
       this.pad.fBits = obj.fBits;
+      this.pad.fTitle = obj.fTitle;
 
       this.pad.fGridx = obj.fGridx;
       this.pad.fGridy = obj.fGridy;
@@ -5519,7 +5521,7 @@
          var pthis = this;
 
          this.RedrawPadSnap(snap, function() {
-            pthis.ShowAllSectionsOnce();
+            pthis.CompeteCanvasSnapDrawing();
             var reply = pthis.GetAllRanges();
             // if (reply) console.log("ranges: " + reply);
             conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
@@ -5593,7 +5595,11 @@
    };
 
 
-   TCanvasPainter.prototype.ShowAllSectionsOnce = function() {
+   TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
+      if (!this.pad) return;
+
+      if (document) document.title = this.pad.fTitle;
+
       if (this._all_sections_showed) return;
       this._all_sections_showed = true;
       this.ShowSection("Menu", this.pad.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
