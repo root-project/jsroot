@@ -1694,7 +1694,7 @@
                   lines.push(entry.fTitle); // make as before
                   var ecolor = this.get_color(entry.fTextColor);
                   colors.push(ecolor);
-                  if (ecolor === undefined) this.UseTextColor = true;
+                  if (!ecolor || !entry.fTextColor) this.UseTextColor = true;
                }
                break;
             case "TLine":
@@ -1752,7 +1752,7 @@
          this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
          if (nlines == 1) {
-            this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0].fTitle, tcolor);
+            this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0], tcolor);
             this.UseTextColor = true;
          } else
          for (var j = 0; j < nlines; ++j) {
