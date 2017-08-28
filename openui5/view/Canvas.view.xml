@@ -39,9 +39,9 @@
                   <Menu itemSelected="onViewMenuAction">
                      <items>
                         <MenuItem text="Editor" icon="{/GedIcon}" />
-                        <MenuItem text="Toolbar" />
+                        <MenuItem text="Toolbar" icon="{/ToolbarIcon} "/>
                         <MenuItem text="Event statusbar" icon="{/StatusIcon}" />
-                        <MenuItem text="Tooltip info" icon="sap-icon://accept" />
+                        <MenuItem text="Tooltip info" icon="{/TooltipIcon}" />
                         <MenuItem text="Colors" startsSection="true" />
                         <MenuItem text="Fonts" />
                         <MenuItem text="Markers" />

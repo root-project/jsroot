@@ -22,7 +22,7 @@ sap.ui.define([
          this._Page = this.getView().byId("CanvasMainPage");
          this.bottomVisible = false;
 
-         var model = new JSONModel({ GedIcon: "", StatusIcon: "", ToobarIcon: "",
+         var model = new JSONModel({ GedIcon: "", StatusIcon: "", ToolbarIcon: "", TooltipIcon: "sap-icon://accept",
                                      StatusLbl1:"", StatusLbl2:"", StatusLbl3:"", StatusLbl4:"" });
          this.getView().setModel(model);
 
@@ -318,12 +318,20 @@ sap.ui.define([
       },
 
       toggleToolBar : function(new_state) {
-
-         if (new_state === undefined) new_state = !this.getView().getModel().getProperty("/ToobarIcon");
+         if (new_state === undefined) new_state = !this.getView().getModel().getProperty("/ToolbarIcon");
 
          this._Page.setShowSubHeader(new_state);
 
-         this.getView().getModel().setProperty("/ToobarIcon", new_state ? "sap-icon://accept" : "");
+         this.getView().getModel().setProperty("/ToolbarIcon", new_state ? "sap-icon://accept" : "");
+      },
+
+      toggleToolTip : function(new_state) {
+         if (new_state === undefined) new_state = !this.getView().getModel().getProperty("/TooltipIcon");
+
+         this.getView().getModel().setProperty("/TooltipIcon", new_state ? "sap-icon://accept" : "");
+
+         var p = this.getCanvasPainter(true);
+         if (p) p.SetTooltipAllowed(new_state);
       },
 
       setShowMenu : function(new_state) {
@@ -333,28 +341,14 @@ sap.ui.define([
 
       onViewMenuAction : function (oEvent) {
 
-         var item = oEvent.getParameter("item"),
-             name = item.getText();
+         var item = oEvent.getParameter("item");
 
-         if (name=="Editor") return this.toggleGedEditor();
-         if (name=="Event statusbar") return this.toggleShowStatus();
-         if (name=="ToolBar") return this.toggleToolBar();
-
-
-         var p = this.getCanvasPainter(true);
-         if (!p) return;
-
-         var new_state = !item.getIcon();
-
-         switch (name) {
-            case "Tooltip info":
-               p.SetTooltipAllowed(new_state);
-               break;
-            default: return;
+         switch (item.getText()) {
+            case "Editor": this.toggleGedEditor(); break;
+            case "Event statusbar": this.toggleShowStatus(); break;
+            case "Toolbar": this.toggleToolBar(); break;
+            case "Tooltip info": this.toggleToolTip(); break;
          }
-         item.setIcon(new_state ? "sap-icon://accept" : "");
-
-         // MessageToast.show("Action triggered on item: " + name);
       },
 
       onToolsMenuAction : function(oEvent) {
@@ -373,11 +367,13 @@ sap.ui.define([
       },
 
       showSection : function(that, on) {
+         // this function call when section state changed from server side
          switch(that) {
             case "Menu": this.setShowMenu(on); break;
             case "StatusBar": this.toggleShowStatus(on); break;
             case "Editor": this.showGeEditor(on); break;
             case "ToolBar": this.toggleToolBar(on); break;
+            case "ToolTips": this.toggleToolTip(on); break;
          }
       }
 

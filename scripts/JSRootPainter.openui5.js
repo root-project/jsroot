@@ -371,8 +371,6 @@
    }
 
    JSROOT.TCanvasPainter.prototype.ShowSection = function(that, on) {
-      if (that == "ToolTips") return this.SetTooltipAllowed(on);
-
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showSection(that, on);
    }
