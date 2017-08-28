@@ -1641,7 +1641,7 @@
       var pt = this.GetObject(),
           tcolor = this.get_color(pt.fTextColor),
           nlines = 0,
-          lines = [],
+          lines = [], colors = [],
           can_height = this.pad_height(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length>0);
@@ -1688,11 +1688,13 @@
 
                   this.FinishTextDrawing(undefined, this.FinishPave);
 
-
                   this.FirstRun++;
 
                } else {
-                  lines.push(entry); // make as before
+                  lines.push(entry.fTitle); // make as before
+                  var ecolor = this.get_color(entry.fTextColor);
+                  colors.push(ecolor);
+                  if (ecolor === undefined) this.UseTextColor = true;
                }
                break;
             case "TLine":
@@ -1726,19 +1728,19 @@
       }
 
       if (individual_positioning) {
+
          // we should call FinishPave
          if (this.FinishPave) this.FinishPave();
 
       } else {
 
-         var line0 = (nlines===1) ? lines[0].fTitle : "";
+         var line0 = (nlines===1) ? lines[0] : "";
 
          if ((line0.indexOf("#splitline{")===0) && (line0[line0.length-1]=="}")) {
             var pos = line0.indexOf("}{");
             if ((pos>0) && (pos == line0.lastIndexOf("}{"))) {
-               lines[1] = JSROOT.extend({}, lines[0]); // clone object
-               lines[1].fTitle = line0.substr(pos+2, line0.length - pos - 3);
-               lines[0].fTitle = line0.substr(11, pos - 11);
+               lines[1] = line0.substr(pos+2, line0.length - pos - 3);
+               lines[0] = line0.substr(11, pos - 11);
                nlines = 2;
                this.UseTextColor = true;
             }
@@ -1754,15 +1756,9 @@
             this.UseTextColor = true;
          } else
          for (var j = 0; j < nlines; ++j) {
-            var posy = j*stepy, jcolor = tcolor;
-            if (!this.UseTextColor && (lines[j].fTextColor!==0))
-               jcolor = this.get_color(lines[j].fTextColor);
-            if (jcolor===undefined) {
-               jcolor = tcolor;
-               this.UseTextColor = true;
-            }
+            var posy = j*stepy, jcolor = this.UseTextColor ? tcolor : colors[j];
 
-            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j].fTitle, jcolor);
+            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
          }
 
          this.FinishTextDrawing(undefined, this.FinishPave);
