@@ -2857,8 +2857,14 @@
             this.args_menu_items = items;
             this.args_menu_id = replyid;
 
+            var lastclname;
+
             for (var n=0;n<items.length;++n) {
                var item = items[n];
+
+               if (item.fClassName && lastclname && (lastclname!=item.fClassName)) _menu.add("separator");
+               lastclname = item.fClassName;
+
                if ((item.fChecked === undefined) || (item.fChecked < 0))
                   _menu.add(item.fName, n, DoExecMenu);
                else
