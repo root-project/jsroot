@@ -7392,7 +7392,10 @@
       lines.push("y = " + pmain.AxisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
       lines.push("bin = " + binname);
-      lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fStatFormat));
+      if (bin.fContent === Math.round(bin.fContent))
+         lines.push("content = " + bin.fContent);
+      else
+         lines.push("content = " + JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fStatFormat));
       return lines;
    }
 
