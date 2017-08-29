@@ -3619,7 +3619,8 @@
       }
 
       if (this.lineatt === undefined)
-         this.lineatt = new TAttLineHandler(tframe ? tframe : 'black');
+         if (pad) this.lineatt = new TAttLineHandler({ fLineColor: pad.fFrameLineColor, fLineWidth: pad.fFrameLineWidth, fLineStyle: pad.fFrameLineStyle });
+             else this.lineatt = new TAttLineHandler(tframe ? tframe : 'black');
    }
 
    TFramePainter.prototype.SizeChanged = function() {
