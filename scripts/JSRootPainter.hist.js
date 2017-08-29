@@ -1741,8 +1741,8 @@
             if ((pos>0) && (pos == line0.lastIndexOf("}{"))) {
                lines[1] = line0.substr(pos+2, line0.length - pos - 3);
                lines[0] = line0.substr(11, pos - 11);
+               colors[1] = colors[0];
                nlines = 2;
-               colors[1] = color[0];
             }
          }
 
