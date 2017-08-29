@@ -1319,17 +1319,17 @@
 
             shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
 
-            this.DrawTextNew({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
-                               height: (rotate<0) ? -90 : -270, rotate: (rotate<0) ? 90 : 270,
-                               text: axis.fTitle, color: title_color, draw_g: title_g });
+            this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+                            rotate: (rotate<0) ? 90 : 270,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
 
             shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
-            this.DrawTextNew({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
-                               height: (rotate<0) ? -180 : 0, rotate: (rotate<0) ? 180 : 0,
-                               text: axis.fTitle, color: title_color, draw_g: title_g });
+            this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                            rotate: (rotate<0) ? 180 : 0,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
          }
 
          var axis_rect = null;
@@ -1538,14 +1538,14 @@
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
    }
 
-   TPavePainter.prototype.DrawPaveLabel = function(width, height) {
+   TPavePainter.prototype.DrawPaveLabel = function(_width, _height) {
       this.UseTextColor = true;
 
       var pave = this.GetObject();
 
-      this.StartTextDrawing(pave.fTextFont, height/1.2);
+      this.StartTextDrawing(pave.fTextFont, _height/1.2);
 
-      this.DrawTextNew({ align: pave.fTextAlign, width: width, height: height, text: pave.fLabel, color: this.get_color(pave.fTextColor)});
+      this.DrawText({ align: pave.fTextAlign, width: _width, height: _height, text: pave.fLabel, color: this.get_color(pave.fTextColor) });
 
       this.FinishTextDrawing(null, this.FinishPave);
    }
@@ -1590,7 +1590,7 @@
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.DrawTextNew( { align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor} );
+         this.DrawText( { align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor} );
       } else
       for (var j = 0; j < nlines; ++j) {
          var posy = j*stepy, jcolor = tcolor;
@@ -1599,22 +1599,21 @@
          if ((first_stat > 0) && (j >= first_stat)) {
             var parts = lines[j].split("|");
             for (var n = 0; n < parts.length; ++n)
-               this.DrawTextNew( { align: "middle",
-                      x: width * n / num_cols, y: posy,
-                      width: width/num_cols, height: stepy, text: parts[n], color: jcolor });
+               this.DrawText({ align: "middle", x: width * n / num_cols, y: posy,
+                               width: width/num_cols, height: stepy, text: parts[n], color: jcolor });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
                has_head = true;
                if (lines[j].length > maxlen + 5)
                   lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
-            this.DrawTextNew({ align: (j == 0) ? "middle" : "start",
-                    x: margin_x, y: posy, width: width-2*margin_x, height: stepy, text: lines[j], color: jcolor });
+            this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
+                            width: width-2*margin_x, height: stepy, text: lines[j], color: jcolor });
          } else {
             var parts = lines[j].split("="), sumw = 0;
             for (var n = 0; n < 2; ++n)
-               sumw += this.DrawTextNew({ align: (n == 0) ? "start" : "end",
-                          x: margin_x, y: posy, width: width-2*margin_x, height: stepy, text: parts[n], color: jcolor });
+               sumw += this.DrawText({ align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
+                                       width: width-2*margin_x, height: stepy, text: parts[n], color: jcolor });
             this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
          }
       }
@@ -1682,7 +1681,7 @@
 
                   this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height);
 
-                  this.DrawTextNew({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor });
+                  this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor });
 
                   this.FinishTextDrawing(undefined, this.FinishPave);
 
@@ -1750,7 +1749,7 @@
          this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
          if (nlines == 1) {
-            this.DrawTextNew({ align: pt.fTextAlign, x:0, y:0, width: width, height: height, text: lines[0], color: tcolor });
+            this.DrawText({ align: pt.fTextAlign, x:0, y:0, width: width, height: height, text: lines[0], color: tcolor });
             this.UseTextColor = true;
          } else
          for (var j = 0; j < nlines; ++j) {
@@ -1760,7 +1759,7 @@
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
             if (sizes[j]) arg.font_size = Math.round(sizes[j]*can_height);
 
-            this.DrawTextNew(arg);
+            this.DrawText(arg);
          }
 
          this.FinishTextDrawing(undefined, this.FinishPave);
@@ -1781,7 +1780,7 @@
 
          this.StartTextDrawing(pt.fTextFont, h/1.5, lbl_g);
 
-         this.DrawTextNew({ align:22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
+         this.DrawText({ align:22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
 
          this.FinishTextDrawing(lbl_g, this.FinishPave);
 
@@ -2124,7 +2123,7 @@
             if (lopt.length>0) any_opt = true;
                           else if (!any_opt) pos_x = x0 + padding_x;
 
-            this.DrawTextNew({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
          }
 
          // rescale after all entries are shown
@@ -5230,16 +5229,16 @@
 
       if (show_text) {
          text_col = this.get_color(this.histo.fMarkerColor);
-         text_angle = (this.options.Text>1000) ? this.options.Text % 1000 : 0;
+         text_angle = (this.options.Text>1000) ? -1*(this.options.Text % 1000) : 0;
          text_size = 20;
 
-         if ((this.histo.fMarkerSize!==1) && (text_angle!==0))
+         if ((this.histo.fMarkerSize!==1) && text_angle)
             text_size = 0.02*height*this.histo.fMarkerSize;
 
-         if ((text_angle === 0) && (this.options.Text<1000)) {
+         if (!text_angle && (this.options.Text<1000)) {
              var space = width / (right - left + 1);
              if (space < 3 * text_size) {
-                text_angle = 90;
+                text_angle = 270;
                 text_size = Math.round(space*0.7);
              }
          }
@@ -5317,24 +5316,19 @@
                             posy = Math.round(my-2-text_size),
                             sizex = Math.round((mx2-mx1)*0.8),
                             sizey = text_size,
-                            lbl = Math.round(cont),
+                            lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat),
                             talign = 22;
 
-                        if (lbl === cont)
-                           lbl = cont.toString();
-                        else
-                           lbl = JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
-
-                        if (text_angle!==0) {
+                        if (text_angle) {
                            posx = midx;
                            posy = Math.round(my - 2 - text_size/5);
                            sizex = 0;
-                           sizey = text_angle-360;
+                           sizey = 0;
                            talign = 12;
                         }
 
                         if (cont!==0)
-                           this.DrawTextNew({ align: talign, x: posx, y: posy, width: sizex, height: sizey, text: lbl, color: text_col, latex: 0 });
+                           this.DrawText({ align: talign, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                      }
 
                      if (show_line && (path_line !== null))
@@ -6748,11 +6742,11 @@
 
       if (textbins.length > 0) {
          var text_col = this.get_color(histo.fMarkerColor),
-             text_angle = (this.options.Text > 1000) ? this.options.Text % 1000 : 0,
+             text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
 
-         if ((histo.fMarkerSize!==1) && (text_angle!==0))
+         if ((histo.fMarkerSize!==1) && text_angle)
              text_size = Math.round(0.02*h*histo.fMarkerSize);
 
          this.StartTextDrawing(42, text_size, text_g, text_size);
@@ -6765,7 +6759,7 @@
                 posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
                 posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2));
 
-            this.DrawTextNew({ align: 22, x: posx, y: posy, width: 0, height: (text_angle>0) ? text_angle-360 : 0, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.DrawText({ align: 22, x: posx, y: posy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
          this.FinishTextDrawing(text_g, null);
@@ -6781,11 +6775,11 @@
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       var text_col = this.get_color(histo.fMarkerColor),
-          text_angle = (this.options.Text > 1000) ? this.options.Text % 1000 : 0,
+          text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0;
 
-      if ((histo.fMarkerSize!==1) && (text_angle!==0))
+      if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*h*histo.fMarkerSize);
 
       if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
@@ -6807,11 +6801,11 @@
             lbl = (binz === Math.round(binz)) ? binz.toString() :
                       JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
 
-            if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
+            if (text_angle /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);
                posy = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
                sizex = 0;
-               sizey = text_angle-360;
+               sizey = 0;
             } else {
                posx = Math.round(handle.grx[i] + binw*0.1);
                posy = Math.round(handle.gry[j+1] + binh*(0.1 + text_offset));
@@ -6819,7 +6813,7 @@
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawTextNew({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
       this.FinishTextDrawing(text_g, null);

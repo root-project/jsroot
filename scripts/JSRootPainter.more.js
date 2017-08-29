@@ -62,7 +62,7 @@
 
       this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
 
-      this.DrawTextNew({ align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind });
+      this.DrawText({ align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind });
 
       this.FinishTextDrawing();
    }
@@ -2097,12 +2097,10 @@
 
                      var angle = attr.fTextAngle;
                      angle -= Math.floor(angle/360) * 360;
-                     if (angle>0) angle = -360 + angle; // rotation angle in ROOT and SVG has different meaning
-
-                     var enable_latex = 0; // 0-off, 1 - when make sense, 2 - always
 
                      // todo - correct support of angle
-                     this.DrawTextNew({ align: attr.fTextAlign, x: xx, y: yy, height: angle, rotate: -angle, text: obj.fOper.arr[k].fString, color: JSROOT.Painter.root_colors[attr.fTextColor], latex: enable_latex, draw_g: group });
+                     this.DrawText({ align: attr.fTextAlign, x: xx, y: yy, rotate: angle,
+                                     text: obj.fOper.arr[k].fString, color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }

@@ -3373,7 +3373,16 @@
       return draw_g.property('max_text_width');
    }
 
-   TObjectPainter.prototype.DrawTextNew = function(arg) { //{align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
+   TObjectPainter.prototype.DrawText = function(arg) {
+      // following arguments can be supplied
+      //  align - either int value or text
+      //  x,y - position
+      //  width, height - dimension (optional)
+      //  text - text to draw
+      //  latex - 0 - off, 1 - when make sence (default), 2 - always
+      //  color - text color
+      //  rotate - rotaion angle (optional)
+      //  font_size - fixed font size (optional)
 
       var draw_g = arg.draw_g || this.draw_g,
           label = arg.text || "", align = ['start', 'middle'],
@@ -3391,7 +3400,7 @@
          if ((arg.align % 10) == 3) align[1] = 'top';
       }
 
-      var scale = (arg.width>0) && (arg.height>0);
+      var scale = (w>0) && (h>0);
 
       if (arg.latex===undefined) arg.latex = 1;
       if (arg.latex<2)
@@ -3406,7 +3415,7 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = arg.x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
+         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
@@ -3429,7 +3438,10 @@
 
          // use translate and then rotate to avoid complex sign calculations
          var trans = "translate("+pos_x+","+pos_y+")";
-         if (!scale && (h<0)) trans += " rotate("+(-h)+",0,0)";
+         if (arg.rotate) {
+            while (arg.rotate<0) arg.rotate += 360;
+            trans += " rotate("+Math.round(arg.rotate)+",0,0)";
+         }
 
          var txt = draw_g.append("text")
                          .attr("text-anchor", align[0])
@@ -3461,20 +3473,16 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
 
-      var rotate = 0;
-
-      if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
-
       var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color),
           fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
-                       .property('_x',x) // used for translation later
-                       .property('_y',y)
-                       .property('_width',w) // used to check scaling
-                       .property('_height',h)
+                       .property('_x', x) // used for translation later
+                       .property('_y', y)
+                       .property('_width', w) // used to check scaling
+                       .property('_height', h)
                        .property('_scale', scale)
-                       .property('_rotate', rotate)
+                       .property('_rotate', arg.rotate || 0)
                        .property('_align', align);
 
       draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
