@@ -23,6 +23,7 @@
 18. Improve resize of frame and paves - all eight directions now supported 
 19. Fix - draw stats box for histogram when required
 20. Implement x/y projections display for TH2 histograms (aka SetShowProjectionX)
+21. Support "TEXT" draw option for TH2Poly
 
 
 ## Changes in 5.2.0

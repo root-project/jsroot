@@ -208,10 +208,10 @@
          fGridStyle : 3,
          fGridWidth : 1,
          fFrameFillColor : 0,
-         fFrameLineColor : 1,
          fFrameFillStyle : 1001,
-         fFrameLineStyle : 1,
+         fFrameLineColor : 1,
          fFrameLineWidth : 1,
+         fFrameLineStyle : 1,
          fFrameBorderSize : 1,
          fFrameBorderMode : 0,
          fEndErrorSize : 2,   // size in pixels of end error for E1 draw options
@@ -1373,10 +1373,10 @@
                                  fTopMargin: JSROOT.gStyle.fPadTopMargin,
                                  fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
                                  fFrameFillColor: JSROOT.gStyle.fFrameFillColor,
-                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
                                  fFrameFillStyle: JSROOT.gStyle.fFrameFillStyle,
-                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
+                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
                                  fFrameLineWidth: JSROOT.gStyle.fFrameLineWidth,
+                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
                                  fFrameBorderSize: JSROOT.gStyle.fFrameBorderSize,
                                  fFrameBorderMode: JSROOT.gStyle.fFrameBorderMode });
             break;

@@ -6700,7 +6700,7 @@
    TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
       var histo = this.GetObject(),
           pmain = this.main_painter(),
-          colPaths = [],
+          colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
 
@@ -6729,18 +6729,47 @@
             colPaths[colindx] = cmd;
          else
             colPaths[colindx] += cmd;
+
+         if (this.options.Text) textbins.push(bin);
       }
 
       for (colindx=0;colindx<colPaths.length;++colindx)
-         if (colPaths[colindx] !== undefined) {
+         if (colPaths[colindx]) {
             item = this.draw_g
                      .append("svg:path")
                      .attr("palette-index", colindx)
                      .attr("fill", this.fPalette.getColor(colindx))
-                     .attr("d", colPaths[colindx])
+                     .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
          }
+
+      if (textbins.length > 0) {
+         var text_col = this.get_color(histo.fMarkerColor),
+             text_angle = (this.options.Text > 1000) ? this.options.Text % 1000 : 0,
+             text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
+             text_size = 12;
+
+         if ((histo.fMarkerSize!==1) && (text_angle!==0))
+             text_size = Math.round(0.02*h*histo.fMarkerSize);
+
+         this.StartTextDrawing(42, text_size, text_g, text_size);
+
+         for (i = 0; i < textbins.length; ++ i) {
+            bin = textbins[i];
+
+            var lbl = (Math.round(bin.fContent) === bin.fContent) ?
+                       bin.fContent.toString() :
+                       JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
+
+            var posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
+                posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2));
+
+            this.DrawText(22, posx, posy, 0, (text_angle>0) ? text_angle-360 : 0, lbl, text_col, 0, text_g);
+         }
+
+         this.FinishTextDrawing(text_g, null);
+      }
 
       return { poly: true };
    }
