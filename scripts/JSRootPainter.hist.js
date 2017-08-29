@@ -6758,11 +6758,9 @@
          for (i = 0; i < textbins.length; ++ i) {
             bin = textbins[i];
 
-            var lbl = (Math.round(bin.fContent) === bin.fContent) ?
-                       bin.fContent.toString() :
-                       JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
-
-            var posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
+            var lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
+                       JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat),
+                posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
                 posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2));
 
             this.DrawText(22, posx, posy, 0, (text_angle>0) ? text_angle-360 : 0, lbl, text_col, 0, text_g);
@@ -6804,11 +6802,8 @@
                  this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'))
                    binz = histo.getBinEntries(i+1, j+1);
 
-            lbl = Math.round(binz);
-            if (lbl === binz)
-               lbl = binz.toString();
-            else
-               lbl = JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
+            lbl = (binz === Math.round(binz)) ? binz.toString() :
+                      JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
 
             if ((text_angle!==0) /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);

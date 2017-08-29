@@ -58,7 +58,7 @@ examples_main = {
       { opt: "col0z", title: "suppress empty bins with 0 option" },
       { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
       { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
-      { name: "fibonaci", json: "fibonacci.json.gz", title: "Example canvas produced with tutorials/hist/Fibonacci.C macro" }
+      { name: "fibonacci", json: "fibonacci.json.gz", title: "Example canvas produced with tutorials/hist/Fibonacci.C macro" }
    ],
    TH3 : [
      { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
