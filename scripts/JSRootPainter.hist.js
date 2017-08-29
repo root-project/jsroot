@@ -1319,17 +1319,17 @@
 
             shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
 
-            this.DrawText((center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
-                           0, 0, 0, (rotate<0 ? -90 : -270),
-                           axis.fTitle, title_color, 1, title_g);
+            this.DrawTextNew({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+                               height: (rotate<0) ? -90 : -270, rotate: (rotate<0) ? 90 : 270,
+                               text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
 
             shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
-            this.DrawText((center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
-                          0, 0, 0, (rotate<0 ? -180 : 0),
-                          axis.fTitle, title_color, 1, title_g);
+            this.DrawTextNew({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                               height: (rotate<0) ? -180 : 0, rotate: (rotate<0) ? 180 : 0,
+                               text: axis.fTitle, color: title_color, draw_g: title_g });
          }
 
          var axis_rect = null;
@@ -1545,7 +1545,7 @@
 
       this.StartTextDrawing(pave.fTextFont, height/1.2);
 
-      this.DrawText(pave.fTextAlign, 0, 0, width, height, pave.fLabel, this.get_color(pave.fTextColor));
+      this.DrawTextNew({ align: pave.fTextAlign, width: width, height: height, text: pave.fLabel, color: this.get_color(pave.fTextColor)});
 
       this.FinishTextDrawing(null, this.FinishPave);
    }
@@ -1590,7 +1590,7 @@
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0], tcolor);
+         this.DrawTextNew( { align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor} );
       } else
       for (var j = 0; j < nlines; ++j) {
          var posy = j*stepy, jcolor = tcolor;
@@ -1599,22 +1599,22 @@
          if ((first_stat > 0) && (j >= first_stat)) {
             var parts = lines[j].split("|");
             for (var n = 0; n < parts.length; ++n)
-               this.DrawText("middle",
-                     width * n / num_cols, posy,
-                     width/num_cols, stepy, parts[n], jcolor);
+               this.DrawTextNew( { align: "middle",
+                      x: width * n / num_cols, y: posy,
+                      width: width/num_cols, height: stepy, text: parts[n], color: jcolor });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
                has_head = true;
                if (lines[j].length > maxlen + 5)
                   lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
-            this.DrawText((j == 0) ? "middle" : "start",
-                  margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
+            this.DrawTextNew({ align: (j == 0) ? "middle" : "start",
+                    x: margin_x, y: posy, width: width-2*margin_x, height: stepy, text: lines[j], color: jcolor });
          } else {
             var parts = lines[j].split("="), sumw = 0;
             for (var n = 0; n < 2; ++n)
-               sumw += this.DrawText((n == 0) ? "start" : "end",
-                     margin_x, posy, width-2*margin_x, stepy, parts[n], jcolor);
+               sumw += this.DrawTextNew({ align: (n == 0) ? "start" : "end",
+                          x: margin_x, y: posy, width: width-2*margin_x, height: stepy, text: parts[n], color: jcolor });
             this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
          }
       }
@@ -1682,9 +1682,7 @@
 
                   this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height);
 
-                  this.DrawText(entry.fTextAlign || pt.fTextAlign, lx, ly, 0, 0, entry.fTitle, jcolor);
-
-                  // this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, entry.fTitle, tcolor);
+                  this.DrawTextNew({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor });
 
                   this.FinishTextDrawing(undefined, this.FinishPave);
 
@@ -1783,7 +1781,7 @@
 
          this.StartTextDrawing(pt.fTextFont, h/1.5, lbl_g);
 
-         this.DrawText(22, x, y, w, h, pt.fLabel, tcolor, 1, lbl_g);
+         this.DrawTextNew({ align:22, x: x, y: y, width: w, height: h, text: pt.fLabel, color: tcolor, draw_g: lbl_g });
 
          this.FinishTextDrawing(lbl_g, this.FinishPave);
 
@@ -2126,7 +2124,7 @@
             if (lopt.length>0) any_opt = true;
                           else if (!any_opt) pos_x = x0 + padding_x;
 
-            this.DrawText("start", pos_x, pos_y, x0+column_width-pos_x-padding_x, step_y, leg.fLabel, tcolor);
+            this.DrawTextNew({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
          }
 
          // rescale after all entries are shown
@@ -5336,7 +5334,7 @@
                         }
 
                         if (cont!==0)
-                           this.DrawText(talign, posx, posy, sizex, sizey, lbl, text_col, 0);
+                           this.DrawTextNew({ align: talign, x: posx, y: posy, width: sizex, height: sizey, text: lbl, color: text_col, latex: 0 });
                      }
 
                      if (show_line && (path_line !== null))
@@ -6767,7 +6765,7 @@
                 posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
                 posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2));
 
-            this.DrawText(22, posx, posy, 0, (text_angle>0) ? text_angle-360 : 0, lbl, text_col, 0, text_g);
+            this.DrawTextNew({ align: 22, x: posx, y: posy, width: 0, height: (text_angle>0) ? text_angle-360 : 0, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
          this.FinishTextDrawing(text_g, null);
@@ -6821,7 +6819,7 @@
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawText(22, posx, posy, sizex, sizey, lbl, text_col, 0, text_g);
+            this.DrawTextNew({ align: 22, x: posx, y: posy, width: sizex, height: sizey, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
       this.FinishTextDrawing(text_g, null);

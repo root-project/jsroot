@@ -62,7 +62,7 @@
 
       this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
 
-      this.DrawText(text.fTextAlign, Math.round(pos_x), Math.round(pos_y), 0, 0, text.fTitle, tcolor, latex_kind);
+      this.DrawTextNew({ align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind });
 
       this.FinishTextDrawing();
    }
@@ -2102,7 +2102,7 @@
                      var enable_latex = 0; // 0-off, 1 - when make sense, 2 - always
 
                      // todo - correct support of angle
-                     this.DrawText(attr.fTextAlign, xx, yy, 0, angle, obj.fOper.arr[k].fString, JSROOT.Painter.root_colors[attr.fTextColor], enable_latex, group);
+                     this.DrawTextNew({ align: attr.fTextAlign, x: xx, y: yy, height: angle, rotate: -angle, text: obj.fOper.arr[k].fString, color: JSROOT.Painter.root_colors[attr.fTextColor], latex: enable_latex, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }

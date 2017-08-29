@@ -3374,8 +3374,8 @@
    }
 
    TObjectPainter.prototype.DrawTextNew = function(arg) {
-      if (!arg) return;
-      this.DrawText(arg.align, arg.x, arg.y, arg.width, arg.height, arg.text, arg.color, arg.latex, arg.draw_g, arg.font_size);
+      if (!arg) return 0;
+      return this.DrawText(arg.align, arg.x || 0, arg.y || 0, arg.width || 0, arg.height || 0, arg.text, arg.color, arg.latex, arg.draw_g, arg.font_size);
    }
 
    TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
