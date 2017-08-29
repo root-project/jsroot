@@ -4435,37 +4435,49 @@
       return pad_visible;
    }
 
-   TPadPainter.prototype.CheckColors = function(can) {
+   TPadPainter.prototype.CheckSpecial = function(obj) {
+
+      if (!obj || (obj._typename!=="TObjArray")) return false;
+
+      if (obj.name == "ListOfColors") {
+         if (!this.options || this.options.GlobalColors) // set global list of colors
+            Painter.adoptRootColors(obj);
+         if (this.options && this.options.LocalColors) {
+            // copy existing colors and extend with new values
+            this.root_colors = [];
+            for (var n=0;n<JSROOT.Painter.root_colors.length;++n)
+               this.root_colors[n] = JSROOT.Painter.root_colors[n];
+            Painter.extendRootColors(this.root_colors, obj);
+         }
+         return true;
+      }
+
+      if (obj.name == "CurrentColorPalette") {
+         var arr = [], missing = false;
+         for (var n = 0; n < obj.arr.length; ++n) {
+            var col = obj.arr[n];
+            if (col && (col._typename == 'TColor')) {
+               arr[n] = Painter.MakeColorRGB(col);
+            } else {
+               console.log('Missing color with index ' + n); missing = true;
+            }
+         }
+         if (!this.options || (!missing && !this.options.IgnorePalette)) this.CanvasPalette = new ColorPalette(arr);
+         return true;
+      }
+
+      return false;
+   }
+
+   TPadPainter.prototype.CheckSpecialsInPrimitives = function(can) {
       var lst = can ? can.fPrimitives : null;
       if (!lst) return;
       for (var i = 0; i < lst.arr.length; ++i) {
-         var obj = lst.arr[i];
-         if (!obj || (obj._typename!=="TObjArray")) continue;
-         if (obj.name == "ListOfColors") {
-            if (this.options.GlobalColors) // set global list of colors
-               Painter.adoptRootColors(obj);
-            if (this.options.LocalColors) {
-               // copy existing colors and extend with new values
-               this.root_colors = [];
-               for (var n=0;n<JSROOT.Painter.root_colors.length;++n)
-                  this.root_colors[n] = JSROOT.Painter.root_colors[n];
-               Painter.extendRootColors(this.root_colors, obj);
-            }
-         } else if (obj.name == "CurrentColorPalette") {
-            var arr = [], missing = false;
-            for (var n = 0; n < obj.arr.length; ++n) {
-               var col = obj.arr[n];
-               if (col && (col._typename == 'TColor')) {
-                  arr[n] = Painter.MakeColorRGB(col);
-               } else {
-                  console.log('Missing color with index ' + n); missing = true;
-               }
-            }
-            if (!missing && !this.options.IgnorePalette) this.CanvasPalette = new ColorPalette(arr);
-         } else continue;
-         lst.arr.splice(i,1);
-         lst.opt.splice(i,1);
-         i--;
+         if (this.CheckSpecial(lst.arr[i])) {
+            lst.arr.splice(i,1);
+            lst.opt.splice(i,1);
+            i--;
+         }
       }
    }
 
@@ -4707,7 +4719,7 @@
       this.pad.fLineStyle = obj.fLineStyle;
       this.pad.fLineWidth = obj.fLineWidth;
 
-      if (this.iscan) this.CheckColors(obj);
+      if (this.iscan) this.CheckSpecialsInPrimitives(obj);
 
       var fp = this.frame_painter();
       if (fp) fp.UpdateAttributes(!fp.modified_NDC);
@@ -4771,6 +4783,11 @@
             }
 
             continue; // call next
+         }
+
+         if (snap.fKind === 4) { // specials like list of colors
+            this.CheckSpecial(snap.fSnapshot);
+            continue;
          }
 
          if (snap.fKind === 3) { // subpad
@@ -5640,7 +5657,7 @@
       painter.DecodeOptions(opt);
 
       painter.SetDivId(divid, -1); // just assign id
-      painter.CheckColors(can);
+      painter.CheckSpecialsInPrimitives(can);
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
 
