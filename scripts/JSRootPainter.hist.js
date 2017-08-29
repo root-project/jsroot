@@ -1455,14 +1455,15 @@
 
       var pt = this.GetObject();
 
+      if (pt.fLabel) console.log('Draw label', pt.fLabel, pt.fInit, pt.fOption, pt.fX1NDC, pt.fX2NDC);
+
       if (pt.fInit===0) {
          pt.fInit = 1;
          var pad = this.root_pad();
          if (pt.fOption.indexOf("NDC")>=0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
-         } else
-         if (pad !== null) {
+         } else if (pad) {
             if (pad.fLogx) {
                if (pt.fX1 > 0) pt.fX1 = JSROOT.log10(pt.fX1);
                if (pt.fX2 > 0) pt.fX2 = JSROOT.log10(pt.fX2);
@@ -2256,15 +2257,15 @@
       if (d.check('TOOLTIP')) tooltip = true;
       if ((tooltip!==null) && this.frame_painter()) this.frame_painter().tooltip_allowed = tooltip;
 
-      if (d.check('LOGX')) pad.fLogx = 1;
-      if (d.check('LOGY')) pad.fLogy = 1;
-      if (d.check('LOGZ')) pad.fLogz = 1;
-      if (d.check('GRIDXY')) pad.fGridx = pad.fGridy = 1;
-      if (d.check('GRIDX')) pad.fGridx = 1;
-      if (d.check('GRIDY')) pad.fGridy = 1;
-      if (d.check('TICKXY')) pad.fTickx = pad.fTicky = 1;
-      if (d.check('TICKX')) pad.fTickx = 1;
-      if (d.check('TICKY')) pad.fTicky = 1;
+      if (d.check('LOGX') && pad) pad.fLogx = 1;
+      if (d.check('LOGY') && pad) pad.fLogy = 1;
+      if (d.check('LOGZ') && pad) pad.fLogz = 1;
+      if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
+      if (d.check('GRIDX') && pad) pad.fGridx = 1;
+      if (d.check('GRIDY') && pad) pad.fGridy = 1;
+      if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
+      if (d.check('TICKX') && pad) pad.fTickx = 1;
+      if (d.check('TICKY') && pad) pad.fTicky = 1;
 
       if (d.check('FILL_', true)) {
          if (d.partAsInt(1)>0) option.histoFillColor = d.partAsInt(); else
@@ -2941,28 +2942,39 @@
    }
 
    /** Set selected range back to TPad object */
-   THistPainter.prototype.SetRootPadRange = function(pad) {
+   THistPainter.prototype.SetRootPadRange = function(pad, is3d) {
       if (!pad) return;
 
-      if (this.logx) {
-         pad.fUxmin = JSROOT.log10(this.scale_xmin);
-         pad.fUxmax = JSROOT.log10(this.scale_xmax);
+      if (is3d) {
+         // this is fake values, algorithm should be copied from TView3D class of ROOT
+         pad.fLogx = pad.fLogy = 0;
+         pad.fUxmin = pad.fUymin = -0.9;
+         pad.fUxmax = pad.fUymax = 0.9;
       } else {
+         pad.fLogx = this.logx ? 1 : 0;
          pad.fUxmin = this.scale_xmin;
          pad.fUxmax = this.scale_xmax;
-      }
-      if (this.logy) {
-         pad.fUymin = JSROOT.log10(this.scale_ymin);
-         pad.fUymax = JSROOT.log10(this.scale_ymax);
-      } else {
+         pad.fLogx = this.logy ? 1 : 0;
          pad.fUymin = this.scale_ymin;
          pad.fUymax = this.scale_ymax;
+      }
+
+      if (pad.fLogx) {
+         pad.fUxmin = JSROOT.log10(pad.fUxmin);
+         pad.fUxmax = JSROOT.log10(pad.fUxmax);
+      }
+      if (pad.fLogy) {
+         pad.fUymin = JSROOT.log10(pad.fUymin);
+         pad.fUymax = JSROOT.log10(pad.fUymax);
       }
 
       var rx = pad.fUxmax - pad.fUxmin,
           mx = 1 - pad.fLeftMargin - pad.fRightMargin,
           ry = pad.fUymax - pad.fUymin,
           my = 1 - pad.fBottomMargin - pad.fTopMargin;
+
+      if (mx <= 0) mx = 0.01; // to prevent overflow
+      if (my <= 0) my = 0.01;
 
       pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
       pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;

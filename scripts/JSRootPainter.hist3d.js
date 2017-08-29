@@ -485,6 +485,8 @@
 
       this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 
+      this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
+
       this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.CreateFormatFuncs();
