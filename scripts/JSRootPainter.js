@@ -4731,85 +4731,94 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      if (objpainter && lst && lst[indx] && (typeof objpainter.snapid === 'undefined')) {
-         // keep snap id in painter, will be used for the
-         if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
-         objpainter.snapid = lst[indx].fObjectID;
-      }
+      while (true) {
 
-      ++indx; // change to the next snap
-
-      if (!lst || indx >= lst.length) return JSROOT.CallBack(call_back, this);
-
-      var snap = lst[indx], painter = null;
-
-      // first find existing painter for the object
-      for (var k=0; k<this.painters.length; ++k) {
-         if (this.painters[k].snapid === snap.fObjectID) { painter = this.painters[k]; break;  }
-      }
-
-      // function which should be called when drawing of next item finished
-      var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
-
-      if (painter) {
-
-         if (snap.fKind === 1) { // object itself
-            if (painter.UpdateObject(snap.fSnapshot, snap.fOption)) painter.Redraw();
-            return draw_callback(painter); // call next
+         if (objpainter && lst && lst[indx] && (typeof objpainter.snapid === 'undefined')) {
+            // keep snap id in painter, will be used for the
+            if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
+            objpainter.snapid = lst[indx].fObjectID;
          }
 
-         if (snap.fKind === 2) { // update SVG
-            if (painter.UpdateObject(snap.fSnapshot)) painter.Redraw();
-            return draw_callback(painter); // call next
+         ++indx; // change to the next snap
+
+         if (!lst || indx >= lst.length) return JSROOT.CallBack(call_back, this);
+
+         var snap = lst[indx];
+         objpainter = null;
+
+         // first find existing painter for the object
+         for (var k=0; k<this.painters.length; ++k) {
+            if (this.painters[k].snapid === snap.fObjectID) { objpainter = this.painters[k]; break;  }
+         }
+
+         // function which should be called when drawing of next item finished
+         var draw_callback = this.DrawNextSnap.bind(this, lst, indx, call_back);
+
+         if (objpainter) {
+
+            if (snap.fKind === 1) { // object itself
+               if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
+               continue; // call next
+            }
+
+            if (snap.fKind === 2) { // update SVG
+               if (objpainter.UpdateObject(snap.fSnapshot)) objpainter.Redraw();
+               continue; // call next
+            }
+
+            if (snap.fKind === 3) { // subpad
+               return objpainter.RedrawPadSnap(snap, draw_callback);
+            }
+
+            continue; // call next
          }
 
          if (snap.fKind === 3) { // subpad
-            return painter.RedrawPadSnap(snap, draw_callback);
+
+            if (snap.fPrimitives._typename) {
+               alert("Problem in JSON I/O with primitves for sub-pad");
+               snap.fPrimitives = [ snap.fPrimitives ];
+            }
+
+            var subpad = snap.fPrimitives[0].fSnapshot;
+
+            subpad.fPrimitives = null; // clear primitives, they just because of I/O
+
+            var padpainter = new TPadPainter(subpad, false);
+            padpainter.DecodeOptions(snap.fPrimitives[0].fOption);
+            padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
+            padpainter.snapid = snap.fObjectID;
+
+            padpainter.CreatePadSvg();
+
+            if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 1) {
+               padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
+               padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
+
+               if (JSROOT.gStyle.ContextMenu)
+                  padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+            }
+
+            // we select current pad, where all drawing is performed
+            var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
+            padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+               padpainter.CurrentPadName(prev_name);
+               draw_callback(padpainter);
+            });
+            return;
          }
 
-         return draw_callback(painter); // call next
+         var handle = { func: draw_callback };
+
+         // here the case of normal drawing, can be improved
+         if (snap.fKind === 1)
+            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
+
+         if (snap.fKind === 2)
+            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
+
+         if (!handle.completed) return; // if callback will be invoked, break while loop
       }
-
-      if (snap.fKind === 3) { // subpad
-
-         if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
-
-         var subpad = snap.fPrimitives[0].fSnapshot;
-
-         subpad.fPrimitives = null; // clear primitives, they just because of I/O
-
-         var padpainter = new TPadPainter(subpad, false);
-         padpainter.DecodeOptions(snap.fPrimitives[0].fOption);
-         padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
-         padpainter.snapid = snap.fObjectID;
-
-         padpainter.CreatePadSvg();
-
-         if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 1) {
-            padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
-            padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
-
-            if (JSROOT.gStyle.ContextMenu)
-              padpainter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
-         }
-
-         // we select current pad, where all drawing is performed
-         var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
-         padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
-            padpainter.CurrentPadName(prev_name);
-            draw_callback(padpainter);
-         });
-         return;
-      }
-
-      // here the case of normal drawing, can be improved
-      if (snap.fKind === 1)
-         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
-
-      if (snap.fKind === 2)
-         return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, draw_callback);
-
-      draw_callback(null);
    }
 
    TPadPainter.prototype.FindSnap = function(snapid) {
