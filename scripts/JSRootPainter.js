@@ -4506,13 +4506,22 @@
       return false;
    }
 
-   TPadPainter.prototype.DrawPrimitive = function(indx, callback, ppainter) {
-      if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
+   TPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
 
-      if (!this.pad || (indx >= this.pad.fPrimitives.arr.length))
-         return JSROOT.CallBack(callback);
+      while (true) {
+         if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
 
-      JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], this.DrawPrimitive.bind(this, indx+1, callback));
+         if (!this.pad || (indx >= this.pad.fPrimitives.arr.length))
+            return JSROOT.CallBack(callback);
+
+         // handle use to invoke callback only when necessary
+         var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
+
+         ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
+
+         if (!handle.completed) return;
+         indx++;
+      }
    }
 
    TPadPainter.prototype.GetTooltips = function(pnt) {
@@ -5341,7 +5350,7 @@
          // we select current pad, where all drawing is performed
          prev_name = painter.CurrentPadName(painter.this_pad_name);
 
-      painter.DrawPrimitive(0, function() {
+      painter.DrawPrimitives(0, function() {
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
          painter.DrawingReady();
@@ -5636,7 +5645,7 @@
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
 
-      painter.DrawPrimitive(0, function() { painter.DrawingReady(); });
+      painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
       return painter;
    }
 
@@ -5955,13 +5964,27 @@
 
    /** @fn JSROOT.draw(divid, obj, opt, callback)
     * Draw object in specified HTML element with given draw options  */
-   JSROOT.draw = function(divid, obj, opt, callback) {
+   JSROOT.draw = function(divid, obj, opt, drawcallback) {
+
+      var isdirectdraw = true; // indicates if extra callbacks (via AssertPrerequisites) was invoked to process
 
       function completeDraw(painter) {
-         if (painter && callback && (typeof painter.WhenReady == 'function'))
-            painter.WhenReady(callback);
+         var callbackfunc = null, ishandle = false;
+         if (typeof drawcallback == 'function') callbackfunc = drawcallback; else
+            if (drawcallback && (typeof drawcallback == 'object') && (typeof drawcallback.func=='function')) {
+               callbackfunc = drawcallback.func;
+               ishandle = true;
+            }
+
+         if (ishandle && isdirectdraw) {
+            // if there is no painter or drawing is already completed, return directly
+            if (!painter || painter._ready_called_) { drawcallback.completed = true; return painter; }
+         }
+
+         if (painter && drawcallback && (typeof painter.WhenReady == 'function'))
+            painter.WhenReady(callbackfunc);
          else
-            JSROOT.CallBack(callback, painter);
+            JSROOT.CallBack(callbackfunc, painter);
          return painter;
       }
 
@@ -5983,12 +6006,11 @@
       if (!handle) return completeDraw(null);
 
       if (handle.draw_field && obj[handle.draw_field])
-         return JSROOT.draw(divid, obj[handle.draw_field], opt, callback);
+         return JSROOT.draw(divid, obj[handle.draw_field], opt, drawcallback);
 
       if (!handle.func) return completeDraw(null);
 
       function performDraw() {
-
          if (handle.direct) {
             painter = new TObjectPainter(obj);
             painter.SetDivId(divid, 2);
@@ -6026,6 +6048,8 @@
       }
 
       if (prereq.length === 0) return completeDraw(null);
+
+      isdirectdraw = false;
 
       JSROOT.AssertPrerequisites(prereq, function() {
          var func = JSROOT.findFunction(funcname);
