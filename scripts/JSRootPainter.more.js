@@ -1930,17 +1930,14 @@
             this.palette = JSROOT.Painter.GetColorPalette();
          if (this.palette) {
             var color = this.palette.calcColor(indx, graphs.arr.length+1);
-            var icolor = JSROOT.Painter.root_colors.indexOf(color);
-            if (icolor<0) {
-               icolor = JSROOT.Painter.root_colors.length;
-               JSROOT.Painter.root_colors.push(color);
-            }
+            var icolor = this.add_color(color);
+
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;
             if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
          }
+         this._pfc = this._plc = this._pmc = false;
       }
-
 
       JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt,
                   this.DrawNextGraph.bind(this, indx+1, opt));

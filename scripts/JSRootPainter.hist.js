@@ -1455,8 +1455,6 @@
 
       var pt = this.GetObject();
 
-      if (pt.fLabel) console.log('Draw label', pt.fLabel, pt.fInit, pt.fOption, pt.fX1NDC, pt.fX2NDC);
-
       if (pt.fInit===0) {
          pt.fInit = 1;
          var pad = this.root_pad();
@@ -1472,10 +1470,10 @@
                if (pt.fY1 > 0) pt.fY1 = JSROOT.log10(pt.fY1);
                if (pt.fY2 > 0) pt.fY2 = JSROOT.log10(pt.fY2);
             }
-            pt.fX1NDC = (pt.fX1-pad.fX1) / (pad.fX2 - pad.fX1);
-            pt.fY1NDC = (pt.fY1-pad.fY1) / (pad.fY2 - pad.fY1);
-            pt.fX2NDC = (pt.fX2-pad.fX1) / (pad.fX2 - pad.fX1);
-            pt.fY2NDC = (pt.fY2-pad.fY1) / (pad.fY2 - pad.fY1);
+            pt.fX1NDC = (pt.fX1 - pad.fX1) / (pad.fX2 - pad.fX1);
+            pt.fY1NDC = (pt.fY1 - pad.fY1) / (pad.fY2 - pad.fY1);
+            pt.fX2NDC = (pt.fX2 - pad.fX1) / (pad.fX2 - pad.fX1);
+            pt.fY2NDC = (pt.fY2 - pad.fY1) / (pad.fY2 - pad.fY1);
          } else {
             pt.fX1NDC = pt.fY1NDC = 0.1;
             pt.fX2NDC = pt.fY2NDC = 0.9;
@@ -2228,6 +2226,7 @@
              AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
              Optimize: JSROOT.gStyle.OptimizeDraw,
+             _pmc: false, _plc: false, _pfc: false,
              minimum: -1111, maximum: -1111, original: opt },
            d = new JSROOT.DrawOptions(opt || this.histo.fOption),
            hdim = this.Dimension(),
@@ -2437,6 +2436,10 @@
       if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
       if ((hdim==3) && d.check('BB')) option.BackBox = 0;
 
+      option._pfc = d.check("PFC");
+      option._plc = d.check("PLC");
+      option._pmc = d.check("PMC");
+
       if (d.check('LF2')) { option.Line = 2; option.Hist = -1; option.Error = 0; need_fillcol = true; }
       if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
 
@@ -2585,6 +2588,25 @@
    }
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
+
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         if (!this.pallette && JSROOT.Painter.GetColorPalette)
+            this.palette = JSROOT.Painter.GetColorPalette();
+
+         var pp = this.pad_painter(true);
+         if (this.palette && pp) {
+            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
+
+            var color = this.palette.calcColor(indx, num);
+            var icolor = this.add_color(color);
+
+            if (this.options._pfc) { this.histo.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { this.histo.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { this.histo.fMarkerColor = icolor; delete this.markeratt; }
+         }
+
+         this.options._pfc = this.options._plc = this.options._pmc = false;
+      }
 
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(this.histo, undefined, this.options.histoFillColor, 1);

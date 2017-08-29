@@ -13,7 +13,7 @@
 8. Automatic title positioning of vertical axis when fTitleOffset==0
 9. Introduce openui5 components for webgui functionality
 10. In all sources specify "use strict" derictive, fix several connected errors
-11. Implement PFC, PLC and PMC draw options for TMultiGraph
+11. Implement PFC, PLC and PMC draw options for histograms and TMultiGraph
 12. Use color palette stored in the TCanvas
 13. Let ignore color "nocol" or palette "nopal" stored in the TCanvas
 14. Better support of TPaveText - lines, boxes and arbitrary text positions

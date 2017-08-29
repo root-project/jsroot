@@ -1671,6 +1671,18 @@
       return jsarr[indx];
    }
 
+   TObjectPainter.prototype.add_color = function(color) {
+      var jsarr = this.root_colors;
+      if (!jsarr) {
+         var pp = this.pad_painter();
+         jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
+      }
+      var indx = jsarr.indexOf(color);
+      if (indx >= 0) return indx;
+      jsarr.push(color);
+      return jsarr.length-1;
+   }
+
    TObjectPainter.prototype.CheckResize = function(arg) {
       // no painter - no resize
       var pad_painter = this.pad_painter();
@@ -4187,6 +4199,14 @@
       TObjectPainter.prototype.Cleanup.call(this);
    }
 
+   TPadPainter.prototype.GetCurrentPrimitiveIndx = function() {
+      return this._current_primitive_indx || 0;
+   }
+
+   TPadPainter.prototype.GetNumPrimitives = function() {
+      return this._num_primitives || 1;
+   }
+
    TPadPainter.prototype.ForEachPainterInPad = function(userfunc, onlypadpainters) {
       userfunc(this);
       for (var k = 0; k < this.painters.length; ++k) {
@@ -4530,6 +4550,9 @@
 
    TPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
 
+      // set number of primitves
+      this._num_primitives = this.pad ? this.pad.fPrimitives.arr.length : 0;
+
       while (true) {
          if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
 
@@ -4538,6 +4561,9 @@
 
          // handle use to invoke callback only when necessary
          var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
+
+         // set current index
+         this._current_primitive_indx = indx;
 
          ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
 
@@ -4753,6 +4779,8 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
+      this._num_primitives = lst ? lst.length : 0;
+
       while (true) {
 
          if (objpainter && lst && lst[indx] && (typeof objpainter.snapid === 'undefined')) {
@@ -4767,6 +4795,8 @@
 
          var snap = lst[indx];
          objpainter = null;
+
+         this._current_primitive_indx = indx;
 
          // first find existing painter for the object
          for (var k=0; k<this.painters.length; ++k) {

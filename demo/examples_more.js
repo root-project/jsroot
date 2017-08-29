@@ -4,7 +4,8 @@ examples_more = {
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
-     { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" }
+     { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
+     { name: "plc", json: "histpalettecolor.json.gz", title: "Use PLC and PMC draw options for multiple histograms (tutorials/hist/histpalettecolor.C macro)" }
    ],
    TH2: [
      { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },
