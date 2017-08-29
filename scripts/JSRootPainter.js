@@ -3373,44 +3373,40 @@
       return draw_g.property('max_text_width');
    }
 
-   TObjectPainter.prototype.DrawTextNew = function(arg) {
-      if (!arg) return 0;
-      return this.DrawText(arg.align, arg.x || 0, arg.y || 0, arg.width || 0, arg.height || 0, arg.text, arg.color, arg.latex, arg.draw_g, arg.font_size);
-   }
+   TObjectPainter.prototype.DrawTextNew = function(arg) { //{align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
 
-   TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
+      var draw_g = arg.draw_g || this.draw_g,
+          label = arg.text || "", align = ['start', 'middle'],
+          x = arg.x || 0, y = arg.y || 0,
+          w = arg.width || 0, h = arg.height || 0;
 
-      if (!draw_g) draw_g = this.draw_g;
-      var align;
-
-      if (typeof align_arg == 'string') {
-         align = align_arg.split(";");
+      if (typeof arg.align == 'string') {
+         align = arg.align.split(";");
          if (align.length==1) align.push('middle');
       } else {
-         align = ['start', 'middle'];
-         if ((align_arg / 10) >= 3) align[0] = 'end'; else
-         if ((align_arg / 10) >= 2) align[0] = 'middle';
-         if ((align_arg % 10) == 0) align[1] = 'bottom'; else
-         if ((align_arg % 10) == 1) align[1] = 'bottom-base'; else
-         if ((align_arg % 10) == 3) align[1] = 'top';
+         if ((arg.align / 10) >= 3) align[0] = 'end'; else
+         if ((arg.align / 10) >= 2) align[0] = 'middle';
+         if ((arg.align % 10) == 0) align[1] = 'bottom'; else
+         if ((arg.align % 10) == 1) align[1] = 'bottom-base'; else
+         if ((arg.align % 10) == 3) align[1] = 'top';
       }
 
-      var scale = (w>0) && (h>0);
+      var scale = (arg.width>0) && (arg.height>0);
 
-      if (latex_kind==null) latex_kind = 1;
-      if (latex_kind<2)
-         if (!JSROOT.Painter.isAnyLatex(label)) latex_kind = 0;
+      if (arg.latex===undefined) arg.latex = 1;
+      if (arg.latex<2)
+         if (!JSROOT.Painter.isAnyLatex(label)) arg.latex = 0;
 
-      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (latex_kind!==2)) || (latex_kind<1),
+      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (arg.latex!==2)) || (arg.latex<1),
           font = draw_g.property('text_font');
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
       if (use_normal_text) {
-         if (latex_kind>0) label = JSROOT.Painter.translateLaTeX(label);
+         if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
+         var pos_x = arg.x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
@@ -3439,12 +3435,12 @@
                          .attr("text-anchor", align[0])
                          .attr("x", 0)
                          .attr("y", 0)
-                         .attr("fill", tcolor ? tcolor : null)
+                         .attr("fill", arg.color || null)
                          .attr("transform", trans)
                          .text(label);
          if (pos_dy) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
-         if (font_size) txt.attr("font-size", font_size);
+         if (arg.font_size) txt.attr("font-size", arg.font_size);
 
          draw_g.property('normaltext_use', true);
 
@@ -3456,8 +3452,8 @@
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if ((w>0) && scale && !font_size) this.TextScaleFactor(1.05*box.width / w, draw_g);
-         if ((h>0) && scale && !font_size) this.TextScaleFactor(1.*box.height / h, draw_g);
+         if ((w>0) && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width / w, draw_g);
+         if ((h>0) && scale && !arg.font_size) this.TextScaleFactor(1.*box.height / h, draw_g);
 
          return box.width;
       }
@@ -3469,7 +3465,7 @@
 
       if (!scale && h<0) { rotate = Math.abs(h); h = 0; }
 
-      var mtext = JSROOT.Painter.translateMath(label, latex_kind, tcolor),
+      var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color),
           fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
