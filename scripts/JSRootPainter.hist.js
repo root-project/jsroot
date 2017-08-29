@@ -1752,16 +1752,17 @@
          this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
          if (nlines == 1) {
-            this.DrawText(pt.fTextAlign, 0, 0, width, height, lines[0], tcolor);
+            this.DrawTextNew({ align: pt.fTextAlign, x:0, y:0, width: width, height: height, text: lines[0], color: tcolor });
             this.UseTextColor = true;
          } else
          for (var j = 0; j < nlines; ++j) {
-            var posy = j*stepy, jcolor = colors[j];
-            if (!jcolor) { this.UseTextColor = true; jcolor = tcolor; }
-            var font_size = undefined;
-            if (sizes[j]) font_size = Math.round(sizes[j]*can_height);
 
-            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor, 1, null, font_size);
+            var arg = { align: pt.fTextAlign, x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy, text: lines[j], color: colors[j] };
+
+            if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
+            if (sizes[j]) arg.font_size = Math.round(sizes[j]*can_height);
+
+            this.DrawTextNew(arg);
          }
 
          this.FinishTextDrawing(undefined, this.FinishPave);

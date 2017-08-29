@@ -3373,6 +3373,11 @@
       return draw_g.property('max_text_width');
    }
 
+   TObjectPainter.prototype.DrawTextNew = function(arg) {
+      if (!arg) return;
+      this.DrawText(arg.align, arg.x, arg.y, arg.width, arg.height, arg.text, arg.color, arg.latex, arg.draw_g, arg.font_size);
+   }
+
    TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
 
       if (!draw_g) draw_g = this.draw_g;
