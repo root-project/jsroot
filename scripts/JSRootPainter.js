@@ -3373,7 +3373,7 @@
       return draw_g.property('max_text_width');
    }
 
-   TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g) {
+   TObjectPainter.prototype.DrawText = function(align_arg, x, y, w, h, label, tcolor, latex_kind, draw_g, font_size) {
 
       if (!draw_g) draw_g = this.draw_g;
       var align;
@@ -3439,6 +3439,7 @@
                          .text(label);
          if (pos_dy) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");
+         if (font_size) txt.attr("font-size", font_size);
 
          draw_g.property('normaltext_use', true);
 
@@ -3450,8 +3451,8 @@
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if ((w>0) && scale) this.TextScaleFactor(1.05*box.width / w, draw_g);
-         if ((h>0) && scale) this.TextScaleFactor(1.*box.height / h, draw_g);
+         if ((w>0) && scale && !font_size) this.TextScaleFactor(1.05*box.width / w, draw_g);
+         if ((h>0) && scale && !font_size) this.TextScaleFactor(1.*box.height / h, draw_g);
 
          return box.width;
       }

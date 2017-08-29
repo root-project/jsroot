@@ -1641,7 +1641,7 @@
       var pt = this.GetObject(),
           tcolor = this.get_color(pt.fTextColor),
           nlines = 0,
-          lines = [], colors = [],
+          lines = [], colors = [], sizes = [],
           can_height = this.pad_height(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length>0);
@@ -1674,8 +1674,8 @@
                   if ((lx>0) && (lx<1)) lx = Math.round(lx*width); else lx = pt.fMargin * width;
                   if ((ly>0) && (ly<1)) ly = Math.round((1-ly)*height); else ly = ytext;
 
-                  var jcolor = entry.fTextColor ? this.get_color(entry.fTextColor) : undefined;
-                  if (jcolor===undefined) {
+                  var jcolor = entry.fTextColor ? this.get_color(entry.fTextColor) : "";
+                  if (!jcolor) {
                      jcolor = tcolor;
                      this.UseTextColor = true;
                   }
@@ -1692,9 +1692,9 @@
 
                } else {
                   lines.push(entry.fTitle); // make as before
-                  var ecolor = this.get_color(entry.fTextColor);
+                  var ecolor = entry.fTextColor ? this.get_color(entry.fTextColor) : "";
                   colors.push(ecolor);
-                  if (!ecolor || !entry.fTextColor) this.UseTextColor = true;
+                  sizes.push(entry.fTextSize);
                }
                break;
             case "TLine":
@@ -1742,7 +1742,7 @@
                lines[1] = line0.substr(pos+2, line0.length - pos - 3);
                lines[0] = line0.substr(11, pos - 11);
                nlines = 2;
-               this.UseTextColor = true;
+               colors[1] = color[0];
             }
          }
 
@@ -1756,9 +1756,12 @@
             this.UseTextColor = true;
          } else
          for (var j = 0; j < nlines; ++j) {
-            var posy = j*stepy, jcolor = this.UseTextColor ? tcolor : colors[j];
+            var posy = j*stepy, jcolor = colors[j];
+            if (!jcolor) { this.UseTextColor = true; jcolor = tcolor; }
+            var font_size = undefined;
+            if (sizes[j]) font_size = Math.round(sizes[j]*can_height);
 
-            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor);
+            this.DrawText(pt.fTextAlign, margin_x, posy, width-2*margin_x, stepy, lines[j], jcolor, 1, null, font_size);
          }
 
          this.FinishTextDrawing(undefined, this.FinishPave);
