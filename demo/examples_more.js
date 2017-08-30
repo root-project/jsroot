@@ -6,7 +6,7 @@ examples_more = {
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
      { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
      { name: "plc", json: "histpalettecolor.json.gz", title: "Use PLC and PMC draw options for multiple histograms (tutorials/hist/histpalettecolor.C macro)" },
-     { name: "th1k", json: "th1k.json.gz", title: "TH1K class - produced from tutorials/hist/hksimple.C macro" },
+     { name: "th1k", json: "th1k.json.gz", title: "TH1K class - produced from tutorials/hist/hksimple.C macro" }
    ],
    TH2: [
      { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },
@@ -76,7 +76,8 @@ examples_more = {
      { name: "hsum", file: "hsum.root", item: "c1;1", title: "Canvas with several histos and selected user range (from hsum.C macro)" },
      { name: "sub-sub", file: "fitslicesy.root", item: "c1;1", title: "Canvas with sub-sub pads" },
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
-     { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" }
+     { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" },
+     { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" }
    ],
    TGeo : [
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },

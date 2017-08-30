@@ -1721,7 +1721,7 @@
          if (frame.empty()) return frame;
          if (typeof frame_layer != 'string') frame_layer = "main_layer";
          var layer = frame.select("." + frame_layer);
-         if (layer.empty()) return layer();
+         if (layer.empty()) layer = frame.select(".main_layer");
          this.draw_g = layer.append("svg:g");
       } else {
          this.draw_g = this.svg_layer("primitives_layer").append("svg:g");
