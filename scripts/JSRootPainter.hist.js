@@ -2727,8 +2727,8 @@
             }
          }
 
-         var changed_opt = (histo.fOpion != obj.fOption);
-         histo.fOpion = obj.fOption;
+         var changed_opt = (histo.fOption != obj.fOption);
+         histo.fOption = obj.fOption;
 
          if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
             this.options = this.DecodeOptions(opt);
