@@ -24,6 +24,7 @@
 19. Fix - draw stats box for histogram when required
 20. Implement x/y projections display for TH2 histograms (aka SetShowProjectionX)
 21. Support "TEXT" draw option for TH2Poly
+22. Preliminary support of TH1K class
 
 
 ## Changes in 5.2.0

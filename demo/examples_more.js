@@ -5,7 +5,8 @@ examples_more = {
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
      { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
-     { name: "plc", json: "histpalettecolor.json.gz", title: "Use PLC and PMC draw options for multiple histograms (tutorials/hist/histpalettecolor.C macro)" }
+     { name: "plc", json: "histpalettecolor.json.gz", title: "Use PLC and PMC draw options for multiple histograms (tutorials/hist/histpalettecolor.C macro)" },
+     { name: "th1k", json: "th1k.json.gz", title: "TH1K class - produced from tutorials/hist/hksimple.C macro" },
    ],
    TH2: [
      { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },

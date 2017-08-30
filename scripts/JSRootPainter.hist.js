@@ -2161,6 +2161,10 @@
       return this.MatchObjectType('TProfile');
    }
 
+   THistPainter.prototype.IsTH1K = function() {
+      return this.MatchObjectType('TH1K');
+   }
+
    THistPainter.prototype.IsTH2Poly = function() {
       return this.histo && this.histo._typename.match(/^TH2Poly/);
    }
@@ -2703,6 +2707,10 @@
 
          if (this.IsTProfile()) {
             histo.fBinEntries = obj.fBinEntries;
+         }
+         if (this.IsTH1K()) {
+            histo.fNIn = obj.fNIn;
+            histo.fReady = false;
          }
 
          if (obj.fFunctions && !this.options.Same && this.options.Func) {
@@ -4824,10 +4832,25 @@
 
    TH1Painter.prototype = Object.create(THistPainter.prototype);
 
+   TH1Painter.prototype.ConvertTH1K = function() {
+      var histo = this.GetObject();
+
+      if (histo.fReady) return;
+
+      var arr = histo.fArray; // array of values
+      histo.fNcells = histo.fXaxis.fNbins + 2;
+      histo.fArray = new Float64Array(histo.fNcells);
+      for (var n=0;n<histo.fNcells;++n) histo.fArray[n] = 0;
+      for (var n=0;n<histo.fNIn;++n) histo.Fill(arr[n]);
+      histo.fReady = true;
+   }
+
    TH1Painter.prototype.ScanContent = function(when_axis_changed) {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
+
+      if (this.IsTH1K()) this.ConvertTH1K();
 
       if (!when_axis_changed) {
          this.nbinsx = this.histo.fXaxis.fNbins;
