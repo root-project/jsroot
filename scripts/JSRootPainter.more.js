@@ -2003,20 +2003,21 @@
                       x2 = this.AxisToSvg("x", obj.fBuf[indx++]),
                       y2 = this.AxisToSvg("y", obj.fBuf[indx++]);
 
-                  if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
-
                   var rect = this.draw_g
                      .append("svg:rect")
                      .attr("x", Math.min(x1,x2))
                      .attr("y", Math.min(y1,y2))
                      .attr("width", Math.abs(x2-x1))
-                     .attr("height", Math.abs(y1-y2))
-                     .call(lineatt.func);
+                     .attr("height", Math.abs(y1-y2));
 
                   if (oper === "box") {
                      if (!fillatt) fillatt = this.createAttFill(attr);
-                     rect.call(fillatt.func);
+                     rect.call(fillatt.func).style('stroke','none');
+                  } else {
+                     if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
+                     rect.call(lineatt.func).style('fill','none');
                   }
+
                   continue;
                }
                case "line":
