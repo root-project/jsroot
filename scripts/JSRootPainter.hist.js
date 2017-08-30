@@ -1285,7 +1285,12 @@
            txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
               .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
         });
-        textscale = 1;
+     } else if (vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
+        label_g.selectAll("text").each(function() {
+           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = txt.attr("y");
+           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
+              .style("text-anchor", "middle").attr("x", null).attr("y", null);
+        });
      } else if ((textscale>0) && (textscale<1.) && !disable_axis_drawing) {
         // rotate X labels if they are too big
         if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
@@ -1298,7 +1303,7 @@
            textscale = 1;
         }
         // round to upper boundary for calculated value like 4.4
-        if (textscale!=1) {
+        if (textscale != 1) {
            labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
            label_g.call(labelfont.func);
         }
