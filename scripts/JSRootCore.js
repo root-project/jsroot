@@ -804,7 +804,7 @@
          isrootjs = true;
          filename = filename.slice(3);
          if ((filename.indexOf("style/")==0) && JSROOT.source_min &&
-             (filename.lastIndexOf('.css')==filename.length-3) &&
+             (filename.lastIndexOf('.css')==filename.length-4) &&
              (filename.indexOf('.min.css')<0))
             filename = filename.slice(0, filename.length-4) + '.min.css';
       } else
