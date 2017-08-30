@@ -1267,10 +1267,9 @@
               var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
 
               txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
-                 .style("text-anchor", "start")
-                 .attr("x",null).attr("y",null);
+                 .style("text-anchor", "start").attr("x",null).attr("y",null);
            });
-           textscale *= 3.5;
+           textscale = 1;
         }
         // round to upper boundary for calculated value like 4.4
         labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
