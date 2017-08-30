@@ -752,6 +752,24 @@
 
    // =======================================================================
 
+   JSROOT.EAxisBits = {
+         kTickPlus      : JSROOT.BIT(9),
+         kTickMinus     : JSROOT.BIT(10),
+         kAxisRange     : JSROOT.BIT(11),
+         kCenterTitle   : JSROOT.BIT(12),
+         kCenterLabels  : JSROOT.BIT(14),
+         kRotateTitle   : JSROOT.BIT(15),
+         kPalette       : JSROOT.BIT(16),
+         kNoExponent    : JSROOT.BIT(17),
+         kLabelsHori    : JSROOT.BIT(18),
+         kLabelsVert    : JSROOT.BIT(19),
+         kLabelsDown    : JSROOT.BIT(20),
+         kLabelsUp      : JSROOT.BIT(21),
+         kIsInteger     : JSROOT.BIT(22),
+         kMoreLogLabels : JSROOT.BIT(23),
+         kDecimals      : JSROOT.BIT(11)
+   };
+
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -1260,20 +1278,30 @@
                .attr("dy", "-.5em")
                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
 
-     if ((textscale>0) && (textscale<1.) && !disable_axis_drawing) {
+     if (!vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
+        // rotate all labels vertically
+        label_g.selectAll("text").each(function() {
+           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = parseInt(txt.attr("y")) + side*3;
+           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
+              .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
+        });
+        textscale = 1;
+     } else if ((textscale>0) && (textscale<1.) && !disable_axis_drawing) {
         // rotate X labels if they are too big
         if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
            label_g.selectAll("text").each(function() {
               var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
 
               txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
-                 .style("text-anchor", "start").attr("x",null).attr("y",null);
+                 .style("text-anchor", "start").attr("x", null).attr("y", null);
            });
            textscale = 1;
         }
         // round to upper boundary for calculated value like 4.4
-        labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-        label_g.call(labelfont.func);
+        if (textscale!=1) {
+           labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
+           label_g.call(labelfont.func);
+        }
      }
 
      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {

@@ -234,24 +234,6 @@
          kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
    };
 
-   JSROOT.EAxisBits = {
-         kTickPlus      : JSROOT.BIT(9),
-         kTickMinus     : JSROOT.BIT(10),
-         kAxisRange     : JSROOT.BIT(11),
-         kCenterTitle   : JSROOT.BIT(12),
-         kCenterLabels  : JSROOT.BIT(14),
-         kRotateTitle   : JSROOT.BIT(15),
-         kPalette       : JSROOT.BIT(16),
-         kNoExponent    : JSROOT.BIT(17),
-         kLabelsHori    : JSROOT.BIT(18),
-         kLabelsVert    : JSROOT.BIT(19),
-         kLabelsDown    : JSROOT.BIT(20),
-         kLabelsUp      : JSROOT.BIT(21),
-         kIsInteger     : JSROOT.BIT(22),
-         kMoreLogLabels : JSROOT.BIT(23),
-         kDecimals      : JSROOT.BIT(11)
-   };
-
    // wrapper for console.log, avoids missing console in IE
    // if divid specified, provide output to the HTML element
    JSROOT.console = function(value, divid) {
