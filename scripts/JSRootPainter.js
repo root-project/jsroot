@@ -1705,6 +1705,8 @@
      *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
      *  svg:g element can be attached to different layers */
    TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
+      if (take_pad) return this.RecreatePrimitivesG();
+
       if (this.draw_g) {
          // one should keep svg:g element on its place
          // d3.selectAll(this.draw_g.node().childNodes).remove();
@@ -1721,7 +1723,7 @@
       }
 
       // set attributes for debugging
-      if (this.draw_object!==null) {
+      if (this.draw_object) {
          this.draw_g.attr('objname', encodeURI(this.draw_object.fName || "name"));
          this.draw_g.attr('objtype', encodeURI(this.draw_object._typename || "type"));
       }
@@ -1729,7 +1731,26 @@
       return this.draw_g;
    }
 
-   /** This is main graphical SVG element, where all Canvas drawing are performed */
+   TObjectPainter.prototype.RecreatePrimitivesG = function() {
+      if (this.draw_g) {
+         // one should keep svg:g element on its place
+         // d3.selectAll(this.draw_g.node().childNodes).remove();
+         this.draw_g.selectAll('*').remove();
+      } else {
+         this.draw_g = this.svg_layer("primitives_layer").append("svg:g");
+      }
+
+      // set attributes for debugging
+      if (this.draw_object) {
+         this.draw_g.attr('objname', encodeURI(this.draw_object.fName || "name"));
+         this.draw_g.attr('objtype', encodeURI(this.draw_object._typename || "type"));
+      }
+
+      return this.draw_g;
+   }
+
+
+   /** This is main graphical SVG element, where all drawings are performed */
    TObjectPainter.prototype.svg_canvas = function() {
       return this.select_main().select(".root_canvas");
    }
@@ -1739,7 +1760,7 @@
       var c = this.svg_canvas();
       if (pad_name === undefined) pad_name = this.pad_name;
       if (pad_name && !c.empty())
-         c = c.select(".subpads_layer").select("[pad=" + pad_name + ']');
+         c = c.select(".primitives_layer").select("[pad=" + pad_name + ']');
       return c;
    }
 
@@ -1748,8 +1769,12 @@
       var svg = this.svg_pad(pad_name);
       if (svg.empty()) return svg;
 
-      var node = svg.node().firstChild;
+      if (name.indexOf("prim#")==0) {
+         svg = svg.select(".primitives_layer");
+         name = name.substr(5);
+      }
 
+      var node = svg.node().firstChild;
       while (node!==null) {
          var elem = d3.select(node);
          if (elem.classed(name)) return elem;
@@ -1807,7 +1832,7 @@
 
    /** This is SVG element with current frame */
    TObjectPainter.prototype.svg_frame = function(pad_name) {
-      return this.svg_pad(pad_name).select(".root_frame");
+      return this.svg_layer("primitives_layer", pad_name).select(".root_frame");
    }
 
    TObjectPainter.prototype.frame_painter = function() {
@@ -1990,23 +2015,25 @@
 
       if (size.can3d > 1) {
 
-         var layer = this.svg_layer("special_layer");
+         elem = this.svg_layer(size.clname);
 
-         elem = layer.select("." + size.clname);
+         // elem = layer.select("." + size.clname);
          if (onlyget) return elem;
+
+         var svg = this.svg_pad();
 
          if (size.can3d === 3) {
             // this is SVG mode
 
             if (elem.empty())
-               elem = layer.append("g").attr("class", size.clname);
+               elem = svg.insert("g",".primitives_layer").attr("class", size.clname);
 
             elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
 
          } else {
 
             if (elem.empty())
-               elem = layer.append("foreignObject").attr("class", size.clname);
+               elem = svg.insert("foreignObject",".primitives_layer").attr("class", size.clname);
 
             elem.attr('x', size.x)
                 .attr('y', size.y)
@@ -3695,14 +3722,16 @@
       }
 
       // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.svg_frame();
-      if (this.draw_g.empty())
-         return console.error('did not found frame layer');
+      this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
 
-      var top_rect = this.draw_g.select("rect"),
-          main_svg = this.draw_g.select(".main_layer");
+      var top_rect, main_svg;
 
-      if (main_svg.empty()) {
+      if (this.draw_g.empty()) {
+
+         var layer = this.svg_layer("primitives_layer");
+
+         this.draw_g = layer.append("svg:g").attr("class", "root_frame");
+
          this.draw_g.append("svg:title").text("");
 
          top_rect = this.draw_g.append("svg:rect");
@@ -3718,6 +3747,9 @@
 
          this.draw_g.append('svg:g').attr('class','axis_layer');
          this.draw_g.append('svg:g').attr('class','upper_layer');
+      } else {
+         top_rect = this.draw_g.select("rect");
+         main_svg = this.draw_g.select(".main_layer");
       }
 
       var trans = "translate(" + lm + "," + tm + ")";
@@ -3802,7 +3834,7 @@
                   .attr("width", w)
                   .attr("height", h);
 
-      var hintsg = this.svg_layer("stat_layer").select(".objects_hints");
+      var hintsg = this.svg_layer("info_layer").select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && this.tooltip_allowed)
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
@@ -3863,7 +3895,7 @@
    TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
-      return ! (this.svg_layer("stat_layer").select(".objects_hints").empty());
+      return ! (this.svg_layer("info_layer").select(".objects_hints").empty());
    }
 
    TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -3920,7 +3952,7 @@
          }
       }
 
-      var layer = this.svg_layer("stat_layer"),
+      var layer = this.svg_layer("info_layer"),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       if (status_func) {
@@ -4278,11 +4310,11 @@
                  .on("click", this.SelectObjectPainter.bind(this, this))
                  .on("mouseenter", this.ShowObjectStatus.bind(this));
 
-         svg.append("svg:g").attr("class","root_frame");
-         svg.append("svg:g").attr("class","subpads_layer");
-         svg.append("svg:g").attr("class","special_layer");
-         svg.append("svg:g").attr("class","text_layer");
-         svg.append("svg:g").attr("class","stat_layer");
+         //svg.append("svg:g").attr("class","root_frame");
+         //svg.append("svg:g").attr("class","special_layer");
+         svg.append("svg:g").attr("class","primitives_layer");
+         // svg.append("svg:g").attr("class","text_layer");
+         svg.append("svg:g").attr("class","info_layer");
          svg.append("svg:g").attr("class","btns_layer");
 
          if (JSROOT.gStyle.ContextMenu)
@@ -4409,7 +4441,7 @@
          svg_rect = svg_pad.select(".root_pad_border");
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = svg_can.select(".subpads_layer")
+         svg_pad = svg_can.select(".primitives_layer")
              .append("g")
              .attr("class", "root_pad")
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
@@ -4417,10 +4449,9 @@
              .property('mainpainter', null); // this is custom property
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
-         svg_pad.append("svg:g").attr("class","root_frame");
-         svg_pad.append("svg:g").attr("class","special_layer");
-         svg_pad.append("svg:g").attr("class","text_layer");
-         svg_pad.append("svg:g").attr("class","stat_layer");
+         svg_pad.append("svg:g").attr("class","primitives_layer");
+         // svg_pad.append("svg:g").attr("class","text_layer");
+         svg_pad.append("svg:g").attr("class","info_layer");
          btns = svg_pad.append("svg:g").attr("class","btns_layer");
 
          if (JSROOT.gStyle.ContextMenu)
@@ -5144,8 +5175,8 @@
          //rrr.setSize(sz.width, sz.height);
          //rrr.render(main.scene, main.camera);
 
-          main.svg_layer("special_layer")      // select layer
-              .append("g")                     // create special group
+          main
+              .insert("g",".primitives_layer")             // create special group
               .attr("class","temp_saveaspng")
               .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
               .node().appendChild(svg3d);      // add code

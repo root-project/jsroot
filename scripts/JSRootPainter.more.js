@@ -1987,7 +1987,7 @@
              lineatt = null, fillatt = null, markeratt = null;
          if (!obj || !obj.fOper) return;
 
-         this.RecreateDrawG(true, "special_layer");
+         this.RecreateDrawG(true);
 
          for (var k=0;k<obj.fOper.arr.length;++k) {
             var oper = obj.fOper.opt[k];

@@ -1487,7 +1487,7 @@
           lwidth = pt.fBorderSize;
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true, this.IsStats() ? "stat_layer" : "text_layer");
+      this.RecreateDrawG(true);
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
