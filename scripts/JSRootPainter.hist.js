@@ -1402,7 +1402,7 @@
 
       this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
 
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
@@ -1487,7 +1487,7 @@
           lwidth = pt.fBorderSize;
 
       // container used to recalculate coordinates
-      this.RecreateDrawG(true);
+      this.CreateG();
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
@@ -5119,7 +5119,7 @@
 
    TH1Painter.prototype.DrawBars = function(width, height) {
 
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
@@ -5190,7 +5190,7 @@
    }
 
    TH1Painter.prototype.DrawFilledErrors = function(width, height) {
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
@@ -5242,7 +5242,7 @@
       if ((this.options.Error == 13) || (this.options.Error == 14))
          return this.DrawFilledErrors(width, height);
 
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
@@ -7325,7 +7325,7 @@
 
       this.CheckHistDrawAttributes();
 
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       var w = this.frame_width(),
           h = this.frame_height(),

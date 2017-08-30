@@ -32,7 +32,7 @@
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
           tcolor = JSROOT.Painter.root_colors[text.fTextColor],
-          use_pad = true, latex_kind = 0, fact = 1.;
+          use_frame = false, latex_kind = 0, fact = 1.;
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
@@ -40,7 +40,7 @@
          pos_y = (1 - pos_y) * h;
       } else
       if (this.main_painter() !== null) {
-         w = this.frame_width(); h = this.frame_height(); use_pad = false;
+         w = this.frame_width(); h = this.frame_height(); use_frame = "upper_layer";
          pos_x = this.main_painter().grx(pos_x);
          pos_y = this.main_painter().gry(pos_y);
       } else
@@ -55,7 +55,7 @@
          if (text.fTextColor === 0) text.fTextColor = 1;
       }
 
-      this.RecreateDrawG(use_pad, use_pad ? "text_layer" : "upper_layer");
+      this.CreateG(use_frame);
 
       if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
       if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
@@ -77,7 +77,7 @@
           isndc = line.TestBit(kLineNDC);
 
       // create svg:g container for line drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       this.draw_g
           .append("svg:line")
@@ -100,7 +100,7 @@
           cmd = "";
 
       // create svg:g container for polyline drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       for (var n=0;n<=polyline.fLastPoint;++n)
          cmd += ((n>0) ? "L" : "M") +
@@ -126,7 +126,7 @@
       if (!this.fillatt) this.fillatt = this.createAttFill(ellipse);
 
       // create svg:g container for ellipse drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       var x = this.AxisToSvg("x", ellipse.fX1, false),
           y = this.AxisToSvg("y", ellipse.fY1, false),
@@ -175,7 +175,7 @@
           fillatt = this.createAttFill(box);
 
       // create svg:g container for box drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       var x1 = this.AxisToSvg("x", box.fX1, false),
           x2 = this.AxisToSvg("x", box.fX2, false),
@@ -204,7 +204,7 @@
           isndc = marker.TestBit(kMarkerNDC);
 
       // create svg:g container for box drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       var x = this.AxisToSvg("x", marker.fX, isndc),
           y = this.AxisToSvg("y", marker.fY, isndc),
@@ -224,7 +224,7 @@
           isndc = false;
 
       // create svg:g container for box drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       var path = "";
 
@@ -250,7 +250,7 @@
       var hsize = wsize * Math.tan(arrow.fAngle/2 * (Math.PI/180));
 
       // create svg:g container for line drawing
-      this.RecreateDrawG(true, "text_layer");
+      this.CreateG();
 
       var x1 = this.AxisToSvg("x", arrow.fX1, false),
           y1 = this.AxisToSvg("y", arrow.fY1, false),
@@ -539,7 +539,7 @@
 
       var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
 
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       // recalculate drawing bins when necessary
       this.bins = this.CreateBins(false);
@@ -843,7 +843,7 @@
 
    TGraphPainter.prototype.DrawBins = function() {
 
-      this.RecreateDrawG(false, "main_layer");
+      this.CreateG(true);
 
       var pthis = this,
           pmain = this.main_painter(),
@@ -1987,7 +1987,7 @@
              lineatt = null, fillatt = null, markeratt = null;
          if (!obj || !obj.fOper) return;
 
-         this.RecreateDrawG(true);
+         this.CreateG();
 
          for (var k=0;k<obj.fOper.arr.length;++k) {
             var oper = obj.fOper.opt[k];

@@ -1701,41 +1701,28 @@
       }
    }
 
-   /** function (re)creates svg:g element used for specific object drawings
-     *  either one attached svg:g to pad (take_pad==true) or to the frame (take_pad==false)
-     *  svg:g element can be attached to different layers */
-   TObjectPainter.prototype.RecreateDrawG = function(take_pad, layer) {
-      if (take_pad) return this.RecreatePrimitivesG();
+   TObjectPainter.prototype.RecreateDrawG = function(usepad, layer) {
+      // keep old function for a while - later
+      console.warn("Obsolete RecreateDrawG is used, will be removed soon. Change to CreateG");
+      return this.CreateG(usepad ? undefined : layer);
+   }
 
+   /** function (re)creates svg:g element used for specific object drawings
+     *  either one attach svg:g to pad list of primitives (default)
+     *  or svg:g element created in specified frame layer (default main_layer) */
+   TObjectPainter.prototype.CreateG = function(frame_layer) {
       if (this.draw_g) {
          // one should keep svg:g element on its place
          // d3.selectAll(this.draw_g.node().childNodes).remove();
          this.draw_g.selectAll('*').remove();
       } else
-      if (take_pad) {
-         if (typeof layer != 'string') layer = "text_layer";
-         if (layer[0] == ".") layer = layer.substr(1);
-         this.draw_g = this.svg_layer(layer).append("svg:g");
-      } else {
-         if (typeof layer != 'string') layer = ".main_layer";
-         if (layer[0] != ".") layer = "." + layer;
-         this.draw_g = this.svg_frame().select(layer).append("svg:g");
-      }
-
-      // set attributes for debugging
-      if (this.draw_object) {
-         this.draw_g.attr('objname', encodeURI(this.draw_object.fName || "name"));
-         this.draw_g.attr('objtype', encodeURI(this.draw_object._typename || "type"));
-      }
-
-      return this.draw_g;
-   }
-
-   TObjectPainter.prototype.RecreatePrimitivesG = function() {
-      if (this.draw_g) {
-         // one should keep svg:g element on its place
-         // d3.selectAll(this.draw_g.node().childNodes).remove();
-         this.draw_g.selectAll('*').remove();
+      if (frame_layer) {
+         var frame = this.svg_frame();
+         if (frame.empty()) return frame;
+         if (typeof frame_layer != 'string') frame_layer = "main_layer";
+         var layer = frame.select("." + frame_layer);
+         if (layer.empty()) return layer();
+         this.draw_g = layer.append("svg:g");
       } else {
          this.draw_g = this.svg_layer("primitives_layer").append("svg:g");
       }
@@ -1748,7 +1735,6 @@
 
       return this.draw_g;
    }
-
 
    /** This is main graphical SVG element, where all drawings are performed */
    TObjectPainter.prototype.svg_canvas = function() {
