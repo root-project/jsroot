@@ -31,7 +31,7 @@
    JSROOT.sources.push("openui5");
 
    var load_callback = JSROOT.complete_script_load;
-   JSROOT.complete_script_load = null; // normal callback is intercepted - we need to instantiate openui5
+   delete JSROOT.complete_script_load; // normal callback is intercepted - we need to instantiate openui5
 
    JSROOT.completeUI5Loading = function() {
       // console.log('complete ui5 loading', typeof sap);

@@ -13,12 +13,12 @@
 
       // first load JSRootCore.js script
       require(['../scripts/JSRootCore.min'], function(jsroot) {
-
+         
          // request data from JSON file
          jsroot.NewHttpRequest("canvas_tf1.json", 'object', function(obj) {
 
             // display object
-            jsroot.draw("drawing", obj, "hist");
+            jsroot.draw("drawing", obj);
 
          }).send();
 

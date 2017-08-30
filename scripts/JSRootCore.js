@@ -767,7 +767,7 @@
       return xhr;
    }
 
-   JSROOT.loadScript = function(urllist, callback, debugout) {
+   JSROOT.loadScript = function(urllist, callback, debugout, from_previous) {
       // dynamic script loader using callback
       // (as loading scripts may be asynchronous)
       // one could specify list of scripts or style files, separated by semicolon ';'
@@ -776,33 +776,30 @@
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
-      function completeLoad() {
+      delete JSROOT.complete_script_load;
 
-         JSROOT.complete_script_load = null;
-
+      if (from_previous) {
          if (debugout)
             document.getElementById(debugout).innerHTML = "";
          else
             JSROOT.progress();
 
-         if (urllist)
-            return JSROOT.loadScript(urllist, callback, debugout);
-
-         JSROOT.CallBack(callback);
+         if (!urllist) return JSROOT.CallBack(callback);
       }
 
-      if (!urllist)
-         return completeLoad();
+      if (!urllist) return JSROOT.CallBack(callback);
 
       var filename = urllist, separ = filename.indexOf(";"),
           isrootjs = false, isbower = false;
 
       if (separ>0) {
          filename = filename.substr(0, separ);
-         urllist = urllist.slice(separ+1);
+         urllist = urllist.substr(separ+1);
       } else {
          urllist = "";
       }
+
+      var completeLoad = JSROOT.loadScript.bind(JSROOT, urllist, callback, debugout, true);
 
       if (filename.indexOf('&&&scripts/')===0) {
          isrootjs = true;
@@ -813,7 +810,7 @@
          isrootjs = true;
          filename = filename.slice(3);
          if ((filename.indexOf("style/")==0) && JSROOT.source_min &&
-             (filename.lastIndexOf('.css')==filename.length-3) &&
+             (filename.lastIndexOf('.css')==filename.length-4) &&
              (filename.indexOf('.min.css')<0))
             filename = filename.slice(0, filename.length-4) + '.min.css';
       } else
@@ -880,13 +877,13 @@
          element.onreadystatechange = function() {
             if (element.readyState == "loaded" || element.readyState == "complete") {
                element.onreadystatechange = null;
-               if (JSROOT.complete_script_load) completeLoad();
+               if (JSROOT.complete_script_load) JSROOT.complete_script_load();
             }
          }
       } else { // Other browsers
          element.onload = function() {
             element.onload = null;
-            if (JSROOT.complete_script_load) completeLoad();
+            if (JSROOT.complete_script_load) JSROOT.complete_script_load();
          }
       }
 
@@ -897,7 +894,7 @@
       // one could specify kind of requirements
       //     'io'  TFile functionality
       //   'tree'  TTree support
-      //     '2d'  basic 2d graphic (TCanvas)
+      //     '2d'  basic 2d graphic (TCanvas/TPad/TFrame)
       //     '3d'  basic 3d graphic (three.js)
       //   'hist'  histograms 2d graphic
       // 'hist3d'  histograms 3d graphic
