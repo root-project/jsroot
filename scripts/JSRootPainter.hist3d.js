@@ -1020,7 +1020,7 @@
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
           histo = this.GetObject(),
-          basehisto = histo ? histo['$baseh'] : null,
+          basehisto = histo ? histo.$baseh : null,
           split_faces = (this.options.Lego === 11) || (this.options.Lego === 13); // split each layer on two parts
 
       if ((i1 >= i2) || (j1 >= j2)) return;

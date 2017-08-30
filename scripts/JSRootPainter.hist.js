@@ -5863,6 +5863,10 @@
    }
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
+      // add protection against multiple call of drawfunc at the same time
+      if (this._calling_draw_func) return;
+      this._calling_draw_func = true;
+
       var is3d = (this.options.Lego > 0) ? true : false,
           main = this.main_painter();
 
@@ -5874,9 +5878,13 @@
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, resize);
+      this[funcname](this.FinishDrawFunc.bind(this, callback), resize);
    }
 
+   TH1Painter.prototype.FinishDrawFunc = function(callback) {
+      delete this._calling_draw_func;
+      JSROOT.CallBack(callback);
+   }
 
    TH1Painter.prototype.Draw2D = function(call_back) {
       if (typeof this.Create3DScene === 'function')
@@ -5900,10 +5908,10 @@
       JSROOT.CallBack(call_back);
    }
 
-   TH1Painter.prototype.Draw3D = function(call_back) {
+   TH1Painter.prototype.Draw3D = function(call_back, resize) {
       this.mode3d = true;
       JSROOT.AssertPrerequisites('hist3d', function() {
-         this.Draw3D(call_back);
+         this.Draw3D(call_back, resize);
       }.bind(this));
    }
 
@@ -7759,14 +7767,18 @@
       JSROOT.CallBack(call_back);
    }
 
-   TH2Painter.prototype.Draw3D = function(call_back) {
+   TH2Painter.prototype.Draw3D = function(call_back, resize) {
       this.mode3d = true;
       JSROOT.AssertPrerequisites('hist3d', function() {
-         this.Draw3D(call_back);
+         this.Draw3D(call_back, resize);
       }.bind(this));
    }
 
    TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
+      // add protection against multiple call of drawfunc at the same time
+      if (this._calling_draw_func) return;
+      this._calling_draw_func = true;
+
       var main = this.main_painter(), is3d = false;
 
       if ((this.options.Contour > 0) && (main !== this)) is3d = main.mode3d; else
@@ -7782,7 +7794,12 @@
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, resize);
+      this[funcname](this.FinishDrawFunc.bind(this, callback), resize);
+   }
+
+   TH2Painter.prototype.FinishDrawFunc = function(callback) {
+      delete this._calling_draw_func;
+      JSROOT.CallBack(callback);
    }
 
    TH2Painter.prototype.Redraw = function(resize) {
@@ -8002,7 +8019,12 @@
           stack = this.GetObject(),
           histos = stack.fHists,
           nhists = histos.arr.length,
-          d = new JSROOT.DrawOptions(opt),
+          ndim = 1;
+
+      if ((nhists>0) && (histos.arr[0]._typename.indexOf("TH2")==0)) ndim = 2;
+      if ((ndim==2) && !opt) opt = "lego1";
+
+      var d = new JSROOT.DrawOptions(opt),
           lsame = d.check("SAME");
 
       this.nostack = d.check("NOSTACK");
@@ -8014,10 +8036,11 @@
          this.nostack = ! this.BuildStack();
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.nostack && this.haserrors && !d.check("HIST")) opt+= " E";
+      if (!this.nostack && this.haserrors && !d.check("HIST")) opt+=" E";
+
+      this.dolego = d.check("LEGO");
 
       // order used to display histograms in stack direct - true, reverse - false
-      this.dolego = d.check("LEGO");
       this.horder = this.nostack || this.dolego;
 
       var mm = this.GetMinMax(d.check("E"));
@@ -8041,14 +8064,17 @@
          }
 
          var h = stack.fHists.arr[0];
-         stack.fHistogram = histo = JSROOT.CreateHistogram("TH1I", h.fXaxis.fNbins);
-         histo.fName = h.fName;
+
+         histo = JSROOT.CreateHistogram((ndim==1) ? "TH1I" : "TH2I", h.fXaxis.fNbins, h.fYaxis.fNbins);
+         histo.fName = "axis_hist";
          histo.fXaxis = JSROOT.clone(h.fXaxis);
          histo.fYaxis = JSROOT.clone(h.fYaxis);
          histo.fXaxis.fXmin = xmin;
          histo.fXaxis.fXmax = xmax;
          histo.fYaxis.fXmin = ymin;
          histo.fYaxis.fXmax = ymax;
+
+         stack.fHistogram = histo;
       }
       histo.fTitle = stack.fTitle;
 
@@ -8068,15 +8094,16 @@
    THStackPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
+      var lst = this.nostack ? obj.fHists : obj.fStack;
+      if (!lst) return false;
+
       var isany = false;
       if (this.firstpainter)
          if (this.firstpainter.UpdateObject(obj.fHistogram)) isany = true;
 
-      var harr = this.nostack ? obj.fHists.arr : obj.fStack.arr,
-          nhists = Math.min(harr.length, this.painters.length);
-
+      var nhists = Math.min(lst.arr.length, this.painters.length);
       for (var i = 0; i < nhists; ++i) {
-         var hist = harr[this.horder ? i : nhists - i - 1];
+         var hist = lst.arr[this.horder ? i : nhists - i - 1];
          if (this.painters[i].UpdateObject(hist)) isany = true;
       }
 
