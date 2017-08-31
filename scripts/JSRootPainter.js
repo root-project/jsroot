@@ -5610,9 +5610,8 @@
          msg = msg.substr(5);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1));
-
-         var pthis = this;
+             snap = JSROOT.parse(msg.substr(p1+1)),
+             pthis = this;
          this.RedrawPadSnap(snap, function() {
             conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
@@ -5621,14 +5620,18 @@
 
          this.root6_canvas = true; // indicate that drawing of root6 canvas is peformed
 
-         var snap = JSROOT.parse(msg.substr(6));
-         var pthis = this;
+         msg = msg.substr(6);
+         var p1 = msg.indexOf(":"),
+             snapid = msg.substr(0,p1),
+             snap = JSROOT.parse(msg.substr(p1+1)),
+             pthis = this;
 
          this.RedrawPadSnap(snap, function() {
             pthis.CompeteCanvasSnapDrawing();
-            var reply = pthis.GetAllRanges();
-            // if (reply) console.log("ranges: " + reply);
-            conn.send(reply ? "RREADY:" + reply : "RREADY:" ); // send ready message back when drawing completed
+            var ranges = pthis.GetAllRanges();
+            if (ranges) ranges = ":" + ranges;
+            // if (ranges) console.log("ranges: " + ranges);
+            conn.send("RREADY:" + snapid + ranges); // send ready message back when drawing completed
          });
 
       } else if (msg.substr(0,4)=='JSON') {
