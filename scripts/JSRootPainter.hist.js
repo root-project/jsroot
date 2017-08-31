@@ -5864,7 +5864,7 @@
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
       // add protection against multiple call of drawfunc at the same time
-      if (this._calling_draw_func) return;
+      if (this._calling_draw_func) return console.log('Prevent second redraw for ', this.histo.fName);
       this._calling_draw_func = true;
 
       var is3d = (this.options.Lego > 0) ? true : false,
@@ -7776,7 +7776,7 @@
 
    TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
       // add protection against multiple call of drawfunc at the same time
-      if (this._calling_draw_func) return;
+      if (this._calling_draw_func) return console.log('Prevent second redraw for ', this.histo.fName);
       this._calling_draw_func = true;
 
       var main = this.main_painter(), is3d = false;

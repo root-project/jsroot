@@ -4567,14 +4567,21 @@
 
    TPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
 
-      // set number of primitves
-      this._num_primitives = this.pad ? this.pad.fPrimitives.arr.length : 0;
+      if (indx===0) {
+         // flag used to prevent immediate pad redraw during normal drawing sequence
+         this._doing_pad_draw = true;
+
+         // set number of primitves
+         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
+      }
 
       while (true) {
          if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
 
-         if (!this.pad || (indx >= this.pad.fPrimitives.arr.length))
+         if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
+            delete this._doing_pad_draw;
             return JSROOT.CallBack(callback);
+         }
 
          // handle use to invoke callback only when necessary
          var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
@@ -4684,6 +4691,9 @@
    }
 
    TPadPainter.prototype.Redraw = function(resize) {
+
+      // prevent redrawing
+      if (this._doing_pad_draw) return console.log('Prevent redrawing', this.pad.fName);
 
       var showsubitems = true;
 
@@ -4796,7 +4806,11 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      this._num_primitives = lst ? lst.length : 0;
+      if (indx===0) {
+         // flag used to prevent immediate pad redraw during first draw
+         this._doing_pad_draw = true;
+         this._num_primitives = lst ? lst.length : 0;
+      }
 
       while (true) {
 
@@ -4808,7 +4822,10 @@
 
          ++indx; // change to the next snap
 
-         if (!lst || indx >= lst.length) return JSROOT.CallBack(call_back, this);
+         if (!lst || indx >= lst.length) {
+            delete this._doing_pad_draw;
+            return JSROOT.CallBack(call_back, this);
+         }
 
          var snap = lst[indx];
          objpainter = null;
@@ -4996,13 +5013,9 @@
           prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
       padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
-          padpainter.CurrentPadName(prev_name);
-          call_back(padpainter);
+         padpainter.CurrentPadName(prev_name);
+         call_back(padpainter);
       });
-
-      // this.DrawNextSnap(snap.fPrimitives, 0, call_back, null); // update all snaps after each other
-
-      // show we redraw all other painters without snapid?
    }
 
    TPadPainter.prototype.CreateImage = function(format, call_back) {
@@ -5427,12 +5440,10 @@
             painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
       }
 
-      var prev_name;
+      // we select current pad, where all drawing is performed
+      var prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
 
-      if (painter.has_canvas)
-         // we select current pad, where all drawing is performed
-         prev_name = painter.CurrentPadName(painter.this_pad_name);
-
+      // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, function() {
          // we restore previous pad name
          painter.CurrentPadName(prev_name);
@@ -5686,7 +5697,6 @@
       kIsGrayscale      : JSROOT.BIT(22),
       kShowToolTips     : JSROOT.BIT(23)
    };
-
 
    TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
       if (!this.pad) return;
