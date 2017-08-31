@@ -5863,9 +5863,6 @@
    }
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
-      // add protection against multiple call of drawfunc at the same time
-      if (this._calling_draw_func) return console.log('Prevent second redraw for ', this.histo.fName);
-      this._calling_draw_func = true;
 
       var is3d = (this.options.Lego > 0) ? true : false,
           main = this.main_painter();
@@ -5878,12 +5875,7 @@
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
 
-      this[funcname](this.FinishDrawFunc.bind(this, callback), resize);
-   }
-
-   TH1Painter.prototype.FinishDrawFunc = function(callback) {
-      delete this._calling_draw_func;
-      JSROOT.CallBack(callback);
+      this[funcname](callback, resize);
    }
 
    TH1Painter.prototype.Draw2D = function(call_back) {
@@ -7775,9 +7767,6 @@
    }
 
    TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
-      // add protection against multiple call of drawfunc at the same time
-      if (this._calling_draw_func) return console.log('Prevent second redraw for ', this.histo.fName);
-      this._calling_draw_func = true;
 
       var main = this.main_painter(), is3d = false;
 
@@ -7794,12 +7783,7 @@
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
 
-      this[funcname](this.FinishDrawFunc.bind(this, callback), resize);
-   }
-
-   TH2Painter.prototype.FinishDrawFunc = function(callback) {
-      delete this._calling_draw_func;
-      JSROOT.CallBack(callback);
+      this[funcname](callback, resize);
    }
 
    TH2Painter.prototype.Redraw = function(resize) {
