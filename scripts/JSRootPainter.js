@@ -3381,7 +3381,7 @@
             this.fillatt = this.createAttFill(tframe);
          else
          if (pad)
-            this.fillatt = this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor);
+            this.fillatt = this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor || pad.fFillColor);
          else
             this.fillatt = this.createAttFill(null, 1001, 0);
 
