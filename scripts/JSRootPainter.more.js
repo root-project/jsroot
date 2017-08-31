@@ -2039,24 +2039,29 @@
                }
                case "polyline":
                case "polylinendc":
-               case "fillarea": {
+               case "fillarea":
+               case "fillareandc": {
 
-                  var npoints = parseInt(obj.fOper.arr[k].fString), cmd = "";
+                  var npoints = parseInt(obj.fOper.arr[k].fString),
+                      cmd = "", isndc = (oper.indexOf("ndc") > 0);
 
                   if (!lineatt) lineatt = new JSROOT.TAttLineHandler(attr);
 
                   for (var n=0;n<npoints;++n)
                      cmd += ((n>0) ? "L" : "M") +
-                            this.AxisToSvg("x", obj.fBuf[indx++], false) + "," +
-                            this.AxisToSvg("y", obj.fBuf[indx++], false);
+                            this.AxisToSvg("x", obj.fBuf[indx++], isndc) + "," +
+                            this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  if (oper == "fillarea") cmd+="Z";
+                  if (oper.indexOf("fillarea") == 0) cmd+="Z";
+
+                  if (oper == "fillareandc") console.log('cmd', cmd);
+
                   var path = this.draw_g
                           .append("svg:path")
                           .attr("d", cmd)
                           .call(lineatt.func);
 
-                  if (oper == "fillarea") {
+                  if (oper.indexOf("fillarea") == 0) {
                      if (!fillatt) fillatt = this.createAttFill(attr);
                      path.call(fillatt.func);
                   }
