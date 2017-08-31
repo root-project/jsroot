@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.2.x
+1. Fix - support pow(x,n) function in formula
+
+
 ## Changes in 5.2.3
 1. Fix - potential mix-up in marker attributes handling
 2. Fix - unzomming of log scale https://root-forum.cern.ch/t/25889
