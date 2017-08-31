@@ -3641,13 +3641,9 @@
       }
 
       if (this.fillatt === undefined) {
-         if (tframe)
-            this.fillatt = this.createAttFill(tframe);
-         else
-         if (pad)
-            this.fillatt = this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor);
-         else
-            this.fillatt = this.createAttFill(null, 1001, 0);
+         if (tframe) this.fillatt = this.createAttFill(tframe);
+         else if (pad) this.fillatt = this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor || pad.fFillColor);
+         else this.fillatt = this.createAttFill(null, 1001, 0);
 
          // force white color for the frame
          // if (this.fillatt.color == 'none') this.fillatt.color = 'white';
