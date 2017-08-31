@@ -355,7 +355,7 @@
 
             if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
-            if (pnt2 && this.painter.enable_hightlight)
+            if (pnt2 && this.painter.enable_highlight)
                if (this.mouse_zoom_mesh.object.ShowSelection(this.mouse_zoom_mesh.point, pnt2))
                   this.painter.Render3D(0);
 
@@ -646,7 +646,7 @@
       this.BinHighlight3D = JSROOT.Painter.BinHighlight3D;
 
       this.first_render_tm = 0;
-      this.enable_hightlight = false;
+      this.enable_highlight = false;
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
 
       if (JSROOT.BatchMode) return;
@@ -1435,7 +1435,7 @@
    JSROOT.Painter.BinHighlight3D = function(tip, selfmesh) {
 
       var changed = false, tooltip_mesh = null, changed_self = true,
-          want_remove = !tip || (tip.x1===undefined) || !this.enable_hightlight;
+          want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -2682,7 +2682,7 @@
 
          if (this.first_render_tm === 0) {
             this.first_render_tm = tm2.getTime() - tm1.getTime();
-            this.enable_hightlight = (this.first_render_tm < 1200) && this.tooltip_allowed;
+            this.enable_highlight = (this.first_render_tm < 1200) && this.tooltip_allowed;
             console.log('First render tm = ' + this.first_render_tm);
          }
 
