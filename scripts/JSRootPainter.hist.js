@@ -2904,6 +2904,7 @@
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
       }
+
       if (this.x_kind == 'time') {
          this.x = d3.scaleTime();
       } else
@@ -3013,10 +3014,10 @@
          pad.fUxmin = pad.fUymin = -0.9;
          pad.fUxmax = pad.fUymax = 0.9;
       } else {
-         pad.fLogx = this.logx ? 1 : 0;
+         pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
          pad.fUxmin = this.scale_xmin;
          pad.fUxmax = this.scale_xmax;
-         pad.fLogx = this.logy ? 1 : 0;
+         pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
          pad.fUymin = this.scale_ymin;
          pad.fUymax = this.scale_ymax;
       }
