@@ -1961,6 +1961,7 @@
       if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
+      if (JSROOT.GetUrlOption('openui5', src)!=null) prereq += "openui5;";
       var user = JSROOT.GetUrlOption('load', src),
           onload = JSROOT.GetUrlOption('onload', src),
           bower = JSROOT.GetUrlOption('bower', src);
