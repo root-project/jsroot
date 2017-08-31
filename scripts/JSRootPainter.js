@@ -4809,6 +4809,7 @@
       if (indx===0) {
          // flag used to prevent immediate pad redraw during first draw
          this._doing_pad_draw = true;
+         this._snaps_map = {}; // to control how much snaps are drawn
          this._num_primitives = lst ? lst.length : 0;
       }
 
@@ -4824,17 +4825,25 @@
 
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
+            delete this._snaps_map;
             return JSROOT.CallBack(call_back, this);
          }
 
-         var snap = lst[indx];
-         objpainter = null;
+         var snap = lst[indx],
+             snapid = snap.fObjectID,
+             cnt = this._snaps_map[snapid],
+             objpainter = null;
+
+         if (cnt) cnt++; else cnt=1;
+         this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
 
          this._current_primitive_indx = indx;
 
-         // first find existing painter for the object
+         // first appropriate painter for the object
+         // if same object drawn twice, two painters will exists
          for (var k=0; k<this.painters.length; ++k) {
-            if (this.painters[k].snapid === snap.fObjectID) { objpainter = this.painters[k]; break;  }
+            if (this.painters[k].snapid === snapid)
+               if (--cnt === 0) { objpainter = this.painters[k]; break;  }
          }
 
          // function which should be called when drawing of next item finished
