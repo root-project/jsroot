@@ -358,7 +358,7 @@
 
             if (pnt2) this.mouse_zoom_mesh.point2 = pnt2;
 
-            if (pnt2 && this.painter.enable_hightlight)
+            if (pnt2 && this.painter.enable_highlight)
                if (this.mouse_zoom_mesh.object.ShowSelection(this.mouse_zoom_mesh.point, pnt2))
                   this.painter.Render3D(0);
 
