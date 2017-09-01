@@ -2030,7 +2030,7 @@
           return tip;
        }
 
-       this.toplevel.add(line);
+       main.toplevel.add(line);
    }
 
    JSROOT.TH2Painter.prototype.DrawPolyLego = function() {
@@ -2522,6 +2522,7 @@
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = this.get_color(rootcolor),
+          main = this.main_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
@@ -2799,7 +2800,7 @@
             return tip;
          }
 
-         this.toplevel.add(combined_bins);
+         main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
             var lcolor = this.get_color(this.GetObject().fLineColor),
@@ -2813,7 +2814,7 @@
                lines = JSROOT.Painter.createLineSegments( helper_positions[nseq], helper_material );
             }
 
-            this.toplevel.add(lines);
+            main.toplevel.add(lines);
          }
       }
    }
