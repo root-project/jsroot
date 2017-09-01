@@ -1094,7 +1094,8 @@
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer, tickSize = 10, scaling_size = 100, text_scaling_size = 100,
+          axis_g = layer, tickSize = 10, scaling_size = 100,
+          text_scaling_size = 100, optionUnlab = false,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10;
 
@@ -1106,6 +1107,8 @@
 
       if (is_gaxis) {
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
+         // scaling_size = vertical ? h : w;
+         // tickSize = Math.round((axis.fChopt.indexOf("S")>=0 ? axis.fTickSize : 0.03)*scaling_size);
          scaling_size = (vertical ? pad_w : pad_h);
          tickSize = Math.round(axis.fTickSize * scaling_size);
       } else {
@@ -1119,15 +1122,29 @@
       if (!is_gaxis || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
-            axis_g = layer.append("svg:g").attr("class",this.name+"_container");
+            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
          else
             axis_g.selectAll("*").remove();
          if (this.invert_side) side = -side;
       } else {
 
-         if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
-         if (vertical && axis.fChopt=="+L") side = -1; else
-         if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; }
+         function myXor(a,b) { return ( a || b ) && !( a && b ); }
+
+         if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; } else
+         if (axis.fChopt.indexOf("-")>=0) { side = myXor(reverse,vertical) ? 1 : -1; } else
+         if (axis.fChopt.indexOf("+")>=0) { side = myXor(reverse,vertical) ? -1 : 1; }
+
+         //if (axis.fChopt.indexOf("+")>=0) { side = vertical ? -1 : 1; } else
+         // if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
+         // if (vertical && axis.fChopt=="+L") side = -1; else
+
+         //if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
+         //if (vertical && axis.fChopt=="+L") side = -1; else
+         //if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; }
+
+         // console.log(vertical, axis.fChopt, 'min/max', this.scale_min, this.scale_max, side);
+
+         if ((axis.fChopt.indexOf("U")>=0) || (axis.fLabelOffset>1.1)) optionUnlab = true;
 
          if (!disable_axis_drawing)
             axis_g.append("svg:line")
@@ -1214,7 +1231,7 @@
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
          var pos = Math.round(this.func(handle.major[nmajor])),
              lbl = this.format(handle.major[nmajor], true);
-         if ((lbl === null) || disable_axis_drawing) continue;
+         if ((lbl === null) || disable_axis_drawing || optionUnlab) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
@@ -1278,34 +1295,36 @@
                .attr("dy", "-.5em")
                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
 
-     if (!vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        // rotate all labels vertically
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = parseInt(txt.attr("y")) + side*3;
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
-        });
-     } else if (vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = txt.attr("y");
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", "middle").attr("x", null).attr("y", null);
-        });
-     } else if ((textscale>0) && (textscale<1.) && !disable_axis_drawing) {
-        // rotate X labels if they are too big
-        if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
+     if (!disable_axis_drawing && !optionUnlab) {
+        if (!vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
+           // rotate all labels vertically
            label_g.selectAll("text").each(function() {
-              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
-
-              txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
-                 .style("text-anchor", "start").attr("x", null).attr("y", null);
+              var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = parseInt(txt.attr("y")) + side*3;
+              txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
+                 .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
            });
-           textscale = 1;
-        }
-        // round to upper boundary for calculated value like 4.4
-        if (textscale != 1) {
-           labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-           label_g.call(labelfont.func);
+        } else if (vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
+           label_g.selectAll("text").each(function() {
+              var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = txt.attr("y");
+              txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
+                 .style("text-anchor", "middle").attr("x", null).attr("y", null);
+           });
+        } else if ((textscale>0) && (textscale<1.)) {
+           // rotate X labels if they are too big
+           if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
+              label_g.selectAll("text").each(function() {
+                 var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
+
+                 txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
+                    .style("text-anchor", "start").attr("x", null).attr("y", null);
+              });
+              textscale = 1;
+           }
+           // round to upper boundary for calculated value like 4.4
+           if (textscale != 1) {
+              labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
+              label_g.call(labelfont.func);
+           }
         }
      }
 
