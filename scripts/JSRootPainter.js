@@ -6146,7 +6146,8 @@
           x2 = this.AxisToSvg("x", gaxis.fX2),
           y2 = this.AxisToSvg("y", gaxis.fY2),
           w = x2 - x1, h = y1 - y2,
-          vertical = w < 5, kind = "normal", func = null,
+          vertical = Math.abs(w) < Math.abs(h),
+          kind = "normal", func = null,
           min = gaxis.fWmin, max = gaxis.fWmax, reverse = false;
 
       if (gaxis.fChopt.indexOf("G")>=0) {

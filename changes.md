@@ -3,6 +3,7 @@
 ## Changes in 5.2.x
 1. Fix - support pow(x,n) function in formula
 2. Fix - use pad.fFillColor for frame when fFrameFillColor==0
+3. Fix - correctly identify horizontal TGaxis with reverse scale 
 
 
 ## Changes in 5.2.3
