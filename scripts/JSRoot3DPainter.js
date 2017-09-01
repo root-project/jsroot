@@ -1616,7 +1616,7 @@
           return tip;
        }
 
-       this.toplevel.add(line);
+       main.toplevel.add(line);
    }
 
 
@@ -3435,6 +3435,7 @@
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = JSROOT.Painter.root_colors[rootcolor],
+          main = this.main_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
@@ -3712,7 +3713,7 @@
             return tip;
          }
 
-         this.toplevel.add(combined_bins);
+         main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
             var helper_geom = new THREE.BufferGeometry();
@@ -3729,7 +3730,7 @@
                 helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
                 lines = new THREE.LineSegments(helper_geom, helper_material );
 
-            this.toplevel.add(lines);
+            main.toplevel.add(lines);
          }
       }
    }
