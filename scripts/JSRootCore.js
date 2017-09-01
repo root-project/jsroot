@@ -1339,11 +1339,11 @@
          case 'TGaxis':
             JSROOT.Create("TLine", obj);
             JSROOT.Create("TAttText", obj);
-            JSROOT.extend(obj, { _fChopt: "", fFunctionName: "", fGridLength: 0,
-                                  fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-                                  fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
-                                  fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
-                                  fWmax: 100, fWmin: 0 });
+            JSROOT.extend(obj, { fChopt: "", fFunctionName: "", fGridLength: 0,
+                                 fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
+                                 fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
+                                 fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
+                                 fWmax: 100, fWmin: 0 });
             break;
          case 'TAttPad':
             JSROOT.extend(obj, { fLeftMargin: JSROOT.gStyle.fPadLeftMargin,

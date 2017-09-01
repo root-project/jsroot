@@ -1091,15 +1091,15 @@
       // function draw complete TAxis
       // later will be used to draw TGaxis
 
-      var axis = this.GetObject(),
+      var axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
-          side = (this.name === "zaxis") ? -1  : 1, both_sides = 0,
-          axis_g = layer, tickSize = 10, scaling_size = 100,
-          text_scaling_size = 100, optionUnlab = false,
+          axis_g = layer, tickSize = 0.03,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10;
 
       this.vertical = vertical;
+
+      function myXor(a,b) { return ( a || b ) && !( a && b ); }
 
       // shift for second ticks set (if any)
       if (!second_shift) second_shift = 0; else
@@ -1107,17 +1107,13 @@
 
       if (is_gaxis) {
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
-         // scaling_size = vertical ? h : w;
-         // tickSize = Math.round((axis.fChopt.indexOf("S")>=0 ? axis.fTickSize : 0.03)*scaling_size);
-         scaling_size = (vertical ? pad_w : pad_h);
-         tickSize = Math.round(axis.fTickSize * scaling_size);
+         chOpt = axis.fChopt;
+         tickSize = axis.fTickSize;
       } else {
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
-         scaling_size = (vertical ? w : h);
-         tickSize = Math.round(axis.fTickLength * scaling_size);
+         chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
+         tickSize = axis.fTickLength;
       }
-
-      text_scaling_size = Math.min(pad_w, pad_h);
 
       if (!is_gaxis || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
@@ -1125,27 +1121,7 @@
             axis_g = layer.append("svg:g").attr("class",this.name + "_container");
          else
             axis_g.selectAll("*").remove();
-         if (this.invert_side) side = -side;
       } else {
-
-         function myXor(a,b) { return ( a || b ) && !( a && b ); }
-
-         if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; } else
-         if (axis.fChopt.indexOf("-")>=0) { side = myXor(reverse,vertical) ? 1 : -1; } else
-         if (axis.fChopt.indexOf("+")>=0) { side = myXor(reverse,vertical) ? -1 : 1; }
-
-         //if (axis.fChopt.indexOf("+")>=0) { side = vertical ? -1 : 1; } else
-         // if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
-         // if (vertical && axis.fChopt=="+L") side = -1; else
-
-         //if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")<0)) side = -1; else
-         //if (vertical && axis.fChopt=="+L") side = -1; else
-         //if ((axis.fChopt.indexOf("-")>=0) && (axis.fChopt.indexOf("+")>=0)) { side = 1; both_sides = 1; }
-
-         // console.log(vertical, axis.fChopt, 'min/max', this.scale_min, this.scale_max, side);
-
-         if ((axis.fChopt.indexOf("U")>=0) || (axis.fLabelOffset>1.1)) optionUnlab = true;
-
          if (!disable_axis_drawing)
             axis_g.append("svg:line")
                   .attr("x1",0).attr("y1",0)
@@ -1156,6 +1132,27 @@
 
       if (transform !== undefined)
          axis_g.attr("transform", transform);
+
+      var side = 1, both_sides = 0,
+          scaling_size = (vertical ? h : w),
+          text_scaling_size = Math.min(pad_w, pad_h);
+
+      var optionPlus = (chOpt.indexOf("+")>=0),
+          optionMinus = (chOpt.indexOf("-")>=0),
+          optionSize = (chOpt.indexOf("S")>=0),
+          optionY = (chOpt.indexOf("Y")>=0),
+          optionUp = (chOpt.indexOf("0")>=0),
+          optionDown = (chOpt.indexOf("O")>=0),
+          optionUnlab = (chOpt.indexOf("U")>=0);  // no labels
+
+      if (optionPlus && optionMinus) { side = 1; both_sides = 1; } else
+      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
+      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+
+      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
       this.CreateFormatFuncs();
 
@@ -1205,8 +1202,16 @@
       if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing)
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
+      var labelsize = axis.fLabelSize;
+
+      if (labelsize<1) {
+         if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
+         labelsize = Math.round(labelsize * text_scaling_size); // (is_gaxis ? pad_h : h));
+      }
+
+      if (labelsize <= 0) optionUnlab = true; // disable labels when size not specified
+
       var last = vertical ? h : 0,
-          labelsize = (axis.fLabelSize >= 1) ? axis.fLabelSize : Math.round(axis.fLabelSize * (is_gaxis ? this.pad_height() : h)),
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
           label_color = this.get_color(axis.fLabelColor),
           labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size),
@@ -1228,10 +1233,12 @@
          }
       }
 
+      // draw labels
+      if (!disable_axis_drawing && !optionUnlab)
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
          var pos = Math.round(this.func(handle.major[nmajor])),
              lbl = this.format(handle.major[nmajor], true);
-         if ((lbl === null) || disable_axis_drawing || optionUnlab) continue;
+         if (lbl === null) continue;
 
          var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
@@ -4715,17 +4722,13 @@
          return null;
       }
 
-      if (pal === null) {
+      if (!pal) {
          pal = JSROOT.Create('TPave');
 
-         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: null,
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
-         pal.fAxis = JSROOT.Create('TGaxis');
-
-         // set values from base classes
-
-         JSROOT.extend(pal.fAxis, { fTitle: this.GetObject().fZaxis.fTitle,
+         JSROOT.extend(pal.fAxis, { fTitle: this.GetObject().fZaxis.fTitle, fChopt: "+",
                                     fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
                                     fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42 });
 
