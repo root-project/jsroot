@@ -1094,6 +1094,7 @@
       var axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
           axis_g = layer, tickSize = 0.03,
+          scaling_size = 100,
           pad_w = this.pad_width() || 10,
           pad_h = this.pad_height() || 10;
 
@@ -1109,10 +1110,12 @@
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
          chOpt = axis.fChopt;
          tickSize = axis.fTickSize;
+         scaling_size = (vertical ? h : w);
       } else {
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
          chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
          tickSize = axis.fTickLength;
+         scaling_size = (vertical ? pad_w : pad_h);
       }
 
       if (!is_gaxis || (this.name === "zaxis")) {
@@ -1134,7 +1137,6 @@
          axis_g.attr("transform", transform);
 
       var side = 1, both_sides = 0,
-          scaling_size = (vertical ? h : w),
           text_scaling_size = Math.min(pad_w, pad_h);
 
       var optionPlus = (chOpt.indexOf("+")>=0),
@@ -1145,12 +1147,12 @@
           optionDown = (chOpt.indexOf("O")>=0),
           optionUnlab = (chOpt.indexOf("U")>=0);  // no labels
 
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+
       if (optionPlus && optionMinus) { side = 1; both_sides = 1; } else
       if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
       if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
-
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
-      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
@@ -1202,14 +1204,9 @@
       if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing)
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
-      var labelsize = axis.fLabelSize;
-
-      if (labelsize<1) {
-         if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
-         labelsize = Math.round(labelsize * text_scaling_size); // (is_gaxis ? pad_h : h));
-      }
-
-      if (labelsize <= 0) optionUnlab = true; // disable labels when size not specified
+      var labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
+      // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
+      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1))  optionUnlab = true; // disable labels when size not specified
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
@@ -1428,7 +1425,8 @@
           x2 = this.AxisToSvg("x", gaxis.fX2),
           y2 = this.AxisToSvg("y", gaxis.fY2),
           w = x2 - x1, h = y1 - y2,
-          vertical = w < 5, kind = "normal", func = null,
+          vertical = Math.abs(w) < Math.abs(h),
+          kind = "normal", func = null,
           min = gaxis.fWmin, max = gaxis.fWmax, reverse = false;
 
       if (gaxis.fChopt.indexOf("G")>=0) {
@@ -4736,6 +4734,8 @@
          this.AddFunction(pal, true);
 
          can_move = true;
+      } else {
+         if (pal.fAxis && !pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
       }
 
       var frame_painter = this.frame_painter();
