@@ -4560,6 +4560,8 @@
 
          svg = this.svg_canvas();
 
+         if (svg.empty()) return false;
+
          factor = svg.property('height_factor');
 
          rect = this.check_main_resize(check_resize, null, factor);
