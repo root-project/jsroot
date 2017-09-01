@@ -6866,10 +6866,18 @@
          for (i = 0; i < textbins.length; ++ i) {
             bin = textbins[i];
 
-            var lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
-                       JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat),
-                posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
-                posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2));
+            var posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
+                posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2)),
+                lbl = "";
+
+            if (this.options.Text < 1000) {
+               lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
+                          JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
+            } else {
+               if (bin.fPoly) lbl = bin.fPoly.fName;
+               if (lbl === "Graph") lbl = "";
+               if (!lbl) lbl = bin.fNumber;
+            }
 
             this.DrawText({ align: 22, x: posx, y: posy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
