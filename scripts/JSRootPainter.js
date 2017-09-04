@@ -4322,10 +4322,7 @@
                  .on("click", this.SelectObjectPainter.bind(this, this))
                  .on("mouseenter", this.ShowObjectStatus.bind(this));
 
-         //svg.append("svg:g").attr("class","root_frame");
-         //svg.append("svg:g").attr("class","special_layer");
          svg.append("svg:g").attr("class","primitives_layer");
-         // svg.append("svg:g").attr("class","text_layer");
          svg.append("svg:g").attr("class","info_layer");
          svg.append("svg:g").attr("class","btns_layer");
 
@@ -4462,8 +4459,6 @@
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
-         // svg_pad.append("svg:g").attr("class","text_layer");
-         svg_pad.append("svg:g").attr("class","info_layer");
          btns = svg_pad.append("svg:g").attr("class","btns_layer");
 
          if (JSROOT.gStyle.ContextMenu)
