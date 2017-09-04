@@ -2909,7 +2909,7 @@
       if (this.options.Bar>=20) this.swap_xy = true;
       this.logx = this.logy = false;
 
-      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
 
       if (this.histo.fXaxis.fTimeDisplay) {
          this.x_kind = 'time';
@@ -2924,6 +2924,16 @@
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
+      if (use_pad_range) {
+         var dx = pad.fX2 - pad.fX1;
+         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
+         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
@@ -2964,8 +2974,17 @@
          this.grx = this.x;
       }
 
-      this.scale_ymin = this.ymin;
-      this.scale_ymax = this.ymax;
+      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
+      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+      if (use_pad_range) {
+         var dy = pad.fY2 - pad.fY1;
+         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
+         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
       if (this.zoom_ymin != this.zoom_ymax) {
          this.scale_ymin = this.zoom_ymin;
          this.scale_ymax = this.zoom_ymax;
