@@ -2340,8 +2340,8 @@
       if (d.check('X+')) option.AxisPos = 10;
       if (d.check('Y+')) option.AxisPos += 1;
 
-      if (d.check('SAMES')) option.Same = 2;
-      if (d.check('SAME')) option.Same = 1;
+      if (d.check('SAMES')) { option.Same = 2; option.ForceStat = true; }
+      if (d.check('SAME')) { option.Same = 1; option.Func = 0; }
 
       // if here rest option is empty, draw histograms by default
       if (d.empty()) option.Hist = 1;
@@ -2769,7 +2769,7 @@
             histo.fReady = false;
          }
 
-         if (obj.fFunctions && !this.options.Same && this.options.Func) {
+         if (obj.fFunctions && this.options.Func) {
             for (var n=0;n<obj.fFunctions.arr.length;++n) {
                var func = obj.fFunctions.arr[n];
                if (!func || !func._typename) continue;
@@ -3422,8 +3422,8 @@
    THistPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      if (this.options.Same || !this.options.Func || !this.histo.fFunctions ||
-           (indx >= this.histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
+      if (!this.options.Func || !this.histo.fFunctions ||
+          (indx >= this.histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
 
       var func = this.histo.fFunctions.arr[indx],
           opt = this.histo.fFunctions.opt[indx],
