@@ -3822,7 +3822,7 @@
                   .attr("width", w)
                   .attr("height", h);
 
-      var hintsg = this.svg_layer("info_layer").select(".objects_hints");
+      var hintsg = this.hints_layer().select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && this.tooltip_allowed)
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
@@ -3880,10 +3880,18 @@
       });
    }
 
+   TFramePainter.prototype.hints_layer = function() {
+      // return layer where frame tooltips are shown
+      // only canvas info_layer can be used while other pads can overlay
+
+      var canp = this.pad_painter();
+      return canp ? canp.svg_layer("info_layer") : d3.select(null);
+   }
+
    TFramePainter.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
-      return ! (this.svg_layer("info_layer").select(".objects_hints").empty());
+      return ! (this.hints_layer().select(".objects_hints").empty());
    }
 
    TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -3897,7 +3905,6 @@
           pad_width = this.pad_width(),
           frame_x = this.frame_x(),
           pp = this.pad_painter(true),
-          maxhinty = this.pad_height() - this.draw_g.property('draw_y'),
           font = JSROOT.Painter.getFontDetails(160, textheight),
           status_func = this.GetShowStatusFunc(),
           disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
@@ -3940,7 +3947,7 @@
          }
       }
 
-      var layer = this.svg_layer("info_layer"),
+      var layer = this.hints_layer(),
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       if (status_func) {
@@ -3986,8 +3993,14 @@
                        .attr("class", "objects_hints")
                        .style("pointer-events","none");
 
+      var frame_shift = { x: 0, y: 0 }, trans = this.draw_g.attr("transform");
+      if (!pp.iscan) {
+         pp.CalcAbsolutePosition(this.svg_pad(), frame_shift);
+         trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
+      }
+
       // copy transform attributes from frame itself
-      hintsg.attr("transform", this.draw_g.attr("transform"));
+      hintsg.attr("transform", trans);
 
       hintsg.property("last_point", pnt);
 
@@ -4025,7 +4038,9 @@
 
       var curry = 10, // normal y coordinate
           gapy = 10,  // y coordinate, taking into account all gaps
-          gapminx = -1111, gapmaxx = -1111;
+          gapminx = -1111, gapmaxx = -1111,
+          minhinty = -frame_shift.y,
+          maxhinty = this.pad_height("") - this.draw_g.property('draw_y') - frame_shift.y;
 
       function FindPosInGap(y) {
          for (var n=0;(n<hints.length) && (y < maxhinty); ++n) {
@@ -4066,6 +4081,7 @@
 
          group.attr("x", posx)
               .attr("y", curry)
+              .property("curry", curry)
               .property("gapy", gapy);
 
          curry += hint.height + 5;
@@ -4141,10 +4157,16 @@
          svgs.attr("x", posx);
       }
 
+
       // if gap not very big, apply gapy coordinate to open view on the histogram
-      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry))
+      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
          if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
             svgs.attr("y", function() { return d3.select(this).property('gapy'); });
+      } else if ((viewmode !== 'single') && (curry > maxhinty)) {
+         var shift = Math.max((maxhinty - curry - 10), minhinty);
+         if (shift<0)
+            svgs.attr("y", function() { return d3.select(this).property('curry') + shift; });
+      }
 
       if (actualw > 10)
          svgs.attr("width", actualw)
