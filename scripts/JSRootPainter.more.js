@@ -1922,8 +1922,10 @@
       var graphs = this.GetObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
-      if (indx >= graphs.arr.length)
+      if (indx >= graphs.arr.length) {
+         this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
          return this.DrawNextFunction(0, this.DrawingReady.bind(this));
+      }
 
       // if there is auto colors assignment, try to provide it
       if (this._pfc || this._plc || this._pmc) {
@@ -1937,7 +1939,6 @@
             if (this._plc) graphs.arr[indx].fLineColor = icolor;
             if (this._pmc) graphs.arr[indx].fMarkerColor = icolor;
          }
-         this._pfc = this._plc = this._pmc = false;
       }
 
       JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt,
