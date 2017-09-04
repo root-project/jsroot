@@ -3152,7 +3152,7 @@
    THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
-      if (!this.is_main_painter()) return;
+      if (!this.is_main_painter() || this.options.Same) return;
 
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
@@ -3219,7 +3219,7 @@
    THistPainter.prototype.DrawTitle = function() {
 
       // case when histogram drawn over other histogram (same option)
-      if (!this.is_main_painter()) return;
+      if (!this.is_main_painter() || this.options.Same) return;
 
       var tpainter = this.FindPainterFor(null, "title");
       var pavetext = (tpainter !== null) ? tpainter.GetObject() : null;
