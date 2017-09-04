@@ -58,7 +58,7 @@ examples_main = {
       { opt: "col0z", title: "suppress empty bins with 0 option" },
       { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
       { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
-      { name: "fibonacci", json: "fibonacci.json.gz", title: "Example canvas produced with tutorials/hist/Fibonacci.C macro" }
+      { name: "fibonacci", file: "tutorials_hist.root", item: 'Fibonacci',  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" }
    ],
    TH3 : [
      { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
@@ -94,7 +94,8 @@ examples_main = {
    THStack : [
      { opt: "", file: "histpainter6.root", item: "draw_hstack;1", title: "several examples from THistPainter docu" },
      { name: "nostackb", item: "draw_nostackb;1", title: "example of bar chart with stacked histograms" },
-     { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" }
+     { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" },
+     { name: "lego", file: "tutorials_hist.root", item: 'multicolor', title: "Several histograms with different colors, tutorials/hist/multicolor.C" }
    ],
    TF1 : [
      { name: "hist+func", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },

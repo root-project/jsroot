@@ -5,8 +5,10 @@ examples_more = {
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
      { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
-     { name: "plc", json: "histpalettecolor.json.gz", title: "Use PLC and PMC draw options for multiple histograms (tutorials/hist/histpalettecolor.C macro)" },
-     { name: "th1k", json: "th1k.json.gz", title: "TH1K class - produced from tutorials/hist/hksimple.C macro" }
+     { name: "tut1", file: "tutorials_hist.root", layout: "grid2x1", items: ['h1draw','hksimple'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
+     { name: "tut2", file: "tutorials_hist.root", layout: "grid2x1", items: ['logscales', 'rebin'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
+     { name: "tut3", file: "tutorials_hist.root", layout: "grid2x2", items: ['histpalettecolor', 'hlabels1', 'twoscales', 'transpad'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
+     { name: "tut4", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstackpalettecolor', 'statsEditing', 'testSmooth',  'xyplot'], opts: ['pfc nostack'], title: "Macro outputs from $ROOTSYS/tutorials/hist" }
    ],
    TH2: [
      { name: "hitmap", file: "hitmap.root", item: "HitMap;1" },
@@ -22,7 +24,8 @@ examples_more = {
      { name: "docu_cont", file: "histpainter6.root", layout: "vert33", items: ['draw_contz','draw_cont1z', 'draw_cont2', 'draw_cont3', 'draw_cont4z', 'draw_contlst1'], title:"several TH2 CONT examples from THistPainter documentation page" },
      { name: "docu_lego", file: "histpainter6.root", layout: "grid2x2", items: ['draw_lego', 'draw_lego1', 'draw_lego3', 'draw_lego2'], title: "several TH2 LEGO examples from THistPainter documentation page" },
      { name: "docu_surf", file: "histpainter6.root", layout: "grid4x2", items: ['draw_surf', 'draw_surf1', 'draw_surf2', 'draw_surf3', 'draw_surf4', 'draw_surf5', 'draw_surf7', 'draw_surf2_cont1'], title: "several TH2 SURF examples from THistPainter documentation page" },
-     { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" }
+     { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" },
+     { name: "tut1", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstack2palettecolor', 'reverseaxis', 'hlabels2'], opts: ['0lego1 pfc'], title: "Macro outputs from $ROOTSYS/tutorials/hist" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
