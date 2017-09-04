@@ -26,6 +26,7 @@
 21. Support "TEXT" draw option for TH2Poly
 22. Preliminary support of TH1K class
 23. Support "SAMES" draw option for histogram - draw stat box for superimposed histograms
+24. Resepct text angle in TText/TLatex drawings
 
 
 ## Changes in 5.2.0

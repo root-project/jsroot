@@ -31,8 +31,9 @@
       var text = this.GetObject(),
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
-          tcolor = JSROOT.Painter.root_colors[text.fTextColor],
-          use_frame = false, latex_kind = 0, fact = 1.;
+          tcolor = this.get_color(text.fTextColor),
+          use_frame = false, latex_kind = 0,
+          fact = 1., textsize = text.fTextSize || 0.05;
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
@@ -51,18 +52,21 @@
          text.fTextAlign = 22;
          pos_x = w/2;
          pos_y = h/2;
-         if (text.fTextSize === 0) text.fTextSize = 0.05;
-         if (text.fTextColor === 0) text.fTextColor = 1;
+         if (!tcolor) tcolor = 'black';
       }
 
       this.CreateG(use_frame);
 
-      if (text._typename == 'TLatex') { latex_kind = 1; fact = 0.9; } else
-      if (text._typename == 'TMathText') { latex_kind = 2; fact = 0.8; }
+      var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind };
 
-      this.StartTextDrawing(text.fTextFont, Math.round(text.fTextSize*Math.min(w,h)*fact));
+      if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
-      this.DrawText({ align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind });
+      if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
+      if (text._typename == 'TMathText') { arg.latex = 2; fact = 0.8; }
+
+      this.StartTextDrawing(text.fTextFont, Math.round((textsize>1) ? textsize : textsize*Math.min(w,h)*fact));
+
+      this.DrawText(arg);
 
       this.FinishTextDrawing();
    }
