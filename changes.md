@@ -25,6 +25,7 @@
 20. Implement x/y projections display for TH2 histograms (aka SetShowProjectionX)
 21. Support "TEXT" draw option for TH2Poly
 22. Preliminary support of TH1K class
+23. Support "SAMES" draw option for histogram - draw stat box for superimposed histograms
 
 
 ## Changes in 5.2.0

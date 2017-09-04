@@ -1801,16 +1801,20 @@
 
    /** Converts x or y coordinate into SVG pad coordinates,
     *  which could be used directly for drawing in the pad.
-    *  Parameters: axis should be "x" or "y", value to convert
+    *  Parameters: axis should be "x" or "y", value to convert.
+    *  \par kind can be:
+    *  undefined or false - this is coordinate inside frame
+    *  true - when NDC coordinates are used
+    *  "pad" - when pad coordinates relative to pad ranges are specified
     *  Always return rounded values */
-   TObjectPainter.prototype.AxisToSvg = function(axis, value, isndc) {
+   TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
       var main = this.main_painter();
-      if (main && !isndc) {
+      if (main && !kind) {
          // this is frame coordinates
          value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
       } else {
-         if (!isndc) value = this.ConvertToNDC(axis, value);
+         if (kind !== true) value = this.ConvertToNDC(axis, value);
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
       return Math.round(value);

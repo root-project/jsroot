@@ -1420,10 +1420,10 @@
    TAxisPainter.prototype.Redraw = function() {
 
       var gaxis = this.GetObject(),
-          x1 = this.AxisToSvg("x", gaxis.fX1),
-          y1 = this.AxisToSvg("y", gaxis.fY1),
-          x2 = this.AxisToSvg("x", gaxis.fX2),
-          y2 = this.AxisToSvg("y", gaxis.fY2),
+          x1 = this.AxisToSvg("x", gaxis.fX1, "pad"),
+          y1 = this.AxisToSvg("y", gaxis.fY1, "pad"),
+          x2 = this.AxisToSvg("x", gaxis.fX2, "pad"),
+          y2 = this.AxisToSvg("y", gaxis.fY2, "pad"),
           w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
           kind = "normal", func = null,
@@ -3030,7 +3030,7 @@
 
    /** Set selected range back to TPad object */
    THistPainter.prototype.SetRootPadRange = function(pad, is3d) {
-      if (!pad) return;
+      if (!pad || this.options.Same) return;
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT
