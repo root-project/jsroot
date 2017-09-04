@@ -8008,7 +8008,10 @@
           hlst = this.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
-      if (indx>=nhists) return this.DrawingReady();
+      if (indx>=nhists) {
+         this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
+         return this.DrawingReady();
+      }
 
       if (indx>=0) {
          rindx = this.horder ? indx : nhists-indx-1;
@@ -8016,6 +8019,21 @@
          hopt = hlst.opt[rindx] || hist.fOption || opt;
          if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
          hopt += " same";
+
+         // if there is auto colors assignment, try to provide it
+         if (this._pfc || this._plc || this._pmc) {
+            if (!this.pallette && JSROOT.Painter.GetColorPalette)
+               this.palette = JSROOT.Painter.GetColorPalette();
+            if (this.palette) {
+               var color = this.palette.calcColor(rindx, nhists+1);
+               var icolor = this.add_color(color);
+
+               if (this._pfc) hist.fFillColor = icolor;
+               if (this._plc) hist.fLineColor = icolor;
+               if (this._pmc) hist.fMarkerColor = icolor;
+            }
+         }
+
       } else {
          hopt = (opt || "") + " axis";
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
@@ -8044,16 +8062,20 @@
 
       this.nostack = d.check("NOSTACK");
 
-      opt = d.opt; // use remaining draw options for histogram draw
+      this._pfc = d.check("PFC");
+      this._plc = d.check("PLC");
+      this._pmc = d.check("PMC");
+
+      opt = d.remain(); // use remaining draw options for histogram draw
 
       // when building stack, one could fail to sum up histograms
       if (!this.nostack)
          this.nostack = ! this.BuildStack();
 
-      // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.nostack && this.haserrors && !d.check("HIST")) opt+=" E";
-
       this.dolego = d.check("LEGO");
+
+      // if any histogram appears with pre-calculated errors, use E for all histograms
+      if (!this.nostack && this.haserrors && !this.dolego && !d.check("HIST")) opt+=" E";
 
       // order used to display histograms in stack direct - true, reverse - false
       this.horder = this.nostack || this.dolego;
