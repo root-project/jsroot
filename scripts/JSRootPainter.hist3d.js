@@ -104,9 +104,19 @@
       var max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
       this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
 
+      var pad = this.root_pad();
+      if (pad && (pad.fTheta!==undefined) && (pad.fPhi!==undefined) && (pad.fTheta !== 30) || (pad.fPhi !== 30)) {
+         max3d = 3*Math.max(this.size_xy3d, this.size_z3d);
+         var phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
+
+         this.camera.position.set(max3d*Math.cos(phi)*Math.cos(theta),
+                                  max3d*Math.sin(phi)*Math.cos(theta),
+                                  this.size_z3d + max3d*Math.sin(theta));
+      }
+
       this.pointLight = new THREE.PointLight(0xffffff,1);
-      this.camera.add( this.pointLight );
-      this.pointLight.position.set( this.size_xy3d/2, this.size_xy3d/2, this.size_z3d/2 );
+      this.camera.add(this.pointLight);
+      this.pointLight.position.set(this.size_xy3d/2, this.size_xy3d/2, this.size_z3d/2);
 
       var lookat = new THREE.Vector3(0,0,0.8*this.size_z3d);
 
@@ -211,6 +221,7 @@
    }
 
    JSROOT.THistPainter.prototype.Render3D = function(tmout) {
+
       if (tmout === -1111) {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications

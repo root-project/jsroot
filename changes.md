@@ -29,6 +29,7 @@
 24. Resepct text angle in TText/TLatex drawings
 25. Implement drawing of TPolyLine3D class
 26. Draw X/Y/Z axis titles in lego plots
+27. Use canvas Theta/Phi angles to set initial camera position in 3D plots 
 
 
 ## Changes in 5.2.0
