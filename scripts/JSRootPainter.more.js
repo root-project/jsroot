@@ -676,6 +676,10 @@
 
       if (this.has_errors) res.Errors = 1;
 
+      res._pfc = d.check("PFC");
+      res._plc = d.check("PLC");
+      res._pmc = d.check("PMC");
+
       if (d.check('L')) res.Line = 1;
       if (d.check('F')) res.Fill = 1;
       if (d.check('IA')) res.Axis = "A"; else
@@ -855,6 +859,25 @@
           h = this.frame_height(),
           graph = this.GetObject(),
           excl_width = 0;
+
+      if (this.options._pfc || this.options._plc || this.options._pmc) {
+         if (!this.pallette && JSROOT.Painter.GetColorPalette)
+            this.palette = JSROOT.Painter.GetColorPalette();
+
+         var pp = this.pad_painter(true);
+         if (this.palette && pp) {
+            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
+
+            var color = this.palette.calcColor(indx, num);
+            var icolor = this.add_color(color);
+
+            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
+         }
+
+         this.options._pfc = this.options._plc = this.options._pmc = false;
+      }
 
       if (!this.lineatt)
          this.lineatt = new JSROOT.TAttLineHandler(graph, undefined, true);

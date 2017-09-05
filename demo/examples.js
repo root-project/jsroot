@@ -142,7 +142,8 @@ examples_main = {
      { opt: "B" },
      { opt: "B1" },
      { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
-     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Output of tutorials/graphs/exclusiongraph2.C" }
+     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
+     { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" }
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
