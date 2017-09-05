@@ -3019,9 +3019,9 @@
 
       var res = { Color: d.check("COL"),
                   Error: d.check("ERR") && this.MatchObjectType("TGraph2DErrors"),
-                  Markers: d.check("P") };
+                  Circles: d.check("P0"), Markers: d.check("P") };
 
-      if (!res.Markers && !res.Error) res.Markers = true;
+      if (!res.Markers && !res.Error && !res.Circles) res.Markers = true;
       if (!res.Markers) res.Color = false;
 
       return res;
@@ -3147,6 +3147,8 @@
          levels = [main.scale_zmin, main.scale_zmax],
          scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
 
+      if (this.options.Circles) scale = 0.06*main.size_xy3d;
+
       if (main.usesvg) scale*=0.3;
 
       if (this.options.Color) {
@@ -3166,7 +3168,7 @@
              index = new Int32Array(size), icnt = 0,
              err = null, ierr = 0;
 
-         if (this.options.Markers)
+         if (this.options.Markers || this.options.Circles)
             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
 
          if (this.options.Error)
@@ -3236,8 +3238,11 @@
 
          if (pnts) {
 
-            var fcolor = palette ? palette.calcColor(lvl, levels.length) :
-                                   this.get_color(graph.fMarkerColor);
+            var fcolor = 'blue';
+
+            if (!this.options.Circles)
+               fcolor = palette ? palette.calcColor(lvl, levels.length) :
+                                  this.get_color(graph.fMarkerColor);
 
             var mesh = pnts.CreatePoints(fcolor);
 
