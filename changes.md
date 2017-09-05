@@ -27,6 +27,7 @@
 22. Preliminary support of TH1K class
 23. Support "SAMES" draw option for histogram - draw stat box for superimposed histograms
 24. Resepct text angle in TText/TLatex drawings
+25. Implement drawing of TPolyLine3D class
 
 
 ## Changes in 5.2.0

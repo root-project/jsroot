@@ -375,6 +375,60 @@
       }
    }
 
+   function HPainter_TestAxisVisibility(camera, toplevel, fb, bb) {
+      var top;
+      for (var n=0;n<toplevel.children.length;++n) {
+         top = toplevel.children[n];
+         if (top.axis_draw) break;
+         top = undefined;
+      }
+
+      if (!top) return;
+
+      if (!camera) {
+         // this is case when axis drawing want to be removed
+         toplevel.remove(top);
+         delete this.TestAxisVisibility;
+         return;
+      }
+
+      fb = fb ? true : false;
+      bb = bb ? true : false;
+
+      var qudrant = 1, pos = camera.position;
+      if ((pos.x < 0) && (pos.y >= 0)) qudrant = 2;
+      if ((pos.x >= 0) && (pos.y >= 0)) qudrant = 3;
+      if ((pos.x >= 0) && (pos.y < 0)) qudrant = 4;
+
+      function testvisible(id, range) {
+         if (id <= qudrant) id+=4;
+         return (id > qudrant) && (id < qudrant+range);
+      }
+
+      for (var n=0;n<top.children.length;++n) {
+         var chld = top.children[n];
+         if (chld.grid) chld.visible = bb && testvisible(chld.grid, 3); else
+         if (chld.zid) chld.visible = testvisible(chld.zid, 2); else
+         if (chld.xyid) chld.visible = testvisible(chld.xyid, 3); else
+         if (chld.xyboxid) {
+            var range = 5, shift = 0;
+            if (bb && !fb) { range = 3; shift = -2; } else
+            if (fb && !bb) range = 3; else
+            if (!fb && !bb) range = (chld.bottom ? 3 : 0);
+            chld.visible = testvisible(chld.xyboxid + shift, range);
+            if (!chld.visible && chld.bottom && bb)
+               chld.visible = testvisible(chld.xyboxid, 3);
+         } else
+         if (chld.zboxid) {
+            var range = 2, shift = 0;
+            if (fb && bb) range = 5; else
+            if (bb && !fb) range = 4; else
+            if (!bb && fb) { shift = -2; range = 4; }
+            chld.visible = testvisible(chld.zboxid + shift, range);
+         }
+      }
+   }
+
    JSROOT.THistPainter.prototype.DrawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
@@ -420,7 +474,7 @@
       // factor 1.1 used in ROOT for lego plots
       if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-      this.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
+      this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       if (pad && pad.fLogx) {
          if (xmax <= 0) xmax = 1.;
@@ -826,10 +880,9 @@
       }
 
       while (zticks.next()) {
-         var grz = zticks.grpos;
-         var is_major = zticks.kind == 1;
-
-         var lbl = this.z_handle.format(zticks.tick, true, true);
+         var grz = zticks.grpos,
+            is_major = (zticks.kind == 1),
+            lbl = this.z_handle.format(zticks.tick, true, true);
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl && (lbl.length > 0)) {
@@ -849,21 +902,19 @@
 
          // create grid
          if (zgridx && is_major)
-            zgridx.push(grminx, 0, grz, grmaxx, 0, grz);
+            zgridx.push(grminx,0,grz, grmaxx,0,grz);
 
          if (zgridy && is_major)
-            zgridy.push(0, grminy, grz, 0, grmaxy, grz);
+            zgridy.push(0,grminy,grz, 0,grmaxy,grz);
 
          ticks.push(0, 0, grz, (is_major ? ticklen : ticklen * 0.6), 0, grz);
       }
 
       if (zgridx && (zgridx.length > 0)) {
 
-         // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
+         var material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
          var lines1 = JSROOT.Painter.createLineSegments(zgridx, material);
-
          lines1.position.set(0,grmaxy,0);
          lines1.grid = 2; // mark as grid
          lines1.visible = false;
@@ -878,11 +929,9 @@
 
       if (zgridy && (zgridy.length > 0)) {
 
-         // var material = new THREE.LineBasicMaterial({ color: 0x0, linewidth: 0.5 });
-         var material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
+         var material = new THREE.LineDashedMaterial({ color: 0x0, dashSize: 2, gapSize: 2 });
 
-         var lines1 = JSROOT.Painter.createLineSegments( zgridy, material );
-
+         var lines1 = JSROOT.Painter.createLineSegments(zgridy, material);
          lines1.position.set(grmaxx,0, 0);
          lines1.grid = 3; // mark as grid
          lines1.visible = false;
@@ -915,7 +964,6 @@
       var zcont = [], zticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
-         //zcont[n].add(new THREE.Mesh(ggg, textMaterial));
 
          lbls.forEach(function(lbl) {
             var m = new THREE.Matrix4();
@@ -951,7 +999,7 @@
       // for TAxis3D do not show final cube
       if (this.size_z3d === 0) return;
 
-      var linex_geom = JSROOT.Painter.createLineSegments( [grminx, 0, 0, grmaxx, 0, 0], lineMaterial, null, true);
+      var linex_geom = JSROOT.Painter.createLineSegments([grminx,0,0, grmaxx,0,0], lineMaterial, null, true);
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(linex_geom, lineMaterial);
          line.position.set(0, grminy, (n===0) ? grminz : grmaxz);
@@ -964,7 +1012,7 @@
          top.add(line);
       }
 
-      var liney_geom = JSROOT.Painter.createLineSegments( [0, grminy,0, 0, grmaxy, 0], lineMaterial, null, true );
+      var liney_geom = JSROOT.Painter.createLineSegments([0,grminy,0, 0,grmaxy,0], lineMaterial, null, true);
       for(var n=0;n<2;++n) {
          var line = new THREE.LineSegments(liney_geom, lineMaterial);
          line.position.set(grminx, 0, (n===0) ? grminz : grmaxz);
@@ -977,7 +1025,7 @@
          top.add(line);
       }
 
-      var linez_geom = JSROOT.Painter.createLineSegments( [0, 0, grminz, 0, 0, grmaxz], lineMaterial, null, true );
+      var linez_geom = JSROOT.Painter.createLineSegments([0,0,grminz, 0,0,grmaxz], lineMaterial, null, true);
       for(var n=0;n<4;++n) {
          var line = new THREE.LineSegments(linez_geom, lineMaterial);
          line.zboxid = zcont[n].zid;
@@ -1387,7 +1435,7 @@
 
          main.adjustCameraPosition();
 
-         main.TestAxisVisibility = JSROOT.Painter.HPainter_TestAxisVisibility;
+         main.TestAxisVisibility = HPainter_TestAxisVisibility;
 
          main.Render3D();
       }
