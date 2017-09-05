@@ -2391,6 +2391,11 @@
          if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
       }
 
+      if (option.Surf || option.Lego) {
+         if (d.check('FB')) option.FrontBox = 0;
+         if (d.check('BB')) option.BackBox = 0;
+      }
+
       if (d.check('LIST')) option.List = 1;
 
       if (d.check('CONT', true)) {
