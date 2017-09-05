@@ -106,7 +106,8 @@ examples_main = {
    ],
    TF2 : [
      { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
-     { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" }
+     { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" },
+     { name: "pnt", file: "tutorials_graphs.root", item: "graph2derrorsfit", title: "Combination of TF2 and TGraph2DErrors, output of tutorials/graphs/graph2derrorsfit.C" },
    ],
    TCanvas : [
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
@@ -143,7 +144,8 @@ examples_main = {
      { opt: "B1" },
      { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
      { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
-     { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" }
+     { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
+     { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
@@ -179,9 +181,9 @@ examples_main = {
      { name: "all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
    ],
    TGraph2D : [
-      { opt:"", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
-      { name:"pcol", item: "pcol", title: "example of TGraph2D, color options" },
-      { opt:"err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
+      { opt: "", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
+      { name: "pcol", item: "pcol", title: "example of TGraph2D, color options" },
+      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
    ],
    TLatex : [
      { name:"text", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Without MathJax.js rendering" },
