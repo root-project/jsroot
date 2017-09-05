@@ -33,19 +33,18 @@
           pos_x = text.fX, pos_y = text.fY,
           tcolor = this.get_color(text.fTextColor),
           use_frame = false, latex_kind = 0,
-          fact = 1., textsize = text.fTextSize || 0.05;
+          fact = 1., textsize = text.fTextSize || 0.05,
+          main = this.main_painter();
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
          pos_x = pos_x * w;
          pos_y = (1 - pos_y) * h;
-      } else
-      if (this.main_painter() !== null) {
+      } else if (main && !main.mode3d) {
          w = this.frame_width(); h = this.frame_height(); use_frame = "upper_layer";
-         pos_x = this.main_painter().grx(pos_x);
-         pos_y = this.main_painter().gry(pos_y);
-      } else
-      if (this.root_pad() !== null) {
+         pos_x = main.grx(pos_x);
+         pos_y = main.gry(pos_y);
+      } else if (this.root_pad() !== null) {
          pos_x = this.ConvertToNDC("x", pos_x) * w;
          pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
       } else {
