@@ -8236,6 +8236,8 @@
          hist.fYaxis.fXmin = func.fYmin;
          hist.fYaxis.fXmax = func.fYmax;
 
+         hist.fBits |= JSROOT.TH1StatusBits.kNoStats;
+
          for (var j=0;j<npy;++j)
            for (var i=0;i<npx;++i) {
                var x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / npx,
