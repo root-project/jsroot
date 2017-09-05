@@ -2462,6 +2462,14 @@
          marker.fName = (ver > 1) ? buf.ReadTString() : "TPolyMarker3D";
       };
 
+      cs['TPolyLine3D'] = function(buf, obj) {
+         buf.ClassStreamer(obj, "TObject");
+         buf.ClassStreamer(obj, "TAttLine");
+         obj.fN = buf.ntoi4();
+         obj.fP = buf.ReadFastArray(obj.fN*3, JSROOT.IO.kFloat);
+         obj.fOption = buf.ReadTString();
+      };
+
       cs['TStreamerInfo'] = function(buf, obj) {
          // stream an object of class TStreamerInfo from the I/O buffer
          buf.ClassStreamer(obj, "TNamed");
