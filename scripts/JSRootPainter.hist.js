@@ -8013,7 +8013,7 @@
          if (pad.fLogy) {
             if (res.min<0) res.min = res.max * 1e-4;
          } else {
-            if (res.min < 0.05*res.max) res.min = 0;
+            if ((res.min>0) && (res.min < 0.05*res.max)) res.min = 0;
          }
       }
 
@@ -8061,7 +8061,8 @@
 
       } else {
          hopt = (opt || "") + " axis";
-         if (mm && hist.fMinimum==-1111 && hist.fMaximum==-1111) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
+         // if (mm && (!this.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
+         if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
       }
 
       // special handling of stacked histograms - set $baseh object for correct drawing

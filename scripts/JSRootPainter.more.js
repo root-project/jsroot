@@ -1873,12 +1873,10 @@
       if (mgraph.fMaximum != -1111)
          rw.ymax = maximum = mgraph.fMaximum;
 
-      if (minimum < 0 && rw.ymin >= 0 && logy)
-         minimum = 0.9 * rw.ymin;
-      if (maximum > 0 && rw.ymax <= 0 && logy)
-         maximum = 1.1 * rw.ymax;
-      if (minimum <= 0 && logy)
-         minimum = 0.001 * maximum;
+      if (minimum < 0 && rw.ymin >= 0 && logy) minimum = 0.9 * rw.ymin;
+      if (maximum > 0 && rw.ymax <= 0 && logy) maximum = 1.1 * rw.ymax;
+      if (minimum <= 0 && logy) minimum = 0.001 * maximum;
+      if (!logy && minimum > 0 && minimum < 0.05*maximum) minimum = 0;
       if (uxmin <= 0 && logx)
          uxmin = (uxmax > 1000) ? 1 : 0.001 * uxmax;
 
