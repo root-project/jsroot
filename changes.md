@@ -4,6 +4,7 @@
 1. Fix - support pow(x,n) function in formula
 2. Fix - use pad.fFillColor for frame when fFrameFillColor==0
 3. Fix - correctly identify horizontal TGaxis with reverse scale 
+4. Fix - correctly handle negative line width in exclusion  
 
 
 ## Changes in 5.2.3

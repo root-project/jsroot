@@ -459,13 +459,12 @@
       if (_width==0) line.color = 'none';
 
       if (can_excl) {
-         line.excl_side = 0;
-         line.excl_width = 0;
+         line.excl_side = line.excl_width = 0;
          if (Math.abs(line.width) > 99) {
             // exclusion graph
             line.excl_side = (line.width < 0) ? -1 : 1;
             line.excl_width = Math.floor(line.width / 100) * 5;
-            line.width = line.width % 100; // line width
+            line.width = Math.abs(line.width % 100); // line width
          }
 
          line.ChangeExcl = function(side,width) {

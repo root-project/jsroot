@@ -1716,7 +1716,7 @@
       this.marker_size = 0; // indicate if markers are drawn
 
       if (this.lineatt.excl_side!=0) {
-         excl_width = this.lineatt.excl_side * this.lineatt.excl_width;
+         excl_width = this.lineatt.excl_width;
          if (this.lineatt.width>0) this.options.Line = 1;
       }
 
