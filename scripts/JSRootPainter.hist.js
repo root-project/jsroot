@@ -2981,6 +2981,7 @@
 
       this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
       this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+
       if (use_pad_range) {
          var dy = pad.fY2 - pad.fY1;
          this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
@@ -3011,7 +3012,7 @@
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
-         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1))
+         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1) && this.draw_content)
             this.scale_ymax*=1.8;
 
          // this is for 2/3 dim histograms - find first non-negative bin
@@ -4929,6 +4930,9 @@
 
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
+      // Paint histogram axis only
+      if (this.options.Axis > 0) this.draw_content = false;
+
       if (this.IsTH1K()) this.ConvertTH1K();
 
       if (!when_axis_changed) {
@@ -5004,28 +5008,25 @@
          }
       }
 
-      hmin = hmax = null;
+      hmin = this.options.minimum;
+      hmax = this.options.maximum;
       var set_zoom = false;
 
-      if (this.options.minimum !== -1111) {
-         hmin = this.options.minimum;
-         if (hmin < this.ymin)
-            this.ymin = hmin;
-         else
-            set_zoom = true;
-      }
-
-      if (this.options.maximum !== -1111) {
-         hmax = this.options.maximum;
-         if (hmax > this.ymax)
-            this.ymax = hmax;
-         else
-            set_zoom = true;
+      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
+         this.ymin = hmin;
+         this.ymax = hmax;
+      } else {
+         if (hmin != -1111) {
+            if (hmin < this.ymin) this.ymin = hmin; else set_zoom = true;
+         }
+         if (hmax != -1111) {
+            if (hmax > this.ymax) this.ymax = hmax; else set_zoom = true;
+         }
       }
 
       if (set_zoom && this.draw_content) {
-         this.zoom_ymin = (hmin === null) ? this.ymin : hmin;
-         this.zoom_ymax = (hmax === null) ? this.ymax : hmax;
+         this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
+         this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
       }
 
       // If no any draw options specified, do not try draw histogram
@@ -5033,9 +5034,6 @@
           !this.options.Error && !this.options.Same && !this.options.Lego && !this.options.Text) {
          if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
                                else this.draw_content = false;
-      }
-      if (this.options.Axis > 0) { // Paint histogram axis only
-         this.draw_content = false;
       }
    }
 
