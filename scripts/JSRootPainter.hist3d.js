@@ -1907,7 +1907,7 @@
          var material;
 
          if (this.options.Surf === 1)
-            material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2  } );
+            material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
          else
             material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(histo.fLineColor)) });
 

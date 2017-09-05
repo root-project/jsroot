@@ -646,6 +646,26 @@
       return pnts;
    }
 
+   // ==============================================================================
+
+   function Create3DLineMaterial(painter, obj) {
+      if (!painter || !obj) return null;
+
+      var lcolor = painter.get_color(obj.fLineColor),
+          material = null,
+          style = obj.fLineStyle ? JSROOT.Painter.root_line_styles[obj.fLineStyle] : "",
+          dash = style ? style.split(",") : [];
+
+      if (dash && dash.length>=2)
+         material = new THREE.LineDashedMaterial( { color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) } );
+      else
+         material = new THREE.LineBasicMaterial({ color: lcolor });
+
+      if (obj.fLineWidth && (obj.fLineWidth>1) && !JSROOT.browser.isIE) material.linewidth = obj.fLineWidth;
+
+      return material;
+   }
+
    // ============================================================================================================
 
    function drawPolyLine3D() {
@@ -657,7 +677,7 @@
       var fN, fP, fOption;
 
       if (line._blob && line._blob.length==4) {
-         // workaround for custom streamer for JSON
+         // workaround for custom streamer for JSON, should be resolved
          fN = line._blob[1];
          fP = line._blob[2];
          fOption = line._blob[3];
@@ -667,19 +687,13 @@
          fOption = line.fOption;
       }
 
-      console.log('Draw PolyLine', fN);
-
       var pnts = [];
 
       for (var n=3;n<3*fN;n+=3)
          pnts.push(main.grx(fP[n-3]), main.gry(fP[n-2]), main.grz(fP[n-1]),
                    main.grx(fP[n]), main.gry(fP[n+1]), main.grz(fP[n+2]));
 
-      var material = new THREE.LineBasicMaterial({ color: 'black' });
-
-      var lines = JSROOT.Painter.createLineSegments(pnts, material);
-
-      lines.renderOrder = 10000;
+      var lines = JSROOT.Painter.createLineSegments(pnts, Create3DLineMaterial(this, line));
 
       main.toplevel.add(lines);
    }
