@@ -104,6 +104,10 @@ examples_main = {
      { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
      { name: "ff3", file: "ff3.root", item: "c1Dia;1" }
    ],
+   TF2 : [
+     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
+     { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" }
+   ],
    TCanvas : [
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
      { name:"subpad", url: "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
@@ -129,15 +133,16 @@ examples_main = {
      { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz;black,projx;black]", title: "Simple ALICE geometry and two projections" }
    ],
    TGraph : [
-     { opt:"", file: "graph.root", item: "Graph;1" },
-     { opt:"L" },
-     { opt:"AX+Y+L" },
-     { opt:"P" },
-     { name:"star", opt:"*" },
-     { opt:"LP" },
-     { opt:"B" },
-     { opt:"B1" },
-     { name:"docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" }
+     { opt: "", file: "graph.root", item: "Graph;1" },
+     { opt: "L" },
+     { opt: "AX+Y+L" },
+     { opt: "P" },
+     { name: "star", opt:"*" },
+     { opt: "LP" },
+     { opt: "B" },
+     { opt: "B1" },
+     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
+     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Output of tutorials/graphs/exclusiongraph2.C" }
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
@@ -164,13 +169,13 @@ examples_main = {
      { opt:"2", title: "filled rec"  }
    ],
    TMultiGraph : [
-     { name:"exclusion", file: "graph.root", item: "exclusion;1" },
-     { name:"c1", file: "multigraph.root", item: "c1;1" },
-     { name:"c2", item: "c2;1" },
-     { name:"c3", item: "c3;1" },
-     { name:"c4", item: "c4;1" },
-     { name:"c5", item: "c5;1" },
-     { name:"all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
+     { name: "exclusion", file: "graph.root", item: "exclusion;1" },
+     { name: "c1", file: "multigraph.root", item: "c1;1" },
+     { name: "c2", item: "c2;1" },
+     { name: "c3", item: "c3;1" },
+     { name: "c4", item: "c4;1" },
+     { name: "c5", item: "c5;1" },
+     { name: "all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
    ],
    TGraph2D : [
       { opt:"", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
@@ -190,7 +195,6 @@ examples_main = {
      { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
      { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" }
 
    ]
