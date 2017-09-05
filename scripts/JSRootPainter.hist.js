@@ -7985,7 +7985,7 @@
       return res;
    }
 
-   THStackPainter.prototype.GetMinMax = function(iserr) {
+   THStackPainter.prototype.GetMinMax = function(iserr, pad) {
       var res = { min : 0, max : 0 },
           stack = this.GetObject();
 
@@ -8009,9 +8009,12 @@
          res.max = this.GetHistMinMax(stack.fStack.arr[stack.fStack.arr.length-1], iserr).max * 1.05;
       }
 
-      var pad = this.root_pad();
-      if (pad && pad.fLogy) {
-         if (res.min<0) res.min = res.max * 1e-4;
+      if (pad) {
+         if (pad.fLogy) {
+            if (res.min<0) res.min = res.max * 1e-4;
+         } else {
+            if (res.min < 0.05*res.max) res.min = 0;
+         }
       }
 
       return res;
@@ -8058,7 +8061,7 @@
 
       } else {
          hopt = (opt || "") + " axis";
-         if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
+         if (mm && hist.fMinimum==-1111 && hist.fMaximum==-1111) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
       }
 
       // special handling of stacked histograms - set $baseh object for correct drawing
@@ -8102,7 +8105,7 @@
       // order used to display histograms in stack direct - true, reverse - false
       this.horder = this.nostack || this.dolego;
 
-      var mm = this.GetMinMax(d.check("E"));
+      var mm = this.GetMinMax(d.check("E"), pad);
 
       var histo = stack.fHistogram;
 
