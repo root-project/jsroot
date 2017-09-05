@@ -803,13 +803,12 @@
       this.width = _width;
       this.style = style;
       if (can_excl) {
-         this.excl_side = 0;
-         this.excl_width = 0;
+         this.excl_side = this.excl_width = 0;
          if (Math.abs(this.width) > 99) {
             // exclusion graph
             this.excl_side = (this.width < 0) ? -1 : 1;
             this.excl_width = Math.floor(this.width / 100) * 5;
-            this.width = this.width % 100; // line width
+            this.width = Math.abs(this.width % 100); // line width
          }
       }
 

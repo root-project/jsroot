@@ -866,9 +866,9 @@
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
 
-      if (this.lineatt.excl_side!=0) {
-         excl_width = this.lineatt.excl_side * this.lineatt.excl_width;
-         if (this.lineatt.width>0) this.options.Line = 1;
+      if (this.lineatt.excl_side != 0) {
+         excl_width = this.lineatt.excl_width;
+         if (this.lineatt.width > 0) this.options.Line = 1;
       }
 
       var drawbins = null;
