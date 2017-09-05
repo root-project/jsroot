@@ -572,7 +572,9 @@
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(-draw_width/2, 0, 0);
+            text3d.center = true; // place central
+
+            // text3d.translate(-draw_width/2, 0, 0);
 
             maxtextheight = Math.max(maxtextheight, draw_height);
 
@@ -588,6 +590,15 @@
          }
 
          ticks.push(grx, 0, 0, grx, (is_major ? -ticklen : -ticklen * 0.6), 0);
+      }
+
+      if (xaxis && xaxis.fTitle) {
+         var text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         text3d.computeBoundingBox();
+         text3d.center = (xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle));
+         text3d.gry = 2; // factor 2 shift
+         text3d.grx = (grminx + grmaxx)/2; // default position for centered title
+         lbls.push(text3d);
       }
 
       this.Get3DZoomCoord = function(point, kind) {
@@ -708,10 +719,12 @@
       xcont.add(xtickslines);
 
       lbls.forEach(function(lbl) {
-         var m = new THREE.Matrix4();
+         var w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
+             posx = lbl.center ? lbl.grx - w/2 : grmaxx - w,
+             m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(text_scale, 0,           0,  lbl.grx,
-               0,          text_scale,  0,  -maxtextheight*text_scale - 1.5*ticklen,
+         m.set(text_scale, 0,           0,  posx,
+               0,          text_scale,  0,  (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
                0,          0,           1,  0,
                0,          0,           0,  1);
 
@@ -719,33 +732,6 @@
          mesh.applyMatrix(m);
          xcont.add(mesh);
       });
-
-      // Append X title on default side
-      if (xaxis && xaxis.fTitle) {
-         var text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
-
-         text3d.computeBoundingBox();
-         var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x, posx = 0;
-
-         if (xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle)) {
-            text3d.translate(-draw_width/2, 0, 0); // align to the center
-            posx = (grminx + grmaxx)/2;
-         } else {
-            text3d.translate(-draw_width, 0, 0); // align to the right
-            posx = grmaxx;
-         }
-
-         var m = new THREE.Matrix4();
-         // matrix to swap y and z scales and shift along z to its position
-         m.set(text_scale, 0,           0,  posx,
-               0,          text_scale,  0,  2*(-maxtextheight*text_scale - 1.5*ticklen),
-               0,          0,           1,  0,
-               0,          0,           0,  1);
-
-         var mesh = new THREE.Mesh(text3d, textMaterial);
-         mesh.applyMatrix(m);
-         xcont.add(mesh);
-      }
 
       if (opts.zoom) xcont.add(CreateZoomMesh("x", this.size_xy3d));
       top.add(xcont);
@@ -755,42 +741,19 @@
       xcont.rotation.x = 3/4*Math.PI;
       xcont.add(new THREE.LineSegments(xtickslines.geometry, lineMaterial));
       lbls.forEach(function(lbl) {
-         var m = new THREE.Matrix4();
+
+         var w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
+             posx = lbl.center ? lbl.grx + w/2 : grmaxx,
+             m = new THREE.Matrix4();
          // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale, 0,           0, lbl.grx,
-               0,           text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
+         m.set(-text_scale, 0,           0, posx,
+               0,           text_scale,  0, (-maxtextheight*text_scale - 1.5*ticklen) * (lbl.gry || 1),
                0,           0,           -1, 0,
                0,            0,           0, 1);
          var mesh = new THREE.Mesh(lbl, textMaterial);
          mesh.applyMatrix(m);
          xcont.add(mesh);
       });
-
-      // Append X title on the opposite side
-      if (xaxis && xaxis.fTitle) {
-         var text3d = new THREE.TextGeometry(xaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
-
-         text3d.computeBoundingBox();
-         var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x, posx = 0;
-
-         if (xaxis.TestBit(JSROOT.EAxisBits.kCenterTitle)) {
-            text3d.translate(-draw_width/2, 0, 0); // align to the center
-            posx = (grminx + grmaxx)/2;
-         } else {
-            posx = grmaxx;
-         }
-
-         var m = new THREE.Matrix4();
-         // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale, 0,           0,  posx,
-               0,          text_scale,  0,  2*(-maxtextheight*text_scale - 1.5*ticklen),
-               0,          0,           -1,  0,
-               0,          0,           0,  1);
-
-         var mesh = new THREE.Mesh(text3d, textMaterial);
-         mesh.applyMatrix(m);
-         xcont.add(mesh);
-      }
 
       //xcont.add(new THREE.Mesh(ggg2, textMaterial));
       xcont.xyid = 4;
@@ -799,11 +762,13 @@
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
 
+      var yaxis = histo ? histo.fYaxis : null
+
       while (yticks.next()) {
          var gry = yticks.grpos;
          var is_major = (yticks.kind===1);
          var lbl = this.y_handle.format(yticks.tick, true, true);
-         if (yticks.last_major()) lbl = "y"; else
+         if (yticks.last_major()) { if (!yaxis || !yaxis.fTitle) lbl = "y"; }  else
             if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major) {
@@ -811,7 +776,8 @@
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
-            text3d.translate(-draw_width/2, 0, 0);
+            // text3d.translate(-draw_width/2, 0, 0);
+            text3d.center = true;
 
             maxtextheight = Math.max(maxtextheight, draw_height);
 
@@ -828,32 +794,18 @@
          ticks.push(0,gry,0, (is_major ? -ticklen : -ticklen*0.6), gry, 0);
       }
 
-/*
-      var ggg1 = new THREE.Geometry(), ggg2 = new THREE.Geometry();
-
-      lbls.forEach(function(lbl) {
-         var m = new THREE.Matrix4();
-         m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-               -text_scale,  0, 0, lbl.gry,
-               0, 0,  1, 0);
-
-         ggg1.merge(lbl, m);
-
-         m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-               text_scale,  0, 0, lbl.gry,
-               0, 0,  1, 0);
-
-         ggg2.merge(lbl, m);
-
-      });
-
-      ggg1 = new THREE.BufferGeometry().fromGeometry(ggg1);
-      ggg2 = new THREE.BufferGeometry().fromGeometry(ggg2);
-    */
+      if (yaxis && yaxis.fTitle) {
+         var text3d = new THREE.TextGeometry(yaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+         text3d.computeBoundingBox();
+         text3d.center = yaxis.TestBit(JSROOT.EAxisBits.kCenterTitle);
+         text3d.grx = 2; // factor 2 shift
+         text3d.gry = (grminy + grmaxy)/2; // default position for centered title
+         lbls.push(text3d);
+      }
 
       if (!opts.use_y_for_z) {
 
-         var yticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
+         var yticksline = JSROOT.Painter.createLineSegments(ticks, lineMaterial);
 
          var ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
@@ -862,10 +814,13 @@
          //ycont.add(new THREE.Mesh(ggg1, textMaterial));
 
          lbls.forEach(function(lbl) {
-            var m = new THREE.Matrix4();
+
+            var w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
+                posy = lbl.center ? lbl.gry + w/2 : grmaxy,
+                m = new THREE.Matrix4();
             // matrix to swap y and z scales and shift along z to its position
-            m.set(0, text_scale,  0, -maxtextheight*text_scale - 1.5*ticklen,
-                  -text_scale,  0, 0, lbl.gry,
+            m.set(0, text_scale,  0, (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
+                  -text_scale,  0, 0, posy,
                   0, 0,  1, 0,
                   0, 0,  0, 1);
 
@@ -884,9 +839,11 @@
          ycont.add(new THREE.LineSegments(yticksline.geometry, lineMaterial));
          //ycont.add(new THREE.Mesh(ggg2, textMaterial));
          lbls.forEach(function(lbl) {
-            var m = new THREE.Matrix4();
-            m.set(0, text_scale, 0,  -maxtextheight*text_scale - 1.5*ticklen,
-                  text_scale, 0, 0,  lbl.gry,
+            var w = lbl.boundingBox.max.x - lbl.boundingBox.min.x,
+                posy = lbl.center ? lbl.gry - w/2 : grmaxy - w,
+                m = new THREE.Matrix4();
+            m.set(0, text_scale, 0,  (-maxtextheight*text_scale - 1.5*ticklen)*(lbl.grx || 1),
+                  text_scale, 0, 0,  posy,
                   0,         0, -1,  0,
                   0, 0, 0, 1);
 
