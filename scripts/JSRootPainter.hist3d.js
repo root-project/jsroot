@@ -861,7 +861,9 @@
 
       ticks = []; // just array, will be used for the buffer geometry
 
-      var zgridx = null, zgridy = null, lastmajorz = null;
+      var zgridx = null, zgridy = null, lastmajorz = null,
+          zaxis = histo ? histo.fZaxis : null, maxzlblwidth = 0;
+
       if (this.size_z3d) {
          zgridx = []; zgridy = [];
       }
@@ -873,7 +875,7 @@
          if (lbl === null) { is_major = false; lbl = ""; }
 
          if (is_major && lbl && (lbl.length > 0)) {
-            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size : textsize, height : 0, curveSegments : 5 });
+            var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
                 draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y;
@@ -883,6 +885,8 @@
 
             if ((lastmajorz !== null) && (draw_height>0))
                text_scale = Math.min(text_scale, 0.9*(grz - lastmajorz)/draw_height);
+
+            maxzlblwidth = Math.max(maxzlblwidth, draw_width);
 
             lastmajorz = grz;
          }
@@ -931,23 +935,6 @@
          top.add(lines2);
       }
 
-
-/*      var ggg = new THREE.Geometry();
-
-      lbls.forEach(function(lbl) {
-         var m = new THREE.Matrix4();
-         // matrix to swap y and z scales and shift along z to its position
-         m.set(-text_scale,          0,  0, 2*ticklen,
-                        0,          0,  1, 0,
-                        0, text_scale,  0, lbl.grz);
-
-         ggg.merge(lbl, m);
-      });
-
-      ggg = new THREE.BufferGeometry().fromGeometry(ggg);
-*/
-
-
       var zcont = [], zticksline = JSROOT.Painter.createLineSegments( ticks, lineMaterial );
       for (var n=0;n<4;++n) {
          zcont.push(new THREE.Object3D());
@@ -962,6 +949,24 @@
             mesh.applyMatrix(m);
             zcont[n].add(mesh);
          });
+
+         if (zaxis && zaxis.fTitle) {
+            var text3d = new THREE.TextGeometry(zaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
+            text3d.computeBoundingBox();
+            var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
+                draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
+                posz = zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
+
+            text3d.rotateZ(Math.PI/2);
+
+            var m = new THREE.Matrix4();
+            m.set(-text_scale,          0,  0, 3*ticklen + maxzlblwidth,
+                            0,          0,  1, 0,
+                            0, text_scale,  0, posz);
+            var mesh = new THREE.Mesh(text3d, textMaterial);
+            mesh.applyMatrix(m);
+            zcont[n].add(mesh);
+         }
 
          zcont[n].add(n==0 ? zticksline : new THREE.LineSegments(zticksline.geometry, lineMaterial));
          if (opts.zoom) zcont[n].add(CreateZoomMesh("z", this.size_z3d, opts.use_y_for_z));

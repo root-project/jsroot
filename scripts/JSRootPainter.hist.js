@@ -8261,6 +8261,14 @@
       hist.fMarkerStyle = func.fMarkerStyle;
       hist.fMarkerSize = func.fMarkerSize;
 
+      // only for testing - unfortunately, axis settings are not stored with TF2
+      // hist.fXaxis.fTitle = "axis X";
+      // hist.fXaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+      // hist.fYaxis.fTitle = "axis Y";
+      // hist.fYaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+      // hist.fZaxis.fTitle = "axis Z";
+      // hist.fZaxis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+
       if (d.empty()) opt = "cont3"; else
       if (d.opt === "SAME") opt = "cont2 same";
       else opt = d.opt;
