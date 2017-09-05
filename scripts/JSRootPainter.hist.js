@@ -8243,8 +8243,6 @@
          hist.fYaxis.fXmin = func.fYmin;
          hist.fYaxis.fXmax = func.fYmax;
 
-         hist.fBits |= JSROOT.TH1StatusBits.kNoStats;
-
          for (var j=0;j<npy;++j)
            for (var i=0;i<npx;++i) {
                var x = func.fXmin + (i + 0.5) * (func.fXmax - func.fXmin) / npx,
@@ -8267,6 +8265,8 @@
       hist.fMarkerColor = func.fMarkerColor;
       hist.fMarkerStyle = func.fMarkerStyle;
       hist.fMarkerSize = func.fMarkerSize;
+
+      hist.fBits |= JSROOT.TH1StatusBits.kNoStats;
 
       // only for testing - unfortunately, axis settings are not stored with TF2
       // hist.fXaxis.fTitle = "axis X";
