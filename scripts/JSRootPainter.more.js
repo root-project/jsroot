@@ -1681,16 +1681,13 @@
    TGraphPainter.prototype.FillStatistic = function(stat, dostat, dofit) {
 
       // cannot fill stats without func
-      var func = this.FindFunc(),
-          npars = func ? func.GetNumPars() : 0;
+      var func = this.FindFunc();
 
-      if (!npars) return false;
+      if (!func || !dofit) return false;
 
       stat.ClearPave();
 
-      stat.AddText("#chi^2 / ndf = " + stat.Format(func.fChisquare) + " / " + func.fNDF);
-      for (var n=0;n<npars;++n)
-         stat.AddText(func.GetParName(n) + " = " + stat.Format(func.GetParValue(n), "fit") + " #pm " + stat.Format(func.GetParError(n), "fit"));
+      stat.FillFunctionStat(func, dofit);
 
       return true;
    }

@@ -1646,22 +1646,20 @@
             return this._func(x, y);
          }
          m.GetParName = function(n) {
-            if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
-            if ('fNames' in this) return this.fNames[n];
-            return "Par"+n;
+            if (this.fFormula && this.fFormula.fParams) return this.fFormula.fParams[n].first;
+            if (this.fNames && this.fNames[n]) return this.fNames[n];
+            return "p"+n;
          }
          m.GetParValue = function(n) {
-            if (('fFormula' in this) && ('fClingParameters' in this.fFormula)) return this.fFormula.fClingParameters[n];
-            if (('fParams' in this) && (this.fParams!=null)) return this.fParams[n];
-            return 0;
+            if (this.fFormula && this.fFormula.fClingParameters) return this.fFormula.fClingParameters[n];
+            if (this.fParams) return this.fParams[n];
+            return undefined;
          }
          m.GetParError = function(n) {
-            return this.fParErrors ? this.fParErrors[n] : 0;
+            return this.fParErrors ? this.fParErrors[n] : undefined;
          }
          m.GetNumPars = function() {
-            if (this.fFormula && this.fFormula.fClingParameters) return this.fFormula.fClingParameters.length;
-            if (this.fParams) return this.fParams.length;
-            return 0;
+            return this.fNpar;
          }
       }
 

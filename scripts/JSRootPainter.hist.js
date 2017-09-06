@@ -1993,6 +1993,37 @@
       this.GetObject().AddText(txt);
    }
 
+   TPavePainter.prototype.FillFunctionStat = function(f1, dofit) {
+      if (!dofit || !f1) return false;
+
+      var print_fval    = dofit % 10,
+          print_ferrors = Math.floor(dofit/10) % 10,
+          print_fchi2   = Math.floor(dofit/100) % 10,
+          print_fprob   = Math.floor(dofit/1000) % 10;
+
+      if (print_fchi2 > 0)
+         this.AddText("#chi^2 / ndf = " + this.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
+      if (print_fprob > 0)
+         this.AddText("Prob = "  + (('Math' in JSROOT) ? this.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
+      if (print_fval > 0)
+         for(var n=0;n<f1.GetNumPars();++n) {
+            var parname = f1.GetParName(n), parvalue = f1.GetParValue(n), parerr = f1.GetParError(n);
+
+            parvalue = (parvalue===undefined) ? "<not avail>" : this.Format(Number(parvalue),"fit");
+            if (parerr !== undefined) {
+               parerr = this.Format(parerr,"last");
+               if ((Number(parerr)===0) && (f1.GetParError(n) != 0)) parerr = this.Format(f1.GetParError(n),"4.2g");
+            }
+
+            if ((print_ferrors > 0) && parerr)
+               this.AddText(parname + " = " + parvalue + " #pm " + parerr);
+            else
+               this.AddText(parname + " = " + parvalue);
+         }
+
+      return true;
+   }
+
    TPavePainter.prototype.FillStatistic = function() {
       var pave = this.GetObject(),
           main = pave.$main_painter || this.main_painter();
@@ -5163,38 +5194,7 @@
             stat.AddText("Kurt = <not avail>");
       }
 
-      if (dofit != 0) {
-         var f1 = this.FindFunction('TF1');
-         if (f1!=null) {
-            var print_fval    = dofit % 10,
-                print_ferrors = Math.floor(dofit/10) % 10,
-                print_fchi2   = Math.floor(dofit/100) % 10,
-                print_fprob   = Math.floor(dofit/1000) % 10;
-
-            if (print_fchi2 > 0)
-               stat.AddText("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
-            if (print_fprob > 0)
-               stat.AddText("Prob = "  + (('Math' in JSROOT) ? stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
-            if (print_fval > 0) {
-               for(var n=0;n<f1.fNpar;++n) {
-                  var parname = f1.GetParName(n);
-                  var parvalue = f1.GetParValue(n);
-                  if (parvalue != null) parvalue = stat.Format(Number(parvalue),"fit");
-                                 else  parvalue = "<not avail>";
-                  var parerr = "";
-                  if (f1.fParErrors!=null) {
-                     parerr = stat.Format(f1.fParErrors[n],"last");
-                     if ((Number(parerr)==0.0) && (f1.fParErrors[n]!=0.0)) parerr = stat.Format(f1.fParErrors[n],"4.2g");
-                  }
-
-                  if ((print_ferrors > 0) && (parerr.length > 0))
-                     stat.AddText(parname + " = " + parvalue + " #pm " + parerr);
-                  else
-                     stat.AddText(parname + " = " + parvalue);
-               }
-            }
-         }
-      }
+      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
 
       return true;
    }
@@ -6474,6 +6474,8 @@
          stat.AddText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
          stat.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
+
+      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
 
       return true;
    }

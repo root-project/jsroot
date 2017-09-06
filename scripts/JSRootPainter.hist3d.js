@@ -2448,6 +2448,8 @@
          stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
       }
 
+      if (dofit) stat.FillFunctionStat(this.FindFunction('TF1'), dofit);
+
       return true;
    }
 
