@@ -2409,10 +2409,11 @@
    }
 
    TH3Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
-      if (this.GetObject()===null) return false;
 
-      var pave = stat.GetObject(),
-          data = this.CountStat(),
+      // no need to refill statistic if histogram is dummy
+      if (this.IgnoreStatsFill()) return false;
+
+      var data = this.CountStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -2423,36 +2424,28 @@
       //var print_skew = Math.floor(dostat / 10000000) % 10;
       //var print_kurt = Math.floor(dostat / 100000000) % 10;
 
+      stat.ClearPave();
+
       if (print_name > 0)
-         pave.AddText(this.GetObject().fName);
+         stat.AddText(this.GetObject().fName);
 
       if (print_entries > 0)
-         pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         pave.AddText("Mean x = " + stat.Format(data.meanx));
-         pave.AddText("Mean y = " + stat.Format(data.meany));
-         pave.AddText("Mean z = " + stat.Format(data.meanz));
+         stat.AddText("Mean x = " + stat.Format(data.meanx));
+         stat.AddText("Mean y = " + stat.Format(data.meany));
+         stat.AddText("Mean z = " + stat.Format(data.meanz));
       }
 
       if (print_rms > 0) {
-         pave.AddText("Std Dev x = " + stat.Format(data.rmsx));
-         pave.AddText("Std Dev y = " + stat.Format(data.rmsy));
-         pave.AddText("Std Dev z = " + stat.Format(data.rmsz));
+         stat.AddText("Std Dev x = " + stat.Format(data.rmsx));
+         stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.AddText("Std Dev z = " + stat.Format(data.rmsz));
       }
 
       if (print_integral > 0) {
-         pave.AddText("Integral = " + stat.Format(data.integral,"entries"));
-      }
-
-      // adjust the size of the stats box with the number of lines
-
-      var nlines = pave.fLines.arr.length,
-          stath = nlines * JSROOT.gStyle.StatFontSize;
-      if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
-         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         pave.fY1NDC = 0.93 - stath;
-         pave.fY2NDC = 0.93;
+         stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
       }
 
       return true;

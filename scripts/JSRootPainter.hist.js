@@ -1985,24 +1985,35 @@
       return this.MatchObjectType('TPaveStats');
    }
 
+   TPavePainter.prototype.ClearPave = function() {
+      this.GetObject().Clear();
+   }
+
+   TPavePainter.prototype.AddText = function(txt) {
+      this.GetObject().AddText(txt);
+   }
+
    TPavePainter.prototype.FillStatistic = function() {
-      var pave = this.GetObject(), main = this.main_painter();
+      var pave = this.GetObject(),
+          main = pave.$main_painter || this.main_painter();
 
       if (pave.fName !== "stats") return false;
-      if ((main===null) || !('FillStatistic' in main)) return false;
-
-      // no need to refill statistic if histogram is dummy
-      if (main.IsDummyHisto()) return true;
+      if (!main || typeof main.FillStatistic !== 'function') return false;
 
       var dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
       if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
       if (isNaN(dofit)) dofit = JSROOT.gStyle.fOptFit;
 
-      // make empty at the beginning
-      pave.Clear();
+      // we take statistic from main painter
+      if (!main.FillStatistic(this, dostat, dofit)) return false;
 
-      // we take statistic from first painter
-      main.FillStatistic(this, dostat, dofit);
+      // adjust the size of the stats box with the number of lines
+      var nlines = pave.fLines.arr.length,
+          stath = nlines * JSROOT.gStyle.StatFontSize;
+      if ((stath <= 0) || (JSROOT.gStyle.StatFont % 10 === 3)) {
+         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
+         pave.fY1NDC = pave.fY2NDC - stath;
+      }
 
       return true;
    }
@@ -2208,10 +2219,6 @@
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   THistPainter.prototype.IsDummyHisto = function() {
-      return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
-   }
 
    THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
@@ -3373,6 +3380,10 @@
       return null;
    }
 
+   THistPainter.prototype.IgnoreStatsFill = function() {
+      return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
+   }
+
    THistPainter.prototype.CreateStat = function(force) {
 
       if (!force && !this.options.ForceStat) {
@@ -3431,7 +3442,6 @@
          histo.fFunctions.AddFirst(obj);
       else
          histo.fFunctions.Add(obj);
-
    }
 
    THistPainter.prototype.FindFunction = function(type_name) {
@@ -5090,10 +5100,11 @@
    }
 
    TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
-      if (!this.histo) return false;
 
-      var pave = stat.GetObject(),
-          data = this.CountStat(),
+      // no need to refill statistic if histogram is dummy
+      if (this.IgnoreStatsFill()) return false;
+
+      var data = this.CountStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -5104,63 +5115,66 @@
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
+      // make empty at the beginning
+      stat.ClearPave();
+
       if (print_name > 0)
-         pave.AddText(this.histo.fName);
+         stat.AddText(this.histo.fName);
 
       if (this.IsTProfile()) {
 
          if (print_entries > 0)
-            pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0) {
-            pave.AddText("Mean = " + stat.Format(data.meanx));
-            pave.AddText("Mean y = " + stat.Format(data.meany));
+            stat.AddText("Mean = " + stat.Format(data.meanx));
+            stat.AddText("Mean y = " + stat.Format(data.meany));
          }
 
          if (print_rms > 0) {
-            pave.AddText("Std Dev = " + stat.Format(data.rmsx));
-            pave.AddText("Std Dev y = " + stat.Format(data.rmsy));
+            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
+            stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
          }
 
       } else {
 
          if (print_entries > 0)
-            pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
          if (print_mean > 0)
-            pave.AddText("Mean = " + stat.Format(data.meanx));
+            stat.AddText("Mean = " + stat.Format(data.meanx));
 
          if (print_rms > 0)
-            pave.AddText("Std Dev = " + stat.Format(data.rmsx));
+            stat.AddText("Std Dev = " + stat.Format(data.rmsx));
 
          if (print_under > 0)
-            pave.AddText("Underflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0,"entries"));
+            stat.AddText("Underflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0,"entries"));
 
          if (print_over > 0)
-            pave.AddText("Overflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0,"entries"));
+            stat.AddText("Overflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0,"entries"));
 
          if (print_integral > 0)
-            pave.AddText("Integral = " + stat.Format(data.integral,"entries"));
+            stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
 
          if (print_skew > 0)
-            pave.AddText("Skew = <not avail>");
+            stat.AddText("Skew = <not avail>");
 
          if (print_kurt > 0)
-            pave.AddText("Kurt = <not avail>");
+            stat.AddText("Kurt = <not avail>");
       }
 
-      if (dofit!=0) {
+      if (dofit != 0) {
          var f1 = this.FindFunction('TF1');
          if (f1!=null) {
-            var print_fval    = dofit%10;
-            var print_ferrors = Math.floor(dofit/10) % 10;
-            var print_fchi2   = Math.floor(dofit/100) % 10;
-            var print_fprob   = Math.floor(dofit/1000) % 10;
+            var print_fval    = dofit % 10,
+                print_ferrors = Math.floor(dofit/10) % 10,
+                print_fchi2   = Math.floor(dofit/100) % 10,
+                print_fprob   = Math.floor(dofit/1000) % 10;
 
             if (print_fchi2 > 0)
-               pave.AddText("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
+               stat.AddText("#chi^2 / ndf = " + stat.Format(f1.fChisquare,"fit") + " / " + f1.fNDF);
             if (print_fprob > 0)
-               pave.AddText("Prob = "  + (('Math' in JSROOT) ? stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
+               stat.AddText("Prob = "  + (('Math' in JSROOT) ? stat.Format(JSROOT.Math.Prob(f1.fChisquare, f1.fNDF)) : "<not avail>"));
             if (print_fval > 0) {
                for(var n=0;n<f1.fNpar;++n) {
                   var parname = f1.GetParName(n);
@@ -5174,21 +5188,12 @@
                   }
 
                   if ((print_ferrors > 0) && (parerr.length > 0))
-                     pave.AddText(parname + " = " + parvalue + " #pm " + parerr);
+                     stat.AddText(parname + " = " + parvalue + " #pm " + parerr);
                   else
-                     pave.AddText(parname + " = " + parvalue);
+                     stat.AddText(parname + " = " + parvalue);
                }
             }
          }
-      }
-
-      // adjust the size of the stats box with the number of lines
-      var nlines = pave.fLines.arr.length,
-          stath = nlines * JSROOT.gStyle.StatFontSize;
-      if ((stath <= 0) || (JSROOT.gStyle.StatFont % 10 === 3)) {
-         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         pave.fY1NDC = 0.93 - stath;
-         pave.fY2NDC = 0.93;
       }
 
       return true;
@@ -6418,10 +6423,11 @@
    }
 
    TH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
-      if (this.GetObject() === null) return false;
 
-      var pave = stat.GetObject(),
-          data = this.CountStat(),
+      // no need to refill statistic if histogram is dummy
+      if (this.IgnoreStatsFill()) return false;
+
+      var data = this.CountStat(),
           print_name = Math.floor(dostat % 10),
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -6432,48 +6438,41 @@
           print_skew = Math.floor(dostat / 10000000) % 10,
           print_kurt = Math.floor(dostat / 100000000) % 10;
 
+      stat.ClearPave();
+
       if (print_name > 0)
-         pave.AddText(this.GetObject().fName);
+         stat.AddText(this.GetObject().fName);
 
       if (print_entries > 0)
-         pave.AddText("Entries = " + stat.Format(data.entries,"entries"));
+         stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
 
       if (print_mean > 0) {
-         pave.AddText("Mean x = " + stat.Format(data.meanx));
-         pave.AddText("Mean y = " + stat.Format(data.meany));
+         stat.AddText("Mean x = " + stat.Format(data.meanx));
+         stat.AddText("Mean y = " + stat.Format(data.meany));
       }
 
       if (print_rms > 0) {
-         pave.AddText("Std Dev x = " + stat.Format(data.rmsx));
-         pave.AddText("Std Dev y = " + stat.Format(data.rmsy));
+         stat.AddText("Std Dev x = " + stat.Format(data.rmsx));
+         stat.AddText("Std Dev y = " + stat.Format(data.rmsy));
       }
 
       if (print_integral > 0)
-         pave.AddText("Integral = " + stat.Format(data.matrix[4],"entries"));
+         stat.AddText("Integral = " + stat.Format(data.matrix[4],"entries"));
 
       if (print_skew > 0) {
-         pave.AddText("Skewness x = <undef>");
-         pave.AddText("Skewness y = <undef>");
+         stat.AddText("Skewness x = <undef>");
+         stat.AddText("Skewness y = <undef>");
       }
 
       if (print_kurt > 0)
-         pave.AddText("Kurt = <undef>");
+         stat.AddText("Kurt = <undef>");
 
       if ((print_under > 0) || (print_over > 0)) {
          var m = data.matrix;
 
-         pave.AddText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
-         pave.AddText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
-         pave.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
-      }
-
-      // adjust the size of the stats box wrt the number of lines
-      var nlines = pave.fLines.arr.length,
-          stath = nlines * JSROOT.gStyle.StatFontSize;
-      if (stath <= 0 || 3 == (JSROOT.gStyle.StatFont % 10)) {
-         stath = 0.25 * nlines * JSROOT.gStyle.StatH;
-         pave.fY1NDC = 0.93 - stath;
-         pave.fY2NDC = 0.93;
+         stat.AddText("" + m[6].toFixed(0) + " | " + m[7].toFixed(0) + " | "  + m[7].toFixed(0));
+         stat.AddText("" + m[3].toFixed(0) + " | " + m[4].toFixed(0) + " | "  + m[5].toFixed(0));
+         stat.AddText("" + m[0].toFixed(0) + " | " + m[1].toFixed(0) + " | "  + m[2].toFixed(0));
       }
 
       return true;

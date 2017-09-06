@@ -1566,7 +1566,6 @@
          return true; // call is processed
       }
 
-
       return false;
    }
 
@@ -1621,6 +1620,81 @@
       return true;
    }
 
+   TGraphPainter.prototype.FindFunc = function() {
+      var gr = this.GetObject();
+      if (gr && gr.fFunctions)
+         for (var i = 0; i < gr.fFunctions.arr.length; ++i) {
+            var func = gr.fFunctions.arr[i];
+            if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
+         }
+      return func;
+   }
+
+   TGraphPainter.prototype.FindStat = function() {
+      var gr = this.GetObject();
+      if (gr && gr.fFunctions)
+         for (var i = 0; i < gr.fFunctions.arr.length; ++i) {
+            var func = gr.fFunctions.arr[i];
+            if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
+         }
+
+      return null;
+   }
+
+   TGraphPainter.prototype.CreateStat = function() {
+      var func = this.FindFunc();
+      if (!func) return null;
+
+      var stats = this.FindStat();
+      if (stats) return stats;
+
+      var st = JSROOT.gStyle;
+
+      stats = JSROOT.Create('TPaveStats');
+      JSROOT.extend(stats, { fName : 'stats',
+                             fOptStat: st.fOptStat,
+                             fOptFit: st.fOptFit,
+                             fBorderSize : 1} );
+
+      stats.fX1NDC = st.fStatX - st.fStatW;
+      stats.fY1NDC = st.fStatY - st.fStatH;
+      stats.fX2NDC = st.fStatX;
+      stats.fY2NDC = st.fStatY;
+
+      stats.fFillColor = st.fStatColor;
+      stats.fFillStyle = st.fStatStyle;
+
+      stats.fTextAngle = 0;
+      stats.fTextSize = st.fStatFontSize; // 9 ??
+      stats.fTextAlign = 12;
+      stats.fTextColor = st.fStatTextColor;
+      stats.fTextFont = st.fStatFont;
+
+      stats.AddText(func.fName);
+
+      // while TF1 was found, one can be sure that stats is existing
+      this.GetObject().fFunctions.Add(stats);
+
+      return stats;
+   }
+
+   TGraphPainter.prototype.FillStatistic = function(stat, dostat, dofit) {
+
+      // cannot fill stats without func
+      var func = this.FindFunc(),
+          npars = func ? func.GetNumPars() : 0;
+
+      if (!npars) return false;
+
+      stat.ClearPave();
+
+      stat.AddText("#chi^2 / ndf = " + stat.Format(func.fChisquare) + " / " + func.fNDF);
+      for (var n=0;n<npars;++n)
+         stat.AddText(func.GetParName(n) + " = " + stat.Format(func.GetParValue(n), "fit") + " #pm " + stat.Format(func.GetParError(n), "fit"));
+
+      return true;
+   }
+
    TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
@@ -1629,8 +1703,13 @@
       if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      JSROOT.draw(this.divid, graph.fFunctions.arr[indx], graph.fFunctions.opt[indx],
-                  this.DrawNextFunction.bind(this, indx+1, callback));
+      var func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
+
+      //  required for stats filling
+      // TODO: use weak reference (via pad list of painters and any kind of string)
+      func.$main_painter = this;
+
+      JSROOT.draw(this.divid, func, opt, this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
@@ -1650,6 +1729,8 @@
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       painter.CreateBins();
+
+      painter.CreateStat();
 
       if (!painter.main_painter()) {
          if (!graph.fHistogram)

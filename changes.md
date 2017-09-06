@@ -30,6 +30,7 @@
 25. Implement drawing of TPolyLine3D class
 26. Draw X/Y/Z axis titles in lego plots
 27. Use canvas Theta/Phi angles to set initial camera position in 3D plots 
+28. Create statbox when drawing TGraph with TF1 in list of functions
 
 
 ## Changes in 5.2.0
