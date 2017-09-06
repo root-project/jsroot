@@ -5765,6 +5765,7 @@
 
       var painter = new TCanvasPainter(can);
       painter.DecodeOptions(opt);
+      painter.normal_canvas = !nocanvas;
 
       painter.SetDivId(divid, -1); // just assign id
       painter.CheckSpecialsInPrimitives(can);

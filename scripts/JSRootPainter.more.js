@@ -1648,6 +1648,10 @@
       var stats = this.FindStat();
       if (stats) return stats;
 
+      // do not create stats box when drawing canvas
+      var pp = this.pad_painter();
+      if (pp && pp.normal_canvas) return null;
+
       this.create_stats = true;
 
       var st = JSROOT.gStyle;
