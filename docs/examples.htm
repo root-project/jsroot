@@ -239,7 +239,7 @@
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
-               return JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0); });
+               return JSROOT.AssertPrerequisites("2d;hierarchy", function() { RunBigTest(0); });
             }
 
             if (!keyid) return; // this is indication of test break
@@ -375,7 +375,7 @@
             }
             
             // all painter assigned to viewer element will be automatically informed about resize 
-            JSROOT.AssertPrerequisites("2d", function() {
+            JSROOT.AssertPrerequisites("2d;hierarchy", function() {
                JSROOT.RegisterForResize('viewer');
             });
             
