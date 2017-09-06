@@ -1648,12 +1648,14 @@
       var stats = this.FindStat();
       if (stats) return stats;
 
+      this.create_stats = true;
+
       var st = JSROOT.gStyle;
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: st.fOptStat,
-                             fOptFit: st.fOptFit,
+                             fOptStat: 0,
+                             fOptFit: st.fOptFit || 111,
                              fBorderSize : 1} );
 
       stats.fX1NDC = st.fStatX - st.fStatW;
@@ -1683,7 +1685,7 @@
       // cannot fill stats without func
       var func = this.FindFunc();
 
-      if (!func || !dofit) return false;
+      if (!func || !dofit || !this.create_stats) return false;
 
       stat.ClearPave();
 
