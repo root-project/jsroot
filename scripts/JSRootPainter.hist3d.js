@@ -221,6 +221,14 @@
    }
 
    JSROOT.THistPainter.prototype.Render3D = function(tmout) {
+      // call 3D rendering of the histogram drawing
+      // tmout specified delay, after which actual rendering will be invoked
+      // Timeout used to avoid multiple rendering of the picture when several 3D drawings
+      // superimposed with each other.
+      // If tmeout<=0, rendering performed immediately
+      // Several special values are used:
+      //   -1111 - immediate rendering with SVG renderer
+      //   -2222 - rendering performed only if there were previous calls, which causes timeout activation
 
       if (tmout === -1111) {
          // special handling for direct SVG renderer
@@ -240,8 +248,11 @@
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
       if ((tmout <= 0) || this.usesvg) {
-         if ('render_tmout' in this)
+         if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
+         } else {
+            if (tmout === -2222) return; // special case to check if rendering timeout was active
+         }
 
          if (this.renderer === undefined) return;
 

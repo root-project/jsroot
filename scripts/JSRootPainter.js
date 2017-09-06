@@ -1321,12 +1321,14 @@
 
       this._ready_called_ = true;
       if (this._ready_callback_ !== undefined) {
+         var callbacks = this._ready_callback_;
          if (!this._return_res_painter) res_painter = this;
-                                   else delete this._return_res_painter;
 
-         while (this._ready_callback_.length)
-            JSROOT.CallBack(this._ready_callback_.shift(), res_painter);
+         delete this._return_res_painter;
          delete this._ready_callback_;
+
+         while (callbacks.length)
+            JSROOT.CallBack(callbacks.shift(), res_painter);
       }
       return this;
    }
@@ -5415,6 +5417,15 @@
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
          this.pad_painter().AddButton(btn, tooltip, funcname);
+   }
+
+   TPadPainter.prototype.DrawingReady = function(res_painter) {
+
+      var main = this.main_painter();
+
+      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
+
+      TBasePainter.prototype.DrawingReady.call(this, res_painter);
    }
 
    TPadPainter.prototype.DecodeOptions = function(opt) {
