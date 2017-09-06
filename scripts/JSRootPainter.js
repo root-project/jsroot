@@ -1842,24 +1842,27 @@
       return isNaN(res) ? 0 : res;
    }
 
+   TObjectPainter.prototype.frame_property = function(name) {
+      var res = this.svg_frame();
+      if (res.empty()) return 0;
+      res = res.property(name);
+      return (res===undefined) || isNaN(res) ? 0 : res;
+   }
+
    TObjectPainter.prototype.frame_x = function() {
-      var res = this.svg_frame().property("draw_x");
-      return isNaN(res) ? 0 : res;
+      return this.frame_property("draw_x");
    }
 
    TObjectPainter.prototype.frame_y = function() {
-      var res = this.svg_frame().property("draw_y");
-      return isNaN(res) ? 0 : res;
+      return this.frame_property("draw_y");
    }
 
    TObjectPainter.prototype.frame_width = function() {
-      var res = this.svg_frame().property("draw_width");
-      return isNaN(res) ? 0 : res;
+      return this.frame_property("draw_width");
    }
 
    TObjectPainter.prototype.frame_height = function() {
-      var res = this.svg_frame().property("draw_height");
-      return isNaN(res) ? 0 : res;
+      return this.frame_property("draw_height");
    }
 
    TObjectPainter.prototype.embed_3d = function() {
