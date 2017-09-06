@@ -520,7 +520,8 @@ Here, the default location of JSROOT is specified. One could have a local copy o
 
 In URL string with JSRootCore.js script one can specify which JSROOT functionality should be loaded:
 
-    + '2d' normal drawing for objects like TH1/TCanvas/TGraph
+    + '2d' basic drawing functionality, support TPad/TCanvas/TFrame
+    + 'hist' histograms drawing
     + 'more2d' more classes for 2D drawing like TH2/TF1/TEllipse
     + '3d' 3D drawing for 2D/3D histograms
     + 'geo' 3D drawing of TGeo classes
@@ -528,6 +529,7 @@ In URL string with JSRootCore.js script one can specify which JSROOT functionali
     + 'tree' TTree functionality
     + 'math' advanced mathemathical functions
     + 'mathjax' loads MathJax.js and use it for latex output
+    + 'openui5' load and configure OpenUI5 toolkit
     + 'gui' default gui for offline/online applications
     + 'load' name of user script(s) to load
     + 'onload' name of function to call when scripts loading completed
@@ -755,3 +757,41 @@ create SVG output. For example, open create SVG image with lego plot, one should
         });
      });               
  
+
+### Use with OpenUI5
+
+[OpenUI5](http://openui5.org/) is  a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
+
+First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 URL parameter when loading JSROOT:
+
+   
+      <script type="text/javascript" 
+              src="https://root.cern/js/latest/scripts/JSRootCore.min.js?openui5&onload=doInit">
+      </script>
+ 
+ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, 
+ specified initialization function will be called, where `JSROOT.sap` can be used as normal `sap` variable.
+ Simple way to start any custom application is:
+ 
+      <script type="text/javascript">
+         function doInit() {
+            jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "./");
+            new JSROOT.sap.m.App ({
+              pages: [
+                new JSROOT.sap.m.Page({
+                  title: "Nav Container",
+                    enableScrolling : true,
+                    content: [ new sap.ui.core.ComponentContainer({
+                         name : "sap.m.sample.NavContainer"
+                    })]
+                })
+              ]
+            }).placeAt("content");
+         } 
+      </script>
+
+There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified 
+as `jsrootsys/scripts/JSRootCore.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
+
+    jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "/currentdir/");
+    
