@@ -1109,7 +1109,7 @@
 
          res.changed = gbin.property("current_bin") !== best;
          res.menu = res.exact;
-         res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
+         res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.gry-pnt.y));
 
          if (res.changed)
             gbin.attr("cx", bin.grx)

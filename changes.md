@@ -3,8 +3,9 @@
 ## Changes in 5.2.x
 1. Fix - support pow(x,n) function in formula
 2. Fix - use pad.fFillColor for frame when fFrameFillColor==0
-3. Fix - correctly identify horizontal TGaxis with reverse scale 
-4. Fix - correctly handle negative line width in exclusion  
+3. Fix - correctly identify horizontal TGaxis with reverse scale
+4. Fix - correctly handle negative line width in exclusion
+5. Fix - tooltips handling for TF1
 
 
 ## Changes in 5.2.3
