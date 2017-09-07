@@ -540,15 +540,14 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      var w = this.frame_width(), h = this.frame_height(), tf1 = this.GetObject();
+      var w = this.frame_width(), h = this.frame_height(),
+          tf1 = this.GetObject(), pmain = this.main_painter(),
+          name = this.GetTipName("\n");
 
       this.CreateG(true);
 
       // recalculate drawing bins when necessary
       this.bins = this.CreateBins(false);
-
-      var pmain = this.main_painter();
-          name = this.GetTipName("\n");
 
       if (!this.lineatt)
          this.lineatt = new JSROOT.TAttLineHandler(tf1);

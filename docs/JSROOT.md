@@ -140,7 +140,8 @@ List of supported classes and draw options:
 - TProfile2D : [example](https://root.cern/js/latest/examples.htm#misc_profile2d)
 - THStack : [example](https://root.cern/js/latest/examples.htm#thstack)
 - TF1 : [example](https://root.cern/js/latest/examples.htm#tf1_canv)
-- TF2 : [example](https://root.cern/js/latest/examples.htm#misc_tf2)
+- TF2 : [example](https://root.cern/js/latest/examples.htm#tf2_tf2)
+- TSpline : [example](https://root.cern/js/latest/examples.htm#misc_spline)
 - TGraph : [dflt](https://root.cern/js/latest/examples.htm#tgraph),
 [L](https://root.cern/js/latest/examples.htm#tgraph_l),
 [P](https://root.cern/js/latest/examples.htm#tgraph_p),
