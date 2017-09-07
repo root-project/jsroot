@@ -1165,14 +1165,40 @@
       for (i in Painter.symbols_map)
          str = str.replace(new RegExp(i,'g'), Painter.symbols_map[i]);
 
-      // simple workaround for simple #splitline{first_line}{second_line}
-      //if ((str.indexOf("#splitline{")==0) && (str[str.length-1]=="}")) {
-      //   var pos = str.indexOf("}{");
-      //   if ((pos>0) && (pos === str.lastIndexOf("}{")))
-      //      str = str.replace("}{", "\n").slice(11, str.length-1);
-      //}
-
       return str.replace(/\^2/gi,'\xB2').replace(/\^3/gi,'\xB3');
+   }
+
+   Painter.translateLaTeXColor = function(painter, node, label) {
+      var clean = "", first = true;
+      while (label) {
+         var p = label.indexOf("#color[");
+         if ((p<0) && first) return label;
+         if (first) { node.text(""); first = false; }
+         if (p!=0) {
+            var norm = (p<0) ? label : label.substr(0, p);
+            node.append("tspan").text(norm);
+            clean += norm;
+            if (p<0) break;
+         }
+
+         label = label.substr(p+7);
+         p = label.indexOf("]{");
+         if (p<=0) break;
+         var colindx = parseInt(label.substr(0,p));
+         if (isNaN(colindx)) break;
+         var col = painter.get_color(colindx);
+         label = label.substr(p+2);
+         p = label.indexOf("}");
+         if (p<0) break;
+
+         var part = label.substr(0,p);
+         label = label.substr(p+1);
+         if (part) {
+            node.append("tspan").text(part).attr("fill",col);
+            clean += part;
+         }
+      }
+      return clean; // return modified label to make use it for text approxim
    }
 
    Painter.isAnyLatex = function(str) {
@@ -3415,39 +3441,6 @@
       return draw_g.property('max_text_width');
    }
 
-   TObjectPainter.prototype.DrawTextColor = function(node, label) {
-      var clean = "", first = true;
-      while (label) {
-         var p = label.indexOf("#color[");
-         if ((p<0) && first) return label;
-         if (first) { node.text(""); first = false; }
-         if (p!=0) {
-            var norm = (p<0) ? label : label.substr(0, p);
-            node.append("tspan").text(norm);
-            clean += norm;
-            if (p<0) break;
-         }
-
-         label = label.substr(p+7);
-         p = label.indexOf("]{");
-         if (p<=0) break;
-         var colindx = parseInt(label.substr(0,p));
-         if (isNaN(colindx)) break;
-         var col = this.get_color(colindx);
-         label = label.substr(p+2);
-         p = label.indexOf("}");
-         if (p<0) break;
-
-         var part = label.substr(0,p);
-         label = label.substr(p+1);
-         if (part) {
-            node.append("tspan").text(part).attr("fill",col);
-            clean += part;
-         }
-      }
-      return clean; // return modified label to make use it for text approxim
-   }
-
    TObjectPainter.prototype.DrawText = function(arg) {
       // following arguments can be supplied
       //  align - either int value or text
@@ -3532,16 +3525,21 @@
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
                var l1 = label.substr(11, pos - 11),
                    l2 = label.substr(pos+2, label.length - pos - 3);
-               label = l1+l2;
+
                txt.text("");
-               var span1 = txt.append("tspan").attr("x",0).text(l1);
-               l1 = this.DrawTextColor(span1, l1);
-               var span2 = txt.append("tspan").attr("x",0).attr("dy", Math.round(arg.height ? arg.height/2 : font.size*1.2)).text(l2);
-               l2 = this.DrawTextColor(span1, l2);
+
+               var yy = Math.round(arg.height ? arg.height/4 : font.size*0.6);
+
+               var span1 = txt.append("tspan").attr("x",0).attr("y", -yy).text(l1);
+               l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
+               var span2 = txt.append("tspan").attr("x",0).attr("y", yy).text(l2);
+               l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
+
+               label = l1+l2;
             }
          }
 
-         if (arg.latex) label = this.DrawTextColor(txt, label);
+         if (arg.latex) label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
 
          if (pos_dy) txt.attr("dy", pos_dy);
          if (middleline) txt.attr("dominant-baseline", "middle");

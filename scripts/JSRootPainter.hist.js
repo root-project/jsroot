@@ -1786,18 +1786,6 @@
 
       } else {
 
-         var line0 = (nlines===1) ? lines[0] : "";
-
-         if ((line0.indexOf("#splitline{")===0) && (line0[line0.length-1]=="}")) {
-            var pos = line0.indexOf("}{");
-            if ((pos>0) && (pos == line0.lastIndexOf("}{"))) {
-               lines[1] = line0.substr(pos+2, line0.length - pos - 3);
-               lines[0] = line0.substr(11, pos - 11);
-               colors[1] = colors[0];
-               nlines = 2;
-            }
-         }
-
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
          var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
