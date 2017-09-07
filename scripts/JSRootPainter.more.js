@@ -32,7 +32,7 @@
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
           tcolor = this.get_color(text.fTextColor),
-          use_frame = false, latex_kind = 0,
+          use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
           main = this.main_painter();
 
@@ -56,7 +56,7 @@
 
       this.CreateG(use_frame);
 
-      var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: latex_kind };
+      var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: 0 };
 
       if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
