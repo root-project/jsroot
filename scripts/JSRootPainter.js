@@ -1177,14 +1177,18 @@
    }
 
    Painter.translateLaTeXColor = function(painter, node, label) {
+      // function process #color[n]{} tags, used in TLatex
+      // if node is provided creates tspan elements
+      // if node===null, replace string for MathJax
+
       var clean = "", first = true;
       while (label) {
          var p = label.indexOf("#color[");
          if ((p<0) && first) return label;
-         if (first) { node.text(""); first = false; }
+         if (first) { if (node) node.text(""); first = false; }
          if (p!=0) {
             var norm = (p<0) ? label : label.substr(0, p);
-            node.append("tspan").text(norm);
+            if (node) node.append("tspan").text(norm);
             clean += norm;
             if (p<0) break;
          }
@@ -1202,8 +1206,12 @@
          var part = label.substr(0,p);
          label = label.substr(p+1);
          if (part) {
-            node.append("tspan").text(part).attr("fill",col);
-            clean += part;
+            if (node) {
+               node.append("tspan").text(part).attr("fill",col);
+               clean += part;
+            } else {
+               clean += "\\color{" + col + '}{' + part + "}";
+            }
          }
       }
       return clean; // return modified label to make use it for text approxim
@@ -1221,15 +1229,17 @@
       return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
    }
 
-   Painter.translateMath = function(str, kind, color) {
+   Painter.translateMath = function(str, kind, color, painter) {
       // function translate ROOT TLatex into MathJax format
 
-      if (kind!=2) {
+      if (kind != 2) {
          for (var x in Painter.math_symbols_map)
             str = str.replace(new RegExp(x,'g'), Painter.math_symbols_map[x]);
 
          for (var x in Painter.symbols_map)
             str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
+
+         str = Painter.translateLaTeXColor(painter, null, str);
       } else {
          str = str.replace(/\\\^/g, "\\hat");
       }
@@ -3586,7 +3596,7 @@
       w = Math.round(w); h = Math.round(h);
       x = Math.round(x); y = Math.round(y);
 
-      var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color),
+      var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
           fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
