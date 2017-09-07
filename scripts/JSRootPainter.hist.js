@@ -934,7 +934,14 @@
 
       var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
-      handle.minor = handle.middle = handle.major = this.func.ticks(this.nticks);
+      var ticks = this.func.ticks(this.nticks);
+
+      if ((!ticks || !ticks.length) && (this.kind == "time")) {
+         ticks = [ this.scale_min, this.scale_max ];
+         this.nticks2 = 1;
+      }
+
+      handle.minor = handle.middle = handle.major = ticks;
 
       if (only_major_as_array) {
          var res = handle.major;
@@ -1169,6 +1176,7 @@
       var handle = this.CreateTicks();
 
       while (handle.next(true)) {
+
          var h1 = Math.round(tickSize/4), h2 = 0;
 
          if (handle.kind < 3)
@@ -1206,12 +1214,12 @@
 
       var labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
       // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
-      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1))  optionUnlab = true; // disable labels when size not specified
+      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
           label_color = this.get_color(axis.fLabelColor),
-          labeloffset = 3 + Math.round(axis.fLabelOffset * scaling_size),
+          labeloffset = Math.round(axis.fLabelOffset*text_scaling_size + 0.5*labelsize),
           label_g = axis_g.append("svg:g")
                          .attr("class","axis_labels")
                          .call(labelfont.func);
@@ -1248,7 +1256,7 @@
              .style("dominant-baseline", "middle");
          else
             t.attr("x", pos)
-             .attr("y", 2+labeloffset*side  + both_sides*tickSize)
+             .attr("y", 2+labeloffset*side + both_sides*tickSize)
              .attr("dy", (side > 0) ? ".7em" : "-.3em")
              .style("text-anchor", "middle");
 
@@ -1429,7 +1437,10 @@
           kind = "normal", func = null,
           min = gaxis.fWmin, max = gaxis.fWmax, reverse = false;
 
-      if (gaxis.fChopt.indexOf("G")>=0) {
+      if (gaxis.fChopt.indexOf("t")>=0) {
+         func = d3.scaleTime();
+         kind = "time";
+      } else if (gaxis.fChopt.indexOf("G")>=0) {
          func = d3.scaleLog();
          kind = "log";
       } else {
