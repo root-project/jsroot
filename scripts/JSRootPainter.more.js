@@ -517,11 +517,11 @@
                   color1: this.lineatt.color,
                   color2: this.fillatt.color,
                   lines: [],
-                  exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
+                  exact: (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
 
       res.changed = gbin.property("current_bin") !== best;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
+      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.gry-pnt.y));
 
       if (res.changed)
          gbin.attr("cx", bin.grx)
@@ -1136,7 +1136,7 @@
          else
             this.markeratt.Change(undefined, this.options.Mark - 100);
 
-         this.marker_size = this.markeratt.size;
+         this.marker_size = this.markeratt.GetFullSize();
 
          this.markeratt.reset_pos();
 
@@ -1751,60 +1751,48 @@
 
    TSplinePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   TSplinePainter.prototype.Eval = function(x) {
-      return Math.sin(x);
+   TSplinePainter.prototype.UpdateObject = function(obj, opt) {
+      var spline = this.GetObject();
+
+      if (spline._typename != obj._typename) return false;
+
+      if (spline !== obj) JSROOT.extend(spline, obj);
+
+      if (opt !== undefined) this.DecodeOptions(opt);
+
+      return true;
    }
 
-   TSplinePainter.prototype.CreateBins = function() {
-      var main = this.main_painter(),
-          gxmin = 0, gxmax = 0,
-          spline = this.GetObject();
+   TSplinePainter.prototype.Eval = function(knot, x) {
+      var dx = x - knot.fX;
+      return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
+   }
 
-      if (main)  {
-         if (main.zoom_xmin !== main.zoom_xmax) {
-            gxmin = main.zoom_xmin;
-            gxmax = main.zoom_xmax;
-         } else {
-            gxmin = main.xmin;
-            gxmax = main.xmax;
+   TSplinePainter.prototype.FindX = function(x) {
+      var spline = this.GetObject(),
+          klow = 0, khig = spline.fNp - 1;
+
+      if (x <= spline.fXmin) return 0;
+      if (x >= spline.fXmax) return khig;
+
+      if(spline.fKstep) {
+         // Equidistant knots, use histogramming
+         klow = Math.round((x - spline.fXmin)/spline.fDelta);
+         // Correction for rounding errors
+         if (x < spline.fPoly[klow].fX) {
+            klow = Math.max(klow-1,0);
+         } else if (klow < khig) {
+            if (x > spline.fPoly[klow+1].fX) ++klow;
+         }
+      } else {
+         // Non equidistant knots, binary search
+         while(khig-klow>1) {
+            var khalf = Math.round((klow+khig)/2);
+            if(x > spline.fPoly[khalf].fX) klow = khalf;
+                                      else khig = khalf;
          }
       }
-
-      var xmin = spline.fXmin, xmax = spline.fXmax, logx = false;
-
-      if (gxmin !== gxmax) {
-         if (gxmin > xmin) xmin = gxmin;
-         if (gxmax < xmax) xmax = gxmax;
-      }
-
-      if (main && main.logx && (xmin>0) && (xmax>0)) {
-         logx = true;
-         xmin = Math.log(xmin);
-         xmax = Math.log(xmax);
-      }
-
-      var res = [];
-
-      for (var n = 0; n < spline.fNp; n++) {
-         var knot = spline.fPoly[n];
-         if ((knot.fX>=gxmin) && (knot.fX<=gxmax))
-            res.push({ x: knot.fX, y: knot.fY });
-      }
-
-      return res;
-/*
-
-      var npx = Math.max(spline.fNpx, 100),
-          dx = (xmax - xmin) / (np - 1);
-
-      for (var n=0; n<npx; n++) {
-         var xx = xmin + n*dx;
-         if (logx) xx = Math.exp(xx);
-         var yy = this.Eval(xx);
-         if (!isNaN(yy)) res.push({ x: xx, y: yy });
-      }
-      return res;
-*/
+      return klow;
    }
 
    TSplinePainter.prototype.CreateDummyHisto = function() {
@@ -1850,13 +1838,28 @@
    }
 
    TSplinePainter.prototype.ProcessTooltip = function(pnt) {
-      var cleanup = false;
 
-      if ((pnt === null) || (this.bins === null)) {
+      var cleanup = false,
+          spline = this.GetObject(),
+          main = this.main_painter(),
+          xx, yy, knot = null, indx = 0;
+
+      if ((pnt === null) || !spline || !main) {
          cleanup = true;
-      } else
-      if ((this.bins.length==0) || (pnt.x < this.bins[0].grx) || (pnt.x > this.bins[this.bins.length-1].grx)) {
-         cleanup = true;
+      } else {
+         xx = main.RevertX(pnt.x);
+         indx = this.FindX(xx);
+         knot = spline.fPoly[indx];
+         yy = this.Eval(knot, xx);
+
+         if ((indx < spline.fN-1) && (Math.abs(spline.fPoly[indx+1].fX-xx) < Math.abs(xx-knot.fX))) knot = spline.fPoly[++indx];
+
+         if (Math.abs(main.grx(knot.fX) - pnt.x) < 0.5*this.knot_size) {
+            xx = knot.fX; yy = knot.fY;
+         } else {
+            knot = null;
+            if ((xx < spline.fXmin) || (xx > spline.fXmax)) cleanup = true;
+         }
       }
 
       if (cleanup) {
@@ -1865,22 +1868,12 @@
          return null;
       }
 
-      var min = 100000, best = -1, bin;
-
-      for(var n=0; n < this.bins.length; ++n) {
-         bin = this.bins[n];
-         var dist = Math.abs(bin.grx - pnt.x);
-         if (dist < min) { min = dist; best = n; }
-      }
-
-      bin = this.bins[best];
-
       var gbin = this.draw_g.select(".tooltip_bin"),
           radius = this.lineatt.width + 3;
 
       if (gbin.empty())
          gbin = this.draw_g.append("svg:circle")
-                           .attr("class","tooltip_bin")
+                           .attr("class", "tooltip_bin")
                            .style("pointer-events","none")
                            .attr("r", radius)
                            .style("fill", "none")
@@ -1888,53 +1881,73 @@
 
       var res = { name: this.GetObject().fName,
                   title: this.GetObject().fTitle,
-                  x: bin.grx,
-                  y: bin.gry,
+                  x: main.grx(xx),
+                  y: main.gry(yy),
                   color1: this.lineatt.color,
                   lines: [],
-                  exact : (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
+                  exact: (knot !== null) || (Math.abs(main.gry(yy) - pnt.y) < radius) };
 
-      res.changed = gbin.property("current_bin") !== best;
+      res.changed = gbin.property("current_xx") !== xx;
       res.menu = res.exact;
-      res.menu_dist = Math.sqrt((bin.grx-pnt.x)*(bin.grx-pnt.x) + (bin.gry-pnt.y)*(bin.grx-pnt.x));
+      res.menu_dist = Math.sqrt((res.x-pnt.x)*(res.x-pnt.x) + (res.y-pnt.y)*(res.y-pnt.y));
 
       if (res.changed)
-         gbin.attr("cx", bin.grx)
-             .attr("cy", bin.gry)
-             .property("current_bin", best);
+         gbin.attr("cx", Math.round(res.x))
+             .attr("cy", Math.round(res.y))
+             .property("current_xx", xx);
 
       var name = this.GetTipName();
       if (name.length > 0) res.lines.push(name);
-
-      var pmain = this.main_painter();
-      if (pmain!==null)
-         res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
+      res.lines.push("x = " + main.AxisAsText("x", xx))
+      res.lines.push("y = " + main.AxisAsText("y", yy));
+      if (knot !== null) {
+         res.lines.push("knot = " + indx);
+         res.lines.push("B = " + JSROOT.FFormat(knot.fB, JSROOT.gStyle.fStatFormat));
+         res.lines.push("C = " + JSROOT.FFormat(knot.fC, JSROOT.gStyle.fStatFormat));
+         res.lines.push("D = " + JSROOT.FFormat(knot.fD, JSROOT.gStyle.fStatFormat));
+      }
 
       return res;
    }
 
    TSplinePainter.prototype.Redraw = function() {
 
-      var w = this.frame_width(), h = this.frame_height(), spline = this.GetObject();
+      var w = this.frame_width(),
+          h = this.frame_height(),
+          spline = this.GetObject(),
+          pmain = this.main_painter(),
+          name = this.GetTipName("\n");
 
       this.CreateG(true);
 
-      // recalculate drawing bins when necessary
-      this.bins = this.CreateBins();
-
-      var pmain = this.main_painter();
-          name = this.GetTipName("\n");
+      this.knot_size = 5; // used in tooltip handling
 
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(spline);
 
-      // first calculate graphical coordinates
-      for(var n=0; n<this.bins.length; ++n) {
-         var bin = this.bins[n];
-         bin.grx = pmain.grx(bin.x);
-         bin.gry = pmain.gry(bin.y);
-      }
+      if (this.options.Line || this.options.Curve) {
 
-      if (this.bins.length > 2) {
+         var npx = Math.max(10, spline.fNpx);
+
+         var xmin = Math.max(pmain.scale_xmin, spline.fXmin),
+             xmax = Math.min(pmain.scale_xmax, spline.fXmax),
+             indx = this.FindX(xmin),
+             bins = []; // index of current knot
+
+         if (pmain.logx) {
+            xmin = Math.log(xmin);
+            xmax = Math.log(xmax);
+         }
+
+         for (var n=0;n<npx;++n) {
+            var xx = xmin + (xmax-xmin)/npx*(n-1);
+            if (pmain.logx) xx = Math.exp(xx);
+
+            while ((indx < spline.fNp-1) && (xx > spline.fPoly[indx+1].fX)) ++indx;
+
+            var yy = this.Eval(spline.fPoly[indx], xx);
+
+            bins.push({ x: xx, y: yy, grx: pmain.grx(xx), gry: pmain.gry(yy) });
+         }
 
          var h0 = h;  // use maximal frame height for filling
          if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
@@ -1942,7 +1955,7 @@
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
+         var path = JSROOT.Painter.BuildSvgPath("bezier", bins, h0, 2);
 
          this.draw_g.append("svg:path")
              .attr("class", "line")
@@ -1950,15 +1963,57 @@
              .style("fill", "none")
              .call(this.lineatt.func);
       }
+
+      if (this.options.Mark) {
+
+         // for tooltips use markers only if nodes where not created
+         var path = "";
+
+         if (!this.markeratt)
+            this.markeratt = new JSROOT.TAttMarkerHandler(spline);
+
+         this.markeratt.reset_pos();
+
+         this.knot_size = this.markeratt.GetFullSize();
+
+         for (var n=0; n<spline.fPoly.length; n++) {
+            var knot = spline.fPoly[n],
+                grx = pmain.grx(knot.fX);
+            if ((grx > -this.knot_size) && (grx < w + this.knot_size)) {
+               var gry = pmain.gry(knot.fY);
+               if ((gry > -this.knot_size) && (gry < h + this.knot_size)) {
+                  path += this.markeratt.create(grx, gry);
+               }
+            }
+         }
+
+         if (path)
+            this.draw_g.append("svg:path")
+                       .attr("d", path)
+                       .call(this.markeratt.func);
+      }
+
    }
 
    TSplinePainter.prototype.CanZoomIn = function(axis,min,max) {
       if (axis!=="x") return false;
 
       var spline = this.GetObject();
+      if (!spline) return false;
 
       // if function calculated, one always could zoom inside
       return true;
+   }
+
+   TSplinePainter.prototype.DecodeOptions = function(opt) {
+      var d = new JSROOT.DrawOptions(opt);
+
+      this.options = {
+         Same: d.check('SAME'),
+         Line: d.check('L'),
+         Curve: d.check('C'),
+         Mark: d.check('P')
+      }
    }
 
    TSplinePainter.prototype.FirstDraw = function() {
@@ -1972,8 +2027,13 @@
       var painter = new TSplinePainter(spline);
 
       painter.SetDivId(divid, -1);
+      painter.DecodeOptions(opt);
 
       if (!painter.main_painter()) {
+         if (painter.options.Same) {
+            console.warn('TSpline painter requires histogram to be drawn');
+            return null;
+         }
          var histo = painter.CreateDummyHisto();
          JSROOT.draw(divid, histo, "AXIS", painter.FirstDraw.bind(painter));
          return painter;
