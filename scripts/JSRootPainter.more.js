@@ -1765,7 +1765,14 @@
 
    TSplinePainter.prototype.Eval = function(knot, x) {
       var dx = x - knot.fX;
-      return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
+
+      if (knot._typename == "TSplinePoly3")
+         return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
+
+      if (knot._typename == "TSplinePoly5")
+         return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*(knot.fD + dx*(knot.fE + dx*knot.fF))));
+
+      return knot.fY + dx;
    }
 
    TSplinePainter.prototype.FindX = function(x) {
@@ -1905,6 +1912,10 @@
          res.lines.push("B = " + JSROOT.FFormat(knot.fB, JSROOT.gStyle.fStatFormat));
          res.lines.push("C = " + JSROOT.FFormat(knot.fC, JSROOT.gStyle.fStatFormat));
          res.lines.push("D = " + JSROOT.FFormat(knot.fD, JSROOT.gStyle.fStatFormat));
+         if ((knot.fE!==undefined) && (knot.fF!==undefined)) {
+            res.lines.push("E = " + JSROOT.FFormat(knot.fE, JSROOT.gStyle.fStatFormat));
+            res.lines.push("F = " + JSROOT.FFormat(knot.fF, JSROOT.gStyle.fStatFormat));
+         }
       }
 
       return res;
