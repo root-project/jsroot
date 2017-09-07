@@ -1300,11 +1300,11 @@
       return chld.painter;
    }
 
-   TBasePainter.prototype.Cleanup = function() {
+   TBasePainter.prototype.Cleanup = function(keep_origin) {
       // generic method to cleanup painter
 
       var origin = this.select_main('origin');
-      if (!origin.empty()) origin.html("");
+      if (!origin.empty() && !keep_origin) origin.html("");
       this.set_layout_kind('simple');
       this.AccessTopPainter(false);
       this.divid = null;
@@ -1592,12 +1592,17 @@
    TObjectPainter.prototype = Object.create(TBasePainter.prototype);
 
    TObjectPainter.prototype.Cleanup = function() {
+      // generic method to cleanup painters
+      // first of all, remove object drawaing and in case of main painter - also main HTML components
 
       this.RemoveDrawG();
 
-      // generic method to cleanup painters
-      //if (this.is_main_painter())
-      //   this.select_main().html("");
+      var keep_origin = true;
+
+      if (this.is_main_painter()) {
+         var pp = this.pad_painter(true);
+         if (!pp || pp.normal_canvas === false) keep_origin = false;
+      }
 
       // cleanup all existing references
       this.pad_name = "";
@@ -1612,7 +1617,7 @@
       delete this._drawopt;
       delete this.root_colors;
 
-      TBasePainter.prototype.Cleanup.call(this);
+      TBasePainter.prototype.Cleanup.call(this, keep_origin);
    }
 
    TObjectPainter.prototype.GetObject = function() {
@@ -4840,11 +4845,13 @@
 
       while (true) {
 
-         if (objpainter && lst && lst[indx] && (typeof objpainter.snapid === 'undefined')) {
+         if (objpainter && lst && lst[indx] && objpainter.snapid === undefined) {
             // keep snap id in painter, will be used for the
             if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
          }
+
+         objpainter = null;
 
          ++indx; // change to the next snap
 
@@ -4856,8 +4863,7 @@
 
          var snap = lst[indx],
              snapid = snap.fObjectID,
-             cnt = this._snaps_map[snapid],
-             objpainter = null;
+             cnt = this._snaps_map[snapid];
 
          if (cnt) cnt++; else cnt=1;
          this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
@@ -5662,6 +5668,7 @@
          // This is snapshot, produced with ROOT6, handled slighly different
 
          this.root6_canvas = true; // indicate that drawing of root6 canvas is peformed
+         // if (!this.snap_cnt) this.snap_cnt = 1; else this.snap_cnt++;
 
          msg = msg.substr(6);
          var p1 = msg.indexOf(":"),
@@ -5669,7 +5676,10 @@
              snap = JSROOT.parse(msg.substr(p1+1)),
              pthis = this;
 
+         // console.log('Get SNAP6', this.snap_cnt);
+
          this.RedrawPadSnap(snap, function() {
+            // console.log('Complete SNAP6', pthis.snap_cnt);
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetAllRanges();
             if (ranges) ranges = ":" + ranges;
