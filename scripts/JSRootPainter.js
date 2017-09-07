@@ -163,6 +163,12 @@
                        'oArial', 'bArial', 'boArial', 'Courier New',
                        'oCourier New', 'bCourier New', 'boCourier New',
                        'Symbol', 'Times New Roman', 'Wingdings', 'Symbol', 'Verdana'],
+          // taken from https://www.math.utah.edu/~beebe/fonts/afm-widths.html
+          root_fonts_aver_width: [ 0.537, 0.514,
+                                   0.535, 0.520, 0.537,
+                                   0.54, 0.556, 0.56, 0.6,
+                                   0.6, 0.6, 0.6,
+                                   0.587, 0.514, 0.896, 0.587, 0.55 ],
           superscript_symbols_map: {
                 '1': '\xB9',
                 '2': '\xB2',
@@ -1030,7 +1036,8 @@
    Painter.getFontDetails = function(fontIndex, size) {
 
       var res = { name: "Arial", size: Math.round(size || 11), weight: null, style: null },
-          fontName = Painter.root_fonts[Math.floor(fontIndex / 10)] || "";
+          indx = Math.floor(fontIndex / 10),
+          fontName = Painter.root_fonts[indx] || "";
 
       while (fontName.length > 0) {
          if (fontName[0]==='b') res.weight = "bold"; else
@@ -1043,6 +1050,7 @@
          res.weight = res.style = null;
 
       res.name = fontName;
+      res.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
 
       res.SetFont = function(selection) {
          selection.attr("font-family", this.name)
@@ -1199,6 +1207,14 @@
          }
       }
       return clean; // return modified label to make use it for text approxim
+   }
+
+   Painter.approxTextWidth = function(font, label, label2) {
+      // returns approximate width of given label, required for reasonable scaling of text in node.js
+
+      var res = Math.round(label.length*font.size*font.aver_width);
+      if (label2) res = Math.max(res, Painter.approxTextWidth(font, label2));
+      return res;
    }
 
    Painter.isAnyLatex = function(str) {
@@ -3519,6 +3535,8 @@
                          .attr("transform", trans)
                          .text(label);
 
+         var box = null; // box with label dimensions
+
          if (arg.latex && (label.indexOf("#splitline{")===0) && (label[label.length-1]=="}")) {
             // this is split line, use special handling
             var pos = label.indexOf("}{");
@@ -3535,6 +3553,9 @@
                var span2 = txt.append("tspan").attr("x",0).attr("y", yy).text(l2);
                l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
 
+               if (JSROOT.nodejs)
+                  box = { height: Math.round(font.size*1.2+2*yy), width: JSROOT.Painter.approxTextWidth(font, l1, l2) };
+
                label = l1+l2;
             }
          }
@@ -3549,8 +3570,9 @@
 
          // workaround for Node.js - use primitive estimation of textbox size
          // later can be done with Node.js (via SVG) or with alternative implementation of jsdom
-         var box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
-                    { height: Math.round(font.size*1.2), width: Math.round(label.length*font.size*0.4) };
+
+         if (!box) box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
+                          { height: Math.round(font.size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
 
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
