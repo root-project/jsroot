@@ -675,6 +675,10 @@
       return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
    }
 
+   TAttMarkerHandler.prototype.GetFullSize = function() {
+      return this.scale*this.size;
+   }
+
    TAttMarkerHandler.prototype.Change = function(color, style, size) {
       this.changed = true;
 

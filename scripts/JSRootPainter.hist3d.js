@@ -3151,7 +3151,7 @@
       var markeratt = new JSROOT.TAttMarkerHandler(graph),
          palette = null,
          levels = [main.scale_zmin, main.scale_zmax],
-         scale = main.size_xy3d / 100 * markeratt.size * markeratt.scale;
+         scale = main.size_xy3d / 100 * markeratt.GetFullSize();
 
       if (this.options.Circles) scale = 0.06*main.size_xy3d;
 

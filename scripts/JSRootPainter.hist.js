@@ -5730,7 +5730,7 @@
          show_rect = true;
 
          var msize = 3;
-         if (this.markeratt) msize = Math.max(msize, 2+Math.round(this.markeratt.size * 4));
+         if (this.markeratt) msize = Math.max(msize, this.markeratt.GetFullSize());
 
          if (this.options.Error > 0) {
             var cont = this.histo.getBinContent(findbin+1),
