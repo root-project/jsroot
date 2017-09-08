@@ -1200,8 +1200,6 @@
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert);
 
-      // if (!vertical) rotate_lbls = true;
-
       this.StartTextDrawing(labelfont, 'font', label_g);
 
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
@@ -1226,7 +1224,7 @@
          if (vertical) {
             arg.x = -labeloffset*side;
             arg.y = pos;
-            arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side < 0) ? 12 : 32);
+            arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
          } else {
             arg.x = pos;
             arg.y = (labeloffset+2)*side + both_sides*tickSize;
@@ -1237,7 +1235,7 @@
 
          var textwidth = this.DrawText(arg);
 
-         if (textwidth && !vertical && !rotate_lbls) {
+         if (textwidth && !vertical && !rotate_lbls && (this.kind != 'log')) {
             var maxwidth = gap_before*0.45 + gap_after*0.45;
             if (!gap_before) maxwidth = 0.9*gap_after; else
             if (!gap_after) maxwidth = 0.9*gap_before;
