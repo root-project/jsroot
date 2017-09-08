@@ -1200,7 +1200,11 @@
 
    TAxisPainter.prototype.DrawLabelsNew = function(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset) {
 
-      var textscale = 1, maxtextlen = 0, center_lbls = this.IsCenterLabels();
+      var textscale = 1, maxtextlen = 0,
+          center_lbls = this.IsCenterLabels(),
+          rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert);
+
+      // if (!vertical) rotate_lbls = true;
 
       this.StartTextDrawing(labelfont, 'font', label_g);
 
@@ -1209,20 +1213,19 @@
          var lbl = this.format(handle.major[nmajor], true);
          if (lbl === null) continue;
 
-         var pos = Math.round(this.func(handle.major[nmajor]));
+         var pos = Math.round(this.func(handle.major[nmajor])),
+             gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
+             gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
 
          if (center_lbls) {
-            var pos_before = (nmajor>0) ? Math.round(this.func(handle.major[nmajor-1])) : pos,
-                pos_after = (nmajor<handle.major.length-1) ? Math.round(this.func(handle.major[nmajor+1])) : pos,
-                gap = Math.abs(pos_after - pos);
-
-            if (!gap) gap = Math.abs(pos_before - pos);
+            var gap = gap_after || gap_before;
             pos = Math.round(pos + gap/2);
+            if (pos > (vertical ? h : w) + 2) continue;
          }
 
          // var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
 
-         var arg = { text: lbl, color: label_color, latex: 1, draw_g : label_g };
+         var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g };
 
          maxtextlen = Math.max(maxtextlen, lbl.length);
 
@@ -1240,111 +1243,53 @@
          if (vertical) {
             arg.x = -labeloffset*side;
             arg.y = pos;
-            arg.align = (side < 0) ? 12 : 32;
+            arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side < 0) ? 12 : 32);
          } else {
             arg.x = pos;
-            arg.y = 2+labeloffset*side + both_sides*tickSize;
-            arg.align = (side<0) ? 20 : 23;
+            arg.y = (labeloffset+2)*side + both_sides*tickSize;
+            arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
          }
 
-         if (axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) arg.rotate = 270;
+         if (rotate_lbls) arg.rotate = 270;
 
-         this.DrawText(arg);
+         var textwidth = this.DrawText(arg);
 
-         /*
-         var tsize = !JSROOT.nodejs ? this.GetBoundarySizes(t.node()) :
-                      { height: Math.round(labelfont.size*1.2), width: Math.round(lbl.length*labelfont.size*0.4) },
-             space_before = (nmajor > 0) ? (pos - last) : (vertical ? h/2 : w/2),
-             space_after = (nmajor < handle.major.length-1) ? (Math.round(this.func(handle.major[nmajor+1])) - pos) : space_before,
-             space = Math.min(Math.abs(space_before), Math.abs(space_after));
+         if (textwidth && !vertical && !rotate_lbls) {
+            var maxwidth = gap_before*0.5 + gap_after*0.5;
+            if (!gap_before) maxwidth = gap_after; else
+            if (!gap_after) maxwidth = gap_before;
 
-         if (vertical) {
-
-            if ((space > 0) && (tsize.height > 5) && (this.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.height);
-
-            if (this.IsCenterLabels()) {
-               // if position too far top, remove label
-               if (pos + space_after/2 - textscale*tsize.height/2 < -10)
-                  t.remove();
-               else
-                  t.attr("y", Math.round(pos + space_after/2));
-            }
-
-         } else {
-
-            // test if label consume too much space
-            if ((space > 0) && (tsize.width > 10) && (this.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.width);
-
-            if (this.IsCenterLabels()) {
-               // if position too far right, remove label
-               if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
-                  t.remove();
-               else
-                  t.attr("x", Math.round(pos + space_after/2));
-            }
+            textscale = Math.min(textscale, maxwidth / textwidth);
          }
-
-         last = pos;
-         */
-      }
-
-      /*
-      if (this.order!==0)
-         label_g.append("svg:text")
-                .attr("fill", label_color)
-                .attr("x", vertical ? labeloffset : w+5)
-                .attr("y", 0)
-                .style("text-anchor", "start")
-                .style("dominant-baseline", "middle")
-                .attr("dy", "-.5em")
-                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
-      */
 
       if (this.order!==0)
          this.DrawText({ color: label_color,
                          x: vertical ? labeloffset : w+5,
-                         y: "-.5em",
+                         y: -3*side,
                          align: vertical ? 10 : 33,
                          latex: 0,
                          text: '\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)),
-                         draw_g : label_g
+                         draw_g: label_g
                        });
 
-/*
-     if (!vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        // rotate all labels vertically
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = parseInt(txt.attr("y")) + side*3;
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
-        });
-     } else if (vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = txt.attr("y");
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", "middle").attr("x", null).attr("y", null);
-        });
-     } else if ((textscale>0) && (textscale<1.)) {
-        // rotate X labels if they are too big
-        if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
-           label_g.selectAll("text").each(function() {
-              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
-               txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
-                 .style("text-anchor", "start").attr("x", null).attr("y", null);
-           });
-           textscale = 1;
-        }
-        // round to upper boundary for calculated value like 4.4
-        if (textscale != 1) {
-           labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-           label_g.call(labelfont.func);
-        }
-      }
-*/
 
       this.FinishTextDrawing(label_g);
+
+      if ((textscale>0) && (textscale<1)) {
+         if (!vertical && !rotate_lbls &&  (maxtextlen>5) && (textscale<0.7)) {
+            label_g.selectAll("text").each(function() {
+               var txt = d3.select(this), tr = txt.attr("transform");
+                txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+            });
+            textscale = 1;
+         }
+
+         // round to upper boundary for calculated value like 4.4
+         if (textscale != 1) {
+            labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
+            label_g.call(labelfont.func);
+         }
+      }
    }
 
    TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing) {
@@ -1371,7 +1316,7 @@
          draw_lines = axis.fLineColor != 0;
          chOpt = axis.fChopt;
          tickSize = axis.fTickSize;
-         scaling_size = (vertical ? h : w);
+         scaling_size = (vertical ? 1.7*h : 0.6*w);
       } else {
          if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
          chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
@@ -1471,7 +1416,7 @@
       var last = vertical ? h : 0,
           labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
           label_color = this.get_color(axis.fLabelColor),
-          labeloffset = Math.round(axis.fLabelOffset*text_scaling_size + 0.5*labelsize),
+          labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
           label_g = axis_g.append("svg:g").attr("class","axis_labels");
 
       this.order = 0;
@@ -1490,9 +1435,8 @@
 
       // draw labels
       if (!disable_axis_drawing && !optionUnlab) {
-         this.DrawLabels(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset);
-
-      } // end disable_axis_drawing && !optionUnlab
+         this.DrawLabelsNew(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset);
+      }
 
 
      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
