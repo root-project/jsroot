@@ -819,8 +819,8 @@
       delete this.format;// remove formatting func
 
       var ndiv = 508;
-      if (axis !== null)
-         ndiv = Math.max(is_gaxis ? axis.fNdiv : axis.fNdivisions, 4) ;
+      if (is_gaxis) ndiv = axis.fNdiv; else
+      if (axis) ndiv = Math.max(axis.fNdivisions, 4);
 
       this.nticks = ndiv % 100;
       this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
@@ -837,6 +837,7 @@
          var scale_range = this.scale_max - this.scale_min;
 
          var tf1 = JSROOT.Painter.getTimeFormat(axis);
+
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
          var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
@@ -935,11 +936,6 @@
       var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
       var ticks = this.func.ticks(this.nticks);
-
-      if ((!ticks || !ticks.length) && (this.kind == "time")) {
-         ticks = [ this.scale_min, this.scale_max ];
-         this.nticks2 = 1;
-      }
 
       handle.minor = handle.middle = handle.major = ticks;
 
@@ -1521,20 +1517,25 @@
           y2 = this.AxisToSvg("y", gaxis.fY2, "pad"),
           w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
-          kind = "normal", func = null,
-          min = gaxis.fWmin, max = gaxis.fWmax, reverse = false;
+          func = null, reverse = false, kind = "normal",
+          min = gaxis.fWmin, max = gaxis.fWmax,
+          domain_min = min, domain_max = max;
 
       if (gaxis.fChopt.indexOf("t")>=0) {
          func = d3.scaleTime();
          kind = "time";
+         this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
+         domain_min = new Date(this.toffset + min*1000);
+         domain_max = new Date(this.toffset + max*1000);
       } else if (gaxis.fChopt.indexOf("G")>=0) {
          func = d3.scaleLog();
          kind = "log";
       } else {
          func = d3.scaleLinear();
+         kind = "normal";
       }
 
-      func.domain([min, max]);
+      func.domain([domain_min, domain_max]);
 
       if (vertical) {
          if (h > 0) {

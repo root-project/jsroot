@@ -1128,7 +1128,23 @@
           msec = next(" ", 0, 999);
 
       var dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
-      return dt.getTime();
+
+      var offset = dt.getTime();
+
+      // now also handle suffix like GMT or GMT -0600
+      sof = sof.toUpperCase();
+
+      if (sof.indexOf('GMT')==0) {
+         offset += dt.getTimezoneOffset()*60000;
+         sof = sof.substr(4).trim();
+         if (sof.length > 3) {
+            var p = 0, sign = 1000;
+            if (sof[0]=='-') { p = 1; sign = -1000; }
+            offset -= sign * (parseInt(sof.substr(p,2))*3600 + parseInt(sof.substr(p+2,2))*60);
+         }
+      }
+
+      return offset;
    }
 
    Painter.translateSuperscript = function(_exp) {
