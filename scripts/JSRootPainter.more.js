@@ -1305,7 +1305,7 @@
 
       var radius = Math.max(this.lineatt.width + 3, 4);
 
-      if (this.marker_size > 0) radius = Math.max(Math.round(this.marker_size*7), radius);
+      if (this.marker_size > 0) radius = Math.max(Math.round(this.marker_size*1.2), radius);
 
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
