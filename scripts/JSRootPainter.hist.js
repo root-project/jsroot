@@ -1223,22 +1223,9 @@
             if (pos > (vertical ? h : w) + 2) continue;
          }
 
-         // var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
-
          var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g };
 
          maxtextlen = Math.max(maxtextlen, lbl.length);
-
-         //if (vertical)
-            //t.attr("x", -labeloffset*side)
-            // .attr("y", pos)
-            // .style("text-anchor", (side > 0) ? "end" : "start")
-            // .style("dominant-baseline", "middle");
-         //else
-           // t.attr("x", pos)
-           //  .attr("y", 2+labeloffset*side + both_sides*tickSize)
-           //  .attr("dy", (side > 0) ? ".7em" : "-.3em")
-           //  .style("text-anchor", "middle");
 
          if (vertical) {
             arg.x = -labeloffset*side;
@@ -1255,12 +1242,13 @@
          var textwidth = this.DrawText(arg);
 
          if (textwidth && !vertical && !rotate_lbls) {
-            var maxwidth = gap_before*0.5 + gap_after*0.5;
-            if (!gap_before) maxwidth = gap_after; else
-            if (!gap_after) maxwidth = gap_before;
+            var maxwidth = gap_before*0.45 + gap_after*0.45;
+            if (!gap_before) maxwidth = 0.9*gap_after; else
+            if (!gap_after) maxwidth = 0.9*gap_before;
 
             textscale = Math.min(textscale, maxwidth / textwidth);
          }
+      }
 
       if (this.order!==0)
          this.DrawText({ color: label_color,
