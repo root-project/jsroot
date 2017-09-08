@@ -1321,8 +1321,8 @@
                   .call(this.lineatt.func);
       }
 
-      if (transform !== undefined)
-         axis_g.attr("transform", transform);
+      axis_g.attr("transform", null);
+      if (transform) axis_g.attr("transform", transform);
 
       var side = 1, both_sides = 0,
           text_scaling_size = Math.min(pad_w, pad_h);

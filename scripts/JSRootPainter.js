@@ -4762,22 +4762,34 @@
 
       if (!this._websocket) {
 
-         function ToggleField(arg) {
+         function ToggleGridField(arg) {
             this.pad[arg] = this.pad[arg] ? 0 : 1;
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
-            if (!main) return;
-
-            if ((arg.indexOf('fGrid')==0) && (typeof main.DrawGrids == 'function'))
-               return main.DrawGrids();
-
-            if ((arg.indexOf('fTick')==0) && (typeof main.DrawAxes == 'function'))
-               return main.DrawAxes();
+            if (main && (typeof main.DrawGrids == 'function')) main.DrawGrids();
          }
 
-         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleField);
-         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleField);
-         menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
-         menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
+         function SetTickField(arg) {
+            this.pad[arg.substr(1)] = parseInt(arg[0]);
+
+            var main = this.svg_pad(this.this_pad_name).property('mainpainter');
+            if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
+         }
+
+         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleGridField);
+         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleGridField);
+         menu.add("sub:Ticks x");
+         menu.addchk(this.pad.fTickx == 0, "normal", "0fTickx", SetTickField);
+         menu.addchk(this.pad.fTickx == 1, "ticks on both sides", "1fTickx", SetTickField);
+         menu.addchk(this.pad.fTickx == 2, "labels up", "2fTickx", SetTickField);
+         menu.add("endsub:");
+         menu.add("sub:Ticks y");
+         menu.addchk(this.pad.fTicky == 0, "normal", "0fTicky", SetTickField);
+         menu.addchk(this.pad.fTicky == 1, "ticks on both side", "1fTicky", SetTickField);
+         menu.addchk(this.pad.fTicky == 2, "labels right", "2fTicky", SetTickField);
+         menu.add("endsub:");
+
+         //menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
+         //menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
          this.FillAttContextMenu(menu);
       }
