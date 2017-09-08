@@ -3260,7 +3260,7 @@
 
       if (!draw_g) draw_g = this.draw_g;
 
-      var font = JSROOT.Painter.getFontDetails(font_face, font_size);
+      var font = (font_size==='font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
 
       draw_g.call(font.func);
 
@@ -3477,6 +3477,7 @@
       //  color - text color
       //  rotate - rotaion angle (optional)
       //  font_size - fixed font size (optional)
+      //  draw_g - element where to place text
 
       var draw_g = arg.draw_g || this.draw_g,
           label = arg.text || "", align = ['start', 'middle'],
