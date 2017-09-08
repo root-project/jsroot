@@ -3317,7 +3317,7 @@
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = (this.options.AxisPos>=10);
+      this.x_handle.invert_side = (this.options.AxisPos>=10) || (pad.fTickx > 1);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -3326,7 +3326,7 @@
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-      this.y_handle.invert_side = (this.options.AxisPos % 10) === 1;
+      this.y_handle.invert_side = ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
 
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
