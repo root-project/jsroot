@@ -1785,6 +1785,8 @@
       if (lpath) this.draw_g.append("svg:path").attr("d",lpath).call(this.lineatt.func);
 
       this.FinishTextDrawing(undefined, this.FinishPave);
+
+      this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
    }
 
    TPavePainter.prototype.DrawPaveText = function(width, height) {
@@ -2174,6 +2176,7 @@
       // if pavetext artificially disabled, do not redraw it
 
       this.DrawPave(true);
+
    }
 
    JSROOT.Painter.drawPaveText = function(divid, pave, opt) {

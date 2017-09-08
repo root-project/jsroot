@@ -1802,7 +1802,9 @@
          if (layer.empty()) layer = frame.select(".main_layer");
          this.draw_g = layer.append("svg:g");
       } else {
-         this.draw_g = this.svg_layer("primitives_layer").append("svg:g");
+         var layer = this.svg_layer("primitives_layer");
+         this.draw_g = layer.append("svg:g");
+         layer.selectAll(".most_upper_primitives").raise();
       }
 
       // set attributes for debugging
