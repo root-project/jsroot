@@ -2366,6 +2366,12 @@
       function complete_drag() {
          drag_rect.style("cursor", "auto");
 
+         if (!pthis.draw_g) {
+            drag_rect.remove();
+            drag_rect = null;
+            return;
+         }
+
          var oldx = Number(pthis.draw_g.attr("x")),
              oldy = Number(pthis.draw_g.attr("y")),
              newx = Number(drag_rect.attr("x")),
@@ -4354,6 +4360,18 @@
       TObjectPainter.prototype.Cleanup.call(this);
    }
 
+   TPadPainter.prototype.CleanPrimitives = function(selector) {
+      if (!selector || (typeof selector !== 'function')) return;
+
+      for (var k=this.painters.length-1;k>=0;--k) {
+         var p = this.painters[k];
+         if (selector(p)) {
+            p.Cleanup();
+            this.painters.splice(k--, 1);
+         }
+      }
+   }
+
    TPadPainter.prototype.GetCurrentPrimitiveIndx = function() {
       return this._current_primitive_indx || 0;
    }
@@ -6027,11 +6045,11 @@
    JSROOT.addDrawFunc({ name: "TGraphStruct" });
    JSROOT.addDrawFunc({ name: "TGraphNode" });
    JSROOT.addDrawFunc({ name: "TGraphEdge" });
-   JSROOT.addDrawFunc({ name: "TGraphTime" });
-   JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL" });
-   JSROOT.addDrawFunc({ name: "TGraph2DErrors", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL;ERR" });
-   JSROOT.addDrawFunc({ name: "TGraphPolargram", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawPolargram", opt: "" });
-   JSROOT.addDrawFunc({ name: "TGraphPolar", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphPolar", opt: ";F;L;P;PE" });
+   JSROOT.addDrawFunc({ name: "TGraphTime", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphTime", opt: "once;repeat", theonly: true });
+   JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL", theonly: true });
+   JSROOT.addDrawFunc({ name: "TGraph2DErrors", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL;ERR", theonly: true });
+   JSROOT.addDrawFunc({ name: "TGraphPolargram", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawPolargram", opt: "", theonly: true });
+   JSROOT.addDrawFunc({ name: "TGraphPolar", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphPolar", opt: ";F;L;P;PE", theonly: true });
    JSROOT.addDrawFunc({ name: /^TGraph/, icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraph", opt: ";L;P" });
    JSROOT.addDrawFunc({ name: "TEfficiency", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawEfficiency", opt: ";AP" });
    JSROOT.addDrawFunc({ name: "TCutG", sameas: "TGraph" });

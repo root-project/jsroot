@@ -2380,6 +2380,134 @@
 
    // =============================================================
 
+   function TGraphTimePainter(gr) {
+      JSROOT.TObjectPainter.call(this, gr);
+   }
+
+   TGraphTimePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TGraphTimePainter.prototype.Redraw = function() {
+      if (this.step === undefined) this.StartDrawing(false);
+   }
+
+   TGraphTimePainter.prototype.DecodeOptions = function(opt) {
+
+      var d = new JSROOT.DrawOptions(opt || "REPEAT");
+
+      this.options = {
+          once: d.check("ONCE"),
+          repeat: d.check("REPEAT")
+      }
+   }
+
+   TGraphTimePainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
+
+      if (indx===0) {
+         this._doing_primitives = true;
+      }
+
+      var lst = this.GetObject().fSteps.arr[this.step];
+
+      while (true) {
+         if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
+
+         if (!lst || (indx >= lst.arr.length)) {
+            delete this._doing_primitives;
+            return JSROOT.CallBack(callback);
+         }
+
+         // handle use to invoke callback only when necessary
+         var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
+
+         ppainter = JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx], handle);
+
+         if (!handle.completed) return;
+         indx++;
+      }
+   }
+
+   TGraphTimePainter.prototype.Selector = function(p) {
+      return p && (p.$grtimeid === this.selfid);
+   }
+
+
+   TGraphTimePainter.prototype.ContineDrawing = function() {
+
+      var gr = this.GetObject();
+
+      if (!this.ready_called) {
+         this.ready_called = true;
+         this.DrawingReady(); // do it already here, animation will continue in background
+      }
+
+      if (this.running_timeout) {
+         clearTimeout(this.running_timeout);
+         delete this.running_timeout;
+
+         // clear pad
+
+         var pp = this.pad_painter(true);
+         if (!pp) {
+            console.error('Fail to get pad painter');
+            delete this.step; // main indicator that animation running
+            return;
+         }
+
+         pp.CleanPrimitives(this.Selector.bind(this));
+
+         // draw ptrimitives again
+
+         this.DrawPrimitives(0, this.ContineDrawing.bind(this));
+      } else {
+
+         if (++this.step > gr.fSteps.arr.length) {
+            console.log('Drawing completed');
+            delete this.step; // main indicator that animation running
+            return;
+         }
+
+         var sleeptime = gr.fSleepTime;
+         if (!sleeptime || (sleeptime<100)) sleeptime = 10;
+         this.running_timeout = setTimeout(this.ContineDrawing.bind(this), sleeptime);
+      }
+
+   }
+
+   TGraphTimePainter.prototype.StartDrawing = function(once_again) {
+      if (once_again!==false) this.SetDivId(this.divid);
+
+      this.step = 0;
+
+      this.DrawPrimitives(0, this.ContineDrawing.bind(this));
+   }
+
+   JSROOT.Painter.drawGraphTime = function(divid,gr,opt) {
+
+      var painter = new TGraphTimePainter(gr);
+      painter.SetDivId(divid,-1);
+
+      if (painter.main_painter()) {
+         console.error('Cannot draw graph time on top of other histograms');
+         return null;
+      }
+
+      if (!gr.fFrame) {
+         console.error('Frame histogram not exists');
+         return null;
+      }
+
+      painter.DecodeOptions(opt);
+
+      painter.selfid = "grtime" + JSROOT.id_counter++;
+
+      JSROOT.draw(divid, gr.fFrame, "AXIS", painter.StartDrawing.bind(painter));
+
+      return painter;
+
+   }
+
+   // =============================================================
+
    function TEfficiencyPainter(eff) {
       JSROOT.TObjectPainter.call(this, eff);
       this.fBoundary = 'Normal';
