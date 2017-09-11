@@ -1767,6 +1767,15 @@
       return pos;
    }
 
+   TPolargramPainter.prototype.format = function(radius) {
+      // used to format label for radius ticks
+
+      if (radius === Math.round(radius)) return radius.toString();
+      if (this.ndig>10) return radius.toExponential(4);
+
+      return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
+   }
+
    TPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
@@ -1791,6 +1800,22 @@
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
       if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ fLineColor: polar.fLineColor, fLineStyle: 2, fLineWidth: 1 });
 
+
+      var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
+      this.ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
+
+      // verify that all radius labels are unique
+      var lbls = [], indx = 0;
+      while (indx<ticks.length) {
+         var lbl = this.format(ticks[indx]);
+         if (lbls.indexOf(lbl)>=0) {
+            if (++this.ndig>10) break;
+            lbls = []; indx = 0; continue;
+          }
+         lbls.push(lbl);
+         indx++;
+      }
+
       var exclude_last = false;
 
       if (ticks[ticks.length-1] < polar.fRwrmax) {
@@ -1798,8 +1823,6 @@
          exclude_last = true;
       }
 
-      var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
-      var ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
 
       this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * szy * 2));
 
@@ -1813,15 +1836,9 @@
              .style("fill", "none")
              .call(this.lineatt.func);
 
-         var val = ticks[n],
-             rnd = Math.round(),
-             lbl = val.toString();
-
-         if (val !== rnd) lbl = (ndig>10) ? ticks[n].toExponential(4) : ticks[n].toFixed((ndig > 0) ? ndig : 0)
-
          if ((n < ticks.length-1) || !exclude_last)
             this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * szy * 0.5),
-                            text: lbl, color: this.get_color[polar.fRadialLabelColor], latex: 0 });
+                            text: this.format(ticks[n]), color: this.get_color[polar.fRadialLabelColor], latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
             var dr = (ticks[1] - ticks[0]) / nminor;
@@ -1915,10 +1932,14 @@
 
    TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
 
-      var d = new JSROOT.DrawOptions(opt);
+      var d = new JSROOT.DrawOptions(opt || "L");
 
-      this._draw_mark = d.check("P");
-      this._draw_err = d.check("E");
+      this.options = {
+          mark: d.check("P"),
+          err: d.check("E"),
+          fill: d.check("F"),
+          line: d.check("L") || d.check("C")
+      }
    }
 
    TGraphPolarPainter.prototype.DrawBins = function() {
@@ -1927,17 +1948,18 @@
 
       if (!graph || !main || !main.$polargram) return;
 
-      if (this._draw_mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
-      if (this._draw_err && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
+      if (this.options.mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
+      if ((this.options.err || this.options.line) && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
+      if (this.options.fill && !this.fillatt) this.fillatt = this.createAttFill(graph);
 
       this.CreateG();
 
       this.draw_g.attr("transform", main.draw_g.attr("transform"));
 
-      var mpath = "", epath = "";
+      var mpath = "", epath = "", lpath = "";
 
       for (var n=0;n<graph.fNpoints;++n) {
-         if (this._draw_err) {
+         if (this.options.err) {
             var pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                 pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
             epath += "M" + pos1.x + "," + pos1.y + "L" + pos2.x + "," + pos2.y;
@@ -1947,11 +1969,29 @@
 
             epath += "M" + pos1.x + "," + pos1.y + "A" + pos2.rx + "," + pos2.ry+ ",0,0,1," +pos2.x + "," + pos2.y;
          }
-         if (this._draw_mark) {
-            var pos = main.translate(graph.fX[n], graph.fY[n]);
+
+         var pos = main.translate(graph.fX[n], graph.fY[n]);
+
+         if (this.options.mark) {
             mpath += this.markeratt.create(pos.x, pos.y);
          }
+
+         if (this.options.line || this.options.fill) {
+            lpath += (lpath ? "L" : "M") + pos.x + "," + pos.y;
+         }
       }
+
+      if (this.options.fill && lpath)
+         this.draw_g.append("svg:path")
+             .attr("d",lpath + "Z")
+             .style("stroke","none")
+             .call(this.fillatt.func);
+
+      if (this.options.line && lpath)
+         this.draw_g.append("svg:path")
+             .attr("d",lpath + "Z")
+             .style("fill","none")
+             .call(this.lineatt.func);
 
       if (epath)
          this.draw_g.append("svg:path")
