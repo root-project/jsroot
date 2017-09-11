@@ -3375,9 +3375,7 @@
 
       if (!this.histo || !this.histo.fTitle) return;
 
-
       var arr = this.histo.fTitle.split(';');
-
       if (arr.length===3) {
          this.histo.fTitle = arr[0];
          this.histo.fXaxis.fTitle = arr[1];

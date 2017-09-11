@@ -2427,11 +2427,10 @@
          delete this.running_timeout;
 
          // clear pad
-
          var pp = this.pad_painter(true);
          if (!pp) {
-            console.error('Fail to get pad painter');
-            delete this.step; // main indicator that animation running
+            // most probably, pad is cleared
+            delete this.step;
             return;
          }
 
@@ -2979,7 +2978,6 @@
 
       return painter.DrawingReady();
    }
-
 
    JSROOT.Painter.drawText = drawText;
    JSROOT.Painter.drawLine = drawLine;
