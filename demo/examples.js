@@ -171,6 +171,11 @@ examples_main = {
      { opt:"[]" , title: "do not draw main error lines, only ends as brackets"},
      { opt:"2", title: "filled rec"  }
    ],
+   TGraphPolar : [
+      { opt: "", file: "tutorials_graphs.root", item: "graphpolar", title: "Polar coordinates, output of tutorials/graphs/graphpolar.C" },
+      { name: "tut2", item: "graphpolar2", title: "Polar coordinates, output of tutorials/graphs/graphpolar2.C" },
+      { name: "tut3", item: "graphpolar3", title: "Polar coordinates, output of tutorials/graphs/graphpolar3.C" }
+   ],
    TMultiGraph : [
      { name: "exclusion", file: "graph.root", item: "exclusion;1" },
      { name: "c1", file: "multigraph.root", item: "c1;1" },

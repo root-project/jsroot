@@ -1928,7 +1928,7 @@
 
    TGraphPolarPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   TGraphPainter.prototype.Redraw = function() {
+   TGraphPolarPainter.prototype.Redraw = function() {
       this.DrawBins();
    }
 
@@ -2025,7 +2025,7 @@
       var polargram = JSROOT.Create("TGraphPolargram"),
           gr = this.GetObject();
 
-      var rmin = gr.fY[0] || 0, rmax = rmin0;
+      var rmin = gr.fY[0] || 0, rmax = rmin;
       for (var n=0;n<gr.fNpoints;++n) {
          rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
          rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
