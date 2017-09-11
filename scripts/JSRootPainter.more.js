@@ -1860,15 +1860,17 @@
 
       this.FinishTextDrawing();
 
-
       var fontsize = Math.round(polar.fPolarTextSize * szy * 2);
       this.StartTextDrawing(polar.fPolarLabelFont, fontsize);
 
-      var lbls = ["0", "#pi/4", "#pi/2", "3#pi/4", "#pi", "5#pi/4", "3#pi/2", "7#pi/4"],
+      var nmajor = polar.fNdivPol % 100;
+      if ((nmajor !== 8) && (nmajor !== 3)) nmajor = 8;
+
+      var lbls = (nmajor==8) ? ["0", "#pi/4", "#pi/2", "3#pi/4", "#pi", "5#pi/4", "3#pi/2", "7#pi/4"] : ["0", "2#pi/3", "4#pi/3"],
           aligns = [12, 11, 21, 31, 32, 33, 23, 13 ];
 
-      for (var n=0;n<8;++n) {
-         var angle = -n*Math.PI/4 - this.angle;
+      for (var n=0;n<nmajor;++n) {
+         var angle = -n*2*Math.PI/nmajor - this.angle;
          this.draw_g.append("line")
              .attr("x1",0)
              .attr("y1",0)
@@ -1888,9 +1890,9 @@
       var nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
       if (nminor > 1)
-         for (var n=0;n<8*nminor;++n) {
+         for (var n=0;n<nmajor*nminor;++n) {
             if (n % nminor === 0) continue;
-            var angle = -n*Math.PI/4/nminor - this.angle;
+            var angle = -n*2*Math.PI/nmajor/nminor - this.angle;
             this.draw_g.append("line")
                 .attr("x1",0)
                 .attr("y1",0)
@@ -1989,8 +1991,8 @@
 
       if (this.options.line && lpath)
          this.draw_g.append("svg:path")
-             .attr("d",lpath + "Z")
-             .style("fill","none")
+             .attr("d", lpath)
+             .style("fill", "none")
              .call(this.lineatt.func);
 
       if (epath)
