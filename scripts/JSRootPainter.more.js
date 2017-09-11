@@ -159,12 +159,12 @@
           y2 = -dx2*st - dy2*ct;
 
       this.draw_g
-         .attr("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+")")
+         .attr("transform","translate("+Math.round(x)+","+Math.round(y)+")")
          .append("svg:path")
-         .attr("d", "M 0,0" +
-                    " L " + x1.toFixed(1) + "," + y1.toFixed(1) +
-                    " A " + rx.toFixed(1) + " " + ry.toFixed(1) + " " + -ellipse.fTheta.toFixed(1) + " 1 0 " + x2.toFixed(1) + "," + y2.toFixed(1) +
-                    " L 0,0 Z")
+         .attr("d", "M0,0" +
+                    "L" + Math.round(x1) + "," + Math.round(y1) +
+                    "A" + Math.round(rx) + "," + Math.round(ry) + "," + Math.round(-ellipse.fTheta) + ",1,0," + Math.round(x2) + "," + Math.round(y2) +
+                    "Z")
          .call(this.lineatt.func).call(this.fillatt.func);
    }
 
