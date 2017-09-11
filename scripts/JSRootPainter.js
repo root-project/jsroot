@@ -2176,6 +2176,12 @@
       function complete_drag() {
          drag_rect.style("cursor", "auto");
 
+         if (!pthis.draw_g) {
+            drag_rect.remove();
+            drag_rect = null;
+            return false;
+         }
+
          var oldx = Number(pthis.draw_g.attr("x")),
              oldy = Number(pthis.draw_g.attr("y")),
              newx = Number(drag_rect.attr("x")),
