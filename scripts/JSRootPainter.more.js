@@ -455,15 +455,7 @@
           tf1 = this.GetObject();
 
       histo.fName = tf1.fName + "_hist";
-      if (tf1.fTitle.indexOf(';')!==0) {
-         var array = tf1.fTitle.split(';');
-         histo.fTitle = array[0];
-         if (array.length>1)
-            histo.fXaxis.fTitle = array[1];
-         if (array.length>2)
-            histo.fYaxis.fTitle = array[2];
-      }
-      else histo.fTitle = tf1.fTitle;
+      histo.fTitle = tf1.fTitle;
 
       histo.fXaxis.fXmin = xmin;
       histo.fXaxis.fXmax = xmax;
@@ -2151,15 +2143,7 @@
       var histo = JSROOT.Create("TH1I");
 
       histo.fName = spline.fName + "_hist";
-      if (spline.fTitle.indexOf(';')!==0) {
-         var array = spline.fTitle.split(';');
-         histo.fTitle = array[0];
-         if (array.length>1)
-            histo.fXaxis.fTitle = array[1];
-         if (array.length>2)
-            histo.fYaxis.fTitle = array[2];
-      }
-      else histo.fTitle = spline.fTitle;
+      histo.fTitle = spline.fTitle;
 
       histo.fXaxis.fXmin = xmin;
       histo.fXaxis.fXmax = xmax;
@@ -2500,7 +2484,9 @@
 
       painter.DecodeOptions(opt);
 
-      painter.selfid = "grtime" + JSROOT.id_counter++;
+      if (!gr.fFrame.fTitle && gr.fTitle) gr.fFrame.fTitle = gr.fTitle;
+
+      painter.selfid = "grtime" + JSROOT.id_counter++; // use to identify primitives which should be clean
 
       JSROOT.draw(divid, gr.fFrame, "AXIS", painter.StartDrawing.bind(painter));
 
