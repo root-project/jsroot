@@ -1940,7 +1940,8 @@
           mark: d.check("P"),
           err: d.check("E"),
           fill: d.check("F"),
-          line: d.check("L") || d.check("C")
+          line: d.check("L"),
+          curve: d.check("C")
       }
    }
 
@@ -1951,14 +1952,14 @@
       if (!graph || !main || !main.$polargram) return;
 
       if (this.options.mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
-      if ((this.options.err || this.options.line) && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
+      if ((this.options.err || this.options.line || this.options.curve) && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
       if (this.options.fill && !this.fillatt) this.fillatt = this.createAttFill(graph);
 
       this.CreateG();
 
       this.draw_g.attr("transform", main.draw_g.attr("transform"));
 
-      var mpath = "", epath = "", lpath = "";
+      var mpath = "", epath = "", lpath = "", bins = [];
 
       for (var n=0;n<graph.fNpoints;++n) {
          if (this.options.err) {
@@ -1981,6 +1982,12 @@
          if (this.options.line || this.options.fill) {
             lpath += (lpath ? "L" : "M") + pos.x + "," + pos.y;
          }
+
+         if (this.options.curve) {
+            pos.grx = pos.x;
+            pos.gry = pos.y;
+            bins.push(pos);
+         }
       }
 
       if (this.options.fill && lpath)
@@ -1994,6 +2001,12 @@
              .attr("d", lpath)
              .style("fill", "none")
              .call(this.lineatt.func);
+
+      if (this.options.curve && bins.length)
+         this.draw_g.append("svg:path")
+                 .attr("d", JSROOT.Painter.BuildSvgPath("bezier", bins).path)
+                 .style("fill", "none")
+                 .call(this.lineatt.func);
 
       if (epath)
          this.draw_g.append("svg:path")
