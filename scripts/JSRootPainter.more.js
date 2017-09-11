@@ -2430,9 +2430,7 @@
       return p && (p.$grtimeid === this.selfid);
    }
 
-
    TGraphTimePainter.prototype.ContineDrawing = function() {
-
       var gr = this.GetObject();
 
       if (!this.ready_called) {
@@ -2460,17 +2458,21 @@
          this.DrawPrimitives(0, this.ContineDrawing.bind(this));
       } else {
 
-         if (++this.step > gr.fSteps.arr.length) {
-            console.log('Drawing completed');
-            delete this.step; // main indicator that animation running
-            return;
-         }
-
          var sleeptime = gr.fSleepTime;
          if (!sleeptime || (sleeptime<100)) sleeptime = 10;
+
+         if (++this.step > gr.fSteps.arr.length) {
+            if (this.options.repeat) {
+               this.step = 0; // start again
+               sleeptime = Math.max(5000, 5*sleeptime); // increase sleep time
+            } else {
+               delete this.step;    // clear indicator that animation running
+               return;
+            }
+         }
+
          this.running_timeout = setTimeout(this.ContineDrawing.bind(this), sleeptime);
       }
-
    }
 
    TGraphTimePainter.prototype.StartDrawing = function(once_again) {

@@ -35,6 +35,7 @@
 30. Handle #color[N] and #splitline{}{} tags in the TLatex
 31. Support pad.fTickx==2 and pad.fTicky==2 - drawing axes labels on opposite side  
 32. Implement drawing of TGraphPolar and TGraphPolargram 
+33. Implement drawing of TGraphTime
 
 
 ## Changes in 5.2.0

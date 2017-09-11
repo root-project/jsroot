@@ -2369,7 +2369,7 @@
          if (!pthis.draw_g) {
             drag_rect.remove();
             drag_rect = null;
-            return;
+            return false;
          }
 
          var oldx = Number(pthis.draw_g.attr("x")),
