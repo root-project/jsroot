@@ -2638,6 +2638,11 @@
          // do nothing
       };
 
+      ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function(buf,obj) {
+         // do nothing
+      };
+
+
       ds['TDatime'] = function(buf,obj) {
          obj.fDatime = buf.ntou4();
 //         obj.GetDate = function() {
