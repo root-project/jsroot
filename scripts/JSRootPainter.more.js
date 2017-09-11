@@ -1743,6 +1743,105 @@
 
    // ==============================================================
 
+   function TPolargramPainter(polargram) {
+      JSROOT.TObjectPainter.call(this, polargram);
+      this.$polargram = true; // indicate that this is polargram
+   }
+
+   TPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TPolargramPainter.prototype.Redraw = function() {
+      if (!this.is_main_painter()) return;
+
+      var pad = this.root_pad();
+
+      console.log('drawing polargram')
+   }
+
+   JSROOT.Painter.drawPolargram = function(divid, polargram, opt) {
+
+      var painter = new TPolargramPainter(polargram);
+
+      painter.SetDivId(divid, -1); // just to get access to existing elements
+
+      var main = painter.main_painter();
+
+      if (main) {
+         if (main.GetObject() !== polargram)
+             console.error('Cannot superimpose TGraphPolargram with any other drawings');
+          return null;
+      }
+      painter.SetDivId(divid, 4); // main object without need of frame
+      painter.Redraw();
+      return painter.DrawingReady();
+   }
+
+   // ==============================================================
+
+   function TGraphPolarPainter(graph) {
+      JSROOT.TObjectPainter.call(this, graph);
+   }
+
+   TGraphPolarPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TGraphPainter.prototype.Redraw = function() {
+      this.DrawBins();
+   }
+
+   TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
+
+      var d = new JSROOT.DrawOptions(opt);
+
+      this._draw_mark = d.check("P");
+      this._draw_err = d.check("E");
+   }
+
+   TGraphPolarPainter.prototype.DrawBins = function() {
+      var graph = this.GetObject(),
+          main = this.main_painter();
+
+      if (!graph || !main || !main.$polargram) return;
+
+      console.log('Draw Polar Bins');
+   }
+
+   TGraphPolarPainter.prototype.CreatePolargram = function() {
+      // TODO
+      return null;
+   }
+
+   TGraphPolarPainter.prototype.PerformDrawing = function(divid) {
+      this.SetDivId(divid);
+      this.DrawBins();
+      this.DrawingReady();
+   }
+
+   JSROOT.Painter.drawGraphPolar = function(divid, graph, opt) {
+
+      var painter = new TGraphPolarPainter(graph);
+
+      painter.DecodeOptions(opt);
+
+      painter.SetDivId(divid, -1); // just to get access to existing elements
+
+      var main = painter.main_painter();
+      if (main) {
+         if (!main.$polargram) {
+            console.error('Cannot superimpose TGraphPolar with plain histograms');
+            return null;
+         }
+         painter.PerformDrawing(divid);
+      } else {
+         if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
+
+         JSROOT.draw(divid, graph.fPolargram, "", painter.PerformDrawing.bind(painter, divid));
+      }
+
+      return painter;
+   }
+
+   // ==============================================================
+
    function TSplinePainter(spline) {
       JSROOT.TObjectPainter.call(this, spline);
       this.bins = null;
@@ -2552,6 +2651,7 @@
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
+   JSROOT.TGraphPolarPainter = TGraphPolarPainter;
    JSROOT.TMultiGraphPainter = TMultiGraphPainter;
    JSROOT.TSplinePainter = TSplinePainter;
 
