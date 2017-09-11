@@ -1764,11 +1764,15 @@
       this.draw_g.attr("transform", "translate(" + midx + "," + midy + ")");
 
       this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, szx ]);
+      this.szx = szx;
+      this.szy = szy;
+      this.angle = polar.fAxisAngle || 0;
 
       var ticks = this.r.ticks(5),
-          ticks2 = this.r.ticks(40);
+          nminor = Math.floor((polar.fNdivRad % 10000) / 100);
 
-      if(!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
+      if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
+      if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ fLineColor: polar.fLineColor, fLineStyle: 2, fLineWidth: 1 });
 
       var exclude_last = false;
 
@@ -1783,8 +1787,7 @@
       this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * szy * 2));
 
       for (var n=0;n<ticks.length;++n) {
-         var rx = this.r(ticks[n]),
-             ry = rx/szx*szy;
+         var rx = this.r(ticks[n]), ry = rx/szx*szy;
          this.draw_g.append("ellipse")
              .attr("cx",0)
              .attr("cy",0)
@@ -1802,6 +1805,23 @@
          if ((n < ticks.length-1) || !exclude_last)
             this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * szy * 0.5),
                             text: lbl, color: this.get_color[polar.fRadialLabelColor], latex: 0 });
+
+         if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
+            var dr = (ticks[1] - ticks[0]) / nminor;
+            for (var nn=1;nn<nminor;++nn) {
+               var gridr = ticks[n] + dr*nn;
+               if (gridr>polar.fRwrmax) break;
+               rx = this.r(gridr); ry = rx/szx*szy;
+               this.draw_g.append("ellipse")
+                   .attr("cx",0)
+                   .attr("cy",0)
+                   .attr("rx",Math.round(rx))
+                   .attr("ry",Math.round(ry))
+                   .style("fill", "none")
+                   .call(this.gridatt.func);
+            }
+         }
+
       }
 
       this.FinishTextDrawing();
@@ -1814,7 +1834,7 @@
           aligns = [12, 11, 21, 31, 32, 33, 23, 13 ];
 
       for (var n=0;n<8;++n) {
-         var angle = -n*Math.PI/4;
+         var angle = -n*Math.PI/4 - this.angle;
          this.draw_g.append("line")
              .attr("x1",0)
              .attr("y1",0)
@@ -1822,15 +1842,28 @@
              .attr("y2", Math.round(szy*Math.sin(angle)))
              .call(this.lineatt.func);
 
-         this.DrawText({ align: aligns[n], x: Math.round((szx+fontsize)*Math.cos(angle)), y: Math.round((szy + fontsize/szx*szy)*(Math.sin(angle))),
+         var aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+
+         this.DrawText({ align: aligns[aindx], x: Math.round((szx+fontsize)*Math.cos(angle)), y: Math.round((szy + fontsize/szx*szy)*(Math.sin(angle))),
                        text: lbls[n],
                        color: this.get_color[polar.fPolarLabelColor], latex: 1 });
-
-
       }
 
       this.FinishTextDrawing();
 
+      var nminor = Math.floor((polar.fNdivPol % 10000) / 100);
+
+      if (nminor > 1)
+         for (var n=0;n<8*nminor;++n) {
+            if (n % nminor === 0) continue;
+            var angle = -n*Math.PI/4/nminor - this.angle;
+            this.draw_g.append("line")
+                .attr("x1",0)
+                .attr("y1",0)
+                .attr("x2", Math.round(szx*Math.cos(angle)))
+                .attr("y2", Math.round(szy*Math.sin(angle)))
+                .call(this.gridatt.func);
+         }
    }
 
    JSROOT.Painter.drawPolargram = function(divid, polargram, opt) {
