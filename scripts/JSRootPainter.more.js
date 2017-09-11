@@ -1753,9 +1753,84 @@
    TPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
-      var pad = this.root_pad();
+      var pad = this.root_pad(), polar = this.GetObject(),
+          w = this.pad_width(), h = this.pad_height(),
+          midx = Math.round(w/2), midy = Math.round(h/2),
+          szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
+          szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
 
-      console.log('drawing polargram')
+      this.CreateG();
+
+      this.draw_g.attr("transform", "translate(" + midx + "," + midy + ")");
+
+      this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, szx ]);
+
+      var ticks = this.r.ticks(5),
+          ticks2 = this.r.ticks(40);
+
+      if(!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
+
+      var exclude_last = false;
+
+      if (ticks[ticks.length-1] < polar.fRwrmax) {
+         ticks.push(polar.fRwrmax);
+         exclude_last = true;
+      }
+
+      var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
+      var ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
+
+      this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * szy * 2));
+
+      for (var n=0;n<ticks.length;++n) {
+         var rx = this.r(ticks[n]),
+             ry = rx/szx*szy;
+         this.draw_g.append("ellipse")
+             .attr("cx",0)
+             .attr("cy",0)
+             .attr("rx",Math.round(rx))
+             .attr("ry",Math.round(ry))
+             .style("fill", "none")
+             .call(this.lineatt.func);
+
+         var val = ticks[n],
+             rnd = Math.round(),
+             lbl = val.toString();
+
+         if (val !== rnd) lbl = (ndig>10) ? ticks[n].toExponential(4) : ticks[n].toFixed((ndig > 0) ? ndig : 0)
+
+         if ((n < ticks.length-1) || !exclude_last)
+            this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * szy * 0.5),
+                            text: lbl, color: this.get_color[polar.fRadialLabelColor], latex: 0 });
+      }
+
+      this.FinishTextDrawing();
+
+
+      var fontsize = Math.round(polar.fPolarTextSize * szy * 2);
+      this.StartTextDrawing(polar.fPolarLabelFont, fontsize);
+
+      var lbls = ["0", "#pi/4", "#pi/2", "3#pi/4", "#pi", "5#pi/4", "3#pi/2", "7#pi/4"],
+          aligns = [12, 11, 21, 31, 32, 33, 23, 13 ];
+
+      for (var n=0;n<8;++n) {
+         var angle = -n*Math.PI/4;
+         this.draw_g.append("line")
+             .attr("x1",0)
+             .attr("y1",0)
+             .attr("x2", Math.round(szx*Math.cos(angle)))
+             .attr("y2", Math.round(szy*Math.sin(angle)))
+             .call(this.lineatt.func);
+
+         this.DrawText({ align: aligns[n], x: Math.round((szx+fontsize)*Math.cos(angle)), y: Math.round((szy + fontsize/szx*szy)*(Math.sin(angle))),
+                       text: lbls[n],
+                       color: this.get_color[polar.fPolarLabelColor], latex: 1 });
+
+
+      }
+
+      this.FinishTextDrawing();
+
    }
 
    JSROOT.Painter.drawPolargram = function(divid, polargram, opt) {
