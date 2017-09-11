@@ -66,8 +66,10 @@ examples_more = {
       { name: "ip0", file: "ip0.root", item: "c;1" },
       { name: "root5", file: "danilo5.root", item: "canvas;1" },
       { name: "gaus", file: "macro8.root", item: "c1;1" },
-      { name: "landau", file: "cdist.root", item: "cdist;1", title: "TF1 as TFormula with C function inside" },
-      { name: "tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" }
+      { name: "landau", file: "cdist.root", item: "cdist;1", title: "TF1 as TFormula with C function inside" }
+   ],
+   TF2 : [
+     { name: "xygaus", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item: "f2form", title: "TF2 with xygaus" }
    ],
    TCanvas : [
      { name: "jpsi", file:"JPsi_evolution.root", item: "CutTrees/cut1/C_cut1 < 2.85714;1" },
