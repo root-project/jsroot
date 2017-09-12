@@ -811,7 +811,7 @@
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.CreateFormatFuncs = function() {
+   TAxisPainter.prototype.CreateFormatFuncs = function(optionNoopt, optionInt) {
 
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis');
@@ -923,12 +923,18 @@
       }
    }
 
-   TAxisPainter.prototype.CreateTicks = function(only_major_as_array) {
+   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoopt, optionInt) {
       // function used to create array with minor/middle/major ticks
 
-      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks = [];
 
-      var ticks = this.func.ticks(this.nticks);
+      if (optionNoopt && this.nticks && (this.kind == "normal")) {
+         var dom = this.func.domain();
+         for (var n=0;n<=this.nticks;++n)
+            ticks.push((dom[0]*(this.nticks-n) + dom[1]*n)/this.nticks);
+      } else {
+         ticks = this.func.ticks(this.nticks);
+      }
 
       handle.minor = handle.middle = handle.major = ticks;
 
@@ -1341,7 +1347,9 @@
           optionY = (chOpt.indexOf("Y")>=0),
           optionUp = (chOpt.indexOf("0")>=0),
           optionDown = (chOpt.indexOf("O")>=0),
-          optionUnlab = (chOpt.indexOf("U")>=0);  // no labels
+          optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
+          optionNoopt = (chOpt.indexOf("N")>=0),
+          optionInt = (chOpt.indexOf("I")>=0);
 
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
@@ -1360,7 +1368,7 @@
 
       this.ticks = [];
 
-      var handle = this.CreateTicks();
+      var handle = this.CreateTicks(false, optionNoopt, optionInt);
 
       while (handle.next(true)) {
 
