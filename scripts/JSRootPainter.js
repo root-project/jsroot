@@ -3628,8 +3628,8 @@
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if ((w>0) && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width / w, draw_g);
-         if ((h>0) && scale && !arg.font_size) this.TextScaleFactor(1.*box.height / h, draw_g);
+         if ((w>0) && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width/w, draw_g);
+         if ((h>0) && scale && !arg.font_size) this.TextScaleFactor(1.*box.height/h, draw_g);
 
          return box.width;
       }

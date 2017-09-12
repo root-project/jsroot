@@ -36,6 +36,7 @@
 31. Support pad.fTickx==2 and pad.fTicky==2 - drawing axes labels on opposite side  
 32. Implement drawing of TGraphPolar and TGraphPolargram 
 33. Implement drawing of TGraphTime
+34. Improve TLegend drawing - ignore empty entries
 
 
 ## Changes in 5.2.0

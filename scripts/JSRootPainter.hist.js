@@ -2248,18 +2248,34 @@
 
          if (ncols<2) ncols = 1; else { while ((nrows-1)*ncols >= nlines) nrows--; }
 
-         this.StartTextDrawing(legend.fTextFont, h / (nlines * 1.2));
+         function isEmpty(entry) {
+            return !entry.fObject && !entry.fOption && (!entry.fLabel || (entry.fLabel == " "));
+         }
+
+         if (ncols==1) {
+            for (var i=0;i<nlines;++i)
+               if (isEmpty(legend.fPrimitives.arr[i])) nrows--;
+         }
+
+         if (nrows<1) nrows = 1;
 
          var tcolor = this.get_color(legend.fTextColor),
              column_width = Math.round(w/ncols),
              padding_x = Math.round(0.03*w/ncols),
              padding_y = Math.round(0.03*h),
              step_y = (h - 2*padding_y)/nrows,
-             any_opt = false;
+             any_opt = false, i = -1;
 
-         for (var i = 0; i < nlines; ++i) {
-            var leg = legend.fPrimitives.arr[i],
-                lopt = leg.fOption.toLowerCase(),
+         this.StartTextDrawing(legend.fTextFont, 0.9*step_y);
+
+         for (var ii = 0; ii < nlines; ++ii) {
+            var leg = legend.fPrimitives.arr[ii];
+
+            if (isEmpty(leg)) continue; // let discard empty entry
+
+            if (ncols==1) ++i; else i = ii;
+
+            var lopt = leg.fOption.toLowerCase(),
                 icol = i % ncols, irow = (i - icol) / ncols,
                 x0 = icol * column_width,
                 tpos_x = x0 + Math.round(legend.fMargin*column_width),
@@ -2267,8 +2283,7 @@
                 mid_y = Math.round(padding_y + (irow+0.5)*step_y), // center line
                 o_fill = leg, o_marker = leg, o_line = leg,
                 mo = leg.fObject,
-                painter = null,
-                isany = false;
+                painter = null, isany = false;
 
             if ((mo !== null) && (typeof mo == 'object')) {
                if ('fLineColor' in mo) o_line = mo;
@@ -2332,7 +2347,8 @@
             if (lopt.length>0) any_opt = true;
                           else if (!any_opt) pos_x = x0 + padding_x;
 
-            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+            if (leg.fLabel && (leg.fLabel != " "))
+               this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
          }
 
          // rescale after all entries are shown
