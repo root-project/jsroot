@@ -2421,9 +2421,8 @@
          this.DrawingReady(); // do it already here, animation will continue in background
       }
 
-      if (this.running_timeout) {
-         clearTimeout(this.running_timeout);
-         delete this.running_timeout;
+      if (this.wait_animation_frame) {
+         delete this.wait_animation_frame;
 
          // clear pad
          var pp = this.pad_painter(true);
@@ -2433,11 +2432,18 @@
             return;
          }
 
+         // clear primitives produced by the TGraphTime
          pp.CleanPrimitives(this.Selector.bind(this));
 
          // draw ptrimitives again
-
          this.DrawPrimitives(0, this.ContineDrawing.bind(this));
+      } else if (this.running_timeout) {
+         clearTimeout(this.running_timeout);
+         delete this.running_timeout;
+
+         this.wait_animation_frame = true;
+         // use animation frame to disable update in inactive form
+         requestAnimationFrame(this.ContineDrawing.bind(this));
       } else {
 
          var sleeptime = gr.fSleepTime;
