@@ -711,8 +711,8 @@
          return true;
       }
 
-      var marker_kind = ((this.style > 0) && (this.style < Painter.root_markers.length)) ? Painter.root_markers[this.style] : 100;
-      var shape = marker_kind % 100;
+      var marker_kind = Painter.root_markers[this.style] || 100,
+          shape = marker_kind % 100;
 
       this.fill = (marker_kind>=100);
 
@@ -723,7 +723,7 @@
          default: this.size = size; this.scale = 8;
       }
 
-      size = this.size*this.scale;
+      size = this.GetFullSize();
 
       this.ndig = (size>7) ? 0 : ((size>2) ? 1 : 2);
       if (shape == 6) this.ndig++;
@@ -6045,7 +6045,7 @@
    JSROOT.addDrawFunc({ name: "TGraphStruct" });
    JSROOT.addDrawFunc({ name: "TGraphNode" });
    JSROOT.addDrawFunc({ name: "TGraphEdge" });
-   JSROOT.addDrawFunc({ name: "TGraphTime", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphTime", opt: "once;repeat", theonly: true });
+   JSROOT.addDrawFunc({ name: "TGraphTime", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphTime", opt: "once;repeat;first", theonly: true });
    JSROOT.addDrawFunc({ name: "TGraph2D", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL", theonly: true });
    JSROOT.addDrawFunc({ name: "TGraph2DErrors", icon:"img_graph", prereq: "hist3d", func: "JSROOT.Painter.drawGraph2D", opt: ";P;PCOL;ERR", theonly: true });
    JSROOT.addDrawFunc({ name: "TGraphPolargram", icon:"img_graph", prereq: "more2d", func: "JSROOT.Painter.drawGraphPolargram", theonly: true });

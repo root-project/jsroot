@@ -2379,7 +2379,8 @@
 
       this.options = {
           once: d.check("ONCE"),
-          repeat: d.check("REPEAT")
+          repeat: d.check("REPEAT"),
+          first: d.check("FIRST")
       }
    }
 
@@ -2419,6 +2420,12 @@
       if (!this.ready_called) {
          this.ready_called = true;
          this.DrawingReady(); // do it already here, animation will continue in background
+      }
+
+      if (this.options.first) {
+         // draw only single frame, cancel all others
+         delete this.step;
+         return;
       }
 
       if (this.wait_animation_frame) {
