@@ -213,7 +213,7 @@
           y = this.AxisToSvg("y", marker.fY, isndc),
           path = att.create(x,y);
 
-      if (path && path.length > 0)
+      if (path)
          this.draw_g.append("svg:path")
              .attr("d", path)
              .call(att.func);

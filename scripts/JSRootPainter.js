@@ -732,7 +732,7 @@
       switch(shape) {
          case 0: // circle
             this.x0 = -size/2;
-            this.marker = "a"+half+","+half+" 0 1,0 "+full+",0a"+half+","+half+" 0 1,0 -"+full+",0z";
+            this.marker = "a"+half+","+half+",0,1,0,"+full+",0a"+half+","+half+",0,1,0,-"+full+",0z";
             break;
          case 1: // cross
             var d = (size/3).toFixed(this.ndig);
@@ -749,18 +749,18 @@
             break;
          case 4: // triangle-up
             this.y0 = size/2;
-            this.marker = "l-"+ half+",-"+full+"h"+full+"z";
+            this.marker = "l-"+half+",-"+full+"h"+full+"z";
             break;
          case 5: // triangle-down
             this.y0 = -size/2;
-            this.marker = "l-"+ half+","+full+"h"+full+"z";
+            this.marker = "l-"+half+","+full+"h"+full+"z";
             break;
          case 6: // star
             this.y0 = -size/2;
-            this.marker = "l" + (size/3).toFixed(this.ndig)+","+full +
-                         "l-"+ (5/6*size).toFixed(this.ndig) + ",-" + (5/8*size).toFixed(this.ndig) +
-                         "h" + full +
-                         "l-" + (5/6*size).toFixed(this.ndig) + "," + (5/8*size).toFixed(this.ndig) + "z";
+            this.marker = "l"  + (size/3).toFixed(this.ndig) + "," + full +
+                          "l-" + (5/6*size).toFixed(this.ndig) + ",-" + (5/8*size).toFixed(this.ndig) +
+                          "h"  + full +
+                          "l-" + (5/6*size).toFixed(this.ndig) + "," + (5/8*size).toFixed(this.ndig) + "z";
             break;
          case 7: // asterisk
             this.x0 = this.y0 = -size/2;
@@ -778,7 +778,7 @@
             break;
          default: // diamand
             this.x0 = -size/2;
-            this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
+            this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half+"z";
             break;
       }
 
