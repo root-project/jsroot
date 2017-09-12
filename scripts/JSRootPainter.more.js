@@ -1735,14 +1735,14 @@
 
    // ==============================================================
 
-   function TPolargramPainter(polargram) {
+   function TGraphPolargramPainter(polargram) {
       JSROOT.TObjectPainter.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
    }
 
-   TPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   TPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
+   TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
 
       var rx = this.r(radius),
           ry = rx/this.szx*this.szy;
@@ -1759,7 +1759,7 @@
       return pos;
    }
 
-   TPolargramPainter.prototype.format = function(radius) {
+   TGraphPolargramPainter.prototype.format = function(radius) {
       // used to format label for radius ticks
 
       if (radius === Math.round(radius)) return radius.toString();
@@ -1768,7 +1768,7 @@
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
-   TPolargramPainter.prototype.Redraw = function() {
+   TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
       var pad = this.root_pad(), polar = this.GetObject(),
@@ -1814,7 +1814,6 @@
          ticks.push(polar.fRwrmax);
          exclude_last = true;
       }
-
 
       this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * szy * 2));
 
@@ -1894,9 +1893,9 @@
          }
    }
 
-   JSROOT.Painter.drawPolargram = function(divid, polargram, opt) {
+   JSROOT.Painter.drawGraphPolargram = function(divid, polargram, opt) {
 
-      var painter = new TPolargramPainter(polargram);
+      var painter = new TGraphPolargramPainter(polargram);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 

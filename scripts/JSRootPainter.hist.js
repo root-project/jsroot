@@ -834,13 +834,12 @@
       if (this.kind == 'time') {
          if (this.nticks > 8) this.nticks = 8;
 
-         var scale_range = this.scale_max - this.scale_min;
-
-         var tf1 = JSROOT.Painter.getTimeFormat(axis);
+         var scale_range = this.scale_max - this.scale_min,
+             tf1 = JSROOT.Painter.getTimeFormat(axis),
+             tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
 
          if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
             tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
-         var tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
 
          this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
          if (tf2!==tf1)
@@ -850,21 +849,16 @@
             return asticks ? this.tfunc1(d) : this.tfunc2(d);
          }
 
-      } else
-      if (this.kind == 'log') {
+      } else if (this.kind == 'log') {
          this.nticks2 = 1;
          this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
 
          this.format = function(d, asticks, notickexp) {
-
-            var val = parseFloat(d);
-
-            if (!asticks) {
-               var rnd = Math.round(val);
+            var val = parseFloat(d), rnd = Math.round(val);
+            if (!asticks)
                return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : val.toExponential(4);
-            }
 
             if (val <= 0) return null;
             var vlog = JSROOT.log10(val);
@@ -879,8 +873,7 @@
             }
             return null;
          }
-      } else
-      if (this.kind == 'labels') {
+      } else if (this.kind == 'labels') {
          this.nticks = 50; // for text output allow max 50 names
          var scale_range = this.scale_max - this.scale_min;
          if (this.nticks > scale_range)
@@ -904,7 +897,7 @@
          if (this.range <= 0)
             this.ndig = -3;
          else
-            this.ndig = Math.round(JSROOT.log10(this.nticks / this.range) + 0.7);
+            this.ndig = Math.round(JSROOT.log10(this.nticks/this.range));
 
          this.format = function(d, asticks) {
             var val = parseFloat(d), rnd = Math.round(val);
@@ -938,6 +931,21 @@
       var ticks = this.func.ticks(this.nticks);
 
       handle.minor = handle.middle = handle.major = ticks;
+
+      // verify that all normal lables are unique, when not - increase ndig
+      if ((this.kind == "normal") && (this.ndig!==undefined)) {
+         var lbls = [], indx = 0;
+         while (indx<ticks.length) {
+            var lbl = this.format(ticks[indx],true);
+            if (lbls.indexOf(lbl)<0) {
+               lbls.push(lbl);
+               indx++;
+               continue;
+            }
+            if (++this.ndig>10) break; // not too many digits
+            lbls = []; indx = 0;
+         }
+      }
 
       if (only_major_as_array) {
          var res = handle.major;

@@ -511,7 +511,7 @@
       } else {
          this.grx = d3.scaleLinear();
          if (histo && histo.fXaxis.fLabels) this.x_kind = "labels";
-                                       else this.x_kind = "lin";
+                                       else this.x_kind = "normal";
       }
 
       this.logx = (this.x_kind === "log");
@@ -536,7 +536,7 @@
       } else {
          this.gry = d3.scaleLinear();
          if (histo && histo.fYaxis.fLabels) this.y_kind = "labels";
-                                       else this.y_kind = "lin";
+                                       else this.y_kind = "normal";
       }
 
       this.logy = (this.y_kind === "log");
@@ -554,7 +554,7 @@
          this.z_kind = "log";
       } else {
          this.grz = d3.scaleLinear();
-         this.z_kind = "lin";
+         this.z_kind = "normal";
       }
 
       this.logz = (this.z_kind === "log");
@@ -583,9 +583,9 @@
       var ticks = [], maxtextheight = 0, xaxis = histo ? histo.fXaxis : null;
 
       while (xticks.next()) {
-         var grx = xticks.grpos;
-         var is_major = (xticks.kind===1);
-         var lbl = this.x_handle.format(xticks.tick, true, true);
+         var grx = xticks.grpos,
+            is_major = (xticks.kind===1),
+            lbl = this.x_handle.format(xticks.tick, true, true);
          if (xticks.last_major()) { if (!xaxis || !xaxis.fTitle) lbl = "x"; } else
             if (lbl === null) { is_major = false; lbl = ""; }
 
@@ -787,9 +787,9 @@
       var yaxis = histo ? histo.fYaxis : null
 
       while (yticks.next()) {
-         var gry = yticks.grpos;
-         var is_major = (yticks.kind===1);
-         var lbl = this.y_handle.format(yticks.tick, true, true);
+         var gry = yticks.grpos,
+             is_major = (yticks.kind===1),
+             lbl = this.y_handle.format(yticks.tick, true, true);
          if (yticks.last_major()) { if (!yaxis || !yaxis.fTitle) lbl = "y"; }  else
             if (lbl === null) { is_major = false; lbl = ""; }
 
@@ -826,10 +826,8 @@
       }
 
       if (!opts.use_y_for_z) {
-
-         var yticksline = JSROOT.Painter.createLineSegments(ticks, lineMaterial);
-
-         var ycont = new THREE.Object3D();
+         var yticksline = JSROOT.Painter.createLineSegments(ticks, lineMaterial),
+             ycont = new THREE.Object3D();
          ycont.position.set(grminx, 0, grminz);
          ycont.rotation.y = -1/4*Math.PI;
          ycont.add(yticksline);
