@@ -955,6 +955,11 @@
             if (++this.ndig>10) break; // not too many digits
             lbls = []; indx = 0;
          }
+
+         if (optionInt) {
+            if (this.ndig>0) console.warn('Axis painter - integer labels are configured, but decimal values are required');
+            this.ndig = 0;
+         }
       }
 
       if (only_major_as_array) {
@@ -974,7 +979,7 @@
             handle.minor = handle.middle = handle.major;
          } else
          if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
-            handle.minor = this.this.ProduceTicks(handle.middle.length, this.nticks3);
+            handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
       }
