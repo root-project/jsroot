@@ -1356,8 +1356,8 @@
           optionUp = (chOpt.indexOf("0")>=0),
           optionDown = (chOpt.indexOf("O")>=0),
           optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
-          optionNoopt = (chOpt.indexOf("N")>=0),
-          optionInt = (chOpt.indexOf("I")>=0);
+          optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
+          optionInt = (chOpt.indexOf("I")>=0);    // integer labels
 
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
@@ -4945,7 +4945,11 @@
 
          can_move = true;
       } else {
-         if (pal.fAxis && !pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
+         if (pal.fAxis) {
+            if (!pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
+            if (!pal.fAxis.fNdiv) pal.fAxis.fNdiv = 12;
+            if (!pal.fAxis.fLabelOffset) pal.fAxis.fLabelOffset = 0.005;
+         }
       }
 
       var frame_painter = this.frame_painter();
