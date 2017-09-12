@@ -923,26 +923,30 @@
       }
    }
 
+   TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+      if (!this.noticksopt) return this.func.ticks(ndiv * (ndiv2 || 1));
+
+      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+      var dom = this.func.domain(), ticks = [];
+      for (var n=0;n<=ndiv;++n)
+         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+      return ticks;
+   }
+
    TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoopt, optionInt) {
       // function used to create array with minor/middle/major ticks
 
-      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func }, ticks = [];
+      if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
 
-      if (optionNoopt && this.nticks && (this.kind == "normal")) {
-         var dom = this.func.domain();
-         for (var n=0;n<=this.nticks;++n)
-            ticks.push((dom[0]*(this.nticks-n) + dom[1]*n)/this.nticks);
-      } else {
-         ticks = this.func.ticks(this.nticks);
-      }
+      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
-      handle.minor = handle.middle = handle.major = ticks;
+      handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
 
       // verify that all normal lables are unique, when not - increase ndig
       if ((this.kind == "normal") && (this.ndig!==undefined)) {
          var lbls = [], indx = 0;
-         while (indx<ticks.length) {
-            var lbl = this.format(ticks[indx],true);
+         while (indx<handle.major.length) {
+            var lbl = this.format(handle.major[indx],true);
             if (lbls.indexOf(lbl)<0) {
                lbls.push(lbl);
                indx++;
@@ -954,15 +958,14 @@
       }
 
       if (only_major_as_array) {
-         var res = handle.major;
-         var delta = (this.scale_max - this.scale_min)*1e-5;
+         var res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
          if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
          if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
          return res;
       }
 
       if (this.nticks2 > 1) {
-         handle.minor = handle.middle = this.func.ticks(handle.major.length * this.nticks2);
+         handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
 
          var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
 
@@ -971,7 +974,7 @@
             handle.minor = handle.middle = handle.major;
          } else
          if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
-            handle.minor = this.func.ticks(handle.middle.length * this.nticks3);
+            handle.minor = this.this.ProduceTicks(handle.middle.length, this.nticks3);
             if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
          }
       }
