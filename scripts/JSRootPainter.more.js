@@ -1857,7 +1857,7 @@
       var nmajor = polar.fNdivPol % 100;
       if ((nmajor !== 8) && (nmajor !== 3)) nmajor = 8;
 
-      var lbls = (nmajor==8) ? ["0", "#pi/4", "#pi/2", "3#pi/4", "#pi", "5#pi/4", "3#pi/2", "7#pi/4"] : ["0", "2#pi/3", "4#pi/3"],
+      var lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"],
           aligns = [12, 11, 21, 31, 32, 33, 23, 13 ];
 
       for (var n=0;n<nmajor;++n) {

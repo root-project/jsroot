@@ -1233,12 +1233,10 @@
       return clean; // return modified label to make use it for text approxim
    }
 
-   Painter.approxTextWidth = function(font, label, label2) {
+   Painter.approxTextWidth = function(font, label) {
       // returns approximate width of given label, required for reasonable scaling of text in node.js
 
-      var res = Math.round(label.length*font.size*font.aver_width);
-      if (label2) res = Math.max(res, Painter.approxTextWidth(font, label2));
-      return res;
+      return Math.round(label.length*font.size*font.aver_width);
    }
 
    Painter.isAnyLatex = function(str) {
@@ -3534,7 +3532,7 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = "", middleline = false;
+         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = 0, middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
@@ -3544,14 +3542,14 @@
 
          if (h>0) {
             if (align[1].indexOf('bottom')===0) pos_y = (y+h).toFixed(0); else
-            if (align[1] == 'top') pos_dy = ".8em"; else {
+            if (align[1] == 'top') pos_dy = 0.8; else {
                pos_y = (y + h/2 + 1).toFixed(0);
-               if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
+               if (JSROOT.browser.isIE) pos_dy = 0.4; else middleline = true;
             }
          } else {
-            if (align[1] == 'top') pos_dy = ".8em"; else
+            if (align[1] == 'top') pos_dy = 0.8; else
             if (align[1] == 'middle') {
-               if (JSROOT.browser.isIE) pos_dy = ".4em"; else middleline = true;
+               if (JSROOT.browser.isIE) pos_dy = 0.4; else middleline = true;
             }
          }
 
@@ -3572,24 +3570,42 @@
 
          var box = null; // box with label dimensions
 
-         if (arg.latex && (label.indexOf("#splitline{")===0) && (label[label.length-1]=="}")) {
+         if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
             // this is split line, use special handling
-            var pos = label.indexOf("}{");
+            var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
-               var l1 = label.substr(11, pos - 11),
+               var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
                    l2 = label.substr(pos+2, label.length - pos - 3);
 
                txt.text("");
 
-               var yy = Math.round(arg.height ? arg.height/4 : font.size*0.6);
+               var yy = arg.height ? arg.height/4 : font.size*0.6;
 
-               var span1 = txt.append("tspan").attr("x",0).attr("y", -yy).text(l1);
+               var span1 = txt.append("tspan").attr("x",0).attr("y", Math.round(-yy + pos_dy*font.size)).text(l1);
                l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
-               var span2 = txt.append("tspan").attr("x",0).attr("y", yy).text(l2);
+               var w1 = JSROOT.Painter.approxTextWidth(font, l1);
+
+               var span2 = txt.append("tspan").attr("x",0).attr("y", Math.round(yy + pos_dy*font.size)).text(l2);
                l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
+               var w2 = JSROOT.Painter.approxTextWidth(font, l2);
+
+               pos_dy = 0; // no need for extra shifts
+
+               if (isfrac) {
+
+                  var xsign = (align[0] == 'end') ? -1 : ((align[0] == 'start') ? 1 : 0);
+
+                  if (w1>=w2) {
+                     span1.style("text-decoration", "underline");
+                     span2.attr("x", Math.round(xsign*(w1-w2)/2));
+                  } else {
+                     span2.style("text-decoration", "overline");
+                     span1.attr("x", Math.round(xsign*(w2-w1)/2));
+                  }
+               }
 
                if (JSROOT.nodejs)
-                  box = { height: Math.round(font.size*1.2+2*yy), width: JSROOT.Painter.approxTextWidth(font, l1, l2) };
+                  box = { height: Math.round(font.size*1.2+2*yy), width: Math.max(w1,w2) };
 
                label = l1+l2;
             }
@@ -3597,7 +3613,7 @@
 
          if (arg.latex) label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
 
-         if (pos_dy) txt.attr("dy", pos_dy);
+         if (pos_dy) txt.attr("dy", pos_dy.toFixed(1).substr(1)+"em");
          if (middleline) txt.attr("dominant-baseline", "middle");
          if (arg.font_size) txt.attr("font-size", arg.font_size);
 
