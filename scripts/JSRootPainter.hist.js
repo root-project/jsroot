@@ -1677,16 +1677,16 @@
       this.UseTextColor = true;
 
       if (nlines == 1) {
-         this.DrawText( { align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor} );
+         this.DrawText({ align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor, latex: 1 });
       } else
       for (var j = 0; j < nlines; ++j) {
          var posy = j*stepy, jcolor = tcolor;
          this.UseTextColor = true;
 
-         if ((first_stat > 0) && (j >= first_stat)) {
+         if (first_stat && (j >= first_stat)) {
             var parts = lines[j].split("|");
             for (var n = 0; n < parts.length; ++n)
-               this.DrawText({ align: "middle", x: width * n / num_cols, y: posy,
+               this.DrawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], color: jcolor });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
@@ -1728,8 +1728,7 @@
 
       var pt = this.GetObject(),
           tcolor = this.get_color(pt.fTextColor),
-          nlines = 0,
-          lines = [], colors = [], sizes = [],
+          nlines = 0, lines = [],
           can_height = this.pad_height(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length>0);
@@ -1741,7 +1740,7 @@
          var entry = pt.fLines.arr[j];
          if ((entry._typename=="TText") || (entry._typename=="TLatex")) {
             nlines++; // count lines
-            if ((entry.fX>0) || (entry.fY>0)) individual_positioning = true; //
+            if ((entry.fX>0) || (entry.fY>0)) individual_positioning = true;
          }
       }
 
@@ -1770,17 +1769,15 @@
 
                   this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height);
 
-                  this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor });
+                  this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
+                                   latex: (entry._typename == "TText") ? 0 : 1 });
 
                   this.FinishTextDrawing(undefined, this.FinishPave);
 
                   this.FirstRun++;
 
                } else {
-                  lines.push(entry.fTitle); // make as before
-                  var ecolor = entry.fTextColor ? this.get_color(entry.fTextColor) : "";
-                  colors.push(ecolor);
-                  sizes.push(entry.fTextSize);
+                  lines.push(entry); // make as before
                }
                break;
             case "TLine":
@@ -1825,16 +1822,20 @@
 
          this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
 
-         if (nlines == 1) {
-            this.DrawText({ align: pt.fTextAlign, x:0, y:0, width: width, height: height, text: lines[0], color: tcolor });
-            this.UseTextColor = true;
-         } else
          for (var j = 0; j < nlines; ++j) {
+            var arg = null, lj = lines[j];
 
-            var arg = { align: pt.fTextAlign, x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy, text: lines[j], color: colors[j] };
+            if (nlines == 1) {
+               arg = { align: pt.fTextAlign, x:0, y:0, width: width, height: height };
+            } else {
+               arg = { align: pt.fTextAlign, x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
+               if (lj.fTextColor) arg.color = this.get_color(lj.fTextColor);
+               if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*can_height);
+            }
 
+            arg.latex = (lj._typename == "TText" ? 0 : 1);
+            arg.text = lj.fTitle;
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
-            if (sizes[j]) arg.font_size = Math.round(sizes[j]*can_height);
 
             this.DrawText(arg);
          }
