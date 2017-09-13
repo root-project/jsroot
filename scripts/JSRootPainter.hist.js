@@ -659,6 +659,8 @@
 
          this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
+         this.z_handle.max_tick_size = Math.round(s_width*0.7);
+
          this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
 
          if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
@@ -1306,6 +1308,8 @@
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
+      if (this.max_tick_size && tickSize > this.max_tick_size) tickSize = this.max_tick_size;
+
       this.CreateFormatFuncs();
 
       var res = "", res2 = "", lastpos = 0, lasth = 0;
@@ -1367,7 +1371,6 @@
       if (!disable_axis_drawing && !optionUnlab) {
          this.DrawLabelsNew(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset);
       }
-
 
      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
         var r =  axis_g.append("svg:rect")
