@@ -4481,6 +4481,8 @@
             menu.add("sub:Labels");
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
             this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
                   function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
             this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
