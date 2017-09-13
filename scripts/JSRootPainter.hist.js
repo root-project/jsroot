@@ -811,6 +811,8 @@
    }
 
    TAxisPainter.prototype.formatExp = function(label) {
+      if (JSROOT.nodejs) return JSROOT.Painter.formatExp(label);
+
       var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
           pos = str.indexOf('@'),
           exp = "#superscript{" + str.substr(pos+1) + "}",

@@ -3620,8 +3620,6 @@
             pos += (up ? 13 : 11);
             var l2 = label.substr(pos, label.length-1-pos);
 
-            console.log(label, l1, l2);
-
             txt.text("");
 
             var span1 = txt.append("tspan").text(l1),
