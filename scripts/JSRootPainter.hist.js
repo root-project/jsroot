@@ -1173,7 +1173,7 @@
 
          if (center_lbls) {
             var gap = gap_after || gap_before;
-            pos = Math.round(pos + gap/2);
+            pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
             if (pos > (vertical ? h : w) + 2) continue;
          }
 
