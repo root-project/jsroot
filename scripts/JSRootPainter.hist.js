@@ -795,7 +795,6 @@
       this.ticks = [];
       this.func = null;
       delete this.format;
-      delete this.range;
 
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
@@ -811,7 +810,7 @@
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.CreateFormatFuncs = function(optionNoopt, optionInt) {
+   TAxisPainter.prototype.CreateFormatFuncs = function() {
 
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis');
@@ -893,18 +892,15 @@
          }
       } else {
 
-         this.range = Math.abs(this.scale_max - this.scale_min);
-         if (this.range <= 0)
-            this.ndig = -3;
-         else
-            this.ndig = Math.round(JSROOT.log10(this.nticks/this.range));
+         this.order = 0;
+         this.ndig = 0;
 
          this.format = function(d, asticks) {
             var val = parseFloat(d), rnd = Math.round(val);
             if (asticks) {
                if (this.order===0) {
                   if (val === rnd) return rnd.toString();
-                  if (Math.abs(val) < 1e-10 * this.range) return 0;
+                  if (Math.abs(val) < 1e-10 * Math.abs(this.scale_max - this.scale_min)) return 0;
                   val = (this.ndig>10) ? val.toExponential(4) : val.toFixed(this.ndig > 0 ? this.ndig : 0);
                   if ((typeof d == 'string') && (d.length <= val.length+1)) return d;
                   return val;
@@ -941,26 +937,6 @@
       var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
 
       handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
-
-      // verify that all normal lables are unique, when not - increase ndig
-      if ((this.kind == "normal") && (this.ndig!==undefined)) {
-         var lbls = [], indx = 0;
-         while (indx<handle.major.length) {
-            var lbl = this.format(handle.major[indx],true);
-            if (lbls.indexOf(lbl)<0) {
-               lbls.push(lbl);
-               indx++;
-               continue;
-            }
-            if (++this.ndig>10) break; // not too many digits
-            lbls = []; indx = 0;
-         }
-
-         if (optionInt) {
-            if (this.ndig>0) console.warn('Axis painter - integer labels are configured, but decimal values are required');
-            this.ndig = 0;
-         }
-      }
 
       if (only_major_as_array) {
          var res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
@@ -1175,7 +1151,7 @@
          last = pos;
       }
 
-      if (this.order!==0)
+      if (this.order)
          label_g.append("svg:text")
                 .attr("fill", label_color)
                 .attr("x", vertical ? labeloffset : w+5)
@@ -1216,13 +1192,81 @@
      }
    }
 
-   TAxisPainter.prototype.DrawLabelsNew = function(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset) {
+   TAxisPainter.prototype.DrawLabelsNew = function(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset, optionInt) {
 
       var textscale = 1, maxtextlen = 0,
           center_lbls = this.IsCenterLabels(),
           rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert);
 
+      // at the moment when drawing labels, we can try to find most optimal text representation for them
+
+      this.order = 0;
+      this.ndig = 0;
+
+      if ((this.kind == "normal") && (handle.major.length > 0)) {
+
+         var maxorder = 0, minorder = 0;
+
+         if (!axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
+            var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
+                ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
+
+             if (maxtick || mintick) {
+                maxorder = Math.max(ord1,ord2) + 3;
+                minorder = Math.min(ord1,ord2) - 3;
+             }
+         }
+
+         // now try to find best combination of order and ndig for labels
+
+         var bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
+
+         // if (axis.fName == "xaxis")  console.log('check', minorder, maxorder);
+
+         for (var order = minorder; order <= maxorder; order+=3) {
+            this.order = order;
+            this.ndig = 0;
+            var lbls = [], indx = 0, totallen = 0;
+            while (indx<handle.major.length) {
+               var lbl = this.format(handle.major[indx], true);
+               if (lbls.indexOf(lbl)<0) {
+                  lbls.push(lbl);
+                  totallen += lbl.length;
+                  indx++;
+                  continue;
+               }
+               if (++this.ndig>20) break; // not too many digits
+               lbls = []; indx = 0; totallen = 0;
+            }
+
+            // if (axis.fName == "xaxis") console.log('order', order, 'ndig', this.ndig, 'totallen', totallen);
+
+            // for order==0 we should virually remove "0." and extra label on top
+            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+
+            if (totallen < bestlen) {
+               bestlen = totallen;
+               bestorder = this.order;
+               bestndig = this.ndig;
+            }
+         }
+
+         this.order = bestorder;
+         this.ndig = bestndig;
+
+         if (optionInt) {
+            if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
+            if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
+            this.ndig = 0;
+            this.order = 0;
+         }
+      }
+
       this.StartTextDrawing(labelfont, 'font', label_g);
+
+      var lbl_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + both_sides*tickSize;
 
       for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
 
@@ -1244,12 +1288,12 @@
          maxtextlen = Math.max(maxtextlen, lbl.length);
 
          if (vertical) {
-            arg.x = -labeloffset*side;
+            arg.x = lbl_coord;
             arg.y = pos;
             arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
          } else {
             arg.x = pos;
-            arg.y = (labeloffset+2)*side + both_sides*tickSize;
+            arg.y = lbl_coord;
             arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
          }
 
@@ -1266,16 +1310,17 @@
          }
       }
 
-      if (this.order!==0)
+      function xor(b1,b2) { return (b1 && !b2) || (!b1 && b2); }
+
+      if (this.order)
          this.DrawText({ color: label_color,
-                         x: vertical ? labeloffset : w+5,
-                         y: -3*side,
-                         align: vertical ? 10 : 33,
+                         x: vertical ? side*5 : w+5,
+                         y: this.has_obstacle ? lbl_coord : (vertical ? -3 : -3*side),
+                         align: vertical ? ((side<0) ? 30 : 10) : (xor(this.has_obstacle,(side<0)) ? 13 : 10),
                          latex: 0,
                          text: '\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)),
                          draw_g: label_g
                        });
-
 
       this.FinishTextDrawing(label_g);
 
@@ -1376,7 +1421,7 @@
 
       this.ticks = [];
 
-      var handle = this.CreateTicks(false, optionNoopt, optionInt);
+      var handle = this.CreateTicks(false, optionNoopt);
 
       while (handle.next(true)) {
 
@@ -1425,23 +1470,9 @@
           labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
           label_g = axis_g.append("svg:g").attr("class","axis_labels");
 
-      this.order = 0;
-      if ((this.kind=="normal") && /*vertical && */ !axis.TestBit(JSROOT.EAxisBits.kNoExponent)) {
-         var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1]));
-         for(var order=18;order>-18;order-=3) {
-            if (order===0) continue;
-            if ((order<0) && ((this.range>=0.1) || (maxtick>=1.))) break;
-            var mult = Math.pow(10, order);
-            if ((this.range > mult * 9.99999) || ((maxtick > mult*50) && (this.range > mult * 0.05))) {
-               this.order = order;
-               break;
-            }
-         }
-      }
-
       // draw labels
       if (!disable_axis_drawing && !optionUnlab) {
-         this.DrawLabelsNew(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset);
+         this.DrawLabelsNew(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset, optionInt);
       }
 
 
@@ -3361,6 +3392,7 @@
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
       this.x_handle.invert_side = (this.options.AxisPos>=10) || (pad.fTickx > 1);
+      this.x_handle.has_obstacle = (this.options.Zscale > 0);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -4944,12 +4976,11 @@
          this.AddFunction(pal, true);
 
          can_move = true;
-      } else {
-         if (pal.fAxis) {
-            if (!pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
-            if (!pal.fAxis.fNdiv) pal.fAxis.fNdiv = 12;
-            if (!pal.fAxis.fLabelOffset) pal.fAxis.fLabelOffset = 0.005;
-         }
+      } else if (pal.fAxis) {
+         // check some default values of TGaxis object
+         if (!pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
+         if (!pal.fAxis.fNdiv) pal.fAxis.fNdiv = 12;
+         if (!pal.fAxis.fLabelOffset) pal.fAxis.fLabelOffset = 0.005;
       }
 
       var frame_painter = this.frame_painter();
