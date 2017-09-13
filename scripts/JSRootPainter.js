@@ -464,6 +464,8 @@
                 '#it':"\\textit",
                 '#bf':"\\textbf",
                 '#frac':"\\frac",
+                '#superscript':"^", // jsroot internal
+                '#subscript':"_",   // jsroot internal
                 '#left{':"\\lbrace",
                 '#right}':"\\rbrace",
                 '#left\\[':"\\lbrack",
@@ -1165,6 +1167,7 @@
       var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
           pos = str.indexOf('@'),
           exp = Painter.translateSuperscript(str.substr(pos+1)),
+          // exp = "#superscript{" + str.substr(pos+1) + "}",
           str = str.substr(0, pos);
 
       return ((str === "1x10") ? "10" : str) + exp;
@@ -3609,6 +3612,30 @@
 
                label = l1+l2;
             }
+         } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
+            var pos = label.indexOf('#superscript{'), up = true;
+            if (pos<0) { pos = label.indexOf('#subscript{'); up = false; }
+
+            var l1 = label.substr(0, pos);
+            pos += (up ? 13 : 11);
+            var l2 = label.substr(pos, label.length-1-pos);
+
+            console.log(label, l1, l2);
+
+            txt.text("");
+
+            var span1 = txt.append("tspan").text(l1),
+                w1 = JSROOT.Painter.approxTextWidth(font, l1),
+                span2 = txt.append("tspan").text(l2).attr("y",Math.round(up ? -0.5*font.size : 0.5*font.size)).style('vertical-align', up ? 'super' : 'sub').style('font-size', 'smaller'),
+                w2 = JSROOT.Painter.approxTextWidth(font, l1);
+
+            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.7) } ;
+
+            txt.attr("text-anchor", "start");
+            if (align[0]=="middle") txt.attr("x", -Math.round(box.width*0.5));
+            if (align[0]=="end") txt.attr("x", -box.width);
+
+            label = l1+l2;
          }
 
          if (arg.latex) label = JSROOT.Painter.translateLaTeXColor(this, txt, label);

@@ -810,6 +810,15 @@
       this.scale_max = smax;
    }
 
+   TAxisPainter.prototype.formatExp = function(label) {
+      var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
+          pos = str.indexOf('@'),
+          exp = "#superscript{" + str.substr(pos+1) + "}",
+          str = str.substr(0, pos);
+
+      return ((str === "1x10") ? "10" : str) + exp;
+   }
+
    TAxisPainter.prototype.CreateFormatFuncs = function() {
 
       var axis = this.GetObject(),
@@ -863,12 +872,9 @@
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp && !notickexp)
-                  return JSROOT.Painter.formatExp(val.toExponential(0));
-               else
-               if (vlog<0)
-                  return val.toFixed(Math.round(-vlog+0.5));
-               else
-                  return val.toFixed(0);
+                  return this.formatExp(val.toExponential(0));
+
+               return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
             }
             return null;
          }
@@ -1086,110 +1092,6 @@
             });
 
       title_g.style("cursor", "move").call(drag_move);
-   }
-
-   TAxisPainter.prototype.DrawLabels = function(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset) {
-
-      label_g.call(labelfont.func);
-
-      var textscale = 1, maxtextlen = 0, last = 0;
-
-      for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
-         var pos = Math.round(this.func(handle.major[nmajor])),
-             lbl = this.format(handle.major[nmajor], true);
-         if (lbl === null) continue;
-
-         var t = label_g.append("svg:text").attr("fill", label_color).text(lbl);
-
-         maxtextlen = Math.max(maxtextlen, lbl.length);
-
-         if (vertical)
-            t.attr("x", -labeloffset*side)
-             .attr("y", pos)
-             .style("text-anchor", (side > 0) ? "end" : "start")
-             .style("dominant-baseline", "middle");
-         else
-            t.attr("x", pos)
-             .attr("y", 2+labeloffset*side + both_sides*tickSize)
-             .attr("dy", (side > 0) ? ".7em" : "-.3em")
-             .style("text-anchor", "middle");
-
-         var tsize = !JSROOT.nodejs ? this.GetBoundarySizes(t.node()) :
-                      { height: Math.round(labelfont.size*1.2), width: Math.round(lbl.length*labelfont.size*0.4) },
-             space_before = (nmajor > 0) ? (pos - last) : (vertical ? h/2 : w/2),
-             space_after = (nmajor < handle.major.length-1) ? (Math.round(this.func(handle.major[nmajor+1])) - pos) : space_before,
-             space = Math.min(Math.abs(space_before), Math.abs(space_after));
-
-         if (vertical) {
-
-            if ((space > 0) && (tsize.height > 5) && (this.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.height);
-
-            if (this.IsCenterLabels()) {
-               // if position too far top, remove label
-               if (pos + space_after/2 - textscale*tsize.height/2 < -10)
-                  t.remove();
-               else
-                  t.attr("y", Math.round(pos + space_after/2));
-            }
-
-         } else {
-
-            // test if label consume too much space
-            if ((space > 0) && (tsize.width > 10) && (this.kind !== 'log'))
-               textscale = Math.min(textscale, space / tsize.width);
-
-            if (this.IsCenterLabels()) {
-               // if position too far right, remove label
-               if (pos + space_after/2 - textscale*tsize.width/2 > w - 10)
-                  t.remove();
-               else
-                  t.attr("x", Math.round(pos + space_after/2));
-            }
-         }
-
-         last = pos;
-      }
-
-      if (this.order)
-         label_g.append("svg:text")
-                .attr("fill", label_color)
-                .attr("x", vertical ? labeloffset : w+5)
-                .attr("y", 0)
-                .style("text-anchor", "start")
-                .style("dominant-baseline", "middle")
-                .attr("dy", "-.5em")
-                .text('\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)));
-
-     if (!vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        // rotate all labels vertically
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = parseInt(txt.attr("y")) + side*3;
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", (side<0) ? "begin" : "end").attr("x", null).attr("y", null);
-        });
-     } else if (vertical && axis.TestBit(JSROOT.EAxisBits.kLabelsVert)) {
-        label_g.selectAll("text").each(function() {
-           var txt = d3.select(this), x = Math.round(parseInt(txt.attr("x"))-side*labelfont.size/2), y = txt.attr("y");
-           txt.attr("transform", "translate(" + x + "," + y + ") rotate(270)")
-              .style("text-anchor", "middle").attr("x", null).attr("y", null);
-        });
-     } else if ((textscale>0) && (textscale<1.)) {
-        // rotate X labels if they are too big
-        if ((textscale < 0.7) && !vertical && (side>0) && (maxtextlen > 5)) {
-           label_g.selectAll("text").each(function() {
-              var txt = d3.select(this), x = txt.attr("x"), y = txt.attr("y") - 5;
-               txt.attr("transform", "translate(" + x + "," + y + ") rotate(25)")
-                 .style("text-anchor", "start").attr("x", null).attr("y", null);
-           });
-           textscale = 1;
-        }
-        // round to upper boundary for calculated value like 4.4
-        if (textscale != 1) {
-           labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-           label_g.call(labelfont.func);
-        }
-     }
    }
 
    TAxisPainter.prototype.DrawLabelsNew = function(w, h, axis, handle, vertical, side, both_sides, tickSize, label_g, labelfont, label_color, labeloffset, optionInt) {
