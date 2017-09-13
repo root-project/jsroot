@@ -637,9 +637,9 @@
 
                var r = this.draw_g.append("svg:rect")
                           .attr("x", 0)
-                          .attr("y",  z1.toFixed(1))
+                          .attr("y",  Math.round(z1))
                           .attr("width", s_width)
-                          .attr("height", (z0-z1).toFixed(1))
+                          .attr("height", Math.round(z0) - Math.round(z1))
                           .style("fill", col)
                           .style("stroke", col)
                           .property("fill0", col)

@@ -248,9 +248,8 @@
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
       if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
-      var wsize = Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize;
-      if (wsize<3) wsize = 3;
-      var hsize = wsize * Math.tan(arrow.fAngle/2 * (Math.PI/180));
+      var wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
+          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
 
       // create svg:g container for line drawing
       this.CreateG();
@@ -259,8 +258,8 @@
           y1 = this.AxisToSvg("y", arrow.fY1, false),
           x2 = this.AxisToSvg("x", arrow.fX2, false),
           y2 = this.AxisToSvg("y", arrow.fY2, false),
-          right_arrow = "M0,0" + " L"+wsize.toFixed(1) +","+hsize.toFixed(1) + " L0," + (hsize*2).toFixed(1),
-          left_arrow =  "M" + wsize.toFixed(1) + ", 0" + " L 0," + hsize.toFixed(1) + " L " + wsize.toFixed(1) + "," + (hsize*2).toFixed(1),
+          right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
+          left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+"," + (2*hsize),
           m_start = null, m_mid = null, m_end = null, defs = null,
           oo = arrow.fOption, len = oo.length;
 
@@ -270,10 +269,10 @@
          m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
          var beg = defs.append("svg:marker")
                        .attr("id", m_start)
-                       .attr("markerWidth", wsize.toFixed(1))
-                       .attr("markerHeight", (hsize*2).toFixed(1))
+                       .attr("markerWidth", wsize)
+                       .attr("markerHeight", 2*hsize)
                        .attr("refX", "0")
-                       .attr("refY", hsize.toFixed(1))
+                       .attr("refY", hsize)
                        .attr("orient", "auto")
                        .attr("markerUnits", "userSpaceOnUse")
                        .append("svg:path")
@@ -296,10 +295,10 @@
 
          var mid = defs.append("svg:marker")
                       .attr("id", m_mid)
-                      .attr("markerWidth", wsize.toFixed(1))
-                      .attr("markerHeight", (hsize*2).toFixed(1))
-                      .attr("refX", (wsize*0.5).toFixed(1))
-                      .attr("refY", hsize.toFixed(1))
+                      .attr("markerWidth", wsize)
+                      .attr("markerHeight", 2*hsize)
+                      .attr("refX", Math.round(wsize*0.5))
+                      .attr("refY", hsize)
                       .attr("orient", "auto")
                       .attr("markerUnits", "userSpaceOnUse")
                       .append("svg:path")
@@ -316,10 +315,10 @@
          m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
          var end = defs.append("svg:marker")
                        .attr("id", m_end)
-                       .attr("markerWidth", wsize.toFixed(1))
-                       .attr("markerHeight", (hsize*2).toFixed(1))
-                       .attr("refX", wsize.toFixed(1))
-                       .attr("refY", hsize.toFixed(1))
+                       .attr("markerWidth", wsize)
+                       .attr("markerHeight", 2*hsize)
+                       .attr("refX", wsize)
+                       .attr("refY", hsize)
                        .attr("orient", "auto")
                        .attr("markerUnits", "userSpaceOnUse")
                        .append("svg:path")
@@ -331,9 +330,9 @@
 
       var path = this.draw_g
            .append("svg:path")
-           .attr("d",  "M" + x1 + "," + y1 +
-                       ((m_mid == null) ? "" : "L" + (x1/2+x2/2).toFixed(1) + "," + (y1/2+y2/2).toFixed(1)) +
-                       " L" + x2 + "," + y2)
+           .attr("d",  "M"+x1+","+y1 +
+                       ((m_mid == null) ? "" : "L" + Math.round(x1/2+x2/2) + "," + Math.round(y1/2+y2/2)) +
+                       "L"+x2+","+y2)
             .call(this.lineatt.func);
 
       if (m_start) path.style("marker-start","url(#" + m_start + ")");
@@ -1297,7 +1296,7 @@
 
       var radius = Math.max(this.lineatt.width + 3, 4);
 
-      if (this.marker_size > 0) radius = Math.max(Math.round(this.marker_size*1.2), radius);
+      if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
 
       if (bestbin !== null)
          bestdist = Math.sqrt(Math.pow(pnt.x-pmain.grx(bestbin.x),2) + Math.pow(pnt.y-pmain.gry(bestbin.y),2));
@@ -1311,7 +1310,7 @@
 
       if (bestbin === null) bestindx = -1;
 
-      var res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: radius };
+      var res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
 
       if ((bestbin===null) && islines) {
 
@@ -1450,18 +1449,18 @@
                  .attr("class","h1bin")
                  .style("pointer-events","none")
                  .style("opacity", "0.3")
-                 .attr("x", (hint.x - hint.radius).toFixed(1))
-                 .attr("y", (hint.y - hint.radius).toFixed(1))
-                 .attr("width", (2*hint.radius).toFixed(1))
-                 .attr("height", (2*hint.radius).toFixed(1));
+                 .attr("x", Math.round(hint.x - hint.radius))
+                 .attr("y", Math.round(hint.y - hint.radius))
+                 .attr("width", 2*hint.radius)
+                 .attr("height", 2*hint.radius);
          } else {
-            ttbin.append("svg:circle").attr("cy", hint.gry1.toFixed(1))
+            ttbin.append("svg:circle").attr("cy", Math.round(hint.gry1))
             if (Math.abs(hint.gry1-hint.gry2) > 1)
-               ttbin.append("svg:circle").attr("cy", hint.gry2.toFixed(1));
+               ttbin.append("svg:circle").attr("cy", Math.round(hint.gry2));
 
             var elem = ttbin.selectAll("circle")
                             .attr("r", hint.radius)
-                            .attr("cx", hint.x.toFixed(1));
+                            .attr("cx", Math.round(hint.x));
 
             if (!hint.islines) {
                elem.style('stroke', hint.color1 == 'black' ? 'green' : 'black').style('fill','none');
