@@ -273,7 +273,7 @@
                 if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
             }
             if (entry.item) itemname = entry.item;
-            if (entry.opt) opt = entry.opt;
+            if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
             if (entry.json) {
                jsonname = entry.json;
                if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
