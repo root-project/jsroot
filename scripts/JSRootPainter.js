@@ -1805,7 +1805,13 @@
       } else {
          var layer = this.svg_layer("primitives_layer");
          this.draw_g = layer.append("svg:g");
-         layer.selectAll(".most_upper_primitives").raise();
+
+         // layer.selectAll(".most_upper_primitives").raise();
+         var up = [];
+         layer.node().childNodes.forEach(function(node) {
+            if (d3.select(node).classed("most_upper_primitives")) up.push(node);
+         });
+         up.forEach(function(top) { d3.select(top).raise(); });
       }
 
       // set attributes for debugging
