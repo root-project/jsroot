@@ -1807,10 +1807,10 @@
          this.draw_g = layer.append("svg:g");
 
          // layer.selectAll(".most_upper_primitives").raise();
-         var up = [];
-         layer.node().childNodes.forEach(function(node) {
-            if (d3.select(node).classed("most_upper_primitives")) up.push(node);
-         });
+         var up = [], chlds = layer.node().childNodes;
+         for (var n=0;n<chlds.length;++n)
+            if (d3.select(chlds[n]).classed("most_upper_primitives")) up.push(chlds[n]);
+
          up.forEach(function(top) { d3.select(top).raise(); });
       }
 
