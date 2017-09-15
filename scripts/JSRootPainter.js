@@ -3628,14 +3628,25 @@
 
             txt.text("");
 
-            var span1 = txt.append("tspan").text(l1),
+            var span1 = txt.append("tspan")
+                           .text(l1)
+                           .attr("y", Math.round(pos_dy*font.size)),
                 w1 = JSROOT.Painter.approxTextWidth(font, l1),
-                span2 = txt.append("tspan").text(l2).attr("y",Math.round(up ? -0.5*font.size : 0.5*font.size)).style('vertical-align', up ? 'super' : 'sub').style('font-size', 'smaller'),
-                w2 = JSROOT.Painter.approxTextWidth(font, l1);
-
-            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.7) } ;
+                span2 = txt.append("tspan")
+                           .text(l2)
+                           .attr("y", Math.round((pos_dy + (up ? -0.5 : 0.5))*font.size))
+                           .style('vertical-align', up ? 'super' : 'sub')
+                           .style('font-size', 'smaller'),
+                w2 = JSROOT.Painter.approxTextWidth(font, l2);
+            
+            pos_dy = 0;
 
             txt.attr("text-anchor", "start");
+            
+            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.8) };
+
+            console.log(l1, l2, box.width, box.height, w1+w2*0.8);
+            
             if (align[0]=="middle") txt.attr("x", -Math.round(box.width*0.5));
             if (align[0]=="end") txt.attr("x", -box.width);
 
