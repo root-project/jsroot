@@ -3541,18 +3541,18 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x.toFixed(0), pos_y = y.toFixed(0), pos_dy = 0, middleline = false;
+         var pos_x = x, pos_y = y, pos_dy = 0, middleline = false;
 
          if (w>0) {
             // adjust x position when scale into specified rectangle
-            if (align[0]=="middle") pos_x = (x+w*0.5).toFixed(0); else
-            if (align[0]=="end") pos_x = (x+w).toFixed(0);
+            if (align[0]=="middle") pos_x += w*0.5; else
+            if (align[0]=="end") pos_x += w;
          }
 
          if (h>0) {
-            if (align[1].indexOf('bottom')===0) pos_y = (y+h).toFixed(0); else
+            if (align[1].indexOf('bottom')===0) pos_y += h; else
             if (align[1] == 'top') pos_dy = 0.8; else {
-               pos_y = (y + h/2 + 1).toFixed(0);
+               pos_y += h/2 + 1;
                if (JSROOT.browser.isIE) pos_dy = 0.4; else middleline = true;
             }
          } else {
@@ -3563,7 +3563,7 @@
          }
 
          // use translate and then rotate to avoid complex sign calculations
-         var trans = "translate("+pos_x+","+pos_y+")";
+         var trans = "translate("+Math.round(pos_x)+","+Math.round(pos_y)+")";
          if (arg.rotate) {
             while (arg.rotate<0) arg.rotate += 360;
             trans += " rotate("+Math.round(arg.rotate)+",0,0)";
@@ -3645,8 +3645,6 @@
             
             box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.8) };
 
-            console.log(l1, l2, box.width, box.height, w1+w2*0.8);
-            
             if (align[0]=="middle") txt.attr("x", -Math.round(box.width*0.5));
             if (align[0]=="end") txt.attr("x", -box.width);
 
