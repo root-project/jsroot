@@ -1275,7 +1275,7 @@
    Painter.approxTextWidth = function(font, label) {
       // returns approximate width of given label, required for reasonable scaling of text in node.js
 
-      return Math.round(label.length*font.size*font.aver_width);
+      return label.length * font.size * font.aver_width;
    }
 
    Painter.isAnyLatex = function(str) {
@@ -3522,13 +3522,24 @@
       return draw_g.property('max_text_width');
    }
 
-   TObjectPainter.prototype.produceLatex = function(node, label, lvl) {
+   TObjectPainter.prototype.produceLatex = function(node, label, arg, curr) {
       // attempt to implement subset of TLatex with plain SVG text and tspan elements
 
-      if (!lvl) lvl = 0;
+      if (!curr) {
+         curr = { lvl: 0, x: 0, y: 0, fsize: arg.font_size };
+         arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
+      }
+
+      function extend_pos(label) {
+         curr.x += JSROOT.Painter.approxTextWidth(arg.font, label);
+         arg.rect.x2 = Math.max(arg.rect.x2, curr.x);
+
+         arg.rect.y1 = Math.min(arg.rect.y1, curr.y - curr.fsize*0.6);
+         arg.rect.y2 = Math.max(arg.rect.y2, curr.y + curr.fsize*0.6);
+      }
 
       var features = [ "#it{", "#color[" ], isany = false,
-          best, found, pos, n, subnode;
+          best, found, pos, n, subnode, subpos;
 
       while (label) {
 
@@ -3540,13 +3551,16 @@
          }
 
          if (!found && !isany) {
-            if (!lvl) return 0; // indicate that nothing found, one can
+            if (!curr.lvl) return 0; // indicate that nothing found
+            extend_pos(label);
             node.text(label);
             return true;
          }
 
-         if (best>0)
+         if (best>0) {
+            extend_pos(label.substr(0,best));
             node.append('tspan').text(label.substr(0,best));
+         }
 
          if (!found) return true;
 
@@ -3554,6 +3568,8 @@
          label = label.substr(best + found.length);
 
          subnode = node.append('tspan');
+
+         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize };
 
          isany = true;
 
@@ -3589,7 +3605,9 @@
             return false;
          }
 
-         if (!this.produceLatex(subnode, label.substr(0,pos), lvl+1)) return false;
+         if (!this.produceLatex(subnode, label.substr(0,pos), arg, subpos)) return false;
+
+         curr.x = Math.max(curr.x, subpos.x);
 
          label = label.substr(pos+1);
       }
@@ -3706,17 +3724,19 @@
 
             // console.log('Converting ', label);
 
-            arg.plain = !arg.latex || JSROOT.nodejs || (this.produceLatex(txt, label) === 0);
+            arg.font = font; // use in latex conversion
+
+            arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
 
             if (arg.plain) {
+               label = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
                txt.text(label);
-               if (JSROOT.nodejs) arg.box = { height: Math.round(arg.font_size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
+            } else if (JSROOT.nodejs && arg.rect) {
+               arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
             }
 
-            // txt.text(label);
-            // var label1 = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
-            // arg.plain = label1 == label;
-
+            if (JSROOT.nodejs && !arg.box)
+               arg.box = { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) };
          }
 
          if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
