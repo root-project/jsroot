@@ -2293,8 +2293,7 @@
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this, drag_tm = null, drag_rect = null,
-          pad_w = 1, pad_h = 1, acc_x1 = 0, acc_y1 = 0, acc_x2 = 0, acc_y2 = 0;
+      var pthis = this, drag_tm = null, drag_rect = null;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -2307,25 +2306,23 @@
       function rect_height() { return Number(pthis.draw_g.attr("height")); }
 
       function MakeResizeElements(group, width, height, handler) {
-         function make(cursor,d,dx,dy) {
+         function make(cursor,d) {
             var clname = "js_" + cursor.replace('-','_');
             var elem = group.select('.'+clname);
             if (elem.empty()) elem = group.append('path').classed(clname,true);
-            elem.style('opacity', 0).style('cursor', cursor);
-            elem.attr('d',d);
-            if (dx || dy) elem.attr('transform','translate(' + dx + ',' + dy + ')');
+            elem.style('opacity', 0).style('cursor', cursor).attr('d',d);
             if (handler) elem.call(handler);
          }
 
          make("nw-resize", "M2,2h15v-5h-20v20h5Z");
-         make("ne-resize", "M-2,2h-15v-5h20v20h-5 Z", width, 0);
-         make("sw-resize", "M2,-2h15v5h-20v-20h5Z", 0, height);
-         make("se-resize", "M-2,-2h-15v5h20v-20h-5Z", width, height);
+         make("ne-resize", "M" + (width-2) + ",2h-15v-5h20v20h-5 Z");
+         make("sw-resize", "M2," + (height-2) + "h15v5h-20v-20h5Z");
+         make("se-resize", "M" + (width-2) + "," + (height-2) + "h-15v5h20v-20h-5Z");
 
          make("w-resize", "M-3,18h5v" + Math.max(0, height - 2*18) + "h-5Z");
-         make("e-resize", "M3,18h-5v" + Math.max(0, height - 2*18) + "h5Z", width, 0)
-         make("n-resize", "M18,-3v5h" + Math.max(0, width - 2*18) + "v-5Z")
-         make("s-resize", "M18,3v-5h" + Math.max(0, width - 2*18) + "v5Z", 0, height);
+         make("e-resize", "M" + (width+3) + ",18h-5v" + Math.max(0, height - 2*18) + "h5Z");
+         make("n-resize", "M18,-3v5h" + Math.max(0, width - 2*18) + "v-5Z");
+         make("s-resize", "M18," + (height+3) + "v-5h" + Math.max(0, width - 2*18) + "v5Z");
       }
 
       function complete_drag() {
@@ -2401,32 +2398,38 @@
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
 
-            acc_x1 = Number(pthis.draw_g.attr("x"));
-            acc_y1 = Number(pthis.draw_g.attr("y"));
-            pad_w = pthis.pad_width() - rect_width();
-            pad_h = pthis.pad_height() - rect_height();
+            var handle = {
+               acc_x1: Number(pthis.draw_g.attr("x")),
+               acc_y1: Number(pthis.draw_g.attr("y")),
+               pad_w: pthis.pad_width() - rect_width(),
+               pad_h: pthis.pad_height() - rect_height()
+            };
 
             drag_tm = new Date();
 
             drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
                  .classed("zoom", true)
-                 .attr("x", acc_x1)
-                 .attr("y", acc_y1)
+                 .attr("x", handle.acc_x1)
+                 .attr("y", handle.acc_y1)
                  .attr("width", rect_width())
                  .attr("height", rect_height())
                  .style("cursor", "move")
-                 .style("pointer-events","none"); // let forward double click to underlying elements
+                 .style("pointer-events","none") // let forward double click to underlying elements
+                 .property('drag_handle', handle);
+
           }).on("drag", function() {
                if (!drag_rect) return;
 
                d3.event.sourceEvent.preventDefault();
                d3.event.sourceEvent.stopPropagation();
 
-               acc_x1 += d3.event.dx;
-               acc_y1 += d3.event.dy;
+               var handle = drag_rect.property('drag_handle');
 
-               drag_rect.attr("x", Math.min( Math.max(acc_x1, 0), pad_w))
-                        .attr("y", Math.min( Math.max(acc_y1, 0), pad_h));
+               handle.acc_x1 += d3.event.dx;
+               handle.acc_y1 += d3.event.dy;
+
+               drag_rect.attr("x", Math.min( Math.max(handle.acc_x1, 0), handle.pad_w))
+                        .attr("y", Math.min( Math.max(handle.acc_y1, 0), handle.pad_h));
 
           }).on(prefix+"end", function() {
                if (!drag_rect) return;
@@ -2454,41 +2457,46 @@
 
            pthis.SwitchTooltip(false); // disable tooltip
 
-           acc_x1 = Number(pthis.draw_g.attr("x"));
-           acc_y1 = Number(pthis.draw_g.attr("y"));
-           acc_x2 = acc_x1 + rect_width();
-           acc_y2 = acc_y1 + rect_height();
+           var handle = {
+              acc_x1: Number(pthis.draw_g.attr("x")),
+              acc_y1: Number(pthis.draw_g.attr("y")),
+              pad_w:  pthis.pad_width(),
+              pad_h:  pthis.pad_height()
+           };
 
-           pad_w = pthis.pad_width();
-           pad_h = pthis.pad_height();
+           handle.acc_x2 = handle.acc_x1 + rect_width();
+           handle.acc_y2 = handle.acc_y1 + rect_height();
 
            drag_rect = d3.select(pthis.draw_g.node().parentNode)
                          .append("rect")
                          .classed("zoom", true)
                          .style("cursor", d3.select(this).style("cursor"))
-                         .attr("x", acc_x1)
-                         .attr("y", acc_y1)
-                         .attr("width", acc_x2 - acc_x1)
-                         .attr("height", acc_y2 - acc_y1);
+                         .attr("x", handle.acc_x1)
+                         .attr("y", handle.acc_y1)
+                         .attr("width", handle.acc_x2 - handle.acc_x1)
+                         .attr("height", handle.acc_y2 - handle.acc_y1)
+                         .property('drag_handle', handle);
+
          }).on("drag", function() {
             if (!drag_rect) return;
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
 
-            var dx = d3.event.dx, dy = d3.event.dy, elem = d3.select(this);
+            var handle = drag_rect.property('drag_handle'),
+                dx = d3.event.dx, dy = d3.event.dy, elem = d3.select(this);
 
-            if (elem.classed('js_nw_resize')) { acc_x1 += dx; acc_y1 += dy; }
-            else if (elem.classed('js_ne_resize')) { acc_x2 += dx; acc_y1 += dy; }
-            else if (elem.classed('js_sw_resize')) { acc_x1 += dx; acc_y2 += dy; }
-            else if (elem.classed('js_se_resize')) { acc_x2+=dx; acc_y2 += dy; }
-            else if (elem.classed('js_w_resize')) { acc_x1 += dx; }
-            else if (elem.classed('js_n_resize')) { acc_y1 += dy; }
-            else if (elem.classed('js_e_resize')) { acc_x2 += dx; }
-            else if (elem.classed('js_s_resize')) { acc_y2 += dy; }
+            if (elem.classed('js_nw_resize')) { handle.acc_x1 += dx; handle.acc_y1 += dy; }
+            else if (elem.classed('js_ne_resize')) { handle.acc_x2 += dx; handle.acc_y1 += dy; }
+            else if (elem.classed('js_sw_resize')) { handle.acc_x1 += dx; handle.acc_y2 += dy; }
+            else if (elem.classed('js_se_resize')) { handle.acc_x2 += dx; handle.acc_y2 += dy; }
+            else if (elem.classed('js_w_resize')) { handle.acc_x1 += dx; }
+            else if (elem.classed('js_n_resize')) { handle.acc_y1 += dy; }
+            else if (elem.classed('js_e_resize')) { handle.acc_x2 += dx; }
+            else if (elem.classed('js_s_resize')) { handle.acc_y2 += dy; }
 
-            var x1 = Math.max(0, acc_x1), x2 = Math.min(acc_x2, pad_w),
-                y1 = Math.max(0, acc_y1), y2 = Math.min(acc_y2, pad_h);
+            var x1 = Math.max(0, handle.acc_x1), x2 = Math.min(handle.acc_x2, handle.pad_w),
+                y1 = Math.max(0, handle.acc_y1), y2 = Math.min(handle.acc_y2, handle.pad_h);
 
             drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2-x1)).attr("height", Math.max(0, y2-y1));
 
