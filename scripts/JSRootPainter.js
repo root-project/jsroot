@@ -3522,6 +3522,81 @@
       return draw_g.property('max_text_width');
    }
 
+   TObjectPainter.prototype.produceLatex = function(node, label, lvl) {
+      // attempt to implement subset of TLatex with plain SVG text and tspan elements
+
+      if (!lvl) lvl = 0;
+
+      var features = [ "#it{", "#color[" ], isany = false,
+          best, found, pos, n, subnode;
+
+      while (label) {
+
+         best = label.length; found = "";
+
+         for(n=0;n<features.length;++n) {
+            pos = label.indexOf(features[n]);
+            if ((pos>=0) && (pos<best)) { best = pos; found = features[n]; }
+         }
+
+         if (!found && !isany) {
+            if (!lvl) return 0; // indicate that nothing found, one can
+            node.text(label);
+            return true;
+         }
+
+         if (best>0)
+            node.append('tspan').text(label.substr(0,best));
+
+         if (!found) return true;
+
+         // remove preceeding block and tag itself
+         label = label.substr(best + found.length);
+
+         subnode = node.append('tspan');
+
+         isany = true;
+
+         switch(found) {
+            case "#color[": {
+               var pos = label.indexOf("]{");
+               var colindx = (pos>0) ? parseInt(label.substr(0,pos)) : Number.NaN;
+
+               if (isNaN(colindx)) {
+                  console.log('failure with #color[] tag');
+                  return false;
+               }
+
+               var col = this.get_color(colindx);
+               label = label.substr(pos + 2);
+               if (col) subnode.attr('fill', col);
+               break;
+           }
+           case "#it{":
+              subnode.attr('font-style', 'italic');
+              break;
+         }
+
+         pos = -1; n = 1;
+
+         while ((n!=0) && (++pos<label.length)) {
+            if (label[pos]=='{') n++; else
+            if (label[pos]=='}') n--;
+         }
+
+         if (n!=0) {
+            console.log('mismatch with open { and close } braces in Latex', label);
+            return false;
+         }
+
+         if (!this.produceLatex(subnode, label.substr(0,pos), lvl+1)) return false;
+
+         label = label.substr(pos+1);
+      }
+
+      return true;
+   }
+
    TObjectPainter.prototype.DrawText = function(arg) {
       // following arguments can be supplied
       //  align - either int value or text
@@ -3568,7 +3643,7 @@
 
       if (use_normal_text) {
 
-         if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
+         if (arg.latex) label = JSROOT.Painter.translateLaTeX(label);
 
          var txt = arg.draw_g.append("text");
 
@@ -3578,7 +3653,7 @@
                        else arg.font_size = font.size;
 
          if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
-            // this is split line, use special handling
+            // this is splitline, use special handling
             var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
                var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
@@ -3606,6 +3681,7 @@
                if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
+            // jsroot internal superscipt and subscript for axis labeling
             var pos = label.indexOf('#superscript{'), up = true;
             if (pos<0) { pos = label.indexOf('#subscript{'); up = false; }
 
@@ -3627,12 +3703,20 @@
             if (JSROOT.nodejs) arg.box = { height: 1.4*arg.font_size, width: w1+w2*0.8 };
 
          } else {
-            txt.text(label);
-            var label1 = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
 
-            arg.plain = label1 == label;
+            // console.log('Converting ', label);
 
-            if (JSROOT.nodejs) arg.box = { height: Math.round(arg.font_size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
+            arg.plain = !arg.latex || JSROOT.nodejs || (this.produceLatex(txt, label) === 0);
+
+            if (arg.plain) {
+               txt.text(label);
+               if (JSROOT.nodejs) arg.box = { height: Math.round(arg.font_size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
+            }
+
+            // txt.text(label);
+            // var label1 = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
+            // arg.plain = label1 == label;
+
          }
 
          if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
