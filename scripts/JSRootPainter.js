@@ -2306,69 +2306,27 @@
       function rect_width() { return Number(pthis.draw_g.attr("width")); }
       function rect_height() { return Number(pthis.draw_g.attr("height")); }
 
-      var resize_nw = this.draw_g.select('.resize_nw'),
-          resize_ne = this.draw_g.select('.resize_ne'),
-          resize_sw = this.draw_g.select('.resize_sw'),
-          resize_se = this.draw_g.select('.resize_se'),
-          resize_w = this.draw_g.select('.resize_w'),
-          resize_n = this.draw_g.select('.resize_n'),
-          resize_e = this.draw_g.select('.resize_e'),
-          resize_s = this.draw_g.select('.resize_s');
+      function MakeResizeElements(group, width, height, handler) {
+         function make(cursor,d,dx,dy) {
+            var clname = "js_" + cursor.replace('-','_');
+            var elem = group.select('.'+clname);
+            if (elem.empty()) elem = group.append('path').classed(clname,true);
+            elem.style('opacity', 0).style('cursor', cursor);
+            elem.attr('d',d);
+            if (dx || dy) elem.attr('transform','translate(' + dx + ',' + dy + ')');
+            if (handler) elem.call(handler);
+         }
 
-      if (resize_nw.empty())
-         resize_nw = this.draw_g.append("path")
-                              .attr('class','resize_nw')
-                              .attr("d","M2,2 h15 v-5 h-20 v20 h5 Z");
+         make("nw-resize", "M2,2h15v-5h-20v20h5Z");
+         make("ne-resize", "M-2,2h-15v-5h20v20h-5 Z", width, 0);
+         make("sw-resize", "M2,-2h15v5h-20v-20h5Z", 0, height);
+         make("se-resize", "M-2,-2h-15v5h20v-20h-5Z", width, height);
 
-      if (resize_ne.empty())
-         resize_ne = this.draw_g.append("path")
-                                .attr('class','resize_ne')
-                                .attr("d","M-2,2 h-15 v-5 h20 v20 h-5 Z");
-      if (resize_sw.empty())
-         resize_sw = this.draw_g.append("path")
-                                .attr('class','resize_sw')
-                                .attr("d","M2,-2 h15 v5 h-20 v-20 h5 Z");
-
-      if (resize_se.empty())
-         resize_se = this.draw_g.append("path")
-                              .attr('class','resize_se')
-                              .attr("d","M-2,-2 h-15 v5 h20 v-20 h-5 Z");
-
-      if (resize_w.empty())
-         resize_w = this.draw_g.append("rect")
-                        .attr('class','resize_w')
-                        .attr("x","-3").attr("y","18").attr("width","5");
-
-      if (resize_n.empty())
-         resize_n = this.draw_g.append("rect")
-                        .attr('class','resize_n')
-                        .attr("x","18").attr("y","-3").attr("height","5");
-
-      if (resize_e.empty())
-         resize_e = this.draw_g.append("rect")
-                        .attr('class','resize_e')
-                        .attr("x","-2").attr("y","18").attr("width","5");
-
-      if (resize_s.empty())
-         resize_s = this.draw_g.append("rect")
-                        .attr('class','resize_s')
-                        .attr("x","18").attr("y","-2").attr("height","5");
-
-      resize_nw.style('opacity', 0).style('cursor',"nw-resize");
-      resize_ne.style('opacity', 0).style('cursor',"ne-resize")
-                      .attr("transform", "translate(" + rect_width() + "," + 0 + ")");
-      resize_sw.style('opacity', 0).style('cursor',"sw-resize")
-                      .attr("transform", "translate(" + 0 + "," + rect_height() + ")");
-      resize_se.style('opacity', 0).style('cursor',"se-resize")
-                      .attr("transform", "translate(" + rect_width() + "," + rect_height() + ")");
-
-      resize_w.style('opacity',0).style('cursor',"w-resize").attr("height", Math.max(0, rect_height() - 2*18));
-      resize_n.style('opacity',0).style('cursor',"n-resize").attr("width", Math.max(0, rect_width() - 2*18));
-
-      resize_e.style('opacity',0).style('cursor',"e-resize").attr("height", Math.max(0, rect_height() - 2*18))
-                                                            .attr("transform", "translate(" + rect_width() + "," + 0 + ")");
-      resize_s.style('opacity',0).style('cursor',"s-resize").attr("width", Math.max(0, rect_width() - 2*18))
-                                                            .attr("transform", "translate(" + 0 + "," + rect_height() + ")");
+         make("w-resize", "M-3,18h5v" + Math.max(0, height - 2*18) + "h-5Z");
+         make("e-resize", "M3,18h-5v" + Math.max(0, height - 2*18) + "h5Z", width, 0)
+         make("n-resize", "M18,-3v5h" + Math.max(0, width - 2*18) + "v-5Z")
+         make("s-resize", "M18,3v-5h" + Math.max(0, width - 2*18) + "v5Z", 0, height);
+      }
 
       function complete_drag() {
          drag_rect.style("cursor", "auto");
@@ -2401,13 +2359,7 @@
 
          pthis.SwitchTooltip(true);
 
-         resize_ne.attr("transform", "translate(" + newwidth + "," + 0 + ")");
-         resize_sw.attr("transform", "translate(" + 0 + "," + newheight + ")");
-         resize_se.attr("transform", "translate(" + newwidth + "," + newheight + ")");
-         resize_w.attr("height", Math.max(0, newheight - 2*18));
-         resize_n.attr("width", Math.max(0, newwidth - 2*18));
-         resize_e.attr("height", Math.max(0, newheight - 2*18)).attr("transform", "translate(" + newwidth + "," + 0 + ")");
-         resize_s.attr("width", Math.max(0, newwidth - 2*18)).attr("transform", "translate(" + 0 + "," + newheight + ")");
+         MakeResizeElements(pthis.draw_g, newwidth, newheight);
 
          if (change_size || change_pos) {
             if (change_size && ('resize' in callback)) callback.resize(newwidth, newheight);
@@ -2526,14 +2478,14 @@
 
             var dx = d3.event.dx, dy = d3.event.dy, elem = d3.select(this);
 
-            if (elem.classed('resize_nw')) { acc_x1 += dx; acc_y1 += dy; }
-            else if (elem.classed('resize_ne')) { acc_x2 += dx; acc_y1 += dy; }
-            else if (elem.classed('resize_sw')) { acc_x1 += dx; acc_y2 += dy; }
-            else if (elem.classed('resize_se')) { acc_x2+=dx; acc_y2 += dy; }
-            else if (elem.classed('resize_w')) { acc_x1 += dx; }
-            else if (elem.classed('resize_n')) { acc_y1 += dy; }
-            else if (elem.classed('resize_e')) { acc_x2 += dx; }
-            else if (elem.classed('resize_s')) { acc_y2 += dy; }
+            if (elem.classed('js_nw_resize')) { acc_x1 += dx; acc_y1 += dy; }
+            else if (elem.classed('js_ne_resize')) { acc_x2 += dx; acc_y1 += dy; }
+            else if (elem.classed('js_sw_resize')) { acc_x1 += dx; acc_y2 += dy; }
+            else if (elem.classed('js_se_resize')) { acc_x2+=dx; acc_y2 += dy; }
+            else if (elem.classed('js_w_resize')) { acc_x1 += dx; }
+            else if (elem.classed('js_n_resize')) { acc_y1 += dy; }
+            else if (elem.classed('js_e_resize')) { acc_x2 += dx; }
+            else if (elem.classed('js_s_resize')) { acc_y2 += dy; }
 
             var x1 = Math.max(0, acc_x1), x2 = Math.min(acc_x2, pad_w),
                 y1 = Math.max(0, acc_y1), y2 = Math.min(acc_y2, pad_h);
@@ -2551,14 +2503,7 @@
       if (!callback.only_resize)
          this.draw_g.style("cursor", "move").call(drag_move);
 
-      resize_nw.call(drag_resize);
-      resize_ne.call(drag_resize);
-      resize_sw.call(drag_resize);
-      resize_se.call(drag_resize);
-      resize_w.call(drag_resize);
-      resize_n.call(drag_resize);
-      resize_e.call(drag_resize);
-      resize_s.call(drag_resize);
+      MakeResizeElements(this.draw_g, rect_width(), rect_height(), drag_resize);
    }
 
    TObjectPainter.prototype.startTouchMenu = function(kind) {
@@ -3472,11 +3417,10 @@
       });
 
       // now hidden text after rescaling can be shown
-      draw_g.selectAll('.hidden_text').attr('opacity', null).classed('hidden_text', false).each(function() {
+      draw_g.selectAll('.hidden_text').attr('visibility', null).classed('hidden_text', false).each(function() {
          // case when scaling is changed and we can shift text position only after final text size is defined
          var txt = d3.select(this),
              arg = txt.property("_arg");
-
          txt.property("_arg", null);
 
          if (!arg) return;
@@ -3550,7 +3494,7 @@
       if (typeof arg.align == 'string') {
          align = arg.align.split(";");
          if (align.length==1) align.push('middle');
-      } else {
+      } else if (typeof arg.align == 'number') {
          if ((arg.align / 10) >= 3) align[0] = 'end'; else
          if ((arg.align / 10) >= 2) align[0] = 'middle';
          if ((arg.align % 10) == 0) align[1] = 'bottom'; else
@@ -3563,7 +3507,8 @@
       arg.x = arg.x || 0;
       arg.y = arg.y || 0;
       arg.scale = arg.width && arg.height && !arg.font_size;
-      if (!arg.scale) arg.width = arg.height = 0;
+      arg.width = arg.width || 0;
+      arg.height = arg.height || 0;
 
       if (arg.latex===undefined) arg.latex = 1;
       if (arg.latex<2)
@@ -3645,7 +3590,7 @@
 
          if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
 
-         txt.classed('hidden_text',true).attr('opacity',0) // hide elements until text drawing is finished
+         txt.classed('hidden_text',true).attr('visibility','hidden') // hide elements until text drawing is finished
             .property("_arg", arg);
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
