@@ -3485,7 +3485,30 @@
       });
 
       // now hidden text after rescaling can be shown
-      draw_g.selectAll('.hidden_text').attr('opacity', '1').classed('hidden_text',false);
+      draw_g.selectAll('.hidden_text').attr('opacity', null).classed('hidden_text',false).each(function() {
+         // case when scaling is changed and we can shift text position only after final text size is defined
+         var txt = d3.select(this);
+         var shift_x = txt.property('shift_x') || 0, shift_y = txt.property('shift_y') || 0;
+         if (!shift_x && !shift_y) return;
+
+         var box = txt.property("_box"),
+             pos_x = txt.property("_pos_x"),
+             pos_y = txt.property("_pos_y"),
+             rotate = txt.property("_rotate");
+         if (JSROOT.nodejs) {
+            if (f>0) { box.width = box.width/f; box.height = box.height/f; }
+         } else {
+            box = painter.GetBoundarySizes(txt.node());
+         }
+         txt.property("_box", null);
+         console.log('shift_x', shift_x, 'box_width', box.width);
+         pos_x += shift_x*box.width;
+         pos_y += shift_y*box.height;
+         var trans = "translate("+Math.round(pos_x)+","+Math.round(pos_y)+")";
+         if (rotate) trans += " rotate("+Math.round(rotate)+")";
+         console.log('trans', trans);
+         txt.attr("transform", null).attr("transform", trans);
+      });
 
       if (!call_ready) call_ready = draw_g.node().text_callback;
       draw_g.node().text_callback = null;
@@ -3540,7 +3563,7 @@
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
          var pos_x = arg.x || 0, pos_y = arg.y || 0,
-             box = null, simple_txt = false,
+             box = null, simple_txt = false, after_shift = false,
              txt = draw_g.append("text");
 
          if (arg.color) txt.attr("fill", arg.color);
@@ -3560,19 +3583,18 @@
                l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
                var w2 = JSROOT.Painter.approxTextWidth(font, l2);
 
-               if (isfrac) {
+               if (isfrac || (align[0]=='middle')) {
 
                   if (w1>=w2) {
-                     span1.style("text-decoration", "underline");
-                     span2.attr("x", Math.round(w1-w2)/2);
+                     if (isfrac) span1.style("text-decoration", "underline");
+                     span2.attr("x", ((w1-w2)/font.size*0.5).toFixed(1) + "em"); // use em units to let scale
                   } else {
-                     span2.style("text-decoration", "overline");
-                     span1.attr("x", Math.round(w2-w1)/2);
+                     if (isfrac) span2.style("text-decoration", "overline");
+                     span1.attr("x", ((w2-w1)/font.size*0.5).toFixed(1) + "em"); // use em units to let scale
                   }
                }
 
-               box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
-                      { height: Math.round(font.size*1.2+2*yy), width: Math.max(w1,w2) };
+               box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: 2.2*font.size, width: Math.max(w1,w2) };
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             var pos = label.indexOf('#superscript{'), up = true;
@@ -3588,12 +3610,12 @@
                 w1 = JSROOT.Painter.approxTextWidth(font, l1),
                 span2 = txt.append("tspan")
                            .text(l2)
-                           .attr("y", Math.round((up ? -0.5 : 0.5)*font.size))
+                           .attr("y", up ? "-.5em" : ".5em")
                            .style('vertical-align', up ? 'super' : 'sub')
                            .style('font-size', 'smaller'),
                 w2 = JSROOT.Painter.approxTextWidth(font, l2);
 
-            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.8) };
+            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: 1.4*font.size, width: w1+w2*0.8 };
 
          } else {
             txt.text(label);
@@ -3615,8 +3637,14 @@
             txt.attr("text-anchor", align[0]);
          } else {
             txt.attr("text-anchor", "start");
-            if (align[0]=="middle") pos_x -= (arg.width || box.width)/2; else
-            if (align[0]=="end") pos_x -= (arg.width || box.width);
+            var shift_x = (align[0]=="middle") ? -0.5 : ((align[0]=="end") ? -1 : 0);
+            if (shift_x && scale) {
+               after_shift = true;
+               console.log('shift_x', shift_x);
+               txt.property('shift_x', shift_x);
+            } else {
+               pos_x += shift_x*box.width;
+            }
          }
 
          if (arg.height) {
@@ -3630,8 +3658,13 @@
                if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
-            if (align[1] == 'top') pos_y += (arg.height || box.height); else
-            if (align[1] == 'middle') pos_y += (arg.height || box.height)/2;
+            var shift_y = (align[1] == 'top') ? 1 : (align[1] == 'middle') ? 0.5 : 0;
+            if (shift_y && scale) {
+               after_shift = true;
+               txt.property('shift_y', shift_y);
+            } else {
+               pos_y += shift_y*box.height;
+            }
          }
 
          // use translate and then rotate to avoid complex sign calculations
@@ -3646,7 +3679,11 @@
          // workaround for Node.js - use primitive estimation of textbox size
          // later can be done with Node.js (via SVG) or with alternative implementation of jsdom
 
-         if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
+         if (scale) {
+            txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
+            if (after_shift) txt.property("_pos_x", pos_x).property("_pos_y", pos_y)
+                                .property("_rotate", arg.rotate || 0).property("_box", box);
+         }
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
          if (arg.width && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width/arg.width, draw_g);
