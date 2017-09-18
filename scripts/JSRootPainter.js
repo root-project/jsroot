@@ -3627,7 +3627,7 @@
          if (simple_txt) {
             if (align[1] == 'top') txt.attr("dy", ".8em"); else
             if (align[1] == 'middle') {
-               if (JSROOT.browser.isIE) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+               if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
             if (align[1] == 'top') pos_y += (arg.height || box.height); else
