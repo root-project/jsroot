@@ -3511,9 +3511,9 @@
       //  draw_g - element where to place text
 
       var draw_g = arg.draw_g || this.draw_g,
-          label = arg.text || "", align = ['start', 'middle'],
-          x = arg.x || 0, y = arg.y || 0,
-          w = arg.width || 0, h = arg.height || 0;
+          label = arg.text || "",
+          align = ['start', 'middle'],
+          scale = arg.width && arg.height;
 
       if (typeof arg.align == 'string') {
          align = arg.align.split(";");
@@ -3525,8 +3525,6 @@
          if ((arg.align % 10) == 1) align[1] = 'bottom-base'; else
          if ((arg.align % 10) == 3) align[1] = 'top';
       }
-
-      var scale = arg.width && arg.height;
 
       if (arg.latex===undefined) arg.latex = 1;
       if (arg.latex<2)
@@ -3541,21 +3539,18 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x, pos_y = y, middleline = false,
-             box = null, simple_txt = false;
+         var pos_x = arg.x || 0, pos_y = arg.y || 0,
+             box = null, simple_txt = false,
+             txt = draw_g.append("text");
 
-         var txt = draw_g.append("text")
-                         .attr("x", 0)
-                         .attr("y", 0)
-                         .attr("fill", arg.color || null);
+         if (arg.color) txt.attr("fill", arg.color);
 
          if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
             // this is split line, use special handling
             var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
                var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
-                   l2 = label.substr(pos+2, label.length - pos - 3),
-                   yy = arg.height ? arg.height/2 : font.size*1.2;
+                   l2 = label.substr(pos+2, label.length - pos - 3);
 
                var span1 = txt.append("tspan").attr("x",0).attr("y", "-1em").text(l1);
                l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
@@ -3567,23 +3562,17 @@
 
                if (isfrac) {
 
-                  var xsign = (align[0] == 'end') ? -1 : ((align[0] == 'start') ? 1 : 0);
-
                   if (w1>=w2) {
                      span1.style("text-decoration", "underline");
-                     span2.attr("x", Math.round(xsign*(w1-w2)/2));
+                     span2.attr("x", Math.round(w1-w2)/2);
                   } else {
                      span2.style("text-decoration", "overline");
-                     span1.attr("x", Math.round(xsign*(w2-w1)/2));
+                     span1.attr("x", Math.round(w2-w1)/2);
                   }
                }
 
-               txt.attr("text-anchor", "start");
-
                box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
                       { height: Math.round(font.size*1.2+2*yy), width: Math.max(w1,w2) };
-
-               console.log('splitline', box.height, 'pos_y', pos_y, 'align[1]', align[1], 'arg.height', arg.height);
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             var pos = label.indexOf('#superscript{'), up = true;
@@ -3604,8 +3593,6 @@
                            .style('font-size', 'smaller'),
                 w2 = JSROOT.Painter.approxTextWidth(font, l2);
 
-            txt.attr("text-anchor", "start");
-
             box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.8) };
 
          } else {
@@ -3620,7 +3607,7 @@
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
-            if (align[0]=="middle") pos_x += arg.width*0.5; else
+            if (align[0]=="middle") pos_x += arg.width/2; else
             if (align[0]=="end") pos_x += arg.width;
          }
 
@@ -3628,13 +3615,13 @@
             txt.attr("text-anchor", align[0]);
          } else {
             txt.attr("text-anchor", "start");
-            if (align[0]=="middle") pos_x -= box.width/2; else
-            if (align[0]=="end") pos_x -= box.width;
+            if (align[0]=="middle") pos_x -= (arg.width || box.width)/2; else
+            if (align[0]=="end") pos_x -= (arg.width || box.width);
          }
 
          if (arg.height) {
             if (align[1].indexOf('bottom')===0) pos_y += arg.height; else
-            if (align[1] == 'middle') pos_y += h/2;
+            if (align[1] == 'middle') pos_y += arg.height/2;
          }
 
          if (simple_txt) {
@@ -3646,9 +3633,10 @@
             if (align[1] == 'top') pos_y += (arg.height || box.height); else
             if (align[1] == 'middle') pos_y += (arg.height || box.height)/2;
          }
+
          // use translate and then rotate to avoid complex sign calculations
          var trans = (pos_x || pos_y) ? "translate("+Math.round(pos_x)+","+Math.round(pos_y)+")" : "";
-         if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+",0,0)";
+         if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+")";
          if (trans) txt.attr("transform", trans);
 
          if (arg.font_size) txt.attr("font-size", arg.font_size);
@@ -3661,23 +3649,20 @@
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
          if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if ((w>0) && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width/w, draw_g);
-         if ((h>0) && scale && !arg.font_size) this.TextScaleFactor(1.*box.height/h, draw_g);
+         if (arg.width && scale && !arg.font_size) this.TextScaleFactor(1.05*box.width/arg.width, draw_g);
+         if (arg.height && scale && !arg.font_size) this.TextScaleFactor(1.*box.height/arg.height, draw_g);
 
          return box.width;
       }
-
-      w = Math.round(w); h = Math.round(h);
-      x = Math.round(x); y = Math.round(y);
 
       var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
           fo_g = draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
-                       .property('_x', x) // used for translation later
-                       .property('_y', y)
-                       .property('_width', w) // used to check scaling
-                       .property('_height', h)
+                       .property('_x', Math.round(arg.x || 0)) // used for translation later
+                       .property('_y', Math.round(arg.y || 0))
+                       .property('_width', Math.round(arg.width || 0)) // used to check scaling
+                       .property('_height', Math.round(arg.height || 0))
                        .property('_scale', scale)
                        .property('_rotate', arg.rotate || 0)
                        .property('_align', align);
