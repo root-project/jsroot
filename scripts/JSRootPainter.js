@@ -169,7 +169,7 @@
                                    0.54, 0.556, 0.56, 0.6,
                                    0.6, 0.6, 0.6,
                                    0.587, 0.514, 0.896, 0.587, 0.55 ],
-          superscript_symbols_map: {
+          superscript_letters: {
                 '1': '\xB9',
                 '2': '\xB2',
                 '3': '\xB3',
@@ -187,9 +187,6 @@
                 '=': '\u207C',
                 '(': '\u207D',
                 ')': '\u207E',
-                'n': '\u207F',
-                'a': '\xAA',
-                'v': '\u2C7D',
                 'h': '\u02B0',
                 'j': '\u02B2',
                 'r': '\u02B3',
@@ -197,9 +194,33 @@
                 'y': '\u02B8',
                 'l': '\u02E1',
                 's': '\u02E2',
-                'x': '\u02E3'
+                'x': '\u02E3',
+                'a': '\u1D43',
+                'b': '\u1D47',
+                'd': '\u1D48',
+                'e': '\u1D49',
+                'g': '\u1D4D',
+                'k': '\u1D4F',
+                'm': '\u1D50',
+                'o': '\u1D52',
+                'p': '\u1D56',
+                't': '\u1D57',
+                'u': '\u1D58',
+                'v': '\u1D5B',
+                'c': '\u1D9C',
+                'f': '\u1DA0',
+                'i': '\u2071',
+                'n': '\u207F'
           },
-          subscript_symbols_map: {
+          superscript_symbols_map: {
+                '#beta': '\u1D5D',
+                '#gamma': '\u1D5E',
+                '#delta': '\u1D5F',
+                '#phi': '\u1D60',
+                '#xi': '\u1D61',
+                '#theta': '\u1DBF'
+          },
+          subscript_letters: {
                   '0': '\u2080',
                   '1': '\u2081',
                   '2': '\u2082',
@@ -215,20 +236,31 @@
                   '=': '\u208C',
                   '(': '\u208D',
                   ')': '\u208E',
+                  'i': '\u1D62',
+                  'r': '\u1D63',
+                  'u': '\u1D64',
+                  'v': '\u1D65',
                   'a': '\u2090',
                   'e': '\u2091',
                   'o': '\u2092',
                   'x': '\u2093',
                   'ə': '\u2094',
+                  'j': '\u2C7C',
+                  'l': '\u2097',
                   'h': '\u2095',
                   'k': '\u2096',
-                  'l': '\u2097',
                   'm': '\u2098',
                   'n': '\u2099',
                   'p': '\u209A',
                   's': '\u209B',
-                  't': '\u209C',
-                  'j': '\u2C7C'
+                  't': '\u209C'
+          },
+          subscript_symbols_map: {
+                  '#beta' : '\u1D66',
+                  '#gamma' : '\u1D67',
+                  '#rho' : '\u1D68',
+                  '#phi' : '\u1D69',
+                  '#chi' : '\u1D6A'
           },
           symbols_map: {
                 // greek letters
@@ -1149,17 +1181,21 @@
       return offset;
    }
 
-   Painter.translateSuperscript = function(_exp) {
+   Painter.translateSuperscript = function(str) {
+      for (var i in this.superscript_symbols_map)
+         str = str.replace(new RegExp(i,'g'), this.superscript_symbols_map[i]);
       var res = "";
-      for (var n=0;n<_exp.length;++n)
-         res += (this.superscript_symbols_map[_exp[n]] || _exp[n]);
+      for (var n=0;n<str.length;++n)
+         res += (this.superscript_letters[str[n]] || str[n]);
       return res;
    }
 
-   Painter.translateSubscript = function(_sub) {
+   Painter.translateSubscript = function(str) {
+      for (var i in this.subscript_symbols_map)
+         str = str.replace(new RegExp(i,'g'), this.subscript_symbols_map[i]);
       var res = "";
-      for (var n=0;n<_sub.length;++n)
-         res += (this.subscript_symbols_map[_sub[n]] || _sub[n]);
+      for (var n=0;n<str.length;++n)
+         res += (this.subscript_letters[str[n]] || str[n]);
       return res;
    }
 
@@ -2293,7 +2329,7 @@
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this, drag_tm = null, drag_rect = null;
+      var pthis = this, drag_rect = null;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -2307,8 +2343,8 @@
 
       function MakeResizeElements(group, width, height, handler) {
          function make(cursor,d) {
-            var clname = "js_" + cursor.replace('-','_');
-            var elem = group.select('.'+clname);
+            var clname = "js_" + cursor.replace('-','_'),
+                elem = group.select('.'+clname);
             if (elem.empty()) elem = group.append('path').classed(clname,true);
             elem.style('opacity', 0).style('cursor', cursor).attr('d',d);
             if (handler) elem.call(handler);
@@ -2402,10 +2438,9 @@
                acc_x1: Number(pthis.draw_g.attr("x")),
                acc_y1: Number(pthis.draw_g.attr("y")),
                pad_w: pthis.pad_width() - rect_width(),
-               pad_h: pthis.pad_height() - rect_height()
+               pad_h: pthis.pad_height() - rect_height(),
+               drag_tm: new Date()
             };
-
-            drag_tm = new Date();
 
             drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
                  .classed("zoom", true)
@@ -2416,6 +2451,7 @@
                  .style("cursor", "move")
                  .style("pointer-events","none") // let forward double click to underlying elements
                  .property('drag_handle', handle);
+
 
           }).on("drag", function() {
                if (!drag_rect) return;
@@ -2436,9 +2472,11 @@
 
                d3.event.sourceEvent.preventDefault();
 
+               var handle = drag_rect.property('drag_handle');
+
                if (complete_drag() === false) {
-                  var spent = (new Date()).getTime() - drag_tm.getTime();
-                  if(callback.ctxmenu && (spent > 600)) {
+                  var spent = (new Date()).getTime() - handle.drag_tm.getTime();
+                  if (callback.ctxmenu && (spent > 600)) {
                      var rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   } else if (callback.canselect && (spent <= 600)) {
@@ -3529,6 +3567,7 @@
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
       if (use_normal_text) {
+
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
          var txt = arg.draw_g.append("text");
