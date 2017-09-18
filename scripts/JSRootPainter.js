@@ -3526,7 +3526,7 @@
          if ((arg.align % 10) == 3) align[1] = 'top';
       }
 
-      var scale = (w>0) && (h>0);
+      var scale = arg.width && arg.height;
 
       if (arg.latex===undefined) arg.latex = 1;
       if (arg.latex<2)
@@ -3541,64 +3541,29 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var pos_x = x, pos_y = y, pos_dy = 0, middleline = false;
-
-         if (w>0) {
-            // adjust x position when scale into specified rectangle
-            if (align[0]=="middle") pos_x += w*0.5; else
-            if (align[0]=="end") pos_x += w;
-         }
-
-         if (h>0) {
-            if (align[1].indexOf('bottom')===0) pos_y += h; else
-            if (align[1] == 'top') pos_dy = 0.8; else {
-               pos_y += h/2 + 1;
-               if (JSROOT.browser.isIE) pos_dy = 0.4; else middleline = true;
-            }
-         } else {
-            if (align[1] == 'top') pos_dy = 0.8; else
-            if (align[1] == 'middle') {
-               if (JSROOT.browser.isIE) pos_dy = 0.4; else middleline = true;
-            }
-         }
-
-         // use translate and then rotate to avoid complex sign calculations
-         var trans = "translate("+Math.round(pos_x)+","+Math.round(pos_y)+")";
-         if (arg.rotate) {
-            while (arg.rotate<0) arg.rotate += 360;
-            trans += " rotate("+Math.round(arg.rotate)+",0,0)";
-         }
+         var pos_x = x, pos_y = y, middleline = false,
+             box = null, simple_txt = false;
 
          var txt = draw_g.append("text")
-                         .attr("text-anchor", align[0])
                          .attr("x", 0)
                          .attr("y", 0)
-                         .attr("fill", arg.color || null)
-                         .attr("transform", trans)
-                         .text(label);
-
-         var box = null; // box with label dimensions
+                         .attr("fill", arg.color || null);
 
          if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
             // this is split line, use special handling
             var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
                var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
-                   l2 = label.substr(pos+2, label.length - pos - 3);
+                   l2 = label.substr(pos+2, label.length - pos - 3),
+                   yy = arg.height ? arg.height/2 : font.size*1.2;
 
-               txt.text("");
-
-               var yy = arg.height ? arg.height/4 : font.size*0.6;
-
-               var span1 = txt.append("tspan").attr("x",0).attr("y", Math.round(-yy + pos_dy*font.size)).text(l1);
+               var span1 = txt.append("tspan").attr("x",0).attr("y", "-1em").text(l1);
                l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
                var w1 = JSROOT.Painter.approxTextWidth(font, l1);
 
-               var span2 = txt.append("tspan").attr("x",0).attr("y", Math.round(yy + pos_dy*font.size)).text(l2);
+               var span2 = txt.append("tspan").attr("x",0).attr("y", 0).text(l2);
                l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
                var w2 = JSROOT.Painter.approxTextWidth(font, l2);
-
-               pos_dy = 0; // no need for extra shifts
 
                if (isfrac) {
 
@@ -3613,10 +3578,12 @@
                   }
                }
 
-               if (JSROOT.nodejs)
-                  box = { height: Math.round(font.size*1.2+2*yy), width: Math.max(w1,w2) };
+               txt.attr("text-anchor", "start");
 
-               label = l1+l2;
+               box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
+                      { height: Math.round(font.size*1.2+2*yy), width: Math.max(w1,w2) };
+
+               console.log('splitline', box.height, 'pos_y', pos_y, 'align[1]', align[1], 'arg.height', arg.height);
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             var pos = label.indexOf('#superscript{'), up = true;
@@ -3626,44 +3593,70 @@
             pos += (up ? 13 : 11);
             var l2 = label.substr(pos, label.length-1-pos);
 
-            txt.text("");
-
             var span1 = txt.append("tspan")
                            .text(l1)
-                           .attr("y", Math.round(pos_dy*font.size)),
+                           .attr("y", 0),
                 w1 = JSROOT.Painter.approxTextWidth(font, l1),
                 span2 = txt.append("tspan")
                            .text(l2)
-                           .attr("y", Math.round((pos_dy + (up ? -0.5 : 0.5))*font.size))
+                           .attr("y", Math.round((up ? -0.5 : 0.5)*font.size))
                            .style('vertical-align', up ? 'super' : 'sub')
                            .style('font-size', 'smaller'),
                 w2 = JSROOT.Painter.approxTextWidth(font, l2);
-            
-            pos_dy = 0;
 
             txt.attr("text-anchor", "start");
-            
+
             box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) : { height: Math.round(font.size*1.4), width: Math.round(w1+w2*0.8) };
 
-            if (align[0]=="middle") txt.attr("x", -Math.round(box.width*0.5));
-            if (align[0]=="end") txt.attr("x", -box.width);
+         } else {
+            txt.text(label);
+            var label1 = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
 
-            label = l1+l2;
+            simple_txt = label1 == label;
+
+            box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
+                     { height: Math.round(font.size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
          }
 
-         if (arg.latex) label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
+         if (arg.width) {
+            // adjust x position when scale into specified rectangle
+            if (align[0]=="middle") pos_x += arg.width*0.5; else
+            if (align[0]=="end") pos_x += arg.width;
+         }
 
-         if (pos_dy) txt.attr("dy", pos_dy.toFixed(1).substr(1)+"em");
-         if (middleline) txt.attr("dominant-baseline", "middle");
+         if (simple_txt) {
+            txt.attr("text-anchor", align[0]);
+         } else {
+            txt.attr("text-anchor", "start");
+            if (align[0]=="middle") pos_x -= box.width/2; else
+            if (align[0]=="end") pos_x -= box.width;
+         }
+
+         if (arg.height) {
+            if (align[1].indexOf('bottom')===0) pos_y += arg.height; else
+            if (align[1] == 'middle') pos_y += h/2;
+         }
+
+         if (simple_txt) {
+            if (align[1] == 'top') txt.attr("dy", ".8em"); else
+            if (align[1] == 'middle') {
+               if (JSROOT.browser.isIE) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+            }
+         } else {
+            if (align[1] == 'top') pos_y += (arg.height || box.height); else
+            if (align[1] == 'middle') pos_y += (arg.height || box.height)/2;
+         }
+         // use translate and then rotate to avoid complex sign calculations
+         var trans = (pos_x || pos_y) ? "translate("+Math.round(pos_x)+","+Math.round(pos_y)+")" : "";
+         if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+",0,0)";
+         if (trans) txt.attr("transform", trans);
+
          if (arg.font_size) txt.attr("font-size", arg.font_size);
 
          draw_g.property('normaltext_use', true);
 
          // workaround for Node.js - use primitive estimation of textbox size
          // later can be done with Node.js (via SVG) or with alternative implementation of jsdom
-
-         if (!box) box = !JSROOT.nodejs ? this.GetBoundarySizes(txt.node()) :
-                          { height: Math.round(font.size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
 
          if (scale) txt.classed('hidden_text',true).attr('opacity','0'); // hide rescale elements
 
