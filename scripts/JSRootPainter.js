@@ -3410,15 +3410,17 @@
 
          vvv.attr("width", width).attr('height', height).attr("style",null);
 
-         fo_g.property('_valign', valign);
-
          if (!JSROOT.nodejs) {
             var box = painter.GetBoundarySizes(fo_g.node());
             width = 1.05*box.width; height = 1.05*box.height;
          }
 
-         if (fo_g.property('_scale'))
-            svg_factor = Math.max(svg_factor, width / fo_g.property('_width'), height / fo_g.property('_height'));
+         var arg = fo_g.property("_arg");
+
+         arg.valign = valign;
+
+         if (arg.scale)
+            svg_factor = Math.max(svg_factor, width / arg.width, height / arg.height);
       });
 
       if (svgs)
@@ -3427,7 +3429,7 @@
          // only direct parent
          if (fo_g.node().parentNode !== draw_g.node()) return;
 
-         var valign = fo_g.property('_valign'),
+         var arg = fo_g.property("_arg"),
              m = fo_g.select("svg"), // MathJax svg
              mw = parseInt(m.attr("width")),
              mh = parseInt(m.attr("height"));
@@ -3444,54 +3446,46 @@
             mh = box.height || mh || 10;
          }
 
-         if ((svg_factor > 0.) && valign) valign = valign/svg_factor;
+         if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign/svg_factor;
 
-         if (valign===null) valign = (font_size - mh)/2;
-
-         var align = fo_g.property('_align'),
-             rotate = fo_g.property('_rotate'),
-             fo_w = fo_g.property('_width'),
-             fo_h = fo_g.property('_height'),
-             tr = { x: fo_g.property('_x'), y: fo_g.property('_y') };
+         if (arg.valign===null) arg.valign = (font_size - mh)/2;
 
          var sign = { x:1, y:1 }, nx = "x", ny = "y";
-         if (rotate == 180) { sign.x = sign.y = -1; } else
-         if ((rotate == 270) || (rotate == 90)) {
-            sign.x = (rotate===270) ? -1 : 1;
+         if (arg.rotate == 180) { sign.x = sign.y = -1; } else
+         if ((arg.rotate == 270) || (arg.rotate == 90)) {
+            sign.x = (arg.rotate == 270) ? -1 : 1;
             sign.y = -sign.x;
             nx = "y"; ny = "x"; // replace names to which align applied
          }
 
-         if (!fo_g.property('_scale')) fo_w = fo_h = 0;
+         if (arg.align[0] == 'middle') arg[nx] += sign.x*(arg.width - mw)/2; else
+         if (arg.align[0] == 'end')    arg[nx] += sign.x*(arg.width - mw);
 
-         if (align[0] == 'middle') tr[nx] += sign.x*(fo_w - mw)/2; else
-         if (align[0] == 'end')    tr[nx] += sign.x*(fo_w - mw);
+         if (arg.align[1] == 'middle') arg[ny] += sign.y*(arg.height - mh)/2; else
+         if (arg.align[1] == 'bottom') arg[ny] += sign.y*(arg.height - mh); else
+         if (arg.align[1] == 'bottom-base') arg[ny] += sign.y*(arg.height - mh - arg.valign);
 
-         if (align[1] == 'middle') tr[ny] += sign.y*(fo_h - mh)/2; else
-         if (align[1] == 'bottom') tr[ny] += sign.y*(fo_h - mh); else
-         if (align[1] == 'bottom-base') tr[ny] += sign.y*(fo_h - mh - valign);
+         var trans = "translate("+arg.x+","+arg.y+")";
+         if (arg.rotate) trans += " rotate("+arg.rotate+")";
 
-         var trans = "translate("+tr.x+","+tr.y+")";
-         if (rotate!==0) trans += " rotate("+rotate+",0,0)";
-
-         fo_g.attr('transform', trans).attr('visibility', null);
+         fo_g.attr('transform', trans).attr('visibility', null).property('_arg',null);
       });
 
       // now hidden text after rescaling can be shown
       draw_g.selectAll('.hidden_text').attr('opacity', null).classed('hidden_text', false).each(function() {
          // case when scaling is changed and we can shift text position only after final text size is defined
          var txt = d3.select(this),
-             box = txt.property("_box"),
              arg = txt.property("_arg");
 
-         txt.property("_box", null).property("_arg", null);
+         txt.property("_arg", null);
 
          if (!arg) return;
 
          if (JSROOT.nodejs) {
-            if (arg.scale && (f>0)) { box.width = box.width/f; box.height = box.height/f; }
-         } else {
-            box = painter.GetBoundarySizes(txt.node());
+            if (arg.scale && (f>0)) { arg.box.width = arg.box.width/f; arg.box.height = arg.box.height/f; }
+         } else if (!arg.plain) {
+            // exact box dimension only required when complex text was build
+            arg.box = painter.GetBoundarySizes(txt.node());
          }
 
          if (arg.width) {
@@ -3504,8 +3498,7 @@
             txt.attr("text-anchor", arg.align[0]);
          } else {
             txt.attr("text-anchor", "start");
-            arg.shift_x = (arg.align[0]=="middle") ? -0.5 : ((arg.align[0]=="end") ? -1 : 0);
-            arg.x += arg.shift_x*box.width;
+            arg.x -= ((arg.align[0]=="middle") ? 0.5 : ((arg.align[0]=="end") ? 1 : 0)) * arg.box.width;
          }
 
          if (arg.height) {
@@ -3519,8 +3512,7 @@
                if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
-            arg.shift_y = (arg.align[1] == 'top') ? 1 : (arg.align[1] == 'middle') ? 0.5 : 0;
-            arg.y += arg.shift_y*box.height;
+            arg.y += ((arg.align[1] == 'top') ? 1 : (arg.align[1] == 'middle') ? 0.5 : 0) * arg.box.height;
          }
 
          // use translate and then rotate to avoid complex sign calculations
@@ -3552,8 +3544,7 @@
       //  font_size - fixed font size (optional)
       //  draw_g - element where to place text
 
-      var draw_g = arg.draw_g || this.draw_g,
-          label = arg.text || "",
+      var label = arg.text || "",
           align = ['start', 'middle'];
 
       if (typeof arg.align == 'string') {
@@ -3567,17 +3558,19 @@
          if ((arg.align % 10) == 3) align[1] = 'top';
       }
 
+      arg.draw_g = arg.draw_g || this.draw_g;
       arg.align = align;
       arg.x = arg.x || 0;
       arg.y = arg.y || 0;
       arg.scale = arg.width && arg.height && !arg.font_size;
+      if (!arg.scale) arg.width = arg.height = 0;
 
       if (arg.latex===undefined) arg.latex = 1;
       if (arg.latex<2)
          if (!JSROOT.Painter.isAnyLatex(label)) arg.latex = 0;
 
       var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (arg.latex!==2)) || (arg.latex<1),
-          font = draw_g.property('text_font');
+          font = arg.draw_g.property('text_font');
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
@@ -3585,8 +3578,7 @@
       if (use_normal_text) {
          if (arg.latex>0) label = JSROOT.Painter.translateLaTeX(label);
 
-         var box = null, after_shift = false,
-             txt = draw_g.append("text");
+         var txt = arg.draw_g.append("text");
 
          if (arg.color) txt.attr("fill", arg.color);
 
@@ -3619,7 +3611,7 @@
                   }
                }
 
-               if (JSROOT.nodejs) box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
+               if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             var pos = label.indexOf('#superscript{'), up = true;
@@ -3640,7 +3632,7 @@
                            .style('font-size', 'smaller'),
                 w2 = JSROOT.Painter.approxTextWidth(font, l2);
 
-            if (JSROOT.nodejs) box = { height: 1.4*arg.font_size, width: w1+w2*0.8 };
+            if (JSROOT.nodejs) arg.box = { height: 1.4*arg.font_size, width: w1+w2*0.8 };
 
          } else {
             txt.text(label);
@@ -3648,34 +3640,28 @@
 
             arg.plain = label1 == label;
 
-            if (JSROOT.nodejs) box = { height: Math.round(arg.font_size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
+            if (JSROOT.nodejs) arg.box = { height: Math.round(arg.font_size*1.2), width: JSROOT.Painter.approxTextWidth(font, label) };
          }
 
-         if (!box) box = this.GetBoundarySizes(txt.node());
+         if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
 
          txt.classed('hidden_text',true).attr('opacity',0) // hide elements until text drawing is finished
-            .property("_arg", arg).property("_box", box);
+            .property("_arg", arg);
 
-         if (box.width > draw_g.property('max_text_width')) draw_g.property('max_text_width', box.width);
-         if (arg.scale) this.TextScaleFactor(1.05*box.width/arg.width, draw_g);
-         if (arg.scale) this.TextScaleFactor(1.*box.height/arg.height, draw_g);
+         if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
+         if (arg.scale) this.TextScaleFactor(1.05*arg.box.width/arg.width, arg.draw_g);
+         if (arg.scale) this.TextScaleFactor(1.*arg.box.height/arg.height, arg.draw_g);
 
-         return box.width;
+         return arg.box.width;
       }
 
       var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
-          fo_g = draw_g.append("svg:g")
+          fo_g = arg.draw_g.append("svg:g")
                        .attr('class', 'math_svg')
                        .attr('visibility','hidden')
-                       .property('_x', Math.round(arg.x || 0)) // used for translation later
-                       .property('_y', Math.round(arg.y || 0))
-                       .property('_width', Math.round(arg.width || 0)) // used to check scaling
-                       .property('_height', Math.round(arg.height || 0))
-                       .property('_scale', scale)
-                       .property('_rotate', arg.rotate || 0)
-                       .property('_align', align);
+                       .property('_arg', arg);
 
-      draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
+      arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
 
       if (JSROOT.nodejs) {
          // special handling for Node.js
@@ -3694,7 +3680,7 @@
 
          JSROOT.nodejs_mathjax.typeset({
             jsroot_painter: this,
-            jsroot_drawg: draw_g,
+            jsroot_drawg: arg.draw_g,
             jsroot_fog: fo_g,
             ex: font.size,
             math: mtext,
@@ -3728,9 +3714,9 @@
 
       JSROOT.AssertPrerequisites('mathjax', function() {
 
-         MathJax.Hub.Typeset(element, ["FinishMathjax", painter, draw_g, fo_g]);
+         MathJax.Hub.Typeset(element, ["FinishMathjax", painter, arg.draw_g, fo_g]);
 
-         MathJax.Hub.Queue(["FinishMathjax", painter, draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
+         MathJax.Hub.Queue(["FinishMathjax", painter, arg.draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
       });
 
       return 0;
