@@ -3542,8 +3542,9 @@
       // attempt to implement subset of TLatex with plain SVG text and tspan elements
 
       if (!curr) {
-         curr = { lvl: 0, x: 0, y: 0, fsize: arg.font_size };
+         curr = { lvl: 0, x: 0, y: 0, dy: 0, fsize: arg.font_size };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
+         // if (label.indexOf("#frac")==0) { arg.rotate = 0; arg.x = 500; arg.y = -50; } // debug
       }
 
       function extend_pos(label) {
@@ -3581,7 +3582,8 @@
 
          if (best>0) {
             extend_pos(label.substr(0,best));
-            node.append('tspan').text(JSROOT.Painter.translateLaTeX(label.substr(0,best)));
+            var plain = node.append('tspan').text(JSROOT.Painter.translateLaTeX(label.substr(0,best)));
+            if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
          }
 
          if (!found) return true;
@@ -3591,7 +3593,7 @@
 
          subnode = node.append('tspan');
 
-         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize };
+         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dy: 0 };
 
          isany = true;
 
@@ -3609,6 +3611,7 @@
             label = label.substr(pos + 2);
          }
 
+         var nextdy = curr.dy; curr.dy = 0; // relative shift for elements
 
          switch(found.name) {
             case "#color[": {
@@ -3620,16 +3623,22 @@
               subnode.attr('font-style', 'italic');
               break;
            case "_{":
-              subnode.attr('font-size', '60%').attr('dy','.4em');
+              nextdy += 0.4;
+              subnode.attr('font-size', '60%');
               subpos.y += 0.4*subpos.fsize;
               subpos.fsize *= 0.6;
+              curr.dy = -0.4*0.6; // compensation value, applied for next element
               break;
            case "^{":
-              subnode.attr('font-size', '60%').attr('dy','-.4em');
+              nextdy -= 0.6;
+              subnode.attr('font-size', '60%');
               subpos.y -= 0.4*subpos.fsize;
               subpos.fsize *= 0.6;
+              curr.dy = 0.6*0.6; // compensation value, applied for next element
               break;
          }
+
+         if (nextdy) subnode.attr('dy', nextdy.toFixed(2)+'em');
 
          pos = -1; n = 1;
 
