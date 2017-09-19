@@ -3544,9 +3544,10 @@
       if (!curr) {
          curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: 0, fsize: arg.font_size };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
+         arg.mainnode = node.node();
          if (label.indexOf("#frac")==0) {
            //  label = "#frac{1}{N} e^{x^{n}} D_{p_{t}} normal text";
-          //  arg.rotate = 0; arg.x = 500; arg.y = -50;
+           // arg.rotate = 0; arg.x = 500; arg.y = -50;
          }
       }
 
@@ -3588,6 +3589,7 @@
             extend_pos(label.substr(0,best));
             var plain = node.append('tspan').text(JSROOT.Painter.translateLaTeX(label.substr(0,best)));
             if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
+            if (curr.dx) { plain.attr('dx', curr.dx.toFixed(2) + 'em'); curr.dx = 0; }
          }
 
          if (!found) return true;
@@ -3684,33 +3686,58 @@
                subpos.x2 = subpos.x;
 
                // now length defined with primitve caluclations, later should be done more complex
-               var k = 1/subpos.fsize, l1 = (subpos.x1 - subpos.x0)*k, l2 = (subpos.x2 - subpos.x0)*k;
+               var k = 1/subpos.fsize, l1 = (subpos.x1 - subpos.x0)*k, l2 = (subpos.x2 - subpos.x0)*k, l3 = l2, middle = null;
 
-               var middle = node.append('tspan').attr('dy', curr.dy.toFixed(2)+"em").attr('text-decoration','line-through');
-               curr.dy = 0;
-
-               if (l1 <= l2) {
-                  subpos.first.attr("dx", (0.5*(l2-l1)).toFixed(2)+"em");
-
-                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
-
-                  middle.attr("dx", (-l2).toFixed(2) + "em");
-                               // .style("text-decoration", "overline");
+               if (JSROOT.nodejs) {
+                  // just create midline - nothing better one can do
+                  var len = Math.round(Math.max(l1,l2)/0.3), a = "";
+                  while (len--) a += '\xA0';
+                  middle = node.append('tspan').attr('text-decoration','line-through').text(a);
                } else {
-                  // subpos.first.style("text-decoration", "underline");
-                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+                  subpos.first.style('display', 'none');
+                  subpos.second.style('display', 'none');
 
-                  middle.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+                  var box0 = this.GetBoundarySizes(arg.mainnode);
 
-                  curr.dx = 0;
-                  // curr.dx = 0.5*(l2-l1); // applied for next element
+                  subpos.first.style('display', null);
+
+                  var box1 = this.GetBoundarySizes(arg.mainnode);
+
+                  subpos.first.style('display', 'none');
+                  subpos.second.style('display', null);
+
+                  var box2 = this.GetBoundarySizes(arg.mainnode);
+
+                  subpos.second.style('display', 'none');
+
+                  l1 = (box1.width - box0.width)*k;
+                  l2 = (box2.width - box0.width)*k;
+
+                  var len = Math.round(Math.max(l1,l2)/0.3), a = "";
+                  while (len--) a += '\xA0';
+
+                  middle = node.append('tspan').attr('text-decoration','line-through').text(a);
+
+                  var box3 = this.GetBoundarySizes(arg.mainnode);
+
+                  l3 = (box3.width - box0.width)*k;
+                  if (l3 < Math.max(l1,l2)) console.warn('divider in #frac too short - make adjustments');
+
+                  subpos.first.style('display', null);
+                  subpos.second.style('display', null);
                }
 
-               console.log('l1,l2',l1,l2);
+               middle.attr('dy', curr.dy.toFixed(2)+"em"); curr.dy = 0;
 
-               var len = Math.round(Math.max(l1,l2)/0.4), a = "";
-               while (len--) a += '\xA0';
-               middle.text(a);
+
+               subpos.first.attr("dx", (0.5*(l3-l1)).toFixed(2)+"em");
+
+               subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+
+               middle.attr("dx", (-0.5*(l3+l2)).toFixed(2) + "em");
+
+               curr.dx = 0.2; // extra spacing
+               // curr.dx = 0.5*(l2-l1); // applied for next element
 
                delete subpos.first;
                delete subpos.second;
