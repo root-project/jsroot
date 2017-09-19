@@ -3542,9 +3542,12 @@
       // attempt to implement subset of TLatex with plain SVG text and tspan elements
 
       if (!curr) {
-         curr = { lvl: 0, x: 0, y: 0, dy: 0, fsize: arg.font_size };
+         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: 0, fsize: arg.font_size };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
-         // if (label.indexOf("#frac")==0) { arg.rotate = 0; arg.x = 500; arg.y = -50; } // debug
+         if (label.indexOf("#frac")==0) {
+           //  label = "#frac{1}{N} e^{x^{n}} D_{p_{t}} normal text";
+          //  arg.rotate = 0; arg.x = 500; arg.y = -50;
+         }
       }
 
       function extend_pos(label) {
@@ -3559,7 +3562,8 @@
           { name: "#it{" }, // italic
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
-          { name: "^{" }   // superscript
+          { name: "^{" },   // superscript
+          { name: "#frac{" }
        ];
 
       var isany = false, best, found, foundarg, pos, n, subnode, subpos;
@@ -3611,7 +3615,9 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy; curr.dy = 0; // relative shift for elements
+         var nextdy = curr.dy, nextdx = curr.dx;
+
+         curr.dy = 0; curr.dx = 0; // relative shift for elements
 
          switch(found.name) {
             case "#color[": {
@@ -3636,27 +3642,101 @@
               subpos.fsize *= 0.6;
               curr.dy = 0.6*0.6; // compensation value, applied for next element
               break;
+           case "#frac{": {
+              subpos.first = subnode;
+              subpos.two_lines = true;
+              nextdy -= 0.5;
+              subpos.x0 = subpos.x;
+              subpos.y0 = subpos.y;
+              subpos.y -= 0.5*subpos.fsize;
+              curr.dy = -0.5;
+              break;
+           }
          }
 
-         if (nextdy) subnode.attr('dy', nextdy.toFixed(2)+'em');
+         while (true) {
 
-         pos = -1; n = 1;
+            if (nextdx) subnode.attr('dx', nextdx.toFixed(2)+'em');
+            if (nextdy) subnode.attr('dy', nextdy.toFixed(2)+'em');
 
-         while ((n!=0) && (++pos<label.length)) {
-            if (label[pos]=='{') n++; else
-            if (label[pos]=='}') n--;
+            pos = -1; n = 1; nextdy = 0;
+
+            while ((n!=0) && (++pos<label.length)) {
+               if (label[pos]=='{') n++; else
+               if (label[pos]=='}') n--;
+            }
+
+            if (n!=0) {
+               console.log('mismatch with open { and close } braces in Latex', label);
+               return false;
+            }
+
+            if (!this.produceLatex(subnode, label.substr(0,pos), arg, subpos)) return false;
+
+            if (subpos.dx) curr.dx += subpos.dx * subpos.fsize / curr.fsize;
+            if (subpos.dy) curr.dy += subpos.dy * subpos.fsize / curr.fsize;
+
+            curr.x = Math.max(curr.x, subpos.x);
+
+            label = label.substr(pos+1);
+
+            if (subpos.first && subpos.second) {
+               subpos.x2 = subpos.x;
+
+               // now length defined with primitve caluclations, later should be done more complex
+               var k = 1/subpos.fsize, l1 = (subpos.x1 - subpos.x0)*k, l2 = (subpos.x2 - subpos.x0)*k;
+
+               var middle = node.append('tspan').attr('dy', curr.dy.toFixed(2)+"em").attr('text-decoration','line-through');
+               curr.dy = 0;
+
+               if (l1 <= l2) {
+                  subpos.first.attr("dx", (0.5*(l2-l1)).toFixed(2)+"em");
+
+                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+
+                  middle.attr("dx", (-l2).toFixed(2) + "em");
+                               // .style("text-decoration", "overline");
+               } else {
+                  // subpos.first.style("text-decoration", "underline");
+                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+
+                  middle.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+
+                  curr.dx = 0;
+                  // curr.dx = 0.5*(l2-l1); // applied for next element
+               }
+
+               console.log('l1,l2',l1,l2);
+
+               var len = Math.round(Math.max(l1,l2)/0.4), a = "";
+               while (len--) a += '\xA0';
+               middle.text(a);
+
+               delete subpos.first;
+               delete subpos.second;
+            }
+
+            if (!subpos.two_lines) break;
+
+            if (label[0] != '{') {
+               console.log('missing { for second line', label);
+               return false;
+            }
+
+            label = label.substr(1);
+
+            subnode = node.append('tspan');
+
+            subpos.two_lines = false;
+            subpos.x1 = subpos.x;
+            subpos.x = subpos.x0;
+            subpos.y = subpos.y0 + 0.7*subpos.fsize;
+            subpos.second = subnode;
+
+            nextdy = curr.dy + 1.7;
+            curr.dy = -0.7;
          }
 
-         if (n!=0) {
-            console.log('mismatch with open { and close } braces in Latex', label);
-            return false;
-         }
-
-         if (!this.produceLatex(subnode, label.substr(0,pos), arg, subpos)) return false;
-
-         curr.x = Math.max(curr.x, subpos.x);
-
-         label = label.substr(pos+1);
       }
 
       return true;
