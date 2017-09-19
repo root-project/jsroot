@@ -554,6 +554,9 @@
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
       if ((mathjax!==null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
 
+      var oldlatex = JSROOT.GetUrlOption("oldlatex", url);
+      if ((oldlatex!==null) && (oldlatex!="0")) JSROOT.gStyle.OldLatex = true;
+
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
       if (JSROOT.GetUrlOption("notouch", url)!=null) JSROOT.touches = false;
@@ -1209,26 +1212,34 @@
       return ((str === "1x10") ? "10" : str) + exp;
    }
 
-   Painter.translateLaTeX = function(str) {
-      var i, lstr = str.match(/\^{(.*?)}/gi);
-      if (lstr)
-         for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], Painter.translateSuperscript(lstr[i].substr(2, lstr[i].length-3)));
+   Painter.translateLaTeX = function(str, with_sub_super_script) {
+      var i;
 
-      lstr = str.match(/\_{(.*?)}/gi);
-      if (lstr)
-         for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], Painter.translateSubscript(lstr[i].substr(2, lstr[i].length-3)));
+      if (!with_sub_super_script) {
+         str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
+      } else {
+         var lstr = str.match(/\^{(.*?)}/gi);
+         if (lstr)
+            for (i = 0; i < lstr.length; ++i)
+               str = str.replace(lstr[i], Painter.translateSuperscript(lstr[i].substr(2, lstr[i].length-3)));
 
-      lstr = str.match(/\#sqrt{(.*?)}/gi);
-      if (lstr)
-         for (i = 0; i < lstr.length; ++i)
-            str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
+         lstr = str.match(/\_{(.*?)}/gi);
+         if (lstr)
+            for (i = 0; i < lstr.length; ++i)
+               str = str.replace(lstr[i], Painter.translateSubscript(lstr[i].substr(2, lstr[i].length-3)));
+
+         lstr = str.match(/\#sqrt{(.*?)}/gi);
+         if (lstr)
+            for (i = 0; i < lstr.length; ++i)
+               str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
+
+         str = str.replace(/\^2/gi,'\xB2').replace(/\^3/gi,'\xB3');
+      }
 
       for (i in Painter.symbols_map)
          str = str.replace(new RegExp(i,'g'), Painter.symbols_map[i]);
 
-      return str.replace(/\^2/gi,'\xB2').replace(/\^3/gi,'\xB3');
+      return str;
    }
 
    Painter.translateLaTeXColor = function(painter, node, label) {
@@ -3553,13 +3564,13 @@
          if (!found && !isany) {
             if (!curr.lvl) return 0; // indicate that nothing found
             extend_pos(label);
-            node.text(label);
+            node.text(JSROOT.Painter.translateLaTeX(label));
             return true;
          }
 
          if (best>0) {
             extend_pos(label.substr(0,best));
-            node.append('tspan').text(label.substr(0,best));
+            node.append('tspan').text(JSROOT.Painter.translateLaTeX(label.substr(0,best)));
          }
 
          if (!found) return true;
@@ -3650,7 +3661,7 @@
       arg.height = arg.height || 0;
 
       if (arg.latex===undefined) arg.latex = 1;
-      if (arg.latex<2)
+      if (arg.latex < 2)
          if (!JSROOT.Painter.isAnyLatex(label)) arg.latex = 0;
 
       var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (arg.latex!==2)) || (arg.latex<1),
@@ -3660,8 +3671,6 @@
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
       if (use_normal_text) {
-
-         if (arg.latex) label = JSROOT.Painter.translateLaTeX(label);
 
          var txt = arg.draw_g.append("text");
 
@@ -3677,26 +3686,42 @@
                var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
                    l2 = label.substr(pos+2, label.length - pos - 3);
 
-               var span1 = txt.append("tspan").attr("x",0).attr("y", "-1em").text(l1);
-               l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
-               var w1 = JSROOT.Painter.approxTextWidth(font, l1);
-
-               var span2 = txt.append("tspan").attr("x",0).attr("y", 0).text(l2);
-               l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
-               var w2 = JSROOT.Painter.approxTextWidth(font, l2);
-
-               if (isfrac || (arg.align[0]=='middle')) {
-
-                  if (w1>=w2) {
-                     if (isfrac) span1.style("text-decoration", "underline");
-                     span2.attr("x", ((w1-w2)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
-                  } else {
-                     if (isfrac) span2.style("text-decoration", "overline");
-                     span1.attr("x", ((w2-w1)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
+               function check(str) {
+                  var cnt = 0;
+                  for (var n=0;n<str.length;++n) {
+                     if (str[n]=='{') ++cnt;
+                     if (str[n]=='}') --cnt;
+                     if (cnt<0) return false;
                   }
-               }
+                  return cnt == 0;
+                }
 
-               if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
+               if (check(l1) && check(l2)) {
+
+                  l1 = JSROOT.Painter.translateLaTeX(l1);
+                  var span1 = txt.append("tspan").attr("x",0).attr("y", "-1em").text(l1);
+                  l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
+                  var w1 = JSROOT.Painter.approxTextWidth(font, l1);
+
+                  l2 = JSROOT.Painter.translateLaTeX(l2);
+                  var span2 = txt.append("tspan").attr("x",0).attr("y", 0).text(l2);
+                  l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
+                  var w2 = JSROOT.Painter.approxTextWidth(font, l2);
+
+                  if (isfrac || (arg.align[0]=='middle')) {
+                     if (w1>=w2) {
+                        if (isfrac) span1.style("text-decoration", "underline");
+                        span2.attr("x", ((w1-w2)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
+                     } else {
+                        if (isfrac) span2.style("text-decoration", "overline");
+                        span1.attr("x", ((w2-w1)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
+                     }
+                  }
+
+                  arg.processed = true;
+
+                  if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
+               }
             }
          } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             // jsroot internal superscipt and subscript for axis labeling
@@ -3720,16 +3745,23 @@
 
             if (JSROOT.nodejs) arg.box = { height: 1.4*arg.font_size, width: w1+w2*0.8 };
 
-         } else {
+            arg.processed = true;
+
+         }
+
+         if (!arg.processed) {
 
             // console.log('Converting ', label);
 
             arg.font = font; // use in latex conversion
 
-            arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
+            arg.plain = !arg.latex || JSROOT.gStyle.OldLatex || (this.produceLatex(txt, label, arg) === 0);
 
             if (arg.plain) {
-               label = arg.latex ? JSROOT.Painter.translateLaTeXColor(this, txt, label) : label;
+               if (arg.latex) {
+                  label = JSROOT.Painter.translateLaTeX(label, true);
+                  label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
+               }
                txt.text(label);
             } else if (JSROOT.nodejs && arg.rect) {
                arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
