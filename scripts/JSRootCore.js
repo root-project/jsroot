@@ -160,7 +160,6 @@
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
          Palette : 57,
          MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
-         OldLatex : false,    // when true, use old-style simplified TLatex support
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,

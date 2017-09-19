@@ -169,99 +169,6 @@
                                    0.54, 0.556, 0.56, 0.6,
                                    0.6, 0.6, 0.6,
                                    0.587, 0.514, 0.896, 0.587, 0.55 ],
-          superscript_letters: {
-                '1': '\xB9',
-                '2': '\xB2',
-                '3': '\xB3',
-                'o': '\xBA',
-                '0': '\u2070',
-                'i': '\u2071',
-                '4': '\u2074',
-                '5': '\u2075',
-                '6': '\u2076',
-                '7': '\u2077',
-                '8': '\u2078',
-                '9': '\u2079',
-                '+': '\u207A',
-                '-': '\u207B',
-                '=': '\u207C',
-                '(': '\u207D',
-                ')': '\u207E',
-                'h': '\u02B0',
-                'j': '\u02B2',
-                'r': '\u02B3',
-                'w': '\u02B7',
-                'y': '\u02B8',
-                'l': '\u02E1',
-                's': '\u02E2',
-                'x': '\u02E3',
-                'a': '\u1D43',
-                'b': '\u1D47',
-                'd': '\u1D48',
-                'e': '\u1D49',
-                'g': '\u1D4D',
-                'k': '\u1D4F',
-                'm': '\u1D50',
-                'o': '\u1D52',
-                'p': '\u1D56',
-                't': '\u1D57',
-                'u': '\u1D58',
-                'v': '\u1D5B',
-                'c': '\u1D9C',
-                'f': '\u1DA0',
-                'i': '\u2071',
-                'n': '\u207F'
-          },
-          superscript_symbols_map: {
-                '#beta': '\u1D5D',
-                '#gamma': '\u1D5E',
-                '#delta': '\u1D5F',
-                '#phi': '\u1D60',
-                '#xi': '\u1D61',
-                '#theta': '\u1DBF'
-          },
-          subscript_letters: {
-                  '0': '\u2080',
-                  '1': '\u2081',
-                  '2': '\u2082',
-                  '3': '\u2083',
-                  '4': '\u2084',
-                  '5': '\u2085',
-                  '6': '\u2086',
-                  '7': '\u2087',
-                  '8': '\u2088',
-                  '9': '\u2089',
-                  '+': '\u208A',
-                  '-': '\u208B',
-                  '=': '\u208C',
-                  '(': '\u208D',
-                  ')': '\u208E',
-                  'i': '\u1D62',
-                  'r': '\u1D63',
-                  'u': '\u1D64',
-                  'v': '\u1D65',
-                  'a': '\u2090',
-                  'e': '\u2091',
-                  'o': '\u2092',
-                  'x': '\u2093',
-                  'ə': '\u2094',
-                  'j': '\u2C7C',
-                  'l': '\u2097',
-                  'h': '\u2095',
-                  'k': '\u2096',
-                  'm': '\u2098',
-                  'n': '\u2099',
-                  'p': '\u209A',
-                  's': '\u209B',
-                  't': '\u209C'
-          },
-          subscript_symbols_map: {
-                  '#beta' : '\u1D66',
-                  '#gamma' : '\u1D67',
-                  '#rho' : '\u1D68',
-                  '#phi' : '\u1D69',
-                  '#chi' : '\u1D6A'
-          },
           symbols_map: {
                 // greek letters
                 '#alpha': '\u03B1',
@@ -318,8 +225,8 @@
                 '#Zeta': '\u0396',
                 '#varUpsilon': '\u03D2',
                 '#epsilon': '\u03B5',
-                // math symbols
 
+                // only required for MathJax
                 '#sqrt': '\u221A',
 
                 // from TLatex tables #2 & #3
@@ -551,9 +458,6 @@
 
       var mathjax = JSROOT.GetUrlOption("mathjax", url);
       if ((mathjax!==null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
-
-      var oldlatex = JSROOT.GetUrlOption("oldlatex", url);
-      if ((oldlatex!==null) && (oldlatex!="0")) JSROOT.gStyle.OldLatex = true;
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
@@ -1182,93 +1086,13 @@
       return offset;
    }
 
-   Painter.translateSuperscript = function(str) {
-      for (var i in this.superscript_symbols_map)
-         str = str.replace(new RegExp(i,'g'), this.superscript_symbols_map[i]);
-      var res = "";
-      for (var n=0;n<str.length;++n)
-         res += (this.superscript_letters[str[n]] || str[n]);
-      return res;
-   }
+   Painter.translateLaTeX = function(str) {
+      str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
 
-   Painter.translateSubscript = function(str) {
-      for (var i in this.subscript_symbols_map)
-         str = str.replace(new RegExp(i,'g'), this.subscript_symbols_map[i]);
-      var res = "";
-      for (var n=0;n<str.length;++n)
-         res += (this.subscript_letters[str[n]] || str[n]);
-      return res;
-   }
-
-   Painter.translateLaTeX = function(str, with_sub_super_script) {
-      var i;
-
-      if (!with_sub_super_script) {
-         str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
-      } else {
-         var lstr = str.match(/\^{(.*?)}/gi);
-         if (lstr)
-            for (i = 0; i < lstr.length; ++i)
-               str = str.replace(lstr[i], Painter.translateSuperscript(lstr[i].substr(2, lstr[i].length-3)));
-
-         lstr = str.match(/\_{(.*?)}/gi);
-         if (lstr)
-            for (i = 0; i < lstr.length; ++i)
-               str = str.replace(lstr[i], Painter.translateSubscript(lstr[i].substr(2, lstr[i].length-3)));
-
-         lstr = str.match(/\#sqrt{(.*?)}/gi);
-         if (lstr)
-            for (i = 0; i < lstr.length; ++i)
-               str = str.replace(lstr[i], lstr[i].replace(' ', '').replace('#sqrt{', '#sqrt').replace('}', ''));
-
-         str = str.replace(/\^2/gi,'\xB2').replace(/\^3/gi,'\xB3');
-      }
-
-      for (i in Painter.symbols_map)
-         str = str.replace(new RegExp(i,'g'), Painter.symbols_map[i]);
+      for (var i in this.symbols_map)
+         str = str.replace(new RegExp(i,'g'), this.symbols_map[i]);
 
       return str;
-   }
-
-   Painter.translateLaTeXColor = function(painter, node, label) {
-      // function process #color[n]{} tags, used in TLatex
-      // if node is provided creates tspan elements
-      // if node===null, replace string for MathJax
-
-      var clean = "", first = true;
-      while (label) {
-         var p = label.indexOf("#color[");
-         if ((p<0) && first) return label;
-         if (first) { if (node) node.text(""); first = false; }
-         if (p!=0) {
-            var norm = (p<0) ? label : label.substr(0, p);
-            if (node) node.append("tspan").text(norm);
-            clean += norm;
-            if (p<0) break;
-         }
-
-         label = label.substr(p+7);
-         p = label.indexOf("]{");
-         if (p<=0) break;
-         var colindx = parseInt(label.substr(0,p));
-         if (isNaN(colindx)) break;
-         var col = painter.get_color(colindx);
-         label = label.substr(p+2);
-         p = label.indexOf("}");
-         if (p<0) break;
-
-         var part = label.substr(0,p);
-         label = label.substr(p+1);
-         if (part) {
-            if (node) {
-               node.append("tspan").text(part).attr("fill",col);
-               clean += part;
-            } else {
-               clean += "\\color{" + col + '}{' + part + "}";
-            }
-         }
-      }
-      return clean; // return modified label to make use it for text approxim
    }
 
    Painter.approxTextWidth = function(font, label) {
@@ -1291,7 +1115,35 @@
          for (var x in Painter.symbols_map)
             str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
 
-         str = Painter.translateLaTeXColor(painter, null, str);
+         // replace all #color[]{} occurances
+         var clean = "", first = true;
+         while (str) {
+            var p = str.indexOf("#color[");
+            if ((p<0) && first) { clean = str; break; }
+            first = false;
+            if (p!=0) {
+               var norm = (p<0) ? str : str.substr(0, p);
+               clean += norm;
+               if (p<0) break;
+            }
+
+            str = str.substr(p+7);
+            p = str.indexOf("]{");
+            if (p<=0) break;
+            var colindx = parseInt(str.substr(0,p));
+            if (isNaN(colindx)) break;
+            var col = painter.get_color(colindx);
+            str = str.substr(p+2);
+            p = str.indexOf("}");
+            if (p<0) break;
+
+            var part = str.substr(0,p);
+            str = str.substr(p+1);
+            if (part)
+               clean += "\\color{" + col + '}{' + part + "}";
+         }
+
+         str = clean;
       } else {
          str = str.replace(/\\\^/g, "\\hat");
       }
@@ -3570,9 +3422,10 @@
           { name: "^{" },   // superscript
           { name: "#frac{" },
           { name: "#splitline{" },
+          { name: "#sqrt{" }
        ];
 
-      var isany = false, best, found, foundarg, pos, n, subnode, subpos;
+      var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos;
 
       while (label) {
 
@@ -3584,15 +3437,17 @@
          }
 
          if (!found && !isany) {
-            if (!curr.lvl) return 0; // indicate that nothing found
-            extend_pos(label);
-            node.text(JSROOT.Painter.translateLaTeX(label));
+            var s = JSROOT.Painter.translateLaTeX(label);
+            if (!curr.lvl && (s==label)) return 0; // indicate that nothing found - plain string
+            extend_pos(s);
+            node.text(s);
             return true;
          }
 
          if (best>0) {
-            extend_pos(label.substr(0,best));
-            var plain = node.append('tspan').text(JSROOT.Painter.translateLaTeX(label.substr(0,best)));
+            var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
+            extend_pos(s);
+            var plain = node.append('tspan').text(s);
             if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
             if (curr.dx) { plain.attr('dx', curr.dx.toFixed(2) + 'em'); curr.dx = 0; }
          }
@@ -3602,9 +3457,9 @@
          // remove preceeding block and tag itself
          label = label.substr(best + found.name.length);
 
-         subnode = node.append('tspan');
+         subnode1 = subnode = node.append('tspan');
 
-         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dy: 0 };
+         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dx:0, dy: 0 };
 
          isany = true;
 
@@ -3622,16 +3477,15 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx;
+         var nextdy = curr.dy, nextdx = curr.dx; // this will be applied to the next element
 
-         curr.dy = 0; curr.dx = 0; // relative shift for elements
+         curr.dy = curr.dx = 0; // relative shift for elements
 
          switch(found.name) {
-            case "#color[": {
+            case "#color[":
                if (this.get_color(foundarg))
                    subnode.attr('fill', this.get_color(foundarg));
                break;
-           }
            case "#it{":
               subnode.attr('font-style', 'italic');
               break;
@@ -3650,7 +3504,7 @@
               curr.dy = 0.6*0.6; // compensation value, applied for next element
               break;
            case "#frac{":
-           case "#splitline{": {
+           case "#splitline{":
               subpos.first = subnode;
               subpos.two_lines = true;
               subpos.need_middle = (found.name == "#frac{");
@@ -3660,15 +3514,23 @@
               subpos.y -= 0.5*subpos.fsize;
               curr.dy = -0.5;
               break;
-           }
+           case "#sqrt{":
+              subnode.append('tspan').text('\u221A');
+              subnode1 = subnode.append('tspan');
+              subpos.square_root = true;
+              subpos.x0 = subpos.x;
+              if (!JSROOT.nodejs) subpos.box0 = this.GetBoundarySizes(arg.mainnode);
+              break;
          }
 
          while (true) {
+            // loop need to create two lines for #frac or #splitline
+            // normally only one sub-element is created
 
             if (nextdx) subnode.attr('dx', nextdx.toFixed(2)+'em');
             if (nextdy) subnode.attr('dy', nextdy.toFixed(2)+'em');
 
-            pos = -1; n = 1; nextdy = 0;
+            pos = -1; n = 1; nextdy = 0; nextdx = 0;
 
             while ((n!=0) && (++pos<label.length)) {
                if (label[pos]=='{') n++; else
@@ -3680,16 +3542,47 @@
                return false;
             }
 
-            if (!this.produceLatex(subnode, label.substr(0,pos), arg, subpos)) return false;
+            if (!this.produceLatex(subnode1, label.substr(0,pos), arg, subpos)) return false;
 
-            if (subpos.dx) curr.dx += subpos.dx * subpos.fsize / curr.fsize;
-            if (subpos.dy) curr.dy += subpos.dy * subpos.fsize / curr.fsize;
+            subpos.dx *= subpos.fsize / curr.fsize;
+            subpos.dy *= subpos.fsize / curr.fsize;
 
             curr.x = Math.max(curr.x, subpos.x);
 
             label = label.substr(pos+1);
 
+            if (subpos.square_root) {
+               // creating cap for square root
+               // while overline symbol does not match with square root, use empty text with overline
+               var k = 1/subpos.fsize, len = (subpos.x - subpos.x0)*k, box1 = null;
+               if (!JSROOT.nodejs) {
+                  box1 = this.GetBoundarySizes(arg.mainnode);
+                  len = (box1.width - subpos.box0.width)*k;
+               }
+
+               var a = "", nn = Math.max(2, Math.round(len/0.3));
+               while (nn--) a += '\xA0';
+
+               var over = subnode.append('tspan').attr('dx', (subpos.dx-len).toFixed(2)+"em").text(a).attr('text-decoration','overline');
+               if (subpos.dy) over.attr("dy", subpos.dy.toFixed(2) + "em");
+
+               while (box1) {
+                  // ensure that cap longer then content
+                  var box2 = this.GetBoundarySizes(arg.mainnode);
+                  if (box2.width > box1.width) break;
+                  a+='\xA0';
+                  over.text(a);
+               }
+               subpos.dy = subpos.dx = 0;
+               break;
+            }
+
+            curr.dx += subpos.dx;
+            curr.dy += subpos.dy;
+
             if (subpos.first && subpos.second) {
+               // when two lines created, adjust horizontal position and place divider if required
+
                subpos.x2 = subpos.x;
 
                // now length defined with primitve caluclations, later should be done more complex
@@ -3848,13 +3741,9 @@
 
          arg.font = font; // use in latex conversion
 
-         arg.plain = !arg.latex || JSROOT.gStyle.OldLatex || (this.produceLatex(txt, label, arg) === 0);
+         arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
 
          if (arg.plain) {
-            if (arg.latex) {
-               label = JSROOT.Painter.translateLaTeX(label, true);
-               label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
-            }
             txt.text(label);
          } else if (JSROOT.nodejs && arg.rect) {
             arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
