@@ -3387,7 +3387,7 @@
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
-         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size }; //
+         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
       }
@@ -3647,8 +3647,15 @@
                   if (l2<l1) curr.dx += 0.5*(l1-l2);
                }
 
-               subpos.first.attr("dx", (0.5*(l3-l1)).toFixed(2)+"em");
-               subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+               if (middle || arg.align[0]=='middle') {
+                  subpos.first.attr("dx", (0.5*(l3-l1)).toFixed(2)+"em");
+                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+               } else if (arg.align[0]=='end') {
+                  if (l1<l2) subpos.first.attr("dx", (l2-l1).toFixed(2)+"em");
+                  subpos.second.attr("dx", (-l2).toFixed(2)+"em");
+               } else {
+                  subpos.second.attr("dx", (-l1).toFixed(2)+"em");
+               }
 
                delete subpos.first;
                delete subpos.second;
