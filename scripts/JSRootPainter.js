@@ -3546,6 +3546,8 @@
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
          if (label.indexOf("#frac")==0) {
+            // console.log('label', label);
+            // label = "#frac{1 any other}{N_{ev}}d^{2}N/dp_{t}dy (Gev/c)^{-1}";
            //  label = "#frac{1}{N} e^{x^{n}} D_{p_{t}} normal text";
            // arg.rotate = 0; arg.x = 500; arg.y = -50;
          }
@@ -3564,7 +3566,8 @@
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
-          { name: "#frac{" }
+          { name: "#frac{" },
+          { name: "#splitline{" },
        ];
 
       var isany = false, best, found, foundarg, pos, n, subnode, subpos;
@@ -3644,9 +3647,11 @@
               subpos.fsize *= 0.6;
               curr.dy = 0.6*0.6; // compensation value, applied for next element
               break;
-           case "#frac{": {
+           case "#frac{":
+           case "#splitline{": {
               subpos.first = subnode;
               subpos.two_lines = true;
+              subpos.need_middle = (found.name == "#frac{");
               nextdy -= 0.5;
               subpos.x0 = subpos.x;
               subpos.y0 = subpos.y;
@@ -3689,10 +3694,12 @@
                var k = 1/subpos.fsize, l1 = (subpos.x1 - subpos.x0)*k, l2 = (subpos.x2 - subpos.x0)*k, l3 = l2, middle = null;
 
                if (JSROOT.nodejs) {
-                  // just create midline - nothing better one can do
-                  var len = Math.round(Math.max(l1,l2)/0.3), a = "";
-                  while (len--) a += '\xA0';
-                  middle = node.append('tspan').attr('text-decoration','line-through').text(a);
+                  if (subpos.need_middle) {
+                     // just create midline - nothing better one can do
+                     var a = "", len = Math.max(2, Math.round(Math.max(l1,l2)/0.3));
+                     while (len--) a += '\xA0';
+                     middle = node.append('tspan').attr('text-decoration','line-through').text(a);
+                  }
                } else {
                   subpos.first.style('display', 'none');
                   subpos.second.style('display', 'none');
@@ -3708,36 +3715,51 @@
 
                   var box2 = this.GetBoundarySizes(arg.mainnode);
 
-                  subpos.second.style('display', 'none');
-
                   l1 = (box1.width - box0.width)*k;
                   l2 = (box2.width - box0.width)*k;
 
-                  var len = Math.round(Math.max(l1,l2)/0.3), a = "";
-                  while (len--) a += '\xA0';
+                  if (subpos.need_middle) {
 
-                  middle = node.append('tspan').attr('text-decoration','line-through').text(a);
+                     subpos.second.style('display', 'none');
 
-                  var box3 = this.GetBoundarySizes(arg.mainnode);
+                     var a = "", len = Math.max(2, Math.round(Math.max(l1,l2)/0.3));
+                     while (len--) a += '\xA0';
 
-                  l3 = (box3.width - box0.width)*k;
-                  if (l3 < Math.max(l1,l2)) console.warn('divider in #frac too short - make adjustments');
+                     middle = node.append('tspan').attr('text-decoration','line-through').text(a);
 
+                     var box3 = this.GetBoundarySizes(arg.mainnode);
+
+                     l3 = (box3.width - box0.width)*k;
+                     if (l3 < Math.max(l1,l2)) {
+                        // case when approx value not good enough
+                        // console.warn('divider in #frac too short - make adjustments', l3, l1,l2);
+
+                        len = Math.max(l1,l2)/l3 * a.length;
+                        while (a.length<len) a += '\xA0';
+                        middle.text(a);
+                        box3 = this.GetBoundarySizes(arg.mainnode);
+                        l3 = (box3.width - box0.width)*k;
+
+                        // console.warn('Now should be better', l3, l1,l2);
+                     }
+                  }
                   subpos.first.style('display', null);
                   subpos.second.style('display', null);
                }
 
-               middle.attr('dy', curr.dy.toFixed(2)+"em"); curr.dy = 0;
-
+               if (middle) {
+                  middle.attr('dy', curr.dy.toFixed(2)+"em");
+                  middle.attr("dx", (-0.5*(l3+l2)).toFixed(2) + "em");
+                  curr.dy = 0;
+                  curr.dx = 0.2; // extra spacing
+               } else {
+                  l3 = Math.max(l2, l1);
+                  curr.dx = 0.2;
+                  if (l2<l1) curr.dx += 0.5*(l1-l2);
+               }
 
                subpos.first.attr("dx", (0.5*(l3-l1)).toFixed(2)+"em");
-
                subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
-
-               middle.attr("dx", (-0.5*(l3+l2)).toFixed(2) + "em");
-
-               curr.dx = 0.2; // extra spacing
-               // curr.dx = 0.5*(l2-l1); // applied for next element
 
                delete subpos.first;
                delete subpos.second;
