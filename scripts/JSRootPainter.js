@@ -3489,6 +3489,8 @@
             arg.box = painter.GetBoundarySizes(txt.node());
          }
 
+         // if (arg.text.length>20) console.log(arg.box, arg.align, arg.x, arg.y, 'plain', arg.plain, 'inside', arg.width, arg.height);
+
          if (arg.width) {
             // adjust x position when scale into specified rectangle
             if (arg.align[0]=="middle") arg.x += arg.width/2; else
@@ -3515,8 +3517,10 @@
                if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
-            arg.dy = ((arg.align[1] == 'top') ? 1 : (arg.align[1] == 'middle') ? 0.5 : 0) * arg.box.height;
+            arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
          }
+
+         // if (arg.text.length>20) console.log(arg.x, arg.y, arg.dx, arg.dy);
 
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
@@ -3545,7 +3549,8 @@
          curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: 0, fsize: arg.font_size };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
-         if (label.indexOf("#frac")==0) {
+         if (label.indexOf("#splitline")==0) {
+            // arg.debug = true;
             // console.log('label', label);
             // label = "#frac{1 any other}{N_{ev}}d^{2}N/dp_{t}dy (Gev/c)^{-1}";
            //  label = "#frac{1}{N} e^{x^{n}} D_{p_{t}} normal text";
@@ -3557,8 +3562,17 @@
          curr.x += label.length * arg.font.aver_width * curr.fsize;
          arg.rect.x2 = Math.max(arg.rect.x2, curr.x);
 
-         arg.rect.y1 = Math.min(arg.rect.y1, curr.y - curr.fsize*0.6);
-         arg.rect.y2 = Math.max(arg.rect.y2, curr.y + curr.fsize*0.6);
+         arg.rect.y1 = Math.min(arg.rect.y1, curr.y - curr.fsize*1.2);
+         arg.rect.y2 = Math.max(arg.rect.y2, curr.y); // normally text position from bottom
+
+         var h = arg.rect.y2 - arg.rect.y1, mid = (arg.rect.y2 + arg.rect.y1)/2;
+
+         if (h>0) {
+            arg.mid_shift = -mid/h || 0.001;        // relative shift to get latex middle at given point
+            arg.top_shift = -arg.rect.y1/h || 0.001; // relative shift to get latex top at given point
+         }
+
+         // if (arg.debug) console.log('y1,y2', arg.rect.y1, arg.rect.y2, arg.mid_shift, arg.up_shift);
       }
 
       var features = [
@@ -3844,7 +3858,7 @@
          if (arg.font_size) txt.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
 
-         if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
+        /* if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
             // this is splitline, use special handling
             var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
             if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
@@ -3888,7 +3902,8 @@
                   if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
                }
             }
-         } else if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
+         } else */
+         if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
             // jsroot internal superscipt and subscript for axis labeling
             var pos = label.indexOf('#superscript{'), up = true;
             if (pos<0) { pos = label.indexOf('#subscript{'); up = false; }
@@ -3935,6 +3950,8 @@
          }
 
          if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
+
+         // if (label.length>20) console.log('label', label, 'box', arg.box);
 
          txt.classed('hidden_text',true).attr('visibility','hidden') // hide elements until text drawing is finished
             .property("_arg", arg);
