@@ -3495,11 +3495,13 @@
             if (arg.align[0]=="end") arg.x += arg.width;
          }
 
+         arg.dx = arg.dy = 0;
+
          if (arg.plain) {
             txt.attr("text-anchor", arg.align[0]);
          } else {
             txt.attr("text-anchor", "start");
-            arg.x -= ((arg.align[0]=="middle") ? 0.5 : ((arg.align[0]=="end") ? 1 : 0)) * arg.box.width;
+            arg.dx = ((arg.align[0]=="middle") ? -0.5 : ((arg.align[0]=="end") ? -1 : 0)) * arg.box.width;
          }
 
          if (arg.height) {
@@ -3513,12 +3515,15 @@
                if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
-            arg.y += ((arg.align[1] == 'top') ? 1 : (arg.align[1] == 'middle') ? 0.5 : 0) * arg.box.height;
+            arg.dy = ((arg.align[1] == 'top') ? 1 : (arg.align[1] == 'middle') ? 0.5 : 0) * arg.box.height;
          }
+
+         if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
          var trans = (arg.x || arg.y) ? "translate("+Math.round(arg.x)+","+Math.round(arg.y)+")" : "";
          if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+")";
+         if (arg.dx || arg.dy) trans += " translate("+Math.round(arg.dx)+","+Math.round(arg.dy)+")";
          if (trans) txt.attr("transform", trans);
       });
 
@@ -3542,22 +3547,28 @@
       }
 
       function extend_pos(label) {
-         curr.x += JSROOT.Painter.approxTextWidth(arg.font, label);
+         curr.x += label.length * arg.font.aver_width * curr.fsize;
          arg.rect.x2 = Math.max(arg.rect.x2, curr.x);
 
          arg.rect.y1 = Math.min(arg.rect.y1, curr.y - curr.fsize*0.6);
          arg.rect.y2 = Math.max(arg.rect.y2, curr.y + curr.fsize*0.6);
       }
 
-      var features = [ "#it{", "#color[" ], isany = false,
-          best, found, pos, n, subnode, subpos;
+      var features = [
+          { name: "#it{" }, // italic
+          { name: "#color[", arg: 'int' },
+          { name: "_{" },  // subscript
+          { name: "^{" }   // superscript
+       ];
+
+      var isany = false, best, found, foundarg, pos, n, subnode, subpos;
 
       while (label) {
 
-         best = label.length; found = "";
+         best = label.length; found = null; foundarg = null;
 
          for(n=0;n<features.length;++n) {
-            pos = label.indexOf(features[n]);
+            pos = label.indexOf(features[n].name);
             if ((pos>=0) && (pos<best)) { best = pos; found = features[n]; }
          }
 
@@ -3576,7 +3587,7 @@
          if (!found) return true;
 
          // remove preceeding block and tag itself
-         label = label.substr(best + found.length);
+         label = label.substr(best + found.name.length);
 
          subnode = node.append('tspan');
 
@@ -3584,23 +3595,39 @@
 
          isany = true;
 
-         switch(found) {
+         if (found.arg) {
+            pos = label.indexOf("]{");
+            if (pos < 0) { console.log('missing argument for ', found.name); return false; }
+            foundarg = label.substr(0,pos);
+            if (found.arg == 'int') {
+               foundarg = parseInt(foundarg);
+               if (isNaN(foundarg)) { console.log('wrong int argument', label.substr(0,pos)); return false; }
+            } else if (found.arg == 'float') {
+               foundarg = parseFloat(foundarg);
+               if (isNaN(foundarg)) { console.log('wrong float argument', label.substr(0,pos)); return false; }
+            }
+            label = label.substr(pos + 2);
+         }
+
+
+         switch(found.name) {
             case "#color[": {
-               var pos = label.indexOf("]{");
-               var colindx = (pos>0) ? parseInt(label.substr(0,pos)) : Number.NaN;
-
-               if (isNaN(colindx)) {
-                  console.log('failure with #color[] tag');
-                  return false;
-               }
-
-               var col = this.get_color(colindx);
-               label = label.substr(pos + 2);
-               if (col) subnode.attr('fill', col);
+               if (this.get_color(foundarg))
+                   subnode.attr('fill', this.get_color(foundarg));
                break;
            }
            case "#it{":
               subnode.attr('font-style', 'italic');
+              break;
+           case "_{":
+              subnode.attr('font-size', '60%').attr('dy','.4em');
+              subpos.y += 0.4*subpos.fsize;
+              subpos.fsize *= 0.6;
+              break;
+           case "^{":
+              subnode.attr('font-size', '60%').attr('dy','-.4em');
+              subpos.y -= 0.4*subpos.fsize;
+              subpos.fsize *= 0.6;
               break;
          }
 
@@ -3750,8 +3777,6 @@
          }
 
          if (!arg.processed) {
-
-            // console.log('Converting ', label);
 
             arg.font = font; // use in latex conversion
 
