@@ -496,8 +496,6 @@
                 '#it':"\\textit",
                 '#bf':"\\textbf",
                 '#frac':"\\frac",
-                '#superscript':"^", // jsroot internal
-                '#subscript':"_",   // jsroot internal
                 '#left{':"\\lbrace",
                 '#right}':"\\rbrace",
                 '#left\\[':"\\lbrack",
@@ -1200,16 +1198,6 @@
       for (var n=0;n<str.length;++n)
          res += (this.subscript_letters[str[n]] || str[n]);
       return res;
-   }
-
-   Painter.formatExp = function(label) {
-      var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
-          pos = str.indexOf('@'),
-          exp = Painter.translateSuperscript(str.substr(pos+1)),
-          // exp = "#superscript{" + str.substr(pos+1) + "}",
-          str = str.substr(0, pos);
-
-      return ((str === "1x10") ? "10" : str) + exp;
    }
 
    Painter.translateLaTeX = function(str, with_sub_super_script) {
@@ -3858,96 +3846,22 @@
          if (arg.font_size) txt.attr("font-size", arg.font_size);
                        else arg.font_size = font.size;
 
-        /* if (arg.latex && (label[label.length-1]=="}") && ((label.indexOf("#splitline{")===0) || (label.indexOf("#frac{")===0))) {
-            // this is splitline, use special handling
-            var pos = label.indexOf("}{"), isfrac = label.indexOf("#frac{")===0;
-            if ((pos>0) && (pos == label.lastIndexOf("}{"))) {
-               var l1 = label.substr(isfrac ? 6 : 11, pos - (isfrac ? 6 : 11)),
-                   l2 = label.substr(pos+2, label.length - pos - 3);
+         arg.font = font; // use in latex conversion
 
-               function check(str) {
-                  var cnt = 0;
-                  for (var n=0;n<str.length;++n) {
-                     if (str[n]=='{') ++cnt;
-                     if (str[n]=='}') --cnt;
-                     if (cnt<0) return false;
-                  }
-                  return cnt == 0;
-                }
+         arg.plain = !arg.latex || JSROOT.gStyle.OldLatex || (this.produceLatex(txt, label, arg) === 0);
 
-               if (check(l1) && check(l2)) {
-
-                  l1 = JSROOT.Painter.translateLaTeX(l1);
-                  var span1 = txt.append("tspan").attr("x",0).attr("y", "-1em").text(l1);
-                  l1 = JSROOT.Painter.translateLaTeXColor(this, span1, l1);
-                  var w1 = JSROOT.Painter.approxTextWidth(font, l1);
-
-                  l2 = JSROOT.Painter.translateLaTeX(l2);
-                  var span2 = txt.append("tspan").attr("x",0).attr("y", 0).text(l2);
-                  l2 = JSROOT.Painter.translateLaTeXColor(this, span1, l2);
-                  var w2 = JSROOT.Painter.approxTextWidth(font, l2);
-
-                  if (isfrac || (arg.align[0]=='middle')) {
-                     if (w1>=w2) {
-                        if (isfrac) span1.style("text-decoration", "underline");
-                        span2.attr("x", ((w1-w2)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
-                     } else {
-                        if (isfrac) span2.style("text-decoration", "overline");
-                        span1.attr("x", ((w2-w1)/arg.font_size*0.5).toFixed(1) + "em"); // use em units to let scale
-                     }
-                  }
-
-                  arg.processed = true;
-
-                  if (JSROOT.nodejs) arg.box = { height: 2.2*arg.font_size, width: Math.max(w1,w2) };
-               }
+         if (arg.plain) {
+            if (arg.latex) {
+               label = JSROOT.Painter.translateLaTeX(label, true);
+               label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
             }
-         } else */
-         if (arg.latex && (label[label.length-1]=="}") && (label.indexOf('#superscript{')>=0 || label.indexOf('#subscript{')>=0)) {
-            // jsroot internal superscipt and subscript for axis labeling
-            var pos = label.indexOf('#superscript{'), up = true;
-            if (pos<0) { pos = label.indexOf('#subscript{'); up = false; }
-
-            var l1 = label.substr(0, pos);
-            pos += (up ? 13 : 11);
-            var l2 = label.substr(pos, label.length-1-pos);
-
-            var span1 = txt.append("tspan")
-                           .text(l1)
-                           .attr("y", 0),
-                w1 = JSROOT.Painter.approxTextWidth(font, l1),
-                span2 = txt.append("tspan")
-                           .text(l2)
-                           .attr("y", up ? "-.5em" : ".5em")
-                           .style('vertical-align', up ? 'super' : 'sub')
-                           .style('font-size', 'smaller'),
-                w2 = JSROOT.Painter.approxTextWidth(font, l2);
-
-            if (JSROOT.nodejs) arg.box = { height: 1.4*arg.font_size, width: w1+w2*0.8 };
-
-            arg.processed = true;
-
+            txt.text(label);
+         } else if (JSROOT.nodejs && arg.rect) {
+            arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
          }
 
-         if (!arg.processed) {
-
-            arg.font = font; // use in latex conversion
-
-            arg.plain = !arg.latex || JSROOT.gStyle.OldLatex || (this.produceLatex(txt, label, arg) === 0);
-
-            if (arg.plain) {
-               if (arg.latex) {
-                  label = JSROOT.Painter.translateLaTeX(label, true);
-                  label = JSROOT.Painter.translateLaTeXColor(this, txt, label);
-               }
-               txt.text(label);
-            } else if (JSROOT.nodejs && arg.rect) {
-               arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
-            }
-
-            if (JSROOT.nodejs && !arg.box)
-               arg.box = { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) };
-         }
+         if (JSROOT.nodejs && !arg.box)
+            arg.box = { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) };
 
          if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
 

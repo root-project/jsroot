@@ -813,11 +813,10 @@
    }
 
    TAxisPainter.prototype.formatExp = function(label) {
-      if (JSROOT.nodejs) return JSROOT.Painter.formatExp(label);
 
       var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
           pos = str.indexOf('@'),
-          exp = "#superscript{" + str.substr(pos+1) + "}",
+          exp = "^{" + str.substr(pos+1) + "}",
           str = str.substr(0, pos);
 
       return ((str === "1x10") ? "10" : str) + exp;
@@ -1338,8 +1337,8 @@
                            x: vertical ? side*5 : w+5,
                            y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
                            align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
-                           latex: 0,
-                           text: '\xD7' + JSROOT.Painter.formatExp(Math.pow(10,this.order).toExponential(0)),
+                           latex: 1,
+                           text: '#times' + this.formatExp(Math.pow(10,this.order).toExponential(0)),
                            draw_g: label_g
            });
 
