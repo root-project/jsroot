@@ -3387,7 +3387,7 @@
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
-         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size };
+         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
       }
@@ -3419,6 +3419,9 @@
 
       var features = [
           { name: "#it{" }, // italic
+          { name: "#bf{" }, // bold
+          { name: "kern[", arg: 'float' }, // horizontal shift
+          { name: "lower[", arg: 'float' },  // vertical shift
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
@@ -3461,7 +3464,7 @@
 
          subnode1 = subnode = node.append('tspan');
 
-         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dx:0, dy: 0 };
+         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dx:0, dy: 0, parent: curr };
 
          isany = true;
 
@@ -3479,7 +3482,7 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx; // this will be applied to the next element
+         var nextdy = curr.dy, nextdx = curr.dx, trav = null; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
@@ -3488,8 +3491,33 @@
                if (this.get_color(foundarg))
                    subnode.attr('fill', this.get_color(foundarg));
                break;
+           case "#kern[":
+              nextdx += foundarg;
+              curr.dx -= foundarg;
+              break;
+           case "#lower[":
+              nextdy += foundarg;
+              curr.dy -= foundarg;
+              break;
            case "#it{":
-              subnode.attr('font-style', 'italic');
+              curr.italic = true;
+              trav = curr;
+              while (trav = trav.parent)
+                 if (trav.italic!==undefined) {
+                    curr.italic = !trav.italic;
+                    break;
+                 }
+              subnode.attr('font-style', curr.italic ? 'italic' : 'normal');
+              break;
+           case "#bf{":
+              curr.bold = true;
+              trav = curr;
+              while (trav = trav.parent)
+                 if (trav.bold!==undefined) {
+                    curr.bold = !trav.bold;
+                    break;
+                 }
+              subnode.attr('font-weight', curr.bold ? 'bold' : 'normal');
               break;
            case "_{":
               nextdy += 0.4;
