@@ -3386,16 +3386,10 @@
       // attempt to implement subset of TLatex with plain SVG text and tspan elements
 
       if (!curr) {
-         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: 0, fsize: arg.font_size };
+         // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
+         curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size }; //
          arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
-         if (label.indexOf("#splitline")==0) {
-            // arg.debug = true;
-            // console.log('label', label);
-            // label = "#frac{1 any other}{N_{ev}}d^{2}N/dp_{t}dy (Gev/c)^{-1}";
-           //  label = "#frac{1}{N} e^{x^{n}} D_{p_{t}} normal text";
-           // arg.rotate = 0; arg.x = 500; arg.y = -50;
-         }
       }
 
       function extend_pos(label) {
@@ -3448,8 +3442,8 @@
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
             extend_pos(s);
             var plain = node.append('tspan').text(s);
-            if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
             if (curr.dx) { plain.attr('dx', curr.dx.toFixed(2) + 'em'); curr.dx = 0; }
+            if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
          }
 
          if (!found) return true;
@@ -3669,7 +3663,7 @@
 
             label = label.substr(1);
 
-            subnode = node.append('tspan');
+            subnode = subnode1 = node.append('tspan');
 
             subpos.two_lines = false;
             subpos.x1 = subpos.x;
