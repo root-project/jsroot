@@ -226,8 +226,9 @@
                 '#varUpsilon': '\u03D2',
                 '#epsilon': '\u03B5',
 
-                // only required for MathJax
+                // only required for MathJax to provide correct replacement
                 '#sqrt': '\u221A',
+                '#bar': '',
 
                 // from TLatex tables #2 & #3
                 '#leq': '\u2264',
@@ -310,7 +311,6 @@
                 '#GT': '\x3E',
                 '#forall': '\u2200',
                 '#exists': '\u2203',
-                '#bar': '',
                 '#vec': '',
                 '#dot': '\u22C5',
                 '#hat': '\xB7',
@@ -3425,6 +3425,16 @@
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
+          { name: "#bar{", accent: "\u0305" }, //
+          { name: "#hat{", accent: "\u0302" }, //
+          { name: "#check{", accent: "\u030C" }, //
+          { name: "#acute{", accent: "\u0301" }, //
+          { name: "#grave{", accent: "\u0300" }, //
+          { name: "#dot{", accent: "\u0307" }, //
+          { name: "#ddot{", accent: "\u0308" }, //
+          { name: "#tilde{", accent: "\u0303" }, //
+          { name: "#slash{", accent: "\u0337" }, //
+          { name: "#vect{", accent: "\u0350" }, // arrowhead
           { name: "#frac{" },
           { name: "#splitline{" },
           { name: "#sqrt{" }
@@ -3444,6 +3454,10 @@
          if (!found && !isany) {
             var s = JSROOT.Painter.translateLaTeX(label);
             if (!curr.lvl && (s==label)) return 0; // indicate that nothing found - plain string
+            if (curr.accent && (s == label) && (s.length==1)) {
+               s += curr.accent;
+               curr.accent = false;
+            }
             extend_pos(s);
             node.text(s);
             return true;
@@ -3486,6 +3500,9 @@
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
+         if (found.accent) {
+            subpos.accent = found.accent;
+         } else
          switch(found.name) {
             case "#color[":
                if (this.get_color(foundarg))
