@@ -3409,6 +3409,14 @@
          // if (arg.debug) console.log('y1,y2', arg.rect.y1, arg.rect.y2, arg.mid_shift, arg.up_shift);
       }
 
+      function makeem(value) {
+         if (value==Math.round(value)) return Math.round(value) + "em";
+         var res = value.toFixed(2)+"em";
+         if (res.indexOf("0.")==0) return res.substr(1);
+         if (res.indexOf("-0.")==0) return "-." + res.substr(3);
+         return res;
+      }
+
       var features = [
           { name: "#it{" }, // italic
           { name: "#color[", arg: 'int' },
@@ -3442,8 +3450,8 @@
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
             extend_pos(s);
             var plain = node.append('tspan').text(s);
-            if (curr.dx) { plain.attr('dx', curr.dx.toFixed(2) + 'em'); curr.dx = 0; }
-            if (curr.dy) { plain.attr('dy', curr.dy.toFixed(2) + 'em'); curr.dy = 0; }
+            if (curr.dx) { plain.attr('dx', makeem(curr.dx)); curr.dx = 0; }
+            if (curr.dy) { plain.attr('dy', makeem(curr.dy)); curr.dy = 0; }
          }
 
          if (!found) return true;
@@ -3521,8 +3529,8 @@
             // loop need to create two lines for #frac or #splitline
             // normally only one sub-element is created
 
-            if (nextdx) subnode.attr('dx', nextdx.toFixed(2)+'em');
-            if (nextdy) subnode.attr('dy', nextdy.toFixed(2)+'em');
+            if (nextdx) subnode.attr('dx', makeem(nextdx));
+            if (nextdy) subnode.attr('dy', makeem(nextdy));
 
             pos = -1; n = 1; nextdy = 0; nextdx = 0;
 
@@ -3557,8 +3565,8 @@
                var a = "", nn = Math.max(2, Math.round(len/0.3));
                while (nn--) a += '\xA0';
 
-               var over = subnode.append('tspan').attr('dx', (subpos.dx-len).toFixed(2)+"em").text(a).attr('text-decoration','overline');
-               if (subpos.dy) over.attr("dy", subpos.dy.toFixed(2) + "em");
+               var over = subnode.append('tspan').attr('dx', makeem(subpos.dx-len)).text(a).attr('text-decoration','overline');
+               if (subpos.dy) over.attr("dy", makeem(subpos.dy));
 
                while (box1) {
                   // ensure that cap longer then content
@@ -3637,8 +3645,8 @@
                }
 
                if (middle) {
-                  middle.attr('dy', curr.dy.toFixed(2)+"em");
-                  middle.attr("dx", (-0.5*(l3+l2)).toFixed(2) + "em");
+                  middle.attr('dy', makeem(curr.dy));
+                  middle.attr("dx", makeem(-0.5*(l3+l2)));
                   curr.dy = 0;
                   curr.dx = 0.2; // extra spacing
                } else {
@@ -3648,13 +3656,13 @@
                }
 
                if (middle || arg.align[0]=='middle') {
-                  subpos.first.attr("dx", (0.5*(l3-l1)).toFixed(2)+"em");
-                  subpos.second.attr("dx", (-0.5*(l2+l1)).toFixed(2)+"em");
+                  subpos.first.attr("dx", makeem(0.5*(l3-l1)));
+                  subpos.second.attr("dx", makeem(-0.5*(l2+l1)));
                } else if (arg.align[0]=='end') {
-                  if (l1<l2) subpos.first.attr("dx", (l2-l1).toFixed(2)+"em");
-                  subpos.second.attr("dx", (-l2).toFixed(2)+"em");
+                  if (l1<l2) subpos.first.attr("dx", makeem(l2-l1));
+                  subpos.second.attr("dx", makeem(-l2));
                } else {
-                  subpos.second.attr("dx", (-l1).toFixed(2)+"em");
+                  subpos.second.attr("dx", makeem(-l1));
                }
 
                delete subpos.first;
