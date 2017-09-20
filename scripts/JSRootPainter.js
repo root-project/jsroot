@@ -3606,6 +3606,7 @@
               // console.log('subscript', label);
               if (prevsubpos && (prevsubpos.script === 'super')) {
                  var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                 subpos.width_limit = rect.width;
                  nextdx -= rect.width/subpos.fsize;
               } else {
                  nextdx += 0.1;
@@ -3624,6 +3625,7 @@
               if (prevsubpos && (prevsubpos.script === 'sub')) {
                  var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
                  nextdx -= rect.width/subpos.fsize;
+                 subpos.width_limit = rect.width;
               } else {
                  nextdx += 0.1;
               }
@@ -3685,6 +3687,16 @@
             curr.dy += subpos.dy*subpos.fsize/curr.fsize;
 
             label = label.substr(pos+1);
+
+            if (subpos.width_limit) {
+               // special handling for the case when created element does not reach its minimal width
+               // use when super-script and subscript should be combined together
+
+               var rect = get_boundary(this,  subnode1, subpos.rect);
+               if (rect.width < subpos.width_limit)
+                  curr.dx += (subpos.width_limit-rect.width)/curr.fsize;
+               delete subpos.width_limit;
+            }
 
             if (subpos.square_root) {
                // creating cap for square root
