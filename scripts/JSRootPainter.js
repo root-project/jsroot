@@ -3432,12 +3432,13 @@
       }
 
       function makeem(value) {
-         if (Math.abs(value)<1e-3) return null; // very small values not needed, attribute will be removed
+         if (Math.abs(value)<1e-2) return null; // very small values not needed, attribute will be removed
          if (value==Math.round(value)) return Math.round(value) + "em";
-         var res = value.toFixed(2)+"em";
-         if (res.indexOf("0.")==0) return res.substr(1);
-         if (res.indexOf("-0.")==0) return "-." + res.substr(3);
-         return res;
+         var res = value.toFixed(2);
+         if (res.indexOf("0.")==0) res = res.substr(1); else
+         if (res.indexOf("-0.")==0) res = "-." + res.substr(3);
+         if (res[res.length-1]=='0') res = res.substr(0, res.length-1);
+         return res+"em";
       }
 
       function get_boundary(painter, element, approx_rect) {
