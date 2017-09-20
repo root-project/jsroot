@@ -3482,7 +3482,9 @@
           { name: "#vect{", accent: "\u02B9" }, // "\u0350" arrowhead
           { name: "#frac{" },
           { name: "#splitline{" },
-          { name: "#sqrt{" }
+          { name: "#sqrt{" },
+          { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
+          { name: "#int", special: '\u222B', w: 0.3, h: 1.0 }
        ];
 
       var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
@@ -3517,14 +3519,16 @@
 
          if (best>0) {
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
-            extend_pos(curr, s);
-            node.append('tspan')
-                .attr('dx', makeem(curr.dx))
-                .attr('dy', makeem(curr.dy))
-                .text(s);
-
-            curr.dx = curr.dy = 0;
+            if (s.length>0) {
+               extend_pos(curr, s);
+               node.append('tspan')
+                   .attr('dx', makeem(curr.dx))
+                   .attr('dy', makeem(curr.dy))
+                   .text(s);
+               curr.dx = curr.dy = 0;
+            }
             subpos = null; // indicate that last element is plain
+            delete curr.special; // and any special handling is also over
          }
 
          if (!found) return true;
@@ -3554,9 +3558,22 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale; // this will be applied to the next element
+         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale = 0; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
+
+         if (found.special) {
+            subnode.attr('dx', makeem(nextdx)).attr('dy', makeem(nextdy)).text(found.special);
+            nextdx = nextdy = 0;
+            curr.special = found;
+
+            var rect = get_boundary(this, subnode);
+            if (rect.width && rect.height) {
+               found.w = rect.width/curr.fsize;
+               found.h = rect.height/curr.fsize-0.1;
+            }
+            continue; // just create special node
+         }
 
          if (found.accent) {
             subpos.accent = found.accent;
@@ -3596,38 +3613,52 @@
               break;
            case "_{":
               scale = 0.6;
-              nextdy = nextdy/scale + 0.4;
               subnode.attr('font-size', Math.round(scale*100)+'%');
-              subpos.y += 0.4*subpos.fsize;
-              subpos.fsize *= scale;
-              curr.dy = -0.4*scale; // compensation value, applied for next element
               subpos.script = 'sub';
+              nextdy = nextdy/scale;
 
-              // console.log('subscript', label);
-              if (prevsubpos && (prevsubpos.script === 'super')) {
-                 var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
-                 subpos.width_limit = rect.width;
-                 nextdx -= rect.width/subpos.fsize;
+              if (curr.special) {
+                 curr.dx = curr.special.w;
+                 curr.dy = -0.7;
+                 nextdx -= curr.dx/scale;
+                 nextdy -= curr.dy/scale;
               } else {
                  nextdx += 0.1;
-              }
+                 nextdy += 0.4;
+                 subpos.y += 0.4*subpos.fsize;
+                 subpos.fsize *= scale;
+                 curr.dy = -0.4*scale; // compensation value, applied for next element
 
+                 if (prevsubpos && (prevsubpos.script === 'super')) {
+                    var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                    subpos.width_limit = rect.width;
+                    nextdx -= rect.width/subpos.fsize+0.1;
+                 }
+              }
               break;
            case "^{":
               scale = 0.6;
-              nextdy = nextdy/scale - 0.6;
+              nextdy = nextdy/scale;
               subnode.attr('font-size', Math.round(scale*100)+'%');
-              subpos.y -= 0.4*subpos.fsize;
-              subpos.fsize *= scale;
-              curr.dy = 0.6*scale; // compensation value, applied for next element
               subpos.script = 'super';
 
-              if (prevsubpos && (prevsubpos.script === 'sub')) {
-                 var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
-                 nextdx -= rect.width/subpos.fsize;
-                 subpos.width_limit = rect.width;
+              if (curr.special) {
+                 curr.dx = curr.special.w;
+                 curr.dy = curr.special.h;
+                 nextdx -= curr.dx/scale;
+                 nextdy -= curr.dy/scale;
               } else {
                  nextdx += 0.1;
+                 nextdy -= 0.6;
+                 subpos.y -= 0.4*subpos.fsize;
+                 subpos.fsize *= scale;
+                 curr.dy = 0.6*scale; // compensation value, applied for next element
+
+                 if (prevsubpos && (prevsubpos.script === 'sub')) {
+                    var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                    nextdx -= rect.width/subpos.fsize+0.1;
+                    subpos.width_limit = rect.width;
+                 }
               }
               break;
            case "#frac{":
@@ -3647,6 +3678,8 @@
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
               break;
          }
+
+         if (curr.special && !subpos.script) delete curr.special;
 
          subpos.node = subnode; // remember node where sublement is build
 
@@ -3696,6 +3729,12 @@
                if (rect.width < subpos.width_limit)
                   curr.dx += (subpos.width_limit-rect.width)/curr.fsize;
                delete subpos.width_limit;
+            }
+
+            if (curr.special) {
+               // case over #sum or #integral one need to compensate width
+               var rect = get_boundary(this,  subnode1, subpos.rect);
+               curr.dx -= rect.width/curr.fsize; // compensate width as much as we can
             }
 
             if (subpos.square_root) {
