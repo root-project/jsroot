@@ -3598,10 +3598,8 @@
               subpos.first = subnode;
               subpos.two_lines = true;
               subpos.need_middle = (found.name == "#frac{");
-              nextdy -= 0.5;
               subpos.x0 = subpos.x;
-              subpos.y0 = subpos.y;
-              // subpos.y -= 0.5*subpos.fsize;
+              nextdy -= 0.5;
               curr.dy = -0.5;
               break;
            case "#sqrt{":
@@ -3609,7 +3607,6 @@
               subpos.square_root = subnode.append('tspan').text('\u221A');
               subnode1 = subnode.append('tspan'); // 0.3 is additional space
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2  }; // only height is interesting
-              subpos.x0 = subpos.x; // required for simple width calculations with node.js
               break;
          }
 
@@ -3693,8 +3690,8 @@
                var l1, l2, l3; // length of up,down and middle lines
 
                if (JSROOT.nodejs) {
-                  l1 = (subpos.x1 - subpos.x0)/subpos.fsize;
-                  l2 = (subpos.x - subpos.x0)/subpos.fsize;
+                  l1 = (subpos.rect1 ? subpos.rect1.width : 0)/subpos.fsize;
+                  l2 = (subpos.rect ? subpos.rect.width : 0)/subpos.fsize;
                } else {
                   // measure exact dimenstion of up and down lines
                   subpos.first.style('display', 'none');
@@ -3760,10 +3757,9 @@
             subnode = subnode1 = node.append('tspan');
 
             subpos.two_lines = false;
-            delete subpos.rect; // reset rectangle calculations
-            subpos.x1 = subpos.x;
-            subpos.x = subpos.x0;
-            // subpos.y = subpos.y0 + 0.7*subpos.fsize;
+            subpos.rect1 = subpos.rect; // remember first rect
+            delete subpos.rect;     // reset rectangle calculations
+            subpos.x = subpos.x0;   // it is used only for SVG, make it more realistic
             subpos.second = subnode;
 
             nextdy = curr.dy + 1.7;
@@ -3832,16 +3828,11 @@
 
          arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
 
-         if (arg.plain) {
-            txt.text(label);
-         } else if (JSROOT.nodejs && arg.text_rect) {
-            arg.box = { height: arg.text_rect.y2 - arg.text_rect.y1, width: arg.text_rect.x2 - arg.text_rect.x1 };
-         }
+         if (arg.plain) txt.text(label);
 
-         if (JSROOT.nodejs && !arg.box)
-            arg.box = { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) };
-
-         if (!arg.box) arg.box = this.GetBoundarySizes(txt.node());
+         // complete rectangle with very rougth size estimations
+         arg.box = JSROOT.nodejs ? (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) })
+                                 : this.GetBoundarySizes(txt.node());
 
          // if (label.length>20) console.log('label', label, 'box', arg.box);
 
