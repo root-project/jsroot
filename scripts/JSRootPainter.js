@@ -3437,8 +3437,10 @@
          return res;
       }
 
-      function makebox(painter, element) {
-         if (!element || element.empty()) return null;
+      function get_boundary(painter, element, approx_rect) {
+         if (JSROOT.nodejs || !element || element.empty())
+            return approx_rect || { height: 0, width: 0 };
+
          var important = [], prnt = element.node();
 
          while (prnt && (prnt!=arg.mainnode)) {
@@ -3651,28 +3653,19 @@
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               var len = 2, scale = 1, sqrt_dy = 0, bs = null, be = null;
+               var len = 2, scale = 1, sqrt_dy = 0,
+                   bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
+                   be = get_boundary(this, subnode1, subpos.rect);
 
-               if (JSROOT.nodejs) {
-                  bs = subpos.sqrt_rect;  // approx rectangle for the
-                  be = subpos.rect;       // rectangle with element dimensions
-               } else {
-                  bs = makebox(this, subpos.square_root);
-                  be = makebox(this, subnode1);
+               // we can compare y coordinates while both nodes (root and element) on the same level
+               if ((be.height > bs.height) && (bs.height > 0)) {
+                  scale = be.height/bs.height*1.2;
+                  sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/scale;
+                  subpos.square_root.style('font-size', Math.round(100*scale)+'%').attr('dy', makeem(sqrt_dy));
                }
 
-               if (bs && be) {
-
-                  // we can compare y coordinates while both nodes (root and element) on the same level
-                  if (be.height > bs.height) {
-                     scale = be.height/bs.height*1.2;
-                     sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/scale;
-                     subpos.square_root.style('font-size', Math.round(100*scale)+'%').attr('dy', makeem(sqrt_dy));
-                  }
-
-                  // we taking into account only element width
-                  len = be.width / subpos.fsize / scale;
-               }
+               // we taking into account only element width
+               len = be.width / subpos.fsize / scale;
 
                var a = "", nn = Math.round(Math.max(len*3,2));
                while (nn--) a += '\u203E'; // unicode overline
@@ -3687,36 +3680,15 @@
             if (subpos.first && subpos.second) {
                // when two lines created, adjust horizontal position and place divider if required
 
-               var l1, l2, l3; // length of up,down and middle lines
-
-               if (JSROOT.nodejs) {
-                  l1 = (subpos.rect1 ? subpos.rect1.width : 0)/subpos.fsize;
-                  l2 = (subpos.rect ? subpos.rect.width : 0)/subpos.fsize;
-               } else {
-                  // measure exact dimenstion of up and down lines
-                  subpos.first.style('display', 'none');
-                  subpos.second.style('display', 'none');
-
-                  var box0 = this.GetBoundarySizes(arg.mainnode);
-
-                  subpos.first.style('display', null);
-
-                  var box1 = this.GetBoundarySizes(arg.mainnode);
-
-                  subpos.first.style('display', 'none');
-                  subpos.second.style('display', null);
-
-                  var box2 = this.GetBoundarySizes(arg.mainnode);
-
-                  l1 = (box1.width - box0.width)/subpos.fsize;
-                  l2 = (box2.width - box0.width)/subpos.fsize;
-
-                  subpos.first.style('display', null);
-               }
+               var rect1 = get_boundary(this, subpos.first, subpos.rect1),
+                   rect2 = get_boundary(this, subpos.second, subpos.rect),
+                   l1 = rect1.width / subpos.fsize,
+                   l2 = rect2.width / subpos.fsize,
+                   l3 = Math.max(l2, l1);
 
                if (subpos.need_middle) {
                   // starting from content len 1.2 two -- will be inserted
-                  l3 = Math.round(Math.max(l1,l2,1)+0.3);
+                  l3 = Math.round(Math.max(l3,1)+0.3);
                   var a = "";
                   while (a.length < l3) a += '\u2014';
                   node.append('tspan')
@@ -3726,7 +3698,6 @@
                   curr.dy = 0;
                   curr.dx = 0.2; // extra spacing
                } else {
-                  l3 = Math.max(l2, l1);
                   curr.dx = 0.2;
                   if (l2<l1) curr.dx += 0.5*(l1-l2);
                }
