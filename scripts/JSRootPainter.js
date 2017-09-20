@@ -3485,7 +3485,7 @@
           { name: "#sqrt{" }
        ];
 
-      var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos;
+      var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
 
       while (label) {
 
@@ -3524,6 +3524,7 @@
                 .text(s);
 
             curr.dx = curr.dy = 0;
+            subpos = null; // indicate that last element is plain
          }
 
          if (!found) return true;
@@ -3532,6 +3533,8 @@
          label = label.substr(best + found.name.length);
 
          subnode1 = subnode = node.append('tspan');
+
+         prevsubpos = subpos;
 
          subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dx:0, dy: 0, parent: curr };
 
@@ -3598,6 +3601,16 @@
               subpos.y += 0.4*subpos.fsize;
               subpos.fsize *= scale;
               curr.dy = -0.4*scale; // compensation value, applied for next element
+              subpos.script = 'sub';
+
+              // console.log('subscript', label);
+              if (prevsubpos && (prevsubpos.script === 'super')) {
+                 var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                 nextdx -= rect.width/subpos.fsize;
+              } else {
+                 nextdx += 0.1;
+              }
+
               break;
            case "^{":
               scale = 0.6;
@@ -3606,6 +3619,14 @@
               subpos.y -= 0.4*subpos.fsize;
               subpos.fsize *= scale;
               curr.dy = 0.6*scale; // compensation value, applied for next element
+              subpos.script = 'super';
+
+              if (prevsubpos && (prevsubpos.script === 'sub')) {
+                 var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                 nextdx -= rect.width/subpos.fsize;
+              } else {
+                 nextdx += 0.1;
+              }
               break;
            case "#frac{":
            case "#splitline{":
@@ -3624,6 +3645,8 @@
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
               break;
          }
+
+         subpos.node = subnode; // remember node where sublement is build
 
          while (true) {
             // loop need to create two lines for #frac or #splitline
