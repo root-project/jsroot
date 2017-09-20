@@ -3467,16 +3467,16 @@
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
-          { name: "#bar{", accent: "\u0305" }, //
-          { name: "#hat{", accent: "\u0302" }, //
-          { name: "#check{", accent: "\u030C" }, //
-          { name: "#acute{", accent: "\u0301" }, //
-          { name: "#grave{", accent: "\u0300" }, //
-          { name: "#dot{", accent: "\u0307" }, //
-          { name: "#ddot{", accent: "\u0308" }, //
-          { name: "#tilde{", accent: "\u0303" }, //
-          { name: "#slash{", accent: "\u0337" }, //
-          { name: "#vect{", accent: "\u0350" }, // arrowhead
+          { name: "#bar{", accent: "\u02C9" }, // "\u0305"
+          { name: "#hat{", accent: "\u02C6"  }, // "\u0302"
+          { name: "#check{", accent: "\u02C7" }, // "\u030C"
+          { name: "#acute{", accent: "\u02CA" }, // "\u0301"
+          { name: "#grave{", accent: "\u02CB" }, // "\u0300"
+          { name: "#dot{", accent: "\u02D9" }, // "\u0307"
+          { name: "#ddot{", accent: "\u02BA" }, // "\u0308"
+          { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
+          { name: "#slash{", accent: "\u2215" }, // "\u0337"
+          { name: "#vect{", accent: "\u02B9" }, // "\u0350" arrowhead
           { name: "#frac{" },
           { name: "#splitline{" },
           { name: "#sqrt{" }
@@ -3496,12 +3496,19 @@
          if (!found && !isany) {
             var s = JSROOT.Painter.translateLaTeX(label);
             if (!curr.lvl && (s==label)) return 0; // indicate that nothing found - plain string
-            if (curr.accent && (s == label) && (s.length==1)) {
-               s += curr.accent;
-               curr.accent = false;
-            }
             extend_pos(curr, s);
-            node.text(s);
+
+            if (curr.accent && (s == label) && (s.length==1)) {
+               var elem = node.append('tspan').text(s),
+                   rect = get_boundary(this, elem, { width : 10000 }),
+                   w = Math.min(rect.width/curr.fsize, 0.4); // at maximum, 0.4 should be used
+
+               node.append('tspan').attr('dx', makeem(-w)).attr('dy', makeem(-0.2)).text(curr.accent);
+               curr.dy = 0.2; // compensate hat
+               curr.accent = false;
+            } else {
+               node.text(s);
+            }
             return true;
          }
 
