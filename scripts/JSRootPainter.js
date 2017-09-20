@@ -3638,17 +3638,16 @@
 
             var sublabel = label.substr(0,pos);
 
-            // if (subpos.square_root) sublabel = "#frac{a}{bc}";
+            // if (subpos.square_root) sublabel = "#frac{a}{bc}and more text #pi";
 
             if (!this.produceLatex(subnode1, sublabel, arg, subpos)) return false;
 
-            // rescale deltas
-            subpos.dx *= subpos.fsize / curr.fsize;
-            subpos.dy *= subpos.fsize / curr.fsize;
-
-            // takeover current possition
+            // takeover current possition and deltas
             curr.x = subpos.x;
             curr.y = subpos.y;
+
+            curr.dx += subpos.dx*subpos.fsize/curr.fsize;
+            curr.dy += subpos.dy*subpos.fsize/curr.fsize;
 
             label = label.substr(pos+1);
 
@@ -3660,19 +3659,12 @@
                if (JSROOT.nodejs) {
                   bs = subpos.sqrt_rect;  // approx rectangle for the
                   be = subpos.rect;       // rectangle with element dimensions
-
-                  // console.log('bs', bs, 'be', be);
-
                } else {
                   bs = makebox(this, subpos.square_root);
                   be = makebox(this, subnode1);
                }
 
                if (bs && be) {
-
-
-                  //var bs = makebox(this, subpos.square_root),
-                  //    be = makebox(this, subnode1);
 
                   // we can compare y coordinates while both nodes (root and element) on the same level
                   if (be.height > bs.height) {
@@ -3685,21 +3677,15 @@
                   len = be.width / subpos.fsize / scale;
                }
 
-               var a = "", nn = Math.round(Math.max(len,1)+0.3);
-               while (nn--) a += '\u2014';
+               var a = "", nn = Math.round(Math.max(len*3,2));
+               while (nn--) a += '\u203E'; // unicode overline
 
                subpos.square_root
-                     .append('tspan').attr("dy", makeem(-0.6)).text(a)
-                     .append('tspan').attr("dy", makeem(0.6-sqrt_dy)).attr("dx", makeem(-a.length)).text('\u2009');
-
-               curr.dx += subpos.dx;
-               curr.dy += subpos.dy;
+                     .append('tspan').attr("dy", makeem(-0.25)).text(a)
+                     .append('tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3)).text('\u2009'); // unicode tiny space
 
                break;
             }
-
-            curr.dx += subpos.dx;
-            curr.dy += subpos.dy;
 
             if (subpos.first && subpos.second) {
                // when two lines created, adjust horizontal position and place divider if required
