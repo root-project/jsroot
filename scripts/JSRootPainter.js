@@ -1087,6 +1087,9 @@
    }
 
    Painter.translateLaTeX = function(str) {
+      while ((str.length>2) && (str[0]=='{') && (str[str.length-1]=='}'))
+         str = str.substr(1,str.length-2);
+
       str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
 
       for (var i in this.symbols_map)
