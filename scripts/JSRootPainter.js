@@ -3388,22 +3388,41 @@
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
          curr = { lvl: 0, x: 0, y: 0, dx: 0, dy: -0.1, fsize: arg.font_size, parent: null };
-         arg.rect = { x1: 0, y1: 0, x2: 0, y2: 0 };
          arg.mainnode = node.node();
       }
 
-      function extend_pos(label) {
-         curr.x += label.length * arg.font.aver_width * curr.fsize;
-         arg.rect.x2 = Math.max(arg.rect.x2, curr.x);
+      function extend_pos(pos, value) {
+         if (typeof value == 'string') {
+            if (!pos.rect) pos.rect = { x1: pos.x, x2: pos.x, y1: pos.y, y2: pos.y, height: 0, width: 0 };
 
-         arg.rect.y1 = Math.min(arg.rect.y1, curr.y - curr.fsize*1.2);
-         arg.rect.y2 = Math.max(arg.rect.y2, curr.y); // normally text position from bottom
+            pos.x += value.length * arg.font.aver_width * pos.fsize;
 
-         var h = arg.rect.y2 - arg.rect.y1, mid = (arg.rect.y2 + arg.rect.y1)/2;
+            pos.rect.x2 = Math.max(pos.rect.x2, pos.x);
+            pos.rect.y1 = Math.min(pos.rect.y1, pos.y - pos.fsize*1.2);
+            pos.rect.y2 = Math.max(pos.rect.y2, pos.y); // normally text position from bottom
+         } else {
+            if (!pos.rect) pos.rect = JSROOT.extend({}, value);
+            pos.rect.x1 = Math.min(pos.rect.x1, value.x1);
+            pos.rect.x2 = Math.max(pos.rect.x2, value.x2);
+            pos.rect.y1 = Math.min(pos.rect.y1, value.y1);
+            pos.rect.y2 = Math.max(pos.rect.y2, value.y2); // normally text position from bottom
+         }
+
+         pos.rect.x = pos.rect.x1;
+         pos.rect.y = pos.rect.y1;
+         pos.rect.width = pos.rect.x2 - pos.rect.x1;
+         pos.rect.height = pos.rect.y2 - pos.rect.y1;
+
+         if (pos.parent) return extend_pos(pos.parent, pos.rect)
+
+         // calculate dimensions for the
+         arg.text_rect = pos.rect;
+
+         var h = pos.rect.height, mid = (pos.rect.y2 + pos.rect.y1)/2;
 
          if (h>0) {
             arg.mid_shift = -mid/h || 0.001;        // relative shift to get latex middle at given point
-            arg.top_shift = -arg.rect.y1/h || 0.001; // relative shift to get latex top at given point
+            arg.top_shift = -pos.rect.y1/h || 0.001; // relative shift to get latex top at given point
          }
 
          // if (arg.debug) console.log('y1,y2', arg.rect.y1, arg.rect.y2, arg.mid_shift, arg.up_shift);
@@ -3416,6 +3435,26 @@
          if (res.indexOf("0.")==0) return res.substr(1);
          if (res.indexOf("-0.")==0) return "-." + res.substr(3);
          return res;
+      }
+
+      function makebox(painter, element) {
+         if (!element || element.empty()) return null;
+         var important = [], prnt = element.node();
+
+         while (prnt && (prnt!=arg.mainnode)) {
+            important.push(prnt);
+            prnt = prnt.parentNode;
+         }
+
+         element.selectAll('tspan').each(function() { important.push(this) });
+
+         var tspans = d3.select(arg.mainnode).selectAll('tspan');
+
+         tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', 'none'); });
+         var box = painter.GetBoundarySizes(arg.mainnode);
+
+         tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', null); });
+         return box;
       }
 
       var features = [
@@ -3459,14 +3498,14 @@
                s += curr.accent;
                curr.accent = false;
             }
-            extend_pos(s);
+            extend_pos(curr, s);
             node.text(s);
             return true;
          }
 
          if (best>0) {
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
-            extend_pos(s);
+            extend_pos(curr, s);
             node.append('tspan')
                 .attr('dx', makeem(curr.dx))
                 .attr('dy', makeem(curr.dy))
@@ -3562,21 +3601,25 @@
               nextdy -= 0.5;
               subpos.x0 = subpos.x;
               subpos.y0 = subpos.y;
-              subpos.y -= 0.5*subpos.fsize;
+              // subpos.y -= 0.5*subpos.fsize;
               curr.dy = -0.5;
               break;
            case "#sqrt{":
-              subnode.append('tspan').text('\u221A');
-              subnode1 = subnode.append('tspan');
-              subpos.square_root = true;
-              subpos.x0 = subpos.x;
-              if (!JSROOT.nodejs) subpos.box0 = this.GetBoundarySizes(arg.mainnode);
+              extend_pos(curr, ' '); // just dummy symbol instead of square root
+              subpos.square_root = subnode.append('tspan').text('\u221A');
+              subnode1 = subnode.append('tspan'); // 0.3 is additional space
+              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2  }; // only height is interesting
+              subpos.x0 = subpos.x; // required for simple width calculations with node.js
               break;
          }
 
          while (true) {
             // loop need to create two lines for #frac or #splitline
             // normally only one sub-element is created
+
+            // moving cursor with the tspan
+            subpos.x += nextdx*subpos.fsize;
+            subpos.y += nextdy*subpos.fsize;
 
             subnode.attr('dx', makeem(nextdx)).attr('dy', makeem(nextdy));
             nextdx = nextdy = 0;
@@ -3593,37 +3636,65 @@
                return false;
             }
 
-            if (!this.produceLatex(subnode1, label.substr(0,pos), arg, subpos)) return false;
+            var sublabel = label.substr(0,pos);
 
+            // if (subpos.square_root) sublabel = "#frac{a}{bc}";
+
+            if (!this.produceLatex(subnode1, sublabel, arg, subpos)) return false;
+
+            // rescale deltas
             subpos.dx *= subpos.fsize / curr.fsize;
             subpos.dy *= subpos.fsize / curr.fsize;
 
-            curr.x = Math.max(curr.x, subpos.x);
+            // takeover current possition
+            curr.x = subpos.x;
+            curr.y = subpos.y;
 
             label = label.substr(pos+1);
 
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               var len;
+               var len = 2, scale = 1, sqrt_dy = 0, bs = null, be = null;
+
                if (JSROOT.nodejs) {
-                  len = (subpos.x - subpos.x0)/subpos.fsize;
+                  bs = subpos.sqrt_rect;  // approx rectangle for the
+                  be = subpos.rect;       // rectangle with element dimensions
+
+                  // console.log('bs', bs, 'be', be);
+
                } else {
-                  var box1 = this.GetBoundarySizes(arg.mainnode);
-                  len = (box1.width - subpos.box0.width)/subpos.fsize;
+                  bs = makebox(this, subpos.square_root);
+                  be = makebox(this, subnode1);
+               }
+
+               if (bs && be) {
+
+
+                  //var bs = makebox(this, subpos.square_root),
+                  //    be = makebox(this, subnode1);
+
+                  // we can compare y coordinates while both nodes (root and element) on the same level
+                  if (be.height > bs.height) {
+                     scale = be.height/bs.height*1.2;
+                     sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/scale;
+                     subpos.square_root.style('font-size', Math.round(100*scale)+'%').attr('dy', makeem(sqrt_dy));
+                  }
+
+                  // we taking into account only element width
+                  len = be.width / subpos.fsize / scale;
                }
 
                var a = "", nn = Math.round(Math.max(len,1)+0.3);
                while (nn--) a += '\u2014';
 
-               subnode.append('tspan')
-                      .attr("dx", makeem(subpos.dx-len))
-                      .attr("dy", makeem(subpos.dy-0.6))
-                      .text(a);
+               subpos.square_root
+                     .append('tspan').attr("dy", makeem(-0.6)).text(a)
+                     .append('tspan').attr("dy", makeem(0.6-sqrt_dy)).attr("dx", makeem(-a.length)).text('\u2009');
 
-               subpos.dy = subpos.dx = 0;
+               curr.dx += subpos.dx;
+               curr.dy += subpos.dy;
 
-               curr.dy += 0.6;
                break;
             }
 
@@ -3703,9 +3774,10 @@
             subnode = subnode1 = node.append('tspan');
 
             subpos.two_lines = false;
+            delete subpos.rect; // reset rectangle calculations
             subpos.x1 = subpos.x;
             subpos.x = subpos.x0;
-            subpos.y = subpos.y0 + 0.7*subpos.fsize;
+            // subpos.y = subpos.y0 + 0.7*subpos.fsize;
             subpos.second = subnode;
 
             nextdy = curr.dy + 1.7;
@@ -3776,8 +3848,8 @@
 
          if (arg.plain) {
             txt.text(label);
-         } else if (JSROOT.nodejs && arg.rect) {
-            arg.box = { height: arg.rect.y2 - arg.rect.y1, width: arg.rect.x2 - arg.rect.x1 };
+         } else if (JSROOT.nodejs && arg.text_rect) {
+            arg.box = { height: arg.text_rect.y2 - arg.text_rect.y1, width: arg.text_rect.x2 - arg.text_rect.x1 };
          }
 
          if (JSROOT.nodejs && !arg.box)
