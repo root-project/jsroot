@@ -3410,6 +3410,7 @@
       }
 
       function makeem(value) {
+         if (Math.abs(value)<1e-3) return null; // very small values not needed, attribute will be removed
          if (value==Math.round(value)) return Math.round(value) + "em";
          var res = value.toFixed(2)+"em";
          if (res.indexOf("0.")==0) return res.substr(1);
@@ -3466,9 +3467,12 @@
          if (best>0) {
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
             extend_pos(s);
-            var plain = node.append('tspan').text(s);
-            if (curr.dx) { plain.attr('dx', makeem(curr.dx)); curr.dx = 0; }
-            if (curr.dy) { plain.attr('dy', makeem(curr.dy)); curr.dy = 0; }
+            node.append('tspan')
+                .attr('dx', makeem(curr.dx))
+                .attr('dy', makeem(curr.dy))
+                .text(s);
+
+            curr.dx = curr.dy = 0;
          }
 
          if (!found) return true;
@@ -3574,10 +3578,10 @@
             // loop need to create two lines for #frac or #splitline
             // normally only one sub-element is created
 
-            if (nextdx) subnode.attr('dx', makeem(nextdx));
-            if (nextdy) subnode.attr('dy', makeem(nextdy));
+            subnode.attr('dx', makeem(nextdx)).attr('dy', makeem(nextdy));
+            nextdx = nextdy = 0;
 
-            pos = -1; n = 1; nextdy = 0; nextdx = 0;
+            pos = -1; n = 1;
 
             while ((n!=0) && (++pos<label.length)) {
                if (label[pos]=='{') n++; else
@@ -3601,26 +3605,25 @@
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               var k = 1/subpos.fsize, len = (subpos.x - subpos.x0)*k, box1 = null;
-               if (!JSROOT.nodejs) {
-                  box1 = this.GetBoundarySizes(arg.mainnode);
-                  len = (box1.width - subpos.box0.width)*k;
+               var len;
+               if (JSROOT.nodejs) {
+                  len = (subpos.x - subpos.x0)/subpos.fsize;
+               } else {
+                  var box1 = this.GetBoundarySizes(arg.mainnode);
+                  len = (box1.width - subpos.box0.width)/subpos.fsize;
                }
 
-               var a = "", nn = Math.max(2, Math.round(len/0.3));
-               while (nn--) a += '\xA0';
+               var a = "", nn = Math.round(Math.max(len,1)+0.3);
+               while (nn--) a += '\u2014';
 
-               var over = subnode.append('tspan').attr('dx', makeem(subpos.dx-len)).text(a).attr('text-decoration','overline');
-               if (subpos.dy) over.attr("dy", makeem(subpos.dy));
+               subnode.append('tspan')
+                      .attr("dx", makeem(subpos.dx-len))
+                      .attr("dy", makeem(subpos.dy-0.6))
+                      .text(a);
 
-               while (box1) {
-                  // ensure that cap longer then content
-                  var box2 = this.GetBoundarySizes(arg.mainnode);
-                  if (box2.width > box1.width) break;
-                  a+='\xA0';
-                  over.text(a);
-               }
                subpos.dy = subpos.dx = 0;
+
+               curr.dy += 0.6;
                break;
             }
 
