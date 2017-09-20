@@ -3548,7 +3548,7 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx, trav = null; // this will be applied to the next element
+         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
@@ -3589,18 +3589,20 @@
               subnode.attr('font-weight', curr.bold ? 'bold' : 'normal');
               break;
            case "_{":
-              nextdy += 0.4;
-              subnode.attr('font-size', '60%');
+              scale = 0.6;
+              nextdy = nextdy/scale + 0.4;
+              subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.y += 0.4*subpos.fsize;
-              subpos.fsize *= 0.6;
-              curr.dy = -0.4*0.6; // compensation value, applied for next element
+              subpos.fsize *= scale;
+              curr.dy = -0.4*scale; // compensation value, applied for next element
               break;
            case "^{":
-              nextdy -= 0.6;
-              subnode.attr('font-size', '60%');
+              scale = 0.6;
+              nextdy = nextdy/scale - 0.6;
+              subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.y -= 0.4*subpos.fsize;
-              subpos.fsize *= 0.6;
-              curr.dy = 0.6*0.6; // compensation value, applied for next element
+              subpos.fsize *= scale;
+              curr.dy = 0.6*scale; // compensation value, applied for next element
               break;
            case "#frac{":
            case "#splitline{":
@@ -3613,9 +3615,10 @@
               break;
            case "#sqrt{":
               extend_pos(curr, ' '); // just dummy symbol instead of square root
-              subpos.square_root = subnode.append('tspan').text('\u221A');
+              subpos.square_root = subnode.append('tspan');
+              subpos.square_root.append('tspan').text('\u221A');
               subnode1 = subnode.append('tspan'); // 0.3 is additional space
-              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2  }; // only height is interesting
+              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
               break;
          }
 
