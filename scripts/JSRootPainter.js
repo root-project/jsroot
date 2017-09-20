@@ -3630,19 +3630,13 @@
             if (subpos.first && subpos.second) {
                // when two lines created, adjust horizontal position and place divider if required
 
-               subpos.x2 = subpos.x;
-
-               // now length defined with primitve caluclations, later should be done more complex
-               var k = 1/subpos.fsize, l1 = (subpos.x1 - subpos.x0)*k, l2 = (subpos.x2 - subpos.x0)*k, l3 = l2, middle = null;
+               var l1, l2, l3; // length of up,down and middle lines
 
                if (JSROOT.nodejs) {
-                  if (subpos.need_middle) {
-                     // just create midline - nothing better one can do
-                     var a = "", len = Math.max(2, Math.round(Math.max(l1,l2)/0.3));
-                     while (len--) a += '\xA0';
-                     middle = node.append('tspan').attr('text-decoration','line-through').text(a);
-                  }
+                  l1 = (subpos.x1 - subpos.x0)/subpos.fsize;
+                  l2 = (subpos.x - subpos.x0)/subpos.fsize;
                } else {
+                  // measure exact dimenstion of up and down lines
                   subpos.first.style('display', 'none');
                   subpos.second.style('display', 'none');
 
@@ -3657,41 +3651,21 @@
 
                   var box2 = this.GetBoundarySizes(arg.mainnode);
 
-                  l1 = (box1.width - box0.width)*k;
-                  l2 = (box2.width - box0.width)*k;
+                  l1 = (box1.width - box0.width)/subpos.fsize;
+                  l2 = (box2.width - box0.width)/subpos.fsize;
 
-                  if (subpos.need_middle) {
-
-                     subpos.second.style('display', 'none');
-
-                     var a = "", len = Math.max(2, Math.round(Math.max(l1,l2)/0.3));
-                     while (len--) a += '\xA0';
-
-                     middle = node.append('tspan').attr('text-decoration','line-through').text(a);
-
-                     var box3 = this.GetBoundarySizes(arg.mainnode);
-
-                     l3 = (box3.width - box0.width)*k;
-                     if (l3 < Math.max(l1,l2)) {
-                        // case when approx value not good enough
-                        // console.warn('divider in #frac too short - make adjustments', l3, l1,l2);
-
-                        len = Math.max(l1,l2)/l3 * a.length;
-                        while (a.length<len) a += '\xA0';
-                        middle.text(a);
-                        box3 = this.GetBoundarySizes(arg.mainnode);
-                        l3 = (box3.width - box0.width)*k;
-
-                        // console.warn('Now should be better', l3, l1,l2);
-                     }
-                  }
                   subpos.first.style('display', null);
-                  subpos.second.style('display', null);
                }
 
-               if (middle) {
-                  middle.attr('dy', makeem(curr.dy));
-                  middle.attr("dx", makeem(-0.5*(l3+l2)));
+               if (subpos.need_middle) {
+                  // starting from content len 1.2 two -- will be inserted
+                  l3 = Math.round(Math.max(l1,l2,1)+0.3);
+                  var a = "";
+                  while (a.length < l3) a += '\u2014';
+                  node.append('tspan')
+                       .attr("dx", makeem(-0.5*(l3+l2)))
+                       .attr("dy", makeem(curr.dy))
+                       .text(a);
                   curr.dy = 0;
                   curr.dx = 0.2; // extra spacing
                } else {
@@ -3700,7 +3674,7 @@
                   if (l2<l1) curr.dx += 0.5*(l1-l2);
                }
 
-               if (middle || arg.align[0]=='middle') {
+               if (subpos.need_middle || arg.align[0]=='middle') {
                   subpos.first.attr("dx", makeem(0.5*(l3-l1)));
                   subpos.second.attr("dx", makeem(-0.5*(l2+l1)));
                } else if (arg.align[0]=='end') {
