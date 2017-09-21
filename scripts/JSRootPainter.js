@@ -3468,6 +3468,7 @@
           { name: "#bf{" }, // bold
           { name: "kern[", arg: 'float' }, // horizontal shift
           { name: "lower[", arg: 'float' },  // vertical shift
+          { name: "scale[", arg: 'float' },  // font scale
           { name: "#color[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
@@ -3559,7 +3560,7 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale = 0; // this will be applied to the next element
+         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale = 1; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
@@ -3584,13 +3585,19 @@
                if (this.get_color(foundarg))
                    subnode.attr('fill', this.get_color(foundarg));
                break;
-           case "#kern[":
+           case "#kern[": // horizontal shift
               nextdx += foundarg;
-              curr.dx -= foundarg;
               break;
-           case "#lower[":
-              nextdy += foundarg;
+           case "#lower[": // after vertical shift one need to compensate it back
               curr.dy -= foundarg;
+              nextdy += foundarg;
+              break;
+           case "scale[":
+              scale = foundarg;
+              subnode.attr('font-size', Math.round(scale*100)+'%');
+              subpos.fsize *= scale;
+              nextdx = nextdx/scale;
+              nextdy = nextdy/scale;
               break;
            case "#it{":
               curr.italic = true;
@@ -3616,6 +3623,7 @@
               scale = 0.6;
               subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.script = 'sub';
+              nextdx = nextdx/scale;
               nextdy = nextdy/scale;
 
               if (curr.special) {
@@ -3639,6 +3647,7 @@
               break;
            case "^{":
               scale = 0.6;
+              nextdx = nextdx/scale;
               nextdy = nextdy/scale;
               subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.script = 'super';
