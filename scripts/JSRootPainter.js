@@ -3477,6 +3477,10 @@
           { name: "#left(", right: "#right)", braces: "()" },
           { name: "#left{", right: "#right}", braces: "{}" },
           { name: "#left|", right: "#right|", braces: "||" },
+          { name: "#[]{", braces: "[]" },
+          { name: "#(){", braces: "()" },
+          { name: "#{}{", braces: "{}" },
+          { name: "#||{", braces: "||" }
        ];
 
       var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
@@ -3521,6 +3525,7 @@
             }
             subpos = null; // indicate that last element is plain
             delete curr.special; // and any special handling is also over
+            delete curr.next_super_dy; // remove potential shift
          }
 
          if (!found) return true;
@@ -3576,8 +3581,10 @@
             subnode1 = subnode.append('tspan');
             subpos.left_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
             subpos.braces = found; // indicate braces handling
-            left_brace = found.name;
-            right_brace = found.right;
+            if (found.right) {
+               left_brace = found.name;
+               right_brace = found.right;
+            }
          } else if (found.accent) {
             subpos.accent = found.accent;
          } else
@@ -3651,10 +3658,14 @@
                  nextdx -= curr.dx;
                  nextdy -= curr.dy;
               } else {
-                 nextdx += 0.1*scale;
-                 nextdy -= 0.6*scale;
-                 subpos.y -= 0.4*subpos.fsize;
+
                  curr.dy = 0.6*scale; // compensate vertical shift afterwards
+                 if (curr.next_super_dy) curr.dy -= curr.next_super_dy;
+
+                 nextdx += 0.1*scale;
+                 nextdy -= curr.dy;
+
+                 subpos.y -= 0.4*subpos.fsize;
 
                  if (prevsubpos && (prevsubpos.script === 'sub')) {
                     var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
@@ -3669,8 +3680,8 @@
               subpos.two_lines = true;
               subpos.need_middle = (found.name == "#frac{");
               subpos.x0 = subpos.x;
-              nextdy -= 0.5;
-              curr.dy = -0.5;
+              nextdy -= 0.6;
+              curr.dy = -0.6;
               break;
            case "#sqrt{":
               extend_pos(curr, ' '); // just dummy symbol instead of square root
@@ -3690,6 +3701,7 @@
          }
 
          if (curr.special && !subpos.script) delete curr.special;
+         delete curr.next_super_dy;
 
          subpos.node = subnode; // remember node where sublement is build
 
@@ -3783,14 +3795,15 @@
 
                // console.log('braces height', bs.height, ' entry height', be.height);
 
-               if ((1.2*bs.height < be.height) && true) {
+               if (1.2*bs.height < be.height) {
                   // make scaling
                   yscale = be.height/bs.height;
-                  brace_dy = 0; // ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale;
+                  brace_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale - 0.15;
                   subpos.left.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
-                  subpos.left_cont.append('tspan').attr("dy", makeem(-brace_dy*yscale)).text('\u2009'); // unicode tiny space
-
-                  // console.log('yscale', yscale, 'dy', brace_dy)
+                  // unicode tiny space, used to return cursor on vertical position
+                  subpos.left_cont.append('tspan').attr("dx",makeem(-0.2))
+                                                  .attr("dy", makeem(-brace_dy*yscale)).text('\u2009');
+                  curr.next_super_dy = -0.3*yscale;
                }
 
                extend_pos(curr, ' '); // just dummy symbol instead of right brace for accounting
@@ -3801,7 +3814,7 @@
 
                curr.dx = curr.dy = 0;
 
-               if (yscale!=1) right_cont.append('tspan').text('\u2009'); // unicode tiny space if larger brace is used
+               if (yscale!=1) right_cont.append('tspan').attr("dx",makeem(-0.2)).text('\u2009'); // unicode tiny space if larger brace is used
 
                var right = right_cont.append('tspan').text(subpos.braces.braces[1]);
 
@@ -3829,9 +3842,9 @@
                   while (a.length < l3) a += '\u2014';
                   node.append('tspan')
                        .attr("dx", makeem(-0.5*(l3+l2)))
-                       .attr("dy", makeem(curr.dy))
+                       .attr("dy", makeem(curr.dy-0.2))
                        .text(a);
-                  curr.dy = 0;
+                  curr.dy = 0.2; // return to the normal level
                   curr.dx = 0.2; // extra spacing
                } else {
                   curr.dx = 0.2;
@@ -3869,8 +3882,8 @@
             subpos.x = subpos.x0;   // it is used only for SVG, make it more realistic
             subpos.second = subnode;
 
-            nextdy = curr.dy + 1.7;
-            curr.dy = -0.7;
+            nextdy = curr.dy + 1.6;
+            curr.dy = -0.4;
          }
 
       }
