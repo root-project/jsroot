@@ -192,7 +192,6 @@ examples_main = {
    ],
    TLatex : [
      { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
-     { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor" },
      { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
      { name: "math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
    ],

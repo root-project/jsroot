@@ -3968,17 +3968,16 @@
          }
       }
 
-      if (arg.latex === 1) {
-         if ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label)) arg.latex = 2; else
-         if (JSROOT.gStyle.Latex < 2) arg.latex = 0;
-      }
+      var font = arg.draw_g.property('text_font'),
+          use_mathjax = (arg.latex == 2);
 
-      var font = arg.draw_g.property('text_font');
+      if (arg.latex === 1)
+         use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label));
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
-      if (arg.latex !== 2) {
+      if (!use_mathjax) {
 
          var txt = arg.draw_g.append("text");
 
@@ -3989,10 +3988,10 @@
 
          arg.font = font; // use in latex conversion
 
-         arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
+         arg.plain = !arg.latex || (JSROOT.gStyle.Latex < 2) || (this.produceLatex(txt, label, arg) === 0);
 
          if (arg.plain) {
-            if (JSROOT.gStyle.Latex == 1) label = Painter.translateLaTeX(label); // replace latex symbols
+            if (arg.latex && (JSROOT.gStyle.Latex == 1)) label = Painter.translateLaTeX(label); // replace latex symbols
             txt.text(label);
          }
 
@@ -4083,11 +4082,26 @@
       // function should be called when processing of element is completed
 
       if (fo_g.node().parentNode !== draw_g.node()) return;
+
       var entry = fo_g.property('_element');
       if (!entry) return;
 
       var vvv = d3.select(entry).select("svg");
-      if (vvv.empty()) return; // not yet finished
+
+      if (vvv.empty()) {
+
+         var merr = d3.select(entry).select("merror"); // indication of error
+
+         if (merr.empty()) return; // not yet finished
+
+         document.body.removeChild(entry);
+
+         console.warn('MathJax error', merr.text());
+
+         fo_g.append("svg").attr('viewBox', '0 0 300 50').append("text").text("MathJax error" + merr.text());
+
+         return this.FinishTextDrawing(draw_g);
+      }
 
       fo_g.property('_element', null);
 
