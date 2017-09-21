@@ -37,6 +37,8 @@
 32. Implement drawing of TGraphPolar and TGraphPolargram 
 33. Implement drawing of TGraphTime
 34. Improve TLegend drawing - ignore empty entries
+35. Process TLatex inside JSROOT - now one could decide if complex formulas 
+    drawn with plain JSROOT (default) or with using of MathJax.js
 
 
 ## Changes in 5.2.0

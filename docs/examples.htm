@@ -286,6 +286,7 @@
                url += "&items=[" + entry.items.join(",") + "]";
                if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                if (entry.mathjax) url += "&mathjax";
+               if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
             } else
             if (entry.asurl) {
@@ -293,6 +294,7 @@
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
                url += itemname + "&opt=" + opt;
                if (entry.mathjax) url += "&mathjax"; 
+               if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
             }
             
@@ -418,6 +420,7 @@
                         url += "&items=[" + entry.items.join(",") + "]";
                         if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                         if (entry.mathjax) url += "&mathjax";
+                        if (entry.latex) url += "&latex=" + entry.latex;
                         if (entry.style) url += "&style=" + entry.style;
                      }
                   }
@@ -444,6 +447,7 @@
                         url = prefix + "file=" + filename + "&item=" + itemname;
                      if (entry.style) url += "&style=" + entry.style;
                      if (entry.mathjax) url += "&mathjax";
+                     if (entry.latex) url += "&latex="+entry.latex;
                   }
 
                   if (url) 

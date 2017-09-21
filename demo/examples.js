@@ -113,7 +113,7 @@ examples_main = {
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
      { name:"subpad", url: "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
-     { name:"legend", asurl: true, file: "legends.root", item: "legends;1", mathjax: true, title: "TCanvas with TLegend, use MathJax.js" },
+     { name:"legend", asurl: true, file: "legends.root", item: "legends;1", latex: "mathjax", title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
    ],
@@ -191,8 +191,9 @@ examples_main = {
       { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
    ],
    TLatex : [
-     { name: "text", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor (without MathJax.js)" },
-     { name: "latex", file: "latex.root", layout: "grid2x2", mathjax: true, items: ['lva','ex1','ex2','ex3'], title: "With MathJax.js rendering" },
+     { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
+     { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor" },
+     { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
      { name: "math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
    ],
    Misc : [

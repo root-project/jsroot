@@ -159,7 +159,8 @@
          AutoStat : true,
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
          Palette : 57,
-         MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
+         Latex : 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
+         // MathJax : 0,  // depricated, will be supported till JSROOT 6.0, use Latex variable  0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,
@@ -1055,7 +1056,6 @@
                normal_callback();
             }
          }
-         if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
       }
 
       if (kind.indexOf("simple;")>=0) {

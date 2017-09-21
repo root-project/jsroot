@@ -456,8 +456,11 @@
       var tt = JSROOT.GetUrlOption("tooltip", url);
       if (tt !== null) JSROOT.gStyle.Tooltip = parseInt(tt);
 
-      var mathjax = JSROOT.GetUrlOption("mathjax", url);
-      if ((mathjax!==null) && (mathjax!="0")) JSROOT.gStyle.MathJax = 1;
+      var mathjax = JSROOT.GetUrlOption("mathjax", url),
+          latex = JSROOT.GetUrlOption("latex", url);
+
+      if ((mathjax!==null) && (mathjax!="0") && (latex===null)) latex = "math";
+      if (latex!==null) JSROOT.gStyle.Latex = latex; // decoding will be performed with the first text drawing
 
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
@@ -1075,7 +1078,7 @@
       while ((str.length>2) && (str[0]=='{') && (str[str.length-1]=='}'))
          str = str.substr(1,str.length-2);
 
-      str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
+      // str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
 
       for (var i in this.symbols_map)
          str = str.replace(new RegExp(i,'g'), this.symbols_map[i]);
@@ -3911,7 +3914,7 @@
       //  x,y - position
       //  width, height - dimension (optional)
       //  text - text to draw
-      //  latex - 0 - off, 1 - when make sence (default), 2 - always
+      //  latex - 0 - plain text, 1 - normal TLatex, 2 - math
       //  color - text color
       //  rotate - rotaion angle (optional)
       //  font_size - fixed font size (optional)
@@ -3932,6 +3935,7 @@
       }
 
       arg.draw_g = arg.draw_g || this.draw_g;
+      if (arg.latex===undefined) arg.latex = 1; //  latex 0-text, 1-latex, 2-math
       arg.align = align;
       arg.x = arg.x || 0;
       arg.y = arg.y || 0;
@@ -3939,17 +3943,42 @@
       arg.width = arg.width || 0;
       arg.height = arg.height || 0;
 
-      if (arg.latex===undefined) arg.latex = 1;
-      if (arg.latex < 2)
-         if (!JSROOT.Painter.isAnyLatex(label)) arg.latex = 0;
+      if (JSROOT.gStyle.MathJax !== undefined) {
+         switch (JSROOT.gStyle.MathJax) {
+            case 0: JSROOT.gStyle.Latex = 2; break;
+            case 2: JSROOT.gStyle.Latex = 4; break;
+            default: JSROOT.gStyle.Latex = 3;
+         }
+         delete JSROOT.gStyle.MathJax;
+      }
 
-      var use_normal_text = ((JSROOT.gStyle.MathJax<1) && (arg.latex!==2)) || (arg.latex<1),
-          font = arg.draw_g.property('text_font');
+      if (typeof JSROOT.gStyle.Latex == 'string') {
+         switch (JSROOT.gStyle.Latex) {
+            case "off": JSROOT.gStyle.Latex = 0; break;
+            case "symbols": JSROOT.gStyle.Latex = 1; break;
+            case "MathJax":
+            case "mathjax":
+            case "math":   JSROOT.gStyle.Latex = 3; break;
+            case "AlwaysMathJax":
+            case "alwaysmath":
+            case "alwaysmathjax": JSROOT.gStyle.Latex = 4; break;
+            default:
+               var code = parseInt(JSROOT.gStyle.Latex);
+               JSROOT.gStyle.Latex = (!isNaN(code) && (code>=0) && (code<=4)) ? code : 2;
+         }
+      }
+
+      if (arg.latex === 1) {
+         if ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label)) arg.latex = 2; else
+         if (JSROOT.gStyle.Latex < 2) arg.latex = 0;
+      }
+
+      var font = arg.draw_g.property('text_font');
 
       // only Firefox can correctly rotate incapsulated SVG, produced by MathJax
       // if (!use_normal_text && (h<0) && !JSROOT.browser.isFirefox) use_normal_text = true;
 
-      if (use_normal_text) {
+      if (arg.latex !== 2) {
 
          var txt = arg.draw_g.append("text");
 
@@ -3962,7 +3991,10 @@
 
          arg.plain = !arg.latex || (this.produceLatex(txt, label, arg) === 0);
 
-         if (arg.plain) txt.text(label);
+         if (arg.plain) {
+            if (JSROOT.gStyle.Latex == 1) label = Painter.translateLaTeX(label); // replace latex symbols
+            txt.text(label);
+         }
 
          // complete rectangle with very rougth size estimations
          arg.box = JSROOT.nodejs ? (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) })
@@ -6329,7 +6361,7 @@
          var txt = this.txt.value;
          if (typeof txt != 'string') txt = "<undefined>";
 
-         var mathjax = this.txt.mathjax || (JSROOT.gStyle.MathJax>1);
+         var mathjax = this.txt.mathjax || (JSROOT.gStyle.Latex == 4);
 
          if (!mathjax && !('as_is' in this.txt)) {
             var arr = txt.split("\n"); txt = "";

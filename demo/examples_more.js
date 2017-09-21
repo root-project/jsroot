@@ -104,6 +104,10 @@ examples_more = {
      { name: "split", file: "gr2.root", item: "c1equi;1", title: "split line in legend, ignored" },
      { name: "approx", file: "tutorials_graphs.root", item: "approx;1", title: "Output of tutorials/graphs/approx.C" }
    ],
+   TLatex : [
+      { name: "symbols", file: "latex.root", layout: "grid2x2", latex: "symbols", items: ['lva','ex1','ex2','ex3'], title: "Replace only known TLatex Disable TLatex symbols" },
+      { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor completely" }
+   ],
    Misc : [
      { name: "io", url: "?file=$$$iotest.root&layout=grid4x3&items=[ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ex9,ex10,clones,map]&opts=[inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect]", title: "Different I/O test classes" },
      { name: "io56", file: "fitLinear56.root", item: "fitLinear6", title: "file with two version from ROOT 5/6 of same object" },
