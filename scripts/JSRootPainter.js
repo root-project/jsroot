@@ -3687,7 +3687,7 @@
               extend_pos(curr, ' '); // just dummy symbol instead of square root
               subpos.square_root = subnode.append('tspan');
               subpos.square_root.append('tspan').text('\u221A');
-              subnode1 = subnode.append('tspan'); // 0.3 is additional space
+              subnode1 = subnode.append('tspan');
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
               break;
          }
@@ -3798,7 +3798,8 @@
                if (1.2*bs.height < be.height) {
                   // make scaling
                   yscale = be.height/bs.height;
-                  brace_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale - 0.15;
+                  // brace_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale - 0.15;
+                  brace_dy = 0;
                   subpos.left.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
                   // unicode tiny space, used to return cursor on vertical position
                   subpos.left_cont.append('tspan').attr("dx",makeem(-0.2))
