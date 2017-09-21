@@ -3598,8 +3598,6 @@
                right_brace = found.right;
             }
          } else if (found.accent) {
-            console.log('accent', found.name, 'remain', label);
-
             subpos.accent = found.accent;
          } else
          switch(found.name) {
@@ -4014,6 +4012,8 @@
          return arg.box.width;
       }
 
+      // if (label.indexOf("#rightarrow")>0) arg.latex = 2;
+
       var mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
           fo_g = arg.draw_g.append("svg:g")
                        .attr('class', 'math_svg')
@@ -4097,21 +4097,24 @@
 
          if (merr.empty()) return; // not yet finished
 
-         document.body.removeChild(entry);
-
          console.warn('MathJax error', merr.text());
 
-         fo_g.append("svg").attr('viewBox', '0 0 300 50').append("text").text("MathJax error" + merr.text());
-
-         return this.FinishTextDrawing(draw_g);
+         fo_g.append("svg").attr('width', Math.min(20, merr.text().length + 5) + 'ex')
+                           .attr('height', '3ex')
+                           .style('vertical-align','0ex')
+                           .append("text")
+                           .style('font-size','12px')
+                           .style('fill','red')
+                           .attr('x','0')
+                           .attr('y','2ex')
+                           .text("Err: " + merr.text());
+      } else {
+         vvv.remove();
+         fo_g.append(function() { return vvv.node(); });
       }
 
       fo_g.property('_element', null);
-
-      vvv.remove();
       document.body.removeChild(entry);
-
-      fo_g.append(function() { return vvv.node(); });
 
       this.FinishTextDrawing(draw_g); // check if all other elements are completed
    }
