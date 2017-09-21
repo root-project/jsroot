@@ -3380,40 +3380,48 @@
       }
 
       function extend_pos(pos, value) {
+
+         var rect = pos.rect, dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
+
          if (typeof value == 'string') {
-            if (!pos.rect) pos.rect = { x1: pos.x, x2: pos.x, y1: pos.y, y2: pos.y, height: 0, width: 0 };
+            if (!rect) rect = pos.rect = { x: pos.x, y: pos.y, height: 0, width: 0 };
 
             pos.x += value.length * arg.font.aver_width * pos.fsize;
 
-            pos.rect.x2 = Math.max(pos.rect.x2, pos.x);
-            pos.rect.y1 = Math.min(pos.rect.y1, pos.y - pos.fsize*1.2);
-            pos.rect.y2 = Math.max(pos.rect.y2, pos.y); // normally text position from bottom
+            dx1 = -pos.x;
+            dx2 = pos.x;
+            dy1 = -pos.y + pos.fsize*1.2;
+            dy2 = pos.y;
          } else {
-            if (!pos.rect) pos.rect = JSROOT.extend({}, value);
-            pos.rect.x1 = Math.min(pos.rect.x1, value.x1);
-            pos.rect.x2 = Math.max(pos.rect.x2, value.x2);
-            pos.rect.y1 = Math.min(pos.rect.y1, value.y1);
-            pos.rect.y2 = Math.max(pos.rect.y2, value.y2); // normally text position from bottom
+            if (!pos) rect = pos.rect = JSROOT.extend({}, value);
+            dx1 = -value.x;
+            dx2 = value.x + value.width;
+            dy1 = - value.y;
+            dy2 = value.y + value.height;
          }
 
-         pos.rect.x = pos.rect.x1;
-         pos.rect.y = pos.rect.y1;
-         pos.rect.width = pos.rect.x2 - pos.rect.x1;
-         pos.rect.height = pos.rect.y2 - pos.rect.y1;
+         dx1 += rect.x;
+         dx2 -= rect.x + rect.width;
+         dy1 += rect.y;
+         dy2 -= rect.y + rect.height;
 
-         if (pos.parent) return extend_pos(pos.parent, pos.rect)
+
+         if (dx1>0) { rect.x -= dx1; rect.width+=dx1; }
+         if (dx2>0) rect.width += dx2;
+         if (dy1>0) { rect.y -= dy1; rect.height+=dy1; }
+         if (dy2>0) rect.height+=dy2;
+
+         if (pos.parent) return extend_pos(pos.parent, rect)
 
          // calculate dimensions for the
-         arg.text_rect = pos.rect;
+         arg.text_rect = rect;
 
-         var h = pos.rect.height, mid = (pos.rect.y2 + pos.rect.y1)/2;
+         var h = rect.height, mid = rect.y + rect.height/2;
 
          if (h>0) {
             arg.mid_shift = -mid/h || 0.001;        // relative shift to get latex middle at given point
-            arg.top_shift = -pos.rect.y1/h || 0.001; // relative shift to get latex top at given point
+            arg.top_shift = -rect.y/h || 0.001; // relative shift to get latex top at given point
          }
-
-         // if (arg.debug) console.log('y1,y2', arg.rect.y1, arg.rect.y2, arg.mid_shift, arg.up_shift);
       }
 
       function makeem(value) {
