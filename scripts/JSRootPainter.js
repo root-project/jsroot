@@ -3381,34 +3381,33 @@
 
       function extend_pos(pos, value) {
 
-         var rect = pos.rect, dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
+         var dx1, dx2, dy1, dy2;
 
          if (typeof value == 'string') {
-            if (!rect) rect = pos.rect = { x: pos.x, y: pos.y, height: 0, width: 0 };
-
-            pos.x += value.length * arg.font.aver_width * pos.fsize;
-
+            if (!pos.rect) pos.rect = { x: pos.x, y: pos.y, height: 0, width: 0 };
             dx1 = -pos.x;
+            pos.x += value.length * arg.font.aver_width * pos.fsize;
             dx2 = pos.x;
-            dy1 = -pos.y + pos.fsize*1.2;
-            dy2 = pos.y;
+            dy1 = -(pos.y-pos.fsize*1.1);
+            dy2 = pos.y + pos.fsize*0.1;
          } else {
-            if (!pos) rect = pos.rect = JSROOT.extend({}, value);
+            if (!pos.rect) pos.rect = JSROOT.extend({}, value);
             dx1 = -value.x;
-            dx2 = value.x + value.width;
-            dy1 = - value.y;
-            dy2 = value.y + value.height;
+            dx2 = value.x+value.width;
+            dy1 = -value.y;
+            dy2 = value.y+value.height;
          }
 
+         var rect = pos.rect;
+
          dx1 += rect.x;
-         dx2 -= rect.x + rect.width;
+         dx2 -= (rect.x+rect.width);
          dy1 += rect.y;
-         dy2 -= rect.y + rect.height;
+         dy2 -= (rect.y+rect.height);
 
-
-         if (dx1>0) { rect.x -= dx1; rect.width+=dx1; }
+         if (dx1>0) { rect.x -= dx1; rect.width += dx1; }
          if (dx2>0) rect.width += dx2;
-         if (dy1>0) { rect.y -= dy1; rect.height+=dy1; }
+         if (dy1>0) { rect.y -= dy1; rect.height += dy1; }
          if (dy2>0) rect.height+=dy2;
 
          if (pos.parent) return extend_pos(pos.parent, rect)
@@ -3478,6 +3477,7 @@
           { name: "#vect{", accent: "\u02B9" }, // "\u0350" arrowhead
           { name: "#frac{" },
           { name: "#splitline{" },
+          { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
           { name: "#sqrt{" },
           { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
           { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
@@ -3583,11 +3583,11 @@
 
          if (found.braces) {
             // special handling of large braces
-            extend_pos(curr, ' '); // just dummy symbol instead of square root
             subpos.left_cont = subnode.append('tspan'); // container for left brace
             subpos.left = subpos.left_cont.append('tspan').text(found.braces[0]);
             subnode1 = subnode.append('tspan');
-            subpos.left_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
+            subpos.left_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
+            extend_pos(curr, subpos.left_rect);
             subpos.braces = found; // indicate braces handling
             if (found.right) {
                left_brace = found.name;
@@ -3692,11 +3692,13 @@
               curr.dy = -0.6;
               break;
            case "#sqrt{":
-              extend_pos(curr, ' '); // just dummy symbol instead of square root
+              foundarg = 2;
+           case "#sqrt[":
               subpos.square_root = subnode.append('tspan');
-              subpos.square_root.append('tspan').text('\u221A');
+              subpos.square_root.append('tspan').text((foundarg==3) ? '\u221B' : ((foundarg==4) ? '\u221C' : '\u221A')); // unicode square, cubic and fourth root
               subnode1 = subnode.append('tspan');
-              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
+              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.7 };
+              extend_pos(curr, subpos.sqrt_rect); // just dummy symbol instead of square root
               break;
          }
 
@@ -3738,7 +3740,7 @@
 
             var sublabel = label.substr(0,pos);
 
-            // if (subpos.square_root) sublabel = "#frac{a}{bc}and more text #pi";
+            // if (subpos.square_root) sublabel = "#frac{a}{bc}";
 
             if (!this.produceLatex(subnode1, sublabel, arg, subpos)) return false;
 
@@ -3787,9 +3789,9 @@
                var a = "", nn = Math.round(Math.max(len*3,2));
                while (nn--) a += '\u203E'; // unicode overline
 
-               subpos.square_root
-                     .append('tspan').attr("dy", makeem(-0.25)).text(a)
-                     .append('tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3)).text('\u2009'); // unicode tiny space
+               subpos.square_root.append('tspan').attr("dy", makeem(-0.25)).text(a);
+
+               subpos.square_root.append('tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3-0.2)).text('\u2009'); // unicode tiny space
 
                break;
             }
@@ -3812,10 +3814,13 @@
                   // unicode tiny space, used to return cursor on vertical position
                   subpos.left_cont.append('tspan').attr("dx",makeem(-0.2))
                                                   .attr("dy", makeem(-brace_dy*yscale)).text('\u2009');
-                  curr.next_super_dy = -0.3*yscale;
+                  curr.next_super_dy = -0.3*yscale; // special shift for next comming superscript
                }
 
-               extend_pos(curr, ' '); // just dummy symbol instead of right brace for accounting
+               subpos.left_rect.y = curr.y;
+               subpos.left_rect.height *= yscale;
+
+               extend_pos(curr, subpos.left_rect); // just dummy symbol instead of right brace for accounting
 
                var right_cont = subnode.append('tspan')
                                        .attr("dx", makeem(curr.dx))
