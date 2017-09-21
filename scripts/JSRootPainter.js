@@ -3469,7 +3469,7 @@
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
           { name: "#bar{", accent: "\u02C9" }, // "\u0305"
-          { name: "#hat{", accent: "\u02C6"  }, // "\u0302"
+          { name: "#hat{", accent: "\u02C6" }, // "\u0302"
           { name: "#check{", accent: "\u02C7" }, // "\u030C"
           { name: "#acute{", accent: "\u02CA" }, // "\u0301"
           { name: "#grave{", accent: "\u02CB" }, // "\u0300"
@@ -3477,7 +3477,7 @@
           { name: "#ddot{", accent: "\u02BA" }, // "\u0308"
           { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
           { name: "#slash{", accent: "\u2215" }, // "\u0337"
-          { name: "#vect{", accent: "\u02B9" }, // "\u0350" arrowhead
+          { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
           { name: "#frac{" },
           { name: "#splitline{" },
           { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
@@ -3510,13 +3510,14 @@
             if (!curr.lvl && (s==label)) return 0; // indicate that nothing found - plain string
             extend_pos(curr, s);
 
-            if (curr.accent && (s == label) && (s.length==1)) {
+            if (curr.accent && (s.length==1)) {
                var elem = node.append('tspan').text(s),
                    rect = get_boundary(this, elem, { width : 10000 }),
-                   w = Math.min(rect.width/curr.fsize, 0.4); // at maximum, 0.4 should be used
+                   w = Math.min(rect.width/curr.fsize, 0.5); // at maximum, 0.5 should be used
 
-               node.append('tspan').attr('dx', makeem(-w)).attr('dy', makeem(-0.2)).text(curr.accent);
-               curr.dy = 0.2; // compensate hat
+               node.append('tspan').attr('dx', makeem(curr.dx-w)).attr('dy', makeem(curr.dy-0.2)).text(curr.accent);
+               curr.dy = 0.2;; // compensate hat
+               curr.dx = Math.max(0.2, w-0.2); // extra horizontal gap
                curr.accent = false;
             } else {
                node.text(s);
@@ -3597,6 +3598,8 @@
                right_brace = found.right;
             }
          } else if (found.accent) {
+            console.log('accent', found.name, 'remain', label);
+
             subpos.accent = found.accent;
          } else
          switch(found.name) {
