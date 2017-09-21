@@ -3472,7 +3472,11 @@
           { name: "#splitline{" },
           { name: "#sqrt{" },
           { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
-          { name: "#int", special: '\u222B', w: 0.3, h: 1.0 }
+          { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
+          { name: "#left[", right: "#right]", braces: "[]" },
+          { name: "#left(", right: "#right)", braces: "()" },
+          { name: "#left{", right: "#right}", braces: "{}" },
+          { name: "#left|", right: "#right|", braces: "||" },
        ];
 
       var isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
@@ -3546,7 +3550,8 @@
             label = label.substr(pos + 2);
          }
 
-         var nextdy = curr.dy, nextdx = curr.dx, trav = null, scale = 1; // this will be applied to the next element
+         var nextdy = curr.dy, nextdx = curr.dx, trav = null,
+             scale = 1, left_brace = "{", right_brace = "}"; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
@@ -3563,7 +3568,17 @@
             continue; // just create special node
          }
 
-         if (found.accent) {
+         if (found.braces) {
+            // special handling of large braces
+            extend_pos(curr, ' '); // just dummy symbol instead of square root
+            subpos.left_cont = subnode.append('tspan'); // container for left brace
+            subpos.left = subpos.left_cont.append('tspan').text(found.braces[0]);
+            subnode1 = subnode.append('tspan');
+            subpos.left_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
+            subpos.braces = found; // indicate braces handling
+            left_brace = found.name;
+            right_brace = found.right;
+         } else if (found.accent) {
             subpos.accent = found.accent;
          } else
          switch(found.name) {
@@ -3583,7 +3598,6 @@
               break;
            case "#font[":
               JSROOT.Painter.getFontDetails(foundarg).setFont(subnode,'without-size');
-
               break;
            case "#it{":
               curr.italic = true;
@@ -3692,13 +3706,13 @@
 
             pos = -1; n = 1;
 
-            while ((n!=0) && (++pos<label.length)) {
-               if (label[pos]=='{') n++; else
-               if (label[pos]=='}') n--;
+            while ((n!=0) && (++pos < label.length)) {
+               if (label.indexOf(left_brace, pos) === pos) n++; else
+               if (label.indexOf(right_brace, pos) === pos) n--;
             }
 
             if (n!=0) {
-               console.log('mismatch with open { and close } braces in Latex', label);
+               console.log('mismatch with open ' + left_brace + ' and close ' + right_brace + ' braces in Latex', label);
                return false;
             }
 
@@ -3715,7 +3729,7 @@
             curr.dx += subpos.dx*subpos.fsize/curr.fsize;
             curr.dy += subpos.dy*subpos.fsize/curr.fsize;
 
-            label = label.substr(pos+1);
+            label = label.substr(pos+right_brace.length);
 
             if (subpos.width_limit) {
                // special handling for the case when created element does not reach its minimal width
@@ -3736,19 +3750,19 @@
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               var len = 2, scale = 1, sqrt_dy = 0,
+               var len = 2, scale = 1, sqrt_dy = 0, yscale = 1,
                    bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
                    be = get_boundary(this, subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
-                  scale = be.height/bs.height*1.2;
-                  sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/scale;
-                  subpos.square_root.style('font-size', Math.round(100*scale)+'%').attr('dy', makeem(sqrt_dy));
+                  yscale = be.height/bs.height*1.2;
+                  sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale;
+                  subpos.square_root.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(sqrt_dy));
                }
 
                // we taking into account only element width
-               len = be.width / subpos.fsize / scale;
+               len = be.width / subpos.fsize / yscale;
 
                var a = "", nn = Math.round(Math.max(len*3,2));
                while (nn--) a += '\u203E'; // unicode overline
@@ -3756,6 +3770,45 @@
                subpos.square_root
                      .append('tspan').attr("dy", makeem(-0.25)).text(a)
                      .append('tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3)).text('\u2009'); // unicode tiny space
+
+               break;
+            }
+
+            if (subpos.braces) {
+               // handling braces
+
+               var bs = get_boundary(this, subpos.left_cont, subpos.left_rect),
+                   be = get_boundary(this, subnode1, subpos.rect),
+                   yscale = 1, brace_dy = 0;
+
+               // console.log('braces height', bs.height, ' entry height', be.height);
+
+               if ((1.2*bs.height < be.height) && true) {
+                  // make scaling
+                  yscale = be.height/bs.height;
+                  brace_dy = 0; // ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale;
+                  subpos.left.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
+                  subpos.left_cont.append('tspan').attr("dy", makeem(-brace_dy*yscale)).text('\u2009'); // unicode tiny space
+
+                  // console.log('yscale', yscale, 'dy', brace_dy)
+               }
+
+               extend_pos(curr, ' '); // just dummy symbol instead of right brace for accounting
+
+               var right_cont = subnode.append('tspan')
+                                       .attr("dx", makeem(curr.dx))
+                                       .attr("dy", makeem(curr.dy));
+
+               curr.dx = curr.dy = 0;
+
+               if (yscale!=1) right_cont.append('tspan').text('\u2009'); // unicode tiny space if larger brace is used
+
+               var right = right_cont.append('tspan').text(subpos.braces.braces[1]);
+
+               if (yscale!=1) {
+                  right.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
+                  curr.dy = -brace_dy*yscale; // compensation of right brace
+               }
 
                break;
             }
