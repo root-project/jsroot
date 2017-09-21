@@ -991,33 +991,18 @@
       res.name = fontName;
       res.aver_width = Painter.root_fonts_aver_width[indx] || 0.55;
 
-      res.SetFont = function(selection) {
-         selection.attr("font-family", this.name)
-                  .attr("font-size", this.size)
-                  .attr("xml:space","preserve");
+      res.setFont = function(selection, arg) {
+         selection.attr("font-family", this.name);
+         if (arg != 'without-size')
+            selection.attr("font-size", this.size)
+                     .attr("xml:space", "preserve");
          if (this.weight)
             selection.attr("font-weight", this.weight);
          if (this.style)
             selection.attr("font-style", this.style);
       }
 
-      res.asStyle = function(sz) {
-         return (sz ? sz : this.size) + "px " + this.name;
-      }
-
-      res.stringWidth = function(svg, line) {
-         /* compute the bounding box of a string by using temporary svg:text */
-         var text = svg.append("svg:text")
-                     .attr("xml:space","preserve")
-                     .style("opacity", 0)
-                     .text(line);
-         this.SetFont(text);
-         var w = text.node().getBBox().width;
-         text.remove();
-         return w;
-      }
-
-      res.func = res.SetFont.bind(res);
+      res.func = res.setFont.bind(res);
 
       return res;
    }
@@ -3470,6 +3455,7 @@
           { name: "lower[", arg: 'float' },  // vertical shift
           { name: "scale[", arg: 'float' },  // font scale
           { name: "#color[", arg: 'int' },
+          { name: "#font[", arg: 'int' },
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
           { name: "#bar{", accent: "\u02C9" }, // "\u0305"
@@ -3594,6 +3580,10 @@
               break;
            case "scale[":
               scale = foundarg;
+              break;
+           case "#font[":
+              JSROOT.Painter.getFontDetails(foundarg).setFont(subnode,'without-size');
+
               break;
            case "#it{":
               curr.italic = true;
