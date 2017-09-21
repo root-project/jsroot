@@ -3594,10 +3594,6 @@
               break;
            case "scale[":
               scale = foundarg;
-              subnode.attr('font-size', Math.round(scale*100)+'%');
-              subpos.fsize *= scale;
-              nextdx = nextdx/scale;
-              nextdy = nextdy/scale;
               break;
            case "#it{":
               curr.italic = true;
@@ -3621,53 +3617,45 @@
               break;
            case "_{":
               scale = 0.6;
-              subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.script = 'sub';
-              nextdx = nextdx/scale;
-              nextdy = nextdy/scale;
 
               if (curr.special) {
                  curr.dx = curr.special.w;
                  curr.dy = -0.7;
-                 nextdx -= curr.dx/scale;
-                 nextdy -= curr.dy/scale;
+                 nextdx -= curr.dx;
+                 nextdy -= curr.dy;
               } else {
-                 nextdx += 0.1;
-                 nextdy += 0.4;
+                 nextdx += 0.1*scale;
+                 nextdy += 0.4*scale;
                  subpos.y += 0.4*subpos.fsize;
-                 subpos.fsize *= scale;
-                 curr.dy = -0.4*scale; // compensation value, applied for next element
+                 curr.dy = -0.4*scale; // compensate vertical shift back
 
                  if (prevsubpos && (prevsubpos.script === 'super')) {
                     var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
                     subpos.width_limit = rect.width;
-                    nextdx -= rect.width/subpos.fsize+0.1;
+                    nextdx -= (rect.width/subpos.fsize+0.1)*scale;
                  }
               }
               break;
            case "^{":
               scale = 0.6;
-              nextdx = nextdx/scale;
-              nextdy = nextdy/scale;
-              subnode.attr('font-size', Math.round(scale*100)+'%');
               subpos.script = 'super';
 
               if (curr.special) {
                  curr.dx = curr.special.w;
                  curr.dy = curr.special.h;
-                 nextdx -= curr.dx/scale;
-                 nextdy -= curr.dy/scale;
+                 nextdx -= curr.dx;
+                 nextdy -= curr.dy;
               } else {
-                 nextdx += 0.1;
-                 nextdy -= 0.6;
+                 nextdx += 0.1*scale;
+                 nextdy -= 0.6*scale;
                  subpos.y -= 0.4*subpos.fsize;
-                 subpos.fsize *= scale;
-                 curr.dy = 0.6*scale; // compensation value, applied for next element
+                 curr.dy = 0.6*scale; // compensate vertical shift afterwards
 
                  if (prevsubpos && (prevsubpos.script === 'sub')) {
                     var rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
-                    nextdx -= rect.width/subpos.fsize+0.1;
                     subpos.width_limit = rect.width;
+                    nextdx -= (rect.width/subpos.fsize+0.1)*scale;
                  }
               }
               break;
@@ -3687,6 +3675,14 @@
               subnode1 = subnode.append('tspan'); // 0.3 is additional space
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.2, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.6 };
               break;
+         }
+
+         if (scale!==1) {
+            // handle centrally change of scale factor
+            subnode.attr('font-size', Math.round(scale*100)+'%');
+            subpos.fsize *= scale;
+            nextdx = nextdx/scale;
+            nextdy = nextdy/scale;
          }
 
          if (curr.special && !subpos.script) delete curr.special;
