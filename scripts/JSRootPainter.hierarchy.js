@@ -2179,9 +2179,12 @@
             painter._configured_socket_kind = socket_kind;
             painter.use_openui = true;
 
-            JSROOT.openui5_canvas_painter = painter;
-
             return JSROOT.AssertPrerequisites('openui5', function() {
+            
+               var oData = { canvas_painter: painter };
+               var oModel = new sap.ui.model.json.JSONModel(oData);
+               sap.ui.getCore().setModel(oModel, "TopCanvasId--MainPanel");
+               
                new JSROOT.sap.ui.xmlview({
                   id: "TopCanvasId",
                   viewName: "sap.ui.jsroot.view.Canvas"

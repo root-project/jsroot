@@ -51,9 +51,20 @@ sap.ui.define([
       },
 
       onInit: function() {
-         this.canvas_painter = JSROOT.openui5_canvas_painter;
-         delete JSROOT.openui5_canvas_painter;
+         // this.canvas_painter = JSROOT.openui5_canvas_painter;
+         // delete JSROOT.openui5_canvas_painter;
 
+         var oModel = sap.ui.getCore().getModel(this.getView().getId());
+         if (oModel) {
+            var oData = oModel.getData();
+            console.log("Found Panel data");
+            
+            if (oData.canvas_painter) {
+               this.canvas_painter = oData.canvas_painter;
+               delete oData.canvas_painter;
+            }
+         }
+         
          ResizeHandler.register(this.getView(), this.onResize.bind(this));
       },
 
