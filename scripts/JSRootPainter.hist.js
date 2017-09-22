@@ -812,13 +812,19 @@
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.format10Exp = function(order) {
-      if (JSROOT.gStyle.Latex > 1) return "10^{" + order + "}";
+   TAxisPainter.prototype.format10Exp = function(order, value) {
+      var res = "";
+      if (value) {
+         value = Math.round(value/Math.pow(10,order));
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
+      }
+      res += "10";
+      if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
       var superscript_symbols = {
             '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
             '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
          };
-      var str = order.toString(), res = "10";
+      var str = order.toString();
       for (var n=0;n<str.length;++n) res += superscript_symbols[str[n]];
       return res;
    }
@@ -876,7 +882,7 @@
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp && !notickexp)
-                  return this.format10Exp(Math.round(vlog));
+                  return this.format10Exp(Math.floor(vlog+0.01), val);
 
                return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
             }
@@ -1016,8 +1022,6 @@
 
          var bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
 
-         // if (!axis.fName) console.log('check', minorder, maxorder, axis.fName);
-
          for (var order = minorder; order <= maxorder; order+=3) {
             this.order = order;
             this.ndig = 0;
@@ -1033,8 +1037,6 @@
                if (++this.ndig > 11) break; // not too many digits, anyway it will be exponential
                lbls = []; indx = 0; totallen = 0;
             }
-
-            // if (!axis.fName) console.log('order', order, 'ndig', this.ndig, 'totallen', totallen, lbls);
 
             // for order==0 we should virually remove "0." and extra label on top
             if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
