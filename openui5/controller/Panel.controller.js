@@ -14,6 +14,15 @@ sap.ui.define([
          }
       },
       
+      drawObject: function(obj, opt) {
+         var oController = this;
+         oController.object = obj;
+         JSROOT.draw(oController.getView().getDomRef(), oController.object, opt, function(painter) {
+            oController.object_painter = painter;
+            console.log("object painting finished");
+         });
+      },
+      
       onAfterRendering: function() {
          if (this.after_render_callback) {
             JSROOT.CallBack(this.after_render_callback);
@@ -30,26 +39,15 @@ sap.ui.define([
             var oController = this;
             
             if (oController.panel_data.object) {
-               JSROOT.draw(oController.getView().getDomRef(), oController.panel_data.object, oController.panel_data.opt, function(painter) {
-                  oController.object_painter = painter;
-                  console.log("object painting finished");
-               });
+               oController.drawObject(oController.panel_data.object, oController.panel_data.opt);
             } else if (oController.panel_data.jsonfilename) {
                JSROOT.NewHttpRequest(oController.panel_data.jsonfilename, 'object', function(obj) {
-                  oController.object = obj;
-                  JSROOT.draw(oController.getView().getDomRef(), oController.panel_data.object, oController.panel_data.opt, function(painter) {
-                     oController.object_painter = painter;
-                     console.log("object painting finished");
-                  });
+                  oController.drawObject(obj, oController.panel_data.opt);               
                }).send();
             } else if (oController.panel_data.filename) {
                JSROOT.OpenFile(oController.panel_data.filename, function(file) {
                   file.ReadObject(oController.panel_data.itemname, function(obj) {
-                     oController.panel_data.object = obj; // get object from the file
-                     JSROOT.draw(oController.getView().getDomRef(), obj, oController.panel_data.opt, function(painter) {
-                        oController.object_painter = painter;
-                       console.log("object painting finished");
-                     });
+                     oController.drawObject(obj, oController.panel_data.opt);
                   });
                });
             }
