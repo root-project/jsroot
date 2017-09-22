@@ -34,6 +34,14 @@ sap.ui.define([
                   oController.object_painter = painter;
                   console.log("object painting finished");
                });
+            } else if (oController.panel_data.jsonfilename) {
+               JSROOT.NewHttpRequest(oController.panel_data.jsonfilename, 'object', function(obj) {
+                  oController.object = obj;
+                  JSROOT.draw(oController.getView().getDomRef(), oController.panel_data.object, oController.panel_data.opt, function(painter) {
+                     oController.object_painter = painter;
+                     console.log("object painting finished");
+                  });
+               }).send();
             } else if (oController.panel_data.filename) {
                JSROOT.OpenFile(oController.panel_data.filename, function(file) {
                   file.ReadObject(oController.panel_data.itemname, function(obj) {
