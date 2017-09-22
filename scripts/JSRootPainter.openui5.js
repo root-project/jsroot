@@ -59,7 +59,8 @@
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
    element.setAttribute('data-sap-ui-preload', 'async');
-   // for the moment specify path in the THttpServer, later can adjust for offline case
+   
+   // configure path for openui5 scripts
    element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "' + JSROOT.source_dir + 'openui5/" }');
 
    element.setAttribute('data-sap-ui-evt-oninit', "JSROOT.completeUI5Loading()");
@@ -72,7 +73,7 @@
 
       var menu = { painter: painter,  element: null, cnt: 1, stack: [], items: [], separ: false };
 
-      // this is slighly modified version of original MenuItem.render function.
+      // this is slightly modified version of original MenuItem.render function.
       // need to be updated with any further changes
       function RenderCustomItem(rm, oItem, oMenu, oInfo) {
          var oSubMenu = oItem.getSubmenu();

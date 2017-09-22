@@ -17,6 +17,20 @@ sap.ui.define([
             this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
             delete this.canvas_painter._configured_socket_kind;
          }
+ 
+         if (this.panel_data) {
+            var oController = this;
+            JSROOT.OpenFile(oController.panel_data.filename, function(file) {
+               file.ReadObject(oController.panel_data.itemname, function(obj) {
+                  JSROOT.draw(oController.getView().getDomRef(), obj, oController.panel_data.opt, function(painter) {
+                     oController.object_painter = painter;
+                     console.log("object painting finished");
+                  });
+               });
+            });
+         }
+         
+         
       },
 
       onBeforeRendering: function() {
@@ -62,6 +76,9 @@ sap.ui.define([
             if (oData.canvas_painter) {
                this.canvas_painter = oData.canvas_painter;
                delete oData.canvas_painter;
+            } else {
+               this.panel_data = oData;
+               console.log("data", oData);
             }
          } else {
             console.log("found no model for", this.getView().getId());
