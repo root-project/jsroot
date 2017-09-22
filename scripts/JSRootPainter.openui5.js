@@ -60,12 +60,11 @@
 
    element.setAttribute('data-sap-ui-preload', 'async');
    // for the moment specify path in the THttpServer, later can adjust for offline case
-   element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "/jsrootsys/openui5/" }');
+   element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "' + JSROOT.source_dir + 'openui5/" }');
 
    element.setAttribute('data-sap-ui-evt-oninit', "JSROOT.completeUI5Loading()");
 
    document.getElementsByTagName("head")[0].appendChild(element);
-
 
    // function allows to create menu with openui
    // for the moment deactivated - can be used later
