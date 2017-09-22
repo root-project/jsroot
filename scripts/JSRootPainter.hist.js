@@ -1344,7 +1344,7 @@
                            y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
                            align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
                            latex: 1,
-                           text: '#times' + this.format10Exp(order),
+                           text: '#times' + this.format10Exp(this.order),
                            draw_g: label_g
            });
 
