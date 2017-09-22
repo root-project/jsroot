@@ -6,6 +6,14 @@ sap.ui.define([
 
    return Controller.extend("sap.ui.jsroot.controller.Panel", {
 
+      onBeforeRendering: function() {
+         console.log("Cleanup Panel", this.getView().getId());
+         if (this.object_painter) {
+            this.object_painter.Cleanup();
+            delete this.object_painter;
+         }
+      },
+      
       onAfterRendering: function() {
          if (this.after_render_callback) {
             JSROOT.CallBack(this.after_render_callback);
@@ -20,23 +28,27 @@ sap.ui.define([
  
          if (this.panel_data) {
             var oController = this;
-            JSROOT.OpenFile(oController.panel_data.filename, function(file) {
-               file.ReadObject(oController.panel_data.itemname, function(obj) {
-                  JSROOT.draw(oController.getView().getDomRef(), obj, oController.panel_data.opt, function(painter) {
-                     oController.object_painter = painter;
-                     console.log("object painting finished");
+            
+            if (oController.panel_data.object) {
+               JSROOT.draw(oController.getView().getDomRef(), oController.panel_data.object, oController.panel_data.opt, function(painter) {
+                  oController.object_painter = painter;
+                  console.log("object painting finished");
+               });
+            } else if (oController.panel_data.filename) {
+               JSROOT.OpenFile(oController.panel_data.filename, function(file) {
+                  file.ReadObject(oController.panel_data.itemname, function(obj) {
+                     oController.panel_data.object = obj; // get object from the file
+                     JSROOT.draw(oController.getView().getDomRef(), obj, oController.panel_data.opt, function(painter) {
+                        oController.object_painter = painter;
+                       console.log("object painting finished");
+                     });
                   });
                });
-            });
+            }
          }
-         
-         
       },
 
-      onBeforeRendering: function() {
-      },
-
-      onResize: function(event) {
+       onResize: function(event) {
          // use timeout
          if (this.resize_tmout) clearTimeout(this.resize_tmout);
          this.resize_tmout = setTimeout(this.onResizeTimeout.bind(this), 300); // minimal latency
