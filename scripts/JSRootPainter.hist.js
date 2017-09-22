@@ -868,7 +868,10 @@
          }
 
       } else if (this.kind == 'log') {
-         this.nticks2 = 1;
+         if (this.nticks2 > 1) {
+            this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
+            this.nticks2 = 1;
+         }
          this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
@@ -1224,7 +1227,7 @@
 
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
-      if (this.max_tick_size && tickSize > this.max_tick_size) tickSize = this.max_tick_size;
+      if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
 
       this.CreateFormatFuncs();
 
