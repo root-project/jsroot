@@ -57,12 +57,14 @@ sap.ui.define([
          var oModel = sap.ui.getCore().getModel(this.getView().getId());
          if (oModel) {
             var oData = oModel.getData();
-            console.log("Found Panel data");
+            console.log("Found Panel data for ", this.getView().getId());
             
             if (oData.canvas_painter) {
                this.canvas_painter = oData.canvas_painter;
                delete oData.canvas_painter;
             }
+         } else {
+            console.log("found no model for", this.getView().getId());
          }
          
          ResizeHandler.register(this.getView(), this.onResize.bind(this));
