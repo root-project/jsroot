@@ -3305,10 +3305,11 @@
       });
 
       // now hidden text after rescaling can be shown
-      draw_g.selectAll('.hidden_text').attr('visibility', null).classed('hidden_text', false).each(function() {
+      draw_g.selectAll('.hidden_text').attr('visibility', null).attr('class', null).each(function() {
          // case when scaling is changed and we can shift text position only after final text size is defined
          var txt = d3.select(this),
              arg = txt.property("_arg");
+
          txt.property("_arg", null);
 
          if (!arg) return;
@@ -3360,6 +3361,15 @@
          if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+")";
          if (arg.dx || arg.dy) trans += " translate("+Math.round(arg.dx)+","+Math.round(arg.dy)+")";
          if (trans) txt.attr("transform", trans);
+
+         if (JSROOT.browser.isWebKit && draw_g.node().insertAdjacentHTML && arg.large_latex) {
+            // this is workaround for sporadic placement problem in Chrome/Opera
+            // Due to unclear reasons tspan elements placed wrongly
+            // Full refresh of created elements (including text itself) solves problem
+            var html = txt.node().outerHTML;
+            txt.remove();
+            draw_g.node().insertAdjacentHTML( 'beforeend', html );
+         }
       });
 
       if (!call_ready) call_ready = draw_g.node().text_callback;
@@ -3437,10 +3447,15 @@
       }
 
       function get_boundary(painter, element, approx_rect) {
+         // actually, it is workaround for getBBox() or getElementBounday,
+         // which is not implemented for tspan element in Firefox
+
          if (JSROOT.nodejs || !element || element.empty())
             return approx_rect || { height: 0, width: 0 };
 
          var important = [], prnt = element.node();
+
+         // if (element.node().getBBox && !JSROOT.browser.isFirefox) return element.node().getBBox();
 
          while (prnt && (prnt!=arg.mainnode)) {
             important.push(prnt);
@@ -3451,10 +3466,14 @@
 
          var tspans = d3.select(arg.mainnode).selectAll('tspan');
 
+         // this is just workaround to know that many elements are created and in Chrome we need to redo them once again
+         if (tspans.size()>3)  arg.large_latex = true;
+
          tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', 'none'); });
          var box = painter.GetBoundarySizes(arg.mainnode);
 
          tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', null); });
+
          return box;
       }
 
@@ -3511,11 +3530,11 @@
             extend_pos(curr, s);
 
             if (curr.accent && (s.length==1)) {
-               var elem = node.append('tspan').text(s),
+               var elem = node.append('svg:tspan').text(s),
                    rect = get_boundary(this, elem, { width : 10000 }),
                    w = Math.min(rect.width/curr.fsize, 0.5); // at maximum, 0.5 should be used
 
-               node.append('tspan').attr('dx', makeem(curr.dx-w)).attr('dy', makeem(curr.dy-0.2)).text(curr.accent);
+               node.append('svg:tspan').attr('dx', makeem(curr.dx-w)).attr('dy', makeem(curr.dy-0.2)).text(curr.accent);
                curr.dy = 0.2;; // compensate hat
                curr.dx = Math.max(0.2, w-0.2); // extra horizontal gap
                curr.accent = false;
@@ -3529,7 +3548,7 @@
             var s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
             if (s.length>0) {
                extend_pos(curr, s);
-               node.append('tspan')
+               node.append('svg:tspan')
                    .attr('dx', makeem(curr.dx))
                    .attr('dy', makeem(curr.dy))
                    .text(s);
@@ -3545,7 +3564,7 @@
          // remove preceeding block and tag itself
          label = label.substr(best + found.name.length);
 
-         subnode1 = subnode = node.append('tspan');
+         subnode1 = subnode = node.append('svg:tspan');
 
          prevsubpos = subpos;
 
@@ -3587,9 +3606,9 @@
 
          if (found.braces) {
             // special handling of large braces
-            subpos.left_cont = subnode.append('tspan'); // container for left brace
-            subpos.left = subpos.left_cont.append('tspan').text(found.braces[0]);
-            subnode1 = subnode.append('tspan');
+            subpos.left_cont = subnode.append('svg:tspan'); // container for left brace
+            subpos.left = subpos.left_cont.append('svg:tspan').text(found.braces[0]);
+            subnode1 = subnode.append('svg:tspan');
             subpos.left_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
             extend_pos(curr, subpos.left_rect);
             subpos.braces = found; // indicate braces handling
@@ -3698,9 +3717,9 @@
            case "#sqrt{":
               foundarg = 2;
            case "#sqrt[":
-              subpos.square_root = subnode.append('tspan');
-              subpos.square_root.append('tspan').text((foundarg==3) ? '\u221B' : ((foundarg==4) ? '\u221C' : '\u221A')); // unicode square, cubic and fourth root
-              subnode1 = subnode.append('tspan');
+              subpos.square_root = subnode.append('svg:tspan');
+              subpos.square_root.append('svg:tspan').text((foundarg==3) ? '\u221B' : ((foundarg==4) ? '\u221C' : '\u221A')); // unicode square, cubic and fourth root
+              subnode1 = subnode.append('svg:tspan');
               subpos.sqrt_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.7 };
               extend_pos(curr, subpos.sqrt_rect); // just dummy symbol instead of square root
               break;
@@ -3793,9 +3812,9 @@
                var a = "", nn = Math.round(Math.max(len*3,2));
                while (nn--) a += '\u203E'; // unicode overline
 
-               subpos.square_root.append('tspan').attr("dy", makeem(-0.25)).text(a);
+               subpos.square_root.append('svg:tspan').attr("dy", makeem(-0.25)).text(a);
 
-               subpos.square_root.append('tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3-0.2)).text('\u2009'); // unicode tiny space
+               subpos.square_root.append('svg:tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3-0.2)).text('\u2009'); // unicode tiny space
 
                break;
             }
@@ -3816,7 +3835,7 @@
                   brace_dy = 0;
                   subpos.left.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
                   // unicode tiny space, used to return cursor on vertical position
-                  subpos.left_cont.append('tspan').attr("dx",makeem(-0.2))
+                  subpos.left_cont.append('svg:tspan').attr("dx",makeem(-0.2))
                                                   .attr("dy", makeem(-brace_dy*yscale)).text('\u2009');
                   curr.next_super_dy = -0.3*yscale; // special shift for next comming superscript
                }
@@ -3826,15 +3845,15 @@
 
                extend_pos(curr, subpos.left_rect); // just dummy symbol instead of right brace for accounting
 
-               var right_cont = subnode.append('tspan')
+               var right_cont = subnode.append('svg:tspan')
                                        .attr("dx", makeem(curr.dx))
                                        .attr("dy", makeem(curr.dy));
 
                curr.dx = curr.dy = 0;
 
-               if (yscale!=1) right_cont.append('tspan').attr("dx",makeem(-0.2)).text('\u2009'); // unicode tiny space if larger brace is used
+               if (yscale!=1) right_cont.append('svg:tspan').attr("dx",makeem(-0.2)).text('\u2009'); // unicode tiny space if larger brace is used
 
-               var right = right_cont.append('tspan').text(subpos.braces.braces[1]);
+               var right = right_cont.append('svg:tspan').text(subpos.braces.braces[1]);
 
                if (yscale!=1) {
                   right.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
@@ -3858,7 +3877,7 @@
                   l3 = Math.round(Math.max(l3,1)+0.3);
                   var a = "";
                   while (a.length < l3) a += '\u2014';
-                  node.append('tspan')
+                  node.append('svg:tspan')
                        .attr("dx", makeem(-0.5*(l3+l2)))
                        .attr("dy", makeem(curr.dy-0.2))
                        .text(a);
@@ -3892,7 +3911,7 @@
 
             label = label.substr(1);
 
-            subnode = subnode1 = node.append('tspan');
+            subnode = subnode1 = node.append('svg:tspan');
 
             subpos.two_lines = false;
             subpos.rect1 = subpos.rect; // remember first rect
@@ -3980,7 +3999,7 @@
 
       if (!use_mathjax || arg.nomathjax) {
 
-         var txt = arg.draw_g.append("text");
+         var txt = arg.draw_g.append("svg:text");
 
          if (arg.color) txt.attr("fill", arg.color);
 
@@ -4002,8 +4021,9 @@
 
          // if (label.length>20) console.log('label', label, 'box', arg.box);
 
-         txt.classed('hidden_text',true).attr('visibility','hidden') // hide elements until text drawing is finished
-            .property("_arg", arg);
+         txt.attr('class','hidden_text')
+             .attr('visibility','hidden') // hide elements until text drawing is finished
+             .property("_arg", arg);
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
          if (arg.scale) this.TextScaleFactor(1.05*arg.box.width/arg.width, arg.draw_g);

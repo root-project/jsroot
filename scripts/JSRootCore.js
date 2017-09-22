@@ -95,7 +95,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 21/09/2017";
+   JSROOT.version = "dev 22/09/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -109,21 +109,19 @@
    // JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false, isWin:false };
+   JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       var scripts = document.getElementsByTagName('script');
       for (var n = 0; n < scripts.length; ++n) {
-         var src = scripts[n].src;
-         if ((src===undefined) || (typeof src !== 'string')) continue;
+         if (!scripts[n].src || (typeof scripts[n].src !== 'string')) continue;
 
-         var pos = src.indexOf("scripts/JSRootCore.");
+         var pos = scripts[n].src.indexOf("scripts/JSRootCore.");
          if (pos<0) continue;
 
-         JSROOT.source_dir = src.substr(0, pos);
-         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
-
-         JSROOT.source_fullpath = src;
+         JSROOT.source_dir = scripts[n].src.substr(0, pos);
+         JSROOT.source_min = scripts[n].src.indexOf("scripts/JSRootCore.min.js") >= 0;
+         JSROOT.source_fullpath = scripts[n].src;
 
          if ((console!==undefined) && (typeof console.log == 'function'))
             console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
@@ -139,7 +137,7 @@
       JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
    }
 
-   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
+   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
 
    // default draw styles, can be changed after loading of JSRootCore.js
    // this style also can be changed providing style=itemname in the URL
