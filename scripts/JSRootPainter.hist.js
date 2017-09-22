@@ -812,14 +812,15 @@
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.formatExp = function(label) {
-
-      var str = label.toLowerCase().replace('e+', 'x10@').replace('e-', 'x10@-'),
-          pos = str.indexOf('@'),
-          exp = "^{" + str.substr(pos+1) + "}",
-          str = str.substr(0, pos);
-
-      return ((str === "1x10") ? "10" : str) + exp;
+   TAxisPainter.prototype.format10Exp = function(order) {
+      if (JSROOT.gStyle.Latex > 1) return "10^{" + order + "}";
+      var superscript_symbols = {
+            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+         };
+      var str = order.toString(), res = "10";
+      for (var n=0;n<str.length;++n) res += superscript_symbols[str[n]];
+      return res;
    }
 
    TAxisPainter.prototype.CreateFormatFuncs = function() {
@@ -875,7 +876,7 @@
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
                if (!this.noexp && !notickexp)
-                  return this.formatExp(val.toExponential(0));
+                  return this.format10Exp(Math.round(vlog));
 
                return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
             }
@@ -1338,7 +1339,7 @@
                            y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
                            align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
                            latex: 1,
-                           text: '#times' + this.formatExp(Math.pow(10,this.order).toExponential(0)),
+                           text: '#times' + this.format10Exp(order),
                            draw_g: label_g
            });
 
