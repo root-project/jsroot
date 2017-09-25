@@ -30,7 +30,7 @@ sap.ui.define([
       },
 
       getCanvasPainter : function(also_without_websocket) {
-         var elem = this.getView().byId("jsroot_canvas");
+         var elem = this.getView().byId("MainPanel");
 
          var p = elem ? elem.getController().canvas_painter : null;
 
