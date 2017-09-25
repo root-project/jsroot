@@ -99,9 +99,13 @@ sap.ui.define([
 
          this.rendering_perfromed = false;
 
-         console.log("Initialization of JSROOT Panel", this.getView().getId());
+         var id = this.getView().getId();
 
-         var oModel = sap.ui.getCore().getModel(this.getView().getId());
+         console.log("Initialization of JSROOT Panel", id);
+
+         var oModel = sap.ui.getCore().getModel(id);
+         if (!oModel && (id.indexOf("__xmlview0--")==0)) oModel = sap.ui.getCore().getModel(id.substr(12));
+
          if (oModel)
             this.panel_data = oModel.getData();
 
