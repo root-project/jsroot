@@ -1,44 +1,46 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Provide shape parameters in TGeo tooltips
-2. Let inspect selected TGeoNode
-3. Change in JSROOT.draw functionality. Now valid painter instance can be only 
+1. New supported classes:
+    - TGraphPolar
+    - TGraphTime
+    - TSpline3
+    - TSpline5
+    - TPolyLine3D
+    - TPolyMarker
+    - TEfficiency
+    - TH1K
+2. New supported options:
+     "PFC" - auto fill color (histograms and graphs)
+     "PLC" - auto line color
+     "PMC" - auto marker color
+     "A"  - fully disables axes drawing for histograms painters
+     "TEXT" - for TH2Poly
+     "SAMES" - draw stat box for superimposed histograms
+     "NOCOL" - ignore stored in the TCanvas colors list
+     "NOPAL" - ignore stored in the TCanvas color palette
+3. Improvements in existing painters:
+     - use color palette stored in the TCanvas
+     - draw stats box when really required
+     - let resize frames and paves in all eight directions
+     - support lines, boxes and arbitrary text positions in TPaveText
+     - automatic title positioning of vertical axis when fTitleOffset==0
+     - when pad.fTickx/y==2 draw axes labels on opposite side
+     - editing of TGraph objects - moving of the graph bins
+     - draw X/Y/Z axis titles in lego plots
+     - use canvas Theta/Phi angles to set initial camera position in 3D plots
+4. New TLatex processor supports most ROOT features, still MathJax can be used
+5. New X/Y projections display for TH2 histograms (aka TH2::SetShowProjectionX/Y)
+6. New in geometry viewer:
+    - provide shape parameters in TGeo tooltips
+    - let inspect selected TGeoNode
+    - provide text info when geometry drawing takes too long
+7. Change in JSROOT.draw functionality. Now valid painter instance can be only
    obtained via call-back - forth argument of JSROOT.draw() function.
-4. Refactor JSROOT scripts structure - extract histograms and hierarchy painters into separate scripts
-5. Use latest three.js r86 with improved Projector and CanvasRenderer
+8. Use latest three.js r86 with improved Projector and CanvasRenderer
    Still use own SVGRenderer which supported direct SVG text dump
-6. Provide text info when geometry drawing takes too long
-7. Preliminary support of TEfficiency
-8. Automatic title positioning of vertical axis when fTitleOffset==0
 9. Introduce openui5 components for webgui functionality
-10. In all sources specify "use strict" derictive, fix several connected errors
-11. Implement PFC, PLC and PMC draw options for histograms and graphs
-12. Use color palette stored in the TCanvas
-13. Let ignore color "nocol" or palette "nopal" stored in the TCanvas
-14. Better support of TPaveText - lines, boxes and arbitrary text positions
-15. Implement option "A" for histograms painters - fully disables axes drawing
-16. Support drawing of TPolyMarker
-17. Implement editing of TGraph objects - moving of the graph bins
-18. Improve resize of frame and paves - all eight directions now supported 
-19. Fix - draw stats box for histogram when required
-20. Implement x/y projections display for TH2 histograms (aka SetShowProjectionX)
-21. Support "TEXT" draw option for TH2Poly
-22. Preliminary support of TH1K class
-23. Support "SAMES" draw option for histogram - draw stat box for superimposed histograms
-24. Resepct text angle in TText/TLatex drawings
-25. Implement drawing of TPolyLine3D class
-26. Draw X/Y/Z axis titles in lego plots
-27. Use canvas Theta/Phi angles to set initial camera position in 3D plots 
-28. Create statbox when drawing TGraph with TF1 in list of functions
-29. Implement drawing of TSpline3 and TSpline5 classes 
-30. Handle #color[N] and #splitline{}{} tags in the TLatex
-31. Support pad.fTickx==2 and pad.fTicky==2 - drawing axes labels on opposite side  
-32. Implement drawing of TGraphPolar and TGraphPolargram 
-33. Implement drawing of TGraphTime
-34. Improve TLegend drawing - ignore empty entries
-35. Process TLatex inside JSROOT - now one could decide if complex formulas 
-    drawn with plain JSROOT (default) or with using of MathJax.js
+10. In all sources specify "use strict" directive
 
 
 ## Changes in 5.2.0
