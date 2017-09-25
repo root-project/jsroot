@@ -12,19 +12,49 @@ sap.ui.define([
             this.object_painter.Cleanup();
             delete this.object_painter;
          }
+         this.rendering_perfromed = false;
       },
 
-      drawObject: function(obj, opt) {
+      drawObject: function(obj, options) {
+
+         if (!this.rendering_perfromed) {
+            this.panel_data = { object: obj, opt: opt };
+            return;
+         }
+
          var oController = this;
          oController.object = obj;
          d3.select(oController.getView().getDomRef()).style('overflow','hidden');
 
-         JSROOT.draw(oController.getView().getDomRef(), oController.object, opt, function(painter) {
+         JSROOT.draw(oController.getView().getDomRef(), oController.object, options, function(painter) {
             console.log("object painting finished");
             oController.object_painter = painter;
             oController.get_callbacks.forEach(function(cb) { JSROOT.CallBack(cb,painter); });
             oController.get_callbacks = [];
          });
+      },
+
+      drawModel: function(model) {
+         if (!model) return;
+         if (!this.rendering_perfromed) {
+            this.panel_data = model;
+            return;
+         }
+
+         var oController = this;
+         if (model.object) {
+            oController.drawObject(model.object, model.opt);
+         } else if (model.jsonfilename) {
+            JSROOT.NewHttpRequest(model.jsonfilename, 'object', function(obj) {
+               oController.drawObject(obj, model.opt);
+            }).send();
+         } else if (model.filename) {
+            JSROOT.OpenFile(model.filename, function(file) {
+               file.ReadObject(model.itemname, function(obj) {
+                  oController.drawObject(obj, model.opt);
+               });
+            });
+         }
       },
 
       /** method to access object painter
@@ -47,24 +77,8 @@ sap.ui.define([
       },
 
       onAfterRendering: function() {
-
-         if (!this.panel_data) return;
-
-         var oController = this;
-
-         if (oController.panel_data.object) {
-            oController.drawObject(oController.panel_data.object, oController.panel_data.opt);
-         } else if (oController.panel_data.jsonfilename) {
-            JSROOT.NewHttpRequest(oController.panel_data.jsonfilename, 'object', function(obj) {
-               oController.drawObject(obj, oController.panel_data.opt);
-            }).send();
-         } else if (oController.panel_data.filename) {
-            JSROOT.OpenFile(oController.panel_data.filename, function(file) {
-               file.ReadObject(oController.panel_data.itemname, function(obj) {
-                  oController.drawObject(obj, oController.panel_data.opt);
-               });
-            });
-         }
+         this.rendering_perfromed = true;
+         if (this.panel_data) this.drawModel(this.panel_data);
       },
 
       onResize: function(event) {
@@ -82,6 +96,8 @@ sap.ui.define([
       onInit: function() {
 
          this.get_callbacks = []; // list of callbacks
+
+         this.rendering_perfromed = false;
 
          console.log("Initialization of JSROOT Panel", this.getView().getId());
 

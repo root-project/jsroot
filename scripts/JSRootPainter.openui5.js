@@ -58,8 +58,8 @@
    element.setAttribute('data-sap-ui-compatVersion', 'edge');
    // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
 
-   element.setAttribute('data-sap-ui-preload', 'async');
-   
+   element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
+
    // configure path for openui5 scripts
    element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "' + JSROOT.source_dir + 'openui5/" }');
 
