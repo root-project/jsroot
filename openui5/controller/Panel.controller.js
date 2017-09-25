@@ -13,16 +13,38 @@ sap.ui.define([
             delete this.object_painter;
          }
       },
-      
+
       drawObject: function(obj, opt) {
          var oController = this;
          oController.object = obj;
+         d3.select(oController.getView().getDomRef()).style('overflow','hidden');
+
          JSROOT.draw(oController.getView().getDomRef(), oController.object, opt, function(painter) {
-            oController.object_painter = painter;
             console.log("object painting finished");
+            oController.object_painter = painter;
+            oController.get_callbacks.forEach(function(cb) { JSROOT.CallBack(cb,painter); });
+            oController.get_callbacks = [];
          });
       },
-      
+
+      /** method to access object painter
+         if object already painted and exists, it will be returned as result
+         but it may take time to complete object drawing, therefore callback function should be used like
+            var panel = sap.ui.getCore().byId("YourPanelId");
+            var object_painter = null;
+            panel.getController().getPainter(funciton(painter) {
+               object_painter = painter;
+            });
+      */
+      getPainter: function(call_back) {
+         if (this.object_painter) {
+            JSROOT.CallBack(call_back, this.object_painter);
+         } else if (call_back) {
+            this.get_callbacks.push(call_back);
+         }
+         return this.object_painter;
+      },
+
       onAfterRendering: function() {
          if (this.after_render_callback) {
             JSROOT.CallBack(this.after_render_callback);
@@ -34,15 +56,15 @@ sap.ui.define([
             this.canvas_painter.OpenWebsocket(this.canvas_painter._configured_socket_kind);
             delete this.canvas_painter._configured_socket_kind;
          }
- 
+
          if (this.panel_data) {
             var oController = this;
-            
+
             if (oController.panel_data.object) {
                oController.drawObject(oController.panel_data.object, oController.panel_data.opt);
             } else if (oController.panel_data.jsonfilename) {
                JSROOT.NewHttpRequest(oController.panel_data.jsonfilename, 'object', function(obj) {
-                  oController.drawObject(obj, oController.panel_data.opt);               
+                  oController.drawObject(obj, oController.panel_data.opt);
                }).send();
             } else if (oController.panel_data.filename) {
                JSROOT.OpenFile(oController.panel_data.filename, function(file) {
@@ -86,22 +108,23 @@ sap.ui.define([
          // this.canvas_painter = JSROOT.openui5_canvas_painter;
          // delete JSROOT.openui5_canvas_painter;
 
+         this.get_callbacks = []; // list of callbacks
+
+         console.log("Initialization of JSROOT Panel", this.getView().getId());
+
          var oModel = sap.ui.getCore().getModel(this.getView().getId());
          if (oModel) {
             var oData = oModel.getData();
-            console.log("Found Panel data for ", this.getView().getId());
-            
+
             if (oData.canvas_painter) {
                this.canvas_painter = oData.canvas_painter;
                delete oData.canvas_painter;
             } else {
                this.panel_data = oData;
-               console.log("data", oData);
+               // console.log("data", oData);
             }
-         } else {
-            console.log("found no model for", this.getView().getId());
          }
-         
+
          ResizeHandler.register(this.getView(), this.onResize.bind(this));
       },
 
