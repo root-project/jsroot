@@ -11,7 +11,7 @@
     "gulp-filter" : "*",
     "gulp-rename"  : "*",
     "gulp-uglify" : "*",
-    "gulp-minify-css" : "*",
+    "gulp-clean-css" : "*",
     "gulp-flatten" : "*",
     "gulp-notify" : "*"
   }

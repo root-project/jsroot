@@ -4,7 +4,7 @@
   "description": "Example of building lib.js with gulp for JavaScript ROOT",
   "main": "example.htm",
   "dependencies": {
-    "jsroot": "file:///home/linev/git/jsroot/.git#dev"
+    "jsroot": "^5.3.0"
   },
   "overrides": {
      "MathJax": {
