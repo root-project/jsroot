@@ -3350,6 +3350,7 @@
          main.toplevel.add(mesh);
 
          mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+         mesh.tip_name = poly.fName || "Poly3D";
          mesh.poly = poly;
          mesh.painter = main;
          mesh.scale0 = 0.7*pnts.scale;
@@ -3361,24 +3362,27 @@
 
             indx = this.index[indx];
 
-            var p = this.painter;
-
-            var tip = { info: "bin: " + indx/3 + "<br/>" +
-                  "x: " + p.x_handle.format(this.poly.fP[indx]) + "<br/>" +
-                  "y: " + p.y_handle.format(this.poly.fP[indx+1]) + "<br/>" +
-                  "z: " + p.z_handle.format(this.poly.fP[indx+2]) };
-
-            var grx = p.grx(this.poly.fP[indx]),
+            var p = this.painter,
+                grx = p.grx(this.poly.fP[indx]),
                 gry = p.gry(this.poly.fP[indx+1]),
                 grz = p.grz(this.poly.fP[indx+2]);
 
-            tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-            tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-            tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
+            return  {
+               x1: grx - this.scale0,
+               x2: grx + this.scale0,
+               y1: gry - this.scale0,
+               y2: gry + this.scale0,
+               z1: grz - this.scale0,
+               z2: grz + this.scale0,
+               color: this.tip_color,
+               lines: [ this.tip_name,
+                        "pnt: " + indx/3,
+                        "x: " + p.x_handle.format(this.poly.fP[indx]),
+                        "y: " + p.y_handle.format(this.poly.fP[indx+1]),
+                        "z: " + p.z_handle.format(this.poly.fP[indx+2])
+                      ]
+            }
 
-            tip.color = this.tip_color;
-
-            return tip;
          }
 
          main.Render3D(100); // set large timeout to be able draw other points
