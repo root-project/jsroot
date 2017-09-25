@@ -3099,20 +3099,23 @@
       var p = this.painter,
           grx = p.grx(this.graph.fX[indx]),
           gry = p.gry(this.graph.fY[indx]),
-          grz = p.grz(this.graph.fZ[indx]),
-          tip = { info: this.tip_name + "<br/>" +
-                "pnt: " + indx + "<br/>" +
-                "x: " + p.x_handle.format(this.graph.fX[indx]) + "<br/>" +
-                "y: " + p.y_handle.format(this.graph.fY[indx]) + "<br/>" +
-                "z: " + p.z_handle.format(this.graph.fZ[indx]) };
+          grz = p.grz(this.graph.fZ[indx]);
 
-      tip.x1 = grx - this.scale0; tip.x2 = grx + this.scale0;
-      tip.y1 = gry - this.scale0; tip.y2 = gry + this.scale0;
-      tip.z1 = grz - this.scale0; tip.z2 = grz + this.scale0;
-
-      tip.color = this.tip_color;
-
-      return tip;
+      return {
+         x1: grx - this.scale0,
+         x2: grx + this.scale0,
+         y1: gry - this.scale0,
+         y2: gry + this.scale0,
+         z1: grz - this.scale0,
+         z2: grz + this.scale0,
+         color: this.tip_color,
+         lines: [ this.tip_name,
+                  "pnt: " + indx,
+                  "x: " + p.x_handle.format(this.graph.fX[indx]),
+                  "y: " + p.y_handle.format(this.graph.fY[indx]),
+                  "z: " + p.z_handle.format(this.graph.fZ[indx])
+                ]
+      }
    }
 
    TGraph2DPainter.prototype.Redraw = function() {
@@ -3147,9 +3150,9 @@
       }
 
       var markeratt = new JSROOT.TAttMarkerHandler(graph),
-         palette = null,
-         levels = [main.scale_zmin, main.scale_zmax],
-         scale = main.size_xy3d / 100 * markeratt.GetFullSize();
+          palette = null,
+          levels = [main.scale_zmin, main.scale_zmax],
+          scale = main.size_xy3d / 100 * markeratt.GetFullSize();
 
       if (this.options.Circles) scale = 0.06*main.size_xy3d;
 
