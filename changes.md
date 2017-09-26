@@ -43,6 +43,33 @@
 10. In all sources specify "use strict" directive
 
 
+## Changes in 5.2.4
+1. Fix - support pow(x,n) function in formula
+2. Fix - use pad.fFillColor for frame when fFrameFillColor==0
+3. Fix - correctly identify horizontal TGaxis with reverse scale
+4. Fix - correctly handle negative line width in exclusion
+5. Fix - tooltips handling for TF1
+
+
+## Changes in 5.2.3
+1. Fix - potential mix-up in marker attributes handling
+2. Fix - unzomming of log scale https://root-forum.cern.ch/t/25889
+3. Fix - ignore not-supported options in TMultiGraph https://root-forum.cern.ch/t/25888
+4. Fix - correctly use fGridColor from TStyle
+5. Fix - prevent error when TPaveText includes TLine or TBox in list of lines
+6. Fix - bin errors calculations in TProfile
+
+
+## Changes in 5.2.2
+1. Fix several problems, discovered with "use strict" directive
+
+
+## Changes in 5.2.1
+1. Fix - correctly handle new TF1 parameter coding convention (#132)
+2. Fix - Check if pad name can be used as element id (#133)
+3. Fix - adjust title position for vertical axis with fTitleOffset==0
+
+
 ## Changes in 5.2.0
 1. Basic JSROOT functionality can be used in Node.js:
        var jsroot = require("path/to/JSRootCore.js");
