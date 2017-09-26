@@ -1558,14 +1558,11 @@
    JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       var main = this.main_painter(),
-          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
-
-      // get levels
-      var histo = this.GetObject(),
+          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
+          histo = this.GetObject(), // get levels
           levels = this.GetContour(), // init contour if not exists
           palette = this.GetPalette(),
-          painter = this,
-          layerz = 2*main.size_z3d;
+          layerz = 2*main.size_z3d, pnts = [];
 
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
@@ -1577,23 +1574,15 @@
                 if ((layerz < 0) || (layerz > 2*main.size_z3d)) return;
              }
 
-             var linepos = new Float32Array((iplus-iminus+1)*3), indx = 0;
-             for (var i=iminus;i<=iplus;++i) {
-                linepos[indx] = xp[i];
-                linepos[indx+1] = yp[i];
-                linepos[indx+2] = layerz;
-                indx+=3;
+             for (var i=iminus;i<iplus;++i) {
+                pnts.push(xp[i], yp[i], layerz);
+                pnts.push(xp[i+1], yp[i+1], layerz);
              }
-
-             var geometry = new THREE.BufferGeometry();
-             geometry.addAttribute( 'position', new THREE.BufferAttribute( linepos, 3 ) );
-
-             var material = new THREE.LineBasicMaterial({ color: new THREE.Color(main.get_color(histo.fLineColor)) });
-
-             var line = new THREE.Line(geometry, material);
-             main.toplevel.add(line);
          }
       );
+
+      var lines = JSROOT.Painter.createLineSegments(pnts, JSROOT.Painter.Create3DLineMaterial(this, histo));
+      main.toplevel.add(lines);
    }
 
    JSROOT.TH2Painter.prototype.DrawSurf = function() {

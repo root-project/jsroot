@@ -705,6 +705,8 @@
 
    JSROOT.Painter.drawPolyLine3D = drawPolyLine3D;
 
+   JSROOT.Painter.Create3DLineMaterial = Create3DLineMaterial;
+
 
    return JSROOT;
 
