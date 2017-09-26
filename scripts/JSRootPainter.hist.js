@@ -6584,15 +6584,12 @@
       var histo = this.GetObject(),
           kMAXCONTOUR = 404,
           kMAXCOUNT = 400,
-      // arguments used in he PaintContourLine
+          // arguments used in the PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
           itarr = new Int32Array(2*kMAXCONTOUR),
           lj = 0, ipoly, poly, polys = [], np, npmax = 0,
-          x = new Float32Array(4),
-          y = new Float32Array(4),
-          zc = new Float32Array(4),
-          ir =  new Int32Array(4),
+          x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
           i, j, k, n, m, ix, ljfill, count,
           xsave, ysave, itars, ix, jx;
 
@@ -6746,12 +6743,12 @@
          poly = polys[ipoly];
          if (!poly) continue;
 
-         var colindx = palette.calcColorIndex(ipoly, levels.length);
-
-         var xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
+         var colindx = palette.calcColorIndex(ipoly, levels.length),
+             xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
              istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
          while (true) {
+
             iminus = npmax;
             iplus  = iminus+1;
             xp[iminus]= xx[istart];   yp[iminus] = yy[istart];
@@ -6761,16 +6758,16 @@
             while (true) {
                nadd = 0;
                for (i=2;i<np;i+=2) {
-                  if (xx[i] === xp[iplus] && yy[i] === yp[iplus]) {
+                  if ((iplus < np-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                      iplus++;
-                     xp[iplus] = xx[i+1]; yp[iplus]  = yy[i+1];
+                     xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
                      xx[i] = xx[i+1] = xmin;
                      yy[i] = yy[i+1] = ymin;
                      nadd++;
                   }
-                  if (xx[i+1] === xp[iminus] && yy[i+1] === yp[iminus]) {
+                  if ((iminus > 0) && (xx[i+1] === xp[iminus]) && (yy[i+1] === yp[iminus])) {
                      iminus--;
-                     xp[iminus] = xx[i];   yp[iminus]  = yy[i];
+                     xp[iminus] = xx[i]; yp[iminus] = yy[i];
                      xx[i] = xx[i+1] = xmin;
                      yy[i] = yy[i+1] = ymin;
                      nadd++;
@@ -6789,6 +6786,7 @@
                   break;
                }
             }
+
             if (istart === 0) break;
          }
       }
@@ -7210,12 +7208,8 @@
           handle = this.PrepareColorDraw(),
           pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
-          i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt;
-
-      // candle option coded into string, which comes after candle identifier
-      // console.log('Draw candle plot with option', this.options.Candle);
-
-      var bars = "", markers = "";
+          i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
+          bars = "", markers = "";
 
       // create attribute only when necessary
       if (!this.markeratt) {
@@ -7255,8 +7249,6 @@
          }
          pnt.iqr = pnt.p25y-pnt.m25y;
 
-//       console.log('Whisker before ' + pnt.whiskerm + '/' + pnt.whiskerp);
-
          //Whiskers cannot exceed 1.5*iqr from box
          if ((pnt.m25y-1.5*pnt.iqr) > pnt.whsikerm)  {
             pnt.whiskerm = pnt.m25y-1.5*pnt.iqr;
@@ -7264,7 +7256,6 @@
          if ((pnt.p25y+1.5*pnt.iqr) < pnt.whiskerp) {
             pnt.whiskerp = pnt.p25y+1.5*pnt.iqr;
          }
-//       console.log('Whisker after ' + pnt.whiskerm + '/' + pnt.whiskerp);
 
          // exclude points with negative y when log scale is specified
          if (pmain.logy && (pnt.whiskerm<=0)) continue;
@@ -7300,7 +7291,6 @@
          bars += "M" + center + "," + pnt.y2 + "v" + (pnt.yy2-pnt.y2);
          bars += "M" + pnt.x1 + "," + pnt.yy2 + "h" + (pnt.x2-pnt.x1);
 
-//       console.log('Whisker-: '+ pnt.whiskerm + ' Whisker+:' + pnt.whiskerp);
          //estimate outliers
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
@@ -8282,8 +8272,7 @@
          hist.fYaxis.fXmin = func.fSave[nsave-4] - dy;
          hist.fYaxis.fXmax = func.fSave[nsave-3] + dy;
 
-         var k = 0;
-         for (var j=0;j<=npy;++j)
+         for (var k=0,j=0;j<=npy;++j)
             for (var i=0;i<=npx;++i)
                hist.setBinContent(hist.getBin(i+1,j+1), func.fSave[k++]);
 
