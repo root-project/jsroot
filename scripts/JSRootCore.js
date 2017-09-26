@@ -28,8 +28,12 @@
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
+            'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
+            'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
+            'JSRootPainter.openui5': dir+'JSRootPainter.openui5'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
             'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
@@ -89,7 +93,9 @@
    }
 } (function(JSROOT) {
 
-   JSROOT.version = "5.2.4 25/09/2017";
+   "use strict";
+
+   JSROOT.version = "5.3.0 26/09/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -103,21 +109,19 @@
    // JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
-   JSROOT.browser = { isOpera:false, isFirefox:true, isSafari:false, isChrome:false, isIE:false, isWin:false };
+   JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       var scripts = document.getElementsByTagName('script');
       for (var n = 0; n < scripts.length; ++n) {
-         var src = scripts[n].src;
-         if ((src===undefined) || (typeof src !== 'string')) continue;
+         if (!scripts[n].src || (typeof scripts[n].src !== 'string')) continue;
 
-         var pos = src.indexOf("scripts/JSRootCore.");
+         var pos = scripts[n].src.indexOf("scripts/JSRootCore.");
          if (pos<0) continue;
 
-         JSROOT.source_dir = src.substr(0, pos);
-         JSROOT.source_min = src.indexOf("scripts/JSRootCore.min.js") >= 0;
-
-         JSROOT.source_fullpath = src;
+         JSROOT.source_dir = scripts[n].src.substr(0, pos);
+         JSROOT.source_min = scripts[n].src.indexOf("scripts/JSRootCore.min.js") >= 0;
+         JSROOT.source_fullpath = scripts[n].src;
 
          if ((console!==undefined) && (typeof console.log == 'function'))
             console.log("Set JSROOT.source_dir to " + JSROOT.source_dir + ", " + JSROOT.version);
@@ -133,7 +137,7 @@
       JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
    }
 
-   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari;
+   JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
 
    // default draw styles, can be changed after loading of JSRootCore.js
    // this style also can be changed providing style=itemname in the URL
@@ -148,22 +152,22 @@
          MoveResize : true,   // enable move and resize of elements like statbox, title, pave, colz
          DragAndDrop : true,  // enables drag and drop functionality
          ToolBar : 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
-         CanEnlarge : true,  // if drawing inside particular div can be enrlarged on full window
+         CanEnlarge : true,  // if drawing inside particular div can be enlarged on full window
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat : true,
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
          Palette : 57,
-         MathJax : 0,  // 0 - never, 1 - only for complex cases, 2 - always
+         Latex : 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
+         // MathJax : 0,  // depricated, will be supported till JSROOT 6.0, use Latex variable  0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          NoWebGL : false, // if true, WebGL will be disabled,
-         SVGRenderer : true, // if true, use own SVG renderer, which is faster, but has some limitations
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
-         HierarchyLimit : 250,   // how many items shown on one level of hierarhcy
+         HierarchyLimit : 250,   // how many items shown on one level of hierarchy
 
-         // these are TStyle attributes, which can be chenged via URL 'style' parameter
+         // these are TStyle attributes, which can be changed via URL 'style' parameter
 
          fPadBottomMargin : 0.1,
          fPadTopMargin : 0.1,
@@ -200,13 +204,13 @@
          fOptFit : 0,
          fNumberContours : 20,
          fGridColor : 0,
-         fGridStyle : 11,
+         fGridStyle : 3,
          fGridWidth : 1,
          fFrameFillColor : 0,
-         fFrameLineColor : 1,
          fFrameFillStyle : 1001,
-         fFrameLineStyle : 1,
+         fFrameLineColor : 1,
          fFrameLineWidth : 1,
+         fFrameLineStyle : 1,
          fFrameBorderSize : 1,
          fFrameBorderMode : 0,
          fEndErrorSize : 2,   // size in pixels of end error for E1 draw options
@@ -227,24 +231,6 @@
          kIsZoomed      : JSROOT.BIT(16), // bit set when zooming on Y axis
          kNoTitle       : JSROOT.BIT(17), // don't draw the histogram title
          kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
-   };
-
-   JSROOT.EAxisBits = {
-         kTickPlus      : JSROOT.BIT(9),
-         kTickMinus     : JSROOT.BIT(10),
-         kAxisRange     : JSROOT.BIT(11),
-         kCenterTitle   : JSROOT.BIT(12),
-         kCenterLabels  : JSROOT.BIT(14),
-         kRotateTitle   : JSROOT.BIT(15),
-         kPalette       : JSROOT.BIT(16),
-         kNoExponent    : JSROOT.BIT(17),
-         kLabelsHori    : JSROOT.BIT(18),
-         kLabelsVert    : JSROOT.BIT(19),
-         kLabelsDown    : JSROOT.BIT(20),
-         kLabelsUp      : JSROOT.BIT(21),
-         kIsInteger     : JSROOT.BIT(22),
-         kMoreLogLabels : JSROOT.BIT(23),
-         kDecimals      : JSROOT.BIT(11)
    };
 
    // wrapper for console.log, avoids missing console in IE
@@ -383,7 +369,7 @@
    // This is simple replacement of jQuery.extend method
    // Just copy (not clone) all fields from source to the target object
    JSROOT.extend = function(tgt, src) {
-      if ((src === null) || (typeof src !== 'object')) return src;
+      if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
 
       for (var k in src)
@@ -567,7 +553,7 @@
          res.push(val); return res;
       }
 
-      // try to split ourself, checking quotes and brackes
+      // try to split ourself, checking quotes and brackets
       var nbr = 0, nquotes = 0, ndouble = 0, last = 1;
 
       for (var indx = 1; indx < val.length; ++indx) {
@@ -692,7 +678,8 @@
          if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
       }
 
-      var pthis = this, method = "GET";
+      var pthis = this, method = "GET", async = true, p = kind.indexOf(";sync");
+      if (p>0) { kind.substr(0,p); async = false; }
       if (kind === "head") method = "HEAD"; else
       if ((kind === "multi") || (kind==="posttext")) method = "POST";
 
@@ -751,7 +738,7 @@
          callback(xhr.response);
       }
 
-      xhr.open(method, url, true);
+      xhr.open(method, url, async);
 
       if ((kind == "bin") || (kind == "buf")) xhr.responseType = 'arraybuffer';
 
@@ -761,7 +748,7 @@
       return xhr;
    }
 
-   JSROOT.loadScript = function(urllist, callback, debugout) {
+   JSROOT.loadScript = function(urllist, callback, debugout, from_previous) {
       // dynamic script loader using callback
       // (as loading scripts may be asynchronous)
       // one could specify list of scripts or style files, separated by semicolon ';'
@@ -770,30 +757,30 @@
       // by the position of JSRootCore.js file, which must be loaded by normal methods:
       // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
-      function completeLoad() {
+      delete JSROOT.complete_script_load;
+
+      if (from_previous) {
          if (debugout)
             document.getElementById(debugout).innerHTML = "";
          else
             JSROOT.progress();
 
-         if (urllist)
-            return JSROOT.loadScript(urllist, callback, debugout);
-
-         JSROOT.CallBack(callback);
+         if (!urllist) return JSROOT.CallBack(callback);
       }
 
-      if (!urllist)
-         return completeLoad();
+      if (!urllist) return JSROOT.CallBack(callback);
 
       var filename = urllist, separ = filename.indexOf(";"),
           isrootjs = false, isbower = false;
 
       if (separ>0) {
          filename = filename.substr(0, separ);
-         urllist = urllist.slice(separ+1);
+         urllist = urllist.substr(separ+1);
       } else {
          urllist = "";
       }
+
+      var completeLoad = JSROOT.loadScript.bind(JSROOT, urllist, callback, debugout, true);
 
       if (filename.indexOf('&&&scripts/')===0) {
          isrootjs = true;
@@ -865,17 +852,19 @@
          element.setAttribute('src', filename);
       }
 
+      JSROOT.complete_script_load = completeLoad;
+
       if (element.readyState) { // Internet Explorer specific
          element.onreadystatechange = function() {
             if (element.readyState == "loaded" || element.readyState == "complete") {
                element.onreadystatechange = null;
-               completeLoad();
+               if (JSROOT.complete_script_load) JSROOT.complete_script_load();
             }
          }
       } else { // Other browsers
          element.onload = function() {
             element.onload = null;
-            completeLoad();
+            if (JSROOT.complete_script_load) JSROOT.complete_script_load();
          }
       }
 
@@ -886,12 +875,16 @@
       // one could specify kind of requirements
       //     'io'  TFile functionality
       //   'tree'  TTree support
-      //     '2d'  basic 2d graphic (TCanvas, TH1)
-      // 'more2d'  extra 2d graphic (TH2, TGraph)
+      //     '2d'  basic 2d graphic (TCanvas/TPad/TFrame)
+      //     '3d'  basic 3d graphic (three.js)
+      //   'hist'  histograms 2d graphic
+      // 'hist3d'  histograms 3d graphic
+      // 'more2d'  extra 2d graphic (TGraph, TF1)
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
-      //   'jq2d'  jQuery-dependend part of 2d graphic
-      //     '3d'  histograms 3d graphic
+      // 'hierarchy' hierarchy browser
+      //   'jq2d'  jQuery-dependent part of hierarchy
+      // 'openui5'  OpenUI5 and related functionality
       //   'geom'  TGeo support
       // 'simple'  for basic user interface
       //  'load:'  list of user-specific scripts at the end of kind string
@@ -924,7 +917,6 @@
          jsroot.AssertPrerequisites('__next__');
       }
 
-
       jsroot.doing_assert[0].running = true;
 
       if (kind[kind.length-1]!=";") kind+=";";
@@ -933,7 +925,7 @@
           need_jquery = false,
           use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
-          extrafiles = "", // scripts for direct loadin
+          extrafiles = "", // scripts for direct loading
           modules = [],  // modules used for require.js
           load_callback = normal_callback;
 
@@ -956,7 +948,7 @@
             modules.push('JSRootTree');
          }
 
-      if ((kind.indexOf('2d;')>=0) || (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
+      if ((kind.indexOf('2d;')>=0) || (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
          if (jsroot._test_d3_ === undefined) {
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
                jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.4", debugout);
@@ -975,7 +967,7 @@
                jsroot._test_d3_ = 4;
             }
          }
-         if (jsroot.sources.indexOf("2d")<0) {
+         if (jsroot.sources.indexOf("2d") < 0) {
             modules.push('JSRootPainter');
             mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
             extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
@@ -989,16 +981,30 @@
 
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
-      if ((kind.indexOf('more2d;')>=0) || (kind.indexOf("3d;")>=0))
-         if (jsroot.sources.indexOf("more2d")<0) {
-            mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
-            modules.push('JSRootPainter.more');
-         }
+      if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
+         modules.push('JSRootPainter.hist');
+      }
 
-      if ((kind.indexOf('jq2d;')>=0) && (jsroot.sources.indexOf("jq2d")<0)) {
+      if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.more' + ext + ".js;";
+         modules.push('JSRootPainter.more');
+      }
+
+      if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0) || (kind.indexOf('openui5;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hierarchy' + ext + ".js;";
+         modules.push('JSRootPainter.hierarchy');
+      }
+
+      if (((kind.indexOf('jq2d;')>=0) || (kind.indexOf('openui5;')>=0)) && (jsroot.sources.indexOf("jq2d")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
          modules.push('JSRootPainter.jquery');
          need_jquery = true;
+      }
+
+      if ((kind.indexOf('openui5;')>=0) && (jsroot.sources.indexOf("openui5")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.openui5' + ext + ".js;";
+         modules.push('JSRootPainter.openui5');
       }
 
       if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
@@ -1007,6 +1013,11 @@
          modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
+      }
+
+      if ((kind.indexOf('hist3d;')>=0) && (jsroot.sources.indexOf("hist3d")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.hist3d' + ext + ".js;";
+         modules.push('JSRootPainter.hist3d');
       }
 
       if ((kind.indexOf("geom;")>=0) && (jsroot.sources.indexOf("geom")<0)) {
@@ -1020,6 +1031,7 @@
       }
 
       if (kind.indexOf("mathjax;")>=0) {
+
          if (typeof MathJax == 'undefined') {
             mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://root.cern/js/mathjax/latest/MathJax.js") +
                            "?config=TeX-AMS-MML_SVG&delayStartupUntil=configured";
@@ -1043,7 +1055,6 @@
                normal_callback();
             }
          }
-         if (jsroot.gStyle.MathJax == 0) jsroot.gStyle.MathJax = 1;
       }
 
       if (kind.indexOf("simple;")>=0) {
@@ -1108,7 +1119,7 @@
 
    // function can be used to draw supported ROOT classes,
    // required functionality will be loaded automatically
-   // if painter pointer required, one should load '2d' functionlity itself
+   // if painter pointer required, one should load '2d' functionality itself
    // or use callback function which provides painter pointer as first argument
    JSROOT.draw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
@@ -1136,33 +1147,29 @@
 
       var debugout = null,
           nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
-          requirements = "io;2d;",
+          requirements = "2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
 
       if (JSROOT.GetUrlOption('libs')!==null) JSROOT.use_full_libs = true;
 
       if (simplegui) {
          debugout = 'simpleGUI';
-         if ((JSROOT.GetUrlOption('json')!=null) &&
-             (JSROOT.GetUrlOption('file')==null) &&
-             (JSROOT.GetUrlOption('files')==null)) requirements = "2d;";
+         if (JSROOT.GetUrlOption('file') || JSROOT.GetUrlOption('files')) requirements += "io;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
-      } else
-      if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI'; requirements = "2d;"; } else
-      if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; requirements = "2d;"; nobrowser = true; }
+      } else if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI';
+      } else if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; nobrowser = true;
+      } else requirements += "io;";
 
       if (user_scripts == 'check_existing_elements') {
          user_scripts = null;
          if (debugout == null) return;
       }
 
-      if (!nobrowser) requirements += 'jq2d;simple;';
+      if (!nobrowser) requirements += 'jq2d;';
 
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("autoload");
-      if (user_scripts == null) user_scripts = JSROOT.GetUrlOption("load");
+      if (!user_scripts) user_scripts = JSROOT.GetUrlOption("autoload") || JSROOT.GetUrlOption("load");
 
-      if (user_scripts != null)
-         requirements += "load:" + user_scripts + ";";
+      if (user_scripts) requirements += "load:" + user_scripts + ";";
 
       JSROOT.AssertPrerequisites(requirements, function() {
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
@@ -1311,12 +1318,25 @@
             JSROOT.Create("TAttFill", obj);
             JSROOT.Create("TAttMarker", obj);
             JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fHistogram: null,
-                                 fMaxSize: 0, fMaximum:-1111, fMinimum:-1111, fNpoints: 0, fX: [], fY: [] });
+                                 fMaxSize: 0, fMaximum: -1111, fMinimum: -1111, fNpoints: 0, fX: [], fY: [] });
+            break;
+         case 'TGraphAsymmErrors':
+            JSROOT.Create("TGraph", obj);
+            JSROOT.extend(obj, { fEXlow: [], fEXhigh: [], fEYlow: [], fEYhigh: []});
             break;
          case 'TMultiGraph':
             JSROOT.Create("TNamed", obj);
             JSROOT.extend(obj, { fFunctions: JSROOT.Create("TList"), fGraphs: JSROOT.Create("TList"),
                                  fHistogram: null, fMaximum: -1111, fMinimum: -1111 });
+            break;
+         case 'TGraphPolargram':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.extend(obj, { fRadian: true, fDegree: false, fGrad: false, fPolarLabelColor: 1, fRadialLabelColor: 1,
+                                 fAxisAngle: 0, fPolarOffset: 0.04, fPolarTextSize: 0.04, fRadialOffset: 0.025, fRadialTextSize: 0.035,
+                                 fRwrmin: 0, fRwrmax: 1, fRwtmin: 0, fRwtmax: 2*Math.PI, fTickpolarSize: 0.02,
+                                 fPolarLabelFont: 62, fRadialLabelFont: 62, fCutRadial: 0, fNdivRad: 508, fNdivPol: 508 });
             break;
          case 'TPolyLine':
             JSROOT.Create("TObject", obj);
@@ -1327,11 +1347,11 @@
          case 'TGaxis':
             JSROOT.Create("TLine", obj);
             JSROOT.Create("TAttText", obj);
-            JSROOT.extend(obj, { _fChopt: "", fFunctionName: "", fGridLength: 0,
-                                  fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
-                                  fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
-                                  fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
-                                  fWmax: 100, fWmin: 0 });
+            JSROOT.extend(obj, { fChopt: "", fFunctionName: "", fGridLength: 0,
+                                 fLabelColor: 1, fLabelFont: 42, fLabelOffset: 0.005, fLabelSize: 0.035,
+                                 fName: "", fNdiv: 12, fTickSize: 0.02, fTimeFormat: "",
+                                 fTitle: "", fTitleOffset: 1, fTitleSize: 0.035,
+                                 fWmax: 100, fWmin: 0 });
             break;
          case 'TAttPad':
             JSROOT.extend(obj, { fLeftMargin: JSROOT.gStyle.fPadLeftMargin,
@@ -1340,10 +1360,10 @@
                                  fTopMargin: JSROOT.gStyle.fPadTopMargin,
                                  fXfile: 2, fYfile: 2, fAfile: 1, fXstat: 0.99, fYstat: 0.99, fAstat: 2,
                                  fFrameFillColor: JSROOT.gStyle.fFrameFillColor,
-                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
                                  fFrameFillStyle: JSROOT.gStyle.fFrameFillStyle,
-                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
+                                 fFrameLineColor: JSROOT.gStyle.fFrameLineColor,
                                  fFrameLineWidth: JSROOT.gStyle.fFrameLineWidth,
+                                 fFrameLineStyle: JSROOT.gStyle.fFrameLineStyle,
                                  fFrameBorderSize: JSROOT.gStyle.fFrameBorderSize,
                                  fFrameBorderMode: JSROOT.gStyle.fFrameBorderMode });
             break;
@@ -1546,7 +1566,7 @@
 
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
-            this.fLines.Add({ _typename: 'TText', fTitle: txt, fTextColor: 1 });
+            this.fLines.Add({ _typename: 'TLatex', fTitle: txt, fTextColor: 1 });
          }
          m.Clear = function() {
             this.fLines.Clear();
@@ -1634,19 +1654,25 @@
             return this._func(x, y);
          }
          m.GetParName = function(n) {
-            if (('fFormula' in this) && ('fParams' in this.fFormula)) return this.fFormula.fParams[n].first;
-            if ('fNames' in this) return this.fNames[n];
-            return "Par"+n;
+            if (this.fFormula && this.fFormula.fParams) return this.fFormula.fParams[n].first;
+            if (this.fNames && this.fNames[n]) return this.fNames[n];
+            return "p"+n;
          }
          m.GetParValue = function(n) {
-            if (('fFormula' in this) && ('fClingParameters' in this.fFormula)) return this.fFormula.fClingParameters[n];
-            if (('fParams' in this) && (this.fParams!=null))  return this.fParams[n];
-            return null;
+            if (this.fFormula && this.fFormula.fClingParameters) return this.fFormula.fClingParameters[n];
+            if (this.fParams) return this.fParams[n];
+            return undefined;
+         }
+         m.GetParError = function(n) {
+            return this.fParErrors ? this.fParErrors[n] : undefined;
+         }
+         m.GetNumPars = function() {
+            return this.fNpar;
          }
       }
 
-      if ((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) {
-         // check if point inside figure specified by the TGrpah
+      if (((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) && (typename != "TGraphPolargram") && (typename != "TGraphTime")) {
+         // check if point inside figure specified by the TGraph
          m.IsInside = function(xp,yp) {
             var i, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
 
@@ -1678,7 +1704,7 @@
             return Math.sqrt(Math.abs(this.fArray[bin]));
          };
          m.setBinContent = function(bin, content) {
-            // Set bin content - only trival case, without expansion
+            // Set bin content - only trivial case, without expansion
             this.fEntries++;
             this.fTsumw = 0;
             if ((bin>=0) && (bin<this.fArray.length))
@@ -1778,9 +1804,7 @@
             if (this.fErrorMode === EErrorType.kERRORSPREADG)
                return 1.0/Math.sqrt(sum);
             // compute variance in y (eprim2) and standard deviation in y (eprim)
-            var contsum = cont/sum;
-            var eprim2  = Math.abs(err2/sum - contsum*contsum);
-            var eprim   = Math.sqrt(eprim2);
+            var contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
             if (this.fErrorMode === EErrorType.kERRORSPREADI) {
                if (eprim != 0) return eprim/Math.sqrt(neff);
                // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
@@ -1802,6 +1826,11 @@
             if (this.fNbins <= 0) return 0;
             if ((this.fXbins.length > 0) && (bin > 0) && (bin <= this.fNbins)) return this.fXbins[bin-1];
             return this.fXmin + (bin-1) * (this.fXmax - this.fXmin) / this.fNbins;
+         }
+         m.GetBinCenter = function(bin) {
+            if (this.fNbins <= 0) return 0;
+            if ((this.fXbins.length > 0) && (bin > 0) && (bin < this.fNbins)) return (this.fXbins[bin-1] + this.fXbins[bin])/2;
+            return this.fXmin + (bin-0.5) * (this.fXmax - this.fXmin) / this.fNbins;
          }
       }
 
@@ -1938,12 +1967,15 @@
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
       if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
-      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "jq2d;";
+      if (JSROOT.GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
+      if (JSROOT.GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
+      if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";
       if (JSROOT.GetUrlOption('more2d', src)!=null) prereq += "more2d;";
       if (JSROOT.GetUrlOption('geom', src)!=null) prereq += "geom;";
       if (JSROOT.GetUrlOption('3d', src)!=null) prereq += "3d;";
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
+      if (JSROOT.GetUrlOption('openui5', src)!=null) prereq += "openui5;";
       var user = JSROOT.GetUrlOption('load', src),
           onload = JSROOT.GetUrlOption('onload', src),
           bower = JSROOT.GetUrlOption('bower', src);

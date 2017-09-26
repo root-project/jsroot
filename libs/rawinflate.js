@@ -8,7 +8,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( ['JSRootCore'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -20,12 +19,11 @@
       if (typeof JSROOT.ZIP !== 'undefined')
          throw new Error('JSROOT.ZIP already exists', 'rawinflate.js');
 
-      // Browser globals
       factory(JSROOT);
    }
 } (function(JSROOT) {
 
-
+   "use strict";
 
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0.0.1

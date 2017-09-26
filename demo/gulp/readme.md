@@ -8,9 +8,9 @@ Following steps are required:
 
 ## Correctly provide JSROOT location in bower.json file
 
-In the example 5.2.0 version of JSROOT is used.
+In the example 5.3.0 version of JSROOT is used.
 
-    "dependencies": { "jsroot": "^5.2.0" }
+    "dependencies": { "jsroot": "^5.3.0" }
 
 For experimental purposes one can configure local checkout of jsroot
 

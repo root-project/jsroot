@@ -3,7 +3,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -23,17 +22,19 @@
    }
 } (function( JSROOT, THREE, ThreeBSP ) {
 
+   "use strict";
+
    /** @namespace JSROOT.GEO */
    /// Holder of all TGeo-related functions and classes
    JSROOT.GEO = {
-         GradPerSegm: 6,     // grad per segment in cylined/spherical symetry shapes
+         GradPerSegm: 6,     // grad per segment in cylinder/spherical symmetry shapes
          CompressComp: true,  // use faces compression in composite shapes
          CompLimit: 20        // maximal number of components in composite shape
     };
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.BITS = {
-         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overidden
+         kVisOverride     : JSROOT.BIT(0),           // volume's vis. attributes are overwritten
          kVisNone         : JSROOT.BIT(1),           // the volume/node is invisible, as well as daughters
          kVisThis         : JSROOT.BIT(2),           // this volume/node is visible
          kVisDaughters    : JSROOT.BIT(3),           // all leaves are visible
@@ -260,7 +261,7 @@
                                                               nx4,ny4,nz4,
                                                               reduce) {
      // same as AddFace4, assign normals for each individual vertex
-     // reduce has same meening and should be the same
+     // reduce has same meaning and should be the same
 
       if (this.last4 && reduce)
          return console.error('missmatch between AddFace4 and SetNormal4 calls');
@@ -430,7 +431,7 @@
                                                             x3,y3,z3,
                                                             x4,y4,z4,
                                                             reduce) {
-      // from four vertices one normaly creates two faces (1,2,3) and (1,3,4)
+      // from four vertices one normally creates two faces (1,2,3) and (1,3,4)
       // if (reduce==1), first face is reduced
       //  if (reduce==2), second face is reduced
 
@@ -671,7 +672,7 @@
             4,5,1,   1,0,4,   6,2,1,   1,5,6,
             7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
-      // detect same vertecies on both Z-layers
+      // detect same vertices on both Z-layers
       for (var side=0;side<vertices.length;side += vertices.length/2)
          for (var n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
             for (var n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
@@ -824,7 +825,7 @@
              s = (side===0) ? 1 : -1,
              d1 = 1 - side, d2 = 1 - d1;
 
-         // use direct algorithm for the sphere - here normals and position can be calculated direclty
+         // use direct algorithm for the sphere - here normals and position can be calculated directly
          for (var k=0;k<heightSegments;++k) {
 
             var k1 = k + d1, k2 = k + d2;
@@ -1188,7 +1189,7 @@
       for (var layer=0; layer < shape.fNz; ++layer)
          if (shape.fRmin[layer] > 0) hasrmin = true;
 
-      // return very rought estimation, number of faces may be much less
+      // return very rough estimation, number of faces may be much less
       if (faces_limit < 0) return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
 
       // coordinate of point on cut edge (x,z)
@@ -1250,7 +1251,7 @@
 
          } else {
             // let three.js calculate our faces
-            // console.log('trinagulate polygon ' + shape.fShapeId);
+            // console.log('triangulate polygon ' + shape.fShapeId);
             cut_faces = THREE.ShapeUtils.triangulateShape(pnts, []);
          }
          numfaces += cut_faces.length*2;
@@ -1356,7 +1357,7 @@
       for (var vert = 0; vert < shape.fNvert; ++vert)
          pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
-      // console.log('trinagulate Xtru ' + shape.fShapeId);
+      // console.log('triangulate Xtru ' + shape.fShapeId);
       var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
       if (faces.length < pnts.length-2) {
          JSROOT.GEO.warn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
@@ -1477,8 +1478,8 @@
                              lastr*_cos[seg+1],  lastr*_sin[seg+1], lastz,
                              radius*_cos[seg+1], radius*_sin[seg+1], layerz, skip);
 
-            // use analitic normal values when open/closing parabaloid around 0
-            // cutted faces (top or bottom) set with simple normal
+            // use analytic normal values when open/closing paraboloid around 0
+            // cut faces (top or bottom) set with simple normal
             if ((skip===0) || ((layer===1) && (rmin===0)) || ((layer===heightSegments+1) && (rmax===0)))
                creator.SetNormal4(nxy*_cos[seg],       nxy*_sin[seg],       nz,
                                   lastnxy*_cos[seg],   lastnxy*_sin[seg],   lastnz,
@@ -1879,6 +1880,85 @@
       return limit < 0 ? 0 : null;
    }
 
+   /** Provides info about geo object, used for tooltip info */
+   JSROOT.GEO.provideInfo = function(obj) {
+      var info = [], shape = null;
+
+      if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
+      if (obj.fShape !== undefined) shape = obj.fShape; else
+      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) shape = obj;
+
+      if (!shape) {
+         info.push(obj._typename);
+         return info;
+      }
+
+      var sz = Math.max(shape.fDX, shape.fDY, shape.fDZ);
+      var useexp = (sz>1e7) || (sz<1e-7);
+
+      function conv(v) {
+         if (v===undefined) return "???";
+         if ((v==Math.round(v) && v<1e7)) return Math.round(v);
+         return useexp ? v.toExponential(4) : v.toPrecision(7);
+      }
+
+      info.push(shape._typename);
+
+      info.push("DX="+conv(shape.fDX) + " DY="+conv(shape.fDY) + " DZ="+conv(shape.fDZ));
+
+      switch (shape._typename) {
+         case "TGeoBBox": break;
+         case "TGeoPara": info.push("Alpha=" + shape.fAlpha + " Phi=" + shape.fPhi + " Theta=" + shape.fTheta); break;
+         case "TGeoTrd2": info.push("Dy1=" + conv(shape.fDy1) + " Dy2=" + conv(shape.fDy1));
+         case "TGeoTrd1": info.push("Dx1=" + conv(shape.fDx1) + " Dx2=" + conv(shape.fDx1)); break;
+         case "TGeoArb8": break;
+         case "TGeoTrap": break;
+         case "TGeoGtra": break;
+         case "TGeoSphere":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+            info.push("Theta1=" + shape.fTheta1 + " Theta2=" + shape.fTheta2);
+            break;
+         case "TGeoConeSeg":
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         case "TGeoCone":
+            info.push("Rmin1=" + conv(shape.fRmin1) + " Rmax1=" + conv(shape.fRmax1));
+            info.push("Rmin2=" + conv(shape.fRmin2) + " Rmax2=" + conv(shape.fRmax2));
+            break;
+         case "TGeoCtub":
+         case "TGeoTubeSeg":
+            info.push("Phi1=" + shape.fPhi1 + " Phi2=" + shape.fPhi2);
+         case "TGeoEltu":
+         case "TGeoTube":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            break;
+         case "TGeoTorus":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("Phi1=" + shape.fPhi1 + " Dphi=" + shape.fDphi);
+            break;
+         case "TGeoPcon":
+         case "TGeoPgon": break;
+         case "TGeoXtru": break;
+         case "TGeoParaboloid":
+            info.push("Rlo=" + conv(shape.fRlo) + " Rhi=" + conv(shape.fRhi));
+            info.push("A=" + conv(shape.fA) + " B=" + conv(shape.fB));
+            break;
+         case "TGeoHype":
+            info.push("Rmin=" + conv(shape.fRmin) + " Rmax=" + conv(shape.fRmax));
+            info.push("StIn=" + conv(shape.fStIn) + " StOut=" + conv(shape.fStOut));
+            break;
+         case "TGeoCompositeShape": break;
+         case "TGeoShapeAssembly": break;
+         case "TGeoScaledShape":
+            info = JSROOT.GEO.provideInfo(shape.fShape);
+            if (shape.fScale)
+               info.unshift('Scale X=' + shape.fScale.fScale[0] + " Y=" + shape.fScale.fScale[1] + " Z=" + shape.fScale.fScale[2]);
+            break;
+      }
+
+      return info;
+   }
+
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
       var cameraProjectionMatrix = new THREE.Matrix4();
@@ -1945,7 +2025,7 @@
          if (this.containsPoint(pnt)) cnt++;
          pnt.set(box.max.x, box.max.y, box.max.z);
          if (this.containsPoint(pnt)) cnt++;
-         return cnt>5; // only if 6 edges and more are seen, we think that box is fully visisble
+         return cnt>5; // only if 6 edges and more are seen, we think that box is fully visible
       }
 
       return frustum;
@@ -2020,7 +2100,7 @@
    JSROOT.GEO.ClonedNodes = function(obj, clones) {
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
-      this.maxdepth = 1; // maximal hierarchy depth, required for transparancy
+      this.maxdepth = 1; // maximal hierarchy depth, required for transparency
 
       if (obj) {
          if (obj.$geoh) this.toplevel = false;
@@ -2109,7 +2189,7 @@
           sortarr.push(node); // array use to produce sortmap
        }
 
-       // than fill childrens lists
+       // than fill children lists
        for (var n=0;n<this.origin.length;++n) {
           var obj = this.origin[n], clone = this.nodes[n];
 
@@ -2149,7 +2229,7 @@
 
           if (!chlds) continue;
 
-          // in cloned object childs is only list of ids
+          // in cloned object children is only list of ids
           clone.chlds = new Int32Array(chlds.length);
           for (var k=0;k<chlds.length;++k)
              clone.chlds[k] = chlds[k]._refid;
@@ -2162,7 +2242,7 @@
        // do sorting once
        sortarr.sort(function(a,b) { return b.vol - a.vol; });
 
-       // rememember sort map
+       // remember sort map
        this.sortmap = new Int32Array(this.nodes.length);
        for (var n=0;n<this.nodes.length;++n)
           this.sortmap[n] = sortarr[n].id;
@@ -2382,7 +2462,7 @@
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
-      // also set renderOrder, required to handle transperancy
+      // also set renderOrder, required to handle transparency
 
       var node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = (typeof options == 'object') || (options==='force');
@@ -2423,7 +2503,7 @@
          // add the mesh to the scene
          three_prnt.add(obj3d);
 
-         // this is only for debugging - test invertion of whole geometry
+         // this is only for debugging - test inversion of whole geometry
          if ((lvl==0) && (typeof options == 'object') && options.scale) {
             if ((options.scale.x<0) || (options.scale.y<0) || (options.scale.z<0)) {
                obj3d.scale.copy(options.scale);
@@ -2465,7 +2545,7 @@
 
    JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
       if (!this.sortmap) {
-         console.error('sorting map not exisits');
+         console.error('sorting map do not exist');
          return { min: 0, max: 1 };
       }
 
@@ -2607,7 +2687,7 @@
          var entry = lst[i];
          var shape = this.GetNodeShape(entry.nodeid);
 
-         if (!shape) continue; // strange, but avoid missleading
+         if (!shape) continue; // strange, but avoid misleading
 
          if (shape._id === undefined) {
             shape._id = shapes.length;
@@ -2756,7 +2836,7 @@
    }
 
    JSROOT.GEO.createFlippedMesh = function(parent, shape, material) {
-      // when transformation matrix includes one or several invertion of axis,
+      // when transformation matrix includes one or several inversion of axis,
       // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
       var flip =  new THREE.Vector3(1,1,-1);
@@ -2832,7 +2912,7 @@
       }
 
       function traverse(obj, lvl, arr) {
-         // traverse hierarchy and extract all childs of given level
+         // traverse hierarchy and extract all children of given level
          // if (obj.$jsroot_depth===undefined) return;
 
          if (!obj.children) return;
@@ -2854,7 +2934,7 @@
       }
 
       function sort(arr, minorder, maxorder) {
-         // resort meshes using reycaster and camera position
+         // resort meshes using ray caster and camera position
          // idea to identify meshes which are in front or behind
 
          if (arr.length>300) {
@@ -3063,7 +3143,7 @@
 
       var frustum = null;
 
-      // collect visisble nodes
+      // collect visible nodes
       var res = clones.CollectVisibles(opt.numfaces, frustum, opt.numnodes);
 
       var draw_nodes = res.lst;
@@ -3115,7 +3195,7 @@
          }
 
          obj3d.add(mesh);
-         // specify rendering order, required for transparancy handling
+         // specify rendering order, required for transparency handling
          //if (obj3d.$jsroot_depth !== undefined)
          //   mesh.renderOrder = clones.maxdepth - obj3d.$jsroot_depth;
          //else

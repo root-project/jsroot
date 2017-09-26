@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+
+   <head>
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta charset="utf-8">
+
+      <title>Nav Container with JSROOT drawings</title>
+
+      <script type="text/javascript" src="../../scripts/JSRootCore.js"></script>
+
+      <!-- Application launch configuration -->
+      <script>
+
+      JSROOT.AssertPrerequisites('openui5', function() {
+         // from here you can use  JSROOT.sap variable like
+
+         jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "./");
+
+         var oModel1 = new sap.ui.model.json.JSONModel({ 
+            filename: "https://root.cern/js/files/hsimple.root", 
+            itemname: "hpx", 
+            opt: "" 
+         });
+         sap.ui.getCore().setModel(oModel1, "panel1");
+
+         var oModel2 = new sap.ui.model.json.JSONModel({ 
+            filename: "https://root.cern/js/files/hsimple.root", 
+            itemname: "hpxpy", 
+            opt: "lego2" 
+         });
+         sap.ui.getCore().setModel(oModel2, "panel2");
+
+         var oModel3 = new sap.ui.model.json.JSONModel({ 
+            filename: "https://root.cern/js/files/zdemo.root", 
+            itemname: "zdemo", 
+            opt: "" 
+         });
+         sap.ui.getCore().setModel(oModel3, "panel3");
+
+         var oModel4 = new sap.ui.model.json.JSONModel({ 
+            jsonfilename: "https://root.cern/js/files/simple_alice.json.gz", 
+            opt: "" 
+         });
+         sap.ui.getCore().setModel(oModel4, "panel4");
+
+         new JSROOT.sap.m.App ({
+            pages: [
+               new JSROOT.sap.m.Page({
+                  title: "Nav Container",
+                  enableScrolling : true,
+                  content: [ new sap.ui.core.ComponentContainer({
+                     name : "sap.m.sample.NavContainer"
+                  })]
+               })
+            ]
+         }).placeAt("content");
+      });
+
+      </script>
+   </head>
+
+   <!-- UI Content -->
+   <body class="sapUiBody" id="content" role="application">
+   </body>
+
+</html>

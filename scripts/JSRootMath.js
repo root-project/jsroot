@@ -6,7 +6,6 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      // AMD. Register as an anonymous module.
       define( ['JSRootCore'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -22,6 +21,8 @@
    }
 } (function(JSROOT) {
    // math methods for Javascript ROOT
+
+   "use strict";
 
    JSROOT.sources.push("math");
 
@@ -262,6 +263,10 @@
       if ( code != 0 )
          x = -x;
       return( x );
+   };
+
+   JSROOT.Math.normal_quantile = function(z, sigma) {
+      return  sigma * JSROOT.Math.ndtri(z);
    };
 
    /** @memberOf JSROOT.Math */

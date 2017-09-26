@@ -239,7 +239,7 @@
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
-               return JSROOT.AssertPrerequisites("2d", function() { RunBigTest(0); });
+               return JSROOT.AssertPrerequisites("2d;hierarchy", function() { RunBigTest(0); });
             }
 
             if (!keyid) return; // this is indication of test break
@@ -273,7 +273,7 @@
                 if ((filename.indexOf("http:")<0) && (filename.indexOf("https:")<0)) filename = filepath + filename; 
             }
             if (entry.item) itemname = entry.item;
-            if (entry.opt) opt = entry.opt;
+            if (entry.testopt !== undefined) opt = entry.testopt; else if (entry.opt) opt = entry.opt;
             if (entry.json) {
                jsonname = entry.json;
                if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
@@ -286,6 +286,7 @@
                url += "&items=[" + entry.items.join(",") + "]";
                if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                if (entry.mathjax) url += "&mathjax";
+               if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
             } else
             if (entry.asurl) {
@@ -293,6 +294,7 @@
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
                url += itemname + "&opt=" + opt;
                if (entry.mathjax) url += "&mathjax"; 
+               if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
             }
             
@@ -375,7 +377,7 @@
             }
             
             // all painter assigned to viewer element will be automatically informed about resize 
-            JSROOT.AssertPrerequisites("2d", function() {
+            JSROOT.AssertPrerequisites("2d;hierarchy", function() {
                JSROOT.RegisterForResize('viewer');
             });
             
@@ -418,6 +420,7 @@
                         url += "&items=[" + entry.items.join(",") + "]";
                         if (entry.opts) url += "&opts=[" + entry.opts.join(",") + "]";
                         if (entry.mathjax) url += "&mathjax";
+                        if (entry.latex) url += "&latex=" + entry.latex;
                         if (entry.style) url += "&style=" + entry.style;
                      }
                   }
@@ -444,6 +447,7 @@
                         url = prefix + "file=" + filename + "&item=" + itemname;
                      if (entry.style) url += "&style=" + entry.style;
                      if (entry.mathjax) url += "&mathjax";
+                     if (entry.latex) url += "&latex="+entry.latex;
                   }
 
                   if (url) 

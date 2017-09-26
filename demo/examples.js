@@ -7,6 +7,7 @@ examples_main = {
      { opt: "L", title: "draw histogram as line" },
      { name: "LF2", opt:"LF2,fill_blue", title: "draw histogram as line with filled area" },
      { name: "B", opt:"B,fill_red", title: "draw histogram as bar chart" },
+     { opt: "A", title: "disables axes drawing" },
      { opt: "E" },
      { opt: "E0", title: "draw errors, also for empty bins" },
      { opt: "E1" },
@@ -25,12 +26,13 @@ examples_main = {
      { opt: "col" },
      { opt: "colpal77", title: "example how color palette 77 can be used for drawing" },
      { opt: "colz", title: "color draw with palette" },
+     { opt: "acol", title: "disable axes drawing with col option" },
      { opt: "arr", title: "ARR draw option" },
-     { opt: "cont", title: "Contor plot" },
-     { opt: "cont1", title: "Contor plot with different line colors" },
-     { opt: "cont2", title: "Contor plot with different line styles" },
-     { opt: "cont3", title: "Contor plot with just lines" },
-     { opt: "cont4", title: "Contor plot with background color" },
+     { opt: "cont", title: "Contour plot" },
+     { opt: "cont1", title: "Contour plot with different line colors" },
+     { opt: "cont2", title: "Contour plot with different line styles" },
+     { opt: "cont3", title: "Contour plot with just lines" },
+     { opt: "cont4", title: "Contour plot with background color" },
      { opt: "surf", title: "3D plot with surf option" },
      { opt: "surf1", title: "3D SURF plot with colors levels" },
      { opt: "surf2", title: "3D colored SURF without lines" },
@@ -56,6 +58,7 @@ examples_main = {
       { opt: "col0z", title: "suppress empty bins with 0 option" },
       { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
       { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
+      { name: "fibonacci", file: "tutorials_hist.root", item: 'Fibonacci',  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" }
    ],
    TH3 : [
      { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
@@ -91,7 +94,8 @@ examples_main = {
    THStack : [
      { opt: "", file: "histpainter6.root", item: "draw_hstack;1", title: "several examples from THistPainter docu" },
      { name: "nostackb", item: "draw_nostackb;1", title: "example of bar chart with stacked histograms" },
-     { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" }
+     { name: "err", item: "draw_stacke;1", title: "error draw options for stacked histograms" },
+     { name: "lego", file: "tutorials_hist.root", item: 'multicolor', title: "Several histograms with different colors, tutorials/hist/multicolor.C" }
    ],
    TF1 : [
      { name: "hist+func", opt: "", url: "?nobrowser&file=$$$fillrandom.root&item=h1f;1+sqroot;1" },
@@ -100,11 +104,16 @@ examples_main = {
      { name: "ff2", file: "ff2.root", item: "c1Dia;1" },
      { name: "ff3", file: "ff3.root", item: "c1Dia;1" }
    ],
+   TF2 : [
+     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" },
+     { name: "3d", file: "tutorials_graphs.root", item: "annotation3d", title: "Output of tutorials/graphs/annotation3d.C" },
+     { name: "pnt", file: "tutorials_graphs.root", item: "graph2derrorsfit", title: "Combination of TF2 and TGraph2DErrors, output of tutorials/graphs/graph2derrorsfit.C" },
+   ],
    TCanvas : [
      { name:"roofit", file: "rf107.root", item: "rf107_plotstyles;1" },
      { name:"subpad", url: "?nobrowser&file=$$$rf107.root&item=rf107_plotstyles;1/[0]", title: "Draw only selected sub-pad from list of TCanvas list of primitives"  },
      { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
-     { name:"legend", asurl: true, file: "legends.root", item: "legends;1", mathjax: true, title: "TCanvas with TLegend, use MathJax.js" },
+     { name:"legend", asurl: true, file: "legends.root", item: "legends;1", latex: "mathjax", title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
      { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
    ],
@@ -125,15 +134,18 @@ examples_main = {
      { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz;black,projx;black]", title: "Simple ALICE geometry and two projections" }
    ],
    TGraph : [
-     { opt:"", file: "graph.root", item: "Graph;1" },
-     { opt:"L" },
-     { opt:"AX+Y+L" },
-     { opt:"P" },
-     { name:"star", opt:"*" },
-     { opt:"LP" },
-     { opt:"B" },
-     { opt:"B1" },
-     { name:"docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" }
+     { opt: "", file: "graph.root", item: "Graph;1" },
+     { opt: "L" },
+     { opt: "AX+Y+L" },
+     { opt: "P" },
+     { name: "star", opt:"*" },
+     { opt: "LP" },
+     { opt: "B" },
+     { opt: "B1" },
+     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
+     { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
+     { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
+     { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
    ],
    TGraphErrors : [
      { opt:"", file: "graph.root", item: "GraphErrors;1" },
@@ -159,24 +171,29 @@ examples_main = {
      { opt:"[]" , title: "do not draw main error lines, only ends as brackets"},
      { opt:"2", title: "filled rec"  }
    ],
+   TGraphPolar : [
+      { opt: "", file: "tutorials_graphs.root", item: "graphpolar", title: "Polar coordinates, output of tutorials/graphs/graphpolar.C" },
+      { name: "tut2", item: "graphpolar2", title: "Polar coordinates, output of tutorials/graphs/graphpolar2.C" },
+      { name: "tut3", item: "graphpolar3", title: "Polar coordinates, output of tutorials/graphs/graphpolar3.C" }
+   ],
    TMultiGraph : [
-     { name:"exclusion", file: "graph.root", item: "exclusion;1" },
-     { name:"c1", file: "multigraph.root", item: "c1;1" },
-     { name:"c2", item: "c2;1" },
-     { name:"c3", item: "c3;1" },
-     { name:"c4", item: "c4;1" },
-     { name:"c5", item: "c5;1" },
-     { name:"all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
+     { name: "exclusion", file: "graph.root", item: "exclusion;1" },
+     { name: "c1", file: "multigraph.root", item: "c1;1" },
+     { name: "c2", item: "c2;1" },
+     { name: "c3", item: "c3;1" },
+     { name: "c4", item: "c4;1" },
+     { name: "c5", item: "c5;1" },
+     { name: "all", url: "?nobrowser&file=$$$multigraph.root&layout=grid3x2&items=[c1,c2,c3,c4,c5]" }
    ],
    TGraph2D : [
-      { opt:"", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
-      { name:"pcol", item: "pcol", title: "example of TGraph2D, color options" },
-      { opt:"err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
+      { opt: "", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
+      { name: "pcol", item: "pcol", title: "example of TGraph2D, color options" },
+      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
    ],
    TLatex : [
-     { name:"text", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Without MathJax.js rendering" },
-     { name:"latex", file: "latex.root", layout: "grid2x2", mathjax: true, items: ['lva','ex1','ex2','ex3'], title: "Without MathJax.js rendering" },
-     { name:"math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
+     { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
+     { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
+     { name: "math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
    ],
    Misc : [
      { name: "ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },
@@ -185,7 +202,9 @@ examples_main = {
      { name: "sinfo", url: "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
      { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
+     { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, Macro outputs from tutorials/graphs/splines_test.C" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-     { name: "tf2", json: "tf2.json.gz", opt: "nosave", title: "Example of TF2 drawing" }
+     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" }
+
    ]
  };

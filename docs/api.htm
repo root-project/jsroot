@@ -148,6 +148,7 @@
               { name: "Veritcal layout", url: "?file=" + filepath + "hsimple.root&layout=vert121&items=[hpx;1,hpxpy;1,ntuple;1,hprof;1]&opts=[hist,colz,px:pz,e1]", title: "Display several items in vertical layout" },
               { name: "Horizontal layout", url: "?file=" + filepath + "hsimple.root&layout=horiz32_12&items=[ntuple,ntuple,ntuple,hpx,hpxpy]&opts=[px:py,px:pz,py:pz,hist,lego2]", title: "Display several items in horizontal layout, adjust size ratio" },
               { name: "Inspector", url: "?file=" + filepath + "hsimple.root&item=hpx;1&opt=inspect", title: "Show objects data memebers" },
+              { name: "Projection", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hpxpy;1&opt=col,projx3", title: "Enable X projection with 3 bins" },
               { name: "Use JSON", url: "?nobrowser&json=" + filepath + "danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class"  },
               { name: "Superimpose", url: "?file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1", title: "Superimpose histogram and function" },
               { name: "Several files", url: "?layout=grid2x2&path=" + filepath + "&files=[hsimple.root,graph.root,ct.root]&items=[hsimple.root/[1],graph.root/[11],graph.root/[3],ct.root/[0]]&opts=[lego]", title: "Open several files simultaneusely"  },
@@ -174,7 +175,8 @@
               { name: "File hierarchy", url: "demo/file_hierarchy.htm", title: "Use HierarchyPainter to display file objects hiararchy", src: true },
               { name: "Zooming", url: "demo/zoom_handler.htm", title: "Redefine Zoom function to make synchronous zooming in other histogram", src: true },
               { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
-              { name: "Geometry", url: "demo/tgeo_build.htm", title : "Example how one can create three.js model for TGeo object, using JSROOT.GEO.build function", src: "demo/tgeo_build.htm" }
+              { name: "Geometry", url: "demo/tgeo_build.htm", title : "Example how one can create three.js model for TGeo object, using JSROOT.GEO.build function", src: "demo/tgeo_build.htm" },
+              { name: "OpenUI5", url: "demo/openui5/", title : "Use of JSROOT graphics inside OpenUI5", src: "demo/openui5/Readme.md" }
             ],
             'TTree': [
                { name: "TSelector", url: "demo/read_tree.htm", title: "Simple example of reading TTree using TSelector class", src: true, syn: "custom_html_read_tree" },
@@ -188,7 +190,7 @@
                { name: "Testing", title : "Test suite to test JSROOT functionality with Node.js", src: "https://github.com/linev/jsroot-test/", srcload: "https://raw.githubusercontent.com/linev/jsroot-test/master/test.js" }
              ],
             'httpserver.C' : [
-              { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpserver.C' },
+              { link: 'https://github.com/root-project/root/blob/master/tutorials/http/httpserver.C' },
               { name: "Default page", url: "httpserver.C/", title : "Default HTML page of running httpserver.C macro (snapshot)" },
               { name: "Sub-folder", url: "httpserver.C/Files/job1.root/", title : "Browse server objects from sub-folder" },
               { name: "Display item", url: "httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000", title : "Display histogram and enable monitoring (not updating while snapshot is used)" },
@@ -202,7 +204,7 @@
               { name: "Superimpose", url: "httpserver.C/?file=../../files/hsimple.root&item=[job1/Files/job1.root/hpx,hsimple.root/hpx;1]&opt=logy", title : "Superimpose objects from ROOT file and online server" }
             ],
             'httpcontrol.C' : [
-              { link: 'https://github.com/root-mirror/root/blob/master/tutorials/http/httpcontrol.C' },
+              { link: 'https://github.com/root-project/root/blob/master/tutorials/http/httpcontrol.C' },
               { name: "Default page", url: "httpcontrol.C/", title : "Default HTML page of running httpscontrol.C macro (snapshot)" },
               { name: "Text output", url: "httpcontrol.C/?layout=simple&item=Debug&monitoring=0", title : "Custom text output, using MathJax.js; also disable default monitoring" },
               { name: "Text output (2)", url: "httpcontrol.C/Debug/draw.htm", title : "Custom text output without browser" }
