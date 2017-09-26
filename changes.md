@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 5.3.0
 1. New supported classes:
     - TGraphPolar
     - TGraphTime
