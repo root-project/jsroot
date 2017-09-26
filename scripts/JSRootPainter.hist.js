@@ -6758,7 +6758,7 @@
             while (true) {
                nadd = 0;
                for (i=2;i<np;i+=2) {
-                  if ((iplus < np-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
+                  if ((iplus < 2*npmax-1) && (xx[i] === xp[iplus]) && (yy[i] === yp[iplus])) {
                      iplus++;
                      xp[iplus] = xx[i+1]; yp[iplus] = yy[i+1];
                      xx[i] = xx[i+1] = xmin;
