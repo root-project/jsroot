@@ -34,7 +34,7 @@
       kDoNotUseBufferMap: JSROOT.BIT(22) // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
    }
 
-   JSROOT.TSelector = function() {
+    function TSelector() {
       // class to read data from TTree
       this.branches = []; // list of branches to read
       this.names = []; // list of member names for each branch in tgtobj
@@ -43,7 +43,7 @@
       this.tgtobj = {};
    }
 
-   JSROOT.TSelector.prototype.AddBranch = function(branch, name, direct) {
+   TSelector.prototype.AddBranch = function(branch, name, direct) {
       // Add branch to the selector
       // Either branch name or branch itself should be specified
       // Second parameter defines member name in the tgtobj
@@ -58,32 +58,32 @@
       return this.branches.length-1;
    }
 
-   JSROOT.TSelector.prototype.indexOfBranch = function(branch) {
+   TSelector.prototype.indexOfBranch = function(branch) {
       return this.branches.indexOf(branch);
    }
 
-   JSROOT.TSelector.prototype.nameOfBranch = function(indx) {
+   TSelector.prototype.nameOfBranch = function(indx) {
       return this.names[indx];
    }
 
-   JSROOT.TSelector.prototype.ShowProgress = function(value) {
+   TSelector.prototype.ShowProgress = function(value) {
       // this function can be used to check current TTree progress
    }
 
-   JSROOT.TSelector.prototype.Abort = function() {
+   TSelector.prototype.Abort = function() {
       // call this function to abort processing
       this.break_execution = -1111;
    }
 
-   JSROOT.TSelector.prototype.Begin = function(tree) {
+   TSelector.prototype.Begin = function(tree) {
       // function called before start processing
    }
 
-   JSROOT.TSelector.prototype.Process = function(entry) {
+   TSelector.prototype.Process = function(entry) {
       // function called when next entry extracted from the tree
    }
 
-   JSROOT.TSelector.prototype.Terminate = function(res) {
+   TSelector.prototype.Terminate = function(res) {
       // function called at the very end of processing
    }
 
@@ -112,7 +112,7 @@
       return plain ? 2 : 1;
    }
 
-   JSROOT.ArrayIterator = function(arr, select, tgtobj) {
+   function ArrayIterator(arr, select, tgtobj) {
       // class used to iterate over all array indexes until number value
 
       this.object = arr;
@@ -128,7 +128,7 @@
          this.select = []; // empty array, undefined for each dimension means iterate over all indexes
    }
 
-   JSROOT.ArrayIterator.prototype.next = function() {
+   ArrayIterator.prototype.next = function() {
       var obj, typ, cnt = this.cnt, seltyp;
 
       if (cnt >= 0) {
@@ -222,7 +222,7 @@
       return false;
    }
 
-   JSROOT.ArrayIterator.prototype.reset = function() {
+   ArrayIterator.prototype.reset = function() {
       this.arr = [];
       this.indx = [];
       delete this.fastarr;
@@ -232,7 +232,7 @@
 
    // ============================================================================
 
-   JSROOT.TDrawVariable = function(globals) {
+   function TDrawVariable(globals) {
       // object with single variable in TTree::Draw expression
       this.globals = globals;
 
@@ -246,7 +246,7 @@
       this.buf = []; // buffer accumulates temporary values
    }
 
-   JSROOT.TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch,branch_mode) {
+   TDrawVariable.prototype.Parse = function(tree,selector,code,only_branch,branch_mode) {
       // when only_branch specified, its placed in the front of the expression
 
       function is_start_symbol(symb) {
@@ -375,7 +375,7 @@
                      arriter.push(parseInt(sub));
                   } else {
                      // try to compile code as draw variable
-                     var subvar = new JSROOT.TDrawVariable(this.globals);
+                     var subvar = new TDrawVariable(this.globals);
                      if (!subvar.Parse(tree,selector, sub)) return false;
                      arriter.push(subvar);
                   }
@@ -419,11 +419,11 @@
       return true;
    }
 
-   JSROOT.TDrawVariable.prototype.is_dummy = function() {
+   TDrawVariable.prototype.is_dummy = function() {
       return (this.branches.length === 0) && !this.func;
    }
 
-   JSROOT.TDrawVariable.prototype.Produce = function(obj) {
+   TDrawVariable.prototype.Produce = function(obj) {
       // after reading tree braches into the object, calculate variable value
 
       this.length = 1;
@@ -452,7 +452,7 @@
             // plain array, can be used as is
             arrs[n] = arg[name];
          } else {
-            var iter = new JSROOT.ArrayIterator(arg[name], this.brarray[n], obj);
+            var iter = new ArrayIterator(arg[name], this.brarray[n], obj);
             arrs[n] = [];
             while (iter.next()) arrs[n].push(iter.value);
          }
@@ -491,11 +491,11 @@
       if (!this.kind) this.kind = typeof this.value[0];
    }
 
-   JSROOT.TDrawVariable.prototype.get = function(indx) {
+   TDrawVariable.prototype.get = function(indx) {
       return this.isarray ? this.value[indx] : this.value;
    }
 
-   JSROOT.TDrawVariable.prototype.AppendArray = function(tgtarr) {
+   TDrawVariable.prototype.AppendArray = function(tgtarr) {
       // append array to the buffer
 
       this.buf = this.buf.concat(tgtarr[this.branches[0]]);
@@ -503,8 +503,8 @@
 
    // =============================================================================
 
-   JSROOT.TDrawSelector = function(callback) {
-      JSROOT.TSelector.call(this);
+   function TDrawSelector(callback) {
+      TSelector.call(this);
 
       this.ndim = 0;
       this.vars = []; // array of expression variables
@@ -523,9 +523,9 @@
       this.aver_diff = 0;
    }
 
-   JSROOT.TDrawSelector.prototype = Object.create(JSROOT.TSelector.prototype);
+   TDrawSelector.prototype = Object.create(TSelector.prototype);
 
-   JSROOT.TDrawSelector.prototype.ParseParameters = function(tree, args, expr) {
+   TDrawSelector.prototype.ParseParameters = function(tree, args, expr) {
 
       if (!expr || (typeof expr !== "string")) return "";
 
@@ -622,7 +622,7 @@
       return expr;
    }
 
-   JSROOT.TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
+   TDrawSelector.prototype.ParseDrawExpression = function(tree, args) {
 
       // parse complete expression
       var expr = this.ParseParameters(tree, args, args.expr), cut = "";
@@ -669,12 +669,12 @@
       var is_direct = !cut;
 
       for (var n=0;n<this.ndim;++n) {
-         this.vars[n] = new JSROOT.TDrawVariable(this.globals);
+         this.vars[n] = new TDrawVariable(this.globals);
          if (!this.vars[n].Parse(tree, this, names[n])) return false;
          if (!this.vars[n].direct_branch) is_direct = false;
       }
 
-      this.cut = new JSROOT.TDrawVariable(this.globals);
+      this.cut = new TDrawVariable(this.globals);
       if (cut)
          if (!this.cut.Parse(tree, this, cut)) return false;
 
@@ -695,7 +695,7 @@
       return true;
    }
 
-   JSROOT.TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
+   TDrawSelector.prototype.DrawOnlyBranch = function(tree, branch, expr, args) {
       this.ndim = 1;
 
       if (expr.indexOf("dump")==0) expr = ";" + expr;
@@ -726,25 +726,25 @@
          return true;
       }
 
-      this.vars[0] = new JSROOT.TDrawVariable(this.globals);
+      this.vars[0] = new TDrawVariable(this.globals);
       if (!this.vars[0].Parse(tree, this, expr, branch, args.direct_branch)) return false;
       this.hist_title = "drawing branch '" + branch.fName + (expr ? "' expr:'" + expr : "") + "'  from " + tree.fName;
 
-      this.cut = new JSROOT.TDrawVariable(this.globals);
+      this.cut = new TDrawVariable(this.globals);
 
       if (this.vars[0].direct_branch) this.ProcessArrays = this.ProcessArraysFunc;
 
       return true;
    }
 
-   JSROOT.TDrawSelector.prototype.Begin = function(tree) {
+   TDrawSelector.prototype.Begin = function(tree) {
       this.globals.entries = tree.fEntries;
 
       if (this.monitoring)
          this.lasttm = new Date().getTime();
    }
 
-   JSROOT.TDrawSelector.prototype.ShowProgress = function(value) {
+   TDrawSelector.prototype.ShowProgress = function(value) {
       // this function should be defined not here
 
       if (typeof document == 'undefined' || !JSROOT.progress) return;
@@ -783,7 +783,7 @@
       this.last_progress = value;
    }
 
-   JSROOT.TDrawSelector.prototype.GetBitsBins = function(nbits, res) {
+   TDrawSelector.prototype.GetBitsBins = function(nbits, res) {
       res.nbins = res.max = nbits;
       res.fLabels = JSROOT.Create("THashList");
       for (var k=0;k<nbits;++k) {
@@ -795,7 +795,7 @@
       return res;
    }
 
-   JSROOT.TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
+   TDrawSelector.prototype.GetMinMaxBins = function(axisid, nbins) {
 
       var res = { min: 0, max: 0, nbins: nbins, k: 1., fLabels: null, title: "" };
 
@@ -900,7 +900,7 @@
       return res;
    }
 
-   JSROOT.TDrawSelector.prototype.CreateHistogram = function() {
+   TDrawSelector.prototype.CreateHistogram = function() {
       if (this.hist || !this.vars[0].buf) return;
 
       if (this.dump_values) {
@@ -969,7 +969,7 @@
       delete this.cut.buf;
    }
 
-   JSROOT.TDrawSelector.prototype.FillTBitsHistogram = function(xvalue, weight) {
+   TDrawSelector.prototype.FillTBitsHistogram = function(xvalue, weight) {
       if (!weight || !xvalue || !xvalue.fNbits || !xvalue.fAllBits) return;
 
       var sz = Math.min(xvalue.fNbits+1, xvalue.fNbytes*8);
@@ -987,7 +987,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.FillBitsHistogram = function(xvalue, weight) {
+   TDrawSelector.prototype.FillBitsHistogram = function(xvalue, weight) {
       if (!weight) return;
 
       for (var bit=0,mask=1;bit<this.x.nbins;++bit) {
@@ -996,7 +996,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.Fill1DHistogram = function(xvalue, weight) {
+   TDrawSelector.prototype.Fill1DHistogram = function(xvalue, weight) {
       var bin = this.x.GetBin(xvalue);
       this.hist.fArray[bin] += weight;
 
@@ -1007,7 +1007,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue, weight) {
+   TDrawSelector.prototype.Fill2DHistogram = function(xvalue, yvalue, weight) {
       var xbin = this.x.GetBin(xvalue),
           ybin = this.y.GetBin(yvalue);
 
@@ -1022,7 +1022,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue, weight) {
+   TDrawSelector.prototype.Fill3DHistogram = function(xvalue, yvalue, zvalue, weight) {
       var xbin = this.x.GetBin(xvalue),
           ybin = this.y.GetBin(yvalue),
           zbin = this.z.GetBin(zvalue);
@@ -1042,7 +1042,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.DumpValue = function(v1, v2, v3, v4) {
+   TDrawSelector.prototype.DumpValue = function(v1, v2, v3, v4) {
       var obj;
       switch (this.ndim) {
          case 1: obj = { x: v1, weight: v2 }; break;
@@ -1057,7 +1057,7 @@
       this.hist.push(obj);
    }
 
-   JSROOT.TDrawSelector.prototype.ProcessArraysFunc = function(entry) {
+   TDrawSelector.prototype.ProcessArraysFunc = function(entry) {
       // function used when all branches can be read as array
       // most typical usage - histogramming of single branch
 
@@ -1105,7 +1105,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.ProcessDump = function(entry) {
+   TDrawSelector.prototype.ProcessDump = function(entry) {
       // simple dump of the branch - no need to analyze something
 
       var res = this.leaf ? this.tgtobj.br0[this.leaf] : this.tgtobj.br0;
@@ -1121,7 +1121,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.Process = function(entry) {
+   TDrawSelector.prototype.Process = function(entry) {
 
       this.globals.entry = entry; // can be used in any expression
 
@@ -1193,7 +1193,7 @@
       }
    }
 
-   JSROOT.TDrawSelector.prototype.Terminate = function(res) {
+   TDrawSelector.prototype.Terminate = function(res) {
       if (res && !this.hist) this.CreateHistogram();
 
       this.ShowProgress();
@@ -2421,7 +2421,7 @@
       if (args.expr === "testio")
          return this.IOTest(args, result_callback);
 
-      var selector = new JSROOT.TDrawSelector(result_callback);
+      var selector = new TDrawSelector(result_callback);
 
       if (args.branch) {
          if (!selector.DrawOnlyBranch(this, args.branch, args.expr, args)) selector = null;
@@ -2479,7 +2479,7 @@
 
       function TestNextBranch() {
 
-         var selector = new JSROOT.TSelector;
+         var selector = new TSelector;
 
          selector.AddBranch(args.branches[args.nbr], "br0");
 
@@ -2550,9 +2550,7 @@
 
    // ===========================================================================
 
-
    if (JSROOT.Painter)
-
    JSROOT.Painter.CreateBranchItem = function(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
@@ -2664,8 +2662,7 @@
       return true;
    }
 
-
- if (JSROOT.Painter)
+   if (JSROOT.Painter)
    JSROOT.Painter.drawTree = function(divid, obj, opt) {
       // this is function called from JSROOT.draw()
       // just envelope for real TTree::Draw method which do the main job
@@ -2754,6 +2751,10 @@
 
       return painter;
    }
+
+   JSROOT.TSelector = TSelector;
+   JSROOT.TDrawVariable = TDrawVariable;
+   JSROOT.TDrawSelector = TDrawSelector;
 
    return JSROOT;
 
