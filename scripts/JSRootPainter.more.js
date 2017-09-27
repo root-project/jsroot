@@ -1767,6 +1767,26 @@
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
+   TGraphPolargramPainter.prototype.MouseEvent = function(kind) {
+      var layer = this.svg_layer("primitives_layer"),
+          interactive = layer.select(".interactive_ellipse");
+      if (interactive.empty()) return;
+
+      var pnt = null;
+
+      if (kind !== 'leave') {
+         var pos = d3.mouse(interactive.node());
+         pnt = { x: pos[0], y: pos[1], touch: false };
+      }
+
+      this.ProcessTooltipEvent(pnt);
+   }
+
+   TGraphPolargramPainter.prototype.ProcessTooltipEvent = function(pnt) {
+      var pp = this.pad_painter(true),
+         hints = pp ? pp.GetTooltips(pnt) : [];
+   }
+
    TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
@@ -1790,7 +1810,6 @@
 
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
       if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ fLineColor: polar.fLineColor, fLineStyle: 2, fLineWidth: 1 });
-
 
       var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
       this.ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
@@ -1845,7 +1864,6 @@
                    .call(this.gridatt.func);
             }
          }
-
       }
 
       this.FinishTextDrawing();
@@ -1890,6 +1908,29 @@
                 .attr("y2", Math.round(szy*Math.sin(angle)))
                 .call(this.gridatt.func);
          }
+
+
+      if (JSROOT.BatchMode || true) return;
+
+      var layer = this.svg_layer("primitives_layer"),
+          interactive = layer.select(".interactive_ellipse");
+
+      if (interactive.empty())
+         interactive = layer.append("g")
+                            .classed("most_upper_primitives", true)
+                            .append("ellipse")
+                            .classed("interactive_ellipse", true)
+                            .attr("cx",0)
+                            .attr("cy",0)
+                            .style("fill", "none")
+                            .style("pointer-events","visibleFill")
+                            .on('mouseenter', this.MouseEvent.bind(this,'enter'))
+                            .on('mousemove', this.MouseEvent.bind(this,'move'))
+                            .on('mouseleave', this.MouseEvent.bind(this,'leave'));
+
+      interactive.attr("rx", szx).attr("ry", szy);
+
+      d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
    }
 
    JSROOT.Painter.drawGraphPolargram = function(divid, polargram, opt) {

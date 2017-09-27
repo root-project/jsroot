@@ -4689,7 +4689,6 @@
          svgs.attr("x", posx);
       }
 
-
       // if gap not very big, apply gapy coordinate to open view on the histogram
       if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
          if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
