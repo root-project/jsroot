@@ -7723,7 +7723,6 @@
          return res;
       }
 
-
       var i, j, binz = 0, colindx = null;
 
       // search bins position
@@ -7759,7 +7758,7 @@
 
       if (this.options.Color > 0) res.color2 = this.GetPalette().getColor(colindx);
 
-      if (pnt.disabled) {
+      if (pnt.disabled && !this.is_projection) {
          ttrect.remove();
          res.changed = true;
       } else {
@@ -7808,11 +7807,10 @@
             this.RedrawProjection(i1, i2, j1, j2);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed) {
-         this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
+      if (this.IsUserTooltipCallback() && res.changed)
+         this.ProvideUserTooltip({ obj: histo, name: histo.fName,
                                    bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
                                    grx: pnt.x, gry: pnt.y });
-      }
 
       return res;
    }
