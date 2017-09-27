@@ -146,11 +146,7 @@
 
       while (true) {
 
-         if (cnt < 0) {
-            obj = this.object;
-         } else {
-            obj = (this.arr[cnt])[this.indx[cnt]];
-         }
+         obj = (cnt < 0) ? this.object : (this.arr[cnt])[this.indx[cnt]];
 
          typ = obj ? typeof obj : "any";
 
@@ -158,8 +154,7 @@
             if (obj._typename !== undefined) {
                if (JSROOT.IsRootCollection(obj)) { obj = obj.arr; typ = "array"; }
                                             else typ = "any";
-            } else
-            if (!isNaN(obj.length) && (JSROOT.CheckArrayPrototype(obj)>0)) {
+            } else if (!isNaN(obj.length) && (JSROOT.CheckArrayPrototype(obj)>0)) {
                typ = "array";
             } else {
                typ = "any";
@@ -598,11 +593,9 @@
          }
          if (harg === "dump") {
             args.dump = true;
-         } else
-         if (pos<0) {
+         } else if (pos<0) {
             this.hist_name = harg;
-         } else
-         if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
+         } else  if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
             harg = harg.substr(1,harg.length-2).split(",");
             var isok = true;
             for (var n=0;n<harg.length;++n) {
@@ -846,12 +839,10 @@
             if (s.fString === "") s.fString = "<empty>";
             res.fLabels.Add(s);
          }
-      } else
-      if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
+      } else if ((axisid === 0) && (this.hist_name === "bits") && (this.hist_args.length <= 1)) {
          this.Fill1DHistogram = this.FillBitsHistogram;
          return this.GetBitsBins(this.hist_args[0] || 32, res);
-      } else
-      if (axisid*3 + 2 < this.hist_args.length) {
+      } else if (axisid*3 + 2 < this.hist_args.length) {
          res.nbins = this.hist_args[axisid*3];
          res.min = this.hist_args[axisid*3+1];
          res.max = this.hist_args[axisid*3+2];
@@ -1163,8 +1154,7 @@
             this.CreateHistogram();
             this.arr_limit = 0;
          }
-      } else
-      if (this.hist) {
+      } else if (this.hist) {
          switch(this.ndim) {
             case 1:
                for (var n0=0;n0<var0.length;++n0)
@@ -1213,8 +1203,8 @@
           arr = (s_i && s_i.fElements) ? s_i.fElements.arr : null;
       if (!arr) return null;
 
-      var match_name = branch.fName;
-      var pos = match_name.indexOf("[");
+      var match_name = branch.fName,
+          pos = match_name.indexOf("[");
       if (pos>0) match_name = match_name.substr(0, pos);
       pos = match_name.lastIndexOf(".");
       if (pos>0) match_name = match_name.substr(pos+1);
@@ -1253,7 +1243,6 @@
           elem = null;
       if (!arr) return "";
 
-
       for (var k=0;k<arr.length;++k) {
          if (arr[k].fTypeName === "BASE") {
             var res = JSROOT.IO.DefineMemberTypeName(file, arr[k].fName, member_name);
@@ -1285,9 +1274,8 @@
 
       var s_elem = JSROOT.IO.FindBrachStreamerElement(branch, tree.$file);
 
-      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName==="BASE")) {
+      if ((branch.fType === JSROOT.BranchType.kBaseClassNode) && s_elem && (s_elem.fTypeName==="BASE"))
           return s_elem.fName;
-      }
 
       if (branch.fType === JSROOT.BranchType.kObjectNode) {
          if (s_elem && ((s_elem.fType === JSROOT.IO.kObject) || (s_elem.fType === JSROOT.IO.kAny)))
@@ -1485,18 +1473,14 @@
              child_scan = 0, // scan child branches after main branch is appended
              item_cnt = null, item_cnt2 = null, object_class = "";
 
-
          if (branch.fBranchCount) {
 
             item_cnt = FindInHandle(branch.fBranchCount);
 
-            if (!item_cnt) {
+            if (!item_cnt)
                item_cnt = AddBranchForReading(branch.fBranchCount, target_object, "$counter" + namecnt++, true);
-               // console.log('Add counter branch', branch.fBranchCount.fName, 'as', item_cnt ? item_cnt.name : "---");
-            }
 
             if (!item_cnt) { console.error('Cannot add counter branch', branch.fBranchCount.fName); return null; }
-
 
             var BranchCount2 = branch.fBranchCount2;
 
@@ -1654,9 +1638,7 @@
 
              return item; // this kind of branch does not have baskets and not need to be read
 
-          } else
-
-          if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
+          } else if (is_brelem && (nb_leaves === 1) && (leaf.fName === branch.fName) && (branch.fID==-1)) {
 
              elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fClassName);
 
@@ -1681,23 +1663,20 @@
 
              // only STL containers here
              // if (!elem.fSTLtype) elem = null;
-          } else
-          if (is_brelem && (nb_leaves <= 1)) {
+          } else if (is_brelem && (nb_leaves <= 1)) {
 
              elem = JSROOT.IO.FindBrachStreamerElement(branch, handle.file);
 
              // this is basic type - can try to solve problem differently
-             if (!elem && branch.fStreamerType && (branch.fStreamerType < 20)) {
+             if (!elem && branch.fStreamerType && (branch.fStreamerType < 20))
                 elem = JSROOT.IO.CreateStreamerElement(target_name, branch.fStreamerType);
-             }
-          } else
-          if (nb_leaves === 1) {
+
+          } else if (nb_leaves === 1) {
               // no special constrains for the leaf names
 
              elem = CreateLeafElem(leaf, target_name);
 
-          } else
-          if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
+          } else if ((branch._typename === "TBranch") && (nb_leaves > 1)) {
              // branch with many elementary leaves
 
              var arr = new Array(nb_leaves), isok = true;
@@ -1746,12 +1725,10 @@
              if (snames.length === 1) {
                 // no point in the name - just plain array of objects
                 member.get = function(arr,n) { return arr[n]; }
-             } else
-             if (read_mode === "$child$") {
+             } else if (read_mode === "$child$") {
                 console.error('target name contains point, but suppose to be direct child', target_name);
                 return null;
-             } else
-             if (snames.length === 2) {
+             } else if (snames.length === 2) {
                 target_name = member.name = snames[1];
                 member.name1 = snames[0];
                 member.subtype1 = read_mode;
@@ -1810,8 +1787,7 @@
                 }
              }
 
-          } else
-          if (item_cnt) {
+          } else if (item_cnt) {
 
              handle.process_arrays = false;
 
@@ -1949,7 +1925,7 @@
       }
 
       // main loop to add all branches from selector for reading
-      for (var nn = 0; nn < selector.branches.length; ++nn) {
+      for (var nn=0; nn<selector.branches.length; ++nn) {
 
          var item = AddBranchForReading(selector.branches[nn], undefined, selector.names[nn], selector.directs[nn]);
 
@@ -1961,7 +1937,7 @@
 
       // check if simple reading can be performed and there are direct data in branch
 
-      for (var h=1;(h < handle.arr.length) && handle.simple_read;++h) {
+      for (var h=1; (h < handle.arr.length) && handle.simple_read; ++h) {
 
          var item = handle.arr[h], item0 = handle.arr[0];
 
@@ -2014,9 +1990,9 @@
             selector.tgtarr = {}; // object with arrays
 
             for(var nn=0;nn<handle.arr.length;++nn) {
-               var item = handle.arr[nn];
+               var item = handle.arr[nn],
+                   elem = JSROOT.IO.CreateStreamerElement(item.name, item.type);
 
-               var elem = JSROOT.IO.CreateStreamerElement(item.name, item.type);
                elem.fType = item.type + JSROOT.IO.kOffsetL;
                elem.fArrayLength = 10;
                elem.fArrayDim = 1;
@@ -2510,12 +2486,10 @@
 
          JSROOT.progress("br " + args.nbr + "/" + args.branches.length + " " + args.names[args.nbr]);
 
-         var br = args.branches[args.nbr];
-
-         var object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
-             num = br.fEntries;
-
-         var skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
+         var br = args.branches[args.nbr],
+             object_class = JSROOT.IO.GetBranchObjectClass(br, tree),
+             num = br.fEntries,
+             skip_branch = (!br.fLeaves || (br.fLeaves.arr.length === 0));
 
          if (object_class) skip_branch = (args.nchilds[args.nbr]>100);
 
@@ -2604,7 +2578,7 @@
                  });
               }
 
-            for (var i=0; i < bobj.fBranches.arr.length; ++i)
+            for (var i=0; i<bobj.fBranches.arr.length; ++i)
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
             var object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
@@ -2628,12 +2602,10 @@
             return true;
          }
          return true;
-      } else
-      if (nb_leaves === 1) {
+      } else if (nb_leaves === 1) {
          subitem._icon = "img_leaf";
          subitem._more = false;
-      } else
-      if (nb_leaves > 1) {
+      } else if (nb_leaves > 1) {
          subitem._childs = [];
          for (var j = 0; j < nb_leaves; ++j) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
@@ -2656,7 +2628,7 @@
       node._childs = [];
       node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-      for ( var i = 0; i < obj.fBranches.arr.length; ++i)
+      for (var i=0; i<obj.fBranches.arr.length; ++i)
          JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
 
       return true;
@@ -2668,9 +2640,8 @@
       // just envelope for real TTree::Draw method which do the main job
       // Can be also used for the branch and leaf object
 
-      var painter = new JSROOT.TObjectPainter(obj);
-
-      var tree = obj, args = opt;
+      var painter = new JSROOT.TObjectPainter(obj),
+          tree = obj, args = opt;
 
       if (obj._typename == "TBranchFunc") {
          // fictional object, created only in browser
@@ -2678,8 +2649,7 @@
          if (opt && opt.indexOf("dump")==0) args.expr += ">>" + opt; else
          if (opt) args.expr += opt;
          tree = obj.branch.$tree;
-      } else
-      if (obj.$branch) {
+      } else if (obj.$branch) {
          // this is drawing of the single leaf from the branch
          args = { expr: "." + obj.fName + (opt || ""), branch: obj.$branch };
          if ((args.branch.fType === JSROOT.BranchType.kClonesNode) || (args.branch.fType === JSROOT.BranchType.kSTLNode)) {
@@ -2689,8 +2659,7 @@
          }
 
          tree = obj.$branch.$tree;
-      } else
-      if (obj.$tree) {
+      } else if (obj.$tree) {
          // this is drawing of the branch
 
          // if generic object tried to be drawn without specifying any options, it will be just dump
