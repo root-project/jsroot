@@ -95,7 +95,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 27/09/2017";
+   JSROOT.version = "dev 28/09/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1136,6 +1136,12 @@
    JSROOT.MakeSVG = function(args, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.MakeSVG(args, callback);
+      });
+   }
+
+   JSROOT.saveSvgAsPng = function(el, options, callback) {
+      JSROOT.AssertPrerequisites("savepng", function() {
+         JSROOT.saveSvgAsPng(el, options, callback);
       });
    }
 

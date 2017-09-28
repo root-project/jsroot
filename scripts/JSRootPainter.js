@@ -4130,306 +4130,6 @@
 
    // ===========================================================
 
-   function TFramePainter(tframe) {
-      TObjectPainter.call(this, tframe);
-      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
-   }
-
-   TFramePainter.prototype = Object.create(TObjectPainter.prototype);
-
-   TFramePainter.prototype.GetTipName = function(append) {
-      var res = TObjectPainter.prototype.GetTipName.call(this) || "TFrame";
-      if (append) res+=append;
-      return res;
-   }
-
-   TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
-      this.fX1NDC += shrink_left;
-      this.fX2NDC -= shrink_right;
-   }
-
-   TFramePainter.prototype.SetLastEventPos = function(pnt) {
-      // set position of last context menu event, can be
-      this.fLastEventPnt = pnt;
-   }
-
-   TFramePainter.prototype.GetLastEventPos = function() {
-      // return position of last event
-      return this.fLastEventPnt;
-   }
-
-   TFramePainter.prototype.UpdateAttributes = function(force) {
-      var pad = this.root_pad(),
-          tframe = this.GetObject();
-
-      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
-         if (!pad) {
-            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
-         } else {
-            JSROOT.extend(this, {
-               fX1NDC: pad.fLeftMargin,
-               fX2NDC: 1 - pad.fRightMargin,
-               fY1NDC: pad.fBottomMargin,
-               fY2NDC: 1 - pad.fTopMargin
-            });
-         }
-      }
-
-      if (this.fillatt === undefined) {
-         if (tframe) this.fillatt = this.createAttFill(tframe);
-         else if (pad) this.fillatt = pad.fFrameFillColor ? this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor) : this.createAttFill(pad);
-         else this.fillatt = this.createAttFill(null, 1001, 0);
-
-         // force white color for the frame
-         if (!tframe && (this.fillatt.color == 'none') && this.pad_painter(true) && this.pad_painter(true).iscan) {
-            this.fillatt.color = 'white';
-         }
-      }
-
-      if (this.lineatt === undefined)
-         if (pad) this.lineatt = new TAttLineHandler({ fLineColor: pad.fFrameLineColor, fLineWidth: pad.fFrameLineWidth, fLineStyle: pad.fFrameLineStyle });
-             else this.lineatt = new TAttLineHandler(tframe ? tframe : 'black');
-   }
-
-   TFramePainter.prototype.SizeChanged = function() {
-      // function called at the end of resize of frame
-      // One should apply changes to the pad
-
-      var pad = this.root_pad(),
-          main = this.main_painter();
-
-      if (pad) {
-         pad.fLeftMargin = this.fX1NDC;
-         pad.fRightMargin = 1 - this.fX2NDC;
-         pad.fBottomMargin = this.fY1NDC;
-         pad.fTopMargin = 1 - this.fY2NDC;
-         if (main) main.SetRootPadRange(pad);
-      }
-
-      this.RedrawPad();
-   }
-
-   TFramePainter.prototype.Cleanup = function() {
-      if (this.draw_g) {
-         this.draw_g.selectAll("*").remove();
-         this.draw_g.on("mousedown", null)
-                    .on("dblclick", null)
-                    .on("wheel", null)
-                    .on("contextmenu", null)
-                    .property('interactive_set', null);
-      }
-      this.draw_g = null;
-      TObjectPainter.prototype.Cleanup.call(this);
-   }
-
-   TFramePainter.prototype.Redraw = function() {
-
-      // first update all attributes from objects
-      this.UpdateAttributes();
-
-      var width = this.pad_width(),
-          height = this.pad_height(),
-          lm = Math.round(width * this.fX1NDC),
-          w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
-          tm = Math.round(height * (1 - this.fY2NDC)),
-          h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, fixpos = false, pp = this.pad_painter();
-
-      if (pp && pp.options) {
-         if (pp.options.RotateFrame) rotate = true;
-         if (pp.options.FixFrame) fixpos = true;
-      }
-
-      // this is svg:g object - container for every other items belonging to frame
-      this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
-
-      var top_rect, main_svg;
-
-      if (this.draw_g.empty()) {
-
-         var layer = this.svg_layer("primitives_layer");
-
-         this.draw_g = layer.append("svg:g").attr("class", "root_frame");
-
-         this.draw_g.append("svg:title").text("");
-
-         top_rect = this.draw_g.append("svg:rect");
-
-         // append for the moment three layers - for drawing and axis
-         this.draw_g.append('svg:g').attr('class','grid_layer');
-
-         main_svg = this.draw_g.append('svg:svg')
-                           .attr('class','main_layer')
-                           .attr("x", 0)
-                           .attr("y", 0)
-                           .attr('overflow', 'hidden');
-
-         this.draw_g.append('svg:g').attr('class','axis_layer');
-         this.draw_g.append('svg:g').attr('class','upper_layer');
-      } else {
-         top_rect = this.draw_g.select("rect");
-         main_svg = this.draw_g.select(".main_layer");
-      }
-
-      var trans = "translate(" + lm + "," + tm + ")";
-      if (rotate) {
-         trans += " rotate(-90) " + "translate(" + -h + ",0)";
-         var d = w; w = h; h = d;
-      }
-
-      this.draw_g.property('frame_painter', this) // simple way to access painter via frame container
-                 .property('draw_x', lm)
-                 .property('draw_y', tm)
-                 .property('draw_width', w)
-                 .property('draw_height', h)
-                 .attr("transform", trans);
-
-      top_rect.attr("x", 0)
-              .attr("y", 0)
-              .attr("width", w)
-              .attr("height", h)
-              .call(this.fillatt.func)
-              .call(this.lineatt.func);
-
-      main_svg.attr("width", w)
-              .attr("height", h)
-              .attr("viewBox", "0 0 " + w + " " + h);
-
-      var tooltip_rect = this.draw_g.select(".interactive_rect");
-
-      if (JSROOT.BatchMode) return tooltip_rect.remove();
-
-      this.draw_g.attr("x", lm)
-                 .attr("y", tm)
-                 .attr("width", w)
-                 .attr("height", h);
-
-      if (!rotate && !fixpos)
-         this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
-                        redraw: this.SizeChanged.bind(this) });
-
-      var painter = this;
-
-      function MouseMoveEvent() {
-         var pnt = d3.mouse(tooltip_rect.node());
-         painter.ProcessTooltipEvent({ x: pnt[0], y: pnt[1], touch: false });
-      }
-
-      function MouseCloseEvent() {
-         painter.ProcessTooltipEvent(null);
-      }
-
-      function TouchMoveEvent() {
-         var pnt = d3.touches(tooltip_rect.node());
-         if (!pnt || pnt.length !== 1) return painter.ProcessTooltipEvent(null);
-         painter.ProcessTooltipEvent({ x: pnt[0][0], y: pnt[0][1], touch: true });
-      }
-
-      function TouchCloseEvent() {
-         painter.ProcessTooltipEvent(null);
-      }
-
-      if (tooltip_rect.empty()) {
-         tooltip_rect =
-            this.draw_g
-                .append("rect")
-                .attr("class","interactive_rect")
-                .style('opacity',0)
-                .style('fill',"none")
-                .style("pointer-events","visibleFill")
-                .on('mouseenter', MouseMoveEvent)
-                .on('mousemove', MouseMoveEvent)
-                .on('mouseleave', MouseCloseEvent);
-
-         if (JSROOT.touches)
-            tooltip_rect.on("touchstart", TouchMoveEvent)
-                        .on("touchmove", TouchMoveEvent)
-                        .on("touchend", TouchCloseEvent)
-                        .on("touchcancel", TouchCloseEvent);
-      }
-
-      tooltip_rect.attr("x", 0)
-                  .attr("y", 0)
-                  .attr("width", w)
-                  .attr("height", h);
-
-      var hintsg = this.hints_layer().select(".objects_hints");
-      // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty() && this.tooltip_allowed)
-         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
-   }
-
-   TFramePainter.prototype.FillContextMenu = function(menu) {
-      // fill context menu for the frame
-      // it could be appended to the histogram menus
-
-      var main = this.main_painter(), alone = menu.size()==0, pad = this.root_pad();
-
-      if (alone)
-         menu.add("header:Frame");
-      else
-         menu.add("separator");
-
-      if (main) {
-         if (main.zoom_xmin !== main.zoom_xmax)
-            menu.add("Unzoom X", main.Unzoom.bind(main,"x"));
-         if (main.zoom_ymin !== main.zoom_ymax)
-            menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
-         if (main.zoom_zmin !== main.zoom_zmax)
-            menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
-         menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
-
-         if (pad) {
-            menu.addchk(pad.fLogx, "SetLogx", main.ToggleLog.bind(main,"x"));
-
-            menu.addchk(pad.fLogy, "SetLogy", main.ToggleLog.bind(main,"y"));
-
-            if (main.Dimension() == 2)
-               menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
-         }
-         menu.add("separator");
-      }
-
-      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
-         var fp = this.frame_painter();
-         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
-      });
-      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
-      menu.add("separator");
-      menu.add("Save as frame.png", function(arg) {
-         var top = this.svg_frame();
-         if (!top.empty())
-            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
-      });
-
-      return true;
-   }
-
-   JSROOT.saveSvgAsPng = function(el, options, call_back) {
-      JSROOT.AssertPrerequisites("savepng", function() {
-         JSROOT.saveSvgAsPng(el, options, call_back);
-      });
-   }
-
-
-
-   TFramePainter.prototype.hints_layer = function() {
-      // return layer where frame tooltips are shown
-      // only canvas info_layer can be used while other pads can overlay
-
-      var canp = this.pad_painter();
-      return canp ? canp.svg_layer("info_layer") : d3.select(null);
-   }
-
-   TFramePainter.prototype.IsTooltipShown = function() {
-      // return true if tooltip is shown, use to prevent some other action
-      if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
-      return ! (this.hints_layer().select(".objects_hints").empty());
-   }
-
-   // ==============
-
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
       this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
@@ -4450,20 +4150,6 @@
       // return true if tooltip is shown, use to prevent some other action
       if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
       return ! (this.hints_layer().select(".objects_hints").empty());
-   }
-
-   TooltipHandler.prototype.GetFrameRect = function() {
-      // returns rectangle where frawe is drawn,
-
-      var rect = {
-         x: this.frame_x(),
-         y: this.frame_y(),
-         width: this.frame_width(),
-         height: this.frame_height(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : ""
-      }
-
-      return rect;
    }
 
    TooltipHandler.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -4746,282 +4432,295 @@
       hintsg.property('startx', posx);
    }
 
-   TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
+   // ===============================================
 
-      if (enabled !== undefined) this.tooltip_enabled = enabled;
 
-      var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
-          textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
-          height = this.frame_height(),
-          width = this.frame_width(),
-          pad_width = this.pad_width(),
-          frame_x = this.frame_x(),
-          pp = this.pad_painter(true),
-          font = JSROOT.Painter.getFontDetails(160, textheight),
-          status_func = this.GetShowStatusFunc(),
-          disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
+   function TFramePainter(tframe) {
+      TooltipHandler.call(this, tframe);
+   }
 
-      if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
-      if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
+   TFramePainter.prototype = Object.create(TooltipHandler.prototype);
 
-      // collect tooltips from pad painter - it has list of all drawn objects
-      if (pp) hints = pp.GetTooltips(pnt);
+   TFramePainter.prototype.GetTipName = function(append) {
+      var res = TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
+      if (append) res+=append;
+      return res;
+   }
 
-      if (pnt && pnt.touch) textheight = 15;
+   TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
+      this.fX1NDC += shrink_left;
+      this.fX2NDC -= shrink_right;
+   }
 
-      for (var n=0; n < hints.length; ++n) {
-         var hint = hints[n];
-         if (!hint) continue;
-         if (!hint.lines || (hint.lines.length===0)) {
-            hints[n] = null; continue;
-         }
+   TFramePainter.prototype.SetLastEventPos = function(pnt) {
+      // set position of last context menu event, can be
+      this.fLastEventPnt = pnt;
+   }
 
-         // check if fully duplicated hint already exists
-         for (var k=0;k<n;++k) {
-            var hprev = hints[k], diff = false;
-            if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
-            for (var l=0;l<hint.lines.length && !diff;++l)
-               if (hprev.lines[l] !== hint.lines[l]) diff = true;
-            if (!diff) { hints[n] = null; break; }
-         }
-         if (!hints[n]) continue;
+   TFramePainter.prototype.GetLastEventPos = function() {
+      // return position of last event
+      return this.fLastEventPnt;
+   }
 
-         nhints++;
+   TFramePainter.prototype.UpdateAttributes = function(force) {
+      var pad = this.root_pad(),
+          tframe = this.GetObject();
 
-         for (var l=0;l<hint.lines.length;++l)
-            maxlen = Math.max(maxlen, hint.lines[l].length);
-
-         hint.height = Math.round(hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1));
-
-         if ((hint.color1!==undefined) && (hint.color1!=='none')) {
-            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
-            lastcolor1 = hint.color1;
-         }
-      }
-
-      var layer = this.hints_layer(),
-          hintsg = layer.select(".objects_hints"); // group with all tooltips
-
-      if (status_func) {
-         var title = "", name = "", coordinates = "", info = "";
-         if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
-         var hint = null, best_dist2 = 1e10, best_hint = null;
-         // try to select hint with exact match of the position when several hints available
-         if (hints && hints.length>0)
-            for (var k=0;k<hints.length;++k) {
-               if (!hints[k]) continue;
-               if (!hint) hint = hints[k];
-               if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
-
-               if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
-
-               var dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
-               if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
-            }
-
-         if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
-
-         if (hint) {
-            name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
-            title = hint.title || "";
-            info = hint.line;
-            if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
-         }
-
-         status_func(name, title, info, coordinates);
-      }
-
-      // end of closing tooltips
-      if (!pnt || disable_tootlips || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
-         hintsg.remove();
-         return;
-      }
-
-      // we need to set pointer-events=none for all elements while hints
-      // placed in front of so-called interactive rect in frame, used to catch mouse events
-
-      if (hintsg.empty())
-         hintsg = layer.append("svg:g")
-                       .attr("class", "objects_hints")
-                       .style("pointer-events","none");
-
-      var frame_shift = { x: 0, y: 0 }, trans = this.draw_g.attr("transform");
-      if (!pp.iscan) {
-         pp.CalcAbsolutePosition(this.svg_pad(), frame_shift);
-         trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
-      }
-
-      // copy transform attributes from frame itself
-      hintsg.attr("transform", trans);
-
-      hintsg.property("last_point", pnt);
-
-      var viewmode = hintsg.property('viewmode') || "",
-          actualw = 0, posx = pnt.x + 15;
-
-      if (nhints > 1) {
-         // if there are many hints, place them left or right
-
-         var bleft = 0.5, bright = 0.5;
-
-         if (viewmode=="left") bright = 0.7; else
-         if (viewmode=="right") bleft = 0.3;
-
-         if (pnt.x <= bleft*width) {
-            viewmode = "left";
-            posx = 20;
-         } else if (pnt.x >= bright*width) {
-            viewmode = "right";
-            posx = width - 60;
+      if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
+         if (!pad) {
+            JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
          } else {
-            posx = hintsg.property('startx');
+            JSROOT.extend(this, {
+               fX1NDC: pad.fLeftMargin,
+               fX2NDC: 1 - pad.fRightMargin,
+               fY1NDC: pad.fBottomMargin,
+               fY2NDC: 1 - pad.fTopMargin
+            });
          }
+      }
+
+      if (this.fillatt === undefined) {
+         if (tframe) this.fillatt = this.createAttFill(tframe);
+         else if (pad) this.fillatt = pad.fFrameFillColor ? this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor) : this.createAttFill(pad);
+         else this.fillatt = this.createAttFill(null, 1001, 0);
+
+         // force white color for the frame
+         if (!tframe && (this.fillatt.color == 'none') && this.pad_painter(true) && this.pad_painter(true).iscan) {
+            this.fillatt.color = 'white';
+         }
+      }
+
+      if (this.lineatt === undefined)
+         if (pad) this.lineatt = new TAttLineHandler({ fLineColor: pad.fFrameLineColor, fLineWidth: pad.fFrameLineWidth, fLineStyle: pad.fFrameLineStyle });
+             else this.lineatt = new TAttLineHandler(tframe ? tframe : 'black');
+   }
+
+   TFramePainter.prototype.SizeChanged = function() {
+      // function called at the end of resize of frame
+      // One should apply changes to the pad
+
+      var pad = this.root_pad(),
+          main = this.main_painter();
+
+      if (pad) {
+         pad.fLeftMargin = this.fX1NDC;
+         pad.fRightMargin = 1 - this.fX2NDC;
+         pad.fBottomMargin = this.fY1NDC;
+         pad.fTopMargin = 1 - this.fY2NDC;
+         if (main) main.SetRootPadRange(pad);
+      }
+
+      this.RedrawPad();
+   }
+
+   TFramePainter.prototype.Cleanup = function() {
+      if (this.draw_g) {
+         this.draw_g.selectAll("*").remove();
+         this.draw_g.on("mousedown", null)
+                    .on("dblclick", null)
+                    .on("wheel", null)
+                    .on("contextmenu", null)
+                    .property('interactive_set', null);
+      }
+      this.draw_g = null;
+      TooltipHandler.prototype.Cleanup.call(this);
+   }
+
+   TFramePainter.prototype.Redraw = function() {
+
+      // first update all attributes from objects
+      this.UpdateAttributes();
+
+      var width = this.pad_width(),
+          height = this.pad_height(),
+          lm = Math.round(width * this.fX1NDC),
+          w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
+          tm = Math.round(height * (1 - this.fY2NDC)),
+          h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
+          rotate = false, fixpos = false, pp = this.pad_painter();
+
+      if (pp && pp.options) {
+         if (pp.options.RotateFrame) rotate = true;
+         if (pp.options.FixFrame) fixpos = true;
+      }
+
+      // this is svg:g object - container for every other items belonging to frame
+      this.draw_g = this.svg_layer("primitives_layer").select(".root_frame");
+
+      var top_rect, main_svg;
+
+      if (this.draw_g.empty()) {
+
+         var layer = this.svg_layer("primitives_layer");
+
+         this.draw_g = layer.append("svg:g").attr("class", "root_frame");
+
+         this.draw_g.append("svg:title").text("");
+
+         top_rect = this.draw_g.append("svg:rect");
+
+         // append for the moment three layers - for drawing and axis
+         this.draw_g.append('svg:g').attr('class','grid_layer');
+
+         main_svg = this.draw_g.append('svg:svg')
+                           .attr('class','main_layer')
+                           .attr("x", 0)
+                           .attr("y", 0)
+                           .attr('overflow', 'hidden');
+
+         this.draw_g.append('svg:g').attr('class','axis_layer');
+         this.draw_g.append('svg:g').attr('class','upper_layer');
       } else {
-         viewmode = "single";
+         top_rect = this.draw_g.select("rect");
+         main_svg = this.draw_g.select(".main_layer");
       }
 
-      if (viewmode !== hintsg.property('viewmode')) {
-         hintsg.property('viewmode', viewmode);
-         hintsg.selectAll("*").remove();
+      var trans = "translate(" + lm + "," + tm + ")";
+      if (rotate) {
+         trans += " rotate(-90) " + "translate(" + -h + ",0)";
+         var d = w; w = h; h = d;
       }
 
-      var curry = 10, // normal y coordinate
-          gapy = 10,  // y coordinate, taking into account all gaps
-          gapminx = -1111, gapmaxx = -1111,
-          minhinty = -frame_shift.y,
-          maxhinty = this.pad_height("") - this.draw_g.property('draw_y') - frame_shift.y;
+      this.draw_g.property('frame_painter', this) // simple way to access painter via frame container
+                 .property('draw_x', lm)
+                 .property('draw_y', tm)
+                 .property('draw_width', w)
+                 .property('draw_height', h)
+                 .attr("transform", trans);
 
-      function FindPosInGap(y) {
-         for (var n=0;(n<hints.length) && (y < maxhinty); ++n) {
-            var hint = hints[n];
-            if (!hint) continue;
-            if ((hint.y>=y-5) && (hint.y <= y+hint.height+5)) {
-               y = hint.y+10;
-               n = -1;
-            }
+      top_rect.attr("x", 0)
+              .attr("y", 0)
+              .attr("width", w)
+              .attr("height", h)
+              .call(this.fillatt.func)
+              .call(this.lineatt.func);
+
+      main_svg.attr("width", w)
+              .attr("height", h)
+              .attr("viewBox", "0 0 " + w + " " + h);
+
+      var tooltip_rect = this.draw_g.select(".interactive_rect");
+
+      if (JSROOT.BatchMode) return tooltip_rect.remove();
+
+      this.draw_g.attr("x", lm)
+                 .attr("y", tm)
+                 .attr("width", w)
+                 .attr("height", h);
+
+      if (!rotate && !fixpos)
+         this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
+                        redraw: this.SizeChanged.bind(this) });
+
+      var painter = this;
+
+      function MouseMoveEvent() {
+         var pnt = d3.mouse(tooltip_rect.node());
+         painter.ProcessTooltipEvent({ x: pnt[0], y: pnt[1], touch: false });
+      }
+
+      function MouseCloseEvent() {
+         painter.ProcessTooltipEvent(null);
+      }
+
+      function TouchMoveEvent() {
+         var pnt = d3.touches(tooltip_rect.node());
+         if (!pnt || pnt.length !== 1) return painter.ProcessTooltipEvent(null);
+         painter.ProcessTooltipEvent({ x: pnt[0][0], y: pnt[0][1], touch: true });
+      }
+
+      function TouchCloseEvent() {
+         painter.ProcessTooltipEvent(null);
+      }
+
+      if (tooltip_rect.empty()) {
+         tooltip_rect =
+            this.draw_g
+                .append("rect")
+                .attr("class","interactive_rect")
+                .style('opacity',0)
+                .style('fill',"none")
+                .style("pointer-events","visibleFill")
+                .on('mouseenter', MouseMoveEvent)
+                .on('mousemove', MouseMoveEvent)
+                .on('mouseleave', MouseCloseEvent);
+
+         if (JSROOT.touches)
+            tooltip_rect.on("touchstart", TouchMoveEvent)
+                        .on("touchmove", TouchMoveEvent)
+                        .on("touchend", TouchCloseEvent)
+                        .on("touchcancel", TouchCloseEvent);
+      }
+
+      tooltip_rect.attr("x", 0)
+                  .attr("y", 0)
+                  .attr("width", w)
+                  .attr("height", h);
+
+      var hintsg = this.hints_layer().select(".objects_hints");
+      // if tooltips were visible before, try to reconstruct them after short timeout
+      if (!hintsg.empty() && this.tooltip_allowed)
+         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
+   }
+
+   TFramePainter.prototype.FillContextMenu = function(menu) {
+      // fill context menu for the frame
+      // it could be appended to the histogram menus
+
+      var main = this.main_painter(), alone = menu.size()==0, pad = this.root_pad();
+
+      if (alone)
+         menu.add("header:Frame");
+      else
+         menu.add("separator");
+
+      if (main) {
+         if (main.zoom_xmin !== main.zoom_xmax)
+            menu.add("Unzoom X", main.Unzoom.bind(main,"x"));
+         if (main.zoom_ymin !== main.zoom_ymax)
+            menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
+         if (main.zoom_zmin !== main.zoom_zmax)
+            menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
+         menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
+
+         if (pad) {
+            menu.addchk(pad.fLogx, "SetLogx", main.ToggleLog.bind(main,"x"));
+
+            menu.addchk(pad.fLogy, "SetLogy", main.ToggleLog.bind(main,"y"));
+
+            if (main.Dimension() == 2)
+               menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
          }
-         return y;
+         menu.add("separator");
       }
 
-      for (var n=0; n < hints.length; ++n) {
-         var hint = hints[n],
-             group = hintsg.select(".painter_hint_"+n);
-         if (hint===null) {
-            group.remove();
-            continue;
-         }
+      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
+         var fp = this.frame_painter();
+         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
+      });
+      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
+      menu.add("separator");
+      menu.add("Save as frame.png", function(arg) {
+         var top = this.svg_frame();
+         if (!top.empty())
+            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
+      });
 
-         var was_empty = group.empty();
+      return true;
+   }
 
-         if (was_empty)
-            group = hintsg.append("svg:svg")
-                          .attr("class", "painter_hint_"+n)
-                          .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
-                          .style('overflow','hidden')
-                          .style("pointer-events","none");
+   TFramePainter.prototype.GetFrameRect = function() {
+      // returns rectangle where frawe is drawn,
 
-         if (viewmode == "single") {
-            curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
-         } else {
-            gapy = FindPosInGap(gapy);
-            if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
-            gapminx = Math.min(gapminx, hint.x);
-            gapmaxx = Math.min(gapmaxx, hint.x);
-         }
-
-         group.attr("x", posx)
-              .attr("y", curry)
-              .property("curry", curry)
-              .property("gapy", gapy);
-
-         curry += hint.height + 5;
-         gapy += hint.height + 5;
-
-         if (!was_empty)
-            group.selectAll("*").remove();
-
-         group.attr("width", 60)
-              .attr("height", hint.height);
-
-         var r = group.append("rect")
-                      .attr("x",0)
-                      .attr("y",0)
-                      .attr("width", 60)
-                      .attr("height", hint.height)
-                      .attr("fill","lightgrey")
-                      .style("pointer-events","none");
-
-         if (nhints > 1) {
-            var col = usecolor1 ? hint.color1 : hint.color2;
-            if ((col !== undefined) && (col!=='none'))
-               r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
-         }
-
-         if (hint.lines != null) {
-            for (var l=0;l<hint.lines.length;l++)
-               if (hint.lines[l]!==null) {
-                  var txt = group.append("svg:text")
-                                 .attr("text-anchor", "start")
-                                 .attr("x", wmargin)
-                                 .attr("y", hmargin + l*textheight*hstep)
-                                 .attr("dy", ".8em")
-                                 .attr("fill","black")
-                                 .style("pointer-events","none")
-                                 .call(font.func)
-                                 .text(hint.lines[l]);
-
-                  var box = this.GetBoundarySizes(txt.node());
-
-                  actualw = Math.max(actualw, box.width);
-               }
-         }
-
-         function translateFn() {
-            // We only use 'd', but list d,i,a as params just to show can have them as params.
-            // Code only really uses d and t.
-            return function(d, i, a) {
-               return function(t) {
-                  return t < 0.8 ? "0" : (t-0.8)*5;
-               };
-            };
-         }
-
-         if (was_empty)
-            if (JSROOT.gStyle.TooltipAnimation > 0)
-               group.transition().duration(JSROOT.gStyle.TooltipAnimation).attrTween("opacity", translateFn());
-            else
-               group.attr('opacity',1);
+      var rect = {
+         x: this.frame_x(),
+         y: this.frame_y(),
+         width: this.frame_width(),
+         height: this.frame_height(),
+         transform: this.draw_g ? this.draw_g.attr("transform") : ""
       }
 
-      actualw += 2*wmargin;
-
-      var svgs = hintsg.selectAll("svg");
-
-      if ((viewmode == "right") && (posx + actualw > width - 20)) {
-         posx = width - actualw - 20;
-         svgs.attr("x", posx);
-      }
-
-      if ((viewmode == "single") && (posx + actualw > pad_width - frame_x) && (posx > actualw+20)) {
-         posx -= (actualw + 20);
-         svgs.attr("x", posx);
-      }
-
-      // if gap not very big, apply gapy coordinate to open view on the histogram
-      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
-         if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
-            svgs.attr("y", function() { return d3.select(this).property('gapy'); });
-      } else if ((viewmode !== 'single') && (curry > maxhinty)) {
-         var shift = Math.max((maxhinty - curry - 10), minhinty);
-         if (shift<0)
-            svgs.attr("y", function() { return d3.select(this).property('curry') + shift; });
-      }
-
-      if (actualw > 10)
-         svgs.attr("width", actualw)
-             .select('rect').attr("width", actualw);
-
-      hintsg.property('startx', posx);
+      return rect;
    }
 
    TFramePainter.prototype.ProcessFrameClick = function(pnt) {
