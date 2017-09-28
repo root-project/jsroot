@@ -1736,19 +1736,20 @@
    TGraphPolargramPainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
+      var _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
+          pos = {
+            x: _rx * Math.cos(-angle - this.angle),
+            y: _ry * Math.sin(-angle - this.angle),
+            rx: _rx,
+            ry: _ry
+         };
 
-      var rx = this.r(radius),
-          ry = rx/this.szx*this.szy;
-
-      var pos = {
-         x: rx * Math.cos(-angle - this.angle),
-         y: ry * Math.sin(-angle - this.angle)
+      if (!keep_float) {
+         pos.x = Math.round(pos.x);
+         pos.y = Math.round(pos.y);
+         pos.rx =  Math.round(pos.rx);
+         pos.ry =  Math.round(pos.ry);
       }
-
-      if (!keep_float) { pos.x = Math.round(pos.x); pos.y = Math.round(pos.y); }
-      pos.rx = rx;
-      pos.ry = ry;
-
       return pos;
    }
 
@@ -2068,7 +2069,7 @@
             pos1 = main.translate(graph.fX[n] + graph.fEX[n], graph.fY[n]);
             pos2 = main.translate(graph.fX[n] - graph.fEX[n], graph.fY[n]);
 
-            epath += "M" + pos1.x + "," + pos1.y + "A" + pos2.rx + "," + pos2.ry+ ",0,0,1," +pos2.x + "," + pos2.y;
+            epath += "M" + pos1.x + "," + pos1.y + "A" + pos2.rx + "," + pos2.ry+ ",0,0,1," + pos2.x + "," + pos2.y;
          }
 
          var pos = main.translate(graph.fX[n], graph.fY[n]);
