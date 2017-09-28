@@ -814,7 +814,7 @@
       return optbins;
    }
 
-   TGraphPainter.prototype.TooltipText = function(d, asarray) {
+   TGraphPainter.prototype.TooltipText = function(d) {
       var pmain = this.main_painter(), lines = [];
 
       lines.push(this.GetTipName());
@@ -829,11 +829,7 @@
          if ((this.options.Errors || (this.options.EF > 0)) && (pmain.y_kind=='normal') && ('eylow' in d) && ((d.eylow!=0) || (d.eyhigh!=0)))
             lines.push("error y = -" + pmain.AxisAsText("y", d.eylow) + "/+" + pmain.AxisAsText("y", d.eyhigh));
       }
-      if (asarray) return lines;
-
-      var res = "";
-      for (var n=0;n<lines.length;++n) res += ((n>0 ? "\n" : "") + lines[n]);
-      return res;
+      return lines;
    }
 
    TGraphPainter.prototype.DrawBins = function() {
@@ -1210,7 +1206,7 @@
       var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
-                  lines: this.TooltipText(d, true),
+                  lines: this.TooltipText(d),
                   rect: best, d3bin: findbin  };
 
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
@@ -1381,7 +1377,7 @@
                   x: best.bin ? pmain.grx(best.bin.x) : best.linex,
                   y: best.bin ? pmain.gry(best.bin.y) : best.liney,
                   color1: this.lineatt.color,
-                  lines: this.TooltipText(best.bin, true),
+                  lines: this.TooltipText(best.bin),
                   usepath: true };
 
       res.ismark = ismark;
@@ -1764,6 +1760,21 @@
       return radius.toFixed((this.ndig > 0) ? this.ndig : 0);
    }
 
+   TGraphPolargramPainter.prototype.AxisAsText = function(axis, value) {
+
+      if (axis == "r") {
+         if (value === Math.round(value)) return value.toString();
+         if (this.ndig>10) return value.toExponential(4);
+         return value.toFixed(this.ndig+2);
+      } else {
+         value *= 180/Math.PI;
+         if (value === Math.round(value)) return value.toString();
+         return value.toFixed(1);
+      }
+
+      return value.toPrecision(4);
+   }
+
    TGraphPolargramPainter.prototype.MouseEvent = function(kind) {
       var layer = this.svg_layer("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
@@ -1792,6 +1803,9 @@
       rect.y = Math.round((h - rect.height)/2);
       rect.midx = Math.round(w/2);
       rect.midy = Math.round(h/2);
+
+      rect.hint_delta_x = rect.midx - rect.x;
+      rect.hint_delta_y = rect.midy - rect.y;
 
       rect.transform = "translate(" + rect.x + "," + rect.y + ")";
 
@@ -2106,12 +2120,20 @@
                   x: bestpos.x, y: bestpos.y,
                   color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
-                  lines: ["line1", "line2"],
+                  lines: [ this.GetTipName() ],
                   binindx: bestindx,
                   menu_dist: match_distance,
                   radius: match_distance
-
                 };
+
+      res.lines.push("r = " + main.AxisAsText("r", graph.fY[bestindx]));
+      res.lines.push("phi = " + main.AxisAsText("phi",graph.fX[bestindx]));
+
+      if (graph.fEY && graph.fEY[bestindx])
+         res.lines.push("error r = " + main.AxisAsText("r", graph.fEY[bestindx]));
+
+      if (graph.fEX && graph.fEX[bestindx])
+         res.lines.push("error phi = " + main.AxisAsText("phi", graph.fEX[bestindx]));
 
       return res;
    }

@@ -4337,9 +4337,9 @@
             gapmaxx = Math.min(gapmaxx, hint.x);
          }
 
-         group.attr("x", posx)
-              .attr("y", curry)
-              .property("curry", curry)
+         group.attr("x", posx + frame_rect.hint_delta_x)
+              .attr("y", curry + frame_rect.hint_delta_y)
+              .property("curry", curry + frame_rect.hint_delta_y)
               .property("gapy", gapy);
 
          curry += hint.height + 5;
@@ -4710,17 +4710,17 @@
    }
 
    TFramePainter.prototype.GetFrameRect = function() {
-      // returns rectangle where frawe is drawn,
+      // returns frame rectangle plus extra info for hint display
 
-      var rect = {
+      return {
          x: this.frame_x(),
          y: this.frame_y(),
          width: this.frame_width(),
          height: this.frame_height(),
-         transform: this.draw_g ? this.draw_g.attr("transform") : ""
+         transform: this.draw_g ? this.draw_g.attr("transform") : "",
+         hint_delta_x: 0,
+         hint_delta_y: 0
       }
-
-      return rect;
    }
 
    TFramePainter.prototype.ProcessFrameClick = function(pnt) {
