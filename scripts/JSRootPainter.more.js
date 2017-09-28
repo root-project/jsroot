@@ -1795,17 +1795,19 @@
           w = this.pad_width(),
           h = this.pad_height(),
           rect = {
-             width: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
-             height: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h)
+             szx: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
+             szy: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h)
           };
 
-      rect.x = Math.round((w - rect.width)/2);
-      rect.y = Math.round((h - rect.height)/2);
+      rect.width = 2*rect.szx;
+      rect.height = 2*rect.szy;
       rect.midx = Math.round(w/2);
       rect.midy = Math.round(h/2);
+      rect.x = rect.midx - rect.szx;
+      rect.y = rect.midy - rect.szy;
 
-      rect.hint_delta_x = rect.midx - rect.x;
-      rect.hint_delta_y = rect.midy - rect.y;
+      rect.hint_delta_x = rect.szx;
+      rect.hint_delta_y = rect.szy;
 
       rect.transform = "translate(" + rect.x + "," + rect.y + ")";
 
@@ -1826,8 +1828,8 @@
       this.CreateG();
 
       this.draw_g.attr("transform", "translate(" + rect.midx + "," + rect.midy + ")");
-      this.szx = rect.width;
-      this.szy = rect.height;
+      this.szx = rect.szx;
+      this.szy = rect.szy;
 
       this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, this.szx ]);
       this.angle = polar.fAxisAngle || 0;

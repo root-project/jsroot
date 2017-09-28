@@ -1793,7 +1793,7 @@
       var res = this.svg_frame();
       if (res.empty()) return 0;
       res = res.property(name);
-      return (res===undefined) || isNaN(res) ? 0 : res;
+      return ((res===undefined) || isNaN(res)) ? 0 : res;
    }
 
    TObjectPainter.prototype.frame_x = function() {
@@ -4160,10 +4160,7 @@
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           frame_rect = this.GetFrameRect(),
-          height = frame_rect.height,
-          width = frame_rect.width,
           pad_width = this.pad_width(),
-          frame_x = frame_rect.x,
           pp = this.pad_painter(true),
           font = JSROOT.Painter.getFontDetails(160, textheight),
           status_func = this.GetShowStatusFunc(),
@@ -4265,7 +4262,7 @@
       hintsg.property("last_point", pnt);
 
       var viewmode = hintsg.property('viewmode') || "",
-          actualw = 0, posx = pnt.x + 15;
+          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
 
       if (nhints > 1) {
          // if there are many hints, place them left or right
@@ -4275,17 +4272,18 @@
          if (viewmode=="left") bright = 0.7; else
          if (viewmode=="right") bleft = 0.3;
 
-         if (pnt.x <= bleft*width) {
+         if (posx <= bleft*frame_rect.width) {
             viewmode = "left";
             posx = 20;
-         } else if (pnt.x >= bright*width) {
+         } else if (posx >= bright*frame_rect.width) {
             viewmode = "right";
-            posx = width - 60;
+            posx = frame_rect.width - 60;
          } else {
             posx = hintsg.property('startx');
          }
       } else {
          viewmode = "single";
+         posx += 15;
       }
 
       if (viewmode !== hintsg.property('viewmode')) {
@@ -4319,7 +4317,7 @@
             continue;
          }
 
-         var was_empty = group.empty();
+         var was_empty = group.empty(), dx = 0, dy = 0;
 
          if (was_empty)
             group = hintsg.append("svg:svg")
@@ -4329,7 +4327,7 @@
                           .style("pointer-events","none");
 
          if (viewmode == "single") {
-            curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
+            curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
          } else {
             gapy = FindPosInGap(gapy);
             if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
@@ -4337,9 +4335,9 @@
             gapmaxx = Math.min(gapmaxx, hint.x);
          }
 
-         group.attr("x", posx + frame_rect.hint_delta_x)
-              .attr("y", curry + frame_rect.hint_delta_y)
-              .property("curry", curry + frame_rect.hint_delta_y)
+         group.attr("x", posx)
+              .attr("y", curry)
+              .property("curry", curry)
               .property("gapy", gapy);
 
          curry += hint.height + 5;
@@ -4405,12 +4403,12 @@
 
       var svgs = hintsg.selectAll("svg");
 
-      if ((viewmode == "right") && (posx + actualw > width - 20)) {
-         posx = width - actualw - 20;
+      if ((viewmode == "right") && (posx + actualw > frame_rect.width - 20)) {
+         posx = frame_rect.width - actualw - 20;
          svgs.attr("x", posx);
       }
 
-      if ((viewmode == "single") && (posx + actualw > pad_width - frame_x) && (posx > actualw+20)) {
+      if ((viewmode == "single") && (posx + actualw > pad_width - frame_rect.x) && (posx > actualw+20)) {
          posx -= (actualw + 20);
          svgs.attr("x", posx);
       }
@@ -4426,7 +4424,7 @@
       }
 
       if (actualw > 10)
-         svgs.attr("width", actualw)
+         svgs.attr("width",actualw)
              .select('rect').attr("width", actualw);
 
       hintsg.property('startx', posx);
