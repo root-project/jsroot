@@ -1732,11 +1732,11 @@
    // ==============================================================
 
    function TGraphPolargramPainter(polargram) {
-      JSROOT.TObjectPainter.call(this, polargram);
+      JSROOT.TooltipHandler.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
    }
 
-   TGraphPolargramPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   TGraphPolargramPainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
 
@@ -1779,27 +1779,43 @@
       this.ProcessTooltipEvent(pnt);
    }
 
-   TGraphPolargramPainter.prototype.ProcessTooltipEvent = function(pnt) {
-      var pp = this.pad_painter(true),
-          hints = pp ? pp.GetTooltips(pnt) : [];
+   TGraphPolargramPainter.prototype.GetFrameRect = function() {
+      var pad = this.root_pad(),
+          w = this.pad_width(),
+          h = this.pad_height(),
+          rect = {
+             width: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
+             height: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h)
+          };
+
+      rect.x = Math.round((w - rect.width)/2);
+      rect.y = Math.round((h - rect.height)/2);
+      rect.midx = Math.round(w/2);
+      rect.midy = Math.round(h/2);
+
+      rect.transform = "translate(" + rect.x + "," + rect.y + ")";
+
+      return rect;
    }
 
    TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
-      var pad = this.root_pad(), polar = this.GetObject(),
-          w = this.pad_width(), h = this.pad_height(),
-          midx = Math.round(w/2), midy = Math.round(h/2),
-          szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
-          szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
+      var pad = this.root_pad(),
+          polar = this.GetObject(),
+          rect = this.GetFrameRect();
+//          w = this.pad_width(), h = this.pad_height(),
+//          midx = Math.round(w/2), midy = Math.round(h/2),
+//          szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
+//          szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
 
       this.CreateG();
 
-      this.draw_g.attr("transform", "translate(" + midx + "," + midy + ")");
+      this.draw_g.attr("transform", "translate(" + rect.midx + "," + rect.midy + ")");
+      this.szx = rect.width;
+      this.szy = rect.height;
 
-      this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, szx ]);
-      this.szx = szx;
-      this.szy = szy;
+      this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, this.szx ]);
       this.angle = polar.fAxisAngle || 0;
 
       var ticks = this.r.ticks(5),
@@ -1830,10 +1846,10 @@
          exclude_last = true;
       }
 
-      this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * szy * 2));
+      this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2));
 
       for (var n=0;n<ticks.length;++n) {
-         var rx = this.r(ticks[n]), ry = rx/szx*szy;
+         var rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
          this.draw_g.append("ellipse")
              .attr("cx",0)
              .attr("cy",0)
@@ -1843,7 +1859,7 @@
              .call(this.lineatt.func);
 
          if ((n < ticks.length-1) || !exclude_last)
-            this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * szy * 0.5),
+            this.DrawText({ align: 23, x: Math.round(rx), y: Math.round(polar.fRadialTextSize * this.szy * 0.5),
                             text: this.format(ticks[n]), color: this.get_color[polar.fRadialLabelColor], latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
@@ -1851,7 +1867,7 @@
             for (var nn=1;nn<nminor;++nn) {
                var gridr = ticks[n] + dr*nn;
                if (gridr>polar.fRwrmax) break;
-               rx = this.r(gridr); ry = rx/szx*szy;
+               rx = this.r(gridr); ry = rx/this.szx*this.szy;
                this.draw_g.append("ellipse")
                    .attr("cx",0)
                    .attr("cy",0)
@@ -1865,7 +1881,7 @@
 
       this.FinishTextDrawing();
 
-      var fontsize = Math.round(polar.fPolarTextSize * szy * 2);
+      var fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
       this.StartTextDrawing(polar.fPolarLabelFont, fontsize);
 
       var nmajor = polar.fNdivPol % 100;
@@ -1879,15 +1895,17 @@
          this.draw_g.append("line")
              .attr("x1",0)
              .attr("y1",0)
-             .attr("x2", Math.round(szx*Math.cos(angle)))
-             .attr("y2", Math.round(szy*Math.sin(angle)))
+             .attr("x2", Math.round(this.szx*Math.cos(angle)))
+             .attr("y2", Math.round(this.szy*Math.sin(angle)))
              .call(this.lineatt.func);
 
          var aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
 
-         this.DrawText({ align: aligns[aindx], x: Math.round((szx+fontsize)*Math.cos(angle)), y: Math.round((szy + fontsize/szx*szy)*(Math.sin(angle))),
-                       text: lbls[n],
-                       color: this.get_color[polar.fPolarLabelColor], latex: 1 });
+         this.DrawText({ align: aligns[aindx],
+                         x: Math.round((this.szx+fontsize)*Math.cos(angle)),
+                         y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
+                         text: lbls[n],
+                          color: this.get_color[polar.fPolarLabelColor], latex: 1 });
       }
 
       this.FinishTextDrawing();
@@ -1901,8 +1919,8 @@
             this.draw_g.append("line")
                 .attr("x1",0)
                 .attr("y1",0)
-                .attr("x2", Math.round(szx*Math.cos(angle)))
-                .attr("y2", Math.round(szy*Math.sin(angle)))
+                .attr("x2", Math.round(this.szx*Math.cos(angle)))
+                .attr("y2", Math.round(this.szy*Math.sin(angle)))
                 .call(this.gridatt.func);
          }
 
@@ -1925,7 +1943,7 @@
                             .on('mousemove', this.MouseEvent.bind(this,'move'))
                             .on('mouseleave', this.MouseEvent.bind(this,'leave'));
 
-      interactive.attr("rx", szx).attr("ry", szy);
+      interactive.attr("rx", this.szx).attr("ry", this.szy);
 
       d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
    }
@@ -2079,15 +2097,20 @@
          if (dist2<best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
       }
 
-      if (Math.sqrt(best_dist2)>5) return null;
+      var match_distance = 5;
+      if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.GetFullSize();
+
+      if (Math.sqrt(best_dist2) > match_distance) return null;
 
       var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
                   x: bestpos.x, y: bestpos.y,
-                  color1: this.lineatt.color,
+                  color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
                   lines: ["line1", "line2"],
                   binindx: bestindx,
-                  menu_dist: 3
+                  menu_dist: match_distance,
+                  radius: match_distance
+
                 };
 
       return res;
@@ -2114,11 +2137,11 @@
       if (hint.changed)
          ttcircle.attr("cx", hint.x)
                .attr("cy", hint.y)
-               .attr("rx", 10)
-               .attr("ry", 10)
+               .attr("rx", Math.round(hint.radius))
+               .attr("ry", Math.round(hint.radius))
                .style("fill", "none")
-               .style("stroke", "red")
-               .property("current_bin", hint.d3bin);
+               .style("stroke", hint.color1)
+               .property("current_bin", hint.binindx);
    }
 
    TGraphPolarPainter.prototype.ProcessTooltip = function(pnt) {

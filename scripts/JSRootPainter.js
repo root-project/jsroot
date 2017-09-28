@@ -4412,6 +4412,8 @@
       });
    }
 
+
+
    TFramePainter.prototype.hints_layer = function() {
       // return layer where frame tooltips are shown
       // only canvas info_layer can be used while other pads can overlay
@@ -4424,6 +4426,324 @@
       // return true if tooltip is shown, use to prevent some other action
       if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
       return ! (this.hints_layer().select(".objects_hints").empty());
+   }
+
+   // ==============
+
+   function TooltipHandler(obj) {
+      JSROOT.TObjectPainter.call(this, obj);
+      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
+   }
+
+   TooltipHandler.prototype = Object.create(TObjectPainter.prototype);
+
+   TooltipHandler.prototype.hints_layer = function() {
+      // return layer where frame tooltips are shown
+      // only canvas info_layer can be used while other pads can overlay
+
+      var canp = this.pad_painter();
+      return canp ? canp.svg_layer("info_layer") : d3.select(null);
+   }
+
+   TooltipHandler.prototype.IsTooltipShown = function() {
+      // return true if tooltip is shown, use to prevent some other action
+      if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
+      return ! (this.hints_layer().select(".objects_hints").empty());
+   }
+
+   TooltipHandler.prototype.GetFrameRect = function() {
+      // returns rectangle where frawe is drawn,
+
+      var rect = {
+         x: this.frame_x(),
+         y: this.frame_y(),
+         width: this.frame_width(),
+         height: this.frame_height(),
+         transform: this.draw_g ? this.draw_g.attr("transform") : ""
+      }
+
+      return rect;
+   }
+
+   TooltipHandler.prototype.ProcessTooltipEvent = function(pnt, enabled) {
+      // make central function which let show selected hints for the object
+
+      if (enabled !== undefined) this.tooltip_enabled = enabled;
+
+      var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
+          textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
+          frame_rect = this.GetFrameRect(),
+          height = frame_rect.height,
+          width = frame_rect.width,
+          pad_width = this.pad_width(),
+          frame_x = frame_rect.x,
+          pp = this.pad_painter(true),
+          font = JSROOT.Painter.getFontDetails(160, textheight),
+          status_func = this.GetShowStatusFunc(),
+          disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
+
+      if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
+      if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
+
+      // collect tooltips from pad painter - it has list of all drawn objects
+      if (pp) hints = pp.GetTooltips(pnt);
+
+      if (pnt && pnt.touch) textheight = 15;
+
+      for (var n=0; n < hints.length; ++n) {
+         var hint = hints[n];
+         if (!hint) continue;
+         if (!hint.lines || (hint.lines.length===0)) {
+            hints[n] = null; continue;
+         }
+
+         // check if fully duplicated hint already exists
+         for (var k=0;k<n;++k) {
+            var hprev = hints[k], diff = false;
+            if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
+            for (var l=0;l<hint.lines.length && !diff;++l)
+               if (hprev.lines[l] !== hint.lines[l]) diff = true;
+            if (!diff) { hints[n] = null; break; }
+         }
+         if (!hints[n]) continue;
+
+         nhints++;
+
+         for (var l=0;l<hint.lines.length;++l)
+            maxlen = Math.max(maxlen, hint.lines[l].length);
+
+         hint.height = Math.round(hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1));
+
+         if ((hint.color1!==undefined) && (hint.color1!=='none')) {
+            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+            lastcolor1 = hint.color1;
+         }
+      }
+
+      var layer = this.hints_layer(),
+          hintsg = layer.select(".objects_hints"); // group with all tooltips
+
+      if (status_func) {
+         var title = "", name = "", coordinates = "", info = "";
+         if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
+         var hint = null, best_dist2 = 1e10, best_hint = null;
+         // try to select hint with exact match of the position when several hints available
+         if (hints && hints.length>0)
+            for (var k=0;k<hints.length;++k) {
+               if (!hints[k]) continue;
+               if (!hint) hint = hints[k];
+               if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
+
+               if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
+
+               var dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
+               if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
+            }
+
+         if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
+
+         if (hint) {
+            name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
+            title = hint.title || "";
+            info = hint.line;
+            if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
+         }
+
+         status_func(name, title, info, coordinates);
+      }
+
+      // end of closing tooltips
+      if (!pnt || disable_tootlips || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
+         hintsg.remove();
+         return;
+      }
+
+      // we need to set pointer-events=none for all elements while hints
+      // placed in front of so-called interactive rect in frame, used to catch mouse events
+
+      if (hintsg.empty())
+         hintsg = layer.append("svg:g")
+                       .attr("class", "objects_hints")
+                       .style("pointer-events","none");
+
+      var frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || "";
+      if (!pp.iscan) {
+         pp.CalcAbsolutePosition(this.svg_pad(), frame_shift);
+         trans = "translate(" + frame_shift.x + "," + frame_shift.y + ") " + trans;
+      }
+
+      // copy transform attributes from frame itself
+      hintsg.attr("transform", trans);
+
+      hintsg.property("last_point", pnt);
+
+      var viewmode = hintsg.property('viewmode') || "",
+          actualw = 0, posx = pnt.x + 15;
+
+      if (nhints > 1) {
+         // if there are many hints, place them left or right
+
+         var bleft = 0.5, bright = 0.5;
+
+         if (viewmode=="left") bright = 0.7; else
+         if (viewmode=="right") bleft = 0.3;
+
+         if (pnt.x <= bleft*width) {
+            viewmode = "left";
+            posx = 20;
+         } else if (pnt.x >= bright*width) {
+            viewmode = "right";
+            posx = width - 60;
+         } else {
+            posx = hintsg.property('startx');
+         }
+      } else {
+         viewmode = "single";
+      }
+
+      if (viewmode !== hintsg.property('viewmode')) {
+         hintsg.property('viewmode', viewmode);
+         hintsg.selectAll("*").remove();
+      }
+
+      var curry = 10, // normal y coordinate
+          gapy = 10,  // y coordinate, taking into account all gaps
+          gapminx = -1111, gapmaxx = -1111,
+          minhinty = -frame_shift.y,
+          maxhinty = this.pad_height("") - frame_rect.y - frame_shift.y;
+
+      function FindPosInGap(y) {
+         for (var n=0;(n<hints.length) && (y < maxhinty); ++n) {
+            var hint = hints[n];
+            if (!hint) continue;
+            if ((hint.y>=y-5) && (hint.y <= y+hint.height+5)) {
+               y = hint.y+10;
+               n = -1;
+            }
+         }
+         return y;
+      }
+
+      for (var n=0; n < hints.length; ++n) {
+         var hint = hints[n],
+             group = hintsg.select(".painter_hint_"+n);
+         if (hint===null) {
+            group.remove();
+            continue;
+         }
+
+         var was_empty = group.empty();
+
+         if (was_empty)
+            group = hintsg.append("svg:svg")
+                          .attr("class", "painter_hint_"+n)
+                          .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
+                          .style('overflow','hidden')
+                          .style("pointer-events","none");
+
+         if (viewmode == "single") {
+            curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
+         } else {
+            gapy = FindPosInGap(gapy);
+            if ((gapminx === -1111) && (gapmaxx === -1111)) gapminx = gapmaxx = hint.x;
+            gapminx = Math.min(gapminx, hint.x);
+            gapmaxx = Math.min(gapmaxx, hint.x);
+         }
+
+         group.attr("x", posx)
+              .attr("y", curry)
+              .property("curry", curry)
+              .property("gapy", gapy);
+
+         curry += hint.height + 5;
+         gapy += hint.height + 5;
+
+         if (!was_empty)
+            group.selectAll("*").remove();
+
+         group.attr("width", 60)
+              .attr("height", hint.height);
+
+         var r = group.append("rect")
+                      .attr("x",0)
+                      .attr("y",0)
+                      .attr("width", 60)
+                      .attr("height", hint.height)
+                      .attr("fill","lightgrey")
+                      .style("pointer-events","none");
+
+         if (nhints > 1) {
+            var col = usecolor1 ? hint.color1 : hint.color2;
+            if ((col !== undefined) && (col!=='none'))
+               r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
+         }
+
+         if (hint.lines != null) {
+            for (var l=0;l<hint.lines.length;l++)
+               if (hint.lines[l]!==null) {
+                  var txt = group.append("svg:text")
+                                 .attr("text-anchor", "start")
+                                 .attr("x", wmargin)
+                                 .attr("y", hmargin + l*textheight*hstep)
+                                 .attr("dy", ".8em")
+                                 .attr("fill","black")
+                                 .style("pointer-events","none")
+                                 .call(font.func)
+                                 .text(hint.lines[l]);
+
+                  var box = this.GetBoundarySizes(txt.node());
+
+                  actualw = Math.max(actualw, box.width);
+               }
+         }
+
+         function translateFn() {
+            // We only use 'd', but list d,i,a as params just to show can have them as params.
+            // Code only really uses d and t.
+            return function(d, i, a) {
+               return function(t) {
+                  return t < 0.8 ? "0" : (t-0.8)*5;
+               };
+            };
+         }
+
+         if (was_empty)
+            if (JSROOT.gStyle.TooltipAnimation > 0)
+               group.transition().duration(JSROOT.gStyle.TooltipAnimation).attrTween("opacity", translateFn());
+            else
+               group.attr('opacity',1);
+      }
+
+      actualw += 2*wmargin;
+
+      var svgs = hintsg.selectAll("svg");
+
+      if ((viewmode == "right") && (posx + actualw > width - 20)) {
+         posx = width - actualw - 20;
+         svgs.attr("x", posx);
+      }
+
+      if ((viewmode == "single") && (posx + actualw > pad_width - frame_x) && (posx > actualw+20)) {
+         posx -= (actualw + 20);
+         svgs.attr("x", posx);
+      }
+
+      // if gap not very big, apply gapy coordinate to open view on the histogram
+      if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
+         if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
+            svgs.attr("y", function() { return d3.select(this).property('gapy'); });
+      } else if ((viewmode !== 'single') && (curry > maxhinty)) {
+         var shift = Math.max((maxhinty - curry - 10), minhinty);
+         if (shift<0)
+            svgs.attr("y", function() { return d3.select(this).property('curry') + shift; });
+      }
+
+      if (actualw > 10)
+         svgs.attr("width", actualw)
+             .select('rect').attr("width", actualw);
+
+      hintsg.property('startx', posx);
    }
 
    TFramePainter.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -4536,10 +4856,8 @@
 
       hintsg.property("last_point", pnt);
 
-      var viewmode = hintsg.property('viewmode');
-      if (viewmode === undefined) viewmode = "";
-
-      var actualw = 0, posx = pnt.x + 15;
+      var viewmode = hintsg.property('viewmode') || "",
+          actualw = 0, posx = pnt.x + 15;
 
       if (nhints > 1) {
          // if there are many hints, place them left or right
@@ -4552,8 +4870,7 @@
          if (pnt.x <= bleft*width) {
             viewmode = "left";
             posx = 20;
-         } else
-         if (pnt.x >= bright*width) {
+         } else if (pnt.x >= bright*width) {
             viewmode = "right";
             posx = width - 60;
          } else {
@@ -4599,8 +4916,9 @@
          if (was_empty)
             group = hintsg.append("svg:svg")
                           .attr("class", "painter_hint_"+n)
-                          .attr('opacity',0) // use attribute, not style to make animation with d3.transition()
-                          .style('overflow','hidden').style("pointer-events","none");
+                          .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
+                          .style('overflow','hidden')
+                          .style("pointer-events","none");
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3);
@@ -6988,6 +7306,7 @@
    JSROOT.TAttMarkerHandler = TAttMarkerHandler;
    JSROOT.TBasePainter = TBasePainter;
    JSROOT.TObjectPainter = TObjectPainter;
+   JSROOT.TooltipHandler = TooltipHandler;
    JSROOT.TFramePainter = TFramePainter;
    JSROOT.TPadPainter = TPadPainter;
    JSROOT.TCanvasPainter = TCanvasPainter;
