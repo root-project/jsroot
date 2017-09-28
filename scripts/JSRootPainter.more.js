@@ -1257,11 +1257,8 @@
    }
 
    TGraphPainter.prototype.ProcessTooltip = function(pnt) {
-
       var hint = this.ExtractTooltip(pnt);
-
       if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
-
       return hint;
    }
 
@@ -1784,7 +1781,7 @@
 
    TGraphPolargramPainter.prototype.ProcessTooltipEvent = function(pnt) {
       var pp = this.pad_painter(true),
-         hints = pp ? pp.GetTooltips(pnt) : [];
+          hints = pp ? pp.GetTooltips(pnt) : [];
    }
 
    TGraphPolargramPainter.prototype.Redraw = function() {
@@ -1910,7 +1907,7 @@
          }
 
 
-      if (JSROOT.BatchMode || true) return;
+      if (JSROOT.BatchMode) return;
 
       var layer = this.svg_layer("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
@@ -2066,6 +2063,68 @@
       polargram.fRwrmax = rmax + (rmax-rmin)*0.1;
 
       return polargram;
+   }
+
+   TGraphPolarPainter.prototype.ExtractTooltip = function(pnt) {
+      if (!pnt) return null;
+
+      var graph = this.GetObject(),
+          main = this.main_painter(),
+          best_dist2 = 1e10, bestindx = -1, bestpos = null;
+
+      for (var n=0;n<graph.fNpoints;++n) {
+         var pos = main.translate(graph.fX[n], graph.fY[n]);
+
+         var dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
+         if (dist2<best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
+      }
+
+      if (Math.sqrt(best_dist2)>5) return null;
+
+      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+                  x: bestpos.x, y: bestpos.y,
+                  color1: this.lineatt.color,
+                  exact: Math.sqrt(best_dist2) < 4,
+                  lines: ["line1", "line2"],
+                  binindx: bestindx,
+                  menu_dist: 3
+                };
+
+      return res;
+   }
+
+   TGraphPolarPainter.prototype.ShowTooltip = function(hint) {
+
+      if (!this.draw_g) return;
+
+      var ttcircle = this.draw_g.select(".tooltip_bin");
+
+      if (!hint) {
+         ttcircle.remove();
+         return;
+      }
+
+      if (ttcircle.empty())
+         ttcircle = this.draw_g.append("svg:ellipse")
+                             .attr("class","tooltip_bin")
+                             .style("pointer-events","none");
+
+      hint.changed = ttcircle.property("current_bin") !== hint.binindx;
+
+      if (hint.changed)
+         ttcircle.attr("cx", hint.x)
+               .attr("cy", hint.y)
+               .attr("rx", 10)
+               .attr("ry", 10)
+               .style("fill", "none")
+               .style("stroke", "red")
+               .property("current_bin", hint.d3bin);
+   }
+
+   TGraphPolarPainter.prototype.ProcessTooltip = function(pnt) {
+      var hint = this.ExtractTooltip(pnt);
+      if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
+      return hint;
    }
 
    TGraphPolarPainter.prototype.PerformDrawing = function(divid) {
