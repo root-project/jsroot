@@ -1730,6 +1730,7 @@
    function TGraphPolargramPainter(polargram) {
       JSROOT.TooltipHandler.call(this, polargram);
       this.$polargram = true; // indicate that this is polargram
+      this.zoom_rmin = this.zoom_rmax = 0;
    }
 
    TGraphPolargramPainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
@@ -1766,13 +1767,10 @@
          if (value === Math.round(value)) return value.toString();
          if (this.ndig>10) return value.toExponential(4);
          return value.toFixed(this.ndig+2);
-      } else {
-         value *= 180/Math.PI;
-         if (value === Math.round(value)) return value.toString();
-         return value.toFixed(1);
       }
 
-      return value.toPrecision(4);
+      value *= 180/Math.PI;
+      return (value === Math.round(value)) ? value.toString() : value.toFixed(1);
    }
 
    TGraphPolargramPainter.prototype.MouseEvent = function(kind) {
@@ -1794,10 +1792,10 @@
       var pad = this.root_pad(),
           w = this.pad_width(),
           h = this.pad_height(),
-          rect = {
-             szx: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
-             szy: Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h)
-          };
+          rect = {};
+
+      rect.szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w);
+      rect.szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
 
       rect.width = 2*rect.szx;
       rect.height = 2*rect.szy;
@@ -1814,16 +1812,41 @@
       return rect;
    }
 
+   TGraphPolargramPainter.prototype.MouseWheel = function() {
+      d3.event.stopPropagation();
+      d3.event.preventDefault();
+
+      this.ProcessTooltipEvent(null); // remove all tooltips
+
+      var polar = this.GetObject();
+
+      if (!d3.event || !polar) return;
+
+      var delta = d3.event.wheelDelta ? -d3.event.wheelDelta : (d3.event.deltaY || d3.event.detail);
+      if (!delta) return;
+
+      delta = (delta<0) ? -0.2 : 0.2;
+
+      var rmin = this.scale_rmin, rmax = this.scale_rmax, range = rmax - rmin;
+
+      // rmin -= delta*range;
+      rmax += delta*range;
+
+      if ((rmin<polar.fRwrmin) || (rmax>polar.fRwrmax)) rmin = rmax = 0;
+
+      if ((this.zoom_rmin != rmin) || (this.zoom_rmax != rmax)) {
+         this.zoom_rmin = rmin;
+         this.zoom_rmax = rmax;
+         this.RedrawPad();
+      }
+   }
+
    TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
       var pad = this.root_pad(),
           polar = this.GetObject(),
           rect = this.GetFrameRect();
-//          w = this.pad_width(), h = this.pad_height(),
-//          midx = Math.round(w/2), midy = Math.round(h/2),
-//          szx = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fLeftMargin, pad.fRightMargin))*w),
-//          szy = Math.round(Math.max(0.1, 0.5 - Math.max(pad.fBottomMargin, pad.fTopMargin))*h);
 
       this.CreateG();
 
@@ -1831,7 +1854,14 @@
       this.szx = rect.szx;
       this.szy = rect.szy;
 
-      this.r = d3.scaleLinear().domain([polar.fRwrmin, polar.fRwrmax]).range([ 0, this.szx ]);
+      this.scale_rmin = polar.fRwrmin;
+      this.scale_rmax = polar.fRwrmax;
+      if (this.zoom_rmin != this.zoom_rmax) {
+         this.scale_rmin = this.zoom_rmin;
+         this.scale_rmax = this.zoom_rmax;
+      }
+
+      this.r = d3.scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([ 0, this.szx ]);
       this.angle = polar.fAxisAngle || 0;
 
       var ticks = this.r.ticks(5),
@@ -1857,7 +1887,7 @@
 
       var exclude_last = false;
 
-      if (ticks[ticks.length-1] < polar.fRwrmax) {
+      if ((ticks[ticks.length-1] < polar.fRwrmax) && (this.zoom_rmin == this.zoom_rmax)) {
          ticks.push(polar.fRwrmax);
          exclude_last = true;
       }
@@ -1882,7 +1912,7 @@
             var dr = (ticks[1] - ticks[0]) / nminor;
             for (var nn=1;nn<nminor;++nn) {
                var gridr = ticks[n] + dr*nn;
-               if (gridr>polar.fRwrmax) break;
+               if (gridr > this.scale_rmax) break;
                rx = this.r(gridr); ry = rx/this.szx*this.szy;
                this.draw_g.append("ellipse")
                    .attr("cx",0)
@@ -1962,6 +1992,9 @@
       interactive.attr("rx", this.szx).attr("ry", this.szy);
 
       d3.select(interactive.node().parentNode).attr("transform", this.draw_g.attr("transform"));
+
+      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
+         interactive.on("wheel", this.MouseWheel.bind(this));
    }
 
    JSROOT.Painter.drawGraphPolargram = function(divid, polargram, opt) {
@@ -2024,6 +2057,9 @@
       var mpath = "", epath = "", lpath = "", bins = [];
 
       for (var n=0;n<graph.fNpoints;++n) {
+
+         if (graph.fY[n] > main.scale_rmax) continue;
+
          if (this.options.err) {
             var pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                 pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);

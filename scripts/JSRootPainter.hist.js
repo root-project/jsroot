@@ -4110,10 +4110,9 @@
       if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
       if ('dright' in item) { delta_right = item.dright; delta = 1; }
 
-      if ('delta' in item)
+      if ('delta' in item) {
          delta = item.delta;
-      else
-      if (event && event.wheelDelta !== undefined ) {
+      } else if (event && event.wheelDelta !== undefined ) {
          // WebKit / Opera / Explorer 9
          delta = -event.wheelDelta;
       } else if (event && event.deltaY !== undefined ) {
@@ -4148,8 +4147,7 @@
             item.min = item.min / Math.pow(10, factor*delta_left*dmin);
             item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
          } else {
-            var rx_left = (item.max - item.min),
-                rx_right = rx_left;
+            var rx_left = (item.max - item.min), rx_right = rx_left;
             if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
             item.min += -delta_left*dmin*rx_left;
 

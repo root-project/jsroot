@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Tooltips and zooming in TGraphPolar drawings
+
+
 ## Changes in 5.3.0
 1. New supported classes:
     - TGraphPolar
