@@ -1555,6 +1555,7 @@
       var pt = this.GetObject(), opt = pt.fOption.toUpperCase();
 
       if (pt.fInit===0) {
+         this.stored = JSROOT.extend({}, pt); // store coordinates to use them when updating
          pt.fInit = 1;
          var pad = this.root_pad();
          if (opt.indexOf("NDC")>=0) {
@@ -2207,13 +2208,27 @@
 
       var pave = this.GetObject();
 
-      if (!('modified_NDC' in pave)) {
+      if (!pave.modified_NDC) {
          // if position was not modified interactively, update from source object
-         pave.fInit = obj.fInit;
-         pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
-         pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
-         pave.fX1NDC = obj.fX1NDC; pave.fX2NDC = obj.fX2NDC;
-         pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
+
+         if (this.stored && !obj.fInit && (this.stored.fX1 == obj.fX1)
+             && (this.stored.fX2 == obj.fX2) && (this.stored.fY1 == obj.fY1) && (this.stored.fY2 == obj.fY2)) {
+            // case when source object not initialized and original coordinates are not changed
+            // take over only modified NDC coordinate, used in tutorials/graphics/canvas.C
+            if (this.stored.fX1NDC != obj.fX1NDC) pave.fX1NDC = obj.fX1NDC;
+            if (this.stored.fX2NDC != obj.fX2NDC) pave.fX2NDC = obj.fX2NDC;
+            if (this.stored.fY1NDC != obj.fY1NDC) pave.fY1NDC = obj.fY1NDC;
+            if (this.stored.fY2NDC != obj.fY2NDC) pave.fY2NDC = obj.fY2NDC;
+         } else {
+            pave.fOption = obj.fOption;
+            pave.fInit = obj.fInit;
+            pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
+            pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
+            pave.fX1NDC = obj.fX1NDC; pave.fX2NDC = obj.fX2NDC;
+            pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
+         }
+
+         this.stored = JSROOT.extend({}, obj); // store latest coordiantes
       }
 
       switch (obj._typename) {
@@ -2244,7 +2259,6 @@
       // if pavetext artificially disabled, do not redraw it
 
       this.DrawPave(true);
-
    }
 
    JSROOT.Painter.drawPave = function(divid, pave, opt) {
