@@ -202,9 +202,9 @@ examples_main = {
      { name: "sinfo", url: "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
      { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
-     { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, Macro outputs from tutorials/graphs/splines_test.C" },
+     { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" }
-
+     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" },
+     { name: "archi", file: "tutorials_graphics.root", item: 'archi',  title: "Usage of TPavesText, tutorials/graphics/archi.C" }
    ]
  };

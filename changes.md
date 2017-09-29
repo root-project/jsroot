@@ -2,7 +2,8 @@
 
 ## Changes in dev
 1. Tooltips and zooming in TGraphPolar drawings
-2. Support border draws for TBox
+2. Support border draws for TWbox
+3. Support TPavesText with multiple underlying paves 
 
 
 ## Changes in 5.3.0

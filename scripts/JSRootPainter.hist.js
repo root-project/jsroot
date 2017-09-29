@@ -1552,12 +1552,12 @@
       if (!this.Enabled)
          return this.RemoveDrawG();
 
-      var pt = this.GetObject();
+      var pt = this.GetObject(), opt = pt.fOption.toUpperCase();
 
       if (pt.fInit===0) {
          pt.fInit = 1;
          var pad = this.root_pad();
-         if (pt.fOption.indexOf("NDC")>=0) {
+         if (opt.indexOf("NDC")>=0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
          } else if (pad) {
@@ -1603,6 +1603,16 @@
          this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
       if (!this.fillatt)
          this.fillatt = this.createAttFill(pt);
+
+      if (pt.fNpaves) {
+         var dx = (opt.indexOf("L")<0) ? 4 : -4,
+             dy = (opt.indexOf("B")<0) ? -4 : 4;
+         for (var n = pt.fNpaves-1; n>0; --n)
+            this.draw_g.append("svg:path")
+               .attr("d", "M" + dx*n + ","+ dy*n + "h"+width+"v"+height+"h-"+width+"z")
+               .call(this.fillatt.func)
+               .call(this.lineatt.func);
+      }
 
       var rect =
          this.draw_g.append("svg:path")
@@ -2210,6 +2220,10 @@
          case 'TPaveText':
             pave.fLines = JSROOT.clone(obj.fLines);
             return true;
+         case 'TPavesText':
+            pave.fLines = JSROOT.clone(obj.fLines);
+            pave.fNpaves = obj.fNpaves;
+            return true;
          case 'TPaveLabel':
             pave.fLabel = obj.fLabel;
             return true;
@@ -2246,6 +2260,7 @@
             painter.PaveDrawFunc = painter.DrawPaveStats;
             break;
          case "TPaveText":
+         case "TPavesText":
             painter.PaveDrawFunc = painter.DrawPaveText;
             break;
          case "TLegend":
