@@ -183,19 +183,42 @@
       var x1 = this.AxisToSvg("x", box.fX1, false),
           x2 = this.AxisToSvg("x", box.fX2, false),
           y1 = this.AxisToSvg("y", box.fY1, false),
-          y2 = this.AxisToSvg("y", box.fY2, false);
+          y2 = this.AxisToSvg("y", box.fY2, false),
+          xx = Math.min(x1,x2), yy = Math.min(y1,y2),
+          ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
       // if box filled, contour line drawn only with "L" draw option:
       if ((fillatt.color != 'none') && !draw_line) lineatt.color = "none";
 
       this.draw_g
           .append("svg:rect")
-          .attr("x", Math.min(x1,x2))
-          .attr("y", Math.min(y1,y2))
-          .attr("width", Math.abs(x2-x1))
-          .attr("height", Math.abs(y1-y2))
+          .attr("x", xx).attr("y", yy)
+          .attr("width", ww)
+          .attr("height", hh)
           .call(lineatt.func)
           .call(fillatt.func);
+
+      if (box.fBorderMode && box.fBorderSize && (fillatt.color!=='none')) {
+         var pww = box.fBorderSize, phh = box.fBorderSize,
+             side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
+                     "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
+             side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
+                     "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
+
+         if (box.fBorderMode<0) { var s = side1; side1 = side2; side2 = s; }
+
+         this.draw_g.append("svg:path")
+                    .attr("d", side1)
+                    .style("stroke","none")
+                    .call(fillatt.func)
+                    .style("fill", d3.rgb(fillatt.color).brighter(0.5).toString());
+
+         this.draw_g.append("svg:path")
+             .attr("d", side2)
+             .style("stroke","none")
+             .call(fillatt.func)
+             .style("fill", d3.rgb(fillatt.color).darker(0.5).toString());
+      }
    }
 
    // =============================================================================

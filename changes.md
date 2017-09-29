@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Tooltips and zooming in TGraphPolar drawings
+2. Support border draws for TBox
 
 
 ## Changes in 5.3.0
