@@ -267,12 +267,13 @@
    // ======================================================================================
 
    function drawArrow() {
-      var arrow = this.GetObject();
+      var arrow = this.GetObject(),
+          wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
+          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
+
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
       if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
-      var wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
-          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
 
       // create svg:g container for line drawing
       this.CreateG();
@@ -282,7 +283,7 @@
           x2 = this.AxisToSvg("x", arrow.fX2, false),
           y2 = this.AxisToSvg("y", arrow.fY2, false),
           right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
-          left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+"," + (2*hsize),
+          left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
           m_start = null, m_mid = null, m_end = null, defs = null,
           oo = arrow.fOption, len = oo.length;
 
@@ -294,15 +295,18 @@
                        .attr("id", m_start)
                        .attr("markerWidth", wsize)
                        .attr("markerHeight", 2*hsize)
-                       .attr("refX", "0")
+                       .attr("refX", 0)
                        .attr("refY", hsize)
                        .attr("orient", "auto")
                        .attr("markerUnits", "userSpaceOnUse")
                        .append("svg:path")
                        .style("fill","none")
-                       .attr("d", left_arrow + (closed ? " Z" : ""))
+                       .attr("d", left_arrow + (closed ? "Z" : ""))
                        .call(this.lineatt.func);
-         if (closed) beg.call(this.fillatt.func);
+         if (closed) {
+            beg.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) beg.style('stroke-width',1);
+         }
       }
 
       var midkind = 0;
@@ -327,9 +331,12 @@
                       .append("svg:path")
                       .style("fill","none")
                       .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) +
-                            ((midkind > 10) ? " Z" : ""))
+                            ((midkind > 10) ? "Z" : ""))
                             .call(this.lineatt.func);
-         if (midkind > 10) mid.call(this.fillatt.func);
+         if (midkind > 10) {
+            mid.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) mid.style('stroke-width',1);
+         }
       }
 
       if (oo.lastIndexOf(">") == len-1) {
@@ -346,9 +353,12 @@
                        .attr("markerUnits", "userSpaceOnUse")
                        .append("svg:path")
                        .style("fill","none")
-                       .attr("d", right_arrow + (closed ? " Z" : ""))
+                       .attr("d", right_arrow + (closed ? "Z" : ""))
                        .call(this.lineatt.func);
-         if (closed) end.call(this.fillatt.func);
+         if (closed) {
+            end.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) end.style('stroke-width',1);
+         }
       }
 
       var path = this.draw_g

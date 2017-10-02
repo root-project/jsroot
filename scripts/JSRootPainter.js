@@ -820,6 +820,10 @@
       // return true if color not specified or fill style not specified
       return (this.color == 'none');
    }
+   
+   TAttFillHandler.prototype.isSolid = function() {
+      return this.pattern === 1001;
+   }
 
    // method used when color or pattern were changed with OpenUi5 widgets
    TAttFillHandler.prototype.verifyDirectChange = function(painter) {
@@ -852,7 +856,7 @@
          return true;
       }
 
-      if ((this.pattern === 1001) && (this.colorindx===0) && (this.kind===1)) {
+      if (this.isSolid() && (this.colorindx===0) && (this.kind===1)) {
          this.color = 'none';
          return true;
       }
@@ -860,7 +864,7 @@
       this.color = JSROOT.Painter.root_colors[this.colorindx];
       if (typeof this.color != 'string') this.color = "none";
 
-      if (this.pattern === 1001) return true;
+      if (this.isSolid()) return true;
 
       if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
          // special transparent colors (use for subpads)
