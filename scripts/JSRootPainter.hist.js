@@ -1534,7 +1534,7 @@
 
    TPavePainter.prototype.AssignFinishPave = function() {
       function func() {
-         // function used to signal drawing ready, required when text drawing posponed due to mathjax
+         // function used to signal drawing ready, required when text drawing postponed due to mathjax
          if (this.FirstRun <= 0) return;
          this.FirstRun--;
          if (this.FirstRun!==0) return;
@@ -1543,7 +1543,7 @@
       }
       this.FinishPave = func.bind(this);
    }
-
+   
    TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
@@ -1593,6 +1593,35 @@
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
+      if (!this.lineatt)
+         this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
+      if (!this.fillatt)
+         this.fillatt = this.createAttFill(pt);
+      
+      if (pt._typename == "TDiamond") {
+         var h2 = Math.round(height/2), w2 = Math.round(width/2), 
+             dpath = "l"+w2+",-"+h2 + "l"+w2+","+h2 + "l-"+w2+","+h2+"z";
+         
+         if ((lwidth > 1) && (pt.fShadowColor > 0) && (dx || dy))
+            this.draw_g.append("svg:path")
+                 .attr("d","M0,"+(h2+lwidth) + dpath)
+                 .style("fill", this.get_color(pt.fShadowColor))
+                 .style("stroke", this.get_color(pt.fShadowColor))
+                 .style("stroke-width", "1px");
+         
+         this.draw_g.append("svg:path")
+             .attr("d", "M0,"+h2 +dpath)
+             .call(this.fillatt.func)
+             .call(this.lineatt.func);
+         
+         var text_g = this.draw_g.append("svg:g")
+                                 .attr("transform", "translate(" + Math.round(width/4) + "," + Math.round(height/4) + ")");
+         
+         this.DrawPaveText(w2, h2, arg, text_g);
+
+         return;
+      }
+      
       // add shadow decoration before main rect
       if ((lwidth > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy))
          this.draw_g.append("svg:path")
@@ -1601,12 +1630,6 @@
             .style("stroke", this.get_color(pt.fShadowColor))
             .style("stroke-width", "1px");
       
-
-      if (!this.lineatt)
-         this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(pt);
-
       if (pt.fNpaves) 
          for (var n = pt.fNpaves-1; n>0; --n)
             this.draw_g.append("svg:path")
@@ -1739,7 +1762,7 @@
       this.draw_g.classed("most_upper_primitives", true); // this primitive will remain on top of list
    }
 
-   TPavePainter.prototype.DrawPaveText = function(width, height) {
+   TPavePainter.prototype.DrawPaveText = function(width, height, dummy_arg, text_g) {
 
       var pt = this.GetObject(),
           tcolor = this.get_color(pt.fTextColor),
@@ -1749,6 +1772,8 @@
           draw_header = (pt.fLabel.length>0);
 
       if (draw_header) this.FirstRun++; // increment finish counter
+      
+      if (!text_g) text_g = this.draw_g;
 
       // first check how many text lines in the list
       for (var j=0;j<pt.fLines.arr.length;++j) {
@@ -1782,12 +1807,12 @@
                      this.UseTextColor = true;
                   }
 
-                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height);
+                  this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, text_g);
 
                   this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
-                                   latex: (entry._typename == "TText") ? 0 : 1 });
+                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g });
 
-                  this.FinishTextDrawing(undefined, this.FinishPave);
+                  this.FinishTextDrawing(text_g, this.FinishPave);
 
                   this.FirstRun++;
 
@@ -1805,16 +1830,16 @@
                ly2 = ly2 ? Math.round((1-ly2)*height) : ytext;
                if (entry._typename == "TLine") {
                   var lineatt = new JSROOT.TAttLineHandler(entry);
-                  this.draw_g.append("svg:line")
-                             .attr("x1", lx1)
-                             .attr("y1", ly1)
-                             .attr("x2", lx2)
-                             .attr("y2", ly2)
-                             .call(lineatt.func);
+                  text_g.append("svg:line")
+                        .attr("x1", lx1)
+                        .attr("y1", ly1)
+                        .attr("x2", lx2)
+                        .attr("y2", ly2)
+                        .call(lineatt.func);
                } else {
                   var fillatt = this.createAttFill(entry);
 
-                  this.draw_g.append("svg:rect")
+                  text_g.append("svg:rect")
                       .attr("x", lx1)
                       .attr("y", ly2)
                       .attr("width", lx2-lx1)
@@ -1835,7 +1860,7 @@
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
          var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
 
-         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2));
+         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g);
 
          for (var j = 0; j < nlines; ++j) {
             var arg = null, lj = lines[j];
@@ -1848,6 +1873,7 @@
                if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*can_height);
             }
 
+            arg.draw_g = text_g;
             arg.latex = (lj._typename == "TText" ? 0 : 1);
             arg.text = lj.fTitle;
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
@@ -1855,7 +1881,7 @@
             this.DrawText(arg);
          }
 
-         this.FinishTextDrawing(undefined, this.FinishPave);
+         this.FinishTextDrawing(text_g, this.FinishPave);
       }
 
       if (draw_header) {
@@ -1863,7 +1889,7 @@
              y = Math.round(-height*0.02),
              w = Math.round(width*0.5),
              h = Math.round(height*0.04),
-             lbl_g = this.draw_g.append("svg:g");
+             lbl_g = text_g.append("svg:g");
 
          lbl_g.append("svg:path")
                .attr("d", "M"+x+","+y + "h"+w + "v"+h + "h-"+w + "z")
@@ -2274,6 +2300,7 @@
             break;
          case "TPaveText":
          case "TPavesText":
+         case "TDiamond":   
             painter.PaveDrawFunc = painter.DrawPaveText;
             break;
          case "TLegend":
