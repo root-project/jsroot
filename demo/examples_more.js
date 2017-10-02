@@ -118,6 +118,7 @@ examples_more = {
      { name: "roofit", file: "https://root.cern/files/stressRooFit_v534_ref.root", layout: "grid2x2", items: ['rf101_plot2','rf201_plot1','rf310_plot2','rf708_plot6'], title: "Several RooFit plots (still some classes not work)" },
      { name: "ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", itemfield: "fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O", notest: true },
      { name: "taxis", file: "tutorials_graphs.root", item: "timeonaxis3", title: "Custom time format for TGaxis, output of tutorials/graphs/timeonaxis3.C" },
-     { name: "gtime", file: "tutorials_graphs.root", item: "gtime", opt: "repeat", title: "Example of TGraphTime, output of tutorials/graphs/gtime.C", testopt: "first" }
+     { name: "gtime", file: "tutorials_graphs.root", item: "gtime", opt: "repeat", title: "Example of TGraphTime, output of tutorials/graphs/gtime.C", testopt: "first" },
+     { name: "diamond", file: "tutorials_graphics.root", item: 'diamond',  title: "TDiamond, tutorials/graphics/diamond.C" }
    ]
 };
