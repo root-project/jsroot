@@ -1584,7 +1584,9 @@
           pos_y = Math.round((1.0 - pt.fY2NDC) * this.pad_height()),
           width = Math.round((pt.fX2NDC - pt.fX1NDC) * this.pad_width()),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * this.pad_height()),
-          lwidth = pt.fBorderSize;
+          lwidth = pt.fBorderSize, 
+          dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
+          dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
 
       // container used to recalculate coordinates
       this.CreateG();
@@ -1592,32 +1594,29 @@
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
       // add shadow decoration before main rect
-      if ((lwidth > 1) && (pt.fShadowColor > 0))
+      if ((lwidth > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy))
          this.draw_g.append("svg:path")
-             .attr("d","M"+width+","+height + "v"+(-height + lwidth) + "h"+lwidth +
-                       "v"+height + "h"+(-width) + "v"+(-lwidth) + "Z")
+            .attr("d","M"+(dx*lwidth)+","+(dy*lwidth) + "v"+height + "h"+width + "v-"+height + "z")
             .style("fill", this.get_color(pt.fShadowColor))
             .style("stroke", this.get_color(pt.fShadowColor))
             .style("stroke-width", "1px");
+      
 
       if (!this.lineatt)
          this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
       if (!this.fillatt)
          this.fillatt = this.createAttFill(pt);
 
-      if (pt.fNpaves) {
-         var dx = (opt.indexOf("L")<0) ? 4 : -4,
-             dy = (opt.indexOf("B")<0) ? -4 : 4;
+      if (pt.fNpaves) 
          for (var n = pt.fNpaves-1; n>0; --n)
             this.draw_g.append("svg:path")
-               .attr("d", "M" + dx*n + ","+ dy*n + "h"+width+"v"+height+"h-"+width+"z")
+               .attr("d", "M" + (dx*4*n) + ","+ (dy*4*n) + "h"+width + "v"+height + "h-"+width + "z")
                .call(this.fillatt.func)
                .call(this.lineatt.func);
-      }
 
       var rect =
          this.draw_g.append("svg:path")
-          .attr("d", "M0,0h"+width+"v"+height+"h-"+width+"z")
+          .attr("d", "M0,0h"+width + "v"+height + "h-"+width + "z")
           .call(this.fillatt.func)
           .call(this.lineatt.func);
 
