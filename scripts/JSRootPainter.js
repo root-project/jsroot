@@ -5013,7 +5013,7 @@
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
          svg_pad = svg_can.select(".primitives_layer")
-             .append("g")
+             .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .attr("class", "root_pad")
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
@@ -5042,6 +5042,10 @@
 
       svg_pad.attr("transform", "translate(" + x + "," + y + ")")
              .attr("display", pad_visible ? null : "none")
+             .attr("viewBox", "0 0 " + w + " " + h) // due to svg
+             .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
+             .attr("width", w)    // due to svg
+             .attr("height", h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
              .property('draw_y', y)
              .property('draw_width', w)
