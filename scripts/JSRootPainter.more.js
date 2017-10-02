@@ -274,7 +274,6 @@
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
       if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
 
-
       // create svg:g container for line drawing
       this.CreateG();
 
@@ -285,27 +284,34 @@
           right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
           left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
           m_start = null, m_mid = null, m_end = null, defs = null,
-          oo = arrow.fOption, len = oo.length;
+          oo = arrow.fOption, oolen = oo.length;
 
       if (oo.indexOf("<")==0) {
          var closed = (oo.indexOf("<|") == 0);
          if (!defs) defs = this.draw_g.append("defs");
          m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
-         var beg = defs.append("svg:marker")
+         var mbeg = defs.append("svg:marker")
                        .attr("id", m_start)
                        .attr("markerWidth", wsize)
                        .attr("markerHeight", 2*hsize)
                        .attr("refX", 0)
                        .attr("refY", hsize)
                        .attr("orient", "auto")
-                       .attr("markerUnits", "userSpaceOnUse")
-                       .append("svg:path")
+                       .attr("markerUnits", "userSpaceOnUse");
+         var pbeg = mbeg.append("svg:path")
                        .style("fill","none")
                        .attr("d", left_arrow + (closed ? "Z" : ""))
                        .call(this.lineatt.func);
          if (closed) {
-            beg.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) beg.style('stroke-width',1);
+            pbeg.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pbeg.style('stroke-width',1);
+            var dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx + dy*dy);
+            if (len>wsize) {
+               var ratio = wsize/len;
+               x1 += ratio*dx;
+               y1 += ratio*dy;
+               mbeg.attr("refX", wsize);
+            }
          }
       }
 
@@ -314,13 +320,13 @@
       if (oo.indexOf("-|>-")>=0) midkind = 11; else
       if (oo.indexOf("-<-")>=0) midkind = 2; else
       if (oo.indexOf("-<|-")>=0) midkind = 12;
-
+      
       if (midkind > 0) {
          var closed = midkind > 10;
          if (!defs) defs = this.draw_g.append("defs");
          m_mid = "jsroot_arrowmarker_" + JSROOT.id_counter++;
 
-         var mid = defs.append("svg:marker")
+         var pmid = defs.append("svg:marker")
                       .attr("id", m_mid)
                       .attr("markerWidth", wsize)
                       .attr("markerHeight", 2*hsize)
@@ -334,38 +340,45 @@
                             ((midkind > 10) ? "Z" : ""))
                             .call(this.lineatt.func);
          if (midkind > 10) {
-            mid.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) mid.style('stroke-width',1);
+            pmid.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pmid.style('stroke-width',1);
          }
       }
 
-      if (oo.lastIndexOf(">") == len-1) {
-         var closed = (oo.lastIndexOf("|>") == len-2) && (len>1);
+      if (oo.lastIndexOf(">") == oolen-1) {
+         var closed = (oo.lastIndexOf("|>") == oolen-2) && (oolen>1);
          if (!defs) defs = this.draw_g.append("defs");
          m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-         var end = defs.append("svg:marker")
+         var mend = defs.append("svg:marker")
                        .attr("id", m_end)
                        .attr("markerWidth", wsize)
                        .attr("markerHeight", 2*hsize)
                        .attr("refX", wsize)
                        .attr("refY", hsize)
                        .attr("orient", "auto")
-                       .attr("markerUnits", "userSpaceOnUse")
-                       .append("svg:path")
+                       .attr("markerUnits", "userSpaceOnUse");
+         var pend = mend.append("svg:path")
                        .style("fill","none")
                        .attr("d", right_arrow + (closed ? "Z" : ""))
                        .call(this.lineatt.func);
          if (closed) {
-            end.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) end.style('stroke-width',1);
+            pend.call(this.fillatt.func);
+            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pend.style('stroke-width',1);
+            var dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx + dy*dy);
+            if (len>wsize) {
+               var ratio = wsize/len;
+               x2 -= ratio*dx;
+               y2 -= ratio*dy;
+               mend.attr("refX", 0);
+            }
          }
       }
 
       var path = this.draw_g
            .append("svg:path")
-           .attr("d",  "M"+x1+","+y1 +
+           .attr("d",  "M"+Math.round(x1)+","+Math.round(y1) +
                        ((m_mid == null) ? "" : "L" + Math.round(x1/2+x2/2) + "," + Math.round(y1/2+y2/2)) +
-                       "L"+x2+","+y2)
+                       "L"+Math.round(x2)+","+Math.round(y2))
             .call(this.lineatt.func);
 
       if (m_start) path.style("marker-start","url(#" + m_start + ")");

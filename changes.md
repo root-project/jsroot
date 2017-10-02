@@ -4,6 +4,7 @@
 1. Tooltips and zooming in TGraphPolar drawings
 2. Support border draws for TWbox
 3. Support TPavesText with multiple underlying paves 
+4. Correctly draw filled TArrow endings
 
 
 ## Changes in 5.3.0
