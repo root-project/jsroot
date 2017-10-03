@@ -6630,8 +6630,8 @@
 
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
       var histo = this.GetObject(),
-          kMAXCONTOUR = 404,
-          kMAXCOUNT = 400,
+          kMAXCONTOUR = 2004,
+          kMAXCOUNT = 2000,
           // arguments used in the PaintContourLine
           xarr = new Float32Array(2*kMAXCONTOUR),
           yarr = new Float32Array(2*kMAXCONTOUR),
