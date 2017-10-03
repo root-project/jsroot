@@ -1158,7 +1158,7 @@
    }
 
    TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing) {
-      // function draws  TAxis ot TGaxis object
+      // function draws  TAxis or TGaxis object
 
       var axis = this.GetObject(), chOpt = "",
           is_gaxis = (axis && axis._typename === 'TGaxis'),
@@ -1289,7 +1289,7 @@
       // draw labels
       if (!disable_axis_drawing && !optionUnlab) {
 
-         var textscale = 1, maxtextlen = 0,
+         var textscale = 1, maxtextlen = 0, lastpos = 0,
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + both_sides*tickSize;
@@ -1329,13 +1329,19 @@
 
            var textwidth = this.DrawText(arg);
 
-           if (textwidth && !vertical && !rotate_lbls && (this.kind != 'log')) {
+           if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
               var maxwidth = gap_before*0.45 + gap_after*0.45;
               if (!gap_before) maxwidth = 0.9*gap_after; else
-                 if (!gap_after) maxwidth = 0.9*gap_before;
-
+              if (!gap_after) maxwidth = 0.9*gap_before;
               textscale = Math.min(textscale, maxwidth / textwidth);
            }
+           
+           if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
+              var axis_step = Math.abs(pos-lastpos);
+              textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+           }
+           
+           lastpos = pos;
         }
 
         if (this.order)
