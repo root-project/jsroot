@@ -5,7 +5,7 @@
 2. Support border draws for TWbox
 3. Support TPavesText with multiple underlying paves 
 4. Correctly draw filled TArrow endings
-5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc
+5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
 
 
 ## Changes in 5.3.0

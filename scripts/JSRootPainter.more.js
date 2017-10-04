@@ -138,6 +138,47 @@
           rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
           ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
 
+      if (ellipse._typename == "TCrown") {
+         if (ellipse.fR1 <= 0) {
+            // handle same as ellipse with equal radius
+            rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2, false) - x;
+         } else {
+            var rx1 = rx, ry2 = ry,
+                ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1, false),
+                rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2, false) - x;
+            
+            var elem = this.draw_g
+                          .attr("transform","translate("+x+","+y+")")
+                          .append("svg:path")
+                          .call(this.lineatt.func).call(this.fillatt.func);
+            
+            if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
+               elem.attr("d", "M-"+rx1+",0" +
+                              "A"+rx1+","+ry1+",0,1,0,"+rx1+",0" + 
+                              "A"+rx1+","+ry1+",0,1,0,-"+rx1+",0" +
+                              "M-"+rx2+",0" +
+                              "A"+rx2+","+ry2+",0,1,0,"+rx2+",0" + 
+                              "A"+rx2+","+ry2+",0,1,0,-"+rx2+",0");
+               
+            } else {
+               var large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0;
+               
+               var a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
+                   dx1 = rx1 * Math.cos(a1), dy1 = ry1 * Math.sin(a1),
+                   dx2 = rx1 * Math.cos(a2), dy2 = ry1 * Math.sin(a2),
+                   dx3 = rx2 * Math.cos(a1), dy3 = ry2 * Math.sin(a1),
+                   dx4 = rx2 * Math.cos(a2), dy4 = ry2 * Math.sin(a2);
+
+               elem.attr("d", "M"+dx2+","+dy2+
+                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+dx1+","+dy1+ 
+                              "L"+dx3+","+dy3 +
+                              "A"+rx2+","+ry2+",0,"+large_arc+",1,"+dx4+","+dy4+"Z");
+            }
+            
+            return;
+         }
+      }
+      
       if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
          this.draw_g.append("svg:ellipse")
@@ -161,11 +202,11 @@
           y2 = -dx2*st - dy2*ct;
 
       this.draw_g
-         .attr("transform","translate("+Math.round(x)+","+Math.round(y)+")")
+         .attr("transform","translate("+x+","+y+")")
          .append("svg:path")
          .attr("d", "M0,0" +
                     "L" + Math.round(x1) + "," + Math.round(y1) +
-                    "A" + Math.round(rx) + "," + Math.round(ry) + "," + Math.round(-ellipse.fTheta) + ",1,0," + Math.round(x2) + "," + Math.round(y2) +
+                    "A"+rx+ ","+ry + "," + Math.round(-ellipse.fTheta) + ",1,0," + Math.round(x2) + "," + Math.round(y2) +
                     "Z")
          .call(this.lineatt.func).call(this.fillatt.func);
    }
