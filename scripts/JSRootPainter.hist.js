@@ -6899,8 +6899,8 @@
       for (ipoly=first-1;ipoly>=0;ipoly--) {polysort[k] = ipoly; k++;}
       for (ipoly=first;ipoly<levels.length;ipoly++) { polysort[k] = ipoly; k++;}
 
-      var xp = new Int32Array(2*npmax),
-          yp = new Int32Array(2*npmax);
+      var xp = new Float32Array(2*npmax),
+          yp = new Float32Array(2*npmax);
 
       for (k=0;k<levels.length;++k) {
 
@@ -6977,7 +6977,7 @@
             var icol = palette.getColor(colindx),
                 fillcolor = icol, lineatt = null;
 
-            switch(painter.options.Contour) {
+            switch (painter.options.Contour) {
                case 1: break;
                case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler(icol); break;
                case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
@@ -6985,9 +6985,9 @@
                case 14: break;
             }
 
-            var cmd = "M" + xp[iminus] + "," + yp[iminus];
+            var cmd = "M" + Math.round(xp[iminus]) + "," + Math.round(yp[iminus]);
             for (var i=iminus+1;i<=iplus;++i)
-               cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
+               cmd +=  "l" + (Math.round(xp[i]) - Math.round(xp[i-1])) + "," + (Math.round(yp[i]) - Math.round(yp[i-1]));
             if (fillcolor !== 'none') cmd += "Z";
 
             var elem = painter.draw_g
