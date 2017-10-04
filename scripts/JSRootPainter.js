@@ -5040,10 +5040,13 @@
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
       }
 
-      svg_pad.attr("transform", "translate(" + x + "," + y + ")")
+      svg_pad
+              //.attr("transform", "translate(" + x + "," + y + ")") // is not handled for SVG
              .attr("display", pad_visible ? null : "none")
              .attr("viewBox", "0 0 " + w + " " + h) // due to svg
              .attr("preserveAspectRatio", "none")   // due to svg, we do not preserve relative ratio
+             .attr("x", x)    // due to svg
+             .attr("y", y)   // due to svg
              .attr("width", w)    // due to svg
              .attr("height", h)   // due to svg
              .property('draw_x', x) // this is to make similar with canvas
