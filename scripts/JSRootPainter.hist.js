@@ -6979,9 +6979,9 @@
           painter = this;
       
       function BuildPath(xp,yp,iminus,iplus) {
-         var cmd = "", last = null;
-         for (var i=iminus;i<=iplus;++i) {
-            var pnt = null;
+         var cmd = "", last = null, pnt = null, i;
+         for (i=iminus;i<=iplus;++i) {
+            pnt = null;
             switch (painter.options.Proj) {
                case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
                case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
@@ -7792,7 +7792,7 @@
    }
 
    TH2Painter.prototype.ProcessTooltip = function(pnt) {
-      if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle) {
+      if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle || this.options.Proj) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
