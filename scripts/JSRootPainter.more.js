@@ -169,10 +169,10 @@
                    dx3 = rx2 * Math.cos(a1), dy3 = ry2 * Math.sin(a1),
                    dx4 = rx2 * Math.cos(a2), dy4 = ry2 * Math.sin(a2);
 
-               elem.attr("d", "M"+dx2+","+dy2+
-                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+dx1+","+dy1+ 
-                              "L"+dx3+","+dy3 +
-                              "A"+rx2+","+ry2+",0,"+large_arc+",1,"+dx4+","+dy4+"Z");
+               elem.attr("d", "M"+Math.round(dx2)+","+Math.round(dy2)+
+                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+Math.round(dx1)+","+Math.round(dy1)+ 
+                              "L"+Math.round(dx3)+","+Math.round(dy3) +
+                              "A"+rx2+","+ry2+",0,"+large_arc+",1,"+Math.round(dx4)+","+Math.round(dy4)+"Z");
             }
             
             return;
