@@ -6971,7 +6971,7 @@
    }
 
    TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
-      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: true });
+      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 });
 
       // get levels
       var levels = this.GetContour(),
@@ -6987,10 +6987,15 @@
                case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
                case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
                case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
-               default: pnt = { x: xp[i], y: yp[i] };
             }
-            pnt.x = Math.round(painter.grx(pnt.x));
-            pnt.y = Math.round(painter.gry(pnt.y));
+            if (pnt) {
+               pnt.x = painter.grx(pnt.x);
+               pnt.y = painter.gry(pnt.y);
+            } else {
+               pnt = { x: xp[i], y: yp[i] };
+            }
+            pnt.x = Math.round(pnt.x);
+            pnt.y = Math.round(pnt.y);
             if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
             else if ((pnt.x != last.x) && (pnt.y != last.y)) cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
             else if (pnt.x != last.x) cmd +=  "h" + (pnt.x - last.x);
