@@ -6992,7 +6992,9 @@
             pnt.x = Math.round(painter.grx(pnt.x));
             pnt.y = Math.round(painter.gry(pnt.y));
             if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
-                 else cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
+            else if ((pnt.x != last.x) && (pnt.y != last.y)) cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
+            else if (pnt.x != last.x) cmd +=  "h" + (pnt.x - last.x);
+            else if (pnt.y != last.y) cmd +=  "v" + (pnt.y - last.y);
             last = pnt;
          }
          return cmd;
@@ -7001,19 +7003,20 @@
       if (this.options.Contour===14) {
          var dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w;
          if (this.options.Proj) {
-            var xd = new Float32Array(202), yd = new Float32Array(202);
-            for (var i=0;i<=100;++i) {
+            var sz = handle.j2 - handle.j1, xd = new Float32Array(sz*2), yd = new Float32Array(sz*2);
+            for (var i=0;i<sz;++i) {
                xd[i] = handle.origx[handle.i1];
-               yd[i] = (handle.origy[handle.j1]*i + handle.origy[handle.j2]*(100-i))/100;
-               xd[i+101] = handle.origx[handle.i2];
-               yd[i+101] = (handle.origy[handle.j2]*i + handle.origy[handle.j1]*(100-i))/100;
+               yd[i] = (handle.origy[handle.j1]*(i+0.5) + handle.origy[handle.j2]*(sz-0.5-i))/sz;
+               xd[i+sz] = handle.origx[handle.i2];
+               yd[i+sz] = (handle.origy[handle.j2]*(i+0.5) + handle.origy[handle.j1]*(sz-0.5-i))/sz;
             }
-            dd = BuildPath(xd,yd,0,201);
+            dd = BuildPath(xd,yd,0,2*sz-1);
          }
          
          this.draw_g
              .append("svg:path")
              .attr("d", dd + "z")
+             .style('stroke','none')
              .style("fill", palette.calcColor(0, levels.length));
       }
 
@@ -7030,13 +7033,10 @@
                case 14: break;
             }
             
-            var cmd = BuildPath(xp,yp,iminus,iplus);
-            if (fillcolor !== 'none') cmd += "Z";
-
             var elem = painter.draw_g
                           .append("svg:path")
                           .attr("class","th2_contour")
-                          .attr("d", cmd)
+                          .attr("d", BuildPath(xp,yp,iminus,iplus) + (fillcolor == 'none' ? "" : "z"))
                           .style("fill", fillcolor);
 
             if (lineatt!==null)
