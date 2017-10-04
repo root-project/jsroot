@@ -6535,6 +6535,8 @@
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine", direct: true });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow", direct: true });
    JSROOT.addDrawFunc({ name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine", direct: true });
+   JSROOT.addDrawFunc({ name: "TCurlyLine", sameas: 'TPolyLine' });
+   JSROOT.addDrawFunc({ name: "TCurlyArc", sameas: 'TPolyLine' });
    JSROOT.addDrawFunc({ name: "TGaxis", icon: "img_graph", prereq: "hist", func: "JSROOT.Painter.drawGaxis" });
    JSROOT.addDrawFunc({ name: "TLegend", icon: "img_pavelabel", prereq: "hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });

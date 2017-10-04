@@ -110,6 +110,8 @@
                 this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
                 this.AxisToSvg("y", polyline.fY[n], isndc);
 
+      if (polyline._typename != "TPolyLine") fillatt.color = "none";
+      
       if (fillatt.color!=='none') cmd+="Z";
 
       this.draw_g
