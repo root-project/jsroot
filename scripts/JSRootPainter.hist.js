@@ -4992,6 +4992,12 @@
           };
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
+      
+      if (args.original) {
+         res.original = true;
+         res.origx = new Float32Array(res.i2+1);
+         res.origy = new Float32Array(res.j2+1);
+      }
 
       if (args.pixel_density) args.rounding = true;
 
@@ -4999,6 +5005,7 @@
       for (i = res.i1; i <= res.i2; ++i) {
          x = this.GetBinX(i + args.middle);
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
+         if (res.origx) res.origx[i] = x;
          res.grx[i] = pmain.grx(x);
          if (args.rounding) res.grx[i] = Math.round(res.grx[i]);
 
@@ -5015,6 +5022,7 @@
       for (j = res.j1; j <= res.j2; ++j) {
          y = this.GetBinY(j + args.middle);
          if (pmain.logy && (y <= 0)) { res.j1 = j+1; continue; }
+         if (res.origy) res.origy[j] = y;
          res.gry[j] = pmain.gry(y);
          if (args.rounding) res.gry[j] = Math.round(res.gry[j]);
 
@@ -6792,11 +6800,14 @@
          }
          return icount;
       }
+      
+      var arrx = handle.original ? handle.origx : handle.grx,
+          arry = handle.original ? handle.origy : handle.gry;
 
       for (j = handle.j1; j < handle.j2-1; ++j) {
 
-         y[1] = y[0] = (handle.gry[j] + handle.gry[j+1])/2;
-         y[3] = y[2] = (handle.gry[j+1] + handle.gry[j+2])/2;
+         y[1] = y[0] = (arry[j] + arry[j+1])/2;
+         y[3] = y[2] = (arry[j+1] + arry[j+2])/2;
 
          for (i = handle.i1; i < handle.i2-1; ++i) {
 
@@ -6809,27 +6820,8 @@
                ir[k] = BinarySearch(zc[k]);
 
             if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
-               x[3] = x[0] = (handle.grx[i] + handle.grx[i+1])/2;
-               x[2] = x[1] = (handle.grx[i+1] + handle.grx[i+2])/2;
-               
-               if (painter.options.Proj) {
-                  var pnt1 = null, pnt2 = null,
-                      ux0 = painter.RevertX((handle.grx[i] + handle.grx[i+1])/2), 
-                      ux2 = painter.RevertX((handle.grx[i+1] + handle.grx[i+2])/2),
-                      uy0 = painter.RevertY((handle.gry[j] + handle.gry[j+1])/2), 
-                      uy2 = painter.RevertY((handle.gry[j+1] + handle.gry[j+2])/2);
-                      
-                  switch (painter.options.Proj) {
-                     case 1: pnt1 = painter.ProjectAitoff2xy(ux0, uy0); pnt2 = painter.ProjectAitoff2xy(ux2, uy2); break;
-                     case 2: pnt1 = painter.ProjectMercator2xy(ux0, uy0); pnt2 = painter.ProjectMercator2xy(ux2, uy2); break;
-                     case 3: pnt1 = painter.ProjectSinusoidal2xy(ux0, uy0); pnt2 = painter.ProjectSinusoidal2xy(ux2, uy2); break;
-                     case 4: pnt1 = painter.ProjectParabolic2xy(ux0, uy0); pnt2 = painter.ProjectParabolic2xy(ux2, uy2); break;
-                  }
-                  x[3] = x[0] = painter.grx(pnt1.x);
-                  x[2] = x[1] = painter.grx(pnt2.x);
-                  y[1] = y[0] = painter.gry(pnt1.y);
-                  y[3] = y[2] = painter.gry(pnt2.y);
-               }
+               x[3] = x[0] = (arrx[i] + arrx[i+1])/2;
+               x[2] = x[1] = (arrx[i+1] + arrx[i+2])/2;
 
                if (zc[0] <= zc[1]) n = 0; else n = 1;
                if (zc[2] <= zc[3]) m = 2; else m = 3;
@@ -6974,7 +6966,7 @@
    }
 
    TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
-      var handle = this.PrepareColorDraw({ rounding: false, extra: 100 });
+      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: true });
 
       // get levels
       var levels = this.GetContour(),
@@ -7001,9 +6993,21 @@
                case 14: break;
             }
             
-            var cmd = "M" + Math.round(xp[iminus]) + "," + Math.round(yp[iminus]);
+            for (var i=iminus;i<=iplus;++i) {
+               var pnt = null;
+               switch (painter.options.Proj) {
+                  case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
+                  case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
+                  case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
+                  case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
+               }
+               xp[i] = Math.round(painter.grx(pnt ? pnt.x : xp[i]));
+               yp[i] = Math.round(painter.gry(pnt ? pnt.y : yp[i]));
+            }
+            
+            var cmd = "M" + xp[iminus] + "," + yp[iminus];
             for (var i=iminus+1;i<=iplus;++i)
-               cmd +=  "l" + (Math.round(xp[i]) - Math.round(xp[i-1])) + "," + (Math.round(yp[i]) - Math.round(yp[i-1]));
+               cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
             if (fillcolor !== 'none') cmd += "Z";
 
             var elem = painter.draw_g
