@@ -3044,7 +3044,35 @@
          this.y = this.main_painter().y;
          return;
       }
+      
+      this.scale_xmin = this.xmin;
+      this.scale_xmax = this.xmax;
+      if (use_pad_range) {
+         var dx = pad.fX2 - pad.fX1;
+         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
+         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+      
+      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
+      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
 
+      if (use_pad_range) {
+         var dy = pad.fY2 - pad.fY1;
+         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
+         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+
+      if (typeof this.RecalculateRange == "function")
+         this.RecalculateRange();
+      
       this.swap_xy = false;
       if (this.options.Bar>=20) this.swap_xy = true;
       this.logx = this.logy = false;
@@ -3061,19 +3089,7 @@
          this.ConvertX = function(x) { return x; };
          this.RevertX = function(grx) { return this.x.invert(grx); };
       }
-
-      this.scale_xmin = this.xmin;
-      this.scale_xmax = this.xmax;
-      if (use_pad_range) {
-         var dx = pad.fX2 - pad.fX1;
-         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
-         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
-         }
-      }
-
+      
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
@@ -3087,7 +3103,7 @@
 
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
 
-         if ((this.scale_xmin <= 0) && (this.nbinsx>0))
+         if ((this.scale_xmin <= 0) && (this.nbinsx>0) && !this.swap_xy)
             for (var i=0;i<this.nbinsx;++i) {
                this.scale_xmin = Math.max(this.scale_xmin, this.GetBinX(i));
                if (this.scale_xmin>0) break;
@@ -3114,18 +3130,6 @@
          this.grx = this.x;
       }
 
-      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
-      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
-
-      if (use_pad_range) {
-         var dy = pad.fY2 - pad.fY1;
-         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
-         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
-         }
-      }
       if (this.zoom_ymin != this.zoom_ymax) {
          this.scale_ymin = this.zoom_ymin;
          this.scale_ymax = this.zoom_ymax;
@@ -3151,7 +3155,7 @@
             this.scale_ymax*=1.8;
 
          // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1))
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1) && !this.swap_xy)
             for (var i=0;i<this.nbinsy;++i) {
                this.scale_ymin = Math.max(this.scale_ymin, this.GetBinY(i));
                if (this.scale_ymin>0) break;
@@ -6214,7 +6218,7 @@
       menu.add("sub:Projections", this.ToggleProjection);
       var kind = this.is_projection || "";
       if (kind) kind += this.projection_width;
-      var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10" ];
+      var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
       for (var k=0;k<kinds.length;++k)
          menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
       menu.add("endsub:");
@@ -6355,13 +6359,120 @@
 
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
+   
+   TH2Painter.prototype.ProjectAitoff2xy = function(l, b) {
+      var DegToRad = Math.PI/180,
+           alpha2 = (l/2)*DegToRad,
+           delta  = b*DegToRad,
+           r2     = Math.sqrt(2),
+           f      = 2*r2/Math.PI,
+           cdec   = Math.cos(delta),
+           denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
+           res = {
+             x: cdec*Math.sin(alpha2)*2.*r2/denom,
+             y: Math.sin(delta)*r2/denom
+           };
+      res.x     *= RadToDeg/f;
+      res.y     *= RadToDeg/f;
+      //  x *= -1.; // for a skymap swap left<->right
+      return res;
+   }
+
+   TH2Painter.prototype.ProjectMercator2xy = function(l, b) {
+      var aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+      return { x: l, y: Math.log(aid) };
+   }
+
+   TH2Painter.prototype.ProjectSinusoidal2xy = function(l, b) {
+      return { x: l*Math.cos(b/180*Math.PI), y: b };
+   }
+
+   TH2Painter.prototype.ProjectParabolic2xy = function(l, b) {
+      return {
+         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+         y: 180*Math.Sin(b/180*Math.PI/3)
+      };
+   }
+   
+   TH2Painter.prototype.RecalculateRange = function() {
+
+      if (!this.is_main_painter() || !this.options.Proj || true) return;
+
+      var pnts = []; // all extrems which used to find 
+      if (this.options.Proj == 1) {
+         // TODO : check x range not lower than -180 and not higher than 180
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            // there is an  'equator', check its range in the plot..
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
+         }
+      } else if ( this.options.Proj == 2) {
+         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
+            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+            this.options.Proj = 0;
+            return;
+         } 
+         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
+         
+      } else if (this.options.Proj == 3) {
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
+         }
+      } else if (this.options.Proj == 4) {
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
+         }
+      } else {
+         this.options.Proj = 0;
+         return;
+      }
+      
+      this.scale_xmin = this.scale_xmax = pnts[0].x;
+      this.scale_ymin = this.scale_ymax = pnts[0].y;
+      
+      for (var n=1;n<pnts.length;++n) { 
+         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
+         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
+         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
+         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+      }
+      
+      console.log(this.scale_ymin, this.scale_ymax)
+   }
 
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy) return;
 
-      var i,j,histo = this.GetObject();
+      var i, j, histo = this.GetObject();
 
       this.nbinsx = histo.fXaxis.fNbins;
       this.nbinsy = histo.fYaxis.fNbins;
