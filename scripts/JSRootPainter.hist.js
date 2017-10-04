@@ -6362,18 +6362,16 @@
    
    TH2Painter.prototype.ProjectAitoff2xy = function(l, b) {
       var DegToRad = Math.PI/180,
-           alpha2 = (l/2)*DegToRad,
-           delta  = b*DegToRad,
-           r2     = Math.sqrt(2),
-           f      = 2*r2/Math.PI,
-           cdec   = Math.cos(delta),
-           denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
-           res = {
-             x: cdec*Math.sin(alpha2)*2.*r2/denom,
-             y: Math.sin(delta)*r2/denom
-           };
-      res.x     *= RadToDeg/f;
-      res.y     *= RadToDeg/f;
+          alpha2 = (l/2)*DegToRad,
+          delta  = b*DegToRad,
+          r2     = Math.sqrt(2),
+          f      = 2*r2/Math.PI,
+          cdec   = Math.cos(delta),
+          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
+          res = {
+             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+             y: Math.sin(delta)*r2/denom/f/DegToRad
+          };
       //  x *= -1.; // for a skymap swap left<->right
       return res;
    }
@@ -6390,13 +6388,13 @@
    TH2Painter.prototype.ProjectParabolic2xy = function(l, b) {
       return {
          x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.Sin(b/180*Math.PI/3)
+         y: 180*Math.sin(b/180*Math.PI/3)
       };
    }
    
    TH2Painter.prototype.RecalculateRange = function() {
 
-      if (!this.is_main_painter() || !this.options.Proj || true) return;
+      if (!this.is_main_painter() || !this.options.Proj) return;
 
       var pnts = []; // all extrems which used to find 
       if (this.options.Proj == 1) {
@@ -6463,8 +6461,6 @@
          this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
          this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
       }
-      
-      console.log(this.scale_ymin, this.scale_ymax)
    }
 
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {
@@ -6746,7 +6742,8 @@
    }
 
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
-      var histo = this.GetObject(),
+      var histo = this.GetObject(), ddd = 0,
+          painter = this,
           kMAXCONTOUR = 2004,
           kMAXCOUNT = 2000,
           // arguments used in the PaintContourLine
@@ -6814,6 +6811,25 @@
             if ((ir[0] !== ir[1]) || (ir[1] !== ir[2]) || (ir[2] !== ir[3]) || (ir[3] !== ir[0])) {
                x[3] = x[0] = (handle.grx[i] + handle.grx[i+1])/2;
                x[2] = x[1] = (handle.grx[i+1] + handle.grx[i+2])/2;
+               
+               if (painter.options.Proj) {
+                  var pnt1 = null, pnt2 = null,
+                      ux0 = painter.RevertX((handle.grx[i] + handle.grx[i+1])/2), 
+                      ux2 = painter.RevertX((handle.grx[i+1] + handle.grx[i+2])/2),
+                      uy0 = painter.RevertY((handle.gry[j] + handle.gry[j+1])/2), 
+                      uy2 = painter.RevertY((handle.gry[j+1] + handle.gry[j+2])/2);
+                      
+                  switch (painter.options.Proj) {
+                     case 1: pnt1 = painter.ProjectAitoff2xy(ux0, uy0); pnt2 = painter.ProjectAitoff2xy(ux2, uy2); break;
+                     case 2: pnt1 = painter.ProjectMercator2xy(ux0, uy0); pnt2 = painter.ProjectMercator2xy(ux2, uy2); break;
+                     case 3: pnt1 = painter.ProjectSinusoidal2xy(ux0, uy0); pnt2 = painter.ProjectSinusoidal2xy(ux2, uy2); break;
+                     case 4: pnt1 = painter.ProjectParabolic2xy(ux0, uy0); pnt2 = painter.ProjectParabolic2xy(ux2, uy2); break;
+                  }
+                  x[3] = x[0] = painter.grx(pnt1.x);
+                  x[2] = x[1] = painter.grx(pnt2.x);
+                  y[1] = y[0] = painter.gry(pnt1.y);
+                  y[3] = y[2] = painter.gry(pnt2.y);
+               }
 
                if (zc[0] <= zc[1]) n = 0; else n = 1;
                if (zc[2] <= zc[3]) m = 2; else m = 3;
@@ -6984,7 +7000,7 @@
                case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
                case 14: break;
             }
-
+            
             var cmd = "M" + Math.round(xp[iminus]) + "," + Math.round(yp[iminus]);
             for (var i=iminus+1;i<=iplus;++i)
                cmd +=  "l" + (Math.round(xp[i]) - Math.round(xp[i-1])) + "," + (Math.round(yp[i]) - Math.round(yp[i-1]));
