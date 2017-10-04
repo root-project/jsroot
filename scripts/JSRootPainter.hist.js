@@ -6460,6 +6460,11 @@
          return;
       }
       
+      this.original_xmin = this.scale_xmin;
+      this.original_xmax = this.scale_xmax;
+      this.original_ymin = this.scale_ymin;
+      this.original_ymax = this.scale_ymax;
+      
       this.scale_xmin = this.scale_xmax = pnts[0].x;
       this.scale_ymin = this.scale_ymax = pnts[0].y;
       
@@ -6972,13 +6977,45 @@
       var levels = this.GetContour(),
           palette = this.GetPalette(),
           painter = this;
+      
+      function BuildPath(xp,yp,iminus,iplus) {
+         var cmd = "", last = null;
+         for (var i=iminus;i<=iplus;++i) {
+            var pnt = null;
+            switch (painter.options.Proj) {
+               case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
+               case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
+               case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
+               case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
+               default: pnt = { x: xp[i], y: yp[i] };
+            }
+            pnt.x = Math.round(painter.grx(pnt.x));
+            pnt.y = Math.round(painter.gry(pnt.y));
+            if (!cmd) cmd = "M" + pnt.x + "," + pnt.y;
+                 else cmd +=  "l" + (pnt.x - last.x) + "," + (pnt.y - last.y);
+            last = pnt;
+         }
+         return cmd;
+      }
 
-      if (this.options.Contour===14)
+      if (this.options.Contour===14) {
+         var dd = "M0,0h"+frame_w+"v"+frame_h+"h-"+frame_w;
+         if (this.options.Proj) {
+            var xd = new Float32Array(202), yd = new Float32Array(202);
+            for (var i=0;i<=100;++i) {
+               xd[i] = handle.origx[handle.i1];
+               yd[i] = (handle.origy[handle.j1]*i + handle.origy[handle.j2]*(100-i))/100;
+               xd[i+101] = handle.origx[handle.i2];
+               yd[i+101] = (handle.origy[handle.j2]*i + handle.origy[handle.j1]*(100-i))/100;
+            }
+            dd = BuildPath(xd,yd,0,201);
+         }
+         
          this.draw_g
-             .append("svg:rect")
-             .attr("x", 0).attr("y", 0)
-             .attr("width", frame_w).attr("height", frame_h)
+             .append("svg:path")
+             .attr("d", dd + "z")
              .style("fill", palette.calcColor(0, levels.length));
+      }
 
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus) {
@@ -6993,21 +7030,7 @@
                case 14: break;
             }
             
-            for (var i=iminus;i<=iplus;++i) {
-               var pnt = null;
-               switch (painter.options.Proj) {
-                  case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
-                  case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
-                  case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
-                  case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
-               }
-               xp[i] = Math.round(painter.grx(pnt ? pnt.x : xp[i]));
-               yp[i] = Math.round(painter.gry(pnt ? pnt.y : yp[i]));
-            }
-            
-            var cmd = "M" + xp[iminus] + "," + yp[iminus];
-            for (var i=iminus+1;i<=iplus;++i)
-               cmd +=  "l" + (xp[i] - xp[i-1]) + "," + (yp[i] - yp[i-1]);
+            var cmd = BuildPath(xp,yp,iminus,iplus);
             if (fillcolor !== 'none') cmd += "Z";
 
             var elem = painter.draw_g
