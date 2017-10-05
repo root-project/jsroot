@@ -3680,6 +3680,9 @@
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
+      // disable zooming when axis convertion is enabled
+      if (this.options && this.options.Proj) return false;
+      
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
       if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
@@ -4299,7 +4302,7 @@
       this.zoom_curr = null;    // current point for zooming
       this.touch_cnt = 0;
 
-      if (JSROOT.gStyle.Zooming) {
+      if (JSROOT.gStyle.Zooming && (!this.options || !this.options.Proj)) {
          if (JSROOT.gStyle.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
