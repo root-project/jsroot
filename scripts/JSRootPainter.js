@@ -327,7 +327,8 @@
                 '#perp': '\u22A5',
                 '#odot': '',
                 '#left': '',
-                '#right': ''
+                '#right': '',
+                '{}': ''
           },
           math_symbols_map: {
                 '#LT':"\\langle",
