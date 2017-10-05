@@ -746,7 +746,7 @@
       var d = new JSROOT.DrawOptions(opt);
 
       var res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
-                  Errors: 0, MainError: 1, Ends: 1, Axis: "AXIS", original: opt };
+                  Errors: 0, MainError: 1, Ends: 1, Axis: "", original: opt };
 
       var graph = this.GetObject();
 
@@ -908,7 +908,7 @@
 
       lines.push(this.GetTipName());
 
-      if (d) {
+      if (d && pmain) {
          lines.push("x = " + pmain.AxisAsText("x", d.x));
          lines.push("y = " + pmain.AxisAsText("y", d.y));
 
@@ -920,18 +920,49 @@
       }
       return lines;
    }
+   
+   TGraphPainter.prototype.get_main = function() {
+      var pmain = this.main_painter();
+      
+      if (pmain && pmain.grx && pmain.gry) return pmain;
+      
+      pmain = {
+          pad_layer: true,
+          pad: this.root_pad(),
+          pw: this.pad_width(),
+          ph: this.pad_height(),
+          grx: function(value) {
+             if (this.pad.fLogx)
+                value = (value>0) ? JSROOT.log10(value) : this.pad.fUxmin;
+             else
+                value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+             return value*this.pw;
+          },
+          gry: function(value) {
+             if (this.pad.fLogy)
+                value = (value>0) ? JSROOT.log10(value) : this.pad.fUymin;
+             else
+                value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
+             return (1-value)*this.ph;
+          }
+      }
+      
+      return pmain.pad ? pmain : null;
+   }
 
    TGraphPainter.prototype.DrawBins = function() {
 
-      this.CreateG(true);
-
       var pthis = this,
-          pmain = this.main_painter(),
+          pmain = this.get_main(),
           w = this.frame_width(),
           h = this.frame_height(),
           graph = this.GetObject(),
           excl_width = 0;
+      
+      if (!pmain) return;
 
+      this.CreateG(!pmain.pad_layer);
+      
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
@@ -955,9 +986,8 @@
          this.lineatt = new JSROOT.TAttLineHandler(graph, undefined, true);
       if (!this.fillatt)
          this.fillatt = this.createAttFill(graph, undefined, undefined, 1);
-      this.fillatt.used = false;
+      this.fillatt.used = false; // mark used only when really used
 
-      if (this.fillatt) this.fillatt.used = false; // mark used only when really used
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
       this.marker_size = 0; // indicate if markers are drawn
 
@@ -1790,8 +1820,8 @@
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
    }
-
-   JSROOT.Painter.drawGraph = function(divid, graph, opt) {
+   
+   function drawGraph(divid, graph, opt) {
 
       var painter = new TGraphPainter(graph);
 
@@ -1803,7 +1833,7 @@
 
       painter.CreateStat();
 
-      if (!painter.main_painter()) {
+      if (!painter.main_painter() && painter.options.Axis) {
          if (!graph.fHistogram)
             graph.fHistogram = painter.CreateHistogram();
          JSROOT.draw(divid, graph.fHistogram, painter.options.Axis, painter.PerformDrawing.bind(painter, divid));
@@ -3273,6 +3303,7 @@
    JSROOT.Painter.drawPolyMarker = drawPolyMarker;
    JSROOT.Painter.drawWebPainting = drawWebPainting;
    JSROOT.Painter.drawRooPlot = drawRooPlot;
+   JSROOT.Painter.drawGraph = drawGraph;
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
