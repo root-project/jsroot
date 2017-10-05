@@ -1801,12 +1801,14 @@
    }
 
    TObjectPainter.prototype.pad_width = function(pad_name) {
-      var res = this.svg_pad(pad_name).property("draw_width");
+      var res = this.svg_pad(pad_name);
+      res = res.empty() ? 0 : res.property("draw_width");
       return isNaN(res) ? 0 : res;
    }
 
    TObjectPainter.prototype.pad_height = function(pad_name) {
-      var res = this.svg_pad(pad_name).property("draw_height");
+      var res = this.svg_pad(pad_name);
+      res = res.empty() ? 0 : res.property("draw_height");
       return isNaN(res) ? 0 : res;
    }
 

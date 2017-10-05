@@ -743,13 +743,11 @@
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
-      var d = new JSROOT.DrawOptions(opt);
-
-      var res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
+      var graph = this.GetObject(),
+          d = new JSROOT.DrawOptions(opt),
+          res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
                   Errors: 0, MainError: 1, Ends: 1, Axis: "", original: opt };
-
-      var graph = this.GetObject();
-
+      
       if (this.has_errors) res.Errors = 1;
 
       res._pfc = d.check("PFC");
@@ -791,6 +789,14 @@
       if (graph._typename == 'TGraphErrors') {
          if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
             res.Errors = 0;
+      }
+      
+      if (!res.Axis) {
+         // check if axis should be drawn 
+         // either graph drawn directly or
+         // graph is first object in list of primitives
+         var pad = this.root_pad();
+         if (!pad || !pad.fPrimitives || (pad.fPrimitives.arr[0] === graph)) res.Axis = "AXIS";
       }
 
       return res;
@@ -1824,11 +1830,11 @@
    function drawGraph(divid, graph, opt) {
 
       var painter = new TGraphPainter(graph);
-
-      painter.options = painter.DecodeOptions(opt);
-
+      
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
+      painter.options = painter.DecodeOptions(opt);
+      
       painter.CreateBins();
 
       painter.CreateStat();
