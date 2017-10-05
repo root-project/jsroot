@@ -158,13 +158,13 @@
                         100, 103, 105, 104,   0,  // 20..24
                           3,   4,   2,   1, 106,  // 25..29
                           6,   7,   5, 102, 101], // 30..34
-          root_fonts: ['Arial', 'Times New Roman',
+          root_fonts: ['Arial', 'iTimes New Roman',
                        'bTimes New Roman', 'biTimes New Roman', 'Arial',
                        'oArial', 'bArial', 'boArial', 'Courier New',
                        'oCourier New', 'bCourier New', 'boCourier New',
-                       'Symbol', 'Times New Roman', 'Wingdings', 'Symbol', 'Verdana'],
+                       'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol', 'Verdana'],
           // taken from https://www.math.utah.edu/~beebe/fonts/afm-widths.html
-          root_fonts_aver_width: [ 0.537, 0.514,
+          root_fonts_aver_width: [ 0.537, 0.510,
                                    0.535, 0.520, 0.537,
                                    0.54, 0.556, 0.56, 0.6,
                                    0.6, 0.6, 0.6,
