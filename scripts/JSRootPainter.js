@@ -905,15 +905,15 @@
             break;
          case 3005:
             patt.attr("width", 8).attr("height", 8);
-            patt.append("svg:line").attr("x1", 0).attr("y1", 0).attr("x2", 8).attr("y2", 8);
+            lines.push(patt.append("svg:path").attr("d", "M0,0L8,8"));
             break;
          case 3006:
             patt.attr("width", 4).attr("height", 4);
-            patt.append("svg:line").attr("x1", 1).attr("y1", 0).attr("x2", 1).attr("y2", 3);
+            lines.push(patt.append("svg:path").attr("d", "M1,0v4"));
             break;
          case 3007:
             patt.attr("width", 4).attr("height", 4);
-            patt.append("svg:line").attr("x1", 0).attr("y1", 1).attr("x2", 3).attr("y2", 1);
+            lines.push(patt.append("svg:path").attr("d", "M0,1h4"));
             break;
          case 3008:
             patt.attr("width", 10).attr("height", 10);
@@ -922,23 +922,19 @@
             break;
          case 3010: // bricks
             patt.attr("width", 10).attr("height", 10);
-            patt.append("svg:line").attr("x1", 0).attr("y1", 2).attr("x2", 10).attr("y2", 2);
-            patt.append("svg:line").attr("x1", 0).attr("y1", 7).attr("x2", 10).attr("y2", 7);
-            patt.append("svg:line").attr("x1", 2).attr("y1", 0).attr("x2", 2).attr("y2", 2);
-            patt.append("svg:line").attr("x1", 7).attr("y1", 2).attr("x2", 7).attr("y2", 7);
-            patt.append("svg:line").attr("x1", 2).attr("y1", 7).attr("x2", 2).attr("y2", 10);
+            lines.push(patt.append("svg:path").attr("d", "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"));
             break;
          case 3018: // lines
             patt.attr("width", 4).attr("height", 4);
-            patt.append("svg:line").attr("x1", 1).attr("y1", 1).attr("x2", 3).attr("y2", 3);
+            lines.push(patt.append("svg:path").attr("d", "M1,1l2,2"));
             break;
-         case 3021: // stairs
-         case 3022:
-            patt.attr("width", 10).attr("height", 10);
-            patt.append("svg:line").attr("x1", 0).attr("y1", 5).attr("x2", 5).attr("y2", 5);
-            patt.append("svg:line").attr("x1", 5).attr("y1", 5).attr("x2", 5).attr("y2", 0);
-            patt.append("svg:line").attr("x1", 5).attr("y1", 10).attr("x2", 10).attr("y2", 10);
-            patt.append("svg:line").attr("x1", 10).attr("y1", 10).attr("x2", 10).attr("y2", 5);
+         case 3021: // left stairs
+            patt.attr("width", 8).attr("height", 8);
+            lines.push(patt.append("svg:path").attr("d", "M8,2h-2v4h-4v2M2,0v2h-2").style("fill","none"));
+            break;
+         case 3022: // right stairs
+            patt.attr("width", 8).attr("height", 8);
+            lines.push(patt.append("svg:path").attr("d", "M0,2h2v4h4v2M6,0v2h2").style("fill","none"));
             break;
          case 3025:
             patt.attr("width", 18).attr("height", 18);
@@ -946,15 +942,12 @@
             break;
          default: /* == 3004 */
             patt.attr("width", 8).attr("height", 8);
-            patt.append("svg:line").attr("x1", 8).attr("y1", 0).attr("x2", 0).attr("y2", 8);
+            lines.push(patt.append("svg:path").attr("d", "M8,0L0,8"));
             break;
       }
       
       fills.forEach(function(elem) { elem.style("fill",line_color); });
       lines.forEach(function(elem) { elem.style('stroke',line_color).style("stroke-width",1); });
-
-      patt.selectAll('line').style('stroke',line_color).style("stroke-width",1);
-      patt.selectAll('rect').style("fill",line_color);
 
       return true;
    }
