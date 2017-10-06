@@ -887,69 +887,33 @@
 
       if (!defs.select("."+id).empty()) return true;
 
-      var lines = "", fills = "", w = 2, h = 2;
+      var lines = "", lfill = null, fills = "", w = 2, h = 2;
 
       switch (this.pattern) {
-         case 3001:
-            w = h = 2;
-            fills = "M0,0h1v1h-1zM1,1h1v1h-1z";
-            break;
-         case 3002:
-            w = 4; h = 2;
-            fills = "M1,0h1v1h-1zM3,1h1v1h-1z";
-            break;
-         case 3003:
-            w = h = 4;
-            fills = "M2,1h1v1h-1zM0,3h1v1h-1z";
-            break;
-         case 3005:
-            w = h = 8;
-            lines = "M0,0L8,8";
-            break;
-         case 3006:
-            w = h = 4;
-            lines = "M1,0v4";
-            break;
-         case 3007:
-            w = h = 4;
-            lines = "M0,1h4";
-            break;
+         case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
+         case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
+         case 3003: w = h = 4; fills = "M2,1h1v1h-1zM0,3h1v1h-1z"; break;
+         case 3005: w = h = 8; lines = "M0,0L8,8"; break;
+         case 3006: w = h = 4; lines = "M1,0v4"; break;
+         case 3007: w = h = 4; lines = "M0,1h4"; break;
          case 3008:
             w = h = 10;
             fills = "M0,3v-3h3ZM7,0h3v3ZM0,7v3h3ZM7,10h3v-3ZM5,2l3,3l-3,3l-3,-3Z";
             lines = "M0,3l5,5M3,10l5,-5M10,7l-5,-5M7,0l-5,5";
             break;
-         case 3010: // bricks
-            w = h = 10;
-            lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3";
-            break;
-         case 3018: // lines
-            w = h = 4;
-            lines = "M1,1l2,2";
-            break;
-         case 3021: // left stairs
-            w  = h = 8;
-            lines = "M8,2h-2v4h-4v2M2,0v2h-2";
-            break;
-         case 3022: // right stairs
-            w = h = 8;
-            lines = "M0,2h2v4h4v2M6,0v2h2";
-            break;
-         case 3025:
-            w = h = 18;
-            fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z";
-            break;
-         default: /* == 3004 */
-            w = h = 8;
-            lines = "M8,0L0,8";
-            break;
+         case 3010: w = h = 10; lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"; break; // bricks
+         case 3018: w = h = 4; lines = "M1,1l2,2"; break;
+         case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = "none"; break; // left stairs
+         case 3022: w = h = 8; lines = "M0,2h2v4h4v2M6,0v2h2"; lfill = "none"; break; // right stairs
+         case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
+         default: w = h = 8; lines = "M8,0L0,8"; break; /* == 3004 */
       }
       
       var patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse")
                      .attr("width", w).attr("height", h);
       
-      if (fills) patt.append("svg:path").attr("d", fills).style("fill",line_color); 
-      if (lines) patt.append("svg:path").attr("d", lines).style('stroke',line_color).style("stroke-width",1).style("fill","none");
+      if (fills) patt.append("svg:path").attr("d", fills).style("fill", line_color); 
+      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', line_color).style("stroke-width", 1).style("fill", lfill);
 
       return true;
    }
