@@ -927,19 +927,22 @@
          default:
             var code = this.pattern % 1000,
                 k = code % 10, j = ((code - k) % 100) / 10, i = (code - j*10 - k)/100; 
-            if (code !== i*100 + j*10 + k) console.log("patten", this.pattern, i, j, k); 
-            if (!i || ((j==5) && (k==5))) break;
+            if (!i) break;
             
-            var sz = i*12;  // distance between lines
+            var sz = i*12;  // axis distance between lines
             
-            w = h = 6*sz; // we need 6 steps
+            w = h = 6*sz; // we use at least 6 steps
             
-            function produce(dy,min,max,swap) {
-               var pos = [];
-               for (var n=min;n<max;n++) {
-                  var y1 = n*sz;
-                  if (!dy) y1+=sz/2;
-                  var y2 = y1 + dy;
+            function produce(dy,swap) {
+               var pos = [], step = sz, y1 = 0, y2, max = h;
+               
+               // reduce step for smaller angles to keep normal distance approx same
+               if (Math.abs(dy)<3) step = Math.round(sz/12*9); 
+               if (dy==0) { step = Math.round(sz/12*8); y1 = step/2; } 
+               else if (dy>0) max -= step; else y1 = step;
+               
+               while(y1<=max) {
+                  y2 = y1 + dy*step;
                   if (y2 < 0) {
                      var x2 = Math.round(y1/(y1-y2)*w);
                      pos.push(0,y1,x2,0);
@@ -951,6 +954,7 @@
                   } else {
                      pos.push(0,y1,w,y2);
                   }
+                  y1+=step;
                }
                for (var k=0;k<pos.length;k+=4)
                   if (swap) lines += "M"+pos[k+1]+","+pos[k]+"L"+pos[k+3]+","+pos[k+2];
@@ -958,27 +962,27 @@
             }
             
             switch (j) {
-               case 0: produce(0,0,6,false); break; 
-               case 1: produce(sz,0,6); break;               
-               case 2: produce(2*sz,0,6); break;
-               case 3: produce(3*sz,0,6); break;
-               case 4: produce(6*sz,0,6); break;
-               case 6: produce(3*sz,0,6,true); break;
-               case 7: produce(2*sz,0,6,true); break;
-               case 8: produce(sz,0,6,true); break;
-               case 9: produce(0,0,6,true); break;
+               case 0: produce(0); break; 
+               case 1: produce(1); break;               
+               case 2: produce(2); break;
+               case 3: produce(3); break;
+               case 4: produce(6); break;
+               case 6: produce(3,true); break;
+               case 7: produce(2,true); break;
+               case 8: produce(1,true); break;
+               case 9: produce(0,true); break;
             }
             
             switch (k) {
-               case 0: if (j) produce(0,0,6,false); break; 
-               case 1: produce(-sz,1,7); break;               
-               case 2: produce(-2*sz,1,7); break;
-               case 3: produce(-3*sz,1,7); break;
-               case 4: produce(-6*sz,1,7); break;
-               case 6: produce(-3*sz,1,7); break;
-               case 7: produce(-2*sz,1,7); break;
-               case 8: produce(-sz,1,7); break;
-               case 9: if (j!=9) produce(0,0,6,true); break;
+               case 0: if (j) produce(0); break; 
+               case 1: produce(-1); break;               
+               case 2: produce(-2); break;
+               case 3: produce(-3); break;
+               case 4: produce(-6); break;
+               case 6: produce(-3,true); break;
+               case 7: produce(-2,true); break;
+               case 8: produce(-1,true); break;
+               case 9: if (j!=9) produce(0,true); break;
             }
             
             break;
