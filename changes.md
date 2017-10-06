@@ -6,7 +6,7 @@
 3. Support TPavesText with multiple underlying paves 
 4. Correctly draw filled TArrow endings
 5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
-6. Implement fill styles 3008, 3018, 3025
+6. Implement most existing fill styles
 
 
 ## Changes in 5.3.0
