@@ -887,7 +887,7 @@
 
       if (!defs.select("."+id).empty()) return true;
 
-      var lines = "", lfill = null, fills = "", w = 2, h = 2;
+      var lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
 
       switch (this.pattern) {
          case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
@@ -920,6 +920,8 @@
          case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = "none"; break;
          case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = "none"; break; // left stairs
          case 3022: w = h = 8; lines = "M0,2h2v4h4v2M6,0v2h2"; lfill = "none"; break; // right stairs
+         case 3023: w = h = 8; fills = "M4,0h4v4zM8,4v4h-4z"; fills2 = "M4,0L0,4L4,8L8,4Z"; break;
+         case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
          case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
          default: w = h = 8; lines = "M8,0L0,8"; break; /* == 3004 */
       }
@@ -927,6 +929,11 @@
       var patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse")
                      .attr("width", w).attr("height", h);
       
+      if (fills2) {
+         var col = d3.rgb(line_color);
+         col.r = Math.round((col.r+255)/2); col.g = Math.round((col.g+255)/2); col.b = Math.round((col.b+255)/2);
+         patt.append("svg:path").attr("d", fills2).style("fill", col);
+      }
       if (fills) patt.append("svg:path").attr("d", fills).style("fill", line_color); 
       if (lines) patt.append("svg:path").attr("d", lines).style('stroke', line_color).style("stroke-width", 1).style("fill", lfill);
 
