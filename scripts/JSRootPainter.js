@@ -934,38 +934,51 @@
             
             w = h = 6*sz; // we need 6 steps
             
-            function horizontal(dy,min,max) {
+            function produce(dy,min,max,swap) {
+               var pos = [];
                for (var n=min;n<max;n++) {
-                  var y1 = n*sz, y2 = y1 + dy;
+                  var y1 = n*sz;
+                  if (!dy) y1+=sz/2;
+                  var y2 = y1 + dy;
                   if (y2 < 0) {
                      var x2 = Math.round(y1/(y1-y2)*w);
-                     lines += "M0,"+y1 + "L"+x2+",0";
-                     lines += "M"+w+","+(h-y1) + "L"+(w-x2)+","+h; // symmetric from other side 
+                     pos.push(0,y1,x2,0);
+                     pos.push(w,h-y1,w-x2,h);
                   } else if (y2 > h) {
                      var x2 = Math.round((h-y1)/(y2-y1)*w);
-                     lines += "M0,"+y1 + "L"+x2+","+h;
-                     lines += "M"+w+","+(h-y1) + "L"+(w-x2)+",0"; // symmetric from other side 
-                     
+                     pos.push(0,y1,x2,h);
+                     pos.push(w,h-y1,w-x2,0);
                   } else {
-                     lines += "M0,"+y1 + "L"+w+","+y2;
+                     pos.push(0,y1,w,y2);
                   }
                }
+               for (var k=0;k<pos.length;k+=4)
+                  if (swap) lines += "M"+pos[k+1]+","+pos[k]+"L"+pos[k+3]+","+pos[k+2];
+                       else lines += "M"+pos[k]+","+pos[k+1]+"L"+pos[k+2]+","+pos[k+3];
             }
             
             switch (j) {
-               case 0: horizontal(0,0,7); break; 
-               case 1: horizontal(sz,0,6); break;               
-               case 2: horizontal(2*sz,0,6); break;
-               case 3: horizontal(3*sz,0,6); break;
-               case 4: horizontal(6*sz,0,6); break;
+               case 0: produce(0,0,6,false); break; 
+               case 1: produce(sz,0,6); break;               
+               case 2: produce(2*sz,0,6); break;
+               case 3: produce(3*sz,0,6); break;
+               case 4: produce(6*sz,0,6); break;
+               case 6: produce(3*sz,0,6,true); break;
+               case 7: produce(2*sz,0,6,true); break;
+               case 8: produce(sz,0,6,true); break;
+               case 9: produce(0,0,6,true); break;
             }
             
             switch (k) {
-               case 0: if (j) horizontal(0,0,7); break; 
-               case 1: horizontal(-sz,1,7); break;               
-               case 2: horizontal(-2*sz,1,7); break;
-               case 3: horizontal(-3*sz,1,7); break;
-               case 4: horizontal(-6*sz,1,7); break;
+               case 0: if (j) produce(0,0,6,false); break; 
+               case 1: produce(-sz,1,7); break;               
+               case 2: produce(-2*sz,1,7); break;
+               case 3: produce(-3*sz,1,7); break;
+               case 4: produce(-6*sz,1,7); break;
+               case 6: produce(-3*sz,1,7); break;
+               case 7: produce(-2*sz,1,7); break;
+               case 8: produce(-sz,1,7); break;
+               case 9: if (j!=9) produce(0,0,6,true); break;
             }
             
             break;
