@@ -851,6 +851,11 @@
          delete this.opacity;
          delete this.antialias;
       }
+      
+      if ((this.pattern == 1000) && (this.colorindx===0)) {
+         this.color = 'white';
+         return true;
+      }
 
       if (this.pattern < 1001) {
          this.color = 'none';
