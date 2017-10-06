@@ -206,7 +206,7 @@ examples_main = {
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
      { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" },
      { name: "archi", file: "tutorials_graphics.root", item: 'archi',  title: "Usage of TPavesText, tutorials/graphics/archi.C" },
-     { name: "feynman", file: "tutorials_graphics.root", item: 'feynman',  title: "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" }
-     
+     { name: "feynman", file: "tutorials_graphics.root", item: 'feynman',  title: "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
+     { name: "fill", file: "fillpatterns.root", item: 'patterns',  title: "Different fill patterns" }
    ]
  };
