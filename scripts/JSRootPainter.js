@@ -893,6 +893,7 @@
          case 3001: w = h = 2; fills = "M0,0h1v1h-1zM1,1h1v1h-1z"; break;
          case 3002: w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
          case 3003: w = h = 4; fills = "M2,1h1v1h-1zM0,3h1v1h-1z"; break;
+         case 3004: w = h = 8; lines = "M8,0L0,8"; break;
          case 3005: w = h = 8; lines = "M0,0L8,8"; break;
          case 3006: w = h = 4; lines = "M1,0v4"; break;
          case 3007: w = h = 4; lines = "M0,1h4"; break;
@@ -905,7 +906,7 @@
          case 3010: w = h = 10; lines = "M0,2h10M0,7h10M2,0v2M7,2v5M2,7v3"; break; // bricks
          case 3011: w = 9; h = 18; lines = "M5,0v8M2,1l6,6M8,1l-6,6M9,9v8M6,10l3,3l-3,3M0,9v8M3,10l-3,3l3,3"; lfill = "none"; break;
          case 3012: w = 10; h = 20; lines = "M5,1A4,4,0,0,0,5,9A4,4,0,0,0,5,1M0,11A4,4,0,0,1,0,19M10,11A4,4,0,0,0,10,19"; lfill = "none"; break;
-         case 3013: w = h = 10; lines = "M0,0l10,10M10,0l-10,10"; lfill = "none"; break;
+         case 3013: w = h = 7; lines = "M0,0L7,7M7,0L0,7"; lfill = "none"; break;
          case 3014: w = h = 16; lines = "M0,0h16v16h-16v-16M0,12h16M12,0v16M4,0v8M4,4h8M0,8h8M8,4v8"; lfill = "none"; break;
          case 3015: w = 6; h = 12; lines = "M2,1A2,2,0,0,0,2,5A2,2,0,0,0,2,1M0,7A2,2,0,0,1,0,11M6,7A2,2,0,0,0,6,11"; lfill = "none"; break;
          case 3016: w = 12; h = 7; lines = "M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1"; lfill = "none"; break;
@@ -923,8 +924,54 @@
          case 3023: w = h = 8; fills = "M4,0h4v4zM8,4v4h-4z"; fills2 = "M4,0L0,4L4,8L8,4Z"; break;
          case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
          case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
-         default: w = h = 8; lines = "M8,0L0,8"; break; /* == 3004 */
+         default:
+            var code = this.pattern % 1000,
+                k = code % 10, j = ((code - k) % 100) / 10, i = (code - j*10 - k)/100; 
+            if (code !== i*100 + j*10 + k) console.log("patten", this.pattern, i, j, k); 
+            if (!i || ((j==5) && (k==5))) break;
+            
+            var sz = i*12;  // distance between lines
+            
+            w = h = 6*sz; // we need 6 steps
+            
+            function horizontal(dy,min,max) {
+               for (var n=min;n<max;n++) {
+                  var y1 = n*sz, y2 = y1 + dy;
+                  if (y2 < 0) {
+                     var x2 = Math.round(y1/(y1-y2)*w);
+                     lines += "M0,"+y1 + "L"+x2+",0";
+                     lines += "M"+w+","+(h-y1) + "L"+(w-x2)+","+h; // symmetric from other side 
+                  } else if (y2 > h) {
+                     var x2 = Math.round((h-y1)/(y2-y1)*w);
+                     lines += "M0,"+y1 + "L"+x2+","+h;
+                     lines += "M"+w+","+(h-y1) + "L"+(w-x2)+",0"; // symmetric from other side 
+                     
+                  } else {
+                     lines += "M0,"+y1 + "L"+w+","+y2;
+                  }
+               }
+            }
+            
+            switch (j) {
+               case 0: horizontal(0,0,7); break; 
+               case 1: horizontal(sz,0,6); break;               
+               case 2: horizontal(2*sz,0,6); break;
+               case 3: horizontal(3*sz,0,6); break;
+               case 4: horizontal(6*sz,0,6); break;
+            }
+            
+            switch (k) {
+               case 0: if (j) horizontal(0,0,7); break; 
+               case 1: horizontal(-sz,1,7); break;               
+               case 2: horizontal(-2*sz,1,7); break;
+               case 3: horizontal(-3*sz,1,7); break;
+               case 4: horizontal(-6*sz,1,7); break;
+            }
+            
+            break;
       }
+      
+      if (!fills && !lines) return false;
       
       var patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse")
                      .attr("width", w).attr("height", h);
