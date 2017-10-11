@@ -28,6 +28,751 @@
    
    JSROOT.v7 = {}; // placeholder for all v7-relevant code
    
+   
+   
+   function TAxisPainter(axis, embedded) {
+      JSROOT.TObjectPainter.call(this, axis);
+
+      this.embedded = embedded; // indicate that painter embedded into the histo painter
+
+      this.name = "yaxis";
+      this.kind = "normal";
+      this.func = null;
+      this.order = 0; // scaling order for axis labels
+
+      this.full_min = 0;
+      this.full_max = 1;
+      this.scale_min = 0;
+      this.scale_max = 1;
+      this.ticks = []; // list of major ticks
+      this.invert_side = false;
+   }
+
+   TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TAxisPainter.prototype.Cleanup = function() {
+
+      this.ticks = [];
+      this.func = null;
+      delete this.format;
+
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
+   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
+      this.name = name;
+      this.kind = kind;
+      this.func = func;
+
+      this.full_min = min;
+      this.full_max = max;
+      this.scale_min = smin;
+      this.scale_max = smax;
+   }
+
+   TAxisPainter.prototype.format10Exp = function(order, value) {
+      var res = "";
+      if (value) {
+         value = Math.round(value/Math.pow(10,order));
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
+      }
+      res += "10";
+      if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
+      var superscript_symbols = {
+            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+         };
+      var str = order.toString();
+      for (var n=0;n<str.length;++n) res += superscript_symbols[str[n]];
+      return res;
+   }
+
+   TAxisPainter.prototype.CreateFormatFuncs = function() {
+
+      var axis = this.GetObject(),
+          is_gaxis = (axis && axis._typename === 'TGaxis');
+
+      delete this.format;// remove formatting func
+
+      var ndiv = 508;
+      if (is_gaxis) ndiv = axis.fNdiv; else
+      if (axis) ndiv = Math.max(axis.fNdivisions, 4);
+
+      this.nticks = ndiv % 100;
+      this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
+      this.nticks3 = Math.floor(ndiv/10000);
+
+      if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
+
+      var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+      if (gr_range<=0) gr_range = 100;
+
+      if (this.kind == 'time') {
+         if (this.nticks > 8) this.nticks = 8;
+
+         var scale_range = this.scale_max - this.scale_min,
+             tf1 = JSROOT.Painter.getTimeFormat(axis),
+             tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
+
+         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
+
+         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
+         if (tf2!==tf1)
+            this.tfunc2 = d3.timeFormat(tf2);
+
+         this.format = function(d, asticks) {
+            return asticks ? this.tfunc1(d) : this.tfunc2(d);
+         }
+
+      } else if (this.kind == 'log') {
+         if (this.nticks2 > 1) {
+            this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
+            this.nticks2 = 1;
+         }
+         this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
+         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
+         this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
+
+         this.format = function(d, asticks, notickexp) {
+            var val = parseFloat(d), rnd = Math.round(val);
+            if (!asticks)
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : val.toExponential(4);
+
+            if (val <= 0) return null;
+            var vlog = JSROOT.log10(val);
+            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this.noexp && !notickexp)
+                  return this.format10Exp(Math.floor(vlog+0.01), val);
+
+               return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+            }
+            return null;
+         }
+      } else if (this.kind == 'labels') {
+         this.nticks = 50; // for text output allow max 50 names
+         var scale_range = this.scale_max - this.scale_min;
+         if (this.nticks > scale_range)
+            this.nticks = Math.round(scale_range);
+         this.nticks2 = 1;
+
+         this.axis = axis;
+
+         this.format = function(d) {
+            var indx = Math.round(parseInt(d)) + 1;
+            if ((indx<1) || (indx>this.axis.fNbins)) return null;
+            for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
+               var tstr = this.axis.fLabels.arr[i];
+               if (tstr.fUniqueID == indx) return tstr.fString;
+            }
+            return null;
+         }
+      } else {
+
+         this.order = 0;
+         this.ndig = 0;
+
+         this.format = function(d, asticks) {
+            var val = parseFloat(d);
+            if (asticks && this.order) val = val / Math.pow(10, this.order);
+
+            if (val === Math.round(val))
+               return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+
+            return (this.ndig>10) ? val.toExponential(4) : val.toFixed(this.ndig + (asticks ? 0 : 2));
+         }
+      }
+   }
+
+   TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+      if (!this.noticksopt) return this.func.ticks(ndiv * (ndiv2 || 1));
+
+      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+      var dom = this.func.domain(), ticks = [];
+      for (var n=0;n<=ndiv;++n)
+         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+      return ticks;
+   }
+
+   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+      // function used to create array with minor/middle/major ticks
+
+      if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
+
+      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+
+      handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
+
+      if (only_major_as_array) {
+         var res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
+         if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
+         if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
+         return res;
+      }
+
+      if (this.nticks2 > 1) {
+         handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
+
+         var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+
+         // avoid black filling by middle-size
+         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
+            handle.minor = handle.middle = handle.major;
+         } else
+         if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
+            handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
+            if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
+         }
+      }
+
+      handle.reset = function() {
+         this.nminor = this.nmiddle = this.nmajor = 0;
+      }
+
+      handle.next = function(doround) {
+         if (this.nminor >= this.minor.length) return false;
+
+         this.tick = this.minor[this.nminor++];
+         this.grpos = this.func(this.tick);
+         if (doround) this.grpos = Math.round(this.grpos);
+         this.kind = 3;
+
+         if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {
+            this.nmiddle++;
+            this.kind = 2;
+         }
+
+         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
+            this.nmajor++;
+            this.kind = 1;
+         }
+         return true;
+      }
+
+      handle.last_major = function() {
+         return (this.kind !== 1) ? false : this.nmajor == this.major.length;
+      }
+
+      handle.next_major_grpos = function() {
+         if (this.nmajor >= this.major.length) return null;
+         return this.func(this.major[this.nmajor]);
+      }
+
+      this.order = 0;
+      this.ndig = 0;
+
+      // at the moment when drawing labels, we can try to find most optimal text representation for them
+
+      if ((this.kind == "normal") && (handle.major.length > 0)) {
+
+         var maxorder = 0, minorder = 0;
+
+         if (!optionNoexp) {
+            var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
+                ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
+
+             if (maxtick || mintick) {
+                maxorder = Math.max(ord1,ord2) + 3;
+                minorder = Math.min(ord1,ord2) - 3;
+             }
+         }
+
+         // now try to find best combination of order and ndig for labels
+
+         var bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
+
+         for (var order = minorder; order <= maxorder; order+=3) {
+            this.order = order;
+            this.ndig = 0;
+            var lbls = [], indx = 0, totallen = 0;
+            while (indx<handle.major.length) {
+               var lbl = this.format(handle.major[indx], true);
+               if (lbls.indexOf(lbl)<0) {
+                  lbls.push(lbl);
+                  totallen += lbl.length;
+                  indx++;
+                  continue;
+               }
+               if (++this.ndig > 11) break; // not too many digits, anyway it will be exponential
+               lbls = []; indx = 0; totallen = 0;
+            }
+
+            // for order==0 we should virually remove "0." and extra label on top
+            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+
+            if (totallen < bestlen) {
+               bestlen = totallen;
+               bestorder = this.order;
+               bestndig = this.ndig;
+            }
+         }
+
+         this.order = bestorder;
+         this.ndig = bestndig;
+
+         if (optionInt) {
+            if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
+            if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
+            this.ndig = 0;
+            this.order = 0;
+         }
+      }
+
+      return handle;
+   }
+
+   TAxisPainter.prototype.IsCenterLabels = function() {
+      if (this.kind === 'labels') return true;
+      if (this.kind === 'log') return false;
+      var axis = this.GetObject();
+      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
+   }
+
+   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+      if (!JSROOT.gStyle.MoveResize) return;
+
+      var pthis = this,  drag_rect = null, prefix = "", drag_move,
+          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos;
+      if (JSROOT._test_d3_ === 3) {
+         prefix = "drag";
+         drag_move = d3.behavior.drag().origin(Object);
+      } else {
+         drag_move = d3.drag().subject(Object);
+      }
+
+      drag_move
+         .on(prefix+"start",  function() {
+
+            d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
+            var box = title_g.node().getBBox(), // check that elements visible, request precise value
+                axis = pthis.GetObject();
+
+            new_x = acc_x = title_g.property('shift_x');
+            new_y = acc_y = title_g.property('shift_y');
+
+            sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
+
+            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+               alt_pos = (reverse === vertical) ? axis_length : 0;
+            else
+               alt_pos = Math.round(axis_length/2);
+
+            drag_rect = title_g.append("rect")
+                 .classed("zoom", true)
+                 .attr("x", box.x)
+                 .attr("y", box.y)
+                 .attr("width", box.width)
+                 .attr("height", box.height)
+                 .style("cursor", "move");
+//                 .style("pointer-events","none"); // let forward double click to underlying elements
+          }).on("drag", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               acc_x += d3.event.dx;
+               acc_y += d3.event.dy;
+
+               var set_x = title_g.property('shift_x'),
+                   set_y = title_g.property('shift_y');
+
+               if (vertical) {
+                  set_x = acc_x;
+                  if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
+               } else {
+                  set_y = acc_y;
+                  if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
+               }
+
+               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
+                  new_x = set_x; new_y = set_y;
+                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+               }
+
+          }).on(prefix+"end", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               title_g.property('shift_x', new_x)
+                      .property('shift_y', new_y);
+
+               var axis = pthis.GetObject();
+
+               axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
+               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+
+               drag_rect.remove();
+               drag_rect = null;
+            });
+
+      title_g.style("cursor", "move").call(drag_move);
+   }
+
+   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing) {
+      // function draws  TAxis or TGaxis object
+
+      var axis = this.GetObject(), chOpt = "",
+          is_gaxis = (axis && axis._typename === 'TGaxis'),
+          axis_g = layer, tickSize = 0.03,
+          scaling_size = 100, draw_lines = true,
+          pad_w = this.pad_width() || 10,
+          pad_h = this.pad_height() || 10;
+
+      this.vertical = vertical;
+
+      function myXor(a,b) { return ( a && !b ) || (!a && b); }
+
+      // shift for second ticks set (if any)
+      if (!second_shift) second_shift = 0; else
+      if (this.invert_side) second_shift = -second_shift;
+
+      if (is_gaxis) {
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
+         draw_lines = axis.fLineColor != 0;
+         chOpt = axis.fChopt;
+         tickSize = axis.fTickSize;
+         scaling_size = (vertical ? 1.7*h : 0.6*w);
+      } else {
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
+         chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
+         tickSize = axis.fTickLength;
+         scaling_size = (vertical ? pad_w : pad_h);
+      }
+
+      if (!is_gaxis || (this.name === "zaxis")) {
+         axis_g = layer.select("." + this.name + "_container");
+         if (axis_g.empty())
+            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+         else
+            axis_g.selectAll("*").remove();
+      } else {
+         if (!disable_axis_drawing && draw_lines)
+            axis_g.append("svg:line")
+                  .attr("x1",0).attr("y1",0)
+                  .attr("x1",vertical ? 0 : w)
+                  .attr("y1", vertical ? h : 0)
+                  .call(this.lineatt.func);
+      }
+
+      axis_g.attr("transform", transform || null);
+
+      var side = 1, both_sides = 0,
+          text_scaling_size = Math.min(pad_w, pad_h),
+          optionPlus = (chOpt.indexOf("+")>=0),
+          optionMinus = (chOpt.indexOf("-")>=0),
+          optionSize = (chOpt.indexOf("S")>=0),
+          optionY = (chOpt.indexOf("Y")>=0),
+          optionUp = (chOpt.indexOf("0")>=0),
+          optionDown = (chOpt.indexOf("O")>=0),
+          optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
+          optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
+          optionInt = (chOpt.indexOf("I")>=0),    // integer labels
+          optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+
+      if (optionPlus && optionMinus) { side = 1; both_sides = 1; } else
+      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
+      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+
+      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
+
+      if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
+
+      this.CreateFormatFuncs();
+
+      var res = "", res2 = "", lastpos = 0, lasth = 0;
+
+      // first draw ticks
+
+      this.ticks = [];
+
+      var handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
+
+      while (handle.next(true)) {
+
+         var h1 = Math.round(tickSize/4), h2 = 0;
+
+         if (handle.kind < 3)
+            h1 = Math.round(tickSize/2);
+
+         if (handle.kind == 1) {
+            // if not showing labels, not show large tick
+            if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
+            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
+         }
+
+         if (both_sides > 0) h2 = -h1; else
+         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
+
+         if (res.length == 0) {
+            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
+            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
+         } else {
+            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
+            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+         }
+
+         res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+         res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
+
+         lastpos = handle.grpos;
+         lasth = h2;
+      }
+
+      if ((res.length > 0) && !disable_axis_drawing && draw_lines)
+         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+
+      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
+         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
+
+      var labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
+      // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
+      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
+
+      var last = vertical ? h : 0,
+          labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
+          label_color = this.get_color(axis.fLabelColor),
+          labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
+          label_g = axis_g.append("svg:g").attr("class","axis_labels");
+
+      // draw labels
+      if (!disable_axis_drawing && !optionUnlab) {
+
+         var textscale = 1, maxtextlen = 0, lastpos = 0,
+             center_lbls = this.IsCenterLabels(),
+             rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
+             fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + both_sides*tickSize;
+
+        this.StartTextDrawing(labelfont, 'font', label_g);
+
+        for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
+
+           var lbl = this.format(handle.major[nmajor], true);
+           if (lbl === null) continue;
+
+           var pos = Math.round(this.func(handle.major[nmajor])),
+               gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
+               gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
+
+           if (center_lbls) {
+              var gap = gap_after || gap_before;
+              pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
+              if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
+           }
+
+           var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g };
+
+           maxtextlen = Math.max(maxtextlen, lbl.length);
+
+           if (vertical) {
+              arg.x = fix_coord;
+              arg.y = pos;
+              arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+           } else {
+              arg.x = pos;
+              arg.y = fix_coord;
+              arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+           }
+
+           if (rotate_lbls) arg.rotate = 270;
+
+           var textwidth = this.DrawText(arg);
+
+           if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
+              var maxwidth = gap_before*0.45 + gap_after*0.45;
+              if (!gap_before) maxwidth = 0.9*gap_after; else
+              if (!gap_after) maxwidth = 0.9*gap_before;
+              textscale = Math.min(textscale, maxwidth / textwidth);
+           }
+           
+           if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
+              var axis_step = Math.abs(pos-lastpos);
+              textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+           }
+           
+           lastpos = pos;
+        }
+
+        if (this.order)
+           this.DrawText({ color: label_color,
+                           x: vertical ? side*5 : w+5,
+                           y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
+                           align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                           latex: 1,
+                           text: '#times' + this.format10Exp(this.order),
+                           draw_g: label_g
+           });
+
+        this.FinishTextDrawing(label_g);
+
+        if ((textscale>0) && (textscale<1)) {
+           if (!vertical && !rotate_lbls && (maxtextlen>5) && (textscale<0.7)) {
+              label_g.selectAll("text").each(function() {
+                 var txt = d3.select(this), tr = txt.attr("transform");
+                 txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+              });
+              textscale = 1;
+           }
+
+           // round to upper boundary for calculated value like 4.4
+           if (textscale != 1) {
+              labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
+              label_g.call(labelfont.func);
+           }
+        }
+     }
+
+     if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
+        var r =  axis_g.append("svg:rect")
+                       .attr("class", "axis_zoom")
+                       .style("opacity", "0")
+                       .style("cursor", "crosshair");
+
+        if (vertical)
+           r.attr("x", (side>0) ? (-2*labelfont.size - 3) : 3)
+            .attr("y", 0)
+            .attr("width", 2*labelfont.size + 3)
+            .attr("height", h)
+        else
+           r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
+            .attr("width", w).attr("height", labelfont.size + 3);
+      }
+
+      if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
+         var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
+             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.pad_height("") || 10)),
+             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+             title_color = this.get_color(axis.fTitleColor),
+             shift_x = 0, shift_y = 0;
+
+         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+         var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
+         if (vertical) {
+            title_offest_k *= -side*pad_w;
+
+            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+
+            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+               // special handling for color palette labels - draw them always on right side
+               var rect = axis_g.node().getBoundingClientRect();
+               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+            }
+
+            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+
+            this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+                            rotate: (rotate<0) ? 90 : 270,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
+         } else {
+            title_offest_k *= side*pad_h;
+            
+            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+            this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                            rotate: (rotate<0) ? 180 : 0,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
+         }
+
+         var axis_rect = null;
+         if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
+            axis_rect = axis_g.node().getBoundingClientRect();
+
+         this.FinishTextDrawing(title_g, function() {
+            if (axis_rect) {
+               var title_rect = title_g.node().getBoundingClientRect();
+               shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                    Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+            }
+
+            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
+                   .property('shift_x', shift_x)
+                   .property('shift_y', shift_y);
+         });
+
+
+         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
+      }
+
+      this.position = 0;
+
+      if ('getBoundingClientRect' in axis_g.node()) {
+         var rect1 = axis_g.node().getBoundingClientRect(),
+             rect2 = this.svg_pad().node().getBoundingClientRect();
+
+         this.position = rect1.left - rect2.left; // use to control left position of Y scale
+      }
+   }
+
+   TAxisPainter.prototype.Redraw = function() {
+
+      var gaxis = this.GetObject(),
+          x1 = this.AxisToSvg("x", gaxis.fX1, "pad"),
+          y1 = this.AxisToSvg("y", gaxis.fY1, "pad"),
+          x2 = this.AxisToSvg("x", gaxis.fX2, "pad"),
+          y2 = this.AxisToSvg("y", gaxis.fY2, "pad"),
+          w = x2 - x1, h = y1 - y2,
+          vertical = Math.abs(w) < Math.abs(h),
+          func = null, reverse = false, kind = "normal",
+          min = gaxis.fWmin, max = gaxis.fWmax,
+          domain_min = min, domain_max = max;
+
+      if (gaxis.fChopt.indexOf("t")>=0) {
+         func = d3.scaleTime();
+         kind = "time";
+         this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
+         domain_min = new Date(this.toffset + min*1000);
+         domain_max = new Date(this.toffset + max*1000);
+      } else if (gaxis.fChopt.indexOf("G")>=0) {
+         func = d3.scaleLog();
+         kind = "log";
+      } else {
+         func = d3.scaleLinear();
+         kind = "normal";
+      }
+
+      func.domain([domain_min, domain_max]);
+
+      if (vertical) {
+         if (h > 0) {
+            func.range([h,0]);
+         } else {
+            var d = y1; y1 = y2; y2 = d;
+            h = -h; reverse = true;
+            func.range([0,h]);
+         }
+      } else {
+         if (w > 0) {
+            func.range([0,w]);
+         } else {
+            var d = x1; x1 = x2; x2 = d;
+            w = -w; reverse = true;
+            func.range([w,0]);
+         }
+      }
+
+      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
+
+      this.CreateG();
+
+      this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+   }
+   
+   // ==========================================================================================
+ 
+   
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
    }
@@ -69,6 +814,137 @@
 
       if (this.lineatt === undefined)
          this.lineatt = new JSROOT.TAttLineHandler('black');
+   }
+   
+   TFramePainter.prototype.DrawGrids = function() {
+      // grid can only be drawn by first painter
+
+      var layer = this.svg_frame().select(".grid_layer");
+
+      layer.selectAll(".xgrid").remove();
+      layer.selectAll(".ygrid").remove();
+
+      var pad = this.root_pad(),
+          h = this.frame_height(),
+          w = this.frame_width(),
+          grid, grid_style = JSROOT.gStyle.fGridStyle,
+          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
+
+      if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
+
+      // add a grid on x axis, if the option is set
+      if (pad && pad.fGridx && this.x_handle) {
+         grid = "";
+         for (var n=0;n<this.x_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M0,"+this.x_handle.ticks[n]+"h"+w;
+            else
+               grid += "M"+this.x_handle.ticks[n]+",0v"+h;
+
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "xgrid")
+               .attr("d", grid)
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray",JSROOT.Painter.root_line_styles[grid_style]);
+      }
+
+      // add a grid on y axis, if the option is set
+      if (pad && pad.fGridy && this.y_handle) {
+         grid = "";
+         for (var n=0;n<this.y_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M"+this.y_handle.ticks[n]+",0v"+h;
+            else
+               grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
+
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "ygrid")
+               .attr("d", grid)
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+      }
+   }
+   
+   TFramePainter.prototype.AxisAsText = function(axis, value) {
+      if (axis == "x") {
+         if (this.x_kind == 'time')
+            value = this.ConvertX(value);
+         if (this.x_handle && ('format' in this.x_handle))
+            return this.x_handle.format(value);
+      } else if (axis == "y") {
+         if (this.y_kind == 'time')
+            value = this.ConvertY(value);
+         if (this.y_handle && ('format' in this.y_handle))
+            return this.y_handle.format(value);
+      } else {
+         if (this.z_handle && ('format' in this.z_handle))
+            return this.z_handle.format(value);
+      }
+
+      return value.toPrecision(4);
+   }
+
+   TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
+      // axes can be drawn only for main histogram
+
+      if (!this.is_main_painter() || this.options.Same) return;
+
+      var layer = this.svg_frame().select(".axis_layer"),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          pad = this.root_pad();
+
+      this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
+      this.x_handle.SetDivId(this.divid, -1);
+      this.x_handle.pad_name = this.pad_name;
+
+      this.x_handle.SetAxisConfig("xaxis",
+                                  (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
+                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
+      this.x_handle.invert_side = (this.options.AxisPos>=10) || (pad.fTickx > 1);
+      this.x_handle.has_obstacle = (this.options.Zscale > 0);
+
+      this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
+      this.y_handle.SetDivId(this.divid, -1);
+      this.y_handle.pad_name = this.pad_name;
+
+      this.y_handle.SetAxisConfig("yaxis",
+                                  (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
+      this.y_handle.invert_side = ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
+
+      var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+
+      draw_horiz.DrawAxis(false, layer, w, h,
+                          draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                          false, pad.fTickx ? -h : 0, this.options.Axis < 0);
+
+      draw_vertical.DrawAxis(true, layer, w, h,
+                             draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                             false, pad.fTicky ? w : 0, this.options.Axis < 0);
+
+      if (shrink_forbidden) return;
+
+      var shrink = 0., ypos = draw_vertical.position;
+
+      if ((-0.2*w < ypos) && (ypos < 0)) {
+         shrink = -ypos/w + 0.001;
+         this.shrink_frame_left += shrink;
+      } else
+      if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+         shrink = -this.shrink_frame_left;
+         this.shrink_frame_left = 0.;
+      }
+
+      if (shrink != 0) {
+         this.frame_painter().Shrink(shrink, 0);
+         this.frame_painter().Redraw();
+         this.CreateXY();
+         this.DrawAxes(true);
+      }
    }
 
    TFramePainter.prototype.SizeChanged = function() {
@@ -319,6 +1195,864 @@
 
       pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
    }
+   
+   TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+      // function can be used for zooming into specified range
+      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+
+      // disable zooming when axis convertion is enabled
+      if (this.options && this.options.Proj) return false;
+      
+      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+
+      var main = this.main_painter(),
+          zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
+          unzoom_x = false, unzoom_y = false, unzoom_z = false;
+
+      if (zoom_x) {
+         var cnt = 0, main_xmin = main.xmin;
+         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
+         if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
+         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+      } else {
+         unzoom_x = (xmin === xmax) && (xmin === 0);
+      }
+
+      if (zoom_y) {
+         var cnt = 0, main_ymin = main.ymin;
+         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
+         if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
+         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+      } else {
+         unzoom_y = (ymin === ymax) && (ymin === 0);
+      }
+
+      if (zoom_z) {
+         var cnt = 0, main_zmin = main.zmin;
+         // if (main.logz && main.ymin_nz && main.Dimension()===2) main_zmin = 0.3*main.ymin_nz;
+         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
+         if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
+         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+      } else {
+         unzoom_z = (zmin === zmax) && (zmin === 0);
+      }
+
+      var changed = false;
+
+      // first process zooming (if any)
+      if (zoom_x || zoom_y || zoom_z)
+         main.ForEachPainter(function(obj) {
+            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
+               main.zoom_xmin = xmin;
+               main.zoom_xmax = xmax;
+               changed = true;
+               zoom_x = false;
+            }
+            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
+               main.zoom_ymin = ymin;
+               main.zoom_ymax = ymax;
+               changed = true;
+               zoom_y = false;
+            }
+            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
+               main.zoom_zmin = zmin;
+               main.zoom_zmax = zmax;
+               changed = true;
+               zoom_z = false;
+            }
+         });
+
+      // and process unzoom, if any
+      if (unzoom_x || unzoom_y || unzoom_z) {
+         if (unzoom_x) {
+            if (main.zoom_xmin !== main.zoom_xmax) changed = true;
+            main.zoom_xmin = main.zoom_xmax = 0;
+         }
+         if (unzoom_y) {
+            if (main.zoom_ymin !== main.zoom_ymax) changed = true;
+            main.zoom_ymin = main.zoom_ymax = 0;
+         }
+         if (unzoom_z) {
+            if (main.zoom_zmin !== main.zoom_zmax) changed = true;
+            main.zoom_zmin = main.zoom_zmax = 0;
+         }
+
+         // first try to unzoom main painter - it could have user range specified
+         if (!changed) {
+            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
+
+            // than try to unzoom all overlapped objects
+            var pp = this.pad_painter(true);
+            if (pp && pp.painters)
+            pp.painters.forEach(function(paint){
+               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
+                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+            });
+         }
+      }
+
+      if (changed) this.RedrawPad();
+
+      return changed;
+   }
+
+   TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
+      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+
+      var last = this.zoom_changed_interactive;
+
+      if (dox || doy || dox) this.zoom_changed_interactive = 2;
+
+      var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                              doy ? 0 : undefined, doy ? 0 : undefined,
+                              doz ? 0 : undefined, doz ? 0 : undefined);
+
+      // if unzooming has no effect, decrease counter
+      if ((dox || doy || dox) && !changed)
+         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
+
+      return changed;
+
+   }
+
+   TFramePainter.prototype.clearInteractiveElements = function() {
+      JSROOT.Painter.closeMenu();
+      if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
+      this.zoom_kind = 0;
+
+      // enable tooltip in frame painter
+      this.SwitchTooltip(true);
+   }
+
+   TFramePainter.prototype.mouseDoubleClick = function() {
+      d3.event.preventDefault();
+      var m = d3.mouse(this.svg_frame().node());
+      this.clearInteractiveElements();
+      var kind = "xyz";
+      if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
+      if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
+      this.Unzoom(kind);
+   }
+
+   TFramePainter.prototype.startRectSel = function() {
+      // ignore when touch selection is activated
+
+      if (this.zoom_kind > 100) return;
+
+      // ignore all events from non-left button
+      if ((d3.event.which || d3.event.button) !== 1) return;
+
+      d3.event.preventDefault();
+
+      var pos = d3.mouse(this.svg_frame().node());
+
+      if (this.FindAlternativeClickHandler(pos)) return;
+
+      this.clearInteractiveElements();
+      this.zoom_origin = pos;
+
+      var w = this.frame_width(), h = this.frame_height();
+
+      this.zoom_curr = [ Math.max(0, Math.min(w, this.zoom_origin[0])),
+                         Math.max(0, Math.min(h, this.zoom_origin[1])) ];
+
+      if ((this.zoom_origin[0] < 0) || (this.zoom_origin[0] > w)) {
+         this.zoom_kind = 3; // only y
+         this.zoom_origin[0] = 0;
+         this.zoom_origin[1] = this.zoom_curr[1];
+         this.zoom_curr[0] = w;
+         this.zoom_curr[1] += 1;
+      } else if ((this.zoom_origin[1] < 0) || (this.zoom_origin[1] > h)) {
+         this.zoom_kind = 2; // only x
+         this.zoom_origin[0] = this.zoom_curr[0];
+         this.zoom_origin[1] = 0;
+         this.zoom_curr[0] += 1;
+         this.zoom_curr[1] = h;
+      } else {
+         this.zoom_kind = 1; // x and y
+         this.zoom_origin[0] = this.zoom_curr[0];
+         this.zoom_origin[1] = this.zoom_curr[1];
+      }
+
+      d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
+                       .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
+
+      this.zoom_rect = null;
+
+      // disable tooltips in frame painter
+      this.SwitchTooltip(false);
+
+      d3.event.stopPropagation();
+   }
+
+   TFramePainter.prototype.moveRectSel = function() {
+
+      if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
+
+      d3.event.preventDefault();
+      var m = d3.mouse(this.svg_frame().node());
+
+      m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
+      m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
+
+      switch (this.zoom_kind) {
+         case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
+         case 2: this.zoom_curr[0] = m[0]; break;
+         case 3: this.zoom_curr[1] = m[1]; break;
+      }
+
+      if (this.zoom_rect===null)
+         this.zoom_rect = this.svg_frame()
+                              .append("rect")
+                              .attr("class", "zoom")
+                              .attr("pointer-events","none");
+
+      this.zoom_rect.attr("x", Math.min(this.zoom_origin[0], this.zoom_curr[0]))
+                    .attr("y", Math.min(this.zoom_origin[1], this.zoom_curr[1]))
+                    .attr("width", Math.abs(this.zoom_curr[0] - this.zoom_origin[0]))
+                    .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
+   }
+
+   TFramePainter.prototype.endRectSel = function() {
+      if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
+
+      d3.event.preventDefault();
+
+      d3.select(window).on("mousemove.zoomRect", null)
+                       .on("mouseup.zoomRect", null);
+
+      var m = d3.mouse(this.svg_frame().node()), changed = [true, true];
+      m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
+      m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
+
+      switch (this.zoom_kind) {
+         case 1: this.zoom_curr[0] = m[0]; this.zoom_curr[1] = m[1]; break;
+         case 2: this.zoom_curr[0] = m[0]; changed[1] = false; break; // only X
+         case 3: this.zoom_curr[1] = m[1]; changed[0] = false; break; // only Y
+      }
+
+      var xmin, xmax, ymin, ymax, isany = false,
+          idx = this.swap_xy ? 1 : 0, idy = 1 - idx;
+
+      if (changed[idx] && (Math.abs(this.zoom_curr[idx] - this.zoom_origin[idx]) > 10)) {
+         xmin = Math.min(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+         xmax = Math.max(this.RevertX(this.zoom_origin[idx]), this.RevertX(this.zoom_curr[idx]));
+         isany = true;
+      }
+
+      if (changed[idy] && (Math.abs(this.zoom_curr[idy] - this.zoom_origin[idy]) > 10)) {
+         ymin = Math.min(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[idy]), this.RevertY(this.zoom_curr[idy]));
+         isany = true;
+      }
+
+      var kind = this.zoom_kind, pnt = (kind===1) ? { x: this.zoom_origin[0], y: this.zoom_origin[1] } : null;
+
+      this.clearInteractiveElements();
+
+      if (isany) {
+         this.zoom_changed_interactive = 2;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      } else {
+         switch (kind) {
+            case 1:
+               var fp = this.frame_painter();
+               if (fp) fp.ProcessFrameClick(pnt);
+               break;
+            case 2:
+               this.pad_painter().SelectObjectPainter(this.x_handle);
+               break;
+            case 3:
+               this.pad_painter().SelectObjectPainter(this.y_handle);
+               break;
+         }
+      }
+
+      this.zoom_kind = 0;
+
+   }
+   
+   
+
+   TFramePainter.prototype.startTouchZoom = function() {
+      // in case when zooming was started, block any other kind of events
+      if (this.zoom_kind != 0) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation();
+         return;
+      }
+
+      var arr = d3.touches(this.svg_frame().node());
+      this.touch_cnt+=1;
+
+      // normally double-touch will be handled
+      // touch with single click used for context menu
+      if (arr.length == 1) {
+         // this is touch with single element
+
+         var now = new Date();
+         var diff = now.getTime() - this.last_touch.getTime();
+         this.last_touch = now;
+
+         if ((diff < 300) && (this.zoom_curr != null)
+               && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+               && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+
+            this.clearInteractiveElements();
+            this.Unzoom("xyz");
+
+            this.last_touch = new Date(0);
+
+            this.svg_frame().on("touchcancel", null)
+                            .on("touchend", null, true);
+         } else
+         if (JSROOT.gStyle.ContextMenu) {
+            this.zoom_curr = arr[0];
+            this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
+                            .on("touchend", this.endTouchSel.bind(this));
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+         }
+      }
+
+      if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
+
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+
+      this.clearInteractiveElements();
+
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null);
+
+      var pnt1 = arr[0], pnt2 = arr[1], w = this.frame_width(), h = this.frame_height();
+
+      this.zoom_curr = [ Math.min(pnt1[0], pnt2[0]), Math.min(pnt1[1], pnt2[1]) ];
+      this.zoom_origin = [ Math.max(pnt1[0], pnt2[0]), Math.max(pnt1[1], pnt2[1]) ];
+
+      if ((this.zoom_curr[0] < 0) || (this.zoom_curr[0] > w)) {
+         this.zoom_kind = 103; // only y
+         this.zoom_curr[0] = 0;
+         this.zoom_origin[0] = w;
+      } else if ((this.zoom_origin[1] > h) || (this.zoom_origin[1] < 0)) {
+         this.zoom_kind = 102; // only x
+         this.zoom_curr[1] = 0;
+         this.zoom_origin[1] = h;
+      } else {
+         this.zoom_kind = 101; // x and y
+      }
+
+      this.SwitchTooltip(false);
+
+      this.zoom_rect = this.svg_frame().append("rect")
+            .attr("class", "zoom")
+            .attr("id", "zoomRect")
+            .attr("x", this.zoom_curr[0])
+            .attr("y", this.zoom_curr[1])
+            .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+            .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+      d3.select(window).on("touchmove.zoomRect", this.moveTouchSel.bind(this))
+                       .on("touchcancel.zoomRect", this.endTouchSel.bind(this))
+                       .on("touchend.zoomRect", this.endTouchSel.bind(this));
+   }
+
+   TFramePainter.prototype.moveTouchSel = function() {
+      if (this.zoom_kind < 100) return;
+
+      d3.event.preventDefault();
+
+      var arr = d3.touches(this.svg_frame().node());
+
+      if (arr.length != 2)
+         return this.clearInteractiveElements();
+
+      var pnt1 = arr[0], pnt2 = arr[1];
+
+      if (this.zoom_kind != 103) {
+         this.zoom_curr[0] = Math.min(pnt1[0], pnt2[0]);
+         this.zoom_origin[0] = Math.max(pnt1[0], pnt2[0]);
+      }
+      if (this.zoom_kind != 102) {
+         this.zoom_curr[1] = Math.min(pnt1[1], pnt2[1]);
+         this.zoom_origin[1] = Math.max(pnt1[1], pnt2[1]);
+      }
+
+      this.zoom_rect.attr("x", this.zoom_curr[0])
+                     .attr("y", this.zoom_curr[1])
+                     .attr("width", this.zoom_origin[0] - this.zoom_curr[0])
+                     .attr("height", this.zoom_origin[1] - this.zoom_curr[1]);
+
+      if ((this.zoom_origin[0] - this.zoom_curr[0] > 10)
+           || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
+         this.SwitchTooltip(false);
+
+      d3.event.stopPropagation();
+   }
+
+   TFramePainter.prototype.endTouchSel = function() {
+
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null);
+
+      if (this.zoom_kind === 0) {
+         // special case - single touch can ends up with context menu
+
+         d3.event.preventDefault();
+
+         var now = new Date();
+
+         var diff = now.getTime() - this.last_touch.getTime();
+
+         if ((diff > 500) && (diff<2000) && !this.frame_painter().IsTooltipShown()) {
+            this.ShowContextMenu('main', { clientX: this.zoom_curr[0], clientY: this.zoom_curr[1] });
+            this.last_touch = new Date(0);
+         } else {
+            this.clearInteractiveElements();
+         }
+      }
+
+      if (this.zoom_kind < 100) return;
+
+      d3.event.preventDefault();
+      d3.select(window).on("touchmove.zoomRect", null)
+                       .on("touchend.zoomRect", null)
+                       .on("touchcancel.zoomRect", null);
+
+      var xmin, xmax, ymin, ymax, isany = false,
+          xid = this.swap_xy ? 1 : 0, yid = 1 - xid,
+          changed = [true, true];
+      if (this.zoom_kind === 102) changed[1] = false;
+      if (this.zoom_kind === 103) changed[0] = false;
+
+      if (changed[xid] && (Math.abs(this.zoom_curr[xid] - this.zoom_origin[xid]) > 10)) {
+         xmin = Math.min(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+         xmax = Math.max(this.RevertX(this.zoom_origin[xid]), this.RevertX(this.zoom_curr[xid]));
+         isany = true;
+      }
+
+      if (changed[yid] && (Math.abs(this.zoom_curr[yid] - this.zoom_origin[yid]) > 10)) {
+         ymin = Math.min(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+         ymax = Math.max(this.RevertY(this.zoom_origin[yid]), this.RevertY(this.zoom_curr[yid]));
+         isany = true;
+      }
+
+      this.clearInteractiveElements();
+      this.last_touch = new Date(0);
+
+      if (isany) {
+         this.zoom_changed_interactive = 2;
+         this.Zoom(xmin, xmax, ymin, ymax);
+      }
+
+      d3.event.stopPropagation();
+   }
+   
+   TFramePainter.prototype.AddInteractive = function() {
+      // only first painter in list allowed to add interactive functionality to the frame
+
+      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
+
+      var svg = this.svg_frame();
+
+      if (svg.empty() || svg.property('interactive_set')) return;
+
+      this.AddKeysHandler();
+
+      this.last_touch = new Date(0);
+      this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
+      this.zoom_rect = null;
+      this.zoom_origin = null;  // original point where zooming started
+      this.zoom_curr = null;    // current point for zooming
+      this.touch_cnt = 0;
+
+      if (JSROOT.gStyle.Zooming && (!this.options || !this.options.Proj)) {
+         if (JSROOT.gStyle.ZoomMouse) {
+            svg.on("mousedown", this.startRectSel.bind(this));
+            svg.on("dblclick", this.mouseDoubleClick.bind(this));
+         }
+         if (JSROOT.gStyle.ZoomWheel) {
+            svg.on("wheel", this.mouseWheel.bind(this));
+         }
+      }
+
+      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch) || JSROOT.gStyle.ContextMenu))
+         svg.on("touchstart", this.startTouchZoom.bind(this));
+
+      if (JSROOT.gStyle.ContextMenu) {
+         if (JSROOT.touches) {
+            svg.selectAll(".xaxis_container")
+               .on("touchstart", this.startTouchMenu.bind(this,"x"));
+            svg.selectAll(".yaxis_container")
+                .on("touchstart", this.startTouchMenu.bind(this,"y"));
+         }
+         svg.on("contextmenu", this.ShowContextMenu.bind(this));
+         svg.selectAll(".xaxis_container")
+             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+         svg.selectAll(".yaxis_container")
+             .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+      }
+
+      svg.selectAll(".xaxis_container")
+         .on("mousemove", this.ShowAxisStatus.bind(this,"x"));
+      svg.selectAll(".yaxis_container")
+         .on("mousemove", this.ShowAxisStatus.bind(this,"y"));
+
+      svg.property('interactive_set', true);
+   }
+
+   TFramePainter.prototype.mouseWheel = function() {
+      d3.event.stopPropagation();
+
+      d3.event.preventDefault();
+      this.clearInteractiveElements();
+
+      var itemx = { name: "x", ignore: false },
+          itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
+          cur = d3.mouse(this.svg_frame().node()),
+          w = this.frame_width(), h = this.frame_height();
+
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
+
+      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+
+      this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
+
+      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
+   }
+   
+   TFramePainter.prototype.AddKeysHandler = function() {
+      if (this.keys_handler || !this.is_main_painter() || JSROOT.BatchMode || (typeof window == 'undefined')) return;
+
+      this.keys_handler = this.ProcessKeyPress.bind(this);
+
+      window.addEventListener('keydown', this.keys_handler, false);
+   }
+
+   TFramePainter.prototype.ProcessKeyPress = function(evnt) {
+
+      var main = this.select_main();
+      if (main.empty()) return;
+      var isactive = main.attr('frame_active');
+      if (isactive && isactive!=='true') return;
+
+      var key = "";
+      switch (evnt.keyCode) {
+         case 33: key = "PageUp"; break;
+         case 34: key = "PageDown"; break;
+         case 37: key = "ArrowLeft"; break;
+         case 38: key = "ArrowUp"; break;
+         case 39: key = "ArrowRight"; break;
+         case 40: key = "ArrowDown"; break;
+         case 42: key = "PrintScreen"; break;
+         case 106: key = "*"; break;
+         default: return false;
+      }
+
+      if (evnt.shiftKey) key = "Shift " + key;
+      if (evnt.altKey) key = "Alt " + key;
+      if (evnt.ctrlKey) key = "Ctrl " + key;
+
+      var zoom = { name: "x", dleft: 0, dright: 0 };
+
+      switch (key) {
+         case "ArrowLeft":  zoom.dleft = -1; zoom.dright = 1; break;
+         case "ArrowRight":  zoom.dleft = 1; zoom.dright = -1; break;
+         case "Ctrl ArrowLeft": zoom.dleft = zoom.dright = -1; break;
+         case "Ctrl ArrowRight": zoom.dleft = zoom.dright = 1; break;
+         case "ArrowUp":  zoom.name = "y"; zoom.dleft = 1; zoom.dright = -1; break;
+         case "ArrowDown":  zoom.name = "y"; zoom.dleft = -1; zoom.dright = 1; break;
+         case "Ctrl ArrowUp": zoom.name = "y"; zoom.dleft = zoom.dright = 1; break;
+         case "Ctrl ArrowDown": zoom.name = "y"; zoom.dleft = zoom.dright = -1; break;
+      }
+
+      if (zoom.dleft || zoom.dright) {
+         if (!JSROOT.gStyle.Zooming) return false;
+         // in 3dmode with orbit control ignore simple arrows
+         if (this.mode3d && (key.indexOf("Ctrl")!==0)) return false;
+         this.AnalyzeMouseWheelEvent(null, zoom, 0.5);
+         this.Zoom(zoom.name, zoom.min, zoom.max);
+         if (zoom.changed) this.zoom_changed_interactive = 2;
+         evnt.stopPropagation();
+         evnt.preventDefault();
+      } else {
+         var pp = this.pad_painter(true),
+             func = pp ? pp.FindButton(key) : "";
+         if (func) {
+            pp.PadButtonClick(func);
+            evnt.stopPropagation();
+            evnt.preventDefault();
+         }
+      }
+
+      return true; // just process any key press
+   }
+   
+   TFramePainter.prototype.CreateXY = function() {
+      // here we create x,y objects which maps our physical coordinates into pixels
+      // while only first painter really need such object, all others just reuse it
+      // following functions are introduced
+      //    this.GetBin[X/Y]  return bin coordinate
+      //    this.Convert[X/Y]  converts root value in JS date when date scale is used
+      //    this.[x,y]  these are d3.scale objects
+      //    this.gr[x,y]  converts root scale into graphical value
+      //    this.Revert[X/Y]  converts graphical coordinates to root scale value
+
+      if (!this.is_main_painter()) {
+         this.x = this.main_painter().x;
+         this.y = this.main_painter().y;
+         return;
+      }
+      
+      this.scale_xmin = this.xmin;
+      this.scale_xmax = this.xmax;
+      if (use_pad_range) {
+         var dx = pad.fX2 - pad.fX1;
+         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
+         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+      
+      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
+      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+
+      if (use_pad_range) {
+         var dy = pad.fY2 - pad.fY1;
+         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
+         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+
+      if (typeof this.RecalculateRange == "function")
+         this.RecalculateRange();
+      
+      this.swap_xy = false;
+      if (this.options.Bar>=20) this.swap_xy = true;
+      this.logx = this.logy = false;
+
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
+
+      if (this.histo.fXaxis.fTimeDisplay) {
+         this.x_kind = 'time';
+         this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
+         this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
+         this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
+      } else {
+         this.x_kind = (this.histo.fXaxis.fLabels==null) ? 'normal' : 'labels';
+         this.ConvertX = function(x) { return x; };
+         this.RevertX = function(grx) { return this.x.invert(grx); };
+      }
+      
+      if (this.zoom_xmin != this.zoom_xmax) {
+         this.scale_xmin = this.zoom_xmin;
+         this.scale_xmax = this.zoom_xmax;
+      }
+
+      if (this.x_kind == 'time') {
+         this.x = d3.scaleTime();
+      } else
+      if (this.swap_xy ? pad.fLogy : pad.fLogx) {
+         this.logx = true;
+
+         if (this.scale_xmax <= 0) this.scale_xmax = 0;
+
+         if ((this.scale_xmin <= 0) && (this.nbinsx>0) && !this.swap_xy)
+            for (var i=0;i<this.nbinsx;++i) {
+               this.scale_xmin = Math.max(this.scale_xmin, this.GetBinX(i));
+               if (this.scale_xmin>0) break;
+            }
+
+         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
+            this.scale_xmin = this.scale_xmax * 0.0001;
+
+         this.x = d3.scaleLog();
+      } else {
+         this.x = d3.scaleLinear();
+      }
+
+      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
+            .range(this.swap_xy ? [ h, 0 ] : [ 0, w ]);
+
+      if (this.x_kind == 'time') {
+         // we emulate scale functionality
+         this.grx = function(val) { return this.x(this.ConvertX(val)); }
+      } else
+      if (this.logx) {
+         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
+      } else {
+         this.grx = this.x;
+      }
+
+      if (this.zoom_ymin != this.zoom_ymax) {
+         this.scale_ymin = this.zoom_ymin;
+         this.scale_ymax = this.zoom_ymax;
+      }
+
+      if (this.histo.fYaxis.fTimeDisplay) {
+         this.y_kind = 'time';
+         this.timeoffsety = JSROOT.Painter.getTimeOffset(this.histo.fYaxis);
+         this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
+         this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
+      } else {
+         this.y_kind = ((this.Dimension()==2) && (this.histo.fYaxis.fLabels!=null)) ? 'labels' : 'normal';
+         this.ConvertY = function(y) { return y; };
+         this.RevertY = function(gry) { return this.y.invert(gry); };
+      }
+
+      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
+         this.logy = true;
+         if (this.scale_ymax <= 0)
+            this.scale_ymax = 1;
+         else
+         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1) && this.draw_content)
+            this.scale_ymax*=1.8;
+
+         // this is for 2/3 dim histograms - find first non-negative bin
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1) && !this.swap_xy)
+            for (var i=0;i<this.nbinsy;++i) {
+               this.scale_ymin = Math.max(this.scale_ymin, this.GetBinY(i));
+               if (this.scale_ymin>0) break;
+            }
+
+         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0) && (this.ymin_nz < 1e-2*this.ymax))
+            this.scale_ymin = 0.3*this.ymin_nz;
+
+         if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
+            this.scale_ymin = 3e-4 * this.scale_ymax;
+
+         this.y = d3.scaleLog();
+      } else
+      if (this.y_kind=='time') {
+         this.y = d3.scaleTime();
+      } else {
+         this.y = d3.scaleLinear()
+      }
+
+      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
+            .range(this.swap_xy ? [ 0, w ] : [ h, 0 ]);
+
+      if (this.y_kind=='time') {
+         // we emulate scale functionality
+         this.gry = function(val) { return this.y(this.ConvertY(val)); }
+      } else
+      if (this.logy) {
+         // make protection for log
+         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
+      } else {
+         this.gry = this.y;
+      }
+
+      this.SetRootPadRange(pad);
+   }
+
+   /** Set selected range back to TPad object */
+   TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+      return;
+      if (!pad || this.options.Same) return;
+
+      if (is3d) {
+         // this is fake values, algorithm should be copied from TView3D class of ROOT
+         pad.fLogx = pad.fLogy = 0;
+         pad.fUxmin = pad.fUymin = -0.9;
+         pad.fUxmax = pad.fUymax = 0.9;
+      } else {
+         pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
+         pad.fUxmin = this.scale_xmin;
+         pad.fUxmax = this.scale_xmax;
+         pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
+         pad.fUymin = this.scale_ymin;
+         pad.fUymax = this.scale_ymax;
+      }
+
+      if (pad.fLogx) {
+         pad.fUxmin = JSROOT.log10(pad.fUxmin);
+         pad.fUxmax = JSROOT.log10(pad.fUxmax);
+      }
+      if (pad.fLogy) {
+         pad.fUymin = JSROOT.log10(pad.fUymin);
+         pad.fUymax = JSROOT.log10(pad.fUymax);
+      }
+
+      var rx = pad.fUxmax - pad.fUxmin,
+          mx = 1 - pad.fLeftMargin - pad.fRightMargin,
+          ry = pad.fUymax - pad.fUymin,
+          my = 1 - pad.fBottomMargin - pad.fTopMargin;
+
+      if (mx <= 0) mx = 0.01; // to prevent overflow
+      if (my <= 0) my = 0.01;
+
+      pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
+      pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
+      pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
+      pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
+   }
+
+   TFramePainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
+
+      if (!this.histo) return false;
+
+      var res = false, painter = this;
+
+      function UnzoomTAxis(obj) {
+         if (!obj) return false;
+         if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
+         if (obj.fFirst === obj.fLast) return false;
+         if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
+         obj.InvertBit(JSROOT.EAxisBits.kAxisRange);
+         return true;
+      }
+
+      function UzoomMinMax(ndim, hist) {
+         if (painter.Dimension()!==ndim) return false;
+         if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
+         if (!painter.draw_content) return false; // if not drawing content, not change min/max
+         painter.options.minimum = painter.options.maximum = -1111;
+         painter.ScanContent(true); // to reset ymin/ymax
+         return true;
+      }
+
+      if (dox && UnzoomTAxis(this.histo.fXaxis)) res = true;
+      if (doy && (UnzoomTAxis(this.histo.fYaxis) || UzoomMinMax(1, this.histo))) res = true;
+      if (doz && (UnzoomTAxis(this.histo.fZaxis) || UzoomMinMax(2, this.histo))) res = true;
+
+      return res;
+   }
+
+   TFramePainter.prototype.ToggleLog = function(axis) {
+      var painter = this.main_painter() || this,
+          pad = this.root_pad();
+      var curr = pad["fLog" + axis];
+      // do not allow log scale for labels
+      if (!curr) {
+         var kind = this[axis+"_kind"];
+         if (this.swap_xy && axis==="x") kind = this["y_kind"]; else
+         if (this.swap_xy && axis==="y") kind = this["x_kind"];
+         if (kind === "labels") return;
+      }
+
+      var pp = this.pad_painter(true), canp = this.pad_painter();
+      if (pp && pp.snapid && canp && canp._websocket) {
+         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
+      } else {
+         pad["fLog" + axis] = curr ? 0 : 1;
+         painter.RedrawPad();
+      }
+   }
+
+   
+
 
    function drawFrame(divid, obj) {
       var p = new TFramePainter(obj);
@@ -1907,6 +3641,7 @@
       return painter;
    }
    
+   JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.TFramePainter = TFramePainter;
    JSROOT.v7.TPadPainter = TPadPainter;
    JSROOT.v7.TCanvasPainter = TCanvasPainter;

@@ -35,6 +35,7 @@
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRootPainter.openui5': dir+'JSRootPainter.openui5'+ext,
             'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
+            'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
             'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
@@ -882,6 +883,7 @@
       // 'hist3d'  histograms 3d graphic
       // 'more2d'  extra 2d graphic (TGraph, TF1)
       //     'v7'  ROOT v7 graphics
+      // 'v7hist'  ROOT v7 histogram graphics
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
       // 'hierarchy' hierarchy browser
@@ -991,6 +993,11 @@
       if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.v7' + ext + ".js;";
          modules.push('JSRootPainter.v7');
+      }
+
+      if ((kind.indexOf('v7hist;')>=0) && (jsroot.sources.indexOf("v7hist")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v7hist' + ext + ".js;";
+         modules.push('JSRootPainter.v7hist');
       }
 
       if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
