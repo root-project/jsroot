@@ -1604,7 +1604,7 @@
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           pad = this.root_pad(),
           pthis = this,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
@@ -1631,8 +1631,8 @@
          gry1 = Math.round(pmain.gry(y));
 
          w = grx2 - grx1;
-         grx1 += Math.round(this.histo.fBarOffset/1000*w);
-         w = Math.round(this.histo.fBarWidth/1000*w);
+         grx1 += Math.round(this.options.fBarOffset/1000*w);
+         w = Math.round(this.options.fBarWidth/1000*w);
 
          if (pmain.swap_xy)
             bars += "M"+gry2+","+grx1 + "h"+(gry1-gry2) + "v"+w + "h"+(gry2-gry1) + "z";
@@ -1712,13 +1712,11 @@
 
       this.CheckHistDrawAttributes();
 
-      var width = this.frame_width(), height = this.frame_height();
+      var width = this.frame_width(), height = this.frame_height(), options = this.options;
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
       
-      var options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0 };
-
       if (options.Bar > 0)
          return this.DrawBars(width, height);
 
@@ -2034,9 +2032,9 @@
 
       var width = this.frame_width(),
           height = this.frame_height(),
-          pmain = this.main_painter(),
-          pad = this.root_pad(),
+          pmain = this.frame_painter(),
           painter = this,
+          histo = this.GetHisto(),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.GetSelectIndex("x", "left", -1),
@@ -2049,8 +2047,8 @@
       }
 
       function GetBinGrY(i) {
-         var yy = painter.histo.getBinContent(i + 1);
-         if (pmain.logy && (yy < painter.scale_ymin))
+         var yy = histo.getBinContent(i + 1);
+         if (pmain.logy && (yy < pmain.scale_ymin))
             return pmain.swap_xy ? -1000 : 10*height;
          return Math.round(pmain.gry(yy));
       }
@@ -2059,13 +2057,11 @@
           pnt_y = pmain.swap_xy ? pnt.x : pnt.y;
 
       while (l < r-1) {
-         var m = Math.round((l+r)*0.5);
-
-         var xx = GetBinGrX(m);
+         var m = Math.round((l+r)*0.5),
+             xx = GetBinGrX(m);
          if ((xx === null) || (xx < pnt_x - 0.5)) {
             if (pmain.swap_xy) r = m; else l = m;
-         } else
-         if (xx > pnt_x + 0.5) {
+         } else if (xx > pnt_x + 0.5) {
             if (pmain.swap_xy) l = m; else r = m;
          } else { l++; r--; }
       }
@@ -2102,8 +2098,8 @@
 
       if (this.options.Bar > 0) {
          var w = grx2 - grx1;
-         grx1 += Math.round(this.histo.fBarOffset/1000*w);
-         grx2 = grx1 + Math.round(this.histo.fBarWidth/1000*w);
+         grx1 += Math.round(this.options.fBarOffset/1000*w);
+         grx2 = grx1 + Math.round(this.options.fBarWidth/1000*w);
       }
 
       if (grx1 > grx2) { var d = grx1; grx1 = grx2; grx2 = d; }
@@ -2132,8 +2128,8 @@
          if (this.markeratt) msize = Math.max(msize, this.markeratt.GetFullSize());
 
          if (this.options.Error > 0) {
-            var cont = this.histo.getBinContent(findbin+1),
-                binerr = this.histo.getBinError(findbin+1);
+            var cont = histo.getBinContent(findbin+1),
+                binerr = histo.getBinError(findbin+1);
 
             gry1 = Math.round(pmain.gry(cont + binerr)); // up
             gry2 = Math.round(pmain.gry(cont - binerr)); // down
@@ -2313,12 +2309,12 @@
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
 
-      var is3d = false, main = this.frame_painter();
+      var is3d = this.options.Lego || this.options.Surf, main = this.frame_painter();
 
       if (main && (main.mode3d !== is3d)) {
          // that to do with that case
          is3d = main.mode3d;
-         // this.options.Lego = main.options.Lego;
+         if (is3d) this.options.Lego = 2;
       }
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
@@ -2331,9 +2327,7 @@
          this.Create3DScene(-1);
 
       this.mode3d = false;
-
-      console.log("Draw2D");
-      
+     
       this.ScanContent(true);
 
       if (typeof this.DrawColorPalette === 'function')
@@ -2366,6 +2360,9 @@
 
       painter.SetDivId(divid);
       
+      painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
+                          fBarOffset: 0, fBarWidth: 1, BaseLine: false };
+      
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
 
@@ -2375,8 +2372,6 @@
 
       // painter.CreateStat(); // only when required
 
-      console.log("Draw v7.TH1");
-      
       painter.CallDrawFunc(function() {
          // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
          // painter.FillToolbar();
@@ -3456,7 +3451,7 @@
    }
 
    TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
@@ -3469,7 +3464,7 @@
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*h*histo.fMarkerSize);
 
-      if (histo.fBarOffset!==0) text_offset = histo.fBarOffset*1e-3;
+      if (this.options.fBarOffset!==0) text_offset = this.options.fBarOffset*1e-3;
 
       this.StartTextDrawing(42, text_size, text_g, text_size);
 
@@ -3695,7 +3690,7 @@
    }
 
    TH2Painter.prototype.DrawCandle = function(w,h) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
@@ -3753,8 +3748,8 @@
 
          w = handle.grx[i+1] - handle.grx[i];
          w *= 0.66;
-         center = (handle.grx[i+1] + handle.grx[i]) / 2 + histo.fBarOffset/1000*w;
-         if (histo.fBarWidth>0) w = w * histo.fBarWidth / 1000;
+         center = (handle.grx[i+1] + handle.grx[i]) / 2 + this.options.fBarOffset/1000*w;
+         if (this.options.fBarWidth >0) w = w * this.options.fBarWidth / 1000;
 
          pnt.x1 = Math.round(center - w/2);
          pnt.x2 = Math.round(center + w/2);
