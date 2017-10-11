@@ -394,6 +394,8 @@
 
                if (inparent) {
                   item._value = "{ prnt }";
+                  item._vclass = 'h_value_num';
+                  item._more = false;
                   simple = true;
                } else {
                   item._obj = fld;
