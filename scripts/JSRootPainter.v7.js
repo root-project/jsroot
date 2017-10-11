@@ -775,6 +775,10 @@
    
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
+      this.shrink_frame_left = 0.;
+      this.x_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.y_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.keys_handler = null;
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
@@ -3265,14 +3269,11 @@
          this.pad_painter().AddButton(btn, tooltip, funcname);
    }
 
-   TPadPainter.prototype.DrawingReady = function(res_painter) {
-
-      var main = this.main_painter();
-
-      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
-
-      TBasePainter.prototype.DrawingReady.call(this, res_painter);
-   }
+//   TPadPainter.prototype.DrawingReady = function(res_painter) {
+//      var main = this.main_painter();
+//      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
+//      TBasePainter.prototype.DrawingReady.call(this, res_painter);
+//   }
 
    TPadPainter.prototype.DecodeOptions = function(opt) {
       var pad = this.GetObject();
@@ -3636,10 +3637,16 @@
 
       // if (nocanvas && opt.indexOf("noframe") < 0)
       drawFrame(divid, null);
+      
+      JSROOT.draw(divid, can.fPrimitives[0], "", function() { painter.DrawingReady(); });
 
       // painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
       return painter;
    }
+   
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<1>", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHist1", opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<2>", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
+   
    
    JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.TFramePainter = TFramePainter;

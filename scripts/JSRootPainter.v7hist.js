@@ -32,13 +32,9 @@
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
-      this.shrink_frame_left = 0.;
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
-      this.x_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.y_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.keys_handler = null;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
       this.zoom_changed_interactive = 0;
@@ -2522,16 +2518,20 @@
       this.CallDrawFunc(null, resize);
    }
 
-   JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
+   function drawHist1(divid, histo, opt) {
       // create painter and add it to canvas
       var painter = new TH1Painter(histo);
 
-      painter.SetDivId(divid, 1);
+      painter.SetDivId(divid);
+      
+      console.log("Draw v7.TH1");
+      
+      return painter.DrawingReady();
 
       // here we deciding how histogram will look like and how will be shown
-      painter.options = painter.DecodeOptions(opt);
+      // painter.options = painter.DecodeOptions(opt);
 
-      if (!painter.options.Lego) painter.CheckPadRange();
+      // if (!painter.options.Lego) painter.CheckPadRange();
 
       painter.ScanContent();
 
@@ -2539,8 +2539,8 @@
 
       painter.CallDrawFunc(function() {
          painter.DrawNextFunction(0, function() {
-            if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
-            painter.FillToolbar();
+            // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
+            // painter.FillToolbar();
             painter.DrawingReady();
          });
       });
@@ -4540,27 +4540,27 @@
       this.CallDrawFunc(null, resize);
    }
 
-   JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
+   function drawHist2(divid, histo, opt) {
       // create painter and add it to canvas
-      var painter = new JSROOT.TH2Painter(histo);
+      var painter = new TH2Painter(histo);
 
       painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
-      painter.options = painter.DecodeOptions(opt);
+      // painter.options = painter.DecodeOptions(opt);
 
-      if (painter.IsTH2Poly()) {
-         if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
-         if (!painter.options.Color) painter.options.Color = 1; // default color
-      }
+      // if (painter.IsTH2Poly()) {
+      //   if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
+      //   if (!painter.options.Color) painter.options.Color = 1; // default color
+      // }
 
       painter._show_empty_bins = false;
 
       painter._can_move_colz = true;
 
       // special case for root 3D drawings - user range is wired
-      if ((painter.options.Contour !==14) && !painter.options.Lego && !painter.options.Surf)
-         painter.CheckPadRange();
+      // if ((painter.options.Contour !==14) && !painter.options.Lego && !painter.options.Surf)
+      //   painter.CheckPadRange();
 
       painter.ScanContent();
 
@@ -4568,12 +4568,12 @@
 
       painter.CallDrawFunc(function() {
          this.DrawNextFunction(0, function() {
-            if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
-               if (this.options.AutoZoom) this.AutoZoom();
-            }
-            this.FillToolbar();
-            if (this.options.Project && !this.mode3d)
-               this.ToggleProjection(this.options.Project);
+            //if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
+            //   if (this.options.AutoZoom) this.AutoZoom();
+            //}
+            // this.FillToolbar();
+            //if (this.options.Project && !this.mode3d)
+            //   this.ToggleProjection(this.options.Project);
             this.DrawingReady();
          }.bind(this));
       }.bind(painter));
@@ -4581,11 +4581,13 @@
       return painter;
    }
    
-   JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.THistPainter = THistPainter;
    JSROOT.v7.TH1Painter = TH1Painter;
    JSROOT.v7.TH2Painter = TH2Painter;
 
+   JSROOT.v7.drawHist1 = drawHist1;
+   JSROOT.v7.drawHist2 = drawHist2;
+   
    return JSROOT;
 
 }));
