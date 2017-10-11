@@ -893,7 +893,7 @@
       return value.toPrecision(4);
    }
    
-   TFramePainter.prototype.DrawAxesRange = function(xmin, xmax, ymin, ymax) {
+   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax) {
       if (this.axes_drawn) return;
       
       if ((this.xmin == this.xmax) && (xmin!==xmax)) {
@@ -904,14 +904,14 @@
          this.ymin = ymin;
          this.ymax = ymax;
       }
-      
-      this.DrawAxes(true);
    }
 
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
       
-      if (this.axes_drawn) return;
+      if (this.axes_drawn) return true;
+      
+      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
       this.CreateXY();
       
@@ -975,6 +975,8 @@
       }
       
       this.axes_drawn = true;
+      
+      return true;
    }
 
    TFramePainter.prototype.SizeChanged = function() {
@@ -2310,7 +2312,7 @@
       this.this_pad_name = "";
       this.has_canvas = false;
 
-      TObjectPainter.prototype.Cleanup.call(this);
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
    TPadPainter.prototype.CleanPrimitives = function(selector) {
@@ -3817,11 +3819,8 @@
    TCanvasPainter.prototype.HasEventStatus = function() {
       return this.has_event_status;
    }
-
    
    function drawCanvas(divid, can, opt) {
-      console.log("Draw canvas v7")
-      
       var nocanvas = !can;
       if (nocanvas) {
          console.log("No canvas specified");

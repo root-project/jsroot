@@ -114,9 +114,12 @@
    }
    
    THistPainter.prototype.DrawAxes = function() {
+      // return true when axes was drawn
       var main = this.frame_painter();
-      if (main && this.draw_content) 
-         main.DrawAxesRange(this.xmin, this.xmax, this.ymin, this.ymax);
+      if (!main) return false;
+      if (this.draw_content) 
+         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax);
+      return main.DrawAxes(true);
    }
 
    THistPainter.prototype.CheckPadRange = function() {
@@ -2033,10 +2036,8 @@
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
-      this.DrawAxes();
-      //this.DrawGrids();
-      
-      this.DrawBins();
+      if (this.DrawAxes())
+         this.DrawBins();
       // this.DrawTitle();
       // this.UpdateStatWebCanvas();
       // this.AddInteractive();
@@ -4020,16 +4021,11 @@
       if (typeof this.Create3DScene == 'function')
          this.Create3DScene(-1);
 
-      this.CreateXY();
-
       // draw new palette, resize frame if required
       var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
 
-      this.DrawAxes();
-
-      this.DrawGrids();
-
-      this.DrawBins();
+      if (this.DrawAxes());
+         this.DrawBins();
 
       // redraw palette till the end when contours are available
       if (pp) pp.DrawPave();
