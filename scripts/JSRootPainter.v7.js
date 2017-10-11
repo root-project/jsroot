@@ -544,6 +544,8 @@
           labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
           label_g = axis_g.append("svg:g").attr("class","axis_labels");
 
+      console.log("HERE", disable_axis_drawing, optionUnlab);
+      
       // draw labels
       if (!disable_axis_drawing && !optionUnlab) {
 
@@ -775,11 +777,13 @@
    
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
+      this.mode3d = false;
       this.shrink_frame_left = 0.;
       this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
+      this.axes_drawn = false;
       this.keys_handler = null;
    }
 
@@ -830,8 +834,7 @@
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      var pad = this.root_pad(),
-          h = this.frame_height(),
+      var h = this.frame_height(),
           w = this.frame_width(),
           grid, grid_style = JSROOT.gStyle.fGridStyle,
           grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
@@ -839,7 +842,7 @@
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
       // add a grid on x axis, if the option is set
-      if (pad && pad.fGridx && this.x_handle) {
+      if (this.x_handle) {
          grid = "";
          for (var n=0;n<this.x_handle.ticks.length;++n)
             if (this.swap_xy)
@@ -856,7 +859,7 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (pad && pad.fGridy && this.y_handle) {
+      if (this.y_handle) {
          grid = "";
          for (var n=0;n<this.y_handle.ticks.length;++n)
             if (this.swap_xy)
@@ -891,46 +894,65 @@
 
       return value.toPrecision(4);
    }
+   
+   TFramePainter.prototype.ConfigureDrawRange = function(xmin, xmax, ymin, ymax) {
+      if ((this.xmin == this.xmax) && (xmin!==xmax)) {
+         this.xmin = xmin;
+         this.xmax = xmax;
+      }
+      if ((this.ymin == this.ymax) && (ymin!==ymax)) {
+         this.ymin = ymin;
+         this.ymax = ymax;
+      }
+   }
 
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
+      
+      if (this.axes_drawn) return;
 
-      if (!this.is_main_painter() || this.options.Same) return;
-
+      this.axes_drawn = true;
+      
+      this.CreateXY();
+      
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
           h = this.frame_height(),
-          pad = this.root_pad();
+          axisx = JSROOT.Create("TAxis"), // temporary object for different attributes
+          axisy = JSROOT.Create("TAxis");
 
-      this.x_handle = new JSROOT.TAxisPainter(this.histo.fXaxis, true);
+      this.x_handle = new JSROOT.TAxisPainter(axisx, true);
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
 
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = (this.options.AxisPos>=10) || (pad.fTickx > 1);
-      this.x_handle.has_obstacle = (this.options.Zscale > 0);
+      this.x_handle.invert_side = false;
+      this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
 
-      this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
+      this.y_handle = new JSROOT.TAxisPainter(axisy, true);
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
 
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-      this.y_handle.invert_side = ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
+      this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
 
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
+          disable_axis_draw = false, show_second_ticks = false;      
 
       draw_horiz.DrawAxis(false, layer, w, h,
                           draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                          false, pad.fTickx ? -h : 0, this.options.Axis < 0);
+                          false, show_second_ticks ? -h : 0, disable_axis_draw);
 
       draw_vertical.DrawAxis(true, layer, w, h,
                              draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, pad.fTicky ? w : 0, this.options.Axis < 0);
+                             false, show_second_ticks ? w : 0, disable_axis_draw);
+
+      this.DrawGrids();
 
       if (shrink_forbidden) return;
 
@@ -944,11 +966,10 @@
          shrink = -this.shrink_frame_left;
          this.shrink_frame_left = 0.;
       }
-
+      
       if (shrink != 0) {
-         this.frame_painter().Shrink(shrink, 0);
-         this.frame_painter().Redraw();
-         this.CreateXY();
+         this.Shrink(shrink, 0);
+         this.Redraw();
          this.DrawAxes(true);
       }
    }
@@ -1805,8 +1826,8 @@
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
       
-      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
-      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+      this.scale_ymin = this.ymin;
+      this.scale_ymax = this.ymax;
 
       //if (typeof this.RecalculateRange == "function")
       //   this.RecalculateRange();

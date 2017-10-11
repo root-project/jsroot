@@ -119,6 +119,14 @@
 
       alert("HistPainter.prototype.ScanContent not implemented");
    }
+   
+   THistPainter.prototype.DrawAxes = function() {
+      var main = this.frame_painter();
+      if (main && this.draw_content) {
+         main.ConfigureDrawRange(this.xmin, this.xmax, this.ymin, this.ymax);
+         main.DrawAxes();
+      }
+   }
 
    THistPainter.prototype.CheckPadRange = function() {
 
@@ -2299,13 +2307,12 @@
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
 
-      var is3d = (this.options.Lego > 0) ? true : false,
-          main = this.main_painter();
+      var is3d = false, main = this.frame_painter();
 
-      if ((main !== this) && (main.mode3d !== is3d)) {
+      if (main && (main.mode3d !== is3d)) {
          // that to do with that case
          is3d = main.mode3d;
-         this.options.Lego = main.options.Lego;
+         // this.options.Lego = main.options.Lego;
       }
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
@@ -2319,19 +2326,20 @@
 
       this.mode3d = false;
 
+      console.log("Draw2D");
+      
       this.ScanContent(true);
-
-      this.CreateXY();
 
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
 
       this.DrawAxes();
-      this.DrawGrids();
-      this.DrawBins();
-      this.DrawTitle();
-      this.UpdateStatWebCanvas();
-      this.AddInteractive();
+      //this.DrawGrids();
+      
+      // this.DrawBins();
+      // this.DrawTitle();
+      // this.UpdateStatWebCanvas();
+      // this.AddInteractive();
       JSROOT.CallBack(call_back);
    }
 
@@ -2362,9 +2370,6 @@
       // painter.CreateStat(); // only when required
 
       console.log("Draw v7.TH1");
-      
-     
-      return painter.DrawingReady();
       
       painter.CallDrawFunc(function() {
          // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
