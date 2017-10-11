@@ -1737,8 +1737,6 @@
                   function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
             menu.add("endsub:");
             menu.add("sub:Ticks");
-            this.AddColorMenuEntry(menu, "Line", faxis.fLineColor,
-                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
             this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
                         function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
             this.AddSizeMenuEntry(menu, "Size", -0.05, 0.055, 0.01, faxis.fTickLength,
