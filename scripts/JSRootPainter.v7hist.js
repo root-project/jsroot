@@ -1985,8 +1985,8 @@
    TH1Painter.prototype.GetBinTips = function(bin) {
       var tips = [],
           name = this.GetTipName(),
-          pmain = this.main_painter(),
-          histo = this.GetObject(),
+          pmain = this.frame_painter(),
+          histo = this.GetHisto(),
           x1 = this.GetBinX(bin),
           x2 = this.GetBinX(bin+1),
           cont = histo.getBinContent(bin+1);
@@ -1998,7 +1998,7 @@
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error > 0) {
             tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
-            tips.push("error y = " + this.histo.getBinError(bin + 1).toPrecision(4));
+            tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
          tips.push("bin = " + (bin+1));
@@ -2176,7 +2176,7 @@
          // if bars option used check that bar is not match
          if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
          // exclude empty bin if empty bins suppressed
-         if (!this.options.Zero && (this.histo.getBinContent(findbin+1)===0)) findbin = null;
+         if (!this.options.Zero && (histo.getBinContent(findbin+1)===0)) findbin = null;
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
@@ -2187,7 +2187,7 @@
          return null;
       }
 
-      var res = { name: this.histo.fName, title: this.histo.fTitle,
+      var res = { name: "histo", title: histo.fTitle,
                   x: midx, y: midy,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
@@ -2198,8 +2198,7 @@
 
          ttrect.remove();
          res.changed = true;
-      } else
-      if (show_rect) {
+      } else if (show_rect) {
 
          if (ttrect.empty())
             ttrect = this.draw_g.append("svg:rect")
@@ -2246,12 +2245,11 @@
                   .property("current_bin", findbin);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed) {
-         this.ProvideUserTooltip({ obj: this.histo,  name: this.histo.fName,
-                                   bin: findbin, cont: this.histo.getBinContent(findbin+1),
+      if (this.IsUserTooltipCallback() && res.changed)
+         this.ProvideUserTooltip({ obj: histo,  name: "histo",
+                                   bin: findbin, cont: histo.getBinContent(findbin+1),
                                    grx: midx, gry: midy });
-      }
-
+  
       return res;
    }
 
