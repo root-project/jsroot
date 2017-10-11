@@ -31,17 +31,22 @@
 
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
-      this.histo = histo;
+      // this.histo = histo;
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
       this.zoom_changed_interactive = 0;
-      this.DecomposeTitle();
+      // this.DecomposeTitle();
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   
+   THistPainter.prototype.GetHisto = function() {
+      var obj = this.GetObject();
+      return obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null; 
+   }
 
    THistPainter.prototype.IsTProfile = function() {
       return false;
@@ -234,109 +239,12 @@
 
          if (!this.MatchObjectType(obj)) return false;
 
-         // TODO: simple replace of object does not help - one can have different
-         // complex relations between histo and stat box, histo and colz axis,
-         // one could have THStack or TMultiGraph object
-         // The only that could be done is update of content
-
-         // this.histo = obj;
-
-         // check only stats bit, later other settings can be monitored
-         if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats) != obj.TestBit(JSROOT.TH1StatusBits.kNoStats)) {
-            histo.fBits = obj.fBits;
-
-            var statpainter = this.FindPainterFor(this.FindStat());
-            if (statpainter) statpainter.Enabled = !histo.TestBit(JSROOT.TH1StatusBits.kNoStats);
-         }
-
-         // if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats)) this.ToggleStat();
-
          // special tratement for webcanvas - also name can be changed
-         if (this.snapid !== undefined)
-            histo.fName = obj.fName;
+         // if (this.snapid !== undefined)
+         //   histo.fName = obj.fName;
 
-         histo.fFillColor = obj.fFillColor;
-         histo.fFillStyle = obj.fFillStyle;
-         histo.fLineColor = obj.fLineColor;
-         histo.fLineStyle = obj.fLineStyle;
-         histo.fLineWidth = obj.fLineWidth;
-
-         histo.fEntries = obj.fEntries;
-         histo.fTsumw = obj.fTsumw;
-         histo.fTsumwx = obj.fTsumwx;
-         histo.fTsumwx2 = obj.fTsumwx2;
-         histo.fXaxis.fNbins = obj.fXaxis.fNbins;
-         if (this.Dimension() > 1) {
-            histo.fTsumwy = obj.fTsumwy;
-            histo.fTsumwy2 = obj.fTsumwy2;
-            histo.fTsumwxy = obj.fTsumwxy;
-            histo.fYaxis.fNbins = obj.fYaxis.fNbins;
-            if (this.Dimension() > 2) {
-               histo.fTsumwz = obj.fTsumwz;
-               histo.fTsumwz2 = obj.fTsumwz2;
-               histo.fTsumwxz = obj.fTsumwxz;
-               histo.fTsumwyz = obj.fTsumwyz;
-               histo.fZaxis.fNbins = obj.fZaxis.fNbins;
-            }
-         }
-         histo.fArray = obj.fArray;
-         histo.fNcells = obj.fNcells;
-         histo.fTitle = obj.fTitle;
-         histo.fMinimum = obj.fMinimum;
-         histo.fMaximum = obj.fMaximum;
-         function CopyAxis(tgt,src) {
-            tgt.fTitle = src.fTitle;
-            tgt.fLabels = src.fLabels;
-         }
-         CopyAxis(histo.fXaxis, obj.fXaxis);
-         CopyAxis(histo.fYaxis, obj.fYaxis);
-         CopyAxis(histo.fZaxis, obj.fZaxis);
-         if (!this.main_painter().zoom_changed_interactive) {
-            function CopyZoom(tgt,src) {
-               tgt.fXmin = src.fXmin;
-               tgt.fXmax = src.fXmax;
-               tgt.fFirst = src.fFirst;
-               tgt.fLast = src.fLast;
-               tgt.fBits = src.fBits;
-            }
-            CopyZoom(histo.fXaxis, obj.fXaxis);
-            CopyZoom(histo.fYaxis, obj.fYaxis);
-            CopyZoom(histo.fZaxis, obj.fZaxis);
-         }
-         histo.fSumw2 = obj.fSumw2;
-
-         if (this.IsTProfile()) {
-            histo.fBinEntries = obj.fBinEntries;
-         }
-         if (this.IsTH1K()) {
-            histo.fNIn = obj.fNIn;
-            histo.fReady = false;
-         }
-
-         this.DecomposeTitle();
-
-         if (obj.fFunctions && this.options.Func) {
-            for (var n=0;n<obj.fFunctions.arr.length;++n) {
-               var func = obj.fFunctions.arr[n];
-               if (!func || !func._typename) continue;
-               var funcpainter = func.fName ? this.FindPainterFor(null, func.fName, func._typename) : null;
-               if (funcpainter) {
-                  funcpainter.UpdateObject(func);
-               } else if ((func._typename != 'TPaletteAxis') && (func._typename != 'TPaveStats')) {
-                  console.log('Get ' + func._typename + ' in histogram functions list, need to use?');
-                  // histo.fFunctions.Add(func,"");
-               }
-            }
-         }
-
-         var changed_opt = (histo.fOption != obj.fOption);
-         histo.fOption = obj.fOption;
-
-         if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
-            this.options = this.DecodeOptions(opt);
+         // histo.fTitle = obj.fTitle;
       }
-
-      if (!this.zoom_changed_interactive) this.CheckPadRange();
 
       this.ScanContent();
 
@@ -348,12 +256,16 @@
    THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
+      
+      var histo = this.GetHisto();
+      if (!histo) return;
+      
+      var axis = histo.fAxes._0;
+      this.xmin = axis.fLow;
+      this.xmax = this.xmin + (axis.fNBins - 2)/axis.fInvBinWidth;
+      this.regularx = true;
 
-      this.xmin = this.histo.fXaxis.fXmin;
-      this.xmax = this.histo.fXaxis.fXmax;
-
-      if (this.histo.fXaxis.fXbins.length == this.nbinsx+1) {
-         this.regularx = false;
+      if (!this.regularx) {
          this.GetBinX = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.xmin;
@@ -368,7 +280,6 @@
             return this.nbinsx;
          };
       } else {
-         this.regularx = true;
          this.binwidthx = (this.xmax - this.xmin);
          if (this.nbinsx > 0)
             this.binwidthx = this.binwidthx / this.nbinsx;
@@ -377,13 +288,14 @@
          this.GetIndexX = function(x,add) { return Math.floor((x - this.xmin) / this.binwidthx + add); };
       }
 
-      this.ymin = this.histo.fYaxis.fXmin;
-      this.ymax = this.histo.fYaxis.fXmax;
-
       if (!with_y_axis || (this.nbinsy==0)) return;
 
-      if (this.histo.fYaxis.fXbins.length == this.nbinsy+1) {
-         this.regulary = false;
+      var axis = histo.fAxes._1;
+      this.ymin = axis.fLow;
+      this.ymax = this.ymin + (axis.fNBins - 2)/axis.fInvBinWidth;
+      this.regulary = true;
+      
+      if (!this.regulary) {
          this.GetBinY = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
@@ -398,7 +310,6 @@
             return this.nbinsy;
          };
       } else {
-         this.regulary = true;
          this.binwidthy = (this.ymax - this.ymin);
          if (this.nbinsy > 0)
             this.binwidthy = this.binwidthy / this.nbinsy;
@@ -409,8 +320,9 @@
 
       if (!with_z_axis || (this.nbinsz==0)) return;
 
-      if (this.histo.fZaxis.fXbins.length == this.nbinsz+1) {
-         this.regularz = false;
+      this.regularz = true;
+      
+      if (!this.regularz) {
          this.GetBinZ = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.zmin;
@@ -425,7 +337,6 @@
             return this.nbinsz;
          };
       } else {
-         this.regularz = true;
          this.binwidthz = (this.zmax - this.zmin);
          if (this.nbinsz > 0)
             this.binwidthz = this.binwidthz / this.nbinsz;
@@ -439,7 +350,6 @@
    THistPainter.prototype.DrawBins = function() {
       alert("HistPainter.DrawBins not implemented");
    }
-
    
 
    THistPainter.prototype.ToggleTitle = function(arg) {
@@ -544,39 +454,22 @@
 
    THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexes starts from 0
-      var indx = 0, obj = this.main_painter();
-      if (!obj) obj = this;
-      var nbin = this['nbins'+axis];
-      if (!nbin) nbin = 0;
-      if (!add) add = 0;
+      var indx = 0, 
+          main = this.frame_painter(),
+          nbins = this['nbins'+axis] || 0;
 
       var func = 'GetIndex' + axis.toUpperCase(),
-          min = obj['zoom_' + axis + 'min'],
-          max = obj['zoom_' + axis + 'max'];
+          min = main ? main['zoom_' + axis + 'min'] : 0,
+          max = main ? main['zoom_' + axis + 'max'] : 0;
 
-      if ((min != max) && (func in this)) {
+      if ((min !== max) && (func in this)) {
          if (size == "left") {
-            indx = this[func](min, add);
+            indx = this[func](min, add || 0);
          } else {
-            indx = this[func](max, add + 0.5);
+            indx = this[func](max, (add || 0) + 0.5);
          }
       } else {
-         indx = (size == "left") ? 0 : nbin;
-      }
-
-      var taxis; // TAxis object of histogram, where user range can be stored
-      if (this.histo) taxis  = this.histo["f" + axis.toUpperCase() + "axis"];
-      if (taxis) {
-         if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
-             ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
-      }
-
-      if (size == "left") {
-         if (indx < 0) indx = 0;
-         if (taxis && (taxis.fFirst>1) && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
-      } else {
-         if (indx > nbin) indx = nbin;
-         if (taxis && (taxis.fLast <= nbin) && (indx>taxis.fLast)) indx = taxis.fLast;
+         indx = (size == "left") ? 0 : nbins;
       }
 
       return indx;
@@ -668,36 +561,6 @@
       return null;
    }
 
-   THistPainter.prototype.DrawNextFunction = function(indx, callback) {
-      // method draws next function from the functions list
-
-      if (!this.options.Func || !this.histo.fFunctions ||
-          (indx >= this.histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
-
-      var func = this.histo.fFunctions.arr[indx],
-          opt = this.histo.fFunctions.opt[indx],
-          do_draw = false,
-          func_painter = this.FindPainterFor(func);
-
-      // no need to do something if painter for object was already done
-      // object will be redraw automatically
-      if (func_painter === null) {
-         if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
-            do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
-         } else
-         if (func._typename === 'TF1') {
-            do_draw = !func.TestBit(JSROOT.BIT(9));
-         } else
-            do_draw = (func._typename !== 'TPaletteAxis');
-      }
-
-      if (do_draw)
-         return JSROOT.draw(this.divid, func, opt, this.DrawNextFunction.bind(this, indx+1, callback));
-
-      this.DrawNextFunction(indx+1, callback);
-   }
-
-   
 
    THistPainter.prototype.FindAlternativeClickHandler = function(pos) {
       var pp = this.pad_painter(true);
@@ -1526,15 +1389,13 @@
    TH1Painter.prototype.ScanContent = function(when_axis_changed) {
       // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
+      var histo = this.GetHisto();
+      if (!histo) return;
+      
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
-      // Paint histogram axis only
-      if (this.options.Axis > 0) this.draw_content = false;
-
-      if (this.IsTH1K()) this.ConvertTH1K();
-
       if (!when_axis_changed) {
-         this.nbinsx = this.histo.fXaxis.fNbins;
+         this.nbinsx = histo.fAxes._0.fNBins - 2;
          this.nbinsy = 0;
          this.CreateAxisFuncs(false);
       }
@@ -1549,12 +1410,11 @@
       this.scan_xleft = left;
       this.scan_xright = right;
 
-      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true,
-          profile = this.IsTProfile(), value, err;
+      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true, value, err;
 
       for (var i = 0; i < this.nbinsx; ++i) {
-         value = this.histo.getBinContent(i + 1);
-         hsum += profile ? this.histo.fBinEntries[i + 1] : value;
+         value = histo.fStatistics.fBinContent[i + 1];
+         hsum += value;
 
          if ((i<left) || (i>=right)) continue;
 
@@ -1563,22 +1423,18 @@
          if (first) {
             hmin = hmax = value;
             first = false;;
-         }
+         } 
 
-         err = (this.options.Error > 0) ? this.histo.getBinError(i + 1) : 0;
+         err =  0;
 
          hmin = Math.min(hmin, value - err);
          hmax = Math.max(hmax, value + err);
       }
 
       // account overflow/underflow bins
-      if (profile)
-         hsum += this.histo.fBinEntries[0] + this.histo.fBinEntries[this.nbinsx + 1];
-      else
-         hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx + 1);
+      hsum += histo.fStatistics.fBinContent[0] + histo.fStatistics.fBinContent[this.nbinsx + 1];
 
       this.stat_entries = hsum;
-      if (this.histo.fEntries>1) this.stat_entries = this.histo.fEntries;
 
       this.hmin = hmin;
       this.hmax = hmax;
@@ -1587,8 +1443,6 @@
 
       if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
          this.draw_content = false;
-         hmin = this.ymin;
-         hmax = this.ymax;
       } else {
          this.draw_content = true;
       }
@@ -1605,34 +1459,8 @@
             this.ymax = hmax + dy;
          }
       }
-
-      hmin = this.options.minimum;
-      hmax = this.options.maximum;
-      var set_zoom = false;
-
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
-         this.ymin = hmin;
-         this.ymax = hmax;
-      } else {
-         if (hmin != -1111) {
-            if (hmin < this.ymin) this.ymin = hmin; else set_zoom = true;
-         }
-         if (hmax != -1111) {
-            if (hmax > this.ymax) this.ymax = hmax; else set_zoom = true;
-         }
-      }
-
-      if (set_zoom && this.draw_content) {
-         this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
-         this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
-      }
-
-      // If no any draw options specified, do not try draw histogram
-      if (!this.options.Bar && !this.options.Hist && !this.options.Line &&
-          !this.options.Error && !this.options.Same && !this.options.Lego && !this.options.Text) {
-         if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
-                               else this.draw_content = false;
-      }
+      
+      console.log("this.x", this.xmin, this.xmax, this.ymin, this.ymax)
    }
 
    TH1Painter.prototype.CountStat = function(cond) {
@@ -2524,10 +2352,6 @@
 
       painter.SetDivId(divid);
       
-      console.log("Draw v7.TH1");
-      
-      return painter.DrawingReady();
-
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
 
@@ -2535,14 +2359,17 @@
 
       painter.ScanContent();
 
-      painter.CreateStat(); // only when required
+      // painter.CreateStat(); // only when required
 
+      console.log("Draw v7.TH1");
+      
+     
+      return painter.DrawingReady();
+      
       painter.CallDrawFunc(function() {
-         painter.DrawNextFunction(0, function() {
-            // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
-            // painter.FillToolbar();
-            painter.DrawingReady();
-         });
+         // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
+         // painter.FillToolbar();
+         painter.DrawingReady();
       });
 
       return painter;
@@ -4567,16 +4394,14 @@
       painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
-         this.DrawNextFunction(0, function() {
-            //if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
-            //   if (this.options.AutoZoom) this.AutoZoom();
-            //}
-            // this.FillToolbar();
-            //if (this.options.Project && !this.mode3d)
-            //   this.ToggleProjection(this.options.Project);
-            this.DrawingReady();
-         }.bind(this));
-      }.bind(painter));
+         //if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
+         //   if (this.options.AutoZoom) this.AutoZoom();
+         //}
+         // this.FillToolbar();
+         //if (this.options.Project && !this.mode3d)
+         //   this.ToggleProjection(this.options.Project);
+         painter.DrawingReady();
+      });
 
       return painter;
    }

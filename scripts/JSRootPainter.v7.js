@@ -776,15 +776,17 @@
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
       this.shrink_frame_left = 0.;
-      this.x_kind = 'normal'; // 'normal', 'time', 'labels'
-      this.y_kind = 'normal'; // 'normal', 'time', 'labels'
+      this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+      this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+      this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
+      this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.keys_handler = null;
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
    TFramePainter.prototype.GetTipName = function(append) {
-      var res = TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
+      var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
       if (append) res+=append;
       return res;
    }
@@ -955,15 +957,14 @@
       // function called at the end of resize of frame
       // One should apply changes to the pad
 
-    /*  var pad = this.root_pad(),
-          main = this.main_painter();
+    /*  var pad = this.root_pad();
 
       if (pad) {
          pad.fLeftMargin = this.fX1NDC;
          pad.fRightMargin = 1 - this.fX2NDC;
          pad.fBottomMargin = this.fY1NDC;
          pad.fTopMargin = 1 - this.fY2NDC;
-         if (main) main.SetRootPadRange(pad);
+         this.SetRootPadRange(pad);
       }
       */
 
@@ -980,7 +981,7 @@
                     .property('interactive_set', null);
       }
       this.draw_g = null;
-      TooltipHandler.prototype.Cleanup.call(this);
+      JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
    TFramePainter.prototype.Redraw = function() {
@@ -1204,7 +1205,7 @@
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
-      // disable zooming when axis convertion is enabled
+      // disable zooming when axis conversion is enabled
       if (this.options && this.options.Proj) return false;
       
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
@@ -1281,19 +1282,6 @@
          if (unzoom_z) {
             if (main.zoom_zmin !== main.zoom_zmax) changed = true;
             main.zoom_zmin = main.zoom_zmax = 0;
-         }
-
-         // first try to unzoom main painter - it could have user range specified
-         if (!changed) {
-            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
-
-            // than try to unzoom all overlapped objects
-            var pp = this.pad_painter(true);
-            if (pp && pp.painters)
-            pp.painters.forEach(function(paint){
-               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
-                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
-            });
          }
       }
 
@@ -1808,53 +1796,28 @@
       //    this.gr[x,y]  converts root scale into graphical value
       //    this.Revert[X/Y]  converts graphical coordinates to root scale value
 
-      if (!this.is_main_painter()) {
-         this.x = this.main_painter().x;
-         this.y = this.main_painter().y;
-         return;
-      }
+      this.swap_xy = false;
+      // if (this.options.Bar>=20) this.swap_xy = true;
+      this.logx = this.logy = false;
+
+      var w = this.frame_width(), h = this.frame_height();
       
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
-      if (use_pad_range) {
-         var dx = pad.fX2 - pad.fX1;
-         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
-         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
-         }
-      }
       
       this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
       this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
 
-      if (use_pad_range) {
-         var dy = pad.fY2 - pad.fY1;
-         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
-         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
-         }
-      }
-
-      if (typeof this.RecalculateRange == "function")
-         this.RecalculateRange();
+      //if (typeof this.RecalculateRange == "function")
+      //   this.RecalculateRange();
       
-      this.swap_xy = false;
-      if (this.options.Bar>=20) this.swap_xy = true;
-      this.logx = this.logy = false;
-
-      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
-
-      if (this.histo.fXaxis.fTimeDisplay) {
+      if (false /*this.histo.fXaxis.fTimeDisplay*/) {
          this.x_kind = 'time';
          this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
          this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
          this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
       } else {
-         this.x_kind = (this.histo.fXaxis.fLabels==null) ? 'normal' : 'labels';
+         this.x_kind = 'normal'; // (this.histo.fXaxis.fLabels==null) ? 'normal' : 'labels';
          this.ConvertX = function(x) { return x; };
          this.RevertX = function(grx) { return this.x.invert(grx); };
       }
@@ -1866,18 +1829,8 @@
 
       if (this.x_kind == 'time') {
          this.x = d3.scaleTime();
-      } else
-      if (this.swap_xy ? pad.fLogy : pad.fLogx) {
-         this.logx = true;
-
-         if (this.scale_xmax <= 0) this.scale_xmax = 0;
-
-         if ((this.scale_xmin <= 0) && (this.nbinsx>0) && !this.swap_xy)
-            for (var i=0;i<this.nbinsx;++i) {
-               this.scale_xmin = Math.max(this.scale_xmin, this.GetBinX(i));
-               if (this.scale_xmin>0) break;
-            }
-
+      } else if (this.logx) {
+         if (this.scale_xmax <= 0) this.scale_xmax = 1;
          if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
             this.scale_xmin = this.scale_xmax * 0.0001;
 
@@ -1892,8 +1845,7 @@
       if (this.x_kind == 'time') {
          // we emulate scale functionality
          this.grx = function(val) { return this.x(this.ConvertX(val)); }
-      } else
-      if (this.logx) {
+      } else if (this.logx) {
          this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
       } else {
          this.grx = this.x;
@@ -1904,41 +1856,24 @@
          this.scale_ymax = this.zoom_ymax;
       }
 
-      if (this.histo.fYaxis.fTimeDisplay) {
+      if (false /*this.histo.fYaxis.fTimeDisplay*/) {
          this.y_kind = 'time';
          this.timeoffsety = JSROOT.Painter.getTimeOffset(this.histo.fYaxis);
          this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
          this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
-         this.y_kind = ((this.Dimension()==2) && (this.histo.fYaxis.fLabels!=null)) ? 'labels' : 'normal';
+         this.y_kind = 'normal'; // ((this.Dimension()==2) && (this.histo.fYaxis.fLabels!=null)) ? 'labels' : 'normal';
          this.ConvertY = function(y) { return y; };
          this.RevertY = function(gry) { return this.y.invert(gry); };
       }
 
-      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
-         this.logy = true;
-         if (this.scale_ymax <= 0)
-            this.scale_ymax = 1;
-         else
-         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1) && this.draw_content)
-            this.scale_ymax*=1.8;
-
-         // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1) && !this.swap_xy)
-            for (var i=0;i<this.nbinsy;++i) {
-               this.scale_ymin = Math.max(this.scale_ymin, this.GetBinY(i));
-               if (this.scale_ymin>0) break;
-            }
-
-         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0) && (this.ymin_nz < 1e-2*this.ymax))
-            this.scale_ymin = 0.3*this.ymin_nz;
-
+      if (this.logy) {
+         if (this.scale_ymax <= 0) this.scale_ymax = 1;
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
 
          this.y = d3.scaleLog();
-      } else
-      if (this.y_kind=='time') {
+      } else if (this.y_kind == 'time') {
          this.y = d3.scaleTime();
       } else {
          this.y = d3.scaleLinear()
@@ -1950,20 +1885,22 @@
       if (this.y_kind=='time') {
          // we emulate scale functionality
          this.gry = function(val) { return this.y(this.ConvertY(val)); }
-      } else
-      if (this.logy) {
+      } else if (this.logy) {
          // make protection for log
          this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
       } else {
          this.gry = this.y;
       }
-
-      this.SetRootPadRange(pad);
+      
+      // this.SetRootPadRange();
    }
 
    /** Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+      // TODO: change of pad range and send back to root application
+      
       return;
+      
       if (!pad || this.options.Same) return;
 
       if (is3d) {
@@ -2001,37 +1938,6 @@
       pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
       pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
       pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
-   }
-
-   TFramePainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
-
-      if (!this.histo) return false;
-
-      var res = false, painter = this;
-
-      function UnzoomTAxis(obj) {
-         if (!obj) return false;
-         if (!obj.TestBit(JSROOT.EAxisBits.kAxisRange)) return false;
-         if (obj.fFirst === obj.fLast) return false;
-         if ((obj.fFirst <= 1) && (obj.fLast >= obj.fNbins)) return false;
-         obj.InvertBit(JSROOT.EAxisBits.kAxisRange);
-         return true;
-      }
-
-      function UzoomMinMax(ndim, hist) {
-         if (painter.Dimension()!==ndim) return false;
-         if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
-         if (!painter.draw_content) return false; // if not drawing content, not change min/max
-         painter.options.minimum = painter.options.maximum = -1111;
-         painter.ScanContent(true); // to reset ymin/ymax
-         return true;
-      }
-
-      if (dox && UnzoomTAxis(this.histo.fXaxis)) res = true;
-      if (doy && (UnzoomTAxis(this.histo.fYaxis) || UzoomMinMax(1, this.histo))) res = true;
-      if (doz && (UnzoomTAxis(this.histo.fZaxis) || UzoomMinMax(2, this.histo))) res = true;
-
-      return res;
    }
 
    TFramePainter.prototype.ToggleLog = function(axis) {
