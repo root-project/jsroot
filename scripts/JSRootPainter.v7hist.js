@@ -84,27 +84,7 @@
          this.Create3DScene(-1);
 
       this.histo = null; // cleanup histogram reference
-      delete this.x; delete this.grx;
-      delete this.ConvertX; delete this.RevertX;
-      delete this.y; delete this.gry;
-      delete this.ConvertY; delete this.RevertY;
-      delete this.z; delete this.grz;
-
-      if (this.x_handle) {
-         this.x_handle.Cleanup();
-         delete this.x_handle;
-      }
-
-      if (this.y_handle) {
-         this.y_handle.Cleanup();
-         delete this.y_handle;
-      }
-
-      if (this.z_handle) {
-         this.z_handle.Cleanup();
-         delete this.z_handle;
-      }
-
+      
       delete this.fPalette;
       delete this.fContour;
       delete this.options;
@@ -135,10 +115,8 @@
    
    THistPainter.prototype.DrawAxes = function() {
       var main = this.frame_painter();
-      if (main && this.draw_content) {
-         main.ConfigureDrawRange(this.xmin, this.xmax, this.ymin, this.ymax);
-         main.DrawAxes();
-      }
+      if (main && this.draw_content) 
+         main.DrawAxesRange(this.xmin, this.xmax, this.ymin, this.ymax);
    }
 
    THistPainter.prototype.CheckPadRange = function() {
@@ -490,14 +468,6 @@
    }
 
    THistPainter.prototype.FindStat = function() {
-      if (this.histo.fFunctions !== null)
-         for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
-            var func = this.histo.fFunctions.arr[i];
-
-            if ((func._typename == 'TPaveStats') &&
-                (func.fName == 'stats')) return func;
-         }
-
       return null;
    }
 
@@ -521,10 +491,10 @@
       var st = JSROOT.gStyle;
 
       stats = JSROOT.Create('TPaveStats');
-      JSROOT.extend(stats, { fName : 'stats',
+      JSROOT.extend(stats, { fName: 'stats',
                              fOptStat: this.histo.$custom_stat || st.fOptStat,
                              fOptFit: st.fOptFit,
-                             fBorderSize : 1} );
+                             fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
@@ -573,116 +543,6 @@
          if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
 
       return null;
-   }
-
-
-   THistPainter.prototype.FindAlternativeClickHandler = function(pos) {
-      var pp = this.pad_painter(true);
-      if (!pp) return false;
-
-      var pnt = { x: pos[0], y: pos[1], painters: true, disabled: true, click_handler: true };
-
-      var hints = pp.GetTooltips(pnt);
-      for (var k=0;k<hints.length;++k)
-         if (hints[k] && (typeof hints[k].click_handler == 'function')) {
-            hints[k].click_handler(hints[k]);
-            return true;
-         }
-
-      return false;
-   }
-
-
-   THistPainter.prototype.AllowDefaultYZooming = function() {
-      // return true if default Y zooming should be enabled
-      // it is typically for 2-Dim histograms or
-      // when histogram not draw, defined by other painters
-
-      if (this.Dimension()>1) return true;
-      if (this.draw_content) return false;
-
-      var pad_painter = this.pad_painter(true);
-      if (pad_painter &&  pad_painter.painters)
-         for (var k = 0; k < pad_painter.painters.length; ++k) {
-            var subpainter = pad_painter.painters[k];
-            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
-               return subpainter.wheel_zoomy;
-         }
-
-      return false;
-   }
-
-   THistPainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
-
-      item.min = item.max = undefined;
-      item.changed = false;
-      if (ignore && item.ignore) return;
-
-      var delta = 0, delta_left = 1, delta_right = 1;
-
-      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-      if ('dright' in item) { delta_right = item.dright; delta = 1; }
-
-      if ('delta' in item) {
-         delta = item.delta;
-      } else if (event && event.wheelDelta !== undefined ) {
-         // WebKit / Opera / Explorer 9
-         delta = -event.wheelDelta;
-      } else if (event && event.deltaY !== undefined ) {
-         // Firefox
-         delta = event.deltaY;
-      } else if (event && event.detail !== undefined) {
-         delta = event.detail;
-      }
-
-      if (delta===0) return;
-      delta = (delta<0) ? -0.2 : 0.2;
-
-      delta_left *= delta
-      delta_right *= delta;
-
-      var lmin = item.min = this["scale_"+item.name+"min"],
-          lmax = item.max = this["scale_"+item.name+"max"],
-          gmin = this[item.name+"min"],
-          gmax = this[item.name+"max"];
-
-      if ((item.min === item.max) && (delta<0)) {
-         item.min = gmin;
-         item.max = gmax;
-      }
-
-      if (item.min >= item.max) return;
-
-      if ((dmin>0) && (dmin<1)) {
-         if (this['log'+item.name]) {
-            var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
-            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
-         } else {
-            var rx_left = (item.max - item.min), rx_right = rx_left;
-            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
-            item.min += -delta_left*dmin*rx_left;
-
-            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
-
-            item.max -= -delta_right*(1-dmin)*rx_right;
-         }
-         if (item.min >= item.max)
-            item.min = item.max = undefined;
-         else
-         if (delta_left !== delta_right) {
-            // extra check case when moving left or right
-            if (((item.min < gmin) && (lmin===gmin)) ||
-                ((item.max > gmax) && (lmax==gmax)))
-                   item.min = item.max = undefined;
-         }
-
-      } else {
-         item.min = item.max = undefined;
-      }
-
-      item.changed = ((item.min !== undefined) && (item.max !== undefined));
    }
 
 
@@ -862,10 +722,7 @@
    
    THistPainter.prototype.FillContextMenu = function(menu) {
 
-      // when fill and show context menu, remove all zooming
-      this.clearInteractiveElements();
-      
-      var histo = this.GetHisto();
+     var histo = this.GetHisto();
 
       menu.add("header:v7histo::anyname");
 
@@ -1229,6 +1086,7 @@
 
    function TH1Painter(histo) {
       THistPainter.call(this, histo);
+      this.wheel_zoomy = false;
    }
 
    TH1Painter.prototype = Object.create(THistPainter.prototype);
@@ -1319,8 +1177,6 @@
             this.ymax = hmax + dy;
          }
       }
-      
-      console.log("this.x", this.xmin, this.xmax, this.ymin, this.ymax)
    }
 
    TH1Painter.prototype.CountStat = function(cond) {
@@ -2232,6 +2088,7 @@
       this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
+      this.wheel_zoomy = true;
    }
 
    TH2Painter.prototype = Object.create(THistPainter.prototype);
