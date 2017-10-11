@@ -3045,6 +3045,12 @@
          return;
       }
       
+      this.swap_xy = false;
+      if (this.options.Bar>=20) this.swap_xy = true;
+      this.logx = this.logy = false;
+      
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
+      
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
       if (use_pad_range) {
@@ -3073,12 +3079,6 @@
       if (typeof this.RecalculateRange == "function")
          this.RecalculateRange();
       
-      this.swap_xy = false;
-      if (this.options.Bar>=20) this.swap_xy = true;
-      this.logx = this.logy = false;
-
-      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
-
       if (this.histo.fXaxis.fTimeDisplay) {
          this.x_kind = 'time';
          this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
