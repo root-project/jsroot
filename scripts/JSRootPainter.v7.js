@@ -544,8 +544,6 @@
           labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
           label_g = axis_g.append("svg:g").attr("class","axis_labels");
 
-      console.log("HERE", disable_axis_drawing, optionUnlab);
-      
       // draw labels
       if (!disable_axis_drawing && !optionUnlab) {
 

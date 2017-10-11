@@ -44,8 +44,21 @@
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
    
    THistPainter.prototype.GetHisto = function() {
-      var obj = this.GetObject();
-      return obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null; 
+      var obj = this.GetObject(),
+          histo = obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null; 
+      
+      if (histo && !histo.getBinContent) {
+         histo.getBinContent = function(bin) {
+            return this.fStatistics.fBinContent[bin];
+         }
+         histo.getBinError = function(bin) {
+            if (this.fStatistics.fSumWeightsSquared)
+               return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
+            return Math.sqrt(Math.abs(this.getBinContent(bin)));
+         }
+      }
+      
+      return histo;
    }
 
    THistPainter.prototype.IsTProfile = function() {
@@ -206,7 +219,7 @@
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
+/*      if (this.options._pfc || this.options._plc || this.options._pmc) {
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
 
@@ -224,19 +237,12 @@
 
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
-
+*/
       if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.histo, undefined, this.options.histoFillColor, 1);
+         this.fillatt = this.createAttFill(null, 0, 0);
 
-      if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = new JSROOT.TAttLineHandler(this.histo, undefined, undefined, this.options.histoLineColor);
-         var main = this.main_painter();
-
-         if (main) {
-            var newcol = main.GetAutoColor(this.lineatt.color);
-            if (newcol !== this.lineatt.color) { this.lineatt.color = newcol; this.lineatt.changed = true; }
-         }
-      }
+      if (!this.lineatt || !this.lineatt.changed)
+         this.lineatt = new JSROOT.TAttLineHandler('black');
    }
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
@@ -1421,7 +1427,7 @@
       var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true, value, err;
 
       for (var i = 0; i < this.nbinsx; ++i) {
-         value = histo.fStatistics.fBinContent[i + 1];
+         value = histo.getBinContent(i+1);
          hsum += value;
 
          if ((i<left) || (i>=right)) continue;
@@ -1710,46 +1716,47 @@
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
+      
+      var options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0 };
 
-      if (this.options.Bar > 0)
+      if (options.Bar > 0)
          return this.DrawBars(width, height);
 
-      if ((this.options.Error == 13) || (this.options.Error == 14))
+      if ((options.Error == 13) || (options.Error == 14))
          return this.DrawFilledErrors(width, height);
 
       this.CreateG(true);
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
-          pmain = this.main_painter(),
-          pad = this.root_pad(),
-          pthis = this,
+          pmain = this.frame_painter(),
+          pthis = this, histo = this.GetHisto(),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
-          exclude_zero = !this.options.Zero,
-          show_errors = (this.options.Error > 0),
-          show_markers = (this.options.Mark > 0),
-          show_line = (this.options.Line > 0),
-          show_text = (this.options.Text > 0),
+          exclude_zero = !options.Zero,
+          show_errors = (options.Error > 0),
+          show_markers = (options.Mark > 0),
+          show_line = (options.Line > 0),
+          show_text = (options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           mpath = "", text_col, text_angle, text_size;
 
-      if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
-         show_markers = true;
+      //if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
+      //   show_markers = true;
 
-      if (this.options.Error == 12) {
+      if (options.Error == 12) {
          if (this.fillatt.color=='none') show_markers = true;
                                     else path_fill = "";
       } else
-      if (this.options.Error > 0) path_err = "";
+      if (options.Error > 0) path_err = "";
 
       if (show_line) path_line = "";
 
       if (show_markers) {
          // draw markers also when e2 option was specified
          if (!this.markeratt)
-            this.markeratt = new JSROOT.TAttMarkerHandler(this.histo, this.options.Mark - 20);
+            this.markeratt = new JSROOT.TAttMarkerHandler(histo, options.Mark - 20);
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
@@ -1760,14 +1767,14 @@
       }
 
       if (show_text) {
-         text_col = this.get_color(this.histo.fMarkerColor);
-         text_angle = (this.options.Text>1000) ? -1*(this.options.Text % 1000) : 0;
+         text_col = this.get_color(histo.fMarkerColor);
+         text_angle = (options.Text>1000) ? -1*(options.Text % 1000) : 0;
          text_size = 20;
 
-         if ((this.histo.fMarkerSize!==1) && text_angle)
+         if ((histo.fMarkerSize!==1) && text_angle)
             text_size = 0.02*height*this.histo.fMarkerSize;
 
-         if (!text_angle && (this.options.Text<1000)) {
+         if (!text_angle && (options.Text<1000)) {
              var space = width / (right - left + 1);
              if (space < 3 * text_size) {
                 text_angle = 270;
@@ -1782,7 +1789,7 @@
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width);
 
-      if (this.options.Error == 11) {
+      if (options.Error == 11) {
          var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
@@ -1797,7 +1804,7 @@
 
          x = this.GetBinX(i);
 
-         if (this.logx && (x <= 0)) continue;
+         if (pmain.logx && (x <= 0)) continue;
 
          grx = Math.round(pmain.grx(x));
 
@@ -1806,7 +1813,7 @@
          if (lastbin && (left<right)) {
             gry = curry;
          } else {
-            y = this.histo.getBinContent(i+1);
+            y = histo.getBinContent(i+1);
             gry = Math.round(pmain.gry(y));
          }
 
@@ -1825,7 +1832,7 @@
             } else {
 
                if (draw_markers || show_text || show_line) {
-                  bincont = this.histo.getBinContent(besti+1);
+                  bincont = histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
                      mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
                      mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
@@ -1833,16 +1840,15 @@
                      my = Math.round(pmain.gry(bincont));
                      yerr1 = yerr2 = 20;
                      if (show_errors) {
-                        binerr = this.histo.getBinError(besti+1);
+                        binerr = histo.getBinError(besti+1);
                         yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
                         yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
                      }
 
                      if (show_text) {
                         var cont = bincont;
-                        if ((this.options.Text>=2000) && (this.options.Text < 3000) &&
-                             this.IsTProfile() && this.histo.fBinEntries)
-                           cont = this.histo.fBinEntries[besti+1];
+                        if ((options.Text>=2000) && (options.Text < 3000) && this.IsTProfile() && histo.getBinEntries)
+                           cont = histo.getBinEntries(besti+1);
 
                         var posx = Math.round(mx1 + (mx2-mx1)*0.1),
                             posy = Math.round(my-2-text_size),
@@ -1874,9 +1880,9 @@
                            if (path_marker !== null)
                               path_marker += this.markeratt.create(midx, my);
                            if (path_err !== null) {
-                              if (this.options.errorX > 0) {
-                                 var mmx1 = Math.round(midx - (mx2-mx1)*this.options.errorX),
-                                     mmx2 = Math.round(midx + (mx2-mx1)*this.options.errorX);
+                              if (options.errorX > 0) {
+                                 var mmx1 = Math.round(midx - (mx2-mx1)*options.errorX),
+                                     mmx2 = Math.round(midx + (mx2-mx1)*options.errorX);
                                  path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
                               }
                               path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
@@ -1949,7 +1955,7 @@
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
-                     .attr("d", this.options.Line===2 ? (path_line + close_path) : res)
+                     .attr("d", options.Line===2 ? (path_line + close_path) : res)
                      .attr("stroke", "none")
                      .call(this.fillatt.func);
 
@@ -1965,7 +1971,7 @@
                 .call(this.markeratt.func);
 
       } else
-      if ((res.length > 0) && (this.options.Hist>0)) {
+      if (res && options.Hist) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
@@ -2336,7 +2342,7 @@
       this.DrawAxes();
       //this.DrawGrids();
       
-      // this.DrawBins();
+      this.DrawBins();
       // this.DrawTitle();
       // this.UpdateStatWebCanvas();
       // this.AddInteractive();
