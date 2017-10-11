@@ -4479,15 +4479,20 @@
             this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
                   function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
             menu.add("endsub:");
+            menu.add("sub:Ticks");
+            if (faxis._typename == "TGaxis") {
+               this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
+                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickSize,
+                        function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
+            } else {
+               this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+                           function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                        function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+            }
+            menu.add("endsub:");
          }
-         menu.add("sub:Ticks");
-         this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
-                     function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
-         this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
-                     function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
-         this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                   function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
-         menu.add("endsub:");
          return true;
       }
 
