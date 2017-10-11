@@ -34,6 +34,7 @@
             'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRootPainter.openui5': dir+'JSRootPainter.openui5'+ext,
+            'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
             'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
@@ -95,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 6/10/2017";
+   JSROOT.version = "dev 11/10/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -880,6 +881,7 @@
       //   'hist'  histograms 2d graphic
       // 'hist3d'  histograms 3d graphic
       // 'more2d'  extra 2d graphic (TGraph, TF1)
+      //     'v7'  ROOT v7 graphics
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
       // 'hierarchy' hierarchy browser
@@ -984,6 +986,11 @@
       if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
          modules.push('JSRootPainter.hist');
+      }
+      
+      if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v7' + ext + ".js;";
+         modules.push('JSRootPainter.v7');
       }
 
       if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
