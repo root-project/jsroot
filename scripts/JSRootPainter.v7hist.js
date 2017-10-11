@@ -685,103 +685,6 @@
       item.changed = ((item.min !== undefined) && (item.max !== undefined));
    }
 
- 
-
-   THistPainter.prototype.ShowAxisStatus = function(axis_name) {
-      // method called normally when mouse enter main object element
-
-      var status_func = this.GetShowStatusFunc();
-
-      if (!status_func) return;
-
-      var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
-
-      var hint_name = axis_name, hint_title = "TAxis";
-
-      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
-
-      var m = d3.mouse(this.svg_frame().node());
-
-      var id = (axis_name=="x") ? 0 : 1;
-      if (this.swap_xy) id = 1-id;
-
-      var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
-
-      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
-                  m[0].toFixed(0)+","+ m[1].toFixed(0));
-   }
-
-
-
-
-   THistPainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
-      // ignore context menu when touches zooming is ongoing
-      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
-
-      // this is for debug purposes only, when context menu is where, close is and show normal menu
-      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
-      //   var elem = document.getElementById('root_ctx_menu');
-      //   elem.parentNode.removeChild(elem);
-      //   return;
-      //}
-
-      var menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
-
-      if (!evnt) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation(); // disable main context menu
-         evnt = d3.event;
-
-         if (kind === undefined) {
-            var ms = d3.mouse(this.svg_frame().node()),
-                tch = d3.touches(this.svg_frame().node()),
-                pp = this.pad_painter(true),
-                pnt = null, sel = null;
-
-            fp = this.frame_painter();
-
-            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
-            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
-
-            if ((pnt !== null) && (pp !== null)) {
-               pnt.painters = true; // assign painter for every tooltip
-               var hints = pp.GetTooltips(pnt), bestdist = 1000;
-               for (var n=0;n<hints.length;++n)
-                  if (hints[n] && hints[n].menu) {
-                     var dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
-                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
-                  }
-            }
-
-            if (sel!==null) menu_painter = sel; else
-            if (fp!==null) kind = "frame";
-
-            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
-
-            if (fp) fp.SetLastEventPos(pnt);
-         }
-      }
-
-      // one need to copy event, while after call back event may be changed
-      menu_painter.ctx_menu_evnt = evnt;
-
-      JSROOT.Painter.createMenu(menu_painter, function(menu) {
-         var domenu = menu.painter.FillContextMenu(menu, kind, obj);
-
-         // fill frame menu by default - or append frame elements when activated in the frame corner
-         if (fp && (!domenu || (frame_corner && (kind!=="frame"))))
-            domenu = fp.FillContextMenu(menu);
-
-         if (domenu)
-            menu.painter.FillObjectExecMenu(menu, kind, function() {
-                // suppress any running zooming
-                menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
-            });
-
-      });  // end menu creation
-   }
-
 
    THistPainter.prototype.ChangeUserRange = function(arg) {
       var taxis = this.histo['f'+arg+"axis"];
@@ -806,147 +709,7 @@
       this.Redraw();
    }
 
-   THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
-
-      // when fill and show context menu, remove all zooming
-      this.clearInteractiveElements();
-
-      if ((kind=="x") || (kind=="y") || (kind=="z")) {
-         var faxis = this.histo.fXaxis;
-         if (kind=="y") faxis = this.histo.fYaxis;  else
-         if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
-         menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
-
-         if ((kind === "z") && (this.options.Zscale > 0))
-            if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
-
-         if (faxis != null) {
-            menu.add("sub:Labels");
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
-                  function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-                  function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-                  function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-            menu.add("sub:Title");
-            menu.add("SetTitle", function() {
-               var t = prompt("Enter axis title", faxis.fTitle);
-               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
-            });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
-                  function(arg) { faxis.fTitleColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                                  function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-                  function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-         }
-         menu.add("sub:Ticks");
-         this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
-                     function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
-         this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
-                     function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
-         this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                   function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
-         menu.add("endsub:");
-         return true;
-      }
-
-      if (kind == "frame") {
-         var fp = this.frame_painter();
-         if (fp) return fp.FillContextMenu(menu);
-      }
-
-      menu.add("header:"+ this.histo._typename + "::" + this.histo.fName);
-
-      if (this.draw_content) {
-         menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
-         if (this.Dimension() == 1) {
-            menu.add("User range X", "X", this.ChangeUserRange);
-         } else {
-            menu.add("sub:User ranges");
-            menu.add("X", "X", this.ChangeUserRange);
-            menu.add("Y", "Y", this.ChangeUserRange);
-            if (this.Dimension() > 2)
-               menu.add("Z", "Z", this.ChangeUserRange);
-            menu.add("endsub:")
-         }
-
-         if (typeof this.FillHistContextMenu == 'function')
-            this.FillHistContextMenu(menu);
-      }
-
-      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.Dimension() === 3)) {
-         // menu for 3D drawings
-
-         if (menu.size() > 0)
-            menu.add("separator");
-
-         var main = this.main_painter() || this;
-
-         menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
-            main.tooltip_allowed = !main.tooltip_allowed;
-         });
-
-         menu.addchk(main.enable_highlight, 'Highlight bins', function() {
-            main.enable_highlight = !main.enable_highlight;
-            if (!main.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
-         });
-
-         menu.addchk(main.options.FrontBox, 'Front box', function() {
-            main.options.FrontBox = !main.options.FrontBox;
-            if (main.Render3D) main.Render3D();
-         });
-         menu.addchk(main.options.BackBox, 'Back box', function() {
-            main.options.BackBox = !main.options.BackBox;
-            if (main.Render3D) main.Render3D();
-         });
-
-         if (this.draw_content) {
-            menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
-               this.options.Zero = !this.options.Zero;
-               this.RedrawPad();
-            });
-
-            if ((this.options.Lego==12) || (this.options.Lego==14)) {
-               menu.addchk(this.options.Zscale, "Z scale", function() {
-                  this.ToggleColz();
-               });
-               if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
-            }
-         }
-
-         if (main.control && typeof main.control.reset === 'function')
-            menu.add('Reset camera', function() {
-               main.control.reset();
-            });
-      }
-
-      this.FillAttContextMenu(menu);
-
-      if (this.histogram_updated && this.zoom_changed_interactive)
-         menu.add('Let update zoom', function() {
-            this.zoom_changed_interactive = 0;
-         });
-
-      return true;
-   }
-
+   
    THistPainter.prototype.ButtonClick = function(funcname) {
       if (!this.is_main_painter()) return false;
       switch(funcname) {
@@ -1096,6 +859,89 @@
 
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
+   
+   THistPainter.prototype.FillContextMenu = function(menu) {
+
+      // when fill and show context menu, remove all zooming
+      this.clearInteractiveElements();
+      
+      var histo = this.GetHisto();
+
+      menu.add("header:v7histo::anyname");
+
+      if (this.draw_content) {
+         menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
+         if (this.Dimension() == 1) {
+            menu.add("User range X", "X", this.ChangeUserRange);
+         } else {
+            menu.add("sub:User ranges");
+            menu.add("X", "X", this.ChangeUserRange);
+            menu.add("Y", "Y", this.ChangeUserRange);
+            if (this.Dimension() > 2)
+               menu.add("Z", "Z", this.ChangeUserRange);
+            menu.add("endsub:")
+         }
+
+         if (typeof this.FillHistContextMenu == 'function')
+            this.FillHistContextMenu(menu);
+      }
+
+      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.Dimension() === 3)) {
+         // menu for 3D drawings
+
+         if (menu.size() > 0)
+            menu.add("separator");
+
+         var main = this.main_painter() || this;
+
+         menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
+            main.tooltip_allowed = !main.tooltip_allowed;
+         });
+
+         menu.addchk(main.enable_highlight, 'Highlight bins', function() {
+            main.enable_highlight = !main.enable_highlight;
+            if (!main.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
+         });
+
+         menu.addchk(main.options.FrontBox, 'Front box', function() {
+            main.options.FrontBox = !main.options.FrontBox;
+            if (main.Render3D) main.Render3D();
+         });
+         menu.addchk(main.options.BackBox, 'Back box', function() {
+            main.options.BackBox = !main.options.BackBox;
+            if (main.Render3D) main.Render3D();
+         });
+
+         if (this.draw_content) {
+            menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
+               this.options.Zero = !this.options.Zero;
+               this.RedrawPad();
+            });
+
+            if ((this.options.Lego==12) || (this.options.Lego==14)) {
+               menu.addchk(this.options.Zscale, "Z scale", function() {
+                  this.ToggleColz();
+               });
+               if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
+            }
+         }
+
+         if (main.control && typeof main.control.reset === 'function')
+            menu.add('Reset camera', function() {
+               main.control.reset();
+            });
+      }
+
+      this.FillAttContextMenu(menu);
+
+      if (this.histogram_updated && this.zoom_changed_interactive)
+         menu.add('Let update zoom', function() {
+            this.zoom_changed_interactive = 0;
+         });
+
+      return true;
+   }
+
 
    /// return index from contours array, which corresponds to the content value **zc**
    THistPainter.prototype.getContourIndex = function(zc) {

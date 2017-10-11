@@ -1140,52 +1140,6 @@
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
-   TFramePainter.prototype.FillContextMenu = function(menu) {
-      // fill context menu for the frame
-      // it could be appended to the histogram menus
-
-      var main = this.main_painter(), alone = menu.size()==0, pad = this.root_pad();
-
-      if (alone)
-         menu.add("header:Frame");
-      else
-         menu.add("separator");
-
-      if (main) {
-         if (main.zoom_xmin !== main.zoom_xmax)
-            menu.add("Unzoom X", main.Unzoom.bind(main,"x"));
-         if (main.zoom_ymin !== main.zoom_ymax)
-            menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
-         if (main.zoom_zmin !== main.zoom_zmax)
-            menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
-         menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
-
-         if (pad) {
-            menu.addchk(pad.fLogx, "SetLogx", main.ToggleLog.bind(main,"x"));
-
-            menu.addchk(pad.fLogy, "SetLogy", main.ToggleLog.bind(main,"y"));
-
-            if (main.Dimension() == 2)
-               menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
-         }
-         menu.add("separator");
-      }
-
-      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
-         var fp = this.frame_painter();
-         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
-      });
-      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
-      menu.add("separator");
-      menu.add("Save as frame.png", function(arg) {
-         var top = this.svg_frame();
-         if (!top.empty())
-            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
-      });
-
-      return true;
-   }
-
    TFramePainter.prototype.GetFrameRect = function() {
       // returns frame rectangle plus extra info for hint display
 
@@ -1665,10 +1619,199 @@
       d3.event.stopPropagation();
    }
    
+   TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
+      // ignore context menu when touches zooming is ongoing
+      if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
+
+      // this is for debug purposes only, when context menu is where, close is and show normal menu
+      //if (!evnt && !kind && document.getElementById('root_ctx_menu')) {
+      //   var elem = document.getElementById('root_ctx_menu');
+      //   elem.parentNode.removeChild(elem);
+      //   return;
+      //}
+
+      var menu_painter = this, frame_corner = false, fp = this; // object used to show context menu
+
+      if (!evnt) {
+         d3.event.preventDefault();
+         d3.event.stopPropagation(); // disable main context menu
+         evnt = d3.event;
+
+         if (kind === undefined) {
+            var ms = d3.mouse(this.svg_frame().node()),
+                tch = d3.touches(this.svg_frame().node()),
+                pp = this.pad_painter(true),
+                pnt = null, sel = null;
+
+            if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
+            if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
+
+            if ((pnt !== null) && (pp !== null)) {
+               pnt.painters = true; // assign painter for every tooltip
+               var hints = pp.GetTooltips(pnt), bestdist = 1000;
+               for (var n=0;n<hints.length;++n)
+                  if (hints[n] && hints[n].menu) {
+                     var dist = ('menu_dist' in hints[n]) ? hints[n].menu_dist : 7;
+                     if (dist < bestdist) { sel = hints[n].painter; bestdist = dist; }
+                  }
+            }
+
+            if (sel!==null) menu_painter = sel;
+
+            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+
+            this.SetLastEventPos(pnt);
+         }
+      }
+
+      // one need to copy event, while after call back event may be changed
+      menu_painter.ctx_menu_evnt = evnt;
+
+      JSROOT.Painter.createMenu(menu_painter, function(menu) {
+         var domenu = menu.painter.FillContextMenu(menu, kind, obj);
+
+         // fill frame menu by default - or append frame elements when activated in the frame corner
+         if (fp && (!domenu || (frame_corner && (kind!=="frame") && (fp!=menu.painter))))
+            domenu = fp.FillContextMenu(menu);
+
+         if (domenu)
+            menu.painter.FillObjectExecMenu(menu, kind, function() {
+                // suppress any running zooming
+                menu.painter.SwitchTooltip(false);
+                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
+            });
+
+      });  // end menu creation
+   }
+   
+   TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
+
+      // when fill and show context menu, remove all zooming
+      this.clearInteractiveElements();
+      
+      if ((kind=="x") || (kind=="y")) {
+         var faxis = null;
+         //this.histo.fXaxis;
+         //if (kind=="y") faxis = this.histo.fYaxis;  else
+         //if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
+         menu.add("header: " + kind.toUpperCase() + " axis");
+         menu.add("Unzoom", this.Unzoom.bind(this, kind));
+         
+         if (this[kind+"_kind"] == "normal")
+           menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+
+         // if ((kind === "z") && (this.options.Zscale > 0))
+         //   if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
+
+         if (faxis != null) {
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+            menu.add("sub:Labels");
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
+                  function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
+                  function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
+                  function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
+            menu.add("endsub:");
+            menu.add("sub:Title");
+            menu.add("SetTitle", function() {
+               var t = prompt("Enter axis title", faxis.fTitle);
+               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
+            });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
+                  function(arg) { faxis.fTitleColor = parseInt(arg); this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
+                                  function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
+                  function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
+            menu.add("endsub:");
+            menu.add("sub:Ticks");
+            this.AddColorMenuEntry(menu, "Line", faxis.fLineColor,
+                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+                        function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu, "Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                      function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+            menu.add("endsub:");
+         }
+         return true;
+      }
+
+      var alone = menu.size()==0;
+
+      if (alone)
+         menu.add("header:Frame");
+      else
+         menu.add("separator");
+
+      if (main.zoom_xmin !== this.zoom_xmax)
+         menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
+      if (this.zoom_ymin !== this.zoom_ymax)
+         menu.add("Unzoom Y", this.Unzoom.bind(this,"y"));
+      if (this.zoom_zmin !== this.zoom_zmax)
+         menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
+      menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
+
+      menu.addchk(this.logx, "SetLogx", this.ToggleLog.bind(this,"x"));
+      menu.addchk(this.logy, "SetLogy", this.ToggleLog.bind(this,"y"));
+      // if (main.Dimension() == 2)
+      //   menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
+      menu.add("separator");
+
+      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
+         var fp = this.frame_painter();
+         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
+      });
+      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
+      menu.add("separator");
+      menu.add("Save as frame.png", function(arg) {
+         var top = this.svg_frame();
+         if (!top.empty())
+            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
+      });
+
+      return true;
+   }
+   
+   TFramePainter.prototype.ShowAxisStatus = function(axis_name) {
+      // method called normally when mouse enter main object element
+
+      var status_func = this.GetShowStatusFunc();
+
+      if (!status_func) return;
+
+      var taxis = null;
+
+      var hint_name = axis_name, hint_title = "TAxis";
+
+      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
+
+      var m = d3.mouse(this.svg_frame().node());
+
+      var id = (axis_name=="x") ? 0 : 1;
+      if (this.swap_xy) id = 1-id;
+
+      var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
+
+      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
+                  m[0].toFixed(0)+","+ m[1].toFixed(0));
+   }
+
    TFramePainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
+      if (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) return;
 
       var svg = this.svg_frame();
 
@@ -1739,7 +1882,7 @@
    }
    
    TFramePainter.prototype.AddKeysHandler = function() {
-      if (this.keys_handler || !this.is_main_painter() || JSROOT.BatchMode || (typeof window == 'undefined')) return;
+      if (this.keys_handler || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
 
@@ -3563,7 +3706,11 @@
       // if (nocanvas && opt.indexOf("noframe") < 0)
       drawFrame(divid, null);
       
-      JSROOT.draw(divid, can.fPrimitives[0], "", function() { painter.DrawingReady(); });
+      JSROOT.draw(divid, can.fPrimitives[0], "", function() { 
+         var fp = painter.frame_painter();
+         if (fp) fp.AddInteractive();
+         painter.DrawingReady(); 
+      });
 
       // painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
       return painter;
