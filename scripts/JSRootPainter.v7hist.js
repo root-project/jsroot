@@ -526,7 +526,7 @@
          if (menu.size() > 0)
             menu.add("separator");
 
-         var main = this.main_painter() || this;
+         var main = this.frame_painter();
 
          menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
             main.tooltip_allowed = !main.tooltip_allowed;
@@ -996,8 +996,8 @@
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
           pmain = this.frame_painter(),
-          pad = this.root_pad(),
           pthis = this,
+          histo = this.GetHisto(),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
           side = (this.options.Bar > 10) ? this.options.Bar % 10 : 0;
@@ -1017,7 +1017,7 @@
          grx1 = Math.round(pmain.grx(x1));
          grx2 = Math.round(pmain.grx(x2));
 
-         y = this.histo.getBinContent(i+1);
+         y = histo.getBinContent(i+1);
          if (pmain.logy && (y < pmain.scale_ymin)) continue;
          gry1 = Math.round(pmain.gry(y));
 
@@ -1043,6 +1043,8 @@
          }
       }
 
+      if (this.fillatt.color == "none") this.fillatt.color = "blue";
+      
       if (bars.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", bars)
@@ -1066,7 +1068,8 @@
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
+          histo = this.GetHisto(),
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
 
@@ -1075,8 +1078,8 @@
          if (pmain.logx && (x <= 0)) continue;
          grx = Math.round(pmain.grx(x));
 
-         y = this.histo.getBinContent(i+1);
-         yerr = this.histo.getBinError(i+1);
+         y = histo.getBinContent(i+1);
+         yerr = histo.getBinError(i+1);
          if (pmain.logy && (y-yerr < pmain.scale_ymin)) continue;
 
          gry1 = Math.round(pmain.gry(y + yerr));
@@ -1086,11 +1089,12 @@
          bins2.unshift({grx:grx, gry: gry2});
       }
 
-      var kind = (this.options.Error == 14) ? "bezier" : "line";
-
-      var path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
+      var kind = (this.options.Error == 14) ? "bezier" : "line",
+          path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
           path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
 
+      if (this.fillatt.color == "none") this.fillatt.color = "blue";
+      
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
                  .style("stroke", "none")
@@ -1748,7 +1752,7 @@
       painter.SetDivId(divid);
       
       painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1, BaseLine: false };
+                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false };
       
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
@@ -3757,7 +3761,7 @@
       painter.SetDivId(divid);
       
       painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1, BaseLine: false, 
+                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false, 
                           Color: 1, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
 
       // here we deciding how histogram will look like and how will be shown
