@@ -1474,7 +1474,7 @@
       } else {
 
          this.DeleteAtt();
-         
+
          this.ScanContent(true); // may be required for axis drawings
 
          if (main === this) {
@@ -2327,7 +2327,7 @@
    }
 
    TH3Painter.prototype.CountStat = function() {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
           i1 = this.GetSelectIndex("x", "left"),
@@ -2336,22 +2336,22 @@
           j2 = this.GetSelectIndex("y", "right"),
           k1 = this.GetSelectIndex("z", "left"),
           k2 = this.GetSelectIndex("z", "right"),
-          res = { entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
+          res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, meanz: 0, rmsx: 0, rmsy: 0, rmsz: 0 },
           xi, yi, zi, xx, xside, yy, yside, zz, zside, cont;
 
       for (xi = 0; xi < this.nbinsx+2; ++xi) {
 
-         xx = this.GetBinX(xi - 0.5);
+         xx = xaxis.GetBinCoord(xi - 0.5);
          xside = (xi < i1) ? 0 : (xi > i2 ? 2 : 1);
 
          for (yi = 0; yi < this.nbinsy+2; ++yi) {
 
-            yy = this.GetBinY(yi - 0.5);
+            yy = yaxis.GetBinCoord(yi - 0.5);
             yside = (yi < j1) ? 0 : (yi > j2 ? 2 : 1);
 
             for (zi = 0; zi < this.nbinsz+2; ++zi) {
 
-               zz = this.GetBinZ(zi - 0.5);
+               zz = zaxis.GetBinCoord(zi - 0.5);
                zside = (zi < k1) ? 0 : (zi > k2 ? 2 : 1);
 
                cont = histo.getBinContent(xi, yi, zi);
@@ -2415,7 +2415,7 @@
       stat.ClearPave();
 
       if (print_name > 0)
-         stat.AddText(this.GetObject().fName);
+         stat.AddText(data.name);
 
       if (print_entries > 0)
          stat.AddText("Entries = " + stat.Format(data.entries,"entries"));

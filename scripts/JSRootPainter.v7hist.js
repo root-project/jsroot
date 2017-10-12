@@ -25,8 +25,8 @@
    "use strict";
 
    JSROOT.sources.push("v7hist");
-  
-      
+
+
    // =============================================================
 
    function THistPainter(histo) {
@@ -41,11 +41,11 @@
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-   
+
    THistPainter.prototype.GetHisto = function() {
       var obj = this.GetObject(),
-          histo = obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null; 
-      
+          histo = obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null;
+
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._1) {
             histo.getBin = function(x, y) { return (x + this.fAxes._0.fNBins * y); }
@@ -57,7 +57,7 @@
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
          } else {
-         
+
             histo.getBinContent = function(bin) {
                return this.fStatistics.fBinContent[bin];
             }
@@ -68,7 +68,7 @@
             }
          }
       }
-      
+
       return histo;
    }
 
@@ -121,12 +121,12 @@
 
       alert("HistPainter.prototype.ScanContent not implemented");
    }
-   
+
    THistPainter.prototype.DrawAxes = function() {
       // return true when axes was drawn
       var main = this.frame_painter();
       if (!main) return false;
-      if (this.draw_content) 
+      if (this.draw_content)
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax);
       return main.DrawAxes(true);
    }
@@ -184,10 +184,10 @@
    THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
-      
+
       var histo = this.GetHisto();
       if (!histo) return;
-      
+
       var axis = histo.fAxes._0;
       this.regularx = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
 
@@ -223,7 +223,7 @@
 
       var axis = histo.fAxes._1;
       this.regulary = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
-      
+
       if (!this.regulary) {
          this.ymin = axis.fBinBorders[0];
          this.ymax = axis.fBinBorders[axis.fNBins - 2];
@@ -256,7 +256,7 @@
 
       var axis = histo.fAxes._1;
       this.regularz = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
-      
+
       if (!this.regularz) {
          this.zmin = axis.fBinBorders[0];
          this.zmax = axis.fBinBorders[axis.fNBins - 2];
@@ -286,11 +286,11 @@
       }
    }
 
-   
+
    THistPainter.prototype.DrawBins = function() {
       alert("HistPainter.DrawBins not implemented");
    }
-   
+
 
    THistPainter.prototype.ToggleTitle = function(arg) {
       return false;
@@ -315,7 +315,7 @@
 
    THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexes starts from 0
-      var indx = 0, 
+      var indx = 0,
           main = this.frame_painter(),
           nbins = this['nbins'+axis] || 0;
 
@@ -446,12 +446,12 @@
       }
 
       var main = this.frame_painter();
-      
+
       if (this.Dimension() < 3) {
          main.zmin = this.zmin = this.colzmin;
          main.zmax = this.zmax = this.colzmax;
       }
-      
+
       main.fContour = this.fContour;
       main.fCustomContour = this.fCustomContour;
       main.colzmin = this.colzmin;
@@ -504,7 +504,7 @@
 
       return this.CreateContour(nlevels, zmin, zmax, zminpos);
    }
-   
+
    THistPainter.prototype.FillContextMenu = function(menu) {
 
      var histo = this.GetHisto();
@@ -695,7 +695,7 @@
           };
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
-      
+
       if (args.original) {
          res.original = true;
          res.origx = new Float32Array(res.i2+1);
@@ -796,7 +796,7 @@
 
       var histo = this.GetHisto();
       if (!histo) return;
-      
+
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
       if (!when_axis_changed) {
@@ -828,7 +828,7 @@
          if (first) {
             hmin = hmax = value;
             first = false;;
-         } 
+         }
 
          err =  0;
 
@@ -872,7 +872,7 @@
           right = this.GetSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
-          res = { meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
+          res = { name: "histo", meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
 
       for (i = left; i < right; ++i) {
          xx = this.GetBinX(i+0.5);
@@ -924,7 +924,6 @@
       if (this.IgnoreStatsFill()) return false;
 
       var data = this.CountStat(),
-          histo = this.GetHisto(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -939,7 +938,7 @@
       stat.ClearPave();
 
       if (print_name > 0)
-         stat.AddText(histo.fName || "histo");
+         stat.AddText(data.name);
 
       if (this.IsTProfile()) {
 
@@ -1043,7 +1042,7 @@
       }
 
       if (this.fillatt.color == "none") this.fillatt.color = "blue";
-      
+
       if (bars.length > 0)
          this.draw_g.append("svg:path")
                     .attr("d", bars)
@@ -1093,7 +1092,7 @@
           path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
 
       if (this.fillatt.color == "none") this.fillatt.color = "blue";
-      
+
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
                  .style("stroke", "none")
@@ -1110,7 +1109,7 @@
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
-      
+
       if (options.Bar > 0)
          return this.DrawBars(width, height);
 
@@ -1643,7 +1642,7 @@
          this.ProvideUserTooltip({ obj: histo,  name: "histo",
                                    bin: findbin, cont: histo.getBinContent(findbin+1),
                                    grx: midx, gry: midy });
-  
+
       return res;
    }
 
@@ -1719,7 +1718,7 @@
          this.Create3DScene(-1);
 
       this.mode3d = false;
-     
+
       this.ScanContent(true);
 
       if (typeof this.DrawColorPalette === 'function')
@@ -1749,10 +1748,10 @@
       var painter = new TH1Painter(histo);
 
       painter.SetDivId(divid);
-      
+
       painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false };
-      
+
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
 
@@ -1787,7 +1786,7 @@
 
       THistPainter.prototype.Cleanup.call(this);
    }
-   
+
    TH2Painter.prototype.Dimension = function() {
       return 2;
    }
@@ -1823,7 +1822,7 @@
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
       // do nothing for the moment
-      
+
    }
 
    TH2Painter.prototype.ExecuteMenuCommand = function(method, args) {
@@ -1982,7 +1981,7 @@
 
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
-   
+
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
@@ -2025,7 +2024,7 @@
             }
          }
       }
-      
+
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
@@ -2042,7 +2041,7 @@
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
           xside, yside, xx, yy, zz,
-          res = { entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
+          res = { name: "histo", entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
       if (this.IsTH2Poly()) {
 
@@ -2177,7 +2176,7 @@
       stat.ClearPave();
 
       if (print_name > 0)
-         stat.AddText(this.GetObject().fName);
+         stat.AddText(data.name);
 
       if (print_entries > 0)
          stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
@@ -2312,7 +2311,7 @@
          }
          return icount;
       }
-      
+
       var arrx = handle.original ? handle.origx : handle.grx,
           arry = handle.original ? handle.origy : handle.gry;
 
@@ -2482,7 +2481,7 @@
           levels = this.GetContour(),
           palette = this.GetPalette(),
           painter = this, main = this.frame_painter();
-      
+
       function BuildPath(xp,yp,iminus,iplus) {
          var cmd = "", last = null, pnt = null, i;
          for (i=iminus;i<=iplus;++i) {
@@ -2522,7 +2521,7 @@
             }
             dd = BuildPath(xd,yd,0,2*sz-1);
          }
-         
+
          this.draw_g
              .append("svg:path")
              .attr("d", dd + "z")
@@ -2542,7 +2541,7 @@
                case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
                case 14: break;
             }
-            
+
             var elem = painter.draw_g
                           .append("svg:path")
                           .attr("class","th2_contour")
@@ -3598,9 +3597,9 @@
       var painter = new TH2Painter(histo);
 
       painter.SetDivId(divid);
-      
+
       painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false, 
+                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false,
                           Color: 1, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
 
       // here we deciding how histogram will look like and how will be shown
@@ -3631,14 +3630,14 @@
 
       return painter;
    }
-   
+
    JSROOT.v7.THistPainter = THistPainter;
    JSROOT.v7.TH1Painter = TH1Painter;
    JSROOT.v7.TH2Painter = TH2Painter;
 
    JSROOT.v7.drawHist1 = drawHist1;
    JSROOT.v7.drawHist2 = drawHist2;
-   
+
    return JSROOT;
 
 }));
