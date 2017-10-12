@@ -7419,7 +7419,6 @@
    TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
-          pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
           bars = "", markers = "";

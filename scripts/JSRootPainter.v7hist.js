@@ -2764,7 +2764,7 @@
    }
 
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
-      var histo = this.GetObject(), ddd = 0,
+      var histo = this.GetHisto(), ddd = 0,
           painter = this,
           kMAXCONTOUR = 2004,
           kMAXCOUNT = 2000,
@@ -3422,8 +3422,7 @@
    TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
-          pad = this.root_pad(),
-          pmain = this.main_painter(), // used for axis values conversions
+          pmain = this.frame_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
           bars = "", markers = "";
 
@@ -4103,9 +4102,9 @@
 
       painter.SetDivId(divid);
       
-      painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1, BaseLine: false, 
-                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 1 };
+                          Color: 1, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
 
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
