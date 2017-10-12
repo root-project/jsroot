@@ -48,13 +48,25 @@
           histo = obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null; 
       
       if (histo && !histo.getBinContent) {
-         histo.getBinContent = function(bin) {
-            return this.fStatistics.fBinContent[bin];
-         }
-         histo.getBinError = function(bin) {
-            if (this.fStatistics.fSumWeightsSquared)
-               return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
-            return Math.sqrt(Math.abs(this.getBinContent(bin)));
+         if (histo.fAxes._1) {
+            histo.getBin = function(x, y) { return (x + this.fAxes._0.fNBins * y); }
+            histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
+            histo.getBinError = function(x,y) {
+               var bin = this.getBin(x,y);
+               if (this.fStatistics.fSumWeightsSquared)
+                  return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
+               return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
+            }
+         } else {
+         
+            histo.getBinContent = function(bin) {
+               return this.fStatistics.fBinContent[bin];
+            }
+            histo.getBinError = function(bin) {
+               if (this.fStatistics.fSumWeightsSquared)
+                  return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
+               return Math.sqrt(Math.abs(this.getBinContent(bin)));
+            }
          }
       }
       
@@ -2118,6 +2130,10 @@
 
       THistPainter.prototype.Cleanup.call(this);
    }
+   
+   TH2Painter.prototype.Dimension = function() {
+      return 2;
+   }
 
    TH2Painter.prototype.ToggleProjection = function(kind, width) {
 
@@ -2511,7 +2527,7 @@
             }
          }
       }
-
+      
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
 
@@ -4100,10 +4116,10 @@
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
 
-      // if (painter.IsTH2Poly()) {
-      //   if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
-      //   if (!painter.options.Color) painter.options.Color = 1; // default color
-      // }
+      if (painter.IsTH2Poly()) {
+         if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
+         if (!painter.options.Color) painter.options.Color = 1; // default color
+      }
 
       painter._show_empty_bins = false;
 
