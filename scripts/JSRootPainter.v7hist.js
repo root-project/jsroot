@@ -181,6 +181,47 @@
       return true;
    }
 
+   THistPainter.prototype.GetAxis = function(name) {
+      var histo = this.GetHisto();
+      if (!histo || !histo.fAxes) return null;
+
+      var axis = histo.fAxes._0;
+
+      switch(name) {
+         case "x": axis = histo.fAxes._0; break;
+         case "y": axis = histo.fAxes._1; break;
+         case "z": axis = histo.fAxes._2; break;
+      }
+      if (!axis || axis.GetBinCoord) return axis;
+
+      if (axis._typename == "ROOT::Experimental::TAxisEquidistant") {
+         axis.min = axis.fLow;
+         axis.max = axis.fLow + (axis.fNBins-2)/axis.fInvBinWidth;
+
+         axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; };
+         axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); };
+
+      } else {
+         axis.min = axis.fBinBorders[0];
+         axis.max = axis.fBinBorders[axis.fNBins - 2];
+         axis.GetBinCoord = function(bin) {
+            var indx = Math.round(bin);
+            if (indx <= 0) return this.fBinBorders[0];
+            if (indx > this.fNBins - 2) return this.fBinBorders[this.fNBins - 2];
+            if (indx==bin) return this.fBinBorders[indx];
+            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
+            return this.fBinBorders[indx] * Math.abs(bin-indx2) + this.fBinBorders[indx2] * Math.abs(bin-indx);
+         };
+         axis.FindBin = function(x,add) {
+            for (var k = 1; k < this.fBinBorders.length; ++k)
+               if (x < this.fBinBorders[k]) return Math.floor(k-1+add);
+            return this.fNBins - 2;
+         };
+      }
+
+      return axis;
+   }
+
    THistPainter.prototype.CreateAxisFuncs = function(with_y_axis, with_z_axis) {
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
@@ -188,102 +229,20 @@
       var histo = this.GetHisto();
       if (!histo) return;
 
-      var axis = histo.fAxes._0;
-      this.regularx = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
+      var axis = this.GetAxis("x");
+      this.xmin = axis.min;
+      this.xmax = axis.max;
 
-      if (!this.regularx) {
-         this.xmin = axis.fBinBorders[0];
-         this.xmax = axis.fBinBorders[axis.fNBins - 2];
-         this.xaxis = axis;
-         this.GetBinX = function(bin) {
-            var indx = Math.round(bin);
-            if (indx <= 0) return this.xmin;
-            if (indx > this.nbinsx) return this.xmax;
-            if (indx==bin) return this.xaxis.fBinBorders[indx];
-            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.xaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.xaxis.fBinBorders[indx2] * Math.abs(bin-indx);
-         };
-         this.GetIndexX = function(x,add) {
-            for (var k = 1; k < this.xaxis.fBinBorders.length; ++k)
-               if (x < this.xaxis.fBinBorders[k]) return Math.floor(k-1+add);
-            return this.nbinsx;
-         };
-      } else {
-         this.xmin = axis.fLow;
-         this.xmax = this.xmin + (axis.fNBins - 2)/axis.fInvBinWidth;
-         this.binwidthx = (this.xmax - this.xmin);
-         if (this.nbinsx > 0)
-            this.binwidthx = this.binwidthx / this.nbinsx;
+      if (!with_y_axis || !this.nbinsy) return;
 
-         this.GetBinX = function(bin) { return this.xmin + bin*this.binwidthx; };
-         this.GetIndexX = function(x,add) { return Math.floor((x - this.xmin) / this.binwidthx + add); };
-      }
+      axis = this.GetAxis("y");
+      this.ymin = axis.min;
+      this.ymax = axis.max;
+      if (!with_z_axis || !this.nbinsz) return;
 
-      if (!with_y_axis || (this.nbinsy==0)) return;
-
-      var axis = histo.fAxes._1;
-      this.regulary = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
-
-      if (!this.regulary) {
-         this.ymin = axis.fBinBorders[0];
-         this.ymax = axis.fBinBorders[axis.fNBins - 2];
-         this.yaxis = axis;
-         this.GetBinY = function(bin) {
-            var indx = Math.round(bin);
-            if (indx <= 0) return this.ymin;
-            if (indx > this.nbinsy) return this.ymax;
-            if (indx==bin) return this.yaxis.fBinBorders[indx];
-            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.yaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.yaxis.fBinBorders[indx2] * Math.abs(bin-indx);
-         };
-         this.GetIndexY = function(y,add) {
-            for (var k = 1; k < this.yaxis.fBinBorders.length; ++k)
-               if (y < this.yaxis.fBinBorders[k]) return Math.floor(k-1+add);
-            return this.nbinsy;
-         };
-      } else {
-         this.ymin = axis.fLow;
-         this.ymax = this.ymin + (axis.fNBins - 2)/axis.fInvBinWidth;
-         this.binwidthy = (this.ymax - this.ymin);
-         if (this.nbinsy > 0)
-            this.binwidthy = this.binwidthy / this.nbinsy;
-
-         this.GetBinY = function(bin) { return this.ymin+bin*this.binwidthy; };
-         this.GetIndexY = function(y,add) { return Math.floor((y - this.ymin) / this.binwidthy + add); };
-      }
-
-      if (!with_z_axis || (this.nbinsz==0)) return;
-
-      var axis = histo.fAxes._1;
-      this.regularz = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
-
-      if (!this.regularz) {
-         this.zmin = axis.fBinBorders[0];
-         this.zmax = axis.fBinBorders[axis.fNBins - 2];
-         this.zaxis = axis;
-         this.GetBinZ = function(bin) {
-            var indx = Math.round(bin);
-            if (indx <= 0) return this.zmin;
-            if (indx > this.nbinsz) return this.zmax;
-            if (indx==bin) return this.zaxis.fBinBorders[indx];
-            var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.zaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.zaxis.fBinBorders[indx2] * Math.abs(bin-indx);
-         };
-         this.GetIndexZ = function(z,add) {
-            for (var k = 1; k < this.zaxis.fBinBorders.length; ++k)
-               if (x < this.zaxis.fBinBorders[k]) return Math.floor(k-1+add);
-            return this.nbinsz;
-         };
-      } else {
-         this.zmin = axis.fLow;
-         this.zmax = this.zmin + (axis.fNBins - 2)/axis.fInvBinWidth;
-         this.binwidthz = (this.zmax - this.zmin);
-         if (this.nbinsz > 0)
-            this.binwidthz = this.binwidthz / this.nbinsz;
-
-         this.GetBinZ = function(bin) { return this.zmin+bin*this.binwidthz; };
-         this.GetIndexZ = function(z,add) { return Math.floor((z - this.zmin) / this.binwidthz + add); };
-      }
+      axis = this.GetAxis("z");
+      this.zmin = axis.min;
+      this.zmax = axis.max;
    }
 
 
@@ -682,7 +641,7 @@
       if (args.extra === undefined) args.extra = 0;
       if (args.middle === undefined) args.middle = 0;
 
-      var histo = this.GetHisto(),
+      var histo = this.GetHisto(), xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"),
           pmain = this.frame_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
@@ -706,7 +665,7 @@
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
-         x = this.GetBinX(i + args.middle);
+         x = xaxis.GetBinCoord(i + args.middle);
          if (pmain.logx && (x <= 0)) { res.i1 = i+1; continue; }
          if (res.origx) res.origx[i] = x;
          res.grx[i] = pmain.grx(x);
@@ -723,7 +682,7 @@
          res.gry[1] = pmain.gry(1);
       } else
       for (j = res.j1; j <= res.j2; ++j) {
-         y = this.GetBinY(j + args.middle);
+         y = yaxis.GetBinCoord(j + args.middle);
          if (pmain.logy && (y <= 0)) { res.j1 = j+1; continue; }
          if (res.origy) res.origy[j] = y;
          res.gry[j] = pmain.gry(y);
@@ -867,7 +826,8 @@
    }
 
    TH1Painter.prototype.CountStat = function(cond) {
-      var profile = this.IsTProfile(), histo = this.GetHisto(),
+      var profile = this.IsTProfile(),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           left = this.GetSelectIndex("x", "left"),
           right = this.GetSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
@@ -875,7 +835,7 @@
           res = { name: "histo", meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
 
       for (i = left; i < right; ++i) {
-         xx = this.GetBinX(i+0.5);
+         xx = xaxis.GetBinCoord(i+0.5);
 
          if (cond && !cond(xx)) continue;
 
@@ -995,7 +955,7 @@
           right = this.GetSelectIndex("x", "right", 1),
           pmain = this.frame_painter(),
           pthis = this,
-          histo = this.GetHisto(),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
           side = (this.options.Bar > 10) ? this.options.Bar % 10 : 0;
@@ -1007,8 +967,8 @@
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
 
       for (i = left; i < right; ++i) {
-         x1 = this.GetBinX(i);
-         x2 = this.GetBinX(i+1);
+         x1 = xaxis.GetBinCoord(i);
+         x2 = xaxis.GetBinCoord(i+1);
 
          if (pmain.logx && (x2 <= 0)) continue;
 
@@ -1067,12 +1027,12 @@
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
           pmain = this.frame_painter(),
-          histo = this.GetHisto(),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];
 
       for (i = left; i < right; ++i) {
-         x = this.GetBinX(i+0.5);
+         x = xaxis.GetBinCoord(i+0.5);
          if (pmain.logx && (x <= 0)) continue;
          grx = Math.round(pmain.grx(x));
 
@@ -1121,7 +1081,7 @@
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.frame_painter(),
-          pthis = this, histo = this.GetHisto(),
+          pthis = this, histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
           exclude_zero = !options.Zero,
@@ -1193,7 +1153,7 @@
 
       for (i = left; i <= right; ++i) {
 
-         x = this.GetBinX(i);
+         x = xaxis.GetBinCoord(i);
 
          if (pmain.logx && (x <= 0)) continue;
 
@@ -1225,8 +1185,8 @@
                if (draw_markers || show_text || show_line) {
                   bincont = histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
-                     mx1 = Math.round(pmain.grx(this.GetBinX(besti)));
-                     mx2 = Math.round(pmain.grx(this.GetBinX(besti+1)));
+                     mx1 = Math.round(pmain.grx(xaxis.GetBinCoord(besti)));
+                     mx2 = Math.round(pmain.grx(xaxis.GetBinCoord(besti+1)));
                      midx = Math.round((mx1+mx2)/2);
                      my = Math.round(pmain.gry(bincont));
                      yerr1 = yerr2 = 20;
@@ -1379,9 +1339,9 @@
       var tips = [],
           name = this.GetTipName(),
           pmain = this.frame_painter(),
-          histo = this.GetHisto(),
-          x1 = this.GetBinX(bin),
-          x2 = this.GetBinX(bin+1),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          x1 = xaxis.GetBinCoord(bin),
+          x2 = xaxis.GetBinCoord(bin+1),
           cont = histo.getBinContent(bin+1);
 
       if (name.length>0) tips.push(name);
@@ -1427,7 +1387,7 @@
           height = this.frame_height(),
           pmain = this.frame_painter(),
           painter = this,
-          histo = this.GetHisto(),
+          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.GetSelectIndex("x", "left", -1),
@@ -1435,7 +1395,7 @@
           l = left, r = right;
 
       function GetBinGrX(i) {
-         var xx = painter.GetBinX(i);
+         var xx = xaxis.GetBinCoord(i);
          return (pmain.logx && (xx<=0)) ? null : pmain.grx(xx);
       }
 
@@ -1667,7 +1627,7 @@
    TH1Painter.prototype.AutoZoom = function() {
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          dist = right - left, histo = this.GetHisto();
+          dist = right - left, histo = this.GetHisto(), xaxis = this.GetAxis("x");
 
       if (dist == 0) return;
 
@@ -1686,11 +1646,13 @@
       }
 
       if ((right - left < dist) && (left < right))
-         this.Zoom(this.GetBinX(left), this.GetBinX(right));
+         this.Zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
    }
 
    TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
-      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+      var xaxis = this.GetAxis("x");
+
+      if ((axis=="x") && (xaxis.FindBin(max,0.5) - xaxis.FindBin(min,0) > 1)) return true;
 
       if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
@@ -1940,7 +1902,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
           j2 = this.GetSelectIndex("y", "right", 1),
-          i,j, histo = this.GetHisto();
+          i,j, histo = this.GetHisto(), xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y");
 
       if ((i1 == i2) || (j1 == j2)) return;
 
@@ -1968,14 +1930,14 @@
       if ((jleft === jright-1) && (jleft > j1+1) && (jright < j2-1)) { jleft--; jright++; }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = this.GetBinX(ileft);
-         xmax = this.GetBinX(iright);
+         xmin = xaxis.GetBinCoord(ileft);
+         xmax = xaxis.GetBinCoord(iright);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = this.GetBinY(jleft);
-         ymax = this.GetBinY(jright);
+         ymin = yaxis.GetBinCoord(jleft);
+         ymax = yaxis.GetBinCoord(jright);
          isany = true;
       }
 
@@ -2101,15 +2063,15 @@
              xright = this.GetSelectIndex("x", "right"),
              yleft = this.GetSelectIndex("y", "left"),
              yright = this.GetSelectIndex("y", "right"),
-             xi, yi;
+             xi, yi, xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y");
 
          for (xi = 0; xi <= this.nbinsx + 1; ++xi) {
             xside = (xi <= xleft) ? 0 : (xi > xright ? 2 : 1);
-            xx = this.GetBinX(xi - 0.5);
+            xx = xaxis.GetBinCoord(xi - 0.5);
 
             for (yi = 0; yi <= this.nbinsy + 1; ++yi) {
                yside = (yi <= yleft) ? 0 : (yi > yright ? 2 : 1);
-               yy = this.GetBinY(yi - 0.5);
+               yy = yaxis.GetBinCoord(yi - 0.5);
 
                zz = histo.getBinContent(xi, yi);
 
@@ -2915,7 +2877,7 @@
    }
 
    TH2Painter.prototype.DrawCandle = function(w,h) {
-      var histo = this.GetHisto(),
+      var histo = this.GetHisto(), yaxis = this.GetAxis("y"),
           handle = this.PrepareColorDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
@@ -2945,7 +2907,7 @@
          //estimate quantiles... simple function... not so nice as GetQuantiles
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
-            posy = this.GetBinY(j + 0.5);
+            posy = yaxis.GetBinCoord(j + 0.5);
             if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = posy; // Lower whisker
             if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = posy; // Lower edge of box
             if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = posy; //Median
@@ -3005,7 +2967,7 @@
          //estimate outliers
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
-            posy = this.GetBinY(j + 0.5);
+            posy = yaxis.GetBinCoord(j + 0.5);
             if (cont > 0 && posy < pnt.whiskerm) markers += this.markeratt.create(center, posy);
             if (cont > 0 && posy > pnt.whiskerp) markers += this.markeratt.create(center, posy);         }
 
@@ -3208,24 +3170,25 @@
    }
 
    TH2Painter.prototype.GetBinTips = function (i, j) {
-      var lines = [], pmain = this.frame_painter();
+      var lines = [], pmain = this.frame_painter(),
+           xaxis = this.GetAxis("y"), yaxis = this.GetAxis("y"),
+           histo = this.GetHisto(),
+           binz = histo.getBinContent(i+1,j+1);
 
       lines.push(this.GetTipName() || "histo<2>");
 
       if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(i)));
+         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinCoord(i)));
       else
-         lines.push("x = [" + pmain.AxisAsText("x", this.GetBinX(i)) + ", " + pmain.AxisAsText("x", this.GetBinX(i+1)) + ")");
+         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(i)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(i+1)) + ")");
 
       if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", this.GetBinY(j)));
+         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinCoord(j)));
       else
-         lines.push("y = [" + pmain.AxisAsText("y", this.GetBinY(j)) + ", " + pmain.AxisAsText("y", this.GetBinY(j+1)) + ")");
+         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(j)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(j+1)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 
-      var histo = this.GetHisto(),
-          binz = histo.getBinContent(i+1,j+1);
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
       if (binz === Math.round(binz))
@@ -3237,12 +3200,11 @@
    }
 
    TH2Painter.prototype.GetCandleTips = function(p) {
-      var lines = [], main = this.frame_painter();
+      var lines = [], main = this.frame_painter(), xaxis = this.GetAxis("y");
 
       lines.push(this.GetTipName() || "histo");
 
-      lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
-      // lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
+      lines.push("x = " + main.AxisAsText("x", xaxis.GetBinCoord(p.bin)));
 
       lines.push('mean y = ' + JSROOT.FFormat(p.meany, JSROOT.gStyle.fStatFormat))
       lines.push('m25 = ' + JSROOT.FFormat(p.m25y, JSROOT.gStyle.fStatFormat))
@@ -3528,13 +3490,12 @@
 
    TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
-      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
-
-      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
 
       if (axis=="z") return true;
 
-      return false;
+      var obj = this.GetAxis(axis);
+
+      return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
    TH2Painter.prototype.Draw2D = function(call_back, resize) {
