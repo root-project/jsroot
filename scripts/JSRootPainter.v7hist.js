@@ -317,7 +317,7 @@
          };
          this.GetIndexY = function(y,add) {
             for (var k = 1; k < this.yaxis.fBinBorders.length; ++k)
-               if (x < this.yaxis.fBinBorders[k]) return Math.floor(k-1+add);
+               if (y < this.yaxis.fBinBorders[k]) return Math.floor(k-1+add);
             return this.nbinsy;
          };
       } else {
@@ -2335,7 +2335,7 @@
           i2 = this.GetSelectIndex("x", "right", 1),
           j1 = this.GetSelectIndex("y", "left", -1),
           j2 = this.GetSelectIndex("y", "right", 1),
-          i,j, histo = this.GetObject();
+          i,j, histo = this.GetHisto();
 
       if ((i1 == i2) || (j1 == j2)) return;
 
@@ -3242,16 +3242,12 @@
    }
 
    TH2Painter.prototype.DrawBinsArrow = function(w, h) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(), cmd = "",
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
-          dxn,dyn,x1,x2,y1,y2, anr,si,co;
-
-      var handle = this.PrepareColorDraw({ rounding: false });
-
-      var scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
+          dxn,dyn,x1,x2,y1,y2, anr,si,co,
+          handle = this.PrepareColorDraw({ rounding: false }),
+          scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y  = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
-
-      var cmd = "";
 
       for (var loop=0;loop<2;++loop)
          for (i = handle.i1; i < handle.i2; ++i)
@@ -3313,19 +3309,17 @@
 
    TH2Painter.prototype.DrawBinsBox = function(w,h) {
 
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           handle = this.PrepareColorDraw({ rounding: false }),
-          main = this.main_painter();
+          main = this.frame_painter();
 
-      if (main===this) {
-         if (main.maxbin === main.minbin) {
-            main.maxbin = main.gmaxbin;
-            main.minbin = main.gminbin;
-            main.minposbin = main.gminposbin;
-         }
-         if (main.maxbin === main.minbin)
-            main.minbin = Math.min(0, main.maxbin-1);
+      if (main.maxbin === main.minbin) {
+         main.maxbin = this.gmaxbin;
+         main.minbin = this.gminbin;
+         main.minposbin = this.gminposbin;
       }
+      if (main.maxbin === main.minbin)
+         main.minbin = Math.min(0, main.maxbin-1);
 
       var absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
           absmin = Math.max(0, main.minbin),
@@ -3538,7 +3532,7 @@
    }
 
    TH2Painter.prototype.DrawBinsScatter = function(w,h) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
@@ -3704,10 +3698,10 @@
          handle = this.DrawBinsBox(w, h);
       else
       if (this.options.Arrow > 0)
-         handle = this.DrawBinsArrow(w,h);
+         handle = this.DrawBinsArrow(w, h);
       else
       if (this.options.Contour > 0)
-         handle = this.DrawBinsContour(w,h);
+         handle = this.DrawBinsContour(w, h);
       else
       if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
@@ -4110,7 +4104,8 @@
       painter.SetDivId(divid);
       
       painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1, BaseLine: false, Color: 1, Candle: 0 };
+                          fBarOffset: 0, fBarWidth: 1, BaseLine: false, 
+                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 1 };
 
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
