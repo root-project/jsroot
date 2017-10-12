@@ -2964,7 +2964,7 @@
                var indx2 = (bin < indx) ? indx - 1 : indx + 1;
                return this.fXbins[indx] * Math.abs(bin-indx2) + this.fXbins[indx2] * Math.abs(bin-indx);
             };
-            this.FindBin = function(x,add) {
+            axis.FindBin = function(x,add) {
                for (var k = 1; k < this.fXbins.length; ++k)
                   if (x < this.fXbins[k]) return Math.floor(k-1+add);
                return this.fNbins;
