@@ -111,7 +111,7 @@
                 this.AxisToSvg("y", polyline.fY[n], isndc);
 
       if (polyline._typename != "TPolyLine") fillatt.color = "none";
-      
+
       if (fillatt.color!=='none') cmd+="Z";
 
       this.draw_g
@@ -146,23 +146,23 @@
             var rx1 = rx, ry2 = ry,
                 ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1, false),
                 rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2, false) - x;
-            
+
             var elem = this.draw_g
                           .attr("transform","translate("+x+","+y+")")
                           .append("svg:path")
                           .call(this.lineatt.func).call(this.fillatt.func);
-            
+
             if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
                elem.attr("d", "M-"+rx1+",0" +
-                              "A"+rx1+","+ry1+",0,1,0,"+rx1+",0" + 
+                              "A"+rx1+","+ry1+",0,1,0,"+rx1+",0" +
                               "A"+rx1+","+ry1+",0,1,0,-"+rx1+",0" +
                               "M-"+rx2+",0" +
-                              "A"+rx2+","+ry2+",0,1,0,"+rx2+",0" + 
+                              "A"+rx2+","+ry2+",0,1,0,"+rx2+",0" +
                               "A"+rx2+","+ry2+",0,1,0,-"+rx2+",0");
-               
+
             } else {
                var large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0;
-               
+
                var a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
                    dx1 = rx1 * Math.cos(a1), dy1 = ry1 * Math.sin(a1),
                    dx2 = rx1 * Math.cos(a2), dy2 = ry1 * Math.sin(a2),
@@ -170,15 +170,15 @@
                    dx4 = rx2 * Math.cos(a2), dy4 = ry2 * Math.sin(a2);
 
                elem.attr("d", "M"+Math.round(dx2)+","+Math.round(dy2)+
-                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+Math.round(dx1)+","+Math.round(dy1)+ 
+                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+Math.round(dx1)+","+Math.round(dy1)+
                               "L"+Math.round(dx3)+","+Math.round(dy3) +
                               "A"+rx2+","+ry2+",0,"+large_arc+",1,"+Math.round(dx4)+","+Math.round(dy4)+"Z");
             }
-            
+
             return;
          }
       }
-      
+
       if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360) && (ellipse.fTheta == 0)) {
             // this is simple case, which could be drawn with svg:ellipse
          this.draw_g.append("svg:ellipse")
@@ -209,6 +209,54 @@
                     "A"+rx+ ","+ry + "," + Math.round(-ellipse.fTheta) + ",1,0," + Math.round(x2) + "," + Math.round(y2) +
                     "Z")
          .call(this.lineatt.func).call(this.fillatt.func);
+   }
+
+   // ==============================================================================
+
+   function drawPie() {
+      var pie = this.GetObject();
+
+      // create svg:g container for ellipse drawing
+      this.CreateG();
+
+      var xc = this.AxisToSvg("x", pie.fX, false),
+          yc = this.AxisToSvg("y", pie.fY, false),
+          r  = this.AxisToSvg("x", pie.fX + pie.fRadius, false) - xc;
+
+      this.draw_g.attr("transform","translate("+xc+","+yc+")");
+
+      // Draw the slices
+      var nb, slice, title, value, total, lineatt, fillatt;
+      nb = pie.fPieSlices.length;
+
+      total = 0;
+      for (var n=0;n<nb; n++) {
+         slice = pie.fPieSlices[n];
+         total = total + slice.fValue;
+      }
+
+      var x1 = r;
+      var y1 = 0;
+      var x2, y2, a = 0;
+
+      for (var n=0;n<nb; n++) {
+         slice = pie.fPieSlices[n];
+         lineatt = new JSROOT.TAttLineHandler(slice);
+         fillatt = this.createAttFill(slice);
+         value   = slice.fValue;
+         a       = a + ((2*Math.PI)/total)*value;
+         x2      = r*Math.cos(a);
+         y2      = -r*Math.sin(a);
+         title   = slice.fTitle;
+         this.draw_g
+             .append("svg:path")
+             .attr("d", "M0,0L"+x1+","+y1+"A"+
+                         r+","+r+",0,0,0,"+x2+","+y2+
+                        "Z")
+             .call(lineatt.func).call(fillatt.func);
+         x1 = x2;
+         y1 = y2;
+      }
    }
 
    // =============================================================================
@@ -363,7 +411,7 @@
       if (oo.indexOf("-|>-")>=0) midkind = 11; else
       if (oo.indexOf("-<-")>=0) midkind = 2; else
       if (oo.indexOf("-<|-")>=0) midkind = 12;
-      
+
       if (midkind > 0) {
          var closed = midkind > 10;
          if (!defs) defs = this.draw_g.append("defs");
@@ -747,7 +795,7 @@
           d = new JSROOT.DrawOptions(opt),
           res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
                   Errors: 0, MainError: 1, Ends: 1, Axis: "", original: opt };
-      
+
       if (this.has_errors) res.Errors = 1;
 
       res._pfc = d.check("PFC");
@@ -790,9 +838,9 @@
          if (d3.max(graph.fEX) < 1.0e-300 && d3.max(graph.fEY) < 1.0e-300)
             res.Errors = 0;
       }
-      
+
       if (!res.Axis) {
-         // check if axis should be drawn 
+         // check if axis should be drawn
          // either graph drawn directly or
          // graph is first object in list of primitives
          var pad = this.root_pad();
@@ -926,12 +974,12 @@
       }
       return lines;
    }
-   
+
    TGraphPainter.prototype.get_main = function() {
       var pmain = this.main_painter();
-      
+
       if (pmain && pmain.grx && pmain.gry) return pmain;
-      
+
       pmain = {
           pad_layer: true,
           pad: this.root_pad(),
@@ -952,7 +1000,7 @@
              return (1-value)*this.ph;
           }
       }
-      
+
       return pmain.pad ? pmain : null;
    }
 
@@ -964,11 +1012,11 @@
           h = this.frame_height(),
           graph = this.GetObject(),
           excl_width = 0;
-      
+
       if (!pmain) return;
 
       this.CreateG(!pmain.pad_layer);
-      
+
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
@@ -1826,15 +1874,15 @@
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
    }
-   
+
    function drawGraph(divid, graph, opt) {
 
       var painter = new TGraphPainter(graph);
-      
+
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
       painter.options = painter.DecodeOptions(opt);
-      
+
       painter.CreateBins();
 
       painter.CreateStat();
@@ -3304,6 +3352,7 @@
    JSROOT.Painter.drawPolyLine = drawPolyLine;
    JSROOT.Painter.drawArrow = drawArrow;
    JSROOT.Painter.drawEllipse = drawEllipse;
+   JSROOT.Painter.drawPie = drawPie;
    JSROOT.Painter.drawBox = drawBox;
    JSROOT.Painter.drawMarker = drawMarker;
    JSROOT.Painter.drawPolyMarker = drawPolyMarker;

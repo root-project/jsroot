@@ -821,7 +821,7 @@
       // return true if color not specified or fill style not specified
       return (this.color == 'none');
    }
-   
+
    TAttFillHandler.prototype.isSolid = function() {
       return this.pattern === 1001;
    }
@@ -851,7 +851,7 @@
          delete this.opacity;
          delete this.antialias;
       }
-      
+
       if ((this.pattern == 1000) && (this.colorindx===0)) {
          this.color = 'white';
          return true;
@@ -917,11 +917,11 @@
          case 3016: w = 12; h = 7; lines = "M0,1A3,2,0,0,1,3,3A3,2,0,0,0,9,3A3,2,0,0,1,12,1"; lfill = "none"; break;
          case 3017: w = h = 4; lines = "M3,1l-2,2"; break;
          case 3018: w = h = 4; lines = "M1,1l2,2"; break;
-         case 3019: 
-            w = h = 12; 
-            lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" + 
-                    "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6"; 
-            lfill = "none"; 
+         case 3019:
+            w = h = 12;
+            lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" +
+                    "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
+            lfill = "none";
             break;
          case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = "none"; break;
          case 3021: w = h = 8; lines = "M8,2h-2v4h-4v2M2,0v2h-2"; lfill = "none"; break; // left stairs
@@ -931,21 +931,21 @@
          case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
          default:
             var code = this.pattern % 1000,
-                k = code % 10, j = ((code - k) % 100) / 10, i = (code - j*10 - k)/100; 
+                k = code % 10, j = ((code - k) % 100) / 10, i = (code - j*10 - k)/100;
             if (!i) break;
-            
+
             var sz = i*12;  // axis distance between lines
-            
+
             w = h = 6*sz; // we use at least 6 steps
-            
+
             function produce(dy,swap) {
                var pos = [], step = sz, y1 = 0, y2, max = h;
-               
+
                // reduce step for smaller angles to keep normal distance approx same
-               if (Math.abs(dy)<3) step = Math.round(sz/12*9); 
-               if (dy==0) { step = Math.round(sz/12*8); y1 = step/2; } 
+               if (Math.abs(dy)<3) step = Math.round(sz/12*9);
+               if (dy==0) { step = Math.round(sz/12*8); y1 = step/2; }
                else if (dy>0) max -= step; else y1 = step;
-               
+
                while(y1<=max) {
                   y2 = y1 + dy*step;
                   if (y2 < 0) {
@@ -965,10 +965,10 @@
                   if (swap) lines += "M"+pos[k+1]+","+pos[k]+"L"+pos[k+3]+","+pos[k+2];
                        else lines += "M"+pos[k]+","+pos[k+1]+"L"+pos[k+2]+","+pos[k+3];
             }
-            
+
             switch (j) {
-               case 0: produce(0); break; 
-               case 1: produce(1); break;               
+               case 0: produce(0); break;
+               case 1: produce(1); break;
                case 2: produce(2); break;
                case 3: produce(3); break;
                case 4: produce(6); break;
@@ -977,10 +977,10 @@
                case 8: produce(1,true); break;
                case 9: produce(0,true); break;
             }
-            
+
             switch (k) {
-               case 0: if (j) produce(0); break; 
-               case 1: produce(-1); break;               
+               case 0: if (j) produce(0); break;
+               case 1: produce(-1); break;
                case 2: produce(-2); break;
                case 3: produce(-3); break;
                case 4: produce(-6); break;
@@ -989,21 +989,21 @@
                case 8: produce(-1,true); break;
                case 9: if (j!=9) produce(0,true); break;
             }
-            
+
             break;
       }
-      
+
       if (!fills && !lines) return false;
-      
+
       var patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse")
                      .attr("width", w).attr("height", h);
-      
+
       if (fills2) {
          var col = d3.rgb(line_color);
          col.r = Math.round((col.r+255)/2); col.g = Math.round((col.g+255)/2); col.b = Math.round((col.b+255)/2);
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
-      if (fills) patt.append("svg:path").attr("d", fills).style("fill", line_color); 
+      if (fills) patt.append("svg:path").attr("d", fills).style("fill", line_color);
       if (lines) patt.append("svg:path").attr("d", lines).style('stroke', line_color).style("stroke-width", 1).style("fill", lfill);
 
       return true;
@@ -6600,6 +6600,7 @@
    JSROOT.addDrawFunc({ name: "TEllipse", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawEllipse", direct: true });
    JSROOT.addDrawFunc({ name: "TArc", sameas: 'TEllipse' });
    JSROOT.addDrawFunc({ name: "TCrown", sameas: 'TEllipse' });
+   JSROOT.addDrawFunc({ name: "TPie", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPie", direct: true });
    JSROOT.addDrawFunc({ name: "TLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawLine", direct: true });
    JSROOT.addDrawFunc({ name: "TArrow", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawArrow", direct: true });
    JSROOT.addDrawFunc({ name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine", direct: true });
