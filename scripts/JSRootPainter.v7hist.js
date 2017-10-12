@@ -31,7 +31,6 @@
 
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
-      // this.histo = histo;
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
@@ -95,8 +94,6 @@
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
 
-      this.histo = null; // cleanup histogram reference
-      
       delete this.fPalette;
       delete this.fContour;
       delete this.options;
@@ -385,19 +382,20 @@
    }
 
    THistPainter.prototype.Get3DToolTip = function(indx) {
-      var tip = { bin: indx, name: this.GetObject().fName, title: this.GetObject().fTitle };
+      var histo = this.GetHisto(),
+          tip = { bin: indx, name: histo.fName || "histo", title: histo.fTitle };
       switch (this.Dimension()) {
          case 1:
             tip.ix = indx; tip.iy = 1;
-            tip.value = this.histo.getBinContent(tip.ix);
-            tip.error = this.histo.getBinError(indx);
+            tip.value = histo.getBinContent(tip.ix);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(indx-1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
-            tip.value = this.histo.getBinContent(tip.ix, tip.iy);
-            tip.error = this.histo.getBinError(indx);
+            tip.value = histo.getBinContent(tip.ix, tip.iy);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          case 3:
@@ -405,7 +403,7 @@
             tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
             tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
             tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
-            tip.error = this.histo.getBinError(indx);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
       }
@@ -926,6 +924,7 @@
       if (this.IgnoreStatsFill()) return false;
 
       var data = this.CountStat(),
+          histo = this.GetHisto(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -940,7 +939,7 @@
       stat.ClearPave();
 
       if (print_name > 0)
-         stat.AddText(this.histo.fName);
+         stat.AddText(histo.fName || "histo");
 
       if (this.IsTProfile()) {
 
@@ -969,10 +968,10 @@
             stat.AddText("Std Dev = " + stat.Format(data.rmsx));
 
          if (print_under > 0)
-            stat.AddText("Underflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0,"entries"));
+            stat.AddText("Underflow = " + stat.Format(histo.getBinContent(0), "entries"));
 
          if (print_over > 0)
-            stat.AddText("Overflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0,"entries"));
+            stat.AddText("Overflow = " + stat.Format(histo.getBinContent(this.nbinsx+1), "entries"));
 
          if (print_integral > 0)
             stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
@@ -1135,7 +1134,7 @@
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           mpath = "", text_col, text_angle, text_size;
 
-      //if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
+      //if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
       //   show_markers = true;
 
       if (options.Error == 12) {
@@ -1164,8 +1163,8 @@
          text_angle = (options.Text>1000) ? -1*(options.Text % 1000) : 0;
          text_size = 20;
 
-         if ((histo.fMarkerSize!==1) && text_angle)
-            text_size = 0.02*height*this.histo.fMarkerSize;
+         if ((options.fMarkerSize!==1) && text_angle)
+            text_size = 0.02 * height * options.fMarkerSize;
 
          if (!text_angle && (options.Text<1000)) {
              var space = width / (right - left + 1);
@@ -1669,18 +1668,18 @@
    TH1Painter.prototype.AutoZoom = function() {
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          dist = right - left;
+          dist = right - left, histo = this.GetHisto();
 
       if (dist == 0) return;
 
       // first find minimum
-      var min = this.histo.getBinContent(left + 1);
+      var min = histo.getBinContent(left + 1);
       for (var indx = left; indx < right; ++indx)
-         min = Math.min(min, this.histo.getBinContent(indx+1));
+         min = Math.min(min, histo.getBinContent(indx+1));
       if (min > 0) return; // if all points positive, no chance for autoscale
 
-      while ((left < right) && (this.histo.getBinContent(left+1) <= min)) ++left;
-      while ((left < right) && (this.histo.getBinContent(right) <= min)) --right;
+      while ((left < right) && (histo.getBinContent(left+1) <= min)) ++left;
+      while ((left < right) && (histo.getBinContent(right) <= min)) --right;
 
       // if singular bin
       if ((left === right-1) && (left > 2) && (right < this.nbinsx-2)) {
@@ -1752,7 +1751,7 @@
       painter.SetDivId(divid);
       
       painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false };
+                          fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false };
       
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
@@ -1823,57 +1822,8 @@
    }
 
    TH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
-
-      if (!this.is_projection) return;
-
-      if (jj2 == undefined) {
-         if (!this.tt_handle) return;
-         ii1 = Math.round((this.tt_handle.i1 + this.tt_handle.i2)/2); ii2 = ii1+1;
-         jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
-      }
-
-      var canp = this.pad_painter();
-
-      if (canp && (this.snapid !== undefined)) {
-         // this is when projection should be created on the server side
-         var exec = "EXECANDSEND:D" + this.is_projection + "PROJ:" + this.snapid + ":";
-         if (this.is_projection == "X")
-            exec += 'ProjectionX("_projx",' + (jj1+1) + ',' + jj2 + ',"")';
-         else
-            exec += 'ProjectionY("_projy",' + (ii1+1) + ',' + ii2 + ',"")';
-         canp.SendWebsocket(exec);
-         return;
-      }
-
-      if (!this.proj_hist) {
-         if (this.is_projection == "X") {
-            this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
-            JSROOT.extend(this.proj_hist.fXaxis, this.histo.fXaxis);
-            this.proj_hist.fName = "xproj";
-            this.proj_hist.fTitle = "X projection";
-         } else {
-            this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsy);
-            JSROOT.extend(this.proj_hist.fXaxis, this.histo.fYaxis);
-            this.proj_hist.fName = "yproj";
-            this.proj_hist.fTitle = "Y projection";
-         }
-      }
-
-      if (this.is_projection == "X") {
-         for (var i=0;i<this.nbinsx;++i) {
-            var sum=0;
-            for (var j=jj1;j<jj2;++j) sum+=this.histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(i+1, sum);
-         }
-      } else {
-         for (var j=0;j<this.nbinsy;++j) {
-            var sum = 0;
-            for (var i=ii1;i<ii2;++i) sum += this.histo.getBinContent(i+1,j+1);
-            this.proj_hist.setBinContent(j+1, sum);
-         }
-      }
-
-      return canp.DrawProjection(this.is_projection, this.proj_hist);
+      // do nothing for the moment
+      
    }
 
    TH2Painter.prototype.ExecuteMenuCommand = function(method, args) {
@@ -1915,8 +1865,6 @@
 
    TH2Painter.prototype.ButtonClick = function(funcname) {
       if (THistPainter.prototype.ButtonClick.call(this, funcname)) return true;
-
-      if (this !== this.main_painter()) return false;
 
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
@@ -2035,114 +1983,6 @@
       if (isany) this.Zoom(xmin, xmax, ymin, ymax);
    }
    
-   TH2Painter.prototype.ProjectAitoff2xy = function(l, b) {
-      var DegToRad = Math.PI/180,
-          alpha2 = (l/2)*DegToRad,
-          delta  = b*DegToRad,
-          r2     = Math.sqrt(2),
-          f      = 2*r2/Math.PI,
-          cdec   = Math.cos(delta),
-          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
-          res = {
-             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
-             y: Math.sin(delta)*r2/denom/f/DegToRad
-          };
-      //  x *= -1.; // for a skymap swap left<->right
-      return res;
-   }
-
-   TH2Painter.prototype.ProjectMercator2xy = function(l, b) {
-      var aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
-      return { x: l, y: Math.log(aid) };
-   }
-
-   TH2Painter.prototype.ProjectSinusoidal2xy = function(l, b) {
-      return { x: l*Math.cos(b/180*Math.PI), y: b };
-   }
-
-   TH2Painter.prototype.ProjectParabolic2xy = function(l, b) {
-      return {
-         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
-         y: 180*Math.sin(b/180*Math.PI/3)
-      };
-   }
-   
-   TH2Painter.prototype.RecalculateRange = function() {
-
-      if (!this.is_main_painter() || !this.options.Proj) return;
-
-      var pnts = []; // all extrems which used to find 
-      if (this.options.Proj == 1) {
-         // TODO : check x range not lower than -180 and not higher than 180
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            // there is an  'equator', check its range in the plot..
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
-            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
-         }
-      } else if ( this.options.Proj == 2) {
-         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
-            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-            this.options.Proj = 0;
-            return;
-         } 
-         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
-         
-      } else if (this.options.Proj == 3) {
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
-         }
-      } else if (this.options.Proj == 4) {
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
-         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
-         if (this.scale_ymin<0 && this.scale_ymax>0) {
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
-            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
-         }
-         if (this.scale_xmin<0 && this.scale_xmax>0) {
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
-            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
-         }
-      } else {
-         this.options.Proj = 0;
-         return;
-      }
-      
-      this.original_xmin = this.scale_xmin;
-      this.original_xmax = this.scale_xmax;
-      this.original_ymin = this.scale_ymin;
-      this.original_ymax = this.scale_ymax;
-      
-      this.scale_xmin = this.scale_xmax = pnts[0].x;
-      this.scale_ymin = this.scale_ymax = pnts[0].y;
-      
-      for (var n=1;n<pnts.length;++n) { 
-         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
-         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
-         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
-         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
-      }
-   }
-
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
@@ -2207,7 +2047,7 @@
       if (this.IsTH2Poly()) {
 
          var len = histo.fBins.arr.length, i, bin, n, gr, ngr, numgraphs, numpoints,
-             pmain = this.main_painter();
+             pmain = this.frame_painter();
 
          for (i=0;i<len;++i) {
             bin = histo.fBins.arr[i];
@@ -2638,26 +2478,24 @@
    }
 
    TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
-      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 });
-
-      // get levels
-      var levels = this.GetContour(),
+      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+          levels = this.GetContour(),
           palette = this.GetPalette(),
-          painter = this;
+          painter = this, main = this.frame_painter();
       
       function BuildPath(xp,yp,iminus,iplus) {
          var cmd = "", last = null, pnt = null, i;
          for (i=iminus;i<=iplus;++i) {
             pnt = null;
             switch (painter.options.Proj) {
-               case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
-               case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
-               case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
-               case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
+               case 1: pnt = main.ProjectAitoff2xy(xp[i], yp[i]); break;
+               case 2: pnt = main.ProjectMercator2xy(xp[i], yp[i]); break;
+               case 3: pnt = main.ProjectSinusoidal2xy(xp[i], yp[i]); break;
+               case 4: pnt = main.ProjectParabolic2xy(xp[i], yp[i]); break;
             }
             if (pnt) {
-               pnt.x = painter.grx(pnt.x);
-               pnt.y = painter.gry(pnt.y);
+               pnt.x = main.grx(pnt.x);
+               pnt.y = main.gry(pnt.y);
             } else {
                pnt = { x: xp[i], y: yp[i] };
             }
@@ -2762,8 +2600,8 @@
    }
 
    TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
-      var histo = this.GetObject(),
-          pmain = this.main_painter(),
+      var histo = this.GetHisto(),
+          pmain = this.frame_painter(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
@@ -3399,9 +3237,9 @@
    }
 
    TH2Painter.prototype.GetCandleTips = function(p) {
-      var lines = [], main = this.main_painter();
+      var lines = [], main = this.frame_painter();
 
-      lines.push(this.GetTipName());
+      lines.push(this.GetTipName() || "histo");
 
       lines.push("x = " + main.AxisAsText("x", this.GetBinX(p.bin)));
       // lines.push("x = [" + main.AxisAsText("x", this.GetBinX(p.bin)) + ", " + main.AxisAsText("x", this.GetBinX(p.bin+1)) + ")");
@@ -3415,8 +3253,9 @@
 
    TH2Painter.prototype.ProvidePolyBinHints = function(binindx, realx, realy) {
 
-      var bin = this.histo.fBins.arr[binindx],
-          pmain = this.main_painter(),
+      var histo = this.GetHisto(),
+          bin = histo.fBins.arr[binindx],
+          pmain = this.frame_painter(),
           binname = bin.fPoly.fName,
           lines = [], numpoints = 0;
 
@@ -3444,7 +3283,7 @@
          }
       }
 
-      lines.push(this.GetTipName());
+      lines.push(this.GetTipName() || "histo");
       lines.push("x = " + pmain.AxisAsText("x", realx));
       lines.push("y = " + pmain.AxisAsText("y", realy));
       if (numpoints > 0) lines.push("npnts = " + numpoints);
@@ -3471,7 +3310,7 @@
       if (h.poly) {
          // process tooltips from TH2Poly
 
-         var pmain = this.main_painter(),
+         var pmain = this.frame_painter(),
              realx, realy, foundindx = -1;
 
          if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);

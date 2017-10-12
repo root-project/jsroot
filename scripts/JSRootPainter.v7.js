@@ -824,6 +824,112 @@
          this.lineatt = new JSROOT.TAttLineHandler('black');
    }
    
+   TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
+      var DegToRad = Math.PI/180,
+          alpha2 = (l/2)*DegToRad,
+          delta  = b*DegToRad,
+          r2     = Math.sqrt(2),
+          f      = 2*r2/Math.PI,
+          cdec   = Math.cos(delta),
+          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
+          res = {
+             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+             y: Math.sin(delta)*r2/denom/f/DegToRad
+          };
+      //  x *= -1.; // for a skymap swap left<->right
+      return res;
+   }
+
+   TFramePainter.prototype.ProjectMercator2xy = function(l, b) {
+      var aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+      return { x: l, y: Math.log(aid) };
+   }
+
+   TFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
+      return { x: l*Math.cos(b/180*Math.PI), y: b };
+   }
+
+   TFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
+      return {
+         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+         y: 180*Math.sin(b/180*Math.PI/3)
+      };
+   }
+   
+   TFramePainter.prototype.RecalculateRange = function(Proj) {
+      // not yet used, could be useful in the future
+
+      if (!Proj) return;
+
+      var pnts = []; // all extremes which used to find 
+      if (Proj == 1) {
+         // TODO : check x range not lower than -180 and not higher than 180
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            // there is an  'equator', check its range in the plot..
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
+         }
+      } else if (Proj == 2) {
+         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
+            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+            this.options.Proj = 0;
+            return;
+         } 
+         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
+         
+      } else if (Proj == 3) {
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
+         }
+      } else if (Proj == 4) {
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
+         }
+      } 
+      
+      this.original_xmin = this.scale_xmin;
+      this.original_xmax = this.scale_xmax;
+      this.original_ymin = this.scale_ymin;
+      this.original_ymax = this.scale_ymax;
+      
+      this.scale_xmin = this.scale_xmax = pnts[0].x;
+      this.scale_ymin = this.scale_ymax = pnts[0].y;
+      
+      for (var n=1;n<pnts.length;++n) { 
+         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
+         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
+         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
+         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+      }
+   }
+   
    TFramePainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
 
