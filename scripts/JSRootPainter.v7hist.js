@@ -2919,7 +2919,7 @@
           handle = this.PrepareColorDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
-          bars = "", markers = "";
+          bars = "", markers = "", posy;
 
       // create attribute only when necessary
       if (!this.markeratt) {
@@ -2945,13 +2945,14 @@
          //estimate quantiles... simple function... not so nice as GetQuantiles
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
-            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = this.GetBinY(j + 0.5); // Lower whisker
-            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = this.GetBinY(j + 0.5); // Lower edge of box
-            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = this.GetBinY(j + 0.5); //Median
-            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = this.GetBinY(j + 0.5); //Upper edge of box
-            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = this.GetBinY(j + 0.5); // Upper whisker
+            posy = this.GetBinY(j + 0.5);
+            if (counter/integral < 0.001 && (counter + cont)/integral >=0.001) pnt.whiskerm = posy; // Lower whisker
+            if (counter/integral < 0.25 && (counter + cont)/integral >=0.25) pnt.m25y = posy; // Lower edge of box
+            if (counter/integral < 0.5 && (counter + cont)/integral >=0.5) pnt.median = posy; //Median
+            if (counter/integral < 0.75 && (counter + cont)/integral >=0.75) pnt.p25y = posy; //Upper edge of box
+            if (counter/integral < 0.999 && (counter + cont)/integral >=0.999) pnt.whiskerp = posy; // Upper whisker
             counter += cont;
-            y = this.GetBinY(j + 0.5); // center of y bin coordinate
+            y = posy; // center of y bin coordinate
             sum1 += cont*y;
          }
          if (counter > 0) {
@@ -3004,9 +3005,9 @@
          //estimate outliers
          for (j = 0; j < this.nbinsy; ++j) {
             cont = histo.getBinContent(i+1,j+1);
-            if (cont > 0 && this.GetBinY(j + 0.5) < pnt.whiskerm) markers += this.markeratt.create(center, this.GetBinY(j + 0.5));
-            if (cont > 0 && this.GetBinY(j + 0.5) > pnt.whiskerp) markers += this.markeratt.create(center, this.GetBinY(j + 0.5));
-         }
+            posy = this.GetBinY(j + 0.5);
+            if (cont > 0 && posy < pnt.whiskerm) markers += this.markeratt.create(center, posy);
+            if (cont > 0 && posy > pnt.whiskerp) markers += this.markeratt.create(center, posy);         }
 
          handle.candle.push(pnt); // keep point for the tooltip
       }

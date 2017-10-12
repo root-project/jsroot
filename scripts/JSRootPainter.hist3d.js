@@ -459,7 +459,7 @@
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
           pad = this.root_pad(),
-          histo = this.histo,
+          histo = this.GetHisto(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -502,7 +502,7 @@
          if (xmax <= 0) xmax = 1.;
          if ((xmin <= 0) && (this.nbinsx > 0))
             for (var i=0;i<this.nbinsx;++i) {
-               xmin = Math.max(xmin, this.GetBinX(i));
+               xmin = Math.max(xmin, histo.fXaxis.GetBinLowEdge(i+1));
                if (xmin>0) break;
             }
          if (xmin <= 0) xmin = 1e-4*xmax;
@@ -526,7 +526,7 @@
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && (this.nbinsy>0))
             for (var i=0;i<this.nbinsy;++i) {
-               ymin = Math.max(ymin, this.GetBinY(i));
+               ymin = Math.max(ymin, histo.fYaxis.GetBinLowEdge(i+1));
                if (ymin>0) break;
             }
 
@@ -1264,21 +1264,21 @@
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             var p = this.painter,
                 main = p.main_painter(),
-                hist = p.GetObject(),
+                histo = p.GetHisto(),
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-main.size_xy3d, main.grx(p.GetBinX(tip.ix-1)));
-            tip.x2 = Math.min(main.size_xy3d, main.grx(p.GetBinX(tip.ix)));
+            tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
+            tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
             if (p.Dimension()===1) {
                tip.y1 = main.gry(0);
                tip.y2 = main.gry(1);
             } else {
-               tip.y1 = Math.max(-main.size_xy3d, main.gry(p.GetBinY(tip.iy-1)));
-               tip.y2 = Math.min(main.size_xy3d, main.gry(p.GetBinY(tip.iy)));
+               tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
+               tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
             }
 
             var binz1 = this.baseline, binz2 = tip.value;
-            if (hist['$baseh']) binz1 = hist['$baseh'].getBinContent(tip.ix, tip.iy);
+            if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(tip.ix, tip.iy);
             if (binz2<binz1) { var v = binz1; binz1 = binz2; binz2 = v; }
 
             tip.z1 = main.grz(Math.max(this.zmin,binz1));
@@ -2063,14 +2063,14 @@
        line.tooltip = function(intersect) {
           var pos = Math.floor(intersect.index / 6);
           if ((pos<0) || (pos >= this.intersect_index.length)) return null;
-          var p = this.painter,
+          var p = this.painter, histo = this.GetHisto(),
               main = p.main_painter(),
               tip = p.Get3DToolTip(this.intersect_index[pos]);
 
-          tip.x1 = Math.max(-main.size_xy3d, main.grx(p.GetBinX(tip.ix-1)));
-          tip.x2 = Math.min(main.size_xy3d, main.grx(p.GetBinX(tip.ix)));
-          tip.y1 = Math.max(-main.size_xy3d, main.gry(p.GetBinY(tip.iy-1)));
-          tip.y2 = Math.min(main.size_xy3d, main.gry(p.GetBinY(tip.iy)));
+          tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
+          tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
+          tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
+          tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fXaxis.GetBinLowEdge(tip.iy+1)));
 
           tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
           tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
@@ -2442,24 +2442,24 @@
    }
 
    TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      var lines = [], pmain = this.main_painter();
+      var lines = [], pmain = this.main_painter(), histo = this.GetHisto();
 
       lines.push(this.GetTipName());
 
       if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(ix)) + "  xbin=" + (ix+1));
+         lines.push("x = " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + "  xbin=" + (ix+1));
       else
-         lines.push("x = [" + pmain.AxisAsText("x", this.GetBinX(ix)) + ", " + pmain.AxisAsText("x", this.GetBinX(ix+1)) + ")   xbin=" + (ix+1));
+         lines.push("x = [" + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + ", " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+2)) + ")   xbin=" + (ix+1));
 
       if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", this.GetBinY(iy))  + "  ybin=" + (iy+1));
+         lines.push("y = " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1))  + "  ybin=" + (iy+1));
       else
-         lines.push("y = [" + pmain.AxisAsText("y", this.GetBinY(iy)) + ", " + pmain.AxisAsText("y", this.GetBinY(iy+1)) + ")  ybin=" + (iy+1));
+         lines.push("y = [" + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1)) + ", " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+2)) + ")  ybin=" + (iy+1));
 
       if (pmain.z_kind == 'labels')
-         lines.push("z = " + pmain.AxisAsText("z", this.GetBinZ(iz))  + "  zbin=" + (iz+1));
+         lines.push("z = " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1))  + "  zbin=" + (iz+1));
       else
-         lines.push("z = [" + pmain.AxisAsText("z", this.GetBinZ(iz)) + ", " + pmain.AxisAsText("z", this.GetBinZ(iz+1)) + ")  zbin=" + (iz+1));
+         lines.push("z = [" + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
 
       var binz = this.GetObject().getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
@@ -2515,9 +2515,9 @@
                var num = Math.round(bin_content*coef);
 
                for (var n=0;n<num;++n) {
-                  var binx = this.GetBinX(i+Math.random()),
-                      biny = this.GetBinY(j+Math.random()),
-                      binz = this.GetBinZ(k+Math.random());
+                  var binx = histo.fXaxis.GetBinCoord(i+Math.random()),
+                      biny = histo.fYaxis.GetBinCoord(j+Math.random()),
+                      binz = histo.fZaxis.GetBinCoord(k+Math.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
@@ -2539,15 +2539,15 @@
          var indx = Math.floor(intersect.index / this.nvertex);
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
-         var p = this.painter,
+         var p = this.painter, histo = p.GetHisto(),
              tip = p.Get3DToolTip(this.bins[indx]);
 
-         tip.x1 = p.grx(p.GetBinX(tip.ix-1));
-         tip.x2 = p.grx(p.GetBinX(tip.ix));
-         tip.y1 = p.gry(p.GetBinY(tip.iy-1));
-         tip.y2 = p.gry(p.GetBinY(tip.iy));
-         tip.z1 = p.grz(p.GetBinZ(tip.iz-1));
-         tip.z2 = p.grz(p.GetBinZ(tip.iz));
+         tip.x1 = p.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
+         tip.x2 = p.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
+         tip.y1 = p.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
+         tip.y2 = p.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
+         tip.z1 = p.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
+         tip.z2 = p.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
          tip.color = this.tip_color;
          tip.opacity = 0.3;
 
@@ -2645,7 +2645,7 @@
       if (use_scale)
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           i1 = this.GetSelectIndex("x", "left", 0.5),
           i2 = this.GetSelectIndex("x", "right", 0),
           j1 = this.GetSelectIndex("y", "left", 0.5),
@@ -2656,9 +2656,9 @@
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
-      var scalex = (this.grx(this.GetBinX(i2)) - this.grx(this.GetBinX(i1))) / (i2-i1),
-          scaley = (this.gry(this.GetBinY(j2)) - this.gry(this.GetBinY(j1))) / (j2-j1),
-          scalez = (this.grz(this.GetBinZ(k2)) - this.grz(this.GetBinZ(k1))) / (k2-k1);
+      var scalex = (this.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - this.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
+          scaley = (this.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - this.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
+          scalez = (this.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - this.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
 
       var nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [];
 
@@ -2731,9 +2731,9 @@
       var binx, grx, biny, gry, binz, grz;
 
       for (i = i1; i < i2; ++i) {
-         binx = this.GetBinX(i+0.5); grx = this.grx(binx);
+         binx = histo.fXaxis.GetBinCenter(i+1); grx = this.grx(binx);
          for (j = j1; j < j2; ++j) {
-            biny = this.GetBinY(j+0.5); gry = this.gry(biny);
+            biny = histo.fYaxis.GetBinCenter(j+1); gry = this.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if ((bin_content===0) || (bin_content < this.gminbin)) continue;
@@ -2750,7 +2750,7 @@
 
                nbins = cols_nbins[nseq];
 
-               binz = this.GetBinZ(k+0.5); grz = this.grz(binz);
+               binz = histo.fZaxis.GetBinCenter(k+1); grz = this.grz(binz);
 
                // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
@@ -2829,11 +2829,11 @@
             var indx = Math.floor(intersect.index / this.bins_faces);
             if ((indx<0) || (indx >= this.bins.length)) return null;
 
-            var p = this.painter,
+            var p = this.painter, histo = p.GetHisto(),
                 tip = p.Get3DToolTip(this.bins[indx]),
-                grx = p.grx(p.GetBinX(tip.ix-0.5)),
-                gry = p.gry(p.GetBinY(tip.iy-0.5)),
-                grz = p.grz(p.GetBinZ(tip.iz-0.5)),
+                grx = p.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
+                gry = p.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
+                grz = p.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
                 wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
@@ -2944,20 +2944,20 @@
       if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = this.GetBinX(ileft);
-         xmax = this.GetBinX(iright);
+         xmin = histo.fXaxis.GetBinLowEdge(ileft+1);
+         xmax = histo.fXaxis.GetBinLowEdge(iright+1);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = this.GetBinY(jleft);
-         ymax = this.GetBinY(jright);
+         ymin = histo.fYaxis.GetBinLowEdge(jleft+1);
+         ymax = histo.fYaxis.GetBinLowEdge(jright+1);
          isany = true;
       }
 
       if ((kleft > k1 || kright < k2) && (kleft < kright - 1)) {
-         zmin = this.GetBinZ(kleft);
-         zmax = this.GetBinZ(kright);
+         zmin = histo.fZaxis.GetBinLowEdge(kleft+1);
+         zmax = histo.fZaxis.GetBinLowEdge(kright+1);
          isany = true;
       }
 
