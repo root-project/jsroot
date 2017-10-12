@@ -3719,9 +3719,9 @@
    }
 
    TH2Painter.prototype.GetBinTips = function (i, j) {
-      var lines = [], pmain = this.main_painter();
+      var lines = [], pmain = this.frame_painter();
 
-      lines.push(this.GetTipName());
+      lines.push(this.GetTipName() || "histo<2>");
 
       if (pmain.x_kind == 'labels')
          lines.push("x = " + pmain.AxisAsText("x", this.GetBinX(i)));
@@ -3735,7 +3735,7 @@
 
       lines.push("bin = " + i + ", " + j);
 
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           binz = histo.getBinContent(i+1,j+1);
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
@@ -3813,7 +3813,7 @@
          return null;
       }
 
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           h = this.tt_handle, i,
           ttrect = this.draw_g.select(".tooltip_bin");
 
@@ -3858,7 +3858,7 @@
             return null;
          }
 
-         var res = { name: histo.fName, title: histo.fTitle,
+         var res = { name: "histo", title: histo.fTitle || "title",
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.color : 'blue',
@@ -3884,7 +3884,7 @@
          }
 
          if (this.IsUserTooltipCallback() && res.changed)
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
+            this.ProvideUserTooltip({ obj: histo,  name: histo.fName || "histo",
                                       bin: foundindx,
                                       cont: bin.fContent,
                                       grx: pnt.x, gry: pnt.y });
@@ -3909,7 +3909,7 @@
             return null;
          }
 
-         var res = { name: histo.fName, title: histo.fTitle,
+         var res = { name: histo.fName || "histo", title: histo.fTitle || "title",
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
                      color2: this.fillatt ? this.fillatt.color : 'blue',
@@ -3936,11 +3936,10 @@
                      .property("current_bin", i);
          }
 
-         if (this.IsUserTooltipCallback() && res.changed) {
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
+         if (this.IsUserTooltipCallback() && res.changed)
+            this.ProvideUserTooltip({ obj: histo,  name: histo.fName || "histo",
                                       bin: i+1, cont: p.median, binx: i+1, biny: 1,
                                       grx: pnt.x, gry: pnt.y });
-         }
 
          return res;
       }
@@ -3972,7 +3971,7 @@
          return null;
       }
 
-      var res = { name: histo.fName, title: histo.fTitle,
+      var res = { name: histo.fName || "histo", title: histo.fTitle || "title",
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
@@ -4030,7 +4029,7 @@
       }
 
       if (this.IsUserTooltipCallback() && res.changed)
-         this.ProvideUserTooltip({ obj: histo, name: histo.fName,
+         this.ProvideUserTooltip({ obj: histo, name: histo.fName || "histo",
                                    bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
                                    grx: pnt.x, gry: pnt.y });
 
