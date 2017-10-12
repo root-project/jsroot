@@ -2345,6 +2345,10 @@
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   
+   THistPainter.prototype.GetHisto = function() {
+      return this.GetObject();
+   }
 
    THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
@@ -2355,7 +2359,7 @@
    }
 
    THistPainter.prototype.IsTH2Poly = function() {
-      return this.histo && this.histo._typename.match(/^TH2Poly/);
+      return this.MatchObjectType(/^TH2Poly/);
    }
 
    THistPainter.prototype.Cleanup = function() {
@@ -2398,17 +2402,19 @@
    }
 
    THistPainter.prototype.Dimension = function() {
-      if (!this.histo) return 0;
-      if (this.histo._typename.indexOf("TH2")==0) return 2;
-      if (this.histo._typename.indexOf("TProfile2D")==0) return 2;
-      if (this.histo._typename.indexOf("TH3")==0) return 3;
+      var histo = this.GetHisto();
+      if (!histo) return 0;
+      if (histo._typename.match(/^TH2/)) return 2;
+      if (histo._typename.match(/^TProfile2D/)) return 2;
+      if (histo._typename.match(/^TH3/)) return 3;
       return 1;
    }
 
    THistPainter.prototype.DecodeOptions = function(opt, interactive) {
 
       /* decode string 'opt' and fill the option structure */
-      var option = { Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
+      var histo = this.GetHisto(),
+          option = { Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
              Error: 0, errorX: JSROOT.gStyle.fErrorX,
              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
@@ -2421,19 +2427,19 @@
              Optimize: JSROOT.gStyle.OptimizeDraw,
              _pmc: false, _plc: false, _pfc: false,
              minimum: -1111, maximum: -1111, original: opt },
-           d = new JSROOT.DrawOptions(opt || this.histo.fOption),
+           d = new JSROOT.DrawOptions(opt || histo.fOption),
            hdim = this.Dimension(),
            pad = this.root_pad(),
            need_fillcol = false;
 
       // use error plot only when any sumw2 bigger than 0
-      if ((hdim===1) && (this.histo.fSumw2.length > 0))
-         for (var n=0;n<this.histo.fSumw2.length;++n)
-            if (this.histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
+      if ((hdim===1) && (histo.fSumw2.length > 0))
+         for (var n=0;n<histo.fSumw2.length;++n)
+            if (histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
 
       if (d.check('PAL', true)) option.Palette = d.partAsInt();
-      if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = this.histo.fMinimum;
-      if (d.check('MAXIMUM:', true)) option.maximum = parseFloat(d.part); else option.maximum = this.histo.fMaximum;
+      if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = histo.fMinimum;
+      if (d.check('MAXIMUM:', true)) option.maximum = parseFloat(d.part); else option.maximum = histo.fMaximum;
 
       if (d.check('NOOPTIMIZE')) option.Optimize = 0;
       if (d.check('OPTIMIZE')) option.Optimize = 2;
@@ -2716,11 +2722,11 @@
       this.zoom_ymin = this.zoom_ymax = 0;
       this.zoom_zmin = this.zoom_zmax = 0;
 
-
       var ndim = this.Dimension(),
-          xaxis = this.histo.fXaxis,
-          yaxis = this.histo.fYaxis,
-          zaxis = this.histo.fXaxis;
+          histo = this.GetHisto(),
+          xaxis = histo.fXaxis,
+          yaxis = histo.fYaxis,
+          zaxis = histo.fXaxis;
 
       // apply selected user range from histogram itself
       if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
@@ -2787,6 +2793,8 @@
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
+      var histo = this.GetHisto();
+      
       if (this.options._pfc || this.options._plc || this.options._pmc) {
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
@@ -2798,19 +2806,19 @@
             var color = this.palette.calcColor(indx, num);
             var icolor = this.add_color(color);
 
-            if (this.options._pfc) { this.histo.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { this.histo.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { this.histo.fMarkerColor = icolor; delete this.markeratt; }
+            if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
+            if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
+            if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
          }
 
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 
       if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.histo, undefined, this.options.histoFillColor, 1);
+         this.fillatt = this.createAttFill(histo, undefined, this.options.histoFillColor, 1);
 
       if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = new JSROOT.TAttLineHandler(this.histo, undefined, undefined, this.options.histoLineColor);
+         this.lineatt = new JSROOT.TAttLineHandler(histo, undefined, undefined, this.options.histoLineColor);
          var main = this.main_painter();
 
          if (main) {
@@ -2822,7 +2830,7 @@
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
-      var histo = this.GetObject();
+      var histo = this.GetHisto();
 
       if (obj !== histo) {
 
@@ -2943,22 +2951,25 @@
       // here functions are defined to convert index to axis value and back
       // introduced to support non-equidistant bins
 
-      this.xmin = this.histo.fXaxis.fXmin;
-      this.xmax = this.histo.fXaxis.fXmax;
+      var histo = this.GetHisto();
+      
+      this.xmin = histo.fXaxis.fXmin;
+      this.xmax = histo.fXaxis.fXmax;
 
-      if (this.histo.fXaxis.fXbins.length == this.nbinsx+1) {
+      if (histo.fXaxis.fXbins.length == this.nbinsx+1) {
          this.regularx = false;
          this.GetBinX = function(bin) {
-            var indx = Math.round(bin);
+            var indx = Math.round(bin), histo = this.GetHisto();
             if (indx <= 0) return this.xmin;
             if (indx > this.nbinsx) return this.xmax;
-            if (indx==bin) return this.histo.fXaxis.fXbins[indx];
+            if (indx==bin) return histo.fXaxis.fXbins[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo.fXaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fXbins[indx2] * Math.abs(bin-indx);
+            return histo.fXaxis.fXbins[indx] * Math.abs(bin-indx2) + histo.fXaxis.fXbins[indx2] * Math.abs(bin-indx);
          };
          this.GetIndexX = function(x,add) {
-            for (var k = 1; k < this.histo.fXaxis.fXbins.length; ++k)
-               if (x < this.histo.fXaxis.fXbins[k]) return Math.floor(k-1+add);
+            var histo = this.GetHisto();
+            for (var k = 1; k < histo.fXaxis.fXbins.length; ++k)
+               if (x < histo.fXaxis.fXbins[k]) return Math.floor(k-1+add);
             return this.nbinsx;
          };
       } else {
@@ -3045,6 +3056,12 @@
          return;
       }
       
+      this.swap_xy = false;
+      if (this.options.Bar>=20) this.swap_xy = true;
+      this.logx = this.logy = false;
+      
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
+      
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
       if (use_pad_range) {
@@ -3073,12 +3090,6 @@
       if (typeof this.RecalculateRange == "function")
          this.RecalculateRange();
       
-      this.swap_xy = false;
-      if (this.options.Bar>=20) this.swap_xy = true;
-      this.logx = this.logy = false;
-
-      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad(), use_pad_range = (this.options.Same>0);
-
       if (this.histo.fXaxis.fTimeDisplay) {
          this.x_kind = 'time';
          this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
@@ -4545,15 +4556,20 @@
             this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
                   function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
             menu.add("endsub:");
+            menu.add("sub:Ticks");
+            if (faxis._typename == "TGaxis") {
+               this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
+                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickSize,
+                        function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
+            } else {
+               this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+                           function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                        function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+            }
+            menu.add("endsub:");
          }
-         menu.add("sub:Ticks");
-         this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
-                     function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
-         this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
-                     function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
-         this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                   function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
-         menu.add("endsub:");
          return true;
       }
 
@@ -4982,7 +4998,6 @@
       if (args.middle === undefined) args.middle = 0;
 
       var histo = this.GetObject(),
-          pad = this.root_pad(),
           pmain = this.main_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
@@ -5775,7 +5790,7 @@
 
       function GetBinGrY(i) {
          var yy = painter.histo.getBinContent(i + 1);
-         if (pmain.logy && (yy < painter.scale_ymin))
+         if (pmain.logy && (yy < pmain.scale_ymin))
             return pmain.swap_xy ? -1000 : 10*height;
          return Math.round(pmain.gry(yy));
       }
@@ -5784,13 +5799,10 @@
           pnt_y = pmain.swap_xy ? pnt.x : pnt.y;
 
       while (l < r-1) {
-         var m = Math.round((l+r)*0.5);
-
-         var xx = GetBinGrX(m);
+         var m = Math.round((l+r)*0.5), xx = GetBinGrX(m);
          if ((xx === null) || (xx < pnt_x - 0.5)) {
             if (pmain.swap_xy) r = m; else l = m;
-         } else
-         if (xx > pnt_x + 0.5) {
+         } else if (xx > pnt_x + 0.5) {
             if (pmain.swap_xy) l = m; else r = m;
          } else { l++; r--; }
       }
@@ -7236,16 +7248,12 @@
    }
 
    TH2Painter.prototype.DrawBinsArrow = function(w, h) {
-      var histo = this.GetObject(),
+      var histo = this.GetObject(), cmd = "",
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
-          dxn,dyn,x1,x2,y1,y2, anr,si,co;
-
-      var handle = this.PrepareColorDraw({ rounding: false });
-
-      var scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
+          dxn,dyn,x1,x2,y1,y2, anr,si,co,
+          handle = this.PrepareColorDraw({ rounding: false }),
+          scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y  = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2;
-
-      var cmd = "";
 
       for (var loop=0;loop<2;++loop)
          for (i = handle.i1; i < handle.i2; ++i)
@@ -7422,7 +7430,6 @@
    TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetObject(),
           handle = this.PrepareColorDraw(),
-          pad = this.root_pad(),
           pmain = this.main_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
           bars = "", markers = "";
@@ -7698,10 +7705,10 @@
          handle = this.DrawBinsBox(w, h);
       else
       if (this.options.Arrow > 0)
-         handle = this.DrawBinsArrow(w,h);
+         handle = this.DrawBinsArrow(w, h);
       else
       if (this.options.Contour > 0)
-         handle = this.DrawBinsContour(w,h);
+         handle = this.DrawBinsContour(w, h);
       else
       if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);

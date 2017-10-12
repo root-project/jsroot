@@ -1596,7 +1596,7 @@
 
    TObjectPainter.prototype.Cleanup = function() {
       // generic method to cleanup painters
-      // first of all, remove object drawaing and in case of main painter - also main HTML components
+      // first of all, remove object drawing and in case of main painter - also main HTML components
 
       this.RemoveDrawG();
 
@@ -1633,9 +1633,10 @@
    }
 
    TObjectPainter.prototype.MatchObjectType = function(arg) {
-      if ((arg === undefined) || (arg === null) || (this.draw_object===null)) return false;
-      if (typeof arg === 'string') return this.draw_object._typename === arg;
-      return (typeof arg === 'object') && (this.draw_object._typename === arg._typename);
+      if (!arg || !this.draw_object) return false;
+      if (typeof arg === 'string') return (this.draw_object._typename === arg);
+      if (arg._typename) return (this.draw_object._typename === arg._typename);
+      return this.draw_object._typename.match(arg);
    }
 
    TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
@@ -6640,6 +6641,9 @@
    JSROOT.addDrawFunc({ name: "Session", icon: "img_globe" });
    JSROOT.addDrawFunc({ name: "kind:TopFolder", icon: "img_base" });
    JSROOT.addDrawFunc({ name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect:true });
+   
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::TCanvas", icon: "img_canvas", prereq: "v7", func: "JSROOT.v7.drawCanvas", opt: "", expand_item: "fPrimitives" });
+   
 
    JSROOT.getDrawHandle = function(kind, selector) {
       // return draw handle for specified item kind
