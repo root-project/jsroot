@@ -2345,6 +2345,10 @@
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   
+   THistPainter.prototype.GetHisto = function() {
+      return this.GetObject();
+   }
 
    THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
@@ -2355,7 +2359,7 @@
    }
 
    THistPainter.prototype.IsTH2Poly = function() {
-      return this.histo && this.histo._typename.match(/^TH2Poly/);
+      return this.MatchObjectType(/^TH2Poly/);
    }
 
    THistPainter.prototype.Cleanup = function() {

@@ -1633,9 +1633,10 @@
    }
 
    TObjectPainter.prototype.MatchObjectType = function(arg) {
-      if ((arg === undefined) || (arg === null) || (this.draw_object===null)) return false;
-      if (typeof arg === 'string') return this.draw_object._typename === arg;
-      return (typeof arg === 'object') && (this.draw_object._typename === arg._typename);
+      if (!arg || !this.draw_object) return false;
+      if (typeof arg === 'string') return (this.draw_object._typename === arg);
+      if (arg._typename) return (this.draw_object._typename === arg._typename);
+      return this.draw_object._typename.match(arg);
    }
 
    TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
