@@ -2954,7 +2954,7 @@
       var histo = this.GetHisto();
 
       function AssignFuncs(axis) {
-         if (axis.fXbins.length == axis.fNbins) {
+         if (axis.fXbins.length >= axis.fNbins) {
             axis.regular = false;
             axis.GetBinCoord = function(bin) {
                var indx = Math.round(bin);
