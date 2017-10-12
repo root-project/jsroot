@@ -4987,7 +4987,6 @@
       if (args.middle === undefined) args.middle = 0;
 
       var histo = this.GetObject(),
-          pad = this.root_pad(),
           pmain = this.main_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
