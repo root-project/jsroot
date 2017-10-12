@@ -256,25 +256,28 @@
       if (!histo) return;
       
       var axis = histo.fAxes._0;
-      this.xmin = axis.fLow;
-      this.xmax = this.xmin + (axis.fNBins - 2)/axis.fInvBinWidth;
-      this.regularx = true;
+      this.regularx = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
 
       if (!this.regularx) {
+         this.xmin = axis.fBinBorders[0];
+         this.xmax = axis.fBinBorders[axis.fNBins - 2];
+         this.xaxis = axis;
          this.GetBinX = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.xmin;
             if (indx > this.nbinsx) return this.xmax;
-            if (indx==bin) return this.histo.fXaxis.fXbins[indx];
+            if (indx==bin) return this.xaxis.fBinBorders[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo.fXaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fXaxis.fXbins[indx2] * Math.abs(bin-indx);
+            return this.xaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.xaxis.fBinBorders[indx2] * Math.abs(bin-indx);
          };
          this.GetIndexX = function(x,add) {
-            for (var k = 1; k < this.histo.fXaxis.fXbins.length; ++k)
-               if (x < this.histo.fXaxis.fXbins[k]) return Math.floor(k-1+add);
+            for (var k = 1; k < this.xaxis.fBinBorders.length; ++k)
+               if (x < this.xaxis.fBinBorders[k]) return Math.floor(k-1+add);
             return this.nbinsx;
          };
       } else {
+         this.xmin = axis.fLow;
+         this.xmax = this.xmin + (axis.fNBins - 2)/axis.fInvBinWidth;
          this.binwidthx = (this.xmax - this.xmin);
          if (this.nbinsx > 0)
             this.binwidthx = this.binwidthx / this.nbinsx;
@@ -286,25 +289,28 @@
       if (!with_y_axis || (this.nbinsy==0)) return;
 
       var axis = histo.fAxes._1;
-      this.ymin = axis.fLow;
-      this.ymax = this.ymin + (axis.fNBins - 2)/axis.fInvBinWidth;
-      this.regulary = true;
+      this.regulary = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
       
       if (!this.regulary) {
+         this.ymin = axis.fBinBorders[0];
+         this.ymax = axis.fBinBorders[axis.fNBins - 2];
+         this.yaxis = axis;
          this.GetBinY = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.ymin;
             if (indx > this.nbinsy) return this.ymax;
-            if (indx==bin) return this.histo.fYaxis.fXbins[indx];
+            if (indx==bin) return this.yaxis.fBinBorders[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo.fYaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fYaxis.fXbins[indx2] * Math.abs(bin-indx);
+            return this.yaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.yaxis.fBinBorders[indx2] * Math.abs(bin-indx);
          };
          this.GetIndexY = function(y,add) {
-            for (var k = 1; k < this.histo.fYaxis.fXbins.length; ++k)
-               if (y < this.histo.fYaxis.fXbins[k]) return Math.floor(k-1+add);
+            for (var k = 1; k < this.yaxis.fBinBorders.length; ++k)
+               if (x < this.yaxis.fBinBorders[k]) return Math.floor(k-1+add);
             return this.nbinsy;
          };
       } else {
+         this.ymin = axis.fLow;
+         this.ymax = this.ymin + (axis.fNBins - 2)/axis.fInvBinWidth;
          this.binwidthy = (this.ymax - this.ymin);
          if (this.nbinsy > 0)
             this.binwidthy = this.binwidthy / this.nbinsy;
@@ -315,23 +321,29 @@
 
       if (!with_z_axis || (this.nbinsz==0)) return;
 
-      this.regularz = true;
+      var axis = histo.fAxes._1;
+      this.regularz = (axis._typename == "ROOT::Experimental::TAxisEquidistant");
       
       if (!this.regularz) {
+         this.zmin = axis.fBinBorders[0];
+         this.zmax = axis.fBinBorders[axis.fNBins - 2];
+         this.zaxis = axis;
          this.GetBinZ = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.zmin;
             if (indx > this.nbinsz) return this.zmax;
-            if (indx==bin) return this.histo.fZaxis.fXbins[indx];
+            if (indx==bin) return this.zaxis.fBinBorders[indx];
             var indx2 = (bin < indx) ? indx - 1 : indx + 1;
-            return this.histo.fZaxis.fXbins[indx] * Math.abs(bin-indx2) + this.histo.fZaxis.fXbins[indx2] * Math.abs(bin-indx);
+            return this.zaxis.fBinBorders[indx] * Math.abs(bin-indx2) + this.zaxis.fBinBorders[indx2] * Math.abs(bin-indx);
          };
          this.GetIndexZ = function(z,add) {
-            for (var k = 1; k < this.histo.fZaxis.fXbins.length; ++k)
-               if (z < this.histo.fZaxis.fXbins[k]) return Math.floor(k-1+add);
+            for (var k = 1; k < this.zaxis.fBinBorders.length; ++k)
+               if (x < this.zaxis.fBinBorders[k]) return Math.floor(k-1+add);
             return this.nbinsz;
          };
       } else {
+         this.zmin = axis.fLow;
+         this.zmax = this.zmin + (axis.fNBins - 2)/axis.fInvBinWidth;
          this.binwidthz = (this.zmax - this.zmin);
          if (this.nbinsz > 0)
             this.binwidthz = this.binwidthz / this.nbinsz;
@@ -670,10 +682,17 @@
             this.fContour.push(this.colzmin + dz*level);
       }
 
+      var main = this.frame_painter();
+      
       if (this.Dimension() < 3) {
-         this.zmin = this.colzmin;
-         this.zmax = this.colzmax;
+         main.zmin = this.zmin = this.colzmin;
+         main.zmax = this.zmax = this.colzmax;
       }
+      
+      main.fContour = this.fContour;
+      main.fCustomContour = this.fCustomContour;
+      main.colzmin = this.colzmin;
+      main.colzmax = this.colzmax;
 
       return this.fContour;
    }
@@ -681,8 +700,8 @@
    THistPainter.prototype.GetContour = function() {
       if (this.fContour) return this.fContour;
 
-      var main = this.main_painter();
-      if ((main !== this) && main.fContour) {
+      var main = this.frame_painter();
+      if (main && main.fContour) {
          this.fContour = main.fContour;
          this.fCustomContour = main.fCustomContour;
          this.colzmin = main.colzmin;
@@ -692,31 +711,31 @@
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
-      var histo = this.GetObject(), nlevels = JSROOT.gStyle.fNumberContours,
+      var histo = this.GetHisto(), nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
-      if (histo.fContour) nlevels = histo.fContour.length;
-      if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
-         zmin = this.options.minimum;
-         zmax = this.options.maximum;
-      }
-      if (this.zoom_zmin != this.zoom_zmax) {
-         zmin = this.zoom_zmin;
-         zmax = this.zoom_zmax;
+      //if (histo.fContour) nlevels = histo.fContour.length;
+      //if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
+      //   zmin = this.options.minimum;
+      //   zmax = this.options.maximum;
+      //}
+      if (main.zoom_zmin != main.zoom_zmax) {
+         zmin = main.zoom_zmin;
+         zmax = main.zoom_zmax;
       }
 
-      if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-         this.fContour = JSROOT.clone(histo.fContour);
-         this.fCustomContour = true;
-         this.colzmin = zmin;
-         this.colzmax = zmax;
-         if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
-         if (this.Dimension()<3) {
-            this.zmin = this.colzmin;
-            this.zmax = this.colzmax;
-         }
-         return this.fContour;
-      }
+      //if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
+      //   this.fContour = JSROOT.clone(histo.fContour);
+      //   this.fCustomContour = true;
+      //   this.colzmin = zmin;
+      //   this.colzmax = zmax;
+      //   if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
+      //   if (this.Dimension()<3) {
+      //      this.zmin = this.colzmin;
+      //      this.zmax = this.colzmax;
+      //   }
+      //   return this.fContour;
+      //}
 
       this.fCustomContour = false;
 
@@ -997,9 +1016,8 @@
       if (args.extra === undefined) args.extra = 0;
       if (args.middle === undefined) args.middle = 0;
 
-      var histo = this.GetObject(),
-          pad = this.root_pad(),
-          pmain = this.main_painter(),
+      var histo = this.GetHisto(),
+          pmain = this.frame_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
           res = {
@@ -2456,10 +2474,10 @@
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy) return;
 
-      var i, j, histo = this.GetObject();
+      var i, j, histo = this.GetHisto();
 
-      this.nbinsx = histo.fXaxis.fNbins;
-      this.nbinsy = histo.fYaxis.fNbins;
+      this.nbinsx = histo.fAxes._0.fNBins - 2;
+      this.nbinsy = histo.fAxes._1.fNBins - 2;
 
       // used in CreateXY method
 
@@ -2685,7 +2703,7 @@
    }
 
    TH2Painter.prototype.DrawBinsColor = function(w,h) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz;
@@ -4022,19 +4040,19 @@
          this.Create3DScene(-1);
 
       // draw new palette, resize frame if required
-      var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
+      // var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
 
       if (this.DrawAxes());
          this.DrawBins();
 
       // redraw palette till the end when contours are available
-      if (pp) pp.DrawPave();
+      // if (pp) pp.DrawPave();
 
-      this.DrawTitle();
+      // this.DrawTitle();
 
-      this.UpdateStatWebCanvas();
+      // this.UpdateStatWebCanvas();
 
-      this.AddInteractive();
+      // this.AddInteractive();
 
       JSROOT.CallBack(call_back);
    }
@@ -4048,17 +4066,17 @@
 
    TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
 
-      var main = this.main_painter(), is3d = false;
+      var is3d = false, main = this.frame_painter();
 
-      if ((this.options.Contour > 0) && (main !== this)) is3d = main.mode3d; else
+      if (this.options.Contour > 0) is3d = main.mode3d; else
       if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) is3d = true;
 
-      if ((main!==this) && (is3d !== main.mode3d)) {
+      if (is3d !== main.mode3d) {
          is3d = main.mode3d;
 
-         this.options.Lego = main.options.Lego;
-         this.options.Surf = main.options.Surf;
-         this.options.Error = main.options.Error;
+         if (this.options.Lego && !is3d) this.options.Lego = 0;
+         if (this.options.Surf && !is3d) this.options.Surf = 0;
+         if (this.options.Error && !is3d) this.options.Error = 0;
       }
 
       var funcname = is3d ? "Draw3D" : "Draw2D";
@@ -4074,7 +4092,10 @@
       // create painter and add it to canvas
       var painter = new TH2Painter(histo);
 
-      painter.SetDivId(divid, 1);
+      painter.SetDivId(divid);
+      
+      painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
+                          fBarOffset: 0, fBarWidth: 1, BaseLine: false, Color: 1, Candle: 0 };
 
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
@@ -4094,7 +4115,7 @@
 
       painter.ScanContent();
 
-      painter.CreateStat(); // only when required
+      // painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
          //if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
