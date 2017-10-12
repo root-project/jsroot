@@ -25,11 +25,11 @@
    "use strict";
 
    JSROOT.sources.push("v7");
-   
+
    JSROOT.v7 = {}; // placeholder for all v7-relevant code
-   
-   
-   
+
+
+
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -593,12 +593,12 @@
               if (!gap_after) maxwidth = 0.9*gap_before;
               textscale = Math.min(textscale, maxwidth / textwidth);
            }
-           
+
            if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
               var axis_step = Math.abs(pos-lastpos);
               textscale = Math.min(textscale, 0.9*axis_step/labelsize);
            }
-           
+
            lastpos = pos;
         }
 
@@ -678,7 +678,7 @@
                             text: axis.fTitle, color: title_color, draw_g: title_g });
          } else {
             title_offest_k *= side*pad_h;
-            
+
             shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
             shift_y = Math.round(title_offest_k*axis.fTitleOffset);
             this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
@@ -769,10 +769,10 @@
 
       this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
-   
+
    // ==========================================================================================
- 
-   
+
+
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
       this.mode3d = false;
@@ -823,7 +823,7 @@
       if (this.lineatt === undefined)
          this.lineatt = new JSROOT.TAttLineHandler('black');
    }
-   
+
    TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
       var DegToRad = Math.PI/180,
           alpha2 = (l/2)*DegToRad,
@@ -855,13 +855,13 @@
          y: 180*Math.sin(b/180*Math.PI/3)
       };
    }
-   
+
    TFramePainter.prototype.RecalculateRange = function(Proj) {
       // not yet used, could be useful in the future
 
       if (!Proj) return;
 
-      var pnts = []; // all extremes which used to find 
+      var pnts = []; // all extremes which used to find
       if (Proj == 1) {
          // TODO : check x range not lower than -180 and not higher than 180
          pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
@@ -882,10 +882,10 @@
             console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
             this.options.Proj = 0;
             return;
-         } 
+         }
          pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
-         
+
       } else if (Proj == 3) {
          pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
@@ -912,24 +912,24 @@
             pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
             pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
          }
-      } 
-      
+      }
+
       this.original_xmin = this.scale_xmin;
       this.original_xmax = this.scale_xmax;
       this.original_ymin = this.scale_ymin;
       this.original_ymax = this.scale_ymax;
-      
+
       this.scale_xmin = this.scale_xmax = pnts[0].x;
       this.scale_ymin = this.scale_ymax = pnts[0].y;
-      
-      for (var n=1;n<pnts.length;++n) { 
+
+      for (var n=1;n<pnts.length;++n) {
          this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
          this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
          this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
          this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
       }
    }
-   
+
    TFramePainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
 
@@ -979,7 +979,7 @@
                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
    }
-   
+
    TFramePainter.prototype.AxisAsText = function(axis, value) {
       if (axis == "x") {
          if (this.x_kind == 'time')
@@ -998,10 +998,10 @@
 
       return value.toPrecision(4);
    }
-   
+
    TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax) {
       if (this.axes_drawn) return;
-      
+
       if ((this.xmin == this.xmax) && (xmin!==xmax)) {
          this.xmin = xmin;
          this.xmax = xmax;
@@ -1014,13 +1014,13 @@
 
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
-      
+
       if (this.axes_drawn) return true;
-      
+
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
       this.CreateXY();
-      
+
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
           h = this.frame_height(),
@@ -1048,7 +1048,7 @@
 
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          disable_axis_draw = false, show_second_ticks = false;      
+          disable_axis_draw = false, show_second_ticks = false;
 
       draw_horiz.DrawAxis(false, layer, w, h,
                           draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
@@ -1059,7 +1059,7 @@
                              false, show_second_ticks ? w : 0, disable_axis_draw);
 
       this.DrawGrids();
-      
+
       if (!shrink_forbidden) {
 
          var shrink = 0., ypos = draw_vertical.position;
@@ -1079,9 +1079,9 @@
             this.DrawAxes(true);
          }
       }
-      
+
       this.axes_drawn = true;
-      
+
       return true;
    }
 
@@ -1102,7 +1102,7 @@
 
       this.RedrawPad();
    }
-   
+
    TFramePainter.prototype.CleanupAxes = function() {
       delete this.x; delete this.grx;
       delete this.ConvertX; delete this.RevertX;
@@ -1192,12 +1192,12 @@
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
-         
+
          this.CleanupAxes();
       }
-      
+
       this.axes_drawn = false;
-      
+
       var trans = "translate(" + lm + "," + tm + ")";
       if (rotate) {
          trans += " rotate(-90) " + "translate(" + -h + ",0)";
@@ -1319,14 +1319,14 @@
 
       pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
    }
-   
+
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
       // disable zooming when axis conversion is enabled
       if (this.options && this.options.Proj) return false;
-      
+
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
       if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
@@ -1446,7 +1446,7 @@
       if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
       this.Unzoom(kind);
    }
-   
+
    TFramePainter.prototype.FindAlternativeClickHandler = function(pos) {
       var pp = this.pad_painter(true);
       if (!pp) return false;
@@ -1600,8 +1600,8 @@
       this.zoom_kind = 0;
 
    }
-   
-   
+
+
 
    TFramePainter.prototype.startTouchZoom = function() {
       // in case when zooming was started, block any other kind of events
@@ -1779,7 +1779,7 @@
 
       d3.event.stopPropagation();
    }
-   
+
    TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
@@ -1844,12 +1844,12 @@
 
       });  // end menu creation
    }
-   
+
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
-      
+
       if ((kind=="x") || (kind=="y")) {
          var faxis = null;
          //this.histo.fXaxis;
@@ -1857,7 +1857,7 @@
          //if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         
+
          if (this[kind+"_kind"] == "normal")
            menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
 
@@ -1942,7 +1942,7 @@
 
       return true;
    }
-   
+
    TFramePainter.prototype.ShowAxisStatus = function(axis_name) {
       // method called normally when mouse enter main object element
 
@@ -2039,7 +2039,7 @@
 
       if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
-   
+
    TFramePainter.prototype.AllowDefaultYZooming = function() {
       // return true if default Y zooming should be enabled
       // it is typically for 2-Dim histograms or
@@ -2055,7 +2055,7 @@
 
       return false;
    }
-   
+
 
    TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
 
@@ -2196,7 +2196,7 @@
 
       return true; // just process any key press
    }
-   
+
    TFramePainter.prototype.CreateXY = function() {
       // here we create x,y objects which maps our physical coordinates into pixels
       // while only first painter really need such object, all others just reuse it
@@ -2212,16 +2212,16 @@
       this.logx = this.logy = false;
 
       var w = this.frame_width(), h = this.frame_height();
-      
+
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
-      
+
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
 
       //if (typeof this.RecalculateRange == "function")
       //   this.RecalculateRange();
-      
+
       if (false /*this.histo.fXaxis.fTimeDisplay*/) {
          this.x_kind = 'time';
          this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.histo.fXaxis);
@@ -2232,7 +2232,7 @@
          this.ConvertX = function(x) { return x; };
          this.RevertX = function(grx) { return this.x.invert(grx); };
       }
-      
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
@@ -2302,14 +2302,14 @@
       } else {
          this.gry = this.y;
       }
-      
+
       // this.SetRootPadRange();
    }
 
    /** Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
       // TODO: change of pad range and send back to root application
-/*      
+/*
       if (!pad || this.options.Same) return;
 
       if (is3d) {
@@ -2371,7 +2371,7 @@
       }
    }
 
-   
+
 
 
    function drawFrame(divid, obj) {
@@ -2383,7 +2383,7 @@
 
    // ===========================================================================
 
-   
+
    function TPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.pad = pad;
@@ -3925,7 +3925,20 @@
    TCanvasPainter.prototype.HasEventStatus = function() {
       return this.has_event_status;
    }
-   
+
+   TCanvasPainter.prototype.GetNewColor = function(indx) {
+       var obj = this.GetObject();
+       if (!obj || !obj.fColorTable || !obj.fColorTable.fTable) return null;
+
+       var item = obj.fColorTable.fTable[indx];
+       if (!item || !item.fVal) return null;
+
+       var col = "rgb(" + Math.round(item.fVal.fRedOrPalettePos*255) + "," +
+                          Math.round(item.fVal.fGreen*255) + "," +
+                          Math.round(item.fVal.fBlue*255) + ")";
+       return col;
+   }
+
    function drawCanvas(divid, can, opt) {
       var nocanvas = !can;
       if (nocanvas) {
@@ -3950,21 +3963,21 @@
 
       // if (nocanvas && opt.indexOf("noframe") < 0)
       drawFrame(divid, null);
-      
-      JSROOT.draw(divid, can.fPrimitives[0], "", function() { 
+
+      JSROOT.draw(divid, can.fPrimitives[0], "", function() {
          var fp = painter.frame_painter();
          if (fp) fp.AddInteractive();
-         painter.DrawingReady(); 
+         painter.DrawingReady();
       });
 
       // painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
       return painter;
    }
-   
+
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<1>", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHist1", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<2>", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
-   
-   
+
+
    JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.TFramePainter = TFramePainter;
    JSROOT.v7.TPadPainter = TPadPainter;

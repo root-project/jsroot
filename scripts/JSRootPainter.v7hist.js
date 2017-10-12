@@ -152,11 +152,16 @@
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 */
+      var obj = this.GetObject().fOpts.fHistAttrs,
+          pp = this.pad_painter();
+
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(null, 0, 0);
 
+      var lcol = pp.GetNewColor(obj.fLine.fColor.fIdx);
+
       if (!this.lineatt || !this.lineatt.changed)
-         this.lineatt = new JSROOT.TAttLineHandler('black');
+         this.lineatt = new JSROOT.TAttLineHandler(lcol || 'black');
    }
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
@@ -3554,15 +3559,18 @@
       this.CallDrawFunc(null, resize);
    }
 
-   function drawHist2(divid, histo, opt) {
+   function drawHist2(divid, obj, opt) {
       // create painter and add it to canvas
-      var painter = new TH2Painter(histo);
+      var painter = new TH2Painter(obj);
 
       painter.SetDivId(divid);
 
       painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false,
-                          Color: 1, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
+                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
+
+      if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = 1;
+                                 else painter.options.Color = 1;
 
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
