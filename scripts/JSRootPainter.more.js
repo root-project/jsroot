@@ -235,9 +235,10 @@
          total = total + slice.fValue;
       }
 
-      var x1 = r;
-      var y1 = 0;
-      var x2, y2, a = 0;
+      var af = (pie.fAngularOffset*Math.PI)/180.;
+      var x1 = r*Math.cos(af);
+      var y1 = -r*Math.sin(af);
+      var x2, y2, a = af;
 
       for (var n=0;n<nb; n++) {
          slice = pie.fPieSlices[n];
