@@ -221,7 +221,8 @@
 
       var xc = this.AxisToSvg("x", pie.fX, false),
           yc = this.AxisToSvg("y", pie.fY, false),
-          r  = this.AxisToSvg("x", pie.fX + pie.fRadius, false) - xc;
+          rx = this.AxisToSvg("x", pie.fX + pie.fRadius, false) - xc,
+          ry = this.AxisToSvg("y", pie.fY + pie.fRadius, false) - yc;
 
       this.draw_g.attr("transform","translate("+xc+","+yc+")");
 
@@ -235,9 +236,10 @@
          total = total + slice.fValue;
       }
 
-      var x1 = r;
-      var y1 = 0;
-      var x2, y2, a = 0;
+      var af = (pie.fAngularOffset*Math.PI)/180.;
+      var x1 = rx*Math.cos(af);
+      var y1 = ry*Math.sin(af);
+      var x2, y2, a = af;
 
       for (var n=0;n<nb; n++) {
          slice = pie.fPieSlices[n];
@@ -245,15 +247,16 @@
          fillatt = this.createAttFill(slice);
          value   = slice.fValue;
          a       = a + ((2*Math.PI)/total)*value;
-         x2      = r*Math.cos(a);
-         y2      = -r*Math.sin(a);
+         x2      = rx*Math.cos(a);
+         y2      = ry*Math.sin(a);
          title   = slice.fTitle;
          this.draw_g
              .append("svg:path")
              .attr("d", "M0,0L"+x1+","+y1+"A"+
-                         r+","+r+",0,0,0,"+x2+","+y2+
+                         rx+","+ry+",0,0,0,"+x2+","+y2+
                         "Z")
-             .call(lineatt.func).call(fillatt.func);
+             .call(lineatt.func)
+             .call(fillatt.func);
          x1 = x2;
          y1 = y2;
       }
