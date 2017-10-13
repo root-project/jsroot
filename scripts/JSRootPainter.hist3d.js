@@ -572,9 +572,9 @@
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
           ticklen = textsize*0.5, text, tick, lbls = [], text_scale = 1,
-          xticks = this.x_handle.CreateTicks(),
-          yticks = this.y_handle.CreateTicks(),
-          zticks = this.z_handle.CreateTicks();
+          xticks = this.x_handle.CreateTicks(false, true),
+          yticks = this.y_handle.CreateTicks(false, true),
+          zticks = this.z_handle.CreateTicks(false, true);
 
       // main element, where all axis elements are placed
       var top = new THREE.Object3D();
@@ -895,7 +895,7 @@
             lbl = this.z_handle.format(zticks.tick, true, true);
          if (lbl === null) { is_major = false; lbl = ""; }
 
-         if (is_major && lbl && (lbl.length > 0)) {
+         if (is_major && lbl) {
             var text3d = new THREE.TextGeometry(lbl, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             var draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,

@@ -1041,7 +1041,7 @@
                lbls = []; indx = 0; totallen = 0;
             }
 
-            // for order==0 we should virually remove "0." and extra label on top
+            // for order==0 we should virtually remove "0." and extra label on top
             if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
 
             if (totallen < bestlen) {
