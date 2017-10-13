@@ -6000,7 +6000,7 @@
    }
 
    TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
-      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
+      if ((axis=="x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
 
       if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
 
@@ -8002,13 +8002,12 @@
 
    TH2Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
-      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
-
-      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
-
       if (axis=="z") return true;
 
-      return false;
+      var obj = this.GetHisto();
+      if (obj) obj = (axis=="y") ? obj.fYaxis : obj.fXaxis;
+
+      return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
    TH2Painter.prototype.Draw2D = function(call_back, resize) {

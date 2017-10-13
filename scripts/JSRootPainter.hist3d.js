@@ -2893,14 +2893,9 @@
 
    TH3Painter.prototype.CanZoomIn = function(axis,min,max) {
       // check if it makes sense to zoom inside specified axis range
-
-      if ((axis=="x") && (this.GetIndexX(max,0.5) - this.GetIndexX(min,0) > 1)) return true;
-
-      if ((axis=="y") && (this.GetIndexY(max,0.5) - this.GetIndexY(min,0) > 1)) return true;
-
-      if ((axis=="z") && (this.GetIndexZ(max,0.5) - this.GetIndexZ(min,0) > 1)) return true;
-
-      return false;
+      var obj = this.GetHisto();
+      if (obj) obj = obj["f"+axis.toUpperCase()+"axis"];
+      return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
    TH3Painter.prototype.AutoZoom = function() {
