@@ -921,7 +921,7 @@
             if (val === Math.round(val))
                return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
 
-            return (this.ndig>10) ? val.toExponential(4) : val.toFixed(this.ndig + (asticks ? 0 : 2));
+            return (this.ndig>10) ? val.toExponential(this.ndig- (asticks ? 11 : 9)) : val.toFixed(this.ndig + (asticks ? 0 : 2));
          }
       }
    }
@@ -1037,7 +1037,7 @@
                   indx++;
                   continue;
                }
-               if (++this.ndig > 11) break; // not too many digits, anyway it will be exponential
+               if (++this.ndig > 15) break; // not too many digits, anyway it will be exponential
                lbls = []; indx = 0; totallen = 0;
             }
 

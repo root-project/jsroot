@@ -569,6 +569,8 @@
       this.z_handle.CreateFormatFuncs();
       this.scale_zmin = zmin; this.scale_zmax = zmax;
 
+      this.x_handle.debug = true;
+
       var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
           ticklen = textsize*0.5, text, tick, lbls = [], text_scale = 1,
