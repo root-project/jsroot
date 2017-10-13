@@ -97,7 +97,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 12/10/2017";
+   JSROOT.version = "dev 13/10/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -989,7 +989,7 @@
          mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
          modules.push('JSRootPainter.hist');
       }
-      
+
       if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.v7' + ext + ".js;";
          modules.push('JSRootPainter.v7');

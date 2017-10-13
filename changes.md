@@ -7,6 +7,7 @@
 4. Correctly draw filled TArrow endings
 5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
 6. Implement most existing fill styles
+7. Support line option for TGraph2D
 
 
 ## Changes in 5.3.0

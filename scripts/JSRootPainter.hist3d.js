@@ -3011,11 +3011,11 @@
    TGraph2DPainter.prototype.DecodeOptions = function(opt) {
       var d = new JSROOT.DrawOptions(opt);
 
-      var res = { Color: d.check("COL"),
+      var res = { Color: d.check("COL"), Line: d.check("LINE"),
                   Error: d.check("ERR") && this.MatchObjectType("TGraph2DErrors"),
                   Circles: d.check("P0"), Markers: d.check("P") };
 
-      if (!res.Markers && !res.Error && !res.Circles) res.Markers = true;
+      if (!res.Markers && !res.Error && !res.Circles && !res.Line) res.Markers = true;
       if (!res.Markers) res.Color = false;
 
       return res;
@@ -3163,13 +3163,16 @@
          var size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
              pnts = null, select = 0,
              index = new Int32Array(size), icnt = 0,
-             err = null, ierr = 0;
+             err = null, line = null, ierr = 0, iline = 0;
 
          if (this.options.Markers || this.options.Circles)
             pnts = new JSROOT.Painter.PointsCreator(size, main.webgl, scale/3);
 
          if (this.options.Error)
             err = new Float32Array(size*6*3);
+
+         if (this.options.Line)
+            line = new Float32Array((size-1)*6);
 
          for (var i=0; i < graph.fNpoints; ++i) {
             if ((graph.fX[i] < main.scale_xmin) || (graph.fX[i] > main.scale_xmax) ||
@@ -3213,6 +3216,26 @@
                ierr+=6;
             }
 
+            if (line) {
+               if (iline>=6) {
+                  line[iline] = line[iline-3];
+                  line[iline+1] = line[iline-2];
+                  line[iline+2] = line[iline-1];
+                  iline+=3;
+               }
+               line[iline] = x;
+               line[iline+1] = y;
+               line[iline+2] = z;
+               iline+=3;
+            }
+         }
+
+         if (line && (iline>3) && (line.length == iline)) {
+            var lcolor = this.get_color(this.GetObject().fLineColor),
+                material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+            if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+            var linemesh = JSROOT.Painter.createLineSegments(line, material);
+            main.toplevel.add(linemesh);
          }
 
          if (err) {
