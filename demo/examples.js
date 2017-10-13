@@ -188,7 +188,8 @@ examples_main = {
    TGraph2D : [
       { opt: "", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
       { name: "pcol", item: "pcol", title: "example of TGraph2D, color options" },
-      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
+      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" },
+      { opt: "line",  item: "line", title: "line drawing with TGraph2D" }
    ],
    TLatex : [
      { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
