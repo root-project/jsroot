@@ -3091,6 +3091,17 @@
           gry = p.gry(this.graph.fY[indx]),
           grz = p.grz(this.graph.fZ[indx]);
 
+      if (this.check_next && indx+1<this.graph.fX.length) {
+         function sqr(v) { return v*v; }
+         var d = intersect.point,
+             grx1 = p.grx(this.graph.fX[indx+1]),
+             gry1 = p.gry(this.graph.fY[indx+1]),
+             grz1 = p.grz(this.graph.fZ[indx+1]);
+         if (sqr(d.x-grx1)+sqr(d.y-gry1)+sqr(d.z-grz1) < sqr(d.x-grx)+sqr(d.y-gry)+sqr(d.z-grz)) {
+            grx = grx1; gry = gry1; grz = grz1; indx++;
+         }
+      }
+
       return {
          x1: grx - this.scale0,
          x2: grx + this.scale0,
@@ -3236,6 +3247,18 @@
             if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
             var linemesh = JSROOT.Painter.createLineSegments(line, material);
             main.toplevel.add(linemesh);
+
+            linemesh.graph = graph;
+            linemesh.index = index;
+            linemesh.painter = main;
+            linemesh.scale0 = 0.7*scale;
+            linemesh.tip_name = this.GetTipName();
+            linemesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
+            linemesh.nvertex = 2;
+            linemesh.check_next = true;
+
+            linemesh.tooltip = this.Graph2DTooltip;
+
          }
 
          if (err) {
