@@ -5978,7 +5978,7 @@
           right = this.GetSelectIndex("x", "right", 1),
           dist = right - left, histo = this.GetHisto();
 
-      if (dist == 0) return;
+      if ((dist == 0) || !histo) return;
 
       // first find minimum
       var min = histo.getBinContent(left + 1);
@@ -5999,6 +5999,8 @@
    }
 
    TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
+      var histo = this.GetHisto();
+
       if ((axis=="x") && histo && (histo.fXaxis.FindBin(max,0.5) - histo.fXaxis.FindBin(min,0) > 1)) return true;
 
       if ((axis=="y") && (Math.abs(max-min) > Math.abs(this.ymax-this.ymin)*1e-6)) return true;
