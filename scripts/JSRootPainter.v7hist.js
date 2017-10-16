@@ -281,17 +281,16 @@
       // be aware - here indexes starts from 0
       var indx = 0,
           main = this.frame_painter(),
-          nbins = this['nbins'+axis] || 0;
-
-      var func = 'GetIndex' + axis.toUpperCase(),
+          taxis = this.GetAxis(axis),
+          nbins = this['nbins'+axis] || 0,
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
 
-      if ((min !== max) && (func in this)) {
+      if ((min !== max) && taxis) {
          if (size == "left") {
-            indx = this[func](min, add || 0);
+            indx = taxis.FindBin(min, add || 0);
          } else {
-            indx = this[func](max, (add || 0) + 0.5);
+            indx = taxis.FindBin(max, (add || 0) + 0.5);
          }
       } else {
          indx = (size == "left") ? 0 : nbins;

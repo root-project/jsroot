@@ -3437,28 +3437,27 @@
 
    THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexes starts from 0
-      var indx = 0, obj = this.main_painter();
+      var indx = 0, obj = this.main_painter(), histo = this.GetHisto();
       if (!obj) obj = this;
       var nbin = this['nbins'+axis];
       if (!nbin) nbin = 0;
       if (!add) add = 0;
 
-      var func = 'GetIndex' + axis.toUpperCase(),
+      var taxis = histo ? histo["f"+axis.toUpperCase()+"axis"] : null,
           min = obj['zoom_' + axis + 'min'],
           max = obj['zoom_' + axis + 'max'];
 
-      if ((min != max) && (func in this)) {
+      if ((min != max) && taxis) {
          if (size == "left") {
-            indx = this[func](min, add);
+            indx = taxis.FindBin(min, add);
          } else {
-            indx = this[func](max, add + 0.5);
+            indx = taxis.FindBin(max, add + 0.5);
          }
       } else {
          indx = (size == "left") ? 0 : nbin;
       }
 
-      var taxis; // TAxis object of histogram, where user range can be stored
-      if (this.histo) taxis  = this.histo["f" + axis.toUpperCase() + "axis"];
+      // TAxis object of histogram, where user range can be stored
       if (taxis) {
          if ((taxis.fFirst === taxis.fLast) || !taxis.TestBit(JSROOT.EAxisBits.kAxisRange) ||
              ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
