@@ -2656,8 +2656,6 @@
           k2 = this.GetSelectIndex("z", "right", 0),
           name = this.GetTipName("<br/>");
 
-      console.log('i1,i2', i1, i2);
-
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
       var scalex = (this.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - this.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
