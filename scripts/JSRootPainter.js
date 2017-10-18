@@ -2693,9 +2693,18 @@
       return this;
    }
 
-   TObjectPainter.prototype.SendWebsocket = function(msg) {
+   TObjectPainter.prototype.SendWebsocket = function(msg, chid) {
       if (!this._websocket) return false;
-      this._websocket.send(msg);
+
+      if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
+
+      if (this._websocket_cansend <= 0) console.error('should be queued before sending');
+
+      var prefix = this._websocket_ackn + ":" + this._websocket_cansend + ":" + chid + ":";
+      this._websocket_ackn = 0;
+      this._websocket_cansend--; // decrease number of allowed sebd packets
+
+      this._websocket.send(prefix + msg);
       if (this._websocket_kind !== "websocket") return true;
       if (this._websocket_timer) clearTimeout(this._websocket_timer);
       this._websocket_timer = setTimeout(this.KeepAliveWebsocket.bind(this), 10000);
@@ -2704,7 +2713,7 @@
 
    TObjectPainter.prototype.KeepAliveWebsocket = function() {
       delete this._websocket_timer;
-      this.SendWebsocket("KEEPALIVE");
+      this.SendWebsocket("KEEPALIVE", 0);
    }
 
    TObjectPainter.prototype.CloseWebsocket = function(force) {
@@ -2726,6 +2735,8 @@
 
       this._websocket_kind = socket_kind;
       this._websocket_state = 0;
+      this._websocket_cansend = 10;
+      this._websocket_ackn = 10;
 
       var pthis = this;
 
@@ -2779,8 +2790,27 @@
             var msg = e.data;
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
-            if (typeof pthis.OnWebsocketMsg == 'function')
-               pthis.OnWebsocketMsg(conn, msg);
+            var i1 = msg.indexOf(":"),
+                credit = parseInt(msg.substr(0,i1)),
+                i2 = msg.indexOf(":", i1+1),
+                cansend = parseInt(msg.substr(i1+1,i2-i1)),
+                i3 = msg.indexOf(":", i2+1),
+                chid = parseInt(msg.substr(i2+1,i3-i2));
+
+            console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
+
+            pthis._websocket_ackn++;            // count number of received packets,
+            pthis._websocket_cansend += credit; // how many packets client can send
+
+            msg = msg.substr(i3+1);
+
+            if (chid == 0) {
+               console.log('GET chid=0 message', msg);
+            } else if (typeof pthis.OnWebsocketMsg == 'function')
+               pthis.OnWebsocketMsg(msg);
+
+            if (pthis._websocket_ackn > 7)
+               pthis.SendWebsocket('READY', 0); // send dummy message to server
          }
 
          conn.onclose = function() {
@@ -6284,14 +6314,17 @@
 
    TCanvasPainter.prototype.OnWebsocketOpened = function(conn) {
       // indicate that we are ready to recieve any following commands
-      this.SendWebsocket('READY');
+      this.SendWebsocket('READY', 0);
    }
 
    TCanvasPainter.prototype.OnWebsocketClosed = function() {
       if (window) window.close(); // close window when socket disapper
    }
 
-   TCanvasPainter.prototype.OnWebsocketMsg = function(conn, msg) {
+   TCanvasPainter.prototype.OnWebsocketMsg = function(msg) {
+
+      var pthis = this;
+
       if (msg == "CLOSE") {
          this.OnWebsocketClosed();
          this.CloseWebsocket(true);
@@ -6299,10 +6332,9 @@
          msg = msg.substr(5);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1)),
-             pthis = this;
+             snap = JSROOT.parse(msg.substr(p1+1));
          this.RedrawPadSnap(snap, function() {
-            conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
+            pthis.SendWebsocket("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6, handled slighly different
@@ -6313,8 +6345,7 @@
          msg = msg.substr(6);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1)),
-             pthis = this;
+             snap = JSROOT.parse(msg.substr(p1+1));
 
          // console.log('Get SNAP6', this.snap_cnt);
 
@@ -6324,14 +6355,14 @@
             var ranges = pthis.GetAllRanges();
             if (ranges) ranges = ":" + ranges;
             // if (ranges) console.log("ranges: " + ranges);
-            conn.send("RREADY:" + snapid + ranges); // send ready message back when drawing completed
+            pthis.SendWebsocket("RREADY:" + snapid + ranges); // send ready message back when drawing completed
          });
 
       } else if (msg.substr(0,4)=='JSON') {
          var obj = JSROOT.parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.RedrawObject(obj);
-         conn.send('READY'); // send ready message back
+         this.SendWebsocket('READY', 0); // send ready message back
 
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
@@ -6340,7 +6371,7 @@
              menuid = msg.substr(0,p1),
              lst = JSROOT.parse(msg.substr(p1+1));
          // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
-         conn.send('READY'); // send ready message back
+         this.SendWebsocket('READY', 0); // send ready message back
          if (typeof this._getmenu_callback == 'function')
             this._getmenu_callback(lst, menuid);
       } else if (msg.substr(0,4)=='CMD:') {
@@ -6351,19 +6382,19 @@
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.CreateImage(cmd.toLowerCase(), function(res) {
-               conn.send(reply + res);
+               pthis.SendWebsocket(reply + res);
             });
          } else {
             console.log('Unrecognized command ' + cmd);
-            conn.send(reply);
+            this.SendWebsocket(reply);
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          var kind = msg[1],
              hist = JSROOT.parse(msg.substr(7));
-         conn.send('READY'); // special message, confirm that sending is ready
+         this.SendWebsocket('READY'); // special message, confirm that sending is ready
          this.DrawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
-         conn.send('READY'); // confirm that sending is ready
+         this.SendWebsocket('READY'); // confirm that sending is ready
          var that = msg.substr(5),
              on = that[that.length-1] == '1';
          this.ShowSection(that.substr(0,that.length-2), on);
@@ -6641,9 +6672,9 @@
    JSROOT.addDrawFunc({ name: "Session", icon: "img_globe" });
    JSROOT.addDrawFunc({ name: "kind:TopFolder", icon: "img_base" });
    JSROOT.addDrawFunc({ name: "kind:Folder", icon: "img_folder", icon2: "img_folderopen", noinspect:true });
-   
+
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::TCanvas", icon: "img_canvas", prereq: "v7", func: "JSROOT.v7.drawCanvas", opt: "", expand_item: "fPrimitives" });
-   
+
 
    JSROOT.getDrawHandle = function(kind, selector) {
       // return draw handle for specified item kind
