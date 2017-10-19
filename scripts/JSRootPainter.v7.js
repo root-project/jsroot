@@ -3796,16 +3796,15 @@
       this.CloseWebsocket(true);
    }
 
-   TCanvasPainter.prototype.OnWebsocketOpened = function(conn) {
+   TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
       // indicate that we are ready to recieve any following commands
-      this.SendWebsocket('READY');
    }
 
    TCanvasPainter.prototype.OnWebsocketClosed = function() {
       if (window) window.close(); // close window when socket disapper
    }
 
-   TCanvasPainter.prototype.OnWebsocketMsg = function(conn, msg) {
+   TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
       if (msg == "CLOSE") {
          this.OnWebsocketClosed();
          this.CloseWebsocket(true);

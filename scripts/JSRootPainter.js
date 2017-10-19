@@ -2805,6 +2805,7 @@
          conn.onopen = function() {
             console.log('websocket initialized');
             pthis._websocket_state = 1;
+            pthis.Send("READY", 0); // need to confirm connection
             if (pthis.receiver && typeof pthis.receiver.OnWebsocketOpened == 'function')
                pthis.receiver.OnWebsocketOpened(pthis);
          }
@@ -2860,33 +2861,14 @@
    }
 
    TObjectPainter.prototype.SendWebsocket = function(msg, chid) {
-      if (!this._websocket) return false;
-
-      if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
-
-      if (this._websocket_cansend <= 0) console.error('should be queued before sending');
-
-      var prefix = this._websocket_ackn + ":" + this._websocket_cansend + ":" + chid + ":";
-      this._websocket_ackn = 0;
-      this._websocket_cansend--; // decrease number of allowed sebd packets
-
-      this._websocket.send(prefix + msg);
-      if (this._websocket_kind !== "websocket") return true;
-      if (this._websocket_timer) clearTimeout(this._websocket_timer);
-      this._websocket_timer = setTimeout(this.KeepAliveWebsocket.bind(this), 10000);
-      return true;
-   }
-
-   TObjectPainter.prototype.KeepAliveWebsocket = function() {
-      delete this._websocket_timer;
-      this.SendWebsocket("KEEPALIVE", 0);
+      if (this._websocket)
+         this._websocket.Send(msg, chid);
    }
 
    TObjectPainter.prototype.CloseWebsocket = function(force) {
-      if (this._websocket && this._websocket_state > 0) {
-         this._websocket_state = force ? -1 : 0; // -1 prevent socket from reopening
-         this._websocket.onclose = null; // hide normal handler
-         this._websocket.close();
+      if (this._websocket) {
+         this._websocket.Close(force);
+         this._websocket.Cleanup();
          delete this._websocket;
       }
    }
@@ -2895,110 +2877,11 @@
       // create websocket for current object (canvas)
       // via websocket one recieved many extra information
 
-      delete this._websocket;
+      this.CloseWebsocket();
 
-      if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
-
-      this._websocket_kind = socket_kind;
-      this._websocket_state = 0;
-      this._websocket_cansend = 10;
-      this._websocket_ackn = 10;
-
-      var pthis = this;
-
-      function retry_open(first_time) {
-
-         if (pthis._websocket_state != 0) return;
-
-         if (!first_time) console.log("try open websocket again");
-
-         if (pthis._websocket) pthis._websocket.close();
-         delete pthis._websocket;
-
-         var path = window.location.href, conn = null;
-
-         if (pthis._websocket_kind == 'cefquery') {
-            var pos = path.indexOf("draw.htm");
-            if (pos < 0) return;
-            path = path.substr(0,pos);
-
-            if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
-            console.log('configure cefquery ' + path);
-            conn = new Cef3QuerySocket(path);
-         } else if ((pthis._websocket_kind !== 'longpoll') && first_time) {
-            path = path.replace("http://", "ws://");
-            path = path.replace("https://", "wss://");
-            var pos = path.indexOf("draw.htm");
-            if (pos < 0) return;
-            path = path.substr(0,pos) + "root.websocket";
-            console.log('configure websocket ' + path);
-            conn = new WebSocket(path);
-         } else {
-            var pos = path.indexOf("draw.htm");
-            if (pos < 0) return;
-            path = path.substr(0,pos) + "root.longpoll";
-            console.log('configure longpoll ' + path);
-            conn = new LongPollSocket(path);
-         }
-
-         if (!conn) return;
-
-         pthis._websocket = conn;
-
-         conn.onopen = function() {
-            console.log('websocket initialized');
-            pthis._websocket_state = 1;
-            if (typeof pthis.OnWebsocketOpened == 'function')
-               pthis.OnWebsocketOpened(conn);
-         }
-
-         conn.onmessage = function (e) {
-            var msg = e.data;
-            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
-
-            var i1 = msg.indexOf(":"),
-                credit = parseInt(msg.substr(0,i1)),
-                i2 = msg.indexOf(":", i1+1),
-                cansend = parseInt(msg.substr(i1+1,i2-i1)),
-                i3 = msg.indexOf(":", i2+1),
-                chid = parseInt(msg.substr(i2+1,i3-i2));
-
-            console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
-
-            pthis._websocket_ackn++;            // count number of received packets,
-            pthis._websocket_cansend += credit; // how many packets client can send
-
-            msg = msg.substr(i3+1);
-
-            if (chid == 0) {
-               console.log('GET chid=0 message', msg);
-            } else if (typeof pthis.OnWebsocketMsg == 'function')
-               pthis.OnWebsocketMsg(msg);
-
-            if (pthis._websocket_ackn > 7)
-               pthis.SendWebsocket('READY', 0); // send dummy message to server
-         }
-
-         conn.onclose = function() {
-            delete pthis._websocket;
-            if (pthis._websocket_state > 0) {
-               console.log('websocket closed');
-               pthis._websocket_state = 0;
-               if (typeof pthis.OnWebsocketClosed == 'function')
-                  pthis.OnWebsocketClosed();
-            }
-         }
-
-         conn.onerror = function (err) {
-            console.log("err "+err);
-            // conn.close();
-         }
-
-         setTimeout(retry_open, 3000); // after 3 seconds try again
-
-      } // retry_open
-
-      retry_open(true); // call for the first time
+      this._websocket = new WebWindowHandle(socket_kind);
+      this._websocket.SetReceiver(this);
+      this._websocket.Connect();
    }
 
    TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
@@ -6478,16 +6361,15 @@
       this.CloseWebsocket(true);
    }
 
-   TCanvasPainter.prototype.OnWebsocketOpened = function(conn) {
+   TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
       // indicate that we are ready to recieve any following commands
-      this.SendWebsocket('READY', 0);
    }
 
-   TCanvasPainter.prototype.OnWebsocketClosed = function() {
+   TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
       if (window) window.close(); // close window when socket disapper
    }
 
-   TCanvasPainter.prototype.OnWebsocketMsg = function(msg) {
+   TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
 
       var pthis = this;
 
