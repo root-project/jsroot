@@ -3661,6 +3661,7 @@
    function TCanvasPainter(canvas) {
       // used for online canvas painter
       TPadPainter.call(this, canvas, true);
+      this._websocket = null;
    }
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
@@ -3791,6 +3792,30 @@
       })
    }
 
+   TCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
+      if (this._websocket)
+         this._websocket.Send(msg, chid);
+   }
+
+   TCanvasPainter.prototype.CloseWebsocket = function(force) {
+      if (this._websocket) {
+         this._websocket.Close(force);
+         this._websocket.Cleanup();
+         delete this._websocket;
+      }
+   }
+
+   TCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      this.CloseWebsocket();
+
+      this._websocket = new JSROOT.WebWindowHandle(socket_kind);
+      this._websocket.SetReceiver(this);
+      this._websocket.Connect();
+   }
+
    TCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
       // when window closed, close socket
       this.CloseWebsocket(true);
@@ -3800,7 +3825,7 @@
       // indicate that we are ready to recieve any following commands
    }
 
-   TCanvasPainter.prototype.OnWebsocketClosed = function() {
+   TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
       if (window) window.close(); // close window when socket disapper
    }
 
@@ -3812,39 +3837,14 @@
          msg = msg.substr(5);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1)),
-             pthis = this;
+             snap = JSROOT.parse(msg.substr(p1+1));
          this.RedrawPadSnap(snap, function() {
-            conn.send("SNAPDONE:" + snapid); // send ready message back when drawing completed
+            handle.Send("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
-      } else if (msg.substr(0,6)=='SNAP6:') {
-         // This is snapshot, produced with ROOT6, handled slighly different
-
-         this.root6_canvas = true; // indicate that drawing of root6 canvas is peformed
-         // if (!this.snap_cnt) this.snap_cnt = 1; else this.snap_cnt++;
-
-         msg = msg.substr(6);
-         var p1 = msg.indexOf(":"),
-             snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1)),
-             pthis = this;
-
-         // console.log('Get SNAP6', this.snap_cnt);
-
-         this.RedrawPadSnap(snap, function() {
-            // console.log('Complete SNAP6', pthis.snap_cnt);
-            pthis.CompeteCanvasSnapDrawing();
-            var ranges = pthis.GetAllRanges();
-            if (ranges) ranges = ":" + ranges;
-            // if (ranges) console.log("ranges: " + ranges);
-            conn.send("RREADY:" + snapid + ranges); // send ready message back when drawing completed
-         });
-
       } else if (msg.substr(0,4)=='JSON') {
          var obj = JSROOT.parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.RedrawObject(obj);
-         conn.send('READY'); // send ready message back
 
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
@@ -3853,7 +3853,6 @@
              menuid = msg.substr(0,p1),
              lst = JSROOT.parse(msg.substr(p1+1));
          // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
-         conn.send('READY'); // send ready message back
          if (typeof this._getmenu_callback == 'function')
             this._getmenu_callback(lst, menuid);
       } else if (msg.substr(0,4)=='CMD:') {
@@ -3864,24 +3863,22 @@
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.CreateImage(cmd.toLowerCase(), function(res) {
-               conn.send(reply + res);
+               handle.Send(reply + res);
             });
          } else {
             console.log('Unrecognized command ' + cmd);
-            conn.send(reply);
+            handle.Send(reply);
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          var kind = msg[1],
              hist = JSROOT.parse(msg.substr(7));
-         conn.send('READY'); // special message, confirm that sending is ready
          this.DrawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
-         conn.send('READY'); // confirm that sending is ready
          var that = msg.substr(5),
              on = that[that.length-1] == '1';
          this.ShowSection(that.substr(0,that.length-2), on);
       } else {
-         console.log("unrecognized msg " + msg);
+         console.log("unrecognized msg len:" + msg.length + " msg:" + msg.substr(0,20));
       }
    }
 

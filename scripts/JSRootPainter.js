@@ -2693,10 +2693,10 @@
    function WebWindowHandle(socket_kind) {
       if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
 
-      this._websocket_kind = socket_kind;
-      this._websocket_state = 0;
-      this._websocket_cansend = 10;
-      this._websocket_ackn = 10;
+      this.kind = socket_kind;
+      this.state = 0;
+      this.cansend = 10;
+      this.ackn = 10;
    }
 
    /// Set object which hanldes different socket callbacks like OnWebsocketMsg, OnWebsocketOpened, OnWebsocketClosed
@@ -2715,8 +2715,8 @@
          delete this._websocket_timer;
       }
 
-      if (this._websocket && this._websocket_state > 0) {
-         this._websocket_state = force ? -1 : 0; // -1 prevent socket from reopening
+      if (this._websocket && this.state > 0) {
+         this.state = force ? -1 : 0; // -1 prevent socket from reopening
          this._websocket.onclose = null; // hide normal handler
          this._websocket.close();
          delete this._websocket;
@@ -2725,18 +2725,18 @@
    }
 
    WebWindowHandle.prototype.Send = function(msg, chid) {
-      if (!this._websocket || (this._websocket_state<=0)) return false;
+      if (!this._websocket || (this.state<=0)) return false;
 
       if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
 
-      if (this._websocket_cansend <= 0) console.error('should be queued before sending');
+      if (this.cansend <= 0) console.error('should be queued before sending');
 
-      var prefix = this._websocket_ackn + ":" + this._websocket_cansend + ":" + chid + ":";
-      this._websocket_ackn = 0;
-      this._websocket_cansend--; // decrease number of allowed sebd packets
+      var prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
+      this.ackn = 0;
+      this.cansend--; // decrease number of allowed sebd packets
 
       this._websocket.send(prefix + msg);
-      if (this._websocket_kind === "websocket") {
+      if (this.kind === "websocket") {
          if (this._websocket_timer) clearTimeout(this._websocket_timer);
          this._websocket_timer = setTimeout(this.KeepAlive.bind(this), 10000);
       }
@@ -2758,7 +2758,7 @@
 
       function retry_open(first_time) {
 
-         if (pthis._websocket_state != 0) return;
+         if (pthis.state != 0) return;
 
          if (!first_time) console.log("try open websocket again");
 
@@ -2767,7 +2767,7 @@
 
          var path = window.location.href, conn = null;
 
-         if (pthis._websocket_kind == 'cefquery') {
+         if (pthis.kind == 'cefquery') {
             if (href === undefined) {
                var pos = path.indexOf("draw.htm");
                if (pos < 0) return;
@@ -2776,7 +2776,7 @@
             }
             console.log('configure cefquery ' + href);
             conn = new Cef3QuerySocket(href);
-         } else if ((pthis._websocket_kind !== 'longpoll') && first_time) {
+         } else if ((pthis.kind !== 'longpoll') && first_time) {
             if (href === undefined) {
                path = path.replace("http://", "ws://");
                path = path.replace("https://", "wss://");
@@ -2804,7 +2804,7 @@
 
          conn.onopen = function() {
             console.log('websocket initialized');
-            pthis._websocket_state = 1;
+            pthis.state = 1;
             pthis.Send("READY", 0); // need to confirm connection
             if (pthis.receiver && typeof pthis.receiver.OnWebsocketOpened == 'function')
                pthis.receiver.OnWebsocketOpened(pthis);
@@ -2823,8 +2823,8 @@
 
             // console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
 
-            pthis._websocket_ackn++;            // count number of received packets,
-            pthis._websocket_cansend += credit; // how many packets client can send
+            pthis.ackn++;            // count number of received packets,
+            pthis.cansend += credit; // how many packets client can send
 
             msg = msg.substr(i3+1);
 
@@ -2833,15 +2833,15 @@
             } else if (pthis.receiver && typeof pthis.receiver.OnWebsocketMsg == 'function')
                pthis.receiver.OnWebsocketMsg(pthis, msg);
 
-            if (pthis._websocket_ackn > 7)
+            if (pthis.ackn > 7)
                pthis.Send('READY', 0); // send dummy message to server
          }
 
          conn.onclose = function() {
             delete pthis._websocket;
-            if (pthis._websocket_state > 0) {
+            if (pthis.state > 0) {
                console.log('websocket closed');
-               pthis._websocket_state = 0;
+               pthis.state = 0;
                if (pthis.receiver && typeof pthis.receiver.OnWebsocketClosed == 'function')
                   pthis.receiver.OnWebsocketClosed(pthis);
             }
@@ -2858,30 +2858,6 @@
       } // retry_open
 
       retry_open(true); // call for the first time
-   }
-
-   TObjectPainter.prototype.SendWebsocket = function(msg, chid) {
-      if (this._websocket)
-         this._websocket.Send(msg, chid);
-   }
-
-   TObjectPainter.prototype.CloseWebsocket = function(force) {
-      if (this._websocket) {
-         this._websocket.Close(force);
-         this._websocket.Cleanup();
-         delete this._websocket;
-      }
-   }
-
-   TObjectPainter.prototype.OpenWebsocket = function(socket_kind) {
-      // create websocket for current object (canvas)
-      // via websocket one recieved many extra information
-
-      this.CloseWebsocket();
-
-      this._websocket = new WebWindowHandle(socket_kind);
-      this._websocket.SetReceiver(this);
-      this._websocket.Connect();
    }
 
    TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
@@ -5897,7 +5873,6 @@
        return svg;
    }
 
-
    TPadPainter.prototype.SaveAsPng = function(full_canvas, filename) {
       if (!filename) {
          filename = this.this_pad_name;
@@ -6226,6 +6201,7 @@
    function TCanvasPainter(canvas) {
       // used for online canvas painter
       TPadPainter.call(this, canvas, true);
+      this._websocket = null;
    }
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
@@ -6361,6 +6337,30 @@
       this.CloseWebsocket(true);
    }
 
+   TCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
+      if (this._websocket)
+         this._websocket.Send(msg, chid);
+   }
+
+   TCanvasPainter.prototype.CloseWebsocket = function(force) {
+      if (this._websocket) {
+         this._websocket.Close(force);
+         this._websocket.Cleanup();
+         delete this._websocket;
+      }
+   }
+
+   TCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      this.CloseWebsocket();
+
+      this._websocket = new JSROOT.WebWindowHandle(socket_kind);
+      this._websocket.SetReceiver(this);
+      this._websocket.Connect();
+   }
+
    TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
       // indicate that we are ready to recieve any following commands
    }
@@ -6371,8 +6371,6 @@
 
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
 
-      var pthis = this;
-
       if (msg == "CLOSE") {
          this.OnWebsocketClosed();
          this.CloseWebsocket(true);
@@ -6382,7 +6380,7 @@
              snapid = msg.substr(0,p1),
              snap = JSROOT.parse(msg.substr(p1+1));
          this.RedrawPadSnap(snap, function() {
-            pthis.SendWebsocket("SNAPDONE:" + snapid); // send ready message back when drawing completed
+            handle.Send("SNAPDONE:" + snapid); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6, handled slighly different
@@ -6393,7 +6391,8 @@
          msg = msg.substr(6);
          var p1 = msg.indexOf(":"),
              snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1));
+             snap = JSROOT.parse(msg.substr(p1+1)),
+             pthis = this;
 
          // console.log('Get SNAP6', this.snap_cnt);
 
@@ -6403,14 +6402,13 @@
             var ranges = pthis.GetAllRanges();
             if (ranges) ranges = ":" + ranges;
             // if (ranges) console.log("ranges: " + ranges);
-            pthis.SendWebsocket("RREADY:" + snapid + ranges); // send ready message back when drawing completed
+            handle.Send("RREADY:" + snapid + ranges); // send ready message back when drawing completed
          });
 
       } else if (msg.substr(0,4)=='JSON') {
          var obj = JSROOT.parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.RedrawObject(obj);
-         this.SendWebsocket('READY', 0); // send ready message back
 
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
@@ -6419,7 +6417,6 @@
              menuid = msg.substr(0,p1),
              lst = JSROOT.parse(msg.substr(p1+1));
          // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
-         this.SendWebsocket('READY', 0); // send ready message back
          if (typeof this._getmenu_callback == 'function')
             this._getmenu_callback(lst, menuid);
       } else if (msg.substr(0,4)=='CMD:') {
@@ -6430,19 +6427,17 @@
              reply = "REPLY:" + cmdid + ":";
          if ((cmd == "SVG") || (cmd == "PNG") || (cmd == "JPEG")) {
             this.CreateImage(cmd.toLowerCase(), function(res) {
-               pthis.SendWebsocket(reply + res);
+               handle.Send(reply + res);
             });
          } else {
             console.log('Unrecognized command ' + cmd);
-            this.SendWebsocket(reply);
+            handle.Send(reply);
          }
       } else if ((msg.substr(0,7)=='DXPROJ:') || (msg.substr(0,7)=='DYPROJ:')) {
          var kind = msg[1],
              hist = JSROOT.parse(msg.substr(7));
-         this.SendWebsocket('READY'); // special message, confirm that sending is ready
          this.DrawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
-         this.SendWebsocket('READY'); // confirm that sending is ready
          var that = msg.substr(5),
              on = that[that.length-1] == '1';
          this.ShowSection(that.substr(0,that.length-2), on);
@@ -7164,6 +7159,7 @@
 
    JSROOT.LongPollSocket = LongPollSocket;
    JSROOT.Cef3QuerySocket = Cef3QuerySocket;
+   JSROOT.WebWindowHandle = WebWindowHandle;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
    JSROOT.TAttLineHandler = TAttLineHandler;
