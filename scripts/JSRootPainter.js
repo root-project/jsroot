@@ -2781,8 +2781,7 @@
                path = path.replace("http://", "ws://");
                path = path.replace("https://", "wss://");
                var pos = path.indexOf("draw.htm");
-               if (pos < 0) return;
-               href = path.substr(0,pos)
+               href = (pos > 0) ? path.substr(0,pos) : path;
             }
             href += "root.websocket";
             console.log('configure websocket ' + href);
