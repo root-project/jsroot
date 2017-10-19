@@ -3134,10 +3134,6 @@
 
       if (!snap || !snap.fPrimitives) return;
 
-      // VERY BAD, NEED TO BE FIXED IN TBufferJSON - should be fixed now in master
-      // Should be fixed now in ROOT
-      // if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
-
       var first = snap.fPrimitives[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
 
@@ -3165,6 +3161,8 @@
 
          if (this.enlarge_main('verify'))
             this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+
+         drawFrame(this.divid, null);
 
          this.DrawNextSnap(snap.fPrimitives, 0, call_back);
 

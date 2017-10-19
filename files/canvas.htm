@@ -27,7 +27,8 @@
       </div>
    </body>
    
-      <script type='text/javascript'>
+   <script type='text/javascript'>
+   
       function InitV7Canvas() {
          var socket_kind = "websocket", use_openui = true;
          if (JSROOT.GetUrlOption("longpoll")!==null) socket_kind = "longpoll"; else
@@ -59,7 +60,7 @@
                   viewName: "sap.ui.jsroot.view.Canvas"
                }).placeAt("CanvasDiv");
             });
-         };
+         }
 
          painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else is happens
 

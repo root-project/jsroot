@@ -43,8 +43,9 @@
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    THistPainter.prototype.GetHisto = function() {
-      var obj = this.GetObject(),
-          histo = obj && obj.fHistImpl ? obj.fHistImpl.fUnique : null;
+      var obj = this.GetObject(), histo = null;
+      if (obj && obj.fHistImpl)
+         histo = obj.fHistImpl.fUnique || (obj.fHistImpl.fWeak ? obj.fHistImpl.fWeak._M_ptr : null);
 
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._1) {
