@@ -2767,31 +2767,21 @@
 
          var path = window.location.href, conn = null;
 
+         if (path && path.lastIndexOf("/")>0) path = path.substr(0, path.lastIndexOf("/")+1);
+         if (!href) href = path;
+
+         console.log('Opening web socket at ' + href);
+
          if (pthis.kind == 'cefquery') {
-            if (href === undefined) {
-               var pos = path.indexOf("draw.htm");
-               if (pos < 0) return;
-               href = path.substr(0,pos);
-               if (href.indexOf("rootscheme://rootserver")==0) href = href.substr(23);
-            }
+            if (href.indexOf("rootscheme://rootserver")==0) href = href.substr(23);
             console.log('configure cefquery ' + href);
             conn = new Cef3QuerySocket(href);
          } else if ((pthis.kind !== 'longpoll') && first_time) {
-            if (href === undefined) {
-               path = path.replace("http://", "ws://");
-               path = path.replace("https://", "wss://");
-               var pos = path.indexOf("draw.htm");
-               href = (pos > 0) ? path.substr(0,pos) : path;
-            }
+            href = href.replace("http://", "ws://").replace("https://", "wss://");
             href += "root.websocket";
             console.log('configure websocket ' + href);
             conn = new WebSocket(href);
          } else {
-            if (href === undefined) {
-               var pos = path.indexOf("draw.htm");
-               if (pos < 0) return;
-               href = path.substr(0,pos);
-            }
             href += "root.longpoll";
             console.log('configure longpoll ' + href);
             conn = new LongPollSocket(href);

@@ -2942,51 +2942,7 @@
    TPadPainter.prototype.UpdateObject = function(obj) {
       if (!obj) return false;
 
-      this.pad.fBits = obj.fBits;
-      this.pad.fTitle = obj.fTitle;
-
-      this.pad.fGridx = obj.fGridx;
-      this.pad.fGridy = obj.fGridy;
-      this.pad.fTickx = obj.fTickx;
-      this.pad.fTicky = obj.fTicky;
-      this.pad.fLogx  = obj.fLogx;
-      this.pad.fLogy  = obj.fLogy;
-      this.pad.fLogz  = obj.fLogz;
-
-      this.pad.fUxmin = obj.fUxmin;
-      this.pad.fUxmax = obj.fUxmax;
-      this.pad.fUymin = obj.fUymin;
-      this.pad.fUymax = obj.fUymax;
-
-      this.pad.fLeftMargin   = obj.fLeftMargin;
-      this.pad.fRightMargin  = obj.fRightMargin;
-      this.pad.fBottomMargin = obj.fBottomMargin
-      this.pad.fTopMargin    = obj.fTopMargin;
-
-      this.pad.fFillColor = obj.fFillColor;
-      this.pad.fFillStyle = obj.fFillStyle;
-      this.pad.fLineColor = obj.fLineColor;
-      this.pad.fLineStyle = obj.fLineStyle;
-      this.pad.fLineWidth = obj.fLineWidth;
-
-      if (this.iscan) this.CheckSpecialsInPrimitives(obj);
-
-      var fp = this.frame_painter();
-      if (fp) fp.UpdateAttributes(!fp.modified_NDC);
-
-      if (!obj.fPrimitives) return false;
-
-      var isany = false, p = 0;
-      for (var n = 0; n < obj.fPrimitives.arr.length; ++n) {
-         while (p < this.painters.length) {
-            var pp = this.painters[p++];
-            if (!pp._primitive) continue;
-            if (pp.UpdateObject(obj.fPrimitives.arr[n])) isany = true;
-            break;
-         }
-      }
-
-      return isany;
+      return true;
    }
 
    TPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
@@ -3140,6 +3096,8 @@
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
+         console.log('Get first canvas ' + first._typename);
+
          this.snapid = snap.fPrimitives[0].fObjectID;
 
          this.draw_object = first;
@@ -3162,9 +3120,12 @@
          if (this.enlarge_main('verify'))
             this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-         drawFrame(this.divid, null);
+         var fp = drawFrame(this.divid, null);
 
-         this.DrawNextSnap(snap.fPrimitives, 0, call_back);
+         this.DrawNextSnap(snap.fPrimitives, 0, function() {
+            if (fp) fp.AddInteractive();
+            JSROOT.CallBack(call_back);
+         });
 
          return;
       }
