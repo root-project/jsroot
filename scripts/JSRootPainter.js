@@ -1286,6 +1286,322 @@
 
    // ==============================================================================
 
+   function LongPollSocket(addr) {
+      this.path = addr;
+      this.connid = null;
+      this.req = null;
+
+      this.nextrequest("", "connect");
+   }
+
+   LongPollSocket.prototype.nextrequest = function(data, kind) {
+      var url = this.path, sync = "";
+      if (kind === "connect") {
+         url+="?connect";
+         this.connid = "connect";
+      } else
+         if (kind === "close") {
+            if ((this.connid===null) || (this.connid==="close")) return;
+            url+="?connection="+this.connid + "&close";
+            this.connid = "close";
+            if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
+         } else
+            if ((this.connid===null) || (typeof this.connid!=='number')) {
+               return console.error("No connection");
+            } else {
+               url+="?connection="+this.connid;
+               if (kind==="dummy") url+="&dummy";
+            }
+
+      if (data) {
+         // special workaround to avoid POST request, which is not supported in WebEngine
+         var post = "&post=";
+         for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
+         url += post;
+      }
+
+      var req = JSROOT.NewHttpRequest(url, "text" + sync, function(res) {
+         if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+         if (this.handle.req === this) {
+            this.handle.req = null; // get response for existing dummy request
+            if (res == "<<nope>>") res = "";
+         }
+         this.handle.processreq(res);
+      });
+
+      req.handle = this;
+      if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
+      req.send();
+   }
+
+   LongPollSocket.prototype.processreq = function(res) {
+      if (res===null) {
+         if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
+         // if (typeof this.onclose === 'function') this.onclose();
+         this.connid = null;
+         return;
+      }
+
+      if (this.connid==="connect") {
+         this.connid = parseInt(res);
+         console.log('Get new longpoll connection with id ' + this.connid);
+         if (typeof this.onopen == 'function') this.onopen();
+      } else if (this.connid==="close") {
+         if (typeof this.onclose == 'function') this.onclose();
+         return;
+      } else {
+         if ((typeof this.onmessage==='function') && res)
+            this.onmessage({ data: res });
+      }
+      if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
+   }
+
+   LongPollSocket.prototype.send = function(str) {
+      this.nextrequest(str);
+   }
+
+   LongPollSocket.prototype.close = function() {
+      this.nextrequest("", "close");
+   }
+
+   function Cef3QuerySocket(addr) {
+      // make very similar to longpoll
+      // create persistent CEF requests which could be use from client application at eny time
+
+      if (!window || !('cefQuery' in window)) return null;
+
+      this.path = addr;
+      this.connid = null;
+      this.nextrequest("","connect");
+   }
+
+   Cef3QuerySocket.prototype.nextrequest = function(data, kind) {
+      var req = { request: "", persistent: false };
+      if (kind === "connect") {
+         req.request = "connect";
+         req.persistent = true; // this initial request will be used for all messages from the server
+         this.connid = "connect";
+      } else if (kind === "close") {
+         if ((this.connid===null) || (this.connid==="close")) return;
+         req.request = this.connid + '::close';
+         this.connid = "close";
+      } else if ((this.connid===null) || (typeof this.connid!=='number')) {
+         return console.error("No connection");
+      } else {
+         req.request = this.connid + '::post';
+         if (data) req.request += "::" + data;
+      }
+
+      if (!req.request) return console.error("No CEF request");
+
+      req.request = this.path + "::" + req.request; // URL always preceed any command
+
+      req.onSuccess = this.onSuccess.bind(this);
+      req.onFailure = this.onFailure.bind(this);
+
+      this.cefid = window.cefQuery(req); // equvalent to req.send
+
+      return this;
+   }
+
+   Cef3QuerySocket.prototype.onFailure = function(error_code, error_message) {
+      console.log("CEF_ERR: " + error_code);
+      if (typeof this.onerror === 'function') this.onerror("failure with connid " + (this.connid || "---"));
+      this.connid = null;
+   }
+
+   Cef3QuerySocket.prototype.onSuccess = function(response) {
+      if (!response) return; // normal situation when request does not send any reply
+
+      if (this.connid==="connect") {
+         this.connid = parseInt(response);
+         console.log('Get new CEF connection with id ' + this.connid);
+         if (typeof this.onopen == 'function') this.onopen();
+      } else if (this.connid==="close") {
+         if (typeof this.onclose == 'function') this.onclose();
+      } else {
+         if ((typeof this.onmessage==='function') && response)
+            this.onmessage({ data: response });
+      }
+   }
+
+   Cef3QuerySocket.prototype.send = function(str) {
+      this.nextrequest(str);
+   }
+
+   Cef3QuerySocket.prototype.close = function() {
+      this.nextrequest("", "close");
+      if (this.cefid) window.cefQueryCancel(this.cefid);
+      delete this.cefid;
+   }
+
+   // client communication handle for TWebWindow
+
+   function WebWindowHandle(socket_kind) {
+      if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
+
+      this.kind = socket_kind;
+      this.state = 0;
+      this.cansend = 10;
+      this.ackn = 10;
+   }
+
+   /// Set object which hanldes different socket callbacks like OnWebsocketMsg, OnWebsocketOpened, OnWebsocketClosed
+   WebWindowHandle.prototype.SetReceiver = function(obj) {
+      this.receiver = obj;
+   }
+
+   WebWindowHandle.prototype.Cleanup = function() {
+      delete this.receiver;
+      this.Close(true);
+   }
+
+   WebWindowHandle.prototype.Close = function(force) {
+      if (this.timerid) {
+         clearTimeout(this.timerid);
+         delete this.timerid;
+      }
+
+      if (this._websocket && this.state > 0) {
+         this.state = force ? -1 : 0; // -1 prevent socket from reopening
+         this._websocket.onclose = null; // hide normal handler
+         this._websocket.close();
+         delete this._websocket;
+      }
+   }
+
+   WebWindowHandle.prototype.Send = function(msg, chid) {
+      if (!this._websocket || (this.state<=0)) return false;
+
+      if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
+
+      if (this.cansend <= 0) console.error('should be queued before sending');
+
+      var prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
+      this.ackn = 0;
+      this.cansend--; // decrease number of allowed sebd packets
+
+      this._websocket.send(prefix + msg);
+      if (this.kind === "websocket") {
+         if (this.timerid) clearTimeout(this.timerid);
+         this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
+      }
+      return true;
+   }
+
+   WebWindowHandle.prototype.KeepAlive = function() {
+      delete this.timerid;
+      this.Send("KEEPALIVE", 0);
+   }
+
+   WebWindowHandle.prototype.Connect = function(href) {
+      // create websocket for current object (canvas)
+      // via websocket one recieved many extra information
+
+      this.Close();
+
+      var pthis = this;
+
+      function retry_open(first_time) {
+
+         if (pthis.state != 0) return;
+
+         if (!first_time) console.log("try open websocket again");
+
+         if (pthis._websocket) pthis._websocket.close();
+         delete pthis._websocket;
+
+         var path = window.location.href, conn = null;
+
+         if (path && path.lastIndexOf("/")>0) path = path.substr(0, path.lastIndexOf("/")+1);
+         if (!href) href = path;
+
+         console.log('Opening web socket at ' + href);
+
+         if (pthis.kind == 'cefquery') {
+            if (href.indexOf("rootscheme://rootserver")==0) href = href.substr(23);
+            console.log('configure cefquery ' + href);
+            conn = new Cef3QuerySocket(href);
+         } else if ((pthis.kind !== 'longpoll') && first_time) {
+            href = href.replace("http://", "ws://").replace("https://", "wss://");
+            href += "root.websocket";
+            console.log('configure websocket ' + href);
+            conn = new WebSocket(href);
+         } else {
+            href += "root.longpoll";
+            console.log('configure longpoll ' + href);
+            conn = new LongPollSocket(href);
+         }
+
+         if (!conn) return;
+
+         pthis._websocket = conn;
+
+         conn.onopen = function() {
+            console.log('websocket initialized');
+            pthis.state = 1;
+            pthis.Send("READY", 0); // need to confirm connection
+            if (pthis.receiver && typeof pthis.receiver.OnWebsocketOpened == 'function')
+               pthis.receiver.OnWebsocketOpened(pthis);
+         }
+
+         conn.onmessage = function(e) {
+            var msg = e.data;
+            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
+
+            var i1 = msg.indexOf(":"),
+                credit = parseInt(msg.substr(0,i1)),
+                i2 = msg.indexOf(":", i1+1),
+                cansend = parseInt(msg.substr(i1+1,i2-i1)),
+                i3 = msg.indexOf(":", i2+1),
+                chid = parseInt(msg.substr(i2+1,i3-i2));
+
+            // console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
+
+            pthis.ackn++;            // count number of received packets,
+            pthis.cansend += credit; // how many packets client can send
+
+            msg = msg.substr(i3+1);
+
+            if (chid == 0) {
+               console.log('GET chid=0 message', msg);
+               if (msg == "CLOSE") {
+                  pthis.Close(true); // force closing of socket
+                  if (pthis.receiver && typeof pthis.receiver.OnWebsocketClosed == 'function')
+                     pthis.receiver.OnWebsocketClosed(pthis);
+               }
+            } else if (pthis.receiver && typeof pthis.receiver.OnWebsocketMsg == 'function')
+               pthis.receiver.OnWebsocketMsg(pthis, msg);
+
+            if (pthis.ackn > 7)
+               pthis.Send('READY', 0); // send dummy message to server
+         }
+
+         conn.onclose = function() {
+            delete pthis._websocket;
+            if (pthis.state > 0) {
+               console.log('websocket closed');
+               pthis.state = 0;
+               if (pthis.receiver && typeof pthis.receiver.OnWebsocketClosed == 'function')
+                  pthis.receiver.OnWebsocketClosed(pthis);
+            }
+         }
+
+         conn.onerror = function (err) {
+            console.log("err "+err);
+            if (pthis.receiver && typeof pthis.receiver.OnWebsocketError == 'function')
+               pthis.receiver.OnWebsocketError(pthis, err);
+         }
+
+         setTimeout(retry_open, 3000); // after 3 seconds try again
+
+      } // retry_open
+
+      retry_open(true); // call for the first time
+   }
+
+   // ========================================================================================
+
    function TBasePainter() {
       this.divid = null; // either id of element (preferable) or element itself
    }
@@ -2536,317 +2852,6 @@
          menu.addchk((Math.abs(value - val) < step/2), entry, val, set_func);
       }
       menu.add("endsub:");
-   }
-
-   function LongPollSocket(addr) {
-
-      this.path = addr;
-      this.connid = null;
-      this.req = null;
-
-      this.nextrequest("", "connect");
-   }
-
-   LongPollSocket.prototype.nextrequest = function(data, kind) {
-      var url = this.path, sync = "";
-      if (kind === "connect") {
-         url+="?connect";
-         this.connid = "connect";
-      } else
-         if (kind === "close") {
-            if ((this.connid===null) || (this.connid==="close")) return;
-            url+="?connection="+this.connid + "&close";
-            this.connid = "close";
-            if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
-         } else
-            if ((this.connid===null) || (typeof this.connid!=='number')) {
-               return console.error("No connection");
-            } else {
-               url+="?connection="+this.connid;
-               if (kind==="dummy") url+="&dummy";
-            }
-
-      if (data) {
-         // special workaround to avoid POST request, which is not supported in WebEngine
-         var post = "&post=";
-         for (var k=0;k<data.length;++k) post+=data.charCodeAt(k).toString(16);
-         url += post;
-      }
-
-      var req = JSROOT.NewHttpRequest(url, "text" + sync, function(res) {
-         if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
-         if (this.handle.req === this) {
-            this.handle.req = null; // get response for existing dummy request
-            if (res == "<<nope>>") res = "";
-         }
-         this.handle.processreq(res);
-      });
-
-      req.handle = this;
-      if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
-      req.send();
-   }
-
-   LongPollSocket.prototype.processreq = function(res) {
-      if (res===null) {
-         if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
-         // if (typeof this.onclose === 'function') this.onclose();
-         this.connid = null;
-         return;
-      }
-
-      if (this.connid==="connect") {
-         this.connid = parseInt(res);
-         console.log('Get new longpoll connection with id ' + this.connid);
-         if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid==="close") {
-         if (typeof this.onclose == 'function') this.onclose();
-         return;
-      } else {
-         if ((typeof this.onmessage==='function') && res)
-            this.onmessage({ data: res });
-      }
-      if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
-   }
-
-   LongPollSocket.prototype.send = function(str) {
-      this.nextrequest(str);
-   }
-
-   LongPollSocket.prototype.close = function() {
-      this.nextrequest("", "close");
-   }
-
-   function Cef3QuerySocket(addr) {
-      // make very similar to longpoll
-      // create persistent CEF requests which could be use from client application at eny time
-
-      if (!window || !('cefQuery' in window)) return null;
-
-      this.path = addr;
-      this.connid = null;
-      this.nextrequest("","connect");
-   }
-
-   Cef3QuerySocket.prototype.nextrequest = function(data, kind) {
-      var req = { request: "", persistent: false };
-      if (kind === "connect") {
-         req.request = "connect";
-         req.persistent = true; // this initial request will be used for all messages from the server
-         this.connid = "connect";
-      } else if (kind === "close") {
-         if ((this.connid===null) || (this.connid==="close")) return;
-         req.request = this.connid + '::close';
-         this.connid = "close";
-      } else if ((this.connid===null) || (typeof this.connid!=='number')) {
-         return console.error("No connection");
-      } else {
-         req.request = this.connid + '::post';
-         if (data) req.request += "::" + data;
-      }
-
-      if (!req.request) return console.error("No CEF request");
-
-      req.request = this.path + "::" + req.request; // URL always preceed any command
-
-      req.onSuccess = this.onSuccess.bind(this);
-      req.onFailure = this.onFailure.bind(this);
-
-      this.cefid = window.cefQuery(req); // equvalent to req.send
-
-      return this;
-   }
-
-   Cef3QuerySocket.prototype.onFailure = function(error_code, error_message) {
-      console.log("CEF_ERR: " + error_code);
-      if (typeof this.onerror === 'function') this.onerror("failure with connid " + (this.connid || "---"));
-      this.connid = null;
-   }
-
-   Cef3QuerySocket.prototype.onSuccess = function(response) {
-      if (!response) return; // normal situation when request does not send any reply
-
-      if (this.connid==="connect") {
-         this.connid = parseInt(response);
-         console.log('Get new CEF connection with id ' + this.connid);
-         if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid==="close") {
-         if (typeof this.onclose == 'function') this.onclose();
-      } else {
-         if ((typeof this.onmessage==='function') && response)
-            this.onmessage({ data: response });
-      }
-   }
-
-   Cef3QuerySocket.prototype.send = function(str) {
-      this.nextrequest(str);
-   }
-
-   Cef3QuerySocket.prototype.close = function() {
-      this.nextrequest("", "close");
-      if (this.cefid) window.cefQueryCancel(this.cefid);
-      delete this.cefid;
-   }
-
-   // client communication handle for TWebWindow
-
-   function WebWindowHandle(socket_kind) {
-      if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
-
-      this.kind = socket_kind;
-      this.state = 0;
-      this.cansend = 10;
-      this.ackn = 10;
-   }
-
-   /// Set object which hanldes different socket callbacks like OnWebsocketMsg, OnWebsocketOpened, OnWebsocketClosed
-   WebWindowHandle.prototype.SetReceiver = function(obj) {
-      this.receiver = obj;
-   }
-
-   WebWindowHandle.prototype.Cleanup = function() {
-      delete this.receiver;
-      this.Close(true);
-   }
-
-   WebWindowHandle.prototype.Close = function(force) {
-      if (this._websocket_timer) {
-         clearTimeout(this._websocket_timer);
-         delete this._websocket_timer;
-      }
-
-      if (this._websocket && this.state > 0) {
-         this.state = force ? -1 : 0; // -1 prevent socket from reopening
-         this._websocket.onclose = null; // hide normal handler
-         this._websocket.close();
-         delete this._websocket;
-      }
-
-   }
-
-   WebWindowHandle.prototype.Send = function(msg, chid) {
-      if (!this._websocket || (this.state<=0)) return false;
-
-      if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
-
-      if (this.cansend <= 0) console.error('should be queued before sending');
-
-      var prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
-      this.ackn = 0;
-      this.cansend--; // decrease number of allowed sebd packets
-
-      this._websocket.send(prefix + msg);
-      if (this.kind === "websocket") {
-         if (this._websocket_timer) clearTimeout(this._websocket_timer);
-         this._websocket_timer = setTimeout(this.KeepAlive.bind(this), 10000);
-      }
-      return true;
-   }
-
-   WebWindowHandle.prototype.KeepAlive = function() {
-      delete this._websocket_timer;
-      this.Send("KEEPALIVE", 0);
-   }
-
-   WebWindowHandle.prototype.Connect = function(href) {
-      // create websocket for current object (canvas)
-      // via websocket one recieved many extra information
-
-      this.Close();
-
-      var pthis = this;
-
-      function retry_open(first_time) {
-
-         if (pthis.state != 0) return;
-
-         if (!first_time) console.log("try open websocket again");
-
-         if (pthis._websocket) pthis._websocket.close();
-         delete pthis._websocket;
-
-         var path = window.location.href, conn = null;
-
-         if (path && path.lastIndexOf("/")>0) path = path.substr(0, path.lastIndexOf("/")+1);
-         if (!href) href = path;
-
-         console.log('Opening web socket at ' + href);
-
-         if (pthis.kind == 'cefquery') {
-            if (href.indexOf("rootscheme://rootserver")==0) href = href.substr(23);
-            console.log('configure cefquery ' + href);
-            conn = new Cef3QuerySocket(href);
-         } else if ((pthis.kind !== 'longpoll') && first_time) {
-            href = href.replace("http://", "ws://").replace("https://", "wss://");
-            href += "root.websocket";
-            console.log('configure websocket ' + href);
-            conn = new WebSocket(href);
-         } else {
-            href += "root.longpoll";
-            console.log('configure longpoll ' + href);
-            conn = new LongPollSocket(href);
-         }
-
-         if (!conn) return;
-
-         pthis._websocket = conn;
-
-         conn.onopen = function() {
-            console.log('websocket initialized');
-            pthis.state = 1;
-            pthis.Send("READY", 0); // need to confirm connection
-            if (pthis.receiver && typeof pthis.receiver.OnWebsocketOpened == 'function')
-               pthis.receiver.OnWebsocketOpened(pthis);
-         }
-
-         conn.onmessage = function(e) {
-            var msg = e.data;
-            if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
-
-            var i1 = msg.indexOf(":"),
-                credit = parseInt(msg.substr(0,i1)),
-                i2 = msg.indexOf(":", i1+1),
-                cansend = parseInt(msg.substr(i1+1,i2-i1)),
-                i3 = msg.indexOf(":", i2+1),
-                chid = parseInt(msg.substr(i2+1,i3-i2));
-
-            // console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
-
-            pthis.ackn++;            // count number of received packets,
-            pthis.cansend += credit; // how many packets client can send
-
-            msg = msg.substr(i3+1);
-
-            if (chid == 0) {
-               console.log('GET chid=0 message', msg);
-            } else if (pthis.receiver && typeof pthis.receiver.OnWebsocketMsg == 'function')
-               pthis.receiver.OnWebsocketMsg(pthis, msg);
-
-            if (pthis.ackn > 7)
-               pthis.Send('READY', 0); // send dummy message to server
-         }
-
-         conn.onclose = function() {
-            delete pthis._websocket;
-            if (pthis.state > 0) {
-               console.log('websocket closed');
-               pthis.state = 0;
-               if (pthis.receiver && typeof pthis.receiver.OnWebsocketClosed == 'function')
-                  pthis.receiver.OnWebsocketClosed(pthis);
-            }
-         }
-
-         conn.onerror = function (err) {
-            console.log("err "+err);
-            if (pthis.receiver && typeof pthis.receiver.OnWebsocketError == 'function')
-               pthis.receiver.OnWebsocketError(pthis, err);
-         }
-
-         setTimeout(retry_open, 3000); // after 3 seconds try again
-
-      } // retry_open
-
-      retry_open(true); // call for the first time
    }
 
    TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
