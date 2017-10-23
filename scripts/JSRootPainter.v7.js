@@ -2968,8 +2968,6 @@
 
          ++indx; // change to the next snap
 
-         console.log('indx', indx, lst.length);
-
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
@@ -3055,8 +3053,6 @@
          }
 
          var handle = { func: draw_callback };
-
-         console.log('Drawing object snapshot', snap.fKind, snap.fSnapshot._typename);
 
          // here the case of normal drawing, can be improved
          if (snap.fKind === 1)
