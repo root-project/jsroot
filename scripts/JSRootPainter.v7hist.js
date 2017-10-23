@@ -764,7 +764,7 @@
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
       if (!when_axis_changed) {
-         this.nbinsx = histo.fAxes._0.fNBins - 2;
+         this.nbinsx = this.GetAxis("x").fNBins - 2;
          this.nbinsy = 0;
          this.CreateAxisFuncs(false);
       }
@@ -801,7 +801,7 @@
       }
 
       // account overflow/underflow bins
-      hsum += histo.fStatistics.fBinContent[0] + histo.fStatistics.fBinContent[this.nbinsx + 1];
+      hsum += histo.getBinContent(0) + histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
 
@@ -818,9 +818,9 @@
 
       if (this.draw_content) {
          if (hmin >= hmax) {
-            if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
-               if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-               else { this.ymin = 0; this.ymax = hmin * 2; }
+            if (hmin == 0) { this.ymin = 0; this.ymax = 1; }
+            else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
+            else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
             var dy = (hmax - hmin) * 0.05;
             this.ymin = hmin - dy;
@@ -1686,7 +1686,7 @@
 
       this.mode3d = false;
 
-      this.ScanContent(true);
+      // this.ScanContent(true);
 
       if (typeof this.DrawColorPalette === 'function')
          this.DrawColorPalette(false);
@@ -1956,8 +1956,8 @@
 
       var i, j, histo = this.GetHisto();
 
-      this.nbinsx = histo.fAxes._0.fNBins - 2;
-      this.nbinsy = histo.fAxes._1.fNBins - 2;
+      this.nbinsx = this.GetAxis("x").fNBins - 2;
+      this.nbinsy = this.GetAxis("y").fNBins - 2;
 
       // used in CreateXY method
 

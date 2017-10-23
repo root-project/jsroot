@@ -2747,13 +2747,13 @@
          this._doing_pad_draw = true;
 
          // set number of primitves
-         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
+         this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.length : 0;
       }
 
       while (true) {
          if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
 
-         if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
+         if (!this.pad || (indx >= this.pad.fPrimitives.length)) {
             delete this._doing_pad_draw;
             return JSROOT.CallBack(callback);
          }
@@ -2764,7 +2764,7 @@
          // set current index
          this._current_primitive_indx = indx;
 
-         ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
+         ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives[indx], "", handle);
 
          if (!handle.completed) return;
          indx++;
@@ -2968,6 +2968,8 @@
 
          ++indx; // change to the next snap
 
+         console.log('indx', indx, lst.length);
+
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
@@ -3053,6 +3055,8 @@
          }
 
          var handle = { func: draw_callback };
+
+         console.log('Drawing object snapshot', snap.fKind, snap.fSnapshot._typename);
 
          // here the case of normal drawing, can be improved
          if (snap.fKind === 1)
@@ -3917,15 +3921,12 @@
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
       // if (nocanvas && opt.indexOf("noframe") < 0)
-      drawFrame(divid, null);
-
-      JSROOT.draw(divid, can.fPrimitives[0], "", function() {
-         var fp = painter.frame_painter();
+      var fp = drawFrame(divid, null);
+      painter.DrawPrimitives(0, function() {
          if (fp) fp.AddInteractive();
          painter.DrawingReady();
       });
 
-      // painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
       return painter;
    }
 
