@@ -34,17 +34,17 @@
       function ShowOpenui5Panel() {
          
          if (!panel_name || !panel_handle || !JSROOT.sap) return false;
+            
+         var panelid = "TopPanelId";
 
-         //var oLd = new SplitterLayoutData({
-         //   resizable : true,
-         //   size      : "250px",
-         //   maxSize   : "500px"
-         //});
-
-         // var oContent =
+         var oModel = new JSROOT.sap.ui.model.json.JSONModel({
+            handle: panel_handle   
+         });
+         
+         sap.ui.getCore().setModel(oModel, panelid);
             
          JSROOT.sap.ui.xmlview({
-            id: "TopPanelId",
+            id: panelid,
             viewName : "sap.ui.jsroot.view." + panel_name,
             // layoutData: oLd,
             // height: "100%"
@@ -65,7 +65,8 @@
          console.log('Try to open web socket ' +  socket_kind);
          
          var handle = new JSROOT.WebWindowHandle(socket_kind);
-         
+
+         // set interim receiver until openui5 panel is not yet ready
          handle.SetReceiver({                  
             OnWebsocketOpened: function(handle) {
                console.log('Connected');
@@ -76,6 +77,12 @@
                 panel_handle = handle;
                 panel_name = "FitPanel";
                 ShowOpenui5Panel();
+            },
+            
+            OnWebsocketClosed: function(handle) {
+               // when connection closed, close panel as well
+               panel_handle = null;
+               if (window) window.close();
             }
          });
          

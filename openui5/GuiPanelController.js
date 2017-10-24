@@ -7,15 +7,40 @@ sap.ui.define([
    return Controller.extend("sap.ui.jsroot.GuiPanelController", {
 
       onInit : function() {
-
          var id = this.getView().getId();
          console.log("Initialization GuiPanel id = " + id);
+
+         var oModel = sap.ui.getCore().getModel(id);
+
+         if (oModel) {
+            this.websocket = oModel.getData().handle;
+            this.websocket.SetReceiver(this); // redirect websocket handling on controller itself
+            this.websocket.Send("PANEL_READY"); // confirm panel creation, only then GUI can send commands
+         }
+
          if (this.onPanelInit) this.onPanelInit();
+      },
+
+      OnWebsocketOpened: function(handle) {
+         console.log('Connection established - should never happen');
+      },
+
+      OnWebsocketMsg: function(handle, msg) {
+          console.log('GuiPanel Get message ' + msg);
+      },
+
+      OnWebsocketClosed: function(handle) {
+          console.log('GuiPanel closed');
+          if (window) window.close();
       },
 
       onExit : function() {
          if (this.onPanelExit) this.onPanelExit();
          console.log("Closing GuiPanel id = " + this.getView().getId());
+         if (this.websocket) {
+            this.websocket.Close();
+            delete this.websocket;
+         }
       }
 
    });
