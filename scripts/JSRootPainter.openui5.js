@@ -398,8 +398,21 @@
 
          pthis.SendWebsocket('OBJEXEC:' + menu_obj_id + ":" + exec);
       });
-
    }
+
+   // ====================================================================================
+
+   if (JSROOT.v7 && JSROOT.v7.TCanvasPainter)
+
+   JSROOT.v7.TCanvasPainter.prototype.ActivatePanel = function(name, callback) {
+      // function used to actiavte FitPanel
+
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      if (!main) return JSROOT.CallBack(callback, false);
+      main.getController().showLeftArea(name, callback);
+   }
+
+
 
    return JSROOT;
 

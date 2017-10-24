@@ -11,9 +11,8 @@ sap.ui.define([
 
          var id = this.getView().getId();
          console.log("Initialization FitPanel id = " + id);
-
-         var model = new JSONModel({ SelectedClass: "none" });
-
+         var model = new JSONModel();
+         // such data can be produced on the server, convert to JSON with TBufferJSON and transferred via socket
          model.setData({
             dataNames:[
                { Id:"1", Name: "Data1" },
@@ -36,12 +35,12 @@ sap.ui.define([
 
       handleFitPress : function() {
          console.log('Press fit');
-         var v1 = this.getView().byId("FitData");
-         if (v1) console.log('data', v1.getValue());
-         var v2 = this.getView().byId("FitModel");
-         if (v2) console.log('model', v2.getValue());
+         // To now with very simple logic
+         // One can bind some parameters direct to the model and use values from model
+         var v1 = this.getView().byId("FitData"),
+             v2 = this.getView().byId("FitModel");
 
-         if (this.websocket)
+         if (this.websocket && v1 && v2)
             this.websocket.Send('DOFIT:"' + v1.getValue() + '","' + v2.getValue() + '"');
       }
 

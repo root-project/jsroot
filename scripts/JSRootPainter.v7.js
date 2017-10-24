@@ -3824,6 +3824,13 @@
             this.CreateImage(cmd.toLowerCase(), function(res) {
                handle.Send(reply + res);
             });
+         } else if (cmd == "ADDPANEL") {
+            console.log('request panel');
+            if (!this.ActivatePanel) handle.Send(reply + "false");
+            else
+               this.ActivatePanel("FitPanel", function(res) {
+                  handle.Send(reply + (res ? "true" : "false"));
+               });
          } else {
             console.log('Unrecognized command ' + cmd);
             handle.Send(reply);
