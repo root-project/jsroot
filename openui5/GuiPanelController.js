@@ -32,6 +32,7 @@ sap.ui.define([
       OnWebsocketClosed: function(handle) {
           console.log('GuiPanel closed');
           if (window) window.close();
+          delete this.websocket; // remove reference on websocket
       },
 
       onExit : function() {
@@ -41,6 +42,12 @@ sap.ui.define([
             this.websocket.Close();
             delete this.websocket;
          }
+      },
+
+      closePanel : function() {
+         var main = sap.ui.getCore().byId("TopCanvasId");
+         if (main) main.getController().showLeftArea("");
+         else if (window) window.close();
       }
 
    });
