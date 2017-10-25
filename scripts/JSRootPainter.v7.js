@@ -3824,13 +3824,44 @@
             this.CreateImage(cmd.toLowerCase(), function(res) {
                handle.Send(reply + res);
             });
-         } else if (cmd == "ADDPANEL") {
-            console.log('request panel');
-            if (!this.ActivatePanel) handle.Send(reply + "false");
-            else
-               this.ActivatePanel("FitPanel", function(res) {
-                  handle.Send(reply + (res ? "true" : "false"));
+         } else if (cmd.indexOf("ADDPANEL:") == 0) {
+            var relative_path = cmd.substr(9);
+            console.log('request panel = ' + relative_path);
+            if (!this.ActivatePanel) {
+               handle.Send(reply + "false");
+            } else {
+
+               var conn = new JSROOT.WebWindowHandle(handle.kind), pthis = this;
+
+               // set interim receiver until first message arrives
+               conn.SetReceiver({
+                  OnWebsocketOpened: function(hhh) {
+                     console.log('Panel socket connected');
+                  },
+
+                  OnWebsocketMsg: function(hhh, msg) {
+                      console.log('Panel get message ' + msg + ' handle ' + !!hhh);
+
+                      pthis.ActivatePanel("FitPanel", hhh, function(res) {
+                         handle.Send(reply + (res ? "true" : "false"));
+                      });
+                  },
+
+                  OnWebsocketClosed: function(hhh) {
+                     // if connection failed,
+                     handle.Send(reply + "false");
+                  },
+
+                  OnWebsocketError: function(hhh) {
+                     // if connection failed,
+                     handle.Send(reply + "false");
+                  }
+
                });
+
+               // only when connection established, panel will be activated
+               conn.Connect(handle.href + relative_path + "/");
+            }
          } else {
             console.log('Unrecognized command ' + cmd);
             handle.Send(reply);
