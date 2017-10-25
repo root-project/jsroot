@@ -75,8 +75,11 @@
             OnWebsocketMsg: function(handle, msg) {
                 console.log('Get message ' + msg + ' handle ' + !!handle);
                 panel_handle = handle;
-                panel_name = "FitPanel";
-                ShowOpenui5Panel();
+                panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
+                if (panel_name)
+                   ShowOpenui5Panel();
+                else
+                   handle.Close();
             },
             
             OnWebsocketClosed: function(handle) {

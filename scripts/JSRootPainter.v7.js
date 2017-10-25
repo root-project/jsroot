@@ -3831,20 +3831,24 @@
                handle.Send(reply + "false");
             } else {
 
-               var conn = new JSROOT.WebWindowHandle(handle.kind), pthis = this;
+               var conn = new JSROOT.WebWindowHandle(handle.kind);
 
                // set interim receiver until first message arrives
                conn.SetReceiver({
+                  cpainter: this,
+
                   OnWebsocketOpened: function(hhh) {
                      console.log('Panel socket connected');
                   },
 
-                  OnWebsocketMsg: function(hhh, msg) {
-                      console.log('Panel get message ' + msg + ' handle ' + !!hhh);
+                  OnWebsocketMsg: function(panel_handle, msg) {
 
-                      pthis.ActivatePanel("FitPanel", hhh, function(res) {
-                         handle.Send(reply + (res ? "true" : "false"));
-                      });
+                     var panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
+                     console.log('Panel get message ' + msg + " show " + panel_name);
+
+                     this.cpainter.ActivatePanel(panel_name, panel_handle, function(res) {
+                        handle.Send(reply + (res ? "true" : "false"));
+                     });
                   },
 
                   OnWebsocketClosed: function(hhh) {
@@ -3859,8 +3863,15 @@
 
                });
 
+               var addr = handle.href;
+               if (relative_path.indexOf("../")==0) {
+                  var ddd = addr.lastIndexOf("/",addr.length-2);
+                  addr = addr.substr(0,ddd) + relative_path.substr(2);
+               } else {
+                  addr += relative_path;
+               }
                // only when connection established, panel will be activated
-               conn.Connect(handle.href + relative_path + "/");
+               conn.Connect(addr);
             }
          } else {
             console.log('Unrecognized command ' + cmd);
