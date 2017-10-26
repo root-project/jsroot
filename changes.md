@@ -8,6 +8,7 @@
 5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
 6. Implement most existing fill styles
 7. Support line option for TGraph2D
+8. Let enable/disable highligh of extra objects in geometry viewer 
 
 
 ## Changes in 5.3.0
