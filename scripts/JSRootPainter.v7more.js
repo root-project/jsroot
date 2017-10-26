@@ -34,37 +34,28 @@
           pp = this.pad_painter(),
           w = this.pad_width(),
           h = this.pad_height(),
-          use_frame = false;
+          use_frame = false,
+          text_font = 42,
+          text_size = 40;
 
       var text = drawable && drawable.fText ? drawable.fText.fWeakForIO : null,
           opts = drawable.fOpts;
 
-      console.log('text drawing', text.fText, text.fX, text.fY);
-
-      console.log('opts', opts);
-
       var fillcolor = pp.GetNewColor(opts.fFill.fColor.fIdx);
 
-      console.log('fill', fillcolor);
-
-      return;
-
-      /*
       this.CreateG(use_frame);
 
-      var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: 0 };
+      var arg = { align: 13, x: Math.round(text.fX*w), y: Math.round(text.fY*h), text: text.fText, color: fillcolor, latex: 1 };
 
-      if (text.fTextAngle) arg.rotate = -text.fTextAngle;
+      // if (text.fTextAngle) arg.rotate = -text.fTextAngle;
+      // if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
+      // if (text._typename == 'TMathText') { arg.latex = 2; fact = 0.8; }
 
-      if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
-      if (text._typename == 'TMathText') { arg.latex = 2; fact = 0.8; }
-
-      this.StartTextDrawing(text.fTextFont, Math.round((textsize>1) ? textsize : textsize*Math.min(w,h)*fact));
+      this.StartTextDrawing(text_font, text_size);
 
       this.DrawText(arg);
 
       this.FinishTextDrawing();
-      */
    }
 
    // ================================================================================
