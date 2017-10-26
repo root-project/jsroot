@@ -8,29 +8,35 @@ sap.ui.define([
 
       // function called from GuiPanelController
       onPanelInit : function() {
-
          var id = this.getView().getId();
          console.log("Initialization FitPanel id = " + id);
-         var model = new JSONModel();
-         // such data can be produced on the server, convert to JSON with TBufferJSON and transferred via socket
-         model.setData({
-            dataNames:[
-               { Id:"1", Name: "Data1" },
-               { Id:"2", Name: "Data2" },
-               { Id:"3", Name: "Data3" }
-            ],
-            modelNames: [
-               { Id:"1", Name: "Model1" },
-               { Id:"2", Name: "Model2" },
-               { Id:"3", Name: "Model3" }
-            ]
-
+         // such data will be produced on server from TFitPanelModel
+         var model = new JSONModel({
+            fDataNames:[ { fId:"1", fName: "----" } ],
+            fSelectDataId: "0",
+            fModelNames: [ { fId:"1", fName: "----" } ],
+            fSelectModelId: "0"
          });
          this.getView().setModel(model);
       },
 
       // function called from GuiPanelController
       onPanelExit : function() {
+      },
+
+      OnWebsocketMsg: function(handle, msg) {
+         if (msg.indexOf("MODEL:")==0) {
+            var json = msg.substr(6);
+            var data = JSROOT.parse(json);
+
+            if (data) {
+               this.getView().setModel(new JSONModel(data));
+               console.log('FitPanel set new model');
+            }
+
+         } else {
+            console.log('FitPanel Get message ' + msg);
+         }
       },
 
       handleFitPress : function() {

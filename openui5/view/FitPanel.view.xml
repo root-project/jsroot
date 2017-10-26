@@ -4,12 +4,12 @@
        <content>
          <VBox>
             <Text text="Data"/>
-            <ComboBox id="FitData" items="{ path: '/dataNames', sorter: { path: 'Name' } }">
-               <core:Item key="{Id}" text="{Name}" />
+            <ComboBox id="FitData" selectedKey="{/fSelectDataId}" items="{ path: '/fDataNames', sorter: { path: 'fName' } }">
+               <core:Item key="{fId}" text="{fName}" />
             </ComboBox>
             <Text text="Models"/>
-            <ComboBox id="FitModel" items="{ path: '/modelNames', sorter: { path: 'Name' } }">
-               <core:Item key="{Id}" text="{Name}" />
+            <ComboBox id="FitModel" selectedKey="{/fSelectModelId}" items="{ path: '/fModelNames', sorter: { path: 'fName' } }">
+               <core:Item key="{fId}" text="{fName}" />
             </ComboBox>
          </VBox>
       </content>
