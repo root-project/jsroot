@@ -2371,9 +2371,6 @@
       }
    }
 
-
-
-
    function drawFrame(divid, obj) {
       var p = new TFramePainter(obj);
       p.SetDivId(divid, 2);
@@ -3120,10 +3117,11 @@
          if (this.enlarge_main('verify'))
             this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-         var fp = drawFrame(this.divid, null);
+         var pthis = this;
 
          this.DrawNextSnap(snap.fPrimitives, 0, function() {
-            if (fp) fp.AddInteractive();
+            var fp = pthis.frame_painter();
+            if (fp) fp.AddInteractive(); // TODO: do it directly in the frame painter
             JSROOT.CallBack(call_back);
          });
 
@@ -3966,8 +3964,10 @@
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
       // if (nocanvas && opt.indexOf("noframe") < 0)
-      var fp = drawFrame(divid, null);
+      // var fp = drawFrame(divid, null);
+
       painter.DrawPrimitives(0, function() {
+         var fp = painter.frame_painter();
          if (fp) fp.AddInteractive();
          painter.DrawingReady();
       });
