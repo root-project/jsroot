@@ -43,7 +43,7 @@
            while (++this.indx < this.lst.arr.length) {
               var handle = { func: this.draw_bind },
                   item = this.lst.arr[this.indx],
-                  opt = this.lst.opt ? this.lst.opt[this.indx] || this.opt;
+                  opt = this.lst.opt ? this.lst.opt[this.indx] : this.opt;
               if (!item) continue;
               JSROOT.draw(this.divid, item, opt, handle);
               if (!handle.completed) return;
