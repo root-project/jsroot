@@ -6713,7 +6713,7 @@
    JSROOT.addDrawFunc({ name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree", func: 'JSROOT.Painter.drawTree', opt: ";dump", noinspect: true });
    JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true });
    JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'JSROOT.Painter.drawTree', opt: ";dump", ctrl: "dump", ignore_online: true });
-   JSROOT.addDrawFunc({ name: "TList", icon: "img_list", prereq: "hierarchy", expand: "JSROOT.Painter.ListHierarchy", dflt: "expand" });
+   JSROOT.addDrawFunc({ name: "TList", icon: "img_list", prereq: "hierarchy", func: "JSROOT.Painter.drawList", expand: "JSROOT.Painter.ListHierarchy", dflt: "expand" });
    JSROOT.addDrawFunc({ name: "THashList", sameas: "TList" });
    JSROOT.addDrawFunc({ name: "TObjArray", sameas: "TList" });
    JSROOT.addDrawFunc({ name: "TClonesArray", sameas: "TList" });

@@ -9,6 +9,7 @@
 6. Implement most existing fill styles
 7. Support line option for TGraph2D
 8. Let enable/disable highligh of extra objects in geometry viewer 
+9. Draw all objectes from TList/TObjArray is they appear in list of primitives
 
 
 ## Changes in 5.3.0
