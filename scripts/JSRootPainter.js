@@ -3907,6 +3907,7 @@
 
             nextdy = curr.dy + 1.6;
             curr.dy = -0.4;
+            subpos.dx = subpos.dy = 0; // reset variable
          }
 
       }
