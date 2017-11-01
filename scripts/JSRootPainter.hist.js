@@ -1286,8 +1286,6 @@
       // draw labels (sometime on boths sides
       if (!disable_axis_drawing && !optionUnlab) {
 
-         // console.log(axis.fName, 'Both Sides', this.lbls_both_sides);
-
          var label_color = this.get_color(axis.fLabelColor),
              labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
              center_lbls = this.IsCenterLabels(),
@@ -1295,7 +1293,12 @@
              textscale = 1, maxtextlen = 0,
              label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
 
+         if (this.lbls_both_sides)
+            label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+
          for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
+
+            if (lcnt > 0) side = -side;
 
             var lastpos = 0,
                 fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
@@ -1380,6 +1383,8 @@
                  label_g[lcnt].call(labelfont.func);
            }
         }
+
+        if (label_g.length > 1) side = -side;
      }
 
      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {

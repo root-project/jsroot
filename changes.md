@@ -10,6 +10,7 @@
 7. Support line option for TGraph2D
 8. Let enable/disable highligh of extra objects in geometry viewer 
 9. Draw all objectes from TList/TObjArray is they appear in list of primitives
+10. Draw axis labels on both sides when pad.fTick[x/y] > 1
 
 
 ## Changes in 5.3.0
