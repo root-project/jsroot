@@ -1364,43 +1364,41 @@
                });
 
             this.FinishTextDrawing(label_g[lcnt]);
-        }
+         }
 
-        if ((textscale>0) && (textscale<1)) {
-           if (!vertical && !rotate_lbls && (maxtextlen>5) && (textscale<0.7)) {
-              for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
-                 label_g[lcnt].selectAll("text").each(function() {
-                    var txt = d3.select(this), tr = txt.attr("transform");
-                    txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-                 });
-              textscale = 1;
-           }
+         if ((textscale > 0) && (textscale < 1)) {
+            if (!vertical && !rotate_lbls && (maxtextlen > 5) && (textscale < 0.7)) {
+               for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
+                  label_g[lcnt].selectAll("text").each(function() {
+                     var txt = d3.select(this), tr = txt.attr("transform");
+                     txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+                  });
+               textscale *= 1.7;
+            }
+            if (textscale < 1) {
+               labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
+               for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
+                  label_g[lcnt].call(labelfont.func);
+            }
+         }
 
-           // round to upper boundary for calculated value like 4.4
-           if (textscale != 1) {
-              labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-              for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
-                 label_g[lcnt].call(labelfont.func);
-           }
-        }
+         if (label_g.length > 1) side = -side;
+      }
 
-        if (label_g.length > 1) side = -side;
-     }
+      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
+         var r =  axis_g.append("svg:rect")
+                        .attr("class", "axis_zoom")
+                        .style("opacity", "0")
+                        .style("cursor", "crosshair");
 
-     if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
-        var r =  axis_g.append("svg:rect")
-                       .attr("class", "axis_zoom")
-                       .style("opacity", "0")
-                       .style("cursor", "crosshair");
-
-        if (vertical)
-           r.attr("x", (side>0) ? (-2*labelfont.size - 3) : 3)
-            .attr("y", 0)
-            .attr("width", 2*labelfont.size + 3)
-            .attr("height", h)
-        else
-           r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
-            .attr("width", w).attr("height", labelfont.size + 3);
+         if (vertical)
+            r.attr("x", (side>0) ? (-2*labelfont.size - 3) : 3)
+             .attr("y", 0)
+             .attr("width", 2*labelfont.size + 3)
+             .attr("height", h)
+         else
+            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
+             .attr("width", w).attr("height", labelfont.size + 3);
       }
 
       if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
