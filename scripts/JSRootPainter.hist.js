@@ -1283,7 +1283,7 @@
 
       var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
 
-      // draw labels (sometime on boths sides
+      // draw labels (sometime on boths sides)
       if (!disable_axis_drawing && !optionUnlab) {
 
          var label_color = this.get_color(axis.fLabelColor),
