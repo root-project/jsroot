@@ -637,8 +637,9 @@
          return true;
       }
 
-      var marker_kind = Painter.root_markers[this.style] || 100,
-          shape = marker_kind % 100;
+      var marker_kind = Painter.root_markers[this.style];
+      if (marker_kind === undefined) marker_kind = 100;
+      var shape = marker_kind % 100;
 
       this.fill = (marker_kind>=100);
 
