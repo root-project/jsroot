@@ -658,7 +658,8 @@
 
       switch(shape) {
          case 0: // circle
-            this.x0 = -size/2;
+            this.x0 = -parseFloat(half);
+            full = (parseFloat(half)*2).toFixed(this.ndig);
             this.marker = "a"+half+","+half+",0,1,0,"+full+",0a"+half+","+half+",0,1,0,-"+full+",0z";
             break;
          case 1: // cross
