@@ -13,7 +13,8 @@
 10. Fix - change proper axis attributes in context menu
 11. Fix - correctly show axis labels on 3D plot
 12. Fix - correctly handle circle (#24) as marker kind
-
+13. Fix - correct circle drawing with coordinates rounding
+ 
 
 ## Changes in 5.3.0
 1. New supported classes:
