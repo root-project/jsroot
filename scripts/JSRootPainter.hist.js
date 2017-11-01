@@ -5108,6 +5108,11 @@
       hmax = this.options.maximum;
       var set_zoom = false;
 
+      if ((hmin === hmax) && (hmin !== -1111)) {
+         hmin = hmin < 0 ? 2*hmin : 0;
+         hmax = hmax < 0 ? 0 : 2*hmax;
+      }
+
       if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
          this.ymin = hmin;
          this.ymax = hmax;
