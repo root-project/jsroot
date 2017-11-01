@@ -1,5 +1,20 @@
 # JSROOT changelog
 
+## Cahnges in 5.3.x
+1. Fix - show TH2 projections also when tooltip is disabled
+2. Fix - use z_handle to format Z-axis labels
+3. Fix - support labels on TH3 Z axis
+4. Fix - TH1 zooming in 3D mode
+5. Fix - suppress empty {} in TLatex
+6. Add several math symbols for TLatex
+7. Fix - font kind 1 is italic times roman
+8. Fix - do not let expand parent item in hierarchy
+9. Fix - use correct painter to check range
+10. Fix - change proper axis attributes in context menu
+11. Fix - correctly show axis labels on 3D plot
+12. Fix - correctly handle circle (#24) as marker kind
+
+
 ## Changes in 5.3.0
 1. New supported classes:
     - TGraphPolar
