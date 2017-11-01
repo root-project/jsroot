@@ -1281,96 +1281,103 @@
       // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
       if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
+      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
+
       // draw labels (sometime on boths sides
       if (!disable_axis_drawing && !optionUnlab) {
 
          // console.log(axis.fName, 'Both Sides', this.lbls_both_sides);
 
-         var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
-             label_color = this.get_color(axis.fLabelColor),
+         var label_color = this.get_color(axis.fLabelColor),
              labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              textscale = 1, maxtextlen = 0,
-             label_g = axis_g.append("svg:g").attr("class","axis_labels"),
-             lastpos = 0,
-             fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
 
-        this.StartTextDrawing(labelfont, 'font', label_g);
+         for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
 
-        for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
+            var lastpos = 0,
+                fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
 
-           var lbl = this.format(handle.major[nmajor], true);
-           if (lbl === null) continue;
+            this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 
-           var pos = Math.round(this.func(handle.major[nmajor])),
-               gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
-               gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
+            for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
 
-           if (center_lbls) {
-              var gap = gap_after || gap_before;
-              pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
-              if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
-           }
+               var lbl = this.format(handle.major[nmajor], true);
+               if (lbl === null) continue;
 
-           var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g };
+               var pos = Math.round(this.func(handle.major[nmajor])),
+                   gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
+                   gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
 
-           maxtextlen = Math.max(maxtextlen, lbl.length);
+               if (center_lbls) {
+                  var gap = gap_after || gap_before;
+                  pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
+                  if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
+               }
 
-           if (vertical) {
-              arg.x = fix_coord;
-              arg.y = pos;
-              arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
-           } else {
-              arg.x = pos;
-              arg.y = fix_coord;
-              arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
-           }
+               var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt] };
 
-           if (rotate_lbls) arg.rotate = 270;
+               maxtextlen = Math.max(maxtextlen, lbl.length);
 
-           var textwidth = this.DrawText(arg);
+               if (vertical) {
+                  arg.x = fix_coord;
+                  arg.y = pos;
+                  arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+               } else {
+                  arg.x = pos;
+                  arg.y = fix_coord;
+                  arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+               }
 
-           if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
-              var maxwidth = gap_before*0.45 + gap_after*0.45;
-              if (!gap_before) maxwidth = 0.9*gap_after; else
-              if (!gap_after) maxwidth = 0.9*gap_before;
-              textscale = Math.min(textscale, maxwidth / textwidth);
-           }
+               if (rotate_lbls) arg.rotate = 270;
 
-           if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
-              var axis_step = Math.abs(pos-lastpos);
-              textscale = Math.min(textscale, 0.9*axis_step/labelsize);
-           }
+               var textwidth = this.DrawText(arg);
 
-           lastpos = pos;
+               if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
+                  var maxwidth = gap_before*0.45 + gap_after*0.45;
+                  if (!gap_before) maxwidth = 0.9*gap_after; else
+                  if (!gap_after) maxwidth = 0.9*gap_before;
+                  textscale = Math.min(textscale, maxwidth / textwidth);
+               }
+
+               if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
+                  var axis_step = Math.abs(pos-lastpos);
+                  textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+               }
+
+               lastpos = pos;
+            }
+
+            if (this.order)
+               this.DrawText({ color: label_color,
+                               x: vertical ? side*5 : w+5,
+                               y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
+                               align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                               latex: 1,
+                               text: '#times' + this.format10Exp(this.order),
+                               draw_g: label_g[lcnt]
+               });
+
+            this.FinishTextDrawing(label_g[lcnt]);
         }
-
-        if (this.order)
-           this.DrawText({ color: label_color,
-                           x: vertical ? side*5 : w+5,
-                           y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
-                           align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
-                           latex: 1,
-                           text: '#times' + this.format10Exp(this.order),
-                           draw_g: label_g
-           });
-
-        this.FinishTextDrawing(label_g);
 
         if ((textscale>0) && (textscale<1)) {
            if (!vertical && !rotate_lbls && (maxtextlen>5) && (textscale<0.7)) {
-              label_g.selectAll("text").each(function() {
-                 var txt = d3.select(this), tr = txt.attr("transform");
-                 txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-              });
+              for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
+                 label_g[lcnt].selectAll("text").each(function() {
+                    var txt = d3.select(this), tr = txt.attr("transform");
+                    txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+                 });
               textscale = 1;
            }
 
            // round to upper boundary for calculated value like 4.4
            if (textscale != 1) {
               labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-              label_g.call(labelfont.func);
+              for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
+                 label_g[lcnt].call(labelfont.func);
            }
         }
      }
