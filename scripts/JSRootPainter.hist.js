@@ -788,6 +788,7 @@
       this.scale_max = 1;
       this.ticks = []; // list of major ticks
       this.invert_side = false;
+      this.lbls_both_sides = false; // draw labels on both sides
    }
 
    TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -1205,7 +1206,7 @@
 
       axis_g.attr("transform", transform || null);
 
-      var side = 1, both_sides = 0,
+      var side = 1, ticks_plusminus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
           optionPlus = (chOpt.indexOf("+")>=0),
           optionMinus = (chOpt.indexOf("-")>=0),
@@ -1221,7 +1222,7 @@
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
       if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
 
-      if (optionPlus && optionMinus) { side = 1; both_sides = 1; } else
+      if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
       if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
       if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
 
@@ -1252,7 +1253,7 @@
             this.ticks.push(handle.grpos); // keep graphical positions of major ticks
          }
 
-         if (both_sides > 0) h2 = -h1; else
+         if (ticks_plusminus > 0) h2 = -h1; else
          if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
 
          if (res.length == 0) {
@@ -1280,19 +1281,20 @@
       // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
       if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
 
-      var last = vertical ? h : 0,
-          labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
-          label_color = this.get_color(axis.fLabelColor),
-          labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
-          label_g = axis_g.append("svg:g").attr("class","axis_labels");
-
-      // draw labels
+      // draw labels (sometime on boths sides
       if (!disable_axis_drawing && !optionUnlab) {
 
-         var textscale = 1, maxtextlen = 0, lastpos = 0,
+         // console.log(axis.fName, 'Both Sides', this.lbls_both_sides);
+
+         var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize),
+             label_color = this.get_color(axis.fLabelColor),
+             labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
-             fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + both_sides*tickSize;
+             textscale = 1, maxtextlen = 0,
+             label_g = axis_g.append("svg:g").attr("class","axis_labels"),
+             lastpos = 0,
+             fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
 
         this.StartTextDrawing(labelfont, 'font', label_g);
 
@@ -3291,7 +3293,8 @@
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = (this.options.AxisPos>=10) || (pad.fTickx > 1);
+      this.x_handle.invert_side = (this.options.AxisPos >= 10);
+      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
       this.x_handle.has_obstacle = (this.options.Zscale > 0);
 
       this.y_handle = new JSROOT.TAxisPainter(this.histo.fYaxis, true);
@@ -3301,7 +3304,8 @@
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-      this.y_handle.invert_side = ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
+      this.y_handle.invert_side = ((this.options.AxisPos % 10) === 1);
+      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
 
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
