@@ -3121,7 +3121,7 @@
          this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
          this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
       } else {
-         this.y_kind = ((this.Dimension()==2) && histo.fYaxis.fLabels) ? 'labels' : 'normal';
+         this.y_kind = !histo.fYaxis.fLabels ? 'normal' : 'labels';
          this.ConvertY = function(y) { return y; };
          this.RevertY = function(gry) { return this.y.invert(gry); };
       }
