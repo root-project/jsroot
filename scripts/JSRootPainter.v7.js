@@ -416,7 +416,7 @@
       title_g.style("cursor", "move").call(drag_move);
    }
 
-   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing) {
+   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
       // function draws  TAxis or TGaxis object
 
       var axis = this.GetObject(), chOpt = "",
@@ -601,6 +601,8 @@
                   if (!gap_before) maxwidth = 0.9*gap_after; else
                   if (!gap_after) maxwidth = 0.9*gap_before;
                   textscale = Math.min(textscale, maxwidth / textwidth);
+               } else if (vertical && max_text_width && !lcnt && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
+                  textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
                }
 
                if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
@@ -1070,7 +1072,8 @@
 
       draw_vertical.DrawAxis(true, layer, w, h,
                              draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, show_second_ticks ? w : 0, disable_axis_draw);
+                             false, show_second_ticks ? w : 0, disable_axis_draw,
+                             draw_vertical.invert_side ? 0 : this.frame_x());
 
       this.DrawGrids();
 
