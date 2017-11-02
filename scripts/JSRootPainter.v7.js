@@ -627,7 +627,7 @@
 
          if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !this.lbls_both_sides) {
             lbls_tilt = true;
-            textscale *= 1.7;
+            textscale *= 3;
          }
 
          for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
