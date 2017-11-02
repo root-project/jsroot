@@ -548,7 +548,7 @@
              labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
-             textscale = 1, maxtextlen = 0,
+             textscale = 1, maxtextlen = 0, lbls_tilt = false,
              label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
 
          if (this.lbls_both_sides)
@@ -623,23 +623,23 @@
                                draw_g: label_g[lcnt]
                });
 
-            this.FinishTextDrawing(label_g[lcnt]);
          }
 
-         if ((textscale > 0) && (textscale < 1)) {
-            if (!vertical && !rotate_lbls && (maxtextlen > 5) && (textscale < 0.7)) {
-               for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
-                  label_g[lcnt].selectAll("text").each(function() {
-                     var txt = d3.select(this), tr = txt.attr("transform");
-                     txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
-                  });
-               textscale *= 1.7;
-            }
-            if (textscale < 1) {
-               labelfont.size = Math.floor(labelfont.size * textscale + 0.7);
-               for (var lcnt = 0; lcnt < label_g.length; ++lcnt)
-                  label_g[lcnt].call(labelfont.func);
-            }
+         if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !this.lbls_both_sides) {
+            lbls_tilt = true;
+            textscale *= 1.7;
+         }
+
+         for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
+            if ((textscale > 0.01) && (textscale < 1))
+               this.TextScaleFactor(1/textscale, label_g[lcnt]);
+
+            this.FinishTextDrawing(label_g[lcnt]);
+            if (lbls_tilt)
+               label_g[lcnt].selectAll("text").each(function() {
+                  var txt = d3.select(this), tr = txt.attr("transform");
+                  txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+               });
          }
 
          if (label_g.length > 1) side = -side;
