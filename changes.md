@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Cahnges in 5.3.x
+## Changes in 5.3.1
 1. Fix - show TH2 projections also when tooltip is disabled
 2. Fix - use z_handle to format Z-axis labels
 3. Fix - support labels on TH3 Z axis
@@ -14,7 +14,10 @@
 11. Fix - correctly show axis labels on 3D plot
 12. Fix - correctly handle circle (#24) as marker kind
 13. Fix - correct circle drawing with coordinates rounding
- 
+14. Fix - TLatex #frac and #splitline, adjust vertical position
+15. Fix - workaround for y range when fMinimum==fMaximum!=-1111
+16. Fix - correct tooltips for graph with marker drawing
+
 
 ## Changes in 5.3.0
 1. New supported classes:
