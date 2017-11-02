@@ -536,10 +536,7 @@
          axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
 
       var labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
-      // if (axis.fLabelFont % 10 != 3) labelsize*=0.6666;
       if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
-
-      var labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
 
       // draw labels (on both sides, when needed)
       if (!disable_axis_drawing && !optionUnlab) {
@@ -548,7 +545,7 @@
              labeloffset = Math.round(axis.fLabelOffset*text_scaling_size /*+ 0.5*labelsize*/),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
-             textscale = 1, maxtextlen = 0, lbls_tilt = false,
+             textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
              label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
 
          if (this.lbls_both_sides)
@@ -560,6 +557,8 @@
 
             var lastpos = 0,
                 fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+
+            labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
 
             this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 
@@ -643,6 +642,8 @@
          }
 
          if (label_g.length > 1) side = -side;
+
+         if (labelfont) labelsize = labelfont.size; // use real font size
       }
 
       if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
@@ -652,13 +653,13 @@
                         .style("cursor", "crosshair");
 
          if (vertical)
-            r.attr("x", (side>0) ? (-2*labelfont.size - 3) : 3)
+            r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
              .attr("y", 0)
-             .attr("width", 2*labelfont.size + 3)
+             .attr("width", 2*labelsize + 3)
              .attr("height", h)
          else
-            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelfont.size-3)
-             .attr("width", w).attr("height", labelfont.size + 3);
+            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize-3)
+             .attr("width", w).attr("height", labelsize + 3);
       }
 
       if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
