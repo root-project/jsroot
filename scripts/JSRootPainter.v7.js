@@ -1074,18 +1074,17 @@
 
       this.DrawGrids();
 
-      if (!shrink_forbidden) {
+      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
 
          var shrink = 0., ypos = draw_vertical.position;
 
          if ((-0.2*w < ypos) && (ypos < 0)) {
             shrink = -ypos/w + 0.001;
             this.shrink_frame_left += shrink;
-         } else
-            if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
-               shrink = -this.shrink_frame_left;
-               this.shrink_frame_left = 0.;
-            }
+         } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+            shrink = -this.shrink_frame_left;
+            this.shrink_frame_left = 0.;
+         }
 
          if (shrink != 0) {
             this.Shrink(shrink, 0);

@@ -449,6 +449,7 @@
       if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
       if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
       if (JSROOT.GetUrlOption("notouch", url)!=null) JSROOT.touches = false;
+      if (JSROOT.GetUrlOption("adjframe", url)!=null) JSROOT.gStyle.CanAdjustFrame = true;
 
       JSROOT.gStyle.fOptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.fOptStat);
       JSROOT.gStyle.fOptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.fOptFit);
@@ -5372,12 +5373,12 @@
          menu.add("sub:Ticks x");
          menu.addchk(this.pad.fTickx == 0, "normal", "0fTickx", SetTickField);
          menu.addchk(this.pad.fTickx == 1, "ticks on both sides", "1fTickx", SetTickField);
-         menu.addchk(this.pad.fTickx == 2, "labels up", "2fTickx", SetTickField);
+         menu.addchk(this.pad.fTickx == 2, "labels on both sides", "2fTickx", SetTickField);
          menu.add("endsub:");
          menu.add("sub:Ticks y");
          menu.addchk(this.pad.fTicky == 0, "normal", "0fTicky", SetTickField);
-         menu.addchk(this.pad.fTicky == 1, "ticks on both side", "1fTicky", SetTickField);
-         menu.addchk(this.pad.fTicky == 2, "labels right", "2fTicky", SetTickField);
+         menu.addchk(this.pad.fTicky == 1, "ticks on both sides", "1fTicky", SetTickField);
+         menu.addchk(this.pad.fTicky == 2, "labels on both sides", "2fTicky", SetTickField);
          menu.add("endsub:");
 
          //menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);

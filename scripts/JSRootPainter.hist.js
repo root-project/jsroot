@@ -3328,15 +3328,14 @@
                              draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                              false, pad.fTicky ? w : 0, this.options.Axis < 0);
 
-      if (shrink_forbidden) return;
+      if (shrink_forbidden || !JSROOT.gStyle.CanAdjustFrame) return;
 
       var shrink = 0., ypos = draw_vertical.position;
 
       if ((-0.2*w < ypos) && (ypos < 0)) {
          shrink = -ypos/w + 0.001;
          this.shrink_frame_left += shrink;
-      } else
-      if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+      } else if ((ypos > 0) && (ypos < 0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
          shrink = -this.shrink_frame_left;
          this.shrink_frame_left = 0.;
       }
