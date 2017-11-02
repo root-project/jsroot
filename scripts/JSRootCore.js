@@ -28,6 +28,7 @@
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
             'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
             'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
@@ -955,7 +956,8 @@
             modules.push('JSRootTree');
          }
 
-      if ((kind.indexOf('2d;')>=0) || (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
+      if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
+          (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
          if (jsroot._test_d3_ === undefined) {
             if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
                jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.4", debugout);
@@ -979,6 +981,10 @@
             mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
             extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
          }
+         if ((jsroot.sources.indexOf("v6") < 0) && (kind.indexOf('v7;') < 0)) {
+            mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
+            modules.push('JSRootPainter.v6');
+         }
       }
 
       if ((kind.indexOf('savepng;')>=0) && (jsroot.sources.indexOf("savepng")<0)) {
@@ -991,6 +997,11 @@
       if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
          modules.push('JSRootPainter.hist');
+      }
+
+      if ((kind.indexOf('v6;')>=0) && (jsroot.sources.indexOf("v6")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
+         modules.push('JSRootPainter.v6');
       }
 
       if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
