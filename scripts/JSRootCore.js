@@ -99,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 2/11/2017";
+   JSROOT.version = "dev 3/11/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -171,6 +171,8 @@
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
          HierarchyLimit : 250,   // how many items shown on one level of hierarchy
+
+         FrameAxisDrawing : false,  // temporary flag, switch old and new mode of axis drawing thruogh the frame
 
          // these are TStyle attributes, which can be changed via URL 'style' parameter
 

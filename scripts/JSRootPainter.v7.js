@@ -972,7 +972,7 @@
                .attr("class", "xgrid")
                .attr("d", grid)
                .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray",JSROOT.Painter.root_line_styles[grid_style]);
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set

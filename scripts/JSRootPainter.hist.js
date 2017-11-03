@@ -3008,10 +3008,9 @@
    }
 
    THistPainter.prototype.CreateXY = function() {
-      // here we create x,y objects which maps our physical coordinates into pixels
-      // while only first painter really need such object, all others just reuse it
+      // here we create x,y objects which maps user coordinates into pixels
+      // while only first painter really need such objects, all others just reuse them
       // following functions are introduced
-      //    this.GetBin[X/Y]  return bin coordinate
       //    this.Convert[X/Y]  converts root value in JS date when date scale is used
       //    this.[x,y]  these are d3.scale objects
       //    this.gr[x,y]  converts root scale into graphical value
@@ -3023,13 +3022,13 @@
          return;
       }
 
-      this.swap_xy = false;
-      if (this.options.Bar>=20) this.swap_xy = true;
+      this.swap_xy = (this.options.Bar>=20);
       this.logx = this.logy = false;
 
       var w = this.frame_width(), h = this.frame_height(),
           histo = this.GetHisto(),
-          pad = this.root_pad(), use_pad_range = (this.options.Same > 0);
+          pad = this.root_pad(),
+          use_pad_range = (this.options.Same > 0);
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -3292,6 +3291,12 @@
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter() || this.options.Same) return;
+
+      if (JSROOT.gStyle.FrameAxisDrawing) {
+         var fp = this.frame_painter();
+         if (fp) fp.AddInteractive(this.options && this.options.Proj);
+         return;
+      }
 
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
@@ -4267,6 +4272,12 @@
    THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
+      if (JSROOT.gStyle.FrameAxisDrawing) {
+         var fp = this.frame_painter();
+         if (fp) fp.AddInteractive(this.options && this.options.Proj);
+         return;
+      }
+
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
       var svg = this.svg_frame();
@@ -4282,7 +4293,7 @@
       this.zoom_curr = null;    // current point for zooming
       this.touch_cnt = 0;
 
-      if (JSROOT.gStyle.Zooming && (!this.options || !this.options.Proj)) {
+      if (JSROOT.gStyle.Zooming && !forbid_zooming) {
          if (JSROOT.gStyle.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
@@ -5190,6 +5201,11 @@
          if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
                                else this.draw_content = false;
       }
+
+      // used in AllowDefaultYZooming
+      if (this.Dimension() > 1) this.wheel_zoomy = true; else
+      if (this.draw_content) this.wheel_zoomy = false;
+
    }
 
    TH1Painter.prototype.CountStat = function(cond) {

@@ -31,6 +31,15 @@
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
       this.zoom_kind = 0;
+
+      this.mode3d = false;
+      this.shrink_frame_left = 0.;
+      this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+      this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
+      this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
+      this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
+      this.axes_drawn = false;
+      this.keys_handler = null;
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
@@ -54,6 +63,269 @@
    TFramePainter.prototype.GetLastEventPos = function() {
       // return position of last event
       return this.fLastEventPnt;
+   }
+
+   TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
+      var DegToRad = Math.PI/180,
+          alpha2 = (l/2)*DegToRad,
+          delta  = b*DegToRad,
+          r2     = Math.sqrt(2),
+          f      = 2*r2/Math.PI,
+          cdec   = Math.cos(delta),
+          denom  = Math.sqrt(1. + cdec*Math.cos(alpha2)),
+          res = {
+             x: cdec*Math.sin(alpha2)*2.*r2/denom/f/DegToRad,
+             y: Math.sin(delta)*r2/denom/f/DegToRad
+          };
+      //  x *= -1.; // for a skymap swap left<->right
+      return res;
+   }
+
+   TFramePainter.prototype.ProjectMercator2xy = function(l, b) {
+      var aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
+      return { x: l, y: Math.log(aid) };
+   }
+
+   TFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
+      return { x: l*Math.cos(b/180*Math.PI), y: b };
+   }
+
+   TFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
+      return {
+         x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
+         y: 180*Math.sin(b/180*Math.PI/3)
+      };
+   }
+
+   TFramePainter.prototype.RecalculateRange = function(Proj) {
+      // not yet used, could be useful in the future
+
+      if (!Proj) return;
+
+      var pnts = []; // all extremes which used to find
+      if (Proj == 1) {
+         // TODO : check x range not lower than -180 and not higher than 180
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectAitoff2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            // there is an  'equator', check its range in the plot..
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmin*0.9999, 0));
+            pnts.push(this.ProjectAitoff2xy(this.scale_xmax*0.9999, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
+         }
+      } else if (Proj == 2) {
+         if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
+            console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
+            this.options.Proj = 0;
+            return;
+         }
+         pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
+
+      } else if (Proj == 3) {
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
+         }
+      } else if (Proj == 4) {
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
+         pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymin));
+         if (this.scale_ymin<0 && this.scale_ymax>0) {
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmin, 0));
+            pnts.push(this.ProjectParabolic2xy(this.scale_xmax, 0));
+         }
+         if (this.scale_xmin<0 && this.scale_xmax>0) {
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymin));
+            pnts.push(this.ProjectParabolic2xy(0, this.scale_ymax));
+         }
+      }
+
+      this.original_xmin = this.scale_xmin;
+      this.original_xmax = this.scale_xmax;
+      this.original_ymin = this.scale_ymin;
+      this.original_ymax = this.scale_ymax;
+
+      this.scale_xmin = this.scale_xmax = pnts[0].x;
+      this.scale_ymin = this.scale_ymax = pnts[0].y;
+
+      for (var n=1;n<pnts.length;++n) {
+         this.scale_xmin = Math.min(this.scale_xmin, pnts[n].x);
+         this.scale_xmax = Math.max(this.scale_xmax, pnts[n].x);
+         this.scale_ymin = Math.min(this.scale_ymin, pnts[n].y);
+         this.scale_ymax = Math.max(this.scale_ymax, pnts[n].y);
+      }
+   }
+
+   TFramePainter.prototype.DrawGrids = function() {
+      // grid can only be drawn by first painter
+
+      var layer = this.svg_frame().select(".grid_layer");
+
+      layer.selectAll(".xgrid").remove();
+      layer.selectAll(".ygrid").remove();
+
+      var h = this.frame_height(),
+          w = this.frame_width(),
+          grid, grid_style = JSROOT.gStyle.fGridStyle,
+          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
+
+      if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
+
+      // add a grid on x axis, if the option is set
+      if (this.x_handle) {
+         grid = "";
+         for (var n=0;n<this.x_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M0,"+this.x_handle.ticks[n]+"h"+w;
+            else
+               grid += "M"+this.x_handle.ticks[n]+",0v"+h;
+
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "xgrid")
+               .attr("d", grid)
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+      }
+
+      // add a grid on y axis, if the option is set
+      if (this.y_handle) {
+         grid = "";
+         for (var n=0;n<this.y_handle.ticks.length;++n)
+            if (this.swap_xy)
+               grid += "M"+this.y_handle.ticks[n]+",0v"+h;
+            else
+               grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
+
+         if (grid.length > 0)
+          layer.append("svg:path")
+               .attr("class", "ygrid")
+               .attr("d", grid)
+               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+      }
+   }
+
+   TFramePainter.prototype.AxisAsText = function(axis, value) {
+      if (axis == "x") {
+         if (this.x_kind == 'time')
+            value = this.ConvertX(value);
+         if (this.x_handle && ('format' in this.x_handle))
+            return this.x_handle.format(value);
+      } else if (axis == "y") {
+         if (this.y_kind == 'time')
+            value = this.ConvertY(value);
+         if (this.y_handle && ('format' in this.y_handle))
+            return this.y_handle.format(value);
+      } else {
+         if (this.z_handle && ('format' in this.z_handle))
+            return this.z_handle.format(value);
+      }
+
+      return value.toPrecision(4);
+   }
+
+   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, histo, swap_xy) {
+      if (this.axes_drawn) return;
+
+      if ((this.xmin == this.xmax) && (xmin!==xmax)) {
+         this.xmin = xmin;
+         this.xmax = xmax;
+      }
+      if ((this.ymin == this.ymax) && (ymin!==ymax)) {
+         this.ymin = ymin;
+         this.ymax = ymax;
+      }
+   }
+
+   TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
+      // axes can be drawn only for main histogram
+
+      if (this.axes_drawn) return true;
+
+      if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
+
+      this.CreateXY();
+
+      var layer = this.svg_frame().select(".axis_layer"),
+          w = this.frame_width(),
+          h = this.frame_height(),
+          axisx = JSROOT.Create("TAxis"), // temporary object for different attributes
+          axisy = JSROOT.Create("TAxis");
+
+      this.x_handle = new JSROOT.TAxisPainter(axisx, true);
+      this.x_handle.SetDivId(this.divid, -1);
+      this.x_handle.pad_name = this.pad_name;
+
+      this.x_handle.SetAxisConfig("xaxis",
+                                  (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
+                                  this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
+      this.x_handle.invert_side = false;
+      this.x_handle.lbls_both_sides = false;
+      this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
+
+      this.y_handle = new JSROOT.TAxisPainter(axisy, true);
+      this.y_handle.SetDivId(this.divid, -1);
+      this.y_handle.pad_name = this.pad_name;
+
+      this.y_handle.SetAxisConfig("yaxis",
+                                  (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
+                                  this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
+      this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
+      this.y_handle.lbls_both_sides = false;
+
+      var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
+          disable_axis_draw = false, show_second_ticks = false;
+
+      draw_horiz.DrawAxis(false, layer, w, h,
+                          draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                          false, show_second_ticks ? -h : 0, disable_axis_draw);
+
+      draw_vertical.DrawAxis(true, layer, w, h,
+                             draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                             false, show_second_ticks ? w : 0, disable_axis_draw,
+                             draw_vertical.invert_side ? 0 : this.frame_x());
+
+      this.DrawGrids();
+
+      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
+
+         var shrink = 0., ypos = draw_vertical.position;
+
+         if ((-0.2*w < ypos) && (ypos < 0)) {
+            shrink = -ypos/w + 0.001;
+            this.shrink_frame_left += shrink;
+         } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
+            shrink = -this.shrink_frame_left;
+            this.shrink_frame_left = 0.;
+         }
+
+         if (shrink != 0) {
+            this.Shrink(shrink, 0);
+            this.Redraw();
+            this.DrawAxes(true);
+         }
+      }
+
+      this.axes_drawn = true;
+
+      return true;
    }
 
    TFramePainter.prototype.UpdateAttributes = function(force) {
@@ -107,8 +379,37 @@
       this.RedrawPad();
    }
 
+   TFramePainter.prototype.CleanupAxes = function() {
+      delete this.x; delete this.grx;
+      delete this.ConvertX; delete this.RevertX;
+      delete this.y; delete this.gry;
+      delete this.ConvertY; delete this.RevertY;
+      delete this.z; delete this.grz;
+
+      if (this.x_handle) {
+         this.x_handle.Cleanup();
+         delete this.x_handle;
+      }
+
+      if (this.y_handle) {
+         this.y_handle.Cleanup();
+         delete this.y_handle;
+      }
+
+      if (this.z_handle) {
+         this.z_handle.Cleanup();
+         delete this.z_handle;
+      }
+      if (this.draw_g) {
+         this.draw_g.select(".grid_layer").selectAll("*").remove();
+         this.draw_g.select(".axis_layer").selectAll("*").remove();
+      }
+      this.axes_drawn = false;
+   }
+
    TFramePainter.prototype.Cleanup = function() {
       if (this.draw_g) {
+         this.CleanupAxes();
          this.draw_g.selectAll("*").remove();
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
@@ -167,7 +468,10 @@
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
+         this.CleanupAxes();
       }
+
+      this.axes_drawn = false;
 
       var trans = "translate(" + lm + "," + tm + ")";
       if (rotate) {
@@ -403,6 +707,31 @@
       return true; // just process any key press
    }
 
+   TFramePainter.prototype.FindAlternativeClickHandler = function(pos) {
+      var pp = this.pad_painter(true);
+      if (!pp) return false;
+
+      var pnt = { x: pos[0], y: pos[1], painters: true, disabled: true, click_handler: true };
+
+      var hints = pp.GetTooltips(pnt);
+      for (var k=0;k<hints.length;++k)
+         if (hints[k] && (typeof hints[k].click_handler == 'function')) {
+            hints[k].click_handler(hints[k]);
+            return true;
+         }
+
+      return false;
+   }
+
+   TFramePainter.prototype.clearInteractiveElements = function() {
+      JSROOT.Painter.closeMenu();
+      if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
+      this.zoom_kind = 0;
+
+      // enable tooltip in frame painter
+      this.SwitchTooltip(true);
+   }
+
    TFramePainter.prototype.startRectSel = function() {
       // ignore when touch selection is activated
 
@@ -548,6 +877,95 @@
       if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
       if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
       this.Unzoom(kind);
+   }
+
+   TFramePainter.prototype.AllowDefaultYZooming = function() {
+      // return true if default Y zooming should be enabled
+      // it is typically for 2-Dim histograms or
+      // when histogram not draw, defined by other painters
+
+      var pad_painter = this.pad_painter(true);
+      if (pad_painter &&  pad_painter.painters)
+         for (var k = 0; k < pad_painter.painters.length; ++k) {
+            var subpainter = pad_painter.painters[k];
+            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
+               return subpainter.wheel_zoomy;
+         }
+
+      return false;
+   }
+
+   TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
+
+      item.min = item.max = undefined;
+      item.changed = false;
+      if (ignore && item.ignore) return;
+
+      var delta = 0, delta_left = 1, delta_right = 1;
+
+      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
+      if ('dright' in item) { delta_right = item.dright; delta = 1; }
+
+      if ('delta' in item) {
+         delta = item.delta;
+      } else if (event && event.wheelDelta !== undefined ) {
+         // WebKit / Opera / Explorer 9
+         delta = -event.wheelDelta;
+      } else if (event && event.deltaY !== undefined ) {
+         // Firefox
+         delta = event.deltaY;
+      } else if (event && event.detail !== undefined) {
+         delta = event.detail;
+      }
+
+      if (delta===0) return;
+      delta = (delta<0) ? -0.2 : 0.2;
+
+      delta_left *= delta
+      delta_right *= delta;
+
+      var lmin = item.min = this["scale_"+item.name+"min"],
+          lmax = item.max = this["scale_"+item.name+"max"],
+          gmin = this[item.name+"min"],
+          gmax = this[item.name+"max"];
+
+      if ((item.min === item.max) && (delta<0)) {
+         item.min = gmin;
+         item.max = gmax;
+      }
+
+      if (item.min >= item.max) return;
+
+      if ((dmin>0) && (dmin<1)) {
+         if (this['log'+item.name]) {
+            var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
+            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
+            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
+            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
+         } else {
+            var rx_left = (item.max - item.min), rx_right = rx_left;
+            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
+            item.min += -delta_left*dmin*rx_left;
+
+            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
+
+            item.max -= -delta_right*(1-dmin)*rx_right;
+         }
+         if (item.min >= item.max)
+            item.min = item.max = undefined;
+         else
+         if (delta_left !== delta_right) {
+            // extra check case when moving left or right
+            if (((item.min < gmin) && (lmin===gmin)) ||
+                ((item.max > gmax) && (lmax==gmax)))
+                   item.min = item.max = undefined;
+         }
+
+      } else {
+         item.min = item.max = undefined;
+      }
+
+      item.changed = ((item.min !== undefined) && (item.max !== undefined));
    }
 
    TFramePainter.prototype.mouseWheel = function() {
