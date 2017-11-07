@@ -2234,13 +2234,22 @@
          return;
       }
 
-      this.swap_xy = (this.options.Bar>=20);
+      var swap_xy = (this.options.Bar >= 20),
+          histo = this.GetHisto(),
+          use_pad_range = (this.options.Same > 0);
+
+      if (JSROOT.gStyle.FrameAxisDrawing) {
+         var fp = this.frame_painter();
+         fp.CreateXY(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, use_pad_range, swap_xy);
+         this.x = fp.x;
+         this.y = fp.y;
+         return;
+      }
+
+      this.swap_xy = swap_xy;
       this.logx = this.logy = false;
 
-      var w = this.frame_width(), h = this.frame_height(),
-          histo = this.GetHisto(),
-          pad = this.root_pad(),
-          use_pad_range = (this.options.Same > 0);
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
@@ -2427,6 +2436,11 @@
    THistPainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
+
+      if (JSROOT.gStyle.FrameAxisDrawing) {
+         var fp = this.frame_painter();
+         return fp.DrawGrids();
+      }
 
       var layer = this.svg_frame().select(".grid_layer");
 

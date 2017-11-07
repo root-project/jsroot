@@ -939,6 +939,206 @@
       }
    }
 
+   TFramePainter.prototype.CreateXY = function(xaxis, xmin, xmax, yaxis, ymin, ymax, use_pad_range, swap_xy) {
+      this.xaxis = xaxis;
+      this.xmin = xmin;
+      this.xmax = xmax;
+
+      this.yaxis = yaxis;
+      this.ymin = ymin;
+      this.ymax = ymax;
+
+      this.use_pad_range = use_pad_range;
+      this.swap_xy = swap_xy;
+
+      this.swap_xy = (this.options.Bar>=20);
+      this.logx = this.logy = false;
+
+      var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
+
+      this.scale_xmin = this.xmin;
+      this.scale_xmax = this.xmax;
+      if (use_pad_range) {
+         var dx = pad.fX2 - pad.fX1;
+         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
+         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+
+      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
+      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+
+      if (use_pad_range) {
+         var dy = pad.fY2 - pad.fY1;
+         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
+         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
+         if (pad.fLogx) {
+            this.scale_xmin = Math.pow(10, this.scale_xmin);
+            this.scale_xmax = Math.pow(10, this.scale_xmax);
+         }
+      }
+
+      // projection should be assigned
+      this.RecalculateRange();
+
+      if (this.xaxis.fTimeDisplay) {
+         this.x_kind = 'time';
+         this.timeoffsetx = JSROOT.Painter.getTimeOffset(this.xaxis);
+         this.ConvertX = function(x) { return new Date(this.timeoffsetx + x*1000); };
+         this.RevertX = function(grx) { return (this.x.invert(grx) - this.timeoffsetx) / 1000; };
+      } else {
+         this.x_kind = !this.xaxis.fLabels ? 'normal' : 'labels';
+         this.ConvertX = function(x) { return x; };
+         this.RevertX = function(grx) { return this.x.invert(grx); };
+      }
+
+      if (this.zoom_xmin != this.zoom_xmax) {
+         this.scale_xmin = this.zoom_xmin;
+         this.scale_xmax = this.zoom_xmax;
+      }
+
+      if (this.x_kind == 'time') {
+         this.x = d3.scaleTime();
+      } else
+      if (this.swap_xy ? pad.fLogy : pad.fLogx) {
+         this.logx = true;
+
+         if (this.scale_xmax <= 0) this.scale_xmax = 0;
+
+         if ((this.scale_xmin <= 0) && (this.nbinsx>0) && !this.swap_xy)
+            for (var i=0;i<this.nbinsx;++i) {
+               this.scale_xmin = Math.max(this.scale_xmin, this.xaxis.GetBinLowEdge(i+1));
+               if (this.scale_xmin>0) break;
+            }
+
+         if ((this.scale_xmin <= 0) || (this.scale_xmin >= this.scale_xmax))
+            this.scale_xmin = this.scale_xmax * 0.0001;
+
+         this.x = d3.scaleLog();
+      } else {
+         this.x = d3.scaleLinear();
+      }
+
+      this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
+            .range(this.swap_xy ? [ h, 0 ] : [ 0, w ]);
+
+      if (this.x_kind == 'time') {
+         // we emulate scale functionality
+         this.grx = function(val) { return this.x(this.ConvertX(val)); }
+      } else
+      if (this.logx) {
+         this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
+      } else {
+         this.grx = this.x;
+      }
+
+      if (this.zoom_ymin != this.zoom_ymax) {
+         this.scale_ymin = this.zoom_ymin;
+         this.scale_ymax = this.zoom_ymax;
+      }
+
+      if (this.yaxis.fTimeDisplay) {
+         this.y_kind = 'time';
+         this.timeoffsety = JSROOT.Painter.getTimeOffset(this.yaxis);
+         this.ConvertY = function(y) { return new Date(this.timeoffsety + y*1000); };
+         this.RevertY = function(gry) { return (this.y.invert(gry) - this.timeoffsety) / 1000; };
+      } else {
+         this.y_kind = !this.yaxis.fLabels ? 'normal' : 'labels';
+         this.ConvertY = function(y) { return y; };
+         this.RevertY = function(gry) { return this.y.invert(gry); };
+      }
+
+      if (this.swap_xy ? pad.fLogx : pad.fLogy) {
+         this.logy = true;
+         if (this.scale_ymax <= 0)
+            this.scale_ymax = 1;
+         else
+         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1) && this.draw_content)
+            this.scale_ymax*=1.8;
+
+         // this is for 2/3 dim histograms - find first non-negative bin
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1) && !this.swap_xy)
+            for (var i=0;i<this.nbinsy;++i) {
+               this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
+               if (this.scale_ymin>0) break;
+            }
+
+         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0) && (this.ymin_nz < 1e-2*this.ymax))
+            this.scale_ymin = 0.3*this.ymin_nz;
+
+         if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
+            this.scale_ymin = 3e-4 * this.scale_ymax;
+
+         this.y = d3.scaleLog();
+      } else
+      if (this.y_kind=='time') {
+         this.y = d3.scaleTime();
+      } else {
+         this.y = d3.scaleLinear()
+      }
+
+      this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
+            .range(this.swap_xy ? [ 0, w ] : [ h, 0 ]);
+
+      if (this.y_kind=='time') {
+         // we emulate scale functionality
+         this.gry = function(val) { return this.y(this.ConvertY(val)); }
+      } else
+      if (this.logy) {
+         // make protection for log
+         this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
+      } else {
+         this.gry = this.y;
+      }
+
+      this.SetRootPadRange(pad);
+   }
+
+   /** Set selected range back to TPad object */
+   TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+      if (!pad || this.use_pad_range) return;
+
+      if (is3d) {
+         // this is fake values, algorithm should be copied from TView3D class of ROOT
+         pad.fLogx = pad.fLogy = 0;
+         pad.fUxmin = pad.fUymin = -0.9;
+         pad.fUxmax = pad.fUymax = 0.9;
+      } else {
+         pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
+         pad.fUxmin = this.scale_xmin;
+         pad.fUxmax = this.scale_xmax;
+         pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
+         pad.fUymin = this.scale_ymin;
+         pad.fUymax = this.scale_ymax;
+      }
+
+      if (pad.fLogx) {
+         pad.fUxmin = JSROOT.log10(pad.fUxmin);
+         pad.fUxmax = JSROOT.log10(pad.fUxmax);
+      }
+      if (pad.fLogy) {
+         pad.fUymin = JSROOT.log10(pad.fUymin);
+         pad.fUymax = JSROOT.log10(pad.fUymax);
+      }
+
+      var rx = pad.fUxmax - pad.fUxmin,
+          mx = 1 - pad.fLeftMargin - pad.fRightMargin,
+          ry = pad.fUymax - pad.fUymin,
+          my = 1 - pad.fBottomMargin - pad.fTopMargin;
+
+      if (mx <= 0) mx = 0.01; // to prevent overflow
+      if (my <= 0) my = 0.01;
+
+      pad.fX1 = pad.fUxmin - rx/mx*pad.fLeftMargin;
+      pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
+      pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
+      pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
+   }
+
+
    TFramePainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
 
@@ -1028,15 +1228,13 @@
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
-      this.CreateXY();
+      // this.CreateXY(); should be called from histogram painter
 
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
-          h = this.frame_height(),
-          axisx = JSROOT.Create("TAxis"), // temporary object for different attributes
-          axisy = JSROOT.Create("TAxis");
+          h = this.frame_height();
 
-      this.x_handle = new JSROOT.TAxisPainter(axisx, true);
+      this.x_handle = new JSROOT.TAxisPainter(this.xaxis, true);
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
 
@@ -1047,7 +1245,7 @@
       this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
 
-      this.y_handle = new JSROOT.TAxisPainter(axisy, true);
+      this.y_handle = new JSROOT.TAxisPainter(this.yxais, true);
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
 
@@ -1186,6 +1384,8 @@
                     .property('interactive_set', null);
       }
       this.draw_g = null;
+      this.xaxis = null;
+      this.yaxis = null;
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
