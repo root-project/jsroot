@@ -26,6 +26,774 @@
 
    JSROOT.sources.push("v6");
 
+   // =======================================================================
+
+   function TAxisPainter(axis, embedded) {
+      JSROOT.TObjectPainter.call(this, axis);
+
+      this.embedded = embedded; // indicate that painter embedded into the histo painter
+
+      this.name = "yaxis";
+      this.kind = "normal";
+      this.func = null;
+      this.order = 0; // scaling order for axis labels
+
+      this.full_min = 0;
+      this.full_max = 1;
+      this.scale_min = 0;
+      this.scale_max = 1;
+      this.ticks = []; // list of major ticks
+      this.invert_side = false;
+      this.lbls_both_sides = false; // draw labels on both sides
+   }
+
+   TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   TAxisPainter.prototype.Cleanup = function() {
+
+      this.ticks = [];
+      this.func = null;
+      delete this.format;
+
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
+   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
+      this.name = name;
+      this.kind = kind;
+      this.func = func;
+
+      this.full_min = min;
+      this.full_max = max;
+      this.scale_min = smin;
+      this.scale_max = smax;
+   }
+
+   TAxisPainter.prototype.format10Exp = function(order, value) {
+      var res = "";
+      if (value) {
+         value = Math.round(value/Math.pow(10,order));
+         if ((value!=0) && (value!=1)) res = value.toString() + (JSROOT.gStyle.Latex ? "#times" : "x");
+      }
+      res += "10";
+      if (JSROOT.gStyle.Latex > 1) return res + "^{" + order + "}";
+      var superscript_symbols = {
+            '0': '\u2070', '1': '\xB9', '2': '\xB2', '3': '\xB3', '4': '\u2074', '5': '\u2075',
+            '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079', '-': '\u207B'
+         };
+      var str = order.toString();
+      for (var n=0;n<str.length;++n) res += superscript_symbols[str[n]];
+      return res;
+   }
+
+   TAxisPainter.prototype.CreateFormatFuncs = function() {
+
+      var axis = this.GetObject(),
+          is_gaxis = (axis && axis._typename === 'TGaxis');
+
+      delete this.format;// remove formatting func
+
+      var ndiv = 508;
+      if (is_gaxis) ndiv = axis.fNdiv; else
+      if (axis) ndiv = Math.max(axis.fNdivisions, 4);
+
+      this.nticks = ndiv % 100;
+      this.nticks2 = (ndiv % 10000 - this.nticks) / 100;
+      this.nticks3 = Math.floor(ndiv/10000);
+
+      if (axis && !is_gaxis && (this.nticks > 7)) this.nticks = 7;
+
+      var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+      if (gr_range<=0) gr_range = 100;
+
+      if (this.kind == 'time') {
+         if (this.nticks > 8) this.nticks = 8;
+
+         var scale_range = this.scale_max - this.scale_min,
+             tf1 = JSROOT.Painter.getTimeFormat(axis),
+             tf2 = JSROOT.Painter.chooseTimeFormat(scale_range / gr_range, false);
+
+         if ((tf1.length == 0) || (scale_range < 0.1 * (this.full_max - this.full_min)))
+            tf1 = JSROOT.Painter.chooseTimeFormat(scale_range / this.nticks, true);
+
+         this.tfunc1 = this.tfunc2 = d3.timeFormat(tf1);
+         if (tf2!==tf1)
+            this.tfunc2 = d3.timeFormat(tf2);
+
+         this.format = function(d, asticks) {
+            return asticks ? this.tfunc1(d) : this.tfunc2(d);
+         }
+
+      } else if (this.kind == 'log') {
+         if (this.nticks2 > 1) {
+            this.nticks *= this.nticks2; // all log ticks (major or minor) created centrally
+            this.nticks2 = 1;
+         }
+         this.noexp = axis ? axis.TestBit(JSROOT.EAxisBits.kNoExponent) : false;
+         if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
+         this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
+
+         this.format = function(d, asticks, notickexp) {
+            var val = parseFloat(d), rnd = Math.round(val);
+            if (!asticks)
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : val.toExponential(4);
+
+            if (val <= 0) return null;
+            var vlog = JSROOT.log10(val);
+            if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
+               if (!this.noexp && !notickexp)
+                  return this.format10Exp(Math.floor(vlog+0.01), val);
+
+               return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
+            }
+            return null;
+         }
+      } else if (this.kind == 'labels') {
+         this.nticks = 50; // for text output allow max 50 names
+         var scale_range = this.scale_max - this.scale_min;
+         if (this.nticks > scale_range)
+            this.nticks = Math.round(scale_range);
+         this.nticks2 = 1;
+
+         this.axis = axis;
+
+         this.format = function(d) {
+            var indx = Math.round(parseInt(d)) + 1;
+            if ((indx<1) || (indx>this.axis.fNbins)) return null;
+            for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
+               var tstr = this.axis.fLabels.arr[i];
+               if (tstr.fUniqueID == indx) return tstr.fString;
+            }
+            return null;
+         }
+      } else {
+
+         this.order = 0;
+         this.ndig = 0;
+
+         this.format = function(d, asticks) {
+            var val = parseFloat(d);
+            if (asticks && this.order) val = val / Math.pow(10, this.order);
+
+            if (val === Math.round(val))
+               return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
+
+            return (this.ndig>10) ? val.toExponential(this.ndig- (asticks ? 11 : 9)) : val.toFixed(this.ndig + (asticks ? 0 : 2));
+         }
+      }
+   }
+
+   TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+      if (!this.noticksopt) return this.func.ticks(ndiv * (ndiv2 || 1));
+
+      if (ndiv2) ndiv = (ndiv-1) * ndiv2;
+      var dom = this.func.domain(), ticks = [];
+      for (var n=0;n<=ndiv;++n)
+         ticks.push((dom[0]*(ndiv-n) + dom[1]*n)/ndiv);
+      return ticks;
+   }
+
+   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+      // function used to create array with minor/middle/major ticks
+
+      if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
+
+      var handle = { nminor: 0, nmiddle: 0, nmajor: 0, func: this.func };
+
+      handle.minor = handle.middle = handle.major = this.ProduceTicks(this.nticks);
+
+      if (only_major_as_array) {
+         var res = handle.major, delta = (this.scale_max - this.scale_min)*1e-5;
+         if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
+         if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
+         return res;
+      }
+
+      if (this.nticks2 > 1) {
+         handle.minor = handle.middle = this.ProduceTicks(handle.major.length, this.nticks2);
+
+         var gr_range = Math.abs(this.func.range()[1] - this.func.range()[0]);
+
+         // avoid black filling by middle-size
+         if ((handle.middle.length <= handle.major.length) || (handle.middle.length > gr_range/3.5)) {
+            handle.minor = handle.middle = handle.major;
+         } else
+         if ((this.nticks3 > 1) && (this.kind !== 'log'))  {
+            handle.minor = this.ProduceTicks(handle.middle.length, this.nticks3);
+            if ((handle.minor.length <= handle.middle.length) || (handle.minor.length > gr_range/1.7)) handle.minor = handle.middle;
+         }
+      }
+
+      handle.reset = function() {
+         this.nminor = this.nmiddle = this.nmajor = 0;
+      }
+
+      handle.next = function(doround) {
+         if (this.nminor >= this.minor.length) return false;
+
+         this.tick = this.minor[this.nminor++];
+         this.grpos = this.func(this.tick);
+         if (doround) this.grpos = Math.round(this.grpos);
+         this.kind = 3;
+
+         if ((this.nmiddle < this.middle.length) && (Math.abs(this.grpos - this.func(this.middle[this.nmiddle])) < 1)) {
+            this.nmiddle++;
+            this.kind = 2;
+         }
+
+         if ((this.nmajor < this.major.length) && (Math.abs(this.grpos - this.func(this.major[this.nmajor])) < 1) ) {
+            this.nmajor++;
+            this.kind = 1;
+         }
+         return true;
+      }
+
+      handle.last_major = function() {
+         return (this.kind !== 1) ? false : this.nmajor == this.major.length;
+      }
+
+      handle.next_major_grpos = function() {
+         if (this.nmajor >= this.major.length) return null;
+         return this.func(this.major[this.nmajor]);
+      }
+
+      this.order = 0;
+      this.ndig = 0;
+
+      // at the moment when drawing labels, we can try to find most optimal text representation for them
+
+      if ((this.kind == "normal") && (handle.major.length > 0)) {
+
+         var maxorder = 0, minorder = 0;
+
+         if (!optionNoexp) {
+            var maxtick = Math.max(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                mintick = Math.min(Math.abs(handle.major[0]),Math.abs(handle.major[handle.major.length-1])),
+                ord1 = (maxtick > 0) ? Math.round(JSROOT.log10(maxtick)/3)*3 : 0,
+                ord2 = (mintick > 0) ? Math.round(JSROOT.log10(mintick)/3)*3 : 0;
+
+             if (maxtick || mintick) {
+                maxorder = Math.max(ord1,ord2) + 3;
+                minorder = Math.min(ord1,ord2) - 3;
+             }
+         }
+
+         // now try to find best combination of order and ndig for labels
+
+         var bestorder = 0, bestndig = this.ndig, bestlen = 1e10;
+
+         for (var order = minorder; order <= maxorder; order+=3) {
+            this.order = order;
+            this.ndig = 0;
+            var lbls = [], indx = 0, totallen = 0;
+            while (indx<handle.major.length) {
+               var lbl = this.format(handle.major[indx], true);
+               if (lbls.indexOf(lbl)<0) {
+                  lbls.push(lbl);
+                  totallen += lbl.length;
+                  indx++;
+                  continue;
+               }
+               if (++this.ndig > 15) break; // not too many digits, anyway it will be exponential
+               lbls = []; indx = 0; totallen = 0;
+            }
+
+            // for order==0 we should virtually remove "0." and extra label on top
+            if (!order && (this.ndig<4)) totallen-=(handle.major.length*2+3);
+
+            if (totallen < bestlen) {
+               bestlen = totallen;
+               bestorder = this.order;
+               bestndig = this.ndig;
+            }
+         }
+
+         this.order = bestorder;
+         this.ndig = bestndig;
+
+         if (optionInt) {
+            if (this.order) console.warn('Axis painter - integer labels are configured, but axis order ' + this.order + ' is preferable');
+            if (this.ndig) console.warn('Axis painter - integer labels are configured, but ' + this.ndig + ' decimal digits are required');
+            this.ndig = 0;
+            this.order = 0;
+         }
+      }
+
+      return handle;
+   }
+
+   TAxisPainter.prototype.IsCenterLabels = function() {
+      if (this.kind === 'labels') return true;
+      if (this.kind === 'log') return false;
+      var axis = this.GetObject();
+      return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
+   }
+
+   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+      if (!JSROOT.gStyle.MoveResize) return;
+
+      var pthis = this,  drag_rect = null, prefix = "", drag_move,
+          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos;
+      if (JSROOT._test_d3_ === 3) {
+         prefix = "drag";
+         drag_move = d3.behavior.drag().origin(Object);
+      } else {
+         drag_move = d3.drag().subject(Object);
+      }
+
+      drag_move
+         .on(prefix+"start",  function() {
+
+            d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
+            var box = title_g.node().getBBox(), // check that elements visible, request precise value
+                axis = pthis.GetObject();
+
+            new_x = acc_x = title_g.property('shift_x');
+            new_y = acc_y = title_g.property('shift_y');
+
+            sign_0 = vertical ? (acc_x>0) : (acc_y>0); // sign should remain
+
+            if (axis.TestBit(JSROOT.EAxisBits.kCenterTitle))
+               alt_pos = (reverse === vertical) ? axis_length : 0;
+            else
+               alt_pos = Math.round(axis_length/2);
+
+            drag_rect = title_g.append("rect")
+                 .classed("zoom", true)
+                 .attr("x", box.x)
+                 .attr("y", box.y)
+                 .attr("width", box.width)
+                 .attr("height", box.height)
+                 .style("cursor", "move");
+//                 .style("pointer-events","none"); // let forward double click to underlying elements
+          }).on("drag", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               acc_x += d3.event.dx;
+               acc_y += d3.event.dy;
+
+               var set_x = title_g.property('shift_x'),
+                   set_y = title_g.property('shift_y');
+
+               if (vertical) {
+                  set_x = acc_x;
+                  if (Math.abs(acc_y - set_y) > Math.abs(acc_y - alt_pos)) set_y = alt_pos;
+               } else {
+                  set_y = acc_y;
+                  if (Math.abs(acc_x - set_x) > Math.abs(acc_x - alt_pos)) set_x = alt_pos;
+               }
+
+               if (sign_0 === (vertical ? (set_x>0) : (set_y>0))) {
+                  new_x = set_x; new_y = set_y;
+                  title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
+               }
+
+          }).on(prefix+"end", function() {
+               if (!drag_rect) return;
+
+               d3.event.sourceEvent.preventDefault();
+               d3.event.sourceEvent.stopPropagation();
+
+               title_g.property('shift_x', new_x)
+                      .property('shift_y', new_y);
+
+               var axis = pthis.GetObject();
+
+               axis.fTitleOffset = (vertical ? new_x : new_y) / offset_k;
+               if ((vertical ? new_y : new_x) === alt_pos) axis.InvertBit(JSROOT.EAxisBits.kCenterTitle);
+
+               drag_rect.remove();
+               drag_rect = null;
+            });
+
+      title_g.style("cursor", "move").call(drag_move);
+   }
+
+   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+      // function draws  TAxis or TGaxis object
+
+      var axis = this.GetObject(), chOpt = "",
+          is_gaxis = (axis && axis._typename === 'TGaxis'),
+          axis_g = layer, tickSize = 0.03,
+          scaling_size = 100, draw_lines = true,
+          pad_w = this.pad_width() || 10,
+          pad_h = this.pad_height() || 10;
+
+      this.vertical = vertical;
+
+      function myXor(a,b) { return ( a && !b ) || (!a && b); }
+
+      // shift for second ticks set (if any)
+      if (!second_shift) second_shift = 0; else
+      if (this.invert_side) second_shift = -second_shift;
+
+      if (is_gaxis) {
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
+         draw_lines = axis.fLineColor != 0;
+         chOpt = axis.fChopt;
+         tickSize = axis.fTickSize;
+         scaling_size = (vertical ? 1.7*h : 0.6*w);
+      } else {
+         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
+         chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
+         tickSize = axis.fTickLength;
+         scaling_size = (vertical ? pad_w : pad_h);
+      }
+
+      if (!is_gaxis || (this.name === "zaxis")) {
+         axis_g = layer.select("." + this.name + "_container");
+         if (axis_g.empty())
+            axis_g = layer.append("svg:g").attr("class",this.name + "_container");
+         else
+            axis_g.selectAll("*").remove();
+      } else {
+         if (!disable_axis_drawing && draw_lines)
+            axis_g.append("svg:line")
+                  .attr("x1",0).attr("y1",0)
+                  .attr("x1",vertical ? 0 : w)
+                  .attr("y1", vertical ? h : 0)
+                  .call(this.lineatt.func);
+      }
+
+      axis_g.attr("transform", transform || null);
+
+      var side = 1, ticks_plusminus = 0,
+          text_scaling_size = Math.min(pad_w, pad_h),
+          optionPlus = (chOpt.indexOf("+")>=0),
+          optionMinus = (chOpt.indexOf("-")>=0),
+          optionSize = (chOpt.indexOf("S")>=0),
+          optionY = (chOpt.indexOf("Y")>=0),
+          optionUp = (chOpt.indexOf("0")>=0),
+          optionDown = (chOpt.indexOf("O")>=0),
+          optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
+          optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
+          optionInt = (chOpt.indexOf("I")>=0),    // integer labels
+          optionNoexp = axis.TestBit(JSROOT.EAxisBits.kNoExponent);
+
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickPlus)) optionPlus = true;
+      if (is_gaxis && axis.TestBit(JSROOT.EAxisBits.kTickMinus)) optionMinus = true;
+
+      if (optionPlus && optionMinus) { side = 1; ticks_plusminus = 1; } else
+      if (optionMinus) { side = myXor(reverse,vertical) ? 1 : -1; } else
+      if (optionPlus) { side = myXor(reverse,vertical) ? -1 : 1; }
+
+      tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
+
+      if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
+
+      this.CreateFormatFuncs();
+
+      var res = "", res2 = "", lastpos = 0, lasth = 0;
+
+      // first draw ticks
+
+      this.ticks = [];
+
+      var handle = this.CreateTicks(false, optionNoexp, optionNoopt, optionInt);
+
+      while (handle.next(true)) {
+
+         var h1 = Math.round(tickSize/4), h2 = 0;
+
+         if (handle.kind < 3)
+            h1 = Math.round(tickSize/2);
+
+         if (handle.kind == 1) {
+            // if not showing labels, not show large tick
+            if (!('format' in this) || (this.format(handle.tick,true)!==null)) h1 = tickSize;
+            this.ticks.push(handle.grpos); // keep graphical positions of major ticks
+         }
+
+         if (ticks_plusminus > 0) h2 = -h1; else
+         if (side < 0) { h2 = -h1; h1 = 0; } else { h2 = 0; }
+
+         if (res.length == 0) {
+            res = vertical ? ("M"+h1+","+handle.grpos) : ("M"+handle.grpos+","+(-h1));
+            res2 = vertical ? ("M"+(second_shift-h1)+","+handle.grpos) : ("M"+handle.grpos+","+(second_shift+h1));
+         } else {
+            res += vertical ? ("m"+(h1-lasth)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(lasth-h1));
+            res2 += vertical ? ("m"+(lasth-h1)+","+(handle.grpos-lastpos)) : ("m"+(handle.grpos-lastpos)+","+(h1-lasth));
+         }
+
+         res += vertical ? ("h"+ (h2-h1)) : ("v"+ (h1-h2));
+         res2 += vertical ? ("h"+ (h1-h2)) : ("v"+ (h2-h1));
+
+         lastpos = handle.grpos;
+         lasth = h2;
+      }
+
+      if ((res.length > 0) && !disable_axis_drawing && draw_lines)
+         axis_g.append("svg:path").attr("d", res).call(this.lineatt.func);
+
+      if ((second_shift!==0) && (res2.length>0) && !disable_axis_drawing  && draw_lines)
+         axis_g.append("svg:path").attr("d", res2).call(this.lineatt.func);
+
+      var labelsize = Math.round( (axis.fLabelSize < 1) ? axis.fLabelSize * text_scaling_size : axis.fLabelSize);
+      if ((labelsize <= 0) || (Math.abs(axis.fLabelOffset) > 1.1)) optionUnlab = true; // disable labels when size not specified
+
+      // draw labels (sometime on boths sides)
+      if (!disable_axis_drawing && !optionUnlab) {
+
+         var label_color = this.get_color(axis.fLabelColor),
+             labeloffset = Math.round(axis.fLabelOffset*text_scaling_size),
+             center_lbls = this.IsCenterLabels(),
+             rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
+             textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
+             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
+
+         if (this.lbls_both_sides)
+            label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
+
+         for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
+
+            if (lcnt > 0) side = -side;
+
+            var lastpos = 0,
+                fix_coord = vertical ? -labeloffset*side : (labeloffset+2)*side + ticks_plusminus*tickSize;
+
+            labelfont = JSROOT.Painter.getFontDetails(axis.fLabelFont, labelsize);
+
+            this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
+
+            for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
+
+               var lbl = this.format(handle.major[nmajor], true);
+               if (lbl === null) continue;
+
+               var pos = Math.round(this.func(handle.major[nmajor])),
+                   gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
+                   gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
+
+               if (center_lbls) {
+                  var gap = gap_after || gap_before;
+                  pos = Math.round(pos - (vertical ? 0.5*gap : -0.5*gap));
+                  if ((pos < -5) || (pos > (vertical ? h : w) + 5)) continue;
+               }
+
+               var arg = { text: lbl, color: label_color, latex: 1, draw_g: label_g[lcnt] };
+
+               maxtextlen = Math.max(maxtextlen, lbl.length);
+
+               if (vertical) {
+                  arg.x = fix_coord;
+                  arg.y = pos;
+                  arg.align = rotate_lbls ? ((side<0) ? 23 : 20) : ((side<0) ? 12 : 32);
+               } else {
+                  arg.x = pos;
+                  arg.y = fix_coord;
+                  arg.align = rotate_lbls ? ((side<0) ? 12 : 32) : ((side<0) ? 20 : 23);
+               }
+
+               if (rotate_lbls) arg.rotate = 270;
+
+               var textwidth = this.DrawText(arg);
+
+               if (textwidth && ((!vertical && !rotate_lbls) || (vertical && rotate_lbls)) && (this.kind != 'log')) {
+                  var maxwidth = gap_before*0.45 + gap_after*0.45;
+                  if (!gap_before) maxwidth = 0.9*gap_after; else
+                  if (!gap_after) maxwidth = 0.9*gap_before;
+                  textscale = Math.min(textscale, maxwidth / textwidth);
+               } else if (vertical && max_text_width && !lcnt && (max_text_width - labeloffset > 20) && (textwidth > max_text_width - labeloffset)) {
+                  textscale = Math.min(textscale, (max_text_width - labeloffset) / textwidth);
+               }
+
+               if (lastpos && (pos!=lastpos) && ((vertical && !rotate_lbls) || (!vertical && rotate_lbls))) {
+                  var axis_step = Math.abs(pos-lastpos);
+                  textscale = Math.min(textscale, 0.9*axis_step/labelsize);
+               }
+
+               lastpos = pos;
+            }
+
+            if (this.order)
+               this.DrawText({ color: label_color,
+                               x: vertical ? side*5 : w+5,
+                               y: this.has_obstacle ? fix_coord : (vertical ? -3 : -3*side),
+                               align: vertical ? ((side<0) ? 30 : 10) : ( myXor(this.has_obstacle, (side<0)) ? 13 : 10 ),
+                               latex: 1,
+                               text: '#times' + this.format10Exp(this.order),
+                               draw_g: label_g[lcnt]
+               });
+         }
+
+         if ((textscale > 0.01) && (textscale < 0.7) && !vertical && !rotate_lbls && (maxtextlen > 5) && !this.lbls_both_sides) {
+            lbls_tilt = true;
+            textscale *= 3;
+         }
+
+         for (var lcnt = 0; lcnt < label_g.length; ++lcnt) {
+            if ((textscale > 0.01) && (textscale < 1))
+               this.TextScaleFactor(1/textscale, label_g[lcnt]);
+
+            this.FinishTextDrawing(label_g[lcnt]);
+            if (lbls_tilt)
+               label_g[lcnt].selectAll("text").each(function() {
+                  var txt = d3.select(this), tr = txt.attr("transform");
+                  txt.attr("transform", tr + " rotate(25)").style("text-anchor", "start");
+               });
+         }
+
+         if (label_g.length > 1) side = -side;
+
+         if (labelfont) labelsize = labelfont.size; // use real font size
+      }
+
+      if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
+         var r =  axis_g.append("svg:rect")
+                        .attr("class", "axis_zoom")
+                        .style("opacity", "0")
+                        .style("cursor", "crosshair");
+
+         if (vertical)
+            r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
+             .attr("y", 0)
+             .attr("width", 2*labelsize + 3)
+             .attr("height", h)
+         else
+            r.attr("x", 0).attr("y", (side>0) ? 0 : -labelsize - 3)
+             .attr("width", w).attr("height", labelsize + 3);
+      }
+
+      if ((axis.fTitle.length > 0) && !disable_axis_drawing) {
+         var title_g = axis_g.append("svg:g").attr("class", "axis_title"),
+             title_fontsize = (axis.fTitleSize >= 1) ? axis.fTitleSize : Math.round(axis.fTitleSize * text_scaling_size),
+             title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.pad_height("") || 10)),
+             center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
+             rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
+             title_color = this.get_color(axis.fTitleColor),
+             shift_x = 0, shift_y = 0;
+
+         this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
+
+         var myxor = ((rotate<0) && !reverse) || ((rotate>=0) && reverse);
+
+         if (vertical) {
+            title_offest_k *= -side*pad_w;
+
+            shift_x = Math.round(title_offest_k*axis.fTitleOffset);
+
+            if ((this.name == "zaxis") && is_gaxis && ('getBoundingClientRect' in axis_g.node())) {
+               // special handling for color palette labels - draw them always on right side
+               var rect = axis_g.node().getBoundingClientRect();
+               if (shift_x < rect.width - tickSize) shift_x = Math.round(rect.width - tickSize);
+            }
+
+            shift_y = Math.round(center ? h/2 : (reverse ? h : 0));
+
+            this.DrawText({ align: (center ? "middle" : (myxor ? "begin" : "end" )) + ";middle",
+                            rotate: (rotate<0) ? 90 : 270,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
+         } else {
+            title_offest_k *= side*pad_h;
+
+            shift_x = Math.round(center ? w/2 : (reverse ? 0 : w));
+            shift_y = Math.round(title_offest_k*axis.fTitleOffset);
+            this.DrawText({ align: (center ? 'middle' : (myxor ? 'begin' : 'end')) + ";middle",
+                            rotate: (rotate<0) ? 180 : 0,
+                            text: axis.fTitle, color: title_color, draw_g: title_g });
+         }
+
+         var axis_rect = null;
+         if (vertical && (axis.fTitleOffset == 0) && ('getBoundingClientRect' in axis_g.node()))
+            axis_rect = axis_g.node().getBoundingClientRect();
+
+         this.FinishTextDrawing(title_g, function() {
+            if (axis_rect) {
+               var title_rect = title_g.node().getBoundingClientRect();
+               shift_x = (side>0) ? Math.round(axis_rect.left - title_rect.right - title_fontsize*0.3) :
+                                    Math.round(axis_rect.right - title_rect.left + title_fontsize*0.3);
+            }
+
+            title_g.attr('transform', 'translate(' + shift_x + ',' + shift_y +  ')')
+                   .property('shift_x', shift_x)
+                   .property('shift_y', shift_y);
+         });
+
+
+         this.AddTitleDrag(title_g, vertical, title_offest_k, reverse, vertical ? h : w);
+      }
+
+      this.position = 0;
+
+      if ('getBoundingClientRect' in axis_g.node()) {
+         var rect1 = axis_g.node().getBoundingClientRect(),
+             rect2 = this.svg_pad().node().getBoundingClientRect();
+
+         this.position = rect1.left - rect2.left; // use to control left position of Y scale
+      }
+   }
+
+   TAxisPainter.prototype.Redraw = function() {
+
+      var gaxis = this.GetObject(),
+          x1 = this.AxisToSvg("x", gaxis.fX1, "pad"),
+          y1 = this.AxisToSvg("y", gaxis.fY1, "pad"),
+          x2 = this.AxisToSvg("x", gaxis.fX2, "pad"),
+          y2 = this.AxisToSvg("y", gaxis.fY2, "pad"),
+          w = x2 - x1, h = y1 - y2,
+          vertical = Math.abs(w) < Math.abs(h),
+          func = null, reverse = false, kind = "normal",
+          min = gaxis.fWmin, max = gaxis.fWmax,
+          domain_min = min, domain_max = max;
+
+      if (gaxis.fChopt.indexOf("t")>=0) {
+         func = d3.scaleTime();
+         kind = "time";
+         this.toffset = JSROOT.Painter.getTimeOffset(gaxis);
+         domain_min = new Date(this.toffset + min*1000);
+         domain_max = new Date(this.toffset + max*1000);
+      } else if (gaxis.fChopt.indexOf("G")>=0) {
+         func = d3.scaleLog();
+         kind = "log";
+      } else {
+         func = d3.scaleLinear();
+         kind = "normal";
+      }
+
+      func.domain([domain_min, domain_max]);
+
+      if (vertical) {
+         if (h > 0) {
+            func.range([h,0]);
+         } else {
+            var d = y1; y1 = y2; y2 = d;
+            h = -h; reverse = true;
+            func.range([0,h]);
+         }
+      } else {
+         if (w > 0) {
+            func.range([0,w]);
+         } else {
+            var d = x1; x1 = x2; x2 = d;
+            w = -w; reverse = true;
+            func.range([w,0]);
+         }
+      }
+
+      this.SetAxisConfig(vertical ? "yaxis" : "xaxis", kind, func, min, max, min, max);
+
+      this.CreateG();
+
+      this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
+   }
+
+   JSROOT.Painter.drawGaxis = function(divid, obj, opt) {
+      var painter = new JSROOT.TAxisPainter(obj, false);
+
+      painter.SetDivId(divid);
+
+      painter.disable_zooming = true;
+
+      painter.Redraw();
+
+      return painter.DrawingReady();
+   }
+
    // ===============================================
 
    function TFramePainter(tframe) {
@@ -2966,6 +3734,7 @@
       return painter;
    }
 
+   JSROOT.TAxisPainter = TAxisPainter;
    JSROOT.TFramePainter = TFramePainter;
    JSROOT.TPadPainter = TPadPainter;
    JSROOT.TCanvasPainter = TCanvasPainter;

@@ -4583,6 +4583,24 @@
          kShowToolTips     : JSROOT.BIT(23)
       };
 
+   JSROOT.EAxisBits = {
+         kTickPlus      : JSROOT.BIT(9),
+         kTickMinus     : JSROOT.BIT(10),
+         kAxisRange     : JSROOT.BIT(11),
+         kCenterTitle   : JSROOT.BIT(12),
+         kCenterLabels  : JSROOT.BIT(14),
+         kRotateTitle   : JSROOT.BIT(15),
+         kPalette       : JSROOT.BIT(16),
+         kNoExponent    : JSROOT.BIT(17),
+         kLabelsHori    : JSROOT.BIT(18),
+         kLabelsVert    : JSROOT.BIT(19),
+         kLabelsDown    : JSROOT.BIT(20),
+         kLabelsUp      : JSROOT.BIT(21),
+         kIsInteger     : JSROOT.BIT(22),
+         kMoreLogLabels : JSROOT.BIT(23),
+         kDecimals      : JSROOT.BIT(11)
+   };
+
    // ================= painter of raw text ========================================
 
 
@@ -4727,7 +4745,7 @@
    JSROOT.addDrawFunc({ name: "TPolyLine", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyLine", direct: true });
    JSROOT.addDrawFunc({ name: "TCurlyLine", sameas: 'TPolyLine' });
    JSROOT.addDrawFunc({ name: "TCurlyArc", sameas: 'TPolyLine' });
-   JSROOT.addDrawFunc({ name: "TGaxis", icon: "img_graph", prereq: "v6;hist", func: "JSROOT.Painter.drawGaxis" });
+   JSROOT.addDrawFunc({ name: "TGaxis", icon: "img_graph", prereq: "v6", func: "JSROOT.Painter.drawGaxis" });
    JSROOT.addDrawFunc({ name: "TLegend", icon: "img_pavelabel", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TBox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });
    JSROOT.addDrawFunc({ name: "TWbox", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawBox", direct: true });
