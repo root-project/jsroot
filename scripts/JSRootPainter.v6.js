@@ -808,6 +808,7 @@
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.axes_drawn = false;
       this.keys_handler = null;
+      this.projection = 0; // different projections
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
@@ -831,6 +832,10 @@
    TFramePainter.prototype.GetLastEventPos = function() {
       // return position of last event
       return this.fLastEventPnt;
+   }
+
+   TFramePainter.prototype.SetProjection = function(proj) {
+      this.projection = proj;
    }
 
    TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
@@ -889,7 +894,7 @@
       } else if (Proj == 2) {
          if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
             console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
-            this.options.Proj = 0;
+            this.projection = 0;
             return;
          }
          pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
@@ -951,7 +956,6 @@
       this.use_pad_range = use_pad_range;
       this.swap_xy = swap_xy;
 
-      this.swap_xy = (this.options.Bar>=20);
       this.logx = this.logy = false;
 
       var w = this.frame_width(), h = this.frame_height(), pad = this.root_pad();
@@ -982,7 +986,7 @@
       }
 
       // projection should be assigned
-      this.RecalculateRange();
+      this.RecalculateRange(this.projection);
 
       if (this.xaxis.fTimeDisplay) {
          this.x_kind = 'time';
@@ -1863,6 +1867,128 @@
       return false;
    }
 
+   TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+      // function can be used for zooming into specified range
+      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+
+      // disable zooming when axis convertion is enabled
+      if (this.projection) return false;
+
+      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
+      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
+      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
+
+      var main = this.main_painter(),
+          zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
+          unzoom_x = false, unzoom_y = false, unzoom_z = false;
+
+      if (zoom_x) {
+         var cnt = 0, main_xmin = main.xmin;
+         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
+         if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
+         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
+      } else {
+         unzoom_x = (xmin === xmax) && (xmin === 0);
+      }
+
+      if (zoom_y) {
+         var cnt = 0, main_ymin = main.ymin;
+         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
+         if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
+         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
+      } else {
+         unzoom_y = (ymin === ymax) && (ymin === 0);
+      }
+
+      if (zoom_z) {
+         var cnt = 0, main_zmin = main.zmin;
+         // if (main.logz && main.ymin_nz && main.Dimension()===2) main_zmin = 0.3*main.ymin_nz;
+         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
+         if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
+         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
+      } else {
+         unzoom_z = (zmin === zmax) && (zmin === 0);
+      }
+
+      var changed = false;
+
+      // first process zooming (if any)
+      if (zoom_x || zoom_y || zoom_z)
+         main.ForEachPainter(function(obj) {
+            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
+               main.zoom_xmin = xmin;
+               main.zoom_xmax = xmax;
+               changed = true;
+               zoom_x = false;
+            }
+            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
+               main.zoom_ymin = ymin;
+               main.zoom_ymax = ymax;
+               changed = true;
+               zoom_y = false;
+            }
+            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
+               main.zoom_zmin = zmin;
+               main.zoom_zmax = zmax;
+               changed = true;
+               zoom_z = false;
+            }
+         });
+
+      // and process unzoom, if any
+      if (unzoom_x || unzoom_y || unzoom_z) {
+         if (unzoom_x) {
+            if (main.zoom_xmin !== main.zoom_xmax) changed = true;
+            main.zoom_xmin = main.zoom_xmax = 0;
+         }
+         if (unzoom_y) {
+            if (main.zoom_ymin !== main.zoom_ymax) changed = true;
+            main.zoom_ymin = main.zoom_ymax = 0;
+         }
+         if (unzoom_z) {
+            if (main.zoom_zmin !== main.zoom_zmax) changed = true;
+            main.zoom_zmin = main.zoom_zmax = 0;
+         }
+
+         // first try to unzoom main painter - it could have user range specified
+         if (!changed) {
+            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
+
+            // than try to unzoom all overlapped objects
+            var pp = this.pad_painter(true);
+            if (pp && pp.painters)
+            pp.painters.forEach(function(paint){
+               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
+                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+            });
+         }
+      }
+
+      if (changed) this.RedrawPad();
+
+      return changed;
+   }
+
+   TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
+      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
+      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
+
+      var last = this.zoom_changed_interactive;
+
+      if (dox || doy || dox) this.zoom_changed_interactive = 2;
+
+      var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
+                              doy ? 0 : undefined, doy ? 0 : undefined,
+                              doz ? 0 : undefined, doz ? 0 : undefined);
+
+      // if unzooming has no effect, decrease counter
+      if ((dox || doy || dox) && !changed)
+         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
+
+      return changed;
+
+   }
+
    TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
 
       item.min = item.max = undefined;
@@ -2225,7 +2351,7 @@
                   m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
-   TFramePainter.prototype.AddInteractive = function(forbid_zooming) {
+   TFramePainter.prototype.AddInteractive = function() {
 
       if (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) return;
 
@@ -2242,7 +2368,7 @@
       this.zoom_curr = null;    // current point for zooming
       this.touch_cnt = 0;
 
-      if (JSROOT.gStyle.Zooming && !forbid_zooming) {
+      if (JSROOT.gStyle.Zooming && !this.projection) {
          if (JSROOT.gStyle.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
@@ -2252,7 +2378,7 @@
          }
       }
 
-      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !forbid_zooming) || JSROOT.gStyle.ContextMenu))
+      if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
          svg.on("touchstart", this.startTouchZoom.bind(this));
 
       if (JSROOT.gStyle.ContextMenu) {

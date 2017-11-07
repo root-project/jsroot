@@ -2240,9 +2240,12 @@
 
       if (JSROOT.gStyle.FrameAxisDrawing) {
          var fp = this.frame_painter();
+         fp.SetProjection(this.options.Proj);
          fp.CreateXY(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, use_pad_range, swap_xy);
          this.x = fp.x;
          this.y = fp.y;
+         this.grx = fp.grx; // TODO: should remain in frame painter
+         this.gry = fp.gry; // TODO: should remain in frame painter
          return;
       }
 
@@ -2520,7 +2523,7 @@
 
       if (JSROOT.gStyle.FrameAxisDrawing) {
          var fp = this.frame_painter();
-         if (fp) fp.AddInteractive(this.options && this.options.Proj);
+         if (fp) fp.AddInteractive();
          return;
       }
 
@@ -3495,18 +3498,18 @@
                   m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
-   THistPainter.prototype.AddInteractive = function(forbid_zooming) {
+   THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
       if (JSROOT.gStyle.FrameAxisDrawing) {
          var fp = this.frame_painter();
-         if (fp) fp.AddInteractive(forbid_zooming);
+         if (fp) fp.AddInteractive();
          return;
       }
 
       if ((!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) || !this.is_main_painter()) return;
 
-      var svg = this.svg_frame();
+      var svg = this.svg_frame(), no_zooming = this.options && this.options.Proj;
 
       if (svg.empty() || svg.property('interactive_set')) return;
 
@@ -3519,7 +3522,7 @@
       this.zoom_curr = null;    // current point for zooming
       this.touch_cnt = 0;
 
-      if (JSROOT.gStyle.Zooming && !forbid_zooming) {
+      if (JSROOT.gStyle.Zooming && !no_zooming) {
          if (JSROOT.gStyle.ZoomMouse) {
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
@@ -5305,7 +5308,7 @@
       this.DrawBins();
       this.DrawTitle();
       this.UpdateStatWebCanvas();
-      this.AddInteractive(this.options && this.options.Proj);
+      this.AddInteractive();
       JSROOT.CallBack(call_back);
    }
 
@@ -7298,7 +7301,7 @@
 
       this.UpdateStatWebCanvas();
 
-      this.AddInteractive(this.options && this.options.Proj);
+      this.AddInteractive();
 
       JSROOT.CallBack(call_back);
    }
