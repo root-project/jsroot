@@ -1151,7 +1151,8 @@
       layer.selectAll(".xgrid").remove();
       layer.selectAll(".ygrid").remove();
 
-      var h = this.frame_height(),
+      var pad = this.root_pad(),
+          h = this.frame_height(),
           w = this.frame_width(),
           grid, grid_style = JSROOT.gStyle.fGridStyle,
           grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
@@ -1159,7 +1160,7 @@
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
       // add a grid on x axis, if the option is set
-      if (this.x_handle) {
+      if (pad && pad.fGridx && this.x_handle) {
          grid = "";
          for (var n=0;n<this.x_handle.ticks.length;++n)
             if (this.swap_xy)
@@ -1176,7 +1177,7 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (this.y_handle) {
+      if (pad && pad.fGridy && this.y_handle) {
          grid = "";
          for (var n=0;n<this.y_handle.ticks.length;++n)
             if (this.swap_xy)
@@ -1228,6 +1229,8 @@
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
+      console.log('DRAW AXES', this.axes_drawn, this.xmin, this.xmax, this.ymin, this.ymax);
+
       if (this.axes_drawn) return true;
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
@@ -1249,7 +1252,7 @@
       this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
 
-      this.y_handle = new JSROOT.TAxisPainter(this.yxais, true);
+      this.y_handle = new JSROOT.TAxisPainter(this.yaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
 
@@ -1390,6 +1393,8 @@
       this.draw_g = null;
       this.xaxis = null;
       this.yaxis = null;
+      console.log('FRAME CLEANUP');
+
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
@@ -1878,7 +1883,7 @@
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
       if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
-      var main = this.main_painter(),
+      var main = this,
           zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
 

@@ -2242,10 +2242,8 @@
          var fp = this.frame_painter();
          fp.SetProjection(this.options.Proj);
          fp.CreateXY(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, use_pad_range, swap_xy);
-         this.x = fp.x;
-         this.y = fp.y;
-         this.grx = fp.grx; // TODO: should remain in frame painter
-         this.gry = fp.gry; // TODO: should remain in frame painter
+         this.x = fp.x; // TODO: should remain in frame painter
+         this.y = fp.y; // TODO: should remain in frame painter
          return;
       }
 
@@ -2523,7 +2521,7 @@
 
       if (JSROOT.gStyle.FrameAxisDrawing) {
          var fp = this.frame_painter();
-         if (fp) fp.AddInteractive();
+         fp.DrawAxes(shrink_forbidden);
          return;
       }
 
@@ -4208,7 +4206,7 @@
 
       var histo = this.GetHisto(),
           xaxis = histo.fXaxis, yaxis = histo.fYaxis,
-          pmain = this.main_painter(),
+          pmain = JSROOT.gStyle.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
           res = {
