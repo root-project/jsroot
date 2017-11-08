@@ -1391,7 +1391,6 @@
       this.draw_g = null;
       this.xaxis = null;
       this.yaxis = null;
-      console.log('FRAME CLEANUP');
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }

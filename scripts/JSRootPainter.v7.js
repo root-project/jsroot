@@ -2064,7 +2064,7 @@
       if (pad_painter &&  pad_painter.painters)
          for (var k = 0; k < pad_painter.painters.length; ++k) {
             var subpainter = pad_painter.painters[k];
-            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
+            if (subpainter && (subpainter.wheel_zoomy!==undefined))
                return subpainter.wheel_zoomy;
          }
 
