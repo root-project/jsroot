@@ -2238,7 +2238,7 @@
           histo = this.GetHisto(),
           use_pad_range = (this.options.Same > 0);
 
-      if (JSROOT.gStyle.FrameAxisDrawing) {
+      if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
          fp.SetProjection(this.options.Proj);
          fp.CreateXY(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, use_pad_range, swap_xy);
@@ -2438,7 +2438,7 @@
       // grid can only be drawn by first painter
       if (!this.is_main_painter()) return;
 
-      if (JSROOT.gStyle.FrameAxisDrawing) {
+      if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
          return fp.DrawGrids();
       }
@@ -2519,7 +2519,7 @@
 
       if (!this.is_main_painter() || this.options.Same) return;
 
-      if (JSROOT.gStyle.FrameAxisDrawing) {
+      if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
          fp.DrawAxes(shrink_forbidden);
          return;
@@ -3499,7 +3499,7 @@
    THistPainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if (JSROOT.gStyle.FrameAxisDrawing) {
+      if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
          if (fp) fp.AddInteractive();
          return;
@@ -4206,7 +4206,7 @@
 
       var histo = this.GetHisto(),
           xaxis = histo.fXaxis, yaxis = histo.fYaxis,
-          pmain = JSROOT.gStyle.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
+          pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
           hdim = this.Dimension(),
           i, j, x, y, binz, binarea,
           res = {
@@ -4432,7 +4432,6 @@
       // used in AllowDefaultYZooming
       if (this.Dimension() > 1) this.wheel_zoomy = true; else
       if (this.draw_content) this.wheel_zoomy = false;
-
    }
 
    TH1Painter.prototype.CountStat = function(cond) {
@@ -5354,6 +5353,7 @@
       this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
+      this.wheel_zoomy = true;
    }
 
    TH2Painter.prototype = Object.create(THistPainter.prototype);

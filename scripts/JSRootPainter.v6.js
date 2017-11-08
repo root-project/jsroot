@@ -1229,8 +1229,6 @@
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
-      console.log('DRAW AXES', this.axes_drawn, this.xmin, this.xmax, this.ymin, this.ymax);
-
       if (this.axes_drawn) return true;
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
@@ -1856,22 +1854,6 @@
       this.Unzoom(kind);
    }
 
-   TFramePainter.prototype.AllowDefaultYZooming = function() {
-      // return true if default Y zooming should be enabled
-      // it is typically for 2-Dim histograms or
-      // when histogram not draw, defined by other painters
-
-      var pad_painter = this.pad_painter(true);
-      if (pad_painter &&  pad_painter.painters)
-         for (var k = 0; k < pad_painter.painters.length; ++k) {
-            var subpainter = pad_painter.painters[k];
-            if ((subpainter!==this) && subpainter.wheel_zoomy!==undefined)
-               return subpainter.wheel_zoomy;
-         }
-
-      return false;
-   }
-
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
@@ -1955,16 +1937,14 @@
             main.zoom_zmin = main.zoom_zmax = 0;
          }
 
-         // first try to unzoom main painter - it could have user range specified
+         // first try to unzoom all overlapped objects
          if (!changed) {
-            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
-
             // than try to unzoom all overlapped objects
             var pp = this.pad_painter(true);
             if (pp && pp.painters)
-            pp.painters.forEach(function(paint){
-               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
-                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
+               pp.painters.forEach(function(paint){
+                  if (paint && (typeof paint.UnzoomUserRange == 'function'))
+                     if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
             });
          }
       }
@@ -2065,6 +2045,22 @@
       }
 
       item.changed = ((item.min !== undefined) && (item.max !== undefined));
+   }
+
+   TFramePainter.prototype.AllowDefaultYZooming = function() {
+      // return true if default Y zooming should be enabled
+      // it is typically for 2-Dim histograms or
+      // when histogram not draw, defined by other painters
+
+      var pad_painter = this.pad_painter(true);
+      if (pad_painter && pad_painter.painters)
+         for (var k = 0; k < pad_painter.painters.length; ++k) {
+            var subpainter = pad_painter.painters[k];
+            if (subpainter && (subpainter.wheel_zoomy !== undefined))
+               return subpainter.wheel_zoomy;
+         }
+
+      return false;
    }
 
    TFramePainter.prototype.mouseWheel = function() {
