@@ -1576,6 +1576,18 @@
       return this.GetObject();
    }
 
+   THistPainter.prototype.GetAxis = function(name) {
+      var histo = this.GetObject();
+      if (histo)
+         switch(name) {
+            case "x": return histo.fXaxis;
+            case "y": return histo.fYaxis;
+            case "z": return histo.fZaxis;
+         }
+      return null;
+   }
+
+
    THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
    }
@@ -2241,7 +2253,8 @@
       if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
          fp.SetProjection(this.options.Proj);
-         fp.CreateXY(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, use_pad_range, swap_xy);
+         fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+         fp.CreateXY(use_pad_range, swap_xy);
          this.x = fp.x; // TODO: should remain in frame painter
          this.y = fp.y; // TODO: should remain in frame painter
          return;

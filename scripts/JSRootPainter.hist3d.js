@@ -37,8 +37,8 @@
 
       if ((arg!==undefined) && (arg<0)) {
 
-         if (typeof this.TestAxisVisibility === 'function')
-            this.TestAxisVisibility(null, this.toplevel);
+         //if (typeof this.TestAxisVisibility === 'function')
+         this.TestAxisVisibility(null, this.toplevel);
 
          this.clear_3d_canvas();
 
@@ -184,12 +184,12 @@
 
             if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
-            var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
+            var taxis = painter.GetAxis(axis_name);
 
             var hint = { name: axis_name,
                          title: "TAxis",
                          line: "any info",
-                         only_status: true};
+                         only_status: true };
 
             if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
 
@@ -258,8 +258,8 @@
 
          var tm1 = new Date();
 
-         if (typeof this.TestAxisVisibility === 'function')
-            this.TestAxisVisibility(this.camera, this.toplevel, this.options.FrontBox, this.options.BackBox);
+         //if (typeof this.TestAxisVisibility === 'function')
+         this.TestAxisVisibility(this.camera, this.toplevel, this.options ? this.options.FrontBox : false, this.options ? this.options.BackBox : false);
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
@@ -397,7 +397,7 @@
       }
    }
 
-   function HPainter_TestAxisVisibility(camera, toplevel, fb, bb) {
+   JSROOT.THistPainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
       var top;
       for (var n=0;n<toplevel.children.length;++n) {
          top = toplevel.children[n];
@@ -410,7 +410,7 @@
       if (!camera) {
          // this is case when axis drawing want to be removed
          toplevel.remove(top);
-         delete this.TestAxisVisibility;
+         // delete this.TestAxisVisibility;
          return;
       }
 
@@ -496,7 +496,7 @@
       // factor 1.1 used in ROOT for lego plots
       if ((opts.zmult !== undefined) && !z_zoomed) zmax *= opts.zmult;
 
-      this.TestAxisVisibility = HPainter_TestAxisVisibility;
+      // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
       if (pad && pad.fLogx) {
          if (xmax <= 0) xmax = 1.;
@@ -1077,10 +1077,11 @@
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
-          main = this.main_painter(),
+          hmain = this.main_painter(),
+          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : hmain,
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1],
-          handle = main.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = hmain.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
@@ -1419,6 +1420,15 @@
       main.toplevel.add(line);
    }
 
+   if (JSROOT.FrameAxisDrawing) {
+      // for the moment just take-over functions, later will be assigned directly to TFramePainter
+      JSROOT.TFramePainter.prototype.Create3DScene = JSROOT.THistPainter.prototype.Create3DScene;
+      JSROOT.TFramePainter.prototype.Render3D = JSROOT.THistPainter.prototype.Render3D;
+      JSROOT.TFramePainter.prototype.Resize3D = JSROOT.THistPainter.prototype.Resize3D;
+      JSROOT.TFramePainter.prototype.TestAxisVisibility = JSROOT.THistPainter.prototype.TestAxisVisibility;
+      JSROOT.TFramePainter.prototype.DrawXYZ = JSROOT.THistPainter.prototype.DrawXYZ;
+   }
+
    // ===================================================================================
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
@@ -1449,7 +1459,7 @@
 
          main.adjustCameraPosition();
 
-         main.TestAxisVisibility = HPainter_TestAxisVisibility;
+         main.TestAxisVisibility = JSROOT.THistPainter.prototype.TestAxisVisibility;
 
          main.Render3D();
       }
@@ -1466,11 +1476,13 @@
 
       this.mode3d = true;
 
-      var main = this.main_painter();
+      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(), // who makes axis drawing
+          is_main = this.is_main_painter(), // is main histogram
+          histo = this.GetHisto();
 
       if (resize)  {
 
-         if ((main === this) && (this.Resize3D !== undefined) && this.Resize3D()) this.Render3D();
+         if (is_main && (typeof main.Resize3D == "function") && main.Resize3D()) main.Render3D();
 
       } else {
 
@@ -1478,9 +1490,11 @@
 
          this.ScanContent(true); // may be required for axis drawings
 
-         if (main === this) {
-            this.Create3DScene();
-            this.DrawXYZ(this.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+         if (is_main) {
+            main.Create3DScene();
+            if (JSROOT.FrameAxisDrawing)
+               main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+            main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
          }
 
          this.Draw3DBins();
@@ -1489,10 +1503,10 @@
 
          this.UpdateStatWebCanvas();
 
-         this.AddKeysHandler();
+         main.AddKeysHandler();
       }
 
-      if (main === this) {
+      if (is_main) {
          // (re)draw palette by resize while canvas may change dimension
          this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14)));
 
@@ -1508,11 +1522,13 @@
 
       this.mode3d = true;
 
-      var main = this.main_painter();
+      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(), // who makes axis drawing
+         is_main = this.is_main_painter(), // is main histogram
+         histo = this.GetHisto();
 
       if (resize) {
 
-         if ((main === this) && (this.Resize3D !== undefined) && this.Resize3D()) this.Render3D();
+         if (is_main && (main.Resize3D !== undefined) && main.Resize3D()) main.Render3D();
 
       } else {
 
@@ -1531,9 +1547,11 @@
 
          this.DeleteAtt();
 
-         if (main === this) {
-            this.Create3DScene();
-            this.DrawXYZ(this.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming });
+         if (is_main) {
+            main.Create3DScene();
+            if (JSROOT.FrameAxisDrawing)
+               main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming });
          }
 
          this.Draw3DBins();
@@ -1542,10 +1560,10 @@
 
          this.UpdateStatWebCanvas();
 
-         this.AddKeysHandler();
+         main.AddKeysHandler();
       }
 
-      if (main === this) {
+      if (is_main) {
 
          //  (re)draw palette by resize while canvas may change dimension
          this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) ||
@@ -1559,9 +1577,9 @@
 
    JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
-      var main = this.main_painter(),
+      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
-          histo = this.GetObject(), // get levels
+          histo = this.GetHisto(), // get levels
           levels = this.GetContour(), // init contour if not exists
           palette = this.GetPalette(),
           layerz = 2*main.size_z3d, pnts = [];
@@ -1588,9 +1606,10 @@
    }
 
    JSROOT.TH2Painter.prototype.DrawSurf = function() {
-      var histo = this.GetObject(),
-          main = this.main_painter(),
-          handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+      var histo = this.GetHisto(),
+          hmain = this.main_painter(),
+          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : hmain,
+          handle = hmain.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1];
@@ -1924,7 +1943,7 @@
 
       if (this.options.Surf === 13) {
 
-         handle = main.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+         handle = hmain.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
          var levels = this.GetContour(), // init contour
@@ -1988,8 +2007,9 @@
 
    JSROOT.TH2Painter.prototype.DrawError = function() {
       var pthis = this,
-          main = this.main_painter(),
-          handle = main.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          hmain = this.main_painter(),
+          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : hmain,
+          handle = hmain.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,
@@ -2085,8 +2105,8 @@
    }
 
    JSROOT.TH2Painter.prototype.DrawPolyLego = function() {
-      var histo = this.GetObject(),
-          pmain = this.main_painter(),
+      var histo = this.GetHisto(),
+          pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
           axis_zmin = this.grz.domain()[0],
           axis_zmax = this.grz.domain()[1],
           colindx, bin, i, len = histo.fBins.arr.length, cnt = 0, totalnfaces = 0,
@@ -2568,7 +2588,7 @@
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = this.get_color(rootcolor),
-          main = this.main_painter(),
+          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
@@ -2866,20 +2886,27 @@
    }
 
    TH3Painter.prototype.Redraw = function(resize) {
+
+      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this, // who makes axis and 3D drawing
+          histo = this.GetHisto();
+
       if (resize) {
 
-         if (this.Resize3D()) this.Render3D();
+         if (main.Resize3D()) main.Render3D();
 
       } else {
 
-         this.Create3DScene();
-         this.DrawXYZ(this.toplevel, { zoom: JSROOT.gStyle.Zooming });
-         this.Draw3DBins();
-         this.Render3D();
-         this.UpdateStatWebCanvas();
-         this.AddKeysHandler();
+         main.Create3DScene();
+         if (JSROOT.FrameAxisDrawing)
+            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
 
+         main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming });
+         this.Draw3DBins();
+         main.Render3D();
+         this.UpdateStatWebCanvas();
+         main.AddKeysHandler();
       }
+
       this.DrawTitle();
    }
 

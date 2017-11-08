@@ -944,6 +944,31 @@
       }
    }
 
+   TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
+      if (this.axes_drawn) return;
+
+      this.xaxis = xaxis;
+      this.xmin = xmin;
+      this.xmax = xmax;
+
+      this.yaxis = yaxis;
+      this.ymin = ymin;
+      this.ymax = ymax;
+
+      this.zaxis = zaxis;
+      this.zmin = zmin;
+      this.zmax = zmax;
+   }
+
+   TFramePainter.prototype.GetAxis = function(name) {
+      switch(name) {
+         case "x": return this.xaxis;
+         case "y": return this.yaxis;
+         case "z": return this.xaxis;
+      }
+      return null;
+   }
+
    TFramePainter.prototype.CreateXY = function(xaxis, xmin, xmax, yaxis, ymin, ymax, use_pad_range, swap_xy) {
       this.xaxis = xaxis;
       this.xmin = xmin;
@@ -1211,19 +1236,6 @@
       }
 
       return value.toPrecision(4);
-   }
-
-   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, histo, swap_xy) {
-      if (this.axes_drawn) return;
-
-      if ((this.xmin == this.xmax) && (xmin!==xmax)) {
-         this.xmin = xmin;
-         this.xmax = xmax;
-      }
-      if ((this.ymin == this.ymax) && (ymin!==ymax)) {
-         this.ymin = ymin;
-         this.ymax = ymax;
-      }
    }
 
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
