@@ -459,7 +459,7 @@
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
           pad = this.root_pad(),
-          histo = this.GetHisto(),
+          histo = this.GetHisto ? this.GetHisto() : null,
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -555,14 +555,16 @@
       } else {
          this.grz = d3.scaleLinear();
          this.z_kind = "normal";
-         if ((this.Dimension()==3) && histo && histo.fZaxis.fLabels) this.z_kind = "labels";
+         if (histo)
+            if (histo.fZaxis.fLabels && (this.Dimension()==3)) this.z_kind = "labels";
       }
 
       this.logz = (this.z_kind === "log");
 
       this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 
-      this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
+      if (this.SetRootPadRange)
+         this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
@@ -1429,9 +1431,6 @@
       painter.Draw3DAxis = function() {
          var main = this.main_painter();
 
-         if (!main && ('_main' in this.GetObject()))
-            main = this.GetObject()._main; // simple workaround to get geo painter
-
          if (!main || !main._toplevel)
             return console.warn('no geo object found for 3D axis drawing');
 
@@ -1442,7 +1441,7 @@
          this.zmin = box.min.z; this.zmax = box.max.z;
 
          // use min/max values directly as graphical coordinates
-         this.size_xy3d = this.size_z3d =  0;
+         this.size_xy3d = this.size_z3d = 0;
 
          this.DrawXYZ = JSROOT.THistPainter.prototype.DrawXYZ; // just reuse axis drawing
 

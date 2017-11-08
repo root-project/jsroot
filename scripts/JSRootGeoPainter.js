@@ -2850,13 +2850,7 @@
          if (!force_draw)
            this.TestAxisVisibility(null, this._toplevel);
       } else {
-
          this.drawSimpleAxis();
-
-         //var axis = JSROOT.Create("TNamed");
-         //axis._typename = "TAxis3D";
-         //axis._main = this;
-         //JSROOT.draw(this.divid, axis); // it will include drawing of
       }
    }
 
