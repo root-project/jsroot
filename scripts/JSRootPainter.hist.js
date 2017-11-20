@@ -1929,12 +1929,15 @@
           padding_x = Math.round(0.03*w/ncols),
           padding_y = Math.round(0.03*h),
           step_y = (h - 2*padding_y)/nrows,
+          font_size = 0.9*step_y,
+          max_font_size = 0, // not limited in the beggining
           ph = this.pad_height(),
           fsize, any_opt = false, i = -1;
 
-      if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < step_y)) fsize = Math.round(ph*legend.fTextSize);
+      if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < font_size))
+         font_size = max_font_size = Math.round(ph*legend.fTextSize);
 
-      this.StartTextDrawing(legend.fTextFont, 0.9*step_y);
+      this.StartTextDrawing(legend.fTextFont, font_size, this.draw_g, max_font_size);
 
       for (var ii = 0; ii < nlines; ++ii) {
          var leg = legend.fPrimitives.arr[ii];
@@ -2016,11 +2019,11 @@
                        else if (!any_opt) pos_x = x0 + padding_x;
 
          if (leg.fLabel)
-            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor, font_size: fsize });
+            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
       }
 
       // rescale after all entries are shown
-      this.FinishTextDrawing(null, this.FinishPave);
+      this.FinishTextDrawing(this.draw_g, this.FinishPave);
    }
 
    TPavePainter.prototype.FillContextMenu = function(menu) {
