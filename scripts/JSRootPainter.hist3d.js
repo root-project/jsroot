@@ -3389,7 +3389,7 @@
              index = new Int32Array(size),
              select = 0, icnt = 0;
 
-         for (var i=0; i < poly.fP.length;i+=3) {
+         for (var i=0; i<poly.fP.length; i+=3) {
 
             if ((poly.fP[i] < main.scale_xmin) || (poly.fP[i] > main.scale_xmax) ||
                 (poly.fP[i+1] < main.scale_ymin) || (poly.fP[i+1] > main.scale_ymax) ||
