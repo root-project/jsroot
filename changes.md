@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.3.x
+1. Fix - use FontSize when draw TLegend entries
+
+
 ## Changes in 5.3.1
 1. Fix - show TH2 projections also when tooltip is disabled
 2. Fix - use z_handle to format Z-axis labels
