@@ -998,7 +998,10 @@
           padding_x = Math.round(0.03*w/ncols),
           padding_y = Math.round(0.03*h),
           step_y = (h - 2*padding_y)/nrows,
-          any_opt = false, i = -1;
+          ph = this.pad_height(),
+          fsize, any_opt = false, i = -1;
+
+      if (legend.fTextSize && (ph*legend.fTextSize > 2) && (ph*legend.fTextSize < step_y)) fsize = Math.round(ph*legend.fTextSize);
 
       this.StartTextDrawing(legend.fTextFont, 0.9*step_y);
 
@@ -1081,8 +1084,8 @@
          if (lopt.length>0) any_opt = true;
                        else if (!any_opt) pos_x = x0 + padding_x;
 
-         if (leg.fLabel && (leg.fLabel != " "))
-            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor });
+         if (leg.fLabel)
+            this.DrawText({ align: "start", x: pos_x, y: pos_y, width: x0+column_width-pos_x-padding_x, height: step_y, text: leg.fLabel, color: tcolor, font_size: fsize });
       }
 
       // rescale after all entries are shown
