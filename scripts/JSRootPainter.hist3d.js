@@ -399,11 +399,12 @@
 
    JSROOT.THistPainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
       var top;
-      for (var n=0;n<toplevel.children.length;++n) {
-         top = toplevel.children[n];
-         if (top.axis_draw) break;
-         top = undefined;
-      }
+      if (toplevel && toplevel.children)
+         for (var n=0;n<toplevel.children.length;++n) {
+            top = toplevel.children[n];
+            if (top.axis_draw) break;
+            top = undefined;
+         }
 
       if (!top) return;
 
