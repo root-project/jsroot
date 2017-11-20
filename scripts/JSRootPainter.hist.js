@@ -1319,7 +1319,7 @@
       this.DrawPave(true);
    }
 
-   JSROOT.Painter.drawPave = function(divid, pave, opt) {
+   function drawPave(divid, pave, opt) {
       // one could force drawing of PaveText on specific sub-pad
       var painter = new JSROOT.TPavePainter(pave);
       painter.SetDivId(divid, 2, ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) ? opt.substr(6) : undefined);
@@ -1347,7 +1347,7 @@
       return this.PaveDrawFunc ? painter.DrawingReady() : painter;
    }
 
-   JSROOT.Painter.drawPaletteAxis = function(divid,palette,opt) {
+   function drawPaletteAxis(divid, palette, opt) {
 
       // disable draw of shadow element of TPave
       palette.fBorderSize = 1;
@@ -1547,12 +1547,6 @@
    }
 
    // ==============================================================================
-
-   // kept for backward compatibility, will be removed in future JSROOT versions
-   JSROOT.Painter.drawLegend = JSROOT.Painter.drawPave;
-   JSROOT.Painter.drawPaveText = JSROOT.Painter.drawPave;
-
-   // =============================================================
 
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
@@ -5333,7 +5327,7 @@
       this.CallDrawFunc(null, resize);
    }
 
-   JSROOT.Painter.drawHistogram1D = function(divid, histo, opt) {
+   function drawHistogram1D(divid, histo, opt) {
       // create painter and add it to canvas
       var painter = new TH1Painter(histo);
 
@@ -7348,7 +7342,7 @@
       this.CallDrawFunc(null, resize);
    }
 
-   JSROOT.Painter.drawHistogram2D = function(divid, histo, opt) {
+   function drawHistogram2D(divid, histo, opt) {
       // create painter and add it to canvas
       var painter = new JSROOT.TH2Painter(histo);
 
@@ -7678,14 +7672,13 @@
       return isany;
    }
 
-
-   JSROOT.Painter.drawHStack = function(divid, stack, opt) {
+   function drawHStack(divid, stack, opt) {
       // paint the list of histograms
       // By default, histograms are shown stacked.
       // - the first histogram is paint
       // - then the sum of the first and second, etc
 
-      var painter = new JSROOT.THStackPainter(stack);
+      var painter = new THStackPainter(stack);
 
       painter.SetDivId(divid, -1); // it maybe no element to set divid
 
@@ -7701,7 +7694,7 @@
 
    // =================================================================================
 
-   JSROOT.Painter.drawTF2 = function(divid, func, opt) {
+   function drawTF2(divid, func, opt) {
       // TF2 always drawn via temporary TH2 object,
       // therefore there is no special painter class
 
@@ -7784,8 +7777,19 @@
       if (d.opt === "SAME") opt = "cont2 same";
       else opt = d.opt;
 
-      return JSROOT.Painter.drawHistogram2D(divid, hist, opt);
+      return drawHistogram2D(divid, hist, opt);
    }
+
+   // kept for backward compatibility, will be removed in future JSROOT versions
+   JSROOT.Painter.drawLegend = drawPave;
+   JSROOT.Painter.drawPaveText = drawPave;
+
+   JSROOT.Painter.drawPave = drawPave;
+   JSROOT.Painter.drawPaletteAxis = drawPaletteAxis;
+   JSROOT.Painter.drawHistogram1D = drawHistogram1D;
+   JSROOT.Painter.drawHistogram2D = drawHistogram2D;
+   JSROOT.Painter.drawHStack = drawHStack;
+   JSROOT.Painter.drawTF2 = drawTF2;
 
    JSROOT.TPavePainter = TPavePainter;
    JSROOT.THistPainter = THistPainter;
