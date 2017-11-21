@@ -969,15 +969,7 @@
       return null;
    }
 
-   TFramePainter.prototype.CreateXY = function(xaxis, xmin, xmax, yaxis, ymin, ymax, use_pad_range, swap_xy) {
-      this.xaxis = xaxis;
-      this.xmin = xmin;
-      this.xmax = xmax;
-
-      this.yaxis = yaxis;
-      this.ymin = ymin;
-      this.ymax = ymax;
-
+   TFramePainter.prototype.CreateXY = function(use_pad_range, swap_xy) {
       this.use_pad_range = use_pad_range;
       this.swap_xy = swap_xy;
 

@@ -979,7 +979,7 @@
    }
 
    TGraphPainter.prototype.get_main = function() {
-      var pmain = this.main_painter();
+      var pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
 
