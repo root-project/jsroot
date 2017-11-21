@@ -498,24 +498,25 @@
          if (menu.size() > 0)
             menu.add("separator");
 
-         var main = this.frame_painter();
+         var main = this.main_painter() || this,
+             axis_painter = this.frame_painter();
 
          menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
             main.tooltip_allowed = !main.tooltip_allowed;
          });
 
-         menu.addchk(main.enable_highlight, 'Highlight bins', function() {
-            main.enable_highlight = !main.enable_highlight;
-            if (!main.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
+         menu.addchk(axis_painter.enable_highlight, 'Highlight bins', function() {
+            axis_painter.enable_highlight = !axis_painter.enable_highlight;
+            if (!axis_painter.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
          });
 
          menu.addchk(main.options.FrontBox, 'Front box', function() {
             main.options.FrontBox = !main.options.FrontBox;
-            if (main.Render3D) main.Render3D();
+            if (axis_painter.Render3D) axis_painter.Render3D();
          });
          menu.addchk(main.options.BackBox, 'Back box', function() {
             main.options.BackBox = !main.options.BackBox;
-            if (main.Render3D) main.Render3D();
+            if (axis_painter.Render3D) axis_painter.Render3D();
          });
 
          if (this.draw_content) {

@@ -3823,15 +3823,16 @@
          if (menu.size() > 0)
             menu.add("separator");
 
-         var main = this.main_painter() || this;
+         var main = this.main_painter() || this,
+             axis_painter = JSROOT.FrameAxisDrawing ? this.frame_painter : main;
 
          menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
             main.tooltip_allowed = !main.tooltip_allowed;
          });
 
-         menu.addchk(main.enable_highlight, 'Highlight bins', function() {
-            main.enable_highlight = !main.enable_highlight;
-            if (!main.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
+         menu.addchk(axis_painter.enable_highlight, 'Highlight bins', function() {
+            axis_painter.enable_highlight = !axis_painter.enable_highlight;
+            if (!axis_painter.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
          });
 
          menu.addchk(main.options.FrontBox, 'Front box', function() {

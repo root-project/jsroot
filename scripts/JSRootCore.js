@@ -110,7 +110,7 @@
    JSROOT.id_counter = 0;
    JSROOT.BatchMode = false; // when true, disables all kind of interactive features
 
-   JSROOT.FrameAxisDrawing = true;  // temporary flag, switch old and new mode of axes drawing
+   JSROOT.FrameAxisDrawing = 1;  // temporary flag, switch old and new mode of axes drawing
 
    // JSROOT.use_full_libs = true;
 
