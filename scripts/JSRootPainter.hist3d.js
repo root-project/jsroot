@@ -34,10 +34,6 @@
       throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
    JSROOT.THistPainter.prototype.Create3DScene = function(arg) {
-      if ((arg!==undefined) && (arg<0)) {
-         delete this.tooltip_mesh;
-      }
-
       var fp = this.frame_painter();
       if (fp) fp.Create3DScene(arg);
    }
@@ -61,6 +57,7 @@
 
          delete this.size_xy3d;
          delete this.size_z3d;
+         delete this.tooltip_mesh;
          delete this.scene;
          delete this.toplevel;
          delete this.camera;
@@ -78,6 +75,7 @@
          // it is indication that all 3D object created, just replace it with empty
          this.scene.remove(this.toplevel);
          JSROOT.Painter.DisposeThreejsObject(this.toplevel);
+         delete this.tooltip_mesh;
          delete this.toplevel;
          if (this.control) this.control.HideTooltip();
 
@@ -161,7 +159,7 @@
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
 
-      var axis_painter = this, obj_painter = JSROOT.FrameAxisDrawing ? this.main_painter() : this;
+      var axis_painter = this, obj_painter = this.main_painter();
 
       this.control.ProcessMouseMove = function(intersects) {
          var tip = null, mesh = null, zoom_mesh = null;
@@ -182,7 +180,7 @@
             tip.z1 -= delta_z; tip.z2 += delta_z;
          }
 
-         obj_painter.BinHighlight3D(axis_painter.enable_highlight ? tip : null, mesh);
+         axis_painter.BinHighlight3D(tip, mesh);
 
          if (!tip && zoom_mesh && axis_painter.Get3DZoomCoord) {
             var pnt = zoom_mesh.GlobalIntersect(this.raycaster),
@@ -209,7 +207,7 @@
       }
 
       this.control.ProcessMouseLeave = function() {
-         obj_painter.BinHighlight3D(null);
+         axis_painter.BinHighlight3D(null);
       }
 
       this.control.ContextMenu = function(pos, intersects) {
@@ -329,11 +327,10 @@
       return true;
    }
 
-   JSROOT.THistPainter.prototype.BinHighlight3D = function(tip, selfmesh) {
+   JSROOT.TFramePainter.prototype.BinHighlight3D = function(tip, selfmesh) {
 
       var changed = false, tooltip_mesh = null, changed_self = true,
-          want_remove = !tip || (tip.x1===undefined),
-          axis_painter = JSROOT.FrameAxisDrawing ? this.frame_painter() : this;
+          want_remove = !tip || (tip.x1===undefined) || !this.enable_highlight;
 
       if (this.tooltip_selfmesh) {
          changed_self = (this.tooltip_selfmesh !== selfmesh)
@@ -344,7 +341,7 @@
 
       if (this.tooltip_mesh) {
          tooltip_mesh = this.tooltip_mesh;
-         axis_painter.toplevel.remove(this.tooltip_mesh);
+         this.toplevel.remove(this.tooltip_mesh);
          delete this.tooltip_mesh;
          changed = true;
       }
@@ -403,7 +400,7 @@
             }
          }
          this.tooltip_mesh = tooltip_mesh;
-         axis_painter.toplevel.add(tooltip_mesh);
+         this.toplevel.add(tooltip_mesh);
       }
 
       if (changed) this.Render3D();
@@ -2511,7 +2508,7 @@
       // if too many points, box will be displayed
 
       var histo = this.GetObject(),
-          main = this.main_painter(),
+          main = this.frame_painter(),
           i1 = this.GetSelectIndex("x", "left", 0.5),
           i2 = this.GetSelectIndex("x", "right", 0),
           j1 = this.GetSelectIndex("y", "left", 0.5),
@@ -2576,14 +2573,15 @@
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
          var p = this.painter, histo = p.GetHisto(),
+             main = p.frame_painter(),
              tip = p.Get3DToolTip(this.bins[indx]);
 
-         tip.x1 = p.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
-         tip.x2 = p.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
-         tip.y1 = p.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
-         tip.y2 = p.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
-         tip.z1 = p.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
-         tip.z2 = p.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
+         tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
+         tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
+         tip.y1 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
+         tip.y2 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
+         tip.z1 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
+         tip.z2 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
          tip.color = this.tip_color;
          tip.opacity = 0.3;
 
@@ -2912,8 +2910,7 @@
       } else {
 
          main.Create3DScene();
-         if (JSROOT.FrameAxisDrawing)
-            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+         main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
 
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
@@ -3020,7 +3017,7 @@
       // create painter and add it to canvas
       var painter = new JSROOT.TH3Painter(histo);
 
-      painter.SetDivId(divid, 4);
+      painter.SetDivId(divid, 1);
 
       painter.options = painter.DecodeOptions(opt);
 

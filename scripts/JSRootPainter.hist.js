@@ -2697,7 +2697,7 @@
 
    THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
       // be aware - here indexes starts from 0
-      var indx = 0, obj = this.main_painter(), histo = this.GetHisto();
+      var indx = 0, obj = this.frame_painter(), histo = this.GetHisto();
       if (!obj) obj = this;
       var nbin = this['nbins'+axis];
       if (!nbin) nbin = 0;
@@ -3824,7 +3824,7 @@
             menu.add("separator");
 
          var main = this.main_painter() || this,
-             axis_painter = JSROOT.FrameAxisDrawing ? this.frame_painter : main;
+             axis_painter = this.frame_painter();
 
          menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
             main.tooltip_allowed = !main.tooltip_allowed;
@@ -3832,7 +3832,7 @@
 
          menu.addchk(axis_painter.enable_highlight, 'Highlight bins', function() {
             axis_painter.enable_highlight = !axis_painter.enable_highlight;
-            if (!axis_painter.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
+            if (!axis_painter.enable_highlight && axis_painter.BinHighlight3D && axis_painter.mode3d) axis_painter.BinHighlight3D(null);
          });
 
          menu.addchk(main.options.FrontBox, 'Front box', function() {
@@ -6349,7 +6349,7 @@
 
    TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
       var histo = this.GetObject(),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
@@ -7061,7 +7061,7 @@
       if (h.poly) {
          // process tooltips from TH2Poly
 
-         var pmain = this.main_painter(),
+         var pmain = this.frame_painter(),
              realx, realy, foundindx = -1;
 
          if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
