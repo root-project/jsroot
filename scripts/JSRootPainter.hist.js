@@ -4576,7 +4576,7 @@
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           pad = this.root_pad(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           pthis = this,
@@ -5008,7 +5008,7 @@
 
       var width = this.frame_width(),
           height = this.frame_height(),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           pad = this.root_pad(),
           painter = this,
           histo = this.GetHisto(),

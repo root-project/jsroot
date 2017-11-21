@@ -1383,6 +1383,13 @@
    }
 
    TFramePainter.prototype.Cleanup = function() {
+
+      console.log('TFramePainter.prototype.Cleanup');
+
+      // cleanup all 3D drawings if any
+      if (typeof this.Create3DScene === 'function')
+         this.Create3DScene(-1);
+
       if (this.draw_g) {
          this.CleanupAxes();
          this.draw_g.selectAll("*").remove();

@@ -34,9 +34,15 @@
       throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
    JSROOT.THistPainter.prototype.Create3DScene = function(arg) {
+      if ((arg!==undefined) && (arg<0)) {
+         delete this.tooltip_mesh;
+      }
 
-      if (JSROOT.FrameAxisDrawing && typeof this.Dimension == 'function')
-         return this.frame_painter().Create3DScene(arg);
+      var fp = this.frame_painter();
+      if (fp) fp.Create3DScene(arg);
+   }
+
+   JSROOT.TFramePainter.prototype.Create3DScene = function(arg) {
 
       if ((arg!==undefined) && (arg<0)) {
 
@@ -57,7 +63,6 @@
          delete this.size_z3d;
          delete this.scene;
          delete this.toplevel;
-         delete this.tooltip_mesh;
          delete this.camera;
          delete this.pointLight;
          delete this.renderer;
@@ -74,7 +79,6 @@
          this.scene.remove(this.toplevel);
          JSROOT.Painter.DisposeThreejsObject(this.toplevel);
          delete this.toplevel;
-         delete this.tooltip_mesh;
          if (this.control) this.control.HideTooltip();
 
          var newtop = new THREE.Object3D();
@@ -153,8 +157,6 @@
       this.enable_highlight = false;
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
 
-      console.log('Create 3D scene', typeof(this.Dimension));
-
       if (JSROOT.BatchMode) return;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, lookat);
@@ -226,6 +228,16 @@
    }
 
    JSROOT.THistPainter.prototype.Render3D = function(tmout) {
+      var axis_painter = this.frame_painter();
+      if (!axis_painter) return;
+
+      axis_painter.FrontBox = this.options ? this.options.FrontBox : false;
+      axis_painter.BackBox = this.options ? this.options.BackBox : false;
+      axis_painter.Render3D(tmout);
+   }
+
+
+   JSROOT.TFramePainter.prototype.Render3D = function(tmout) {
       // call 3D rendering of the histogram drawing
       // tmout specified delay, after which actual rendering will be invoked
       // Timeout used to avoid multiple rendering of the picture when several 3D drawings
@@ -235,18 +247,6 @@
       //   -1111 - immediate rendering with SVG renderer
       //   -2222 - rendering performed only if there were previous calls, which causes timeout activation
 
-
-      if (typeof this.Dimension == 'function') {
-         this.FrontBox = this.options ? this.options.FrontBox : false;
-         this.BackBox = this.options ? this.options.BackBox : false;
-         // redirect to frame painter
-         if (JSROOT.FrameAxisDrawing) {
-            var axis_painter = this.frame_painter();
-            axis_painter.FrontBox = this.FrontBox;
-            axis_painter.BackBox = this.BackBox;
-            return axis_painter.Render3D(tmout);
-         }
-      }
 
       if (tmout === -1111) {
          // special handling for direct SVG renderer
@@ -305,11 +305,7 @@
       this.render_tmout = setTimeout(this.Render3D.bind(this,0), tmout);
    }
 
-   JSROOT.THistPainter.prototype.Resize3D = function() {
-
-      // redirect to frame painter
-      if (JSROOT.FrameAxisDrawing && typeof this.Dimension == 'function')
-         return this.frame_painter().Resize3D();
+   JSROOT.TFramePainter.prototype.Resize3D = function() {
 
       var sz = this.size_for_3d(this.access_3d_kind());
 
@@ -1446,9 +1442,6 @@
 
    if (JSROOT.FrameAxisDrawing) {
       // for the moment just take-over functions, later will be assigned directly to TFramePainter
-      JSROOT.TFramePainter.prototype.Create3DScene = JSROOT.THistPainter.prototype.Create3DScene;
-      JSROOT.TFramePainter.prototype.Render3D = JSROOT.THistPainter.prototype.Render3D;
-      JSROOT.TFramePainter.prototype.Resize3D = JSROOT.THistPainter.prototype.Resize3D;
       JSROOT.TFramePainter.prototype.TestAxisVisibility = JSROOT.THistPainter.prototype.TestAxisVisibility;
       JSROOT.TFramePainter.prototype.DrawXYZ = JSROOT.THistPainter.prototype.DrawXYZ;
    }
@@ -1500,13 +1493,13 @@
 
       this.mode3d = true;
 
-      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(), // who makes axis drawing
+      var main = this.frame_painter(), // who makes axis drawing
           is_main = this.is_main_painter(), // is main histogram
           histo = this.GetHisto();
 
       if (resize)  {
 
-         if (is_main && (typeof main.Resize3D == "function") && main.Resize3D()) this.Render3D();
+         if (is_main && main.Resize3D()) this.Render3D();
 
       } else {
 
@@ -1516,8 +1509,7 @@
 
          if (is_main) {
             main.Create3DScene();
-            if (JSROOT.FrameAxisDrawing)
-               main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
          }
 
@@ -1546,13 +1538,13 @@
 
       this.mode3d = true;
 
-      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(), // who makes axis drawing
+      var main = this.frame_painter(), // who makes axis drawing
          is_main = this.is_main_painter(), // is main histogram
          histo = this.GetHisto();
 
       if (resize) {
 
-         if (is_main && (main.Resize3D !== undefined) && main.Resize3D()) this.Render3D();
+         if (is_main && main.Resize3D()) this.Render3D();
 
       } else {
 
@@ -1573,8 +1565,7 @@
 
          if (is_main) {
             main.Create3DScene();
-            if (JSROOT.FrameAxisDrawing)
-               main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming });
          }
 
@@ -2911,7 +2902,7 @@
 
    TH3Painter.prototype.Redraw = function(resize) {
 
-      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this, // who makes axis and 3D drawing
+      var main = this.frame_painter(), // who makes axis and 3D drawing
           histo = this.GetHisto();
 
       if (resize) {
