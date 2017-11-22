@@ -225,16 +225,6 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.Render3D = function(tmout) {
-      var axis_painter = this.frame_painter();
-      if (!axis_painter) return;
-
-      axis_painter.FrontBox = this.options ? this.options.FrontBox : false;
-      axis_painter.BackBox = this.options ? this.options.BackBox : false;
-      axis_painter.Render3D(tmout);
-   }
-
-
    JSROOT.TFramePainter.prototype.Render3D = function(tmout) {
       // call 3D rendering of the histogram drawing
       // tmout specified delay, after which actual rendering will be invoked
@@ -273,6 +263,9 @@
          if (this.renderer === undefined) return;
 
          var tm1 = new Date();
+
+         if (this.FrontBox === undefined) this.FrontBox = true;
+         if (this.BackBox === undefined) this.BackBox = true;
 
          //if (typeof this.TestAxisVisibility === 'function')
          this.TestAxisVisibility(this.camera, this.toplevel, this.FrontBox, this.BackBox);
@@ -413,7 +406,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
+   JSROOT.TFramePainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
       var top;
       if (toplevel && toplevel.children)
          for (var n=0;n<toplevel.children.length;++n) {
@@ -468,7 +461,7 @@
       }
    }
 
-   JSROOT.THistPainter.prototype.DrawXYZ = function(toplevel, opts) {
+   JSROOT.TFramePainter.prototype.DrawXYZ = function(toplevel, opts) {
       if (!opts) opts = {};
 
       var grminx = -this.size_xy3d, grmaxx = this.size_xy3d,
@@ -1437,12 +1430,6 @@
       main.toplevel.add(line);
    }
 
-   if (JSROOT.FrameAxisDrawing) {
-      // for the moment just take-over functions, later will be assigned directly to TFramePainter
-      JSROOT.TFramePainter.prototype.TestAxisVisibility = JSROOT.THistPainter.prototype.TestAxisVisibility;
-      JSROOT.TFramePainter.prototype.DrawXYZ = JSROOT.THistPainter.prototype.DrawXYZ;
-   }
-
    // ===================================================================================
 
    JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
@@ -1467,13 +1454,11 @@
          // use min/max values directly as graphical coordinates
          this.size_xy3d = this.size_z3d = 0;
 
-         this.DrawXYZ = JSROOT.THistPainter.prototype.DrawXYZ; // just reuse axis drawing
+         this.DrawXYZ = JSROOT.TFramePainter.prototype.DrawXYZ; // just reuse axis drawing from frame painter
 
          this.DrawXYZ(main._toplevel);
 
          main.adjustCameraPosition();
-
-         main.TestAxisVisibility = JSROOT.THistPainter.prototype.TestAxisVisibility;
 
          main.Render3D();
       }
@@ -1496,7 +1481,7 @@
 
       if (resize)  {
 
-         if (is_main && main.Resize3D()) this.Render3D();
+         if (is_main && main.Resize3D()) main.Render3D();
 
       } else {
 
@@ -1512,7 +1497,7 @@
 
          this.Draw3DBins();
 
-         this.Render3D();
+         main.Render3D();
 
          this.UpdateStatWebCanvas();
 
@@ -1536,12 +1521,12 @@
       this.mode3d = true;
 
       var main = this.frame_painter(), // who makes axis drawing
-         is_main = this.is_main_painter(), // is main histogram
-         histo = this.GetHisto();
+          is_main = this.is_main_painter(), // is main histogram
+          histo = this.GetHisto();
 
       if (resize) {
 
-         if (is_main && main.Resize3D()) this.Render3D();
+         if (is_main && main.Resize3D()) main.Render3D();
 
       } else {
 
@@ -1568,7 +1553,7 @@
 
          this.Draw3DBins();
 
-         this.Render3D();
+         main.Render3D();
 
          this.UpdateStatWebCanvas();
 
@@ -2905,7 +2890,7 @@
 
       if (resize) {
 
-         if (main.Resize3D()) this.Render3D();
+         if (main.Resize3D()) main.Render3D();
 
       } else {
 
@@ -2914,7 +2899,7 @@
 
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming });
          this.Draw3DBins();
-         this.Render3D();
+         main.Render3D();
          this.UpdateStatWebCanvas();
          main.AddKeysHandler();
       }
@@ -3337,7 +3322,7 @@
          }
       }
 
-      main.Render3D(100); // set large timeout to be able draw other points
+      axis_painter.Render3D(100); // set large timeout to be able draw other points
    }
 
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
@@ -3378,9 +3363,9 @@
       painter.Redraw = function() {
 
          var main = this.main_painter(),
-            axis_painter = JSROOT.FrameAxisDrawing ? this.frame_painter() : main;
+             axis_painter = this.frame_painter();
 
-         if (!main  || !axis_painter || !('renderer' in axis_painter)) return;
+         if (!main || !axis_painter || !('renderer' in axis_painter)) return;
 
          var step = 1, sizelimit = 50000, numselect = 0;
 
@@ -3457,7 +3442,7 @@
 
          }
 
-         main.Render3D(100); // set large timeout to be able draw other points
+         axis_painter.Render3D(100); // set large timeout to be able draw other points
       }
 
       painter.Redraw();

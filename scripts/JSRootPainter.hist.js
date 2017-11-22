@@ -1657,7 +1657,7 @@
              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-             Spec: 0, Pie: 0, List: 0, Zscale: 0, FrontBox: 1, BackBox: 1, Candle: "",
+             Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
              GLBox: 0, GLColor: 0, Project: "",
              System: JSROOT.Painter.Coord.kCARTESIAN,
              AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
@@ -1668,6 +1668,7 @@
            d = new JSROOT.DrawOptions(opt || histo.fOption),
            hdim = this.Dimension(),
            pad = this.root_pad(),
+           fp = this.frame_painter(), check3dbox = "",
            need_fillcol = false;
 
       // use error plot only when any sumw2 bigger than 0
@@ -1691,7 +1692,7 @@
       var tooltip = null;
       if (d.check('NOTOOLTIP')) tooltip = false;
       if (d.check('TOOLTIP')) tooltip = true;
-      if ((tooltip!==null) && this.frame_painter()) this.frame_painter().tooltip_allowed = tooltip;
+      if ((tooltip!==null) && fp) fp.tooltip_allowed = tooltip;
 
       if (d.check('LOGX') && pad) pad.fLogx = 1;
       if (d.check('LOGY') && pad) pad.fLogy = 1;
@@ -1745,33 +1746,20 @@
          if (d.part.indexOf('2') >= 0) option.Lego = 12;
          if (d.part.indexOf('3') >= 0) option.Lego = 13;
          if (d.part.indexOf('4') >= 0) option.Lego = 14;
-         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
+         check3dbox = d.part;
          if (d.part.indexOf('Z') >= 0) option.Zscale = 1;
       }
 
       if (d.check('SURF', true)) {
          option.Scat = 0;
          option.Surf = d.partAsInt(10, 1);
-         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
+         check3dbox = d.part;
          if (d.part.indexOf('Z')>=0) option.Zscale = 1;
       }
 
-      if (d.check('TF3', true)) {
-         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
-      }
+      if (d.check('TF3', true)) check3dbox = d.part;
 
-      if (d.check('ISO', true)) {
-         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
-      }
-
-      if (option.Surf || option.Lego) {
-         if (d.check('FB')) option.FrontBox = 0;
-         if (d.check('BB')) option.BackBox = 0;
-      }
+      if (d.check('ISO', true)) check3dbox = d.part;
 
       if (d.check('LIST')) option.List = 1;
 
@@ -1862,10 +1850,10 @@
          option.Scat = 0;
          option.Color = 0;
          option.Tri = 1;
-         if (d.part.indexOf('FB') >= 0) option.FrontBox = 0;
-         if (d.part.indexOf('BB') >= 0) option.BackBox = 0;
+         check3dbox = d.part;
          if (d.part.indexOf('ERR') >= 0) option.Error = 1;
       }
+
       if (d.check('AITOFF')) option.Proj = 1;
       if (d.check('MERCATOR')) option.Proj = 2;
       if (d.check('SINUSOIDAL')) option.Proj = 3;
@@ -1875,8 +1863,13 @@
       if (d.check('PROJX',true)) option.Project = "X" + d.partAsInt(0,1);
       if (d.check('PROJY',true)) option.Project = "Y" + d.partAsInt(0,1);
 
-      if ((hdim==3) && d.check('FB')) option.FrontBox = 0;
-      if ((hdim==3) && d.check('BB')) option.BackBox = 0;
+      if (check3dbox && fp) {
+         if (check3dbox.indexOf('FB') >= 0) fp.FrontBox = false;
+         if (check3dbox.indexOf('BB') >= 0) fp.BackBox = false;
+      }
+
+      if ((hdim==3) && d.check('FB') && fp) fp.FrontBox = false;
+      if ((hdim==3) && d.check('BB') && fp) fp.BackBox = false;
 
       option._pfc = d.check("PFC");
       option._plc = d.check("PLC");
@@ -2254,7 +2247,7 @@
          var fp = this.frame_painter();
          fp.SetProjection(this.options.Proj);
          fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-         fp.CreateXY(use_pad_range, swap_xy);
+         fp.CreateXY(this.Dimension(), use_pad_range, swap_xy);
          this.x = fp.x; // TODO: should remain in frame painter
          this.y = fp.y; // TODO: should remain in frame painter
          return;
@@ -2880,6 +2873,7 @@
       return res;
    }
 
+   // TODO: remove from hist painter
    THistPainter.prototype.ToggleLog = function(axis) {
       var painter = this.main_painter() || this,
           pad = this.root_pad();
@@ -3023,13 +3017,10 @@
 
    }
 
+   // TODO: should disapper
    THistPainter.prototype.clearInteractiveElements = function() {
-      JSROOT.Painter.closeMenu();
-      if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
-      this.zoom_kind = 0;
-
-      // enable tooltip in frame painter
-      this.SwitchTooltip(true);
+      var fp = this.frame_painter();
+      if (fp) fp.clearInteractiveElements();
    }
 
    THistPainter.prototype.mouseDoubleClick = function() {
@@ -3727,78 +3718,16 @@
       this.Redraw();
    }
 
-   THistPainter.prototype.FillContextMenu = function(menu, kind, obj) {
+   THistPainter.prototype.FillContextMenu = function(menu) {
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
 
-      if ((kind=="x") || (kind=="y") || (kind=="z")) {
-         var faxis = this.histo.fXaxis;
-         if (kind=="y") faxis = this.histo.fYaxis;  else
-         if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
-         menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         menu.addchk(this.options["Log" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
+      var histo = this.GetHisto(),
+          fp = this.frame_painter();
+      if (!histo) return;
 
-         if ((kind === "z") && (this.options.Zscale > 0))
-            if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
-
-         if (faxis != null) {
-            menu.add("sub:Labels");
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
-                  function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-                  function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-                  function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-            menu.add("sub:Title");
-            menu.add("SetTitle", function() {
-               var t = prompt("Enter axis title", faxis.fTitle);
-               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
-            });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
-                  function(arg) { faxis.fTitleColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                                  function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-                  function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-            menu.add("sub:Ticks");
-            if (faxis._typename == "TGaxis") {
-               this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
-                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
-               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickSize,
-                        function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
-            } else {
-               this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
-                           function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
-               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                        function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
-            }
-            menu.add("endsub:");
-         }
-         return true;
-      }
-
-      if (kind == "frame") {
-         var fp = this.frame_painter();
-         if (fp) return fp.FillContextMenu(menu);
-      }
-
-      menu.add("header:"+ this.histo._typename + "::" + this.histo.fName);
+      menu.add("header:"+ histo._typename + "::" + histo.fName);
 
       if (this.draw_content) {
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
@@ -3824,25 +3753,27 @@
             menu.add("separator");
 
          var main = this.main_painter() || this,
-             axis_painter = this.frame_painter();
+             axis_painter = fp;
 
-         menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
-            main.tooltip_allowed = !main.tooltip_allowed;
-         });
-
-         menu.addchk(axis_painter.enable_highlight, 'Highlight bins', function() {
-            axis_painter.enable_highlight = !axis_painter.enable_highlight;
-            if (!axis_painter.enable_highlight && axis_painter.BinHighlight3D && axis_painter.mode3d) axis_painter.BinHighlight3D(null);
+         menu.addchk(fp.tooltip_allowed, 'Show tooltips', function() {
+            fp.tooltip_allowed = !fp.tooltip_allowed;
          });
 
-         menu.addchk(main.options.FrontBox, 'Front box', function() {
-            main.options.FrontBox = !main.options.FrontBox;
-            if (main.Render3D) main.Render3D();
+         menu.addchk(fp.enable_highlight, 'Highlight bins', function() {
+            fp.enable_highlight = !fp.enable_highlight;
+            if (!fp.enable_highlight && fp.BinHighlight3D && fp.mode3d) fp.BinHighlight3D(null);
          });
-         menu.addchk(main.options.BackBox, 'Back box', function() {
-            main.options.BackBox = !main.options.BackBox;
-            if (main.Render3D) main.Render3D();
-         });
+
+         if (fp && fp.Render3D) {
+            menu.addchk(fp.FrontBox, 'Front box', function() {
+               fp.FrontBox = !fp.FrontBox;
+               fp.Render3D();
+            });
+            menu.addchk(fp.BackBox, 'Back box', function() {
+               fp.BackBox = !fp.BackBox;
+               fp.Render3D();
+            });
+         }
 
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
@@ -4648,7 +4579,7 @@
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           i, x, grx, y, yerr, gry1, gry2,
           bins1 = [], bins2 = [];

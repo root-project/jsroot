@@ -964,12 +964,12 @@
       switch(name) {
          case "x": return this.xaxis;
          case "y": return this.yaxis;
-         case "z": return this.xaxis;
+         case "z": return this.zaxis;
       }
       return null;
    }
 
-   TFramePainter.prototype.CreateXY = function(use_pad_range, swap_xy) {
+   TFramePainter.prototype.CreateXY = function(ndim, use_pad_range, swap_xy) {
       this.use_pad_range = use_pad_range;
       this.swap_xy = swap_xy;
 
@@ -1077,11 +1077,11 @@
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
-         if ((this.zoom_ymin === this.zoom_ymax) && (this.Dimension()==1) && this.draw_content)
+         if ((this.zoom_ymin === this.zoom_ymax) && (ndim==1) && this.draw_content)
             this.scale_ymax*=1.8;
 
          // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (this.Dimension()>1) && !this.swap_xy)
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (ndim>1) && !this.swap_xy)
             for (var i=0;i<this.nbinsy;++i) {
                this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
                if (this.scale_ymin>0) break;
@@ -1094,8 +1094,7 @@
             this.scale_ymin = 3e-4 * this.scale_ymax;
 
          this.y = d3.scaleLog();
-      } else
-      if (this.y_kind=='time') {
+      } else if (this.y_kind == 'time') {
          this.y = d3.scaleTime();
       } else {
          this.y = d3.scaleLinear()
@@ -1104,11 +1103,10 @@
       this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
             .range(this.swap_xy ? [ 0, w ] : [ h, 0 ]);
 
-      if (this.y_kind=='time') {
+      if (this.y_kind == 'time') {
          // we emulate scale functionality
          this.gry = function(val) { return this.y(this.ConvertY(val)); }
-      } else
-      if (this.logy) {
+      } else if (this.logy) {
          // make protection for log
          this.gry = function(val) { return (val < this.scale_ymin) ? (this.swap_xy ? -5 : this.y.range()[0]+5) : this.y(val); }
       } else {
@@ -1236,8 +1234,6 @@
       if (this.axes_drawn) return true;
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
-
-      // this.CreateXY(); should be called from histogram painter
 
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
@@ -1400,6 +1396,7 @@
       this.draw_g = null;
       this.xaxis = null;
       this.yaxis = null;
+      this.zaxis = null;
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -1544,7 +1541,27 @@
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
-   TFramePainter.prototype.FillContextMenu = function(menu) {
+   TFramePainter.prototype.ToggleLog = function(axis) {
+      var pad = this.root_pad(),
+          curr = pad["fLog" + axis];
+      // do not allow log scale for labels
+      if (!curr) {
+         var kind = this[axis+"_kind"];
+         if (this.swap_xy && axis==="x") kind = this.y_kind; else
+         if (this.swap_xy && axis==="y") kind = this.x_kind;
+         if (kind === "labels") return;
+      }
+
+      var pp = this.pad_painter(true), canp = this.pad_painter();
+      if (pp && pp.snapid && canp && canp._websocket) {
+         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
+      } else {
+         pad["fLog" + axis] = curr ? 0 : 1;
+         this.RedrawPad();
+      }
+   }
+
+   TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
       // fill context menu for the frame
       // it could be appended to the histogram menus
 
@@ -1555,29 +1572,85 @@
       else
          menu.add("separator");
 
-      if (main) {
-         if (main.zoom_xmin !== main.zoom_xmax)
-            menu.add("Unzoom X", main.Unzoom.bind(main,"x"));
-         if (main.zoom_ymin !== main.zoom_ymax)
-            menu.add("Unzoom Y", main.Unzoom.bind(main,"y"));
-         if (main.zoom_zmin !== main.zoom_zmax)
-            menu.add("Unzoom Z", main.Unzoom.bind(main,"z"));
-         menu.add("Unzoom all", main.Unzoom.bind(main,"xyz"));
+      if ((kind=="x") || (kind=="y") || (kind=="z")) {
+         var faxis = obj || this[kind+'axis'];
+         menu.add("header: " + kind.toUpperCase() + " axis");
+         menu.add("Unzoom", this.Unzoom.bind(this, kind));
+         menu.addchk(pad["fLog" + axis], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
+         menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
+               function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
 
-         if (pad) {
-            menu.addchk(pad.fLogx, "SetLogx", main.ToggleLog.bind(main,"x"));
+         if ((kind === "z") && main && main.options && (main.options.Zscale > 0))
+            if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
 
-            menu.addchk(pad.fLogy, "SetLogy", main.ToggleLog.bind(main,"y"));
-
-            if (main.Dimension() == 2)
-               menu.addchk(pad.fLogz, "SetLogz", main.ToggleLog.bind(main,"z"));
+         if (faxis != null) {
+            menu.add("sub:Labels");
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
+                  function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
+                  function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
+                  function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
+            menu.add("endsub:");
+            menu.add("sub:Title");
+            menu.add("SetTitle", function() {
+               var t = prompt("Enter axis title", faxis.fTitle);
+               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
+            });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
+            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
+                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
+            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
+                  function(arg) { faxis.fTitleColor = parseInt(arg); this.RedrawPad(); });
+            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
+                                  function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
+            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
+                  function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
+            menu.add("endsub:");
+            menu.add("sub:Ticks");
+            if (faxis._typename == "TGaxis") {
+               this.AddColorMenuEntry(menu, "Color", faxis.fLineColor,
+                        function(arg) { faxis.fLineColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickSize,
+                        function(arg) { faxis.fTickSize = parseFloat(arg); this.RedrawPad(); } );
+            } else {
+               this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
+                           function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
+               this.AddSizeMenuEntry(menu,"Size", -0.05, 0.055, 0.01, faxis.fTickLength,
+                        function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
+            }
+            menu.add("endsub:");
          }
+         return true;
+      }
+
+      if (this.zoom_xmin !== this.zoom_xmax)
+         menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
+      if (this.zoom_ymin !== this.zoom_ymax)
+         menu.add("Unzoom Y", this.Unzoom.bind(this,"y"));
+      if (this.zoom_zmin !== this.zoom_zmax)
+         menu.add("Unzoom Z", this.Unzoom.bind(this,"z"));
+      menu.add("Unzoom all", this.Unzoom.bind(this,"xyz"));
+
+      if (pad) {
+         menu.addchk(pad.fLogx, "SetLogx", this.ToggleLog.bind(this,"x"));
+
+         menu.addchk(pad.fLogy, "SetLogy", this.ToggleLog.bind(this,"y"));
+
+         if (main && (typeof main.Dimension === 'function') && (main.Dimension() > 1))
+            menu.addchk(pad.fLogz, "SetLogz", this.ToggleLog.bind(this,"z"));
          menu.add("separator");
       }
 
       menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
-         var fp = this.frame_painter();
-         if (fp) fp.tooltip_allowed = !fp.tooltip_allowed;
+         this.tooltip_allowed = !this.tooltip_allowed;
       });
       this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
@@ -1897,7 +1970,6 @@
 
       if (zoom_z) {
          var cnt = 0, main_zmin = main.zmin;
-         // if (main.logz && main.ymin_nz && main.Dimension()===2) main_zmin = 0.3*main.ymin_nz;
          if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
          if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
@@ -2493,17 +2565,13 @@
    }
 
    TPadPainter.prototype.IsTooltipAllowed = function() {
-      var res = undefined;
-      this.ForEachPainterInPad(function(fp) {
-         if ((res===undefined) && (fp.tooltip_allowed!==undefined)) res = fp.tooltip_allowed;
-      });
-      return res !== undefined ? res : false;
+      var fp = this.frame_painter();
+      return fp ? fp.tooltip_allowed : false;
    }
 
    TPadPainter.prototype.SetTooltipAllowed = function(on) {
-      this.ForEachPainterInPad(function(fp) {
-         if (fp.tooltip_allowed!==undefined) fp.tooltip_allowed = on;
-      });
+      var fp = this.frame_painter();
+      if (fp) fp.tooltip_allowed = on;
    }
 
    TPadPainter.prototype.SelectObjectPainter = function(painter) {

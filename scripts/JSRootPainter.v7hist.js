@@ -499,7 +499,8 @@
             menu.add("separator");
 
          var main = this.main_painter() || this,
-             axis_painter = this.frame_painter();
+             fp = this.frame_painter(),
+             axis_painter = fp;
 
          menu.addchk(main.tooltip_allowed, 'Show tooltips', function() {
             main.tooltip_allowed = !main.tooltip_allowed;
@@ -510,14 +511,16 @@
             if (!axis_painter.enable_highlight && main.BinHighlight3D && main.mode3d) main.BinHighlight3D(null);
          });
 
-         menu.addchk(main.options.FrontBox, 'Front box', function() {
-            main.options.FrontBox = !main.options.FrontBox;
-            if (axis_painter.Render3D) axis_painter.Render3D();
-         });
-         menu.addchk(main.options.BackBox, 'Back box', function() {
-            main.options.BackBox = !main.options.BackBox;
-            if (axis_painter.Render3D) axis_painter.Render3D();
-         });
+         if (fp && fp.Render3D) {
+            menu.addchk(fp.FrontBox, 'Front box', function() {
+               fp.FrontBox = !fp.FrontBox;
+               fp.Render3D();
+            });
+            menu.addchk(fp.BackBox, 'Back box', function() {
+               fp.BackBox = !fp.BackBox;
+               fp.Render3D();
+            });
+         }
 
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
