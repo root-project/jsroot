@@ -1949,6 +1949,11 @@
 
       if (!this.is_main_painter()) return;
 
+      // work will be done when frame will draw axes
+      this.check_pad_range = true;
+
+      return;
+
       var ndim = this.Dimension(),
           histo = this.GetHisto(),
           pad = this.root_pad(),
@@ -2007,6 +2012,7 @@
                // set zoom values if only inside range
                fp.zoom_xmin = min;
                fp.zoom_xmax = max;
+               console.log('xrange', fp.zoom_xmin, fp.zoom_xmax);
             }
       }
 
@@ -2026,6 +2032,7 @@
                // set zoom values if only inside range
                fp.zoom_ymin = min;
                fp.zoom_ymax = max;
+               console.log('yrange', fp.zoom_ymin, fp.zoom_ymax);
             }
       }
    }
@@ -2257,7 +2264,11 @@
          fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
          fp.CreateXY({ ndim: this.Dimension(),
                        use_pad_range: (this.options.Same > 0),
+                       check_pad_range: this.check_pad_range,
+                       create_canvas: this.create_canvas,
                        swap_xy: (this.options.Bar >= 20) });
+         delete this.check_pad_range;
+
          this.x = fp.x; // TODO: should remain in frame painter
          this.y = fp.y; // TODO: should remain in frame painter
          return;

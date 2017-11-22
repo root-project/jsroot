@@ -969,6 +969,89 @@
       return null;
    }
 
+   TFramePainter.prototype.CheckPadRange = function(opts) {
+
+      var pad = this.root_pad(),
+          xaxis = this.xaxis,
+          yaxis = this.yaxis,
+          zaxis = this.zaxis;
+
+      this.zoom_xmin = this.zoom_xmax = 0;
+      this.zoom_ymin = this.zoom_ymax = 0;
+      this.zoom_zmin = this.zoom_zmax = 0;
+
+      // apply selected user range from histogram itself
+      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((xaxis.fFirst !== xaxis.fLast) && ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
+            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst) : xaxis.fXmin;
+            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast+1) : xaxis.fXmax;
+         }
+      }
+
+      if ((opts.ndim > 1) && yaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         //yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((yaxis.fFirst !== yaxis.fLast) && ((yaxis.fFirst > 1) || (yaxis.fLast < yaxis.fNbins))) {
+            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst) : yaxis.fXmin;
+            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast+1) : yaxis.fXmax;
+         }
+      }
+
+      if ((opts.ndim > 2) && zaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         //zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((zaxis.fFirst !== zaxis.fLast) && ((zaxis.fFirst > 1) || (zaxis.fLast < zaxis.fNbins))) {
+            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst) : zaxis.fXmin;
+            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast+1) : zaxis.fXmax;
+         }
+      }
+
+      if (!pad || (pad.fUxmin === undefined) || opts.create_canvas) return;
+
+      var min = pad.fUxmin, max = pad.fUxmax,
+         axis = opts.swap_xy ? yaxis : xaxis,
+         name = opts.swap_xy ? "zoom_y" : "zoom_x";
+
+      // first check that non-default values are there
+      if ((opts.ndim < 3) && ((min !== 0) || (max !== 1))) {
+         if (pad.fLogx > 0) {
+            min = Math.exp(min * Math.log(10));
+            max = Math.exp(max * Math.log(10));
+         }
+
+         var eps = (axis.fXmax - axis.fXmin) * 1e-7;
+         eps = 0; // TODO: remove this line
+
+         if (((axis.fXmin===0) && (axis.fXmax===1) && (axis.fNbins===1)) ||
+             ((Math.abs(min-axis.fXmin) > eps || Math.abs(max-axis.fXmax) > eps) && (min >= axis.fXmin && max <= axis.fXmax))) {
+               // set zoom values if only inside range
+               this[name+"min"] = min;
+               this[name+"max"] = max;
+            }
+      }
+
+      min = pad.fUymin; max = pad.fUymax;
+
+      axis = opts.swap_xy ? xaxis : yaxis;
+      name = opts.swap_xy ? "zoom_x" : "zoom_y";
+
+      if (((opts.ndim == 2) || opts.swap_xy) && ((min !== 0) || (max !== 1))) {
+         if (pad.fLogy > 0) {
+            min = Math.exp(min * Math.log(10));
+            max = Math.exp(max * Math.log(10));
+         }
+
+         var eps = (axis.fXmax - axis.fXmin) * 1e-7;
+         eps = 0; // TODO: remove this line
+
+         if (((axis.fXmin===0) && (axis.fXmax===1) && (axis.fNbins===1)) ||
+             ((Math.abs(min-axis.fXmin) > eps || Math.abs(max-axis.fXmax) > eps) && (min >= axis.fXmin && max <= axis.fXmax))) {
+               // set zoom values if only inside range
+               this[name+"min"] = min;
+               this[name+"max"] = max;
+            }
+      }
+   }
+
    TFramePainter.prototype.CreateXY = function(opts) {
       if (!opts) opts = {};
 
@@ -1004,6 +1087,19 @@
          }
       }
 
+      if (opts.check_pad_range)
+         this.CheckPadRange(opts);
+
+      if (this.zoom_xmin != this.zoom_xmax) {
+         this.scale_xmin = this.zoom_xmin;
+         this.scale_xmax = this.zoom_xmax;
+      }
+
+      if (this.zoom_ymin != this.zoom_ymax) {
+         this.scale_ymin = this.zoom_ymin;
+         this.scale_ymax = this.zoom_ymax;
+      }
+
       // projection should be assigned
       this.RecalculateRange(this.projection);
 
@@ -1016,11 +1112,6 @@
          this.x_kind = !this.xaxis.fLabels ? 'normal' : 'labels';
          this.ConvertX = function(x) { return x; };
          this.RevertX = function(grx) { return this.x.invert(grx); };
-      }
-
-      if (this.zoom_xmin != this.zoom_xmax) {
-         this.scale_xmin = this.zoom_xmin;
-         this.scale_xmax = this.zoom_xmax;
       }
 
       if (this.x_kind == 'time') {
@@ -1056,11 +1147,6 @@
          this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
       } else {
          this.grx = this.x;
-      }
-
-      if (this.zoom_ymin != this.zoom_ymax) {
-         this.scale_ymin = this.zoom_ymin;
-         this.scale_ymax = this.zoom_ymax;
       }
 
       if (this.yaxis.fTimeDisplay) {
