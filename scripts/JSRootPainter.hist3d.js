@@ -68,8 +68,13 @@
             clearTimeout(this.render_tmout);
             delete this.render_tmout;
          }
+
+         delete this.mode3d;
+
          return;
       }
+
+      this.mode3d = true; // indicate 3d mode as hist painter does
 
       if ('toplevel' in this) {
          // it is indication that all 3D object created, just replace it with empty

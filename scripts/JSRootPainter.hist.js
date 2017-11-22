@@ -4631,7 +4631,7 @@
 
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
-          pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
+          pmain = this.frame_painter(),
           pad = this.root_pad(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           pthis = this,

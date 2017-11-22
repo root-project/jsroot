@@ -34,7 +34,7 @@
           tcolor = this.get_color(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
-          main = this.main_painter();
+          main = this.frame_painter();
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
@@ -671,7 +671,7 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      var w = this.frame_width(), h = this.frame_height(),
+      var w = this.frame_width(), h = this.frame_height(), fp = this.frame_painter(),
           tf1 = this.GetObject(), pmain = this.main_painter(),
           name = this.GetTipName("\n");
 
@@ -691,15 +691,15 @@
       // first calculate graphical coordinates
       for(var n=0; n<this.bins.length; ++n) {
          var bin = this.bins[n];
-         bin.grx = pmain.grx(bin.x);
-         bin.gry = pmain.gry(bin.y);
+         bin.grx = fp.grx(bin.x);
+         bin.gry = fp.gry(bin.y);
       }
 
       if (this.bins.length > 2) {
 
          var h0 = h;  // use maximal frame height for filling
          if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
-            h0 = Math.round(pmain.gry(0));
+            h0 = Math.round(fp.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
@@ -1442,7 +1442,7 @@
           bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           dist, grx, gry, n, bin;
 
       for (n=0;n<this.bins.length;++n) {
@@ -1542,9 +1542,9 @@
 
       var islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
-          pmain = this.main_painter();
-
-      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+          pmain = this.frame_painter(),
+          gr = this.GetObject(),
+          res = { name: gr.fName, title: gr.fTitle,
                   x: best.bin ? pmain.grx(best.bin.x) : best.linex,
                   y: best.bin ? pmain.gry(best.bin.y) : best.liney,
                   color1: this.lineatt.color,
@@ -1582,7 +1582,7 @@
       if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
 
       if (!islines) {
-         res.color1 = this.get_color(this.GetObject().fMarkerColor);
+         res.color1 = this.get_color(gr.fMarkerColor);
          if (!res.color2) res.color2 = res.color1;
       }
 
