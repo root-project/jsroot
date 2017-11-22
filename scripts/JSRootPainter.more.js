@@ -511,7 +511,8 @@
    }
 
    TF1Painter.prototype.CreateBins = function(ignore_zoom) {
-      var main = this.main_painter(), gxmin = 0, gxmax = 0, tf1 = this.GetObject();
+      var main = this.frame_painter(),
+          gxmin = 0, gxmax = 0, tf1 = this.GetObject();
 
       if ((main!==null) && !ignore_zoom)  {
          if (main.zoom_xmin !== main.zoom_xmax) {
@@ -671,7 +672,8 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      var w = this.frame_width(), h = this.frame_height(), fp = this.frame_painter(),
+      var w = this.frame_width(), h = this.frame_height(),
+      fp = this.frame_painter(),
           tf1 = this.GetObject(), pmain = this.main_painter(),
           name = this.GetTipName("\n");
 
