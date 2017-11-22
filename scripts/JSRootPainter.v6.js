@@ -1074,8 +1074,8 @@
          }
       }
 
-      this.scale_ymin = opts.use_pad_range ? pad.fUymin : this.ymin;
-      this.scale_ymax = opts.use_pad_range ? pad.fUymax : this.ymax;
+      this.scale_ymin = this.ymin;
+      this.scale_ymax = this.ymax;
 
       if (opts.use_pad_range) {
          var dy = pad.fY2 - pad.fY1;
@@ -1426,15 +1426,14 @@
       // function called at the end of resize of frame
       // One should apply changes to the pad
 
-      var pad = this.root_pad(),
-          main = this.main_painter();
+      var pad = this.root_pad();
 
       if (pad) {
          pad.fLeftMargin = this.fX1NDC;
          pad.fRightMargin = 1 - this.fX2NDC;
          pad.fBottomMargin = this.fY1NDC;
          pad.fTopMargin = 1 - this.fY2NDC;
-         if (main) main.SetRootPadRange(pad);
+         this.SetRootPadRange(pad);
       }
 
       this.RedrawPad();
