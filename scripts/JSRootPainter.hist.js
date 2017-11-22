@@ -1999,7 +1999,10 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== xaxis.fXmin || max !== xaxis.fXmax)
+         var xeps = (xaxis.fXmax - xaxis.fXmin) * 1e-7;
+         xeps = 0; // TODO: remove this line
+
+         if (Math.abs(min-xaxis.fXmin) > xeps || Math.abs(max-xaxis.fXmax) > xeps)
             if (min >= xaxis.fXmin && max <= xaxis.fXmax) {
                // set zoom values if only inside range
                fp.zoom_xmin = min;
@@ -2015,7 +2018,10 @@
             max = Math.exp(max * Math.log(10));
          }
 
-         if (min !== yaxis.fXmin || max !== yaxis.fXmax)
+         var yeps = (yaxis.fXmax - yaxis.fXmin) * 1e-7;
+         yeps = 0; // TODO: remove this line
+
+         if (Math.abs(min-yaxis.fXmin) > yeps || Math.abs(max - yaxis.fXmax) > yeps)
             if (min >= yaxis.fXmin && max <= yaxis.fXmax) {
                // set zoom values if only inside range
                fp.zoom_ymin = min;
@@ -2689,30 +2695,30 @@
    }
 
    THistPainter.prototype.IsAxisZoomed = function(axis) {
-      var obj = this.main_painter() || this;
-      return obj['zoom_'+axis+'min'] !== obj['zoom_'+axis+'max'];
+      var main = this.frame_painter();
+      return main ? main['zoom_'+axis+'min'] !== main['zoom_'+axis+'max'] : false;
    }
 
-   THistPainter.prototype.GetSelectIndex = function(axis, size, add) {
+   THistPainter.prototype.GetSelectIndex = function(axis, side, add) {
       // be aware - here indexes starts from 0
-      var indx = 0, obj = this.frame_painter(), histo = this.GetHisto();
-      if (!obj) obj = this;
-      var nbin = this['nbins'+axis];
-      if (!nbin) nbin = 0;
+      var indx = 0,
+          main = this.frame_painter(),
+          histo = this.GetHisto(),
+          nbin = this['nbins'+axis] || 0;
       if (!add) add = 0;
 
       var taxis = histo ? histo["f"+axis.toUpperCase()+"axis"] : null,
-          min = obj['zoom_' + axis + 'min'],
-          max = obj['zoom_' + axis + 'max'];
+          min = main ? main['zoom_' + axis + 'min'] : 0,
+          max = main ? main['zoom_' + axis + 'max'] : 0;
 
       if ((min != max) && taxis) {
-         if (size == "left") {
+         if (side == "left") {
             indx = taxis.FindBin(min, add);
          } else {
             indx = taxis.FindBin(max, add + 0.5);
          }
       } else {
-         indx = (size == "left") ? 0 : nbin;
+         indx = (side == "left") ? 0 : nbin;
       }
 
       // TAxis object of histogram, where user range can be stored
@@ -2721,7 +2727,7 @@
              ((taxis.fFirst<=1) && (taxis.fLast>=nbin))) taxis = undefined;
       }
 
-      if (size == "left") {
+      if (side == "left") {
          if (indx < 0) indx = 0;
          if (taxis && (taxis.fFirst>1) && (indx<taxis.fFirst)) indx = taxis.fFirst-1;
       } else {
@@ -2903,6 +2909,8 @@
    THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
+
+      console.log('SHOULD NEVER CALLED');
 
       // disable zooming when axis convertion is enabled
       if (this.options && this.options.Proj) return false;
