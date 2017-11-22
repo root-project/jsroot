@@ -3819,11 +3819,15 @@
    }
 
    THistPainter.prototype.ButtonClick = function(funcname) {
-      if (!this.is_main_painter()) return false;
+
+      var fp = this.frame_painter();
+
+      if (!this.is_main_painter() || !fp) return false;
+
       switch(funcname) {
          case "ToggleZoom":
-            if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
-               this.Unzoom();
+            if ((fp.zoom_xmin !== fp.zoom_xmax) || (fp.zoom_ymin !== fp.zoom_ymax) || (fp.zoom_zmin !== fp.zoom_zmax)) {
+               fp.Unzoom();
                return true;
             }
             if (this.draw_content && (typeof this.AutoZoom === 'function')) {
@@ -3831,9 +3835,9 @@
                return true;
             }
             break;
-         case "ToggleLogX": this.ToggleLog("x"); break;
-         case "ToggleLogY": this.ToggleLog("y"); break;
-         case "ToggleLogZ": this.ToggleLog("z"); break;
+         case "ToggleLogX": fp.ToggleLog("x"); break;
+         case "ToggleLogY": fp.ToggleLog("y"); break;
+         case "ToggleLogZ": fp.ToggleLog("z"); break;
          case "ToggleStatBox": this.ToggleStat(); return true; break;
       }
       return false;
