@@ -1031,8 +1031,8 @@
 
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
 
-         if ((this.scale_xmin <= 0) && (this.nbinsx>0) && !this.swap_xy)
-            for (var i=0;i<this.nbinsx;++i) {
+         if ((this.scale_xmin <= 0) && this.xaxis && !this.swap_xy)
+            for (var i=0;i<this.xaxis.fNbins;++i) {
                this.scale_xmin = Math.max(this.scale_xmin, this.xaxis.GetBinLowEdge(i+1));
                if (this.scale_xmin>0) break;
             }
@@ -1083,8 +1083,8 @@
             this.scale_ymax*=1.8;
 
          // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (opts.ndim>1) && !this.swap_xy)
-            for (var i=0;i<this.nbinsy;++i) {
+         if ((this.scale_ymin <= 0) && this.yaxis && (opts.ndim>1) && !this.swap_xy)
+            for (var i=0;i<this.yaxis.fNbins;++i) {
                this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
                if (this.scale_ymin>0) break;
             }

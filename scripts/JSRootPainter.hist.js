@@ -1949,42 +1949,44 @@
 
       if (!this.is_main_painter()) return;
 
-      this.zoom_xmin = this.zoom_xmax = 0;
-      this.zoom_ymin = this.zoom_ymax = 0;
-      this.zoom_zmin = this.zoom_zmax = 0;
-
       var ndim = this.Dimension(),
           histo = this.GetHisto(),
+          pad = this.root_pad(),
+          fp = this.frame_painter(),
           xaxis = histo.fXaxis,
           yaxis = histo.fYaxis,
           zaxis = histo.fXaxis;
+
+      if (!fp) return;
+
+      fp.zoom_xmin = fp.zoom_xmax = 0;
+      fp.zoom_ymin = fp.zoom_ymax = 0;
+      fp.zoom_zmin = fp.zoom_zmax = 0;
 
       // apply selected user range from histogram itself
       if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((xaxis.fFirst !== xaxis.fLast) && ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
-            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst) : xaxis.fXmin;
-            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast+1) : xaxis.fXmax;
+            fp.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst) : xaxis.fXmin;
+            fp.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast+1) : xaxis.fXmax;
          }
       }
 
       if ((ndim>1) && yaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          //yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((yaxis.fFirst !== yaxis.fLast) && ((yaxis.fFirst > 1) || (yaxis.fLast < yaxis.fNbins))) {
-            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst) : yaxis.fXmin;
-            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast+1) : yaxis.fXmax;
+            fp.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst) : yaxis.fXmin;
+            fp.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast+1) : yaxis.fXmax;
          }
       }
 
       if ((ndim>2) && zaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
          //zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((zaxis.fFirst !== zaxis.fLast) && ((zaxis.fFirst > 1) || (zaxis.fLast < zaxis.fNbins))) {
-            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst) : zaxis.fXmin;
-            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast+1) : zaxis.fXmax;
+            fp.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst) : zaxis.fXmin;
+            fp.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast+1) : zaxis.fXmax;
          }
       }
-
-      var pad = this.root_pad();
 
       if (!pad || !('fUxmin' in pad) || this.create_canvas) return;
 
@@ -2000,8 +2002,8 @@
          if (min !== xaxis.fXmin || max !== xaxis.fXmax)
             if (min >= xaxis.fXmin && max <= xaxis.fXmax) {
                // set zoom values if only inside range
-               this.zoom_xmin = min;
-               this.zoom_xmax = max;
+               fp.zoom_xmin = min;
+               fp.zoom_xmax = max;
             }
       }
 
@@ -2016,8 +2018,8 @@
          if (min !== yaxis.fXmin || max !== yaxis.fXmax)
             if (min >= yaxis.fXmin && max <= yaxis.fXmax) {
                // set zoom values if only inside range
-               this.zoom_ymin = min;
-               this.zoom_ymax = max;
+               fp.zoom_ymin = min;
+               fp.zoom_ymax = max;
             }
       }
    }
