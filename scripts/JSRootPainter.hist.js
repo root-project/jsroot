@@ -2260,13 +2260,13 @@
 
       if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
-         fp.SetProjection(this.options.Proj);
          fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
          fp.CreateXY({ ndim: this.Dimension(),
                        use_pad_range: (this.options.Same > 0),
                        check_pad_range: this.check_pad_range,
                        create_canvas: this.create_canvas,
-                       swap_xy: (this.options.Bar >= 20) });
+                       swap_xy: (this.options.Bar >= 20),
+                       Proj: this.options.Proj });
          delete this.check_pad_range;
 
          this.x = fp.x; // TODO: should remain in frame painter
@@ -6195,21 +6195,21 @@
       // get levels
       var levels = this.GetContour(),
           palette = this.GetPalette(),
-          painter = this;
+          painter = this, main = this.frame_painter();
 
       function BuildPath(xp,yp,iminus,iplus) {
          var cmd = "", last = null, pnt = null, i;
          for (i=iminus;i<=iplus;++i) {
             pnt = null;
-            switch (painter.options.Proj) {
-               case 1: pnt = painter.ProjectAitoff2xy(xp[i], yp[i]); break;
-               case 2: pnt = painter.ProjectMercator2xy(xp[i], yp[i]); break;
-               case 3: pnt = painter.ProjectSinusoidal2xy(xp[i], yp[i]); break;
-               case 4: pnt = painter.ProjectParabolic2xy(xp[i], yp[i]); break;
+            switch (main.projection) {
+               case 1: pnt = main.ProjectAitoff2xy(xp[i], yp[i]); break;
+               case 2: pnt = main.ProjectMercator2xy(xp[i], yp[i]); break;
+               case 3: pnt = main.ProjectSinusoidal2xy(xp[i], yp[i]); break;
+               case 4: pnt = main.ProjectParabolic2xy(xp[i], yp[i]); break;
             }
             if (pnt) {
-               pnt.x = painter.grx(pnt.x);
-               pnt.y = painter.gry(pnt.y);
+               pnt.x = main.grx(pnt.x);
+               pnt.y = main.gry(pnt.y);
             } else {
                pnt = { x: xp[i], y: yp[i] };
             }
@@ -6634,7 +6634,7 @@
    TH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
-          pmain = this.main_painter(), // used for axis values conversions
+          pmain = this.frame_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
           bars = "", markers = "", posy;
 

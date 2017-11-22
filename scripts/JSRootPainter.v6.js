@@ -834,10 +834,6 @@
       return this.fLastEventPnt;
    }
 
-   TFramePainter.prototype.SetProjection = function(proj) {
-      this.projection = proj;
-   }
-
    TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
       var DegToRad = Math.PI/180,
           alpha2 = (l/2)*DegToRad,
@@ -873,10 +869,12 @@
    TFramePainter.prototype.RecalculateRange = function(Proj) {
       // not yet used, could be useful in the future
 
-      if (!Proj) return;
+      this.projection = Proj || 0;
+
+      if (!this.projection) return;
 
       var pnts = []; // all extremes which used to find
-      if (Proj == 1) {
+      if (this.projection == 1) {
          // TODO : check x range not lower than -180 and not higher than 180
          pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectAitoff2xy(this.scale_xmin, this.scale_ymax));
@@ -891,7 +889,7 @@
             pnts.push(this.ProjectAitoff2xy(0, this.scale_ymin));
             pnts.push(this.ProjectAitoff2xy(0, this.scale_ymax));
          }
-      } else if (Proj == 2) {
+      } else if (this.projection == 2) {
          if (this.scale_ymin <= -90 || this.scale_ymax >=90) {
             console.warn("Mercator Projection", "Latitude out of range", this.scale_ymin, this.scale_ymax);
             this.projection = 0;
@@ -900,7 +898,7 @@
          pnts.push(this.ProjectMercator2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectMercator2xy(this.scale_xmax, this.scale_ymax));
 
-      } else if (Proj == 3) {
+      } else if (this.projection == 3) {
          pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectSinusoidal2xy(this.scale_xmin, this.scale_ymax));
          pnts.push(this.ProjectSinusoidal2xy(this.scale_xmax, this.scale_ymax));
@@ -913,7 +911,7 @@
             pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymin));
             pnts.push(this.ProjectSinusoidal2xy(0, this.scale_ymax));
          }
-      } else if (Proj == 4) {
+      } else if (this.projection == 4) {
          pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymin));
          pnts.push(this.ProjectParabolic2xy(this.scale_xmin, this.scale_ymax));
          pnts.push(this.ProjectParabolic2xy(this.scale_xmax, this.scale_ymax));
@@ -1101,7 +1099,7 @@
       }
 
       // projection should be assigned
-      this.RecalculateRange(this.projection);
+      this.RecalculateRange(opts.Proj);
 
       if (this.xaxis.fTimeDisplay) {
          this.x_kind = 'time';
