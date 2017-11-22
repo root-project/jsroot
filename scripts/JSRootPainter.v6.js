@@ -1228,16 +1228,19 @@
       return value.toPrecision(4);
    }
 
-   TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
+   TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
       // axes can be drawn only for main histogram
 
       if (this.axes_drawn) return true;
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
+      if (AxisPos === undefined) AxisPos = 0;
+
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(),
-          h = this.frame_height();
+          h = this.frame_height(),
+          pad = this.root_pad();
 
       this.x_handle = new JSROOT.TAxisPainter(this.xaxis, true);
       this.x_handle.SetDivId(this.divid, -1);
@@ -1246,9 +1249,9 @@
       this.x_handle.SetAxisConfig("xaxis",
                                   (this.logx && (this.x_kind !== "time")) ? "log" : this.x_kind,
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
-      this.x_handle.invert_side = false;
-      this.x_handle.lbls_both_sides = false;
-      this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
+      this.x_handle.invert_side = (AxisPos >= 10);
+      this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
+      this.x_handle.has_obstacle = has_x_obstacle; // (this.options.Zscale > 0);
 
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -1257,20 +1260,19 @@
       this.y_handle.SetAxisConfig("yaxis",
                                   (this.logy && this.y_kind !== "time") ? "log" : this.y_kind,
                                   this.y, this.ymin, this.ymax, this.scale_ymin, this.scale_ymax);
-      this.y_handle.invert_side = false; // ((this.options.AxisPos % 10) === 1) || (pad.fTicky > 1);
-      this.y_handle.lbls_both_sides = false;
+      this.y_handle.invert_side = ((AxisPos % 10) === 1);
+      this.y_handle.lbls_both_sides = !this.y_handle.invert_side && (pad.fTicky > 1); // labels on both sides
 
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
-          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle,
-          disable_axis_draw = false, show_second_ticks = false;
+          draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
       draw_horiz.DrawAxis(false, layer, w, h,
                           draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                          false, show_second_ticks ? -h : 0, disable_axis_draw);
+                          false, pad.fTickx ? -h : 0, disable_axis_draw);
 
       draw_vertical.DrawAxis(true, layer, w, h,
                              draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, show_second_ticks ? w : 0, disable_axis_draw,
+                             false, pad.fTicky ? w : 0, disable_axis_draw,
                              draw_vertical.invert_side ? 0 : this.frame_x());
 
       this.DrawGrids();

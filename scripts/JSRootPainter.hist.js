@@ -2527,7 +2527,7 @@
 
       if (JSROOT.FrameAxisDrawing) {
          var fp = this.frame_painter();
-         fp.DrawAxes(shrink_forbidden);
+         fp.DrawAxes(shrink_forbidden, this.options.Axis < 0, this.options.AxisPos, (this.options.Zscale > 0));
          return;
       }
 
