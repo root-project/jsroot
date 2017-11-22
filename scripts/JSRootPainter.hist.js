@@ -2568,7 +2568,8 @@
 
       draw_vertical.DrawAxis(true, layer, w, h,
                              draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, pad.fTicky ? w : 0, this.options.Axis < 0, draw_vertical.invert_side ? 0 : this.frame_x());
+                             false, pad.fTicky ? w : 0, this.options.Axis < 0,
+                             draw_vertical.invert_side ? 0 : this.frame_x());
 
       if (shrink_forbidden || !JSROOT.gStyle.CanAdjustFrame) return;
 

@@ -1253,7 +1253,7 @@
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
       this.x_handle.invert_side = (AxisPos >= 10);
       this.x_handle.lbls_both_sides = !this.x_handle.invert_side && (pad.fTickx > 1); // labels on both sides
-      this.x_handle.has_obstacle = has_x_obstacle; // (this.options.Zscale > 0);
+      this.x_handle.has_obstacle = has_x_obstacle;
 
       this.y_handle = new JSROOT.TAxisPainter(this.yaxis, true);
       this.y_handle.SetDivId(this.divid, -1);
