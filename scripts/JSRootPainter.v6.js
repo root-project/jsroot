@@ -1006,8 +1006,8 @@
       if (!pad || (pad.fUxmin === undefined) || opts.create_canvas) return;
 
       var min = pad.fUxmin, max = pad.fUxmax,
-         axis = opts.swap_xy ? yaxis : xaxis,
-         name = opts.swap_xy ? "zoom_y" : "zoom_x";
+          axis = opts.swap_xy ? yaxis : xaxis,
+          name = opts.swap_xy ? "zoom_y" : "zoom_x";
 
       // first check that non-default values are there
       if ((opts.ndim < 3) && ((min !== 0) || (max !== 1))) {
@@ -1062,7 +1062,11 @@
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
-      if (opts.use_pad_range) {
+
+      this.scale_ymin = this.ymin;
+      this.scale_ymax = this.ymax;
+
+      if (pad && (opts.use_pad_range || opts.check_pad_range)) {
          var dx = pad.fX2 - pad.fX1;
          this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
          this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
@@ -1072,21 +1076,26 @@
          }
       }
 
-      this.scale_ymin = this.ymin;
-      this.scale_ymax = this.ymax;
-
-      if (opts.use_pad_range) {
+      if (padd && (opts.use_pad_range || opts.check_pad_range)) {
          var dy = pad.fY2 - pad.fY1;
          this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
          this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
+
+         if (pad.fLogy) {
+            this.scale_ymin = Math.pow(10, this.scale_ymin);
+            this.scale_ymax = Math.pow(10, this.scale_ymax);
          }
+
+         // TODO: add zooming or scale logic here
       }
 
       if (opts.check_pad_range)
          this.CheckPadRange(opts);
+
+      //console.log('pad ymin/ymax', this.scale_ymin, this.scale_ymax,
+      //      Math.pow(10, pad.fUymin),
+      //      Math.pow(10, pad.fUymax)
+      //);
 
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;

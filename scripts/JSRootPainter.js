@@ -2161,7 +2161,7 @@
     *  "pad" - when pad coordinates relative to pad ranges are specified
     *  Always return rounded values */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
-      var main = this.main_painter();
+      var main = this.frame_painter();
       if (main && !kind) {
          // this is frame coordinates
          value = (axis=="y") ? main.gry(value) + main.frame_y()

@@ -1954,6 +1954,8 @@
 
       return;
 
+      // TODO: remove obsolete code
+
       var ndim = this.Dimension(),
           histo = this.GetHisto(),
           pad = this.root_pad(),
