@@ -2212,8 +2212,8 @@
       this.xmax = histo.fXaxis.fXmax;
       AssignFuncs(histo.fXaxis);
 
-      this.ymin = this.histo.fYaxis.fXmin;
-      this.ymax = this.histo.fYaxis.fXmax;
+      this.ymin = histo.fYaxis.fXmin;
+      this.ymax = histo.fYaxis.fXmax;
 
       if (!with_y_axis || (this.nbinsy==0)) return;
 
