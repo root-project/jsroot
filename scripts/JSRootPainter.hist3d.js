@@ -474,7 +474,6 @@
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
           pad = this.root_pad(),
-          histo = this.GetHisto ? this.GetHisto() : null,
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -515,9 +514,9 @@
 
       if (pad && pad.fLogx) {
          if (xmax <= 0) xmax = 1.;
-         if ((xmin <= 0) && (this.nbinsx > 0))
-            for (var i=0;i<this.nbinsx;++i) {
-               xmin = Math.max(xmin, histo.fXaxis.GetBinLowEdge(i+1));
+         if ((xmin <= 0) && this.xaxis)
+            for (var i=0;i<this.xaxis.fNbins;++i) {
+               xmin = Math.max(xmin, this.xaxis.GetBinLowEdge(i+1));
                if (xmin>0) break;
             }
          if (xmin <= 0) xmin = 1e-4*xmax;
@@ -525,23 +524,23 @@
          this.x_kind = "log";
       } else {
          this.grx = d3.scaleLinear();
-         if (histo && histo.fXaxis.fLabels) this.x_kind = "labels";
-                                       else this.x_kind = "normal";
+         if (this.xaxis && this.xaxis.fLabels) this.x_kind = "labels";
+                                          else this.x_kind = "normal";
       }
 
       this.logx = (this.x_kind === "log");
 
       this.grx.domain([ xmin, xmax ]).range([ grminx, grmaxx ]);
-      this.x_handle = new JSROOT.TAxisPainter(histo ? histo.fXaxis : null);
+      this.x_handle = new JSROOT.TAxisPainter(this.xaxis);
       this.x_handle.SetAxisConfig("xaxis", this.x_kind, this.grx, this.xmin, this.xmax, xmin, xmax);
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
 
       if (pad && pad.fLogy && !opts.use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
-         if ((ymin <= 0) && (this.nbinsy>0))
-            for (var i=0;i<this.nbinsy;++i) {
-               ymin = Math.max(ymin, histo.fYaxis.GetBinLowEdge(i+1));
+         if ((ymin <= 0) && this.yaxis)
+            for (var i=0;i<this.yaxis.fNbins;++i) {
+               ymin = Math.max(ymin, this.yaxis.GetBinLowEdge(i+1));
                if (ymin>0) break;
             }
 
@@ -550,14 +549,14 @@
          this.y_kind = "log";
       } else {
          this.gry = d3.scaleLinear();
-         if (histo && histo.fYaxis.fLabels) this.y_kind = "labels";
-                                       else this.y_kind = "normal";
+         if (this.yaxis && this.yaxis.fLabels) this.y_kind = "labels";
+                                          else this.y_kind = "normal";
       }
 
       this.logy = (this.y_kind === "log");
 
       this.gry.domain([ ymin, ymax ]).range([ grminy, grmaxy ]);
-      this.y_handle = new JSROOT.TAxisPainter(histo ? histo.fYaxis : null);
+      this.y_handle = new JSROOT.TAxisPainter(this.yaxis);
       this.y_handle.SetAxisConfig("yaxis", this.y_kind, this.gry, this.ymin, this.ymax, ymin, ymax);
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
@@ -570,8 +569,7 @@
       } else {
          this.grz = d3.scaleLinear();
          this.z_kind = "normal";
-         if (histo)
-            if (histo.fZaxis.fLabels && (this.Dimension()==3)) this.z_kind = "labels";
+         if (this.zaxis && this.zaxis.fLabels && (opts.ndim === 3)) this.z_kind = "labels";
       }
 
       this.logz = (this.z_kind === "log");
@@ -581,7 +579,7 @@
       if (this.SetRootPadRange)
          this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
-      this.z_handle = new JSROOT.TAxisPainter(histo ? histo.fZaxis : null);
+      this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
       this.z_handle.CreateFormatFuncs();
       this.scale_zmin = zmin; this.scale_zmax = zmax;
@@ -600,7 +598,7 @@
       top.axis_draw = true; // mark element as axis drawing
       toplevel.add(top);
 
-      var ticks = [], maxtextheight = 0, xaxis = histo ? histo.fXaxis : null;
+      var ticks = [], maxtextheight = 0, xaxis = this.xaxis;
 
       while (xticks.next()) {
          var grx = xticks.grpos,
@@ -804,7 +802,7 @@
 
       lbls = []; text_scale = 1; maxtextheight = 0; ticks = [];
 
-      var yaxis = histo ? histo.fYaxis : null
+      var yaxis = this.yaxis;
 
       while (yticks.next()) {
          var gry = yticks.grpos,
@@ -902,7 +900,7 @@
       ticks = []; // just array, will be used for the buffer geometry
 
       var zgridx = null, zgridy = null, lastmajorz = null,
-          zaxis = histo ? histo.fZaxis : null, maxzlblwidth = 0;
+          zaxis = this.zaxis, maxzlblwidth = 0;
 
       if (this.size_z3d) {
          zgridx = []; zgridy = [];
@@ -1497,7 +1495,7 @@
          if (is_main) {
             main.Create3DScene();
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-            main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming });
+            main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
          }
 
          this.Draw3DBins();
@@ -1553,7 +1551,7 @@
          if (is_main) {
             main.Create3DScene();
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-            main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming });
+            main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
          }
 
          this.Draw3DBins();
@@ -2902,7 +2900,7 @@
          main.Create3DScene();
          main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
 
-         main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming });
+         main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });
          this.Draw3DBins();
          main.Render3D();
          this.UpdateStatWebCanvas();

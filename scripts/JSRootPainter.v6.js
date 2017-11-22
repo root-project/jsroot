@@ -969,9 +969,11 @@
       return null;
    }
 
-   TFramePainter.prototype.CreateXY = function(ndim, use_pad_range, swap_xy) {
-      this.use_pad_range = use_pad_range;
-      this.swap_xy = swap_xy;
+   TFramePainter.prototype.CreateXY = function(opts) {
+      if (!opts) opts = {};
+
+      this.use_pad_range = opts.use_pad_range;
+      this.swap_xy = opts.swap_xy;
 
       this.logx = this.logy = false;
 
@@ -979,7 +981,7 @@
 
       this.scale_xmin = this.xmin;
       this.scale_xmax = this.xmax;
-      if (use_pad_range) {
+      if (opts.use_pad_range) {
          var dx = pad.fX2 - pad.fX1;
          this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
          this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
@@ -989,10 +991,10 @@
          }
       }
 
-      this.scale_ymin = use_pad_range ? pad.fUymin : this.ymin;
-      this.scale_ymax = use_pad_range ? pad.fUymax : this.ymax;
+      this.scale_ymin = opts.use_pad_range ? pad.fUymin : this.ymin;
+      this.scale_ymax = opts.use_pad_range ? pad.fUymax : this.ymax;
 
-      if (use_pad_range) {
+      if (opts.use_pad_range) {
          var dy = pad.fY2 - pad.fY1;
          this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
          this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
@@ -1077,11 +1079,11 @@
          if (this.scale_ymax <= 0)
             this.scale_ymax = 1;
          else
-         if ((this.zoom_ymin === this.zoom_ymax) && (ndim==1) && this.draw_content)
+         if ((this.zoom_ymin === this.zoom_ymax) && (opts.ndim==1) && this.draw_content)
             this.scale_ymax*=1.8;
 
          // this is for 2/3 dim histograms - find first non-negative bin
-         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (ndim>1) && !this.swap_xy)
+         if ((this.scale_ymin <= 0) && (this.nbinsy>0) && (opts.ndim>1) && !this.swap_xy)
             for (var i=0;i<this.nbinsy;++i) {
                this.scale_ymin = Math.max(this.scale_ymin, this.yaxis.GetBinLowEdge(i+1));
                if (this.scale_ymin>0) break;

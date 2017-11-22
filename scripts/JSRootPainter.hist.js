@@ -2247,7 +2247,9 @@
          var fp = this.frame_painter();
          fp.SetProjection(this.options.Proj);
          fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
-         fp.CreateXY(this.Dimension(), use_pad_range, swap_xy);
+         fp.CreateXY({ ndim: this.Dimension(),
+                       use_pad_range: (this.options.Same > 0),
+                       swap_xy: (this.options.Bar >= 20) });
          this.x = fp.x; // TODO: should remain in frame painter
          this.y = fp.y; // TODO: should remain in frame painter
          return;
