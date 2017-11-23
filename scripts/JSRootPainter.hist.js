@@ -2465,9 +2465,6 @@
       pad.fX2 = pad.fUxmax + rx/mx*pad.fRightMargin;
       pad.fY1 = pad.fUymin - ry/my*pad.fBottomMargin;
       pad.fY2 = pad.fUymax + ry/my*pad.fTopMargin;
-
-      console.log('Set logy', pad.fLogy)
-
    }
 
    THistPainter.prototype.DrawGrids = function() {

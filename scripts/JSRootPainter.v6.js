@@ -967,6 +967,45 @@
       return null;
    }
 
+   TFramePainter.prototype.CheckAxisZoom = function(name) {
+      var axis = this.GetAxis(name);
+      if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
+         //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
+         if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
+            this['zoom_' + name + 'min'] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
+            this['zoom_' + name + 'max'] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast+1) : axis.fXmax;
+         }
+      }
+   }
+
+   TFramePainter.prototype.CheckPadUserRange = function(pad, name) {
+      if (!pad) return;
+
+      var umin = pad['fU' + name + 'min'],
+          umax = pad['fU' + name + 'max'];
+
+      if ((umin>=umax) || ((umin === 0) && (umax === 1))) return;
+
+      if (pad['fLog' + name] > 0) {
+         umin = Math.exp(umin * Math.log(10));
+         umax = Math.exp(umax * Math.log(10));
+      }
+
+      var aname = name;
+      if (this.swap_xy) aname = (name=="x") ? "y" : "x";
+      var smin = 'scale_' + aname + 'min',
+          smax = 'scale_' + aname + 'max';
+
+      var eps = (this[smin] - this[smax]) * 1e-7;
+      eps = 0; // TODO: remove this line
+
+      if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
+         // set zoom values
+         this["zoom_" + aname + "min"] = umin;
+         this["zoom_" + aname + "max"] = umax;
+      }
+   }
+
    TFramePainter.prototype.CheckPadRange = function(opts) {
 
       var pad = this.root_pad(),
@@ -1066,6 +1105,8 @@
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
 
+/*
+
       if (pad && (opts.use_pad_range || opts.check_pad_range)) {
          var dx = pad.fX2 - pad.fX1;
          this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
@@ -1076,7 +1117,7 @@
          }
       }
 
-      if (padd && (opts.use_pad_range || opts.check_pad_range)) {
+      if (pad && (opts.use_pad_range || opts.check_pad_range)) {
          var dy = pad.fY2 - pad.fY1;
          this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
          this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
@@ -1088,9 +1129,28 @@
 
          // TODO: add zooming or scale logic here
       }
+*/
 
-      if (opts.check_pad_range)
-         this.CheckPadRange(opts);
+      if (opts.use_pad_range || opts.check_pad_range) {
+         // take zooming out of pad or axis attribytes
+
+         this.zoom_xmin = this.zoom_xmax = 0;
+         this.zoom_ymin = this.zoom_ymax = 0;
+         this.zoom_zmin = this.zoom_zmax = 0;
+
+         if (opts.check_pad_range) {
+            this.CheckAxisZoom('x');
+            if (opts.ndim > 1) this.CheckAxisZoom('y');
+            if (opts.ndim > 2) this.CheckAxisZoom('z');
+         }
+
+         this.CheckPadUserRange(pad, 'x');
+         this.CheckPadUserRange(pad, 'y');
+      }
+
+
+      //if (opts.check_pad_range)
+      //   this.CheckPadRange(opts);
 
       //console.log('pad ymin/ymax', this.scale_ymin, this.scale_ymax,
       //      Math.pow(10, pad.fUymin),
