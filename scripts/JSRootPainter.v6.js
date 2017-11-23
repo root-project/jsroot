@@ -981,10 +981,26 @@
    TFramePainter.prototype.CheckPadUserRange = function(pad, name) {
       if (!pad) return;
 
+      // seems to be, not allways user range calculated
       var umin = pad['fU' + name + 'min'],
-          umax = pad['fU' + name + 'max'];
+          umax = pad['fU' + name + 'max'],
+          eps = 1e-7;
 
-      if ((umin>=umax) || ((umin === 0) && (umax === 1))) return;
+      if (name == "x") {
+         if ((Math.abs(pad.fX1) > eps) || (Math.abs(pad.fX2-1) > eps)) {
+            var dx = pad.fX2 - pad.fX1;
+            umin = pad.fX1 + dx*pad.fLeftMargin;
+            umax = pad.fX2 - dx*pad.fRightMargin;
+         }
+      } else {
+         if ((Math.abs(pad.fY1) > eps) || (Math.abs(pad.fY2-1) > eps)) {
+            var dy = pad.fY2 - pad.fY1;
+            umin = pad.fY1 + dy*pad.fBottomMargin;
+            umax = pad.fY2 - dy*pad.fTopMargin;
+         }
+      }
+
+      if ((umin>=umax) || (Math.abs(umin)<eps && Math.abs(umax-1)<eps)) return;
 
       if (pad['fLog' + name] > 0) {
          umin = Math.exp(umin * Math.log(10));
