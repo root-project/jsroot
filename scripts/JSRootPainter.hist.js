@@ -1668,7 +1668,7 @@
          var line = lines[j];
          if (j>0) maxlen = Math.max(maxlen, line.length);
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
-         if (first_stat === 0) first_stat = lines.length-1;
+         if (first_stat === 0) first_stat = j;
          var parts = line.split("|");
          if (parts.length > num_cols)
             num_cols = parts.length;
