@@ -2083,8 +2083,9 @@
        line.tooltip = function(intersect) {
           var pos = Math.floor(intersect.index / 6);
           if ((pos<0) || (pos >= this.intersect_index.length)) return null;
-          var p = this.painter, histo = this.GetHisto(),
-              main = p.main_painter(),
+          var p = this.painter,
+              histo = p.GetHisto(),
+              main = p.frame_painter(),
               tip = p.Get3DToolTip(this.intersect_index[pos]);
 
           tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
@@ -2588,7 +2589,7 @@
 
       var rootcolor = this.GetObject().fFillColor,
           fillcolor = this.get_color(rootcolor),
-          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
+          main = this.frame_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
@@ -2677,9 +2678,9 @@
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
-      var scalex = (this.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - this.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
-          scaley = (this.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - this.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
-          scalez = (this.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - this.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
+      var scalex = (main.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - main.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
+          scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
+          scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
 
       var nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [];
 
@@ -2752,9 +2753,9 @@
       var binx, grx, biny, gry, binz, grz;
 
       for (i = i1; i < i2; ++i) {
-         binx = histo.fXaxis.GetBinCenter(i+1); grx = this.grx(binx);
+         binx = histo.fXaxis.GetBinCenter(i+1); grx = main.grx(binx);
          for (j = j1; j < j2; ++j) {
-            biny = histo.fYaxis.GetBinCenter(j+1); gry = this.gry(biny);
+            biny = histo.fYaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if ((bin_content===0) || (bin_content < this.gminbin)) continue;
@@ -2771,7 +2772,7 @@
 
                nbins = cols_nbins[nseq];
 
-               binz = histo.fZaxis.GetBinCenter(k+1); grz = this.grz(binz);
+               binz = histo.fZaxis.GetBinCenter(k+1); grz = main.grz(binz);
 
                // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
@@ -2850,11 +2851,13 @@
             var indx = Math.floor(intersect.index / this.bins_faces);
             if ((indx<0) || (indx >= this.bins.length)) return null;
 
-            var p = this.painter, histo = p.GetHisto(),
+            var p = this.painter,
+                histo = p.GetHisto(),
+                main = p.frame_painter(),
                 tip = p.Get3DToolTip(this.bins[indx]),
-                grx = p.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
-                gry = p.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
-                grz = p.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
+                grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
+                gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
+                grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
                 wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
@@ -3004,7 +3007,7 @@
       // create painter and add it to canvas
       var painter = new JSROOT.TH3Painter(histo);
 
-      painter.SetDivId(divid, 1);
+      painter.SetDivId(divid, 4);
 
       painter.options = painter.DecodeOptions(opt);
 

@@ -2001,8 +2001,8 @@
    }
 
    TObjectPainter.prototype.pad_painter = function(active_pad) {
-      var can = active_pad ? this.svg_pad() : this.svg_canvas();
-      return can.empty() ? null : can.property('pad_painter');
+      var elem = active_pad ? this.svg_pad() : this.svg_canvas();
+      return elem.empty() ? null : elem.property('pad_painter');
    }
 
    TObjectPainter.prototype.get_color = function(indx) {
@@ -2179,9 +2179,8 @@
    }
 
    TObjectPainter.prototype.frame_painter = function() {
-      var elem = this.svg_frame();
-      var res = elem.empty() ? null : elem.property('frame_painter');
-      return res ? res : null;
+      var pp = this.pad_painter(true);
+      return pp ? pp.frame_painter : null;
    }
 
    TObjectPainter.prototype.pad_width = function(pad_name) {
@@ -2265,12 +2264,12 @@
          return rect;
       }
 
-      var elem = pad;
+      var elem = pad, fp = this.frame_painter();
       if (can3d === 0) elem = this.svg_canvas();
 
       var size = { x: 0, y: 0, width: 100, height: 100, clname: clname, can3d: can3d };
 
-      if (this.frame_painter()!==null) {
+      if (fp && !fp.mode3d) {
          elem = this.svg_frame();
          size.x = elem.property("draw_x");
          size.y = elem.property("draw_y");
@@ -2279,7 +2278,7 @@
       size.width = elem.property("draw_width");
       size.height = elem.property("draw_height");
 
-      if ((this.frame_painter()===null) && (can3d > 0)) {
+      if ((!fp || fp.mode3d) && (can3d > 0)) {
          size.x = Math.round(size.x + size.width*JSROOT.gStyle.fPadLeftMargin);
          size.y = Math.round(size.y + size.height*JSROOT.gStyle.fPadTopMargin);
          size.width = Math.round(size.width*(1 - JSROOT.gStyle.fPadLeftMargin - JSROOT.gStyle.fPadRightMargin));
@@ -2457,7 +2456,7 @@
       //            1 - major objects like TH1/TH2 (required canvas with frame)
       //            2 - if canvas missing, create it, but not set as main object
       //            3 - if canvas and (or) frame missing, create them, but not set as main object
-      //            4 - major objects like TH3 (required canvas, but no frame)
+      //            4 - major objects like TH3 (required canvas and frame in 3d mode)
       //            5 - major objects like TGeoVolume (do not require canvas)
       // pad_name - when specified, subpad name used for object drawin
       // In some situations canvas may not exists - for instance object drawn as html, not as svg.
@@ -2493,9 +2492,9 @@
       if (is_main < 0) return;
 
       // create TFrame element if not exists
-      if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3))) {
-         JSROOT.Painter.drawFrame(divid, null);
-         if (this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
+      if (this.svg_frame().select(".main_layer").empty() && ((is_main == 1) || (is_main == 3) || (is_main == 4))) {
+         JSROOT.Painter.drawFrame(divid, null, (is_main == 4) ? "3d" : "");
+         if ((is_main != 4) && this.svg_frame().empty()) return alert("Fail to draw dummy TFrame");
       }
 
       var svg_p = this.svg_pad();

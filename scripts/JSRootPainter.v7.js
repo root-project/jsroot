@@ -796,6 +796,7 @@
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
       this.axes_drawn = false;
       this.keys_handler = null;
+      this.mode3d = false;
    }
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
@@ -1162,6 +1163,11 @@
 
    TFramePainter.prototype.Redraw = function() {
 
+      var pp = this.pad_painter();
+
+      if (pp) pp.frame_painter = this;
+      if (this.mode3d) return;
+
       // first update all attributes from objects
       this.UpdateAttributes();
 
@@ -1171,7 +1177,7 @@
           w = Math.round(width * (this.fX2NDC - this.fX1NDC)),
           tm = Math.round(height * (1 - this.fY2NDC)),
           h = Math.round(height * (this.fY2NDC - this.fY1NDC)),
-          rotate = false, fixpos = false, pp = this.pad_painter();
+          rotate = false, fixpos = false;
 
       if (pp && pp.options) {
          if (pp.options.RotateFrame) rotate = true;
@@ -2386,8 +2392,9 @@
       }
    }
 
-   function drawFrame(divid, obj) {
+   function drawFrame(divid, obj, opt) {
       var p = new TFramePainter(obj);
+      if (opt == "3d") p.mode3d = true;
       p.SetDivId(divid, 2);
       p.Redraw();
       return p.DrawingReady();
