@@ -1165,7 +1165,7 @@
 
       var pp = this.pad_painter();
 
-      if (pp) pp.frame_painter = this;
+      if (pp) pp.frame_painter_ref = this;
       if (this.mode3d) return;
 
       // first update all attributes from objects
@@ -2432,6 +2432,7 @@
          if (!this.iscan) svg_p.remove();
       }
 
+      delete this.frame_painter_ref;
       this.painters = [];
       this.pad = null;
       this.this_pad_name = "";

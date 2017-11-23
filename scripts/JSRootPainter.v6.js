@@ -1576,7 +1576,7 @@
    TFramePainter.prototype.Redraw = function() {
 
       var pp = this.pad_painter(true);
-      if (pp) pp.frame_painter = this; // keep direct reference to the frame painter
+      if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
 
       if (this.mode3d) return; // no need to create any elements in 3d mode
 
@@ -2700,7 +2700,7 @@
          if (!this.iscan) svg_p.remove();
       }
 
-      delete this.frame_painter;
+      delete this.frame_painter_ref;
 
       this.painters = [];
       this.pad = null;

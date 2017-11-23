@@ -2180,7 +2180,7 @@
 
    TObjectPainter.prototype.frame_painter = function() {
       var pp = this.pad_painter(true);
-      return pp ? pp.frame_painter : null;
+      return pp ? pp.frame_painter_ref : null;
    }
 
    TObjectPainter.prototype.pad_width = function(pad_name) {
