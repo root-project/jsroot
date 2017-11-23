@@ -1963,7 +1963,8 @@
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
-      var histo = this.GetHisto();
+      var histo = this.GetHisto(),
+          fp = this.frame_painter();
 
       if (obj !== histo) {
 
@@ -1989,8 +1990,6 @@
          // special tratement for webcanvas - also name can be changed
          if (this.snapid !== undefined)
             histo.fName = obj.fName;
-
-         var fp = this.frame_painter();
 
          histo.fFillColor = obj.fFillColor;
          histo.fFillStyle = obj.fFillStyle;
