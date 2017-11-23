@@ -2987,9 +2987,8 @@
          isany = true;
       }
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax, zmin, zmax);
+      if (isany) this.frame_painter().Zoom(xmin, xmax, ymin, ymax, zmin, zmax);
    }
-
 
    TH3Painter.prototype.FillHistContextMenu = function(menu) {
 

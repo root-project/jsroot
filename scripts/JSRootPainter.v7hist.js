@@ -1661,7 +1661,7 @@
       }
 
       if ((right - left < dist) && (left < right))
-         this.Zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
+         this.frame_painter().Zoom(xaxis.GetBinCoord(left), xaxis.GetBinCoord(right));
    }
 
    TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
@@ -1956,7 +1956,7 @@
          isany = true;
       }
 
-      if (isany) this.Zoom(xmin, xmax, ymin, ymax);
+      if (isany) this.frame_painter().Zoom(xmin, xmax, ymin, ymax);
    }
 
    TH2Painter.prototype.ScanContent = function(when_axis_changed) {

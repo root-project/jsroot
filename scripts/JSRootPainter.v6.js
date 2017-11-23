@@ -1020,93 +1020,9 @@
       }
    }
 
-   TFramePainter.prototype.CheckPadRange = function(opts) {
-
-      var pad = this.root_pad(),
-          xaxis = this.xaxis,
-          yaxis = this.yaxis,
-          zaxis = this.zaxis;
-
-      this.zoom_xmin = this.zoom_xmax = 0;
-      this.zoom_ymin = this.zoom_ymax = 0;
-      this.zoom_zmin = this.zoom_zmax = 0;
-
-      // apply selected user range from histogram itself
-      if (xaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
-         if ((xaxis.fFirst !== xaxis.fLast) && ((xaxis.fFirst > 1) || (xaxis.fLast < xaxis.fNbins))) {
-            this.zoom_xmin = xaxis.fFirst > 1 ? xaxis.GetBinLowEdge(xaxis.fFirst) : xaxis.fXmin;
-            this.zoom_xmax = xaxis.fLast < xaxis.fNbins ? xaxis.GetBinLowEdge(xaxis.fLast+1) : xaxis.fXmax;
-         }
-      }
-
-      if ((opts.ndim > 1) && yaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         //yaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
-         if ((yaxis.fFirst !== yaxis.fLast) && ((yaxis.fFirst > 1) || (yaxis.fLast < yaxis.fNbins))) {
-            this.zoom_ymin = yaxis.fFirst > 1 ? yaxis.GetBinLowEdge(yaxis.fFirst) : yaxis.fXmin;
-            this.zoom_ymax = yaxis.fLast < yaxis.fNbins ? yaxis.GetBinLowEdge(yaxis.fLast+1) : yaxis.fXmax;
-         }
-      }
-
-      if ((opts.ndim > 2) && zaxis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         //zaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
-         if ((zaxis.fFirst !== zaxis.fLast) && ((zaxis.fFirst > 1) || (zaxis.fLast < zaxis.fNbins))) {
-            this.zoom_zmin = zaxis.fFirst > 1 ? zaxis.GetBinLowEdge(zaxis.fFirst) : zaxis.fXmin;
-            this.zoom_zmax = zaxis.fLast < zaxis.fNbins ? zaxis.GetBinLowEdge(zaxis.fLast+1) : zaxis.fXmax;
-         }
-      }
-
-      if (!pad || (pad.fUxmin === undefined) || opts.create_canvas) return;
-
-      var min = pad.fUxmin, max = pad.fUxmax,
-          axis = opts.swap_xy ? yaxis : xaxis,
-          name = opts.swap_xy ? "zoom_y" : "zoom_x";
-
-      // first check that non-default values are there
-      if ((opts.ndim < 3) && ((min !== 0) || (max !== 1))) {
-         if (pad.fLogx > 0) {
-            min = Math.exp(min * Math.log(10));
-            max = Math.exp(max * Math.log(10));
-         }
-
-         var eps = (axis.fXmax - axis.fXmin) * 1e-7;
-         eps = 0; // TODO: remove this line
-
-         if (((axis.fXmin===0) && (axis.fXmax===1) && (axis.fNbins===1)) ||
-             ((Math.abs(min-axis.fXmin) > eps || Math.abs(max-axis.fXmax) > eps) && (min >= axis.fXmin && max <= axis.fXmax))) {
-               // set zoom values if only inside range
-               this[name+"min"] = min;
-               this[name+"max"] = max;
-            }
-      }
-
-      min = pad.fUymin; max = pad.fUymax;
-
-      axis = opts.swap_xy ? xaxis : yaxis;
-      name = opts.swap_xy ? "zoom_x" : "zoom_y";
-
-      if (((opts.ndim == 2) || opts.swap_xy) && ((min !== 0) || (max !== 1))) {
-         if (pad.fLogy > 0) {
-            min = Math.exp(min * Math.log(10));
-            max = Math.exp(max * Math.log(10));
-         }
-
-         var eps = (axis.fXmax - axis.fXmin) * 1e-7;
-         eps = 0; // TODO: remove this line
-
-         if (((axis.fXmin===0) && (axis.fXmax===1) && (axis.fNbins===1)) ||
-             ((Math.abs(min-axis.fXmin) > eps || Math.abs(max-axis.fXmax) > eps) && (min >= axis.fXmin && max <= axis.fXmax))) {
-               // set zoom values if only inside range
-               this[name+"min"] = min;
-               this[name+"max"] = max;
-            }
-      }
-   }
-
    TFramePainter.prototype.CreateXY = function(opts) {
       if (!opts) opts = {};
 
-      this.use_pad_range = opts.use_pad_range;
       this.swap_xy = opts.swap_xy;
 
       this.logx = this.logy = false;
@@ -1119,59 +1035,20 @@
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
 
-/*
-
-      if (pad && (opts.use_pad_range || opts.check_pad_range)) {
-         var dx = pad.fX2 - pad.fX1;
-         this.scale_xmin = pad.fX1 + dx*pad.fLeftMargin;
-         this.scale_xmax = pad.fX2 - dx*pad.fRightMargin;
-         if (pad.fLogx) {
-            this.scale_xmin = Math.pow(10, this.scale_xmin);
-            this.scale_xmax = Math.pow(10, this.scale_xmax);
-         }
-      }
-
-      if (pad && (opts.use_pad_range || opts.check_pad_range)) {
-         var dy = pad.fY2 - pad.fY1;
-         this.scale_ymin = pad.fY1 + dy*pad.fBottomMargin;
-         this.scale_ymax = pad.fY2 - dy*pad.fTopMargin;
-
-         if (pad.fLogy) {
-            this.scale_ymin = Math.pow(10, this.scale_ymin);
-            this.scale_ymax = Math.pow(10, this.scale_ymax);
-         }
-
-         // TODO: add zooming or scale logic here
-      }
-*/
-
-      if (opts.use_pad_range || opts.check_pad_range) {
+      if (opts.check_pad_range) {
          // take zooming out of pad or axis attribytes
 
          this.zoom_xmin = this.zoom_xmax = 0;
          this.zoom_ymin = this.zoom_ymax = 0;
          this.zoom_zmin = this.zoom_zmax = 0;
 
-         if (opts.check_pad_range) {
-            this.CheckAxisZoom('x');
-            if (opts.ndim > 1) this.CheckAxisZoom('y');
-            if (opts.ndim > 2) this.CheckAxisZoom('z');
-         }
+         this.CheckAxisZoom('x');
+         if (opts.ndim > 1) this.CheckAxisZoom('y');
+         if (opts.ndim > 2) this.CheckAxisZoom('z');
 
          this.CheckPadUserRange(pad, 'x');
          this.CheckPadUserRange(pad, 'y');
-
-         // console.log('xaxis', this.scale_xmin, this.scale_xmax, this.zoom_xmin, this.zoom_xmax);
       }
-
-
-      //if (opts.check_pad_range)
-      //   this.CheckPadRange(opts);
-
-      //console.log('pad ymin/ymax', this.scale_ymin, this.scale_ymax,
-      //      Math.pow(10, pad.fUymin),
-      //      Math.pow(10, pad.fUymax)
-      //);
 
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
@@ -1289,7 +1166,7 @@
 
    /** Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
-      if (!pad || this.use_pad_range) return;
+      if (!pad) return;
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT

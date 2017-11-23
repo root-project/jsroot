@@ -1557,7 +1557,6 @@
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
-      this.shrink_frame_left = 0.;
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
@@ -2140,7 +2139,6 @@
 
       fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
-                    // use_pad_range: (this.options.Same > 0),
                     check_pad_range: this.check_pad_range,
                     create_canvas: this.create_canvas,
                     swap_xy: (this.options.Bar >= 20),
@@ -4100,7 +4098,7 @@
       }
 
       if ((right - left < dist) && (left < right))
-         this.Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
+         this.frame_painter().Zoom(histo.fXaxis.GetBinLowEdge(left+1), histo.fXaxis.GetBinLowEdge(right+1));
    }
 
    TH1Painter.prototype.CanZoomIn = function(axis,min,max) {
