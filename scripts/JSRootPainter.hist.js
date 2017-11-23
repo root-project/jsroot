@@ -2072,7 +2072,7 @@
             this.options = this.DecodeOptions(opt);
       }
 
-      if (!fp.zoom_changed_interactive) this.CheckPadRange();
+      // if (!fp.zoom_changed_interactive) this.CheckPadRange();
 
       this.ScanContent();
 
@@ -4136,6 +4136,8 @@
       this.mode3d = false;
 
       this.ScanContent(true);
+
+      console.log('DRAW TH1', this.ymin, this.ymax);
 
       this.CreateXY();
 

@@ -3963,7 +3963,7 @@
 
          canv.fPrimitives.Add(hist, "hist");
 
-         if (this.use_openui && this.DrawInUI5ProjectionArea ) {
+         if (this.use_openui && this.DrawInUI5ProjectionArea) {
             // copy frame attributes
             this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          } else {
