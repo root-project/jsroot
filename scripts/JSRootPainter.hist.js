@@ -4137,8 +4137,6 @@
 
       this.ScanContent(true);
 
-      console.log('DRAW TH1', this.ymin, this.ymax);
-
       this.CreateXY();
 
       if (typeof this.DrawColorPalette === 'function')
