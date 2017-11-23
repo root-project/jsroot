@@ -3576,7 +3576,7 @@
 
    TPadPainter.prototype.GetPadRanges = function() {
       // function returns actual ranges in the pad, which can be applied to the server
-      var main = this.main_painter(true, this.this_pad_name),
+      var main = this.frame_painter_ref,
           p = this.svg_pad(this.this_pad_name),
           f = this.svg_frame(this.this_pad_name);
 
@@ -3628,11 +3628,11 @@
           case "xaxis":
           case "yaxis":
           case "zaxis":
-             selp = this.main_painter();
+             selp = this.frame_painter_ref;
              selkind = name[0];
              break;
           case "frame":
-             selp = this.frame_painter();
+             selp = this.frame_painter_ref;
              break;
           default: {
              var indx = parseInt(name);
@@ -3643,7 +3643,7 @@
        if (!selp || (typeof selp.FillContextMenu !== 'function')) return;
 
        JSROOT.Painter.createMenu(selp, function(menu) {
-          if (selp.FillContextMenu(menu,selkind))
+          if (selp.FillContextMenu(menu, selkind))
              setTimeout(menu.show.bind(menu, evnt), 50);
        });
    }
@@ -3686,7 +3686,7 @@
 
       painter.ForEachPainterInPad(function(pp) {
 
-         var main = pp.main_painter(true, pp.this_pad_name);
+         var main = pp.frame_painter_ref;
          if (!main || (typeof main.Render3D !== 'function')) return;
 
          var can3d = main.access_3d_kind();
@@ -3700,8 +3700,7 @@
          //rrr.setSize(sz.width, sz.height);
          //rrr.render(main.scene, main.camera);
 
-          main
-              .insert("g",".primitives_layer")             // create special group
+          main.insert("g",".primitives_layer")             // create special group
               .attr("class","temp_saveaspng")
               .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
               .node().appendChild(svg3d);      // add code
@@ -3916,7 +3915,7 @@
 
    TPadPainter.prototype.DrawingReady = function(res_painter) {
 
-      var main = this.main_painter();
+      var main = this.frame_painter_ref;
 
       if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
 
@@ -4071,7 +4070,9 @@
 
       if (this.proj_painter === 1) {
 
-         var canv = JSROOT.Create("TCanvas"), pthis = this, pad = this.root_pad(), main = this.main_painter(), drawopt;
+         var canv = JSROOT.Create("TCanvas"),
+             pthis = this, pad = this.root_pad(),
+             main = this.frame_painter_ref, drawopt;
 
          if (kind == "X") {
             canv.fLeftMargin = pad.fLeftMargin;

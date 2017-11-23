@@ -663,7 +663,7 @@
       var name = this.GetTipName();
       if (name.length > 0) res.lines.push(name);
 
-      var pmain = this.main_painter();
+      var pmain = this.frame_painter();
       if (pmain!==null)
          res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
 
@@ -672,9 +672,11 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      var w = this.frame_width(), h = this.frame_height(),
-      fp = this.frame_painter(),
-          tf1 = this.GetObject(), pmain = this.main_painter(),
+      var w = this.frame_width(),
+          h = this.frame_height(),
+          tf1 = this.GetObject(),
+          fp = this.frame_painter(),
+          pmain = this.main_painter(),
           name = this.GetTipName("\n");
 
       this.CreateG(true);
@@ -963,7 +965,7 @@
    }
 
    TGraphPainter.prototype.TooltipText = function(d) {
-      var pmain = this.main_painter(), lines = [];
+      var pmain = this.frame_painter(), lines = [];
 
       lines.push(this.GetTipName());
 
@@ -981,7 +983,7 @@
    }
 
    TGraphPainter.prototype.get_main = function() {
-      var pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter();
+      var pmain = this.frame_painter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
 
@@ -1336,7 +1338,7 @@
 
       var width = this.frame_width(),
           height = this.frame_height(),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           painter = this,
           findbin = null, best_dist2 = 1e10, best = null;
 
@@ -1645,9 +1647,9 @@
    }
 
    TGraphPainter.prototype.movePntHandler = function(first_time) {
-      var pos = d3.mouse(this.svg_frame().node());
+      var pos = d3.mouse(this.svg_frame().node()),
+          main = this.frame_painter();
 
-      var main = this.main_painter();
       if (!main || !this.interactive_bin) return;
 
       this.interactive_bin.x = main.RevertX(pos[0] + this.interactive_delta_x);
@@ -1675,11 +1677,11 @@
       d3.select(window).on("mousemove.graphPnt", this.movePntHandler.bind(this))
                        .on("mouseup.graphPnt", this.endPntHandler.bind(this), true);
 
-      var pos = d3.mouse(this.svg_frame().node());
-      var main = this.main_painter();
+      var pos = d3.mouse(this.svg_frame().node()),
+          main = this.frame_painter();
 
-      this.interactive_delta_x = main ? main.x(this.interactive_bin.x)-pos[0] : 0;
-      this.interactive_delta_y = main ? main.y(this.interactive_bin.y)-pos[1] : 0;
+      this.interactive_delta_x = main ? main.x(this.interactive_bin.x) - pos[0] : 0;
+      this.interactive_delta_y = main ? main.y(this.interactive_bin.y) - pos[1] : 0;
    }
 
    TGraphPainter.prototype.FillContextMenu = function(menu) {
@@ -1704,7 +1706,7 @@
          var hint = this.ExtractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            var main = this.main_painter(),
+            var main = this.frame_painter(),
                 userx = main && main.RevertX ? main.RevertX(pnt.x) : 0,
                 usery = main && main.RevertY ? main.RevertY(pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
@@ -1762,8 +1764,8 @@
 
       if (funcname !== "ToggleZoom") return false;
 
-      var main = this.main_painter();
-      if (main === null) return false;
+      var main = this.frame_painter();
+      if (!main) return false;
 
       if ((this.xmin===this.xmax) && (this.ymin = this.ymax)) return false;
 
@@ -2512,7 +2514,7 @@
 
       var cleanup = false,
           spline = this.GetObject(),
-          main = this.main_painter(),
+          main = this.frame_painter(),
           xx, yy, knot = null, indx = 0;
 
       if ((pnt === null) || !spline || !main) {
@@ -2590,7 +2592,7 @@
       var w = this.frame_width(),
           h = this.frame_height(),
           spline = this.GetObject(),
-          pmain = this.main_painter(),
+          pmain = this.frame_painter(),
           name = this.GetTipName("\n");
 
       this.CreateG(true);

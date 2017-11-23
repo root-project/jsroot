@@ -1280,7 +1280,7 @@
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             var p = this.painter,
-                main = JSROOT.FrameAxisDrawing ? p.frame_painter() : p.main_painter(),
+                main = p.frame_painter(),
                 histo = p.GetHisto(),
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
@@ -1442,7 +1442,7 @@
          painter.SetDivId(divid);
 
       painter.Draw3DAxis = function() {
-         var main = this.main_painter();
+         var main = this.frame_painter();
 
          if (!main || !main._toplevel)
             return console.warn('no geo object found for 3D axis drawing');
@@ -1576,7 +1576,7 @@
 
    JSROOT.TH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
-      var main = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
+      var main = this.frame_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           histo = this.GetHisto(), // get levels
           levels = this.GetContour(), // init contour if not exists
@@ -1607,7 +1607,7 @@
    JSROOT.TH2Painter.prototype.DrawSurf = function() {
       var histo = this.GetHisto(),
           hmain = this.main_painter(),
-          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : hmain,
+          main = this.frame_painter(),
           handle = hmain.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           axis_zmin = main.grz.domain()[0],
@@ -2007,7 +2007,7 @@
    JSROOT.TH2Painter.prototype.DrawError = function() {
       var pthis = this,
           hmain = this.main_painter(),
-          main = JSROOT.FrameAxisDrawing ? this.frame_painter() : hmain,
+          main = this.frame_painter(),
           handle = hmain.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
@@ -2106,11 +2106,11 @@
 
    JSROOT.TH2Painter.prototype.DrawPolyLego = function() {
       var histo = this.GetHisto(),
-          pmain = JSROOT.FrameAxisDrawing ? this.frame_painter() : this.main_painter(),
-          axis_zmin = this.grz.domain()[0],
-          axis_zmax = this.grz.domain()[1],
+          pmain = this.frame_painter(),
+          axis_zmin = pmain.grz.domain()[0],
+          axis_zmax = pmain.grz.domain()[1],
           colindx, bin, i, len = histo.fBins.arr.length, cnt = 0, totalnfaces = 0,
-          z0 = this.grz(axis_zmin), z1 = z0;
+          z0 = pmain.grz(axis_zmin), z1 = z0;
 
       // force recalculations of contours
       this.fContour = null;
@@ -2132,7 +2132,7 @@
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
              (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
-         z1 = this.grz(bin.fContent > axis_zmax ? axis_zmax : bin.fContent);
+         z1 = pmain.grz((bin.fContent > axis_zmax) ? axis_zmax : bin.fContent);
 
          var all_pnts = [], all_faces = [],
              ngraphs = 1, gr = bin.fPoly, nfaces = 0;
@@ -2275,7 +2275,7 @@
 
          mesh.tooltip = function(intersects) {
 
-            var p = this.painter, main = p.main_painter(),
+            var p = this.painter, main = p.frame_painter(),
                 bin = p.GetObject().fBins.arr[this.bins_index];
 
             var tip = {
@@ -2463,7 +2463,7 @@
    }
 
    TH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      var lines = [], pmain = this.main_painter(), histo = this.GetHisto();
+      var lines = [], pmain = this.frame_painter(), histo = this.GetHisto();
 
       lines.push(this.GetTipName());
 
@@ -2482,7 +2482,7 @@
       else
          lines.push("z = [" + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
 
-      var binz = this.GetObject().getBinContent(ix+1, iy+1, iz+1);
+      var binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
          lines.push("entries = " + binz);
       else
@@ -3147,17 +3147,17 @@
    TGraph2DPainter.prototype.Redraw = function() {
 
       var main = this.main_painter(),
-          axis_painter = JSROOT.FrameAxisDrawing ? this.frame_painter() : main,
+          fp = this.frame_painter(),
           graph = this.GetObject(),
           step = 1;
 
-      if (!graph || !main  || !axis_painter || !('renderer' in axis_painter)) return;
+      if (!graph || !main  || !fp || !fp.mode3d) return;
 
       function CountSelected(zmin, zmax) {
          var cnt = 0;
          for (var i=0; i < graph.fNpoints; ++i) {
-            if ((graph.fX[i] < axis_painter.scale_xmin) || (graph.fX[i] > axis_painter.scale_xmax) ||
-                (graph.fY[i] < axis_painter.scale_ymin) || (graph.fY[i] > axis_painter.scale_ymax) ||
+            if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
+                (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
                 (graph.fZ[i] < zmin) || (graph.fZ[i] >= zmax)) continue;
 
             ++cnt;
@@ -3166,8 +3166,8 @@
       }
 
       // try to define scale-down factor
-      if ((JSROOT.gStyle.OptimizeDraw > 0) && !axis_painter.webgl) {
-         var numselected = CountSelected(axis_painter.scale_zmin, axis_painter.scale_zmax),
+      if ((JSROOT.gStyle.OptimizeDraw > 0) && !fp.webgl) {
+         var numselected = CountSelected(fp.scale_zmin, fp.scale_zmax),
              sizelimit = 50000;
 
          if (numselected > sizelimit) {
@@ -3178,12 +3178,12 @@
 
       var markeratt = new JSROOT.TAttMarkerHandler(graph),
           palette = null,
-          levels = [axis_painter.scale_zmin, axis_painter.scale_zmax],
-          scale = axis_painter.size_xy3d / 100 * markeratt.GetFullSize();
+          levels = [fp.scale_zmin, fp.scale_zmax],
+          scale = fp.size_xy3d / 100 * markeratt.GetFullSize();
 
-      if (this.options.Circles) scale = 0.06*axis_painter.size_xy3d;
+      if (this.options.Circles) scale = 0.06*fp.size_xy3d;
 
-      if (axis_painter.usesvg) scale*=0.3;
+      if (fp.usesvg) scale*=0.3;
 
       if (this.options.Color) {
          levels = main.GetContour();
@@ -3192,8 +3192,8 @@
 
       for (var lvl=0;lvl<levels.length-1;++lvl) {
 
-         var lvl_zmin = Math.max(levels[lvl], axis_painter.scale_zmin),
-             lvl_zmax = Math.min(levels[lvl+1], axis_painter.scale_zmax);
+         var lvl_zmin = Math.max(levels[lvl], fp.scale_zmin),
+             lvl_zmax = Math.min(levels[lvl+1], fp.scale_zmax);
 
          if (lvl_zmin >= lvl_zmax) continue;
 
@@ -3203,7 +3203,7 @@
              err = null, line = null, ierr = 0, iline = 0;
 
          if (this.options.Markers || this.options.Circles)
-            pnts = new JSROOT.Painter.PointsCreator(size, axis_painter.webgl, scale/3);
+            pnts = new JSROOT.Painter.PointsCreator(size, fp.webgl, scale/3);
 
          if (this.options.Error)
             err = new Float32Array(size*6*3);
@@ -3212,8 +3212,8 @@
             line = new Float32Array((size-1)*6);
 
          for (var i=0; i < graph.fNpoints; ++i) {
-            if ((graph.fX[i] < axis_painter.scale_xmin) || (graph.fX[i] > axis_painter.scale_xmax) ||
-                (graph.fY[i] < axis_painter.scale_ymin) || (graph.fY[i] > axis_painter.scale_ymax) ||
+            if ((graph.fX[i] < fp.scale_xmin) || (graph.fX[i] > fp.scale_xmax) ||
+                (graph.fY[i] < fp.scale_ymin) || (graph.fY[i] > fp.scale_ymax) ||
                 (graph.fZ[i] < lvl_zmin) || (graph.fZ[i] >= lvl_zmax)) continue;
 
             if (step > 1) {
@@ -3223,33 +3223,33 @@
 
             index[icnt++] = i; // remember point index for tooltip
 
-            var x = axis_painter.grx(graph.fX[i]),
-                y = axis_painter.gry(graph.fY[i]),
-                z = axis_painter.grz(graph.fZ[i]);
+            var x = fp.grx(graph.fX[i]),
+                y = fp.gry(graph.fY[i]),
+                z = fp.grz(graph.fZ[i]);
 
             if (pnts) pnts.AddPoint(x,y,z);
 
             if (err) {
-               err[ierr]   = axis_painter.grx(graph.fX[i] - graph.fEX[i]);
+               err[ierr]   = fp.grx(graph.fX[i] - graph.fEX[i]);
                err[ierr+1] = y;
                err[ierr+2] = z;
-               err[ierr+3] = axis_painter.grx(graph.fX[i] + graph.fEX[i]);
+               err[ierr+3] = fp.grx(graph.fX[i] + graph.fEX[i]);
                err[ierr+4] = y;
                err[ierr+5] = z;
                ierr+=6;
                err[ierr]   = x;
-               err[ierr+1] = axis_painter.gry(graph.fY[i] - graph.fEY[i]);
+               err[ierr+1] = fp.gry(graph.fY[i] - graph.fEY[i]);
                err[ierr+2] = z;
                err[ierr+3] = x;
-               err[ierr+4] = axis_painter.gry(graph.fY[i] + graph.fEY[i]);
+               err[ierr+4] = fp.gry(graph.fY[i] + graph.fEY[i]);
                err[ierr+5] = z;
                ierr+=6;
                err[ierr]   = x;
                err[ierr+1] = y;
-               err[ierr+2] = axis_painter.grz(graph.fZ[i] - graph.fEZ[i]);
+               err[ierr+2] = fp.grz(graph.fZ[i] - graph.fEZ[i]);
                err[ierr+3] = x;
                err[ierr+4] = y;
-               err[ierr+5] = axis_painter.grz(graph.fZ[i] + graph.fEZ[i]);;
+               err[ierr+5] = fp.grz(graph.fZ[i] + graph.fEZ[i]);;
                ierr+=6;
             }
 
@@ -3272,11 +3272,11 @@
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
             if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
             var linemesh = JSROOT.Painter.createLineSegments(line, material);
-            axis_painter.toplevel.add(linemesh);
+            fp.toplevel.add(linemesh);
 
             linemesh.graph = graph;
             linemesh.index = index;
-            linemesh.painter = axis_painter;
+            linemesh.painter = fp;
             linemesh.scale0 = 0.7*scale;
             linemesh.tip_name = this.GetTipName();
             linemesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
@@ -3291,11 +3291,11 @@
                 material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
             if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
             var errmesh = JSROOT.Painter.createLineSegments(err, material);
-            axis_painter.toplevel.add(errmesh);
+            fp.toplevel.add(errmesh);
 
             errmesh.graph = graph;
             errmesh.index = index;
-            errmesh.painter = axis_painter;
+            errmesh.painter = fp;
             errmesh.scale0 = 0.7*scale;
             errmesh.tip_name = this.GetTipName();
             errmesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
@@ -3314,11 +3314,11 @@
 
             var mesh = pnts.CreatePoints(fcolor);
 
-            axis_painter.toplevel.add(mesh);
+            fp.toplevel.add(mesh);
 
             mesh.graph = graph;
             mesh.index = index;
-            mesh.painter = axis_painter;
+            mesh.painter = fp;
             mesh.scale0 = 0.3*scale;
             mesh.tip_name = this.GetTipName();
             mesh.tip_color = (graph.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
@@ -3327,7 +3327,7 @@
          }
       }
 
-      axis_painter.Render3D(100); // set large timeout to be able draw other points
+      fp.Render3D(100); // set large timeout to be able draw other points
    }
 
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
@@ -3367,17 +3367,16 @@
 
       painter.Redraw = function() {
 
-         var main = this.main_painter(),
-             axis_painter = this.frame_painter();
+         var fp = this.frame_painter();
 
-         if (!main || !axis_painter || !('renderer' in axis_painter)) return;
+         if (!fp || !fp.mode3d) return;
 
          var step = 1, sizelimit = 50000, numselect = 0;
 
          for (var i=0;i<poly.fP.length;i+=3) {
-            if ((poly.fP[i] < axis_painter.scale_xmin) || (poly.fP[i] > axis_painter.scale_xmax) ||
-                (poly.fP[i+1] < axis_painter.scale_ymin) || (poly.fP[i+1] > axis_painter.scale_ymax) ||
-                (poly.fP[i+2] < axis_painter.scale_zmin) || (poly.fP[i+2] > axis_painter.scale_zmax)) continue;
+            if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||
+                (poly.fP[i+1] < fp.scale_ymin) || (poly.fP[i+1] > fp.scale_ymax) ||
+                (poly.fP[i+2] < fp.scale_zmin) || (poly.fP[i+2] > fp.scale_zmax)) continue;
             ++numselect;
          }
 
@@ -3387,15 +3386,15 @@
          }
 
          var size = Math.floor(numselect/step),
-             pnts = new JSROOT.Painter.PointsCreator(size, axis_painter.webgl, axis_painter.size_xy3d/100),
+             pnts = new JSROOT.Painter.PointsCreator(size, fp.webgl, fp.size_xy3d/100),
              index = new Int32Array(size),
              select = 0, icnt = 0;
 
          for (var i=0; i<poly.fP.length; i+=3) {
 
-            if ((poly.fP[i] < axis_painter.scale_xmin) || (poly.fP[i] > axis_painter.scale_xmax) ||
-                (poly.fP[i+1] < axis_painter.scale_ymin) || (poly.fP[i+1] > axis_painter.scale_ymax) ||
-                (poly.fP[i+2] < axis_painter.scale_zmin) || (poly.fP[i+2] > axis_painter.scale_zmax)) continue;
+            if ((poly.fP[i] < fp.scale_xmin) || (poly.fP[i] > fp.scale_xmax) ||
+                (poly.fP[i+1] < fp.scale_ymin) || (poly.fP[i+1] > fp.scale_ymax) ||
+                (poly.fP[i+2] < fp.scale_zmin) || (poly.fP[i+2] > fp.scale_zmax)) continue;
 
             if (step > 1) {
                select = (select+1) % step;
@@ -3404,17 +3403,17 @@
 
             index[icnt++] = i;
 
-            pnts.AddPoint(axis_painter.grx(poly.fP[i]), axis_painter.gry(poly.fP[i+1]), axis_painter.grz(poly.fP[i+2]));
+            pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
          }
 
          var mesh = pnts.CreatePoints(this.get_color(poly.fMarkerColor));
 
-         axis_painter.toplevel.add(mesh);
+         fp.toplevel.add(mesh);
 
          mesh.tip_color = (poly.fMarkerColor === 3) ? 0xFF0000 : 0x00FF00;
          mesh.tip_name = poly.fName || "Poly3D";
          mesh.poly = poly;
-         mesh.painter = axis_painter;
+         mesh.painter = fp;
          mesh.scale0 = 0.7*pnts.scale;
          mesh.index = index;
 
@@ -3447,7 +3446,7 @@
 
          }
 
-         axis_painter.Render3D(100); // set large timeout to be able draw other points
+         fp.Render3D(100); // set large timeout to be able draw other points
       }
 
       painter.Redraw();
