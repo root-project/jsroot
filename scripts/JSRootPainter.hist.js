@@ -5708,7 +5708,7 @@
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
           left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
-          l = left, r = right;
+          l = left, r = right, pnt_x = pnt.x, pnt_y = pnt.y;
 
       function GetBinGrX(i) {
          var xx = painter.GetBinX(i);
@@ -5722,8 +5722,10 @@
          return Math.round(pmain.gry(yy));
       }
 
-      var pnt_x = pmain.swap_xy ? pnt.y : pnt.x,
-          pnt_y = pmain.swap_xy ? pnt.x : pnt.y;
+      if (pmain.swap_xy) {
+         var d = pnt.x; pnt_x = pnt_y; pnt_y = d;
+         d = height; height = width; width = d;
+      }
 
       while (l < r-1) {
          var m = Math.round((l+r)*0.5), xx = GetBinGrX(m);

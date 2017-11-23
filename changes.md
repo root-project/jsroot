@@ -2,7 +2,9 @@
 
 ## Changes in 5.3.x
 1. Fix - use FontSize when draw TLegend entries
-2. Fix - correctly show th2 overflow stats
+2. Fix - correctly show TH2 overflow stats
+3. Fix - tooltips handling for TH1 hbar drawings
+
 
 ## Changes in 5.3.1
 1. Fix - show TH2 projections also when tooltip is disabled
