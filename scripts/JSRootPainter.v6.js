@@ -996,11 +996,9 @@
       var smin = 'scale_' + aname + 'min',
           smax = 'scale_' + aname + 'max';
 
-      var eps = (this[smin] - this[smax]) * 1e-7;
-      eps = 0; // TODO: remove this line
+      var eps = (this[smax] - this[smin]) * 1e-7;
 
       if ((Math.abs(umin - this[smin]) > eps) || (Math.abs(umax - this[smax]) > eps)) {
-         // set zoom values
          this["zoom_" + aname + "min"] = umin;
          this["zoom_" + aname + "max"] = umax;
       }
@@ -1146,6 +1144,8 @@
 
          this.CheckPadUserRange(pad, 'x');
          this.CheckPadUserRange(pad, 'y');
+
+         // console.log('xaxis', this.scale_xmin, this.scale_xmax, this.zoom_xmin, this.zoom_xmax);
       }
 
 
