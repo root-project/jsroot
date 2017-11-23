@@ -514,7 +514,7 @@
       var main = this.frame_painter(),
           gxmin = 0, gxmax = 0, tf1 = this.GetObject();
 
-      if ((main!==null) && !ignore_zoom)  {
+      if (main && !ignore_zoom)  {
          if (main.zoom_xmin !== main.zoom_xmax) {
             gxmin = main.zoom_xmin;
             gxmax = main.zoom_xmax;
@@ -551,7 +551,7 @@
          if (gxmax < xmax) xmax = gxmax;
       }
 
-      if ((main!==null) && main.logx && (xmin>0) && (xmax>0)) {
+      if (main && main.logx && (xmin>0) && (xmax>0)) {
          logx = true;
          xmin = Math.log(xmin);
          xmax = Math.log(xmax);
@@ -664,7 +664,7 @@
       if (name.length > 0) res.lines.push(name);
 
       var pmain = this.frame_painter();
-      if (pmain!==null)
+      if (pmain)
          res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
 
       return res;

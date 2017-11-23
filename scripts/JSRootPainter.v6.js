@@ -943,7 +943,7 @@
    }
 
    TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
-      if (this.axes_drawn) return;
+      // if (this.axes_drawn) return;
 
       this.xaxis = xaxis;
       this.xmin = xmin;
@@ -1402,7 +1402,7 @@
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden, disable_axis_draw, AxisPos, has_x_obstacle) {
       // axes can be drawn only for main histogram
 
-      if (this.axes_drawn) return true;
+      // if (this.axes_drawn) return true;
 
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
@@ -2209,6 +2209,10 @@
       if (changed) this.RedrawPad();
 
       return changed;
+   }
+
+   TFramePainter.prototype.IsAxisZoomed = function(axis) {
+      return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
    TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
@@ -3133,34 +3137,24 @@
 
       if (!this._websocket) {
 
-         function ToggleGridField(arg) {
-            this.pad[arg] = this.pad[arg] ? 0 : 1;
-            var main = this.svg_pad(this.this_pad_name).property('mainpainter');
-            if (main && (typeof main.DrawGrids == 'function')) main.DrawGrids();
-         }
-
-         function SetTickField(arg) {
+         function SetPadField(arg) {
             this.pad[arg.substr(1)] = parseInt(arg[0]);
-
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
             if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
          }
 
-         menu.addchk(this.pad.fGridx, 'Grid x', 'fGridx', ToggleGridField);
-         menu.addchk(this.pad.fGridy, 'Grid y', 'fGridy', ToggleGridField);
+         menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
+         menu.addchk(this.pad.fGridy, 'Grid y', (this.pad.fGridy ? '0' : '1') + 'fGridy', SetPadField);
          menu.add("sub:Ticks x");
-         menu.addchk(this.pad.fTickx == 0, "normal", "0fTickx", SetTickField);
-         menu.addchk(this.pad.fTickx == 1, "ticks on both sides", "1fTickx", SetTickField);
-         menu.addchk(this.pad.fTickx == 2, "labels on both sides", "2fTickx", SetTickField);
+         menu.addchk(this.pad.fTickx == 0, "normal", "0fTickx", SetPadField);
+         menu.addchk(this.pad.fTickx == 1, "ticks on both sides", "1fTickx", SetPadField);
+         menu.addchk(this.pad.fTickx == 2, "labels on both sides", "2fTickx", SetPadField);
          menu.add("endsub:");
          menu.add("sub:Ticks y");
-         menu.addchk(this.pad.fTicky == 0, "normal", "0fTicky", SetTickField);
-         menu.addchk(this.pad.fTicky == 1, "ticks on both sides", "1fTicky", SetTickField);
-         menu.addchk(this.pad.fTicky == 2, "labels on both sides", "2fTicky", SetTickField);
+         menu.addchk(this.pad.fTicky == 0, "normal", "0fTicky", SetPadField);
+         menu.addchk(this.pad.fTicky == 1, "ticks on both sides", "1fTicky", SetPadField);
+         menu.addchk(this.pad.fTicky == 2, "labels on both sides", "2fTicky", SetPadField);
          menu.add("endsub:");
-
-         //menu.addchk(this.pad.fTickx, 'Tick x', 'fTickx', ToggleField);
-         //menu.addchk(this.pad.fTicky, 'Tick y', 'fTicky', ToggleField);
 
          this.FillAttContextMenu(menu);
       }

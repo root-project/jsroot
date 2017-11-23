@@ -2148,65 +2148,42 @@
       delete this.check_pad_range;
    }
 
-   THistPainter.prototype.DrawGrids = function() {
-      // grid can only be drawn by first painter
-      if (!this.is_main_painter()) return;
-
-      var fp = this.frame_painter();
-      if (fp) fp.DrawGrids();
-   }
-
    THistPainter.prototype.DrawBins = function() {
       alert("HistPainter.DrawBins not implemented");
    }
 
-   THistPainter.prototype.AxisAsText = function(axis, value) {
-      console.log("OBSOLETE - should be removed");
-
-      if (axis == "x") {
-         if (this.x_kind == 'time')
-            value = this.ConvertX(value);
-         if (this.x_handle && ('format' in this.x_handle))
-            return this.x_handle.format(value);
-      } else if (axis == "y") {
-         if (this.y_kind == 'time')
-            value = this.ConvertY(value);
-         if (this.y_handle && ('format' in this.y_handle))
-            return this.y_handle.format(value);
-      } else {
-         if (this.z_handle && ('format' in this.z_handle))
-            return this.z_handle.format(value);
-      }
-
-      return value.toPrecision(4);
-   }
-
-   THistPainter.prototype.DrawAxes = function(shrink_forbidden) {
+   THistPainter.prototype.DrawAxes = function() {
       // axes can be drawn only for main histogram
 
       if (!this.is_main_painter() || this.options.Same) return;
 
       var fp = this.frame_painter();
-      fp.DrawAxes(shrink_forbidden, this.options.Axis < 0, this.options.AxisPos, (this.options.Zscale > 0));
+      if (!fp) return;
+
+      fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, (this.options.Zscale > 0));
+      fp.DrawGrids();
    }
 
    THistPainter.prototype.ToggleTitle = function(arg) {
-      if (!this.is_main_painter()) return false;
-      if (arg==='only-check') return !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
-      this.histo.InvertBit(JSROOT.TH1StatusBits.kNoTitle);
+      var histo = this.GetHisto();
+      if (!this.is_main_painter() || !histo) return false;
+      if (arg==='only-check') return !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+      histo.InvertBit(JSROOT.TH1StatusBits.kNoTitle);
       this.DrawTitle();
    }
 
    THistPainter.prototype.DecomposeTitle = function() {
       // if histogram title includes ;, set axis title
 
-      if (!this.histo || !this.histo.fTitle) return;
+      var histo = this.GetHisto();
 
-      var arr = this.histo.fTitle.split(';');
+      if (!histo || !histo.fTitle) return;
+
+      var arr = histo.fTitle.split(';');
       if (arr.length===3) {
-         this.histo.fTitle = arr[0];
-         this.histo.fXaxis.fTitle = arr[1];
-         this.histo.fYaxis.fTitle = arr[2];
+         histo.fTitle = arr[0];
+         histo.fXaxis.fTitle = arr[1];
+         histo.fYaxis.fTitle = arr[2];
       }
    }
 
@@ -2215,24 +2192,25 @@
       // case when histogram drawn over other histogram (same option)
       if (!this.is_main_painter() || this.options.Same) return;
 
-      var tpainter = this.FindPainterFor(null, "title");
-      var pavetext = (tpainter !== null) ? tpainter.GetObject() : null;
-      if (pavetext === null) pavetext = this.FindInPrimitives("title");
-      if ((pavetext !== null) && (pavetext._typename !== "TPaveText")) pavetext = null;
+      var histo = this.GetHisto(),
+          tpainter = this.FindPainterFor(null, "title"),
+          pavetext = tpainter ? tpainter.GetObject() : null;
 
-      var draw_title = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+      if (!pavetext) pavetext = this.FindInPrimitives("title");
+      if (pavetext && (pavetext._typename !== "TPaveText")) pavetext = null;
 
-      if (pavetext !== null) {
+      var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+
+      if (pavetext) {
          pavetext.Clear();
-         if (draw_title)
-            pavetext.AddText(this.histo.fTitle);
+         if (draw_title) pavetext.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
       } else
-      if (draw_title && !tpainter && (this.histo.fTitle.length > 0)) {
+      if (draw_title && !tpainter && histo.fTitle) {
          pavetext = JSROOT.Create("TPaveText");
 
          JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
-         pavetext.AddText(this.histo.fTitle);
+         pavetext.AddText(histo.fTitle);
 
          JSROOT.Painter.drawPave(this.divid, pavetext);
       }
@@ -2283,11 +2261,6 @@
       JSROOT.draw(this.divid, stat, "onpad:" + this.pad_name);
 
       return true;
-   }
-
-   THistPainter.prototype.IsAxisZoomed = function(axis) {
-      var main = this.frame_painter();
-      return main ? main['zoom_'+axis+'min'] !== main['zoom_'+axis+'max'] : false;
    }
 
    THistPainter.prototype.GetSelectIndex = function(axis, side, add) {
@@ -2499,164 +2472,6 @@
       }
    }
 
-   THistPainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
-      // function can be used for zooming into specified range
-      // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
-
-      console.log('OBSOLETE - Zoom, SHOULD NEVER CALLED');
-
-      // disable zooming when axis convertion is enabled
-      if (this.options && this.options.Proj) return false;
-
-      if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
-      if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
-      if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
-
-      var main = this.main_painter(),
-          zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
-          unzoom_x = false, unzoom_y = false, unzoom_z = false;
-
-      if (zoom_x) {
-         var cnt = 0, main_xmin = main.xmin;
-         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
-         if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
-         if (cnt === 2) { zoom_x = false; unzoom_x = true; }
-      } else {
-         unzoom_x = (xmin === xmax) && (xmin === 0);
-      }
-
-      if (zoom_y) {
-         var cnt = 0, main_ymin = main.ymin;
-         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
-         if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
-         if (cnt === 2) { zoom_y = false; unzoom_y = true; }
-      } else {
-         unzoom_y = (ymin === ymax) && (ymin === 0);
-      }
-
-      if (zoom_z) {
-         var cnt = 0, main_zmin = main.zmin;
-         // if (main.logz && main.ymin_nz && main.Dimension()===2) main_zmin = 0.3*main.ymin_nz;
-         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
-         if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
-         if (cnt === 2) { zoom_z = false; unzoom_z = true; }
-      } else {
-         unzoom_z = (zmin === zmax) && (zmin === 0);
-      }
-
-      var changed = false;
-
-      // first process zooming (if any)
-      if (zoom_x || zoom_y || zoom_z)
-         main.ForEachPainter(function(obj) {
-            if (zoom_x && obj.CanZoomIn("x", xmin, xmax)) {
-               main.zoom_xmin = xmin;
-               main.zoom_xmax = xmax;
-               changed = true;
-               zoom_x = false;
-            }
-            if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
-               main.zoom_ymin = ymin;
-               main.zoom_ymax = ymax;
-               changed = true;
-               zoom_y = false;
-            }
-            if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
-               main.zoom_zmin = zmin;
-               main.zoom_zmax = zmax;
-               changed = true;
-               zoom_z = false;
-            }
-         });
-
-      // and process unzoom, if any
-      if (unzoom_x || unzoom_y || unzoom_z) {
-         if (unzoom_x) {
-            if (main.zoom_xmin !== main.zoom_xmax) changed = true;
-            main.zoom_xmin = main.zoom_xmax = 0;
-         }
-         if (unzoom_y) {
-            if (main.zoom_ymin !== main.zoom_ymax) changed = true;
-            main.zoom_ymin = main.zoom_ymax = 0;
-         }
-         if (unzoom_z) {
-            if (main.zoom_zmin !== main.zoom_zmax) changed = true;
-            main.zoom_zmin = main.zoom_zmax = 0;
-         }
-
-         // first try to unzoom main painter - it could have user range specified
-         if (!changed) {
-            changed = main.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z);
-
-            // than try to unzoom all overlapped objects
-            var pp = this.pad_painter(true);
-            if (pp && pp.painters)
-            pp.painters.forEach(function(paint){
-               if (paint && (paint!==main) && (typeof paint.UnzoomUserRange == 'function'))
-                  if (paint.UnzoomUserRange(unzoom_x, unzoom_y, unzoom_z)) changed = true;
-            });
-         }
-      }
-
-      if (changed) this.RedrawPad();
-
-      return changed;
-   }
-
-   THistPainter.prototype.Unzoom = function(dox, doy, doz) {
-      console.log("OBSOLETE - remove");
-
-      if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
-      if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
-
-      var last = this.zoom_changed_interactive;
-
-      if (dox || doy || dox) this.zoom_changed_interactive = 2;
-
-      var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
-                              doy ? 0 : undefined, doy ? 0 : undefined,
-                              doz ? 0 : undefined, doz ? 0 : undefined);
-
-      // if unzooming has no effect, decrease counter
-      if ((dox || doy || dox) && !changed)
-         this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
-
-      return changed;
-
-   }
-
-   // TODO: should disapper
-   THistPainter.prototype.clearInteractiveElements = function() {
-      var fp = this.frame_painter();
-      if (fp) fp.clearInteractiveElements();
-   }
-
-   THistPainter.prototype.mouseDoubleClick = function() {
-      d3.event.preventDefault();
-      var m = d3.mouse(this.svg_frame().node());
-      this.clearInteractiveElements();
-      var kind = "xyz";
-      if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
-      if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
-      this.Unzoom(kind);
-   }
-
-   THistPainter.prototype.FindAlternativeClickHandler = function(pos) {
-      var pp = this.pad_painter(true);
-      if (!pp) return false;
-
-      var pnt = { x: pos[0], y: pos[1], painters: true, disabled: true, click_handler: true };
-
-      var hints = pp.GetTooltips(pnt);
-      for (var k=0;k<hints.length;++k)
-         if (hints[k] && (typeof hints[k].click_handler == 'function')) {
-            hints[k].click_handler(hints[k]);
-            return true;
-         }
-
-      return false;
-   }
-
    THistPainter.prototype.AllowDefaultYZooming = function() {
       // return true if default Y zooming should be enabled
       // it is typically for 2-Dim histograms or
@@ -2674,99 +2489,6 @@
          }
 
       return false;
-   }
-
-   THistPainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
-
-      item.min = item.max = undefined;
-      item.changed = false;
-      if (ignore && item.ignore) return;
-
-      var delta = 0, delta_left = 1, delta_right = 1;
-
-      if ('dleft' in item) { delta_left = item.dleft; delta = 1; }
-      if ('dright' in item) { delta_right = item.dright; delta = 1; }
-
-      if ('delta' in item) {
-         delta = item.delta;
-      } else if (event && event.wheelDelta !== undefined ) {
-         // WebKit / Opera / Explorer 9
-         delta = -event.wheelDelta;
-      } else if (event && event.deltaY !== undefined ) {
-         // Firefox
-         delta = event.deltaY;
-      } else if (event && event.detail !== undefined) {
-         delta = event.detail;
-      }
-
-      if (delta===0) return;
-      delta = (delta<0) ? -0.2 : 0.2;
-
-      delta_left *= delta
-      delta_right *= delta;
-
-      var lmin = item.min = this["scale_"+item.name+"min"],
-          lmax = item.max = this["scale_"+item.name+"max"],
-          gmin = this[item.name+"min"],
-          gmax = this[item.name+"max"];
-
-      if ((item.min === item.max) && (delta<0)) {
-         item.min = gmin;
-         item.max = gmax;
-      }
-
-      if (item.min >= item.max) return;
-
-      if ((dmin>0) && (dmin<1)) {
-         if (this['log'+item.name]) {
-            var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
-            if (factor>10) factor = 10; else if (factor<0.01) factor = 0.01;
-            item.min = item.min / Math.pow(10, factor*delta_left*dmin);
-            item.max = item.max * Math.pow(10, factor*delta_right*(1-dmin));
-         } else {
-            var rx_left = (item.max - item.min), rx_right = rx_left;
-            if (delta_left>0) rx_left = 1.001 * rx_left / (1-delta_left);
-            item.min += -delta_left*dmin*rx_left;
-
-            if (delta_right>0) rx_right = 1.001 * rx_right / (1-delta_right);
-
-            item.max -= -delta_right*(1-dmin)*rx_right;
-         }
-         if (item.min >= item.max)
-            item.min = item.max = undefined;
-         else
-         if (delta_left !== delta_right) {
-            // extra check case when moving left or right
-            if (((item.min < gmin) && (lmin===gmin)) ||
-                ((item.max > gmax) && (lmax==gmax)))
-                   item.min = item.max = undefined;
-         }
-
-      } else {
-         item.min = item.max = undefined;
-      }
-
-      item.changed = ((item.min !== undefined) && (item.max !== undefined));
-   }
-
-   THistPainter.prototype.mouseWheel = function() {
-      d3.event.stopPropagation();
-
-      d3.event.preventDefault();
-      this.clearInteractiveElements();
-
-      var itemx = { name: "x", ignore: false },
-          itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
-          cur = d3.mouse(this.svg_frame().node()),
-          w = this.frame_width(), h = this.frame_height();
-
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
-
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
-
-      this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
-
-      if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
    THistPainter.prototype.ShowAxisStatus = function(axis_name) {
@@ -2893,9 +2615,6 @@
    }
 
    THistPainter.prototype.FillContextMenu = function(menu) {
-
-      // when fill and show context menu, remove all zooming
-      this.clearInteractiveElements();
 
       var histo = this.GetHisto(),
           fp = this.frame_painter();
@@ -3564,6 +3283,7 @@
           right = this.GetSelectIndex("x", "right"),
           stat_sumw = 0, stat_sumwx = 0, stat_sumwx2 = 0, stat_sumwy = 0, stat_sumwy2 = 0,
           i, xx = 0, w = 0, xmax = null, wmax = null,
+          fp = this.frame_painter(),
           res = { name: histo.fName, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, integral: 0, entries: this.stat_entries, xmax:0, wmax:0 };
 
       for (i = left; i < right; ++i) {
@@ -3587,7 +3307,7 @@
       }
 
       // when no range selection done, use original statistic from histogram
-      if (!this.IsAxisZoomed("x") && (histo.fTsumw>0)) {
+      if (!fp.IsAxisZoomed("x") && (histo.fTsumw>0)) {
          stat_sumw = histo.fTsumw;
          stat_sumwx = histo.fTsumwx;
          stat_sumwx2 = histo.fTsumwx2;
@@ -4424,7 +4144,6 @@
          this.DrawColorPalette(false);
 
       this.DrawAxes();
-      this.DrawGrids();
       this.DrawBins();
       this.DrawTitle();
       this.UpdateStatWebCanvas();
@@ -4790,6 +4509,7 @@
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
           xside, yside, xx, yy, zz,
+          fp = this.frame_painter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
       if (this.IsTH2Poly()) {
@@ -4882,7 +4602,7 @@
          }
       }
 
-      if (!this.IsAxisZoomed("x") && !this.IsAxisZoomed("y") && (histo.fTsumw > 0)) {
+      if (!fp.IsAxisZoomed("x") && !fp.IsAxisZoomed("y") && (histo.fTsumw > 0)) {
          stat_sum0 = histo.fTsumw;
          stat_sumx1 = histo.fTsumwx;
          stat_sumx2 = histo.fTsumwx2;
@@ -6303,8 +6023,6 @@
       var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
 
       this.DrawAxes();
-
-      this.DrawGrids();
 
       this.DrawBins();
 

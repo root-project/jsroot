@@ -428,7 +428,7 @@
          evnt.stopPropagation();
          evnt.stopImmediatePropagation();
 
-         if (control.painter && (control.painter.AnalyzeMouseWheelEvent!==undefined)) {
+         if (control.painter && (typeof control.painter.AnalyzeMouseWheelEvent == 'function')) {
             var kind = intersect.object.zoom,
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
