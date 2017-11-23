@@ -1242,12 +1242,14 @@
 
       var origin = this.select_main('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
-      this.set_layout_kind('simple');
+      if (this._changed_layout)
+         this.set_layout_kind('simple');
       this.AccessTopPainter(false);
       this.divid = null;
 
       if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
 
+      delete this._changed_layout;
       delete this._hitemname;
       delete this._hdrawopt;
       delete this._hpainter;
@@ -1342,6 +1344,7 @@
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
          origin.property('layout_selector', (kind!='simple') && main_selector ? main_selector : null);
+         this._changed_layout = (kind !== 'simple'); // use in cleanup
       }
    }
 
