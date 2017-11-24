@@ -3136,9 +3136,9 @@
          color: this.tip_color,
          lines: [ this.tip_name,
                   "pnt: " + indx,
-                  "x: " + p.x_handle.format(this.graph.fX[indx]),
-                  "y: " + p.y_handle.format(this.graph.fY[indx]),
-                  "z: " + p.z_handle.format(this.graph.fZ[indx])
+                  "x: " + p.AxisAsText("x", this.graph.fX[indx]),
+                  "y: " + p.AxisAsText("y", this.graph.fY[indx]),
+                  "z: " + p.AxisAsText("z", this.graph.fZ[indx])
                 ]
       }
    }
@@ -3437,9 +3437,9 @@
                color: this.tip_color,
                lines: [ this.tip_name,
                         "pnt: " + indx/3,
-                        "x: " + p.x_handle.format(this.poly.fP[indx]),
-                        "y: " + p.y_handle.format(this.poly.fP[indx+1]),
-                        "z: " + p.z_handle.format(this.poly.fP[indx+2])
+                        "x: " + p.AxisAsText("x", this.poly.fP[indx]),
+                        "y: " + p.AxisAsText("y", this.poly.fP[indx+1]),
+                        "z: " + p.AxisAsText("z", this.poly.fP[indx+2])
                       ]
             }
 
