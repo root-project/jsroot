@@ -546,6 +546,16 @@ For instance, to load functionality with normal 2D graphics and binary ROOT file
 
 One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
 
+After main __JSRootCore.js__ script is loaded, one can configure different options in JSROOT.gStyle object.
+It is instance of the TStyle object and contains similar properties. For instance, one can change stat format:
+
+    JSROOT.gStyle.fStatFormat = "7.5g"
+
+Or specify custom format for the X/Y object values:
+
+    JSROOT.gStyle.XValuesFormat = "4.2g"
+    JSROOT.gStyle.YValuesFormat = "6.1f"
+ 
 When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:
 
     <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
@@ -654,7 +664,6 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-
     var filename = "https://root.cern/js/files/hsimple.root";
     JSROOT.OpenFile(filename, function(file) {
        file.ReadObject("ntuple;1", function(obj) {
@@ -663,7 +672,6 @@ Simple TTree::Draw operation can be performed with following code:
     });
 
 To get access to selected branches, one should use TSelector class:
-
 
     var filename = "https://root.cern/js/files/hsimple.root";
     JSROOT.OpenFile(filename, function(file) {
@@ -750,18 +758,32 @@ To use in the Node.js scripts, one should add following line:
      var jsroot = require('jsroot');
      
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
-create SVG output. For example, open create SVG image with lego plot, one should do:
+create SVG output. For example, to create SVG image with lego plot, one should do:
 
     var jsroot = require("jsroot");
     var fs = require("fs");
 
     jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
-        file.ReadObject("hpx;1", function(obj) {
-            jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
-                fs.writeFileSync("lego2.svg", svg);
-            });
-        });
+       file.ReadObject("hpx;1", function(obj) {
+          jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
+             fs.writeFileSync("lego2.svg", svg);
+          });
+       });
      });               
+ 
+It is also possible to convert any JavaScript object into ROOT JSON string, using **JSROOT.toJSON()** function. Like:
+
+    var jsroot = require("jsroot");
+    var fs = require("fs");
+
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+       file.ReadObject("hpxpy;1", function(obj) {
+          var json = jsroot.toJSON(obj);
+          fs.writrFileSync("hpxpy.json", json); 
+       });
+    });               
+ 
+Such JSON string could be parsed by any other JSROOT-based application.  
  
 
 ### Use with OpenUI5
