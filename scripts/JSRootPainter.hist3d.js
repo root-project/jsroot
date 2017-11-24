@@ -3047,9 +3047,8 @@
    }
 
    TGraph2DPainter.prototype.CreateHistogram = function() {
-      var gr = this.GetObject();
-
-      var xmin = gr.fX[0], xmax = xmin,
+      var gr = this.GetObject(),
+          xmin = gr.fX[0], xmax = xmin,
           ymin = gr.fY[0], ymax = ymin,
           zmin = gr.fZ[0], zmax = zmin;
 

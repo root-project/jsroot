@@ -99,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 23/11/2017";
+   JSROOT.version = "dev 24/11/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -109,8 +109,6 @@
 
    JSROOT.id_counter = 0;
    JSROOT.BatchMode = false; // when true, disables all kind of interactive features
-
-   JSROOT.FrameAxisDrawing = 1;  // temporary flag, switch old and new mode of axes drawing
 
    // JSROOT.use_full_libs = true;
 
