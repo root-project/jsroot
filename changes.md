@@ -4,6 +4,7 @@
 1. Fix - use FontSize when draw TLegend entries
 2. Fix - correctly show TH2 overflow stats
 3. Fix - tooltips handling for TH1 hbar drawings
+4. Implement JSROOT.toJSON() function to produce ROOT JSON string 
 
 
 ## Changes in 5.3.1
