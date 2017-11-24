@@ -488,6 +488,50 @@
       return arr;
    }
 
+   /** @memberOf JSROOT
+    * Method converts JavaScript object into ROOT-like JSON.
+    * Produced JSON can be used in JSROOT.parse() again */
+   JSROOT.toJSON = function(obj) {
+      if (!obj || typeof obj !== 'object') return "";
+
+      var map = []; // map of stored objects
+
+      function copy_value(value) {
+         if (typeof value === "function") return undefined;
+
+         if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
+
+         var proto = Object.prototype.toString.apply(value);
+
+         // typed array need to be converted into normal array, otherwise looks strange
+         if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
+            var arr = new Array(value.length)
+            for (var i = 0; i < value.length; ++i)
+               arr[i] = copy_value(value[i]);
+            return arr;
+         }
+
+         // this is how reference is code
+         var refid = map.indexOf(value);
+         if (refid >= 0) return { $ref: refid };
+
+         map.push(value);
+
+         var ks = Object.keys(value), len = ks.length, tgt = {}, name;
+
+         for (var k = 0; k < len; ++k) {
+            name = ks[k];
+            tgt[name] = copy_value(value[name]);
+         }
+
+         return tgt;
+      }
+
+      var tgt = copy_value(obj);
+
+      return JSON.stringify(tgt);
+   }
+
    /** @memberOf JSROOT */
    JSROOT.GetUrlOption = function(opt, url, dflt) {
       // analyzes document.URL and extracts options after '?' mark
