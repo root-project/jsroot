@@ -133,15 +133,15 @@
          if ((this.scale_max < 300) && (this.scale_min > 0.3)) this.noexp = true;
          this.moreloglabels = axis ? axis.TestBit(JSROOT.EAxisBits.kMoreLogLabels) : false;
 
-         this.format = function(d, asticks, notickexp) {
+         this.format = function(d, asticks, notickexp_fmt) {
             var val = parseFloat(d), rnd = Math.round(val);
             if (!asticks)
-               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : val.toExponential(4);
+               return ((rnd === val) && (Math.abs(rnd)<1e9)) ? rnd.toString() : JSROOT.FFormat(val, notickexp_fmt || JSROOT.gStyle.fStatFormat);
 
             if (val <= 0) return null;
             var vlog = JSROOT.log10(val);
             if (this.moreloglabels || (Math.abs(vlog - Math.round(vlog))<0.001)) {
-               if (!this.noexp && !notickexp)
+               if (!this.noexp && !notickexp_fmt)
                   return this.format10Exp(Math.floor(vlog+0.01), val);
 
                return (vlog<0) ? val.toFixed(Math.round(-vlog+0.5)) : val.toFixed(0);
@@ -171,14 +171,16 @@
          this.order = 0;
          this.ndig = 0;
 
-         this.format = function(d, asticks) {
+         this.format = function(d, asticks, fmt) {
             var val = parseFloat(d);
             if (asticks && this.order) val = val / Math.pow(10, this.order);
 
             if (val === Math.round(val))
                return (Math.abs(val)<1e9) ? val.toFixed(0) : val.toExponential(4);
 
-            return (this.ndig>10) ? val.toExponential(this.ndig- (asticks ? 11 : 9)) : val.toFixed(this.ndig + (asticks ? 0 : 2));
+            if (asticks) return (this.ndig>10) ? val.toExponential(this.ndig-11) : val.toFixed(this.ndig);
+
+            return JSROOT.FFormat(val, fmt || JSROOT.gStyle.fStatFormat);
          }
       }
    }
@@ -1262,15 +1264,15 @@
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
          if (this.x_handle && ('format' in this.x_handle))
-            return this.x_handle.format(value);
+            return this.x_handle.format(value, false, JSROOT.gStyle.XValuesFormat);
       } else if (axis == "y") {
          if (this.y_kind == 'time')
             value = this.ConvertY(value);
          if (this.y_handle && ('format' in this.y_handle))
-            return this.y_handle.format(value);
+            return this.y_handle.format(value, false, false, JSROOT.gStyle.YValuesFormat);
       } else {
          if (this.z_handle && ('format' in this.z_handle))
-            return this.z_handle.format(value);
+            return this.z_handle.format(value, false, false, JSROOT.gStyle.ZValuesFormat);
       }
 
       return value.toPrecision(4);

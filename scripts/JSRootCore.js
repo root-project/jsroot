@@ -172,6 +172,10 @@
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
          HierarchyLimit : 250,   // how many items shown on one level of hierarchy
 
+         // XValuesFormat : "6.4g",   // custom format for all X values
+         // YValuesFormat : "6.4g",   // custom format for all Y values
+         // ZValuesFormat : "6.4g",   // custom format for all Z values
+
          // these are TStyle attributes, which can be changed via URL 'style' parameter
 
          fPadBottomMargin : 0.1,
