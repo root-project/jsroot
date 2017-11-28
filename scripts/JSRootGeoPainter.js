@@ -2180,7 +2180,7 @@
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
       var hit_size = 8*hit.fMarkerSize,
-          size = hit.fN-1,
+          size = hit.fN,
           projv = this.options.projectPos,
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
