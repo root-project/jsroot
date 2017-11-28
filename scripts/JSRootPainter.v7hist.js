@@ -96,10 +96,6 @@
    }
 
    THistPainter.prototype.Cleanup = function() {
-      if (this.keys_handler) {
-         window.removeEventListener( 'keydown', this.keys_handler, false );
-         this.keys_handler = null;
-      }
 
       // clear all 3D buffers
       if (typeof this.Create3DScene === 'function')

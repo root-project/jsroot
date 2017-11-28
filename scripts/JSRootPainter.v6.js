@@ -1441,13 +1441,17 @@
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
                     .on("wheel", null)
-                    .on("contextmenu", null)
-                    .property('interactive_set', null);
+                    .on("contextmenu", null);
       }
       this.draw_g = null;
       this.xaxis = null;
       this.yaxis = null;
       this.zaxis = null;
+
+      if (this.keys_handler) {
+         window.removeEventListener('keydown', this.keys_handler, false);
+         this.keys_handler = null;
+      }
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -1621,18 +1625,13 @@
       // fill context menu for the frame
       // it could be appended to the histogram menus
 
-      var main = this.main_painter(), alone = menu.size()==0, pad = this.root_pad();
-
-      if (alone)
-         menu.add("header:Frame");
-      else
-         menu.add("separator");
+      var main = this.main_painter(), pad = this.root_pad();
 
       if ((kind=="x") || (kind=="y") || (kind=="z")) {
          var faxis = obj || this[kind+'axis'];
          menu.add("header: " + kind.toUpperCase() + " axis");
          menu.add("Unzoom", this.Unzoom.bind(this, kind));
-         menu.addchk(pad["fLog" + axis], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
+         menu.addchk(pad["fLog" + kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
                function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
          menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
@@ -1686,6 +1685,13 @@
          }
          return true;
       }
+
+      var alone = menu.size() == 0;
+
+      if (alone)
+         menu.add("header:Frame");
+      else
+         menu.add("separator");
 
       if (this.zoom_xmin !== this.zoom_xmax)
          menu.add("Unzoom X", this.Unzoom.bind(this,"x"));
@@ -2498,7 +2504,10 @@
 
       var svg = this.svg_frame();
 
-      if (svg.empty() || svg.property('interactive_set')) return;
+      if (svg.empty()) return;
+
+      var svg_x = svg.selectAll(".xaxis_container"),
+          svg_y = svg.selectAll(".yaxis_container");
 
       this.AddKeysHandler();
 
@@ -2524,24 +2533,16 @@
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
-            svg.selectAll(".xaxis_container")
-               .on("touchstart", this.startTouchMenu.bind(this,"x"));
-            svg.selectAll(".yaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this,"y"));
+            svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
+            svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
          }
          svg.on("contextmenu", this.ShowContextMenu.bind(this));
-         svg.selectAll(".xaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         svg.selectAll(".yaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+         svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+         svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
 
-      svg.selectAll(".xaxis_container")
-         .on("mousemove", this.ShowAxisStatus.bind(this,"x"));
-      svg.selectAll(".yaxis_container")
-         .on("mousemove", this.ShowAxisStatus.bind(this,"y"));
-
-      svg.property('interactive_set', true);
+      svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
+      svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
    }
 
    function drawFrame(divid, obj, opt) {

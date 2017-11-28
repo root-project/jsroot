@@ -1156,9 +1156,14 @@
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
                     .on("wheel", null)
-                    .on("contextmenu", null)
-                    .property('interactive_set', null);
+                    .on("contextmenu", null);
       }
+
+      if (this.keys_handler) {
+         window.removeEventListener('keydown', this.keys_handler, false);
+         this.keys_handler = null;
+      }
+
       this.draw_g = null;
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -2001,7 +2006,10 @@
 
       var svg = this.svg_frame();
 
-      if (svg.empty() || svg.property('interactive_set')) return;
+      if (svg.empty()) return;
+
+      var svg_x = svg.selectAll(".xaxis_container"),
+          svg_y = svg.selectAll(".yaxis_container");
 
       this.AddKeysHandler();
 
@@ -2027,24 +2035,16 @@
 
       if (JSROOT.gStyle.ContextMenu) {
          if (JSROOT.touches) {
-            svg.selectAll(".xaxis_container")
-               .on("touchstart", this.startTouchMenu.bind(this,"x"));
-            svg.selectAll(".yaxis_container")
-                .on("touchstart", this.startTouchMenu.bind(this,"y"));
+            svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
+            svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
          }
          svg.on("contextmenu", this.ShowContextMenu.bind(this));
-         svg.selectAll(".xaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this,"x"));
-         svg.selectAll(".yaxis_container")
-             .on("contextmenu", this.ShowContextMenu.bind(this,"y"));
+         svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
+         svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
 
-      svg.selectAll(".xaxis_container")
-         .on("mousemove", this.ShowAxisStatus.bind(this,"x"));
-      svg.selectAll(".yaxis_container")
-         .on("mousemove", this.ShowAxisStatus.bind(this,"y"));
-
-      svg.property('interactive_set', true);
+      svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
+      svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
    }
 
    TFramePainter.prototype.mouseWheel = function() {
