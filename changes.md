@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.3.3
+1. Use latest jsdom and mathjax-node packages (Node.js only) 
+
+
 ## Changes in 5.3.2
 1. Fix - use FontSize when draw TLegend entries
 2. Fix - correctly show TH2 overflow stats
