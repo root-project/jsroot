@@ -1023,6 +1023,9 @@
    }
 
    TFramePainter.prototype.CreateXY = function(opts) {
+
+      this.CleanXY(); // remove all previous configurations
+
       if (!opts) opts = {};
 
       this.swap_xy = opts.swap_xy;
@@ -1283,6 +1286,8 @@
 
       // if (this.axes_drawn) return true;
 
+      this.CleanupAxes();
+
       if ((this.xmin==this.xmax) || (this.ymin==this.ymax)) return false;
 
       if (AxisPos === undefined) AxisPos = 0;
@@ -1401,13 +1406,17 @@
       this.RedrawPad();
    }
 
-   TFramePainter.prototype.CleanupAxes = function() {
+   TFramePainter.prototype.CleanXY = function() {
+      // remove all kinds of X/Y function for axes transformation
       delete this.x; delete this.grx;
       delete this.ConvertX; delete this.RevertX;
       delete this.y; delete this.gry;
       delete this.ConvertY; delete this.RevertY;
       delete this.z; delete this.grz;
+   }
 
+   TFramePainter.prototype.CleanupAxes = function() {
+      // remove all axes drawings
       if (this.x_handle) {
          this.x_handle.Cleanup();
          delete this.x_handle;
@@ -1443,6 +1452,9 @@
                     .on("wheel", null)
                     .on("contextmenu", null);
       }
+
+      this.CleanXY();
+
       this.draw_g = null;
       this.xaxis = null;
       this.yaxis = null;
@@ -1508,7 +1520,6 @@
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
-         this.CleanupAxes();
       }
 
       this.axes_drawn = false;
