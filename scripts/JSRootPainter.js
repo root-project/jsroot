@@ -2181,11 +2181,6 @@
       return this.svg_layer("primitives_layer", pad_name).select(".root_frame");
    }
 
-   TObjectPainter.prototype.frame_painter = function() {
-      var pp = this.pad_painter(true);
-      return pp ? pp.frame_painter_ref : null;
-   }
-
    TObjectPainter.prototype.pad_width = function(pad_name) {
       var res = this.svg_pad(pad_name);
       res = res.empty() ? 0 : res.property("draw_width");
@@ -2198,27 +2193,30 @@
       return isNaN(res) ? 0 : res;
    }
 
+   TObjectPainter.prototype.frame_painter = function() {
+      var pp = this.pad_painter(true);
+      return pp ? pp.frame_painter_ref : null;
+   }
+
    TObjectPainter.prototype.frame_property = function(name) {
-      var res = this.svg_frame();
-      if (res.empty()) return 0;
-      res = res.property(name);
-      return ((res===undefined) || isNaN(res)) ? 0 : res;
+      var pp = this.frame_painter();
+      return pp && pp[name] ? pp[name] : 0;
    }
 
    TObjectPainter.prototype.frame_x = function() {
-      return this.frame_property("draw_x");
+      return this.frame_property("_frame_x");
    }
 
    TObjectPainter.prototype.frame_y = function() {
-      return this.frame_property("draw_y");
+      return this.frame_property("_frame_y");
    }
 
    TObjectPainter.prototype.frame_width = function() {
-      return this.frame_property("draw_width");
+      return this.frame_property("_frame_width");
    }
 
    TObjectPainter.prototype.frame_height = function() {
-      return this.frame_property("draw_height");
+      return this.frame_property("_frame_height");
    }
 
    TObjectPainter.prototype.embed_3d = function() {

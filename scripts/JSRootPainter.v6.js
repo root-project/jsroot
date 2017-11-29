@@ -1530,12 +1530,12 @@
          var d = w; w = h; h = d;
       }
 
-      this.draw_g.property('frame_painter', this) // simple way to access painter via frame container
-                 .property('draw_x', lm)
-                 .property('draw_y', tm)
-                 .property('draw_width', w)
-                 .property('draw_height', h)
-                 .attr("transform", trans);
+      this._frame_x = lm;
+      this._frame_y = tm;
+      this._frame_width = w;
+      this._frame_height = h;
+
+      this.draw_g.attr("transform", trans);
 
       top_rect.attr("x", 0)
               .attr("y", 0)
