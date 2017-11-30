@@ -65,6 +65,11 @@
          console.log('Try to open web socket ' +  socket_kind);
          
          var handle = new JSROOT.WebWindowHandle(socket_kind);
+         
+         if (window) {
+            window.onbeforeunload = handle.Close.bind(handle);
+            if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
+         }
 
          // set interim receiver until openui5 panel is not yet ready
          handle.SetReceiver({                  
