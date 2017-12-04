@@ -612,6 +612,10 @@
       return this.scale*this.size;
    }
 
+   TAttMarkerHandler.prototype.MarkerLength = function() {
+      return this.marker ? this.marker.length : 10;
+   }
+
    TAttMarkerHandler.prototype.Change = function(color, style, size) {
       this.changed = true;
 

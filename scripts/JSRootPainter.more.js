@@ -800,7 +800,7 @@
 
       var graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt),
-          res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0,
+          res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0, NoOpt: 0,
                   Errors: 0, MainError: 1, Ends: 1, Axis: "", original: opt };
 
       if (this.has_errors) res.Errors = 1;
@@ -809,6 +809,7 @@
       res._plc = d.check("PLC");
       res._pmc = d.check("PMC");
 
+      if (d.check('NOOPT')) res.NoOpt = 1;
       if (d.check('L')) res.Line = 1;
       if (d.check('F')) res.Fill = 1;
       if (d.check('IA')) res.Axis = "A"; else
@@ -874,12 +875,12 @@
          var bin = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
             case 1:
-              bin.exlow = bin.exhigh = gr.fEX[p];
-              bin.eylow = bin.eyhigh = gr.fEY[p];
-              break;
+               bin.exlow = bin.exhigh = gr.fEX[p];
+               bin.eylow = bin.eyhigh = gr.fEY[p];
+               break;
             case 2:
                bin.exlow  = gr.fEXlow[p];
-               bin.exhigh  = gr.fEXhigh[p];
+               bin.exhigh = gr.fEXhigh[p];
                bin.eylow  = gr.fEYlow[p];
                bin.eyhigh = gr.fEYhigh[p];
                break;
@@ -938,7 +939,13 @@
       return histo;
    }
 
-   TGraphPainter.prototype.OptimizeBins = function(filter_func) {
+   /** Returns true if graph drawing can be optimize */
+   TGraphPainter.prototype.CanOptimize = function() {
+      return JSROOT.gStyle.OptimizeDraw > 0 && !this.options.NoOpt;
+   }
+
+   /** Returns optimized bins - if optimization enabled */
+   TGraphPainter.prototype.OptimizeBins = function(maxpnt, filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
       var selbins = null;
@@ -952,10 +959,12 @@
             }
          }
       }
-      if (selbins == null) selbins = this.bins;
+      if (!selbins) selbins = this.bins;
 
-      if ((selbins.length < 5000) || (JSROOT.gStyle.OptimizeDraw == 0)) return selbins;
-      var step = Math.floor(selbins.length / 5000);
+      if (!maxpnt) maxpnt = 500000;
+
+      if ((selbins.length < maxpnt) || !this.CanOptimize()) return selbins;
+      var step = Math.floor(selbins.length / maxpnt);
       if (step < 2) step = 2;
       var optbins = [];
       for (var n = 0; n < selbins.length; n+=step)
@@ -1061,7 +1070,7 @@
 
       if (this.options.EF) {
 
-         drawbins = this.OptimizeBins();
+         drawbins = this.OptimizeBins((this.options.EF > 1) ? 5000 : 0);
 
          // build lower part
          for (var n=0;n<drawbins.length;++n) {
@@ -1070,7 +1079,7 @@
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         var path1 = JSROOT.Painter.BuildSvgPath(this.options.EF > 1 ? "bezier" : "line", drawbins),
+         var path1 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
          for (var n=drawbins.length-1;n>=0;--n) {
@@ -1080,7 +1089,7 @@
          }
 
          // build upper part (in reverse direction)
-         var path2 = JSROOT.Painter.BuildSvgPath(this.options.EF > 1 ? "Lbezier" : "Lline", bins2);
+         var path2 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1096,10 +1105,10 @@
 
          if (this.options.Fill == 1) {
             close_symbol = "Z"; // always close area if we want to fill it
-            excl_width=0;
+            excl_width = 0;
          }
 
-         if (drawbins===null) drawbins = this.OptimizeBins();
+         if (!drawbins) drawbins = this.OptimizeBins(this.options.Curve ? 5000 : 0);
 
          for (var n=0;n<drawbins.length;++n) {
             var bin = drawbins[n];
@@ -1154,7 +1163,7 @@
 
       if (this.options.Errors || this.options.Rect || this.options.Bar) {
 
-         drawbins = this.OptimizeBins(function(pnt,i) {
+         drawbins = this.OptimizeBins(5000, function(pnt,i) {
 
             var grx = pmain.grx(pnt.x);
 
@@ -1294,8 +1303,7 @@
 
       if (this.options.Mark) {
          // for tooltips use markers only if nodes where not created
-         var step = Math.max(1, Math.round(this.bins.length / 50000)),
-             path = "", n, pnt, grx, gry;
+         var path = "", pnt, grx, gry;
 
          if (!this.markeratt)
             this.markeratt = new JSROOT.TAttMarkerHandler(graph, this.options.Mark - 100);
@@ -1306,14 +1314,20 @@
 
          this.markeratt.reset_pos();
 
-         for (n=0;n<this.bins.length;n+=step) {
-            pnt = this.bins[n];
+         // let produce SVG at maximum 1MB
+         var maxnummarker = 1000000 / (this.markeratt.MarkerLength() + 7), step = 1;
+
+         if (!drawbins) drawbins = this.OptimizeBins(maxnummarker); else
+            if (this.CanOptimize() && (drawbins.length > 1.5*maxnummarker))
+               step = Math.min(2, Math.round(drawbins.length/maxnummarker));
+
+         for (var n=0;n<drawbins.length;n+=step) {
+            pnt = drawbins[n];
             grx = pmain.grx(pnt.x);
-            if ((grx > -this.marker_size) && (grx < w+this.marker_size)) {
+            if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
                gry = pmain.gry(pnt.y);
-               if ((gry >-this.marker_size) && (gry < h+this.marker_size)) {
+               if ((gry > -this.marker_size) && (gry < h + this.marker_size))
                   path += this.markeratt.create(grx, gry);
-               }
             }
          }
 

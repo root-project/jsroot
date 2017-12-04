@@ -12,6 +12,8 @@
 9. Draw all objectes from TList/TObjArray is they appear in list of primitives
 10. Draw axis labels on both sides when pad.fTick[x/y] > 1
 11. Disable automatic frame adjustment, can be enabled with "&adjframe" parameter in URL 
+12. Fix - use same number of points to draw lines and markers on the TGraph
+13. Let disable TGraph drawing optimization with "noopt" draw option
 
 
 ## Changes in 5.3.0
