@@ -1208,7 +1208,7 @@
       // function used to provide svg:path for the smoothed curves
       // reuse code from d3.js. Used in TH1, TF1 and TGraph painters
       // kind should contain "bezier" or "line".
-      // If first symbol "L", than it used to continue drawing
+      // If first symbol "L", then it used to continue drawing
 
       var smooth = kind.indexOf("bezier") >= 0;
 
@@ -1274,7 +1274,9 @@
           } else {
              dx = Math.round(bin.grx - currx);
              dy = Math.round(bin.gry - curry);
-             res.path += "l" + dx + "," + dy;
+             if (!dx) res.path += "v"+dy;
+             else if (!dy) res.path += "h"+dx;
+             else res.path += "l" + dx + "," + dy;
              currx+=dx; curry+=dy;
              maxy = Math.max(maxy, curry);
           }
