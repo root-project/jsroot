@@ -1334,7 +1334,7 @@
 
       if (height>0)
          res.close = "L" + conv(bin.grx)+","+conv(maxy) +
-                     "L" + conv(bins[0])+","+conv(maxy) + "Z";
+                     "L" + conv(bins[0].grx)+","+conv(maxy) + "Z";
 
       return res;
    }
