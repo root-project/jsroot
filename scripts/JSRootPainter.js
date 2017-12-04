@@ -1289,14 +1289,14 @@
             bin = bins[n];
             dx = Math.round(bin.grx) - currx;
             dy = Math.round(bin.gry) - curry;
-            if (!dx) res.path += "v"+dy;
-            else if (!dy) res.path += "h"+dx;
-            else res.path += "l"+dx+","+dy;
-            currx+=dx; curry+=dy;
+            if (dx && dy) res.path += "l"+dx+","+dy;
+            else if (!dx && dy) res.path += "v"+dy;
+            else if (dx && !dy) res.path += "h"+dx;
+            currx += dx; curry += dy;
             maxy = Math.max(maxy, curry);
          }
       } else {
-         // build line with optimizing out of many vertical shift
+         // build line with trying optimize many vertical moves
          var lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
          for(var n=1; n<npnts; ++n) {
             bin = bins[n];
@@ -1319,8 +1319,8 @@
                curry = prevy;
             }
             dy = lasty - curry;
-            if (!dy) res.path += "h"+dx;
-            else res.path += "l"+dx+","+dy;
+            if (dy) res.path += "l"+dx+","+dy;
+               else res.path += "h"+dx;
             currx = lastx; curry = lasty;
             prevy = cminy = cmaxy = lasty;
          }
