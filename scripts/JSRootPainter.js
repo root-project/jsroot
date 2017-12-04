@@ -1252,7 +1252,7 @@
       }
 
       var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
-          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy;
+          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
       res.path = ((kind[0] == "L") ? "L" : "M") +
                   bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
@@ -1261,26 +1261,68 @@
       if (smooth || kind.indexOf('calc')>=0)
          jsroot_d3_svg_lineMonotoneTangents(bins);
 
-      if (smooth)
-         res.path +=  "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+      if (smooth) {
+         // build smoothed curve
+         res.path += "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+         for(var n=1; n<npnts; ++n) {
+            bin = bins[n];
+            prev = bin;
+            if (n > 1) res.path += "s";
+            res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+            maxy = Math.max(maxy, prev.gry);
+         }
+      } else if (npnts < 10000) {
+         // build simple curve
+         for(var n=1; n<npnts; ++n) {
+            bin = bins[n];
+            dx = Math.round(bin.grx) - currx;
+            dy = Math.round(bin.gry) - curry;
+            if (!dx) res.path += "v"+dy;
+            else if (!dy) res.path += "h"+dx;
+            else res.path += "l" + dx + "," + dy;
+            currx+=dx; curry+=dy;
+            maxy = Math.max(maxy, curry);
+        }
+      } else {
+         // build line with optimizing out of many vertical shift
+         var lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
+         for(var n=1; n<npnts; ++n) {
+            bin = bins[n];
+            lastx = Math.round(bin.grx);
+            lasty = Math.round(bin.gry);
+            maxy = Math.max(maxy, lasty);
+            dx = lastx - currx;
+            if (dx===0) {
+               // if X not change, just remember amplitude and
+               cminy = Math.min(cminy, lasty);
+               cmaxy = Math.max(cmaxy, lasty);
+               prevy = lasty;
+               continue;
+            }
 
-      for(var n=1; n<bins.length; ++n) {
-          prev = bin;
-          bin = bins[n];
-          if (smooth) {
-             if (n > 1) res.path += "s";
-             res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
-             maxy = Math.max(maxy, prev.gry);
-          } else {
-             dx = Math.round(bin.grx - currx);
-             dy = Math.round(bin.gry - curry);
-             if (!dx) res.path += "v"+dy;
-             else if (!dy) res.path += "h"+dx;
-             else res.path += "l" + dx + "," + dy;
-             currx+=dx; curry+=dy;
-             maxy = Math.max(maxy, curry);
-          }
+            if (cminy !== cmaxy) {
+               if (cminy != curry) res.path += "v" + (cminy-curry);
+               res.path += "v" + (cmaxy-cminy);
+               if (cmaxy != prevy) res.path += "v" + (prevy-cmaxy);
+               curry = prevy;
+            }
+            dy = lasty - curry;
+            if (!dy) res.path += "h"+dx;
+            else res.path += "l"+dx+","+dy;
+            currx = lastx; curry = lasty;
+            prevy = cminy = cmaxy = lasty;
+         }
+
+         if (cminy != cmaxy) {
+            if (cminy != curry) res.path += "v" + (cminy-curry);
+            res.path += "v" + (cmaxy-cminy);
+            if (cmaxy != prevy) res.path += "v" + (prevy-cmaxy);
+            curry = prevy;
+         }
+
       }
+
+
 
       if (height>0)
          res.close = "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
