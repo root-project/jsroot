@@ -1259,13 +1259,15 @@
           currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
       function conv(val) {
-         if (ndig==0) return Math.round(val).toString();
-         return val.toFixed(ndig);
+         var vvv = Math.round(val);
+         if ((ndig==0) || (vvv===val)) return vvv.toString();
+         var str = val.toFixed(ndig);
+         if ((str[str.length-1] == '0') && (str.indexOf(".") < str.length-1))
+            str = str.substr(0,str.length-1);
+         return str;
       }
 
-      res.path = ((kind[0] == "L") ? "L" : "M") +
-                  conv(bin.grx) + "," + conv(bin.gry);
-
+      res.path = ((kind[0] == "L") ? "L" : "M") + conv(bin.grx) + "," + conv(bin.gry);
 
       // just calculate all deltas, can be used to build exclusion
       if (smooth || kind.indexOf('calc')>=0)
@@ -1278,7 +1280,7 @@
             var prev = bin;
             bin = bins[n];
             if (n > 1) res.path += "s";
-            res.path += conv(bin.grx-bin.dgrx-prev.grx) + "," + conv(bin.gry-bin.dgry-prev.gry) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + conv(bin.gry-prev.gry);
+            res.path += conv(bin.grx-bin.dgrx-prev.grx) + "," + conv(bin.gry-bin.dgry-prev.gry) + "," + conv(bin.grx-prev.grx) + "," + conv(bin.gry-prev.gry);
             maxy = Math.max(maxy, prev.gry);
          }
       } else if (npnts < 10000) {
@@ -1333,8 +1335,8 @@
       }
 
       if (height>0)
-         res.close = "L" + conv(bin.grx)+","+conv(maxy) +
-                     "L" + conv(bins[0].grx)+","+conv(maxy) + "Z";
+         res.close = "L"+conv(bin.grx)+","+conv(maxy) +
+                     "h"+conv(bins[0].grx-bin.grx) + "Z";
 
       return res;
    }
