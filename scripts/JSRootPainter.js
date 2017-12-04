@@ -1255,11 +1255,17 @@
          }
       }
 
-      var res = {}, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
+      var res = { path: "", close: "" }, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
           currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
+      function conv(val) {
+         if (ndig==0) return Math.round(val).toString();
+         return val.toFixed(ndig);
+      }
+
       res.path = ((kind[0] == "L") ? "L" : "M") +
-                  bin.grx.toFixed(ndig) + "," + bin.gry.toFixed(ndig);
+                  conv(bin.grx) + "," + conv(bin.gry);
+
 
       // just calculate all deltas, can be used to build exclusion
       if (smooth || kind.indexOf('calc')>=0)
@@ -1267,12 +1273,12 @@
 
       if (smooth) {
          // build smoothed curve
-         res.path += "c" + bin.dgrx.toFixed(ndig) + "," + bin.dgry.toFixed(ndig) + ",";
+         res.path += "c" + conv(bin.dgrx) + "," + conv(bin.dgry) + ",";
          for(var n=1; n<npnts; ++n) {
+            var prev = bin;
             bin = bins[n];
-            prev = bin;
             if (n > 1) res.path += "s";
-            res.path += (bin.grx-bin.dgrx-prev.grx).toFixed(ndig) + "," + (bin.gry-bin.dgry-prev.gry).toFixed(ndig) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + (bin.gry-prev.gry).toFixed(ndig);
+            res.path += conv(bin.grx-bin.dgrx-prev.grx) + "," + conv(bin.gry-bin.dgry-prev.gry) + "," + (bin.grx-prev.grx).toFixed(ndig) + "," + conv(bin.gry-prev.gry);
             maxy = Math.max(maxy, prev.gry);
          }
       } else if (npnts < 10000) {
@@ -1283,10 +1289,10 @@
             dy = Math.round(bin.gry) - curry;
             if (!dx) res.path += "v"+dy;
             else if (!dy) res.path += "h"+dx;
-            else res.path += "l" + dx + "," + dy;
+            else res.path += "l"+dx+","+dy;
             currx+=dx; curry+=dy;
             maxy = Math.max(maxy, curry);
-        }
+         }
       } else {
          // build line with optimizing out of many vertical shift
          var lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
@@ -1318,19 +1324,17 @@
          }
 
          if (cminy != cmaxy) {
-            if (cminy != curry) res.path += "v" + (cminy-curry);
-            res.path += "v" + (cmaxy-cminy);
-            if (cmaxy != prevy) res.path += "v" + (prevy-cmaxy);
+            if (cminy != curry) res.path += "v"+(cminy-curry);
+            res.path += "v"+(cmaxy-cminy);
+            if (cmaxy != prevy) res.path += "v"+(prevy-cmaxy);
             curry = prevy;
          }
 
       }
 
-
-
       if (height>0)
-         res.close = "L" + bin.grx.toFixed(ndig) +"," + maxy.toFixed(ndig) +
-                     "L" + bins[0].grx.toFixed(ndig) +"," + maxy.toFixed(ndig) + "Z";
+         res.close = "L" + conv(bin.grx)+","+conv(maxy) +
+                     "L" + conv(bins[0])+","+conv(maxy) + "Z";
 
       return res;
    }
