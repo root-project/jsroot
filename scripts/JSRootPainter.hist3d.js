@@ -2511,12 +2511,13 @@
 
       // scale down factor if too large values
       var coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
-          numpixels = 0, content_lmt = Math.max(0, this.gminbin);
+          numpixels = 0, sumz = 0, content_lmt = Math.max(0, this.gminbin);
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
+               sumz += bin_content;
                if (bin_content <= content_lmt) continue;
                numpixels += Math.round(bin_content*coef);
             }
@@ -2525,6 +2526,8 @@
 
       // too many pixels - use box drawing
       if (numpixels > (main.webgl ? 100000 : 30000)) return false;
+
+      JSROOT.seed(sumz);
 
       var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
           bins = new Int32Array(numpixels), nbin = 0;
@@ -2537,9 +2540,9 @@
                var num = Math.round(bin_content*coef);
 
                for (var n=0;n<num;++n) {
-                  var binx = histo.fXaxis.GetBinCoord(i+Math.random()),
-                      biny = histo.fYaxis.GetBinCoord(j+Math.random()),
-                      binz = histo.fZaxis.GetBinCoord(k+Math.random());
+                  var binx = histo.fXaxis.GetBinCoord(i+JSROOT.random()),
+                      biny = histo.fYaxis.GetBinCoord(j+JSROOT.random()),
+                      binz = histo.fZaxis.GetBinCoord(k+JSROOT.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);

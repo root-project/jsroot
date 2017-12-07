@@ -14,6 +14,7 @@
 11. Disable automatic frame adjustment, can be enabled with "&adjframe" parameter in URL 
 12. Fix - use same number of points to draw lines and markers on the TGraph
 13. Let disable TGraph drawing optimization with "noopt" draw option
+14. When drawing TH2/TH3 scatter plots, always generate same "random" pattern
 
 
 ## Changes in 5.3.0
