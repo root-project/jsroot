@@ -99,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 4/12/2017";
+   JSROOT.version = "dev 7/12/2017";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -257,6 +257,23 @@
       if (this.nodeis) throw new Error(msg);
       if (typeof alert === 'function') alert(msg);
       else JSROOT.console('ALERT: ' + msg);
+   }
+
+   // Takes any integer
+   JSROOT.seed = function(i) {
+      this.m_w = i;
+      this.m_z = 987654321;
+   }
+
+   // Returns number between 0 (inclusive) and 1.0 (exclusive),
+   // just like Math.random().
+   JSROOT.random = function() {
+      if (this.mz===undefined) return Math.random();
+      this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
+      this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
+      var result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
+      result /= 4294967296;
+      return result + 0.5;
    }
 
    /// Should be used to reintroduce objects references, produced by TBufferJSON
