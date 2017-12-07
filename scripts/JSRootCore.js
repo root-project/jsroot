@@ -259,16 +259,19 @@
       else JSROOT.console('ALERT: ' + msg);
    }
 
-   // Takes any integer
+   // Takes any value
    JSROOT.seed = function(i) {
-      this.m_w = i;
+      i = Math.abs(i);
+      if (i > 1e8) i = Math.abs(1e8 * Math.sin(i)); else
+      if (i < 1) i*=1e8;
+      this.m_w = Math.round(i);
       this.m_z = 987654321;
    }
 
    // Returns number between 0 (inclusive) and 1.0 (exclusive),
    // just like Math.random().
    JSROOT.random = function() {
-      if (this.mz===undefined) return Math.random();
+      if (this.m_z===undefined) return Math.random();
       this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
       this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
       var result = ((this.m_z << 16) + this.m_w) & 0xffffffff;

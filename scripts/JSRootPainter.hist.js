@@ -5506,6 +5506,8 @@
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.);
 
+      JSROOT.seed(handle.sumz);
+
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
 
@@ -5526,8 +5528,8 @@
 
                for (k=0;k<npix;++k)
                   path += this.markeratt.create(
-                            Math.round(handle.grx[i] + cw * Math.random()),
-                            Math.round(handle.gry[j+1] + ch * Math.random()));
+                            Math.round(handle.grx[i] + cw * JSROOT.random()),
+                            Math.round(handle.gry[j+1] + ch * JSROOT.random()));
             }
          }
 
@@ -5606,8 +5608,8 @@
               arrx[0] = arry[0] = 0.5;
            } else {
               for (var n=0;n<npix;++n) {
-                 arrx[n] = Math.random();
-                 arry[n] = Math.random();
+                 arrx[n] = JSROOT.random();
+                 arry[n] = JSROOT.random();
               }
            }
 
