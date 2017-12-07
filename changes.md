@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.3.4
+1. Fix - several problem in TLatex preprocessing for MathJax.js
+
+
 ## Changes in 5.3.3
 1. Use latest jsdom and mathjax-node packages (Node.js only) 
 
