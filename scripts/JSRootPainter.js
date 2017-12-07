@@ -1163,7 +1163,8 @@
             str = str.replace(new RegExp(x,'g'), Painter.math_symbols_map[x]);
 
          for (var x in Painter.symbols_map)
-            str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
+            if ((x[0]=="#") && (x.length>2))
+               str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
 
          // replace all #color[]{} occurances
          var clean = "", first = true;
@@ -1182,10 +1183,13 @@
             if (p<=0) break;
             var colindx = parseInt(str.substr(0,p));
             if (isNaN(colindx)) break;
-            var col = painter.get_color(colindx);
+            var col = painter.get_color(colindx), cnt = 1;
             str = str.substr(p+2);
-            p = str.indexOf("}");
-            if (p<0) break;
+            p = -1;
+            while (cnt && (++p<str.length)) {
+               if (str[p]=='{') cnt++; else if (str[p]=='}') cnt--;
+            }
+            if (cnt!=0) break;
 
             var part = str.substr(0,p);
             str = str.substr(p+1);
@@ -1205,7 +1209,7 @@
       //   color = color.replace(/rgb/g, "[RGB]")
       //                .replace(/\(/g, '{')
       //                .replace(/\)/g, '}');
-      return "\\(\\color{" + color + '}' + str + "\\)";
+      return "\\(\\color{" + color + '}{' + str + "}\\)";
    }
 
    Painter.BuildSvgPath = function(kind, bins, height, ndig) {
