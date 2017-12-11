@@ -9,7 +9,7 @@
 6. Implement most existing fill styles
 7. Support line option for TGraph2D
 8. Let enable/disable highligh of extra objects in geometry viewer 
-9. Draw all objectes from TList/TObjArray is they appear in list of primitives
+9. Draw all objectes from TList/TObjArray as they appear in list of primitives
 10. Draw axis labels on both sides when pad.fTick[x/y] > 1
 11. Disable automatic frame adjustment, can be enabled with "&adjframe" parameter in URL 
 12. Fix - use same number of points to draw lines and markers on the TGraph
@@ -98,7 +98,7 @@
 3. Implement projection of geometry on given plane.
    One could reuse drawing of geometry in other div (should be drawn with main option).
    In control GUI one could change position of the projection plane
-4. On of the TGeo drawing can be assigned as main. When same object drawn next time,
+4. One of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
 5. Let change background color of geo drawing.
