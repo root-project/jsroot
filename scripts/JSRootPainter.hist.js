@@ -6331,7 +6331,7 @@
       this.dolego = d.check("LEGO");
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.nostack && this.haserrors && !this.dolego && !d.check("HIST")) this.draw_errors = true;
+      if (!this.nostack && this.haserrors && !this.dolego && !d.check("HIST") && (opt.indexOf("E")<0)) this.draw_errors = true;
 
       // order used to display histograms in stack direct - true, reverse - false
       this.horder = this.nostack || this.dolego;
