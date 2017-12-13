@@ -2887,6 +2887,17 @@
       if (!obj || (obj._typename!=="TObjArray")) return false;
 
       if (obj.name == "ListOfColors") {
+
+         if (this.options.CreatePalette) {
+            var arr = [];
+            for (var n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
+               var col = JSROOT.Painter.MakeColorRGB(obj.arr[n]);
+               if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
+               arr.push(col);
+            }
+            if (arr) this.CanvasPalette = new JSROOT.ColorPalette(arr);
+         }
+
          if (!this.options || this.options.GlobalColors) // set global list of colors
             JSROOT.Painter.adoptRootColors(obj);
          if (this.options && this.options.LocalColors) {
@@ -3815,13 +3826,15 @@
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
 
-      this.options = { GlobalColors: true, LocalColors: false, IgnorePalette: false, RotateFrame: false, FixFrame: false };
+      this.options = { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false };
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
       if (d.check('NOPALETTE') || d.check('NOPAL')) this.options.IgnorePalette = true;
       if (d.check('ROTATE')) this.options.RotateFrame = true;
       if (d.check('FIXFRAME')) this.options.FixFrame = true;
+
+      if (d.check("CP",true)) this.options.CreatePalette = d.partAsInt(0,0);
 
       if (d.check('WHITE')) pad.fFillColor = 0;
       if (d.check('LOGX')) pad.fLogx = 1;

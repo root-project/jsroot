@@ -323,7 +323,7 @@ One could use wildcard symbol like '+TUBE1*'.
 
 Another way to configure visibility flags is usage of ROOT macros, which typically looks like:
 
-     {
+    {
       TGeoManager::Import("http://root.cern/files/alice2.root");
       gGeoManager->DefaultColors();
       //   gGeoManager->SetVisLevel(4);

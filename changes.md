@@ -15,6 +15,7 @@
 12. Fix - use same number of points to draw lines and markers on the TGraph
 13. Let disable TGraph drawing optimization with "noopt" draw option
 14. When drawing TH2/TH3 scatter plots, always generate same "random" pattern
+15. When use "CPN" draw option for TCanvas, create color palette from N last colors 
 
 
 ## Changes in 5.3.0
