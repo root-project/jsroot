@@ -7973,11 +7973,12 @@
       var nhists = stack.fHists.arr.length;
       if (nhists <= 0) return false;
       var lst = JSROOT.Create("TList");
-      lst.Add(JSROOT.clone(stack.fHists.arr[0]));
+      lst.Add(JSROOT.clone(stack.fHists.arr[0]), stack.fHists.opt[0]);
       this.haserrors = this.HasErrors(stack.fHists.arr[0]);
       for (var i=1;i<nhists;++i) {
          var hnext = JSROOT.clone(stack.fHists.arr[i]),
-              hprev = lst.arr[i-1];
+             hnextopt = stack.fHists.opt[i],
+             hprev = lst.arr[i-1];
 
          if ((hnext.fNbins != hprev.fNbins) ||
              (hnext.fXaxis.fXmin != hprev.fXaxis.fXmin) ||
@@ -7993,7 +7994,7 @@
          for (var n = 0; n < hnext.fArray.length; ++n)
             hnext.fArray[n] += hprev.fArray[n];
 
-         lst.Add(hnext);
+         lst.Add(hnext, hnextopt);
       }
       stack.fStack = lst;
       return true;
@@ -8097,6 +8098,7 @@
          hist = hlst.arr[rindx];
          hopt = hlst.opt[rindx] || hist.fOption || opt;
          if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
+         if (this.draw_errors && !hopt) hopt = "E";
          hopt += " same";
 
          // if there is auto colors assignment, try to provide it
@@ -8141,6 +8143,7 @@
           lsame = d.check("SAME");
 
       this.nostack = d.check("NOSTACK");
+      if (d.check("STACK")) this.nostack = false;
 
       this._pfc = d.check("PFC");
       this._plc = d.check("PLC");
@@ -8155,7 +8158,7 @@
       this.dolego = d.check("LEGO");
 
       // if any histogram appears with pre-calculated errors, use E for all histograms
-      if (!this.nostack && this.haserrors && !this.dolego && !d.check("HIST")) opt+=" E";
+      if (!this.nostack && this.haserrors && !this.dolego && !d.check("HIST")) this.draw_errors = true;
 
       // order used to display histograms in stack direct - true, reverse - false
       this.horder = this.nostack || this.dolego;
