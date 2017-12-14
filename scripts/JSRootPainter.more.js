@@ -800,10 +800,8 @@
 
       var graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt),
-          res = { Line:0, Curve:0, Rect:0, Mark:0, Bar:0, OutRange: 0,  EF:0, Fill:0, NoOpt: 0,
-                  Errors: 0, MainError: 1, Ends: 1, Axis: "", original: opt };
-
-      if (this.has_errors) res.Errors = 1;
+          res = { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
+                  MainError: 1, Ends: 1, Axis: "", original: opt };
 
       res._pfc = d.check("PFC");
       res._plc = d.check("PLC");
@@ -816,7 +814,7 @@
       if (d.check('A')) res.Axis = "AXIS";
       if (d.check('X+')) res.Axis += "X+";
       if (d.check('Y+')) res.Axis += "Y+";
-      if (d.check('C')) { res.Curve = 1; if (!res.Fill) res.Line = 1; }
+      if (d.check('C')) { res.Curve = 1; res.Line = 1; }
       if (d.check('*')) res.Mark = 103;
       if (d.check('P0')) res.Mark = 104;
       if (d.check('P')) res.Mark = 1;
@@ -828,14 +826,18 @@
       if (d.check('>')) { res.Errors = 1; res.Ends = 4; }
       if (d.check('0')) { res.Mark = 1; res.Errors = 1; res.OutRange = 1; }
       if (d.check('1')) { if (res.Bar == 1) res.Bar = 2; }
-      if (d.check('2')) { res.Rect = 1; res.Line = 0; res.Errors = 0; }
-      if (d.check('3')) { res.EF = 1; res.Line = 0; res.Errors = 0; }
-      if (d.check('4')) { res.EF = 2; res.Line = 0; res.Errors = 0; }
-      if (d.check('5')) { res.Rect = 2; res.Line = 0; res.Errors = 0; }
+      if (d.check('2')) { res.Rect = 1; res.Errors = 0; }
+      if (d.check('3')) { res.EF = 1; res.Errors = 0;  }
+      if (d.check('4')) { res.EF = 2; res.Errors = 0; }
+      if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
       if (d.check('X')) res.Errors = 0;
+      if (d.check('E')) res.Errors = 1;
+
+      if (res.Errors === undefined)
+         res.Errors = this.has_errors ? 1 : 0;
 
       // special case - one could use svg:path to draw many pixels (
-      if ((res.Mark==1) && (graph.fMarkerStyle==1)) res.Mark = 101;
+      if ((res.Mark == 1) && (graph.fMarkerStyle==1)) res.Mark = 101;
 
       // if no drawing option is selected and if opt=='' nothing is done.
       if (res.Line + res.Fill + res.Mark + res.Bar + res.EF + res.Rect + res.Errors == 0) {
