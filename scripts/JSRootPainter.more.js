@@ -831,7 +831,7 @@
       if (d.check('4')) { res.EF = 2; res.Errors = 0; }
       if (d.check('5')) { res.Rect = 2; res.Errors = 0; }
       if (d.check('X')) res.Errors = 0;
-      if (d.check('E')) res.Errors = 1;
+      // if (d.check('E')) res.Errors = 1; // E option only defined for TGraphPolar
 
       if (res.Errors === undefined)
          res.Errors = this.has_errors ? 1 : 0;
