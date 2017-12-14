@@ -1028,7 +1028,9 @@
 
       if (!opts) opts = {};
 
-      this.swap_xy = opts.swap_xy;
+      this.swap_xy = opts.swap_xy || false;
+      this.reverse_x = opts.reverse_x || false;
+      this.reverse_y = opts.reverse_y || false;
 
       this.logx = this.logy = false;
 
@@ -1101,8 +1103,11 @@
          this.x = d3.scaleLinear();
       }
 
+      var gr_range_x = this.reverse_x ? [ w, 0 ] : [ 0, w ],
+          gr_range_y = this.reverse_y ? [ 0, h ] : [ h, 0 ];
+
       this.x.domain([this.ConvertX(this.scale_xmin), this.ConvertX(this.scale_xmax)])
-            .range(this.swap_xy ? [ h, 0 ] : [ 0, w ]);
+            .range(this.swap_xy ? gr_range_y : gr_range_x);
 
       if (this.x_kind == 'time') {
          // we emulate scale functionality
@@ -1154,7 +1159,7 @@
       }
 
       this.y.domain([ this.ConvertY(this.scale_ymin), this.ConvertY(this.scale_ymax) ])
-            .range(this.swap_xy ? [ 0, w ] : [ h, 0 ]);
+            .range(this.swap_xy ? gr_range_x : gr_range_y);
 
       if (this.y_kind == 'time') {
          // we emulate scale functionality

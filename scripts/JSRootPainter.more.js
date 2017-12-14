@@ -814,6 +814,8 @@
       if (d.check('A')) res.Axis = "AXIS";
       if (d.check('X+')) res.Axis += "X+";
       if (d.check('Y+')) res.Axis += "Y+";
+      if (d.check('RX')) res.Axis += "RX";
+      if (d.check('RY')) res.Axis += "RY";
       if (d.check('C')) res.Curve = res.Line = 1;
       if (d.check('*')) res.Mark = 103;
       if (d.check('P0')) res.Mark = 104;
@@ -855,6 +857,8 @@
          // graph is first object in list of primitives
          var pad = this.root_pad();
          if (!pad || !pad.fPrimitives || (pad.fPrimitives.arr[0] === graph)) res.Axis = "AXIS";
+      } else if (res.Axis.indexOf("A")<0) {
+         res.Axis = "AXIS," + res.Axis;
       }
 
       return res;

@@ -17,6 +17,7 @@
 14. When drawing TH2/TH3 scatter plots, always generate same "random" pattern
 15. When use "CPN" draw option for TCanvas, create color palette from N last colors 
 16. Fix - let combine "L" or "C" graph draw option with others
+17. Implement "RX", "RY" options for TGraph
 
 
 ## Changes in 5.3.0

@@ -1623,7 +1623,7 @@
 
       /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
-          option = { Axis: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
+          option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
              Error: 0, errorX: JSROOT.gStyle.fErrorX,
              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
@@ -1850,6 +1850,9 @@
       if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
 
       if (d.check('A')) option.Axis = -1;
+      if (option.Axis && d.check("RX")) option.RevX = 1;
+      if (option.Axis && d.check("RY")) option.RevY = 1;
+
       if (d.check('B1')) { option.Bar = 1; option.BaseLine = 0; option.Hist = -1; need_fillcol = true; }
       if (d.check('B')) { option.Bar = 1; option.Hist = -1; need_fillcol = true; }
       if (d.check('C')) { option.Curve = 1; option.Hist = -1; }
@@ -2141,6 +2144,8 @@
                     check_pad_range: this.check_pad_range,
                     create_canvas: this.create_canvas,
                     swap_xy: (this.options.Bar >= 20),
+                    reverse_x: (this.options.RevX > 0),
+                    reverse_y: (this.options.RevY > 0),
                     Proj: this.options.Proj });
       delete this.check_pad_range;
    }
