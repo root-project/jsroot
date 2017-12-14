@@ -3016,6 +3016,8 @@
 
          ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
 
+         indx++;
+
          if (!handle.completed) return;
 
          if (!JSROOT.BatchMode && this.iscan) {
@@ -3026,8 +3028,6 @@
                return requestAnimationFrame(handle.func);
             }
          }
-
-         indx++;
       }
    }
 
