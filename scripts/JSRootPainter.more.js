@@ -814,7 +814,7 @@
       if (d.check('A')) res.Axis = "AXIS";
       if (d.check('X+')) res.Axis += "X+";
       if (d.check('Y+')) res.Axis += "Y+";
-      if (d.check('C')) { res.Curve = 1; res.Line = 1; }
+      if (d.check('C')) res.Curve = res.Line = 1;
       if (d.check('*')) res.Mark = 103;
       if (d.check('P0')) res.Mark = 104;
       if (d.check('P')) res.Mark = 1;
