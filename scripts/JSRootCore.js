@@ -544,12 +544,20 @@
          var refid = map.indexOf(value);
          if (refid >= 0) return { $ref: refid };
 
+         var ks = Object.keys(value), len = ks.length, tgt = {};
+
+         if ((len == 3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+            // special handling of pair objects which does not included into objects map
+            tgt.$pair = value.$pair;
+            tgt.first = copy_value(value.first);
+            tgt.second = copy_value(value.second);
+            return tgt;
+         }
+
          map.push(value);
 
-         var ks = Object.keys(value), len = ks.length, tgt = {}, name;
-
          for (var k = 0; k < len; ++k) {
-            name = ks[k];
+            var name = ks[k];
             tgt[name] = copy_value(value[name]);
          }
 
