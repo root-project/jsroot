@@ -18,6 +18,7 @@
 15. When use "CPN" draw option for TCanvas, create color palette from N last colors 
 16. Fix - let combine "L" or "C" graph draw option with others
 17. Implement "RX", "RY" options for TGraph
+18. Make drawing of TCanvas with many primitives smoother 
 
 
 ## Changes in 5.3.0

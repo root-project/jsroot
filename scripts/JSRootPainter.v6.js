@@ -2987,15 +2987,24 @@
          // flag used to prevent immediate pad redraw during normal drawing sequence
          this._doing_pad_draw = true;
 
+         if (this.iscan)
+            this._start_tm = this._lasttm_tm =  new Date().getTime();
+
          // set number of primitves
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
       }
 
       while (true) {
-         if (ppainter) ppainter._primitive = true; // mark painter as belonging to primitives
+         if (ppainter && (typeof ppainter=='object')) ppainter._primitive = true; // mark painter as belonging to primitives
 
          if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
             delete this._doing_pad_draw;
+            if (this._start_tm) {
+               var spenttm = new Date().getTime() - this._start_tm;
+               if (spenttm > 5000) console.log("Canvas drawing took " + spenttm*1e-3 + "s");
+            }
+            delete this._start_tm;
+
             return JSROOT.CallBack(callback);
          }
 
@@ -3008,6 +3017,16 @@
          ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
 
          if (!handle.completed) return;
+
+         if (!JSROOT.BatchMode && this.iscan) {
+            var curtm = new Date().getTime();
+            if (curtm > this._lasttm_tm + 500) {
+               this._lasttm_tm = curtm;
+               ppainter._primitive = true; // mark primitive ourself
+               return requestAnimationFrame(handle.func);
+            }
+         }
+
          indx++;
       }
    }
