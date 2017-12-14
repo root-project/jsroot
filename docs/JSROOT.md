@@ -147,7 +147,9 @@ List of supported classes and draw options:
 [L](https://root.cern/js/latest/examples.htm#tgraph_l),
 [P](https://root.cern/js/latest/examples.htm#tgraph_p),
 [*](https://root.cern/js/latest/examples.htm#tgraph_star),
-[B](https://root.cern/js/latest/examples.htm#tgraph_b)
+[B](https://root.cern/js/latest/examples.htm#tgraph_b),
+[RX](https://root.cern/js/latest/examples.htm#tgraph_rx),
+[RY](https://root.cern/js/latest/examples.htm#tgraph_ry)
 - TGraphErrors : [dflt](https://root.cern/js/latest/examples.htm#tgrapherrors),
 [l](https://root.cern/js/latest/examples.htm#tgrapherrors_l),
 [lx](https://root.cern/js/latest/examples.htm#tgrapherrors_lx),

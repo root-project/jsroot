@@ -136,13 +136,15 @@ examples_main = {
    TGraph : [
      { opt: "", file: "graph.root", item: "Graph;1" },
      { opt: "L" },
-     { opt: "AX+Y+L" },
      { opt: "P" },
      { name: "star", opt:"*" },
      { opt: "LP" },
      { opt: "B" },
      { opt: "B1" },
-     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
+     { opt: "AX+Y+L", title: "move X/Y labels on other side" },
+     { name: "RX", opt: "ARXL", title: "reverse X axis" },
+     { name: "RY", opt: "ARYL", title: "reverse Y axis" },
+     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title: "several canvas from TGraph documentation page" },
      { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
      { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
