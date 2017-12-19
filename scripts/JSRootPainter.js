@@ -327,8 +327,7 @@
                 '#perp': '\u22A5',
                 '#odot': '\u2299',
                 '#left': '',
-                '#right': '',
-                '{}': ''
+                '#right': ''
           },
           math_symbols_map: {
                 '#LT':"\\langle",
@@ -1145,10 +1144,11 @@
       while ((str.length>2) && (str[0]=='{') && (str[str.length-1]=='}'))
          str = str.substr(1,str.length-2);
 
-      // str = str.replace(/\^2/gi, '^{2}').replace(/\^3/gi,'^{3}');
+      if (str.indexOf("#")>=0)
+         for (var i in this.symbols_map)
+            str = str.replace(new RegExp(i,'g'), this.symbols_map[i]);
 
-      for (var i in this.symbols_map)
-         str = str.replace(new RegExp(i,'g'), this.symbols_map[i]);
+      str = str.replace(/\{\}/g, "");
 
       return str;
    }
@@ -1171,7 +1171,7 @@
             str = str.replace(new RegExp(x,'g'), Painter.math_symbols_map[x]);
 
          for (var x in Painter.symbols_map)
-            if ((x[0]=="#") && (x.length>2))
+            if (x.length > 2)
                str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
 
          // replace all #color[]{} occurances
