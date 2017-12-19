@@ -1685,6 +1685,71 @@
       retry_open(true); // call for the first time
    }
 
+   // mthod used to initialize connection to web window
+   // Following arguments can be supplied:
+   //   arg.prereq - prerequicities, which should be loaded
+   //   arg.socket_kind - kind of connection, normally undefined and extracted from URL
+   //   arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
+   //   arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
+
+   JSROOT.ConnectWebWindow = function(arg) {
+      if (!arg || (typeof arg != 'object')) arg = {};
+
+      if (arg.prereq)
+         return JSROOT.AssertPrerequisites(arg.prereq, function() {
+            delete arg.prereq; JSROOT.ConnectWebWindow(arg);
+         });
+
+      if (!arg.socket_kind) {
+         if (JSROOT.GetUrlOption("longpoll")!==null) arg.socket_kind = "longpoll";
+         else if (JSROOT.GetUrlOption("cef3")!==null) arg.socket_kind = "cefquery";
+         else if (JSROOT.GetUrlOption("qt5")!==null) { JSROOT.browser.qt5 = true; arg.socket_kind = "longpoll"; }
+         else arg.socket_kind = "websocket";
+      }
+
+      var handle = new WebWindowHandle(arg.socket_kind);
+
+      if (window) {
+         window.onbeforeunload = handle.Close.bind(handle);
+         if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
+      }
+
+      if (arg.first_recv) {
+         arg.receiver = {
+            OnWebsocketOpened: function(handle) {
+               console.log('Connected');
+            },
+
+            OnWebsocketMsg: function(handle, msg) {
+                console.log('Get message ' + msg + ' handle ' + !!handle);
+                if (msg.indexOf(arg.first_recv)!=0)
+                   return handle.Close();
+                arg.first_msg = msg.substr(arg.first_recv.length);
+
+                if (!arg.prereq2) JSROOT.CallBack(arg.callback, handle, arg);
+            },
+
+            OnWebsocketClosed: function(handle) {
+               // when connection closed, close panel as well
+               if (window) window.close();
+            }
+         };
+      }
+
+      if (!arg.receiver)
+         return JSROOT.CallBack(arg.callback, handle, arg);
+
+      // when receiver is exists, it handles itself callbacks
+      handle.SetReceiver(arg.receiver);
+      handle.Connect();
+
+      if (arg.prereq2)
+         JSROOT.AssertPrerequisites(arg.prereq2, function() {
+            delete arg.prereq2;
+            if (arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
+         });
+   }
+
    // ========================================================================================
 
    function TBasePainter() {

@@ -2048,6 +2048,7 @@
       return sg;
    }
 
+   // Provide log10, which is used in many places
    JSROOT.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    }
@@ -2055,6 +2056,13 @@
    // dummy function, will be redefined when JSRootPainter is loaded
    JSROOT.progress = function(msg, tmout) {
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
+   }
+
+   /// connect to the TWebWindow instance
+   JSROOT.ConnectWebWindow = function(arg) {
+      JSROOT.AssertPrerequisites("2d", function() {
+         JSROOT.ConnectWebWindow(arg);
+      });
    }
 
    JSROOT.Initialize = function() {
