@@ -41,7 +41,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - load - name of extra JavaScript to load
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
 - paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
-- interactive - enable/disable interactive functions 0-disable all, 1-enable all
+- interactive - enable/disable interactive functions 0 - disable all, 1 - enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor

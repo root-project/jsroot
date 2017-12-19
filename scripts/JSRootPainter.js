@@ -427,14 +427,22 @@
       }
 
       var inter = JSROOT.GetUrlOption("interactive", url);
-      if ((inter=="") || (inter=="1")) inter = "11111"; else
-      if (inter=="0") inter = "00000";
-      if ((inter!==null) && (inter.length==5)) {
-         JSROOT.gStyle.Tooltip =     parseInt(inter[0]);
-         JSROOT.gStyle.ContextMenu = (inter[1] != '0');
-         JSROOT.gStyle.Zooming  =    (inter[2] != '0');
-         JSROOT.gStyle.MoveResize =  (inter[3] != '0');
-         JSROOT.gStyle.DragAndDrop = (inter[4] != '0');
+      if (inter !== null) {
+         if (!inter || (inter=="1")) inter = "111111"; else
+         if (inter=="0") inter = "000000";
+         if (inter.length === 6) {
+            if (inter[0] == "0") JSROOT.gStyle.ToolBar = false; else
+            if (inter[0] == "1") JSROOT.gStyle.ToolBar = 'popup'; else
+            if (inter[0] == "2") JSROOT.gStyle.ToolBar = true;
+            inter = inter.substr(1);
+         }
+         if (inter.length==5) {
+            JSROOT.gStyle.Tooltip =     parseInt(inter[0]);
+            JSROOT.gStyle.ContextMenu = (inter[1] != '0');
+            JSROOT.gStyle.Zooming  =    (inter[2] != '0');
+            JSROOT.gStyle.MoveResize =  (inter[3] != '0');
+            JSROOT.gStyle.DragAndDrop = (inter[4] != '0');
+         }
       }
 
       var tt = JSROOT.GetUrlOption("tooltip", url);
