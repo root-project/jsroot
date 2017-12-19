@@ -1862,7 +1862,7 @@
       return rect;
    }
 
-   TBasePainter.prototype.enlarge_main = function(action) {
+   TBasePainter.prototype.enlarge_main = function(action, skip_warning) {
       // action can be:  true, false, 'toggle', 'state', 'verify'
       // if action not specified, just return possibility to enlarge main div
 
@@ -1896,7 +1896,8 @@
          // if new enlarge area not big enough, do not do it
          if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
             if (rect2.width*rect2.height < rect1.width*rect1.height) {
-               console.log('Enlarged area ' + rect2.width+"x"+rect2.height + ' smaller then original drawing ' + rect1.width+"x"+rect1.height);
+               if (!skip_warning)
+                  console.log('Enlarged area ' + rect2.width+"x"+rect2.height + ' smaller then original drawing ' + rect1.width+"x"+rect1.height);
                enlarge.remove();
                return false;
             }

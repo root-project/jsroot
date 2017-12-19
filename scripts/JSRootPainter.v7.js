@@ -2639,17 +2639,14 @@
          if (this._fixed_size) return; // canvas cannot be enlarged in such mode
          if (!this.enlarge_main('toggle')) return;
          if (this.enlarge_main('state')=='off') svg_can.property("pad_enlarged", null);
+      } else if (!pad_enlarged) {
+         this.enlarge_main(true, true);
+         svg_can.property("pad_enlarged", this.pad);
+      } else if (pad_enlarged === this.pad) {
+         this.enlarge_main(false);
+         svg_can.property("pad_enlarged", null);
       } else {
-         if (!pad_enlarged) {
-            this.enlarge_main(true);
-            svg_can.property("pad_enlarged", this.pad);
-         } else
-         if (pad_enlarged === this.pad) {
-            this.enlarge_main(false);
-            svg_can.property("pad_enlarged", null);
-         } else {
-            console.error('missmatch with pad double click events');
-         }
+         console.error('missmatch with pad double click events');
       }
 
       this.CheckResize({ force: true });
