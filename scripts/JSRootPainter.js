@@ -4282,7 +4282,7 @@
          }
 
          // complete rectangle with very rougth size estimations
-         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTestSize ? this.GetBoundarySizes(txt.node()) :
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize ? this.GetBoundarySizes(txt.node()) :
                      (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
 
          txt.attr('class','hidden_text')
