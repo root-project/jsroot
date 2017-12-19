@@ -2236,7 +2236,7 @@
       var c = this.svg_canvas();
       if (pad_name === undefined) pad_name = this.pad_name;
       if (pad_name && !c.empty())
-         c = c.select(".primitives_layer").select("[pad=" + pad_name + ']');
+         c = c.select(".primitives_layer .__root_pad_" + pad_name);
       return c;
    }
 
