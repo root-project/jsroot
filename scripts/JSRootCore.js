@@ -2060,9 +2060,9 @@
 
    /// connect to the TWebWindow instance
    JSROOT.ConnectWebWindow = function(arg) {
-      JSROOT.AssertPrerequisites("2d", function() {
+      JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
          JSROOT.ConnectWebWindow(arg);
-      });
+      }, (arg ? arg.prereq_logdiv : undefined));
    }
 
    JSROOT.Initialize = function() {

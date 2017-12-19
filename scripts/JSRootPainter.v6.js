@@ -4074,6 +4074,14 @@
       this._websocket.Connect();
    }
 
+   TCanvasPainter.prototype.UseWebsocket = function(handle) {
+      this.CloseWebsocket();
+
+      this._websocket = handle;
+      this._websocket.SetReceiver(this);
+      this._websocket.Connect();
+   }
+
    TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
       // indicate that we are ready to recieve any following commands
    }

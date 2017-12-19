@@ -3833,6 +3833,14 @@
       this._websocket.Connect();
    }
 
+   TCanvasPainter.prototype.UseWebsocket = function(handle) {
+      this.CloseWebsocket();
+
+      this._websocket = handle;
+      this._websocket.SetReceiver(this);
+      this._websocket.Connect();
+   }
+
    TCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
       // when window closed, close socket
       this.CloseWebsocket(true);

@@ -1690,6 +1690,8 @@
    //   arg.prereq - prerequicities, which should be loaded
    //   arg.socket_kind - kind of connection, normally undefined and extracted from URL
    //   arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
+   //   arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
+   //   arg.prereq2   - second part of prerequcities, which is loaded parallel to connecting with WebWindow
    //   arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
 
    JSROOT.ConnectWebWindow = function(arg) {
@@ -1698,7 +1700,7 @@
       if (arg.prereq)
          return JSROOT.AssertPrerequisites(arg.prereq, function() {
             delete arg.prereq; JSROOT.ConnectWebWindow(arg);
-         });
+         }, arg.prereq_logdiv);
 
       if (!arg.socket_kind) {
          if (JSROOT.GetUrlOption("longpoll")!==null) arg.socket_kind = "longpoll";
