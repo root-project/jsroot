@@ -29,11 +29,8 @@
    
    <script type='text/javascript'>
    
-      function InitV6Canvas() {
-         var socket_kind = "websocket", use_openui = true;
-         if (JSROOT.GetUrlOption("longpoll")!==null) socket_kind = "longpoll"; else
-         if (JSROOT.GetUrlOption("cef3")!==null) socket_kind = "cefquery"; else
-         if (JSROOT.GetUrlOption("qt5")!==null) { JSROOT.browser.qt5 = true; socket_kind = "longpoll"; }
+      function InitV6Canvas(handle, args) {
+         var use_openui = true;
 
          var painter = new JSROOT.TCanvasPainter(null);
          painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
@@ -46,7 +43,7 @@
 
          if (use_openui && !painter.batch_mode) {
 
-            painter._configured_socket_kind = socket_kind;
+            painter._configured_socket_kind = args.socket_kind;
             painter.use_openui = true;
 
             return JSROOT.AssertPrerequisites('openui5', function() {
@@ -64,12 +61,16 @@
 
          painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else is happens
 
-         painter.OpenWebsocket(socket_kind); // when connection activated, ROOT must send new instance of the canvas
+         painter.UseWebsocket(socket_kind); // when connection activated, ROOT must send new instance of the canvas
 
          if (!painter.batch_mode) JSROOT.RegisterForResize(painter);
       }
       
-      JSROOT.AssertPrerequisites("2d;v6;", InitV6Canvas, "CanvasDiv");
+      JSROOT.ConnectWebWindow({
+         prereq: "2d;v6;",
+         prereq_logdiv: "CanvasDiv",
+         callback: InitV6Canvas
+      });
 
    </script>
 
