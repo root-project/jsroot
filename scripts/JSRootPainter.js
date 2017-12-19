@@ -4199,10 +4199,8 @@
          }
 
          // complete rectangle with very rougth size estimations
-         arg.box = JSROOT.nodejs ? (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) })
-                                 : this.GetBoundarySizes(txt.node());
-
-         // if (label.length>20) console.log('label', label, 'box', arg.box);
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTestSize ? this.GetBoundarySizes(txt.node()) :
+                     (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
 
          txt.attr('class','hidden_text')
              .attr('visibility','hidden') // hide elements until text drawing is finished
