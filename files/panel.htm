@@ -33,8 +33,6 @@
          
          if (!panel_handle || !arg.first_msg || !JSROOT.sap) return false;
            
-         console.log('ShowPanel', arg.first_msg);
-         
          var panelid = "TopPanelId";
 
          var oModel = new JSROOT.sap.ui.model.json.JSONModel({
@@ -42,10 +40,20 @@
          });
          
          sap.ui.getCore().setModel(oModel, panelid);
+         
+         var viewName, p = arg.first_msg.indexOf(".");
+         
+         if (p>=0) {
+            console.log('Register module path', arg.first_msg.substr(0,p));
+            viewName = arg.first_msg;
+            jQuery.sap.registerModulePath(arg.first_msg.substr(0,p), "/currentdir/");
+         } else {
+            viewName = "sap.ui.jsroot.view." + arg.first_msg;
+         }
             
          JSROOT.sap.ui.xmlview({
             id: panelid,
-            viewName : "sap.ui.jsroot.view." + arg.first_msg,
+            viewName : viewName,
             // layoutData: oLd,
             // height: "100%"
          }).placeAt("PanelDiv");
