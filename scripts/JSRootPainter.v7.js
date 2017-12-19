@@ -2794,6 +2794,14 @@
 
          if (!this.pad || (indx >= this.pad.fPrimitives.length)) {
             delete this._doing_pad_draw;
+
+            if (this._start_tm) {
+               var spenttm = new Date().getTime() - this._start_tm;
+               if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+               delete this._start_tm;
+               delete this._lasttm_tm;
+            }
+
             return JSROOT.CallBack(callback);
          }
 
