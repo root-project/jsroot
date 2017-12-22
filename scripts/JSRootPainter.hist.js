@@ -2131,12 +2131,15 @@
 
    THistPainter.prototype.CreateXY = function() {
       // Create x,y objects which maps user coordinates into pixels
-      // Now moved info TFramePainter
+      // Now moved into TFramePainter
 
       if (!this.is_main_painter()) return;
 
       var histo = this.GetHisto(),
           fp = this.frame_painter();
+
+      if (!fp)
+         return console.warn("histogram drawn without frame - not supported");
 
       fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
@@ -2986,7 +2989,7 @@
       var frame_painter = this.frame_painter();
 
       // keep palette width
-      if (can_move) {
+      if (can_move && frame_painter) {
          pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
          pal.fX1NDC = frame_painter.fX2NDC + 0.01;
          pal.fY1NDC = frame_painter.fY1NDC;
@@ -3012,7 +3015,7 @@
       // make dummy redraw, palette will be updated only from histogram painter
       pal_painter.Redraw = function() {};
 
-      if ((pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette && can_move) {
+      if (can_move && frame_painter && (pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
 
          this.do_redraw_palette = true;
 
@@ -3067,6 +3070,11 @@
       }
 
       if (args.pixel_density) args.rounding = true;
+
+      if (!pmain) {
+         console.warn("cannot draw histogram without frame");
+         return res;
+      }
 
        // calculate graphical coordinates in advance
       for (i = res.i1; i <= res.i2; ++i) {
