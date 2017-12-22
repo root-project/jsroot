@@ -19,6 +19,7 @@
 16. Fix - let combine "L" or "C" graph draw option with others
 17. Implement "RX", "RY" options for TGraph
 18. Make drawing of TCanvas with many primitives smoother 
+19. Correct positioning of custom axis labels
 
 
 ## Changes in 5.3.0

@@ -155,14 +155,26 @@
             this.nticks = Math.round(scale_range);
          this.nticks2 = 1;
 
+         this.regular_labels = true;
+
+         if (axis && axis.fNbins && axis.fLabels) {
+            if ((axis.fNbins != Math.round(axis.fXmax - axis.fXmin)) ||
+                (axis.fXmin != 0) || (axis.fXmax != axis.fNbins)) {
+               this.regular_labels = false;
+            }
+         }
+
          this.axis = axis;
 
          this.format = function(d) {
-            var indx = Math.round(parseInt(d)) + 1;
-            if ((indx<1) || (indx>this.axis.fNbins)) return null;
+            var indx = parseFloat(d);
+            if (!this.regular_labels)
+               indx = (indx - this.axis.fXmin)/(this.axis.fXmax - this.axis.fXmin) * this.axis.fNbins;
+            indx = Math.round(indx);
+            if ((indx<0) || (indx>=this.axis.fNbins)) return null;
             for (var i = 0; i < this.axis.fLabels.arr.length; ++i) {
                var tstr = this.axis.fLabels.arr[i];
-               if (tstr.fUniqueID == indx) return tstr.fString;
+               if (tstr.fUniqueID === indx+1) return tstr.fString;
             }
             return null;
          }
@@ -209,6 +221,14 @@
          if (res[0] > this.scale_min + delta) res.unshift(this.scale_min);
          if (res[res.length-1] < this.scale_max - delta) res.push(this.scale_max);
          return res;
+      }
+
+      if ((this.kind == 'labels') && !this.regular_labels) {
+         handle.lbl_pos = [];
+         for (var n=0;n<this.axis.fNbins;++n) {
+            var x = this.axis.fXmin + n / this.axis.fNbins * (this.axis.fXmax - this.axis.fXmin);
+            if ((x >= this.scale_min) && (x < this.scale_max)) handle.lbl_pos.push(x);
+         }
       }
 
       if (this.nticks2 > 1) {
@@ -546,7 +566,8 @@
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
-             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ];
+             label_g = [ axis_g.append("svg:g").attr("class","axis_labels") ],
+             lbl_pos = handle.lbl_pos || handle.major;
 
          if (this.lbls_both_sides)
             label_g.push(axis_g.append("svg:g").attr("class","axis_labels").attr("transform", vertical ? "translate(" + w + ",0)" : "translate(0," + (-h) + ")"));
@@ -562,14 +583,14 @@
 
             this.StartTextDrawing(labelfont, 'font', label_g[lcnt]);
 
-            for (var nmajor=0;nmajor<handle.major.length;++nmajor) {
+            for (var nmajor=0;nmajor<lbl_pos.length;++nmajor) {
 
-               var lbl = this.format(handle.major[nmajor], true);
+               var lbl = this.format(lbl_pos[nmajor], true);
                if (lbl === null) continue;
 
-               var pos = Math.round(this.func(handle.major[nmajor])),
-                   gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(handle.major[nmajor-1]))) : 0,
-                   gap_after = (nmajor<handle.major.length-1) ? Math.abs(Math.round(this.func(handle.major[nmajor+1])-pos)) : 0;
+               var pos = Math.round(this.func(lbl_pos[nmajor])),
+                   gap_before = (nmajor>0) ? Math.abs(Math.round(pos - this.func(lbl_pos[nmajor-1]))) : 0,
+                   gap_after = (nmajor<lbl_pos.length-1) ? Math.abs(Math.round(this.func(lbl_pos[nmajor+1])-pos)) : 0;
 
                if (center_lbls) {
                   var gap = gap_after || gap_before;
