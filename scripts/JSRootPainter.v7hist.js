@@ -289,11 +289,11 @@
           max = main ? main['zoom_' + axis + 'max'] : 0;
 
       if ((min !== max) && taxis) {
-         if (size == "left") {
+         if (size == "left")
             indx = taxis.FindBin(min, add || 0);
-         } else {
+         else
             indx = taxis.FindBin(max, (add || 0) + 0.5);
-         }
+         if (indx<0) indx = 0; else if (indx>nbins) indx = nbins;
       } else {
          indx = (size == "left") ? 0 : nbins;
       }

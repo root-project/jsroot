@@ -1582,7 +1582,6 @@
       return null;
    }
 
-
    THistPainter.prototype.IsTProfile = function() {
       return this.MatchObjectType('TProfile');
    }
@@ -2269,20 +2268,17 @@
       // be aware - here indexes starts from 0
       var indx = 0,
           main = this.frame_painter(),
-          histo = this.GetHisto(),
-          nbin = this['nbins'+axis] || 0;
-      if (!add) add = 0;
-
-      var taxis = histo ? histo["f"+axis.toUpperCase()+"axis"] : null,
+          nbin = this['nbins'+axis] || 0,
+          taxis = this.GetAxis(axis),
           min = main ? main['zoom_' + axis + 'min'] : 0,
           max = main ? main['zoom_' + axis + 'max'] : 0;
 
-      if ((min != max) && taxis) {
-         if (side == "left") {
-            indx = taxis.FindBin(min, add);
-         } else {
-            indx = taxis.FindBin(max, add + 0.5);
-         }
+      if ((min !== max) && taxis) {
+         if (side == "left")
+            indx = taxis.FindBin(min, add || 0);
+         else
+            indx = taxis.FindBin(max, (add || 0) + 0.5);
+         if (indx<0) indx = 0; else if (indx>nbin) indx = nbin;
       } else {
          indx = (side == "left") ? 0 : nbin;
       }
@@ -3060,6 +3056,7 @@
              j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
              min: 0, max: 0, sumz: 0
           };
+
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
 

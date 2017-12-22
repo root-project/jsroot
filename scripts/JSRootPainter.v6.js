@@ -159,7 +159,6 @@
          if (axis && axis.fNbins && axis.fLabels) {
             if ((axis.fNbins != Math.round(axis.fXmax - axis.fXmin)) ||
                 (axis.fXmin != 0) || (axis.fXmax != axis.fNbins)) {
-               console.log("Irregular labels", axis.fNbins, axis.fXmin, axis.fXmax);
                this.regular_labels = false;
             }
          }
