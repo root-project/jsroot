@@ -1391,8 +1391,8 @@
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
 
       if (zoom_x) {
-         var cnt = 0, main_xmin = this.xmin;
-         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
+         var cnt = 0;
+         if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
          if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
       } else {
@@ -1400,8 +1400,8 @@
       }
 
       if (zoom_y) {
-         var cnt = 0, main_ymin = this.ymin;
-         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
+         var cnt = 0;
+         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
          if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
       } else {
@@ -1409,9 +1409,9 @@
       }
 
       if (zoom_z) {
-         var cnt = 0, main_zmin = this.zmin;
+         var cnt = 0;
          // if (this.logz && this.ymin_nz && this.Dimension()===2) main_zmin = 0.3*this.ymin_nz;
-         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
+         if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
          if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
       } else {

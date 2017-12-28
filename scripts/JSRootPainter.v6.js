@@ -994,10 +994,12 @@
    TFramePainter.prototype.CheckAxisZoom = function(name) {
       var axis = this.GetAxis(name);
       if (axis && axis.TestBit(JSROOT.EAxisBits.kAxisRange)) {
-         //xaxis.InvertBit(JSROOT.EAxisBits.kAxisRange); // axis range is not used for main painter
          if ((axis.fFirst !== axis.fLast) && ((axis.fFirst > 1) || (axis.fLast < axis.fNbins))) {
             this['zoom_' + name + 'min'] = axis.fFirst > 1 ? axis.GetBinLowEdge(axis.fFirst) : axis.fXmin;
             this['zoom_' + name + 'max'] = axis.fLast < axis.fNbins ? axis.GetBinLowEdge(axis.fLast+1) : axis.fXmax;
+            // reset user range for main painter
+            axis.InvertBit(JSROOT.EAxisBits.kAxisRange);
+            axis.fFirst = 1; axis.fLast = axis.fNbins
          }
       }
    }
@@ -1065,15 +1067,15 @@
       this.scale_ymax = this.ymax;
 
       if (opts.check_pad_range) {
-         // take zooming out of pad or axis attribytes
+         // take zooming out of pad or axis attributes
 
          this.zoom_xmin = this.zoom_xmax = 0;
          this.zoom_ymin = this.zoom_ymax = 0;
          this.zoom_zmin = this.zoom_zmax = 0;
 
          this.CheckAxisZoom('x');
-         if (opts.ndim > 1) this.CheckAxisZoom('y');
-         if (opts.ndim > 2) this.CheckAxisZoom('z');
+         if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
+         if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
 
          this.CheckPadUserRange(pad, 'x');
          this.CheckPadUserRange(pad, 'y');
@@ -2039,45 +2041,44 @@
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
-      // disable zooming when axis convertion is enabled
+      // disable zooming when axis conversion is enabled
       if (this.projection) return false;
 
       if (xmin==="x") { xmin = xmax; xmax = ymin; ymin = undefined; } else
       if (xmin==="y") { ymax = ymin; ymin = xmax; xmin = xmax = undefined; } else
       if (xmin==="z") { zmin = xmax; zmax = ymin; xmin = xmax = ymin = undefined; }
 
-      var main = this,
-          zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
+      var zoom_x = (xmin !== xmax), zoom_y = (ymin !== ymax), zoom_z = (zmin !== zmax),
           unzoom_x = false, unzoom_y = false, unzoom_z = false;
 
       if (zoom_x) {
-         var cnt = 0, main_xmin = main.xmin;
-         if (xmin <= main_xmin) { xmin = main_xmin; cnt++; }
-         if (xmax >= main.xmax) { xmax = main.xmax; cnt++; }
+         var cnt = 0;
+         if (xmin <= this.xmin) { xmin = this.xmin; cnt++; }
+         if (xmax >= this.xmax) { xmax = this.xmax; cnt++; }
          if (cnt === 2) { zoom_x = false; unzoom_x = true; }
       } else {
          unzoom_x = (xmin === xmax) && (xmin === 0);
       }
 
       if (zoom_y) {
-         var cnt = 0, main_ymin = main.ymin;
-         if (ymin <= main_ymin) { ymin = main_ymin; cnt++; }
-         if (ymax >= main.ymax) { ymax = main.ymax; cnt++; }
+         var cnt = 0;
+         if (ymin <= this.ymin) { ymin = this.ymin; cnt++; }
+         if (ymax >= this.ymax) { ymax = this.ymax; cnt++; }
          if (cnt === 2) { zoom_y = false; unzoom_y = true; }
       } else {
          unzoom_y = (ymin === ymax) && (ymin === 0);
       }
 
       if (zoom_z) {
-         var cnt = 0, main_zmin = main.zmin;
-         if (zmin <= main_zmin) { zmin = main_zmin; cnt++; }
-         if (zmax >= main.zmax) { zmax = main.zmax; cnt++; }
+         var cnt = 0;
+         if (zmin <= this.zmin) { zmin = this.zmin; cnt++; }
+         if (zmax >= this.zmax) { zmax = this.zmax; cnt++; }
          if (cnt === 2) { zoom_z = false; unzoom_z = true; }
       } else {
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      var changed = false;
+      var changed = false, main = this;
 
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
@@ -2105,16 +2106,16 @@
       // and process unzoom, if any
       if (unzoom_x || unzoom_y || unzoom_z) {
          if (unzoom_x) {
-            if (main.zoom_xmin !== main.zoom_xmax) changed = true;
-            main.zoom_xmin = main.zoom_xmax = 0;
+            if (this.zoom_xmin !== this.zoom_xmax) changed = true;
+            this.zoom_xmin = this.zoom_xmax = 0;
          }
          if (unzoom_y) {
-            if (main.zoom_ymin !== main.zoom_ymax) changed = true;
-            main.zoom_ymin = main.zoom_ymax = 0;
+            if (this.zoom_ymin !== this.zoom_ymax) changed = true;
+            this.zoom_ymin = this.zoom_ymax = 0;
          }
          if (unzoom_z) {
-            if (main.zoom_zmin !== main.zoom_zmax) changed = true;
-            main.zoom_zmin = main.zoom_zmax = 0;
+            if (this.zoom_zmin !== this.zoom_zmax) changed = true;
+            this.zoom_zmin = this.zoom_zmax = 0;
          }
 
          // first try to unzoom all overlapped objects
