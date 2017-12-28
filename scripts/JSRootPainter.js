@@ -2653,9 +2653,10 @@
 
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
       while (!sel.empty() && !sel.classed('root_canvas')) {
-         if (sel.classed('root_frame') || sel.classed('root_pad')) {
-           pos.x += sel.property("draw_x");
-           pos.y += sel.property("draw_y");
+         var cl = sel.attr("class");
+         if (cl && ((cl.indexOf("root_frame")>=0) || (cl.indexOf("__root_pad")>=0))) {
+            pos.x += sel.property("draw_x") || 0;
+            pos.y += sel.property("draw_y") || 0;
          }
          sel = d3.select(sel.node().parentNode);
       }
@@ -4423,8 +4424,8 @@
       // return layer where frame tooltips are shown
       // only canvas info_layer can be used while other pads can overlay
 
-      var canp = this.pad_painter();
-      return canp ? canp.svg_layer("info_layer") : d3.select(null);
+      var pp = this.pad_painter();
+      return pp ? pp.svg_layer("info_layer") : d3.select(null);
    }
 
    TooltipHandler.prototype.IsTooltipShown = function() {
@@ -4489,21 +4490,20 @@
           hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       if (status_func) {
-         var title = "", name = "", coordinates = "", info = "";
-         if (pnt) coordinates = Math.round(pnt.x)+","+Math.round(pnt.y);
-         var hint = null, best_dist2 = 1e10, best_hint = null;
+         var title = "", name = "", info = "",
+             hint = null, best_dist2 = 1e10, best_hint = null,
+             coordinates = pnt ? Math.round(pnt.x)+","+Math.round(pnt.y) : "";
          // try to select hint with exact match of the position when several hints available
-         if (hints && hints.length>0)
-            for (var k=0;k<hints.length;++k) {
-               if (!hints[k]) continue;
-               if (!hint) hint = hints[k];
-               if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
+         for (var k=0; k < (hints ? hints.length : 0); ++k) {
+            if (!hints[k]) continue;
+            if (!hint) hint = hints[k];
+            if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
 
-               if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
+            if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
 
-               var dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
-               if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
-            }
+            var dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
+            if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
+         }
 
          if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
 
@@ -4538,9 +4538,8 @@
       }
 
       // copy transform attributes from frame itself
-      hintsg.attr("transform", trans);
-
-      hintsg.property("last_point", pnt);
+      hintsg.attr("transform", trans)
+            .property("last_point", pnt);
 
       var viewmode = hintsg.property('viewmode') || "",
           actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
