@@ -8,8 +8,8 @@
 5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
 6. Implement most existing fill styles
 7. Support line option for TGraph2D
-8. Let enable/disable highligh of extra objects in geometry viewer 
-9. Draw all objectes from TList/TObjArray as they appear in list of primitives
+8. Let enable/disable highlight of extra objects in geometry viewer 
+9. Draw all objects from TList/TObjArray as they appear in list of primitives
 10. Draw axis labels on both sides when pad.fTick[x/y] > 1
 11. Disable automatic frame adjustment, can be enabled with "&adjframe" parameter in URL 
 12. Fix - use same number of points to draw lines and markers on the TGraph
@@ -20,6 +20,7 @@
 17. Implement "RX", "RY" options for TGraph
 18. Make drawing of TCanvas with many primitives smoother 
 19. Correct positioning of custom axis labels
+20. Correctly show histogram with negative bins and fill attributes (#143) 
 
 
 ## Changes in 5.3.0
