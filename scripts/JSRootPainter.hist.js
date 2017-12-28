@@ -3743,10 +3743,9 @@
       }
 
       var close_path = "";
-
       if (!this.fillatt.empty()) {
-         var h0 = (height+3);
-         if ((this.hmin>=0) && (pmain.gry(0) < height)) h0 = Math.round(pmain.gry(0));
+         var h0 = height + 3, gry0 = Math.round(pmain.gry(0));
+         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
          close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
          if (res.length>0) res += close_path;
       }
@@ -3971,15 +3970,16 @@
          show_rect = (pnt.nproc === 1) && (right-left < width);
 
          if (show_rect) {
-            // for mouse events mouse pointer should be under the curve
-            if ((pnt.y < gry1) && !pnt.touch) findbin = null;
-
             gry2 = height;
 
-            if ((this.fillatt.color !== 'none') && (this.hmin>=0)) {
+            if (!this.fillatt.empty()) {
                gry2 = Math.round(pmain.gry(0));
-               if ((gry2 > height) || (gry2 <= gry1)) gry2 = height;
+               if (gry2 < 0) gry2 = 0; else if (gry2 > height) gry2 = height;
+               if (gry2 < gry1) { var d = gry1; gry1 = gry2; gry2 = d; }
             }
+
+            // for mouse events pointer should be between y1 and y2
+            if (((pnt.y < gry1) || (pnt.y > gry2)) && !pnt.touch) findbin = null;
          }
       }
 
