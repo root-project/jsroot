@@ -1,8 +1,9 @@
 examples_more = {
    TH1: [
-     { name:"docu_zero", file: "histpainter6.root", layout: "vert21", style:"style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
+     { name: "docu_zero", file: "histpainter6.root", layout: "vert21", style: "style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
+     { name: "negfill", opt: "hist,fill_red", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "fill attributes for histogram with negative bins" },
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
      { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
      { name: "tut1", file: "tutorials_hist.root", layout: "grid2x1", items: ['h1draw','hksimple'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
