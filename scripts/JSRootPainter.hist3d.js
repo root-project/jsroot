@@ -2701,7 +2701,7 @@
                if (!use_colors) continue;
 
                var colindx = this.getContourColor(bin_content, true);
-               if (colindx != null) {
+               if (colindxl) {
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
                      cols_sequence[colindx] = num_colors++;

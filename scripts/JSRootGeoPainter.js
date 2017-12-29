@@ -3318,7 +3318,7 @@
 
    JSROOT.GEO.createList = function(parent, lst, name, title) {
 
-      if ((lst==null) || !('arr' in lst) || (lst.arr.length==0)) return;
+      if (!lst || !('arr' in lst) || (lst.arr.length==0)) return;
 
       var item = {
           _name: name,

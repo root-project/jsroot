@@ -2601,7 +2601,7 @@
           curr = "[" +taxis.fFirst+"," + taxis.fLast+"]";
 
       var res = prompt("Enter user range for axis " + arg + " like [1," + taxis.fNbins + "]", curr);
-      if (res==null) return;
+      if (!res) return;
       res = JSON.parse(res);
 
       if (!res || (res.length!=2) || isNaN(res[0]) || isNaN(res[1])) return;
@@ -4563,9 +4563,9 @@
 
             if ((xside != 1) || (yside != 1)) continue;
 
-            if ((cond!=null) && !cond(xx,yy)) continue;
+            if (cond && !cond(xx,yy)) continue;
 
-            if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+            if ((res.wmax===null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
             stat_sum0 += zz;
             stat_sumx1 += xx * zz;
@@ -4599,7 +4599,7 @@
 
                if ((cond!=null) && !cond(xx,yy)) continue;
 
-               if ((res.wmax==null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
+               if ((res.wmax===null) || (zz>res.wmax)) { res.wmax = zz; res.xmax = xx; res.ymax = yy; }
 
                stat_sum0 += zz;
                stat_sumx1 += xx * zz;

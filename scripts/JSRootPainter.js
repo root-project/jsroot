@@ -2177,7 +2177,7 @@
 
    TObjectPainter.prototype.RemoveDrawG = function() {
       // generic method to delete all graphical elements, associated with painter
-      if (this.draw_g != null) {
+      if (this.draw_g) {
          this.draw_g.remove();
          this.draw_g = null;
       }
@@ -4643,24 +4643,22 @@
                r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
          }
 
-         if (hint.lines != null) {
-            for (var l=0;l<hint.lines.length;l++)
-               if (hint.lines[l]!==null) {
-                  var txt = group.append("svg:text")
-                                 .attr("text-anchor", "start")
-                                 .attr("x", wmargin)
-                                 .attr("y", hmargin + l*textheight*hstep)
-                                 .attr("dy", ".8em")
-                                 .attr("fill","black")
-                                 .style("pointer-events","none")
-                                 .call(font.func)
-                                 .text(hint.lines[l]);
+         for (var l=0; l < (hint.lines ? hint.lines.length : 0); l++)
+            if (hint.lines[l]!==null) {
+               var txt = group.append("svg:text")
+                              .attr("text-anchor", "start")
+                              .attr("x", wmargin)
+                              .attr("y", hmargin + l*textheight*hstep)
+                              .attr("dy", ".8em")
+                              .attr("fill","black")
+                              .style("pointer-events","none")
+                              .call(font.func)
+                              .text(hint.lines[l]);
 
-                  var box = this.GetBoundarySizes(txt.node());
+               var box = this.GetBoundarySizes(txt.node());
 
-                  actualw = Math.max(actualw, box.width);
-               }
-         }
+               actualw = Math.max(actualw, box.width);
+            }
 
          function translateFn() {
             // We only use 'd', but list d,i,a as params just to show can have them as params.

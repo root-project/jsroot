@@ -1490,7 +1490,7 @@
 
    TFramePainter.prototype.clearInteractiveElements = function() {
       JSROOT.Painter.closeMenu();
-      if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
+      if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
 
       // enable tooltip in frame painter
@@ -1679,13 +1679,12 @@
       if (arr.length == 1) {
          // this is touch with single element
 
-         var now = new Date();
-         var diff = now.getTime() - this.last_touch.getTime();
+         var now = new Date(), diff = now.getTime() - this.last_touch.getTime();
          this.last_touch = now;
 
-         if ((diff < 300) && (this.zoom_curr != null)
-               && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-               && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+         if ((diff < 300) && this.zoom_curr
+              && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+              && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
 
             d3.event.preventDefault();
             d3.event.stopPropagation();
@@ -1924,7 +1923,7 @@
          // if ((kind === "z") && (this.options.Zscale > 0))
          //   if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
 
-         if (faxis != null) {
+         if (faxis) {
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",

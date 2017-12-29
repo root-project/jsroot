@@ -501,9 +501,9 @@
    /** @memberOf JSROOT
     * Method should be used to parse JSON code, produced with TBufferJSON */
    JSROOT.parse = function(arg) {
-      if ((arg==null) || (arg=="")) return null;
+      if (!arg) return null;
       var obj = JSON.parse(arg);
-      if (obj!=null) obj = this.JSONR_unref(obj);
+      if (obj) obj = this.JSONR_unref(obj);
       return obj;
    }
 

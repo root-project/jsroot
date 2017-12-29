@@ -696,7 +696,7 @@
             var files = [];
             painter.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
 
-            if (painter.GetTopOnlineItem()==null)
+            if (!painter.GetTopOnlineItem())
                addr = JSROOT.source_dir + "index.htm";
 
             if (painter.IsMonitoring())
@@ -727,8 +727,7 @@
 
             menu.add("Direct link", function() { window.open(addr); });
             menu.add("Only items", function() { window.open(addr + "&nobrowser"); });
-         } else
-         if (onlineprop != null) {
+         } else if (onlineprop) {
             painter.FillOnlineMenu(menu, onlineprop, itemname);
          } else {
             var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
@@ -818,16 +817,16 @@
          hoverClass : "ui-state-active",
          accept: function(ui) {
             var dropname = ui.parent().parent().attr('item');
-            if ((dropname == itemname) || (dropname==null)) return false;
+            if ((dropname == itemname) || !dropname) return false;
 
             var ditem = h.Find(dropname);
-            if ((ditem==null) || (!('_kind' in ditem))) return false;
+            if (!ditem || (!('_kind' in ditem))) return false;
 
             return ditem._kind.indexOf("ROOT.")==0;
          },
          drop: function(event, ui) {
             var dropname = ui.draggable.parent().parent().attr('item');
-            if (dropname==null) return false;
+            if (!dropname) return false;
             return h.dropitem(dropname, $(this).attr("id"));
          }
       });

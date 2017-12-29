@@ -1680,7 +1680,7 @@
          if ((kind === "z") && main && main.options && (main.options.Zscale > 0))
             if (typeof main.FillPaletteMenu == 'function') main.FillPaletteMenu(menu);
 
-         if (faxis != null) {
+         if (faxis) {
             menu.add("sub:Labels");
             menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
                   function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
@@ -1883,7 +1883,7 @@
 
    TFramePainter.prototype.clearInteractiveElements = function() {
       JSROOT.Painter.closeMenu();
-      if (this.zoom_rect != null) { this.zoom_rect.remove(); this.zoom_rect = null; }
+      if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
 
       // enable tooltip in frame painter
@@ -2284,13 +2284,12 @@
       if (arr.length == 1) {
          // this is touch with single element
 
-         var now = new Date();
-         var diff = now.getTime() - this.last_touch.getTime();
+         var now = new Date(), diff = now.getTime() - this.last_touch.getTime();
          this.last_touch = now;
 
-         if ((diff < 300) && (this.zoom_curr != null)
-               && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
-               && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
+         if ((diff < 300) && this.zoom_curr
+             && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
+             && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
 
             d3.event.preventDefault();
             d3.event.stopPropagation();
