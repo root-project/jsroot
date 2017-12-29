@@ -4935,9 +4935,7 @@
       if ((selector === null) && (kind in JSROOT.DrawFuncs.cache))
          return JSROOT.DrawFuncs.cache[kind];
 
-      var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind;
-
-      var counter = 0;
+      var search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind, counter = 0;
       for (var i=0; i < JSROOT.DrawFuncs.lst.length; ++i) {
          var h = JSROOT.DrawFuncs.lst[i];
          if (typeof h.name == "string") {
@@ -4949,12 +4947,11 @@
          if (h.sameas !== undefined)
             return JSROOT.getDrawHandle("ROOT."+h.sameas, selector);
 
-         if (selector==null) {
+         if ((selector === null) || (selector === undefined)) {
             // store found handle in cache, can reuse later
             if (!(kind in JSROOT.DrawFuncs.cache)) JSROOT.DrawFuncs.cache[kind] = h;
             return h;
-         } else
-         if (typeof selector == 'string') {
+         } else if (typeof selector == 'string') {
             if (!first) first = h;
             // if drawoption specified, check it present in the list
 
@@ -4966,8 +4963,8 @@
                for (var j=0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
                if (opts.indexOf(selector.toLowerCase())>=0) return h;
             }
-         } else {
-            if (selector === counter) return h;
+         } else if (selector === counter) {
+            return h;
          }
          ++counter;
       }

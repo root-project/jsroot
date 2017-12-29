@@ -53,8 +53,6 @@
 
          if (typeof arg == 'function') { func = arg; arg = name;  }
 
-         // if ((arg==null) || (typeof arg != 'string')) arg = name;
-
          var item = "";
 
          if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
@@ -409,10 +407,10 @@
       this.ForEach(function(item) {
          delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
-         if (('_status' in item) && (status_item==null)) status_item = item;
+         if (('_status' in item) && !status_item) status_item = item;
       });
 
-      if ((this.h == null) || d3elem.empty())
+      if (!this.h || d3elem.empty())
          return JSROOT.CallBack(callback);
 
       if (factcmds.length) {
@@ -2033,7 +2031,7 @@
 
          function SubmitDrawRequest() {
             JSROOT.NewHttpRequest(url, 'object', function(res) {
-               if (res==null) return;
+               if (!res) return;
                JSROOT.cleanup(player.drawid);
                JSROOT.draw(player.drawid, res, option);
             }).send();
@@ -2075,7 +2073,7 @@
       if (mdi == null) return null;
 
       var frame = mdi.FindFrame(itemname, true);
-      if (frame==null) return null;
+      if (!frame) return null;
 
       var divid = d3.select(frame).attr('id');
 
