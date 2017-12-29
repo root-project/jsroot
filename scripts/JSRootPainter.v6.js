@@ -2668,7 +2668,7 @@
 
    TPadPainter.prototype.IsTooltipAllowed = function() {
       var fp = this.frame_painter();
-      return fp ? fp.tooltip_allowed : false;
+      return fp ? fp.tooltip_allowed : undefined;
    }
 
    TPadPainter.prototype.SetTooltipAllowed = function(on) {
@@ -3079,7 +3079,8 @@
          menu.add("header: Canvas");
 
       var tooltipon = this.IsTooltipAllowed();
-      menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
+      if (tooltipon !== undefined)
+         menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
 
       if (!this._websocket) {
 

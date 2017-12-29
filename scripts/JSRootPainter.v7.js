@@ -2519,7 +2519,7 @@
       this.ForEachPainterInPad(function(fp) {
          if ((res===undefined) && (fp.tooltip_allowed!==undefined)) res = fp.tooltip_allowed;
       });
-      return res !== undefined ? res : false;
+      return res;
    }
 
    TPadPainter.prototype.SetTooltipAllowed = function(on) {
@@ -2876,7 +2876,8 @@
          menu.add("header: Canvas");
 
       var tooltipon = this.IsTooltipAllowed();
-      menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
+      if (tooltipon !== undefined)
+         menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
 
       if (!this._websocket) {
 
