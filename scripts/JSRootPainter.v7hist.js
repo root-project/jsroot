@@ -314,6 +314,7 @@
    }
 
    THistPainter.prototype.ButtonClick = function(funcname) {
+      // TODO: move to frame painter
       switch(funcname) {
          case "ToggleZoom":
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
@@ -325,9 +326,9 @@
                return true;
             }
             break;
-         case "ToggleLogX": this.ToggleLog("x"); break;
-         case "ToggleLogY": this.ToggleLog("y"); break;
-         case "ToggleLogZ": this.ToggleLog("z"); break;
+         case "ToggleLogX": this.frame_painter().ToggleLog("x"); break;
+         case "ToggleLogY": this.frame_painter().ToggleLog("y"); break;
+         case "ToggleLogZ": this.frame_painter().ToggleLog("z"); break;
          case "ToggleStatBox": this.ToggleStat(); return true; break;
       }
       return false;
@@ -335,7 +336,7 @@
 
    THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
-      if (pp===null) return;
+      if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");

@@ -2449,30 +2449,6 @@
       return res;
    }
 
-   // TODO: remove from hist painter
-   THistPainter.prototype.ToggleLog = function(axis) {
-      consoloe.log("OBSOLETE ToggleLog");
-
-      var painter = this.main_painter() || this,
-          pad = this.root_pad();
-      var curr = pad["fLog" + axis];
-      // do not allow log scale for labels
-      if (!curr) {
-         var kind = this[axis+"_kind"];
-         if (this.swap_xy && axis==="x") kind = this["y_kind"]; else
-         if (this.swap_xy && axis==="y") kind = this["x_kind"];
-         if (kind === "labels") return;
-      }
-
-      var pp = this.pad_painter(true), canp = this.pad_painter();
-      if (pp && pp.snapid && canp && canp._websocket) {
-         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
-      } else {
-         pad["fLog" + axis] = curr ? 0 : 1;
-         painter.RedrawPad();
-      }
-   }
-
    THistPainter.prototype.AllowDefaultYZooming = function() {
       // return true if default Y zooming should be enabled
       // it is typically for 2-Dim histograms or
@@ -2726,7 +2702,7 @@
 
    THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter(true);
-      if (pp===null) return;
+      if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");
