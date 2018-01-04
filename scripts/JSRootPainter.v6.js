@@ -1479,7 +1479,8 @@
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
                     .on("wheel", null)
-                    .on("contextmenu", null);
+                    .on("contextmenu", null)
+                    .property('interactive_set', null);
       }
 
       this.CleanXY();
@@ -1612,6 +1613,8 @@
       }
 
       if (tooltip_rect.empty()) {
+         console.log('create tooltip rect and assign events');
+
          tooltip_rect =
             this.draw_g
                 .append("rect")
@@ -2542,7 +2545,7 @@
 
       var svg = this.svg_frame();
 
-      if (svg.empty()) return;
+      if (svg.empty() || svg.property('interactive_set')) return;
 
       var svg_x = svg.selectAll(".xaxis_container"),
           svg_y = svg.selectAll(".yaxis_container");
@@ -2581,6 +2584,8 @@
 
       svg_x.on("mousemove", this.ShowAxisStatus.bind(this,"x"));
       svg_y.on("mousemove", this.ShowAxisStatus.bind(this,"y"));
+
+      svg.property('interactive_set', true);
    }
 
    function drawFrame(divid, obj, opt) {
