@@ -1292,28 +1292,11 @@
          this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
                         redraw: this.SizeChanged.bind(this) });
 
-      var painter = this;
-
-      function MouseMoveEvent() {
-         var pnt = d3.mouse(tooltip_rect.node());
-         painter.ProcessTooltipEvent({ x: pnt[0], y: pnt[1], touch: false });
-      }
-
-      function MouseCloseEvent() {
-         painter.ProcessTooltipEvent(null);
-      }
-
-      function TouchMoveEvent() {
-         var pnt = d3.touches(tooltip_rect.node());
-         if (!pnt || pnt.length !== 1) return painter.ProcessTooltipEvent(null);
-         painter.ProcessTooltipEvent({ x: pnt[0][0], y: pnt[0][1], touch: true });
-      }
-
-      function TouchCloseEvent() {
-         painter.ProcessTooltipEvent(null);
-      }
-
       if (tooltip_rect.empty()) {
+
+         var close_handler = this.ProcessTooltipEvent.bind(this, null),
+             mouse_handler = this.ProcessTooltipEvent.bind(this, { handler: true, touch: false });
+
          tooltip_rect =
             this.draw_g
                 .append("rect")
@@ -1321,15 +1304,17 @@
                 .style('opacity',0)
                 .style('fill',"none")
                 .style("pointer-events","visibleFill")
-                .on('mouseenter', MouseMoveEvent)
-                .on('mousemove', MouseMoveEvent)
-                .on('mouseleave', MouseCloseEvent);
+                .on('mouseenter', mouse_handler)
+                .on('mousemove', mouse_handler)
+                .on('mouseleave', close_handler);
 
-         if (JSROOT.touches)
-            tooltip_rect.on("touchstart", TouchMoveEvent)
-                        .on("touchmove", TouchMoveEvent)
-                        .on("touchend", TouchCloseEvent)
-                        .on("touchcancel", TouchCloseEvent);
+         if (JSROOT.touches) {
+            var touch_handler = this.ProcessTooltipEvent.bind(this, { handler: true, touch: true });
+            tooltip_rect.on("touchstart", touch_handler)
+                        .on("touchmove", touch_handler)
+                        .on("touchend", close_handler)
+                        .on("touchcancel", close_handler);
+         }
       }
 
       tooltip_rect.attr("x", 0)

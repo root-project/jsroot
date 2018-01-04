@@ -4438,6 +4438,20 @@
 
       if (enabled !== undefined) this.tooltip_enabled = enabled;
 
+      if (pnt && pnt.handler) {
+         // special use of interactive handler in the frame painter
+         var rect = this.draw_g ? this.draw_g.select(".interactive_rect") : null;
+         if (!rect || rect.empty()) {
+            pnt = null; // disable
+         } else if (pnt.touch) {
+            var pos = d3.touches(rect.node());
+            pnt = (pos && pos.length == 1) ? { touch: true, x: pos[0][0], y: pos[0][1] } : null;
+         } else {
+            var pos = d3.mouse(rect.node());
+            pnt = { touch: false, x: pos[0], y: pos[1] };
+         }
+      }
+
       var hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           frame_rect = this.GetFrameRect(),
