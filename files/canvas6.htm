@@ -31,7 +31,9 @@
    
       function InitV6Canvas(handle, args) {
          var use_openui = true;
-
+         
+         if (JSROOT.GetUrlOption("noopenui") !== null) use_openui = false;
+         
          var painter = new JSROOT.TCanvasPainter(null);
          painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
          if (painter.batch_mode) JSROOT.BatchMode = true;
@@ -61,7 +63,7 @@
 
          painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else is happens
 
-         painter.UseWebsocket(socket_kind); // when connection activated, ROOT must send new instance of the canvas
+         painter.UseWebsocket(handle); // when connection activated, ROOT must send new instance of the canvas
 
          if (!painter.batch_mode) JSROOT.RegisterForResize(painter);
       }

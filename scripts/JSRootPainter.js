@@ -1898,9 +1898,8 @@
                        .style('height',new_size.height+"px");
       }
 
-      var rect_origin = this.get_visible_rect(main_origin, true);
-
-      var can_resize = main_origin.attr('can_resize'),
+      var rect_origin = this.get_visible_rect(main_origin, true),
+          can_resize = main_origin.attr('can_resize'),
           do_resize = false;
 
       if (can_resize == "height")

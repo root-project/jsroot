@@ -2747,7 +2747,7 @@
 
       if ((rect.width<=lmt) || (rect.height<=lmt)) {
          svg.style("display", "none");
-         console.warn("Hide canvas while geometry too small w=",rect.width," h=",rect.height);
+         console.warn("Hide canvas while geometry too small w=" + rect.width + " h=" + rect.height);
          rect.width = 200; rect.height = 100; // just to complete drawing
       } else {
          svg.style("display", null);
