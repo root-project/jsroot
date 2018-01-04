@@ -2901,7 +2901,7 @@
 
       if (obj.name == "ListOfColors") {
 
-         if (this.options.CreatePalette) {
+         if (this.options && this.options.CreatePalette) {
             var arr = [];
             for (var n = obj.arr.length - this.options.CreatePalette; n<obj.arr.length; ++n) {
                var col = JSROOT.Painter.MakeColorRGB(obj.arr[n]);
@@ -2913,6 +2913,7 @@
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
             JSROOT.Painter.adoptRootColors(obj);
+
          if (this.options && this.options.LocalColors) {
             // copy existing colors and extend with new values
             this.root_colors = [];
