@@ -99,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 3/01/2018";
+   JSROOT.version = "dev 5/01/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -2060,6 +2060,7 @@
 
    /// connect to the TWebWindow instance
    JSROOT.ConnectWebWindow = function(arg) {
+      if (typeof arg == 'function') arg = { callback: arg };
       JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
          JSROOT.ConnectWebWindow(arg);
       }, (arg ? arg.prereq_logdiv : undefined));

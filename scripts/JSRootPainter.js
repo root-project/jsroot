@@ -1695,6 +1695,7 @@
    //   arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
 
    JSROOT.ConnectWebWindow = function(arg) {
+      if (typeof arg == 'function') arg = { callback: arg }; else
       if (!arg || (typeof arg != 'object')) arg = {};
 
       if (arg.prereq)
