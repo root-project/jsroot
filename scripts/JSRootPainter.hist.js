@@ -3810,7 +3810,7 @@
    }
 
    TH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0) || (this.options.Surf > 0)) {
+      if ((pnt === null) || !this.draw_content || !this.draw_g || (this.options.Lego > 0) || (this.options.Surf > 0)) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);

@@ -33,11 +33,6 @@
    if (typeof JSROOT.THistPainter === 'undefined')
       throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
-   JSROOT.THistPainter.prototype.Create3DScene = function(arg) {
-      var fp = this.frame_painter();
-      if (fp) fp.Create3DScene(arg);
-   }
-
    JSROOT.TFramePainter.prototype.Create3DScene = function(arg) {
 
       if ((arg!==undefined) && (arg<0)) {

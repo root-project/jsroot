@@ -1467,14 +1467,42 @@
       this.axes_drawn = false;
    }
 
-   TFramePainter.prototype.Cleanup = function() {
+   TFramePainter.prototype.CleanDrawings = function() {
 
       // cleanup all 3D drawings if any
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
 
+      this.CleanupAxes();
+      this.CleanXY();
+
+      this.xmin = this.xmax = 0;
+      this.ymin = this.ymax = 0;
+      this.zmin = this.zmax = 0;
+
+      this.zoom_xmin = this.zoom_xmax = 0;
+      this.zoom_ymin = this.zoom_ymax = 0;
+      this.zoom_zmin = this.zoom_zmax = 0;
+
+      this.scale_xmin = this.scale_xmax = 0;
+      this.scale_ymin = this.scale_ymax = 0;
+      this.scale_zmin = this.scale_zmax = 0;
+
       if (this.draw_g) {
-         this.CleanupAxes();
+         this.draw_g.select(".main_layer").selectAll("*").remove();
+         this.draw_g.select(".upper_layer").selectAll("*").remove();
+      }
+
+      this.xaxis = null;
+      this.yaxis = null;
+      this.zaxis = null;
+   }
+
+   TFramePainter.prototype.Cleanup = function() {
+
+      this.CleanDrawings();
+
+      if (this.draw_g) {
          this.draw_g.selectAll("*").remove();
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
@@ -1483,12 +1511,7 @@
                     .property('interactive_set', null);
       }
 
-      this.CleanXY();
-
       this.draw_g = null;
-      this.xaxis = null;
-      this.yaxis = null;
-      this.zaxis = null;
 
       if (this.keys_handler) {
          window.removeEventListener('keydown', this.keys_handler, false);
@@ -1501,7 +1524,10 @@
    TFramePainter.prototype.Redraw = function() {
 
       var pp = this.pad_painter(true);
-      if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
+      if (pp) {
+         pp.frame_painter_ref = this; // keep direct reference to the frame painter
+         if (pp.painters && (pp.painters.indexOf(this) == pp.painters.length-1)) pp.painters.pop(); // remove frame from painters lists
+      }
 
       if (this.mode3d) return; // no need to create any elements in 3d mode
 
@@ -3219,6 +3245,11 @@
       this.pad.fUymin = obj.fUymin;
       this.pad.fUymax = obj.fUymax;
 
+      this.pad.fX1 = obj.fX1;
+      this.pad.fX2 = obj.fX2;
+      this.pad.fY1 = obj.fY1;
+      this.pad.fY2 = obj.fY2;
+
       this.pad.fLeftMargin   = obj.fLeftMargin;
       this.pad.fRightMargin  = obj.fRightMargin;
       this.pad.fBottomMargin = obj.fBottomMargin
@@ -3324,11 +3355,6 @@
 
          if (snap.fKind === 3) { // subpad
 
-            if (snap.fPrimitives._typename) {
-               alert("Problem in JSON I/O with primitves for sub-pad");
-               snap.fPrimitives = [ snap.fPrimitives ];
-            }
-
             var subpad = snap.fPrimitives[0].fSnapshot;
 
             subpad.fPrimitives = null; // clear primitives, they just because of I/O
@@ -3395,10 +3421,6 @@
 
       if (!snap || !snap.fPrimitives) return;
 
-      // VERY BAD, NEED TO BE FIXED IN TBufferJSON - should be fixed now in master
-      // Should be fixed now in ROOT
-      // if (snap.fPrimitives._typename) snap.fPrimitives = [ snap.fPrimitives ];
-
       var first = snap.fPrimitives[0].fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
 
@@ -3452,11 +3474,14 @@
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
+            // console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.GetObject()._typename);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
          }
       }
+
+      // return JSROOT.CallBack(call_back, padpainter);
 
       if (!isanyfound) {
          var svg_p = this.svg_pad(this.this_pad_name);
@@ -3465,6 +3490,8 @@
          for (var k=0;k<this.painters.length;++k)
             this.painters[k].Cleanup();
          this.painters = [];
+         if (this.frame_painter())
+            this.frame_painter().CleanDrawings();
       }
 
       var padpainter = this,
@@ -3472,7 +3499,7 @@
 
       padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
          padpainter.CurrentPadName(prev_name);
-         call_back(padpainter);
+         JSROOT.CallBack(call_back, padpainter);
       });
    }
 
