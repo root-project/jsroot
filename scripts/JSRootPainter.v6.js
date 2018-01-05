@@ -3782,7 +3782,6 @@
       });
 
       return found_func;
-
    }
 
    TPadPainter.prototype.toggleButtonsVisibility = function(action) {

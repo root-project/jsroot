@@ -1177,9 +1177,37 @@
       this.axes_drawn = false;
    }
 
-   TFramePainter.prototype.Cleanup = function() {
+   TFramePainter.prototype.CleanDrawings = function() {
+      // cleanup all 3D drawings if any
+      if (typeof this.Create3DScene === 'function')
+         this.Create3DScene(-1);
+
+      this.CleanupAxes();
+      this.CleanXY();
+
+      this.xmin = this.xmax = 0;
+      this.ymin = this.ymax = 0;
+      this.zmin = this.zmax = 0;
+
+      this.zoom_xmin = this.zoom_xmax = 0;
+      this.zoom_ymin = this.zoom_ymax = 0;
+      this.zoom_zmin = this.zoom_zmax = 0;
+
+      this.scale_xmin = this.scale_xmax = 0;
+      this.scale_ymin = this.scale_ymax = 0;
+      this.scale_zmin = this.scale_zmax = 0;
+
       if (this.draw_g) {
-         this.CleanupAxes();
+         this.draw_g.select(".main_layer").selectAll("*").remove();
+         this.draw_g.select(".upper_layer").selectAll("*").remove();
+      }
+   }
+
+   TFramePainter.prototype.Cleanup = function() {
+
+      this.CleanDrawings();
+
+      if (this.draw_g) {
          this.draw_g.selectAll("*").remove();
          this.draw_g.on("mousedown", null)
                     .on("dblclick", null)
@@ -1193,9 +1221,8 @@
          this.keys_handler = null;
       }
 
-      this.CleanXY();
-
       this.draw_g = null;
+
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
@@ -1203,7 +1230,10 @@
 
       var pp = this.pad_painter();
 
-      if (pp) pp.frame_painter_ref = this;
+      if (pp) {
+         pp.frame_painter_ref = this;
+         if (pp.painters && (pp.painters.indexOf(this) == pp.painters.length-1)) pp.painters.pop(); // remove frame from painters lists
+      }
       if (this.mode3d) return;
 
       // first update all attributes from objects
@@ -3230,6 +3260,8 @@
          for (var k=0;k<this.painters.length;++k)
             this.painters[k].Cleanup();
          this.painters = [];
+         if (this.frame_painter())
+            this.frame_painter().CleanDrawings();
       }
 
       var padpainter = this,
