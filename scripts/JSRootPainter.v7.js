@@ -1230,10 +1230,7 @@
 
       var pp = this.pad_painter();
 
-      if (pp) {
-         pp.frame_painter_ref = this;
-         if (pp.painters && (pp.painters.indexOf(this) == pp.painters.length-1)) pp.painters.pop(); // remove frame from painters lists
-      }
+      if (pp) pp.frame_painter_ref = this;
       if (this.mode3d) return;
 
       // first update all attributes from objects
@@ -3257,14 +3254,18 @@
       }
 
       if (!isanyfound) {
-         var svg_p = this.svg_pad(this.this_pad_name);
+         var svg_p = this.svg_pad(this.this_pad_name),
+             fp = this.frame_painter();
          if (svg_p && !svg_p.empty())
             svg_p.property('mainpainter', null);
          for (var k=0;k<this.painters.length;++k)
-            this.painters[k].Cleanup();
+            if (fp !== this.painters[k])
+               this.painters[k].Cleanup();
          this.painters = [];
-         if (this.frame_painter())
-            this.frame_painter().CleanDrawings();
+         if (fp) {
+            this.painters.push(fp);
+            fp.CleanDrawings();
+         }
          this.RemoveButtons();
          this.AddOnlineButtons();
       }
