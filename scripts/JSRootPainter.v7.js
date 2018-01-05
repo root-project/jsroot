@@ -3179,6 +3179,15 @@
       return null;
    }
 
+   TPadPainter.prototype.AddOnlineButtons = function() {
+      this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      if (JSROOT.gStyle.ContextMenu)
+         this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+
+      if (this.enlarge_main('verify'))
+         this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+   }
+
    TPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
       // for the canvas snapshot contains list of objects
       // as first entry, graphical properties of canvas itself is provided
@@ -3208,13 +3217,7 @@
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
-
-         this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
-         if (JSROOT.gStyle.ContextMenu)
-            this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
-
-         if (this.enlarge_main('verify'))
-            this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+         this.AddOnlineButtons();
 
          var pthis = this;
 
@@ -3262,6 +3265,8 @@
          this.painters = [];
          if (this.frame_painter())
             this.frame_painter().CleanDrawings();
+         this.RemoveButtons();
+         this.AddOnlineButtons();
       }
 
       var padpainter = this,
@@ -3590,6 +3595,22 @@
          if (this===btn.node()) return;
          d3.select(this).style('display', is_visible ? "" : "none");
       });
+   }
+
+   TPadPainter.prototype.RemoveButtons = function() {
+      var group = this.svg_layer("btns_layer", this.this_pad_name);
+      if (!group.empty()) {
+         group.selectAll("*").remove();
+         group.property("nextx", null);
+      }
+   }
+
+   TPadPainter.prototype.RemoveButtons = function() {
+      var group = this.svg_layer("btns_layer", this.this_pad_name);
+      if (!group.empty()) {
+         group.selectAll("*").remove();
+         group.property("nextx", null);
+      }
    }
 
    TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
