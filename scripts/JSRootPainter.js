@@ -1593,32 +1593,34 @@
 
          if (pthis.state != 0) return;
 
-         if (!first_time) console.log("try open websocket again");
+         if (!first_time) console.log("try connect window again");
 
          if (pthis._websocket) pthis._websocket.close();
          delete pthis._websocket;
 
-         var path = window.location.href, conn = null;
-
-         if (path && path.lastIndexOf("/")>0) path = path.substr(0, path.lastIndexOf("/")+1);
-         if (!href) href = path;
+         var conn = null;
+         if (!href) {
+            href = window.location.href;
+            if (href && href.lastIndexOf("/")>0) href = href.substr(0, href.lastIndexOf("/")+1);
+         }
          pthis.href = href;
 
          console.log('Opening web socket at ' + href);
 
+         var path = href;
+
          if (pthis.kind == 'cefquery') {
-            if (href.indexOf("rootscheme://rootserver")==0) href = href.substr(23);
-            console.log('configure cefquery ' + href);
-            conn = new Cef3QuerySocket(href);
+            if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
+            console.log('configure cefquery ' + path);
+            conn = new Cef3QuerySocket(path);
          } else if ((pthis.kind !== 'longpoll') && first_time) {
-            href = href.replace("http://", "ws://").replace("https://", "wss://");
-            href += "root.websocket";
-            console.log('configure websocket ' + href);
-            conn = new WebSocket(href);
+            path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
+            console.log('configure websocket ' + path);
+            conn = new WebSocket(path);
          } else {
-            href += "root.longpoll";
-            console.log('configure longpoll ' + href);
-            conn = new LongPollSocket(href);
+            path += "root.longpoll";
+            console.log('configure longpoll ' + path);
+            conn = new LongPollSocket(path);
          }
 
          if (!conn) return;
