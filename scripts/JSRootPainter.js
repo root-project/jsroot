@@ -1412,6 +1412,12 @@
       }
 
       if (this.connid==="connect") {
+         if (!res) {
+            this.connid = null;
+            if (typeof this.onerror === 'function') this.onerror("connection rejected");
+            return;
+         }
+
          this.connid = parseInt(res);
          console.log('Get new longpoll connection with id ' + this.connid);
          if (typeof this.onopen == 'function') this.onopen();
@@ -1593,7 +1599,7 @@
 
          if (pthis.state != 0) return;
 
-         if (!first_time) console.log("try connect window again");
+         // if (!first_time) console.log("try connect window again" + (new Date()).getTime());
 
          if (pthis._websocket) pthis._websocket.close();
          delete pthis._websocket;
@@ -1605,7 +1611,7 @@
          }
          pthis.href = href;
 
-         console.log('Opening web socket at ' + href);
+         if (first_time) console.log('Opening web socket at ' + href);
 
          var path = href;
 
@@ -1676,10 +1682,11 @@
          }
 
          conn.onerror = function (err) {
-            console.log("err "+err);
+            console.log("websocket error",err);
             pthis.InvokeReceiver('OnWebsocketError', err);
          }
 
+         // console.log('Set timeout', (new Date()).getTime());
          setTimeout(retry_open, 3000); // after 3 seconds try again
 
       } // retry_open
