@@ -1368,19 +1368,17 @@
       if (kind === "connect") {
          url+="?connect";
          this.connid = "connect";
-      } else
-         if (kind === "close") {
-            if ((this.connid===null) || (this.connid==="close")) return;
-            url+="?connection="+this.connid + "&close";
-            this.connid = "close";
-            if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
-         } else
-            if ((this.connid===null) || (typeof this.connid!=='number')) {
-               return console.error("No connection");
-            } else {
-               url+="?connection="+this.connid;
-               if (kind==="dummy") url+="&dummy";
-            }
+      } else if (kind === "close") {
+         if ((this.connid===null) || (this.connid==="close")) return;
+         url+="?connection="+this.connid + "&close";
+         this.connid = "close";
+         if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
+      } else if ((this.connid===null) || (typeof this.connid!=='number')) {
+         return console.error("No connection");
+      } else {
+         url+="?connection="+this.connid;
+         if (kind==="dummy") url+="&dummy";
+      }
 
       if (data) {
          // special workaround to avoid POST request, which is not supported in WebEngine
@@ -1391,10 +1389,9 @@
 
       var req = JSROOT.NewHttpRequest(url, "text" + sync, function(res) {
          if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
-         if (this.handle.req === this) {
+         if (this.handle.req === this)
             this.handle.req = null; // get response for existing dummy request
-            if (res == "<<nope>>") res = "";
-         }
+         if (res == "<<nope>>") res = "";
          this.handle.processreq(res);
       });
 
@@ -1593,7 +1590,7 @@
 
       this.Close();
 
-      var pthis = this;
+      var pthis = this, ntry = 0;
 
       function retry_open(first_time) {
 
@@ -1610,8 +1607,11 @@
             if (href && href.lastIndexOf("/")>0) href = href.substr(0, href.lastIndexOf("/")+1);
          }
          pthis.href = href;
+         ntry++;
 
          if (first_time) console.log('Opening web socket at ' + href);
+
+         if (ntry>2) JSROOT.progress("Trying to connect " + href);
 
          var path = href;
 
@@ -1634,6 +1634,7 @@
          pthis._websocket = conn;
 
          conn.onopen = function() {
+            if (ntry > 2) JSROOT.progress();
             console.log('websocket initialized');
             pthis.state = 1;
             pthis.Send("READY", 0); // need to confirm connection
@@ -1682,8 +1683,11 @@
          }
 
          conn.onerror = function (err) {
-            console.log("websocket error",err);
-            pthis.InvokeReceiver('OnWebsocketError', err);
+            console.log("websocket error", err);
+            if (pthis.state > 0) {
+               pthis.InvokeReceiver('OnWebsocketError', err);
+               pthis.state = 0;
+            }
          }
 
          // console.log('Set timeout', (new Date()).getTime());
