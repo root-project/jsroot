@@ -1014,7 +1014,7 @@
          drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
       }
 
-      if (this.status_layout) {
+      if (this.status_layout && (this.browser_kind == 'fix')) {
          main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
          main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
       }
