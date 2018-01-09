@@ -486,12 +486,19 @@
 
    /// special layout with three different areas for browser (left), status line (bottom) and central drawing
    /// Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
-   function BrowserLayout(id) {
+   function BrowserLayout(id, hpainter) {
       this.gui_div = id;
+      this.hpainter = hpainter; // used for several callbacks when size of different areas is changed
+      this.browser_kind = null; // should be 'float' or 'fix'
    }
 
    BrowserLayout.prototype.main = function() {
       return d3.select("#" + this.gui_div);
+   }
+
+   BrowserLayout.prototype.CheckResize = function() {
+      if (this.hpainter && (typeof this.hpainter == 'function'))
+         this.hpainter.CheckResize();
    }
 
    /// method used to create basic elements
@@ -1364,9 +1371,9 @@
          find_next();
       }
 
-      if (force) {
-         if (!this.browser_kind) return this.CreateBrowser('float', true, find_next);
-         if (!this.browser_visible) this.ToggleBrowserVisisbility();
+      if (force && this.brlayout) {
+         if (!this.brlayout.browser_kind) return this.CreateBrowser('float', true, find_next);
+         if (!this.brlayout.browser_visible) this.brlayout.ToggleBrowserVisisbility();
       }
 
       // use recursion
@@ -2153,7 +2160,7 @@
 
       this.gui_div = myDiv.attr('id');
 
-      this.brlayout = new BrowserLayout(this.gui_div);
+      this.brlayout = new BrowserLayout(this.gui_div, this);
 
       this.brlayout.Create(!this.exclude_browser);
 

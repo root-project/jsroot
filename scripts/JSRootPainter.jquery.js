@@ -188,6 +188,345 @@
 
    var BrowserLayout = JSROOT.BrowserLayout;
 
+   BrowserLayout.prototype.ToggleBrowserKind = function(kind) {
+
+      if (!this.gui_div) return;
+
+      if (!kind) {
+         if (!this.browser_kind) return;
+         kind = (this.browser_kind === "float") ? "fix" : "float";
+      }
+
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+          jmain = $(main.node()),
+          area = jmain.find(".jsroot_browser_area"),
+          pthis = this;
+
+      if (this.browser_kind === "float") {
+          area.css('bottom', '0px')
+              .css('top', '0px')
+              .css('width','').css('height','')
+              .toggleClass('jsroot_float_browser', false)
+              .resizable("destroy")
+              .draggable("destroy");
+      } else if (this.browser_kind === "fix") {
+         main.select(".jsroot_v_separator").remove();
+         area.css('left', '0px');
+         d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
+         main.select(".jsroot_h_separator").style('left','0px');
+         d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
+         pthis.CheckResize();
+      }
+
+      this.browser_kind = kind;
+      this.browser_visible = true;
+
+      if (kind==="float") {
+         area.css('bottom', '40px')
+           .toggleClass('jsroot_float_browser', true)
+           .resizable({
+              containment: "parent",
+              minWidth: 100,
+              resize: function( event, ui ) {
+                 pthis.SetButtonsPosition();
+              },
+              stop: function( event, ui ) {
+                 var bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
+                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
+              }
+         })
+         .draggable({
+             containment: "parent",
+             handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
+             snap: true,
+             snapMode: "inner",
+             snapTolerance: 10,
+             drag: function( event, ui ) {
+                pthis.SetButtonsPosition();
+             },
+             stop: function( event, ui ) {
+                var bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
+                if (bottom<7) $(this).css('height', "").css('bottom', 0);
+             }
+          });
+         this.AdjustFloatBrowserSize(jmain);
+
+     } else {
+
+        area.css('left',0).css('top',0).css('bottom',0).css('height','');
+
+        var vsepar =
+           main.append('div')
+               .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
+               .style('position', 'absolute').style('top',0).style('bottom',0);
+        // creation of vertical separator
+        $(vsepar.node()).draggable({
+           axis: "x" , cursor: "ew-resize",
+           containment: "parent",
+           helper : function() { return $(this).clone().css('background-color','grey'); },
+           drag: function(event,ui) {
+              pthis.SetButtonsPosition();
+              pthis.AdjustSeparator(ui.position.left, null);
+           },
+           stop: function(event,ui) {
+              pthis.CheckResize();
+           }
+        });
+
+        this.AdjustSeparator(250, null, true, true);
+     }
+
+      this.SetButtonsPosition();
+   }
+
+   BrowserLayout.prototype.SetButtonsPosition = function() {
+      if (!this.gui_div) return;
+
+      var jmain = $("#"+this.gui_div+" .jsroot_browser"), top = 7, left = 7;
+
+      if (this.browser_visible) {
+         var area = jmain.find(".jsroot_browser_area"),
+             off0 = jmain.offset(), off1 = area.offset();
+         top = off1.top - off0.top + 7;
+         left = off1.left - off0.left + area.innerWidth() - 27;
+      }
+
+      jmain.find(".jsroot_browser_btns")
+           .css('left', left+'px').css('top', top+'px');
+   }
+
+   BrowserLayout.prototype.AdjustFloatBrowserSize = function(jmain, onlycheckmax) {
+      if (!jmain) {
+         if (!this.gui_div) return;
+         jmain = $("#" + this.gui_div + " .jsroot_browser");
+      }
+      if (!jmain.length) return;
+
+      var area = jmain.find(".jsroot_browser_area"),
+          cont = jmain.find(".jsroot_browser_hierarchy"),
+          chld = cont.children(":first");
+
+      if (onlycheckmax) {
+         if (area.parent().innerHeight() - 10 < area.innerHeight())
+            area.css('bottom', '0px').css('top','0px');
+         return;
+      }
+
+      if (!chld.length) return;
+
+      var h1 = cont.innerHeight(),
+          h2 = chld.innerHeight();
+
+      if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
+   }
+
+   /// function used to ensure that size of browser area fit to content
+   BrowserLayout.prototype.AdjustBrowserSize = function(onlycheckmax) {
+      if (this.browser_kind === "float")
+         this.AdjustFloatBrowserSize(null, onlycheckmax);
+   }
+
+   BrowserLayout.prototype.ToggleBrowserVisisbility = function() {
+      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
+
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+          area = main.select('.jsroot_browser_area');
+
+      if (area.empty()) return;
+
+      var vsepar = main.select(".jsroot_v_separator"),
+          drawing = d3.select("#" + this.gui_div + "_drawing"),
+          tgt = area.property('last_left'),
+          tgt_separ = area.property('last_vsepar'),
+          tgt_drawing = area.property('last_drawing');
+
+      if (!this.browser_visible) {
+         area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
+      } else {
+         area.property('last_left', area.style('left'));
+         if (!vsepar.empty()) {
+            area.property('last_vsepar', vsepar.style('left'));
+            area.property('last_drawing', drawing.style('left'));
+         }
+         tgt = (-$(area.node()).outerWidth(true)-10).toString() + "px";
+         var mainw = $(main.node()).outerWidth(true);
+
+         if (vsepar.empty() && ($(area.node()).offset().left > mainw/2)) tgt = (mainw+10) + "px";
+
+         tgt_separ = "-10px";
+         tgt_drawing = "0px";
+      }
+
+      var pthis = this, visible_at_the_end  = !this.browser_visible, _duration = 700;
+
+      this.browser_visible = 'changing';
+
+      area.transition().style('left', tgt).duration(_duration).on("end", function() {
+         pthis.browser_visible = visible_at_the_end;
+         if (visible_at_the_end) pthis.SetButtonsPosition();
+      });
+
+      if (!visible_at_the_end)
+         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(_duration);
+
+      if (!vsepar.empty()) {
+         vsepar.transition().style('left', tgt_separ).duration(_duration);
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
+      }
+
+      if (this.status_layout && (this.browser_kind == 'fix')) {
+         main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
+         main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
+      }
+   }
+
+   /// used together with browser buttons
+   BrowserLayout.prototype.Toggle = function(browser_kind) {
+      if (this.browser_visible!=='changing') {
+         if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
+                                            else this.ToggleBrowserKind(browser_kind);
+      }
+   }
+
+   /// method creates status line
+   BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
+      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
+      if (main.empty()) return '';
+
+      var id = this.gui_div + "_status",
+          line = d3.select("#"+id), hsepar;
+
+      if (!line.empty()) {
+         if (this.status_layout==="app") return !mode ? id : false;
+
+         hsepar = main.select(".jsroot_h_separator");
+
+         $(hsepar.node()).draggable("destroy");
+
+         hsepar.remove();
+         line.remove();
+
+         delete this.status_layout;
+
+         if (this.status_handler && (JSROOT.Painter.ShowStatus === this.status_handler)) {
+            delete JSROOT.Painter.ShowStatus;
+            delete this.status_handler;
+         }
+
+         this.AdjustSeparator(null, 0, true);
+         return "";
+      }
+
+      var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
+
+      line = main.insert("div",".jsroot_browser_area").attr("id",id)
+                 .classed("jsroot_status_area", true)
+                 .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
+                 .style('margin',0).style('border',0);
+
+      hsepar = main.insert("div",".jsroot_browser_area")
+                   .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
+                   .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
+
+      var pthis = this;
+
+      $(hsepar.node()).draggable({
+         axis: "y" , cursor: "ns-resize", containment: "parent",
+         helper: function() { return $(this).clone().css('background-color','grey'); },
+         drag: function(event,ui) {
+            pthis.AdjustSeparator(null, -ui.position.top);
+         },
+         stop: function(event,ui) {
+            pthis.CheckResize();
+         }
+      });
+
+      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
+      var skip_height_check = (mode==='toggle') && (height === this.last_hsepar_height);
+
+      this.AdjustSeparator(null, height, true);
+
+      if (!mode) {
+         this.status_layout = "app";
+         return id;
+      }
+
+      this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
+      if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
+
+      var frame_titles = ['object name','object title','mouse coordinates','object info'];
+      for (var k=0;k<4;++k)
+         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
+           .append("label").attr("class","jsroot_status_label");
+
+      this.status_handler = this.ShowStatus.bind(this);
+
+      JSROOT.Painter.ShowStatus = this.status_handler;
+
+      return true;
+   }
+
+   BrowserLayout.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
+
+      if (!this.gui_div) return;
+
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
+
+      if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
+         // if separator set for the first time, check if status line present
+         hsepar = main.select(".jsroot_h_separator").style('bottom');
+         if ((typeof hsepar=='string') && (hsepar.indexOf('px')==hsepar.length-2))
+            hsepar = hsepar.substr(0,hsepar.length-2);
+         else
+            hsepar = null;
+      }
+
+      if (hsepar!==null) {
+         hsepar = parseInt(hsepar);
+         var elem = main.select(".jsroot_h_separator"), hlimit = 0;
+
+         if (!elem.empty()) {
+            if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
+            if (hsepar<5) hsepar = 5;
+            this.last_hsepar_height = hsepar;
+            elem.style('bottom', hsepar+'px').style('height', w+'px');
+            d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
+            hlimit = (hsepar+w) + 'px';
+         }
+
+         d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
+      }
+
+      if (vsepar!==null) {
+         vsepar = parseInt(vsepar);
+         if (vsepar<50) vsepar = 50;
+         main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
+         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
+         main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
+         d3.select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
+         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
+      }
+
+      if (redraw) this.CheckResize();
+   }
+
+   BrowserLayout.prototype.ShowStatus = function(name, title, info, coordinates) {
+      if (!this.status_layout) return;
+
+      $(this.status_layout.GetFrame(0)).children('label').text(name || "");
+      $(this.status_layout.GetFrame(1)).children('label').text(title || "");
+      $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
+      $(this.status_layout.GetFrame(3)).children('label').text(info || "");
+
+      if (!this.status_layout.first_check) {
+         this.status_layout.first_check = true;
+         var maxh = 0;
+         for (var n=0;n<4;++n)
+            maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
+         if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5)))
+            this.AdjustSeparator(null, maxh, true);
+      }
+   }
 
    // =================================================================================================
 
@@ -489,8 +828,7 @@
 
       this.addItemHtml(hitem, d3cont, "update");
 
-      if (this.browser_kind === "float")
-         this.AdjustFloatBrowserSize(null, true);
+      if (this.brlayout) this.brlayout.AdjustBrowserSize(true);
    }
 
    HierarchyPainter.prototype.UpdateBackground = function(hitem, scroll_into_view) {
@@ -837,196 +1175,9 @@
       });
    }
 
-   HierarchyPainter.prototype.SetButtonsPosition = function() {
-      if (!this.gui_div) return;
-
-      var jmain = $("#"+this.gui_div+" .jsroot_browser"), top = 7, left = 7;
-
-      if (this.browser_visible) {
-         var area = jmain.find(".jsroot_browser_area"),
-             off0 = jmain.offset(), off1 = area.offset();
-         top = off1.top - off0.top + 7;
-         left = off1.left - off0.left + area.innerWidth() - 27;
-      }
-
-      jmain.find(".jsroot_browser_btns")
-           .css('left', left+'px').css('top', top+'px');
-   }
-
-   HierarchyPainter.prototype.AdjustFloatBrowserSize = function(jmain, onlycheckmax) {
-      if (!jmain) {
-         if (!this.gui_div) return;
-         jmain = $("#" + this.gui_div + " .jsroot_browser");
-      }
-      if (!jmain.length) return;
-
-      var area = jmain.find(".jsroot_browser_area"),
-          cont = jmain.find(".jsroot_browser_hierarchy"),
-          chld = cont.children(":first");
-
-      if (onlycheckmax) {
-         if (area.parent().innerHeight() - 10 < area.innerHeight())
-            area.css('bottom', '0px').css('top','0px');
-         return;
-      }
-
-      if (!chld.length) return;
-
-      var h1 = cont.innerHeight(),
-          h2 = chld.innerHeight();
-
-      if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
-   }
-
-   HierarchyPainter.prototype.ToggleBrowserKind = function(kind) {
-
-      if (!this.gui_div) return;
-
-      if (!kind) {
-         if (!this.browser_kind) return;
-         kind = (this.browser_kind === "float") ? "fix" : "float";
-      }
-
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser"),
-          jmain = $(main.node()),
-          area = jmain.find(".jsroot_browser_area"),
-          hpainter = this;
-
-      if (this.browser_kind === "float") {
-          area.css('bottom', '0px')
-              .css('top', '0px')
-              .css('width','').css('height','')
-              .toggleClass('jsroot_float_browser', false)
-              .resizable("destroy")
-              .draggable("destroy");
-      } else
-      if (this.browser_kind === "fix") {
-         main.select(".jsroot_v_separator").remove();
-         area.css('left', '0px');
-         d3.select("#"+this.gui_div+"_drawing").style('left','0px'); // reset size
-         main.select(".jsroot_h_separator").style('left','0px');
-         d3.select("#"+this.gui_div+"_status").style('left','0px'); // reset left
-         this.CheckResize();
-      }
-
-      this.browser_kind = kind;
-      this.browser_visible = true;
-
-      if (kind==="float") {
-         area.css('bottom', '40px')
-           .toggleClass('jsroot_float_browser', true)
-           .resizable({
-              containment: "parent",
-              minWidth: 100,
-              resize: function( event, ui ) {
-                 hpainter.SetButtonsPosition();
-              },
-              stop: function( event, ui ) {
-                 var bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
-                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
-              }
-         })
-         .draggable({
-             containment: "parent",
-             handle : $("#"+this.gui_div).find(".jsroot_browser_title"),
-             snap: true,
-             snapMode: "inner",
-             snapTolerance: 10,
-             drag: function( event, ui ) {
-                hpainter.SetButtonsPosition();
-             },
-             stop: function( event, ui ) {
-                var bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
-                if (bottom<7) $(this).css('height', "").css('bottom', 0);
-             }
-          });
-         this.AdjustFloatBrowserSize(jmain);
-
-     } else {
-
-        area.css('left',0).css('top',0).css('bottom',0).css('height','');
-
-        var vsepar =
-           main.append('div')
-               .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
-               .style('position', 'absolute').style('top',0).style('bottom',0);
-        // creation of vertical separator
-        $(vsepar.node()).draggable({
-           axis: "x" , cursor: "ew-resize",
-           containment: "parent",
-           helper : function() { return $(this).clone().css('background-color','grey'); },
-           drag: function(event,ui) {
-              hpainter.SetButtonsPosition();
-              hpainter.AdjustSeparator(ui.position.left, null);
-           },
-           stop: function(event,ui) {
-              hpainter.CheckResize();
-           }
-        });
-
-        this.AdjustSeparator(250, null, true, true);
-     }
-
-      this.SetButtonsPosition();
-   }
-
-   HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
-      if (!this.gui_div || (typeof this.browser_visible==='string')) return;
-
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
-          area = main.select('.jsroot_browser_area');
-
-      if (area.empty()) return;
-
-      var vsepar = main.select(".jsroot_v_separator"),
-          drawing = d3.select("#" + this.gui_div + "_drawing"),
-          tgt = area.property('last_left'),
-          tgt_separ = area.property('last_vsepar'),
-          tgt_drawing = area.property('last_drawing');
-
-      if (!this.browser_visible) {
-         area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
-      } else {
-         area.property('last_left', area.style('left'));
-         if (!vsepar.empty()) {
-            area.property('last_vsepar', vsepar.style('left'));
-            area.property('last_drawing', drawing.style('left'));
-         }
-         tgt = (-$(area.node()).outerWidth(true)-10).toString() + "px";
-         var mainw = $(main.node()).outerWidth(true);
-
-         if (vsepar.empty() && ($(area.node()).offset().left > mainw/2)) tgt = (mainw+10) + "px";
-
-         tgt_separ = "-10px";
-         tgt_drawing = "0px";
-      }
-
-      var hpainter = this, visible_at_the_end  = !this.browser_visible, _duration = 700;
-
-      this.browser_visible = 'changing';
-
-      area.transition().style('left', tgt).duration(_duration).on("end", function() {
-         hpainter.browser_visible = visible_at_the_end;
-         if (visible_at_the_end) hpainter.SetButtonsPosition();
-      });
-
-      if (!visible_at_the_end)
-         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(_duration);
-
-      if (!vsepar.empty()) {
-         vsepar.transition().style('left', tgt_separ).duration(_duration);
-         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
-      }
-
-      if (this.status_layout) {
-         main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
-         main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
-      }
-   }
-
    HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
 
-      if (!this.gui_div || this.exclude_browser) return false;
+      if (!this.gui_div || this.exclude_browser || !this.brlayout) return false;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
           jmain = $(main.node());
@@ -1040,10 +1191,7 @@
          // this is case when browser created,
          // if update_html specified, hidden state will be toggled
 
-         if (update_html && (this.browser_visible!=='changing')) {
-            if (browser_kind === this.browser_kind) this.ToggleBrowserVisisbility();
-                                               else this.ToggleBrowserKind(browser_kind);
-         }
+         if (update_html) this.brlayout.Toggle(browser_kind);
 
          JSROOT.CallBack(call_back);
 
@@ -1181,7 +1329,7 @@
          this.InitializeBrowser();
       }
 
-      this.ToggleBrowserKind(browser_kind || "fix");
+      this.brlayout.ToggleBrowserKind(browser_kind || "fix");
 
       JSROOT.CallBack(call_back);
 
@@ -1194,7 +1342,7 @@
       if (main.empty()) return;
       var jmain = $(main.node()), hpainter = this;
 
-      if (this.browser_kind === "float") this.AdjustFloatBrowserSize(jmain);
+      if (this.brlayout) this.brlayout.AdjustBrowserSize();
 
       var selects = main.select(".gui_layout").node();
 
@@ -1225,8 +1373,7 @@
                hpainter.EnableMonitoring(this.checked);
                hpainter.updateAll(!this.checked);
             });
-      } else
-      if (!this.no_select) {
+      } else if (!this.no_select) {
          var fname = "";
          this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
          jmain.find(".gui_urlToLoad").val(fname);
@@ -1234,144 +1381,8 @@
    }
 
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
-      if (this.status_disabled || !this.gui_div) return '';
-
-      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
-      if (main.empty()) return '';
-
-      var id = this.gui_div + "_status",
-          line = d3.select("#"+id), hsepar;
-
-      if (!line.empty()) {
-         if (this.status_layout==="app") return !mode ? id : false;
-
-         hsepar = main.select(".jsroot_h_separator");
-
-         $(hsepar.node()).draggable("destroy");
-
-         hsepar.remove();
-         line.remove();
-
-         delete this.status_layout;
-
-         if (this.status_handler && (JSROOT.Painter.ShowStatus === this.status_handler)) {
-            delete JSROOT.Painter.ShowStatus;
-            delete this.status_handler;
-         }
-
-         this.AdjustSeparator(null, 0, true);
-         return "";
-      }
-
-      var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
-
-      line = main.insert("div",".jsroot_browser_area").attr("id",id)
-                 .classed("jsroot_status_area", true)
-                 .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
-                 .style('margin',0).style('border',0);
-
-      hsepar = main.insert("div",".jsroot_browser_area")
-                   .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
-                   .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
-
-      var hpainter = this;
-
-      $(hsepar.node()).draggable({
-         axis: "y" , cursor: "ns-resize", containment: "parent",
-         helper: function() { return $(this).clone().css('background-color','grey'); },
-         drag: function(event,ui) {
-            hpainter.AdjustSeparator(null, -ui.position.top);
-         },
-         stop: function(event,ui) {
-            hpainter.CheckResize();
-         }
-      });
-
-      if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
-      var skip_height_check = (mode==='toggle') && (height === this.last_hsepar_height);
-
-      this.AdjustSeparator(null, height, true);
-
-      if (!mode) {
-         this.status_layout = "app";
-         return id;
-      }
-
-      this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
-      if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
-
-      var frame_titles = ['object name','object title','mouse coordinates','object info'];
-      for (var k=0;k<4;++k)
-         d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
-           .append("label").attr("class","jsroot_status_label");
-
-      this.status_handler = this.ShowStatus.bind(this);
-
-      JSROOT.Painter.ShowStatus = this.status_handler;
-
-      return true;
-   }
-
-   HierarchyPainter.prototype.ShowStatus = function(name, title, info, coordinates) {
-      if (!this.status_layout) return;
-
-      $(this.status_layout.GetFrame(0)).children('label').text(name || "");
-      $(this.status_layout.GetFrame(1)).children('label').text(title || "");
-      $(this.status_layout.GetFrame(2)).children('label').text(coordinates || "");
-      $(this.status_layout.GetFrame(3)).children('label').text(info || "");
-
-      if (!this.status_layout.first_check) {
-         this.status_layout.first_check = true;
-         var maxh = 0;
-         for (var n=0;n<4;++n)
-            maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
-         if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5))) this.AdjustSeparator(null, maxh, true);
-      }
-   }
-
-   HierarchyPainter.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
-
-      if (!this.gui_div) return;
-
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
-
-      if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
-         // if separator set for the first time, check if status line present
-         hsepar = main.select(".jsroot_h_separator").style('bottom');
-         if ((typeof hsepar=='string') && (hsepar.indexOf('px')==hsepar.length-2))
-            hsepar = hsepar.substr(0,hsepar.length-2);
-         else
-            hsepar = null;
-      }
-
-      if (hsepar!==null) {
-         hsepar = parseInt(hsepar);
-         var elem = main.select(".jsroot_h_separator"), hlimit = 0;
-
-         if (!elem.empty()) {
-            if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
-            if (hsepar<5) hsepar = 5;
-            this.last_hsepar_height = hsepar;
-            elem.style('bottom', hsepar+'px').style('height', w+'px');
-            d3.select("#" + this.gui_div + "_status").style('height', hsepar+'px');
-            hlimit = (hsepar+w) + 'px';
-         }
-
-         d3.select("#" + this.gui_div + "_drawing").style('bottom',hlimit);
-      }
-
-      if (vsepar!==null) {
-         vsepar = parseInt(vsepar);
-         if (vsepar<50) vsepar = 50;
-         main.select(".jsroot_browser_area").style('width',(vsepar-5)+'px');
-         d3.select("#" + this.gui_div + "_drawing").style('left',(vsepar+w)+'px');
-         main.select(".jsroot_h_separator").style('left', (vsepar+w)+'px');
-         d3.select("#" + this.gui_div + "_status").style('left',(vsepar+w)+'px');
-         main.select(".jsroot_v_separator").style('left',vsepar+'px').style('width',w+"px");
-      }
-
-
-      if (redraw) this.CheckResize();
+      if (this.status_disabled || !this.gui_div || !this.brlayout) return '';
+      return this.brlayout.CreateStatusLine(height, mode);
    }
 
    JSROOT.BuildGUI = function() {
@@ -2112,8 +2123,8 @@
 
    JSROOT.Painter.AdjustLayout = function(left, height, firsttime) {
       // FIXME: obsolete, will be removed
-      if (JSROOT.hpainter)
-         JSROOT.hpainter.AdjustSeparator(left, height, true);
+      if (JSROOT.hpainter && JSROOT.hpainter.brlayout)
+         JSROOT.hpainter.brlayout.AdjustSeparator(left, height, true);
    }
 
    JSROOT.Painter.ConfigureHSeparator = function(height) {
