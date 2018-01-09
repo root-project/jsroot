@@ -482,6 +482,39 @@
       return true;
    }
 
+   // =================================================================================================
+
+   /// special layout with three different areas for browser (left), status line (bottom) and central drawing
+   /// Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
+   function BrowserLayout(id) {
+      this.gui_div = id;
+   }
+
+   BrowserLayout.prototype.main = function() {
+      return d3.select("#" + this.gui_div);
+   }
+
+   /// method used to create basic elements
+   /// should be called only once
+   BrowserLayout.prototype.Create = function(with_browser) {
+      var main = this.main();
+
+      main.append("div").attr("id", this.gui_div + "_drawing")
+                        .classed("jsroot_draw_area", true)
+                        .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
+
+      if (with_browser) main.append("div").classed("jsroot_browser", true);
+   }
+
+   BrowserLayout.prototype.CreateBrowserBtns = function() {
+      var br = this.main().select(".jsroot_browser");
+      if (br.empty()) return;
+      var btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
+      btns.style('position',"absolute").style("left","7px").style("top","7px");
+      if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+      return btns;
+   }
+
    // =========== painter of hierarchical structures =================================
 
    JSROOT.hpainter = null; // global pointer
@@ -2117,20 +2150,15 @@
    }
 
    HierarchyPainter.prototype.PrepareGuiDiv = function(myDiv, layout) {
+
       this.gui_div = myDiv.attr('id');
 
-      myDiv.append("div").attr("id",this.gui_div + "_drawing")
-                         .classed("jsroot_draw_area", true)
-                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
+      this.brlayout = new BrowserLayout(this.gui_div);
+
+      this.brlayout.Create(!this.exclude_browser);
 
       if (!this.exclude_browser) {
-         var br = myDiv.append("div").classed("jsroot_browser", true);
-
-         var btns = br.append("div").classed("jsroot_browser_btns", true)
-                                    .classed("jsroot", true);
-
-         btns.style('position',"absolute").style("left","7px").style("top","7px");
-         if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
+         var btns = this.brlayout.CreateBrowserBtns();
 
          JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
                             .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
@@ -2688,6 +2716,7 @@
    JSROOT.Painter.ListHierarchy = ListHierarchy;
    JSROOT.Painter.KeysHierarchy = KeysHierarchy;
 
+   JSROOT.BrowserLayout = BrowserLayout;
    JSROOT.HierarchyPainter = HierarchyPainter;
 
    JSROOT.MDIDisplay = MDIDisplay;

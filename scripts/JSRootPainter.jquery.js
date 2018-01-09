@@ -184,6 +184,13 @@
       return menu;
    }
 
+   // =================================================================================================
+
+   var BrowserLayout = JSROOT.BrowserLayout;
+
+
+   // =================================================================================================
+
    var HierarchyPainter = JSROOT.HierarchyPainter;
 
    HierarchyPainter.prototype.isLastSibling = function(hitem) {
@@ -843,7 +850,7 @@
       }
 
       jmain.find(".jsroot_browser_btns")
-          .css('left', left+'px').css('top', top+'px');
+           .css('left', left+'px').css('top', top+'px');
    }
 
    HierarchyPainter.prototype.AdjustFloatBrowserSize = function(jmain, onlycheckmax) {
@@ -1026,7 +1033,6 @@
 
       // one requires top-level container
       if (main.empty()) return false;
-
 
       if ((browser_kind==="float") && this.float_browser_disabled) browser_kind = "fix";
 
