@@ -966,9 +966,9 @@
    HierarchyPainter.prototype.ToggleBrowserVisisbility = function() {
       if (!this.gui_div || (typeof this.browser_visible==='string')) return;
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+          area = main.select('.jsroot_browser_area');
 
-      var area = main.select('.jsroot_browser_area');
       if (area.empty()) return;
 
       var vsepar = main.select(".jsroot_v_separator"),
@@ -994,21 +994,26 @@
          tgt_drawing = "0px";
       }
 
-      var hpainter = this, visible_at_the_end  = !this.browser_visible;
+      var hpainter = this, visible_at_the_end  = !this.browser_visible, _duration = 700;
 
       this.browser_visible = 'changing';
 
-      area.transition().style('left', tgt).duration(700).on("end", function() {
+      area.transition().style('left', tgt).duration(_duration).on("end", function() {
          hpainter.browser_visible = visible_at_the_end;
          if (visible_at_the_end) hpainter.SetButtonsPosition();
       });
 
       if (!visible_at_the_end)
-         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(700);
+         main.select(".jsroot_browser_btns").transition().style('left', '7px').style('top', '7px').duration(_duration);
 
       if (!vsepar.empty()) {
-         vsepar.transition().style('left', tgt_separ).duration(700);
-         drawing.transition().style('left', tgt_drawing).duration(700).on("end", this.CheckResize.bind(this));
+         vsepar.transition().style('left', tgt_separ).duration(_duration);
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
+      }
+
+      if (this.status_layout) {
+         main.select(".jsroot_h_separator").transition().style('left', tgt_drawing).duration(_duration);
+         main.select(".jsroot_status_area").transition().style('left', tgt_drawing).duration(_duration);
       }
    }
 
@@ -1225,7 +1230,7 @@
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
       if (this.status_disabled || !this.gui_div) return '';
 
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
       if (main.empty()) return '';
 
       var id = this.gui_div + "_status",
