@@ -1553,7 +1553,7 @@
       }
 
       var res = { name: "histo", title: histo.fTitle,
-                  x: midx, y: midy,
+                  x: midx, y: midy, exact: true,
                   color1: this.lineatt ? this.lineatt.color : 'green',
                   color2: this.fillatt ? this.fillatt.color : 'blue',
                   lines: this.GetBinTips(findbin) };
