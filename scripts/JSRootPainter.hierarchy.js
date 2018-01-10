@@ -502,8 +502,6 @@
    }
 
    BrowserLayout.prototype.CheckResize = function() {
-      console.log('check brower layout resize');
-
       if (this.hpainter && (typeof this.hpainter.CheckResize == 'function'))
          this.hpainter.CheckResize();
       else if (this.objpainter && (typeof this.objpainter.CheckResize == 'function'))
@@ -550,8 +548,10 @@
 
    BrowserLayout.prototype.DeleteContent = function() {
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
-      if (!main.empty())
-         main.selectAll("*").remove();
+      if (main.empty()) return;
+
+      main.selectAll("*").remove();
+      delete this.browser_visible;
    }
 
    // =========== painter of hierarchical structures =================================

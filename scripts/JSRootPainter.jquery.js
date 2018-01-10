@@ -330,7 +330,7 @@
       if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
    }
 
-   BrowserLayout.prototype.ToggleBrowserVisisbility = function() {
+   BrowserLayout.prototype.ToggleBrowserVisisbility = function(fast_close) {
       if (!this.gui_div || (typeof this.browser_visible==='string')) return;
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
@@ -345,6 +345,7 @@
           tgt_drawing = area.property('last_drawing');
 
       if (!this.browser_visible) {
+         if (fast_close) return;
          area.property('last_left', null).property('last_vsepar',null).property('last_drawing', null);
       } else {
          area.property('last_left', area.style('left'));
@@ -361,11 +362,12 @@
          tgt_drawing = "0px";
       }
 
-      var pthis = this, visible_at_the_end  = !this.browser_visible, _duration = 700;
+      var pthis = this, visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
 
       this.browser_visible = 'changing';
 
       area.transition().style('left', tgt).duration(_duration).on("end", function() {
+         if (fast_close) return;
          pthis.browser_visible = visible_at_the_end;
          if (visible_at_the_end) pthis.SetButtonsPosition();
       });
@@ -375,7 +377,7 @@
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(_duration);
-         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", fast_close ? null : this.CheckResize.bind(this));
       }
 
       if (this.status_layout && (this.browser_kind == 'fix')) {
@@ -392,9 +394,26 @@
       }
    }
 
+   BrowserLayout.prototype.DeleteContent = function() {
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      if (main.empty()) return;
+
+      this.CreateStatusLine("delete");
+      var vsepar = main.select(".jsroot_v_separator");
+      if (!vsepar.empty())
+         $(vsepar.node()).draggable('destroy');
+
+      this.ToggleBrowserVisisbility(true);
+
+      main.selectAll("*").remove();
+      delete this.browser_visible;
+
+      this.CheckResize();
+   }
+
    /// method creates status line
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
-      var main = d3.select("#"+this.gui_div + " .jsroot_browser");
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return '';
 
       var id = this.gui_div + "_status",
@@ -420,6 +439,8 @@
          this.AdjustSeparator(null, 0, true);
          return "";
       }
+
+      if (height === "delete") return;
 
       var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
 
