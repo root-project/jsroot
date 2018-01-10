@@ -3448,7 +3448,7 @@
          if (JSROOT.BrowserLayout && (typeof this.divid == 'string') && !this.batch_mode) {
             this.brlayout = new JSROOT.BrowserLayout(this.divid, null, this);
             this.brlayout.Create(this.divid, true);
-            // this.brlayout.ToggleBrowserKind("fix");
+            // this.brlayout.ToggleBrowserKind("float");
             this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
             console.log('create browser layout drawing in', this.brlayout.drawing_divid());
             JSROOT.RegisterForResize(this.brlayout);
@@ -4226,6 +4226,21 @@
       } else {
          console.log("unrecognized msg " + msg);
       }
+   }
+
+   TCanvasPainter.prototype.ActivateGed = function(objpainter) {
+      // function used to actiavte GED
+
+      if (!this.brlayout) return;
+
+      this.brlayout.SetBrowserContent("<div>GED placeholder</div>");
+      this.brlayout.SetBrowserTitle("Future GED");
+      this.brlayout.ToggleBrowserKind("float");
+
+      // var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      // if (main) main.getController().showGeEditor(true);
+
+      // this.SelectObjectPainter(painter);
    }
 
    TCanvasPainter.prototype.ShowSection = function(that, on) {

@@ -188,6 +188,31 @@
 
    var BrowserLayout = JSROOT.BrowserLayout;
 
+   BrowserLayout.prototype.SetBrowserContent = function(guiCode) {
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+
+      if (main.empty()) return;
+
+      var content = "<div style='overflow:hidden'>" +
+                    "<p class='jsroot_browser_title'>title</p>" +
+                    guiCode +
+                    "</div>";
+
+      main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
+          .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
+          .style('padding-left','5px')
+          .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
+          .html(content);
+   }
+
+   /// set browser title text
+   /// Title also used for dragging of the float browser
+   BrowserLayout.prototype.SetBrowserTitle = function(title) {
+      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      if (!main.empty())
+         main.select(".jsroot_browser_title").text(title);
+   }
+
    BrowserLayout.prototype.ToggleBrowserKind = function(kind) {
 
       if (!this.gui_div) return;
@@ -1194,9 +1219,7 @@
          return true;
       }
 
-      var guiCode = "<div style='overflow:hidden'>"
-                  + '<p class="jsroot_browser_title"></p>'
-                  + "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
+      var guiCode = "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
@@ -1204,8 +1227,7 @@
                  + '<label style="margin-right:5px; vertical-align:middle;">'
                  + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
                  + 'Monitoring</label>';
-      } else
-      if (!this.no_select) {
+      } else if (!this.no_select) {
          var myDiv = d3.select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
              path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
@@ -1229,8 +1251,7 @@
             +'       class="gui_ReadFileBtn" type="button" title="Read the Selected File" value="Load"/>'
             +'<input style="padding:3px;margin-right:5px;"'
             +'       class="gui_ResetUIBtn" type="button" title="Close all opened files and clear drawings" value="Reset"/>'
-      } else
-      if (this.no_select=="file") {
+      } else if (this.no_select == "file") {
          guiCode += '<div style="display:flex;flex-direction:row">';
       }
 
@@ -1238,17 +1259,11 @@
          guiCode += '<select style="padding:2px;margin-right:5px;" title="layout kind" class="gui_layout"></select>'
                   + '</div>';
 
-      guiCode += "</div>";
+      guiCode += '<div id="' + this.gui_div+'_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
 
-      guiCode += '<div id="' + this.gui_div + '_browser_hierarchy" class="jsroot_browser_hierarchy"></div>';
+      this.brlayout.SetBrowserContent(guiCode);
 
-      main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area',true)
-           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
-           .style('padding-left','5px')
-           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
-           .html(guiCode);
-
-      main.select('.jsroot_browser_title').text(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
+      this.brlayout.SetBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
 
       var hpainter = this, localfile_read_callback = null;
 
@@ -1335,7 +1350,7 @@
    HierarchyPainter.prototype.InitializeBrowser = function() {
 
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
-      if (main.empty()) return;
+      if (main.empty() || !this.brlayout) return;
       var jmain = $(main.node()), hpainter = this;
 
       if (this.brlayout) this.brlayout.AdjustBrowserSize();
@@ -1362,7 +1377,7 @@
 
       if (this.is_online) {
          if (this.h && this.h._toptitle)
-            main.select('.jsroot_browser_title').text(this.h._toptitle);
+            this.brlayout.SetBrowserTitle(this.h._toptitle);
          jmain.find(".gui_monitoring")
            .prop('checked', this.IsMonitoring())
            .click(function() {
