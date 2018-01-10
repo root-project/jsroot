@@ -34,12 +34,18 @@ sap.ui.define([
       /// data object includes _kind, _painter and _handle (optionally)
       modelPropertyChange : function(evnt, data) {
          var pars = evnt.getParameters();
-         // console.log('Model property changes', pars.path, pars.value, data._kind);
+         console.log('Model property changes', pars.path, pars.value, data._kind);
 
-         if (data._handle && (typeof data._handle.verifyDirectChange === 'function'))
-            data._handle.verifyDirectChange(data._painter);
+         if (data._handle) {
+            //var subname = pars.path.substr(1);
+            //if (subname in data._handle) data._handle[subname] = pars.value;
 
-         if (data._painter && data._painter.AttributeChange)
+            if (typeof data._handle.verifyDirectChange === 'function')
+                data._handle.verifyDirectChange(data._painter);
+            data._handle.changed = true;
+         }
+
+         if (data._painter && (typeof data._painter.AttributeChange === 'function'))
             data._painter.AttributeChange(data._kind, pars.path.substr(1), pars.value);
 
          if (this.currentPadPainter)
