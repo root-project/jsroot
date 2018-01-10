@@ -3755,10 +3755,7 @@
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
 
-      } else
-      if ((res.length > 0) && (this.options.Hist>0)) {
-         console.log('draw hist ', res.length, 'fill', this.fillatt.color, this.fillatt.empty());
-
+      } else if ((res.length > 0) && (this.options.Hist>0)) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")

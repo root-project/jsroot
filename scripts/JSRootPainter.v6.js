@@ -4228,18 +4228,33 @@
       }
    }
 
-   TCanvasPainter.prototype.ActivateGed = function(objpainter) {
+   TCanvasPainter.prototype.ActivateGed = function(objpainter, kind) {
       // function used to actiavte GED
 
       if (!this.brlayout) return;
 
-      if (typeof this.ShowGed == 'function')
+      if (this.brlayout.HasContent())
          return this.SelectObjectPainter(objpainter);
+
+      var btns = this.brlayout.CreateBrowserBtns();
+
+      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos mode")
+                         .style("margin","3px").on("click", this.brlayout.Toggle.bind(this.brlayout, 'fix'));
+
+      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.circle, 15, "toggle float mode")
+                         .style("margin","3px").on("click", this.brlayout.Toggle.bind(this.brlayout, 'float'));
+
+     JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.cross, 15, "delete GED")
+                         .style("margin","3px").on("click", this.brlayout.DeleteContent.bind(this.brlayout));
+
+      //if (!this.status_disabled)
+      //   JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
+      //                      .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 'on', "toggle"));
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
       this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
       this.brlayout.SetBrowserTitle("GED");
-      this.brlayout.ToggleBrowserKind("float");
+      this.brlayout.ToggleBrowserKind(kind || "float");
 
       var pthis = this;
 
