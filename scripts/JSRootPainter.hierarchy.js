@@ -486,9 +486,10 @@
 
    /// special layout with three different areas for browser (left), status line (bottom) and central drawing
    /// Main application is normal browser in JSROOT, but later one should be able to use it in ROOT6 canvas
-   function BrowserLayout(id, hpainter) {
+   function BrowserLayout(id, hpainter, objpainter) {
       this.gui_div = id;
-      this.hpainter = hpainter; // used for several callbacks when size of different areas is changed
+      this.hpainter = hpainter; // painter for brwoser area (if any)
+      this.objpainter = objpainter; // painter for object area (if any)
       this.browser_kind = null; // should be 'float' or 'fix'
    }
 
@@ -496,9 +497,17 @@
       return d3.select("#" + this.gui_div);
    }
 
+   BrowserLayout.prototype.drawing_divid = function() {
+      return this.gui_div + "_drawing";
+   }
+
    BrowserLayout.prototype.CheckResize = function() {
-      if (this.hpainter && (typeof this.hpainter == 'function'))
+      console.log('check brower layout resize');
+
+      if (this.hpainter && (typeof this.hpainter.CheckResize == 'function'))
          this.hpainter.CheckResize();
+      else if (this.objpainter && (typeof this.objpainter.CheckResize == 'function'))
+         this.objpainter.CheckResize();
    }
 
    /// method used to create basic elements
@@ -506,7 +515,7 @@
    BrowserLayout.prototype.Create = function(with_browser) {
       var main = this.main();
 
-      main.append("div").attr("id", this.gui_div + "_drawing")
+      main.append("div").attr("id", this.drawing_divid())
                         .classed("jsroot_draw_area", true)
                         .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0);
 
@@ -2179,7 +2188,7 @@
                                .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 'on', "toggle"));
       }
 
-      this.SetDisplay(layout, this.gui_div + "_drawing");
+      this.SetDisplay(layout, this.brlayout.drawing_divid());
    }
 
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {

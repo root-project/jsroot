@@ -4811,14 +4811,14 @@
       return painter.DrawingReady();
    }
 
-   // =========================================================================
+   ///////////////////////////////////////////////////////////////////////////////
+   /// function used to react on browser window resize event
+   /// While many resize events could come in short time,
+   /// resize will be handled with delay after last resize event
+   /// handle can be function or object with CheckResize function
+   /// one could specify delay after which resize event will be handled
 
    JSROOT.RegisterForResize = function(handle, delay) {
-      // function used to react on browser window resize event
-      // While many resize events could come in short time,
-      // resize will be handled with delay after last resize event
-      // handle can be function or object with CheckResize function
-      // one could specify delay after which resize event will be handled
 
       if (!handle) return;
 

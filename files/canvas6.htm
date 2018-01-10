@@ -1,10 +1,10 @@
-<!--  this file used for ROOT7 Canvas display -->
+<!--  this file used for ROOT6 Canvas display with TWebWindow -->
 <!DOCTYPE html>
 <html lang="en">
    <head>
       <meta charset="UTF-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <title>Draw of single element</title>
+      <title>ROOT6 TCanvas</title>
       <script type="text/javascript" src="jsrootsys/scripts/JSRootCore.js"></script>
    </head>
    
@@ -61,15 +61,13 @@
             });
          }
 
-         painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else is happens
+         painter.SetDivId("CanvasDiv", -1); // just assign id, nothing else happens
 
          painter.UseWebsocket(handle); // when connection activated, ROOT must send new instance of the canvas
-
-         if (!painter.batch_mode) JSROOT.RegisterForResize(painter);
       }
       
       JSROOT.ConnectWebWindow({
-         prereq: "2d;v6;",
+         prereq: "jq2d;v6;",
          prereq_logdiv: "CanvasDiv",
          callback: InitV6Canvas
       });

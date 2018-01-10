@@ -282,7 +282,11 @@
    BrowserLayout.prototype.SetButtonsPosition = function() {
       if (!this.gui_div) return;
 
-      var jmain = $("#"+this.gui_div+" .jsroot_browser"), top = 7, left = 7;
+      var jmain = $("#"+this.gui_div+" .jsroot_browser"),
+          btns = jmain.find(".jsroot_browser_btns"),
+          top = 7, left = 7;
+
+      if (!btns.length) return;
 
       if (this.browser_visible) {
          var area = jmain.find(".jsroot_browser_area"),
@@ -291,8 +295,7 @@
          left = off1.left - off0.left + area.innerWidth() - 27;
       }
 
-      jmain.find(".jsroot_browser_btns")
-           .css('left', left+'px').css('top', top+'px');
+      btns.css('left', left+'px').css('top', top+'px');
    }
 
    BrowserLayout.prototype.AdjustBrowserSize = function(onlycheckmax) {

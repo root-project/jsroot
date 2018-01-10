@@ -3445,9 +3445,19 @@
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
+         if (JSROOT.BrowserLayout && (typeof this.divid == 'string') && !this.batch_mode) {
+            this.brlayout = new JSROOT.BrowserLayout(this.divid, null, this);
+            this.brlayout.Create(this.divid, true);
+            // this.brlayout.ToggleBrowserKind("fix");
+            this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
+            console.log('create browser layout drawing in', this.brlayout.drawing_divid());
+            JSROOT.RegisterForResize(this.brlayout);
+         }
+
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
-         this.AddOnlineButtons();
+         if (!this.batch_mode)
+            this.AddOnlineButtons();
          this.DrawNextSnap(snap.fPrimitives, 0, call_back);
          return;
       }
