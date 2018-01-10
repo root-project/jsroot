@@ -249,7 +249,7 @@
                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
              }
           });
-         this.AdjustFloatBrowserSize(jmain);
+         this.AdjustBrowserSize();
 
      } else {
 
@@ -295,11 +295,10 @@
            .css('left', left+'px').css('top', top+'px');
    }
 
-   BrowserLayout.prototype.AdjustFloatBrowserSize = function(jmain, onlycheckmax) {
-      if (!jmain) {
-         if (!this.gui_div) return;
-         jmain = $("#" + this.gui_div + " .jsroot_browser");
-      }
+   BrowserLayout.prototype.AdjustBrowserSize = function(onlycheckmax) {
+      if (!this.gui_div || (this.browser_kind !== "float")) return;
+
+      var jmain = $("#" + this.gui_div + " .jsroot_browser");
       if (!jmain.length) return;
 
       var area = jmain.find(".jsroot_browser_area"),
@@ -318,12 +317,6 @@
           h2 = chld.innerHeight();
 
       if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
-   }
-
-   /// function used to ensure that size of browser area fit to content
-   BrowserLayout.prototype.AdjustBrowserSize = function(onlycheckmax) {
-      if (this.browser_kind === "float")
-         this.AdjustFloatBrowserSize(null, onlycheckmax);
    }
 
    BrowserLayout.prototype.ToggleBrowserVisisbility = function() {
