@@ -316,7 +316,33 @@
 
    // ===================================================================================================
 
-   JSROOT.TCanvasPainter.prototype.ActivateGed = function(painter) {
+   JSROOT.TCanvasPainter.prototype.ShowGed = function(objpainter) {
+      // function used to actiavte GED
+
+
+      d3.select("#ged_placeholder").text("");
+
+      var panelid = "CanvasGedId";
+
+      var oModel = new JSROOT.sap.ui.model.json.JSONModel({
+         handle: null
+      });
+
+      sap.ui.getCore().setModel(oModel, panelid);
+
+      var viewName = "sap.ui.jsroot.view.Ged";
+
+      JSROOT.sap.ui.xmlview({
+         id: panelid,
+         viewName : viewName,
+         // layoutData: oLd,
+         // height: "100%"
+      }).placeAt("ged_placeholder");
+
+      this.SelectObjectPainter(objpainter);
+   }
+
+   JSROOT.TCanvasPainter.prototype.ActivateGedOld = function(painter) {
       // function used to actiavte GED
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
@@ -332,10 +358,13 @@
       if (main) main.getController().showLeftArea("FitPanel");
    }
 
-   JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(painter) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      var ged = main ? main.getController().getLeftController("Ged") : null;
-      if (ged) ged.onObjectSelect(this, painter);
+   JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(objpainter) {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId"), ged = null;
+      if (main) ged = main.getController().getLeftController("Ged"); else {
+         main = JSROOT.sap.ui.getCore().byId("CanvasGedId");
+         if (main) ged = main.getController();
+      }
+      if (ged) ged.onObjectSelect(this, objpainter);
    }
 
    JSROOT.TCanvasPainter.prototype.HasEventStatus = function() {

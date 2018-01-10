@@ -3450,8 +3450,8 @@
             this.brlayout.Create(this.divid, true);
             // this.brlayout.ToggleBrowserKind("float");
             this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
-            console.log('create browser layout drawing in', this.brlayout.drawing_divid());
             JSROOT.RegisterForResize(this.brlayout);
+            // this.ActivateGed(this);
          }
 
          this.CreateCanvasSvg(0);
@@ -4233,14 +4233,19 @@
 
       if (!this.brlayout) return;
 
-      this.brlayout.SetBrowserContent("<div>GED placeholder</div>");
-      this.brlayout.SetBrowserTitle("Future GED");
+      if (typeof this.ShowGed == 'function')
+         return this.SelectObjectPainter(objpainter);
+
+      // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
+      this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
+      this.brlayout.SetBrowserTitle("GED");
       this.brlayout.ToggleBrowserKind("float");
 
-      // var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      // if (main) main.getController().showGeEditor(true);
+      var pthis = this;
 
-      // this.SelectObjectPainter(painter);
+      JSROOT.AssertPrerequisites('openui5', function() {
+         pthis.ShowGed(objpainter);
+      });
    }
 
    TCanvasPainter.prototype.ShowSection = function(that, on) {

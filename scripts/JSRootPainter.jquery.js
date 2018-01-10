@@ -193,16 +193,11 @@
 
       if (main.empty()) return;
 
-      var content = "<div style='overflow:hidden'>" +
-                    "<p class='jsroot_browser_title'>title</p>" +
-                    guiCode +
-                    "</div>";
-
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
           .style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('width','250px')
           .style('padding-left','5px')
           .style('display','flex').style('flex-direction', 'column')   /* use the flex model */
-          .html(content);
+          .html("<p class='jsroot_browser_title'>title</p>" +  guiCode);
    }
 
    /// set browser title text
