@@ -3420,6 +3420,11 @@
 
       if (this.enlarge_main('verify'))
          this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+
+      if (this.brlayout) {
+         this.AddButton(JSROOT.ToolbarIcons.diamand, "Toggle Ged", "ToggleGed");
+         this.AddButton(JSROOT.ToolbarIcons.three_circles, "Toggle Status", "ToggleStatus");
+      }
    }
 
    TPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
@@ -3459,8 +3464,6 @@
          this.SetDivId(this.divid);  // now add to painters list
          if (!this.batch_mode)
             this.AddOnlineButtons();
-         if (this.brlayout)
-            this.AddButton(JSROOT.ToolbarIcons.diamand, "Toggle Ged", "ToggleGed");
 
          this.DrawNextSnap(snap.fPrimitives, 0, call_back);
          return;
@@ -4156,7 +4159,6 @@
    }
 
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
-
       if (msg == "CLOSE") {
          this.OnWebsocketClosed();
          this.CloseWebsocket(true);
@@ -4233,22 +4235,28 @@
    }
 
    TCanvasPainter.prototype.PadButtonClick = function(funcname) {
-      if (funcname == "ToggleGed") return this.ActivateGed(this, "toggle");
+      if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
+      if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
       TPadPainter.prototype.PadButtonClick.call(this, funcname);
    }
 
-   TCanvasPainter.prototype.ActivateGed = function(objpainter, kind) {
+   TCanvasPainter.prototype.ActivateStatusBar = function(state) {
+      if (this.brlayout)
+         this.brlayout.CreateStatusLine(25, state);
+   }
+
+   TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to actiavte GED
 
       if (!this.brlayout) return;
 
       if (this.brlayout.HasContent()) {
-         if (kind=="toggle") this.brlayout.DeleteContent();
-                        else this.SelectObjectPainter(objpainter);
-         return;
+         if ((mode === "toggle") || (mode === false))
+            return this.brlayout.DeleteContent();
+         return this.SelectObjectPainter(objpainter);
       }
 
-      if (kind=="toggle") kind = "";
+      if (mode === false) return;
 
       var btns = this.brlayout.CreateBrowserBtns();
 
@@ -4280,8 +4288,8 @@
    TCanvasPainter.prototype.ShowSection = function(that, on) {
       switch(that) {
          case "Menu": break;
-         case "StatusBar": break;
-         case "Editor": break;
+         case "StatusBar": this.ActivateStatusBar(on); break;
+         case "Editor": this.ActivateGed(this, null, !!on); break;
          case "ToolBar": break;
          case "ToolTips": this.SetTooltipAllowed(on); break;
       }

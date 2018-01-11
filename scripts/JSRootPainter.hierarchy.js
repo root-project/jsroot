@@ -2072,7 +2072,7 @@
           monitor = GetOption("monitoring"),
           layout = GetOption("layout"),
           style = GetOptionAsArray("#style"),
-          status = GetOption("status"),
+          statush = 0, status = GetOption("status"),
           browser_kind = GetOption("browser"),
           title = GetOption("title");
 
@@ -2120,7 +2120,8 @@
 
       if (status==="no") status = null; else
       if (status==="off") { this.status_disabled = true; status = null; } else
-      if ((status!==null) && (status!=='on')) { status = parseInt(status); if (isNaN(status) || (status<5)) status = 'on'; }
+      if (status==="on") status = true; else
+      if (status!==null) { statush = parseInt(status); if (isNaN(statush) || (statush<5)) statush = 0; status = true; }
       if (this.no_select==="") this.no_select = true;
 
       if (!browser_kind) browser_kind = "fix"; else
@@ -2139,7 +2140,7 @@
 
       function OpenAllFiles(res) {
          if (browser_kind) { hpainter.CreateBrowser(browser_kind); browser_kind = ""; }
-         if (status) { hpainter.CreateStatusLine(status,"toggle"); status = null; }
+         if (status!==null) { hpainter.CreateStatusLine(statush, status); status = null; }
          if (jsonarr.length>0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
          else if (filesarr.length>0)
@@ -2209,7 +2210,7 @@
 
          if (!this.status_disabled)
             JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
-                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 'on', "toggle"));
+                               .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 0, "toggle"));
       }
 
       this.SetDisplay(layout, this.brlayout.drawing_divid());

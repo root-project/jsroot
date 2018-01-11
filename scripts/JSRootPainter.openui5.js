@@ -400,7 +400,7 @@
       if (main) main.getController().showMessage(msg);
    }
 
-   JSROOT.TCanvasPainter.prototype.ShowSection = function(that, on) {
+   JSROOT.TCanvasPainter.prototype.ShowSectionOld = function(that, on) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showSection(that, on);
    }

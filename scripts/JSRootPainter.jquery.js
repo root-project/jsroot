@@ -412,18 +412,33 @@
       this.CheckResize();
    }
 
+   BrowserLayout.prototype.HasStatus = function() {
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      if (main.empty()) return false;
+
+      var id = this.gui_div + "_status",
+          line = d3.select("#"+id);
+
+      return !line.empty();
+   }
+
    /// method creates status line
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       var main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return '';
 
       var id = this.gui_div + "_status",
-          line = d3.select("#"+id), hsepar;
+          line = d3.select("#"+id), skip_height_check = false,
+          is_visible = !line.empty();
 
-      if (!line.empty()) {
-         if (this.status_layout==="app") return !mode ? id : false;
+      if (mode==="toggle") { mode = !is_visible; skip_height_check = (height === this.last_hsepar_height); } else
+      if (height==="delete") { mode = false; height = 0; delete this.status_layout; } else
+      if (mode===undefined) { mode = true; this.status_layout = "app"; }
 
-         hsepar = main.select(".jsroot_h_separator");
+      if (is_visible) {
+         if ((mode === true) || (this.status_layout==="app")) return id;
+
+         var hsepar = main.select(".jsroot_h_separator");
 
          $(hsepar.node()).draggable("destroy");
 
@@ -441,7 +456,7 @@
          return "";
       }
 
-      if (height === "delete") return;
+      if (mode === false) return "";
 
       var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
 
@@ -450,9 +465,9 @@
                  .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
                  .style('margin',0).style('border',0);
 
-      hsepar = main.insert("div",".jsroot_browser_area")
-                   .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
-                   .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
+      var hsepar = main.insert("div",".jsroot_browser_area")
+                       .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
+                      .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
       var pthis = this;
 
@@ -468,17 +483,12 @@
       });
 
       if (!height || (typeof height === 'string')) height = this.last_hsepar_height || 20;
-      var skip_height_check = (mode==='toggle') && (height === this.last_hsepar_height);
 
       this.AdjustSeparator(null, height, true);
 
-      if (!mode) {
-         this.status_layout = "app";
-         return id;
-      }
+      if (this.status_layout == "app") return id;
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
-      if (skip_height_check) this.status_layout.first_check = true; // if restored size, do not adjust height once again
 
       var frame_titles = ['object name','object title','mouse coordinates','object info'];
       for (var k=0;k<4;++k)
@@ -489,7 +499,7 @@
 
       JSROOT.Painter.ShowStatus = this.status_handler;
 
-      return true;
+      return id;
    }
 
    BrowserLayout.prototype.AdjustSeparator = function(vsepar, hsepar, redraw, first_time) {
@@ -834,7 +844,7 @@
 
       if (status_item && !this.status_disabled && (JSROOT.GetUrlOption('nostatus')===null)) {
          var func = JSROOT.findFunction(status_item._status);
-         var hdiv = (typeof func == 'function') ? this.CreateStatusLine('on') : null;
+         var hdiv = (typeof func == 'function') ? this.CreateStatusLine() : null;
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
