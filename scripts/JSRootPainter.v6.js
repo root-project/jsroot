@@ -3208,6 +3208,8 @@
 
       if (!this.iscan && this.has_canvas) return false;
 
+      if ((size === true) || (size === false)) { force = size; size = null; }
+
       if (size && (typeof size === 'object') && size.force) force = true;
 
       if (!force) force = this.RedrawByResize();
@@ -3451,13 +3453,15 @@
             // this.brlayout.ToggleBrowserKind("float");
             this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
             JSROOT.RegisterForResize(this.brlayout);
-            // this.ActivateGed(this);
          }
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
          if (!this.batch_mode)
             this.AddOnlineButtons();
+         if (this.brlayout)
+            this.AddButton(JSROOT.ToolbarIcons.diamand, "Toggle Ged", "ToggleGed");
+
          this.DrawNextSnap(snap.fPrimitives, 0, call_back);
          return;
       }
@@ -4228,13 +4232,23 @@
       }
    }
 
+   TCanvasPainter.prototype.PadButtonClick = function(funcname) {
+      if (funcname == "ToggleGed") return this.ActivateGed(this, "toggle");
+      TPadPainter.prototype.PadButtonClick.call(this, funcname);
+   }
+
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind) {
       // function used to actiavte GED
 
       if (!this.brlayout) return;
 
-      if (this.brlayout.HasContent())
-         return this.SelectObjectPainter(objpainter);
+      if (this.brlayout.HasContent()) {
+         if (kind=="toggle") this.brlayout.DeleteContent();
+                        else this.SelectObjectPainter(objpainter);
+         return;
+      }
+
+      if (kind=="toggle") kind = "";
 
       var btns = this.brlayout.CreateBrowserBtns();
 

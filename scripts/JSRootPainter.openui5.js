@@ -319,7 +319,6 @@
    JSROOT.TCanvasPainter.prototype.ShowGed = function(objpainter) {
       // function used to actiavte GED
 
-
       d3.select("#ged_placeholder").text("");
 
       var panelid = "CanvasGedId";
@@ -330,14 +329,18 @@
 
       sap.ui.getCore().setModel(oModel, panelid);
 
-      var viewName = "sap.ui.jsroot.view.Ged";
+      var ged = sap.ui.getCore().byId(panelid);
 
-      JSROOT.sap.ui.xmlview({
-         id: panelid,
-         viewName : viewName,
-         // layoutData: oLd,
-         // height: "100%"
-      }).placeAt("ged_placeholder");
+      if (!ged) {
+         ged = JSROOT.sap.ui.xmlview({
+            id: panelid,
+            viewName: "sap.ui.jsroot.view.Ged"
+            // layoutData: oLd,
+            // height: "100%"
+         });
+      }
+
+      ged.placeAt("ged_placeholder");
 
       this.SelectObjectPainter(objpainter);
    }

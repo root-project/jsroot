@@ -377,7 +377,7 @@
 
       if (!vsepar.empty()) {
          vsepar.transition().style('left', tgt_separ).duration(_duration);
-         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", fast_close ? null : this.CheckResize.bind(this));
+         drawing.transition().style('left', tgt_drawing).duration(_duration).on("end", this.CheckResize.bind(this));
       }
 
       if (this.status_layout && (this.browser_kind == 'fix')) {
@@ -407,6 +407,7 @@
 
       main.selectAll("*").remove();
       delete this.browser_visible;
+      delete this.browser_kind;
 
       this.CheckResize();
    }

@@ -2180,7 +2180,6 @@
    }
 
    TObjectPainter.prototype.CheckResize = function(arg) {
-      // no painter - no resize
       var pad_painter = this.pad_painter();
       if (!pad_painter) return false;
 

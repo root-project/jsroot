@@ -3017,6 +3017,8 @@
 
       if (!this.iscan && this.has_canvas) return false;
 
+      if ((size === true) || (size === false)) { force = size; size = null; }
+
       if (size && (typeof size === 'object') && size.force) force = true;
 
       if (!force) force = this.RedrawByResize();

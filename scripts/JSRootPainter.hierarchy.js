@@ -504,8 +504,9 @@
    BrowserLayout.prototype.CheckResize = function() {
       if (this.hpainter && (typeof this.hpainter.CheckResize == 'function'))
          this.hpainter.CheckResize();
-      else if (this.objpainter && (typeof this.objpainter.CheckResize == 'function'))
-         this.objpainter.CheckResize();
+      else if (this.objpainter && (typeof this.objpainter.CheckResize == 'function')) {
+         this.objpainter.CheckResize(true);
+      }
    }
 
    /// method used to create basic elements
