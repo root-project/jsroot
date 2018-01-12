@@ -380,7 +380,7 @@
       if (main) main.getController().toggleShowStatus();
    }
 
-   JSROOT.TCanvasPainter.prototype.ShowStatus = function(lbl1,lbl2,lbl3,lbl4) {
+   JSROOT.TCanvasPainter.prototype.ShowStatusOld = function(lbl1,lbl2,lbl3,lbl4) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
    }

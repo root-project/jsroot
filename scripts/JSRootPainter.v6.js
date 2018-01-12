@@ -4269,10 +4269,6 @@
      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.cross, 15, "delete GED")
                          .style("margin","3px").on("click", this.brlayout.DeleteContent.bind(this.brlayout));
 
-      //if (!this.status_disabled)
-      //   JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.three_circles, 15, "toggle status line")
-      //                      .style("margin","3px").on("click", this.CreateStatusLine.bind(this, 'on', "toggle"));
-
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
       this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
       this.brlayout.SetBrowserTitle("GED");
@@ -4288,7 +4284,7 @@
    TCanvasPainter.prototype.ShowSection = function(that, on) {
       switch(that) {
          case "Menu": break;
-         case "StatusBar": this.ActivateStatusBar(on); break;
+         case "StatusBar": console.log('ACTIVATE STATUS ' + on); this.ActivateStatusBar(on); break;
          case "Editor": this.ActivateGed(this, null, !!on); break;
          case "ToolBar": break;
          case "ToolTips": this.SetTooltipAllowed(on); break;
