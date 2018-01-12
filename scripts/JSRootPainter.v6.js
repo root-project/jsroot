@@ -3121,8 +3121,8 @@
 
       menu.add("separator");
 
-      if (this.ToggleEventStatus)
-         menu.addchk(this.HasEventStatus(), "Event status", this.ToggleEventStatus.bind(this));
+      if (this.ActivateStatusBar)
+         menu.addchk(this.HasEventStatus(), "Event status", this.ActivateStatusBar.bind(this, 'toggle'));
 
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
          menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
@@ -3550,22 +3550,22 @@
 
       for (var k=0;k<this.painters.length;++k)
          if (typeof this.painters[k].GetAllRanges == "function")
-            res += this.painters[k].GetAllRanges(arg);
+            this.painters[k].GetAllRanges(arg);
 
       if (is_top) return JSROOT.toJSON(arg);
    }
 
-   TPadPainter.prototype.GetPadRanges = function(elem) {
+   TPadPainter.prototype.GetPadRanges = function(r) {
       // function returns actual ranges in the pad, which can be applied to the server
       var main = this.frame_painter_ref,
           p = this.svg_pad(this.this_pad_name);
 
-      if (!main || !elem) return false;
+      if (!main || !r) return false;
 
-      elem.ux1 = elem.px1 = main.scale_xmin;
-      elem.uy1 = elem.py1 = main.scale_ymin;
-      elem.ux2 = elem.px2 = main.scale_xmax;
-      elem.uy2 = elem.py2 = main.scale_ymax;
+      r.ux1 = r.px1 = main.scale_xmin;
+      r.uy1 = r.py1 = main.scale_ymin;
+      r.ux2 = r.px2 = main.scale_xmax;
+      r.uy2 = r.py2 = main.scale_ymax;
 
       if (p.empty()) return true;
 
@@ -3578,8 +3578,13 @@
           x1 = func(main.scale_xmin) - k*p.property("draw_x"),
           x2 = x1 + k*p.property("draw_width");
 
-      elem.ux1 = func2(x1);
-      elem.ux2 = func2(x2);
+       // method checks if new value v1 close to the old value v0
+       function match(v1, v0, range) {
+          return (Math.abs(v0-v1)<Math.abs(range)*1e-10) ? v0 : v1;
+       }
+
+      r.ux1 = match( func2(x1), r.ux1, r.px2-r.px1);
+      r.ux2 = match( func2(x2), r.ux2, r.px2-r.px1);
 
       func = main.logy ? JSROOT.log10 : same;
       func2 = main.logy ? exp10 : same;
@@ -3588,8 +3593,8 @@
       var y2 = func(main.scale_ymax) + k*p.property("draw_y"),
           y1 = y2 - k*p.property("draw_height");
 
-      elem.uy1 = func2(y1);
-      elem.uy2 = func2(y2);
+      r.uy1 = match( func2(y1), r.uy1, r.py2-r.py1);
+      r.uy2 = match( func2(y2), r.uy2, r.py2-r.py1);
 
       return true;
    }
@@ -4243,13 +4248,26 @@
       TPadPainter.prototype.PadButtonClick.call(this, funcname);
    }
 
+   TCanvasPainter.prototype.HasEventStatus = function() {
+      if (this.use_openui) return this.fullHasEventStatus();
+
+      return this.brlayout ? this.brlayout.HasStatus() : false;
+   }
+
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
+      if (this.use_openui)
+         return this.fullToggleEventStatus(state);
+
       if (this.brlayout)
          this.brlayout.CreateStatusLine(25, state);
    }
 
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to actiavte GED
+
+      if (this.use_openui)
+         return this.fullActivateGed(objpainter, kind, mode);
+
 
       if (!this.brlayout) return;
 
@@ -4285,9 +4303,12 @@
    }
 
    TCanvasPainter.prototype.ShowSection = function(that, on) {
+      if (this.use_openui)
+         return this.fullShowSection(that, on);
+
       switch(that) {
          case "Menu": break;
-         case "StatusBar": console.log('ACTIVATE STATUS ' + on); this.ActivateStatusBar(on); break;
+         case "StatusBar": this.ActivateStatusBar(on); break;
          case "Editor": this.ActivateGed(this, null, !!on); break;
          case "ToolBar": break;
          case "ToolTips": this.SetTooltipAllowed(on); break;

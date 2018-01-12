@@ -3295,7 +3295,7 @@
 
       var pp = this.pad_painter(), res = JSROOT.Painter.ShowStatus;
 
-      if (pp && (typeof pp.ShowStatus === 'function')) res = pp.ShowStatus;
+      if (pp && pp.use_openui && (typeof pp.fullShowStatus === 'function')) res = pp.fullShowStatus.bind(pp);
 
       if (res && (this.enlarge_main('state')==='on')) res = null;
 

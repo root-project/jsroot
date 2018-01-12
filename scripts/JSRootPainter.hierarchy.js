@@ -555,6 +555,25 @@
       delete this.browser_visible;
    }
 
+   BrowserLayout.prototype.HasStatus = function() {
+      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      if (main.empty()) return false;
+
+      var id = this.gui_div + "_status",
+          line = d3.select("#"+id);
+
+      return !line.empty();
+   }
+
+   BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
+      if (!this.gui_div) return '';
+      var pthis = this;
+      JSROOT.AssertPrerequisites('jq2d', function() {
+         pthis.CreateStatusLine(height, mode);
+      });
+      return this.gui_div + "_status";
+   }
+
    // =========== painter of hierarchical structures =================================
 
    JSROOT.hpainter = null; // global pointer
@@ -2217,12 +2236,8 @@
    }
 
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
-      if (!this.gui_div) return;
-
-      var hpainter = this;
-      JSROOT.AssertPrerequisites('jq2d', function() {
-          hpainter.CreateStatusLine(height, mode);
-      });
+      if (this.status_disabled || !this.gui_div || !this.brlayout) return '';
+      return this.brlayout.CreateStatusLine(height, mode);
    }
 
    HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {

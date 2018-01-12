@@ -30,11 +30,10 @@
    <script type='text/javascript'>
    
       function InitV6Canvas(handle, args) {
-         var use_openui = true;
-         
-         if (JSROOT.GetUrlOption("noopenui") !== null) use_openui = false;
          
          var painter = new JSROOT.TCanvasPainter(null);
+         
+         painter.use_openui = (JSROOT.GetUrlOption("noopenui") === null); 
          painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
          if (painter.batch_mode) JSROOT.BatchMode = true;
 
@@ -43,10 +42,9 @@
             if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
          }
 
-         if (use_openui && !painter.batch_mode) {
+         if (painter.use_openui && !painter.batch_mode) {
 
             painter._configured_socket_kind = args.socket_kind;
-            painter.use_openui = true;
 
             return JSROOT.AssertPrerequisites('openui5', function() {
             

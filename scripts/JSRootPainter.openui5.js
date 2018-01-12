@@ -345,8 +345,8 @@
       this.SelectObjectPainter(objpainter);
    }
 
-   JSROOT.TCanvasPainter.prototype.ActivateGedOld = function(painter) {
-      // function used to actiavte GED
+   JSROOT.TCanvasPainter.prototype.fullActivateGed = function(painter, kind, mode) {
+      // function used to actiavte GED in full canvas
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showGeEditor(true);
@@ -357,30 +357,34 @@
    JSROOT.TCanvasPainter.prototype.ActivateFitPanel = function(painter) {
       // function used to actiavte FitPanel
 
+      if (!this.use_openui) return; // not supported in reduced mode
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showLeftArea("FitPanel");
    }
 
    JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(objpainter) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId"), ged = null;
-      if (main) ged = main.getController().getLeftController("Ged"); else {
-         main = JSROOT.sap.ui.getCore().byId("CanvasGedId");
+      var ged = null;
+      if (this.use_openui) {
+         var main = JSROOT.sap.ui.getCore().byId("TopCanvasId")
+         ged = main.getController().getLeftController("Ged");
+      } else {
+         var main = JSROOT.sap.ui.getCore().byId("CanvasGedId");
          if (main) ged = main.getController();
       }
       if (ged) ged.onObjectSelect(this, objpainter);
    }
 
-   JSROOT.TCanvasPainter.prototype.HasEventStatus = function() {
+   JSROOT.TCanvasPainter.prototype.fullHasEventStatus = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       return main ? main.getController().isStatusShown() : false;
    }
 
-   JSROOT.TCanvasPainter.prototype.ToggleEventStatus = function() {
+   JSROOT.TCanvasPainter.prototype.fullToggleEventStatus = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().toggleShowStatus();
    }
 
-   JSROOT.TCanvasPainter.prototype.ShowStatusOld = function(lbl1,lbl2,lbl3,lbl4) {
+   JSROOT.TCanvasPainter.prototype.fullShowStatus = function(lbl1,lbl2,lbl3,lbl4) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
    }
@@ -396,11 +400,13 @@
    }
 
    JSROOT.TCanvasPainter.prototype.ShowMessage = function(msg) {
+      if (!this.use_openui)
+         return JSROOT.progress(msg, 7000);
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showMessage(msg);
    }
 
-   JSROOT.TCanvasPainter.prototype.ShowSectionOld = function(that, on) {
+   JSROOT.TCanvasPainter.prototype.fullShowSection = function(that, on) {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().showSection(that, on);
    }

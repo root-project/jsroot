@@ -412,16 +412,6 @@
       this.CheckResize();
    }
 
-   BrowserLayout.prototype.HasStatus = function() {
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
-      if (main.empty()) return false;
-
-      var id = this.gui_div + "_status",
-          line = d3.select("#"+id);
-
-      return !line.empty();
-   }
-
    /// method creates status line
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       var main = d3.select("#"+this.gui_div+" .jsroot_browser");
