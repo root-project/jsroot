@@ -3295,61 +3295,6 @@
       }
    }
 
-   TPadPainter.prototype.GetAllRanges = function() {
-      var res = "";
-
-      if (this.snapid) {
-         res = this.GetPadRanges();
-         if (res) res = "id=" + this.snapid + ":" + res + ";";
-      }
-
-      for (var k=0;k<this.painters.length;++k)
-         if (typeof this.painters[k].GetAllRanges == "function")
-            res += this.painters[k].GetAllRanges();
-
-      return res;
-   }
-
-   TPadPainter.prototype.GetPadRanges = function() {
-      // function returns actual ranges in the pad, which can be applied to the server
-      var main = this.main_painter(true, this.this_pad_name),
-          p = this.svg_pad(this.this_pad_name),
-          f = this.svg_frame(this.this_pad_name);
-
-      if (!main) return "";
-
-      var res1 = main.scale_xmin + ":" +
-                 main.scale_xmax + ":" +
-                 main.scale_ymin + ":" +
-                 main.scale_ymax;
-
-      if (f.empty() || p.empty()) return res1 + ":" + res1;
-
-      var res2 = "";
-
-      // calculate user range for full pad
-      var same = function(x) { return x; },
-          exp10 = function(x) { return Math.pow(10, x); };
-
-      var func = main.logx ? JSROOT.log10 : same,
-          func2 = main.logx ? exp10 : same;
-
-      var k = (func(main.scale_xmax) - func(main.scale_xmin))/f.property("draw_width");
-      var x1 = func(main.scale_xmin) - k*f.property("draw_x");
-      var x2 = x1 + k*p.property("draw_width");
-      res2 += func2(x1) + ":" + func2(x2);
-
-      func = main.logy ? JSROOT.log10 : same;
-      func2 = main.logy ? exp10 : same;
-
-      var k = (func(main.scale_ymax) - func(main.scale_ymin))/f.property("draw_height");
-      var y2 = func(main.scale_ymax) + k*f.property("draw_y");
-      var y1 = y2 - k*p.property("draw_height");
-      res2 += ":" + func2(y1) + ":" + func2(y2);
-
-      return res1 + ":" + res2;
-   }
-
    TPadPainter.prototype.ItemContextMenu = function(name) {
        var rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
        var evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };

@@ -3538,59 +3538,60 @@
       }
    }
 
-   TPadPainter.prototype.GetAllRanges = function() {
-      var res = "";
+   TPadPainter.prototype.GetAllRanges = function(arg) {
+      var is_top = (arg === undefined);
+      if (is_top) arg = [];
 
       if (this.snapid) {
-         res = this.GetPadRanges();
-         if (res) res = "id=" + this.snapid + ":" + res + ";";
+         var elem = { _typename: "TWebPadRange", snapid: this.snapid.toString() };
+         if (this.GetPadRanges(elem))
+            arg.push(elem);
       }
 
       for (var k=0;k<this.painters.length;++k)
          if (typeof this.painters[k].GetAllRanges == "function")
-            res += this.painters[k].GetAllRanges();
+            res += this.painters[k].GetAllRanges(arg);
 
-      return res;
+      if (is_top) return JSROOT.toJSON(arg);
    }
 
-   TPadPainter.prototype.GetPadRanges = function() {
+   TPadPainter.prototype.GetPadRanges = function(elem) {
       // function returns actual ranges in the pad, which can be applied to the server
       var main = this.frame_painter_ref,
-          p = this.svg_pad(this.this_pad_name),
-          f = this.svg_frame(this.this_pad_name);
+          p = this.svg_pad(this.this_pad_name);
 
-      if (!main) return "";
+      if (!main || !elem) return false;
 
-      var res1 = main.scale_xmin + ":" +
-                 main.scale_xmax + ":" +
-                 main.scale_ymin + ":" +
-                 main.scale_ymax;
+      elem.ux1 = elem.px1 = main.scale_xmin;
+      elem.uy1 = elem.py1 = main.scale_ymin;
+      elem.ux2 = elem.px2 = main.scale_xmax;
+      elem.uy2 = elem.py2 = main.scale_ymax;
 
-      if (f.empty() || p.empty()) return res1 + ":" + res1;
-
-      var res2 = "";
+      if (p.empty()) return true;
 
       // calculate user range for full pad
       var same = function(x) { return x; },
-          exp10 = function(x) { return Math.pow(10, x); };
+          exp10 = function(x) { return Math.pow(10, x); },
+          func = main.logx ? JSROOT.log10 : same,
+          func2 = main.logx ? exp10 : same,
+          k = (func(main.scale_xmax) - func(main.scale_xmin))/p.property("draw_width"),
+          x1 = func(main.scale_xmin) - k*p.property("draw_x"),
+          x2 = x1 + k*p.property("draw_width");
 
-      var func = main.logx ? JSROOT.log10 : same,
-          func2 = main.logx ? exp10 : same;
-
-      var k = (func(main.scale_xmax) - func(main.scale_xmin))/f.property("draw_width");
-      var x1 = func(main.scale_xmin) - k*f.property("draw_x");
-      var x2 = x1 + k*p.property("draw_width");
-      res2 += func2(x1) + ":" + func2(x2);
+      elem.ux1 = func2(x1);
+      elem.ux2 = func2(x2);
 
       func = main.logy ? JSROOT.log10 : same;
       func2 = main.logy ? exp10 : same;
 
-      var k = (func(main.scale_ymax) - func(main.scale_ymin))/f.property("draw_height");
-      var y2 = func(main.scale_ymax) + k*f.property("draw_y");
-      var y1 = y2 - k*p.property("draw_height");
-      res2 += ":" + func2(y1) + ":" + func2(y2);
+      k = (func(main.scale_ymax) - func(main.scale_ymin))/p.property("draw_height");
+      var y2 = func(main.scale_ymax) + k*p.property("draw_y"),
+          y1 = y2 - k*p.property("draw_height");
 
-      return res1 + ":" + res2;
+      elem.uy1 = func2(y1);
+      elem.uy2 = func2(y2);
+
+      return true;
    }
 
    TPadPainter.prototype.ItemContextMenu = function(name) {
@@ -4188,8 +4189,10 @@
             // console.log('Complete SNAP6', pthis.snap_cnt);
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetAllRanges();
-            if (ranges) ranges = ":" + ranges;
-            // if (ranges) console.log("ranges: " + ranges);
+            if (ranges) {
+               console.log("ranges: " + ranges);
+               ranges = ":" + ranges;
+            }
             handle.Send("RREADY:" + snapid + ranges); // send ready message back when drawing completed
          });
 
