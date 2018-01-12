@@ -95,11 +95,17 @@
       return false;
    }
 
+   THistPainter.prototype.Clear3DScene = function() {
+      var fp = this.frame_painter();
+      if (fp && typeof fp.Create3DScene === 'function')
+         fp.Create3DScene(-1);
+      this.mode3d = false;
+   }
+
    THistPainter.prototype.Cleanup = function() {
 
       // clear all 3D buffers
-      if (typeof this.Create3DScene === 'function')
-         this.Create3DScene(-1);
+      this.Clear3DScene();
 
       delete this.fPalette;
       delete this.fContour;
@@ -1688,9 +1694,8 @@
    }
 
    TH1Painter.prototype.Draw2D = function(call_back) {
-      if (typeof this.Create3DScene === 'function')
-         this.Create3DScene(-1);
 
+      this.Clear3DScene();
       this.mode3d = false;
 
       // this.ScanContent(true);
@@ -3516,9 +3521,7 @@
    TH2Painter.prototype.Draw2D = function(call_back, resize) {
 
       this.mode3d = false;
-
-      if (typeof this.Create3DScene == 'function')
-         this.Create3DScene(-1);
+      this.Clear3DScene();
 
       // draw new palette, resize frame if required
       // var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
