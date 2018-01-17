@@ -2623,6 +2623,12 @@
 
       if (!is_main) is_main = 0;
 
+      // check if element really exists
+      if ((is_main >= 0) && this.select_main(true).empty()) {
+         if (typeof divid == 'string') console.error('element with id ' + divid + ' not exists');
+         return;
+      }
+
       this.create_canvas = false;
 
       // SVG element where canvas is drawn
