@@ -2626,6 +2626,7 @@
       // check if element really exists
       if ((is_main >= 0) && this.select_main(true).empty()) {
          if (typeof divid == 'string') console.error('element with id ' + divid + ' not exists');
+                                  else console.error('specified HTML element can not be selected with d3.select()');
          return;
       }
 
