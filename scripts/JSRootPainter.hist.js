@@ -1907,6 +1907,11 @@
       return option;
    }
 
+   /// returns draw option for histogram
+   THistPainter.prototype.GetDrawOptions = function() {
+      return this.options && this.options.original ? this.options.original : "";
+   }
+
    THistPainter.prototype.GetAutoColor = function(col) {
       if (this.options.AutoColor<=0) return col;
 

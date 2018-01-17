@@ -187,6 +187,10 @@ sap.ui.define([
          if (new_state && p) p.SelectObjectPainter(p);
       },
 
+      isGedEditor : function() {
+         return this.getView().getModel().getProperty("/LeftArea") == "Ged";
+      },
+
       showPanelInLeftArea : function(panel_name, panel_handle, call_back) {
 
          var split = this.getView().byId("MainAreaSplitter");

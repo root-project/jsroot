@@ -345,7 +345,12 @@
       this.SelectObjectPainter(objpainter);
    }
 
-   JSROOT.TCanvasPainter.prototype.fullActivateGed = function(painter, kind, mode) {
+   JSROOT.TCanvasPainter.prototype.openuiHasGed = function() {
+      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
+      return main ? main.getController().isGedEditor() : false;
+   }
+
+   JSROOT.TCanvasPainter.prototype.openuiActivateGed = function(painter, kind, mode) {
       // function used to actiavte GED in full canvas
 
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
@@ -374,12 +379,12 @@
       if (ged) ged.onObjectSelect(this, objpainter);
    }
 
-   JSROOT.TCanvasPainter.prototype.fullHasEventStatus = function() {
+   JSROOT.TCanvasPainter.prototype.openuiHasEventStatus = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       return main ? main.getController().isStatusShown() : false;
    }
 
-   JSROOT.TCanvasPainter.prototype.fullToggleEventStatus = function() {
+   JSROOT.TCanvasPainter.prototype.openuiToggleEventStatus = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       if (main) main.getController().toggleShowStatus();
    }

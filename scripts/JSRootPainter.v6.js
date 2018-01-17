@@ -3539,18 +3539,29 @@
    }
 
    TPadPainter.prototype.GetAllRanges = function(arg) {
-      var is_top = (arg === undefined);
+      var is_top = (arg === undefined), elem = null;
       if (is_top) arg = [];
 
       if (this.snapid) {
-         var elem = { _typename: "TWebPadRange", snapid: this.snapid.toString() };
+         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(), bits: 0, primitives: [] };
+
+         if (this.iscan) {
+            if (this.HasEventStatus()) elem.bits |= JSROOT.TCanvasStatusBits.kShowEventStatus;
+            if (this.HasGed()) elem.bits |= JSROOT.TCanvasStatusBits.kShowEditor;
+            if (this.IsTooltipAllowed()) elem.bits |= JSROOT.TCanvasStatusBits.kShowToolTips;
+         }
+
          if (this.GetPadRanges(elem))
             arg.push(elem);
       }
 
-      for (var k=0;k<this.painters.length;++k)
-         if (typeof this.painters[k].GetAllRanges == "function")
-            this.painters[k].GetAllRanges(arg);
+      for (var k=0;k<this.painters.length;++k) {
+         var sub = this.painters[k];
+         if (typeof sub.GetAllRanges == "function")
+            sub.GetAllRanges(arg);
+         else if (sub.snapid && (typeof sub.GetDrawOptions == "function"))
+            elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.GetDrawOptions() });
+      }
 
       if (is_top) return JSROOT.toJSON(arg);
    }
@@ -4249,25 +4260,32 @@
    }
 
    TCanvasPainter.prototype.HasEventStatus = function() {
-      if (this.use_openui) return this.fullHasEventStatus();
+      if (this.use_openui) return this.openuiHasEventStatus();
 
       return this.brlayout ? this.brlayout.HasStatus() : false;
    }
 
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
       if (this.use_openui)
-         return this.fullToggleEventStatus(state);
+         return this.openuiToggleEventStatus(state);
 
       if (this.brlayout)
          this.brlayout.CreateStatusLine(25, state);
    }
 
+   TCanvasPainter.prototype.HasGed = function() {
+      if (this.use_openui)
+         return this.openuiHasGed();
+
+      return this.brlayout ? this.brlayout.HasContent() : false;
+   }
+
+
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to actiavte GED
 
       if (this.use_openui)
-         return this.fullActivateGed(objpainter, kind, mode);
-
+         return this.openuiActivateGed(objpainter, kind, mode);
 
       if (!this.brlayout) return;
 
@@ -4327,10 +4345,6 @@
       this.ShowSection("ToolBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
       this.ShowSection("Editor", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
       this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
-   }
-
-   TCanvasPainter.prototype.HasEventStatus = function() {
-      return this.has_event_status;
    }
 
    function drawCanvas(divid, can, opt) {
