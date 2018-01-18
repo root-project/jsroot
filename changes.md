@@ -20,7 +20,8 @@
 17. Implement "RX", "RY" options for TGraph
 18. Make drawing of TCanvas with many primitives smoother 
 19. Correct positioning of custom axis labels
-20. Correctly show histogram with negative bins and fill attributes (#143) 
+20. Correctly show histogram with negative bins and fill attributes (#143)
+21. Fix - correctly toggle lin/log axes in lego plot
 
 
 ## Changes in 5.3.0

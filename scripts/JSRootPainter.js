@@ -2089,7 +2089,7 @@
       var keep_origin = true;
 
       if (this.is_main_painter()) {
-         var pp = this.pad_painter(true);
+         var pp = this.pad_painter();
          if (!pp || pp.normal_canvas === false) keep_origin = false;
       }
 
@@ -2151,8 +2151,13 @@
       return res;
    }
 
-   TObjectPainter.prototype.pad_painter = function(active_pad) {
-      var elem = active_pad ? this.svg_pad() : this.svg_canvas();
+   TObjectPainter.prototype.pad_painter = function() {
+      var elem = this.svg_pad();
+      return elem.empty() ? null : elem.property('pad_painter');
+   }
+
+   TObjectPainter.prototype.canv_painter = function() {
+      var elem = this.svg_canvas();
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
@@ -2160,7 +2165,7 @@
       var jsarr = this.root_colors;
 
       if (!jsarr) {
-         var pp = this.pad_painter();
+         var pp = this.canv_painter();
          jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
       }
 
@@ -2170,7 +2175,7 @@
    TObjectPainter.prototype.add_color = function(color) {
       var jsarr = this.root_colors;
       if (!jsarr) {
-         var pp = this.pad_painter();
+         var pp = this.canv_painter();
          jsarr = this.root_colors = (pp && pp.root_colors) ? pp.root_colors : JSROOT.Painter.root_colors;
       }
       var indx = jsarr.indexOf(color);
@@ -2180,7 +2185,7 @@
    }
 
    TObjectPainter.prototype.CheckResize = function(arg) {
-      var pad_painter = this.pad_painter();
+      var pad_painter = this.canv_painter();
       if (!pad_painter) return false;
 
       // only canvas should be checked
@@ -2290,7 +2295,7 @@
    }
 
    TObjectPainter.prototype.root_pad = function() {
-      var pad_painter = this.pad_painter(true);
+      var pad_painter = this.pad_painter();
       return pad_painter ? pad_painter.pad : null;
    }
 
@@ -2349,7 +2354,7 @@
    }
 
    TObjectPainter.prototype.frame_painter = function() {
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       return pp ? pp.frame_painter_ref : null;
    }
 
@@ -2701,7 +2706,7 @@
       if (painter) return userfunc(painter);
 
       // iterate over all painters from pad list
-      var pad_painter = this.pad_painter(true);
+      var pad_painter = this.pad_painter();
       if (pad_painter)
          pad_painter.ForEachPainterInPad(userfunc);
    }
@@ -2709,7 +2714,7 @@
    TObjectPainter.prototype.RedrawPad = function() {
       // call Redraw methods for each painter in the frame
       // if selobj specified, painter with selected object will be redrawn
-      var pad_painter = this.pad_painter(true);
+      var pad_painter = this.pad_painter();
       if (pad_painter) pad_painter.Redraw();
    }
 
@@ -2875,7 +2880,7 @@
                      var rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   } else if (callback.canselect && (spent <= 600)) {
-                     pthis.pad_painter().SelectObjectPainter(pthis);
+                     pthis.canv_painter().SelectObjectPainter(pthis);
                   }
 
                }
@@ -3044,7 +3049,7 @@
          return true;
       }
 
-      var canvp = this.pad_painter();
+      var canvp = this.canv_painter();
       if (!canvp) return false;
 
       if ((method.fName == "FitPanel") && canvp.ActivateFitPanel) {
@@ -3063,13 +3068,13 @@
 
    TObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
 
-      var canvp = this.pad_painter();
+      var canvp = this.canv_painter();
 
       if (!this.snapid || !canvp || !canvp._websocket || canvp._getmenu_callback)
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         var canvp = this.pad_painter(),
+         var canvp = this.canv_painter(),
              item = this.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
@@ -3300,7 +3305,7 @@
       // return function used to display object status
       // automatically disabled when drawing is enlarged - status line will be invisible
 
-      var pp = this.pad_painter(), res = JSROOT.Painter.ShowStatus;
+      var pp = this.canv_painter(), res = JSROOT.Painter.ShowStatus;
 
       if (pp && pp.use_openui && (typeof pp.fullShowStatus === 'function')) res = pp.fullShowStatus.bind(pp);
 
@@ -3323,7 +3328,7 @@
       // try to find object by name in list of pad primitives
       // used to find title drawing
 
-      var painter = this.pad_painter(true);
+      var painter = this.pad_painter();
       if ((painter === null) || (painter.pad === null)) return null;
 
       if (painter.pad.fPrimitives !== null)
@@ -3340,7 +3345,7 @@
       // can be used to find painter for some special objects, registered as
       // histogram functions
 
-      var painter = this.pad_painter(true);
+      var painter = this.pad_painter();
       var painters = (painter === null) ? null : painter.painters;
       if (painters === null) return null;
 
@@ -4444,7 +4449,7 @@
       // return layer where frame tooltips are shown
       // only canvas info_layer can be used while other pads can overlay
 
-      var pp = this.pad_painter();
+      var pp = this.canv_painter();
       return pp ? pp.svg_layer("info_layer") : d3.select(null);
    }
 
@@ -4477,7 +4482,7 @@
           textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
           frame_rect = this.GetFrameRect(),
           pad_width = this.pad_width(),
-          pp = this.pad_painter(true),
+          pp = this.pad_painter(),
           font = JSROOT.Painter.getFontDetails(160, textheight),
           status_func = this.GetShowStatusFunc(),
           disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
@@ -5215,7 +5220,7 @@
 
       var dummy = new TObjectPainter();
       dummy.SetDivId(divid, -1);
-      var can_painter = dummy.pad_painter();
+      var can_painter = dummy.canv_painter();
 
       var handle = null;
       if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);

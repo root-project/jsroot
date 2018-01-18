@@ -31,7 +31,7 @@
 
    function drawText() {
       var drawable = this.GetObject(),
-          pp = this.pad_painter(),
+          pp = this.canv_painter(),
           w = this.pad_width(),
           h = this.pad_height(),
           use_frame = false,

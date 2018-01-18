@@ -1228,7 +1228,7 @@
 
    TFramePainter.prototype.Redraw = function() {
 
-      var pp = this.pad_painter();
+      var pp = this.canv_painter();
 
       if (pp) pp.frame_painter_ref = this;
       if (this.mode3d) return;
@@ -1373,7 +1373,7 @@
       // function called when frame is clicked and object selection can be performed
       // such event can be used to select
 
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (!pp) return;
 
       pnt.painters = true; // provide painters reference in the hints
@@ -1521,7 +1521,7 @@
    }
 
    TFramePainter.prototype.FindAlternativeClickHandler = function(pos) {
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (!pp) return false;
 
       var pnt = { x: pos[0], y: pos[1], painters: true, disabled: true, click_handler: true };
@@ -1662,10 +1662,10 @@
                if (fp) fp.ProcessFrameClick(pnt);
                break;
             case 2:
-               this.pad_painter().SelectObjectPainter(this.x_handle);
+               this.canv_painter().SelectObjectPainter(this.x_handle);
                break;
             case 3:
-               this.pad_painter().SelectObjectPainter(this.y_handle);
+               this.canv_painter().SelectObjectPainter(this.y_handle);
                break;
          }
       }
@@ -1873,7 +1873,7 @@
          if (kind === undefined) {
             var ms = d3.mouse(this.svg_frame().node()),
                 tch = d3.touches(this.svg_frame().node()),
-                pp = this.pad_painter(true),
+                pp = this.pad_painter(),
                 pnt = null, sel = null;
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
@@ -2114,7 +2114,7 @@
       // it is typically for 2-Dim histograms or
       // when histogram not draw, defined by other painters
 
-      var pad_painter = this.pad_painter(true);
+      var pad_painter = this.pad_painter();
       if (pad_painter &&  pad_painter.painters)
          for (var k = 0; k < pad_painter.painters.length; ++k) {
             var subpainter = pad_painter.painters[k];
@@ -2254,7 +2254,7 @@
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
-         var pp = this.pad_painter(true),
+         var pp = this.pad_painter(),
              func = pp ? pp.FindButton(key) : "";
          if (func) {
             pp.PadButtonClick(func);
@@ -2437,7 +2437,7 @@
          if (kind === "labels") return;
       }
 
-      var pp = this.pad_painter(true), canp = this.pad_painter();
+      var pp = this.pad_painter(), canp = this.canv_painter();
       if (pp && pp.snapid && canp && canp._websocket) {
          canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
       } else {
@@ -3362,7 +3362,7 @@
 
       if (elem.empty()) return;
 
-      var painter = full_canvas ? this.pad_painter() : this;
+      var painter = full_canvas ? this.canv_painter() : this;
 
       document.body.style.cursor = 'wait';
 
@@ -3608,8 +3608,8 @@
          ctrl.attr("x", group.property('nextx'));
       }
 
-      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.pad_painter()!==this) && (funcname !== "EnlargePad"))
-         this.pad_painter().AddButton(btn, tooltip, funcname);
+      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.canv_painter()!==this) && (funcname !== "EnlargePad"))
+         this.canv_painter().AddButton(btn, tooltip, funcname);
    }
 
 //   TPadPainter.prototype.DrawingReady = function(res_painter) {

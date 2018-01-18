@@ -3025,7 +3025,7 @@
    }
 
    TGeoPainter.prototype.CheckResize = function(size) {
-      var pad_painter = this.pad_painter();
+      var pad_painter = this.canv_painter();
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step

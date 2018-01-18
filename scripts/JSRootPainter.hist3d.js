@@ -2912,7 +2912,7 @@
    }
 
    TH3Painter.prototype.FillToolbar = function() {
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (pp===null) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Unzoom all axes', 'ToggleZoom', "Ctrl *");

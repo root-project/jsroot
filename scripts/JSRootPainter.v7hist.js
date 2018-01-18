@@ -150,7 +150,7 @@
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
 
-         var pp = this.pad_painter(true);
+         var pp = this.pad_painter();
          if (this.palette && pp) {
             var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
 
@@ -166,7 +166,7 @@
       }
 */
       var obj = this.GetObject().fOpts.fHistAttrs,
-          pp = this.pad_painter();
+          pp = this.canv_painter();
 
       if (!this.fillatt || !this.fillatt.changed)
          this.fillatt = this.createAttFill(null, 0, 0);
@@ -341,7 +341,7 @@
    }
 
    THistPainter.prototype.FillToolbar = function() {
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
@@ -591,7 +591,7 @@
 
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
-         var pp = this.options.Palette ? null : this.pad_painter();
+         var pp = this.options.Palette ? null : this.canv_painter();
          this.fPalette = (pp && pp.CanvasPalette) ? pp.CanvasPalette : JSROOT.Painter.GetColorPalette(this.options.Palette);
       }
       return this.fPalette;
@@ -1795,7 +1795,7 @@
       this.is_projection = (this.is_projection === kind) ? "" : kind;
       this.projection_width = width;
 
-      var canp = this.pad_painter();
+      var canp = this.canv_painter();
       if (canp) canp.ToggleProjection(this.is_projection, this.RedrawProjection.bind(this));
    }
 
@@ -1881,7 +1881,7 @@
    TH2Painter.prototype.FillToolbar = function() {
       THistPainter.prototype.FillToolbar.call(this);
 
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (pp===null) return;
 
       if (!this.IsTH2Poly())

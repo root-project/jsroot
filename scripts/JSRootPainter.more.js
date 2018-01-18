@@ -1042,7 +1042,7 @@
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
 
-         var pp = this.pad_painter(true);
+         var pp = this.pad_painter();
          if (this.palette && pp) {
             var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
 
@@ -1679,7 +1679,7 @@
    TGraphPainter.prototype.endPntHandler = function() {
       if (this.snapid && this.interactive_bin) {
          var exec = "SetPoint(" + this.interactive_bin.indx + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
-         var canp = this.pad_painter();
+         var canp = this.canv_painter();
          if (canp) canp.SendWebsocket("OBJEXEC:" + this.snapid + ":" + exec);
       }
 
@@ -1715,7 +1715,7 @@
    TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
       if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
-      var canp = this.pad_painter(), fp = this.frame_painter();
+      var canp = this.canv_painter(), fp = this.frame_painter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
          var pnt = fp ? fp.GetLastEventPos() : null;
@@ -1822,7 +1822,7 @@
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      var pp = this.pad_painter();
+      var pp = this.canv_painter();
       if (pp && pp.normal_canvas) return null;
 
       this.create_stats = true;
@@ -2809,7 +2809,7 @@
          delete this.wait_animation_frame;
 
          // clear pad
-         var pp = this.pad_painter(true);
+         var pp = this.pad_painter();
          if (!pp) {
             // most probably, pad is cleared
             delete this.step;

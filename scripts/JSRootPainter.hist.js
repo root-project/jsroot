@@ -1945,7 +1945,7 @@
          if (!this.pallette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
 
-         var pp = this.pad_painter(true);
+         var pp = this.pad_painter();
          if (this.palette && pp) {
             var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
 
@@ -2468,7 +2468,7 @@
       if (this.Dimension()>1) return true;
       if (this.draw_content) return false;
 
-      var pad_painter = this.pad_painter(true);
+      var pad_painter = this.pad_painter();
       if (pad_painter &&  pad_painter.painters)
          for (var k = 0; k < pad_painter.painters.length; ++k) {
             var subpainter = pad_painter.painters[k];
@@ -2531,7 +2531,7 @@
          if (kind === undefined) {
             var ms = d3.mouse(this.svg_frame().node()),
                 tch = d3.touches(this.svg_frame().node()),
-                pp = this.pad_painter(true),
+                pp = this.pad_painter(),
                 pnt = null, sel = null;
 
             fp = this.frame_painter();
@@ -2712,7 +2712,7 @@
    }
 
    THistPainter.prototype.FillToolbar = function() {
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
@@ -2880,7 +2880,7 @@
 
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
-         var pp = this.options.Palette ? null : this.pad_painter();
+         var pp = this.options.Palette ? null : this.canv_painter();
          this.fPalette = (pp && pp.CanvasPalette) ? pp.CanvasPalette : JSROOT.Painter.GetColorPalette(this.options.Palette);
       }
       return this.fPalette;
@@ -4225,7 +4225,7 @@
       this.is_projection = (this.is_projection === kind) ? "" : kind;
       this.projection_width = width;
 
-      var canp = this.pad_painter();
+      var canp = this.canv_painter();
       if (canp) canp.ToggleProjection(this.is_projection, this.RedrawProjection.bind(this));
    }
 
@@ -4239,7 +4239,7 @@
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
       }
 
-      var canp = this.pad_painter();
+      var canp = this.canv_painter();
 
       if (canp && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
@@ -4362,7 +4362,7 @@
    TH2Painter.prototype.FillToolbar = function() {
       THistPainter.prototype.FillToolbar.call(this);
 
-      var pp = this.pad_painter(true);
+      var pp = this.pad_painter();
       if (pp===null) return;
 
       if (!this.IsTH2Poly())
