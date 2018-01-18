@@ -3139,25 +3139,16 @@
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT
-         pad.fLogx = pad.fLogy = 0;
+         // pad.fLogx = pad.fLogy = 0;
          pad.fUxmin = pad.fUymin = -0.9;
          pad.fUxmax = pad.fUymax = 0.9;
       } else {
          pad.fLogx = (this.swap_xy ? this.logy : this.logx) ? 1 : 0;
-         pad.fUxmin = this.scale_xmin;
-         pad.fUxmax = this.scale_xmax;
+         pad.fUxmin = pad.fLogx ? JSROOT.log10(this.scale_xmin) : this.scale_xmin;
+         pad.fUxmax = pad.fLogx ? JSROOT.log10(this.scale_xmax) : this.scale_xmax;
          pad.fLogy = (this.swap_xy ? this.logx : this.logy) ? 1 : 0;
-         pad.fUymin = this.scale_ymin;
-         pad.fUymax = this.scale_ymax;
-      }
-
-      if (pad.fLogx) {
-         pad.fUxmin = JSROOT.log10(pad.fUxmin);
-         pad.fUxmax = JSROOT.log10(pad.fUxmax);
-      }
-      if (pad.fLogy) {
-         pad.fUymin = JSROOT.log10(pad.fUymin);
-         pad.fUymax = JSROOT.log10(pad.fUymax);
+         pad.fUymin = pad.fLogy ? JSROOT.log10(this.scale_ymin) : this.scale_ymin;
+         pad.fUymax = pad.fLogy ? JSROOT.log10(this.scale_ymax) : this.scale_ymax;
       }
 
       var rx = pad.fUxmax - pad.fUxmin,
