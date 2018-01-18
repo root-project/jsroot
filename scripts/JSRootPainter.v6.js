@@ -1643,23 +1643,24 @@
    }
 
    TFramePainter.prototype.ToggleLog = function(axis) {
-      var pad = this.root_pad(),
-          curr = pad["fLog" + axis];
+      var pad = this.root_pad();
+      if (!pad) return;
+
       // do not allow log scale for labels
-      if (!curr) {
+      if (!pad["fLog" + axis]) {
          var kind = this[axis+"_kind"];
          if (this.swap_xy && axis==="x") kind = this.y_kind; else
          if (this.swap_xy && axis==="y") kind = this.x_kind;
          if (kind === "labels") return;
       }
 
-      var pp = this.pad_painter(), canp = this.canv_painter();
-      if (pp && pp.snapid && canp && canp._websocket) {
-         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
-      } else {
-         pad["fLog" + axis] = curr ? 0 : 1;
-         this.RedrawPad();
-      }
+      // directly change attribute in the pad
+      pad["fLog" + axis] = pad["fLog" + axis] ? 0 : 1;
+
+      this.RedrawPad();
+
+      var canp = this.canv_painter();
+      if (canp) canp.ProcessChanges("log"+axis, this.pad_painter());
    }
 
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
@@ -2135,7 +2136,7 @@
          this.RedrawPad();
 
          var canp = this.canv_painter(); // top-level painter
-         if (canp) canp.ProcessChanges("zoom", this);
+         if (canp) canp.ProcessChanges("zoom", this.pad_painter());
       }
 
       return changed;
@@ -3097,6 +3098,8 @@
             this.pad[arg.substr(1)] = parseInt(arg[0]);
             var main = this.svg_pad(this.this_pad_name).property('mainpainter');
             if (main && (typeof main.DrawAxes == 'function')) main.DrawAxes();
+            var canp = this.canv_painter();
+            if (canp) canp.ProcessChanges(arg.substr(1), this.pad_painter());
          }
 
          menu.addchk(this.pad.fGridx, 'Grid x', (this.pad.fGridx ? '0' : '1') + 'fGridx', SetPadField);
@@ -4321,6 +4324,12 @@
       this.ShowSection("ToolBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
       this.ShowSection("Editor", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
       this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
+   }
+
+   /// method informs that something was changed in the canvas
+   /// used ti update information on the server (when used for webgui)
+   TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
+      // console.log('Get canvas changes', kind);
    }
 
    function drawCanvas(divid, can, opt) {

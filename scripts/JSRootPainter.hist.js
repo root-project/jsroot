@@ -4070,6 +4070,9 @@
 
          // redraw all objects
          this.RedrawPad();
+
+         var canp = this.canv_painter();
+         if (canp) canp.ProcessChanges("drawopt", this.pad_painter());
       });
    }
 
