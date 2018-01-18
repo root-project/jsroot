@@ -3542,7 +3542,10 @@
       if (is_top) arg = [];
 
       if (this.snapid) {
-         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(), bits: 0, primitives: [] };
+         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(), bits: 0, primitives: [],
+                  logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
+                  gridx: this.pad.fGridx, gridy: this.pad.fGridy,
+                  tickx: this.pad.fTickx, ticky: this.pad.fTicky };
 
          if (this.iscan) {
             if (this.HasEventStatus()) elem.bits |= JSROOT.TCanvasStatusBits.kShowEventStatus;
@@ -4329,7 +4332,10 @@
    /// method informs that something was changed in the canvas
    /// used ti update information on the server (when used for webgui)
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
-      // console.log('Get canvas changes', kind);
+      console.log('Get canvas changes', kind);
+
+      if (this._websocket)
+         this._websocket.Send("RANGES6:" + this.GetAllRanges());
    }
 
    function drawCanvas(divid, can, opt) {
