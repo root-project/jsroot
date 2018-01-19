@@ -33,6 +33,7 @@
          
          var painter = new JSROOT.TCanvasPainter(null);
          
+         painter.online_canvas = true;
          painter.use_openui = (JSROOT.GetUrlOption("noopenui") === null); 
          painter.batch_mode = JSROOT.GetUrlOption("batch_mode") !== null;
          if (painter.batch_mode) JSROOT.BatchMode = true;

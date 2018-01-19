@@ -1931,10 +1931,9 @@
 
    THistPainter.prototype.CheckPadRange = function() {
 
-      // work will be done when frame will draw axes
+      // actual work will be done when frame will draw axes
       if (this.is_main_painter())
          this.check_pad_range = true;
-
    }
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {

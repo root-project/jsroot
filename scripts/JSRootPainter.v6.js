@@ -1077,8 +1077,12 @@
          if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
          if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
 
-         this.CheckPadUserRange(pad, 'x');
-         this.CheckPadUserRange(pad, 'y');
+         var canp = this.canv_painter();
+         // ignore range set in the online canvas
+         if (!canp || !canp.online_canvas) {
+            this.CheckPadUserRange(pad, 'x');
+            this.CheckPadUserRange(pad, 'y');
+         }
       }
 
       if (this.zoom_xmin != this.zoom_xmax) {
@@ -4194,7 +4198,7 @@
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetAllRanges();
             if (ranges) {
-               console.log("ranges: " + ranges);
+               // console.log("ranges: " + ranges);
                ranges = ":" + ranges;
             }
             handle.Send("READY6:" + snapid + ranges); // send ready message back when drawing completed
