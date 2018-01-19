@@ -2151,8 +2151,8 @@
       return res;
    }
 
-   TObjectPainter.prototype.pad_painter = function() {
-      var elem = this.svg_pad();
+   TObjectPainter.prototype.pad_painter = function(pad_name) {
+      var elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 

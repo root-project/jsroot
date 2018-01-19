@@ -4332,8 +4332,6 @@
    /// method informs that something was changed in the canvas
    /// used ti update information on the server (when used for webgui)
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
-      console.log('Get canvas changes', kind);
-
       if (this._websocket)
          this._websocket.Send("RANGES6:" + this.GetAllRanges());
    }
