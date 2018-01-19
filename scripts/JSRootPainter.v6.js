@@ -1077,11 +1077,13 @@
          if (opts.ndim && (opts.ndim > 1)) this.CheckAxisZoom('y');
          if (opts.ndim && (opts.ndim > 2)) this.CheckAxisZoom('z');
 
-         var canp = this.canv_painter();
-         // ignore range set in the online canvas
-         if (!canp || !canp.online_canvas) {
-            this.CheckPadUserRange(pad, 'x');
-            this.CheckPadUserRange(pad, 'y');
+         if (opts.check_pad_range === "pad_range") {
+            var canp = this.canv_painter();
+            // ignore range set in the online canvas
+            if (!canp || !canp.online_canvas) {
+               this.CheckPadUserRange(pad, 'x');
+               this.CheckPadUserRange(pad, 'y');
+            }
          }
       }
 

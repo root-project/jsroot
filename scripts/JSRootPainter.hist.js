@@ -1929,11 +1929,11 @@
       alert("HistPainter.prototype.ScanContent not implemented");
    }
 
-   THistPainter.prototype.CheckPadRange = function() {
+   THistPainter.prototype.CheckPadRange = function(use_pad) {
 
       // actual work will be done when frame will draw axes
       if (this.is_main_painter())
-         this.check_pad_range = true;
+         this.check_pad_range = use_pad ? "pad_range" : true;
    }
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
@@ -4166,7 +4166,7 @@
       // here we deciding how histogram will look like and how will be shown
       painter.options = painter.DecodeOptions(opt);
 
-      if (!painter.options.Lego) painter.CheckPadRange();
+      painter.CheckPadRange(!painter.options.Lego);
 
       painter.ScanContent();
 
@@ -6082,9 +6082,8 @@
 
       painter._can_move_colz = true;
 
-      // special case for root 3D drawings - user range is wired
-      if ((painter.options.Contour !==14) && !painter.options.Lego && !painter.options.Surf)
-         painter.CheckPadRange();
+      // special case for root 3D drawings - pad range is wired
+      painter.CheckPadRange((painter.options.Contour !==14) && !painter.options.Lego && !painter.options.Surf);
 
       painter.ScanContent();
 
