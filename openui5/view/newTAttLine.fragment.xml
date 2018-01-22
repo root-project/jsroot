@@ -1,0 +1,47 @@
+<core:FragmentDefinition
+       xmlns="sap.m"
+       xmlns:l="sap.ui.layout"
+       xmlns:jsroot="sap.ui.jsroot"
+       xmlns:core="sap.ui.core">
+        <FlexBox renderType="Bare" width="100%">
+          <items>
+             <Button text="{/color}" title="Line color" press="processTAttLine_Color">
+                <layoutData>
+                   <FlexItemData growFactor="1" />
+                </layoutData>
+             </Button>
+             <Select selectedKey="{/style}" title="Line style">
+                <layoutData>
+                   <FlexItemData growFactor="2"/>
+                </layoutData>
+             
+                 <items>
+                   <core:Item text="none" key="0"/>
+                   <core:Item text="1" key="1"/>
+                   <core:Item text="2" key="2"/>
+                   <core:Item text="3" key="3"/>
+                   <core:Item text="4" key="4"/>
+                   <core:Item text="5" key="5"/>
+                   <core:Item text="6" key="6"/>
+                   <core:Item text="7" key="7"/>
+                   <core:Item text="8" key="8"/>
+                   <core:Item text="9" key="9"/>
+                   <core:Item text="10" key="10"/>
+                 </items>
+             </Select>
+             <Select selectedKey="{/width}" title="Line width">
+               <layoutData>
+                 <FlexItemData growFactor="2"/>
+               </layoutData>
+               <items>
+                 <core:Item text="1" key="1"/>
+                 <core:Item text="2" key="2"/>
+                 <core:Item text="3" key="3"/>
+                 <core:Item text="4" key="4"/>
+                 <core:Item text="5" key="5"/>
+                 <core:Item text="6" key="6"/>
+               </items>
+             </Select>
+          </items>
+     </FlexBox>
+</core:FragmentDefinition>
