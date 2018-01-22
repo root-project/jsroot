@@ -69,7 +69,7 @@ sap.ui.define([
 
          if (painter.lineatt && painter.lineatt.used) {
             var model = new JSONModel( painter.lineatt );
-            var fragm = this.getFragment("newTAttLine", true);
+            var fragm = this.getFragment("TAttLine", true);
             model.attachPropertyChange({ _kind: "TAttLine", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
             fragm.setModel(model);
             oPage.addContent(fragm);
@@ -137,11 +137,6 @@ sap.ui.define([
 
          this.colorPicker.setColorString(col);
          this.colorDialog.open();
-      },
-
-      // TODO: make it generic
-      processTAttLine_Color : function() {
-         this.makeColorDialog('newTAttLine', '/color');
       },
 
       // TODO: make it generic
