@@ -403,6 +403,11 @@
 
    JSROOT.Painter = Painter; // export here to avoid ambiguity
 
+   Painter.convertSymbol = function(charactere) {
+     // example: '#pi' will give '\u03A0'
+     return Painter.symbols_map[charactere];
+   }
+
    Painter.createMenu = function(painter, maincallback) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
@@ -1145,9 +1150,12 @@
       while ((str.length>2) && (str[0]=='{') && (str[str.length-1]=='}'))
          str = str.substr(1,str.length-2);
 
-      if (str.indexOf("#")>=0)
-         for (var i in this.symbols_map)
-            str = str.replace(new RegExp(i,'g'), this.symbols_map[i]);
+      if (!Painter.symbolsRegexCache) {
+        // Create a single regex to detect any symbol to replace
+        Painter.symbolsRegexCache = new RegExp('(' + Object.keys(Painter.symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
+      }
+
+      str = str.replace(Painter.symbolsRegexCache, Painter.convertSymbol);
 
       str = str.replace(/\{\}/g, "");
 
