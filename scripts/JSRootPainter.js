@@ -838,7 +838,7 @@
    TAttFillHandler.prototype.Apply = function(selection) {
       this.used = true;
 
-      selection.style('fill', this.color);
+      selection.style('fill', this.pattern_url || this.color);
 
       if ('opacity' in this)
          selection.style('opacity', this.opacity);
@@ -858,46 +858,51 @@
 
    // method used when color or pattern were changed with OpenUi5 widgets
    TAttFillHandler.prototype.verifyDirectChange = function(painter) {
-      if ((this.color !== 'none') && (this.pattern < 1001)) this.color = 'none';
-      var indx = this.colorindx;
-      if (this.color !== 'none') {
-         indx = JSROOT.Painter.root_colors.indexOf(this.color);
-         if (indx<0) {
-            indx = JSROOT.Painter.root_colors.length;
-            JSROOT.Painter.root_colors.push(this.color);
-         }
-      }
-      this.Change(indx, this.pattern, painter ? painter.svg_canvas() : null);
+      if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
+      if (isNaN(this.pattern)) this.pattern = 0;
+
+      this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
    }
 
-   TAttFillHandler.prototype.Change = function(color, pattern, svg) {
+   TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
+
+      delete this.pattern_url;
+
       this.changed = true;
 
-      if ((color !== undefined) && !isNaN(color))
-         this.colorindx = color;
+      if ((color !== undefined) && !isNaN(color) && !color_as_svg)
+         this.colorindx = parseInt(color);
 
       if ((pattern !== undefined) && !isNaN(pattern)) {
-         this.pattern = pattern;
+         this.pattern = parseInt(pattern);
          delete this.opacity;
          delete this.antialias;
       }
 
       if ((this.pattern == 1000) && (this.colorindx===0)) {
-         this.color = 'white';
+         this.pattern_url = 'white';
          return true;
       }
 
       if (this.pattern < 1001) {
-         this.color = 'none';
+         this.pattern_url = 'none';
          return true;
       }
 
       if (this.isSolid() && (this.colorindx===0) && (this.kind===1)) {
-         this.color = 'none';
+         this.pattern_url = 'none';
          return true;
       }
 
-      this.color = JSROOT.Painter.root_colors[this.colorindx];
+      var indx = this.colorindx;
+
+      if (color_as_svg) {
+         this.color = color;
+         indx = 10000 + JSROOT.id_counter++; // use fictial unique index far away from existing color indexes
+      } else {
+         this.color = JSROOT.Painter.root_colors[indx];
+      }
+
       if (typeof this.color != 'string') this.color = "none";
 
       if (this.isSolid()) return true;
@@ -910,17 +915,19 @@
 
       if (!svg || svg.empty() || (this.pattern < 3000)) return false;
 
-      var id = "pat_" + this.pattern + "_" + this.colorindx;
+      var id = "pat_" + this.pattern + "_" + indx;
 
       var defs = svg.select('.canvas_defs');
       if (defs.empty())
          defs = svg.insert("svg:defs",":first-child").attr("class","canvas_defs");
 
-      var line_color = this.color;
-      this.color = "url(#" + id + ")";
+      this.pattern_url = "url(#" + id + ")";
       this.antialias = false;
 
-      if (!defs.select("."+id).empty()) return true;
+      if (!defs.select("."+id).empty()) {
+         if (color_as_svg) console.log('find id in def', id);
+         return true;
+      }
 
       var lines = "", lfill = null, fills = "", fills2 = "", w = 2, h = 2;
 
@@ -1029,15 +1036,28 @@
                      .attr("width", w).attr("height", h);
 
       if (fills2) {
-         var col = d3.rgb(line_color);
+         var col = d3.rgb(this.color);
          col.r = Math.round((col.r+255)/2); col.g = Math.round((col.g+255)/2); col.b = Math.round((col.b+255)/2);
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
-      if (fills) patt.append("svg:path").attr("d", fills).style("fill", line_color);
-      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', line_color).style("stroke-width", 1).style("fill", lfill);
+      if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
+      if (lines) patt.append("svg:path").attr("d", lines).style('stroke', this.color).style("stroke-width", 1).style("fill", lfill);
 
       return true;
    }
+
+   TAttFillHandler.prototype.CreateSample = function(svg, width, height) {
+
+      // we need to create extra handle to change
+      var sample = new TAttFillHandler;
+
+      sample.Change(this.color, this.pattern, svg, true);
+
+      svg.append("path")
+         .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
+         .call(sample.func);
+   }
+
 
    /** Function returns the ready to use marker for drawing */
    Painter.createAttMarker = function(attmarker, style) {

@@ -76,7 +76,7 @@ sap.ui.define([
          }
 
          if (painter.fillatt && painter.fillatt.used) {
-            var model = new JSONModel( painter.fillatt );
+            var model = new JSONModel( { attfill: painter.fillatt } );
             var fragm = this.getFragment("TAttFill", true);
             model.attachPropertyChange({ _kind: "TAttFill", _painter: painter, _handle: painter.fillatt }, this.modelPropertyChange, this);
             fragm.setModel(model);

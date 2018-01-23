@@ -14,7 +14,7 @@ sap.ui.define([
 
       init: function() {
 
-         console.log('init');
+         // console.log('init');
 
          // svg images are always loaded without @2
          this.addEventDelegate({
@@ -67,8 +67,6 @@ sap.ui.define([
       var w = dom.innerWidth(), h = dom.innerHeight();
       dom.empty();
 
-      console.log('create SVG', w, h);
-
       var svg = d3.select(dom.get(0)).append("svg").attr("width", w).attr("height",h).attr("viewBox","0 0 " + w + " " + h);
 
       var attr = this.getProperty("svgsample");
@@ -90,7 +88,6 @@ sap.ui.define([
    }
 
    SVGSample.prototype.modelPropertyChanged = function() {
-      console.log('MODEL PROPERTY CHANGED');
       this._setSVG();
    }
 
