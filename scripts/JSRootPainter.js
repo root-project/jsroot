@@ -744,6 +744,14 @@
       this.Change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
+   TAttMarkerHandler.prototype.CreateSample = function(svg, width, height) {
+      this.reset_pos();
+
+      svg.append("path")
+         .attr("d", this.create(width/2, height/2))
+         .call(this.func);
+   }
+
    // =======================================================================
 
    function TAttLineHandler(attline, borderw, can_excl, direct_line_color) {
