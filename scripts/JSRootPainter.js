@@ -621,7 +621,14 @@
    }
 
    TAttMarkerHandler.prototype.create = function(x,y) {
-      return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+      if (!this.optimized)
+         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+
+      // use optimized handling with relative position
+      var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
+      var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
+      this.lastx = xx+1; this.lasty = yy;
+      return (m2.length < m1.length) ? m2 : m1;
    }
 
    TAttMarkerHandler.prototype.GetFullSize = function() {
@@ -645,18 +652,12 @@
          this.fill = false;
          this.marker = "h1";
          this.size = 1;
-
-         // use special create function to handle relative position movements
-         this.create = function(x,y) {
-            var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
-            var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
-            this.lastx = xx+1; this.lasty = yy;
-            return (m2.length < m1.length) ? m2 : m1;
-         }
-
+         this.optimized = true;
          this.reset_pos();
          return true;
       }
+
+      this.optimized = false;
 
       var marker_kind = Painter.root_markers[this.style];
       if (marker_kind === undefined) marker_kind = 100;
@@ -737,6 +738,10 @@
    TAttMarkerHandler.prototype.Apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
       selection.style('fill', this.fill ? this.color : "none");
+   }
+
+   TAttMarkerHandler.prototype.verifyDirectChange = function(painter) {
+      this.Change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
    // =======================================================================

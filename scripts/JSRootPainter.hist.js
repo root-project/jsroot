@@ -3550,7 +3550,7 @@
 
       if (show_markers) {
          // draw markers also when e2 option was specified
-         if (!this.markeratt)
+         if (!this.markeratt || !this.markeratt.changed)
             this.markeratt = new JSROOT.TAttMarkerHandler(this.histo, this.options.Mark - 20);
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
@@ -5390,7 +5390,7 @@
           bars = "", markers = "", posy;
 
       // create attribute only when necessary
-      if (!this.markeratt) {
+      if (!this.markeratt || !this.markeratt.changed) {
          if (histo.fMarkerColor === 1) histo.fMarkerColor = histo.fLineColor;
          this.markeratt = new JSROOT.TAttMarkerHandler(histo, 5);
       }
@@ -5507,7 +5507,7 @@
       if (scale*handle.sumz < 1e5) {
          // one can use direct drawing of scatter plot without any patterns
 
-         if (!this.markeratt)
+         if (!this.markeratt || !this.markeratt.changed)
             this.markeratt = new JSROOT.TAttMarkerHandler(histo);
 
          this.markeratt.reset_pos();
@@ -5580,7 +5580,7 @@
       if (defs.empty() && (colPaths.length>0))
          defs = layer.insert("svg:defs",":first-child");
 
-      if (!this.markeratt)
+      if (!this.markeratt || !this.markeratt.changed)
          this.markeratt = new JSROOT.TAttMarkerHandler(histo);
 
       for (colindx=0;colindx<colPaths.length;++colindx)

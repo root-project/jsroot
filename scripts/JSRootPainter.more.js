@@ -2665,7 +2665,7 @@
          // for tooltips use markers only if nodes where not created
          var path = "";
 
-         if (!this.markeratt)
+         if (!this.markeratt || !this.markeratt.changed)
             this.markeratt = new JSROOT.TAttMarkerHandler(spline);
 
          this.markeratt.reset_pos();

@@ -22,6 +22,7 @@
 19. Correct positioning of custom axis labels
 20. Correctly show histogram with negative bins and fill attributes (#143)
 21. Fix - correctly toggle lin/log axes in lego plot
+22. Fix - let correctly change marker attributes interactively 
 
 
 ## Changes in 5.3.0
