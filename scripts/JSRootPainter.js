@@ -736,6 +736,8 @@
       selection.style('fill', this.fill ? this.color : "none");
    }
 
+   // =======================================================================
+
    function TAttLineHandler(attline, borderw, can_excl, direct_line_color) {
       var color = 'black', _width = 0, style = 0;
       if (typeof attline == 'string') {
@@ -801,6 +803,14 @@
       if (style !== undefined) this.style = style;
       this.changed = true;
    }
+
+   TAttLineHandler.prototype.CreateSample = function(svg, width, height) {
+      svg.append("path")
+         .attr("d","M0," + height/2+"h"+width)
+         .call(this.func);
+   }
+
+   // =======================================================================
 
    function TAttFillHandler(attfill, pattern, color, kind, main_svg) {
       // fill kind can be 1 or 2

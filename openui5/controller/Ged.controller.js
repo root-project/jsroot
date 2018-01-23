@@ -68,7 +68,7 @@ sap.ui.define([
          oPage.removeAllContent();
 
          if (painter.lineatt && painter.lineatt.used) {
-            var model = new JSONModel( painter.lineatt );
+            var model = new JSONModel( { attline: painter.lineatt } );
             var fragm = this.getFragment("TAttLine", true);
             model.attachPropertyChange({ _kind: "TAttLine", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
             fragm.setModel(model);

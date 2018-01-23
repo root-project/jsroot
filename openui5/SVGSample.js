@@ -7,7 +7,7 @@ sap.ui.define([
    var SVGSample = Control.extend("sap.ui.jsroot.SVGSample", {
       metadata: {
          properties: {
-            mycolor : {type : "string", group : "Misc", defaultValue : null}
+            svgsample : {type : "object", group : "Misc", defaultValue : null}
          },
          defaultAggregation: null
       },
@@ -21,7 +21,13 @@ sap.ui.define([
             onAfterRendering: function() { this._setSVG(); }
          }, this);
 
-         // ResizeHandler.register(this.getView(), this.onResize.bind(this));
+         this.attachModelContextChange({}, this.modelChanged, this);
+
+         this.resize_id = ResizeHandler.register(this, this.onResize.bind(this));
+      },
+
+      destroy: function() {
+         console.log('destroy SVG');
       },
 
       renderer: function(oRm,oControl){
@@ -56,14 +62,36 @@ sap.ui.define([
 
    SVGSample.prototype._setSVG = function() {
       var dom = this.$();
+      if (!dom) return;
 
-      dom.append("p").text("SVG").css('background-color', 'yellow');
-      console.log('create SVG', dom.width(), dom.parent().height());
+      var w = dom.innerWidth(), h = dom.innerHeight();
+      dom.empty();
+
+      console.log('create SVG', w, h);
+
+      var svg = d3.select(dom.get(0)).append("svg").attr("width", w).attr("height",h).attr("viewBox","0 0 " + w + " " + h);
+
+      var attr = this.getProperty("svgsample");
+      if (attr && (typeof attr == "object") && (typeof attr.CreateSample == "function"))
+         attr.CreateSample(svg,w,h);
+      else
+         svg.append("text").text("none");
    }
 
    SVGSample.prototype.onResize = function() {
-      var dom = this.$();
-      console.log('resize SVG', dom.width(), dom.parent().height());
+      this._setSVG();
+   }
+
+   SVGSample.prototype.modelChanged = function() {
+      if (this._lastModel !== this.getModel()) {
+         this._lastModel = this.getModel();
+         this.getModel().attachPropertyChange({}, this.modelPropertyChanged, this);
+      }
+   }
+
+   SVGSample.prototype.modelPropertyChanged = function() {
+      console.log('MODEL PROPERTY CHANGED');
+      this._setSVG();
    }
 
    return SVGSample;
