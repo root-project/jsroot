@@ -590,12 +590,15 @@
       return this.getColor(indx);
    }
 
-   function TAttMarkerHandler(attmarker, style) {
-      var marker_color = Painter.root_colors[attmarker.fMarkerColor];
-      if (!style || (style<0)) style = attmarker.fMarkerStyle;
+   function TAttMarkerHandler(attmarker, style, color, size) {
+      if (attmarker && (typeof attmarker=='object')) {
+         if (!color) color = Painter.root_colors[attmarker.fMarkerColor];
+         if (!style || (style<0)) style = attmarker.fMarkerStyle;
+         if (!size) size = attmarker.fMarkerSize;
+      }
 
       this.x0 = this.y0 = 0;
-      this.color = marker_color;
+      this.color = color;
       this.style = style;
       this.size = 8;
       this.scale = 1;
@@ -608,7 +611,7 @@
 
       this.func = this.Apply.bind(this);
 
-      this.Change(marker_color, style, attmarker.fMarkerSize);
+      this.Change(color, style, size);
 
       this.changed = false;
    }
@@ -3291,10 +3294,10 @@
          menu.add("sub:style");
          var supported = [1,2,3,4,5,6,7,8,21,22,23,24,25,26,27,28,29,30,31,32,33,34];
 
-         var clone = JSROOT.clone(this.markeratt);
          for (var n=0; n<supported.length; ++n) {
-            clone.Change(undefined, supported[n], 1.7);
-            clone.reset_pos();
+
+            var clone = new TAttMarkerHandler(null, supported[n], this.markeratt.color, 1.7);
+
             var svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,8) + "'></path></svg>";
 
             menu.addchk(this.markeratt.style == supported[n], svg, supported[n],

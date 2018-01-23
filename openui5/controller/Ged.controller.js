@@ -84,68 +84,13 @@ sap.ui.define([
          }
 
          if (painter.markeratt && painter.markeratt.used) {
-            var model = new JSONModel( painter.markeratt );
+            var model = new JSONModel( { attmark: painter.markeratt } );
             var fragm = this.getFragment("TAttMarker", true);
             model.attachPropertyChange({ _kind: "TAttMarker", _painter: painter, _handle: painter.markeratt }, this.modelPropertyChange, this);
             fragm.setModel(model);
             oPage.addContent(fragm);
          }
 
-      },
-
-      // TODO: special controller for each fragment?
-
-      makeColorDialog : function(fragment, property) {
-
-         var that = this, fragm = this.getFragment(fragment);
-
-         if (!fragm) return null;
-
-         if (!this.colorPicker)
-            this.colorPicker = new ColorPicker("colorPicker");
-
-         if (!this.colorDialog) {
-            this.colorDialog = new Dialog({
-               title: 'Select color',
-               content: this.colorPicker,
-               beginButton: new Button({
-                  text: 'Apply',
-                  press: function () {
-                     if (that.colorPicker) {
-                        var fragm = that.getFragment(that.colorFragment);
-                        var col = that.colorPicker.getColorString();
-
-                        fragm.getModel().setProperty(that.colorProperty, col);
-                        fragm.getModel().firePropertyChange({ path: that.colorProperty, value: col });
-                     }
-                     that.colorDialog.close();
-                  }
-               }),
-               endButton: new Button({
-                  text: 'Cancel',
-                  press: function () {
-                     that.colorDialog.close();
-                  }
-               })
-            });
-         }
-
-         this.colorFragment = fragment;
-         this.colorProperty = property;
-
-         var col = fragm.getModel().getProperty(property);
-
-         this.colorPicker.setColorString(col);
-         this.colorDialog.open();
-      },
-
-      // TODO: make it generic
-      processTAttFill_Color : function() {
-         this.makeColorDialog('TAttFill', '/color');
-      },
-
-      processTAttMarker_Color : function() {
-         this.makeColorDialog('TAttMarker', '/color');
       }
 
    });
