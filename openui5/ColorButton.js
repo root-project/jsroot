@@ -7,12 +7,10 @@ sap.ui.define([
 ], function (Controller, Button, ButtonRenderer, Dialog, ColorPicker) {
    "use strict";
 
-   console.log('Load ColorButton');
-
    var ColorButton = Button.extend("sap.ui.jsroot.ColorButton", {
       metadata: {
          properties: {
-            mycolor : {type : "string", group : "Misc", defaultValue : null}
+            attrcolor : {type : "string", group : "Misc", defaultValue : null}
          }
       },
       renderer: ButtonRenderer.render,
@@ -23,27 +21,20 @@ sap.ui.define([
          }, this);
       }
 
-
-
    });
 
    ColorButton.prototype._setColor = function() {
-      console.log('set color', this.getProperty("mycolor"));
-      var dom = this.$();
-
-      dom.children().css('background-color', this.getProperty("mycolor"));
+      this.$().children().css('background-color', this.getProperty("attrcolor"));
    }
 
    ColorButton.prototype.firePress = function(args) {
-      console.log('COLOR BUTTON - FIRE PRESS', this.getProperty("mycolor"));
-
       // if (Button.prototype.firePress)
       //   Button.prototype.firePress.call(this, args);
 
       var that = this;
 
       if (!this.colorPicker)
-         this.colorPicker = new ColorPicker("colorPicker");
+         this.colorPicker = new ColorPicker();
 
       if (!this.colorDialog) {
          this.colorDialog = new Dialog({
@@ -54,7 +45,7 @@ sap.ui.define([
                press: function () {
                   if (that.colorPicker) {
                      var col = that.colorPicker.getColorString();
-                      that.setProperty("mycolor", col);
+                      that.setProperty("attrcolor", col);
                   }
                   that.colorDialog.close();
                }
@@ -68,7 +59,7 @@ sap.ui.define([
          });
       }
 
-      var col = this.getProperty("mycolor");
+      var col = this.getProperty("attrcolor");
 
       this.colorPicker.setColorString(col);
       this.colorDialog.open();

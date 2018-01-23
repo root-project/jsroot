@@ -5,7 +5,7 @@
        xmlns:core="sap.ui.core">
        <FlexBox renderType="Bare" width="100%">
           <items>
-             <jsroot:ColorButton text="fill" mycolor="{/attfill/color}" tooltip="Fill color"/>
+             <jsroot:ColorButton text="fill" attrcolor="{/attfill/color}" tooltip="Fill color"/>
              <Select selectedKey="{/attfill/pattern}">
                <layoutData>
                  <FlexItemData growFactor="2"/>
