@@ -849,7 +849,14 @@
 
    TAttFillHandler.prototype.empty = function() {
       // return true if color not specified or fill style not specified
-      return (this.color == 'none');
+      var fill = this.pattern_url || this.color;
+      return !fill || (fill == 'none');
+   }
+
+   TAttFillHandler.prototype.SetSolidColor = function(col) {
+      delete this.pattern_url;
+      this.color = col;
+      this.pattern = 1001;
    }
 
    TAttFillHandler.prototype.isSolid = function() {
@@ -867,7 +874,6 @@
    TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
 
       delete this.pattern_url;
-
       this.changed = true;
 
       if ((color !== undefined) && !isNaN(color) && !color_as_svg)
@@ -879,7 +885,7 @@
          delete this.antialias;
       }
 
-      if ((this.pattern == 1000) && (this.colorindx===0)) {
+      if ((this.pattern == 1000) && (this.colorindx === 0)) {
          this.pattern_url = 'white';
          return true;
       }
@@ -915,9 +921,9 @@
 
       if (!svg || svg.empty() || (this.pattern < 3000)) return false;
 
-      var id = "pat_" + this.pattern + "_" + indx;
+      var id = "pat_" + this.pattern + "_" + indx,
+          defs = svg.select('.canvas_defs');
 
-      var defs = svg.select('.canvas_defs');
       if (defs.empty())
          defs = svg.insert("svg:defs",":first-child").attr("class","canvas_defs");
 

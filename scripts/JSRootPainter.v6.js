@@ -1404,10 +1404,9 @@
          else if (pad) this.fillatt = pad.fFrameFillColor ? this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor) : this.createAttFill(pad);
          else this.fillatt = this.createAttFill(null, 1001, 0);
 
-         // force white color for the frame
-         if (!tframe && (this.fillatt.color == 'none') && this.pad_painter() && this.pad_painter().iscan) {
-            this.fillatt.color = 'white';
-         }
+         // force white color for the canvas frame
+         if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
+            this.fillatt.SetSolidColor('white');
       }
 
       if (this.lineatt === undefined)
