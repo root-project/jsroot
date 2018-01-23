@@ -110,9 +110,9 @@
                 this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
                 this.AxisToSvg("y", polyline.fY[n], isndc);
 
-      if (polyline._typename != "TPolyLine") fillatt.color = "none";
+      if (polyline._typename != "TPolyLine") fillatt.SetSolidColor("none");
 
-      if (fillatt.color!=='none') cmd+="Z";
+      if (!fillatt.empty()) cmd+="Z";
 
       this.draw_g
           .append("svg:path")
@@ -435,7 +435,7 @@
                             .call(this.lineatt.func);
          if (midkind > 10) {
             pmid.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pmid.style('stroke-width',1);
+            if (this.fillatt.isSolid(this.lineatt.color)) pmid.style('stroke-width',1);
          }
       }
 
@@ -457,7 +457,7 @@
                        .call(this.lineatt.func);
          if (closed) {
             pend.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pend.style('stroke-width',1);
+            if (this.fillatt.isSolid(this.lineatt.color)) pend.style('stroke-width',1);
             var dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx + dy*dy);
             if (len>wsize) {
                var ratio = wsize/len;
@@ -647,7 +647,7 @@
                   x: bin.grx,
                   y: bin.gry,
                   color1: this.lineatt.color,
-                  color2: this.fillatt.color,
+                  color2: this.fillatt.fillcolor(),
                   lines: [],
                   exact: (Math.abs(bin.grx - pnt.x) < radius) && (Math.abs(bin.gry - pnt.y) < radius) };
 
@@ -716,7 +716,7 @@
                .style("fill", "none")
                .call(this.lineatt.func);
 
-         if (this.fillatt.color != "none")
+         if (!this.fillatt.empty())
             this.draw_g.append("svg:path")
                .attr("class", "area")
                .attr("d", path.path + path.close)
@@ -1408,7 +1408,7 @@
                   lines: this.TooltipText(d),
                   rect: best, d3bin: findbin  };
 
-      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
+      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
 
       if (best.exact) res.exact = true;
       res.menu = res.exact; // activate menu only when exactly locate bin
@@ -1602,7 +1602,7 @@
             res.click_handler = this.InvokeClickHandler.bind(this);
       }
 
-      if (this.fillatt && this.fillatt.used) res.color2 = this.fillatt.color;
+      if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
 
       if (!islines) {
          res.color1 = this.get_color(gr.fMarkerColor);

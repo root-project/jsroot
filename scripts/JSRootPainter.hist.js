@@ -1044,7 +1044,7 @@
                    .attr("width", tpos_x - 2*padding_x - x0)
                    .attr("height", Math.round(step_y*0.8))
                    .call(fillatt.func);
-            if (fillatt.color !== 'none') isany = true;
+            if (!fillatt.empty()) isany = true;
          }
 
          // Draw line
@@ -1896,7 +1896,7 @@
       if (d.check('0')) option.Zero = 0;
 
       if (interactive) {
-         if (need_fillcol && this.fillatt && (this.fillatt.color=='none'))
+         if (need_fillcol && this.fillatt && this.fillatt.empty())
             this.fillatt.Change(5,1001);
       }
 
@@ -3541,8 +3541,8 @@
          show_markers = true;
 
       if (this.options.Error == 12) {
-         if (this.fillatt.color=='none') show_markers = true;
-                                    else path_fill = "";
+         if (this.fillatt.empty()) show_markers = true;
+                              else path_fill = "";
       } else
       if (this.options.Error > 0) path_err = "";
 
@@ -3989,7 +3989,7 @@
       var res = { name: histo.fName, title: histo.fTitle,
                   x: midx, y: midy, exact: true,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.color : 'blue',
+                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                   lines: this.GetBinTips(findbin) };
 
       if (pnt.disabled) {
@@ -5821,7 +5821,7 @@
          var res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.color : 'blue',
+                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
@@ -5872,7 +5872,7 @@
          var res = { name: histo.fName, title: histo.fTitle,
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.color : 'blue',
+                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
          if (pnt.disabled) {
@@ -5935,7 +5935,7 @@
       var res = { name: histo.fName, title: histo.fTitle,
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.color : 'blue',
+                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color > 0) res.color2 = this.GetPalette().getColor(colindx);

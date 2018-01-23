@@ -838,7 +838,7 @@
    TAttFillHandler.prototype.Apply = function(selection) {
       this.used = true;
 
-      selection.style('fill', this.pattern_url || this.color);
+      selection.style('fill', this.fillcolor());
 
       if ('opacity' in this)
          selection.style('opacity', this.opacity);
@@ -847,9 +847,19 @@
          selection.style('antialias', this.antialias);
    }
 
+   /// returns fill color (or pattern url)
+   TAttFillHandler.prototype.fillcolor = function() {
+      return this.pattern_url || this.color;
+   }
+
+   /// returns fill color without pattern url. If empty, alternative color will be provided
+   TAttFillHandler.prototype.fillcoloralt = function(altern) {
+      return this.color && (this.color!="none") ? this.color : altern;
+   }
+
    TAttFillHandler.prototype.empty = function() {
       // return true if color not specified or fill style not specified
-      var fill = this.pattern_url || this.color;
+      var fill = this.fillcolor();
       return !fill || (fill == 'none');
    }
 
@@ -859,8 +869,10 @@
       this.pattern = 1001;
    }
 
-   TAttFillHandler.prototype.isSolid = function() {
-      return this.pattern === 1001;
+   /// check if solid fill is used, also color can be checked
+   TAttFillHandler.prototype.isSolid = function(solid_color) {
+      if (this.pattern !== 1001) return false;
+      return !solid_color || solid_color==this.color;
    }
 
    // method used when color or pattern were changed with OpenUi5 widgets

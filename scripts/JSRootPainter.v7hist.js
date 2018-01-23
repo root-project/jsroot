@@ -1019,7 +1019,7 @@
          }
       }
 
-      if (this.fillatt.color == "none") this.fillatt.color = "blue";
+      if (this.fillatt.empty()) this.fillatt.SetSolidColor("blue");
 
       if (bars.length > 0)
          this.draw_g.append("svg:path")
@@ -1069,7 +1069,7 @@
           path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
           path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
 
-      if (this.fillatt.color == "none") this.fillatt.color = "blue";
+      if (this.fillatt.empty()) this.fillatt.setSolidColor("blue");
 
       this.draw_g.append("svg:path")
                  .attr("d", path1.path + path2.path + "Z")
@@ -1115,8 +1115,8 @@
       //   show_markers = true;
 
       if (options.Error == 12) {
-         if (this.fillatt.color=='none') show_markers = true;
-                                    else path_fill = "";
+         if (this.fillatt.empty()) show_markers = true;
+                               else path_fill = "";
       } else
       if (options.Error > 0) path_err = "";
 
@@ -1561,7 +1561,7 @@
       var res = { name: "histo", title: histo.fTitle,
                   x: midx, y: midy, exact: true,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.color : 'blue',
+                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                   lines: this.GetBinTips(findbin) };
 
       if (pnt.disabled) {
@@ -3333,7 +3333,7 @@
          var res = { name: "histo", title: histo.fTitle || "title",
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.color : 'blue',
+                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                      exact: true, menu: true,
                      lines: this.ProvidePolyBinHints(foundindx, realx, realy) };
 
@@ -3384,7 +3384,7 @@
          var res = { name: histo.fName || "histo", title: histo.fTitle || "title",
                      x: pnt.x, y: pnt.y,
                      color1: this.lineatt ? this.lineatt.color : 'green',
-                     color2: this.fillatt ? this.fillatt.color : 'blue',
+                     color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                      lines: this.GetCandleTips(p), exact: true, menu: true };
 
          if (pnt.disabled) {
@@ -3446,7 +3446,7 @@
       var res = { name: histo.fName || "histo", title: histo.fTitle || "title",
                   x: pnt.x, y: pnt.y,
                   color1: this.lineatt ? this.lineatt.color : 'green',
-                  color2: this.fillatt ? this.fillatt.color : 'blue',
+                  color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
       if (this.options.Color > 0) res.color2 = this.GetPalette().getColor(colindx);

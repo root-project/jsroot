@@ -854,7 +854,7 @@
 
       if (this.fillatt === undefined) {
          this.fillatt = this.createAttFill(null, 1001, 0);
-         this.fillatt.color = 'white';
+         this.fillatt.SetSolidColor('white');
       }
 
       if (this.lineatt === undefined)
