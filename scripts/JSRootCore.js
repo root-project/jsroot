@@ -1008,6 +1008,7 @@
 
       var ext = jsroot.source_min ? ".min" : "",
           need_jquery = false,
+          use_require = (typeof define === "function") && define.amd,
           use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
           extrafiles = "", // scripts for direct loading
@@ -1035,23 +1036,9 @@
 
       if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
           (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
-         if (jsroot._test_d3_ === undefined) {
-            if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
-               jsroot.console('Reuse existing d3.js ' + d3.version + ", expected 4.4.4", debugout);
-               jsroot._test_d3_ = 4;
-            } else
-            if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
-               jsroot.console("d3 version is " + d3.version + ", try to adjust");
-               d3.timeFormat = d3.time.format;
-               d3.scaleTime = d3.time.scale;
-               d3.scaleLog = d3.scale.log;
-               d3.scaleLinear = d3.scale.linear;
-
-               jsroot._test_d3_ = 3;
-            } else {
-               mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
-               jsroot._test_d3_ = 4;
-            }
+          if (!use_require && (typeof d3 != 'object') && (jsroot._test_d3_ === undefined)) {
+             mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
+             jsroot._test_d3_ = null;
          }
          if (jsroot.sources.indexOf("2d") < 0) {
             modules.push('JSRootPainter');
