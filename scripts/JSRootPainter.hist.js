@@ -105,7 +105,7 @@
       col = col || JSROOT.gStyle.Palette;
       if ((col>0) && (col<10)) return JSROOT.Painter.CreateGrayPalette();
       if (col < 51) return JSROOT.Painter.CreateDefaultPalette();
-      if (col > 112) col = 57;
+      if (col > 113) col = 57;
       var red, green, blue,
           stops = [ 0.0000, 0.1250, 0.2500, 0.3750, 0.5000, 0.6250, 0.7500, 0.8750, 1.0000 ];
       switch(col) {
@@ -542,6 +542,13 @@
             red = [ 26, 51,  43,  33,  28,  35,  74, 144, 246];
             green = [  9, 24,  55,  87, 118, 150, 180, 200, 222];
             blue = [ 30, 96, 112, 114, 112, 101,  72,  35,   0];
+            break;
+
+         // Cividis
+          case 113:
+            red  = [  0,   5,  65,  97, 124, 156, 189, 224, 255 ];
+            green = [ 32,  54,  77, 100, 123, 148, 175, 203, 234 ];
+            blue  = [ 77, 110, 107, 111, 120, 119, 111,  94,  70 ];
             break;
 
          default:
@@ -2926,7 +2933,7 @@
       add(54, "Two-color hue");
       add(55, "Rainbow");
       add(56, "Inverted dark body radiator");
-      add(57, "Bird", (curr>112));
+      add(57, "Bird", (curr>113));
       add(58, "Cubehelix");
       add(59, "Green Red Violet");
       add(60, "Blue Red Yellow");
