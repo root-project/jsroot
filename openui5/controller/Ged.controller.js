@@ -3,8 +3,8 @@ sap.ui.define([
    'sap/ui/model/json/JSONModel',
    'sap/m/Dialog',
    'sap/m/Button',
-   'sap/ui/commons/ColorPicker'
-], function (Controller, JSONModel, Dialog, Button, ColorPicker) {
+   'sap/ui/core/HTML'
+], function (Controller, JSONModel, Dialog, Button, HTML) {
    "use strict";
 
    return Controller.extend("sap.ui.jsroot.controller.Ged", {
@@ -28,6 +28,19 @@ sap.ui.define([
           if (!fragm && force)
              fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind, this);
           return fragm;
+      },
+
+      addFragment : function(page, kind, model) {
+         var fragm = this.getFragment(kind, true);
+         if (!fragm) return;
+
+         var html = new HTML();
+         html.setContent("<hr>");
+         html.setTooltip(kind);
+         page.addContent(html);
+
+         fragm.setModel(model);
+         page.addContent(fragm);
       },
 
       /// function called when user changes model property
@@ -69,26 +82,23 @@ sap.ui.define([
 
          if (painter.lineatt && painter.lineatt.used) {
             var model = new JSONModel( { attline: painter.lineatt } );
-            var fragm = this.getFragment("TAttLine", true);
             model.attachPropertyChange({ _kind: "TAttLine", _painter: painter, _handle: painter.lineatt }, this.modelPropertyChange, this);
-            fragm.setModel(model);
-            oPage.addContent(fragm);
+
+            this.addFragment(oPage, "TAttLine", model);
          }
 
          if (painter.fillatt && painter.fillatt.used) {
             var model = new JSONModel( { attfill: painter.fillatt } );
-            var fragm = this.getFragment("TAttFill", true);
             model.attachPropertyChange({ _kind: "TAttFill", _painter: painter, _handle: painter.fillatt }, this.modelPropertyChange, this);
-            fragm.setModel(model);
-            oPage.addContent(fragm);
+
+            this.addFragment(oPage, "TAttFill", model);
          }
 
          if (painter.markeratt && painter.markeratt.used) {
             var model = new JSONModel( { attmark: painter.markeratt } );
-            var fragm = this.getFragment("TAttMarker", true);
             model.attachPropertyChange({ _kind: "TAttMarker", _painter: painter, _handle: painter.markeratt }, this.modelPropertyChange, this);
-            fragm.setModel(model);
-            oPage.addContent(fragm);
+
+            this.addFragment(oPage, "TAttMarker", model);
          }
 
       }

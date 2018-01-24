@@ -6,7 +6,7 @@
        <FlexBox renderType="Bare" width="100%">
           <items>
              <jsroot:ColorButton text="fill" attrcolor="{/attfill/color}" tooltip="Fill color"/>
-             <Select selectedKey="{/attfill/pattern}">
+             <Select selectedKey="{/attfill/pattern}" tooltip="Fill pattern">
                <layoutData>
                  <FlexItemData growFactor="2"/>
                </layoutData>
