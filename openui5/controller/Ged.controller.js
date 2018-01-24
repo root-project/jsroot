@@ -101,6 +101,15 @@ sap.ui.define([
             this.addFragment(oPage, "TAttMarker", model);
          }
 
+         if (typeof painter.processTitleChange == 'function') {
+            var obj = painter.processTitleChange("check");
+            if (obj) {
+               var model = new JSONModel( { tnamed: obj } );
+               model.attachPropertyChange({ }, painter.processTitleChange, painter);
+               this.addFragment(oPage, "TNamed", model);
+            }
+         }
+
       }
 
    });

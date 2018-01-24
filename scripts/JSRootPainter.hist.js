@@ -2230,6 +2230,23 @@
       }
    }
 
+   THistPainter.prototype.processTitleChange = function(arg) {
+
+      var histo = this.GetHisto(),
+          tpainter = this.FindPainterFor(null, "title");
+
+      if (!histo || !tpainter) return null;
+
+      if (arg==="check")
+         return (!this.is_main_painter() || this.options.Same) ? null : histo;
+
+      var pavetext = tpainter.GetObject();
+      pavetext.Clear();
+      pavetext.AddText(histo.fTitle);
+
+      tpainter.Redraw();
+   }
+
    THistPainter.prototype.UpdateStatWebCanvas = function() {
       if (!this.snapid) return;
 
