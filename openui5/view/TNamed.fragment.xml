@@ -1,7 +1,6 @@
 <core:FragmentDefinition
        xmlns="sap.m"
        xmlns:l="sap.ui.layout"
-       xmlns:jsroot="sap.ui.jsroot"
        xmlns:core="sap.ui.core">
         <FlexBox renderType="Bare" width="100%">
           <items>

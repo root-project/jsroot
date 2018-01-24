@@ -108,8 +108,13 @@ sap.ui.define([
                model.attachPropertyChange({ }, painter.processTitleChange, painter);
                this.addFragment(oPage, "TNamed", model);
             }
-         }
 
+            if (obj) {
+               var model = new JSONModel( { th1: obj } );
+               // model.attachPropertyChange({}, painter.processTitleChange, painter);
+               this.addFragment(oPage, "TH1", model);
+            }
+         }
       }
 
    });

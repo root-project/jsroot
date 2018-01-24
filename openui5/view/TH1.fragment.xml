@@ -1,0 +1,30 @@
+<core:FragmentDefinition
+       xmlns="sap.m"
+       xmlns:l="sap.ui.layout"
+       xmlns:core="sap.ui.core">
+
+   <!-- <FlexBox renderType="Bare" fitContainer="true" width="100%">
+      <items>  -->
+
+         <TabContainer id="myTabContainer"
+            showAddNewButton="false" class="sapUiResponsiveContentPadding"
+            addNewButtonPress="" itemClose="">
+            <items>
+               <TabContainerItem name="2D">
+                  <content>
+                     <Label text="2D opt" />
+                  </content>
+               </TabContainerItem>
+               <TabContainerItem name="3D">
+                  <content>
+                     <Label text="3D opt" />
+                  </content>
+               </TabContainerItem>
+            </items>
+         </TabContainer>
+    <!--
+      </items>
+   </FlexBox>
+       -->
+       
+</core:FragmentDefinition>
