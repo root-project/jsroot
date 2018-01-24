@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.3.5
+1. Fix - correctly use preloaded d3.js in notebooks/require.js environment
+
+
 ## Changes in 5.3.4
 1. Fix - several problem in TLatex preprocessing for MathJax.js
 2. Fix - use "E" draw options for THStack only when no any other specified

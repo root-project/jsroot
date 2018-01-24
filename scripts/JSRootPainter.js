@@ -32,8 +32,24 @@
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
+   if (!JSROOT._test_d3_) {
+      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
+         if (d3.version !== '4.4.4')
+            console.log('Reuse existing d3.js ' + d3.version + ", expected 4.4.4");
+         JSROOT._test_d3_ = 4;
+      } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
+         console.log("Older d3.js version " + d3.version + " found, try to adjust");
+         d3.timeFormat = d3.time.format;
+         d3.scaleTime = d3.time.scale;
+         d3.scaleLog = d3.scale.log;
+         d3.scaleLinear = d3.scale.linear;
+         JSROOT._test_d3_ = 3;
+      } else {
+         console.error('Fail to identify d3.js version '  + (d3 ? d3.version : "???"));
+      }
+   }
    // list of user painters, called with arguments func(vis, obj, opt)
-   JSROOT.DrawFuncs = {lst:[], cache:{}};
+   JSROOT.DrawFuncs = { lst:[], cache:{} };
 
    // add draw function for the class
    // List of supported draw options could be provided, separated  with ';'
