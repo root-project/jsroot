@@ -2,29 +2,42 @@
        xmlns="sap.m"
        xmlns:l="sap.ui.layout"
        xmlns:core="sap.ui.core">
-
-   <!-- <FlexBox renderType="Bare" fitContainer="true" width="100%">
-      <items>  -->
-
-         <TabContainer id="myTabContainer"
-            showAddNewButton="false" class="sapUiResponsiveContentPadding"
-            addNewButtonPress="" itemClose="">
-            <items>
-               <TabContainerItem name="2D">
-                  <content>
-                     <Label text="2D opt" />
-                  </content>
-               </TabContainerItem>
-               <TabContainerItem name="3D">
-                  <content>
-                     <Label text="3D opt" />
-                  </content>
-               </TabContainerItem>
-            </items>
-         </TabContainer>
-    <!--
-      </items>
-   </FlexBox>
-       -->
-       
+     <l:Grid defaultSpan="L6 M8 S12" class="sapUiSmallMargin sapUiContentPadding" width="100%" position="Center">
+     <l:content>
+          <RadioButtonGroup selectedIndex="0" columns="2" width="100%"  class="sapUiSmallMarginTop">
+            <layoutData>
+               <l:GridData span="L12 M12 S12" linebreak="true"/>
+            </layoutData>
+            <buttons>
+               <RadioButton id="RB1-1" text="2-D"/>
+               <RadioButton id="RB1-2" text="3-D"/>
+            </buttons>
+         </RadioButtonGroup>
+         <FlexBox alignItems="Center">
+            <layoutData>
+               <l:GridData span="L12 M12 S12" linebreak="true"/>
+            </layoutData>
+         
+         <Label text="Contor" labelFor="ContorSelect"/>
+         <Select selectedKey="{/}" tooltip="Contor" id="ContorSelect" >
+               <items>
+                 <core:Item text="none" key="-1"/>
+                 <core:Item text="Cont0" key="0"/>
+                 <core:Item text="Cont1" key="1"/>
+                 <core:Item text="Cont2" key="2"/>
+                 <core:Item text="Cont3" key="3"/>
+                 <core:Item text="Cont4" key="4"/>
+               </items>
+          </Select>
+          </FlexBox>
+      
+         <CheckBox text="Arrow" selected="true" />
+         <CheckBox text="Box" selected="false" />
+         <CheckBox text="Col" selected="false" />
+         <CheckBox text="Scat" selected="false" />
+         <CheckBox text="Text" selected="false" />
+         <CheckBox text="Palette" selected="false" />
+         
+      </l:content>
+   </l:Grid>
 </core:FragmentDefinition>
