@@ -10,9 +10,48 @@
             <RadioButton text="3-D" />
          </buttons>
       </RadioButtonGroup>
-      <Panel visible="{= ${/th1/mode3d} === 0}">
-         <Label text="Contor" labelFor="ContorSelect" />
-         <Select selectedKey="{/th1/Contor}" tooltip="Contor" id="ContorSelect">
+      <Panel visible="{= ${/th1/mode3d} === 0  &amp;&amp; ${/th1/ndim} === 1}">
+         <Label text="Error:" class="sapUiSmallMarginEnd" labelFor="ErrorsSelectTh1" />
+         <Select selectedKey="{/th1/Errors}" tooltip="Contor" id="ErrorsSelectTh1">
+            <items>
+               <core:Item text="No" key="0" />
+               <core:Item text="Simple" key="1" />
+               <core:Item text="Edges" key="2" />
+               <core:Item text="Rect" key="3" />
+               <core:Item text="Fill" key="4" />
+               <core:Item text="Cont" key="5" />
+            </items>
+         </Select>
+         <Label text="Style:" class="sapUiSmallMarginEnd" labelFor="StyleSelectTh1" />
+         <Select selectedKey="{/th1/Style}" tooltip="Contor" id="StyleSelectTh1">
+            <items>
+               <core:Item text="No" key="0" />
+               <core:Item text="Simple" key="1" />
+               <core:Item text="Strooth" key="2" />
+               <core:Item text="Fill" key="3" />
+            </items>
+         </Select>
+
+         <CheckBox text="Simple drawing" selected="true" enabled="false" />
+         <CheckBox text="Show markers" selected="false" />
+         <CheckBox text="Draw bar chart" selected="false" />
+         <CheckBox text="Bar option" selected="false" enabled="false"/>
+      </Panel>
+      
+      <Panel visible="{= ${/th1/mode3d} === 1 &amp;&amp; ${/th1/ndim} === 1}">
+         <Label text="Type" labelFor="LegoSelectTh1" />
+         <Select selectedKey="{/th1/Lego}" tooltip="Contor" id="LegoSelectTh1">
+            <items>
+               <core:Item text="Lego" key="0" />
+               <core:Item text="Lego1" key="1" />
+               <core:Item text="Lego2" key="2" />
+            </items>
+         </Select>
+      </Panel>
+      
+      <Panel visible="{= ${/th1/mode3d} === 0 &amp;&amp; ${/th1/ndim} === 2}">
+         <Label text="Contor" labelFor="ContorSelectTh2" />
+         <Select selectedKey="{/th1/Contor}" tooltip="Contor" id="ContorSelectTh2">
             <items>
                <core:Item text="none" key="-1" />
                <core:Item text="Cont0" key="0" />
@@ -30,9 +69,10 @@
          <CheckBox text="Text" selected="false" />
          <CheckBox text="Palette" selected="false" />
       </Panel>
-      <Panel visible="{= ${/th1/mode3d} === 1}">
-         <Label text="Type" labelFor="LegoSelect" />
-         <Select selectedKey="{/th1/Lego}" tooltip="Contor" id="LegoSelect">
+      
+      <Panel visible="{= ${/th1/mode3d} === 1 &amp;&amp; ${/th1/ndim} === 2}">
+         <Label text="Type" labelFor="LegoSelectTh2" />
+         <Select selectedKey="{/th1/Lego}" tooltip="Contor" id="LegoSelectTh2">
             <items>
                <core:Item text="Lego" key="0" />
                <core:Item text="Lego0" key="1" />

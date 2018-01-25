@@ -113,10 +113,10 @@ sap.ui.define([
                this.addFragment(oPage, "TNamed", model);
             }
 
-            if (obj) {
+            if (typeof painter.GetHisto == 'function') {
 
                if (painter.ged === undefined)
-                  painter.ged = { mode3d: 1, Contor: 1, Lego: 2 };
+                  painter.ged = { mode3d: 0, ndim: painter.Dimension(), Errors:0, Style: 0, Contor: 1, Lego: 2 };
 
                var model = new JSONModel( { th1: painter.ged } );
 
