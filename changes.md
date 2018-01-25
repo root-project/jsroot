@@ -1,7 +1,11 @@
 # JSROOT changelog
 
 ## Changes in 5.3.5
-1. Fix - correctly use preloaded d3.js in notebooks/require.js environment
+1. Fix - correctly show histogram with negative bins and fill attributes (#143)
+2. Fix - correct animation for status line (when visible)
+3. Fix - correctly set lin/log settings back top TPad object
+4. Fix - correctly use preloaded d3.js in notebooks/require.js environment
+5. Cached Latex regex to improve drawing speed (#145)
 
 
 ## Changes in 5.3.4
