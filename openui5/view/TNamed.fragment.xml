@@ -6,7 +6,6 @@
           <items>
           <Input
             id="titleInput"
-            class="sapUiSmallMarginBottom"
             type="Text"
             placeholder="Enter title ..."
             valueStateText="Edit object title."

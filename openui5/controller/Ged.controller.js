@@ -65,6 +65,10 @@ sap.ui.define([
             this.currentPadPainter.Redraw();
       },
 
+      processTH1ModelChange : function(evnt, data) {
+         var pars = evnt.getParameters();
+         console.log('TH1 Model changes', pars.path, pars.value, data);
+      },
 
       onObjectSelect : function(padpainter, painter, place) {
 
@@ -110,9 +114,16 @@ sap.ui.define([
             }
 
             if (obj) {
-               var model = new JSONModel( { th1: obj } );
+
+               if (painter.ged === undefined)
+                  painter.ged = { mode3d: 1, Contor: 1, Lego: 2 };
+
+               var model = new JSONModel( { th1: painter.ged } );
+
                // model.attachPropertyChange({}, painter.processTitleChange, painter);
                this.addFragment(oPage, "TH1", model);
+
+               model.attachPropertyChange({ }, this.processTH1ModelChange, this);
             }
          }
       }

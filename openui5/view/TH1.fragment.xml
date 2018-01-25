@@ -2,42 +2,51 @@
        xmlns="sap.m"
        xmlns:l="sap.ui.layout"
        xmlns:core="sap.ui.core">
-     <l:Grid defaultSpan="L6 M8 S12" class="sapUiSmallMargin sapUiContentPadding" width="100%" position="Center">
-     <l:content>
-          <RadioButtonGroup selectedIndex="0" columns="2" width="100%"  class="sapUiSmallMarginTop">
-            <layoutData>
-               <l:GridData span="L12 M12 S12" linebreak="true"/>
-            </layoutData>
-            <buttons>
-               <RadioButton id="RB1-1" text="2-D"/>
-               <RadioButton id="RB1-2" text="3-D"/>
-            </buttons>
-         </RadioButtonGroup>
-         <FlexBox alignItems="Center">
-            <layoutData>
-               <l:GridData span="L12 M12 S12" linebreak="true"/>
-            </layoutData>
-         
-         <Label text="Contor" labelFor="ContorSelect"/>
-         <Select selectedKey="{/}" tooltip="Contor" id="ContorSelect" >
-               <items>
-                 <core:Item text="none" key="-1"/>
-                 <core:Item text="Cont0" key="0"/>
-                 <core:Item text="Cont1" key="1"/>
-                 <core:Item text="Cont2" key="2"/>
-                 <core:Item text="Cont3" key="3"/>
-                 <core:Item text="Cont4" key="4"/>
-               </items>
-          </Select>
-          </FlexBox>
-      
+   <VBox>
+      <RadioButtonGroup selectedIndex="{/th1/mode3d}" columns="2"
+         width="100%">
+         <buttons>
+            <RadioButton text="2-D" />
+            <RadioButton text="3-D" />
+         </buttons>
+      </RadioButtonGroup>
+      <Panel visible="{= ${/th1/mode3d} === 0}">
+         <Label text="Contor" labelFor="ContorSelect" />
+         <Select selectedKey="{/th1/Contor}" tooltip="Contor" id="ContorSelect">
+            <items>
+               <core:Item text="none" key="-1" />
+               <core:Item text="Cont0" key="0" />
+               <core:Item text="Cont1" key="1" />
+               <core:Item text="Cont2" key="2" />
+               <core:Item text="Cont3" key="3" />
+               <core:Item text="Cont4" key="4" />
+            </items>
+         </Select>
+
          <CheckBox text="Arrow" selected="true" />
          <CheckBox text="Box" selected="false" />
          <CheckBox text="Col" selected="false" />
          <CheckBox text="Scat" selected="false" />
          <CheckBox text="Text" selected="false" />
          <CheckBox text="Palette" selected="false" />
-         
-      </l:content>
-   </l:Grid>
+      </Panel>
+      <Panel visible="{= ${/th1/mode3d} === 1}">
+         <Label text="Type" labelFor="LegoSelect" />
+         <Select selectedKey="{/th1/Lego}" tooltip="Contor" id="LegoSelect">
+            <items>
+               <core:Item text="Lego" key="0" />
+               <core:Item text="Lego0" key="1" />
+               <core:Item text="Lego1" key="2" />
+               <core:Item text="Lego2" key="3" />
+               <core:Item text="Lego3" key="4" />
+               <core:Item text="Lego4" key="5" />
+            </items>
+         </Select>
+
+         <CheckBox text="Front" selected="true" />
+         <CheckBox text="Back" selected="true" />
+         <CheckBox text="Errors" selected="false" />
+         <CheckBox text="Palette" selected="false" />
+      </Panel>
+   </VBox>
 </core:FragmentDefinition>
