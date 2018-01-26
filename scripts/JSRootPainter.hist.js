@@ -4744,13 +4744,18 @@
    }
 
    TH2Painter.prototype.DrawBinsColor = function(w,h) {
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
-          colindx, cmd1, cmd2, i, j, binz;
+          colindx, cmd1, cmd2, i, j, binz, x1, dx, y2, dy;
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
+
+         dx = handle.grx[i+1] - handle.grx[i];
+         x1 = Math.round(handle.grx[i] + dx*handle.xbar1);
+         dx = Math.round(dx*(handle.xbar2-handle.xbar1));
+
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getContourColor(binz, true);
@@ -4760,20 +4765,22 @@
             }
             if (colindx === null) continue;
 
-            cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
+            dy = handle.gry[j]-handle.gry[j+1];
+            y2 = Math.round(handle.gry[j+1] + dy*handle.ybar1);
+            dy = Math.round(dy*(handle.ybar2-handle.ybar1));
+
+            cmd1 = "M"+x1+","+y2;
             if (colPaths[colindx] === undefined) {
                colPaths[colindx] = cmd1;
             } else{
-               cmd2 = "m" + (handle.grx[i]-currx[colindx]) + "," + (handle.gry[j+1]-curry[colindx]);
+               cmd2 = "m" + (x1-currx[colindx]) + "," + (y2-curry[colindx]);
                colPaths[colindx] += (cmd2.length < cmd1.length) ? cmd2 : cmd1;
             }
 
-            currx[colindx] = handle.grx[i];
-            curry[colindx] = handle.gry[j+1];
+            currx[colindx] = x1;
+            curry[colindx] = y2;
 
-            colPaths[colindx] += "v" + (handle.gry[j] - handle.gry[j+1]) +
-                                 "h" + (handle.grx[i+1] - handle.grx[i]) +
-                                 "v" + (handle.gry[j+1] - handle.gry[j]) + "z";
+            colPaths[colindx] += "v"+dy + "h"+dx + "v"+(-dy) + "z";
          }
       }
 
@@ -5969,7 +5976,8 @@
          return res;
       }
 
-      var i, j, binz = 0, colindx = null;
+      var i, j, binz = 0, colindx = null,
+          i1, i2, j1, j2, x1, x2, y1, y2;
 
       // search bins position
       for (i = h.i1; i < h.i2; ++i)
@@ -5979,9 +5987,28 @@
          if ((pnt.y>=h.gry[j+1]) && (pnt.y<=h.gry[j])) break;
 
       if ((i < h.i2) && (j < h.j2)) {
+
+         i1 = i; i2 = i+1; j1 = j; j2 = j+1;
+         x1 = h.grx[i1]; x2 = h.grx[i2];
+         y1 = h.gry[j2]; y2 = h.gry[j1];
+
+         var match = true;
+
+         if (this.options.Color > 0) {
+            // take into account bar settings
+            var dx = x2 - x1, dy = y2 - y1;
+            x2 = Math.round(x1 + dx*h.xbar2);
+            x1 = Math.round(x1 + dx*h.xbar1);
+            y2 = Math.round(y1 + dy*h.ybar2);
+            y1 = Math.round(y1 + dy*h.ybar1);
+            if ((pnt.x<x1) || (pnt.x>=x2) || (pnt.y<y1) || (pnt.y>=y2)) match = false;
+         }
+
          binz = histo.getBinContent(i+1,j+1);
          if (this.is_projection) {
             colindx = 0; // just to avoid hide
+         } else if (!match) {
+            colindx = null;
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
@@ -6013,11 +6040,7 @@
                                 .attr("class","tooltip_bin h1bin")
                                 .style("pointer-events","none");
 
-         var i1 = i, i2 = i+1,
-             j1 = j, j2 = j+1,
-             x1 = h.grx[i1], x2 = h.grx[i2],
-             y1 = h.gry[j2], y2 = h.gry[j1],
-             binid = i*10000 + j;
+         var binid = i*10000 + j;
 
          if (this.is_projection == "X") {
             x1 = 0; x2 = this.frame_width();
