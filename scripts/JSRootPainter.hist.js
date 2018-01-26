@@ -635,8 +635,8 @@
 
       if (!this.lineatt)
          this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(pt);
+
+      this.createAttFill({ attr: pt, std: true });
 
       if (pt._typename == "TDiamond") {
          var h2 = Math.round(height/2), w2 = Math.round(width/2),
@@ -1637,7 +1637,7 @@
       var histo = this.GetHisto(),
           option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
              Error: 0, errorX: JSROOT.gStyle.fErrorX,
-             Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1, Star: 0,
+             Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
              Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
@@ -1984,8 +1984,7 @@
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 
-      if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(histo, undefined, this.options.histoFillColor, 1);
+      this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
 
       if (!this.lineatt || !this.lineatt.changed) {
          this.lineatt = new JSROOT.TAttLineHandler(histo, undefined, undefined, this.options.histoLineColor);

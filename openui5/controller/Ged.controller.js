@@ -65,9 +65,22 @@ sap.ui.define([
             this.currentPadPainter.Redraw();
       },
 
-      processTH1ModelChange : function(evnt, data) {
-         var pars = evnt.getParameters();
-         console.log('TH1 Model changes', pars.path, pars.value, data);
+      processHistModelChange : function(evnt, data) {
+         var pars = evnt.getParameters(), painter = data.painter;
+         console.log('TH1 Model changes', pars.path, pars.value);
+
+         if (painter.ged.mode3d) {
+
+         } else {
+            console.log('ged.bar', painter.ged.bar);
+
+            painter.options.Mark = painter.ged.markers ? 1 : 0;
+            painter.options.Bar = painter.ged.bar ? 1 : 0;
+         }
+
+         if (this.currentPadPainter)
+            this.currentPadPainter.Redraw();
+
       },
 
       onObjectSelect : function(padpainter, painter, place) {
@@ -115,15 +128,21 @@ sap.ui.define([
 
             if (typeof painter.GetHisto == 'function') {
 
+               // this object used to copy ged setting from options and back,
+               // do not (yet) allow to change options directly
                if (painter.ged === undefined)
-                  painter.ged = { mode3d: 0, ndim: painter.Dimension(), Errors:0, Style: 0, Contor: 1, Lego: 2 };
+                  painter.ged = { ndim: painter.Dimension(), Errors: 0, Style: 0, Contor: 1, Lego: 2 };
 
-               var model = new JSONModel( { th1: painter.ged } );
+               painter.ged.mode3d = painter.mode3d ? 1 : 0;
+               painter.ged.markers = painter.options.Mark > 0;
+               painter.ged.bar = painter.options.Bar > 0;
+
+               var model = new JSONModel( { opts : painter.ged } );
 
                // model.attachPropertyChange({}, painter.processTitleChange, painter);
-               this.addFragment(oPage, "TH1", model);
+               this.addFragment(oPage, "Hist", model);
 
-               model.attachPropertyChange({ }, this.processTH1ModelChange, this);
+               model.attachPropertyChange({ painter: painter }, this.processHistModelChange, this);
             }
          }
       }

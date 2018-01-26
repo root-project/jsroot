@@ -1400,9 +1400,10 @@
       }
 
       if (this.fillatt === undefined) {
-         if (tframe) this.fillatt = this.createAttFill(tframe);
-         else if (pad) this.fillatt = pad.fFrameFillColor ? this.createAttFill(null, pad.fFrameFillStyle, pad.fFrameFillColor) : this.createAttFill(pad);
-         else this.fillatt = this.createAttFill(null, 1001, 0);
+         if (tframe) this.createAttFill({ attr: tframe });
+         else if (pad && pad.fFrameFillColor) this.createAttFill({ pattern: pad.fFrameFillStyle, color: pad.fFrameFillColor });
+         else if (pad) this.createAttFill({ attr: pad });
+         else this.createAttFill({ pattern: 1001, color: 0});
 
          // force white color for the canvas frame
          if (!tframe && this.fillatt.empty() && this.pad_painter() && this.pad_painter().iscan)
@@ -2761,8 +2762,7 @@
          }
       }
 
-      if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.pad);
+      this.createAttFill({ attr: this.pad });
 
       if ((rect.width<=lmt) || (rect.height<=lmt)) {
          svg.style("display", "none");
@@ -2886,8 +2886,7 @@
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
       }
 
-      if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.pad);
+      this.createAttFill({ attr: this.pad });
       if (!this.lineatt || !this.lineatt.changed) {
          this.lineatt = new JSROOT.TAttLineHandler(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';

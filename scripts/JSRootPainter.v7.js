@@ -853,7 +853,7 @@
       }
 
       if (this.fillatt === undefined) {
-         this.fillatt = this.createAttFill(null, 1001, 0);
+         this.createAttFill({ pattern: 1001, color: 0 });
          this.fillatt.SetSolidColor('white');
       }
 
@@ -2614,8 +2614,7 @@
          }
       }
 
-      //if (!this.fillatt || !this.fillatt.changed)
-      //   this.fillatt = this.createAttFill(this.pad);
+      // this.createAttFill({ attr: this.pad });
 
       if ((rect.width<=lmt) || (rect.height<=lmt)) {
          svg.style("display", "none");
@@ -2739,8 +2738,7 @@
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
       }
 
-      if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(this.pad);
+      this.createAttFill({ attr: this.pad });
       if (!this.lineatt || !this.lineatt.changed) {
          this.lineatt = new JSROOT.TAttLineHandler(this.pad);
          if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';

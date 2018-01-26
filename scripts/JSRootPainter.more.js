@@ -128,7 +128,7 @@
       var ellipse = this.GetObject();
 
       if(!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(ellipse);
-      if (!this.fillatt) this.fillatt = this.createAttFill(ellipse);
+      this.createAttFill({ attr: ellipse });
 
       // create svg:g container for ellipse drawing
       this.CreateG();
@@ -366,7 +366,7 @@
           hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
 
       if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
-      if (!this.fillatt) this.fillatt = this.createAttFill(arrow);
+      this.createAttFill({ attr: arrow });
 
       // create svg:g container for line drawing
       this.CreateG();
@@ -688,8 +688,7 @@
          this.lineatt = new JSROOT.TAttLineHandler(tf1);
       this.lineatt.used = false;
 
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(tf1, undefined, undefined, 1);
+      this.createAttFill({ attr: tf1, kind: 1 });
       this.fillatt.used = false;
 
       // first calculate graphical coordinates
@@ -1059,8 +1058,8 @@
 
       if (!this.lineatt)
          this.lineatt = new JSROOT.TAttLineHandler(graph, undefined, true);
-      if (!this.fillatt)
-         this.fillatt = this.createAttFill(graph, undefined, undefined, 1);
+
+      this.createAttFill({ attr: graph, kind: 1 });
       this.fillatt.used = false; // mark used only when really used
 
       this.draw_kind = "none"; // indicate if special svg:g were created for each bin
@@ -2243,7 +2242,7 @@
 
       if (this.options.mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
       if ((this.options.err || this.options.line || this.options.curve) && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
-      if (this.options.fill && !this.fillatt) this.fillatt = this.createAttFill(graph);
+      if (this.options.fill) this.createAttFill({ attr: graph });
 
       this.CreateG();
 

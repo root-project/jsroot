@@ -844,27 +844,30 @@
 
    // =======================================================================
 
-   function TAttFillHandler(attfill, pattern, color, kind, main_svg) {
-      // fill kind can be 1 or 2
-      // 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
-      // 2 means all other objects where such combination is white-color filling
+   function TAttFillHandler(args) {
+      // following arguments allowed:
+      //  kind can be 1 or 2
+      //      1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
+      //      2 means all other objects where such combination is white-color filling
       // object painter required when special fill pattern should be registered in central canvas def section
 
       this.color = "none";
       this.colorindx = 0;
       this.pattern = 0;
       this.used = true;
-      this.kind = (kind!==undefined) ? kind : 2;
+      this.kind = args.kind || 2;
       this.changed = false;
       this.func = this.Apply.bind(this);
-
-      if (attfill && (typeof attfill == 'object')) {
-         if ((pattern===undefined) && ('fFillStyle' in attfill)) pattern = attfill.fFillStyle;
-         if ((color==undefined) && ('fFillColor' in attfill)) color = attfill.fFillColor;
-      }
-
-      this.Change(color, pattern, main_svg);
+      this.SetArgs(args);
       this.changed = false; // unset change property that
+   }
+
+   TAttFillHandler.prototype.SetArgs = function(args) {
+      if (args.attr && (typeof args.attr == 'object')) {
+         if ((args.pattern===undefined) && (args.attr.fFillStyle!==undefined)) args.pattern = args.attr.fFillStyle;
+         if ((args.color===undefined) && (args.attr.fFillColor!==undefined)) args.color = args.attr.fFillColor;
+      }
+      this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
    }
 
    TAttFillHandler.prototype.Apply = function(selection) {
@@ -939,7 +942,7 @@
          return true;
       }
 
-      if (this.isSolid() && (this.colorindx===0) && (this.kind===1)) {
+      if (this.isSolid() && (this.colorindx===0) && (this.kind===1) && !color_as_svg) {
          this.pattern_url = 'none';
          return true;
       }
@@ -1096,12 +1099,10 @@
       return true;
    }
 
-   TAttFillHandler.prototype.CreateSample = function(svg, width, height) {
+   TAttFillHandler.prototype.CreateSample = function(sample_svg, width, height) {
 
       // we need to create extra handle to change
-      var sample = new TAttFillHandler;
-
-      sample.Change(this.color, this.pattern, svg, true);
+      var sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
       svg.append("path")
          .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
@@ -2776,9 +2777,37 @@
       return pos;
    }
 
-   TObjectPainter.prototype.createAttFill = function(attfill, pattern, color, kind) {
+   TObjectPainter.prototype.createAttFillOld = function(attfill, pattern, color, kind) {
       return new TAttFillHandler(attfill, pattern, color, kind, this.svg_canvas());
    }
+
+   // method dedicated to create fill attributes, bound to canvas SVG
+   // otherwise newly created patters will not be usable in the canvas
+   // by default this.fillatt is created. Following fields are processed in args:
+   //   std - is this is standard fill attribute for object and should be used as this.fillatt (default true)
+   //   attr - object, derived from TAttFill (default null)
+   //   pattern - integer index of fill pattern (default none)
+   //   color - integer index of fill color (defaule none)
+   //   kind - some special kind which is handled differently from normal patterns
+   //   for special cases one can specify TAttFill as args
+   TObjectPainter.prototype.createAttFill = function(args) {
+      if (!args || (typeof args !== 'object')) args = { std: true }; else
+      if (args._typename && args.fFillColor !== undefined && args.fFillStyle!==undefined) args = { attr: args, std: false };
+
+      if (args.std === undefined) args.std = true;
+
+      var handler = args.std ? this.fillatt : null;
+
+      args.svg = this.svg_canvas();
+
+      if (!handler) handler = new TAttFillHandler(args);
+      else if (!handler.changed) handler.SetArgs(args);
+
+      if (args.std) this.fillatt = handler;
+
+      return handler;
+   }
+
 
    TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
       // function called when user interactively changes attribute in given class

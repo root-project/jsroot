@@ -168,8 +168,7 @@
       var obj = this.GetObject().fOpts.fHistAttrs,
           pp = this.canv_painter();
 
-      if (!this.fillatt || !this.fillatt.changed)
-         this.fillatt = this.createAttFill(null, 0, 0);
+      this.createAttFill( { pattern: 0, color: 0 });
 
       var lcol = pp.GetNewColor(obj.fLine.fColor.fIdx);
 
