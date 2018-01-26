@@ -2786,17 +2786,19 @@
       // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
-   TObjectPainter.prototype.ForEachPainter = function(userfunc) {
+   TObjectPainter.prototype.ForEachPainter = function(userfunc, kind) {
       // Iterate over all known painters
 
       // special case of the painter set as pointer of first child of main element
       var painter = this.AccessTopPainter();
-      if (painter) return userfunc(painter);
+      if (painter) {
+         if (kind !== "pads") userfunc(painter);
+         return;
+      }
 
       // iterate over all painters from pad list
-      var pad_painter = this.pad_painter();
-      if (pad_painter)
-         pad_painter.ForEachPainterInPad(userfunc);
+      var pp = this.pad_painter();
+      if (pp) pp.ForEachPainterInPad(userfunc, kind);
    }
 
    TObjectPainter.prototype.RedrawPad = function() {

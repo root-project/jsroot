@@ -1919,6 +1919,24 @@
       return this.options && this.options.original ? this.options.original : "";
    }
 
+   /// copy draw options to all other histograms in the pad
+   THistPainter.prototype.CopyOptionsToOthers = function() {
+      var pthis = this;
+
+      this.ForEachPainter(function(painter) {
+         if (painter === pthis) return;
+
+         if (!painter.options || (typeof painter.GetHisto != 'function')) return;
+
+         painter.options.Color = pthis.options.Color;
+         painter.options.Lego = pthis.options.Lego;
+         painter.options.Surf = pthis.options.Surf;
+         painter.options.Contour = pthis.options.Contour;
+         painter.options.Zero = pthis.options.Zero;
+
+      }, "objects");
+   }
+
    THistPainter.prototype.GetAutoColor = function(col) {
       if (this.options.AutoColor<=0) return col;
 
@@ -3078,9 +3096,9 @@
              if (histo.fBarOffset <= 1000) {
                 res.xbar1 = res.ybar1 = 0.001*histo.fBarOffset;
              } else if (histo.fBarOffset <= 3000) {
-                res.xbar1 = 0.001 * (histo.fBarOffset-2000);
+                res.xbar1 = 0.001*(histo.fBarOffset-2000);
              } else if (histo.fBarOffset <= 5000) {
-                res.ybar1 = 0.001 * (histo.fBarOffset-4000);
+                res.ybar1 = 0.001*(histo.fBarOffset-4000);
              }
 
              if (histo.fBarWidth <= 1000) {
@@ -3094,8 +3112,6 @@
                 res.ybar2 = Math.min(1., res.ybar1 + 0.001*(histo.fBarWidth-4000));
              }
          }
-
-      console.log('Histo bars', res.xbar1, res.xbar2, res.ybar1, res.ybar2, histo.fBarOffset, histo.fBarWidth, histo.fName);
 
       if (args.original) {
          res.original = true;
@@ -4385,11 +4401,9 @@
          case "Toggle3D":
             if (this.options.Surf > 0) {
                this.options.Surf = -this.options.Surf;
-            } else
-            if (this.options.Lego > 0) {
+            } else if (this.options.Lego > 0) {
                this.options.Lego = 0;
-            } else
-            if (this.options.Surf < 0) {
+            } else if (this.options.Surf < 0) {
                this.options.Surf = -this.options.Surf;
             } else {
                if ((this.nbinsx>=50) || (this.nbinsy>=50))
@@ -4400,6 +4414,7 @@
                this.options.Zero = 0; // do not show zeros by default
             }
 
+            this.CopyOptionsToOthers();
             this.RedrawPad();
             break;
          default: return false;
@@ -4430,15 +4445,16 @@
 
       if (this.options.Color == 0) {
          this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
-      } else
-      if (toggle) {
+      } else if (toggle) {
          this.options.LastColor = this.options.Color;
          this.options.Color = 0;
       }
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
 
-      this.Redraw();
+      this.CopyOptionsToOthers();
+
+      this.RedrawPad();
 
       // this.DrawColorPalette((this.options.Color > 0) && (this.options.Zscale > 0));
    }

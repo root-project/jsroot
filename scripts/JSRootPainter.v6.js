@@ -2666,13 +2666,18 @@
       return this._num_primitives || 1;
    }
 
-   TPadPainter.prototype.ForEachPainterInPad = function(userfunc, onlypadpainters) {
-      userfunc(this);
+   /// call function for each painter
+   /// kind == "all" for all objects (default)
+   /// kind == "pads" only pads and subpads
+   /// kind == "objects" only for object in current pad
+   TPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
+      if (!kind) kind = "all";
+      if (kind!="objects") userfunc(this);
       for (var k = 0; k < this.painters.length; ++k) {
          var sub = this.painters[k];
-         if (typeof sub.ForEachPainterInPad === 'function')
-            sub.ForEachPainterInPad(userfunc, onlypadpainters);
-         else if (!onlypadpainters) userfunc(sub);
+         if (typeof sub.ForEachPainterInPad === 'function') {
+            if (kind!="objects") sub.ForEachPainterInPad(userfunc, kind);
+         } else if (kind != "pads") userfunc(sub);
       }
    }
 
@@ -3707,7 +3712,7 @@
               .attr("class","temp_saveaspng")
               .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
               .node().appendChild(svg3d);      // add code
-      }, true);
+      }, "pads");
 
 //      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
            // this was saving of image buffer from 3D render
