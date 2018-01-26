@@ -771,47 +771,8 @@
    // =======================================================================
 
    function TAttLineHandler(args) {
-      /*
-      var color = 'black', _width = 0, style = 0;
-      if (typeof attline == 'string') {
-         color = attline;
-         if (color!=='none') _width = 1;
-      } else
-      if (typeof attline == 'object') {
-         if ('fLineColor' in attline) color = direct_line_color || Painter.root_colors[attline.fLineColor];
-         if ('fLineWidth' in attline) _width = attline.fLineWidth;
-         if ('fLineStyle' in attline) style = attline.fLineStyle;
-      } else
-      if ((attline !== undefined) && !isNaN(attline)) {
-         color = Painter.root_colors[attline];
-         if (color) { _width = 1; style = 1; }
-      }
-
-      if (borderw!==undefined) _width = borderw;
-
-      this.used = true; // can mark object if it used or not,
-      this.color = (_width==0) ? 'none' : color;
-      this.width = _width;
-      this.style = style;
-      if (can_excl) {
-         this.excl_side = this.excl_width = 0;
-         if (Math.abs(this.width) > 99) {
-            // exclusion graph
-            this.excl_side = (this.width < 0) ? -1 : 1;
-            this.excl_width = Math.floor(this.width / 100) * 5;
-            this.width = Math.abs(this.width % 100); // line width
-         }
-      }
-
-      // if custom color number used, use lightgrey color to show lines
-      if ((this.color === undefined) && (this.width > 0))
-         this.color = 'lightgrey';
-      */
-
       this.func = this.Apply.bind(this);
-
       this.used = true;
-
       if (args._typename && (args.fLineStyle!==undefined)) args = { attr: args };
 
       this.SetArgs(args);
@@ -1154,10 +1115,6 @@
    Painter.createAttMarker = function(attmarker, style) {
       return new TAttMarkerHandler(attmarker, style);
    }
-
-//   Painter.createAttLine = function(attline, borderw, can_excl) {
-//      return new TAttLineHandler(attline, borderw, can_excl);
-//   }
 
    Painter.clearCuts = function(chopt) {
       /* decode string "chopt" and remove graphical cuts */
@@ -2830,6 +2787,7 @@
 
       if (args.std) this.lineatt = handler;
 
+      // handler.used = false; // mark that line handler is not yet used
       return handler;
    }
 
@@ -2858,6 +2816,8 @@
       else if (!handler.changed) handler.SetArgs(args);
 
       if (args.std) this.fillatt = handler;
+
+      // handler.used = false; // mark that fill handler is not yet used
 
       return handler;
    }
