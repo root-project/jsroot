@@ -455,13 +455,13 @@
       if (this.invert_side) second_shift = -second_shift;
 
       if (is_gaxis) {
-         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis);
+         this.createAttLine({ attr: axis });
          draw_lines = axis.fLineColor != 0;
          chOpt = axis.fChopt;
          tickSize = axis.fTickSize;
          scaling_size = (vertical ? 1.7*h : 0.6*w);
       } else {
-         if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(axis.fAxisColor, 1);
+         this.createAttLine({ color: axis.fAxisColor, width: 1, style: 1 });
          chOpt = myXor(vertical, this.invert_side) ? "-S" : "+S";
          tickSize = axis.fTickLength;
          scaling_size = (vertical ? pad_w : pad_h);
@@ -857,8 +857,7 @@
          this.fillatt.SetSolidColor('white');
       }
 
-      if (this.lineatt === undefined)
-         this.lineatt = new JSROOT.TAttLineHandler('black');
+      this.createAttLine({ color: 'black' });
    }
 
    TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
@@ -2739,10 +2738,8 @@
       }
 
       this.createAttFill({ attr: this.pad });
-      if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = new JSROOT.TAttLineHandler(this.pad);
-         if (this.pad.fBorderMode == 0) this.lineatt.color = 'none';
-      }
+
+      this.createAttLine({ attr: this.pad, color0: this.pad.fBorderMode == 0 ? 'none' : '' });
 
       svg_pad
               //.attr("transform", "translate(" + x + "," + y + ")") // is not handled for SVG

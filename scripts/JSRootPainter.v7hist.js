@@ -172,8 +172,7 @@
 
       var lcol = pp.GetNewColor(obj.fLine.fColor.fIdx);
 
-      if (!this.lineatt || !this.lineatt.changed)
-         this.lineatt = new JSROOT.TAttLineHandler(lcol || 'black');
+      this.createAttLine({ color: lcol || 'black' });
    }
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
@@ -2515,8 +2514,8 @@
 
             switch (painter.options.Contour) {
                case 1: break;
-               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler(icol); break;
-               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
+               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol }); break;
+               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color:1, style: (colindx%5 + 1), width: 1 }); break;
                case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
                case 14: break;
             }

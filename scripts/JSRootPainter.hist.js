@@ -633,10 +633,12 @@
 
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
-      if (!this.lineatt)
-         this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
+      //if (!this.lineatt)
+      //   this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
 
-      this.createAttFill({ attr: pt, std: true });
+      this.createAttLine({ attr: pt, width: lwidth>0 ? 1 : 0 });
+
+      this.createAttFill({ attr: pt });
 
       if (pt._typename == "TDiamond") {
          var h2 = Math.round(height/2), w2 = Math.round(width/2),
@@ -1986,8 +1988,9 @@
 
       this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
 
-      if (!this.lineatt || !this.lineatt.changed) {
-         this.lineatt = new JSROOT.TAttLineHandler(histo, undefined, undefined, this.options.histoLineColor);
+      this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
+
+      if (!this.lineatt.changed) {
          var main = this.main_painter();
 
          if (main) {
@@ -5072,8 +5075,8 @@
 
             switch (painter.options.Contour) {
                case 1: break;
-               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler(icol); break;
-               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({fLineColor:1, fLineStyle: (colindx%5 + 1), fLineWidth: 1 }); break;
+               case 11: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: icol } ); break;
+               case 12: fillcolor = 'none'; lineatt = new JSROOT.TAttLineHandler({ color: 1, style: (colindx%5 + 1), width: 1 }); break;
                case 13: fillcolor = 'none'; lineatt = painter.lineatt; break;
                case 14: break;
             }

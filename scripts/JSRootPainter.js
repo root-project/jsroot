@@ -770,7 +770,8 @@
 
    // =======================================================================
 
-   function TAttLineHandler(attline, borderw, can_excl, direct_line_color) {
+   function TAttLineHandler(args) {
+      /*
       var color = 'black', _width = 0, style = 0;
       if (typeof attline == 'string') {
          color = attline;
@@ -805,8 +806,48 @@
       // if custom color number used, use lightgrey color to show lines
       if ((this.color === undefined) && (this.width > 0))
          this.color = 'lightgrey';
+      */
 
       this.func = this.Apply.bind(this);
+
+      this.used = true;
+
+      if (args._typename && (args.fLineStyle!==undefined)) args = { attr: args };
+
+      this.SetArgs(args);
+   }
+
+   TAttLineHandler.prototype.SetArgs = function(args) {
+      if (args.attr) {
+         args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
+         if (args.width===undefined) args.width = args.attr.fLineWidth;
+         args.style = args.attr.fLineStyle;
+      } else if (typeof args.color == 'string') {
+         if ((args.color !== 'none') && !args.width) args.width = 1;
+      } else if (typeof args.color == 'number') {
+         args.color = Painter.root_colors[args.color];
+      }
+
+      if (args.width===undefined)
+         args.width = (args.color && args.color!='none') ? 1 : 0;
+
+      this.color = (args.width===0) ? 'none' : args.color;
+      this.width = args.width;
+      this.style = args.style;
+
+      if (args.can_excl) {
+         this.excl_side = this.excl_width = 0;
+         if (Math.abs(this.width) > 99) {
+            // exclusion graph
+            this.excl_side = (this.width < 0) ? -1 : 1;
+            this.excl_width = Math.floor(this.width / 100) * 5;
+            this.width = Math.abs(this.width % 100); // line width
+         }
+      }
+
+      // if custom color number used, use lightgrey color to show lines
+      if (!this.color && (this.width > 0))
+         this.color = 'lightgrey';
    }
 
    TAttLineHandler.prototype.ChangeExcl = function(side,width) {
@@ -1109,15 +1150,14 @@
                 .call(sample.func);
    }
 
-
    /** Function returns the ready to use marker for drawing */
    Painter.createAttMarker = function(attmarker, style) {
       return new TAttMarkerHandler(attmarker, style);
    }
 
-   Painter.createAttLine = function(attline, borderw, can_excl) {
-      return new TAttLineHandler(attline, borderw, can_excl);
-   }
+//   Painter.createAttLine = function(attline, borderw, can_excl) {
+//      return new TAttLineHandler(attline, borderw, can_excl);
+//   }
 
    Painter.clearCuts = function(chopt) {
       /* decode string "chopt" and remove graphical cuts */
@@ -2777,6 +2817,23 @@
       return pos;
    }
 
+   TObjectPainter.prototype.createAttLine = function(args) {
+      if (!args || (typeof args !== 'object')) args = { std: true }; else
+      if (args.fLineColor!==undefined && args.fLineStyle!==undefined && args.fLineWidth!==undefined) args = { attr: args, std: false };
+
+      if (args.std === undefined) args.std = true;
+
+      var handler = args.std ? this.lineatt : null;
+
+      if (!handler) handler = new TAttLineHandler(args);
+      else if (!handler.changed) handler.SetArgs(args);
+
+      if (args.std) this.lineatt = handler;
+
+      return handler;
+   }
+
+
    // method dedicated to create fill attributes, bound to canvas SVG
    // otherwise newly created patters will not be usable in the canvas
    // by default this.fillatt is created. Following fields are processed in args:
@@ -2784,17 +2841,18 @@
    //   attr - object, derived from TAttFill (default null)
    //   pattern - integer index of fill pattern (default none)
    //   color - integer index of fill color (defaule none)
+   //   color_as_svg - color will be specified as SVG string, not as index from color palette
    //   kind - some special kind which is handled differently from normal patterns
    //   for special cases one can specify TAttFill as args
    TObjectPainter.prototype.createAttFill = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
-      if (args._typename && args.fFillColor !== undefined && args.fFillStyle!==undefined) args = { attr: args, std: false };
+      if (args._typename && args.fFillColor!==undefined && args.fFillStyle!==undefined) args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
 
       var handler = args.std ? this.fillatt : null;
 
-      args.svg = this.svg_canvas();
+      if (!args.svg) args.svg = this.svg_canvas();
 
       if (!handler) handler = new TAttFillHandler(args);
       else if (!handler.changed) handler.SetArgs(args);

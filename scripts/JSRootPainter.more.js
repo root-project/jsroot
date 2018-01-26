@@ -127,7 +127,7 @@
 
       var ellipse = this.GetObject();
 
-      if(!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(ellipse);
+      this.createAttLine({ attr: ellipse });
       this.createAttFill({ attr: ellipse });
 
       // create svg:g container for ellipse drawing
@@ -365,7 +365,7 @@
           wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
           hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
 
-      if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(arrow);
+      this.createAttLine({ attr: arrow });
       this.createAttFill({ attr: arrow });
 
       // create svg:g container for line drawing
@@ -684,8 +684,7 @@
       // recalculate drawing bins when necessary
       this.bins = this.CreateBins(false);
 
-      if (!this.lineatt)
-         this.lineatt = new JSROOT.TAttLineHandler(tf1);
+      this.createAttLine({ attr: tf1 });
       this.lineatt.used = false;
 
       this.createAttFill({ attr: tf1, kind: 1 });
@@ -1056,8 +1055,7 @@
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 
-      if (!this.lineatt)
-         this.lineatt = new JSROOT.TAttLineHandler(graph, undefined, true);
+      this.createAttLine({ attr: graph, can_excl: true });
 
       this.createAttFill({ attr: graph, kind: 1 });
       this.fillatt.used = false; // mark used only when really used
@@ -2061,8 +2059,8 @@
       var ticks = this.r.ticks(5),
           nminor = Math.floor((polar.fNdivRad % 10000) / 100);
 
-      if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(polar);
-      if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ fLineColor: polar.fLineColor, fLineStyle: 2, fLineWidth: 1 });
+      this.createAttLine({ attr: polar });
+      if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ color: polar.fLineColor, style: 2, width: 1 });
 
       var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
       this.ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
@@ -2241,7 +2239,7 @@
       if (!graph || !main || !main.$polargram) return;
 
       if (this.options.mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
-      if ((this.options.err || this.options.line || this.options.curve) && !this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(graph);
+      if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
       if (this.options.fill) this.createAttFill({ attr: graph });
 
       this.CreateG();
@@ -2617,7 +2615,7 @@
 
       this.knot_size = 5; // used in tooltip handling
 
-      if (!this.lineatt) this.lineatt = new JSROOT.TAttLineHandler(spline);
+      this.createAttLine({ attr: spline });
 
       if (this.options.Line || this.options.Curve) {
 
