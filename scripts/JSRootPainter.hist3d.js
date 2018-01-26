@@ -1176,8 +1176,8 @@
          }
 
          for (i=i1;i<i2;++i) {
-            x1 = handle.grx[i];
-            x2 = handle.grx[i+1];
+            x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
+            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
             for (j=j1;j<j2;++j) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
@@ -1185,8 +1185,11 @@
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
-               y1 = handle.gry[j];
-               y2 = handle.gry[j+1];
+               y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
+               y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
+
+               //y1 = handle.gry[j];
+               //y2 = handle.gry[j+1];
 
                z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1);
                z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
@@ -1271,23 +1274,31 @@
          mesh.zmax = axis_zmax;
          mesh.baseline = (this.options.BaseLine===false) ? axis_zmin : this.options.BaseLine;
          mesh.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
+         mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
             if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
             var p = this.painter,
+                handle = this.handle,
                 main = p.frame_painter(),
                 histo = p.GetHisto(),
                 tip = p.Get3DToolTip( this.bins_index[intersect.index] );
 
-            tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
-            tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
-            if (p.Dimension()===1) {
-               tip.y1 = main.gry(0);
-               tip.y2 = main.gry(1);
-            } else {
-               tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
-               tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
-            }
+            tip.x1 = Math.max(-main.size_xy3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
+            tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
+
+            // tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
+            // tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
+            //if (p.Dimension()===1) {
+               //tip.y1 = main.gry(0);
+               //tip.y2 = main.gry(1);
+            //} else {
+               //tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
+               //tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
+            //}
+
+            tip.y1 = Math.max(-main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
+            tip.y2 = Math.min(main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
 
             var binz1 = this.baseline, binz2 = tip.value;
             if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(tip.ix, tip.iy);
@@ -1365,14 +1376,17 @@
           ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
-         x1 = handle.grx[i];
-         x2 = handle.grx[i+1];
+         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
+         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
          for (j=j1;j<j2;++j) {
 
             if (!GetBinContent(i,j,0)) continue;
 
-            y1 = handle.gry[j];
-            y2 = handle.gry[j+1];
+            y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
+            y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
+
+            //y1 = handle.gry[j];
+            //y2 = handle.gry[j+1];
 
             z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
             z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);

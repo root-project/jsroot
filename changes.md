@@ -24,6 +24,7 @@
 21. Fix - correctly toggle lin/log axes in lego plot
 22. Fix - let correctly change marker attributes interactively 
 23. Fix - correctly use preloaded d3.js in notebooks/require.js environment  
+24. Use barwidth/baroffset parameters in lego plots
 
 
 ## Changes in 5.3.0

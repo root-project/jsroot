@@ -3067,11 +3067,33 @@
              i2: this.GetSelectIndex("x", "right", 1 + args.extra),
              j1: (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
              j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
-             min: 0, max: 0, sumz: 0
+             min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
       res.grx = new Float32Array(res.i2+1);
       res.gry = new Float32Array(res.j2+1);
+
+      if (typeof histo.fBarOffset == 'number' && typeof histo.fBarWidth == 'number'
+           && (histo.fBarOffset || histo.fBarWidth !== 1000)) {
+             if (histo.fBarOffset <= 1000) {
+                res.xbar1 = res.ybar1 = 0.001*histo.fBarOffset;
+             } else if (histo.fBarOffset <= 3000) {
+                res.xbar1 = 0.001 * (histo.fBarOffset-2000);
+             } else if (histo.fBarOffset <= 5000) {
+                res.ybar1 = 0.001 * (histo.fBarOffset-4000);
+             }
+
+             if (histo.fBarWidth <= 1000) {
+                res.xbar2 = Math.min(1., res.xbar1 + 0.001*histo.fBarWidth);
+                res.ybar2 = Math.min(1., res.ybar1 + 0.001*histo.fBarWidth);
+             } else if (histo.fBarWidth <= 3000) {
+                res.xbar2 = Math.min(1., res.xbar1 + 0.001*(histo.fBarWidth-2000));
+                // res.ybar2 = res.ybar1 + 1;
+             } else if (histo.fBarWidth <= 5000) {
+                // res.xbar2 = res.xbar1 + 1;
+                res.ybar2 = Math.min(1., res.ybar1 + 0.001*(histo.fBarWidth-4000));
+             }
+         }
 
       if (args.original) {
          res.original = true;
