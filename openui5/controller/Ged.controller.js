@@ -67,13 +67,11 @@ sap.ui.define([
 
       processHistModelChange : function(evnt, data) {
          var pars = evnt.getParameters(), painter = data.painter;
-         console.log('TH1 Model changes', pars.path, pars.value);
+         console.log('Hist model changes', pars.path, pars.value);
 
          if (painter.ged.mode3d) {
 
          } else {
-            console.log('ged.bar', painter.ged.bar);
-
             painter.options.Mark = painter.ged.markers ? 1 : 0;
             painter.options.Bar = painter.ged.bar ? 1 : 0;
          }

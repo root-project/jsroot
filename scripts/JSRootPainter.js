@@ -1104,9 +1104,9 @@
       // we need to create extra handle to change
       var sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
-      svg.append("path")
-         .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
-         .call(sample.func);
+      sample_svg.append("path")
+                .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
+                .call(sample.func);
    }
 
 
@@ -2777,10 +2777,6 @@
       return pos;
    }
 
-   TObjectPainter.prototype.createAttFillOld = function(attfill, pattern, color, kind) {
-      return new TAttFillHandler(attfill, pattern, color, kind, this.svg_canvas());
-   }
-
    // method dedicated to create fill attributes, bound to canvas SVG
    // otherwise newly created patters will not be usable in the canvas
    // by default this.fillatt is created. Following fields are processed in args:
@@ -2807,7 +2803,6 @@
 
       return handler;
    }
-
 
    TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
       // function called when user interactively changes attribute in given class
@@ -3326,14 +3321,10 @@
 
          var supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
 
-         var clone = JSROOT.clone(this.fillatt);
-         if (clone.colorindx<=0) clone.colorindx = 1;
-
          for (var n=0; n<supported.length; ++n) {
 
-            clone.Change(undefined, supported[n], this.svg_canvas());
-
-            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + clone.color + "'></rect></svg>";
+            var sample = this.createAttFill({ std: false, pattern: supported[n], color: this.fillatt.colorindx || 1 });
+            var svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
 
             menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
                this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
