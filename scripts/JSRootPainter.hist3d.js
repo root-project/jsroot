@@ -1130,15 +1130,22 @@
       // DRAW ALL CUBES
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
+         // drawing colors levels, axis can not exceed palette
          levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          palette = this.GetPalette();
+         //axis_zmin = levels[0];
+         //axis_zmax = levels[levels.length-1];
       }
 
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
 
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
-             z1 = 0, z2 = 0, grzmin = main.grz(zmin), grzmax = main.grz(zmax),
-             numvertices = 0, num2vertices = 0;
+             z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
+
+         // artifically extend last level of color pallette to maximial visible value
+         if (palette && (nlevel==levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
+
+         var grzmin = main.grz(zmin), grzmax = main.grz(zmax);
 
          // now calculate size of buffer geometry for boxes
 
@@ -1186,9 +1193,6 @@
 
                y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
                y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
-
-               //y1 = handle.gry[j];
-               //y2 = handle.gry[j+1];
 
                z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1);
                z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
@@ -1286,16 +1290,6 @@
             tip.x1 = Math.max(-main.size_xy3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
             tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
 
-            // tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
-            // tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
-            //if (p.Dimension()===1) {
-               //tip.y1 = main.gry(0);
-               //tip.y2 = main.gry(1);
-            //} else {
-               //tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
-               //tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1)));
-            //}
-
             tip.y1 = Math.max(-main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
             tip.y2 = Math.min(main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
 
@@ -1365,14 +1359,10 @@
       if (!uselineindx) numlinevertices = numsegments*3;
 
       var lpositions = new Float32Array( numlinevertices * 3 ),
-          lindicies = uselineindx ? new Uint16Array( numsegments ) : null;
-//          intersect_size = uselineindx ? numsegments : numlinevertices,
-//          intersect_index = use16indx ? new Uint16Array( intersect_size ) : new Uint32Array( intersect_size );
-
-      var z1 = 0, z2 = 0,
+          lindicies = uselineindx ? new Uint16Array( numsegments ) : null,
           grzmin = main.grz(axis_zmin),
           grzmax = main.grz(axis_zmax),
-          ll = 0, ii = 0;
+          z1 = 0, z2 = 0, ll = 0, ii = 0;
 
       for (i=i1;i<i2;++i) {
          x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
@@ -1383,9 +1373,6 @@
 
             y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
             y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
-
-            //y1 = handle.gry[j];
-            //y2 = handle.gry[j+1];
 
             z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
             z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);
