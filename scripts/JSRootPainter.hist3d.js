@@ -1084,11 +1084,10 @@
           rsegments = [0, 1, 1, 2, 2, 3, 3, 0],
           // reduced vertices
           rvertices = [ new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 1, 0), new THREE.Vector3(1, 0, 0) ],
-          hmain = this.main_painter(),
           main = this.frame_painter(),
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1],
-          handle = hmain.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
@@ -1615,9 +1614,8 @@
 
    JSROOT.TH2Painter.prototype.DrawSurf = function() {
       var histo = this.GetHisto(),
-          hmain = this.main_painter(),
           main = this.frame_painter(),
-          handle = hmain.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
+          handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1];
@@ -1951,7 +1949,7 @@
 
       if (this.options.Surf === 13) {
 
-         handle = hmain.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
+         handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 });
 
          // get levels
          var levels = this.GetContour(), // init contour
@@ -2015,9 +2013,8 @@
 
    JSROOT.TH2Painter.prototype.DrawError = function() {
       var pthis = this,
-          hmain = this.main_painter(),
           main = this.frame_painter(),
-          handle = hmain.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
+          handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
           i, j, bin, binz, binerr, x1, y1, x2, y2, z1, z2,

@@ -3095,6 +3095,8 @@
              }
          }
 
+      console.log('Histo bars', res.xbar1, res.xbar2, res.ybar1, res.ybar2, histo.fBarOffset, histo.fBarWidth, histo.fName);
+
       if (args.original) {
          res.original = true;
          res.origx = new Float32Array(res.i2+1);
