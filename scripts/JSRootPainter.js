@@ -632,7 +632,7 @@
 
       if (args.attr) {
          if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
-         if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
+         if (!args.style || (args.style<0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
 

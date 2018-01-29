@@ -566,10 +566,10 @@
       }
 
       // bins less than zmin not drawn
-      if (zc < this.colzmin) return (this.options.Color === 11) ? 0 : -1;
+      if (zc < this.colzmin) return this.options.Zero ? -1 : 0;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.colzmin) return ((this.colzmin != 0) || (this.options.Color === 11) || this.IsTH2Poly()) ? 0 : -1;
+      if (zc===this.colzmin) return ((this.colzmin != 0) || !this.options.Zero || this.IsTH2Poly()) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
@@ -1833,7 +1833,7 @@
          this.RedrawPad();
       });
 
-      if (this.options.Color > 0)
+      if (this.options.Color)
          this.FillPaletteMenu(menu);
    }
 
@@ -1843,7 +1843,7 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            var can_toggle = this.options.Mode3D ? (this.options.Color > 0) || (this.options.Contour > 0) :
+            var can_toggle = this.options.Mode3D ? this.options.Color || this.options.Contour :
                (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12);
             if (can_toggle) this.ToggleColz();
             break;
@@ -1853,9 +1853,9 @@
             if (this.options.Mode3D) {
                if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
                   if ((this.nbinsx>=50) || (this.nbinsy>=50))
-                     this.options.Lego = (this.options.Color > 0) ? 14 : 13;
+                     this.options.Lego = this.options.Color ? 14 : 13;
                   else
-                     this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+                     this.options.Lego = this.options.Color ? 12 : 1;
 
                   this.options.Zero = 0; // do not show zeros by default
                }
@@ -1895,7 +1895,7 @@
 
       this.Redraw();
 
-      // this.DrawColorPalette((this.options.Color > 0) && (this.options.Zscale > 0));
+      // this.DrawColorPalette(this.options.Color && (this.options.Zscale > 0));
    }
 
    TH2Painter.prototype.AutoZoom = function() {
@@ -2193,7 +2193,7 @@
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getContourColor(binz, true);
             if (binz===0) {
-               if (this.options.Color===11) continue;
+               if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
             }
             if (colindx === null) continue;
@@ -2584,7 +2584,7 @@
          bin = histo.fBins.arr[i];
          colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
-         if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
+         if ((bin.fContent === 0) && !this.options.Zero) continue;
 
          // check if bin outside visible range
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
@@ -3291,7 +3291,7 @@
                     (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
                // ignore empty bins with col0 option
-               if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
+               if ((bin.fContent === 0) && !this.options.Zero) continue;
 
                var gr = bin.fPoly, numgraphs = 1;
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }

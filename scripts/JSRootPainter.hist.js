@@ -1637,6 +1637,7 @@
 
       /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
+          hdim = this.Dimension(),
           option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
              Error: 0, errorX: JSROOT.gStyle.fErrorX,
              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
@@ -1651,7 +1652,7 @@
              _pmc: false, _plc: false, _pfc: false,
              minimum: -1111, maximum: -1111, original: opt },
            d = new JSROOT.DrawOptions(opt || histo.fOption),
-           hdim = this.Dimension(),
+
            pad = this.root_pad(),
            fp = this.frame_painter(), check3dbox = "",
            need_fillcol = false;
@@ -1674,10 +1675,8 @@
       if (d.check('NOSTAT')) option.NoStat = true;
       if (d.check('STAT')) option.ForceStat = true;
 
-      var tooltip = null;
-      if (d.check('NOTOOLTIP')) tooltip = false;
-      if (d.check('TOOLTIP')) tooltip = true;
-      if ((tooltip!==null) && fp) fp.tooltip_allowed = tooltip;
+      if (d.check('NOTOOLTIP') && fp) fp.tooltip_allowed = false;
+      if (d.check('TOOLTIP') && fp) fp.tooltip_allowed = true;
 
       if (d.check('LOGX') && pad) pad.fLogx = 1;
       if (d.check('LOGY') && pad) pad.fLogy = 1;
@@ -1788,11 +1787,8 @@
       if (d.check('COL', true)) {
          option.Color = 1;
 
-         if (d.part.indexOf('0')>=0) option.Color = 11;
-         if (d.part.indexOf('1')>=0) option.Color = 11;
-         if (d.part.indexOf('2')>=0) option.Color = 12;
-         if (d.part.indexOf('3')>=0) option.Color = 13;
-
+         if (d.part.indexOf('0')>=0) option.Zero = 0; // do not draw zero values
+         if (d.part.indexOf('1')>=0) option.Zero = 0;
          if (d.part.indexOf('Z')>=0) option.Zscale = 1;
          if (d.part.indexOf('A')>=0) option.Axis = -1;
          if (hdim == 1) option.Hist = 1;
@@ -1920,6 +1916,50 @@
       return option;
    }
 
+   // function should approx reconstruct draw options
+   THistPainter.prototype.OptionsAsString = function() {
+      var fp = this.frame_painter(),
+          // hdim = this.Dimension(),
+          opt = this.options;
+
+      var res = "";
+      if (opt.Mode3D) {
+
+         if (opt.Lego) {
+            res = "LEGO";
+            if (!opt.Zero) res += "0";
+            if (opt.Lego > 10) res += (opt.Lego-10);
+            if (opt.Zscale) res+="Z";
+         } else if (opt.Surf) {
+            res = "SURF" + (opt.Surf-10);
+            if (opt.Zscale) res+="Z";
+         }
+         if (fp && !fp.FrontBox) res+=",FB";
+         if (fp && !fp.BackBox) res+=",BB";
+
+      } else {
+         if (opt.Color) {
+            res += "COL";
+            if (!opt.Zero) res+="0";
+            if (opt.Zscale) res+="Z";
+            if (opt.Axis < 0) res+="A";
+         } else if (opt.Contour) {
+            res = "CONT";
+            if (opt.Contour > 10) res += (opt.Contour-10);
+            if (opt.Zscale) res+="Z";
+         } else if (opt.Bar) {
+            res = (opt.BaseLine === false) ? "B" : "B1";
+         } else if (opt.Mark) {
+            res = opt.Zero ? "P0" : "P"; // here invert logic with 0
+         } else if (opt.Scat) {
+            res = "SCAT";
+         }
+
+      }
+      return res;
+   }
+
+
    /// returns draw option for histogram
    THistPainter.prototype.GetDrawOptions = function() {
       return this.options && this.options.original ? this.options.original : "";
@@ -1930,10 +1970,10 @@
       var o = this.options, o0 = src.options;
 
       o.Mode3D = o0.Mode3D;
+      o.Zero = o0.Zero;
       if (o0.Mode3D) {
          o.Lego = o0.Lego;
          o.Surf = o0.Surf;
-         o.Zero = o0.Zero;
       } else {
          o.Color = o0.Color;
          o.Contour = o0.Contour;
@@ -2912,10 +2952,10 @@
       }
 
       // bins less than zmin not drawn
-      if (zc < this.colzmin) return (this.options.Color === 11) ? 0 : -1;
+      if (zc < this.colzmin) return this.options.Zero ? -1 : 0;
 
       // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.colzmin) return ((this.colzmin != 0) || (this.options.Color === 11) || this.IsTH2Poly()) ? 0 : -1;
+      if (zc===this.colzmin) return ((this.colzmin != 0) || !this.options.Zero || this.IsTH2Poly()) ? 0 : -1;
 
       return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
    }
@@ -4392,7 +4432,7 @@
          this.RedrawPad();
       });
 
-      if (this.options.Color > 0)
+      if (this.options.Color)
          this.FillPaletteMenu(menu);
    }
 
@@ -4404,7 +4444,7 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            var can_toggle = this.options.Mode3D ? (this.options.Color > 0) || (this.options.Contour > 0) :
+            var can_toggle = this.options.Mode3D ? this.options.Color || this.options.Contour :
                    (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12);
             if (can_toggle) this.ToggleColz();
             break;
@@ -4414,9 +4454,9 @@
             if (this.options.Mode3D) {
                if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
                   if ((this.nbinsx>=50) || (this.nbinsy>=50))
-                     this.options.Lego = (this.options.Color > 0) ? 14 : 13;
+                     this.options.Lego = this.options.Color ? 14 : 13;
                   else
-                     this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+                     this.options.Lego = this.options.Color ? 12 : 1;
 
                   this.options.Zero = 0; // do not show zeros by default
                }
@@ -4459,7 +4499,7 @@
 
       this.RedrawPad();
 
-      // this.DrawColorPalette((this.options.Color > 0) && (this.options.Zscale > 0));
+      // this.DrawColorPalette(this.options.Color && this.options.Zscale);
    }
 
    TH2Painter.prototype.AutoZoom = function() {
@@ -4763,7 +4803,7 @@
             binz = histo.getBinContent(i + 1, j + 1);
             colindx = this.getContourColor(binz, true);
             if (binz===0) {
-               if (this.options.Color===11) continue;
+               if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
             }
             if (colindx === null) continue;
@@ -5158,7 +5198,7 @@
          bin = histo.fBins.arr[i];
          colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
-         if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
+         if ((bin.fContent === 0) && !this.options.Zero) continue;
 
          // check if bin outside visible range
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
@@ -5725,7 +5765,7 @@
       if (this.IsTH2Poly())
          handle = this.DrawPolyBinsColor(w, h);
       else
-      if (this.options.Color > 0)
+      if (this.options.Color)
          handle = this.DrawBinsColor(w, h);
       else
       if (this.options.Scat > 0)
@@ -5868,7 +5908,7 @@
                     (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
                // ignore empty bins with col0 option
-               if ((bin.fContent === 0) && (this.options.Color === 11)) continue;
+               if ((bin.fContent === 0) && !this.options.Zero) continue;
 
                var gr = bin.fPoly, numgraphs = 1;
                if (gr._typename === 'TMultiGraph') { numgraphs = bin.fPoly.fGraphs.arr.length; gr = null; }
@@ -6102,7 +6142,7 @@
       this.CreateXY();
 
       // draw new palette, resize frame if required
-      var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
+      var pp = this.DrawColorPalette((this.options.Zscale > 0) && (this.options.Color || this.options.Contour), true);
 
       this.DrawAxes();
 
