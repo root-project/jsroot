@@ -606,16 +606,11 @@
       return this.getColor(indx);
    }
 
-   function TAttMarkerHandler(attmarker, style, color, size) {
-      if (attmarker && (typeof attmarker=='object')) {
-         if (!color) color = Painter.root_colors[attmarker.fMarkerColor];
-         if (!style || (style<0)) style = attmarker.fMarkerStyle;
-         if (!size) size = attmarker.fMarkerSize;
-      }
-
+   //function TAttMarkerHandler(attmarker, style, color, size) {
+   function TAttMarkerHandler(args) {
       this.x0 = this.y0 = 0;
-      this.color = color;
-      this.style = style;
+      this.color = 'black';
+      this.style = 1;
       this.size = 8;
       this.scale = 1;
       this.stroke = true;
@@ -627,9 +622,21 @@
 
       this.func = this.Apply.bind(this);
 
-      this.Change(color, style, size);
+      this.SetArgs(args);
 
       this.changed = false;
+   }
+
+   TAttMarkerHandler.prototype.SetArgs = function(args) {
+      if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
+
+      if (args.attr) {
+         if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
+         if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
+         if (!args.size) args.size = args.attr.fMarkerSize;
+      }
+
+      this.Change(args.color, args.style, args.size);
    }
 
    TAttMarkerHandler.prototype.reset_pos = function() {
@@ -1109,11 +1116,6 @@
       sample_svg.append("path")
                 .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
                 .call(sample.func);
-   }
-
-   /** Function returns the ready to use marker for drawing */
-   Painter.createAttMarker = function(attmarker, style) {
-      return new TAttMarkerHandler(attmarker, style);
    }
 
    Painter.clearCuts = function(chopt) {
@@ -2774,6 +2776,24 @@
       return pos;
    }
 
+   TObjectPainter.prototype.createAttMarker = function(args) {
+      if (!args || (typeof args !== 'object')) args = { std: true }; else
+      if (args.fMarkerColor!==undefined && args.fMarkerStyle!==undefined && args.fMarkerSize!==undefined) args = { attr: args, std: false };
+
+      if (args.std === undefined) args.std = true;
+
+      var handler = args.std ? this.markeratt : null;
+
+      if (!handler) handler = new TAttMarkerHandler(args);
+      else if (!handler.changed) handler.SetArgs(args);
+
+      if (args.std) this.markeratt = handler;
+
+      // handler.used = false; // mark that line handler is not yet used
+      return handler;
+   }
+
+
    TObjectPainter.prototype.createAttLine = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
       if (args.fLineColor!==undefined && args.fLineStyle!==undefined && args.fLineWidth!==undefined) args = { attr: args, std: false };
@@ -2795,7 +2815,7 @@
    // method dedicated to create fill attributes, bound to canvas SVG
    // otherwise newly created patters will not be usable in the canvas
    // by default this.fillatt is created. Following fields are processed in args:
-   //   std - is this is standard fill attribute for object and should be used as this.fillatt (default true)
+   //   std - this is standard fill attribute for object and should be used as this.fillatt (default true)
    //   attr - object, derived from TAttFill (default null)
    //   pattern - integer index of fill pattern (default none)
    //   color - integer index of fill color (defaule none)
@@ -3365,7 +3385,7 @@
 
          for (var n=0; n<supported.length; ++n) {
 
-            var clone = new TAttMarkerHandler(null, supported[n], this.markeratt.color, 1.7);
+            var clone = new TAttMarkerHandler({ style: supported[n], color: this.markeratt.color, size: 1.7 });
 
             var svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,8) + "'></path></svg>";
 

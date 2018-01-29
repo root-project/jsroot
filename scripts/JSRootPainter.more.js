@@ -1307,10 +1307,7 @@
          // for tooltips use markers only if nodes where not created
          var path = "", pnt, grx, gry;
 
-         if (!this.markeratt)
-            this.markeratt = new JSROOT.TAttMarkerHandler(graph, this.options.Mark - 100);
-         else
-            this.markeratt.Change(undefined, this.options.Mark - 100);
+         this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
 
          this.marker_size = this.markeratt.GetFullSize();
 
@@ -2238,7 +2235,7 @@
 
       if (!graph || !main || !main.$polargram) return;
 
-      if (this.options.mark && !this.markeratt) this.markeratt = new JSROOT.TAttMarkerHandler(graph);
+      if (this.options.mark) this.createAttMarker({ attr: graph });
       if (this.options.err || this.options.line || this.options.curve) this.createAttLine({ attr: graph });
       if (this.options.fill) this.createAttFill({ attr: graph });
 
@@ -2662,8 +2659,7 @@
          // for tooltips use markers only if nodes where not created
          var path = "";
 
-         if (!this.markeratt || !this.markeratt.changed)
-            this.markeratt = new JSROOT.TAttMarkerHandler(spline);
+         this.createAttMarker({ attr: spline })
 
          this.markeratt.reset_pos();
 
