@@ -2,7 +2,7 @@ examples_main = {
    TH1 : [
      { opt: "", file: "hsimple.root", item: "hpx;1" },
      { opt: "P" },
-     { opt: "PO" },
+     { opt: "P0" },
      { name: "star", opt:"*H", title: "draw stars on histogram bins" },
      { opt: "L", title: "draw histogram as line" },
      { name: "LF2", opt:"LF2,fill_blue", title: "draw histogram as line with filled area" },
