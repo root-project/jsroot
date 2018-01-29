@@ -488,7 +488,7 @@
             this.FillHistContextMenu(menu);
       }
 
-      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.Dimension() === 3)) {
+      if (this.options.Mode3D) {
          // menu for 3D drawings
 
          if (menu.size() > 0)
@@ -1390,7 +1390,7 @@
    }
 
    TH1Painter.prototype.ProcessTooltip = function(pnt) {
-      if ((pnt === null) || !this.draw_content || (this.options.Lego > 0) || (this.options.Surf > 0)) {
+      if ((pnt === null) || !this.draw_content || this.options.Mode3D) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
          this.ProvideUserTooltip(null);
@@ -1677,15 +1677,14 @@
 
    TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
 
-      var is3d = this.options.Lego || this.options.Surf, main = this.frame_painter();
+      var main = this.frame_painter();
 
-      if (main && (main.mode3d !== is3d)) {
+      if (main && (main.mode3d !== this.options.Mode3D)) {
          // that to do with that case
-         is3d = main.mode3d;
-         if (is3d) this.options.Lego = 2;
+         this.options.Mode3D = main.mode3d;
       }
 
-      var funcname = is3d ? "Draw3D" : "Draw2D";
+      var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
       this[funcname](callback, resize);
    }
@@ -1726,7 +1725,7 @@
       painter.PrepareFrame(divid);
 
       painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false };
+                          fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
       // here we deciding how histogram will look like and how will be shown
       // painter.options = painter.DecodeOptions(opt);
@@ -1736,7 +1735,7 @@
       // painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
-         // if ((painter.options.Lego === 0) && painter.options.AutoZoom) painter.AutoZoom();
+         // if (!painter.options.Mode3D && painter.options.AutoZoom) painter.AutoZoom();
          // painter.FillToolbar();
          painter.DrawingReady();
       });
@@ -1844,26 +1843,22 @@
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
          case "ToggleColorZ":
-            if (this.options.Lego === 12 || this.options.Lego === 14 ||
-                this.options.Color > 0 || this.options.Contour > 0 ||
-                this.options.Surf === 11 || this.options.Surf === 12) this.ToggleColz();
+            var can_toggle = this.options.Mode3D ? (this.options.Color > 0) || (this.options.Contour > 0) :
+               (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12);
+            if (can_toggle) this.ToggleColz();
             break;
          case "Toggle3D":
-            if (this.options.Surf > 0) {
-               this.options.Surf = -this.options.Surf;
-            } else
-            if (this.options.Lego > 0) {
-               this.options.Lego = 0;
-            } else
-            if (this.options.Surf < 0) {
-               this.options.Surf = -this.options.Surf;
-            } else {
-               if ((this.nbinsx>=50) || (this.nbinsy>=50))
-                  this.options.Lego = (this.options.Color > 0) ? 14 : 13;
-               else
-                  this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+            this.options.Mode3D = !this.options.Mode3D;
 
-               this.options.Zero = 0; // do not show zeros by default
+            if (this.options.Mode3D) {
+               if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
+                  if ((this.nbinsx>=50) || (this.nbinsy>=50))
+                     this.options.Lego = (this.options.Color > 0) ? 14 : 13;
+                  else
+                     this.options.Lego = (this.options.Color > 0) ? 12 : 1;
+
+                  this.options.Zero = 0; // do not show zeros by default
+               }
             }
 
             this.RedrawPad();
@@ -1889,17 +1884,11 @@
 
    TH2Painter.prototype.ToggleColor = function() {
 
-      var toggle = true;
-
-      if (this.options.Lego > 0) { this.options.Lego = 0; toggle = false; } else
-      if (this.options.Surf > 0) { this.options.Surf = -this.options.Surf; toggle = false; }
-
-      if (this.options.Color == 0) {
-         this.options.Color = ('LastColor' in this.options) ?  this.options.LastColor : 1;
-      } else
-      if (toggle) {
-         this.options.LastColor = this.options.Color;
-         this.options.Color = 0;
+      if (this.options.Mode3D) {
+         this.options.Mode3D = false;
+         this.options.Color = 1;
+      } else {
+         this.options.Color = this.options.Color ? 0 : 1;
       }
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
@@ -3543,20 +3532,13 @@
 
    TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
 
-      var is3d = false, main = this.frame_painter();
+      var main = this.frame_painter();
 
-      if (this.options.Contour > 0) is3d = main.mode3d; else
-      if ((this.options.Lego > 0) || (this.options.Surf > 0) || (this.options.Error > 0)) is3d = true;
-
-      if (is3d !== main.mode3d) {
-         is3d = main.mode3d;
-
-         if (this.options.Lego && !is3d) this.options.Lego = 0;
-         if (this.options.Surf && !is3d) this.options.Surf = 0;
-         if (this.options.Error && !is3d) this.options.Error = 0;
+      if (this.options.Mode3D !== main.mode3d) {
+         this.options.Mode3D = main.mode3d;
       }
 
-      var funcname = is3d ? "Draw3D" : "Draw2D";
+      var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
       this[funcname](callback, resize);
    }
@@ -3572,7 +3554,7 @@
       painter.PrepareFrame(divid);
 
       painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
-                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false,
+                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
                           Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
 
       if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = 1;
@@ -3582,8 +3564,8 @@
       // painter.options = painter.DecodeOptions(opt);
 
       if (painter.IsTH2Poly()) {
-         if (painter.options.Lego) painter.options.Lego = 12; else // and lego always 12
-         if (!painter.options.Color) painter.options.Color = 1; // default color
+         if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
+         else if (!painter.options.Color) painter.options.Color = 1; // default is color
       }
 
       painter._show_empty_bins = false;
@@ -3595,9 +3577,7 @@
       // painter.CreateStat(); // only when required
 
       painter.CallDrawFunc(function() {
-         //if ((this.options.Lego <= 0) && (this.options.Surf <= 0)) {
-         //   if (this.options.AutoZoom) this.AutoZoom();
-         //}
+         //if (!this.options.Mode3D && this.options.AutoZoom) this.AutoZoom();
          // this.FillToolbar();
          //if (this.options.Project && !this.mode3d)
          //   this.ToggleProjection(this.options.Project);

@@ -37,6 +37,8 @@
 
       if ((arg!==undefined) && (arg<0)) {
 
+         if (!this.mode3d) return;
+
          //if (typeof this.TestAxisVisibility === 'function')
          this.TestAxisVisibility(null, this.toplevel);
 
@@ -64,7 +66,7 @@
             delete this.render_tmout;
          }
 
-         delete this.mode3d;
+         this.mode3d = false;
 
          return;
       }
