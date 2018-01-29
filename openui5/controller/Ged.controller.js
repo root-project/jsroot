@@ -69,10 +69,12 @@ sap.ui.define([
          var pars = evnt.getParameters(), painter = data.painter;
          console.log('Hist model changes', pars.path, pars.value);
 
-         if (painter.ged.mode3d) {
+         painter.options.Mode3D = painter.ged.mode3d;
 
+         if (painter.ged.mode3d) {
+            painter.options.Lego = parseInt(painter.ged.Lego);
          } else {
-            painter.options.Mark = painter.ged.markers ? 1 : 0;
+            painter.options.Mark = painter.ged.markers ? (painter.ged.last_mark || 1) : 0;
             painter.options.Bar = painter.ged.bar ? 1 : 0;
          }
 
@@ -133,7 +135,9 @@ sap.ui.define([
 
                painter.ged.mode3d = painter.mode3d ? 1 : 0;
                painter.ged.markers = painter.options.Mark > 0;
+               if (painter.ged.markers) painter.ged.last_mark = painter.options.Mark;
                painter.ged.bar = painter.options.Bar > 0;
+               painter.ged.Lego = painter.options.Lego;
 
                var model = new JSONModel( { opts : painter.ged } );
 

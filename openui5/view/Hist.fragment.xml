@@ -42,9 +42,12 @@
          <Label text="Type" labelFor="LegoSelectTh1" />
          <Select selectedKey="{/opts/Lego}" tooltip="Contor" id="LegoSelectTh1">
             <items>
-               <core:Item text="Lego" key="0" />
-               <core:Item text="Lego1" key="1" />
-               <core:Item text="Lego2" key="2" />
+               <core:Item text="NoLego" key="0" />
+               <core:Item text="Lego" key="1" />
+               <core:Item text="Lego1" key="11" />
+               <core:Item text="Lego2" key="12" />
+               <core:Item text="Lego3" key="13" />
+               <core:Item text="Lego4" key="14" />
             </items>
          </Select>
       </Panel>
