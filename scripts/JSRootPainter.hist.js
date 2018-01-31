@@ -1359,7 +1359,7 @@
       painter.Redraw();
 
       // drawing ready handled in special painters, if not exists - drawing is done
-      return this.PaveDrawFunc ? painter : painter.DrawingReady();
+      return painter.PaveDrawFunc ? painter : painter.DrawingReady();
    }
 
    function drawPaletteAxis(divid, palette, opt) {
