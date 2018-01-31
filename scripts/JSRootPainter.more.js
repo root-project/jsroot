@@ -1163,6 +1163,8 @@
 
       var nodes = null;
 
+      console.log('name', graph.fName, 'opt', this.options.original, this.options.Rect);
+
       if (this.options.Errors || this.options.Rect || this.options.Bar) {
 
          drawbins = this.OptimizeBins(5000, function(pnt,i) {

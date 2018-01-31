@@ -946,6 +946,8 @@
          return true;
       }
 
+      if (this.pattern == 1000) this.pattern = 1001;
+
       if (this.pattern < 1001) {
          this.pattern_url = 'none';
          return true;
