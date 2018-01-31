@@ -14,13 +14,30 @@ sap.ui.define([
       gedFragments : [],
 
       onInit : function() {
+         console.log('init GED editor');
          var model = new JSONModel({ SelectedClass: "none" });
          this.getView().setModel(model);
       },
 
       onExit : function() {
          console.log('exit GED editor');
-         this.currentPainter = null; // remove cross ref
+         this.cleanupGed();
+
+      },
+
+      cleanupGed : function() {
+         console.log('Clenup GED editor');
+
+         // empty fragments
+         this.getView().byId("ged_page").removeAllContent();
+
+         // set dummy model
+         this.getView().setModel(new JSONModel({ SelectedClass: "none" }));
+
+         this.currentPainter = null; // remove cross reference
+
+         // TODO: deregsiter for all events
+
       },
 
       getFragment : function(kind, force) {
@@ -76,6 +93,8 @@ sap.ui.define([
          } else {
             painter.options.Mark = painter.ged.markers ? (painter.ged.last_mark || 1) : 0;
             painter.options.Bar = painter.ged.bar ? 1 : 0;
+
+            painter.options.Hist = painter.ged.bar || painter.ged.markers ? 0 : 1;
          }
 
          if (this.currentPadPainter)

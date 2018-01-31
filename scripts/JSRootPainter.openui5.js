@@ -345,6 +345,10 @@
       this.SelectObjectPainter(objpainter);
    }
 
+   JSROOT.TCanvasPainter.prototype.CleanupGed = function() {
+      sap.ui.getCore().byId("CanvasGedId").getController().cleanupGed();
+   }
+
    JSROOT.TCanvasPainter.prototype.openuiHasGed = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
       return main ? main.getController().isGedEditor() : false;

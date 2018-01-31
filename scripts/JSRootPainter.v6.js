@@ -4267,6 +4267,14 @@
       return this.brlayout ? this.brlayout.HasContent() : false;
    }
 
+   TCanvasPainter.prototype.RemoveGed = function() {
+      if (typeof this.CleanupGed == 'function')
+         this.CleanupGed();
+
+      if (this.brlayout)
+         this.brlayout.DeleteContent();
+   }
+
 
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to actiavte GED
@@ -4278,7 +4286,7 @@
 
       if (this.brlayout.HasContent()) {
          if ((mode === "toggle") || (mode === false))
-            return this.brlayout.DeleteContent();
+            return this.RemoveGed();
          return this.SelectObjectPainter(objpainter);
       }
 
@@ -4293,7 +4301,7 @@
                          .style("margin","3px").on("click", this.brlayout.Toggle.bind(this.brlayout, 'float'));
 
      JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.cross, 15, "delete GED")
-                         .style("margin","3px").on("click", this.brlayout.DeleteContent.bind(this.brlayout));
+                         .style("margin","3px").on("click", this.RemoveGed.bind(this));
 
       // be aware, that jsroot_browser_hierarchy required for flexible layout that element use full browser area
       this.brlayout.SetBrowserContent("<div class='jsroot_browser_hierarchy' id='ged_placeholder'>Loading GED ...</div>");
