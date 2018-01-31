@@ -3871,7 +3871,7 @@
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
 
-      } else if ((res.length > 0) && (this.options.Hist>0)) {
+      } else if ((res.length > 0) && ((this.options.Hist>0) || !show_text) && (!this.lineatt.empty() || !this.fillatt.empty())) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")

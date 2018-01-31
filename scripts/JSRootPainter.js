@@ -827,15 +827,20 @@
       this.changed = true;
    }
 
+   TAttLineHandler.prototype.empty = function() {
+      return this.color == 'none';
+   }
+
    TAttLineHandler.prototype.Apply = function(selection) {
       this.used = true;
-      if (this.color=='none') {
-         selection.style('stroke',null).style('stroke-width',null).style('stroke-dasharray',null);
-      } else {
+      if (this.empty())
+         selection.style('stroke', null)
+                  .style('stroke-width', null)
+                  .style('stroke-dasharray', null);
+      else
          selection.style('stroke', this.color)
                   .style('stroke-width', this.width)
                   .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
-      }
    }
 
    TAttLineHandler.prototype.Change = function(color, width, style) {
