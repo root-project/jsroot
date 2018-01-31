@@ -5020,6 +5020,7 @@
    JSROOT.addDrawFunc({ name: "TPad", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPad", opt: ";grid;gridx;gridy;tick;tickx;ticky;log;logx;logy;logz", expand_item: "fPrimitives" });
    JSROOT.addDrawFunc({ name: "TSlider", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPad" });
    JSROOT.addDrawFunc({ name: "TFrame", icon: "img_frame", prereq: "v6", func: "JSROOT.Painter.drawFrame" });
+   JSROOT.addDrawFunc({ name: "TPave", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TPaveText", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TPavesText", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TPaveStats", icon: "img_pavetext", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
