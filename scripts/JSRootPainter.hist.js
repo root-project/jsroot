@@ -2262,7 +2262,7 @@
       painter.Redraw();
 
       // drawing ready handled in special painters, if not exists - drawing is done
-      return this.PaveDrawFunc ? painter.DrawingReady() : painter;
+      return painter.PaveDrawFunc ? painter : painter.DrawingReady();
    }
 
    // ==============================================================================
