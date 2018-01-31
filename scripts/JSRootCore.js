@@ -99,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 29/01/2018";
+   JSROOT.version = "dev 31/01/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -179,6 +179,14 @@
 
          // these are TStyle attributes, which can be changed via URL 'style' parameter
 
+         fOptLogx : 0,
+         fOptLogy : 0,
+         fOptLogz : 0,
+         fOptDate : 0,
+         fOptFile : 0,
+         fOptFit  : 0,
+         fOptStat : 1,
+         fOptTitle : 1,
          fPadBottomMargin : 0.1,
          fPadTopMargin : 0.1,
          fPadLeftMargin : 0.1,
@@ -1483,7 +1491,7 @@
                                  fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
                                  fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
                                  fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
-                                 fNumber: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fNumber: 0, fLogx: JSROOT.gStyle.fOptLogx, fLogy: JSROOT.gStyle.fOptLogy, fLogz: JSROOT.gStyle.fOptLogz,
                                  fTickx: JSROOT.gStyle.fPadTickX,
                                  fTicky: JSROOT.gStyle.fPadTickY,
                                  fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,

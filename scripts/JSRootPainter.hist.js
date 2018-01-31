@@ -2292,7 +2292,7 @@
       if (!pavetext) pavetext = this.FindInPrimitives("title");
       if (pavetext && (pavetext._typename !== "TPaveText")) pavetext = null;
 
-      var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle);
+      var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (JSROOT.gStyle.fOptTitle > 0);
 
       if (pavetext) {
          pavetext.Clear();
