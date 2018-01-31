@@ -688,7 +688,7 @@
       if ('PaveDrawFunc' in this)
          this.PaveDrawFunc(width, height, arg);
 
-      if (JSROOT.BatchMode) return;
+      if (JSROOT.BatchMode || (pt._typename=="TPave")) return;
 
       // here all kind of interactive settings
 
@@ -955,27 +955,16 @@
 
       var pave = this.GetObject();
 
-      if (fmt=="stat") {
-         fmt = pave.fStatFormat;
-         if (!fmt) fmt = JSROOT.gStyle.fStatFormat;
-      } else
-      if (fmt=="fit") {
-         fmt = pave.fFitFormat;
-         if (!fmt) fmt = JSROOT.gStyle.fFitFormat;
-      } else
-      if (fmt=="entries") {
-         if (value < 1e9) return value.toFixed(0);
-         fmt = "14.7g";
-      } else
-      if (fmt=="last") {
-         fmt = this.lastformat;
+      switch(fmt) {
+         case "stat" : fmt = pave.fStatFormat || JSROOT.gStyle.fStatFormat; break;
+         case "fit": fmt = pave.fFitFormat || JSROOT.gStyle.fFitFormat; break;
+         case "entries": if (value < 1e9) return value.toFixed(0); fmt = "14.7g"; break;
+         case "last": fmt = this.lastformat; break;
       }
 
       delete this.lastformat;
 
-      if (!fmt) fmt = "6.4g";
-
-      var res = JSROOT.FFormat(value, fmt);
+      var res = JSROOT.FFormat(value, fmt || "6.4g");
 
       this.lastformat = JSROOT.lastFFormat;
 
