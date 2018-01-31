@@ -1627,7 +1627,7 @@
       /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
           hdim = this.Dimension(),
-          option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 0, Line: 0,
+          option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 1, Line: 0,
              Error: 0, errorX: JSROOT.gStyle.fErrorX,
              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
@@ -1649,7 +1649,7 @@
       // use error plot only when any sumw2 bigger than 0
       if ((hdim===1) && (histo.fSumw2.length > 0))
          for (var n=0;n<histo.fSumw2.length;++n)
-            if (histo.fSumw2[n] > 0) { option.Error = 2; option.Zero = 0; break; }
+            if (histo.fSumw2[n] > 0) { option.Error = 2; option.Hist = 0; option.Zero = 0; break; }
 
       if (d.check('PAL', true)) option.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = histo.fMinimum;
@@ -1695,7 +1695,7 @@
       if (d.check('SAME')) { option.Same = 1; option.Func = 0; }
 
       // if here rest option is empty, draw histograms by default
-      if (d.empty()) option.Hist = 1;
+      // if (d.empty() && !option.Error) option.Hist = 1;
 
       if (d.check('SPEC')) { option.Scat = 0; option.Spec = 1; }
 
@@ -1860,11 +1860,10 @@
 
       if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
 
-      if (d.check('P0')) { option.Mark = 1; option.Hist = -1; option.Zero = 1; }
-      if (d.check('P')) { option.Mark = 1; option.Hist = -1; option.Zero = 0; }
+      if (d.check('P0')) { option.Mark = 1; option.Hist = 0; option.Zero = 1; }
+      if (d.check('P')) { option.Mark = 1; option.Hist = 0; option.Zero = 0; }
       if (d.check('Z')) option.Zscale = 1;
-      if (d.check('*H') || d.check('*')) { option.Mark = 23; option.Hist = -1; }
-
+      if (d.check('*')) { option.Mark = 23; option.Hist = 0; }
       if (d.check('H')) option.Hist = 1;
 
       if (this.IsTH2Poly()) {
@@ -1875,6 +1874,7 @@
          if (hdim == 1) {
             option.Error = 1;
             option.Zero = 0; // do not draw empty bins with erros
+            option.Hist = 0;
             if (!isNaN(parseInt(d.part[0]))) option.Error = 10 + parseInt(d.part[0]);
             if ((option.Error === 13) || (option.Error === 14)) need_fillcol = true;
             if (option.Error === 10) option.Zero = 1; // enable drawing of empty bins
@@ -3365,10 +3365,10 @@
       }
 
       // If no any draw options specified, do not try draw histogram
-      if (!this.options.Bar && !this.options.Hist && !this.options.Line &&
+      if (!this.options.Bar && !this.options.Hist && !this.options.Line && !this.options.Mark &&
           !this.options.Error && !this.options.Same && !this.options.Mode3D && !this.options.Text) {
-         if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
-                               else this.draw_content = false;
+         //if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
+         //                      else this.draw_content = false;
       }
 
       // used in AllowDefaultYZooming
@@ -3625,8 +3625,6 @@
       if ((this.options.Error == 13) || (this.options.Error == 14))
          return this.DrawFilledErrors(width, height);
 
-      this.CreateG(true);
-
       var left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.frame_painter(),
@@ -3667,6 +3665,15 @@
          }
       }
 
+      var draw_markers = show_errors || show_markers,
+          draw_any_but_hist = draw_markers || show_text || show_line,
+          draw_hist =(this.options.Hist > 0) && (!this.lineatt.empty() || !this.fillatt.empty());
+
+      if (!draw_hist && !draw_any_but_hist)
+         return this.RemoveDrawG();
+
+      this.CreateG(true);
+
       if (show_text) {
          text_col = this.get_color(this.histo.fMarkerColor);
          text_angle = (this.options.Text>1000) ? -1*(this.options.Text % 1000) : 0;
@@ -3697,9 +3704,7 @@
          dend = Math.floor((this.lineatt.width-1)/2);
       }
 
-      var draw_markers = show_errors || show_markers;
-
-      if (draw_markers || show_text || show_line) use_minmax = true;
+      if (draw_any_but_hist) use_minmax = true;
 
       for (i = left; i <= right; ++i) {
 
@@ -3723,8 +3728,7 @@
             prevx = startx = currx = grx;
             prevy = curry_min = curry_max = curry = gry;
             res = "M"+currx+","+curry;
-         } else
-         if (use_minmax) {
+         } else if (use_minmax) {
             if ((grx === currx) && !lastbin) {
                if (gry < curry_min) besti = i;
                curry_min = Math.min(curry_min, gry);
@@ -3732,7 +3736,7 @@
                curry = gry;
             } else {
 
-               if (draw_markers || show_text || show_line) {
+               if (draw_any_but_hist) {
                   bincont = histo.getBinContent(besti+1);
                   if (!exclude_zero || (bincont!==0)) {
                      mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+1)));
@@ -3794,8 +3798,8 @@
                   }
                }
 
-               // when several points as same X differs, need complete logic
-               if (!draw_markers && ((curry_min !== curry_max) || (prevy !== curry_min))) {
+               // when several points at same X differs, need complete logic
+               if (draw_hist && ((curry_min !== curry_max) || (prevy !== curry_min))) {
 
                   if (prevx !== currx)
                      res += "h"+(currx-prevx);
@@ -3825,8 +3829,8 @@
                curry_min = curry_max = curry = gry;
                currx = grx;
             }
-         } else
-         if ((gry !== curry) || lastbin) {
+            // end of use_minmax
+         } else if ((gry !== curry) || lastbin) {
             if (grx !== currx) res += "h"+(grx-currx);
             if (gry !== curry) res += "v"+(gry-curry);
             curry = gry;
@@ -3871,7 +3875,9 @@
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
 
-      } else if ((res.length > 0) && ((this.options.Hist>0) || !show_text) && (!this.lineatt.empty() || !this.fillatt.empty())) {
+      }
+
+      if ((res.length > 0) && draw_hist) {
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
