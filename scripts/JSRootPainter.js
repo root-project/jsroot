@@ -871,6 +871,8 @@
          delete this.antialias;
       }
 
+      if (this.pattern == 1000) this.pattern = 1001;
+
       if (this.pattern < 1001) {
          this.color = 'none';
          return true;
