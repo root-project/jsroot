@@ -1917,8 +1917,6 @@
          this.options.Reset();
 
       this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp, this.IsTH2Poly());
-
-      return this.options;
    }
 
    // function should approx reconstruct draw options

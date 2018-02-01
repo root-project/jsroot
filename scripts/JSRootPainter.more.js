@@ -797,9 +797,14 @@
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
       var graph = this.GetObject(),
-          d = new JSROOT.DrawOptions(opt),
-          res = { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
-                  MainError: 1, Ends: 1, Axis: "", original: opt };
+          d = new JSROOT.DrawOptions(opt);
+
+      if (!this.options) this.options = {};
+
+      JSROOT.extend(this.options, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
+                                   MainError: 1, Ends: 1, Axis: "", original: opt });
+
+      var res = this.options;
 
       res._pfc = d.check("PFC");
       res._plc = d.check("PLC");
@@ -858,8 +863,6 @@
       } else if (res.Axis.indexOf("A")<0) {
          res.Axis = "AXIS," + res.Axis;
       }
-
-      return res;
    }
 
    TGraphPainter.prototype.CreateBins = function() {
@@ -1740,7 +1743,7 @@
       if (!this.MatchObjectType(obj)) return false;
 
       if ((opt !== undefined) && (opt != this.options.original))
-         this.options = this.DecodeOptions(opt);
+         this.DecodeOptions(opt);
 
       var graph = this.GetObject();
       // TODO: make real update of TGraph object content
@@ -1896,7 +1899,7 @@
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
-      painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       painter.CreateBins();
 
@@ -2220,13 +2223,15 @@
 
       var d = new JSROOT.DrawOptions(opt || "L");
 
-      this.options = {
+      if (!this.options) this.options = {};
+
+      JSROOT.extend(this.options, {
           mark: d.check("P"),
           err: d.check("E"),
           fill: d.check("F"),
           line: d.check("L"),
           curve: d.check("C")
-      }
+      });
    }
 
    TGraphPolarPainter.prototype.DrawBins = function() {
@@ -2697,12 +2702,14 @@
    TSplinePainter.prototype.DecodeOptions = function(opt) {
       var d = new JSROOT.DrawOptions(opt);
 
-      this.options = {
+      if (!this.options) this.options = {};
+
+      JSROOT.extend(this.options, {
          Same: d.check('SAME'),
          Line: d.check('L'),
          Curve: d.check('C'),
          Mark: d.check('P')
-      }
+      });
    }
 
    TSplinePainter.prototype.FirstDraw = function() {
@@ -2747,11 +2754,13 @@
 
       var d = new JSROOT.DrawOptions(opt || "REPEAT");
 
-      this.options = {
+      if (!this.options) this.options = {};
+
+      JSROOT.extend(this.options, {
           once: d.check("ONCE"),
           repeat: d.check("REPEAT"),
           first: d.check("FIRST")
-      }
+      });
    }
 
    TGraphTimePainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
