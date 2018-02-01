@@ -170,7 +170,7 @@
 
    // =============================================================================
 
-   function drawBox(divid, obj, opt) {
+   function drawBox() {
 
       var box = this.GetObject(),
           draw_line = (typeof this._drawopt == 'string') && (this._drawopt.toUpperCase().indexOf("L")>=0),
