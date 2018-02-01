@@ -2139,12 +2139,8 @@
          }
       }
 
-      if (changed) {
-         this.RedrawPad();
-
-         var canp = this.canv_painter(); // top-level painter
-         if (canp) canp.ProcessChanges("zoom", this.pad_painter());
-      }
+      if (changed)
+         this.InteractiveRedraw("pad", "zoom");
 
       return changed;
    }

@@ -3259,9 +3259,6 @@
 
       if (!this.nbinsx && when_axis_changed) when_axis_changed = false;
 
-      // Paint histogram axis only
-      if (this.options.Axis > 0) this.draw_content = false;
-
       if (this.IsTH1K()) this.ConvertTH1K();
 
       if (!when_axis_changed) {
@@ -3276,6 +3273,11 @@
       if (when_axis_changed) {
          if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
       }
+
+      this.draw_content = true; // draw by default
+
+      // Paint histogram axis only
+      if (this.options.Axis > 0) this.draw_content = false;
 
       this.scan_xleft = left;
       this.scan_xright = right;
@@ -3320,8 +3322,6 @@
          this.draw_content = false;
          hmin = this.ymin;
          hmax = this.ymax;
-      } else {
-         this.draw_content = true;
       }
 
       if (this.draw_content) {
@@ -3361,13 +3361,6 @@
       if (set_zoom && this.draw_content) {
          this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
          this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
-      }
-
-      // If no any draw options specified, do not try draw histogram
-      if (!this.options.Bar && !this.options.Hist && !this.options.Line && !this.options.Mark &&
-          !this.options.Error && !this.options.Same && !this.options.Mode3D && !this.options.Text) {
-         //if (this.options.Axis < 0) this.options.Hist = 1; // if axis was disabled, draw content anyway
-         //                      else this.draw_content = false;
       }
 
       // used in AllowDefaultYZooming
@@ -3616,7 +3609,7 @@
       var width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
-         return this.RemoveDrawG();
+          return this.RemoveDrawG();
 
       if (this.options.Bar)
          return this.DrawBars(width, height);
@@ -4182,7 +4175,7 @@
             this.fillatt.Change(5,1001);
 
          // redraw all objects in pad, inform dependent objects
-         this.InteractiveRedraw("pad");
+         this.InteractiveRedraw("pad", "drawopt");
       });
    }
 
@@ -4423,7 +4416,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
          this.DecodeOptions(arg);
-         this.InteractiveRedraw("pad");
+         this.InteractiveRedraw("pad", "drawopt");
       });
 
       if (this.options.Color)

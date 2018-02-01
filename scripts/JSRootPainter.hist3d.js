@@ -2998,7 +2998,7 @@
 
          this.DecodeOptions(arg);
          this.Redraw();
-         this.InteractiveRedraw(true);
+         this.InteractiveRedraw(true,"drawopt");
       });
    }
 
