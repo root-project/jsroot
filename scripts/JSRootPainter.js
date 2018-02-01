@@ -2198,7 +2198,6 @@
       delete this.lineatt;
       delete this.markeratt;
       delete this.bins;
-      delete this._drawopt;
       delete this.root_colors;
       delete this.options;
       delete this.options_store;
@@ -2250,12 +2249,12 @@
       if (!this.options) return "";
 
       if (!this.OptionesChanged())
-         return this.options.original;
+         return this.options.original || "";
 
       if (typeof this.options.asString == "function")
          return this.options.asString();
 
-      return this.options.original; // nothing better, return original draw option
+      return this.options.original || ""; // nothing better, return original draw option
    }
 
    TObjectPainter.prototype.UpdateObject = function(obj) {
@@ -5353,11 +5352,12 @@
             painter = new TObjectPainter(obj);
             painter.SetDivId(divid, 2);
             painter.Redraw = handle.func;
-            painter._drawopt = opt;
+            painter.options = { original: opt || "" };
             painter.Redraw();
             painter.DrawingReady();
          } else {
             painter = handle.func(divid, obj, opt);
+            if (!painter.options) painter.options = { original: opt || "" };
          }
 
          return completeDraw(painter);

@@ -264,11 +264,12 @@
 
    // =============================================================================
 
-   function drawBox(divid, obj, opt) {
+   function drawBox() {
 
       var box = this.GetObject(),
-          draw_line = (typeof this._drawopt == 'string') && (this._drawopt.toUpperCase().indexOf("L")>=0),
-          lineatt = new JSROOT.TAttLineHandler(box),
+          opt = this.OptionsAsString(),
+          draw_line = (opt.toUpperCase().indexOf("L")>=0),
+          lineatt = this.createAttLine(box),
           fillatt = this.createAttFill(box);
 
       // create svg:g container for box drawing
@@ -282,7 +283,7 @@
           ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
       // if box filled, contour line drawn only with "L" draw option:
-      if ((fillatt.color != 'none') && !draw_line) lineatt.color = "none";
+      if (!fillatt.empty() && !draw_line) lineatt.color = "none";
 
       this.draw_g
           .append("svg:rect")
