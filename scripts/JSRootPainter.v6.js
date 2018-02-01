@@ -3585,7 +3585,7 @@
          var sub = this.painters[k];
          if (typeof sub.GetAllRanges == "function")
             sub.GetAllRanges(arg);
-         else if (sub.snapid && (typeof sub.OptionsAsString == "function"))
+         else if (sub.snapid)
             elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString() });
       }
 

@@ -4195,14 +4195,8 @@
          if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
             this.fillatt.Change(5,1001);
 
-         // redraw all objects in pad
-         this.RedrawPad();
-
-         var canp = this.canv_painter();
-         if (canp) canp.ProcessChanges("drawopt", this.pad_painter());
-
-         // inform that something changes
-         this.InteractiveRedraw(true);
+         // redraw all objects in pad, inform dependent objects
+         this.InteractiveRedraw("pad");
       });
    }
 
@@ -4443,7 +4437,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
          this.DecodeOptions(arg);
-         this.RedrawPad();
+         this.InteractiveRedraw("pad");
       });
 
       if (this.options.Color)

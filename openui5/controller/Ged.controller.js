@@ -90,23 +90,8 @@ sap.ui.define([
          opts.Mode3D = opts.Mode3Dindx > 0;
          opts.Lego = parseInt(opts.Lego);
 
-/*         painter.options.Mode3D = painter.ged.mode3d;
-
-         if (painter.ged.mode3d) {
-            painter.options.Lego = parseInt(painter.ged.Lego);
-         } else {
-
-            console.log('markers', painter.ged.markers, typeof painter.ged.markers);
-
-            painter.options.Mark = painter.ged.markers;
-            painter.options.Bar = painter.ged.bar;
-
-            painter.options.Hist = painter.ged.bar || painter.ged.markers ? 0 : 1;
-         }
-*/
          if (this.currentPadPainter)
             this.currentPadPainter.Redraw();
-
       },
 
       onObjectSelect : function(padpainter, painter, place) {

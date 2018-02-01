@@ -1644,7 +1644,7 @@
             this.fillatt.Change(5,1001);
 
          // redraw all objects
-         this.RedrawPad();
+         this.InteractiveRedraw("pad");
       });
    }
 
@@ -1839,7 +1839,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
          this.DecodeOptions(arg);
-         this.RedrawPad();
+         this.InteractiveRedraw("pad");
       });
 
       if (this.options.Color)

@@ -2901,12 +2901,20 @@
 
    // indicate that redraw was invoked via interactive action (like context menu)
    // use to catch such action by GED
-   TObjectPainter.prototype.InteractiveRedraw = function(skip_redraw) {
+   TObjectPainter.prototype.InteractiveRedraw = function(arg) {
 
-      if (!skip_redraw) this.Redraw();
+      if (arg == "pad") this.RedrawPad(); else
+      if (arg !== true) this.Redraw();
 
+      // inform GED that something changes
       var pad_painter = this.pad_painter();
-      if (pad_painter) pad_painter.InteractiveObjectRedraw(this)
+      if (pad_painter && pad_painter.InteractiveObjectRedraw)
+         pad_painter.InteractiveObjectRedraw(this);
+
+      // inform server that drawopt changes
+      var canp = this.canv_painter();
+      if (canp && canp.ProcessChanges)
+         canp.ProcessChanges("drawopt", this.pad_painter());
    }
 
    //  Redraw all objects in correspondent pad
