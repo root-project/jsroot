@@ -2706,16 +2706,16 @@
    TPadPainter.prototype.SelectObjectPainter = function(_painter) {
       var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
 
-      if (canp && canp.pad_events_receiver)
+      if (canp.pad_events_receiver)
          canp.pad_events_receiver({ what: "select", padpainter: this, painter: _painter });
    }
 
    /// method redirect call to pad events receiver
-   TPadPainter.prototype.ProcessPadRedraw = function(_padpainter) {
+   TPadPainter.prototype.InteractiveObjectRedraw = function(_painter) {
       var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
 
       if (canp && canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "redraw", padpainter: _padpainter });
+         canp.pad_events_receiver({ what: "redraw", padpainter: this, painter: _painter });
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -3202,9 +3202,6 @@
          var sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
       }
-
-      this.ProcessPadRedraw(this);
-
    }
 
    TPadPainter.prototype.NumDrawnSubpads = function() {

@@ -1632,7 +1632,10 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
 
-         this.options = this.DecodeOptions(arg, true);
+         this.options = this.DecodeOptions(arg);
+
+         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+            this.fillatt.Change(5,1001);
 
          // redraw all objects
          this.RedrawPad();

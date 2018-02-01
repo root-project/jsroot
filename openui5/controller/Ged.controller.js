@@ -50,6 +50,8 @@ sap.ui.define([
 
          if (!fragm) return;
 
+         fragm.ged_fragment = true; // mark as ged fragment
+
          var html = new HTML();
          html.setContent("<hr>");
          html.setTooltip(kind);
@@ -167,8 +169,17 @@ sap.ui.define([
          }
       },
 
-      onPadRedraw : function(canpainter, padpainter) {
-         console.log('GED sees pad redraw');
+      onObjectRedraw : function(padpainter, painter) {
+         if ((this.currentPadPainter !== padpainter) || (this.currentPainter !== painter)) return;
+
+         console.log('GED sees selected object redraw');
+
+         var page = this.getView().byId("ged_page");
+         var cont = page.getContent();
+
+         for (var n=0;n<cont.length;++n)
+            if (cont[n] && cont[n].ged_fragment)
+               cont[n].getModel().refresh();
       },
 
       padEventsReceiver : function(evnt) {
@@ -177,7 +188,7 @@ sap.ui.define([
          if (evnt.what == "select")
             this.onObjectSelect(evnt.padpainter, evnt.painter);
          else if (evnt.what == "redraw")
-            this.onPadRedraw(evnt.padpainter);
+            this.onObjectRedraw(evnt.padpainter, evnt.painter);
       }
 
    });

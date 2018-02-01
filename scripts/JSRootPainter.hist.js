@@ -1550,6 +1550,288 @@
       return painter.DrawingReady();
    }
 
+
+   // ==============================================================================
+
+   function THistDrawOptions(opt) {
+      this.Reset();
+   }
+
+   THistDrawOptions.prototype.Reset = function() {
+      JSROOT.extend(this,
+            { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 1, Line: 0,
+              Error: 0, errorX: JSROOT.gStyle.fErrorX,
+              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
+              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
+              Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
+              Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
+              GLBox: 0, GLColor: 0, Project: "",
+              System: JSROOT.Painter.Coord.kCARTESIAN,
+              AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
+              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
+              Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
+              _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
+              minimum: -1111, maximum: -1111, original: "" });
+   }
+
+   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, fp, th2_poly) {
+      this.orginal = opt;
+
+      var d = new JSROOT.DrawOptions(opt), check3dbox = "";
+
+      if ((hdim===1) && (histo.fSumw2.length > 0))
+         for (var n=0;n<histo.fSumw2.length;++n)
+            if (histo.fSumw2[n] > 0) { this.Error = 2; this.Hist = 0; this.Zero = 0; break; }
+
+      if (d.check('PAL', true)) this.Palette = d.partAsInt();
+      if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
+      if (d.check('MAXIMUM:', true)) this.maximum = parseFloat(d.part); else this.maximum = histo.fMaximum;
+
+      if (d.check('NOOPTIMIZE')) this.Optimize = 0;
+      if (d.check('OPTIMIZE')) this.Optimize = 2;
+
+      if (d.check('AUTOCOL')) { this.AutoColor = 1; this.Hist = 1; }
+      if (d.check('AUTOZOOM')) { this.AutoZoom = 1; this.Hist = 1; }
+
+      if (d.check('NOSTAT')) this.NoStat = true;
+      if (d.check('STAT')) this.ForceStat = true;
+
+      if (d.check('NOTOOLTIP') && fp) fp.tooltip_allowed = false;
+      if (d.check('TOOLTIP') && fp) fp.tooltip_allowed = true;
+
+      if (d.check('LOGX') && pad) pad.fLogx = 1;
+      if (d.check('LOGY') && pad) pad.fLogy = 1;
+      if (d.check('LOGZ') && pad) pad.fLogz = 1;
+      if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
+      if (d.check('GRIDX') && pad) pad.fGridx = 1;
+      if (d.check('GRIDY') && pad) pad.fGridy = 1;
+      if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
+      if (d.check('TICKX') && pad) pad.fTickx = 1;
+      if (d.check('TICKY') && pad) pad.fTicky = 1;
+
+      if (d.check('FILL_', true)) {
+         if (d.partAsInt(1)>0) this.histoFillColor = d.partAsInt(); else
+         for (var col=0;col<8;++col)
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histoFillColor = col;
+      }
+      if (d.check('LINE_', true)) {
+         if (d.partAsInt(1)>0) this.histoLineColor = JSROOT.Painter.root_colors[d.partAsInt()]; else
+         for (var col=0;col<8;++col)
+            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) this.histoLineColor = d.part;
+      }
+
+      if (d.check('X+')) this.AxisPos = 10;
+      if (d.check('Y+')) this.AxisPos += 1;
+
+      if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
+      if (d.check('SAME')) { this.Same = 1; this.Func = 0; }
+
+      // if here rest option is empty, draw histograms by default
+      // if (d.empty() && !this.Error) this.Hist = 1;
+
+      if (d.check('SPEC')) { this.Scat = 0; this.Spec = 1; }
+
+      if (d.check('BASE0')) this.BaseLine = 0; else
+      if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
+
+      if (d.check('PIE')) this.Pie = 1;
+
+      if (d.check('CANDLE', true)) this.Candle = d.part;
+
+      if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
+      if (d.check('GLCOL')) this.GLColor = 1;
+
+      d.check('GL'); // suppress GL
+
+      if (d.check('LEGO', true)) {
+         this.Scat = 0;
+         this.Lego = 1;
+         if (d.part.indexOf('0') >= 0) this.Zero = 0;
+         if (d.part.indexOf('1') >= 0) this.Lego = 11;
+         if (d.part.indexOf('2') >= 0) this.Lego = 12;
+         if (d.part.indexOf('3') >= 0) this.Lego = 13;
+         if (d.part.indexOf('4') >= 0) this.Lego = 14;
+         check3dbox = d.part;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = 1;
+      }
+
+      if (d.check('SURF', true)) {
+         this.Scat = 0;
+         this.Surf = d.partAsInt(10, 1);
+         check3dbox = d.part;
+         if (d.part.indexOf('Z')>=0) this.Zscale = 1;
+      }
+
+      if (d.check('TF3', true)) check3dbox = d.part;
+
+      if (d.check('ISO', true)) check3dbox = d.part;
+
+      if (d.check('LIST')) this.List = 1;
+
+      if (d.check('CONT', true)) {
+         if (hdim > 1) {
+            this.Scat = 0;
+            this.Contour = 1;
+            if (d.part.indexOf('Z') >= 0) this.Zscale = 1;
+            if (d.part.indexOf('1') >= 0) this.Contour = 11; else
+            if (d.part.indexOf('2') >= 0) this.Contour = 12; else
+            if (d.part.indexOf('3') >= 0) this.Contour = 13; else
+            if (d.part.indexOf('4') >= 0) this.Contour = 14;
+         } else {
+            this.Hist = 1;
+         }
+      }
+
+      // decode bar/hbar option
+      if (d.check('HBAR', true)) this.Bar = 20; else
+      if (d.check('BAR', true)) this.Bar = 10;
+      if (this.Bar > 0) {
+         this.Hist = 0;
+         this.need_fillcol = true;
+         this.Bar += d.partAsInt();
+      }
+
+      if (d.check('ARR')) {
+         if (hdim > 1) {
+            this.Arrow = 1;
+            this.Scat = 0;
+         } else {
+            this.Hist = 1;
+         }
+      }
+
+      if (d.check('BOX',true)) this.Box = 10 + d.partAsInt();
+
+      if (this.Box)
+         if (hdim > 1) this.Scat = 0;
+                  else this.Hist = 1;
+
+      if (d.check('COL', true)) {
+         this.Color = 1;
+
+         if (d.part.indexOf('0')>=0) this.Zero = 0; // do not draw zero values
+         if (d.part.indexOf('1')>=0) this.Zero = 0;
+         if (d.part.indexOf('Z')>=0) this.Zscale = 1;
+         if (d.part.indexOf('A')>=0) this.Axis = -1;
+         if (hdim == 1) this.Hist = 1;
+                   else this.Scat = 0;
+      }
+
+      if (d.check('CHAR')) { this.Char = 1; this.Scat = 0; }
+      if (d.check('FUNC')) { this.Func = 2; this.Hist = 0; }
+      if (d.check('AXIS')) this.Axis = 1;
+      if (d.check('AXIG')) this.Axis = 2;
+
+      if (d.check('TEXT', true)) {
+         this.Text = 1;
+         this.Scat = 0;
+         this.Hist = 0;
+
+         var angle = Math.min(d.partAsInt(), 90);
+         if (angle) this.Text = 1000 + angle;
+
+         if (d.part.indexOf('N')>=0 && th2_poly)
+            this.Text = 3000 + angle;
+
+         if (d.part.indexOf('E')>=0)
+            this.Text = 2000 + angle;
+      }
+
+      if (d.check('SCAT=', true)) {
+         this.Scat = 1;
+         this.ScatCoef = parseFloat(d.part);
+         if (isNaN(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
+      }
+
+      if (d.check('SCAT')) this.Scat = 1;
+      if (d.check('POL')) this.System = JSROOT.Painter.Coord.kPOLAR;
+      if (d.check('CYL')) this.System = JSROOT.Painter.Coord.kCYLINDRICAL;
+      if (d.check('SPH')) this.System = JSROOT.Painter.Coord.kSPHERICAL;
+      if (d.check('PSR')) this.System = JSROOT.Painter.Coord.kRAPIDITY;
+
+      if (d.check('TRI', true)) {
+         this.Scat = 0;
+         this.Color = 0;
+         this.Tri = 1;
+         check3dbox = d.part;
+         if (d.part.indexOf('ERR') >= 0) this.Error = 1;
+      }
+
+      if (d.check('AITOFF')) this.Proj = 1;
+      if (d.check('MERCATOR')) this.Proj = 2;
+      if (d.check('SINUSOIDAL')) this.Proj = 3;
+      if (d.check('PARABOLIC')) this.Proj = 4;
+      if (this.Proj > 0) { this.Scat = 0; this.Contour = 14; }
+
+      if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
+      if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
+
+      if (check3dbox && fp) {
+         if (check3dbox.indexOf('FB') >= 0) fp.FrontBox = false;
+         if (check3dbox.indexOf('BB') >= 0) fp.BackBox = false;
+      }
+
+      if ((hdim==3) && d.check('FB') && fp) fp.FrontBox = false;
+      if ((hdim==3) && d.check('BB') && fp) fp.BackBox = false;
+
+      this._pfc = d.check("PFC");
+      this._plc = d.check("PLC");
+      this._pmc = d.check("PMC");
+
+      if (d.check('LF2')) { this.Line = 2; this.Hist = -1; this.Error = 0; this.need_fillcol = true; }
+      if (d.check('L')) { this.Line = 1; this.Hist = -1; this.Error = 0; }
+
+      if (d.check('A')) this.Axis = -1;
+      if (this.Axis && d.check("RX")) this.RevX = 1;
+      if (this.Axis && d.check("RY")) this.RevY = 1;
+
+      if (d.check('B1')) { this.Bar = 1; this.BaseLine = 0; this.Hist = -1; this.need_fillcol = true; }
+      if (d.check('B')) { this.Bar = 1; this.Hist = -1; this.need_fillcol = true; }
+      if (d.check('C')) { this.Curve = 1; this.Hist = -1; }
+      if (d.check('][')) { this.Off = 1; this.Hist = 1; }
+      if (d.check('F')) this.Fill = 1;
+
+      if (d.check('HIST')) { this.Hist = 2; this.Func = 0; this.Error = 0; }
+
+      if (d.check('P0')) { this.Mark = 1; this.Hist = 0; this.Zero = 1; }
+      if (d.check('P')) { this.Mark = 1; this.Hist = 0; this.Zero = 0; }
+      if (d.check('Z')) this.Zscale = 1;
+      if (d.check('*')) { this.Mark = 23; this.Hist = 0; }
+      if (d.check('H')) this.Hist = 1;
+
+      if (th2_poly) {
+         if (this.Fill + this.Line + this.Mark != 0) this.Scat = 0;
+      }
+
+      if (d.check('E', true)) {
+         if (hdim == 1) {
+            this.Error = 1;
+            this.Zero = 0; // do not draw empty bins with erros
+            this.Hist = 0;
+            if (!isNaN(parseInt(d.part[0]))) this.Error = 10 + parseInt(d.part[0]);
+            if ((this.Error === 13) || (this.Error === 14)) this.need_fillcol = true;
+            if (this.Error === 10) this.Zero = 1; // enable drawing of empty bins
+            if (d.part.indexOf('X0')>=0) this.errorX = 0;
+         } else {
+            if (this.Error == 0) {
+               this.Error = 100;
+               this.Scat = 0;
+            }
+         }
+      }
+      if (d.check('9')) this.HighRes = 1;
+      if (d.check('0')) this.Zero = 0;
+
+      // flag identifies 3D drawing mode for histogram
+      if ((this.Lego > 0) || (hdim == 3) ||
+          ((this.Surf > 0) || (this.Error > 0) && (hdim == 2))) this.Mode3D = true;
+
+      //if (this.Surf == 15)
+      //   if (this.System == JSROOT.Painter.Coord.kPOLAR || this.System == JSROOT.Painter.Coord.kCARTESIAN)
+      //      this.Surf = 13;
+   }
+
+
    // ==============================================================================
 
    function THistPainter(histo) {
@@ -1622,287 +1904,21 @@
       return 1;
    }
 
-   THistPainter.prototype.DecodeOptions = function(opt, interactive) {
-
+   THistPainter.prototype.DecodeOptions = function(opt) {
       /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
           hdim = this.Dimension(),
-          option = { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 1, Line: 0,
-             Error: 0, errorX: JSROOT.gStyle.fErrorX,
-             Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
-             Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
-             Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-             Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
-             GLBox: 0, GLColor: 0, Project: "",
-             System: JSROOT.Painter.Coord.kCARTESIAN,
-             AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
-             HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
-             Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
-             _pmc: false, _plc: false, _pfc: false,
-             minimum: -1111, maximum: -1111, original: opt },
-           d = new JSROOT.DrawOptions(opt || histo.fOption),
+          pad = this.root_pad(),
+          fp = this.frame_painter();
 
-           pad = this.root_pad(),
-           fp = this.frame_painter(), check3dbox = "",
-           need_fillcol = false;
+      if (!this.options)
+         this.options = new THistDrawOptions;
+      else
+         this.options.Reset();
 
-      // use error plot only when any sumw2 bigger than 0
-      if ((hdim===1) && (histo.fSumw2.length > 0))
-         for (var n=0;n<histo.fSumw2.length;++n)
-            if (histo.fSumw2[n] > 0) { option.Error = 2; option.Hist = 0; option.Zero = 0; break; }
+      this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp, this.IsTH2Poly());
 
-      if (d.check('PAL', true)) option.Palette = d.partAsInt();
-      if (d.check('MINIMUM:', true)) option.minimum = parseFloat(d.part); else option.minimum = histo.fMinimum;
-      if (d.check('MAXIMUM:', true)) option.maximum = parseFloat(d.part); else option.maximum = histo.fMaximum;
-
-      if (d.check('NOOPTIMIZE')) option.Optimize = 0;
-      if (d.check('OPTIMIZE')) option.Optimize = 2;
-
-      if (d.check('AUTOCOL')) { option.AutoColor = 1; option.Hist = 1; }
-      if (d.check('AUTOZOOM')) { option.AutoZoom = 1; option.Hist = 1; }
-
-      if (d.check('NOSTAT')) option.NoStat = true;
-      if (d.check('STAT')) option.ForceStat = true;
-
-      if (d.check('NOTOOLTIP') && fp) fp.tooltip_allowed = false;
-      if (d.check('TOOLTIP') && fp) fp.tooltip_allowed = true;
-
-      if (d.check('LOGX') && pad) pad.fLogx = 1;
-      if (d.check('LOGY') && pad) pad.fLogy = 1;
-      if (d.check('LOGZ') && pad) pad.fLogz = 1;
-      if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
-      if (d.check('GRIDX') && pad) pad.fGridx = 1;
-      if (d.check('GRIDY') && pad) pad.fGridy = 1;
-      if (d.check('TICKXY') && pad) pad.fTickx = pad.fTicky = 1;
-      if (d.check('TICKX') && pad) pad.fTickx = 1;
-      if (d.check('TICKY') && pad) pad.fTicky = 1;
-
-      if (d.check('FILL_', true)) {
-         if (d.partAsInt(1)>0) option.histoFillColor = d.partAsInt(); else
-         for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) option.histoFillColor = col;
-      }
-      if (d.check('LINE_', true)) {
-         if (d.partAsInt(1)>0) option.histoLineColor = JSROOT.Painter.root_colors[d.partAsInt()]; else
-         for (var col=0;col<8;++col)
-            if (JSROOT.Painter.root_colors[col].toUpperCase() === d.part) option.histoLineColor = d.part;
-      }
-
-      if (d.check('X+')) option.AxisPos = 10;
-      if (d.check('Y+')) option.AxisPos += 1;
-
-      if (d.check('SAMES')) { option.Same = 2; option.ForceStat = true; }
-      if (d.check('SAME')) { option.Same = 1; option.Func = 0; }
-
-      // if here rest option is empty, draw histograms by default
-      // if (d.empty() && !option.Error) option.Hist = 1;
-
-      if (d.check('SPEC')) { option.Scat = 0; option.Spec = 1; }
-
-      if (d.check('BASE0')) option.BaseLine = 0; else
-      if (JSROOT.gStyle.fHistMinimumZero) option.BaseLine = 0;
-
-      if (d.check('PIE')) option.Pie = 1;
-
-      if (d.check('CANDLE', true)) option.Candle = d.part;
-
-      if (d.check('GLBOX',true)) option.GLBox = 10 + d.partAsInt();
-      if (d.check('GLCOL')) option.GLColor = 1;
-
-      d.check('GL'); // suppress GL
-
-      if (d.check('LEGO', true)) {
-         option.Scat = 0;
-         option.Lego = 1;
-         if (d.part.indexOf('0') >= 0) option.Zero = 0;
-         if (d.part.indexOf('1') >= 0) option.Lego = 11;
-         if (d.part.indexOf('2') >= 0) option.Lego = 12;
-         if (d.part.indexOf('3') >= 0) option.Lego = 13;
-         if (d.part.indexOf('4') >= 0) option.Lego = 14;
-         check3dbox = d.part;
-         if (d.part.indexOf('Z') >= 0) option.Zscale = 1;
-      }
-
-      if (d.check('SURF', true)) {
-         option.Scat = 0;
-         option.Surf = d.partAsInt(10, 1);
-         check3dbox = d.part;
-         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
-      }
-
-      if (d.check('TF3', true)) check3dbox = d.part;
-
-      if (d.check('ISO', true)) check3dbox = d.part;
-
-      if (d.check('LIST')) option.List = 1;
-
-      if (d.check('CONT', true)) {
-         if (hdim > 1) {
-            option.Scat = 0;
-            option.Contour = 1;
-            if (d.part.indexOf('Z') >= 0) option.Zscale = 1;
-            if (d.part.indexOf('1') >= 0) option.Contour = 11; else
-            if (d.part.indexOf('2') >= 0) option.Contour = 12; else
-            if (d.part.indexOf('3') >= 0) option.Contour = 13; else
-            if (d.part.indexOf('4') >= 0) option.Contour = 14;
-         } else {
-            option.Hist = 1;
-         }
-      }
-
-      // decode bar/hbar option
-      if (d.check('HBAR', true)) option.Bar = 20; else
-      if (d.check('BAR', true)) option.Bar = 10;
-      if (option.Bar > 0) {
-         option.Hist = 0; need_fillcol = true;
-         option.Bar += d.partAsInt();
-      }
-
-      if (d.check('ARR')) {
-         if (hdim > 1) {
-            option.Arrow = 1;
-            option.Scat = 0;
-         } else {
-            option.Hist = 1;
-         }
-      }
-
-      if (d.check('BOX',true)) option.Box = 10 + d.partAsInt();
-
-      if (option.Box)
-         if (hdim > 1) option.Scat = 0;
-                  else option.Hist = 1;
-
-      if (d.check('COL', true)) {
-         option.Color = 1;
-
-         if (d.part.indexOf('0')>=0) option.Zero = 0; // do not draw zero values
-         if (d.part.indexOf('1')>=0) option.Zero = 0;
-         if (d.part.indexOf('Z')>=0) option.Zscale = 1;
-         if (d.part.indexOf('A')>=0) option.Axis = -1;
-         if (hdim == 1) option.Hist = 1;
-                   else option.Scat = 0;
-      }
-
-      if (d.check('CHAR')) { option.Char = 1; option.Scat = 0; }
-      if (d.check('FUNC')) { option.Func = 2; option.Hist = 0; }
-      if (d.check('AXIS')) option.Axis = 1;
-      if (d.check('AXIG')) option.Axis = 2;
-
-      if (d.check('TEXT', true)) {
-         option.Text = 1;
-         option.Scat = 0;
-         option.Hist = 0;
-
-         var angle = Math.min(d.partAsInt(), 90);
-         if (angle) option.Text = 1000 + angle;
-
-         if (d.part.indexOf('N')>=0 && this.IsTH2Poly())
-            option.Text = 3000 + angle;
-
-         if (d.part.indexOf('E')>=0)
-            option.Text = 2000 + angle;
-      }
-
-      if (d.check('SCAT=', true)) {
-         option.Scat = 1;
-         option.ScatCoef = parseFloat(d.part);
-         if (isNaN(option.ScatCoef) || (option.ScatCoef<=0)) option.ScatCoef = 1.;
-      }
-
-      if (d.check('SCAT')) option.Scat = 1;
-      if (d.check('POL')) option.System = JSROOT.Painter.Coord.kPOLAR;
-      if (d.check('CYL')) option.System = JSROOT.Painter.Coord.kCYLINDRICAL;
-      if (d.check('SPH')) option.System = JSROOT.Painter.Coord.kSPHERICAL;
-      if (d.check('PSR')) option.System = JSROOT.Painter.Coord.kRAPIDITY;
-
-      if (d.check('TRI', true)) {
-         option.Scat = 0;
-         option.Color = 0;
-         option.Tri = 1;
-         check3dbox = d.part;
-         if (d.part.indexOf('ERR') >= 0) option.Error = 1;
-      }
-
-      if (d.check('AITOFF')) option.Proj = 1;
-      if (d.check('MERCATOR')) option.Proj = 2;
-      if (d.check('SINUSOIDAL')) option.Proj = 3;
-      if (d.check('PARABOLIC')) option.Proj = 4;
-      if (option.Proj > 0) { option.Scat = 0; option.Contour = 14; }
-
-      if (d.check('PROJX',true)) option.Project = "X" + d.partAsInt(0,1);
-      if (d.check('PROJY',true)) option.Project = "Y" + d.partAsInt(0,1);
-
-      if (check3dbox && fp) {
-         if (check3dbox.indexOf('FB') >= 0) fp.FrontBox = false;
-         if (check3dbox.indexOf('BB') >= 0) fp.BackBox = false;
-      }
-
-      if ((hdim==3) && d.check('FB') && fp) fp.FrontBox = false;
-      if ((hdim==3) && d.check('BB') && fp) fp.BackBox = false;
-
-      option._pfc = d.check("PFC");
-      option._plc = d.check("PLC");
-      option._pmc = d.check("PMC");
-
-      if (d.check('LF2')) { option.Line = 2; option.Hist = -1; option.Error = 0; need_fillcol = true; }
-      if (d.check('L')) { option.Line = 1; option.Hist = -1; option.Error = 0; }
-
-      if (d.check('A')) option.Axis = -1;
-      if (option.Axis && d.check("RX")) option.RevX = 1;
-      if (option.Axis && d.check("RY")) option.RevY = 1;
-
-      if (d.check('B1')) { option.Bar = 1; option.BaseLine = 0; option.Hist = -1; need_fillcol = true; }
-      if (d.check('B')) { option.Bar = 1; option.Hist = -1; need_fillcol = true; }
-      if (d.check('C')) { option.Curve = 1; option.Hist = -1; }
-      if (d.check('][')) { option.Off = 1; option.Hist = 1; }
-      if (d.check('F')) option.Fill = 1;
-
-      if (d.check('HIST')) { option.Hist = 2; option.Func = 0; option.Error = 0; }
-
-      if (d.check('P0')) { option.Mark = 1; option.Hist = 0; option.Zero = 1; }
-      if (d.check('P')) { option.Mark = 1; option.Hist = 0; option.Zero = 0; }
-      if (d.check('Z')) option.Zscale = 1;
-      if (d.check('*')) { option.Mark = 23; option.Hist = 0; }
-      if (d.check('H')) option.Hist = 1;
-
-      if (this.IsTH2Poly()) {
-         if (option.Fill + option.Line + option.Mark != 0) option.Scat = 0;
-      }
-
-      if (d.check('E', true)) {
-         if (hdim == 1) {
-            option.Error = 1;
-            option.Zero = 0; // do not draw empty bins with erros
-            option.Hist = 0;
-            if (!isNaN(parseInt(d.part[0]))) option.Error = 10 + parseInt(d.part[0]);
-            if ((option.Error === 13) || (option.Error === 14)) need_fillcol = true;
-            if (option.Error === 10) option.Zero = 1; // enable drawing of empty bins
-            if (d.part.indexOf('X0')>=0) option.errorX = 0;
-         } else {
-            if (option.Error == 0) {
-               option.Error = 100;
-               option.Scat = 0;
-            }
-         }
-      }
-      if (d.check('9')) option.HighRes = 1;
-      if (d.check('0')) option.Zero = 0;
-
-      if (interactive) {
-         if (need_fillcol && this.fillatt && this.fillatt.empty())
-            this.fillatt.Change(5,1001);
-      }
-
-      // flag identifies 3D drawing mode for histogram
-      if ((option.Lego > 0) || (hdim == 3) ||
-          ((option.Surf > 0) || (option.Error > 0) && (hdim == 2))) option.Mode3D = true;
-
-      //if (option.Surf == 15)
-      //   if (option.System == JSROOT.Painter.Coord.kPOLAR || option.System == JSROOT.Painter.Coord.kCARTESIAN)
-      //      option.Surf = 13;
-
-      return option;
+      return this.options;
    }
 
    // function should approx reconstruct draw options
@@ -4177,13 +4193,19 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
 
-         this.options = this.DecodeOptions(arg, true);
+         this.options = this.DecodeOptions(arg);
 
-         // redraw all objects
+         if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
+            this.fillatt.Change(5,1001);
+
+         // redraw all objects in pad
          this.RedrawPad();
 
          var canp = this.canv_painter();
          if (canp) canp.ProcessChanges("drawopt", this.pad_painter());
+
+         // inform that something changes
+         this.InteractiveRedraw(true);
       });
    }
 
