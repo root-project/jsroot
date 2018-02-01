@@ -1571,7 +1571,7 @@
               HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: -1111, maximum: -1111, original: "" });
+              minimum: -1111, maximum: -1111 });
    }
 
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, fp, th2_poly) {
@@ -1831,6 +1831,46 @@
       //      this.Surf = 13;
    }
 
+   // function should approx reconstruct draw options
+   THistDrawOptions.prototype.asString = function(painter) {
+      var fp = painter ? painter.frame_painter() : null;
+
+      var res = "";
+      if (this.Mode3D) {
+
+         if (this.Lego) {
+            res = "LEGO";
+            if (!this.Zero) res += "0";
+            if (this.Lego > 10) res += (this.Lego-10);
+            if (this.Zscale) res+="Z";
+         } else if (this.Surf) {
+            res = "SURF" + (this.Surf-10);
+            if (this.Zscale) res+="Z";
+         }
+         if (fp && !fp.FrontBox) res+=",FB";
+         if (fp && !fp.BackBox) res+=",BB";
+
+      } else {
+         if (this.Color) {
+            res += "COL";
+            if (!this.Zero) res+="0";
+            if (this.Zscale) res+="Z";
+            if (this.Axis < 0) res+="A";
+         } else if (this.Contour) {
+            res = "CONT";
+            if (this.Contour > 10) res += (this.Contour-10);
+            if (this.Zscale) res+="Z";
+         } else if (this.Bar) {
+            res = (this.BaseLine === false) ? "B" : "B1";
+         } else if (this.Mark) {
+            res = this.Zero ? "P0" : "P"; // here invert logic with 0
+         } else if (this.Scat) {
+            res = "SCAT";
+         }
+
+      }
+      return res;
+   }
 
    // ==============================================================================
 
@@ -1917,55 +1957,8 @@
          this.options.Reset();
 
       this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp, this.IsTH2Poly());
-   }
 
-   // function should approx reconstruct draw options
-   THistPainter.prototype.OptionsAsString = function() {
-      var fp = this.frame_painter(),
-          // hdim = this.Dimension(),
-          opt = this.options;
-
-      var res = "";
-      if (opt.Mode3D) {
-
-         if (opt.Lego) {
-            res = "LEGO";
-            if (!opt.Zero) res += "0";
-            if (opt.Lego > 10) res += (opt.Lego-10);
-            if (opt.Zscale) res+="Z";
-         } else if (opt.Surf) {
-            res = "SURF" + (opt.Surf-10);
-            if (opt.Zscale) res+="Z";
-         }
-         if (fp && !fp.FrontBox) res+=",FB";
-         if (fp && !fp.BackBox) res+=",BB";
-
-      } else {
-         if (opt.Color) {
-            res += "COL";
-            if (!opt.Zero) res+="0";
-            if (opt.Zscale) res+="Z";
-            if (opt.Axis < 0) res+="A";
-         } else if (opt.Contour) {
-            res = "CONT";
-            if (opt.Contour > 10) res += (opt.Contour-10);
-            if (opt.Zscale) res+="Z";
-         } else if (opt.Bar) {
-            res = (opt.BaseLine === false) ? "B" : "B1";
-         } else if (opt.Mark) {
-            res = opt.Zero ? "P0" : "P"; // here invert logic with 0
-         } else if (opt.Scat) {
-            res = "SCAT";
-         }
-
-      }
-      return res;
-   }
-
-
-   /// returns draw option for histogram
-   THistPainter.prototype.GetDrawOptions = function() {
-      return this.options && this.options.original ? this.options.original : "";
+      this.OptionsStore(opt); // opt will be return as default draw option, used in webcanvas
    }
 
    THistPainter.prototype.CopyOptionsFrom = function(src) {
@@ -2163,7 +2156,7 @@
          histo.fOption = obj.fOption;
 
          if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
-            this.DecodeOptions(opt);
+            this.DecodeOptions(opt || histo.fOption);
       }
 
       // if (!fp.zoom_changed_interactive) this.CheckPadRange();

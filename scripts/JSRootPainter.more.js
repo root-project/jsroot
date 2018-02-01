@@ -2232,6 +2232,8 @@
           line: d.check("L"),
           curve: d.check("C")
       });
+
+      this.OptionsStore(opt);
    }
 
    TGraphPolarPainter.prototype.DrawBins = function() {
@@ -2710,6 +2712,8 @@
          Curve: d.check('C'),
          Mark: d.check('P')
       });
+
+      this.OptionsStore(opt);
    }
 
    TSplinePainter.prototype.FirstDraw = function() {
@@ -2761,6 +2765,8 @@
           repeat: d.check("REPEAT"),
           first: d.check("FIRST")
       });
+
+      this.OptionsStore(opt);
    }
 
    TGraphTimePainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {

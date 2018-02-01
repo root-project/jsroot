@@ -3039,14 +3039,16 @@
 
       var res = this.options;
 
-     res.Color = d.check("COL");
-     res.Line = d.check("LINE");
-     res.Error = d.check("ERR") && this.MatchObjectType("TGraph2DErrors");
-     res.Circles = d.check("P0");
-     res.Markers = d.check("P");
+      res.Color = d.check("COL");
+      res.Line = d.check("LINE");
+      res.Error = d.check("ERR") && this.MatchObjectType("TGraph2DErrors");
+      res.Circles = d.check("P0");
+      res.Markers = d.check("P");
 
       if (!res.Markers && !res.Error && !res.Circles && !res.Line) res.Markers = true;
       if (!res.Markers) res.Color = false;
+
+      this.OptionsStore(opt);
    }
 
    TGraph2DPainter.prototype.CreateHistogram = function() {

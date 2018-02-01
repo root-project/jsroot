@@ -2200,6 +2200,8 @@
       delete this.bins;
       delete this._drawopt;
       delete this.root_colors;
+      delete this.options;
+      delete this.options_store;
 
       TBasePainter.prototype.Cleanup.call(this, keep_origin);
    }
@@ -2226,6 +2228,34 @@
       var can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
                    else this.select_main().attr("title", name);
+   }
+
+   TObjectPainter.prototype.OptionsStore = function(original) {
+      if (!this.options) return;
+      this.options.original = original || "";
+      this.options_store = JSROOT.extend({}, this.options);
+   }
+
+   TObjectPainter.prototype.OptionesChanged = function() {
+      if (!this.options) return false;
+      if (!this.options_store) return true;
+
+      for (var k in this.options)
+         if (this.options[k] !== this.options_store[k]) return true;
+
+      return false;
+   }
+
+   TObjectPainter.prototype.OptionsAsString = function() {
+      if (!this.options) return "";
+
+      if (!this.OptionesChanged())
+         return this.options.original;
+
+      if (typeof this.options.asString == "function")
+         return this.options.asString();
+
+      return this.options.original; // nothing better, return original draw option
    }
 
    TObjectPainter.prototype.UpdateObject = function(obj) {

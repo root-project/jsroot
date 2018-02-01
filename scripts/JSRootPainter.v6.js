@@ -3585,8 +3585,8 @@
          var sub = this.painters[k];
          if (typeof sub.GetAllRanges == "function")
             sub.GetAllRanges(arg);
-         else if (sub.snapid && (typeof sub.GetDrawOptions == "function"))
-            elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.GetDrawOptions() });
+         else if (sub.snapid && (typeof sub.OptionsAsString == "function"))
+            elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString() });
       }
 
       if (is_top) return JSROOT.toJSON(arg);
@@ -3958,8 +3958,9 @@
       var d = new JSROOT.DrawOptions(opt);
 
       if (d.check('WEBSOCKET')) this.OpenWebsocket();
+      if (!this.options) this.options = {};
 
-      this.options = { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false };
+      JSROOT.extend(this.options, { GlobalColors: true, LocalColors: false, CreatePalette: 0, IgnorePalette: false, RotateFrame: false, FixFrame: false });
 
       if (d.check('NOCOLORS') || d.check('NOCOL')) this.options.GlobalColors = this.options.LocalColors = false;
       if (d.check('LCOLORS') || d.check('LCOL')) { this.options.GlobalColors = false; this.options.LocalColors = true; }
@@ -3980,6 +3981,8 @@
       if (d.check('TICKX')) pad.fTickx = 1;
       if (d.check('TICKY')) pad.fTicky = 1;
       if (d.check('TICK')) pad.fTickx = pad.fTicky = 1;
+
+      this.OptionsStore(opt);
    }
 
    function drawPad(divid, pad, opt) {
