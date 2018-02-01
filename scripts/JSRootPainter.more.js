@@ -2203,6 +2203,7 @@
              console.error('Cannot superimpose TGraphPolargram with any other drawings');
           return null;
       }
+
       painter.SetDivId(divid, 4); // main object without need of frame
       painter.Redraw();
       return painter.DrawingReady();
@@ -2428,13 +2429,13 @@
             return null;
          }
          painter.PerformDrawing(divid);
-      } else {
-         if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
 
-         JSROOT.draw(divid, graph.fPolargram, "", painter.PerformDrawing.bind(painter, divid));
+         return painter;
       }
 
-      return painter;
+      if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
+
+      return JSROOT.draw(divid, graph.fPolargram, "", painter.PerformDrawing.bind(painter, divid));
    }
 
    // ==============================================================

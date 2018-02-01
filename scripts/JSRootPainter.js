@@ -5357,7 +5357,8 @@
             painter.DrawingReady();
          } else {
             painter = handle.func(divid, obj, opt);
-            if (!painter.options) painter.options = { original: opt || "" };
+
+            if (painter && !painter.options) painter.options = { original: opt || "" };
          }
 
          return completeDraw(painter);
