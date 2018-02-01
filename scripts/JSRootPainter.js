@@ -448,7 +448,8 @@
       }
 
       var inter = JSROOT.GetUrlOption("interactive", url);
-      if (inter !== null) {
+      if (inter === "nomenu") JSROOT.gStyle.ContextMenu = false;
+      else if (inter !== null) {
          if (!inter || (inter=="1")) inter = "111111"; else
          if (inter=="0") inter = "000000";
          if (inter.length === 6) {
@@ -2901,7 +2902,7 @@
 
    // indicate that redraw was invoked via interactive action (like context menu)
    // use to catch such action by GED
-   TObjectPainter.prototype.InteractiveRedraw = function(arg) {
+   TObjectPainter.prototype.InteractiveRedraw = function(arg, info) {
 
       if (arg == "pad") this.RedrawPad(); else
       if (arg !== true) this.Redraw();
@@ -2914,7 +2915,7 @@
       // inform server that drawopt changes
       var canp = this.canv_painter();
       if (canp && canp.ProcessChanges)
-         canp.ProcessChanges("drawopt", this.pad_painter());
+         canp.ProcessChanges(info, this.pad_painter());
    }
 
    //  Redraw all objects in correspondent pad
