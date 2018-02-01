@@ -84,20 +84,26 @@ sap.ui.define([
       },
 
       processHistModelChange : function(evnt, data) {
-         var pars = evnt.getParameters(), painter = data.painter;
+         var pars = evnt.getParameters(), opts = data.options;
          console.log('Hist model changes', pars.path, pars.value);
 
-         painter.options.Mode3D = painter.ged.mode3d;
+         opts.Mode3D = opts.Mode3Dindx > 0;
+         opts.Lego = parseInt(opts.Lego);
+
+/*         painter.options.Mode3D = painter.ged.mode3d;
 
          if (painter.ged.mode3d) {
             painter.options.Lego = parseInt(painter.ged.Lego);
          } else {
-            painter.options.Mark = painter.ged.markers ? (painter.ged.last_mark || 1) : 0;
-            painter.options.Bar = painter.ged.bar ? 1 : 0;
+
+            console.log('markers', painter.ged.markers, typeof painter.ged.markers);
+
+            painter.options.Mark = painter.ged.markers;
+            painter.options.Bar = painter.ged.bar;
 
             painter.options.Hist = painter.ged.bar || painter.ged.markers ? 0 : 1;
          }
-
+*/
          if (this.currentPadPainter)
             this.currentPadPainter.Redraw();
 
@@ -142,7 +148,7 @@ sap.ui.define([
             var obj = painter.processTitleChange("check");
             if (obj) {
                var model = new JSONModel( { tnamed: obj } );
-               model.attachPropertyChange({ }, painter.processTitleChange, painter);
+               model.attachPropertyChange( {}, painter.processTitleChange, painter );
                this.addFragment(oPage, "TNamed", model);
             }
 
@@ -150,21 +156,24 @@ sap.ui.define([
 
                // this object used to copy ged setting from options and back,
                // do not (yet) allow to change options directly
-               if (painter.ged === undefined)
+
+/*               if (painter.ged === undefined)
                   painter.ged = { ndim: painter.Dimension(), Errors: 0, Style: 0, Contor: 1, Lego: 2 };
 
                painter.ged.mode3d = painter.mode3d ? 1 : 0;
-               painter.ged.markers = painter.options.Mark > 0;
-               if (painter.ged.markers) painter.ged.last_mark = painter.options.Mark;
-               painter.ged.bar = painter.options.Bar > 0;
+               painter.ged.markers = painter.options.Mark;
+               painter.ged.bar = painter.options.Bar;
                painter.ged.Lego = painter.options.Lego;
+*/
 
-               var model = new JSONModel( { opts : painter.ged } );
+               painter.options.Mode3Dindx = painter.options.Mode3D ? 1 : 0;
+
+               var model = new JSONModel( { opts : painter.options } );
 
                // model.attachPropertyChange({}, painter.processTitleChange, painter);
                this.addFragment(oPage, "Hist", model);
 
-               model.attachPropertyChange({ painter: painter }, this.processHistModelChange, this);
+               model.attachPropertyChange({ options: painter.options }, this.processHistModelChange, this);
             }
          }
       },
@@ -178,8 +187,11 @@ sap.ui.define([
          var cont = page.getContent();
 
          for (var n=0;n<cont.length;++n)
-            if (cont[n] && cont[n].ged_fragment)
-               cont[n].getModel().refresh();
+            if (cont[n] && cont[n].ged_fragment) {
+               var model = cont[n].getModel();
+
+               model.refresh();
+            }
       },
 
       padEventsReceiver : function(evnt) {

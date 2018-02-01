@@ -2281,7 +2281,7 @@
       this.reverse_x = false;
       this.reverse_y = false;
 
-      // if (this.options.Bar>=20) this.swap_xy = true;
+      // if (this.options.BarStyle>=20) this.swap_xy = true;
       this.logx = this.logy = false;
 
       var w = this.frame_width(), h = this.frame_height();

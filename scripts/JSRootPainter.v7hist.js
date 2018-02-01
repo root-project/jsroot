@@ -980,7 +980,7 @@
           histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
-          side = (this.options.Bar > 10) ? this.options.Bar % 10 : 0;
+          side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
@@ -1092,7 +1092,7 @@
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
 
-      if (options.Bar > 0)
+      if (options.Bar)
          return this.DrawBars(width, height);
 
       if ((options.Error == 13) || (options.Error == 14))
@@ -1108,7 +1108,7 @@
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
           exclude_zero = !options.Zero,
           show_errors = (options.Error > 0),
-          show_markers = (options.Mark > 0),
+          show_markers = options.Mark,
           show_line = (options.Line > 0),
           show_text = (options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
@@ -1128,7 +1128,7 @@
 
       if (show_markers) {
          // draw markers also when e2 option was specified
-         this.createAttMarker({ attr: histo, style: this.options.Mark - 20 });
+         this.createAttMarker({ attr: histo, style: this.options.MarkStyle });
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
@@ -1366,7 +1366,7 @@
 
       if (name.length>0) tips.push(name);
 
-      if ((this.options.Error > 0) || (this.options.Mark > 0)) {
+      if ((this.options.Error > 0) || this.options.Mark) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error > 0) {
@@ -1469,7 +1469,7 @@
       grx1 = Math.round(grx1);
       grx2 = Math.round(GetBinGrX(findbin+1));
 
-      if (this.options.Bar > 0) {
+      if (this.options.Bar) {
          var w = grx2 - grx1;
          grx1 += Math.round(this.options.fBarOffset/1000*w);
          grx2 = grx1 + Math.round(this.options.fBarWidth/1000*w);
@@ -1481,7 +1481,7 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-      if (this.options.Bar > 0) {
+      if (this.options.Bar) {
          show_rect = true;
 
          gapx = 0;
@@ -1493,7 +1493,7 @@
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
       } else
-      if ((this.options.Error > 0) || (this.options.Mark > 0) || (this.options.Line > 0))  {
+      if ((this.options.Error > 0) || this.options.Mark || (this.options.Line > 0))  {
 
          show_rect = true;
 
@@ -1733,7 +1733,7 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 1, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 1, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 0, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
       // here we deciding how histogram will look like and how will be shown
@@ -3562,7 +3562,7 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 0, Bar: 0, Error: 0, errorX: 0, Zero: 0, Mark: 0, Line: 0, Text: 1, Lego: 0, Surf: 0,
+      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 1, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
                           Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
 

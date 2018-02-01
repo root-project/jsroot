@@ -1559,9 +1559,9 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: 0, RevY: 0, Bar: 0, Curve: 0, Hist: 1, Line: 0,
+            { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
               Error: 0, errorX: JSROOT.gStyle.fErrorX,
-              Mark: 0, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
+              Mark: false, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
               Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
@@ -1582,6 +1582,8 @@
       if ((hdim===1) && (histo.fSumw2.length > 0))
          for (var n=0;n<histo.fSumw2.length;++n)
             if (histo.fSumw2[n] > 0) { this.Error = 2; this.Hist = 0; this.Zero = 0; break; }
+
+      this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
@@ -1683,12 +1685,12 @@
       }
 
       // decode bar/hbar option
-      if (d.check('HBAR', true)) this.Bar = 20; else
-      if (d.check('BAR', true)) this.Bar = 10;
-      if (this.Bar > 0) {
+      if (d.check('HBAR', true)) this.BarStyle = 20; else
+      if (d.check('BAR', true)) this.BarStyle = 10;
+      if (this.BarStyle > 0) {
          this.Hist = 0;
          this.need_fillcol = true;
-         this.Bar += d.partAsInt();
+         this.BarStyle += d.partAsInt();
       }
 
       if (d.check('ARR')) {
@@ -1785,22 +1787,26 @@
       if (this.Axis && d.check("RX")) this.RevX = 1;
       if (this.Axis && d.check("RY")) this.RevY = 1;
 
-      if (d.check('B1')) { this.Bar = 1; this.BaseLine = 0; this.Hist = -1; this.need_fillcol = true; }
-      if (d.check('B')) { this.Bar = 1; this.Hist = -1; this.need_fillcol = true; }
+      if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = -1; this.need_fillcol = true; }
+      if (d.check('B')) { this.BarStyle = 1; this.Hist = -1; this.need_fillcol = true; }
       if (d.check('C')) { this.Curve = 1; this.Hist = -1; }
       if (d.check('][')) { this.Off = 1; this.Hist = 1; }
       if (d.check('F')) this.Fill = 1;
 
       if (d.check('HIST')) { this.Hist = 2; this.Func = 0; this.Error = 0; }
 
-      if (d.check('P0')) { this.Mark = 1; this.Hist = 0; this.Zero = 1; }
-      if (d.check('P')) { this.Mark = 1; this.Hist = 0; this.Zero = 0; }
+      this.Bar = (this.BarStyle > 0);
+
+      delete this.MarkStyle; // remove mark style if any
+
+      if (d.check('P0')) { this.Mark = true; this.Hist = 0; this.Zero = 1; }
+      if (d.check('P')) { this.Mark = true; this.Hist = 0; this.Zero = 0; }
       if (d.check('Z')) this.Zscale = 1;
-      if (d.check('*')) { this.Mark = 23; this.Hist = 0; }
+      if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = 0; }
       if (d.check('H')) this.Hist = 1;
 
       if (th2_poly) {
-         if (this.Fill + this.Line + this.Mark != 0) this.Scat = 0;
+         if (this.Fill || this.Line || this.Mark) this.Scat = 0;
       }
 
       if (d.check('E', true)) {
@@ -2230,7 +2236,7 @@
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
                     create_canvas: this.create_canvas,
-                    swap_xy: (this.options.Bar >= 20),
+                    swap_xy: (this.options.BarStyle >= 20),
                     reverse_x: (this.options.RevX > 0),
                     reverse_y: (this.options.RevY > 0),
                     Proj: this.options.Proj });
@@ -3518,7 +3524,7 @@
           pthis = this,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
-          side = (this.options.Bar > 10) ? this.options.Bar % 10 : 0;
+          side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
 
       if (side>4) side = 4;
       gry2 = pmain.swap_xy ? 0 : height;
@@ -3626,7 +3632,7 @@
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
 
-      if (this.options.Bar > 0)
+      if (this.options.Bar)
          return this.DrawBars(width, height);
 
       if ((this.options.Error == 13) || (this.options.Error == 14))
@@ -3642,7 +3648,7 @@
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
           exclude_zero = !this.options.Zero,
           show_errors = (this.options.Error > 0),
-          show_markers = (this.options.Mark > 0),
+          show_markers = this.options.Mark,
           show_line = (this.options.Line > 0),
           show_text = (this.options.Text > 0),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
@@ -3662,7 +3668,7 @@
 
       if (show_markers) {
          // draw markers also when e2 option was specified
-         this.createAttMarker({ attr: histo, style: this.options.Mark - 20 });
+         this.createAttMarker({ attr: histo, style: this.options.MarkStyle }); // when style not configured, it will be ignored
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
@@ -3908,7 +3914,7 @@
 
       if (name.length>0) tips.push(name);
 
-      if ((this.options.Error > 0) || (this.options.Mark > 0)) {
+      if ((this.options.Error > 0) || this.options.Mark) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error > 0) {
@@ -4013,7 +4019,7 @@
       grx1 = Math.round(grx1);
       grx2 = Math.round(GetBinGrX(findbin+1));
 
-      if (this.options.Bar > 0) {
+      if (this.options.Bar) {
          var w = grx2 - grx1;
          grx1 += Math.round(histo.fBarOffset/1000*w);
          grx2 = grx1 + Math.round(histo.fBarWidth/1000*w);
@@ -4025,7 +4031,7 @@
 
       midy = gry1 = gry2 = GetBinGrY(findbin);
 
-      if (this.options.Bar > 0) {
+      if (this.options.Bar) {
          show_rect = true;
 
          gapx = 0;
