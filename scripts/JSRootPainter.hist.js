@@ -1562,7 +1562,8 @@
             { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
               Error: 0, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Fill: 0, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
-              Arrow: false, Box: false, BoxStyle: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
+              Arrow: false, Box: false, BoxStyle: 0,
+              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: 0, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
               GLBox: 0, GLColor: 0, Project: "",
@@ -1574,7 +1575,7 @@
               minimum: -1111, maximum: -1111 });
    }
 
-   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, fp, th2_poly) {
+   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, fp) {
       this.orginal = opt;
 
       var d = new JSROOT.DrawOptions(opt), check3dbox = "";
@@ -1713,17 +1714,12 @@
       if (d.check('AXIG')) this.Axis = 2;
 
       if (d.check('TEXT', true)) {
-         this.Text = 1;
+         this.Text = true;
          this.Hist = 0;
+         this.TextAngle = Math.min(d.partAsInt(), 90);
 
-         var angle = Math.min(d.partAsInt(), 90);
-         if (angle) this.Text = 1000 + angle;
-
-         if (d.part.indexOf('N')>=0 && th2_poly)
-            this.Text = 3000 + angle;
-
-         if (d.part.indexOf('E')>=0)
-            this.Text = 2000 + angle;
+         if (d.part.indexOf('N')>=0) this.TextKind = "N";
+         if (d.part.indexOf('E')>=0) this.TextKind = "E";
       }
 
       if (d.check('SCAT=', true)) {
@@ -1791,10 +1787,6 @@
       if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = 0; }
       if (d.check('H')) this.Hist = 1;
 
-      if (th2_poly) {
-         if (this.Fill || this.Line || this.Mark) this.Scat = 0;
-      }
-
       if (d.check('E', true)) {
          if (hdim == 1) {
             this.Error = 1;
@@ -1804,12 +1796,8 @@
             if ((this.Error === 13) || (this.Error === 14)) this.need_fillcol = true;
             if (this.Error === 10) this.Zero = 1; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) this.errorX = 0;
-         } else {
-            if (this.Error == 0) {
-               this.Error = 100;
-               this.Scat = 0;
-            }
-         }
+         } else if (this.Error == 0)
+            this.Error = 100;
       }
       if (d.check('9')) this.HighRes = 1;
       if (d.check('0')) this.Zero = 0;
@@ -1858,6 +1846,12 @@
             res = this.Zero ? "P0" : "P"; // here invert logic with 0
          } else if (this.Scat) {
             res = "SCAT";
+         }
+
+         if (this.Text) {
+            res += "TEXT";
+            if (this.TextAngle) res += this.TextAngle;
+            res += this.TextKind;
          }
 
       }
@@ -1948,7 +1942,7 @@
       else
          this.options.Reset();
 
-      this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp, this.IsTH2Poly());
+      this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp);
 
       this.OptionsStore(opt); // opt will be return as default draw option, used in webcanvas
    }
@@ -3621,7 +3615,8 @@
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.frame_painter(),
           pad = this.root_pad(),
-          histo = this.GetHisto(), xaxis = histo.fXaxis,
+          histo = this.GetHisto(),
+          xaxis = histo.fXaxis,
           pthis = this,
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
@@ -3629,7 +3624,8 @@
           show_errors = (this.options.Error > 0),
           show_markers = this.options.Mark,
           show_line = (this.options.Line > 0),
-          show_text = (this.options.Text > 0),
+          show_text = this.options.Text,
+          text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           mpath = "", text_col, text_angle, text_size;
@@ -3668,13 +3664,13 @@
 
       if (show_text) {
          text_col = this.get_color(this.histo.fMarkerColor);
-         text_angle = (this.options.Text>1000) ? -1*(this.options.Text % 1000) : 0;
+         text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
          if ((this.histo.fMarkerSize!==1) && text_angle)
             text_size = 0.02*height*this.histo.fMarkerSize;
 
-         if (!text_angle && (this.options.Text<1000)) {
+         if (!text_angle && !this.options.TextKind) {
              var space = width / (right - left + 1);
              if (space < 3 * text_size) {
                 text_angle = 270;
@@ -3743,12 +3739,8 @@
                      }
 
                      if (show_text) {
-                        var cont = bincont;
-                        if ((this.options.Text>=2000) && (this.options.Text < 3000) &&
-                             this.IsTProfile() && histo.fBinEntries)
-                           cont = histo.fBinEntries[besti+1];
-
-                        var posx = Math.round(mx1 + (mx2-mx1)*0.1),
+                        var cont = text_profile ? histo.fBinEntries[besti+1] : bincont,
+                            posx = Math.round(mx1 + (mx2-mx1)*0.1),
                             posy = Math.round(my-2-text_size),
                             sizex = Math.round((mx2-mx1)*0.8),
                             sizey = text_size,
@@ -5214,7 +5206,7 @@
 
       if (textbins.length > 0) {
          var text_col = this.get_color(histo.fMarkerColor),
-             text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
+             text_angle = -1*this.options.TextAngle,
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
 
@@ -5230,7 +5222,7 @@
                 posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2)),
                 lbl = "";
 
-            if (this.options.Text < 1000) {
+            if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
                           JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
             } else {
@@ -5250,14 +5242,14 @@
 
    TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
-          i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
+          i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey,
+          text_col = this.get_color(histo.fMarkerColor),
+          text_angle = -1*this.options.TextAngle,
+          text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
+          text_size = 20, text_offset = 0,
+          profile2d = (this.options.TextKind == "E") && this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
-
-      var text_col = this.get_color(histo.fMarkerColor),
-          text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
-          text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
-          text_size = 20, text_offset = 0;
 
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*h*histo.fMarkerSize);
@@ -5274,9 +5266,8 @@
             binw = handle.grx[i+1] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+1];
 
-            if ((this.options.Text >= 2000) && (this.options.Text < 3000) &&
-                 this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'))
-                   binz = histo.getBinEntries(i+1, j+1);
+            if (profile2d)
+               binz = histo.getBinEntries(i+1, j+1);
 
             lbl = (binz === Math.round(binz)) ? binz.toString() :
                       JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);

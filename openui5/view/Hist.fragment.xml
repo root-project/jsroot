@@ -69,7 +69,7 @@
          <CheckBox text="Col" selected="false" />
          <CheckBox text="Arrow" selected="{/opts/Arrow}" />
          <CheckBox text="Box" selected="{/opts/Box}" />
-         <CheckBox text="Text" selected="false" />
+         <CheckBox text="Text" selected="{/opts/Text}" />
          <CheckBox text="Palette" selected="false" />
       </Panel>
       

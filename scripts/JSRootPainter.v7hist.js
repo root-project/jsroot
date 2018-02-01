@@ -1110,7 +1110,7 @@
           show_errors = (options.Error > 0),
           show_markers = options.Mark,
           show_line = (options.Line > 0),
-          show_text = (options.Text > 0),
+          show_text = options.Text,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           mpath = "", text_col, text_angle, text_size;
@@ -1140,13 +1140,13 @@
 
       if (show_text) {
          text_col = this.get_color(histo.fMarkerColor);
-         text_angle = (options.Text>1000) ? -1*(options.Text % 1000) : 0;
+         text_angle = -1*options.TextAngle;
          text_size = 20;
 
          if ((options.fMarkerSize!==1) && text_angle)
             text_size = 0.02 * height * options.fMarkerSize;
 
-         if (!text_angle && (options.Text<1000)) {
+         if (!text_angle && !options.TextKind) {
              var space = width / (right - left + 1);
              if (space < 3 * text_size) {
                 text_angle = 270;
@@ -1219,7 +1219,7 @@
 
                      if (show_text) {
                         var cont = bincont;
-                        if ((options.Text>=2000) && (options.Text < 3000) && this.IsTProfile() && histo.getBinEntries)
+                        if ((options.TextKind == "E") && this.IsTProfile() && histo.getBinEntries)
                            cont = histo.getBinEntries(besti+1);
 
                         var posx = Math.round(mx1 + (mx2-mx1)*0.1),
@@ -1734,6 +1734,7 @@
       painter.PrepareFrame(divid);
 
       painter.options = { Hist: 1, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 0, Lego: 0, Surf: 0,
+                          Text: false, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
       // here we deciding how histogram will look like and how will be shown
@@ -2622,7 +2623,7 @@
 
       if (textbins.length > 0) {
          var text_col = this.get_color(histo.fMarkerColor),
-             text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
+             text_angle = -1*this.options.TextAngle,
              text_g = this.draw_g.append("svg:g").attr("class","th2poly_text"),
              text_size = 12;
 
@@ -2638,7 +2639,7 @@
                 posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2)),
                 lbl = "";
 
-            if (this.options.Text < 1000) {
+            if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
                           JSROOT.FFormat(bin.fContent, JSROOT.gStyle.fPaintTextFormat);
             } else {
@@ -2663,9 +2664,11 @@
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       var text_col = this.get_color(histo.fMarkerColor),
-          text_angle = (this.options.Text > 1000) ? -1*(this.options.Text % 1000) : 0,
+          text_angle = -1*this.options.TextKind,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
-          text_size = 20, text_offset = 0;
+          text_size = 20, text_offset = 0,
+          profile2d = (this.options.TextKind == "E") &&
+                      this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
 
       if ((histo.fMarkerSize!==1) && text_angle)
          text_size = Math.round(0.02*h*histo.fMarkerSize);
@@ -2682,9 +2685,8 @@
             binw = handle.grx[i+1] - handle.grx[i];
             binh = handle.gry[j] - handle.gry[j+1];
 
-            if ((this.options.Text >= 2000) && (this.options.Text < 3000) &&
-                 this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'))
-                   binz = histo.getBinEntries(i+1, j+1);
+            if (profile2d)
+               binz = histo.getBinEntries(i+1, j+1);
 
             lbl = (binz === Math.round(binz)) ? binz.toString() :
                       JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
@@ -3166,7 +3168,7 @@
       else if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
 
-      if (this.options.Text > 0)
+      if (this.options.Text)
          handle = this.DrawBinsText(w, h, handle);
 
       if (!handle)
@@ -3557,7 +3559,8 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 1, Lego: 0, Surf: 0,
+      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Lego: 0, Surf: 0,
+                          Text: true, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
                           Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Candle: "", Proj: 0 };
 
