@@ -65,8 +65,8 @@
             </items>
          </Select>
 
-         <CheckBox text="Arrow" selected="true" />
-         <CheckBox text="Box" selected="false" />
+         <CheckBox text="Arrow" selected="{/opts/Arrow}" />
+         <CheckBox text="Box" selected="{/opts/Box}" />
          <CheckBox text="Col" selected="false" />
          <CheckBox text="Scat" selected="false" />
          <CheckBox text="Text" selected="false" />

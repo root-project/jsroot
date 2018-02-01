@@ -2836,10 +2836,10 @@
 
             res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
 
-            if ((binz<0) && (this.options.Box === 10))
+            if ((binz<0) && (this.options.BoxStyle === 10))
                cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
 
-            if ((this.options.Box === 11) && (ww>5) && (hh>5)) {
+            if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
                var pww = Math.round(ww*0.1),
                    phh = Math.round(hh*0.1),
                    side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
@@ -2853,13 +2853,13 @@
       }
 
       if (res.length > 0) {
-        var elem = this.draw_g.append("svg:path")
-                              .attr("d", res)
-                              .call(this.fillatt.func);
-        if ((this.options.Box === 11) || (this.fillatt.color !== 'none'))
-           elem.style('stroke','none');
-        else
-           elem.call(this.lineatt.func);
+         var elem = this.draw_g.append("svg:path")
+                               .attr("d", res)
+                               .call(this.fillatt.func);
+         if ((this.options.BoxStyle === 11) || !this.fillatt.empty())
+            elem.style('stroke','none');
+         else
+            elem.call(this.lineatt.func);
       }
 
       if ((btn1.length>0) && (this.fillatt.color !== 'none'))
@@ -3148,9 +3148,9 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text +
-          this.options.Contour + this.options.Arrow + this.options.Candle.length == 0)
-         this.options.Scat = 1;
+      if (!this.options.Color && !this.options.Box && !this.options.Text &&
+            !this.options.Contour && !this.options.Arrow && !this.options.Candle)
+           this.options.Scat = 1;
 
       if (this.draw_content)
       if (this.IsTH2Poly())
@@ -3162,10 +3162,10 @@
       if (this.options.Scat > 0)
          handle = this.DrawBinsScatter(w, h);
       else
-      if (this.options.Box > 0)
+      if (this.options.Box)
          handle = this.DrawBinsBox(w, h);
       else
-      if (this.options.Arrow > 0)
+      if (this.options.Arrow)
          handle = this.DrawBinsArrow(w, h);
       else
       if (this.options.Contour > 0)
@@ -3564,9 +3564,9 @@
 
       painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 1, Lego: 0, Surf: 0,
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
-                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: 0, Arrow: 0, Contour: 0, Candle: "", Proj: 0 };
+                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Candle: "", Proj: 0 };
 
-      if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = 1;
+      if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = true;
                                  else painter.options.Color = 1;
 
       // here we deciding how histogram will look like and how will be shown

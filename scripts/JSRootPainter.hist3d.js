@@ -2592,7 +2592,7 @@
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-          box_option = this.options.Box,
+          box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
       if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;

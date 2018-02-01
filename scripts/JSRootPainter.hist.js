@@ -1562,7 +1562,7 @@
             { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
               Error: 0, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
-              Arrow: 0, Box: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
+              Arrow: false, Box: false, BoxStyle: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
               GLBox: 0, GLColor: 0, Project: "",
@@ -1695,18 +1695,19 @@
 
       if (d.check('ARR')) {
          if (hdim > 1) {
-            this.Arrow = 1;
+            this.Arrow = true;
             this.Scat = 0;
          } else {
             this.Hist = 1;
          }
       }
 
-      if (d.check('BOX',true)) this.Box = 10 + d.partAsInt();
+      if (d.check('BOX',true))
+         this.BoxStyle = 10 + d.partAsInt();
 
-      if (this.Box)
-         if (hdim > 1) this.Scat = 0;
-                  else this.Hist = 1;
+      this.Box = this.BoxStyle > 0;
+      // if (hdim > 1) this.Scat = 0;
+      //         else this.Hist = 1;
 
       if (d.check('COL', true)) {
          this.Color = 1;
@@ -5451,10 +5452,10 @@
 
             res += "M"+xx+","+yy + "v"+hh + "h"+ww + "v-"+hh + "z";
 
-            if ((binz<0) && (this.options.Box === 10))
+            if ((binz<0) && (this.options.BoxStyle === 10))
                cross += "M"+xx+","+yy + "l"+ww+","+hh + "M"+(xx+ww)+","+yy + "l-"+ww+","+hh;
 
-            if ((this.options.Box === 11) && (ww>5) && (hh>5)) {
+            if ((this.options.BoxStyle === 11) && (ww>5) && (hh>5)) {
                var pww = Math.round(ww*0.1),
                    phh = Math.round(hh*0.1),
                    side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
@@ -5468,13 +5469,13 @@
       }
 
       if (res.length > 0) {
-        var elem = this.draw_g.append("svg:path")
-                              .attr("d", res)
-                              .call(this.fillatt.func);
-        if ((this.options.Box === 11) || (this.fillatt.color !== 'none'))
-           elem.style('stroke','none');
-        else
-           elem.call(this.lineatt.func);
+         var elem = this.draw_g.append("svg:path")
+                               .attr("d", res)
+                               .call(this.fillatt.func);
+         if ((this.options.BoxStyle === 11) || !this.fillatt.empty())
+            elem.style('stroke','none');
+         else
+            elem.call(this.lineatt.func);
       }
 
       if ((btn1.length>0) && (this.fillatt.color !== 'none'))
@@ -5765,8 +5766,8 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (this.options.Color + this.options.Box + this.options.Scat + this.options.Text +
-          this.options.Contour + this.options.Arrow + this.options.Candle.length == 0)
+      if (!this.options.Color && !this.options.Box && !this.options.Text &&
+          !this.options.Contour && !this.options.Arrow && !this.options.Candle)
          this.options.Scat = 1;
 
       if (this.draw_content)
@@ -5779,10 +5780,10 @@
       if (this.options.Scat > 0)
          handle = this.DrawBinsScatter(w, h);
       else
-      if (this.options.Box > 0)
+      if (this.options.Box)
          handle = this.DrawBinsBox(w, h);
       else
-      if (this.options.Arrow > 0)
+      if (this.options.Arrow)
          handle = this.DrawBinsArrow(w, h);
       else
       if (this.options.Contour > 0)
