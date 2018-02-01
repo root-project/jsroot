@@ -2996,7 +2996,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(),arg);
 
-         this.options = this.DecodeOptions(arg);
+         this.DecodeOptions(arg);
          this.Redraw();
       });
    }
@@ -3007,7 +3007,7 @@
 
       painter.SetDivId(divid, 4);
 
-      painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       painter.CheckPadRange();
 
@@ -3034,14 +3034,19 @@
    TGraph2DPainter.prototype.DecodeOptions = function(opt) {
       var d = new JSROOT.DrawOptions(opt);
 
-      var res = { Color: d.check("COL"), Line: d.check("LINE"),
-                  Error: d.check("ERR") && this.MatchObjectType("TGraph2DErrors"),
-                  Circles: d.check("P0"), Markers: d.check("P") };
+      if (!this.options)
+         this.options = {};
+
+      var res = this.options;
+
+     res.Color = d.check("COL");
+     res.Line = d.check("LINE");
+     res.Error = d.check("ERR") && this.MatchObjectType("TGraph2DErrors");
+     res.Circles = d.check("P0");
+     res.Markers = d.check("P");
 
       if (!res.Markers && !res.Error && !res.Circles && !res.Line) res.Markers = true;
       if (!res.Markers) res.Color = false;
-
-      return res;
    }
 
    TGraph2DPainter.prototype.CreateHistogram = function() {
@@ -3333,7 +3338,7 @@
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
-      painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       if (painter.main_painter()) {
          painter.SetDivId(divid);

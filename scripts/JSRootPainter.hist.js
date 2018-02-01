@@ -2165,7 +2165,7 @@
          histo.fOption = obj.fOption;
 
          if (((opt !== undefined) && (this.options.original !== opt)) || changed_opt)
-            this.options = this.DecodeOptions(opt);
+            this.DecodeOptions(opt);
       }
 
       // if (!fp.zoom_changed_interactive) this.CheckPadRange();
@@ -4193,7 +4193,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
 
-         this.options = this.DecodeOptions(arg);
+         this.DecodeOptions(arg);
 
          if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
             this.fillatt.Change(5,1001);
@@ -4295,7 +4295,7 @@
       painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
-      painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       painter.CheckPadRange(!painter.options.Mode3D);
 
@@ -4445,7 +4445,7 @@
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
-         this.options = this.DecodeOptions(arg);
+         this.DecodeOptions(arg);
          this.RedrawPad();
       });
 
@@ -6207,7 +6207,7 @@
       painter.SetDivId(divid, 1);
 
       // here we deciding how histogram will look like and how will be shown
-      painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       if (painter.IsTH2Poly()) {
          if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12

@@ -95,6 +95,12 @@
       return false;
    }
 
+   THistPainter.prototype.DecodeOptions = function(opt) {
+      if (!this.options) this.options = { Hist : 1 };
+
+
+   }
+
    THistPainter.prototype.Clear3DScene = function() {
       var fp = this.frame_painter();
       if (fp && typeof fp.Create3DScene === 'function')
@@ -1632,7 +1638,7 @@
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
 
-         this.options = this.DecodeOptions(arg);
+         this.DecodeOptions(arg); // obsolete, should be implemented differently
 
          if (this.options.need_fillcol && this.fillatt && this.fillatt.empty())
             this.fillatt.Change(5,1001);
@@ -1731,7 +1737,7 @@
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
       // here we deciding how histogram will look like and how will be shown
-      // painter.options = painter.DecodeOptions(opt);
+      // painter.DecodeOptions(opt);
 
       painter.ScanContent();
 
@@ -1832,7 +1838,7 @@
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
             return JSROOT.draw(this.divid, this.GetObject(), arg);
-         this.options = this.DecodeOptions(arg);
+         this.DecodeOptions(arg);
          this.RedrawPad();
       });
 
@@ -3564,7 +3570,7 @@
                                  else painter.options.Color = 1;
 
       // here we deciding how histogram will look like and how will be shown
-      // painter.options = painter.DecodeOptions(opt);
+      painter.DecodeOptions(opt);
 
       if (painter.IsTH2Poly()) {
          if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
