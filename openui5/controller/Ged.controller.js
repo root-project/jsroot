@@ -34,21 +34,20 @@ sap.ui.define([
          // set dummy model
          this.getView().setModel(new JSONModel({ SelectedClass: "none" }));
 
-         this.currentPainter = null; // remove cross reference
+         // remove references
+         this.currentPainter = null;
+         this.currentPadPainter = null;
 
          // TODO: deregsiter for all events
 
       },
 
-      getFragment : function(kind, force) {
-          var fragm = this.gedFragments[kind];
-          if (!fragm && force)
-             fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind, this);
-          return fragm;
-      },
-
       addFragment : function(page, kind, model) {
-         var fragm = this.getFragment(kind, true);
+         var fragm = this.gedFragments[kind];
+
+         if (!fragm)
+            fragm = this.gedFragments[kind] = sap.ui.xmlfragment(this.getView().getId(), "sap.ui.jsroot.view." + kind, this);
+
          if (!fragm) return;
 
          var html = new HTML();
@@ -166,6 +165,19 @@ sap.ui.define([
                model.attachPropertyChange({ painter: painter }, this.processHistModelChange, this);
             }
          }
+      },
+
+      onPadRedraw : function(canpainter, padpainter) {
+         console.log('GED sees pad redraw');
+      },
+
+      padEventsReceiver : function(evnt) {
+         if (!evnt) return;
+
+         if (evnt.what == "select")
+            this.onObjectSelect(evnt.padpainter, evnt.painter);
+         else if (evnt.what == "redraw")
+            this.onPadRedraw(evnt.padpainter);
       }
 
    });

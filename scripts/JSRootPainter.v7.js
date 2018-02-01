@@ -1661,10 +1661,12 @@
                if (fp) fp.ProcessFrameClick(pnt);
                break;
             case 2:
-               this.canv_painter().SelectObjectPainter(this.x_handle);
+               var pp = this.pad_painter();
+               if (pp) pp.SelectObjectPainter(this.x_handle);
                break;
             case 3:
-               this.canv_painter().SelectObjectPainter(this.y_handle);
+               var pp = this.pad_painter();
+               if (pp) pp.SelectObjectPainter(this.y_handle);
                break;
          }
       }

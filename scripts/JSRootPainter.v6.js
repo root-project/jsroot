@@ -2023,10 +2023,12 @@
                if (fp) fp.ProcessFrameClick(pnt);
                break;
             case 2:
-               this.canv_painter().SelectObjectPainter(this.x_handle);
+               var pp = this.pad_painter();
+               if (pp) pp.SelectObjectPainter(this.x_handle);
                break;
             case 3:
-               this.canv_painter().SelectObjectPainter(this.y_handle);
+               var pp = this.pad_painter();
+               if (pp) pp.SelectObjectPainter(this.y_handle);
                break;
          }
       }
@@ -2695,8 +2697,25 @@
       if (fp) fp.tooltip_allowed = on;
    }
 
-   TPadPainter.prototype.SelectObjectPainter = function(painter) {
-      // dummy function, redefined in the TCanvasPainter
+   /// Retrive different event when object selected or pad is redrawn
+   TPadPainter.prototype.RegisterForPadEvents = function(receiver) {
+      this.pad_events_receiver = receiver;
+   }
+
+   /// method redirect call to pad events receiver
+   TPadPainter.prototype.SelectObjectPainter = function(_painter) {
+      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
+
+      if (canp && canp.pad_events_receiver)
+         canp.pad_events_receiver({ what: "select", padpainter: this, painter: _painter });
+   }
+
+   /// method redirect call to pad events receiver
+   TPadPainter.prototype.ProcessPadRedraw = function(_padpainter) {
+      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
+
+      if (canp && canp.pad_events_receiver)
+         canp.pad_events_receiver({ what: "redraw", padpainter: _padpainter });
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -3183,6 +3202,9 @@
          var sub = this.painters[i];
          if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
       }
+
+      this.ProcessPadRedraw(this);
+
    }
 
    TPadPainter.prototype.NumDrawnSubpads = function() {

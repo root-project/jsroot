@@ -171,7 +171,10 @@ sap.ui.define([
       },
 
       showGeEditor : function(new_state) {
-         this.showLeftArea(new_state ? "Ged" : "");
+         var ged = this.showLeftArea(new_state ? "Ged" : ""),
+             p = this.getCanvasPainter();
+         p.RegisterForPadEvents((new_state && ged) ? ged.padEventsReceiver.bind(ged) : null);
+         if (new_state) p.SelectObjectPainter(p);
       },
 
       getLeftController : function(name) {
@@ -181,10 +184,7 @@ sap.ui.define([
       },
 
       toggleGedEditor : function() {
-         var new_state = this.getView().getModel().getProperty("/LeftArea") != "Ged";
-         this.showGeEditor(new_state);
-         var p = this.getCanvasPainter();
-         if (new_state && p) p.SelectObjectPainter(p);
+         this.showGeEditor(!this.isGedEditor());
       },
 
       isGedEditor : function() {

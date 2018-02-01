@@ -2871,8 +2871,7 @@
    }
 
    TObjectPainter.prototype.RedrawPad = function() {
-      // call Redraw methods for each painter in the frame
-      // if selobj specified, painter with selected object will be redrawn
+      // call Redraw methods for each painter in the pad
       var pad_painter = this.pad_painter();
       if (pad_painter) pad_painter.Redraw();
    }

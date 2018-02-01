@@ -331,21 +331,27 @@
 
       var ged = sap.ui.getCore().byId(panelid);
 
-      if (!ged) {
+      if (!ged)
          ged = JSROOT.sap.ui.xmlview({
             id: panelid,
             viewName: "sap.ui.jsroot.view.Ged"
             // layoutData: oLd,
             // height: "100%"
          });
-      }
 
       ged.placeAt("ged_placeholder");
+
+      // should be moved into Ged controller - it must be able to detect canvas painter itself
+      this.RegisterForPadEvents(ged.getController().padEventsReceiver.bind(ged.getController()));
 
       this.SelectObjectPainter(objpainter);
    }
 
    JSROOT.TCanvasPainter.prototype.CleanupGed = function() {
+
+      // dettach pad events receiver
+      this.RegisterForPadEvents(null);
+
       sap.ui.getCore().byId("CanvasGedId").getController().cleanupGed();
    }
 
@@ -371,6 +377,7 @@
       if (main) main.getController().showLeftArea("FitPanel");
    }
 
+   /*
    JSROOT.TCanvasPainter.prototype.SelectObjectPainter = function(objpainter) {
       var ged = null;
       if (this.use_openui) {
@@ -382,6 +389,19 @@
       }
       if (ged) ged.onObjectSelect(this, objpainter);
    }
+
+   JSROOT.TCanvasPainter.prototype.ProcessPadRedraw = function(padpainter) {
+      var ged = null;
+      if (this.use_openui) {
+         var main = JSROOT.sap.ui.getCore().byId("TopCanvasId")
+         ged = main.getController().getLeftController("Ged");
+      } else {
+         var main = JSROOT.sap.ui.getCore().byId("CanvasGedId");
+         if (main) ged = main.getController();
+      }
+      if (ged) ged.onPadRedraw(this, padpainter);
+   }
+   */
 
    JSROOT.TCanvasPainter.prototype.openuiHasEventStatus = function() {
       var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
