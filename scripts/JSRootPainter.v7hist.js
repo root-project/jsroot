@@ -1085,12 +1085,12 @@
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
-      this.CheckHistDrawAttributes();
-
       var width = this.frame_width(), height = this.frame_height(), options = this.options;
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
+
+      this.CheckHistDrawAttributes();
 
       if (options.Bar)
          return this.DrawBars(width, height);
@@ -3138,6 +3138,9 @@
 
    TH2Painter.prototype.DrawBins = function() {
 
+      if (!this.draw_content)
+         return this.RemoveDrawG();
+
       this.CheckHistDrawAttributes();
 
       this.CreateG(true);
@@ -3148,34 +3151,26 @@
 
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
-      if (!this.options.Color && !this.options.Box && !this.options.Text &&
-            !this.options.Contour && !this.options.Arrow && !this.options.Candle)
-           this.options.Scat = 1;
-
-      if (this.draw_content)
       if (this.IsTH2Poly())
          handle = this.DrawPolyBinsColor(w, h);
-      else
-      if (this.options.Color > 0)
-         handle = this.DrawBinsColor(w, h);
-      else
-      if (this.options.Scat > 0)
+      else if (this.options.Scat)
          handle = this.DrawBinsScatter(w, h);
-      else
-      if (this.options.Box)
+      else if (this.options.Color > 0)
+         handle = this.DrawBinsColor(w, h);
+      else if (this.options.Box)
          handle = this.DrawBinsBox(w, h);
-      else
-      if (this.options.Arrow)
+      else if (this.options.Arrow)
          handle = this.DrawBinsArrow(w, h);
-      else
-      if (this.options.Contour > 0)
+      else if (this.options.Contour > 0)
          handle = this.DrawBinsContour(w, h);
-      else
-      if (this.options.Candle.length > 0)
+      else if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
 
       if (this.options.Text > 0)
          handle = this.DrawBinsText(w, h, handle);
+
+      if (!handle)
+         handle = this.DrawBinsScatter(w, h);
 
       this.tt_handle = handle;
    }

@@ -1561,7 +1561,7 @@
       JSROOT.extend(this,
             { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
               Error: 0, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Fill: 0, Same: 0, Scat: 0, ScatCoef: 1., Func: 1,
+              Mark: false, Fill: 0, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
               Arrow: false, Box: false, BoxStyle: 0, Text: 0, Char: 0, Color: 0, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
@@ -1631,7 +1631,7 @@
       // if here rest option is empty, draw histograms by default
       // if (d.empty() && !this.Error) this.Hist = 1;
 
-      if (d.check('SPEC')) { this.Scat = 0; this.Spec = 1; }
+      if (d.check('SPEC')) this.Spec = 1;
 
       if (d.check('BASE0')) this.BaseLine = 0; else
       if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
@@ -1646,7 +1646,6 @@
       d.check('GL'); // suppress GL
 
       if (d.check('LEGO', true)) {
-         this.Scat = 0;
          this.Lego = 1;
          if (d.part.indexOf('0') >= 0) this.Zero = 0;
          if (d.part.indexOf('1') >= 0) this.Lego = 11;
@@ -1658,7 +1657,6 @@
       }
 
       if (d.check('SURF', true)) {
-         this.Scat = 0;
          this.Surf = d.partAsInt(10, 1);
          check3dbox = d.part;
          if (d.part.indexOf('Z')>=0) this.Zscale = 1;
@@ -1672,7 +1670,6 @@
 
       if (d.check('CONT', true)) {
          if (hdim > 1) {
-            this.Scat = 0;
             this.Contour = 1;
             if (d.part.indexOf('Z') >= 0) this.Zscale = 1;
             if (d.part.indexOf('1') >= 0) this.Contour = 11; else
@@ -1693,21 +1690,13 @@
          this.BarStyle += d.partAsInt();
       }
 
-      if (d.check('ARR')) {
-         if (hdim > 1) {
-            this.Arrow = true;
-            this.Scat = 0;
-         } else {
-            this.Hist = 1;
-         }
-      }
+      if (d.check('ARR'))
+         this.Arrow = true;
 
       if (d.check('BOX',true))
          this.BoxStyle = 10 + d.partAsInt();
 
       this.Box = this.BoxStyle > 0;
-      // if (hdim > 1) this.Scat = 0;
-      //         else this.Hist = 1;
 
       if (d.check('COL', true)) {
          this.Color = 1;
@@ -1716,18 +1705,15 @@
          if (d.part.indexOf('1')>=0) this.Zero = 0;
          if (d.part.indexOf('Z')>=0) this.Zscale = 1;
          if (d.part.indexOf('A')>=0) this.Axis = -1;
-         if (hdim == 1) this.Hist = 1;
-                   else this.Scat = 0;
       }
 
-      if (d.check('CHAR')) { this.Char = 1; this.Scat = 0; }
+      if (d.check('CHAR')) this.Char = 1;
       if (d.check('FUNC')) { this.Func = 2; this.Hist = 0; }
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
       if (d.check('TEXT', true)) {
          this.Text = 1;
-         this.Scat = 0;
          this.Hist = 0;
 
          var angle = Math.min(d.partAsInt(), 90);
@@ -1741,19 +1727,18 @@
       }
 
       if (d.check('SCAT=', true)) {
-         this.Scat = 1;
+         this.Scat = true;
          this.ScatCoef = parseFloat(d.part);
          if (isNaN(this.ScatCoef) || (this.ScatCoef<=0)) this.ScatCoef = 1.;
       }
 
-      if (d.check('SCAT')) this.Scat = 1;
+      if (d.check('SCAT')) this.Scat = true;
       if (d.check('POL')) this.System = JSROOT.Painter.Coord.kPOLAR;
       if (d.check('CYL')) this.System = JSROOT.Painter.Coord.kCYLINDRICAL;
       if (d.check('SPH')) this.System = JSROOT.Painter.Coord.kSPHERICAL;
       if (d.check('PSR')) this.System = JSROOT.Painter.Coord.kRAPIDITY;
 
       if (d.check('TRI', true)) {
-         this.Scat = 0;
          this.Color = 0;
          this.Tri = 1;
          check3dbox = d.part;
@@ -1764,7 +1749,7 @@
       if (d.check('MERCATOR')) this.Proj = 2;
       if (d.check('SINUSOIDAL')) this.Proj = 3;
       if (d.check('PARABOLIC')) this.Proj = 4;
-      if (this.Proj > 0) { this.Scat = 0; this.Contour = 14; }
+      if (this.Proj > 0) this.Contour = 14;
 
       if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
       if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
@@ -5756,6 +5741,9 @@
 
    TH2Painter.prototype.DrawBins = function() {
 
+      if (!this.draw_content)
+         return this.RemoveDrawG();
+
       this.CheckHistDrawAttributes();
 
       this.CreateG(true);
@@ -5764,36 +5752,26 @@
           h = this.frame_height(),
           handle = null;
 
-      // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
-
-      if (!this.options.Color && !this.options.Box && !this.options.Text &&
-          !this.options.Contour && !this.options.Arrow && !this.options.Candle)
-         this.options.Scat = 1;
-
-      if (this.draw_content)
       if (this.IsTH2Poly())
          handle = this.DrawPolyBinsColor(w, h);
-      else
-      if (this.options.Color)
-         handle = this.DrawBinsColor(w, h);
-      else
-      if (this.options.Scat > 0)
+      else if (this.options.Scat)
          handle = this.DrawBinsScatter(w, h);
-      else
-      if (this.options.Box)
+      else if (this.options.Color)
+         handle = this.DrawBinsColor(w, h);
+      else if (this.options.Box)
          handle = this.DrawBinsBox(w, h);
-      else
-      if (this.options.Arrow)
+      else if (this.options.Arrow)
          handle = this.DrawBinsArrow(w, h);
-      else
-      if (this.options.Contour > 0)
+      else if (this.options.Contour > 0)
          handle = this.DrawBinsContour(w, h);
-      else
-      if (this.options.Candle.length > 0)
+      else if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
 
       if (this.options.Text > 0)
          handle = this.DrawBinsText(w, h, handle);
+
+      if (!handle)
+         handle = this.DrawBinsScatter(w, h);
 
       this.tt_handle = handle;
    }
