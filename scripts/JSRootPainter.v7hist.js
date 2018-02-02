@@ -646,8 +646,31 @@
    }
 
    THistPainter.prototype.ToggleColz = function() {
-      this.options.Zscale = !this.options.Zscale;
-      this.DrawColorPalette(this.options.Zscale, false, true);
+      var can_toggle = this.options.Mode3D ? (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12) :
+         this.options.Color || this.options.Contour;
+
+      if (can_toggle) {
+         this.options.Zscale = !this.options.Zscale;
+         this.DrawColorPalette(this.options.Zscale, false, true);
+      }
+   }
+
+   THistPainter.prototype.ToggleMode3D = function() {
+      this.options.Mode3D = !this.options.Mode3D;
+
+      if (this.options.Mode3D) {
+         if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
+            if ((this.nbinsx>=50) || (this.nbinsy>=50))
+               this.options.Lego = this.options.Color ? 14 : 13;
+            else
+               this.options.Lego = this.options.Color ? 12 : 1;
+
+            this.options.Zero = false; // do not show zeros by default
+         }
+      }
+
+      this.CopyOptionsToOthers();
+      this.InteractiveRedraw("pad","drawopt");
    }
 
    THistPainter.prototype.PrepareColorDraw = function(args) {
@@ -1838,27 +1861,8 @@
 
       switch(funcname) {
          case "ToggleColor": this.ToggleColor(); break;
-         case "ToggleColorZ":
-            var can_toggle = this.options.Mode3D ? this.options.Color || this.options.Contour :
-               (this.options.Lego === 12 || this.options.Lego === 14 || this.options.Surf === 11 || this.options.Surf === 12);
-            if (can_toggle) this.ToggleColz();
-            break;
-         case "Toggle3D":
-            this.options.Mode3D = !this.options.Mode3D;
-
-            if (this.options.Mode3D) {
-               if (!this.options.Surf && !this.options.Lego && !this.options.Error) {
-                  if ((this.nbinsx>=50) || (this.nbinsy>=50))
-                     this.options.Lego = this.options.Color ? 14 : 13;
-                  else
-                     this.options.Lego = this.options.Color ? 12 : 1;
-
-                  this.options.Zero = false; // do not show zeros by default
-               }
-            }
-
-            this.RedrawPad();
-            break;
+         case "ToggleColorZ": this.ToggleColz(); break;
+         case "Toggle3D": this.ToggleMode3D(); break;
          default: return false;
       }
 
