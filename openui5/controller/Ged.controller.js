@@ -90,6 +90,7 @@ sap.ui.define([
          opts.Mode3D = opts.Mode3Dindx > 0;
          opts.Lego = parseInt(opts.Lego);
          opts.Contor = parseInt(opts.Contor);
+         opts.ErrorKind = parseInt(opts.ErrorKind);
 
          if (this.currentPadPainter)
             this.currentPadPainter.Redraw();

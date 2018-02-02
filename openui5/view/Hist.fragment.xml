@@ -12,14 +12,14 @@
       </RadioButtonGroup>
       <Panel visible="{= ${/opts/Mode3Dindx} === 0  &amp;&amp; ${/opts/ndim} === 1}">
          <Label text="Error:" class="sapUiSmallMarginEnd" labelFor="ErrorsSelectTh1" />
-         <Select selectedKey="{/opts/Errors}" tooltip="Contor" id="ErrorsSelectTh1">
+         <Select selectedKey="{/opts/ErrorKind}" enabled="{/opts/Error}" tooltip="Error kinds" id="ErrorsSelectTh1">
             <items>
-               <core:Item text="No" key="0" />
-               <core:Item text="Simple" key="1" />
-               <core:Item text="Edges" key="2" />
-               <core:Item text="Rect" key="3" />
-               <core:Item text="Fill" key="4" />
-               <core:Item text="Cont" key="5" />
+               <core:Item text="Simple" key="-1" />
+               <core:Item text="E0" key="0"/>
+               <core:Item text="E1" key="1"/>
+               <core:Item text="E2" key="2"/>
+               <core:Item text="E3" key="3"/>
+               <core:Item text="E4" key="4"/>
             </items>
          </Select>
          <Label text="Style:" class="sapUiSmallMarginEnd" labelFor="StyleSelectTh1" />
@@ -33,6 +33,7 @@
          </Select>
 
          <CheckBox text="Simple drawing" selected="true" enabled="false" />
+         <CheckBox text="Errors" selected="{/opts/Error}" />
          <CheckBox text="Show markers" selected="{/opts/Mark}" />
          <CheckBox text="Draw bar chart" selected="{/opts/Bar}" />
          <CheckBox text="Bar option" selected="false" enabled="false"/>

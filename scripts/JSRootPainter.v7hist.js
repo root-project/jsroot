@@ -1064,7 +1064,7 @@
          bins2.unshift({grx:grx, gry: gry2});
       }
 
-      var kind = (this.options.Error == 14) ? "bezier" : "line",
+      var kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
           path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
           path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
 
@@ -1090,7 +1090,7 @@
       if (options.Bar)
          return this.DrawBars(width, height);
 
-      if ((options.Error == 13) || (options.Error == 14))
+      if ((options.ErrorKind === 3) || (options.ErrorKind === 4))
          return this.DrawFilledErrors(width, height);
 
       this.CreateG(true);
@@ -1102,7 +1102,7 @@
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
           exclude_zero = !options.Zero,
-          show_errors = (options.Error > 0),
+          show_errors = options.Error,
           show_markers = options.Mark,
           show_line = (options.Line > 0),
           show_text = options.Text,
@@ -1114,11 +1114,11 @@
       //if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
       //   show_markers = true;
 
-      if (options.Error == 12) {
+      if (options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                                else path_fill = "";
       } else
-      if (options.Error > 0) path_err = "";
+      if (options.Error) path_err = "";
 
       if (show_line) path_line = "";
 
@@ -1157,7 +1157,7 @@
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width);
 
-      if (options.Error == 11) {
+      if (options.ErrorKind === 1) {
          var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
@@ -1351,10 +1351,10 @@
 
       if (name.length>0) tips.push(name);
 
-      if ((this.options.Error > 0) || this.options.Mark) {
+      if (this.options.Error || this.options.Mark) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          tips.push("y = " + pmain.AxisAsText("y", cont));
-         if (this.options.Error > 0) {
+         if (this.options.Error) {
             tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
@@ -1478,14 +1478,14 @@
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
       } else
-      if ((this.options.Error > 0) || this.options.Mark || (this.options.Line > 0))  {
+      if (this.options.Error || this.options.Mark || (this.options.Line > 0))  {
 
          show_rect = true;
 
          var msize = 3;
          if (this.markeratt) msize = Math.max(msize, this.markeratt.GetFullSize());
 
-         if (this.options.Error > 0) {
+         if (this.options.Error) {
             var cont = histo.getBinContent(findbin+1),
                 binerr = histo.getBinError(findbin+1);
 
@@ -1718,7 +1718,7 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 1, Bar: false, Error: 0, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 1, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
                           Text: false, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
@@ -3544,7 +3544,7 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 0, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
                           Text: true, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0 };

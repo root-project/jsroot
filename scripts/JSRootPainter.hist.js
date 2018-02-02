@@ -1560,7 +1560,7 @@
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
             { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
-              Error: 0, errorX: JSROOT.gStyle.fErrorX,
+              Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Fill: 0, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
@@ -1582,7 +1582,7 @@
 
       if ((hdim===1) && (histo.fSumw2.length > 0))
          for (var n=0;n<histo.fSumw2.length;++n)
-            if (histo.fSumw2[n] > 0) { this.Error = 2; this.Hist = 0; this.Zero = 0; break; }
+            if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = 0; this.Zero = false; break; }
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
@@ -1737,7 +1737,7 @@
          this.Color = false;
          this.Tri = 1;
          check3dbox = d.part;
-         if (d.part.indexOf('ERR') >= 0) this.Error = 1;
+         if (d.part.indexOf('ERR') >= 0) this.Error = true;
       }
 
       if (d.check('AITOFF')) this.Proj = 1;
@@ -1761,8 +1761,8 @@
       this._plc = d.check("PLC");
       this._pmc = d.check("PMC");
 
-      if (d.check('LF2')) { this.Line = 2; this.Hist = -1; this.Error = 0; this.need_fillcol = true; }
-      if (d.check('L')) { this.Line = 1; this.Hist = -1; this.Error = 0; }
+      if (d.check('LF2')) { this.Line = 2; this.Hist = -1; this.Error = false; this.need_fillcol = true; }
+      if (d.check('L')) { this.Line = 1; this.Hist = -1; this.Error = false; }
 
       if (d.check('A')) this.Axis = -1;
       if (this.Axis && d.check("RX")) this.RevX = 1;
@@ -1774,7 +1774,7 @@
       if (d.check('][')) { this.Off = 1; this.Hist = 1; }
       if (d.check('F')) this.Fill = 1;
 
-      if (d.check('HIST')) { this.Hist = 2; this.Func = 0; this.Error = 0; }
+      if (d.check('HIST')) { this.Hist = 2; this.Func = 0; this.Error = false; }
 
       this.Bar = (this.BarStyle > 0);
 
@@ -1787,23 +1787,22 @@
       if (d.check('H')) this.Hist = 1;
 
       if (d.check('E', true)) {
+         this.Error = true;
          if (hdim == 1) {
-            this.Error = 1;
-            this.Zero = 0; // do not draw empty bins with erros
+            this.Zero = false; // do not draw empty bins with erros
             this.Hist = 0;
-            if (!isNaN(parseInt(d.part[0]))) this.Error = 10 + parseInt(d.part[0]);
-            if ((this.Error === 13) || (this.Error === 14)) this.need_fillcol = true;
-            if (this.Error === 10) this.Zero = 1; // enable drawing of empty bins
+            if (!isNaN(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
+            if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
+            if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
             if (d.part.indexOf('X0')>=0) this.errorX = 0;
-         } else if (this.Error == 0)
-            this.Error = 100;
+         }
       }
       if (d.check('9')) this.HighRes = 1;
       if (d.check('0')) this.Zero = false;
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim == 3) ||
-          ((this.Surf > 0) || (this.Error > 0) && (hdim == 2))) this.Mode3D = true;
+          ((this.Surf > 0) || this.Error && (hdim == 2))) this.Mode3D = true;
 
       //if (this.Surf == 15)
       //   if (this.System == JSROOT.Painter.Coord.kPOLAR || this.System == JSROOT.Painter.Coord.kCARTESIAN)
@@ -1845,6 +1844,9 @@
             res = this.Zero ? "P0" : "P"; // here invert logic with 0
          } else if (this.Scat) {
             res = "SCAT";
+         } else if (this.Error) {
+            res = "E";
+            if (this.ErrorKind>=0) res += this.ErrorKind;
          }
 
          if (this.Text) {
@@ -3286,7 +3288,7 @@
             first = false;;
          }
 
-         err = (this.options.Error > 0) ? this.histo.getBinError(i + 1) : 0;
+         err = this.options.Error ? this.histo.getBinError(i + 1) : 0;
 
          hmin = Math.min(hmin, value - err);
          hmax = Math.max(hmax, value + err);
@@ -3578,7 +3580,7 @@
          bins2.unshift({ grx:grx, gry: gry2 });
       }
 
-      var kind = (this.options.Error == 14) ? "bezier" : "line",
+      var kind = (this.options.ErrorKind === 4) ? "bezier" : "line",
           path1 = JSROOT.Painter.BuildSvgPath(kind, bins1),
           path2 = JSROOT.Painter.BuildSvgPath("L"+kind, bins2);
 
@@ -3602,7 +3604,7 @@
       if (this.options.Bar)
          return this.DrawBars(width, height);
 
-      if ((this.options.Error == 13) || (this.options.Error == 14))
+      if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
          return this.DrawFilledErrors(width, height);
 
       var left = this.GetSelectIndex("x", "left", -1),
@@ -3615,7 +3617,7 @@
           res = "", lastbin = false,
           startx, currx, curry, x, grx, y, gry, curry_min, curry_max, prevy, prevx, i, besti,
           exclude_zero = !this.options.Zero,
-          show_errors = (this.options.Error > 0),
+          show_errors = this.options.Error,
           show_markers = this.options.Mark,
           show_line = (this.options.Line > 0),
           show_text = this.options.Text,
@@ -3627,11 +3629,11 @@
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
          show_markers = true;
 
-      if (this.options.Error == 12) {
+      if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                               else path_fill = "";
       } else
-      if (this.options.Error > 0) path_err = "";
+      if (this.options.Error) path_err = "";
 
       if (show_line) path_line = "";
 
@@ -3679,7 +3681,7 @@
       // instead define min and max value and made min-max drawing
       var use_minmax = ((right-left) > 3*width);
 
-      if (this.options.Error == 11) {
+      if (this.options.ErrorKind === 1) {
          var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize;
          endx = "m0," + lw + "v-" + 2*lw + "m0," + lw;
          endy = "m" + lw + ",0h-" + 2*lw + "m" + lw + ",0";
@@ -3871,10 +3873,10 @@
 
       if (name.length>0) tips.push(name);
 
-      if ((this.options.Error > 0) || this.options.Mark) {
+      if (this.options.Error || this.options.Mark) {
          tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
          tips.push("y = " + pmain.AxisAsText("y", cont));
-         if (this.options.Error > 0) {
+         if (this.options.Error) {
             tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
@@ -4000,14 +4002,14 @@
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
       } else
-      if ((this.options.Error > 0) || (this.options.Mark > 0) || (this.options.Line > 0))  {
+      if (this.options.Error || (this.options.Mark > 0) || (this.options.Line > 0))  {
 
          show_rect = true;
 
          var msize = 3;
          if (this.markeratt) msize = Math.max(msize, this.markeratt.GetFullSize());
 
-         if (this.options.Error > 0) {
+         if (this.options.Error) {
             var cont = histo.getBinContent(findbin+1),
                 binerr = histo.getBinError(findbin+1);
 
