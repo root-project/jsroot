@@ -1563,7 +1563,7 @@
               Error: 0, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Fill: 0, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
               Arrow: false, Box: false, BoxStyle: 0,
-              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: 0, Contour: 0,
+              Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
               GLBox: 0, GLColor: 0, Project: "",
@@ -1700,7 +1700,7 @@
       this.Box = this.BoxStyle > 0;
 
       if (d.check('COL', true)) {
-         this.Color = 1;
+         this.Color = true;
 
          if (d.part.indexOf('0')>=0) this.Zero = 0; // do not draw zero values
          if (d.part.indexOf('1')>=0) this.Zero = 0;
@@ -1735,7 +1735,7 @@
       if (d.check('PSR')) this.System = JSROOT.Painter.Coord.kRAPIDITY;
 
       if (d.check('TRI', true)) {
-         this.Color = 0;
+         this.Color = false;
          this.Tri = 1;
          check3dbox = d.part;
          if (d.part.indexOf('ERR') >= 0) this.Error = 1;
@@ -4459,9 +4459,9 @@
 
       if (this.options.Mode3D) {
          this.options.Mode3D = false;
-         this.options.Color = 1;
+         this.options.Color = true;
       } else {
-         this.options.Color = this.options.Color ? 0 : 1;
+         this.options.Color = !this.options.Color;
       }
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
@@ -5743,7 +5743,7 @@
       else if (this.options.Candle.length > 0)
          handle = this.DrawCandle(w, h);
 
-      if (this.options.Text > 0)
+      if (this.options.Text)
          handle = this.DrawBinsText(w, h, handle);
 
       if (!handle)
@@ -5997,7 +5997,7 @@
 
          var match = true;
 
-         if (this.options.Color > 0) {
+         if (this.options.Color) {
             // take into account bar settings
             var dx = x2 - x1, dy = y2 - y1;
             x2 = Math.round(x1 + dx*h.xbar2);
@@ -6032,7 +6032,7 @@
                   color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : "blue",
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
-      if (this.options.Color > 0) res.color2 = this.GetPalette().getColor(colindx);
+      if (this.options.Color) res.color2 = this.GetPalette().getColor(colindx);
 
       if (pnt.disabled && !this.is_projection) {
          ttrect.remove();
@@ -6157,7 +6157,7 @@
 
       if (painter.IsTH2Poly()) {
          if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color) painter.options.Color = 1; // default is color
+         else if (!painter.options.Color) painter.options.Color = true; // default is color
       }
 
       painter._show_empty_bins = false;

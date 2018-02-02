@@ -1886,9 +1886,9 @@
 
       if (this.options.Mode3D) {
          this.options.Mode3D = false;
-         this.options.Color = 1;
+         this.options.Color = true;
       } else {
-         this.options.Color = this.options.Color ? 0 : 1;
+         this.options.Color = !this.options.Color;
       }
 
       this._can_move_colz = true; // indicate that next redraw can move Z scale
@@ -3147,7 +3147,7 @@
          handle = this.DrawPolyBinsColor(w, h);
       else if (this.options.Scat)
          handle = this.DrawBinsScatter(w, h);
-      else if (this.options.Color > 0)
+      else if (this.options.Color)
          handle = this.DrawBinsColor(w, h);
       else if (this.options.Box)
          handle = this.DrawBinsBox(w, h);
@@ -3427,7 +3427,7 @@
                   color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
-      if (this.options.Color > 0) res.color2 = this.GetPalette().getColor(colindx);
+      if (this.options.Color) res.color2 = this.GetPalette().getColor(colindx);
 
       if (pnt.disabled && !this.is_projection) {
          ttrect.remove();
@@ -3555,14 +3555,14 @@
                           Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Candle: "", Proj: 0 };
 
       if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = true;
-                                 else painter.options.Color = 1;
+                                 else painter.options.Color = true;
 
       // here we deciding how histogram will look like and how will be shown
       painter.DecodeOptions(opt);
 
       if (painter.IsTH2Poly()) {
          if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color) painter.options.Color = 1; // default is color
+         else if (!painter.options.Color) painter.options.Color = true; // default is color
       }
 
       painter._show_empty_bins = false;
