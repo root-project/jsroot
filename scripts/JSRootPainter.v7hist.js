@@ -514,12 +514,12 @@
          });
 
          if (fp && fp.Render3D) {
-            menu.addchk(fp.FrontBox, 'Front box', function() {
-               fp.FrontBox = !fp.FrontBox;
+            menu.addchk(main.options.FrontBox, 'Front box', function() {
+               main.options.FrontBox = !main.options.FrontBox;
                fp.Render3D();
             });
-            menu.addchk(fp.BackBox, 'Back box', function() {
-               fp.BackBox = !fp.BackBox;
+            menu.addchk(main.options.BackBox, 'Back box', function() {
+               main.options.BackBox = !main.options.BackBox;
                fp.Render3D();
             });
          }
@@ -1720,7 +1720,7 @@
 
       painter.options = { Hist: true, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false,
                           Line: false, Fill: false, Lego: 0, Surf: 0,
-                          Text: false, TextAngle: 0, TextKind: "",
+                          Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
       // here we deciding how histogram will look like and how will be shown
@@ -3548,7 +3548,7 @@
       painter.options = { Hist: false, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false,
                           Line: false, Fill: false, Lego: 0, Surf: 0,
                           Text: true, TextAngle: 0, TextKind: "",
-                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
+                          fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false, AutoColor: 0,
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0 };
 
       if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = true;

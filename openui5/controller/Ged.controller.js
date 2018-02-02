@@ -93,7 +93,8 @@ sap.ui.define([
          opts.ErrorKind = parseInt(opts.ErrorKind);
 
          if (this.currentPadPainter)
-            this.currentPadPainter.Redraw();
+            this.currentPadPainter.InteractiveRedraw("object","drawopt");
+
       },
 
       onObjectSelect : function(padpainter, painter, place) {

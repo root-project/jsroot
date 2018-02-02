@@ -1566,12 +1566,13 @@
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: 0, Pie: 0, List: 0, Zscale: false, Candle: "",
-              GLBox: 0, GLColor: 0, Project: "",
+              Spec: false, Pie: false, List: false, Zscale: false, Candle: "",
+              GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
               AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
+              FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
               minimum: -1111, maximum: -1111 });
    }
@@ -1594,8 +1595,8 @@
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
 
-      if (d.check('AUTOCOL')) this.AutoColor = 1;
-      if (d.check('AUTOZOOM')) this.AutoZoom = 1;
+      if (d.check('AUTOCOL')) this.AutoColor = 1; // color index
+      if (d.check('AUTOZOOM')) this.AutoZoom = true;
 
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
@@ -1630,17 +1631,17 @@
       if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
       if (d.check('SAME')) { this.Same = 1; this.Func = 0; }
 
-      if (d.check('SPEC')) this.Spec = 1;
+      if (d.check('SPEC')) this.Spec = true; // not used
 
       if (d.check('BASE0')) this.BaseLine = 0; else
       if (JSROOT.gStyle.fHistMinimumZero) this.BaseLine = 0;
 
-      if (d.check('PIE')) this.Pie = 1;
+      if (d.check('PIE')) this.Pie = true; // not used
 
       if (d.check('CANDLE', true)) this.Candle = d.part;
 
       if (d.check('GLBOX',true)) this.GLBox = 10 + d.partAsInt();
-      if (d.check('GLCOL')) this.GLColor = 1;
+      if (d.check('GLCOL')) this.GLColor = true;
 
       d.check('GL'); // suppress GL
 
@@ -1665,7 +1666,7 @@
 
       if (d.check('ISO', true)) check3dbox = d.part;
 
-      if (d.check('LIST')) this.List = 1;
+      if (d.check('LIST')) this.List = true; // not used
 
       if (d.check('CONT', true) && (hdim>1)) {
          this.Contour = 1;
@@ -1743,13 +1744,13 @@
       if (d.check('PROJX',true)) this.Project = "X" + d.partAsInt(0,1);
       if (d.check('PROJY',true)) this.Project = "Y" + d.partAsInt(0,1);
 
-      if (check3dbox && fp) {
-         if (check3dbox.indexOf('FB') >= 0) fp.FrontBox = false;
-         if (check3dbox.indexOf('BB') >= 0) fp.BackBox = false;
+      if (check3dbox) {
+         if (check3dbox.indexOf('FB') >= 0) this.FrontBox = false;
+         if (check3dbox.indexOf('BB') >= 0) this.BackBox = false;
       }
 
-      if ((hdim==3) && d.check('FB') && fp) fp.FrontBox = false;
-      if ((hdim==3) && d.check('BB') && fp) fp.BackBox = false;
+      if ((hdim==3) && d.check('FB')) this.FrontBox = false;
+      if ((hdim==3) && d.check('BB')) this.BackBox = false;
 
       this._pfc = d.check("PFC");
       this._plc = d.check("PLC");
@@ -1818,12 +1819,14 @@
             res = "SURF" + (this.Surf-10);
             if (this.Zscale) res+="Z";
          }
-         if (fp && !fp.FrontBox) res+=",FB";
-         if (fp && !fp.BackBox) res+=",BB";
+         if (!this.FrontBox) res+="FB";
+         if (!this.BackBox) res+="BB";
 
       } else {
-         if (this.Color) {
-            res += "COL";
+         if (this.Scat) {
+            res = "SCAT";
+         } else if (this.Color) {
+            res = "COL";
             if (!this.Zero) res+="0";
             if (this.Zscale) res+="Z";
             if (this.Axis < 0) res+="A";
@@ -2719,12 +2722,12 @@
          });
 
          if (fp && fp.Render3D) {
-            menu.addchk(fp.FrontBox, 'Front box', function() {
-               fp.FrontBox = !fp.FrontBox;
+            menu.addchk(main.options.FrontBox, 'Front box', function() {
+               main.options.FrontBox = !main.options.FrontBox;
                fp.Render3D();
             });
-            menu.addchk(fp.BackBox, 'Back box', function() {
-               fp.BackBox = !fp.BackBox;
+            menu.addchk(main.options.BackBox, 'Back box', function() {
+               main.options.BackBox = !main.options.BackBox;
                fp.Render3D();
             });
          }
@@ -2732,7 +2735,7 @@
          if (this.draw_content) {
             menu.addchk(!this.options.Zero, 'Suppress zeros', function() {
                this.options.Zero = !this.options.Zero;
-               this.RedrawPad();
+               this.InteractiveRedraw("pad");
             });
 
             if ((this.options.Lego==12) || (this.options.Lego==14)) {

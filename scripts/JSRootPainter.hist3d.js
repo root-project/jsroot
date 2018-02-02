@@ -266,11 +266,10 @@
 
          var tm1 = new Date();
 
-         if (this.FrontBox === undefined) this.FrontBox = true;
-         if (this.BackBox === undefined) this.BackBox = true;
+         if (!this.opt3d) this.opt3d = { FrontBox: true, BackBox: true };
 
          //if (typeof this.TestAxisVisibility === 'function')
-         this.TestAxisVisibility(this.camera, this.toplevel, this.FrontBox, this.BackBox);
+         this.TestAxisVisibility(this.camera, this.toplevel, this.opt3d.FrontBox, this.opt3d.BackBox);
 
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
@@ -461,6 +460,10 @@
             chld.visible = testvisible(chld.zboxid + shift, range);
          }
       }
+   }
+
+   JSROOT.TFramePainter.prototype.Set3DOptions = function(hopt) {
+      this.opt3d = hopt;
    }
 
    JSROOT.TFramePainter.prototype.DrawXYZ = function(toplevel, opts) {
@@ -1491,6 +1494,7 @@
          if (is_main) {
             main.Create3DScene();
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+            main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
          }
 
@@ -1547,6 +1551,7 @@
          if (is_main) {
             main.Create3DScene();
             main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
          }
 
@@ -2900,7 +2905,7 @@
 
          main.Create3DScene();
          main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
-
+         main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });
          this.Draw3DBins();
          main.Render3D();

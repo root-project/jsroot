@@ -73,7 +73,7 @@
          <CheckBox text="Box" selected="{/opts/Box}" />
          <CheckBox text="Text" selected="{/opts/Text}" />
          <CheckBox text="Zero" selected="{/opts/Zero}" />
-         <CheckBox text="Palette" selected="false" />
+         <CheckBox text="Palette" selected="{/opts/Zscale}" />
       </Panel>
       
       <Panel visible="{= ${/opts/Mode3Dindx} === 1 &amp;&amp; ${/opts/ndim} === 2}">
@@ -81,18 +81,18 @@
          <Select selectedKey="{/opts/Lego}" tooltip="Contor" id="LegoSelectTh2">
             <items>
                <core:Item text="NoLego" key="0" />
-               <core:Item text="Lego0" key="1" />
-               <core:Item text="Lego1" key="2" />
-               <core:Item text="Lego2" key="3" />
-               <core:Item text="Lego3" key="4" />
-               <core:Item text="Lego4" key="5" />
+               <core:Item text="Lego" key="1" />
+               <core:Item text="Lego1" key="11" />
+               <core:Item text="Lego2" key="12" />
+               <core:Item text="Lego3" key="13" />
+               <core:Item text="Lego4" key="14" />
             </items>
          </Select>
 
-         <CheckBox text="Front" selected="true" />
-         <CheckBox text="Back" selected="true" />
-         <CheckBox text="Errors" selected="false" />
-         <CheckBox text="Palette" selected="false" />
+         <CheckBox text="Front" selected="{/opts/FrontBox}" />
+         <CheckBox text="Back" selected="{/opts/BackBox}" />
+         <CheckBox text="Errors" selected="{/opts/Error}" />
+         <CheckBox text="Palette" selected="{/opts/Zscale}" />
       </Panel>
    </VBox>
 </core:FragmentDefinition>
