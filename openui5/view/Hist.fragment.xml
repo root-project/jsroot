@@ -33,7 +33,8 @@
          </Select>
 
          <CheckBox text="Simple drawing" selected="true" enabled="false" />
-         <CheckBox text="Errors" selected="{/opts/Error}" />
+         <CheckBox text="Show errors" selected="{/opts/Error}" />
+         <CheckBox text="Show lines" selected="{/opts/Line}" />
          <CheckBox text="Show markers" selected="{/opts/Mark}" />
          <CheckBox text="Draw bar chart" selected="{/opts/Bar}" />
          <CheckBox text="Bar option" selected="false" enabled="false"/>

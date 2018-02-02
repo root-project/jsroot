@@ -1559,9 +1559,10 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: 1, Line: 0,
+            { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: true,
+              Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Fill: 0, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
+              Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
@@ -1582,7 +1583,7 @@
 
       if ((hdim===1) && (histo.fSumw2.length > 0))
          for (var n=0;n<histo.fSumw2.length;++n)
-            if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = 0; this.Zero = false; break; }
+            if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = false; this.Zero = false; break; }
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
@@ -1593,8 +1594,8 @@
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
 
-      if (d.check('AUTOCOL')) { this.AutoColor = 1; this.Hist = 1; }
-      if (d.check('AUTOZOOM')) { this.AutoZoom = 1; this.Hist = 1; }
+      if (d.check('AUTOCOL')) this.AutoColor = 1;
+      if (d.check('AUTOZOOM')) this.AutoZoom = 1;
 
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
@@ -1628,9 +1629,6 @@
 
       if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
       if (d.check('SAME')) { this.Same = 1; this.Func = 0; }
-
-      // if here rest option is empty, draw histograms by default
-      // if (d.empty() && !this.Error) this.Hist = 1;
 
       if (d.check('SPEC')) this.Spec = 1;
 
@@ -1669,24 +1667,20 @@
 
       if (d.check('LIST')) this.List = 1;
 
-      if (d.check('CONT', true)) {
-         if (hdim > 1) {
-            this.Contour = 1;
-            if (d.part.indexOf('Z') >= 0) this.Zscale = true;
-            if (d.part.indexOf('1') >= 0) this.Contour = 11; else
-            if (d.part.indexOf('2') >= 0) this.Contour = 12; else
-            if (d.part.indexOf('3') >= 0) this.Contour = 13; else
-            if (d.part.indexOf('4') >= 0) this.Contour = 14;
-         } else {
-            this.Hist = 1;
-         }
+      if (d.check('CONT', true) && (hdim>1)) {
+         this.Contour = 1;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
+         if (d.part.indexOf('1') >= 0) this.Contour = 11; else
+         if (d.part.indexOf('2') >= 0) this.Contour = 12; else
+         if (d.part.indexOf('3') >= 0) this.Contour = 13; else
+         if (d.part.indexOf('4') >= 0) this.Contour = 14;
       }
 
       // decode bar/hbar option
       if (d.check('HBAR', true)) this.BarStyle = 20; else
       if (d.check('BAR', true)) this.BarStyle = 10;
       if (this.BarStyle > 0) {
-         this.Hist = 0;
+         this.Hist = false;
          this.need_fillcol = true;
          this.BarStyle += d.partAsInt();
       }
@@ -1708,13 +1702,13 @@
       }
 
       if (d.check('CHAR')) this.Char = 1;
-      if (d.check('FUNC')) { this.Func = 2; this.Hist = 0; }
+      if (d.check('FUNC')) { this.Func = 2; this.Hist = false; }
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
       if (d.check('TEXT', true)) {
          this.Text = true;
-         this.Hist = 0;
+         this.Hist = false;
          this.TextAngle = Math.min(d.partAsInt(), 90);
 
          if (d.part.indexOf('N')>=0) this.TextKind = "N";
@@ -1761,36 +1755,35 @@
       this._plc = d.check("PLC");
       this._pmc = d.check("PMC");
 
-      if (d.check('LF2')) { this.Line = 2; this.Hist = -1; this.Error = false; this.need_fillcol = true; }
-      if (d.check('L')) { this.Line = 1; this.Hist = -1; this.Error = false; }
+      if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
+      if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
       if (this.Axis && d.check("RX")) this.RevX = 1;
       if (this.Axis && d.check("RY")) this.RevY = 1;
 
-      if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = -1; this.need_fillcol = true; }
-      if (d.check('B')) { this.BarStyle = 1; this.Hist = -1; this.need_fillcol = true; }
-      if (d.check('C')) { this.Curve = 1; this.Hist = -1; }
-      if (d.check('][')) { this.Off = 1; this.Hist = 1; }
-      if (d.check('F')) this.Fill = 1;
+      if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
+      if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
+      if (d.check('C')) { this.Curve = 1; this.Hist = false; }
+      if (d.check('][')) { this.Off = 1; this.Hist = true; }
 
-      if (d.check('HIST')) { this.Hist = 2; this.Func = 0; this.Error = false; }
+      if (d.check('HIST')) { this.Hist = true; this.Func = 0; this.Error = false; }
 
       this.Bar = (this.BarStyle > 0);
 
       delete this.MarkStyle; // remove mark style if any
 
-      if (d.check('P0')) { this.Mark = true; this.Hist = 0; this.Zero = true; }
-      if (d.check('P')) { this.Mark = true; this.Hist = 0; this.Zero = false; }
+      if (d.check('P0')) { this.Mark = true; this.Hist = false; this.Zero = true; }
+      if (d.check('P')) { this.Mark = true; this.Hist = false; this.Zero = false; }
       if (d.check('Z')) this.Zscale = true;
-      if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = 0; }
-      if (d.check('H')) this.Hist = 1;
+      if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = false; }
+      if (d.check('H')) this.Hist = true;
 
       if (d.check('E', true)) {
          this.Error = true;
          if (hdim == 1) {
             this.Zero = false; // do not draw empty bins with erros
-            this.Hist = 0;
+            this.Hist = false;
             if (!isNaN(parseInt(d.part[0]))) this.ErrorKind = parseInt(d.part[0]);
             if ((this.ErrorKind === 3) || (this.ErrorKind === 4)) this.need_fillcol = true;
             if (this.ErrorKind === 0) this.Zero = true; // enable drawing of empty bins
@@ -1847,6 +1840,9 @@
          } else if (this.Error) {
             res = "E";
             if (this.ErrorKind>=0) res += this.ErrorKind;
+         } else if (this.Line) {
+            res += "L";
+            if (this.Fill) res += "F";
          }
 
          if (this.Text) {
@@ -3619,7 +3615,7 @@
           exclude_zero = !this.options.Zero,
           show_errors = this.options.Error,
           show_markers = this.options.Mark,
-          show_line = (this.options.Line > 0),
+          show_line = this.options.Line,
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
@@ -3651,7 +3647,7 @@
 
       var draw_markers = show_errors || show_markers,
           draw_any_but_hist = draw_markers || show_text || show_line,
-          draw_hist =(this.options.Hist > 0) && (!this.lineatt.empty() || !this.fillatt.empty());
+          draw_hist = this.options.Hist && (!this.lineatt.empty() || !this.fillatt.empty());
 
       if (!draw_hist && !draw_any_but_hist)
          return this.RemoveDrawG();
@@ -3832,7 +3828,7 @@
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
-                     .attr("d", this.options.Line===2 ? (path_line + close_path) : res)
+                     .attr("d", this.options.Fill ? (path_line + close_path) : res)
                      .attr("stroke", "none")
                      .call(this.fillatt.func);
 
@@ -4002,7 +3998,7 @@
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
       } else
-      if (this.options.Error || (this.options.Mark > 0) || (this.options.Line > 0))  {
+      if (this.options.Error || this.options.Mark || this.options.Line)  {
 
          show_rect = true;
 

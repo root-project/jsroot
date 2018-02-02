@@ -1104,7 +1104,7 @@
           exclude_zero = !options.Zero,
           show_errors = options.Error,
           show_markers = options.Mark,
-          show_line = (options.Line > 0),
+          show_line = options.Line,
           show_text = options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
@@ -1311,7 +1311,7 @@
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
-                     .attr("d", options.Line===2 ? (path_line + close_path) : res)
+                     .attr("d", options.Fill ? (path_line + close_path) : res)
                      .attr("stroke", "none")
                      .call(this.fillatt.func);
 
@@ -1478,7 +1478,7 @@
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
       } else
-      if (this.options.Error || this.options.Mark || (this.options.Line > 0))  {
+      if (this.options.Error || this.options.Mark || this.options.Line)  {
 
          show_rect = true;
 
@@ -1718,7 +1718,8 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 1, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: true, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false,
+                          Line: false, Fill: false, Lego: 0, Surf: 0,
                           Text: false, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
@@ -3544,7 +3545,8 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 0, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: false, Bar: false, Error: false, ErrorKind: -1, errorX: 0, Zero: false, Mark: false,
+                          Line: false, Fill: false, Lego: 0, Surf: 0,
                           Text: true, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0 };
