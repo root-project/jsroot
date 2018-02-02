@@ -1505,7 +1505,7 @@
 
       if (is_main) {
          // (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14)));
+         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
 
          this.DrawTitle();
       }
@@ -1562,8 +1562,8 @@
       if (is_main) {
 
          //  (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                                (this.options.Surf===11) || (this.options.Surf===12)));
+         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+                               (this.options.Surf===11) || (this.options.Surf===12)));
 
          this.DrawTitle();
       }

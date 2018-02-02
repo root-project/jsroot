@@ -646,13 +646,8 @@
    }
 
    THistPainter.prototype.ToggleColz = function() {
-      if (this.options.Zscale > 0) {
-         this.options.Zscale = 0;
-      } else {
-         this.options.Zscale = 1;
-      }
-
-      this.DrawColorPalette(this.options.Zscale > 0, false, true);
+      this.options.Zscale = !this.options.Zscale;
+      this.DrawColorPalette(this.options.Zscale, false, true);
    }
 
    THistPainter.prototype.PrepareColorDraw = function(args) {
@@ -1723,7 +1718,7 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 1, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Text: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 1, Bar: false, Error: 0, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
                           Text: false, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, fMarkerSize: 1, BaseLine: false, Mode3D: false };
 
@@ -1857,7 +1852,7 @@
                   else
                      this.options.Lego = this.options.Color ? 12 : 1;
 
-                  this.options.Zero = 0; // do not show zeros by default
+                  this.options.Zero = false; // do not show zeros by default
                }
             }
 
@@ -1895,7 +1890,7 @@
 
       this.Redraw();
 
-      // this.DrawColorPalette(this.options.Color && (this.options.Zscale > 0));
+      // this.DrawColorPalette(this.options.Color && this.options.Zscale);
    }
 
    TH2Painter.prototype.AutoZoom = function() {
@@ -3155,7 +3150,7 @@
          handle = this.DrawBinsArrow(w, h);
       else if (this.options.Contour > 0)
          handle = this.DrawBinsContour(w, h);
-      else if (this.options.Candle.length > 0)
+      else if (this.options.Candle)
          handle = this.DrawCandle(w, h);
 
       if (this.options.Text)
@@ -3502,7 +3497,7 @@
       this.Clear3DScene();
 
       // draw new palette, resize frame if required
-      // var pp = this.DrawColorPalette((this.options.Zscale > 0) && ((this.options.Color > 0) || (this.options.Contour > 0)), true);
+      // var pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
       if (this.DrawAxes());
          this.DrawBins();
@@ -3549,10 +3544,10 @@
 
       painter.PrepareFrame(divid);
 
-      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: 0, Mark: false, Line: 0, Lego: 0, Surf: 0,
+      painter.options = { Hist: 0, Bar: false, Error: 0, errorX: 0, Zero: false, Mark: false, Line: 0, Lego: 0, Surf: 0,
                           Text: true, TextAngle: 0, TextKind: "",
                           fBarOffset: 0, fBarWidth: 1000, BaseLine: false, Mode3D: false,
-                          Color: 0, Scat: 0, ScatCoef: 1, Candle: 0, Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Candle: "", Proj: 0 };
+                          Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0 };
 
       if (obj.fOpts.fStyle.fIdx == 1) painter.options.Box = true;
                                  else painter.options.Color = true;

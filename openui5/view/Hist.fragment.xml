@@ -56,12 +56,12 @@
          <Label text="Contor" labelFor="ContorSelectTh2" />
          <Select selectedKey="{/opts/Contor}" tooltip="Contor" id="ContorSelectTh2">
             <items>
-               <core:Item text="none" key="-1" />
-               <core:Item text="Cont0" key="0" />
-               <core:Item text="Cont1" key="1" />
-               <core:Item text="Cont2" key="2" />
-               <core:Item text="Cont3" key="3" />
-               <core:Item text="Cont4" key="4" />
+               <core:Item text="none" key="0"/>
+               <core:Item text="Cont" key="1"/>
+               <core:Item text="Cont1" key="11"/>
+               <core:Item text="Cont2" key="12"/>
+               <core:Item text="Cont3" key="13"/>
+               <core:Item text="Cont4" key="14"/>
             </items>
          </Select>
 
@@ -70,6 +70,7 @@
          <CheckBox text="Arrow" selected="{/opts/Arrow}" />
          <CheckBox text="Box" selected="{/opts/Box}" />
          <CheckBox text="Text" selected="{/opts/Text}" />
+         <CheckBox text="Zero" selected="{/opts/Zero}" />
          <CheckBox text="Palette" selected="false" />
       </Panel>
       

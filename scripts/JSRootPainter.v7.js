@@ -1075,7 +1075,7 @@
                                   this.x, this.xmin, this.xmax, this.scale_xmin, this.scale_xmax);
       this.x_handle.invert_side = false;
       this.x_handle.lbls_both_sides = false;
-      this.x_handle.has_obstacle = false; // (this.options.Zscale > 0);
+      this.x_handle.has_obstacle = false;
 
       this.y_handle = new JSROOT.TAxisPainter(axisy, true);
       this.y_handle.SetDivId(this.divid, -1);
@@ -1934,7 +1934,7 @@
          if (this[kind+"_kind"] == "normal")
            menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
 
-         // if ((kind === "z") && (this.options.Zscale > 0))
+         // if ((kind === "z") && this.options.Zscale)
          //   if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
 
          if (faxis) {

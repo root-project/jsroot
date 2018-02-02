@@ -1565,11 +1565,11 @@
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: 0, Pie: 0, List: 0, Zscale: 0, Candle: "",
+              Spec: 0, Pie: 0, List: 0, Zscale: false, Candle: "",
               GLBox: 0, GLColor: 0, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
               AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
-              HighRes: 0, Zero: 1, Palette: 0, BaseLine: false,
+              HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
               minimum: -1111, maximum: -1111 });
@@ -1648,19 +1648,19 @@
 
       if (d.check('LEGO', true)) {
          this.Lego = 1;
-         if (d.part.indexOf('0') >= 0) this.Zero = 0;
+         if (d.part.indexOf('0') >= 0) this.Zero = false;
          if (d.part.indexOf('1') >= 0) this.Lego = 11;
          if (d.part.indexOf('2') >= 0) this.Lego = 12;
          if (d.part.indexOf('3') >= 0) this.Lego = 13;
          if (d.part.indexOf('4') >= 0) this.Lego = 14;
          check3dbox = d.part;
-         if (d.part.indexOf('Z') >= 0) this.Zscale = 1;
+         if (d.part.indexOf('Z') >= 0) this.Zscale = true;
       }
 
       if (d.check('SURF', true)) {
          this.Surf = d.partAsInt(10, 1);
          check3dbox = d.part;
-         if (d.part.indexOf('Z')>=0) this.Zscale = 1;
+         if (d.part.indexOf('Z')>=0) this.Zscale = true;
       }
 
       if (d.check('TF3', true)) check3dbox = d.part;
@@ -1672,7 +1672,7 @@
       if (d.check('CONT', true)) {
          if (hdim > 1) {
             this.Contour = 1;
-            if (d.part.indexOf('Z') >= 0) this.Zscale = 1;
+            if (d.part.indexOf('Z') >= 0) this.Zscale = true;
             if (d.part.indexOf('1') >= 0) this.Contour = 11; else
             if (d.part.indexOf('2') >= 0) this.Contour = 12; else
             if (d.part.indexOf('3') >= 0) this.Contour = 13; else
@@ -1702,9 +1702,8 @@
       if (d.check('COL', true)) {
          this.Color = true;
 
-         if (d.part.indexOf('0')>=0) this.Zero = 0; // do not draw zero values
-         if (d.part.indexOf('1')>=0) this.Zero = 0;
-         if (d.part.indexOf('Z')>=0) this.Zscale = 1;
+         if ((d.part.indexOf('0')>=0) || (d.part.indexOf('1')>=0)) this.Zero = false; // do not draw zero values
+         if (d.part.indexOf('Z')>=0) this.Zscale = true;
          if (d.part.indexOf('A')>=0) this.Axis = -1;
       }
 
@@ -1781,9 +1780,9 @@
 
       delete this.MarkStyle; // remove mark style if any
 
-      if (d.check('P0')) { this.Mark = true; this.Hist = 0; this.Zero = 1; }
-      if (d.check('P')) { this.Mark = true; this.Hist = 0; this.Zero = 0; }
-      if (d.check('Z')) this.Zscale = 1;
+      if (d.check('P0')) { this.Mark = true; this.Hist = 0; this.Zero = true; }
+      if (d.check('P')) { this.Mark = true; this.Hist = 0; this.Zero = false; }
+      if (d.check('Z')) this.Zscale = true;
       if (d.check('*')) { this.Mark = true; this.MarkStyle = 3; this.Hist = 0; }
       if (d.check('H')) this.Hist = 1;
 
@@ -1800,7 +1799,7 @@
             this.Error = 100;
       }
       if (d.check('9')) this.HighRes = 1;
-      if (d.check('0')) this.Zero = 0;
+      if (d.check('0')) this.Zero = false;
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim == 3) ||
@@ -2235,7 +2234,7 @@
       var fp = this.frame_painter();
       if (!fp) return;
 
-      fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, (this.options.Zscale > 0));
+      fp.DrawAxes(false, this.options.Axis < 0, this.options.AxisPos, this.options.Zscale);
       fp.DrawGrids();
    }
 
@@ -3095,13 +3094,8 @@
    }
 
    THistPainter.prototype.ToggleColz = function() {
-      if (this.options.Zscale > 0) {
-         this.options.Zscale = 0;
-      } else {
-         this.options.Zscale = 1;
-      }
-
-      this.DrawColorPalette(this.options.Zscale > 0, false, true);
+      this.options.Zscale = !this.options.Zscale;
+      this.DrawColorPalette(this.options.Zscale, false, true);
    }
 
    THistPainter.prototype.PrepareColorDraw = function(args) {
@@ -4429,7 +4423,7 @@
                   else
                      this.options.Lego = this.options.Color ? 12 : 1;
 
-                  this.options.Zero = 0; // do not show zeros by default
+                  this.options.Zero = false; // do not show zeros by default
                }
             }
 
@@ -5738,9 +5732,9 @@
          handle = this.DrawBinsBox(w, h);
       else if (this.options.Arrow)
          handle = this.DrawBinsArrow(w, h);
-      else if (this.options.Contour > 0)
+      else if (this.options.Contour)
          handle = this.DrawBinsContour(w, h);
-      else if (this.options.Candle.length > 0)
+      else if (this.options.Candle)
          handle = this.DrawCandle(w, h);
 
       if (this.options.Text)
@@ -6105,7 +6099,7 @@
       this.CreateXY();
 
       // draw new palette, resize frame if required
-      var pp = this.DrawColorPalette((this.options.Zscale > 0) && (this.options.Color || this.options.Contour), true);
+      var pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
       this.DrawAxes();
 
