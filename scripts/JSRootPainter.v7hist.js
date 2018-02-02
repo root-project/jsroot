@@ -1111,6 +1111,7 @@
           show_markers = options.Mark,
           show_line = (options.Line > 0),
           show_text = options.Text,
+          text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
           mpath = "", text_col, text_angle, text_size;
@@ -1218,27 +1219,16 @@
                      }
 
                      if (show_text) {
-                        var cont = bincont;
-                        if ((options.TextKind == "E") && this.IsTProfile() && histo.getBinEntries)
-                           cont = histo.getBinEntries(besti+1);
+                        var cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
 
-                        var posx = Math.round(mx1 + (mx2-mx1)*0.1),
-                            posy = Math.round(my-2-text_size),
-                            sizex = Math.round((mx2-mx1)*0.8),
-                            sizey = text_size,
-                            lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat),
-                            talign = 22;
+                        if (cont!==0) {
+                           var lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
 
-                        if (text_angle) {
-                           posx = midx;
-                           posy = Math.round(my - 2 - text_size/5);
-                           sizex = 0;
-                           sizey = 0;
-                           talign = 12;
+                           if (text_angle)
+                              this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+                           else
+                              this.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
                         }
-
-                        if (cont!==0)
-                           this.DrawText({ align: talign, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                      }
 
                      if (show_line && (path_line !== null))
@@ -2664,7 +2654,7 @@
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
       var text_col = this.get_color(histo.fMarkerColor),
-          text_angle = -1*this.options.TextKind,
+          text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
           profile2d = (this.options.TextKind == "E") &&

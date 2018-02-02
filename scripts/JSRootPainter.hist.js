@@ -3739,24 +3739,16 @@
                      }
 
                      if (show_text) {
-                        var cont = text_profile ? histo.fBinEntries[besti+1] : bincont,
-                            posx = Math.round(mx1 + (mx2-mx1)*0.1),
-                            posy = Math.round(my-2-text_size),
-                            sizex = Math.round((mx2-mx1)*0.8),
-                            sizey = text_size,
-                            lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat),
-                            talign = 22;
+                        var cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
 
-                        if (text_angle) {
-                           posx = midx;
-                           posy = Math.round(my - 2 - text_size/5);
-                           sizex = 0;
-                           sizey = 0;
-                           talign = 12;
+                        if (cont!==0) {
+                           var lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
+
+                           if (text_angle)
+                              this.DrawText({ align: 12, x: midx, y: Math.round(my - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+                           else
+                              this.DrawText({ align: 22, x: Math.round(mx1 + (mx2-mx1)*0.1), y: Math.round(my-2-text_size), width: Math.round((mx2-mx1)*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
                         }
-
-                        if (cont!==0)
-                           this.DrawText({ align: talign, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
                      }
 
                      if (show_line && (path_line !== null))
