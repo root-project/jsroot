@@ -1463,7 +1463,7 @@
       this.axes_drawn = false;
    }
 
-   TFramePainter.prototype.CleanDrawings = function() {
+   TFramePainter.prototype.CleanFrameDrawings = function() {
 
       // cleanup all 3D drawings if any
       if (typeof this.Create3DScene === 'function')
@@ -1492,11 +1492,6 @@
       this.xaxis = null;
       this.yaxis = null;
       this.zaxis = null;
-   }
-
-   TFramePainter.prototype.Cleanup = function() {
-
-      this.CleanDrawings();
 
       if (this.draw_g) {
          this.draw_g.selectAll("*").remove();
@@ -1505,6 +1500,7 @@
                     .on("wheel", null)
                     .on("contextmenu", null)
                     .property('interactive_set', null);
+         this.draw_g.remove();
       }
 
       this.draw_g = null;
@@ -1513,6 +1509,10 @@
          window.removeEventListener('keydown', this.keys_handler, false);
          this.keys_handler = null;
       }
+   }
+
+   TFramePainter.prototype.Cleanup = function() {
+      this.CleanFrameDrawings();
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -3528,7 +3528,7 @@
          this.painters = [];
          if (fp) {
             this.painters.push(fp);
-            fp.CleanDrawings();
+            fp.CleanFrameDrawings();
          }
          this.RemoveButtons();
          this.AddOnlineButtons();
