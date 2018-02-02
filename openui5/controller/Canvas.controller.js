@@ -170,11 +170,20 @@ sap.ui.define([
          if (p) p.SendWebsocket("RELOAD");
       },
 
+      isGedEditor : function() {
+         return this.getView().getModel().getProperty("/LeftArea") == "Ged";
+      },
+
       showGeEditor : function(new_state) {
-         var ged = this.showLeftArea(new_state ? "Ged" : ""),
-             p = this.getCanvasPainter();
-         p.RegisterForPadEvents((new_state && ged) ? ged.padEventsReceiver.bind(ged) : null);
-         if (new_state) p.SelectObjectPainter(p);
+         this.showLeftArea(new_state ? "Ged" : "");
+      },
+
+      cleanupIfGed : function() {
+         var ged = this.getLeftController("Ged");
+         if (!ged) return;
+         var p = this.getCanvasPainter();
+         p.RegisterForPadEvents(null);
+         ged.cleanupGed();
       },
 
       getLeftController : function(name) {
@@ -187,10 +196,6 @@ sap.ui.define([
          this.showGeEditor(!this.isGedEditor());
       },
 
-      isGedEditor : function() {
-         return this.getView().getModel().getProperty("/LeftArea") == "Ged";
-      },
-
       showPanelInLeftArea : function(panel_name, panel_handle, call_back) {
 
          var split = this.getView().byId("MainAreaSplitter");
@@ -198,7 +203,10 @@ sap.ui.define([
          if (!split || (curr === panel_name)) return JSROOT.CallBack(call_back, false);
 
          // first need to remove existing
-         if (curr) split.removeContentArea(split.getContentAreas()[0]);
+         if (curr) {
+            this.cleanupIfGed();
+            split.removeContentArea(split.getContentAreas()[0]);
+         }
 
          this.getView().getModel().setProperty("/LeftArea", panel_name);
          this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
@@ -236,7 +244,10 @@ sap.ui.define([
          if (!split || (curr === panel_name)) return JSROOT.CallBack(call_back, false);
 
          // first need to remove existing
-         if (curr) split.removeContentArea(split.getContentAreas()[0]);
+         if (curr) {
+            this.cleanupIfGed();
+            split.removeContentArea(split.getContentAreas()[0]);
+         }
 
          this.getView().getModel().setProperty("/LeftArea", panel_name);
          this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
@@ -256,6 +267,13 @@ sap.ui.define([
          });
 
          split.insertContentArea(oContent, 0);
+
+         if (panel_name === "Ged") {
+            var ged = oContent.getController(),
+                p = this.getCanvasPainter();
+            p.RegisterForPadEvents(ged.padEventsReceiver.bind(ged));
+            p.SelectObjectPainter(p);
+         }
 
          JSROOT.CallBack(call_back, true);
 
