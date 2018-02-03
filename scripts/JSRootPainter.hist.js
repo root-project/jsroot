@@ -1328,6 +1328,11 @@
       var painter = new JSROOT.TPavePainter(pave);
       painter.SetDivId(divid, 2, ((typeof opt == 'string') && (opt.indexOf("onpad:")==0)) ? opt.substr(6) : undefined);
 
+      if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
+         var tpainter = painter.FindPainterFor(null, "title");
+         if (tpainter && (tpainter !== painter)) tpainter.DeleteThis();
+      }
+
       switch (pave._typename) {
          case "TPaveLabel":
             painter.PaveDrawFunc = painter.DrawPaveLabel;

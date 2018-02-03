@@ -3088,7 +3088,6 @@
                   } else if (callback.canselect && (spent <= 600)) {
                      pthis.canv_painter().SelectObjectPainter(pthis);
                   }
-
                }
             });
 
@@ -3548,7 +3547,7 @@
 
       var painter = this.pad_painter();
       var painters = (painter === null) ? null : painter.painters;
-      if (painters === null) return null;
+      if (!painters) return null;
 
       for (var n = 0; n < painters.length; ++n) {
          var pobj = painters[n].GetObject();
@@ -3562,6 +3561,17 @@
       }
 
       return null;
+   }
+
+   /// remove painter from list of painters and cleanup all drawings
+   TObjectPainter.prototype.DeleteThis = function() {
+      var pp = this.pad_painter();
+      if (pp) {
+         var k = pp.painters.indexOf(this);
+         if (k>=0) pp.painters.splice(k,1);
+      }
+
+      this.Cleanup();
    }
 
    TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
