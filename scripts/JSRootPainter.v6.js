@@ -2700,23 +2700,23 @@
 
    /// method redirect call to pad events receiver
    TPadPainter.prototype.SelectObjectPainter = function(_painter) {
-      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
+      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter(),
+          pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
 
-      if (typeof canp.SelectActivePad == "function") {
-         var pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+      if (typeof canp.SelectActivePad == "function")
          canp.SelectActivePad(pp);
-      }
 
       if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", painter: _painter });
+         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter });
    }
 
    /// method redirect call to pad events receiver
    TPadPainter.prototype.InteractiveObjectRedraw = function(_painter) {
-      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
+      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter(),
+          pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
 
       if (canp && canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "redraw", padpainter: this, painter: _painter });
+         canp.pad_events_receiver({ what: "redraw", padpainter: pp, painter: _painter });
    }
 
    TPadPainter.prototype.DrawActiveBorder = function(svg_rect, is_active) {
