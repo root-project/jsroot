@@ -3331,7 +3331,7 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      if (indx===0) {
+      if (indx === -1) {
          // flag used to prevent immediate pad redraw during first draw
          this._doing_pad_draw = true;
          this._snaps_map = {}; // to control how much snaps are drawn
@@ -3340,7 +3340,7 @@
 
       while (true) {
 
-         if (objpainter && lst && lst[indx] && objpainter.snapid === undefined) {
+         if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
             // keep snap id in painter, will be used for the
             if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
@@ -3401,18 +3401,18 @@
 
          if (snap.fKind === 3) { // subpad
 
-            var subpad = snap.fPrimitives[0].fSnapshot;
+            var subpad = snap.fSnapshot;
 
             subpad.fPrimitives = null; // clear primitives, they just because of I/O
 
             var padpainter = new TPadPainter(subpad, false);
-            padpainter.DecodeOptions(snap.fPrimitives[0].fOption);
+            padpainter.DecodeOptions(snap.fOption);
             padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
             padpainter.snapid = snap.fObjectID;
 
             padpainter.CreatePadSvg();
 
-            if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 1) {
+            if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 0) {
                padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
                padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
 
@@ -3422,7 +3422,7 @@
 
             // we select current pad, where all drawing is performed
             var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
-            padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+            padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
                padpainter.CurrentPadName(prev_name);
                draw_callback(padpainter);
             });
@@ -3481,13 +3481,15 @@
 
       if (!snap || !snap.fPrimitives) return;
 
-      var first = snap.fPrimitives[0].fSnapshot;
+      this.is_active_pad = !!snap.fActive; // enforce boolean flag
+
+      var first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         this.snapid = snap.fPrimitives[0].fObjectID;
+         this.snapid = snap.fObjectID;
 
          this.draw_object = first;
          this.pad = first;
@@ -3512,7 +3514,7 @@
          if (!this.batch_mode)
             this.AddOnlineButtons();
 
-         this.DrawNextSnap(snap.fPrimitives, 0, call_back);
+         this.DrawNextSnap(snap.fPrimitives, -1, call_back);
          return;
       }
 
@@ -3532,7 +3534,7 @@
          var sub = this.painters[k];
          if (sub.snapid===undefined) continue; // look only for painters with snapid
 
-         for (var i=1;i<snap.fPrimitives.length;++i)
+         for (var i=9;i<snap.fPrimitives.length;++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
@@ -3565,7 +3567,7 @@
       var padpainter = this,
           prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
-      padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+      padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
          padpainter.CurrentPadName(prev_name);
          JSROOT.CallBack(call_back, padpainter);
       });
@@ -4399,6 +4401,9 @@
       if (this.snapid === undefined) return; // only interactive canvas
 
       if (pad_painter.is_active_pad) return;
+
+      if (this._websocket && (pad_painter.snapid !== undefined))
+         this._websocket.Send("ACTIVEPAD:" + pad_painter.snapid);
 
       this.ForEachPainterInPad(function(pp) {
          pp.DrawActiveBorder(null, pp === pad_painter);
