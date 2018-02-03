@@ -2702,8 +2702,13 @@
    TPadPainter.prototype.SelectObjectPainter = function(_painter) {
       var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter();
 
+      if (typeof canp.SelectActivePad == "function") {
+         var pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+         canp.SelectActivePad(pp);
+      }
+
       if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", padpainter: this, painter: _painter });
+         canp.pad_events_receiver({ what: "select", painter: _painter });
    }
 
    /// method redirect call to pad events receiver
@@ -2712,6 +2717,25 @@
 
       if (canp && canp.pad_events_receiver)
          canp.pad_events_receiver({ what: "redraw", padpainter: this, painter: _painter });
+   }
+
+   TPadPainter.prototype.DrawActiveBorder = function(svg_rect, is_active) {
+      if (is_active !== undefined) {
+         if (this.is_active_pad === is_active) return;
+         this.is_active_pad = is_active;
+      }
+
+      if (this.is_active_pad === undefined) return;
+
+      if (!svg_rect)
+         svg_rect = this.iscan ? this.svg_canvas().select(".canvas_fillrect") :
+                       this.svg_pad(this.this_pad_name).select(".root_pad_border");
+
+      var lineatt = this.is_active_pad ? new JSROOT.TAttLineHandler({ style: 1, width: 1, color: "red" }) : this.lineatt;
+
+      if (!lineatt) lineatt = new JSROOT.TAttLineHandler({ color: "none" });
+
+      svg_rect.call(lineatt.func);
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -2814,10 +2838,12 @@
          .property('draw_width', rect.width)
          .property('draw_height', rect.height);
 
-      svg.select(".canvas_fillrect")
+      var fill_rect = svg.select(".canvas_fillrect")
          .attr("width", rect.width)
          .attr("height", rect.height)
          .call(this.fillatt.func);
+
+      this.DrawActiveBorder(fill_rect);
 
       this.svg_layer("btns_layer")
           .attr("transform","translate(2," + (rect.height - this.ButtonSize(1.25)) + ")")
@@ -2923,6 +2949,8 @@
               .attr("height", h)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
+
+      this.DrawActiveBorder(svg_rect);
 
       if (svg_pad.property('can3d') === 1)
          // special case of 3D canvas overlay
@@ -4365,6 +4393,16 @@
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
       if (this._websocket)
          this._websocket.Send("RANGES6:" + this.GetAllRanges());
+   }
+
+   TCanvasPainter.prototype.SelectActivePad = function(pad_painter) {
+      if (this.snapid === undefined) return; // only interactive canvas
+
+      if (pad_painter.is_active_pad) return;
+
+      this.ForEachPainterInPad(function(pp) {
+         pp.DrawActiveBorder(null, pp === pad_painter);
+      }, "pads");
    }
 
    function drawCanvas(divid, can, opt) {
