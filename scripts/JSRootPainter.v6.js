@@ -3592,7 +3592,9 @@
       if (is_top) arg = [];
 
       if (this.snapid) {
-         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(), bits: 0, primitives: [],
+         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(),
+                  active: !!this.is_active_pad,
+                  bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky };
