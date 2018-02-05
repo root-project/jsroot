@@ -2709,8 +2709,6 @@
       if (pos && !istoppad)
          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
 
-      if (pos) console.log('ClickPad at pos', pos);
-
       if (typeof canp.SelectActivePad == "function")
          canp.SelectActivePad(pp);
 
@@ -4413,7 +4411,7 @@
       var arg = null, ischanged = false;
 
       if ((pad_painter.snapid !== undefined) && this._websocket)
-         arg = { _typename: "TWebPadClicked", padid: pad_painter.snapid.toString(), objid: "null", x: -1, y: -1 };
+         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "null", x: -1, y: -1 };
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
