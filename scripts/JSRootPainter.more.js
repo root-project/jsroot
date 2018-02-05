@@ -1164,7 +1164,8 @@
           height = this.frame_height(),
           pmain = this.main_painter(),
           painter = this,
-          findbin = null, best_dist2 = 1e10, best = null;
+          findbin = null, best_dist2 = 1e10, best = null,
+          msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
       this.draw_g.selectAll('.grpoint').each(function() {
          var d = d3.select(this).datum();
@@ -1176,12 +1177,11 @@
          var rect = null;
 
          if (d.error || d.rect || d.marker) {
-            rect = { x1: Math.min(-painter.error_size, d.grx0),
-                     x2: Math.max(painter.error_size, d.grx2),
-                     y1: Math.min(-painter.error_size, d.gry2),
-                     y2: Math.max(painter.error_size, d.gry0) };
-         } else
-         if (d.bar) {
+            rect = { x1: Math.min(-painter.error_size, d.grx0, -msize),
+                     x2: Math.max(painter.error_size, d.grx2, msize),
+                     y1: Math.min(-painter.error_size, d.gry2, -msize),
+                     y2: Math.max(painter.error_size, d.gry0, msize) };
+         } else if (d.bar) {
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
              if (painter.options.Bar===1) {
@@ -1192,8 +1192,8 @@
           } else {
              rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
           }
-          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2);
-          var matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
+          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
+              matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
 
           if (matchx && (matchy || (pnt.nproc > 1))) {
              best_dist2 = dist2;
