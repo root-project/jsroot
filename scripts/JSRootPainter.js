@@ -2804,7 +2804,7 @@
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
       while (!sel.empty() && !sel.classed('root_canvas')) {
          var cl = sel.attr("class");
-         if (cl && ((cl.indexOf("root_frame")>=0) || (cl.indexOf("__root_pad")>=0))) {
+         if (cl && ((cl.indexOf("root_frame")>=0) || (cl.indexOf("__root_pad_")>=0))) {
             pos.x += sel.property("draw_x") || 0;
             pos.y += sel.property("draw_y") || 0;
          }

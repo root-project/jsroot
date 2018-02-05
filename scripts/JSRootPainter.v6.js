@@ -1803,7 +1803,9 @@
       //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
       //      else console.log('Click frame', pnt);
 
-      pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
+      var pos = { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) };
+
+      pp.SelectObjectPainter(exact ? exact.painter : this, pos);
    }
 
    TFramePainter.prototype.AddKeysHandler = function() {
@@ -2699,15 +2701,21 @@
    }
 
    /// method redirect call to pad events receiver
-   TPadPainter.prototype.SelectObjectPainter = function(_painter) {
-      var canp = (this.iscan || !this.has_canvas) ? this : this.canv_painter(),
+   TPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
+      var istoppad = (this.iscan || !this.has_canvas),
+          canp = istoppad ? this : this.canv_painter(),
           pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+
+      if (pos && !istoppad)
+         this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
+
+      if (pos) console.log('ClickPad at pos', pos);
 
       if (typeof canp.SelectActivePad == "function")
          canp.SelectActivePad(pp);
 
       if (canp.pad_events_receiver)
-         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter });
+         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
    }
 
    /// method redirect call to pad events receiver
@@ -4399,17 +4407,34 @@
          this._websocket.Send("RANGES6:" + this.GetAllRanges());
    }
 
-   TCanvasPainter.prototype.SelectActivePad = function(pad_painter) {
-      if (this.snapid === undefined) return; // only interactive canvas
+   TCanvasPainter.prototype.SelectActivePad = function(pad_painter, obj_painter, click_pos) {
+      if ((this.snapid === undefined) || !pad_painter) return; // only interactive canvas
 
-      if (pad_painter.is_active_pad) return;
+      var arg = null, ischanged = false;
 
-      if (this._websocket && (pad_painter.snapid !== undefined))
-         this._websocket.Send("ACTIVEPAD:" + pad_painter.snapid);
+      if ((pad_painter.snapid !== undefined) && this._websocket)
+         arg = { _typename: "TWebPadClicked", padid: pad_painter.snapid.toString(), objid: "null", x: -1, y: -1 };
 
-      this.ForEachPainterInPad(function(pp) {
-         pp.DrawActiveBorder(null, pp === pad_painter);
-      }, "pads");
+      if (!pad_painter.is_active_pad) {
+         ischanged = true;
+         this.ForEachPainterInPad(function(pp) {
+            pp.DrawActiveBorder(null, pp === pad_painter);
+         }, "pads");
+      }
+
+      if (obj_painter && obj_painter.snapid && arg) {
+         ischanged = true;
+         arg.objid = obj_painter.snapid.toString;
+      }
+
+      if (click_pos && arg) {
+         ischanged = true;
+         arg.x = Math.round(click_pos.x || 0);
+         arg.y = Math.round(click_pos.y || 0);
+      }
+
+      if (this._websocket && arg && ischanged)
+         this._websocket.Send("PADCLICKED:" + JSROOT.toJSON(arg));
    }
 
    function drawCanvas(divid, can, opt) {
