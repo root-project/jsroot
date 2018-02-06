@@ -3607,14 +3607,12 @@
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky };
 
-         if (this.iscan) {
-            if (this.HasEventStatus()) elem.bits |= JSROOT.TCanvasStatusBits.kShowEventStatus;
-            if (this.HasGed()) elem.bits |= JSROOT.TCanvasStatusBits.kShowEditor;
-            if (this.IsTooltipAllowed()) elem.bits |= JSROOT.TCanvasStatusBits.kShowToolTips;
-         }
+         if (this.iscan) elem.bits = this.GetStatusBits();
 
          if (this.GetPadRanges(elem))
             arg.push(elem);
+         else
+            console.log('fail to get ranges for pad ' +  this.pad.fName);
       }
 
       for (var k=0;k<this.painters.length;++k) {
@@ -3630,17 +3628,20 @@
 
    TPadPainter.prototype.GetPadRanges = function(r) {
       // function returns actual ranges in the pad, which can be applied to the server
+
+      if (!r) return false;
+
       var main = this.frame_painter_ref,
           p = this.svg_pad(this.this_pad_name);
 
-      if (!main || !r) return false;
+      r.ranges = main ? true : false; // indicate that ranges are assigned
 
-      r.ux1 = r.px1 = main.scale_xmin;
-      r.uy1 = r.py1 = main.scale_ymin;
-      r.ux2 = r.px2 = main.scale_xmax;
-      r.uy2 = r.py2 = main.scale_ymax;
+      r.ux1 = r.px1 = main ? main.scale_xmin : 0; // need to initialize for JSON reader
+      r.uy1 = r.py1 = main ? main.scale_ymin : 0;
+      r.ux2 = r.px2 = main ? main.scale_xmax : 0;
+      r.uy2 = r.py2 = main ? main.scale_ymax : 0;
 
-      if (p.empty()) return true;
+      if (!main || p.empty()) return true;
 
       // calculate user range for full pad
       var same = function(x) { return x; },
@@ -4293,6 +4294,16 @@
          var that = msg.substr(5),
              on = that[that.length-1] == '1';
          this.ShowSection(that.substr(0,that.length-2), on);
+      } else if (msg.substr(0,5) == "EDIT:") {
+         var obj_painter = this.FindSnap(msg.substr(5));
+         console.log('GET EDIT ' + msg.substr(5) +  ' found ' + !!obj_painter);
+         if (obj_painter) {
+            this.ShowSection("Editor", true);
+
+            if (this.pad_events_receiver)
+               this.pad_events_receiver({ what: "select", padpainter: this, painter: obj_painter });
+         }
+
       } else {
          console.log("unrecognized msg " + msg);
       }
@@ -4312,10 +4323,11 @@
 
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
       if (this.use_openui)
-         return this.openuiToggleEventStatus(state);
+         this.openuiToggleEventStatus(state);
+      else if (this.brlayout)
+         this.brlayout.CreateStatusLine(23, state);
 
-      if (this.brlayout)
-         this.brlayout.CreateStatusLine(25, state);
+      this.ProcessChanges("sbits", this);
    }
 
    TCanvasPainter.prototype.HasGed = function() {
@@ -4328,9 +4340,10 @@
    TCanvasPainter.prototype.RemoveGed = function() {
       if (typeof this.CleanupGed == 'function')
          this.CleanupGed();
-
       if (this.brlayout)
          this.brlayout.DeleteContent();
+
+      this.ProcessChanges("sbits", this);
    }
 
 
@@ -4370,6 +4383,7 @@
 
       JSROOT.AssertPrerequisites('openui5', function() {
          pthis.ShowGed(objpainter);
+         pthis.ProcessChanges("sbits", pthis);
       });
    }
 
@@ -4401,10 +4415,13 @@
    }
 
    /// method informs that something was changed in the canvas
-   /// used ti update information on the server (when used for webgui)
+   /// used to update information on the server (when used with web6gui)
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
-      if (this._websocket)
-         this._websocket.Send("RANGES6:" + this.GetAllRanges());
+      if (!this._websocket) return;
+
+      var msg = (kind == "sbits") ? "STATUSBITS:" + this.GetStatusBits() : "RANGES6:" + this.GetAllRanges();
+
+      this._websocket.Send(msg);
    }
 
    TCanvasPainter.prototype.SelectActivePad = function(pad_painter, obj_painter, click_pos) {
@@ -4437,6 +4454,16 @@
       if (this._websocket && arg && ischanged)
          this._websocket.Send("PADCLICKED:" + JSROOT.toJSON(arg));
    }
+
+   TCanvasPainter.prototype.GetStatusBits = function() {
+      var bits = 0;
+      if (this.HasEventStatus()) bits |= JSROOT.TCanvasStatusBits.kShowEventStatus;
+      if (this.HasGed()) bits |= JSROOT.TCanvasStatusBits.kShowEditor;
+      if (this.IsTooltipAllowed()) bits |= JSROOT.TCanvasStatusBits.kShowToolTips;
+      if (this.use_openui) bits |= JSROOT.TCanvasStatusBits.kMenuBar;
+      return bits;
+   }
+
 
    function drawCanvas(divid, can, opt) {
       var nocanvas = (can===null);

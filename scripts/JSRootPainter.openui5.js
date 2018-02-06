@@ -367,6 +367,9 @@
       if (main) main.getController().showGeEditor(true);
 
       this.SelectObjectPainter(painter);
+
+      if (typeof this.ProcessChanges == 'function')
+         this.ProcessChanges("sbits", this);
    }
 
    JSROOT.TCanvasPainter.prototype.ActivateFitPanel = function(painter) {
