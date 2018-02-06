@@ -2710,7 +2710,7 @@
          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
 
       if (typeof canp.SelectActivePad == "function")
-         canp.SelectActivePad(pp);
+         canp.SelectActivePad(pp, _painter, pos);
 
       if (canp.pad_events_receiver)
          canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
@@ -4411,7 +4411,7 @@
       var arg = null, ischanged = false;
 
       if ((pad_painter.snapid !== undefined) && this._websocket)
-         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "null", x: -1, y: -1 };
+         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "", x: -1, y: -1 };
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
@@ -4420,9 +4420,9 @@
          }, "pads");
       }
 
-      if (obj_painter && obj_painter.snapid && arg) {
+      if (obj_painter && (obj_painter.snapid!==undefined) && arg) {
          ischanged = true;
-         arg.objid = obj_painter.snapid.toString;
+         arg.objid = obj_painter.snapid.toString();
       }
 
       if (click_pos && arg) {
