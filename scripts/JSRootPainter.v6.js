@@ -2045,7 +2045,10 @@
       var kind = "xyz";
       if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
       if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
-      this.Unzoom(kind);
+      if (this.Unzoom(kind)) return;
+
+      var pp = this.pad_painter();
+      if (pp) pp.SelectObjectPainter(pp, { x: m[0]+this.frame_x(), y: m[1]+this.frame_y(), dbl: true });
    }
 
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
@@ -2168,7 +2171,6 @@
          this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
 
       return changed;
-
    }
 
    TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
@@ -4411,7 +4413,7 @@
       var arg = null, ischanged = false;
 
       if ((pad_painter.snapid !== undefined) && this._websocket)
-         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "", x: -1, y: -1 };
+         arg = { _typename: "TWebPadClick", padid: pad_painter.snapid.toString(), objid: "", x: -1, y: -1, dbl: false };
 
       if (!pad_painter.is_active_pad) {
          ischanged = true;
@@ -4429,6 +4431,7 @@
          ischanged = true;
          arg.x = Math.round(click_pos.x || 0);
          arg.y = Math.round(click_pos.y || 0);
+         if (click_pos.dbl) arg.dbl = true;
       }
 
       if (this._websocket && arg && ischanged)
