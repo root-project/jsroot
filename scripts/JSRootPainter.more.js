@@ -814,8 +814,7 @@
       if (d.check('NOOPT')) res.NoOpt = 1;
       if (d.check('L')) res.Line = 1;
       if (d.check('F')) res.Fill = 1;
-      if (d.check('IA')) res.Axis = "A"; else
-      if (d.check('A')) res.Axis = "AXIS";
+      if (d.check('A')) res.Axis = d.check("I") ? "A" : "AXIS"; // I means invisible axis
       if (d.check('X+')) res.Axis += "X+";
       if (d.check('Y+')) res.Axis += "Y+";
       if (d.check('RX')) res.Axis += "RX";

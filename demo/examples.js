@@ -143,6 +143,7 @@ examples_main = {
      { opt: "B" },
      { opt: "B1" },
      { opt: "AX+Y+L", title: "move X/Y labels on other side" },
+     { opt: "IA", title: "hide (Invisible) axes drawing " },
      { name: "RX", opt: "ARXL", title: "reverse X axis" },
      { name: "RY", opt: "ARYL", title: "reverse Y axis" },
      { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title: "several canvas from TGraph documentation page" },
