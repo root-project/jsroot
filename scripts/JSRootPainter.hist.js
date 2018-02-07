@@ -1564,10 +1564,10 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: 0, RevY: 0, Bar: false, BarStyle: 0, Curve: 0, Hist: true,
+            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: 0, Hist: true,
               Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: 1,
+              Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
@@ -1634,7 +1634,7 @@
       if (d.check('Y+')) this.AxisPos += 1;
 
       if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
-      if (d.check('SAME')) { this.Same = 1; this.Func = 0; }
+      if (d.check('SAME')) { this.Same = 1; this.Func = false; }
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
@@ -1708,7 +1708,7 @@
       }
 
       if (d.check('CHAR')) this.Char = 1;
-      if (d.check('FUNC')) { this.Func = 2; this.Hist = false; }
+      if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
       if (d.check('AXIS')) this.Axis = 1;
       if (d.check('AXIG')) this.Axis = 2;
 
@@ -1765,15 +1765,15 @@
       if (d.check('F')) { this.Fill = true; this.need_fillcol = true; }
 
       if (d.check('A')) this.Axis = -1;
-      if (this.Axis && d.check("RX")) this.RevX = 1;
-      if (this.Axis && d.check("RY")) this.RevY = 1;
+      if (this.Axis && d.check("RX")) this.RevX = true;
+      if (this.Axis && d.check("RY")) this.RevY = true;
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
       if (d.check('C')) { this.Curve = 1; this.Hist = false; }
       if (d.check('][')) { this.Off = 1; this.Hist = true; }
 
-      if (d.check('HIST')) { this.Hist = true; this.Func = 0; this.Error = false; }
+      if (d.check('HIST')) { this.Hist = true; this.Func = false; this.Error = false; }
 
       this.Bar = (this.BarStyle > 0);
 
@@ -2222,8 +2222,8 @@
                     check_pad_range: this.check_pad_range,
                     create_canvas: this.create_canvas,
                     swap_xy: (this.options.BarStyle >= 20),
-                    reverse_x: (this.options.RevX > 0),
-                    reverse_y: (this.options.RevY > 0),
+                    reverse_x: this.options.RevX,
+                    reverse_y: this.options.RevY,
                     Proj: this.options.Proj });
       delete this.check_pad_range;
    }
@@ -2498,8 +2498,7 @@
       if (func_painter === null) {
          if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
             do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
-         } else
-         if (func._typename === 'TF1') {
+         } else if (func._typename === 'TF1') {
             do_draw = !func.TestBit(JSROOT.BIT(9));
          } else
             do_draw = (func._typename !== 'TPaletteAxis');

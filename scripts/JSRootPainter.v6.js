@@ -4292,7 +4292,7 @@
          this.DrawProjection(kind, hist);
       } else if (msg.substr(0,5)=='SHOW:') {
          var that = msg.substr(5),
-             on = that[that.length-1] == '1';
+             on = (that[that.length-1] == '1');
          this.ShowSection(that.substr(0,that.length-2), on);
       } else if (msg.substr(0,5) == "EDIT:") {
          var obj_painter = this.FindSnap(msg.substr(5));
@@ -4390,6 +4390,8 @@
    TCanvasPainter.prototype.ShowSection = function(that, on) {
       if (this.use_openui)
          return this.fullShowSection(that, on);
+
+      console.log('Show section ' + that + ' flag = ' + on);
 
       switch(that) {
          case "Menu": break;
