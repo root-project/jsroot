@@ -1500,8 +1500,8 @@
 
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
-      } else
-      if (this.options.Error || this.options.Mark || this.options.Line)  {
+
+      } else if (this.options.Error || this.options.Mark || this.options.Line)  {
 
          show_rect = true;
 

@@ -1564,7 +1564,7 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: 0, Hist: true,
+            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false, Hist: true,
               Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
               Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: true,
@@ -1770,7 +1770,7 @@
 
       if (d.check('B1')) { this.BarStyle = 1; this.BaseLine = 0; this.Hist = false; this.need_fillcol = true; }
       if (d.check('B')) { this.BarStyle = 1; this.Hist = false; this.need_fillcol = true; }
-      if (d.check('C')) { this.Curve = 1; this.Hist = false; }
+      if (d.check('C')) { this.Curve = true; this.Hist = false; }
       if (d.check('][')) { this.Off = 1; this.Hist = true; }
 
       if (d.check('HIST')) { this.Hist = true; this.Func = true; this.Error = false; }
@@ -3645,7 +3645,7 @@
           exclude_zero = !this.options.Zero,
           show_errors = this.options.Error,
           show_markers = this.options.Mark,
-          show_line = this.options.Line,
+          show_line = this.options.Line || this.options.Curve,
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
@@ -4027,8 +4027,8 @@
 
          if (!pnt.touch && (pnt.nproc === 1))
             if ((pnt_y<gry1) || (pnt_y>gry2)) findbin = null;
-      } else
-      if (this.options.Error || this.options.Mark || this.options.Line)  {
+
+      } else if (this.options.Error || this.options.Mark || this.options.Line || this.options.Curve)  {
 
          show_rect = true;
 
