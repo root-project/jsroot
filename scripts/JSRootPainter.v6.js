@@ -3605,7 +3605,10 @@
                   bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
-                  tickx: this.pad.fTickx, ticky: this.pad.fTicky };
+                  tickx: this.pad.fTickx, ticky: this.pad.fTicky,
+                  mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
+                  mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin
+         };
 
          if (this.iscan) elem.bits = this.GetStatusBits();
 
