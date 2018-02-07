@@ -1773,7 +1773,7 @@
       if (d.check('C')) { this.Curve = 1; this.Hist = false; }
       if (d.check('][')) { this.Off = 1; this.Hist = true; }
 
-      if (d.check('HIST')) { this.Hist = true; this.Func = false; this.Error = false; }
+      if (d.check('HIST')) { this.Hist = true; this.Func = true; this.Error = false; }
 
       this.Bar = (this.BarStyle > 0);
 
