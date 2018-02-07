@@ -6347,7 +6347,7 @@
          hopt = hlst.opt[rindx] || hist.fOption || opt;
          if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
          if (this.draw_errors && !hopt) hopt = "E";
-         hopt += " same";
+         hopt += " same nostat";
 
          // if there is auto colors assignment, try to provide it
          if (this._pfc || this._plc || this._pmc) {
