@@ -4028,12 +4028,22 @@
       return this.has_event_status;
    }
 
-   TCanvasPainter.prototype.GetNewColor = function(RGBa) {
 
-       var col = "rgb(" + Math.round(RGBa.fAttr.fRedOrPalettePos*255) + "," +
-                          Math.round(RGBa.fAttr.fGreen*255) + "," +
-                          Math.round(RGBa.fAttr.fBlue*255) + ")";
-       return col;
+////////////////////////////////////////////////////////////////////////////////
+/// Return the color in a string ready for SVG from the value found in `RGBa`
+/// If `fKind` == 0 the color `RGBa` contains the Red Green Blue and alpha values.
+/// Otherwise the `fRedOrPalettePos` member of RGBa contains the color index in
+/// the current palette
+
+   TCanvasPainter.prototype.GetNewColor = function(RGBa) {
+      var col;
+      if (!RGBa.fAttr.fKind) {
+         col = "rgb(" + Math.round(RGBa.fAttr.fRedOrPalettePos*255) + "," +
+                        Math.round(RGBa.fAttr.fGreen*255) + "," +
+                        Math.round(RGBa.fAttr.fBlue*255) + ")";
+      } else {
+      }
+      return col;
    }
 
    function drawCanvas(divid, can, opt) {
