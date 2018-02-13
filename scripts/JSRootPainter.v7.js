@@ -4028,16 +4028,11 @@
       return this.has_event_status;
    }
 
-   TCanvasPainter.prototype.GetNewColor = function(indx) {
-       var obj = this.GetObject();
-       if (!obj || !obj.fColorTable || !obj.fColorTable.fTable) return null;
+   TCanvasPainter.prototype.GetNewColor = function(RGBa) {
 
-       var item = obj.fColorTable.fTable[indx];
-       if (!item || !item.fVal) return null;
-
-       var col = "rgb(" + Math.round(item.fVal.fRedOrPalettePos*255) + "," +
-                          Math.round(item.fVal.fGreen*255) + "," +
-                          Math.round(item.fVal.fBlue*255) + ")";
+       var col = "rgb(" + Math.round(RGBa.fAttr.fRedOrPalettePos*255) + "," +
+                          Math.round(RGBa.fAttr.fGreen*255) + "," +
+                          Math.round(RGBa.fAttr.fBlue*255) + ")";
        return col;
    }
 

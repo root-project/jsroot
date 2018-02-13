@@ -41,7 +41,7 @@
       var text = drawable && drawable.fText ? drawable.fText.fWeakForIO : null,
           opts = drawable.fOpts;
 
-      var fillcolor = pp.GetNewColor(opts.fFill.fColor.fIdx);
+      var fillcolor = pp.GetNewColor(opts.fFillColor);
 
       this.CreateG(use_frame);
 

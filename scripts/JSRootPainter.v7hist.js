@@ -171,12 +171,13 @@
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 */
-      var obj = this.GetObject().fOpts.fHistAttrs,
-          pp = this.canv_painter();
+
+      var opts = this.GetObject().fOpts,
+          pp   = this.canv_painter();
 
       this.createAttFill( { pattern: 0, color: 0 });
 
-      var lcol = pp.GetNewColor(obj.fLine.fColor.fIdx);
+      var lcol = pp.GetNewColor(opts.fLineColor);
 
       this.createAttLine({ color: lcol || 'black' });
    }
