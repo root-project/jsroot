@@ -2549,8 +2549,25 @@
       });
    }
 
-   TPadPainter.prototype.SelectObjectPainter = function(painter) {
+   TPadPainter.prototype.RegisterForPadEvents = function(receiver) {
+      this.pad_events_receiver = receiver;
+   }
+
+   TPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
       // dummy function, redefined in the TCanvasPainter
+
+      var istoppad = (this.iscan || !this.has_canvas),
+          canp = istoppad ? this : this.canv_painter(),
+          pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+
+      if (pos && !istoppad)
+          this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
+
+      if (typeof canp.SelectActivePad == "function")
+          canp.SelectActivePad(pp, _painter, pos);
+
+      if (canp.pad_events_receiver)
+         canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
@@ -3868,6 +3885,8 @@
    }
 
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
+      console.log("GET MSG " + msg.substr(0,30));
+
       if (msg == "CLOSE") {
          this.OnWebsocketClosed();
          this.CloseWebsocket(true);

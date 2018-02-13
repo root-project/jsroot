@@ -1519,6 +1519,8 @@
          if (typeof this.onclose == 'function') this.onclose();
          return;
       } else {
+         // console.log("longpoll recv " + res.length);
+
          if ((typeof this.onmessage==='function') && res)
             this.onmessage({ data: res });
       }
@@ -1683,7 +1685,7 @@
 
    WebWindowHandle.prototype.Connect = function(href) {
       // create websocket for current object (canvas)
-      // via websocket one recieved many extra information
+      // via websocket one received many extra information
 
       this.Close();
 

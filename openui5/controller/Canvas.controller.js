@@ -179,11 +179,10 @@ sap.ui.define([
       },
 
       cleanupIfGed : function() {
-         var ged = this.getLeftController("Ged");
-         if (!ged) return;
-         var p = this.getCanvasPainter();
-         p.RegisterForPadEvents(null);
-         ged.cleanupGed();
+         var ged = this.getLeftController("Ged"),
+             p = this.getCanvasPainter();
+         if (ged) ged.cleanupGed();
+         if (p) p.RegisterForPadEvents(null);
       },
 
       getLeftController : function(name) {
@@ -269,10 +268,11 @@ sap.ui.define([
          split.insertContentArea(oContent, 0);
 
          if (panel_name === "Ged") {
-            var ged = oContent.getController(),
-                p = this.getCanvasPainter();
-            p.RegisterForPadEvents(ged.padEventsReceiver.bind(ged));
-            p.SelectObjectPainter(p);
+            var ged = oContent.getController(), p = this.getCanvasPainter();
+            if (p && ged && (typeof p.RegisterForPadEvents == "function")) {
+               p.RegisterForPadEvents(ged.padEventsReceiver.bind(ged));
+               p.SelectObjectPainter(p);
+            }
          }
 
          JSROOT.CallBack(call_back, true);
