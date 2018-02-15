@@ -2047,15 +2047,15 @@
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawGeoTrack(obj, itemname);
       } else
-	 if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
+      if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawEveTrack(obj, itemname);
       } else
-         if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
+      if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawHit(obj, itemname);
       } else
-	 if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
+      if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawExtraShape(obj, itemname);
       }
