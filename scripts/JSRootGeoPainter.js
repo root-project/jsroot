@@ -2051,7 +2051,7 @@
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawEveTrack(obj, itemname);
       } else
-      if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
+         if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawHit(obj, itemname);
       } else
@@ -3107,7 +3107,7 @@
       if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
       } else
-	 if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
+      if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
          shape = obj.fShape;
       } else
       if (obj._typename === 'TGeoManager') {
@@ -3130,7 +3130,7 @@
          obj = JSROOT.extend(JSROOT.Create("TEveGeoShapeExtract"),
                    { fTrans: null, fShape: shape, fRGBA: [0, 1, 0, 1], fElements: null, fRnrSelf: true });
 
-       if (!obj) return null;
+      if (!obj) return null;
 
       var painter = new TGeoPainter(obj, is_manager);
 
@@ -3248,7 +3248,7 @@
       if (obj._typename.indexOf("TGeoVolume")===0) {
          volume = obj;
       } else
-	 if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::TEveGeoShapeExtract") ) {
+      if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::TEveGeoShapeExtract") ) {
          iseve = true;
          shape = obj.fShape;
          subnodes = obj.fElements ? obj.fElements.arr : null;
@@ -3364,7 +3364,7 @@
       if (!item._geoobj) return false;
 
       var obj = item._geoobj, vol = item._volume,
-      iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::TEveGeoShapeExtract'));
+          iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::TEveGeoShapeExtract'));
 
       if (!vol && !iseve) return false;
 
@@ -3490,7 +3490,7 @@
          return false; // no need to update icon - we did it ourself
       }
 
-       if (hitem._geoobj && (( hitem._geoobj._typename == "TEveGeoShapeExtract") || ( hitem._geoobj._typename == "ROOT::Experimental::TEveGeoShapeExtract"))) {
+      if (hitem._geoobj && (( hitem._geoobj._typename == "TEveGeoShapeExtract") || ( hitem._geoobj._typename == "ROOT::Experimental::TEveGeoShapeExtract"))) {
          hitem._geoobj.fRnrSelf = !hitem._geoobj.fRnrSelf;
 
          JSROOT.GEO.updateBrowserIcons(hitem._geoobj, hpainter);
