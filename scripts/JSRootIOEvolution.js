@@ -173,7 +173,8 @@
 
          if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == 8) { fmt = "new"; off = 2; } else
          if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == 8) { fmt = "old"; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA";
+         if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA"; else
+         if (getChar(curr) == 'L' && getChar(curr+1) == '4') { fmt = "LZ4"; off = 0; HDRSIZE = 17; }
 
 /*
          if (fmt == "LZMA") {
@@ -206,24 +207,22 @@
 */
 
          /*   C H E C K   H E A D E R   */
-         if ((fmt !== "new") && (fmt !== "old")) {
-
-            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " zlib format is not supported!");
+         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
+            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " format is not supported!");
             return null;
          }
 
          var srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
-
-//         for(var n=0;n<20;++n)
-//            console.log('codes',n,getCode(curr+n));
-//         console.log('srcsize', srcsize);
 
          var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
 
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         var reslen = JSROOT.ZIP.inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+         var tgt8arr = new Uint8Array(tgtbuf, fullres);
+
+         var reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr)
+                                      : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
          if (reslen<=0) break;
 
          fullres += reslen;
