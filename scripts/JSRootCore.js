@@ -1027,9 +1027,9 @@
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0))
          if (jsroot.sources.indexOf("io")<0) {
             mainfiles += "&&&scripts/rawinflate.min.js;" +
-                         "&&&scripts/lzma-d.js;" +
+            //             "&&&scripts/lzma-d.js;" +
                          "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-            modules.push('rawinflate','lzma-d','JSRootIOEvolution');
+            modules.push('rawinflate', /* 'lzma-d',*/ 'JSRootIOEvolution');
          }
 
       if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0))

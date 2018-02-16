@@ -863,8 +863,6 @@ JSROOT.LZMA = (function () {
     };
 }());
 
-console.log('loading LZMA');
-
 return JSROOT;
 
 }));
