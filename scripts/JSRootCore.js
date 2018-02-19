@@ -18,7 +18,6 @@
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate.min',
-            'lzma-d'               : dir+'lzma-d',
             'MathJax'              : 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
             'saveSvgAsPng'         : dir+'saveSvgAsPng.min',
             'dat.gui'              : dir+'dat.gui.min',
@@ -100,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 16/02/2018";
+   JSROOT.version = "dev 19/02/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1027,9 +1026,8 @@
       if ((kind.indexOf('io;')>=0) || (kind.indexOf('tree;')>=0))
          if (jsroot.sources.indexOf("io")<0) {
             mainfiles += "&&&scripts/rawinflate.min.js;" +
-            //             "&&&scripts/lzma-d.js;" +
                          "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-            modules.push('rawinflate', /* 'lzma-d',*/ 'JSRootIOEvolution');
+            modules.push('rawinflate', 'JSRootIOEvolution');
          }
 
       if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0))
