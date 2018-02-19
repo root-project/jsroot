@@ -179,11 +179,6 @@
 
       var lcol = pp.GetNewColor(opts.fLineColor);
 
-      // console.log('Line color', lcol, opts ? opts.fLineColor : ""); lcol = "blue";
-
-      lcol = 'blue';
-
-
       this.createAttLine({ color: lcol || 'black' });
    }
 

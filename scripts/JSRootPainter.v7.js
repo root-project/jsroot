@@ -4035,14 +4035,14 @@
 /// Otherwise the `fRedOrPalettePos` member of RGBa contains the color index in
 /// the current palette
 
-   TCanvasPainter.prototype.GetNewColor = function(RGBa) {
-      var col;
-      if (!RGBa.fAttr.fKind) {
-         col = "rgb(" + Math.round(RGBa.fAttr.fRedOrPalettePos*255) + "," +
-                        Math.round(RGBa.fAttr.fGreen*255) + "," +
-                        Math.round(RGBa.fAttr.fBlue*255) + ")";
-      } else {
-      }
+   TCanvasPainter.prototype.GetNewColor = function(attr) {
+      if (!attr) return;
+
+      var tcol = attr.fAttr.fAttr; // this is TColor instance
+      if (!tcol.fKind)
+         return "rgb(" + Math.round(tcol.fRedOrPalettePos*255) + "," +
+                         Math.round(tcol.fGreen*255) + "," +
+                         Math.round(tcol.fBlue*255) + ")";
       return col;
    }
 
