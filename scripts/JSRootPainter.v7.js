@@ -3063,7 +3063,7 @@
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
-      if (indx===0) {
+      if (indx===-1) {
          // flag used to prevent immediate pad redraw during first draw
          this._doing_pad_draw = true;
          this._snaps_map = {}; // to control how much snaps are drawn
@@ -3159,7 +3159,7 @@
 
             // we select current pad, where all drawing is performed
             var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
-            padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+            padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
                padpainter.CurrentPadName(prev_name);
                draw_callback(padpainter);
             });
@@ -3239,7 +3239,7 @@
 
          var pthis = this;
 
-         this.DrawNextSnap(snap.fPrimitives, 0, function() {
+         this.DrawNextSnap(snap.fPrimitives, -1, function() {
             var fp = pthis.frame_painter();
             if (fp) fp.AddInteractive(); // TODO: do it directly in the frame painter
             JSROOT.CallBack(call_back);
@@ -3294,7 +3294,7 @@
       var padpainter = this,
           prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
-      padpainter.DrawNextSnap(snap.fPrimitives, 0, function() {
+      padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
          padpainter.CurrentPadName(prev_name);
          call_back(padpainter);
       });
