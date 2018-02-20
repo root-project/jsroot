@@ -3070,6 +3070,9 @@
          this._num_primitives = lst ? lst.length : 0;
       }
 
+      // workaround to insert v6 frame in list of primitives
+      if (objpainter === "workaround") { --indx; objpainter = null; }
+
       while (true) {
 
          if (objpainter && lst && lst[indx] && objpainter.snapid === undefined) {
@@ -3168,6 +3171,12 @@
 
          var handle = { func: draw_callback };
 
+         if (snap._typename === "ROOT::Experimental::TOrdinaryDisplayItem<TObject>")
+            if (!this.frame_painter())
+               return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "", function() {
+                  handle.func("workaround"); // call function with "workaround" as argument
+               });
+
          // here the case of normal drawing, can be improved
          if (snap.fKind === 1)
             objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
@@ -3213,15 +3222,14 @@
 
       if (!snap || !snap.fPrimitives) return;
 
-      var first = snap.fPrimitives[0].fSnapshot;
-      first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
+      var first = snap.fSnapshot;
+
+      first = { fCw: 0, fCh: 0 }; // for the moment no canvas attributes are provided
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         console.log('Get first canvas ' + first._typename);
-
-         this.snapid = snap.fPrimitives[0].fObjectID;
+         this.snapid = snap.fObjectID;
 
          this.draw_object = first;
          this.pad = first;
