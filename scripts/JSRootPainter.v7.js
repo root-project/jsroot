@@ -3115,14 +3115,14 @@
             if (snap._typename == "ROOT::Experimental::TPadDisplayItem")  // subpad
                return objpainter.RedrawPadSnap(snap, draw_callback);
 
-            if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
+            if (objpainter.UpdateObject(snap.fObject, snap.fOption || "")) objpainter.Redraw();
 
             continue; // call next
          }
 
          if (snap._typename == "ROOT::Experimental::TPadDisplayItem") { // subpad
 
-            var subpad = snap.fSnapshot; // not subpad, but just attributes
+            var subpad = snap.fObject || null; // not subpad, but just attributes
 
             var padpainter = new TPadPainter(subpad, false);
             padpainter.DecodeOptions(snap.fOption);
@@ -3150,14 +3150,14 @@
 
          var handle = { func: draw_callback };
 
-         if (snap._typename === "ROOT::Experimental::TOrdinaryDisplayItem<TObject>")
+         if (snap._typename === "ROOT::Experimental::TObjectDisplayItem")
             if (!this.frame_painter())
                return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "", function() {
                   handle.func("workaround"); // call function with "workaround" as argument
                });
 
          // here the case of normal drawing, can be improved
-         objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
+         objpainter = JSROOT.draw(this.divid, snap.fObject, snap.fOption || "", handle);
 
          if (!handle.completed) return; // if callback will be invoked, break while loop
       }
@@ -3191,30 +3191,26 @@
    }
 
    TPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
-      // for the canvas snapshot contains list of objects
-      // as first entry, graphical properties of canvas itself is provided
-      // in ROOT6 it also includes primitives, but we ignore them
+      // for the pad/canvas display item contains list of primitives plus pad attributes
 
       if (!snap || !snap.fPrimitives) return;
 
-      var first = snap.fSnapshot;
-
-      first = { fCw: 0, fCh: 0 }; // for the moment no canvas attributes are provided
+      var padattr = snap.fPadAttributes || { fCw: 0, fCh: 0 }; // for the moment no canvas attributes are provided
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
          this.snapid = snap.fObjectID;
 
-         this.draw_object = first;
-         this.pad = first;
+         this.draw_object = padattr;
+         this.pad = padattr;
          // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
-         if (this.batch_mode && (!first.fCw || !first.fCh)) { first.fCw = 900; first.fCh = 700; }
+         if (this.batch_mode && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
          // case of ROOT7 with always dummy TPad as first entry
-         if (!first.fCw || !first.fCh) this._fixed_size = false;
+         if (!padattr.fCw || !padattr.fCh) this._fixed_size = false;
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
@@ -3231,7 +3227,7 @@
          return;
       }
 
-      this.UpdateObject(first); // update only object attributes
+      this.UpdateObject(padattr); // update only object attributes
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
