@@ -3112,41 +3112,20 @@
 
          if (objpainter) {
 
-            if (snap.fKind === 1) { // object itself
-               if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
-               continue; // call next
-            }
-
-            if (snap.fKind === 2) { // update SVG
-               if (objpainter.UpdateObject(snap.fSnapshot)) objpainter.Redraw();
-               continue; // call next
-            }
-
-            if (snap.fKind === 3) { // subpad
+            if (snap._typename == "ROOT::Experimental::TPadDisplayItem")  // subpad
                return objpainter.RedrawPadSnap(snap, draw_callback);
-            }
+
+            if (objpainter.UpdateObject(snap.fSnapshot, snap.fOption)) objpainter.Redraw();
 
             continue; // call next
          }
 
-         if (snap.fKind === 4) { // specials like list of colors
-            this.CheckSpecial(snap.fSnapshot);
-            continue;
-         }
+         if (snap._typename == "ROOT::Experimental::TPadDisplayItem") { // subpad
 
-         if (snap.fKind === 3) { // subpad
-
-            if (snap.fPrimitives._typename) {
-               alert("Problem in JSON I/O with primitves for sub-pad");
-               snap.fPrimitives = [ snap.fPrimitives ];
-            }
-
-            var subpad = snap.fPrimitives[0].fSnapshot;
-
-            subpad.fPrimitives = null; // clear primitives, they just because of I/O
+            var subpad = snap.fSnapshot; // not subpad, but just attributes
 
             var padpainter = new TPadPainter(subpad, false);
-            padpainter.DecodeOptions(snap.fPrimitives[0].fOption);
+            padpainter.DecodeOptions(snap.fOption);
             padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
             padpainter.snapid = snap.fObjectID;
 
@@ -3178,11 +3157,7 @@
                });
 
          // here the case of normal drawing, can be improved
-         if (snap.fKind === 1)
-            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
-
-         if (snap.fKind === 2)
-            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
+         objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
 
          if (!handle.completed) return; // if callback will be invoked, break while loop
       }
