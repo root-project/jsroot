@@ -28,12 +28,16 @@
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
+            'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
             'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
             'JSRootPainter.hist3d' : dir+'JSRootPainter.hist3d'+ext,
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
             'JSRootPainter.openui5': dir+'JSRootPainter.openui5'+ext,
+            'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
+            'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
+            'JSRootPainter.v7more' : dir+'JSRootPainter.v7more'+ext,
             'JSRoot3DPainter'      : dir+'JSRoot3DPainter'+ext,
             'ThreeCSG'             : dir+'ThreeCSG'+ext,
             'JSRootGeoBase'        : dir+'JSRootGeoBase'+ext,
@@ -95,7 +99,7 @@
 
    "use strict";
 
-   JSROOT.version = "5.3.5 25/01/2018";
+   JSROOT.version = "dev 23/02/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -106,7 +110,7 @@
    JSROOT.id_counter = 0;
    JSROOT.BatchMode = false; // when true, disables all kind of interactive features
 
-   // JSROOT.use_full_libs = true;
+//   JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };
@@ -153,6 +157,8 @@
          DragAndDrop : true,  // enables drag and drop functionality
          ToolBar : 'popup',  // show additional tool buttons on the canvas, false - disabled, true - enabled, 'popup' - only toggle button
          CanEnlarge : true,  // if drawing inside particular div can be enlarged on full window
+         CanAdjustFrame : false,  // if frame position can be adjusted to let show axis or colz labels
+         ApproxTextSize : false,  // calculation of text size consumes time and can be skipped to improve performance (but with side effects on text adjustments)
          OptimizeDraw : 1, // drawing optimization: 0 - disabled, 1 - only for large (>5000 1d bins, >50 2d bins) histograms, 2 - always
          AutoStat : true,
          FrameNDC : { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
@@ -167,8 +173,20 @@
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
          HierarchyLimit : 250,   // how many items shown on one level of hierarchy
 
+         // XValuesFormat : "6.4g",   // custom format for all X values
+         // YValuesFormat : "6.4g",   // custom format for all Y values
+         // ZValuesFormat : "6.4g",   // custom format for all Z values
+
          // these are TStyle attributes, which can be changed via URL 'style' parameter
 
+         fOptLogx : 0,
+         fOptLogy : 0,
+         fOptLogz : 0,
+         fOptDate : 0,
+         fOptFile : 0,
+         fOptFit  : 0,
+         fOptStat : 1,
+         fOptTitle : 1,
          fPadBottomMargin : 0.1,
          fPadTopMargin : 0.1,
          fPadLeftMargin : 0.1,
@@ -248,6 +266,26 @@
       if (this.nodeis) throw new Error(msg);
       if (typeof alert === 'function') alert(msg);
       else JSROOT.console('ALERT: ' + msg);
+   }
+
+   // Takes any value
+   JSROOT.seed = function(i) {
+      i = Math.abs(i);
+      if (i > 1e8) i = Math.abs(1e8 * Math.sin(i)); else
+      if (i < 1) i*=1e8;
+      this.m_w = Math.round(i);
+      this.m_z = 987654321;
+   }
+
+   // Returns number between 0 (inclusive) and 1.0 (exclusive),
+   // just like Math.random().
+   JSROOT.random = function() {
+      if (this.m_z===undefined) return Math.random();
+      this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
+      this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
+      var result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
+      result /= 4294967296;
+      return result + 0.5;
    }
 
    /// Should be used to reintroduce objects references, produced by TBufferJSON
@@ -471,9 +509,9 @@
    /** @memberOf JSROOT
     * Method should be used to parse JSON code, produced with TBufferJSON */
    JSROOT.parse = function(arg) {
-      if ((arg==null) || (arg=="")) return null;
+      if (!arg) return null;
       var obj = JSON.parse(arg);
-      if (obj!=null) obj = this.JSONR_unref(obj);
+      if (obj) obj = this.JSONR_unref(obj);
       return obj;
    }
 
@@ -515,12 +553,20 @@
          var refid = map.indexOf(value);
          if (refid >= 0) return { $ref: refid };
 
+         var ks = Object.keys(value), len = ks.length, tgt = {};
+
+         if ((len == 3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
+            // special handling of pair objects which does not included into objects map
+            tgt.$pair = value.$pair;
+            tgt.first = copy_value(value.first);
+            tgt.second = copy_value(value.second);
+            return tgt;
+         }
+
          map.push(value);
 
-         var ks = Object.keys(value), len = ks.length, tgt = {}, name;
-
          for (var k = 0; k < len; ++k) {
-            name = ks[k];
+            var name = ks[k];
             tgt[name] = copy_value(value[name]);
          }
 
@@ -924,6 +970,9 @@
       //   'hist'  histograms 2d graphic
       // 'hist3d'  histograms 3d graphic
       // 'more2d'  extra 2d graphic (TGraph, TF1)
+      //     'v7'  ROOT v7 graphics
+      // 'v7hist'  ROOT v7 histograms
+      // 'v7more'  ROOT v7 special classes
       //   'math'  some methods from TMath class
       //     'jq'  jQuery and jQuery-ui
       // 'hierarchy' hierarchy browser
@@ -978,7 +1027,7 @@
          if (jsroot.sources.indexOf("io")<0) {
             mainfiles += "&&&scripts/rawinflate.min.js;" +
                          "$$$scripts/JSRootIOEvolution" + ext + ".js;";
-            modules.push('rawinflate','JSRootIOEvolution');
+            modules.push('rawinflate', 'JSRootIOEvolution');
          }
 
       if ((kind.indexOf('math;')>=0) || (kind.indexOf('tree;')>=0) || (kind.indexOf('more2d;')>=0))
@@ -993,7 +1042,8 @@
             modules.push('JSRootTree');
          }
 
-      if ((kind.indexOf('2d;')>=0) || (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
+      if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
+          (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
           if (!use_require && (typeof d3 != 'object') && (jsroot._test_d3_ === undefined)) {
              mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
              jsroot._test_d3_ = null;
@@ -1002,6 +1052,10 @@
             modules.push('JSRootPainter');
             mainfiles += '$$$scripts/JSRootPainter' + ext + ".js;";
             extrafiles += '$$$style/JSRootPainter' + ext + '.css;';
+         }
+         if ((jsroot.sources.indexOf("v6") < 0) && (kind.indexOf('v7;') < 0)) {
+            mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
+            modules.push('JSRootPainter.v6');
          }
       }
 
@@ -1015,6 +1069,26 @@
       if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hist' + ext + ".js;";
          modules.push('JSRootPainter.hist');
+      }
+
+      if ((kind.indexOf('v6;')>=0) && (jsroot.sources.indexOf("v6")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v6' + ext + ".js;";
+         modules.push('JSRootPainter.v6');
+      }
+
+      if ((kind.indexOf('v7;')>=0) && (jsroot.sources.indexOf("v7")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v7' + ext + ".js;";
+         modules.push('JSRootPainter.v7');
+      }
+
+      if ((kind.indexOf('v7hist;')>=0) && (jsroot.sources.indexOf("v7hist")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v7hist' + ext + ".js;";
+         modules.push('JSRootPainter.v7hist');
+      }
+
+      if ((kind.indexOf('v7more;')>=0) && (jsroot.sources.indexOf("v7more")<0)) {
+         mainfiles += '$$$scripts/JSRootPainter.v7more' + ext + ".js;";
+         modules.push('JSRootPainter.v7more');
       }
 
       if ((kind.indexOf('more2d;')>=0) && (jsroot.sources.indexOf("more2d")<0)) {
@@ -1167,6 +1241,12 @@
    JSROOT.MakeSVG = function(args, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.MakeSVG(args, callback);
+      });
+   }
+
+   JSROOT.saveSvgAsPng = function(el, options, callback) {
+      JSROOT.AssertPrerequisites("savepng", function() {
+         JSROOT.saveSvgAsPng(el, options, callback);
       });
    }
 
@@ -1411,7 +1491,7 @@
                                  fXlowNDC: 0, fYlowNDC: 0, fXUpNDC: 0, fYUpNDC: 0, fWNDC: 1, fHNDC: 1,
                                  fAbsXlowNDC: 0, fAbsYlowNDC: 0, fAbsWNDC: 1, fAbsHNDC: 1,
                                  fUxmin: 0, fUymin: 0, fUxmax: 0, fUymax: 0, fTheta: 30, fPhi: 30, fAspectRatio: 0,
-                                 fNumber: 0, fLogx: 0, fLogy: 0, fLogz: 0,
+                                 fNumber: 0, fLogx: JSROOT.gStyle.fOptLogx, fLogy: JSROOT.gStyle.fOptLogy, fLogz: JSROOT.gStyle.fOptLogz,
                                  fTickx: JSROOT.gStyle.fPadTickX,
                                  fTicky: JSROOT.gStyle.fPadTickY,
                                  fPadPaint: 0, fCrosshair: 0, fCrosshairPos: 0, fBorderSize: 2,
@@ -1963,6 +2043,7 @@
       return sg;
    }
 
+   // Provide log10, which is used in many places
    JSROOT.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    }
@@ -1970,6 +2051,14 @@
    // dummy function, will be redefined when JSRootPainter is loaded
    JSROOT.progress = function(msg, tmout) {
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
+   }
+
+   /// connect to the TWebWindow instance
+   JSROOT.ConnectWebWindow = function(arg) {
+      if (typeof arg == 'function') arg = { callback: arg };
+      JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
+         JSROOT.ConnectWebWindow(arg);
+      }, (arg ? arg.prereq_logdiv : undefined));
    }
 
    JSROOT.Initialize = function() {
@@ -1998,6 +2087,7 @@
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
       if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
+      if (JSROOT.GetUrlOption('v7', src)!=null) prereq += "v7;";
       if (JSROOT.GetUrlOption('hist', src)!=null) prereq += "2d;hist;";
       if (JSROOT.GetUrlOption('hierarchy', src)!=null) prereq += "2d;hierarchy;";
       if (JSROOT.GetUrlOption('jq2d', src)!=null) prereq += "2d;hierarchy;jq2d;";

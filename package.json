@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "5.3.5",
+  "version": "5.3.99",
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "main": "./scripts/JSRootCore.js",
@@ -23,6 +23,7 @@
   "repository" : { "type" : "git" , "url" : "https://github.com/root-project/jsroot.git" },
   "files": [
     "scripts/*",
+    "openui5/*",
     "style/*",
     "/LICENSE"
    ]

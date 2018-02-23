@@ -1,46 +1,32 @@
 # JSROOT changelog
 
-## Changes in 5.3.5
-1. Fix - correctly show histogram with negative bins and fill attributes (#143)
-2. Fix - correct animation for status line (when visible)
-3. Fix - correctly set lin/log settings back top TPad object
-4. Fix - correctly use preloaded d3.js in notebooks/require.js environment
-5. Cached Latex regex to improve drawing speed (#145)
-
-
-## Changes in 5.3.4
-1. Fix - several problem in TLatex preprocessing for MathJax.js
-2. Fix - use "E" draw options for THStack only when no any other specified
-
-
-## Changes in 5.3.3
-1. Use latest jsdom and mathjax-node packages (Node.js only) 
-
-
-## Changes in 5.3.2
-1. Fix - use FontSize when draw TLegend entries
-2. Fix - correctly show TH2 overflow stats
-3. Fix - tooltips handling for TH1 hbar drawings
-4. Implement JSROOT.toJSON() function to produce ROOT JSON string
-
-
-## Changes in 5.3.1
-1. Fix - show TH2 projections also when tooltip is disabled
-2. Fix - use z_handle to format Z-axis labels
-3. Fix - support labels on TH3 Z axis
-4. Fix - TH1 zooming in 3D mode
-5. Fix - suppress empty {} in TLatex
-6. Add several math symbols for TLatex
-7. Fix - font kind 1 is italic times roman
-8. Fix - do not let expand parent item in hierarchy
-9. Fix - use correct painter to check range
-10. Fix - change proper axis attributes in context menu
-11. Fix - correctly show axis labels on 3D plot
-12. Fix - correctly handle circle (#24) as marker kind
-13. Fix - correct circle drawing with coordinates rounding
-14. Fix - TLatex #frac and #splitline, adjust vertical position
-15. Fix - workaround for y range when fMinimum==fMaximum!=-1111
-16. Fix - correct tooltips for graph with marker drawing
+## Changes in dev
+1. Tooltips and zooming in TGraphPolar drawings
+2. Support border draws for TWbox
+3. Support TPavesText with multiple underlying paves 
+4. Correctly draw filled TArrow endings
+5. Implement drawing of TDiamond, TArc, TCurlyLine, TCurlyArc, TCrown
+6. Implement most existing fill styles
+7. Support line option for TGraph2D
+8. Let enable/disable highlight of extra objects in geometry viewer 
+9. Draw all objects from TList/TObjArray as they appear in list of primitives
+10. Draw axis labels on both sides when pad.fTick[x/y] > 1
+11. Disable automatic frame adjustment, can be enabled with "&adjframe" parameter in URL 
+12. Fix - use same number of points to draw lines and markers on the TGraph
+13. Let disable TGraph drawing optimization with "noopt" draw option
+14. When drawing TH2/TH3 scatter plots, always generate same "random" pattern
+15. When use "CPN" draw option for TCanvas, create color palette from N last colors 
+16. Fix - let combine "L" or "C" graph draw option with others
+17. Implement "RX", "RY" options for TGraph
+18. Make drawing of TCanvas with many primitives smoother 
+19. Correct positioning of custom axis labels
+20. Correctly show histogram with negative bins and fill attributes (#143)
+21. Fix - correctly toggle lin/log axes in lego plot
+22. Fix - let correctly change marker attributes interactively 
+23. Fix - correctly use preloaded d3.js in notebooks/require.js environment  
+24. Use barwidth/baroffset parameters in lego plots
+25. Add fOptTitle, fOptLogx/y/z fields in JSROOT.gStyle
+26. Support LZ4 compression - future default compression algorithm starting from ROOT 6.14 
 
 
 ## Changes in 5.3.0
@@ -124,7 +110,7 @@
 3. Implement projection of geometry on given plane.
    One could reuse drawing of geometry in other div (should be drawn with main option).
    In control GUI one could change position of the projection plane
-4. On of the TGeo drawing can be assigned as main. When same object drawn next time,
+4. One of the TGeo drawing can be assigned as main. When same object drawn next time,
    its drawing will be derived from the main. Useful for geometry projections.
    Also all tracks and hits will be imported from main drawing.
 5. Let change background color of geo drawing.

@@ -2,8 +2,9 @@ examples_main = {
    TH1 : [
      { opt: "", file: "hsimple.root", item: "hpx;1" },
      { opt: "P" },
-     { opt: "PO" },
-     { name: "star", opt:"*H", title: "draw stars on histogram bins" },
+     { opt: "P0" },
+     { name: "star", opt:"*", title: "draw stars on histogram bins" },
+     { name: "*H", opt:"*H", title: "draw stars and histogram itself" },
      { opt: "L", title: "draw histogram as line" },
      { name: "LF2", opt:"LF2,fill_blue", title: "draw histogram as line with filled area" },
      { name: "B", opt:"B,fill_red", title: "draw histogram as bar chart" },
@@ -136,13 +137,16 @@ examples_main = {
    TGraph : [
      { opt: "", file: "graph.root", item: "Graph;1" },
      { opt: "L" },
-     { opt: "AX+Y+L" },
      { opt: "P" },
      { name: "star", opt:"*" },
      { opt: "LP" },
      { opt: "B" },
      { opt: "B1" },
-     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title:"several canvas from TGraph documentation page" },
+     { opt: "AX+Y+L", title: "move X/Y labels on other side" },
+     { opt: "IA", title: "hide (Invisible) axes drawing " },
+     { name: "RX", opt: "ARXL", title: "reverse X axis" },
+     { name: "RY", opt: "ARYL", title: "reverse Y axis" },
+     { name: "docu", file: "graph.root", layout: "vert333", items: ['c1','c47','c4','c48','c41','c42','c43','c44','c45'], title: "several canvas from TGraph documentation page" },
      { name: "excl", file: "tutorials_graphs.root", item: "exclusiongraph2", title: "Exclusion draw exampl, output of tutorials/graphs/exclusiongraph2.C" },
      { name: "plc", file: "tutorials_graphs.root", item: "graphpalettecolor", title: "Automatic set of graph colors, output of tutorials/graphs/graphpalettecolor.C" },
      { name: "shade", file: "tutorials_graphs.root", item: "graphShade", title: "output of tutorials/graphs/graphShade.C" }
@@ -188,7 +192,8 @@ examples_main = {
    TGraph2D : [
       { opt: "", file: "graph2d.root", item: "Graph2D", title: "example of TGraph2D" },
       { name: "pcol", item: "pcol", title: "example of TGraph2D, color options" },
-      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" }
+      { opt: "err",  item: "cerr", title: "example of TGraph2DErrors, errors drawing" },
+      { opt: "line",  item: "line", title: "line drawing with TGraph2D" }
    ],
    TLatex : [
      { name: "latex", file: "latex.root", layout: "grid2x2", items: ['lva','ex1','ex2','ex3'], title: "Internal TLatex processor" },
@@ -202,9 +207,12 @@ examples_main = {
      { name: "sinfo", url: "?nobrowser&file=$$$hsimple.root&item=StreamerInfo", title: "List of streamer infos" },
      { name: "3dmark", url: "?nobrowser&file=$$$mix2d3d.root&item=Canvas;1/pad4&opt=white", title: "TPloyMarker3D class" },
      { name: "profile2d", file: "profile2d.root", item: "c1;1", title: "TProfile2D class" },
-     { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, Macro outputs from tutorials/graphs/splines_test.C" },
+     { name: "spline", file: "tutorials_graphs.root", item: 'splines_test',  title: "TSpline3 and TSpline5 classes, tutorials/graphs/splines_test.C" },
      { name: "polyline", file: "polyline.root", item: "can;1", title: "TPolyLine class (produced with graphics/triangles.C)" },
-     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" }
-
+     { name: "class", json: "draw_class.json.gz", title: "Canvas, produced with DrawClass() call" },
+     { name: "archi", file: "tutorials_graphics.root", item: 'archi',  title: "Usage of TPavesText, tutorials/graphics/archi.C" },
+     { name: "feynman", file: "tutorials_graphics.root", item: 'feynman',  title: "Usage of TCulyLine/Arc, tutorials/graphics/feynman.C" },
+     { name: "pie", file: "tutorials_graphics.root", item: 'piechart',  title: "TPie, tutorials/graphics/piechart.C" },
+     { name: "fill", file: "fillpatterns.root", item: 'patterns',  title: "Different fill patterns" }
    ]
  };

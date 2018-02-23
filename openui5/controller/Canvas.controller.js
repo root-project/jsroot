@@ -114,6 +114,8 @@ sap.ui.define([
          //to get access to the global model
          // this.getView().addDependent(this.methodDialog);
 
+         this.methodDialog.addStyleClass("sapUiSizeCompact");
+
          this.methodDialog.open();
       },
 
@@ -168,8 +170,19 @@ sap.ui.define([
          if (p) p.SendWebsocket("RELOAD");
       },
 
+      isGedEditor : function() {
+         return this.getView().getModel().getProperty("/LeftArea") == "Ged";
+      },
+
       showGeEditor : function(new_state) {
          this.showLeftArea(new_state ? "Ged" : "");
+      },
+
+      cleanupIfGed : function() {
+         var ged = this.getLeftController("Ged"),
+             p = this.getCanvasPainter();
+         if (ged) ged.cleanupGed();
+         if (p) p.RegisterForPadEvents(null);
       },
 
       getLeftController : function(name) {
@@ -179,26 +192,66 @@ sap.ui.define([
       },
 
       toggleGedEditor : function() {
-         var new_state = this.getView().getModel().getProperty("/LeftArea") != "Ged";
-         this.showGeEditor(new_state);
-         var p = this.getCanvasPainter();
-         if (new_state && p) p.SelectObjectPainter(p);
+         this.showGeEditor(!this.isGedEditor());
       },
 
-      showLeftArea : function(panel_name) {
-         var split = this.getView().byId("MainAreaSplitter");
-         if (!split) return;
+      showPanelInLeftArea : function(panel_name, panel_handle, call_back) {
 
+         var split = this.getView().byId("MainAreaSplitter");
          var curr = this.getView().getModel().getProperty("/LeftArea");
-         if (curr == panel_name) return;
+         if (!split || (curr === panel_name)) return JSROOT.CallBack(call_back, false);
 
          // first need to remove existing
-         if (curr) split.removeContentArea(split.getContentAreas()[0]);
+         if (curr) {
+            this.cleanupIfGed();
+            split.removeContentArea(split.getContentAreas()[0]);
+         }
 
          this.getView().getModel().setProperty("/LeftArea", panel_name);
          this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
 
-         if (!panel_name) return;
+         if (!panel_handle || !panel_name) return JSROOT.CallBack(call_back, false);
+
+         var oLd = new SplitterLayoutData({
+            resizable : true,
+            size      : "250px",
+            maxSize   : "500px"
+         });
+
+         var panelid = "LeftPanelId";
+
+         var oModel = new JSROOT.sap.ui.model.json.JSONModel({
+            handle: panel_handle
+         });
+         sap.ui.getCore().setModel(oModel, panelid);
+
+         var oContent = sap.ui.xmlview({
+            id: panelid,
+            viewName : "sap.ui.jsroot.view." + panel_name,
+            layoutData: oLd,
+            height: panel_name=="Panel" ? "100%" : undefined
+         });
+
+         split.insertContentArea(oContent, 0);
+
+         JSROOT.CallBack(call_back, true);
+      },
+
+      showLeftArea : function(panel_name, call_back) {
+         var split = this.getView().byId("MainAreaSplitter");
+         var curr = this.getView().getModel().getProperty("/LeftArea");
+         if (!split || (curr === panel_name)) return JSROOT.CallBack(call_back, false);
+
+         // first need to remove existing
+         if (curr) {
+            this.cleanupIfGed();
+            split.removeContentArea(split.getContentAreas()[0]);
+         }
+
+         this.getView().getModel().setProperty("/LeftArea", panel_name);
+         this.getView().getModel().setProperty("/GedIcon", (panel_name=="Ged") ? "sap-icon://accept" : "");
+
+         if (!panel_name) return JSROOT.CallBack(call_back, false);
 
          var oLd = new SplitterLayoutData({
             resizable : true,
@@ -213,6 +266,16 @@ sap.ui.define([
          });
 
          split.insertContentArea(oContent, 0);
+
+         if (panel_name === "Ged") {
+            var ged = oContent.getController(), p = this.getCanvasPainter();
+            if (p && ged && (typeof p.RegisterForPadEvents == "function")) {
+               p.RegisterForPadEvents(ged.padEventsReceiver.bind(ged));
+               p.SelectObjectPainter(p);
+            }
+         }
+
+         JSROOT.CallBack(call_back, true);
 
          return oContent.getController(); // return controller of new panel
       },

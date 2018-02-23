@@ -1,8 +1,9 @@
 examples_more = {
    TH1: [
-     { name:"docu_zero", file: "histpainter6.root", layout: "vert21", style:"style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
+     { name: "docu_zero", file: "histpainter6.root", layout: "vert21", style: "style_zero", items: ['draw_bar','draw_zero2','draw_zero1'], title: "show gStyle->SetHistMinimumZero(); functionality from THistPainter documentation page" },
      { name: "varbins", file: "hbins.root", item: "SpectraPions;1", title: "variable bins" },
      { name: "labels", opt: "hist", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "custom text labels for hist bins" },
+     { name: "negfill", opt: "hist,fill_red", file: "hitmap.root", item: "EnergyMeanAsyLo;1", title: "fill attributes for histogram with negative bins" },
      { name: "labels2", opt: "", file: "text_labels.root", item: "c1;1", title: "small labels, should be rotated by 20 grad" },
      { name: "hbar", file: "hbars.root", item: "c1;1", title: "Horizontal bars" },
      { name: "tut1", file: "tutorials_hist.root", layout: "grid2x1", items: ['h1draw','hksimple'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
@@ -25,7 +26,8 @@ examples_more = {
      { name: "docu_lego", file: "histpainter6.root", layout: "grid2x2", items: ['draw_lego', 'draw_lego1', 'draw_lego3', 'draw_lego2'], title: "several TH2 LEGO examples from THistPainter documentation page" },
      { name: "docu_surf", file: "histpainter6.root", layout: "grid4x2", items: ['draw_surf', 'draw_surf1', 'draw_surf2', 'draw_surf3', 'draw_surf4', 'draw_surf5', 'draw_surf7', 'draw_surf2_cont1'], title: "several TH2 SURF examples from THistPainter documentation page" },
      { name: "lego_tf2", file: "https://root.cern/files/StressIOPluginsTestFiles/stress_5.root", item:"h2form", opt:"lego", title: "Combination of th2 an tf2 in 3D" },
-     { name: "tut1", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstack2palettecolor', 'reverseaxis', 'hlabels2'], opts: ['0lego1 pfc'], title: "Macro outputs from $ROOTSYS/tutorials/hist" }
+     { name: "tut1", file: "tutorials_hist.root", layout: "grid2x2", items: ['thstack2palettecolor', 'reverseaxis', 'hlabels2', 'labels3'], opts: ['0lego1_pfc'], title: "Macro outputs from $ROOTSYS/tutorials/hist" },
+     { name: "earth", file: "tutorials_graphics.root", item: 'earth',  title: "Earth projections, tutorials/graphics/earth.C" }
    ],
    TH2Poly : [
       { name: "germany", url: "?nobrowser&file=$$$th2poly.root&item=europe;1/[13]", title: "Draw single TH2PolyBin from europe map" },
@@ -34,6 +36,11 @@ examples_more = {
    TH3 : [
       { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
    ],
+//   v7 : [
+//      { name: "th1", opt: "", file: "v7.root", item: "th1", title: "v7 TH1 class" },
+//      { name: "th2", opt: "", file: "v7.root", item: "th2", title: "v7 TH2 class" },
+//      { name: "text", opt: "", file: "v7.root", item: "text", title: "v7 TText class" }
+//   ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
       { name: "json", title: "Draw stack from JSON file", json: "thstack.json.gz", title: "some special stack from JSON file" }
@@ -82,7 +89,9 @@ examples_more = {
      { name: "sub-sub", file: "fitslicesy.root", item: "c1;1", title: "Canvas with sub-sub pads" },
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
      { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" },
-     { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" }
+     { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" },
+     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
+     { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" }
    ],
    TGeo : [
      { name: "atlas_cryo", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "macro:https://root.cern/files/atlas_cryo.C" },
@@ -118,6 +127,8 @@ examples_more = {
      { name: "roofit", file: "https://root.cern/files/stressRooFit_v534_ref.root", layout: "grid2x2", items: ['rf101_plot2','rf201_plot1','rf310_plot2','rf708_plot6'], title: "Several RooFit plots (still some classes not work)" },
      { name: "ioperf", asurl: true, file: "https://root.cern/files/aod_orig.root", item: "ioperf;1/fGraphIO", itemfield: "fGraphIO", opt: "", title: "Reading TTreePerfStats object and draw graph, fails in normal ROOT I/O", notest: true },
      { name: "taxis", file: "tutorials_graphs.root", item: "timeonaxis3", title: "Custom time format for TGaxis, output of tutorials/graphs/timeonaxis3.C" },
-     { name: "gtime", file: "tutorials_graphs.root", item: "gtime", opt: "repeat", title: "Example of TGraphTime, output of tutorials/graphs/gtime.C", testopt: "first" }
+     { name: "gtime", file: "tutorials_graphs.root", item: "gtime", opt: "repeat", title: "Example of TGraphTime, output of tutorials/graphs/gtime.C", testopt: "first" },
+     { name: "diamond", file: "tutorials_graphics.root", item: 'diamond',  title: "TDiamond, tutorials/graphics/diamond.C" },
+     { name: "crown", file: "tutorials_graphics.root", item: 'crown',  title: "TCrown, tutorials/graphics/crown.C" }
    ]
 };

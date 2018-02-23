@@ -41,7 +41,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - load - name of extra JavaScript to load
 - optimize - drawing optimization 0:off, 1:only large histograms (default), 2:always
 - paltte - id of default color palette, 51..121 - new ROOT6 palette  (default 57)
-- interactive - enable/disable interactive functions 0-disable all, 1-enable all
+- interactive - enable/disable interactive functions 0 - disable all, 1 - enable all
 - noselect - hide file-selection part in the browser (only when file name is specified)
 - mathjax - use MathJax for latex output
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor
@@ -147,7 +147,9 @@ List of supported classes and draw options:
 [L](https://root.cern/js/latest/examples.htm#tgraph_l),
 [P](https://root.cern/js/latest/examples.htm#tgraph_p),
 [*](https://root.cern/js/latest/examples.htm#tgraph_star),
-[B](https://root.cern/js/latest/examples.htm#tgraph_b)
+[B](https://root.cern/js/latest/examples.htm#tgraph_b),
+[RX](https://root.cern/js/latest/examples.htm#tgraph_rx),
+[RY](https://root.cern/js/latest/examples.htm#tgraph_ry)
 - TGraphErrors : [dflt](https://root.cern/js/latest/examples.htm#tgrapherrors),
 [l](https://root.cern/js/latest/examples.htm#tgrapherrors_l),
 [lx](https://root.cern/js/latest/examples.htm#tgrapherrors_lx),
@@ -294,6 +296,9 @@ Following draw options could be specified (separated by semicolon or ';'):
    - all - try to display all geometry volumes (may lead to browser hanging)
    - highlight - force highlighting of selected volume, normally activated for moderate-size geometries
    - nohighlight - disable volumes highlighting (can be activated via context menu)
+   - hscene - enable highlight of extra objects like tracks or hits
+   - hsceneonly - enable only highlight of extra objects like tracks or hits
+   - nohscene - disable highlight of extra objects like tracks or hits
    - macro:name.C - invoke ROOT configuration macro
    - dflt - set default volumes colors as TGeoManager::DefaultColors() does
    - transpXY - set global transparency value (XY is number between 1 and 99)
@@ -320,7 +325,7 @@ One could use wildcard symbol like '+TUBE1*'.
 
 Another way to configure visibility flags is usage of ROOT macros, which typically looks like:
 
-     {
+    {
       TGeoManager::Import("http://root.cern/files/alice2.root");
       gGeoManager->DefaultColors();
       //   gGeoManager->SetVisLevel(4);
@@ -543,6 +548,16 @@ For instance, to load functionality with normal 2D graphics and binary ROOT file
 
 One could use minified version of all scripts (as shown in example) - this reduce page loading time significantly.
 
+After main __JSRootCore.js__ script is loaded, one can configure different options in JSROOT.gStyle object.
+It is instance of the TStyle object and contains similar properties. For instance, one can change stat format:
+
+    JSROOT.gStyle.fStatFormat = "7.5g"
+
+Or specify custom format for the X/Y object values:
+
+    JSROOT.gStyle.XValuesFormat = "4.2g"
+    JSROOT.gStyle.YValuesFormat = "6.1f"
+ 
 When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:
 
     <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
@@ -651,7 +666,6 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 
 Simple TTree::Draw operation can be performed with following code:
 
-
     var filename = "https://root.cern/js/files/hsimple.root";
     JSROOT.OpenFile(filename, function(file) {
        file.ReadObject("ntuple;1", function(obj) {
@@ -660,7 +674,6 @@ Simple TTree::Draw operation can be performed with following code:
     });
 
 To get access to selected branches, one should use TSelector class:
-
 
     var filename = "https://root.cern/js/files/hsimple.root";
     JSROOT.OpenFile(filename, function(file) {
@@ -747,18 +760,32 @@ To use in the Node.js scripts, one should add following line:
      var jsroot = require('jsroot');
      
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
-create SVG output. For example, open create SVG image with lego plot, one should do:
+create SVG output. For example, to create SVG image with lego plot, one should do:
 
     var jsroot = require("jsroot");
     var fs = require("fs");
 
     jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
-        file.ReadObject("hpx;1", function(obj) {
-            jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
-                fs.writeFileSync("lego2.svg", svg);
-            });
-        });
+       file.ReadObject("hpx;1", function(obj) {
+          jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
+             fs.writeFileSync("lego2.svg", svg);
+          });
+       });
      });               
+ 
+It is also possible to convert any JavaScript object into ROOT JSON string, using **JSROOT.toJSON()** function. Like:
+
+    var jsroot = require("jsroot");
+    var fs = require("fs");
+
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+       file.ReadObject("hpxpy;1", function(obj) {
+          var json = jsroot.toJSON(obj);
+          fs.writrFileSync("hpxpy.json", json); 
+       });
+    });               
+ 
+Such JSON string could be parsed by any other JSROOT-based application.  
  
 
 ### Use with OpenUI5

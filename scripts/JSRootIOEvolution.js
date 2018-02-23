@@ -173,11 +173,42 @@
 
          if (getChar(curr) == 'Z' && getChar(curr+1) == 'L' && getCode(curr+2) == 8) { fmt = "new"; off = 2; } else
          if (getChar(curr) == 'C' && getChar(curr+1) == 'S' && getCode(curr+2) == 8) { fmt = "old"; off = 0; } else
-         if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA";
+         if (getChar(curr) == 'X' && getChar(curr+1) == 'Z') fmt = "LZMA"; else
+         if (getChar(curr) == 'L' && getChar(curr+1) == '4') { fmt = "LZ4"; off = 0; HDRSIZE = 17; }
+
+/*
+         if (fmt == "LZMA") {
+            console.log('find LZMA');
+            console.log('chars', getChar(curr), getChar(curr+1), getChar(curr+2));
+
+            for(var n=0;n<20;++n)
+               console.log('codes',n,getCode(curr+n));
+
+            var srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
+
+            var tgtsize0 = ((getCode(curr+6) & 0xff) | ((getCode(curr+7) & 0xff) << 8) | ((getCode(curr+8) & 0xff) << 16));
+
+
+            console.log('srcsize',srcsize, tgtsize0, tgtsize);
+
+            off = 0;
+
+            var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
+
+            JSROOT.LZMA.decompress(uint8arr, function on_decompress_complete(result) {
+                console.log("Decompressed done", typeof result, result);
+             }, function on_decompress_progress_update(percent) {
+                /// Decompressing progress code goes here.
+                console.log("Decompressing: " + (percent * 100) + "%");
+             });
+
+            return null;
+         }
+*/
 
          /*   C H E C K   H E A D E R   */
-         if ((fmt !== "new") && (fmt !== "old")) {
-            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " zlib format is not supported!");
+         if ((fmt !== "new") && (fmt !== "old") && (fmt !== "LZ4")) {
+            if (!noalert) JSROOT.alert("R__unzip: " + fmt + " format is not supported!");
             return null;
          }
 
@@ -188,7 +219,10 @@
          //  place for unpacking
          if (!tgtbuf) tgtbuf = new ArrayBuffer(tgtsize);
 
-         var reslen = JSROOT.ZIP.inflate(uint8arr, new Uint8Array(tgtbuf, fullres));
+         var tgt8arr = new Uint8Array(tgtbuf, fullres);
+
+         var reslen = (fmt === "LZ4") ? JSROOT.LZ4.uncompress(uint8arr, tgt8arr)
+                                      : JSROOT.ZIP.inflate(uint8arr, tgt8arr);
          if (reslen<=0) break;
 
          fullres += reslen;
@@ -291,12 +325,6 @@
          return false;
       }
       return true;
-   }
-
-   TBuffer.prototype.ReadString = function() {
-      // TODO: delete after next major release
-
-      return this.ReadFastString(-1);
    }
 
    TBuffer.prototype.ReadTString = function() {
@@ -864,7 +892,7 @@
       } else {
          var file = this;
          JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
-            if (res==null)
+            if (!res)
                return JSROOT.CallBack(newfile_callback, null);
 
             var accept_ranges = res.getResponseHeader("Accept-Ranges");
@@ -1096,7 +1124,7 @@
    TFile.prototype.GetDir = function(dirname, cycle) {
       // check first that directory with such name exists
 
-      if ((cycle==null) && (typeof dirname == 'string')) {
+      if ((cycle === undefined) && (typeof dirname == 'string')) {
          var pos = dirname.lastIndexOf(';');
          if (pos>0) { cycle = dirname.substr(pos+1); dirname = dirname.substr(0,pos); }
       }
@@ -1134,12 +1162,10 @@
              subname = keyname.substr(pos+1),
              dir = this.GetDir(dirname);
 
-         if (dir!=null) return dir.GetKey(subname, cycle, getkey_callback);
+         if (dir) return dir.GetKey(subname, cycle, getkey_callback);
 
          var dirkey = this.GetKey(dirname);
-         if ((dirkey !== null) && (getkey_callback != null) &&
-             (dirkey.fClassName.indexOf("TDirectory")==0)) {
-
+         if (dirkey && getkey_callback && (dirkey.fClassName.indexOf("TDirectory")==0)) {
             this.ReadObject(dirname, function(newdir) {
                if (newdir) newdir.GetKey(subname, cycle, getkey_callback);
             });
@@ -1160,7 +1186,7 @@
 
       this.ReadBuffer([key.fSeekKey + key.fKeylen, key.fNbytes - key.fKeylen], function(blob1) {
 
-         if (blob1==null) return callback(null);
+         if (!blob1) return callback(null);
 
          var buf = null;
 
@@ -1168,7 +1194,7 @@
             buf = JSROOT.CreateTBuffer(blob1, 0, file);
          } else {
             var objbuf = JSROOT.R__unzip(blob1, key.fObjlen);
-            if (objbuf==null) return callback(null);
+            if (!objbuf) return callback(null);
             buf = JSROOT.CreateTBuffer(objbuf, 0, file);
          }
 
@@ -1239,7 +1265,7 @@
             buf.MapObject(1, obj); // tag object itself with id==1
             buf.ClassStreamer(obj, key.fClassName);
 
-            if (key.fClassName==='TF1')
+            if ((key.fClassName==='TF1') || (key.fClassName==='TF2'))
                return file.ReadFormulas(obj, user_call_back, -1);
 
             if (file.readTrees)
@@ -1269,8 +1295,8 @@
       var file = this;
 
       this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle, function(formula) {
-          tf1.addFormula(formula);
-          file.ReadFormulas(tf1, user_call_back, indx);
+         tf1.addFormula(formula);
+         file.ReadFormulas(tf1, user_call_back, indx);
       });
    }
 
@@ -1354,7 +1380,7 @@
             file.fEND = buf.ntou4();
             file.fSeekFree = buf.ntou4();
             file.fNbytesFree = buf.ntou4();
-            var nfree = buf.ntoi4();
+            buf.shift(4); // var nfree = buf.ntoi4();
             file.fNbytesName = buf.ntou4();
             file.fUnits = buf.ntou1();
             file.fCompress = buf.ntou4();
@@ -1364,7 +1390,7 @@
             file.fEND = buf.ntou8();
             file.fSeekFree = buf.ntou8();
             file.fNbytesFree = buf.ntou4();
-            var nfree = buf.ntou4();
+            buf.shift(4); // var nfree = buf.ntou4();
             file.fNbytesName = buf.ntou4();
             file.fUnits = buf.ntou1();
             file.fCompress = buf.ntou4();
@@ -1421,8 +1447,8 @@
                for (var i = 0; i < nkeys; ++i)
                   file.fKeys.push(buf4.ReadTKey());
 
-               var buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file);
-               var si_key = buf5.ReadTKey();
+               var buf5 = JSROOT.CreateTBuffer(blobs[1], 0, file),
+                   si_key = buf5.ReadTKey();
                if (!si_key) return JSROOT.CallBack(readkeys_callback, null);
 
                file.fKeys.push(si_key);
@@ -2634,14 +2660,9 @@
 
       var ds = JSROOT.IO.DirectStreamers;
 
-      ds['TQObject'] = function(buf,obj) {
+      ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function(buf,obj) {
          // do nothing
       };
-
-      ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function(buf,obj) {
-         // do nothing
-      };
-
 
       ds['TDatime'] = function(buf,obj) {
          obj.fDatime = buf.ntou4();
@@ -2688,7 +2709,6 @@
          dir.fSeekKeys = (version > 1000) ? buf.ntou8() : buf.ntou4();
          // if ((version % 1000) > 2) buf.shift(18); // skip fUUID
       }
-
 
       ds['TBasket'] = function(buf,obj) {
          buf.ClassStreamer(obj, 'TKey');
@@ -2774,16 +2794,6 @@
       }
 
       if (elem.fType > 0) return elem; // basic type
-
-/*
-      if (typename.indexOf('string')===0) {
-         elem._typename = 'TStreamerSTLstring';
-         elem.fType = JSROOT.IO.kStreamer;
-         elem.fSTLtype = 10000; // any positive number
-         elem.fCtype = 0;
-         return elem;
-      }
-*/
 
       // check if there are STL containers
       var stltype = JSROOT.IO.kNotSTL, pos = typename.indexOf("<");
