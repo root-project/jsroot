@@ -1,5 +1,8 @@
 # JSROOT changelog
 
+## Changes in 5.4.x
+1. Fix - monitoring mode in draw.htm page
+
 ## Changes in 5.4.0
 1. New supported classes:
    - TDiamond
