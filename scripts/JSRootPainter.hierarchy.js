@@ -1145,7 +1145,7 @@
       this.disp.ForEachPainter(function(p) {
          var itemname = p.GetItemName(),
              drawopt = p.GetItemDrawOpt();
-         if (!itemname || (allitems.indexOf(itemname)>=0)) return;
+         if ((typeof itemname != 'string') || (allitems.indexOf(itemname)>=0)) return;
 
          var item = hpainter.Find(itemname), forced = false;
          if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
