@@ -517,11 +517,12 @@
       return obj;
    }
 
-   /** @memberOf JSROOT
-    * Method should be used to parse JSON code, produced by multi.json of THttpServer */
-   JSROOT.parse_multi = function(arg) {
-      if (!arg) return null;
-      var arr = JSON.parse(arg);
+   /** Method should be used to parse JSON code, produced by multi.json request of THttpServer
+    * @param {string} json string to parse
+    * @return {Array|null} returns array of parsed elements */
+   JSROOT.parse_multi = function(json) {
+      if (!json) return null;
+      var arr = JSON.parse(json);
       if (arr && arr.length)
          for (var i=0;i<arr.length;++i)
             arr[i] = this.JSONR_unref(arr[i]);
