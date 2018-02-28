@@ -2100,14 +2100,23 @@
    /// @private
    /// function used with THttpServer to assign player for the TTree object
 
-   JSROOT.drawTreePlayer = function(hpainter, itemname, askey) {
+   JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
+
+      var item = hpainter.Find(itemname),
+          top = hpainter.GetTopOnlineItem(item),
+          draw_expr = "", leaf_cnt = 0;
+      if (!item || !top) return null;
+
+      if (asleaf) {
+         draw_expr = item._name;
+         while (item && !item._ttree) item = item._parent;
+         if (!item) return null;
+         itemname = hpainter.itemFullName(item);
+      }
 
       var url = hpainter.GetOnlineItemUrl(itemname);
       if (!url) return null;
 
-      var item = hpainter.Find(itemname),
-          top = hpainter.GetTopOnlineItem(item);
-      if (!item || !top) return null;
       var root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01
 
       var mdi = hpainter.GetDisplay();
@@ -2117,9 +2126,9 @@
       if (!frame) return null;
 
       var divid = d3.select(frame).attr('id'),
-          player = new JSROOT.TBasePainter(),
-          draw_expr = "", leaf_cnt = 0;
-      if (item._childs)
+          player = new JSROOT.TBasePainter();
+
+      if (item._childs && !asleaf)
          for (var n=0;n<item._childs.length;++n) {
             var leaf = item._childs[n];
             if (leaf && leaf._kind && (leaf._kind.indexOf("ROOT.TLeaf")==0) && (leaf_cnt<2)) {
@@ -2138,10 +2147,14 @@
    /// @private
    /// function used with THttpServer when tree is not yet loaded
    JSROOT.drawTreePlayerKey = function(hpainter, itemname) {
-
       return JSROOT.drawTreePlayer(hpainter, itemname, true);
    }
 
+   /// @private
+   /// function used with THttpServer for when tree is not yet loaded
+   JSROOT.drawLeafPlayer = function(hpainter, itemname) {
+      return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
+   }
 
    // =======================================================================
 
