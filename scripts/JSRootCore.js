@@ -987,7 +987,7 @@
       if (jsroot.doing_assert === undefined) jsroot.doing_assert = [];
       if (jsroot.ready_modules === undefined) jsroot.ready_modules = [];
 
-      if ((typeof kind !== 'string') || (kind == ''))
+      if (!kind || (typeof kind !== 'string'))
          return jsroot.CallBack(callback);
 
       if (kind === '__next__') {
