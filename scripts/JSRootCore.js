@@ -1,8 +1,5 @@
-/** @file JSRootCore.js
- * Core methods of JavaScript ROOT */
-
-/** @namespace JSROOT
-  * Holder of all JSROOT functions and classes */
+/** @fileoverview Core methods of JavaScript ROOT
+  * @namespace JSROOT */
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
@@ -469,8 +466,12 @@
       return tgt;
    }
 
-   // method can be used to delete all functions from objects
-   // only such objects can be cloned when transfer to Worker
+   /** Clear all functions from the contained objects.
+    * Only such objects can be cloned when transfer to Worker or converted into JSON
+    * @param {object} src  object where functions will be removed
+    * @returns {object} same object after all functions are removed
+    * @private
+    */
    JSROOT.clear_func = function(src, map) {
       if (src === null) return src;
 
@@ -506,11 +507,12 @@
       return src;
    }
 
-   /** @memberOf JSROOT
-    * Method should be used to parse JSON code, produced with TBufferJSON */
-   JSROOT.parse = function(arg) {
-      if (!arg) return null;
-      var obj = JSON.parse(arg);
+   /** Parse JSON code normally produced with TBufferJSON
+    * @param {string} json string to parse
+    * @return {object|null} returns parsed object */
+   JSROOT.parse = function(json) {
+      if (!json) return null;
+      var obj = JSON.parse(json);
       if (obj) obj = this.JSONR_unref(obj);
       return obj;
    }
