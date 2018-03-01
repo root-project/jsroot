@@ -1168,15 +1168,6 @@
                 .call(sample.func);
    }
 
-   Painter.clearCuts = function(chopt) {
-      /* decode string "chopt" and remove graphical cuts */
-      var left = chopt.indexOf('['),
-          right = chopt.indexOf(']');
-      if ((left>=0) && (right>=0) && (left<right))
-          for (var i = left; i <= right; ++i) chopt[i] = ' ';
-      return chopt;
-   }
-
    Painter.getFontDetails = function(fontIndex, size) {
 
       var res = { name: "Arial", size: Math.round(size || 11), weight: null, style: null },
