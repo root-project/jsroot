@@ -5,7 +5,7 @@
     ],
     "recurseDepth": 10,
     "source": {
-        "include": [ "scripts/JSRootCore.js" ],
+        "include": [ "scripts/JSRootCore.js", "scripts/JSRootPainter.js" ],
         "includePattern": ".+\\.js(doc|x)?$",
         "excludePattern": "(^|\\/|\\\\)_"
     },
