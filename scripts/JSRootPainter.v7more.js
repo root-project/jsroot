@@ -39,7 +39,7 @@
           text_font = 42,
           text_size = 40;
 
-      var fillcolor = pp.GetNewColor(opts.fLineColor);
+      var fillcolor = pp.GetNewColor(opts.fTextColor);
 
       this.CreateG(use_frame);
 
