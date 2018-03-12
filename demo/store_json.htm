@@ -5,7 +5,7 @@
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-   <title>Store canvas in JSON and reproduce again</title>
+   <title>Store canvas in JSON to replicate it</title>
 
    <script src="../scripts/JSRootCore.js" type="text/javascript"></script>
 
@@ -19,16 +19,27 @@
      });
      
      function StoreJson() {
-        console.log("STORE JSON");
+        // produce JSON code
+        var json = JSROOT.StoreJSON("drawing");
+
+        // parse JSON and get new TCanvas
+        var obj2 = JSROOT.parse(json);
+        
+        // cleanup previous drawing
+        JSROOT.cleanup("replica");
+        
+        // draw canvas again
+        JSROOT.draw("replica", obj2);
+        
      }
    </script>
 
 </head>
 
 <body>
-  <div id="drawing" style="width:800px; height:600px"></div>
-  <button onclick="StoreJson()" type="button">Click Me!</button> 
-  <div id="replica" style="width:800px; height:600px"></div>
+  <div id="drawing" style="width:600px; height:400px"></div>
+  <button onclick="StoreJson()" type="button">Replicate</button> 
+  <div id="replica" style="width:600px; height:400px"></div>
   
 </body>
 
