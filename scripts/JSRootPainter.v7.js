@@ -1227,9 +1227,9 @@
 
    TFramePainter.prototype.Redraw = function() {
 
-      var pp = this.canv_painter();
-
+      var pp = this.pad_painter();
       if (pp) pp.frame_painter_ref = this;
+
       if (this.mode3d) return;
 
       // first update all attributes from objects
@@ -2457,16 +2457,16 @@
 
    // ===========================================================================
 
-
    function TPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
-      if (!this.iscan && (pad !== null) && ('fName' in pad)) {
-         this.this_pad_name = pad.fName.replace(" ", "_"); // avoid empty symbol in pad name
-         var regexp = new RegExp("^[A-Za-z][A-Za-z0-9_]*$");
-         if (!regexp.test(this.this_pad_name)) this.this_pad_name = 'jsroot_pad_' + JSROOT.id_counter++;
+      if (!this.iscan && (pad !== null)) {
+         if (pad.fObjectID)
+            this.this_pad_name = "pad" + pad.fObjectID; // use objectid as padname
+         else
+            this.this_pad_name = "ppp" + JSROOT.id_counter++; // artificical name
       }
       this.painters = []; // complete list of all painters in the pad
       this.has_canvas = true;
@@ -2722,11 +2722,15 @@
           height = svg_can.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
           pad_visible = !pad_enlarged || (pad_enlarged === this.pad),
-          w = Math.round(this.pad.fAbsWNDC * width),
-          h = Math.round(this.pad.fAbsHNDC * height),
-          x = Math.round(this.pad.fAbsXlowNDC * width),
-          y = Math.round(height * (1 - this.pad.fAbsYlowNDC)) - h,
+          w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
+
+      if (this.pad && this.pad.fDrawOpts && this.pad.fSize) {
+         w = Math.round(width * this.pad.fSize.fHoriz.fNormal.fVal);
+         h = Math.round(height * this.pad.fSize.fVert.fNormal.fVal);
+         x = Math.round(width * this.pad.fDrawOpts.fPos.fAttr.fHoriz.fNormal.fVal);
+         y = Math.round(height * this.pad.fDrawOpts.fPos.fAttr.fVert.fNormal.fVal);
+      }
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
 
@@ -2737,7 +2741,7 @@
       } else {
          svg_pad = svg_can.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
-             .classed("__root_pad_" + this.this_pad_name)
+             .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
              .property('pad_painter', this) // this is custom property
              .property('mainpainter', null); // this is custom property
@@ -3122,16 +3126,16 @@
 
          if (snap._typename == "ROOT::Experimental::TPadDisplayItem") { // subpad
 
-            var subpad = snap.fObject || null; // not subpad, but just attributes
+            var subpad = snap; // not subpad, but just attributes
 
             var padpainter = new TPadPainter(subpad, false);
-            padpainter.DecodeOptions(snap.fOption);
+            padpainter.DecodeOptions("");
             padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
             padpainter.snapid = snap.fObjectID;
 
             padpainter.CreatePadSvg();
 
-            if (padpainter.MatchObjectType("TPad") && snap.fPrimitives.length > 1) {
+            if (snap.fPrimitives && snap.fPrimitives.length > 0) {
                padpainter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "PadSnapShot");
                padpainter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge pad", "EnlargePad");
 
@@ -4059,10 +4063,11 @@
       return painter;
    }
 
+   // JSROOT.addDrawFunc({ name: "ROOT::Experimental::TPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });
+
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<1>", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHist1", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::THistDrawable<2>", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::TText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true });
-
 
    JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.TFramePainter = TFramePainter;
