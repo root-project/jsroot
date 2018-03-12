@@ -3077,6 +3077,9 @@
          pal_painter.DrawPave(arg);
       }
 
+      // mark painter as secondary - not in list of TCanvas primitives
+      pal_painter.$secondary = true;
+
       // make dummy redraw, palette will be updated only from histogram painter
       pal_painter.Redraw = function() {};
 
