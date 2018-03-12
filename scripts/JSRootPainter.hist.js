@@ -2868,6 +2868,11 @@
       if (this.Dimension() < 3) {
          this.zmin = this.colzmin;
          this.zmax = this.colzmax;
+         var fp = this.frame_painter();
+         if (fp) {
+            fp.zmin = this.colzmin;
+            fp.zmax = this.colzmax;
+         }
       }
 
       return this.fContour;
@@ -2876,7 +2881,8 @@
    THistPainter.prototype.GetContour = function() {
       if (this.fContour) return this.fContour;
 
-      var main = this.main_painter();
+      var main = this.main_painter(),
+          fp = this.frame_painter();
       if ((main !== this) && main.fContour) {
          this.fContour = main.fContour;
          this.fCustomContour = main.fCustomContour;
@@ -2895,9 +2901,9 @@
          zmin = this.options.minimum;
          zmax = this.options.maximum;
       }
-      if (this.zoom_zmin != this.zoom_zmax) {
-         zmin = this.zoom_zmin;
-         zmax = this.zoom_zmax;
+      if (fp && (fp.zoom_zmin != fp.zoom_zmax)) {
+         zmin = fp.zoom_zmin;
+         zmax = fp.zoom_zmax;
       }
 
       if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
@@ -2909,6 +2915,11 @@
          if (this.Dimension()<3) {
             this.zmin = this.colzmin;
             this.zmax = this.colzmax;
+
+            if (fp) {
+               fp.zmin = this.colzmin;
+               fp.zmax = this.colzmax;
+            }
          }
          return this.fContour;
       }
