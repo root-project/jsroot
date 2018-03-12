@@ -2,6 +2,8 @@
 
 ## Changes in 5.4.x
 1. Fix - monitoring mode in draw.htm page
+2. Fix - zooming in colz palette 
+
 
 ## Changes in 5.4.0
 1. New supported classes:
