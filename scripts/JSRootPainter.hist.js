@@ -1401,8 +1401,8 @@
          axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
          if (contour) {
-            zmin = Math.min(contour[0], main.zmin);
-            zmax = Math.max(contour[contour.length-1], main.zmax);
+            zmin = Math.min(contour[0], framep.zmin);
+            zmax = Math.max(contour[contour.length-1], framep.zmax);
          } else
          if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
             // this is case of TH2 (needs only for size adjustment)
@@ -2865,14 +2865,10 @@
             this.fContour.push(this.colzmin + dz*level);
       }
 
-      if (this.Dimension() < 3) {
-         this.zmin = this.colzmin;
-         this.zmax = this.colzmax;
-         var fp = this.frame_painter();
-         if (fp) {
-            fp.zmin = this.colzmin;
-            fp.zmax = this.colzmax;
-         }
+      var fp = this.frame_painter();
+      if ((this.Dimension() < 3) && fp) {
+         fp.zmin = this.colzmin;
+         fp.zmax = this.colzmax;
       }
 
       return this.fContour;
@@ -2912,14 +2908,9 @@
          this.colzmin = zmin;
          this.colzmax = zmax;
          if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
-         if (this.Dimension()<3) {
-            this.zmin = this.colzmin;
-            this.zmax = this.colzmax;
-
-            if (fp) {
-               fp.zmin = this.colzmin;
-               fp.zmax = this.colzmax;
-            }
+         if ((this.Dimension()<3) && fp) {
+            fp.zmin = this.colzmin;
+            fp.zmax = this.colzmax;
          }
          return this.fContour;
       }
