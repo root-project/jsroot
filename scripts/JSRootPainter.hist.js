@@ -1339,6 +1339,7 @@
             break;
          case "TPaveStats":
             painter.PaveDrawFunc = painter.DrawPaveStats;
+            painter.$secondary = true; // indicates that painter created from others
             break;
          case "TPaveText":
          case "TPavesText":
@@ -2396,20 +2397,26 @@
       return indx;
    }
 
-   THistPainter.prototype.FindStat = function() {
-      if (this.histo.fFunctions !== null)
-         for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
-            var func = this.histo.fFunctions.arr[i];
+   THistPainter.prototype.FindFunction = function(type_name, obj_name) {
+      var histo = this.GetObject(),
+          funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
 
-            if ((func._typename == 'TPaveStats') &&
-                (func.fName == 'stats')) return func;
-         }
+      if (!funcs) return null;
+
+      for (var i = 0; i < funcs.length; ++i) {
+         if (obj_name && (funcs[i].fName !== obj_name)) continue;
+         if (funcs[i]._typename === type_name) return funcs[i];
+      }
 
       return null;
    }
 
+   THistPainter.prototype.FindStat = function() {
+      return this.FindFunction('TPaveStats', 'stats');
+   }
+
    THistPainter.prototype.IgnoreStatsFill = function() {
-      return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
+      return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
    THistPainter.prototype.CreateStat = function(force) {
@@ -2470,16 +2477,6 @@
          histo.fFunctions.AddFirst(obj);
       else
          histo.fFunctions.Add(obj);
-   }
-
-   THistPainter.prototype.FindFunction = function(type_name) {
-      var funcs = this.GetObject().fFunctions;
-      if (funcs === null) return null;
-
-      for (var i = 0; i < funcs.arr.length; ++i)
-         if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
-
-      return null;
    }
 
    THistPainter.prototype.DrawNextFunction = function(indx, callback) {

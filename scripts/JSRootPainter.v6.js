@@ -4480,16 +4480,13 @@
 
       if (!this.normal_canvas) {
 
-         console.log('List of primitives', canv.fPrimitives);
-
          // fill list of primitives from painters
          this.ForEachPainterInPad(function(p) {
+            if (p.$secondary) return; // ignore all secoandry painters
+
             var subobj = p.GetObject();
-
-            if (subobj) console.log(subobj._typename, 'opt', p.OptionsAsString());
-
-            if (subobj && subobj._typename=="TH2F") canv.fPrimitives.Add(subobj, p.OptionsAsString());
-
+            if (subobj && subobj._typename)
+               canv.fPrimitives.Add(subobj, p.OptionsAsString());
          }, "objects");
       }
 
@@ -4500,7 +4497,6 @@
 
       return res;
    }
-
 
    function drawCanvas(divid, can, opt) {
       var nocanvas = (can===null);
