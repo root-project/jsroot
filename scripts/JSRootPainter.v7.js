@@ -2717,9 +2717,10 @@
          return true;
       }
 
-      var svg_can = this.svg_canvas(),
-          width = svg_can.property("draw_width"),
-          height = svg_can.property("draw_height"),
+      var svg_parent = this.svg_pad(),
+          svg_can = this.svg_canvas(),
+          width = svg_parent.property("draw_width"),
+          height = svg_parent.property("draw_height"),
           pad_enlarged = svg_can.property("pad_enlarged"),
           pad_visible = !pad_enlarged || (pad_enlarged === this.pad),
           w = width, h = height, x = 0, y = 0,
@@ -2739,7 +2740,7 @@
          svg_rect = svg_pad.select(".root_pad_border");
          btns = this.svg_layer("btns_layer", this.this_pad_name);
       } else {
-         svg_pad = svg_can.select(".primitives_layer")
+         svg_pad = svg_parent.select(".primitives_layer")
              .append("svg:svg") // here was g before, svg used to blend all drawin outside
              .classed("__root_pad_" + this.this_pad_name, true)
              .attr("pad", this.this_pad_name) // set extra attribute  to mark pad name
