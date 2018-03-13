@@ -2797,7 +2797,6 @@
       return pad_visible;
    }
 
-
    TPadPainter.prototype.RemovePrimitive = function(obj) {
       if (!this.pad || !this.pad.fPrimitives) return;
       var indx = this.pad.fPrimitives.arr.indexOf(obj);
@@ -2827,10 +2826,11 @@
    TPadPainter.prototype.HasObjectsToDraw = function() {
       // return true if any objects beside sub-pads exists in the pad
 
-      if (!this.pad || !this.pad.fPrimitives) return false;
+      var arr = this.pad ? this.pad.fPrimitives : null;
 
-      for (var n=0;n<this.pad.fPrimitives.arr.length;++n)
-         if (this.pad.fPrimitives.arr[n] && this.pad.fPrimitives.arr[n]._typename != "TPad") return true;
+      if (arr)
+         for (var n=0;n<arr.length;++n)
+            if (arr[n] && arr[n]._typename != "ROOT::Experimental::TPadDisplayItem") return true;
 
       return false;
    }
