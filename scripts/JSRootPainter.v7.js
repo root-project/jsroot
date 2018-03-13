@@ -3220,13 +3220,7 @@
          this.SetDivId(this.divid);  // now add to painters list
          this.AddOnlineButtons();
 
-         var pthis = this;
-
-         this.DrawNextSnap(snap.fPrimitives, -1, function() {
-            var fp = pthis.frame_painter();
-            if (fp) fp.AddInteractive(); // TODO: do it directly in the frame painter
-            JSROOT.CallBack(call_back);
-         });
+         this.DrawNextSnap(snap.fPrimitives, -1, call_back);
 
          return;
       }
@@ -4051,12 +4045,7 @@
       if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
-      // if (nocanvas && opt.indexOf("noframe") < 0)
-      // var fp = drawFrame(divid, null);
-
       painter.DrawPrimitives(0, function() {
-         var fp = painter.frame_painter();
-         if (fp) fp.AddInteractive();
          painter.DrawingReady();
       });
 
