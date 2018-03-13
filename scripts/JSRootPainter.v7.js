@@ -846,10 +846,17 @@
    }
 
    TFramePainter.prototype.UpdateAttributes = function(force) {
-      // var tframe = this.GetObject();
+      var tframe = this.GetObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
          JSROOT.extend(this, JSROOT.gStyle.FrameNDC);
+
+         if (tframe && tframe.fPos && tframe.fSize) {
+            this.fX1NDC = tframe.fPos.fHoriz.fNormal.fVal;
+            this.fX2NDC = this.fX1NDC + tframe.fSize.fHoriz.fNormal.fVal;
+            this.fY1NDC = tframe.fPos.fVert.fNormal.fVal;
+            this.fY2NDC = this.fY1NDC + tframe.fSize.fVert.fNormal.fVal;
+         }
       }
 
       if (this.fillatt === undefined) {
