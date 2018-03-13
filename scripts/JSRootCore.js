@@ -235,9 +235,14 @@
          fTimeOffset : 788918400 // UTC time at 01/01/95
       };
 
+   /** Generate mask for given bit
+    *
+    * @param {number} n bit number
+    * @returns {Number} produced make
+    * @private */
    JSROOT.BIT = function(n) { return 1 << (n); }
 
-   // TH1 status bits
+   /** TH1 status bits */
    JSROOT.TH1StatusBits = {
          kNoStats       : JSROOT.BIT(9),  // don't draw stats box
          kUserContour   : JSROOT.BIT(10), // user specified contour levels
@@ -248,8 +253,8 @@
          kIsAverage     : JSROOT.BIT(18)  // Bin contents are average (used by Add)
    };
 
-   // wrapper for console.log, avoids missing console in IE
-   // if divid specified, provide output to the HTML element
+   /** Wrapper for console.log, let redirect output to specified div element
+    * @private */
    JSROOT.console = function(value, divid) {
       if ((typeof divid == 'string') && document.getElementById(divid))
          document.getElementById(divid).innerHTML = value;
@@ -258,14 +263,18 @@
          console.log(value);
    }
 
-   // wrapper for alert, throw Error in Node.js
+   /** Wrapper for alert, throws Error in Node.js */
    JSROOT.alert = function(msg) {
       if (this.nodeis) throw new Error(msg);
       if (typeof alert === 'function') alert(msg);
       else JSROOT.console('ALERT: ' + msg);
    }
 
-   // Takes any value
+   /**
+    * Seed simple random generator
+    *
+    * @param {number} i seed value
+    */
    JSROOT.seed = function(i) {
       i = Math.abs(i);
       if (i > 1e8) i = Math.abs(1e8 * Math.sin(i)); else
@@ -274,8 +283,13 @@
       this.m_z = 987654321;
    }
 
-   // Returns number between 0 (inclusive) and 1.0 (exclusive),
-   // just like Math.random().
+   /**
+    * Simple random generator
+    *
+    * Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
+    *
+    * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
+    * */
    JSROOT.random = function() {
       if (this.m_z===undefined) return Math.random();
       this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
@@ -285,11 +299,14 @@
       return result + 0.5;
    }
 
-   /// Should be used to reintroduce objects references, produced by TBufferJSON
-   // Replace all references inside object, object should not be null
-   // Idea of the code taken from JSON-R code, found on
-   // https://github.com/graniteds/jsonr
-   // Only unref part was used, arrays are not accounted as objects
+   /** Should be used to reintroduce objects references, produced by TBufferJSON
+    * Replace all references inside object, object should not be null
+    * Idea of the code taken from JSON-R code, found on
+    * https://github.com/graniteds/jsonr
+    * Only unref part was used, arrays are not accounted as objects
+    * @param {object} obj  object where references will be replaced
+    * @returns {object} same object with replaced references
+    * @private */
    JSROOT.JSONR_unref = function(obj) {
 
       var map = [], newfmt = undefined;
@@ -401,8 +418,8 @@
 
    JSROOT.debug = 0;
 
-   // This is simple replacement of jQuery.extend method
-   // Just copy (not clone) all fields from source to the target object
+   /** This is simple replacement of jQuery.extend method
+    * Just copies (not clone) all fields from source to the target object */
    JSROOT.extend = function(tgt, src) {
       if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
@@ -413,7 +430,8 @@
       return tgt;
    }
 
-   // Make deep clone of the object, including all sub-objects
+   /** Make deep clone of the object, including all sub-objects
+    * @private */
    JSROOT.clone = function(src, map, nofunc) {
       if (src === null) return null;
 
@@ -466,7 +484,9 @@
       return tgt;
    }
 
-   /** Clear all functions from the contained objects.
+   /**
+    * Clear all functions from the contained objects
+    *
     * Only such objects can be cloned when transfer to Worker or converted into JSON
     * @param {object} src  object where functions will be removed
     * @returns {object} same object after all functions are removed
@@ -507,9 +527,12 @@
       return src;
    }
 
-   /** Parse JSON code normally produced with TBufferJSON
+   /**
+    * Parse JSON code produced with TBufferJSON.
+    *
     * @param {string} json string to parse
-    * @return {object|null} returns parsed object */
+    * @return {object|null} returns parsed object
+    */
    JSROOT.parse = function(json) {
       if (!json) return null;
       var obj = JSON.parse(json);
@@ -517,9 +540,12 @@
       return obj;
    }
 
-   /** Method should be used to parse JSON code, produced by multi.json request of THttpServer
+   /**
+    * Method should be used to parse JSON code, produced by multi.json request of THttpServer
+    *
     * @param {string} json string to parse
-    * @return {Array|null} returns array of parsed elements */
+    * @return {Array|null} returns array of parsed elements
+    */
    JSROOT.parse_multi = function(json) {
       if (!json) return null;
       var arr = JSON.parse(json);
@@ -529,9 +555,12 @@
       return arr;
    }
 
-   /** @memberOf JSROOT
+   /**
     * Method converts JavaScript object into ROOT-like JSON.
-    * Produced JSON can be used in JSROOT.parse() again */
+    *
+    * Produced JSON can be used in JSROOT.parse() again
+    * When performed properly, JSON can be used in TBufferJSON to read data back with C++
+    */
    JSROOT.toJSON = function(obj) {
       if (!obj || typeof obj !== 'object') return "";
 
@@ -581,12 +610,18 @@
       return JSON.stringify(tgt);
    }
 
-   /** @memberOf JSROOT */
+   /**
+    * Analyzes document.URL and extracts options after '?' mark
+    *
+    * Following options supported ?opt1&opt2=3
+    * In case of opt1 empty string will be returned, in case of opt2 '3'
+    * If option not found, null is returned (or default value value is provided)
+    *
+    * @param {string} opt option to search
+    * @param {string} full URL with options, document.URL will be used when not specified
+    * @returns {string|null} found value
+    */
    JSROOT.GetUrlOption = function(opt, url, dflt) {
-      // analyzes document.URL and extracts options after '?' mark
-      // following options supported ?opt1&opt2=3
-      // In case of opt1 empty string will be returned, in case of opt2 '3'
-      // If option not found, null is returned (or provided default value)
 
       if (dflt === undefined) dflt = null;
       if ((opt===null) || (typeof opt != 'string') || (opt.length==0)) return dflt;
@@ -629,10 +664,13 @@
       return dflt;
    }
 
+   /**
+    * Parse string value as array.
+    *
+    * It could be just simple string:  "value" or
+    * array with or without string quotes:  [element], ['elem1',elem2]
+    */
    JSROOT.ParseAsArray = function(val) {
-      // parse string value as array.
-      // It could be just simple string:  "value"
-      //  or array with or without string quotes:  [element], ['eleme1',elem2]
 
       var res = [];
 
@@ -681,13 +719,13 @@
       return res;
    }
 
+   /**
+    * Special handling of URL options to produce array
+    * if normal option is specified ...?opt=abc, than array with single element will be created
+    * one could specify normal JSON array ...?opts=['item1','item2']
+    * but also one could skip quotes ...?opts=[item1,item2]
+    */
    JSROOT.GetUrlOptionAsArray = function(opt, url) {
-      // special handling of URL options to produce array
-      // if normal option is specified ...?opt=abc, than array with single element will be created
-      // one could specify normal JSON array ...?opts=['item1','item2']
-      // but also one could skip quotes ...?opts=[item1,item2]
-      // one could collect values from several options, specifying
-      // options names via semicolon like opt='item;items'
 
       var res = [];
 
@@ -708,6 +746,11 @@
       return res;
    }
 
+   /**
+    * Find function with given name
+    *
+    * Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
+    */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
@@ -721,15 +764,19 @@
       return (typeof elem == 'function') ? elem : null;
    }
 
+   /**
+    * Generic method to invoke callback function
+    *
+    * @param {object|function} func either normal function or container like
+    * { obj: object_pointer, func: name of method to call }
+    * @param arg1 first optional argument of callback
+    * @param arg2 second optional argument of callback
+    */
    JSROOT.CallBack = function(func, arg1, arg2) {
-      // generic method to invoke callback function
-      // func either normal function or container like
-      // { obj: object_pointer, func: name of method to call }
-      // arg1, arg2 are optional arguments of the callback
 
       if (typeof func == 'string') func = JSROOT.findFunction(func);
 
-      if (func == null) return;
+      if (!func) return;
 
       if (typeof func == 'function') return func(arg1,arg2);
 
@@ -742,21 +789,28 @@
       }
    }
 
-   JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
-      // Create asynchronous XMLHttpRequest object.
-      // One should call req.send() to submit request
-      // kind of the request can be:
-      //   "bin" - abstract binary data, result as string (default)
-      //   "buf" - abstract binary data, result as BufferArray
-      //   "text" - returns req.responseText
-      //   "object" - returns JSROOT.parse(req.responseText)
-      //   "multi" - returns correctly parsed multi.json request
-      //   "xml" - returns res.responseXML
-      //   "head" - returns request itself, uses "HEAD" method
-      // Result will be returned to the callback functions
-      // Request will be set as this pointer in the callback
-      // If failed, request returns null
+   /**
+    * Create asynchronous XMLHttpRequest object.
+    * One should call req.send() to submit request
+    * kind of the request can be:
+    *   "bin" - abstract binary data, result as string (default)
+    *   "buf" - abstract binary data, result as BufferArray
+    *   "text" - returns req.responseText
+    *   "object" - returns JSROOT.parse(req.responseText)
+    *   "multi" - returns correctly parsed multi.json request
+    *   "xml" - returns res.responseXML
+    *   "head" - returns request itself, uses "HEAD" method
+    * Result will be returned to the callback functions
+    * Request will be set as this pointer in the callback
+    * If failed, request returns null
+    *
+    * @param {string} url URL for the request
+    * @param {string} kind kind of requested data
+    * @param {function} user_call_back function called when request is completed
+    * @returns {object} XMLHttpRequest object
+    */
 
+   JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
 
       var xhr = null;
       if (JSROOT.nodejs) {
