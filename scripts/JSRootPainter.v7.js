@@ -861,7 +861,12 @@
 
       if (this.fillatt === undefined) {
          this.createAttFill({ pattern: 1001, color: 0 });
-         this.fillatt.SetSolidColor('white');
+
+         var fillcolor = 'white';
+         if (tframe && tframe.fFillColor)
+            fillcolor = this.canv_painter().GetNewColor(tframe.fFillColor, true);
+
+         this.fillatt.SetSolidColor(fillcolor);
       }
 
       this.createAttLine({ color: 'black' });
@@ -1679,10 +1684,7 @@
       }
 
       this.zoom_kind = 0;
-
    }
-
-
 
    TFramePainter.prototype.startTouchZoom = function() {
       // in case when zooming was started, block any other kind of events
@@ -4020,10 +4022,10 @@
 /// Otherwise the `fRedOrPalettePos` member of RGBa contains the color index in
 /// the current palette
 
-   TCanvasPainter.prototype.GetNewColor = function(attr) {
+   TCanvasPainter.prototype.GetNewColor = function(attr, direct) {
       if (!attr) return;
 
-      var tcol = attr.fAttr; // this is TColor instance
+      var tcol = direct ? attr : attr.fAttr; // this is TColor instance
       if (!tcol.fKind)
          return "rgb(" + Math.round(tcol.fRedOrPalettePos*255) + "," +
                          Math.round(tcol.fGreen*255) + "," +
