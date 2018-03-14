@@ -271,7 +271,7 @@
    }
 
    /**
-    * Seed simple random generator
+    * @summary Seed simple random generator
     *
     * @param {number} i seed value
     */
@@ -284,9 +284,9 @@
    }
 
    /**
-    * Simple random generator
+    * @summary Simple random generator
     *
-    * Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
+    * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
     *
     * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
     * */
@@ -299,8 +299,9 @@
       return result + 0.5;
    }
 
-   /** Should be used to reintroduce objects references, produced by TBufferJSON
-    * Replace all references inside object, object should not be null
+   /** @summary Should be used to reintroduce objects references, produced by TBufferJSON.
+    *
+    * @desc Replace all references inside object, object should not be null
     * Idea of the code taken from JSON-R code, found on
     * https://github.com/graniteds/jsonr
     * Only unref part was used, arrays are not accounted as objects
@@ -418,8 +419,8 @@
 
    JSROOT.debug = 0;
 
-   /** This is simple replacement of jQuery.extend method
-    * Just copies (not clone) all fields from source to the target object */
+   /** @summary Just copies (not clone) all fields from source to the target object
+    * @desc This is simple replacement of jQuery.extend method */
    JSROOT.extend = function(tgt, src) {
       if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
@@ -430,7 +431,7 @@
       return tgt;
    }
 
-   /** Make deep clone of the object, including all sub-objects
+   /** @summary Make deep clone of the object, including all sub-objects
     * @private */
    JSROOT.clone = function(src, map, nofunc) {
       if (src === null) return null;
@@ -485,7 +486,7 @@
    }
 
    /**
-    * Clear all functions from the contained objects
+    * @summary Clear all functions from the contained objects
     *
     * Only such objects can be cloned when transfer to Worker or converted into JSON
     * @param {object} src  object where functions will be removed
@@ -528,7 +529,7 @@
    }
 
    /**
-    * Parse JSON code produced with TBufferJSON.
+    * @summary Parse JSON code produced with TBufferJSON.
     *
     * @param {string} json string to parse
     * @return {object|null} returns parsed object
@@ -541,7 +542,8 @@
    }
 
    /**
-    * Method should be used to parse JSON code, produced by multi.json request of THttpServer
+    * @summary Parse multi.json request results
+    * @desc Method should be used to parse JSON code, produced by multi.json request of THttpServer
     *
     * @param {string} json string to parse
     * @return {Array|null} returns array of parsed elements
@@ -556,9 +558,9 @@
    }
 
    /**
-    * Method converts JavaScript object into ROOT-like JSON.
+    * @summary Method converts JavaScript object into ROOT-like JSON
     *
-    * Produced JSON can be used in JSROOT.parse() again
+    * @desc Produced JSON can be used in JSROOT.parse() again
     * When performed properly, JSON can be used in TBufferJSON to read data back with C++
     */
    JSROOT.toJSON = function(obj) {
@@ -611,9 +613,9 @@
    }
 
    /**
-    * Analyzes document.URL and extracts options after '?' mark
+    * @summary Analyzes document.URL and extracts options after '?' mark
     *
-    * Following options supported ?opt1&opt2=3
+    * @desc Following options supported ?opt1&opt2=3
     * In case of opt1 empty string will be returned, in case of opt2 '3'
     * If option not found, null is returned (or default value value is provided)
     *
@@ -665,9 +667,9 @@
    }
 
    /**
-    * Parse string value as array.
+    * @summary Parse string value as array.
     *
-    * It could be just simple string:  "value" or
+    * @desc It could be just simple string:  "value" or
     * array with or without string quotes:  [element], ['elem1',elem2]
     */
    JSROOT.ParseAsArray = function(val) {
@@ -720,9 +722,9 @@
    }
 
    /**
-    * Special handling of URL options to produce array.
+    * @summary Special handling of URL options to produce array.
     *
-    * If normal option is specified ...?opt=abc, than array with single element will be created
+    * @desc If normal option is specified ...?opt=abc, than array with single element will be created
     * one could specify normal JSON array ...?opts=['item1','item2']
     * but also one could skip quotes ...?opts=[item1,item2]
     * @private
@@ -749,9 +751,9 @@
    }
 
    /**
-    * Find function with given name.
+    * @summary Find function with given name.
     *
-    * Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
+    * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
     */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
@@ -767,7 +769,7 @@
    }
 
    /**
-    * Generic method to invoke callback function.
+    * @summary Generic method to invoke callback function.
     *
     * @param {object|function} func either normal function or container like
     * { obj: object_pointer, func: name of method to call }
@@ -792,9 +794,9 @@
    }
 
    /**
-    * Create asynchronous XMLHttpRequest object.
+    * @summary Create asynchronous XMLHttpRequest object.
     *
-    * One should call req.send() to submit request
+    * @desc One should call req.send() to submit request
     * kind of the request can be:
     *
     *    - "bin" - abstract binary data, result as string (default)
@@ -907,14 +909,18 @@
       return xhr;
    }
 
+   /**
+    * @summary Dynamic script loader
+    *
+    * @private
+    * @desc One could specify list of scripts or style files, separated by semicolon ';'
+    * one can prepend file name with '$$$' - than file will be loaded from JSROOT location
+    * This location can be set by JSROOT.source_dir or it will be detected automatically
+    * by the position of JSRootCore.js file, which must be loaded by normal methods:
+    * <script type="text/javascript" src="scripts/JSRootCore.js"></script>
+    * When all scripts are loaded, callback function will be called
+    */
    JSROOT.loadScript = function(urllist, callback, debugout, from_previous) {
-      // dynamic script loader using callback
-      // (as loading scripts may be asynchronous)
-      // one could specify list of scripts or style files, separated by semicolon ';'
-      // one can prepend file name with '$$$' - than file will be loaded from JSROOT location
-      // This location can be set by JSROOT.source_dir or it will be detected automatically
-      // by the position of JSRootCore.js file, which must be loaded by normal methods:
-      // <script type="text/javascript" src="scripts/JSRootCore.js"></script>
 
       delete JSROOT.complete_script_load;
 
@@ -1030,9 +1036,9 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   /** Load JSROOT functionality.
+   /** @summary Load JSROOT functionality.
     *
-    * As first argument, required components should be specifed:
+    * @desc As first argument, required components should be specifed:
     *
     *    - 'io'     TFile functionality
     *    - 'tree'   TTree support
@@ -1341,7 +1347,7 @@
       });
    }
 
-   /** Method to build JSROOT GUI with browser
+   /** @summary Method to build JSROOT GUI with browser
     * @private
     */
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
@@ -1380,8 +1386,16 @@
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
          JSROOT.CallBack(andThen);
       }, debugout);
-   };
+   }
 
+   /** @summary Create some ROOT classes
+    *
+    * @param {string} typename - ROOT class name
+    * @example
+    * var obj = JSROOT.Create("TNamed");
+    * obj.fName = "name";
+    * obj.fTitle = "title";
+    */
    JSROOT.Create = function(typename, target) {
       var obj = target || {};
 

@@ -1,5 +1,3 @@
-/** @fileoverview Basic painter methods in JSROOT */
-
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootCore', 'd3'], factory );
@@ -3935,6 +3933,10 @@
       // for the case when drawing should be repeated
    }
 
+   /** @summary Start text drawing
+    *
+    * @desc required before any text can be drawn
+    */
    TObjectPainter.prototype.StartTextDrawing = function(font_face, font_size, draw_g, max_font_size) {
       // we need to preserve font to be able rescale at the end
 
@@ -3972,6 +3974,10 @@
       return res;
    }
 
+   /** @summary Finish text drawing
+    *
+    * @desc Should be called to complete all text drawing operations
+    */
    TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
       if (!draw_g) draw_g = this.draw_g;
 
@@ -4199,8 +4205,12 @@
       return draw_g.property('max_text_width');
    }
 
+   /** @ummary draw TLatex inside element
+    *
+    * @desc attempt to implement subset of TLatex with plain SVG text and tspan elements
+    * @private
+    */
    TObjectPainter.prototype.produceLatex = function(node, label, arg, curr) {
-      // attempt to implement subset of TLatex with plain SVG text and tspan elements
 
       if (!curr) {
          // initial dy = -0.1 is to move complete from very bottom line like with normal text drawing
@@ -4745,17 +4755,23 @@
       return true;
    }
 
+   /** @summary draw text
+    *
+    *  @param {object} arg - different text draw options
+    *  @param {string} arg.text - text to draw
+    *  @param {number} [arg.align = 12] - int value like 12 or 31
+    *  @param {string} [arg.align = undefined] - end;bottom
+    *  @param {number} [arg.x = 0] - x position
+    *  @param {number} [arg.y = 0] - y position
+    *  @param {number} [arg.width = undefined] - when specified, adjust font size in the specified box
+    *  @param {number} [arg.height = undefined] - when specified, adjust font size in the specified box
+    *  @param {number} arg.latex - 0 - plain text, 1 - normal TLatex, 2 - math
+    *  @param {string} [arg.color=black] - text color
+    *  @param {number} [arg.rotate = undefined] - rotaion angle
+    *  @param {number} [arg.font_size = undefined] - fixed font size
+    *  @param {object} [arg.draw_g = this.draw_g] - element where to place text, if not specified central painter container is used
+    */
    TObjectPainter.prototype.DrawText = function(arg) {
-      // following arguments can be supplied
-      //  align - either int value or text
-      //  x,y - position
-      //  width, height - dimension (optional)
-      //  text - text to draw
-      //  latex - 0 - plain text, 1 - normal TLatex, 2 - math
-      //  color - text color
-      //  rotate - rotaion angle (optional)
-      //  font_size - fixed font size (optional)
-      //  draw_g - element where to place text
 
       var label = arg.text || "",
           align = ['start', 'middle'];
@@ -4914,8 +4930,12 @@
       return 0;
    }
 
+   /** @summary Finish MathJax drawing
+    * @desc function should be called when processing of element is completed
+    * @private
+    */
+
    TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, id) {
-      // function should be called when processing of element is completed
 
       if (fo_g.node().parentNode !== draw_g.node()) return;
 
@@ -5348,13 +5368,14 @@
       return painter.DrawingReady();
    }
 
-   ///////////////////////////////////////////////////////////////////////////////
-   /// function used to react on browser window resize event
-   /// While many resize events could come in short time,
-   /// resize will be handled with delay after last resize event
-   /// handle can be function or object with CheckResize function
-   /// one could specify delay after which resize event will be handled
-
+   /** @summary Register handle to react on window resize
+    *
+    * @desc function used to react on browser window resize event
+    * While many resize events could come in short time,
+    * resize will be handled with delay after last resize event
+    * handle can be function or object with CheckResize function
+    * one could specify delay after which resize event will be handled
+    */
    JSROOT.RegisterForResize = function(handle, delay) {
 
       if (!handle) return;
@@ -5636,7 +5657,7 @@
    }
 
    /**
-    * Draw object in specified HTML element with given draw options.
+    * @summary Draw object in specified HTML element with given draw options.
     *
     * @param {string|object} divid - id of div element to draw or directly DOMElement
     * @param {object} obj - object to draw, object type should be registered before in JSROOT
@@ -5757,9 +5778,9 @@
    }
 
    /**
-    * Redraw object in specified HTML element with given draw options.
+    * @summary Redraw object in specified HTML element with given draw options.
     *
-    * If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
+    * @desc If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
     * If drawing was already done, that content will be updated
     * See {@link JSROOT.draw} for meaning of arguments and return vlues
     */
@@ -5801,9 +5822,9 @@
       return JSROOT.draw(divid, obj, opt, callback);
    }
 
-   /** Save object, drawn in specified element, as JSON.
+   /** @summary Save object, drawn in specified element, as JSON.
     *
-    * Normally it is TCanvas object with list of primitives
+    * @desc Normally it is TCanvas object with list of primitives
     * @param {string|object} divid - top element id or DOMElement
     * @returns {string} produced JSON string
     */
@@ -5817,9 +5838,9 @@
    }
 
 
-   /** Create SVG image for provided object.
+   /** @summary Create SVG image for provided object.
     *
-    * Function especially useful in Node.js environment to generate images for
+    * @desc Function especially useful in Node.js environment to generate images for
     * supported ROOT classes
     *
     * @param {object} args - contains different settings
@@ -5895,9 +5916,9 @@
    }
 
    /**
-    * Check resize of drawn element
+    * @summary Check resize of drawn element
     *
-    * As first argument divid one should use same argument as for the drawing
+    * @desc As first argument divid one should use same argument as for the drawing
     * As second argument, one could specify "true" value to force redrawing of
     * the element even after minimal resize of the element
     * Or one just supply object with exact sizes like { width:300, height:200, force:true };
@@ -5920,7 +5941,7 @@
     */
    JSROOT.CheckElementResize = JSROOT.resize;
 
-   /** Safely remove all JSROOT objects from specified element */
+   /** @summary Safely remove all JSROOT objects from specified element */
    JSROOT.cleanup = function(divid) {
       var dummy = new TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
