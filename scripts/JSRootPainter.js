@@ -118,21 +118,26 @@
 
    // ==========================================================================================
 
+   /** Draw options interpreter.
+    * @constructor
+    * @memberof JSROOT
+    */
    var DrawOptions = function(opt) {
       this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
       this.part = "";
    }
 
-   /// returns true if remaining options are empty
+   /** Returns true if remaining options are empty. */
    DrawOptions.prototype.empty = function() {
       return this.opt.length === 0;
    }
 
-   /// returns remaining part of the draw options
+   /** Returns remaining part of the draw options. */
    DrawOptions.prototype.remain = function() {
       return this.opt;
    }
 
+   /** Checks if given option exists */
    DrawOptions.prototype.check = function(name,postpart) {
       var pos = this.opt.indexOf(name);
       if (pos < 0) return false;
@@ -149,13 +154,17 @@
       return true;
    }
 
+   /** Returns remaining part of found option as integer. */
    DrawOptions.prototype.partAsInt = function(offset, dflt) {
       var val = this.part.replace( /^\D+/g, '');
       val = val ? parseInt(val,10) : Number.NaN;
       return isNaN(val) ? (dflt || 0) : val + (offset || 0);
    }
 
-   /** @class JSROOT.Painter Holder of different functions and classes for drawing */
+   // ============================================================================================
+
+   /** @namespace Painter
+    * @memberof JSROOT */
    var Painter = {
          Coord: {
             kCARTESIAN : 1,
@@ -576,35 +585,42 @@
       }
    }
 
-   /// Use TObjArray of TColor instances, typically stored together with TCanvas primitives
+   /** Use TObjArray of TColor instances, typically stored together with TCanvas primitives
+    * @private */
    Painter.adoptRootColors = function(objarr) {
       Painter.extendRootColors(Painter.root_colors, objarr);
    }
 
    // =====================================================================
 
+   /**
+    * Color palette handle.
+    * @constructor
+    * @memberof JSROOT
+    */
+
    function ColorPalette(arr) {
       this.palette = arr;
    }
 
-   /// returns color index which correspond to contour index of provided length
+   /** Returns color index which correspond to contour index of provided length */
    ColorPalette.prototype.calcColorIndex = function(i,len) {
       var theColor = Math.floor((i+0.99)*this.palette.length/(len-1));
       if (theColor > this.palette.length-1) theColor = this.palette.length-1;
       return theColor;
    }
 
-   /// returns color with provided index
+   /** Returns color with provided index */
    ColorPalette.prototype.getColor = function(indx) {
       return this.palette[indx];
    }
 
-   /// returns number of colors in the palette
+   /** Returns number of colors in the palette */
    ColorPalette.prototype.getLength = function() {
       return this.palette.length;
    }
 
-   // calculate color for given i and len
+   /** Calculate color for given i and len */
    ColorPalette.prototype.calcColor = function(i,len) {
       var indx = this.calcColorIndex(i,len);
       return this.getColor(indx);
@@ -658,10 +674,20 @@
       this.Change(args.color, args.style, args.size);
    }
 
+   /** Reset position, used for optimization of drawing of multiple markers
+    * @private */
    TAttMarkerHandler.prototype.reset_pos = function() {
       this.lastx = this.lasty = null;
    }
 
+   /** Create marker path for given position.
+    *
+    * When drawing many elementary points, created path may depend from previously produced markers.
+    *
+    * @param {number} x - first coordinate
+    * @param {number} y - second coordinate
+    * @returns {string} path string
+    */
    TAttMarkerHandler.prototype.create = function(x,y) {
       if (!this.optimized)
          return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
@@ -678,6 +704,7 @@
       return this.scale*this.size;
    }
 
+   /** Returns approximate length of produced marker string */
    TAttMarkerHandler.prototype.MarkerLength = function() {
       return this.marker ? this.marker.length : 10;
    }
@@ -935,12 +962,15 @@
 
    // =======================================================================
 
+
+   /**
+    * Handle for fill attributes.
+    * @constructor
+    * @memberof JSROOT
+    * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
+    */
+
    function TAttFillHandler(args) {
-      // following arguments allowed:
-      //  kind can be 1 or 2
-      //      1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling
-      //      2 means all other objects where such combination is white-color filling
-      // object painter required when special fill pattern should be registered in central canvas def section
 
       this.color = "none";
       this.colorindx = 0;
@@ -953,6 +983,7 @@
       this.changed = false; // unset change property that
    }
 
+   /** Set fill style as arguments */
    TAttFillHandler.prototype.SetArgs = function(args) {
       if (args.attr && (typeof args.attr == 'object')) {
          if ((args.pattern===undefined) && (args.attr.fFillStyle!==undefined)) args.pattern = args.attr.fFillStyle;
@@ -961,6 +992,7 @@
       this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
    }
 
+   /** Apply fill style to selection */
    TAttFillHandler.prototype.Apply = function(selection) {
       this.used = true;
 
@@ -973,29 +1005,32 @@
          selection.style('antialias', this.antialias);
    }
 
-   /// returns fill color (or pattern url)
+   /** Returns fill color (or pattern url). */
    TAttFillHandler.prototype.fillcolor = function() {
       return this.pattern_url || this.color;
    }
 
-   /// returns fill color without pattern url. If empty, alternative color will be provided
+   /** Returns fill color without pattern url.
+    *
+    * If empty, alternative color will be provided */
    TAttFillHandler.prototype.fillcoloralt = function(altern) {
       return this.color && (this.color!="none") ? this.color : altern;
    }
 
+   /** Returns true if color not specified or fill style not specified */
    TAttFillHandler.prototype.empty = function() {
-      // return true if color not specified or fill style not specified
       var fill = this.fillcolor();
       return !fill || (fill == 'none');
    }
 
+   /** Set solid fill color as fill pattern */
    TAttFillHandler.prototype.SetSolidColor = function(col) {
       delete this.pattern_url;
       this.color = col;
       this.pattern = 1001;
    }
 
-   /// check if solid fill is used, also color can be checked
+   /** Check if solid fill is used, also color can be checked */
    TAttFillHandler.prototype.isSolid = function(solid_color) {
       if (this.pattern !== 1001) return false;
       return !solid_color || solid_color==this.color;
@@ -1010,6 +1045,13 @@
       this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
    }
 
+   /** Method to change fill attributes.
+    *
+    * @param {number} color - color index
+    * @param {number} pattern - pattern index
+    * @param {selection} svg - top canvas element for pattern storages
+    * @param {string} [color_as_svg = undefined] - color as HTML string index
+    */
    TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
 
       delete this.pattern_url;
@@ -1193,6 +1235,7 @@
       return true;
    }
 
+   /** Create sample of fill pattern inside SVG */
    TAttFillHandler.prototype.CreateSample = function(sample_svg, width, height) {
 
       // we need to create extra handle to change
@@ -1202,6 +1245,8 @@
                 .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
                 .call(sample.func);
    }
+
+   // ===========================================================================
 
    Painter.getFontDetails = function(fontIndex, size) {
 
@@ -1328,8 +1373,8 @@
       return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
    }
 
+   /** Function translates ROOT TLatex into MathJax format */
    Painter.translateMath = function(str, kind, color, painter) {
-      // function translate ROOT TLatex into MathJax format
 
       if (kind != 2) {
          for (var x in Painter.math_symbols_map)
@@ -1385,11 +1430,14 @@
       return "\\(\\color{" + color + '}{' + str + "}\\)";
    }
 
+   /** Function used to provide svg:path for the smoothed curves.
+    *
+    * reuse code from d3.js. Used in TH1, TF1 and TGraph painters
+    * kind should contain "bezier" or "line".
+    * If first symbol "L", then it used to continue drawing
+    * @private
+    */
    Painter.BuildSvgPath = function(kind, bins, height, ndig) {
-      // function used to provide svg:path for the smoothed curves
-      // reuse code from d3.js. Used in TH1, TF1 and TGraph painters
-      // kind should contain "bezier" or "line".
-      // If first symbol "L", then it used to continue drawing
 
       var smooth = kind.indexOf("bezier") >= 0;
 
@@ -1935,15 +1983,25 @@
 
    // ========================================================================================
 
+   /**
+    * Basic painter class.
+    * @constructor
+    * @memberof JSROOT
+    */
+
    function TBasePainter() {
       this.divid = null; // either id of element (preferable) or element itself
    }
 
+   /** Access painter reference, stored in first child element.
+    *
+    *    - on === true - set *this* as painter
+    *    - on === false - delete painter reference
+    *    - on === undefined - return painter
+    *
+    * @param {boolean} on - that to perfrom
+    */
    TBasePainter.prototype.AccessTopPainter = function(on) {
-      // access painter in the first child element
-      // on === true - set this as painter
-      // on === false - delete painter
-      // on === undefined - return painter
       var main = this.select_main().node(),
          chld = main ? main.firstChild : null;
       if (!chld) return null;
@@ -1952,8 +2010,8 @@
       return chld.painter;
    }
 
+   /** Generic method to cleanup painter */
    TBasePainter.prototype.Cleanup = function(keep_origin) {
-      // generic method to cleanup painter
 
       var origin = this.select_main('origin');
       if (!origin.empty() && !keep_origin) origin.html("");
@@ -1970,8 +2028,9 @@
       delete this._hpainter;
    }
 
+   /** Function should be called by the painter when first drawing is completed */
+
    TBasePainter.prototype.DrawingReady = function(res_painter) {
-      // function should be called by the painter when first drawing is completed
 
       this._ready_called_ = true;
       if (this._ready_callback_ !== undefined) {
@@ -1987,29 +2046,49 @@
       return this;
    }
 
+   /** Call back will be called when painter ready with the drawing
+    *
+    * @private
+    */
    TBasePainter.prototype.WhenReady = function(callback) {
-      // call back will be called when painter ready with the drawing
       if (typeof callback !== 'function') return;
       if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
       if (this._ready_callback_ === undefined) this._ready_callback_ = [];
       this._ready_callback_.push(callback);
    }
 
+   /** Should returns drawn object.
+    *
+    * @abstract
+    */
    TBasePainter.prototype.GetObject = function() {
       return null;
    }
 
+   /** Returns true if type match with drawn object type.
+   *
+   * @abstract
+   */
    TBasePainter.prototype.MatchObjectType = function(typ) {
       return false;
    }
 
+   /** Called to update drawn object content
+   *
+   * @abstract
+   */
    TBasePainter.prototype.UpdateObject = function(obj) {
       return false;
    }
 
+   /** Redraw all objects in current pad
+   *
+   * @abstract
+   */
    TBasePainter.prototype.RedrawPad = function(resize) {
    }
 
+   /** Updates object and readraw it */
    TBasePainter.prototype.RedrawObject = function(obj) {
       if (!this.UpdateObject(obj)) return false;
       var current = document.body.style.cursor;
@@ -2019,13 +2098,24 @@
       return true;
    }
 
+   /** Checks if draw elements were resized and drawing should be updated
+    * @abstract */
    TBasePainter.prototype.CheckResize = function(arg) {
-      return false; // indicate if resize is processed
+      return false;
    }
 
+   /** Method called when interactively changes attribute in given class
+    * @abstract */
+   TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
+      // function called when user interactively changes attribute in given class
+
+      // console.log("Changed attribute", class_name, member_name, new_value);
+   }
+
+   /** Returns d3.select for main element for drawing, defined with this.divid.
+    *
+    * if main element was layouted, returns main element inside layout */
    TBasePainter.prototype.select_main = function(is_direct) {
-      // return d3.select for main element for drawing, defined with divid
-      // if main element was layouted, returns main element inside layout
 
       if (!this.divid) return d3.select(null);
       var id = this.divid;
@@ -2045,6 +2135,9 @@
       return res;
    }
 
+   /** Returns layout kind
+    * @private
+    */
    TBasePainter.prototype.get_layout_kind = function() {
       var origin = this.select_main('origin'),
           layout = origin.empty() ? "" : origin.property('layout');
@@ -2052,6 +2145,9 @@
       return layout || 'simple';
    }
 
+   /** Set layout kind
+    * @private
+    */
    TBasePainter.prototype.set_layout_kind = function(kind, main_selector) {
       // change layout settings
       var origin = this.select_main('origin');
@@ -2063,10 +2159,14 @@
       }
    }
 
+   /** Function checks if geometry of main div was changed.
+    *
+    * returns size of area when main div is drawn
+    * take into account enlarge state
+    *
+    * @private
+    */
    TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
-      // function checks if geometry of main div changed
-      // returns size of area when main div is drawn
-      // take into account enlarge state
 
       var enlarge = this.enlarge_main('state'),
           main_origin = this.select_main('origin'),
@@ -2117,9 +2217,19 @@
       return rect;
    }
 
+   /** Try enlarge main drawing element to full HTML page.
+    *
+    * Possible values for parameter:
+    *
+    *    - true - try to enlarge
+    *    - false - cancel enlarge state
+    *    - 'toggle' - toggle enlarge state
+    *    - 'state' - return current state
+    *    - 'verify' - check if element can be enlarged
+    *
+    * if action not specified, just return possibility to enlarge main div
+    */
    TBasePainter.prototype.enlarge_main = function(action, skip_warning) {
-      // action can be:  true, false, 'toggle', 'state', 'verify'
-      // if action not specified, just return possibility to enlarge main div
 
       var main = this.select_main(true),
           origin = this.select_main('origin');
@@ -2177,6 +2287,8 @@
       return false;
    }
 
+   /** Return CSS value in given HTML element
+    * @private */
    TBasePainter.prototype.GetStyleValue = function(elem, name) {
       if (!elem || elem.empty()) return 0;
       var value = elem.style(name);
@@ -2185,8 +2297,8 @@
       return isNaN(value) ? 0 : Math.round(value);
    }
 
+   /** Returns rect with width/height which correspond to the visible area of drawing region of element. */
    TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
-      // return rect with width/height which correspond to the visible area of drawing region
 
       if (JSROOT.nodejs)
          return { width : parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
@@ -2203,15 +2315,22 @@
       return res;
    }
 
+   /** Assign painter to specified element
+    *
+    * base painter does not creates canvas or frames
+    * it registered in the first child element
+    */
    TBasePainter.prototype.SetDivId = function(divid) {
-      // base painter does not creates canvas or frames
-      // it registered in the first child element
       if (arguments.length > 0)
          this.divid = divid;
 
       this.AccessTopPainter(true);
    }
 
+   /** Set item name, associated with the painter
+    *
+    * Used by {@link JSROOT.HiearchyPainter}
+    */
    TBasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
                                else delete this._hitemname;
@@ -2221,21 +2340,38 @@
       this._hpainter = hpainter;
    }
 
+   /** Returns assigned item name */
    TBasePainter.prototype.GetItemName = function() {
       return ('_hitemname' in this) ? this._hitemname : null;
    }
 
+   /** Returns assigned item draw option */
    TBasePainter.prototype.GetItemDrawOpt = function() {
       return ('_hdrawopt' in this) ? this._hdrawopt : "";
    }
 
+   /** Check if it makes sense to zoom inside specified axis range
+    *
+    * @param {string} axis - name of axis like 'x', 'y', 'z'
+    * @param {number} left - left axis range
+    * @param {number} right - right axis range
+    * @returns true is zooming makes sense
+    * @abstract
+    */
    TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
-      // check if it makes sense to zoom inside specified axis range
       return false;
    }
 
    // ==============================================================================
 
+   /**
+    * Basic painter for objects inside TCanvas/TPad.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TBasePainter
+    * @param {object} obj - object to draw
+    */
    function TObjectPainter(obj) {
       TBasePainter.call(this);
       this.draw_g = null; // container for all drawn objects
@@ -2246,9 +2382,11 @@
 
    TObjectPainter.prototype = Object.create(TBasePainter.prototype);
 
+   /** Generic method to cleanup painter.
+    *
+    * Remove object drawing and in case of main painter - also main HTML components
+    */
    TObjectPainter.prototype.Cleanup = function() {
-      // generic method to cleanup painters
-      // first of all, remove object drawing and in case of main painter - also main HTML components
 
       this.RemoveDrawG();
 
@@ -2276,15 +2414,22 @@
       TBasePainter.prototype.Cleanup.call(this, keep_origin);
    }
 
+   /** Returns drawn object */
    TObjectPainter.prototype.GetObject = function() {
       return this.draw_object;
    }
 
+   /** Returns drawn object class name */
    TObjectPainter.prototype.GetClassName = function() {
       var res = this.draw_object ? this.draw_object._typename : "";
       return res || "";
    }
 
+   /** Checks if drawn object matches with provided typename
+    *
+    * @param {string} arg - typename
+    * @param {string} arg._typename - if arg is object, use its typename
+    */
    TObjectPainter.prototype.MatchObjectType = function(arg) {
       if (!arg || !this.draw_object) return false;
       if (typeof arg === 'string') return (this.draw_object._typename === arg);
@@ -2292,6 +2437,9 @@
       return this.draw_object._typename.match(arg);
    }
 
+   /** Changes item name.
+    *
+    * When available, used for svg:title proprty */
    TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
       TBasePainter.prototype.SetItemName.call(this, name, opt, hpainter);
       if (this.no_default_title || (name=="")) return;
@@ -2300,12 +2448,18 @@
                    else this.select_main().attr("title", name);
    }
 
+   /** Store actual options together with original string
+    * @private */
    TObjectPainter.prototype.OptionsStore = function(original) {
       if (!this.options) return;
       this.options.original = original || "";
       this.options_store = JSROOT.extend({}, this.options);
    }
 
+   /** Checks if any draw options were changed
+    *
+    * @private
+    */
    TObjectPainter.prototype.OptionesChanged = function() {
       if (!this.options) return false;
       if (!this.options_store) return true;
@@ -2316,6 +2470,9 @@
       return false;
    }
 
+   /** Return actual draw options as string
+    * @private
+    */
    TObjectPainter.prototype.OptionsAsString = function() {
       if (!this.options) return "";
 
@@ -2328,21 +2485,25 @@
       return this.options.original || ""; // nothing better, return original draw option
    }
 
+   /** Generic method to update object content.
+    *
+    * Just copy all members from source object
+    */
    TObjectPainter.prototype.UpdateObject = function(obj) {
-      // generic method to update object
-      // just copy all members from source object
       if (!this.MatchObjectType(obj)) return false;
       JSROOT.extend(this.GetObject(), obj);
       return true;
    }
 
+   /** Returns string which either item or object name.
+    *
+    * Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
+    */
    TObjectPainter.prototype.GetTipName = function(append) {
       var res = this.GetItemName(), obj = this.GetObject();
-      if (res===null) res = "";
-      if ((res.length === 0) && obj && obj.fName)
-         res = this.GetObject().fName;
+      if (!res) res = obj && obj.fName ? obj.fName : "";
       if (res.lenght > 20) res = res.substr(0,17) + "...";
-      if ((res.length > 0) && (append!==undefined)) res += append;
+      if (res && append) res += append;
       return res;
    }
 
@@ -2379,6 +2540,9 @@
       return jsarr.length-1;
    }
 
+   /** Checks if draw elements were resized and drawing should be updated.
+    *
+    * Redirects to {@link TPadPainter.CheckCanvasResize} */
    TObjectPainter.prototype.CheckResize = function(arg) {
       var pad_painter = this.canv_painter();
       if (!pad_painter) return false;
@@ -2510,14 +2674,13 @@
       return (value - pad.fX1) / (pad.fX2 - pad.fX1);
    }
 
-   /** Converts x or y coordinate into SVG pad coordinates,
-    *  which could be used directly for drawing in the pad.
-    *  Parameters: axis should be "x" or "y", value to convert.
-    *  \par kind can be:
-    *  undefined or false - this is coordinate inside frame
-    *  true - when NDC coordinates are used
-    *  "pad" - when pad coordinates relative to pad ranges are specified
-    *  Always return rounded values */
+   /** Converts x or y coordinate into SVG pad or frame coordinates.
+    *
+    *  @param {string} axis - name like "x" or "y"
+    *  @param {number} value - axis value to convert.
+    *  @param {boolean} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+    *  @returns {number} rounded value of requested coordiantes
+    */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
       var main = this.frame_painter();
       if (main && !kind) {
@@ -2531,56 +2694,77 @@
       return Math.round(value);
    }
 
-   /** This is SVG element with current frame */
+   /** Returns svg frame element.
+    *
+    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn */
    TObjectPainter.prototype.svg_frame = function(pad_name) {
       return this.svg_layer("primitives_layer", pad_name).select(".root_frame");
    }
 
+   /** Returns pad width.
+    *
+    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+    */
    TObjectPainter.prototype.pad_width = function(pad_name) {
       var res = this.svg_pad(pad_name);
       res = res.empty() ? 0 : res.property("draw_width");
       return isNaN(res) ? 0 : res;
    }
 
+   /** Returns pad height
+    *
+    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+    */
    TObjectPainter.prototype.pad_height = function(pad_name) {
       var res = this.svg_pad(pad_name);
       res = res.empty() ? 0 : res.property("draw_height");
       return isNaN(res) ? 0 : res;
    }
 
+   /** Returns frame painter in current pad
+    * @private */
    TObjectPainter.prototype.frame_painter = function() {
       var pp = this.pad_painter();
       return pp ? pp.frame_painter_ref : null;
    }
 
+   /** Returns property of the frame painter
+    * @private */
    TObjectPainter.prototype.frame_property = function(name) {
       var pp = this.frame_painter();
       return pp && pp[name] ? pp[name] : 0;
    }
 
+   /** Returns frame X coordinate relative to current pad */
    TObjectPainter.prototype.frame_x = function() {
       return this.frame_property("_frame_x");
    }
 
+   /** Returns frame Y coordinate relative to current pad */
    TObjectPainter.prototype.frame_y = function() {
       return this.frame_property("_frame_y");
    }
 
+   /** Returns frame width */
    TObjectPainter.prototype.frame_width = function() {
       return this.frame_property("_frame_width");
    }
 
+   /** Returns frame height */
    TObjectPainter.prototype.frame_height = function() {
       return this.frame_property("_frame_height");
    }
 
+   /** Returns embed mode for 3D drawings (three.js) inside SVG.
+    *
+    *    - 0  no embedding, 3D drawing take full size of canvas
+    *    - 1  no embedding, canvas placed over svg with proper size (resize problem may appear)
+    *    - 2  normall embedding via ForeginObject, works only with Firefox
+    *     - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
+    *
+    *  @private
+    */
    TObjectPainter.prototype.embed_3d = function() {
-      // returns embed mode for 3D drawings (three.js) inside SVG
-      // 0 - no embedding, 3D drawing take full size of canvas
-      // 1 - no embedding, canvas placed over svg with proper size (resize problem may appear)
-      // 2 - normall embedding via ForeginObject, works only with Firefox
-      // 3 - embedding 3D drawing as SVG canvas, requires SVG renderer
-
       if (JSROOT.BatchMode) return 3;
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
@@ -2588,8 +2772,12 @@
       return 1; // default is overlay
    }
 
+   /** Access current 3d mode
+    *
+    * @param {string} [new_value = undefined] - when specified, set new 3d mode
+    * @private
+    */
    TObjectPainter.prototype.access_3d_kind = function(new_value) {
-
       var svg = this.svg_pad(this.this_pad_name);
       if (svg.empty()) return -1;
 
@@ -2599,8 +2787,12 @@
       return ((kind===null) || (kind===undefined)) ? -1 : kind;
    }
 
+   /** Returns size which availble for 3D drawing.
+    *
+    * One uses frame sizes for the 3D drawing - like TH2/TH3 objects
+    * @private
+    */
    TObjectPainter.prototype.size_for_3d = function(can3d) {
-      // one uses frame sizes for the 3D drawing - like TH2/TH3 objects
 
       if (can3d === undefined) can3d = this.embed_3d();
 
@@ -2658,6 +2850,9 @@
       return size;
    }
 
+   /** Clear all 3D drawings
+    * @private
+    */
    TObjectPainter.prototype.clear_3d_canvas = function() {
       var can3d = this.access_3d_kind(null);
       if (can3d < 0) return;
@@ -2676,6 +2871,8 @@
       }
    }
 
+   /** Add 3D canvas
+    * @private */
    TObjectPainter.prototype.add_3d_canvas = function(size, canv) {
 
       if (!canv || (size.can3d < -1)) return;
@@ -2710,6 +2907,8 @@
       }
    }
 
+   /** Apply size to 3D elements
+    * @private */
    TObjectPainter.prototype.apply_3d_size = function(size, onlyget) {
 
       if (size.can3d < 0) return d3.select(null);
@@ -2785,7 +2984,9 @@
       return elem;
    }
 
-   /** Returns main pad painter - normally TH1/TH2 painter, which draws all axis */
+   /** Returns main object painter on the pad.
+    *
+    * Normally this is first histogram drawn on the pad, which also draws all axes */
    TObjectPainter.prototype.main_painter = function(not_store, pad_name) {
       var res = this.main;
       if (!res) {
@@ -2801,22 +3002,30 @@
       return res;
    }
 
+   /** Returns true if this is main painter */
    TObjectPainter.prototype.is_main_painter = function() {
       return this === this.main_painter();
    }
 
+   /** Assigns id of top element (normally <div></div> where drawing is done).
+    *
+    * In some situations canvas may not exists - for instance object drawn as html, not as svg.
+    * In such case the only painter will be assigned to the first element
+    *
+    * Following value of is_main parameter is allowed:
+    *    -1 - only assign id, this painter not add to painters list,
+    *     0 - normal painter (default),
+    *     1 - major objects like TH1/TH2 (required canvas with frame)
+    *     2 - if canvas missing, create it, but not set as main object
+    *     3 - if canvas and (or) frame missing, create them, but not set as main object
+    *     4 - major objects like TH3 (required canvas and frame in 3d mode)
+    *     5 - major objects like TGeoVolume (do not require canvas)
+    *
+    *  @param {string|DOMElement} divid - element to which painter is assigned
+    *  @param {number} [kind = 0] - kind of object drawn with painter
+    *  @paran {string} [pad_name = undefined] - when specified, subpad name used for object drawin
+    */
    TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
-      // Assigns id of top element (normally <div></div> where drawing is done
-      // is_main - -1 - not add to painters list,
-      //            0 - normal painter (default),
-      //            1 - major objects like TH1/TH2 (required canvas with frame)
-      //            2 - if canvas missing, create it, but not set as main object
-      //            3 - if canvas and (or) frame missing, create them, but not set as main object
-      //            4 - major objects like TH3 (required canvas and frame in 3d mode)
-      //            5 - major objects like TGeoVolume (do not require canvas)
-      // pad_name - when specified, subpad name used for object drawin
-      // In some situations canvas may not exists - for instance object drawn as html, not as svg.
-      // In such case the only painter will be assigned to the first element
 
       if (divid !== undefined)
          this.divid = divid;
@@ -2872,6 +3081,10 @@
          svg_p.property('mainpainter', this);
    }
 
+   /** Calculate absolute position of provided selection.
+    *
+    * @private
+    */
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
       while (!sel.empty() && !sel.classed('root_canvas')) {
          var cl = sel.attr("class");
@@ -2884,6 +3097,12 @@
       return pos;
    }
 
+   /** Creates marker attributes object.
+    *
+    * Can be used to produce markers in painter.
+    * See {@link JSROOT.TAttMarkerHandler} for more info.
+    * Instance assigned as this.markeratt data member, recognized by GED editor
+    */
    TObjectPainter.prototype.createAttMarker = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
       if (args.fMarkerColor!==undefined && args.fMarkerStyle!==undefined && args.fMarkerSize!==undefined) args = { attr: args, std: false };
@@ -2902,6 +3121,12 @@
    }
 
 
+   /** Creates line attributes object.
+   *
+   * Can be used to produce lines in painter.
+   * See {@link JSROOT.TAttLineHandler} for more info.
+   * Instance assigned as this.lineatt data member, recognized by GED editor
+   */
    TObjectPainter.prototype.createAttLine = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
       if (args.fLineColor!==undefined && args.fLineStyle!==undefined && args.fLineWidth!==undefined) args = { attr: args, std: false };
@@ -2919,17 +3144,21 @@
       return handler;
    }
 
+   /** Creates fill attributes object.
+    *
+    * Method dedicated to create fill attributes, bound to canvas SVG
+    * otherwise newly created patters will not be usable in the canvas
+    * See {@link JSROOT.TAttFillHandler} for more info.
+    * Instance assigned as this.fillatt data member, recognized by GED editor
 
-   // method dedicated to create fill attributes, bound to canvas SVG
-   // otherwise newly created patters will not be usable in the canvas
-   // by default this.fillatt is created. Following fields are processed in args:
-   //   std - this is standard fill attribute for object and should be used as this.fillatt (default true)
-   //   attr - object, derived from TAttFill (default null)
-   //   pattern - integer index of fill pattern (default none)
-   //   color - integer index of fill color (defaule none)
-   //   color_as_svg - color will be specified as SVG string, not as index from color palette
-   //   kind - some special kind which is handled differently from normal patterns
-   //   for special cases one can specify TAttFill as args
+    * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
+    * @param {object} [args.attr = null] - object, derived from TAttFill
+    * @param {number} [args.pattern = undefined] - integer index of fill pattern
+    * @param {number} [args.color = undefined] - integer index of fill color
+    * @param {string} [args.color_as_svg = undefined] - color will be specified as SVG string, not as index from color palette
+    * @param {number} [args.kind = undefined] - some special kind which is handled differently from normal patterns
+    * @param {object} args - for special cases one can specify TAttFill as args
+   */
    TObjectPainter.prototype.createAttFill = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
       if (args._typename && args.fFillColor!==undefined && args.fFillStyle!==undefined) args = { attr: args, std: false };
@@ -2948,12 +3177,6 @@
       // handler.used = false; // mark that fill handler is not yet used
 
       return handler;
-   }
-
-   TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
-      // function called when user interactively changes attribute in given class
-
-      // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
    TObjectPainter.prototype.ForEachPainter = function(userfunc, kind) {
