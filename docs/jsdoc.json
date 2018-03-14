@@ -24,7 +24,7 @@
         "default": {
 			   "outputSourceFiles" : true
 		   },
-		   "applicationName": "Demo",
+		   "applicationName": "JavaScript ROOT",
 		   "disqus": "",
 		   "googleAnalytics": "",
 		   "openGraph": {

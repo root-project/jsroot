@@ -569,7 +569,7 @@
       return rgb;
    }
 
-   // add new colors from object array
+   /** Add new colors from object array. */
    Painter.extendRootColors = function(jsarr, objarr) {
       if (!objarr || !objarr.arr) return;
 
@@ -1725,8 +1725,13 @@
    // ========================================================================================
 
 
-   // client communication handle for TWebWindow
-
+   /** Client communication handle for TWebWindow.
+    *
+    * Should be created with {@link JSROOT.ConnectWebWindow} function
+    *
+    * @constructor
+    * @memberof JSROOT
+    */
    function WebWindowHandle(socket_kind) {
       if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
 
@@ -1736,21 +1741,31 @@
       this.ackn = 10;
    }
 
-   /// Set object which hanldes different socket callbacks like OnWebsocketMsg, OnWebsocketOpened, OnWebsocketClosed
+   /** Set callbacks receiever.
+    *
+    * Following function can be defined in receiver object:
+    *    - OnWebsocketMsg
+    *    - OnWebsocketOpened,
+    *    - OnWebsocketClosed
+    */
    WebWindowHandle.prototype.SetReceiver = function(obj) {
       this.receiver = obj;
    }
 
+   /** Cleanup and close connection. */
    WebWindowHandle.prototype.Cleanup = function() {
       delete this.receiver;
       this.Close(true);
    }
 
+   /** Invoke method in the receiver.
+    * @private */
    WebWindowHandle.prototype.InvokeReceiver = function(method, arg) {
       if (this.receiver && (typeof this.receiver[method] == 'function'))
          this.receiver[method](this, arg);
    }
 
+   /** Close connection. */
    WebWindowHandle.prototype.Close = function(force) {
       if (this.timerid) {
          clearTimeout(this.timerid);
@@ -1765,6 +1780,7 @@
       }
    }
 
+   /** Send text message via the connection. */
    WebWindowHandle.prototype.Send = function(msg, chid) {
       if (!this._websocket || (this.state<=0)) return false;
 
@@ -1784,12 +1800,16 @@
       return true;
    }
 
+   /** Send keepalive message.
+    * @private */
    WebWindowHandle.prototype.KeepAlive = function() {
       delete this.timerid;
       this.Send("KEEPALIVE", 0);
    }
 
-   /// method opens relative path with the same kind of socket
+   /** Method opens relative path with the same kind of socket.
+    * @private
+    */
    WebWindowHandle.prototype.CreateRelative = function(relative) {
       if (!relative || !this.kind || !this.href) return null;
 
@@ -1799,9 +1819,8 @@
       return handle;
    }
 
+   /** Create configured socket for current object. */
    WebWindowHandle.prototype.Connect = function(href) {
-      // create websocket for current object (canvas)
-      // via websocket one received many extra information
 
       this.Close();
 
@@ -1913,14 +1932,15 @@
       retry_open(true); // call for the first time
    }
 
-   // mthod used to initialize connection to web window
-   // Following arguments can be supplied:
-   //   arg.prereq - prerequicities, which should be loaded
-   //   arg.socket_kind - kind of connection, normally undefined and extracted from URL
-   //   arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
-   //   arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
-   //   arg.prereq2   - second part of prerequcities, which is loaded parallel to connecting with WebWindow
-   //   arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
+   /** Method used to initialize connection to web window.
+    *
+    * @param {string} [arg.prereq = undefined] - prerequicities, which should be loaded
+    * @param {string} [arg.socket_kind = undefined] - kind of connection longpoll|cef3|qt5, normally undefined and extracted from URL
+    * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
+    * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
+    * @param {string} [arg.prereq2 = undefined] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
+    * @param {function} arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
+    */
 
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg }; else
