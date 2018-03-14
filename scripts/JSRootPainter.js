@@ -47,6 +47,7 @@
          console.error('Fail to identify d3.js version '  + (d3 ? d3.version : "???"));
       }
    }
+
    // list of user painters, called with arguments func(vis, obj, opt)
    JSROOT.DrawFuncs = { lst:[], cache:{} };
 
@@ -63,7 +64,7 @@
       return handle;
    }
 
-    // icons taken from http://uxrepo.com/
+   // icons taken from http://uxrepo.com/
 
    JSROOT.ToolbarIcons = {
       camera: { path: 'M 152.00,304.00c0.00,57.438, 46.562,104.00, 104.00,104.00s 104.00-46.562, 104.00-104.00s-46.562-104.00-104.00-104.00S 152.00,246.562, 152.00,304.00z M 480.00,128.00L 368.00,128.00 c-8.00-32.00-16.00-64.00-48.00-64.00L 192.00,64.00 c-32.00,0.00-40.00,32.00-48.00,64.00L 32.00,128.00 c-17.60,0.00-32.00,14.40-32.00,32.00l0.00,288.00 c0.00,17.60, 14.40,32.00, 32.00,32.00l 448.00,0.00 c 17.60,0.00, 32.00-14.40, 32.00-32.00L 512.00,160.00 C 512.00,142.40, 497.60,128.00, 480.00,128.00z M 256.00,446.00c-78.425,0.00-142.00-63.574-142.00-142.00c0.00-78.425, 63.575-142.00, 142.00-142.00c 78.426,0.00, 142.00,63.575, 142.00,142.00 C 398.00,382.426, 334.427,446.00, 256.00,446.00z M 480.00,224.00l-64.00,0.00 l0.00-32.00 l 64.00,0.00 L 480.00,224.00 z' },
@@ -580,6 +581,8 @@
       Painter.extendRootColors(Painter.root_colors, objarr);
    }
 
+   // =====================================================================
+
    function ColorPalette(arr) {
       this.palette = arr;
    }
@@ -607,7 +610,14 @@
       return this.getColor(indx);
    }
 
-   //function TAttMarkerHandler(attmarker, style, color, size) {
+   // =============================================================================
+
+   /**
+    * Handle for marker attributes.
+    * @constructor
+    * @memberof JSROOT
+    */
+
    function TAttMarkerHandler(args) {
       this.x0 = this.y0 = 0;
       this.color = 'black';
@@ -628,6 +638,14 @@
       this.changed = false;
    }
 
+   /** Set marker attributes.
+    *
+    * @param {object} args - arguments can be
+    * @param {object} args.attr - instance of TAttrMarker (or derived class) or
+    * @param {string} args.color - color in HTML form like grb(1,4,5) or 'green'
+    * @param {number} args.style - marker style
+    * @param {number} args.size - marker size
+    */
    TAttMarkerHandler.prototype.SetArgs = function(args) {
       if ((typeof args == 'object') && (typeof args.fMarkerStyle == 'number')) args = { attr: args };
 
@@ -649,12 +667,13 @@
          return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
 
       // use optimized handling with relative position
-      var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1";
-      var m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
+      var xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1",
+          m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
       this.lastx = xx+1; this.lasty = yy;
       return (m2.length < m1.length) ? m2 : m1;
    }
 
+   /** Returns full size of marker */
    TAttMarkerHandler.prototype.GetFullSize = function() {
       return this.scale*this.size;
    }
@@ -663,6 +682,12 @@
       return this.marker ? this.marker.length : 10;
    }
 
+   /** Change marker attributes.
+    *
+    *  @param {string} color - marker color
+    *  @param {number} style - marker style
+    *  @param {number} size - marker size
+    */
    TAttMarkerHandler.prototype.Change = function(color, style, size) {
       this.changed = true;
 
@@ -759,15 +784,26 @@
       return true;
    }
 
+   /** Apply marker styles to created element
+    * @private */
    TAttMarkerHandler.prototype.Apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
       selection.style('fill', this.fill ? this.color : "none");
    }
 
+   /** Method used when color or pattern were changed with OpenUi5 widgets.
+    * @private */
    TAttMarkerHandler.prototype.verifyDirectChange = function(painter) {
       this.Change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
+   /** Create sample with marker in given SVG element
+    *
+    * @param {selection} svg - SVG element
+    * @param {number} width - width of sample SVG
+    * @param {number} height - height of sample SVG
+    * @private
+    */
    TAttMarkerHandler.prototype.CreateSample = function(svg, width, height) {
       this.reset_pos();
 
@@ -779,7 +815,7 @@
    // =======================================================================
 
    /**
-    * Represents a handle for line attributes.
+    * Handle for line attributes.
     * @constructor
     * @memberof JSROOT
     */
@@ -793,16 +829,14 @@
    }
 
    /**
-    * Apply new line attributes.
+    * Set line attributes.
     *
-    *    - args.attr TAttLine object or
-    *    - args.color color in html like rgb(10,0,0) or "red"
-    *    - args.style style number
-    *    - args.width line width
-    *
-    * @param {object} args specify attributes by different ways
+    * @param {object} args - specify attributes by different ways
+    * @param {object} args.attr - TAttLine object with appropriate data members or
+    * @param {string} args.color - color in html like rgb(10,0,0) or "red"
+    * @param {number} args.style - line style number
+    * @param {number} args.width - line width
     */
-
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
          args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
@@ -967,7 +1001,8 @@
       return !solid_color || solid_color==this.color;
    }
 
-   // method used when color or pattern were changed with OpenUi5 widgets
+   /** Method used when color or pattern were changed with OpenUi5 widgets
+    * @private */
    TAttFillHandler.prototype.verifyDirectChange = function(painter) {
       if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
       if (isNaN(this.pattern)) this.pattern = 0;

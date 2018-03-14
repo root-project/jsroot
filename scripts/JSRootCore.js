@@ -720,10 +720,12 @@
    }
 
    /**
-    * Special handling of URL options to produce array
-    * if normal option is specified ...?opt=abc, than array with single element will be created
+    * Special handling of URL options to produce array.
+    *
+    * If normal option is specified ...?opt=abc, than array with single element will be created
     * one could specify normal JSON array ...?opts=['item1','item2']
     * but also one could skip quotes ...?opts=[item1,item2]
+    * @private
     */
    JSROOT.GetUrlOptionAsArray = function(opt, url) {
 
@@ -747,7 +749,7 @@
    }
 
    /**
-    * Find function with given name
+    * Find function with given name.
     *
     * Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
     */
@@ -765,7 +767,7 @@
    }
 
    /**
-    * Generic method to invoke callback function
+    * Generic method to invoke callback function.
     *
     * @param {object|function} func either normal function or container like
     * { obj: object_pointer, func: name of method to call }
@@ -791,23 +793,33 @@
 
    /**
     * Create asynchronous XMLHttpRequest object.
+    *
     * One should call req.send() to submit request
     * kind of the request can be:
-    *   "bin" - abstract binary data, result as string (default)
-    *   "buf" - abstract binary data, result as BufferArray
-    *   "text" - returns req.responseText
-    *   "object" - returns JSROOT.parse(req.responseText)
-    *   "multi" - returns correctly parsed multi.json request
-    *   "xml" - returns res.responseXML
-    *   "head" - returns request itself, uses "HEAD" method
-    * Result will be returned to the callback functions
-    * Request will be set as this pointer in the callback
+    *
+    *    - "bin" - abstract binary data, result as string (default)
+    *    - "buf" - abstract binary data, result as BufferArray
+    *    - "text" - returns req.responseText
+    *    - "object" - returns JSROOT.parse(req.responseText)
+    *    - "multi" - returns correctly parsed multi.json request
+    *    - "xml" - returns req.responseXML
+    *    - "head" - returns request itself, uses "HEAD" method
+    *
+    * Result will be returned to the callback function.
+    * Request will be set as this pointer in the callback.
     * If failed, request returns null
     *
-    * @param {string} url URL for the request
-    * @param {string} kind kind of requested data
-    * @param {function} user_call_back function called when request is completed
+    * @param {string} url - URL for the request
+    * @param {string} kind - kind of requested data
+    * @param {function} user_call_back - called when request is completed
     * @returns {object} XMLHttpRequest object
+    *
+    * @example
+    * JSROOT.NewHttpRequest("https://root.cern/js/files/thstack.json.gz", "object",
+    *                       function(res) {
+    *     if (res) console.log('Retrieve object', res._typename);
+    *         else console.error('Fail to get object');
+    * }).send();
     */
 
    JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
@@ -1018,26 +1030,43 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
+   /** Load JSROOT functionality.
+    *
+    * As first argument, required components should be specifed:
+    *
+    *    - 'io'     TFile functionality
+    *    - 'tree'   TTree support
+    *    - '2d'     basic 2d graphic (TCanvas/TPad/TFrame)
+    *    - '3d'     basic 3d graphic (three.js)
+    *    - 'hist'   histograms 2d graphic
+    *    - 'hist3d' histograms 3d graphic
+    *    - 'more2d' extra 2d graphic (TGraph, TF1)
+    *    - 'v7'     ROOT v7 graphics
+    *    - 'v7hist' ROOT v7 histograms
+    *    - 'v7more' ROOT v7 special classes
+    *    - 'math'   some methods from TMath class
+    *    - 'jq'     jQuery and jQuery-ui
+    *    - 'hierarchy' hierarchy browser
+    *    - 'jq2d'   jQuery-dependent part of hierarchy
+    *    - 'openui5' OpenUI5 and related functionality
+    *    - 'geom'    TGeo support
+    *    - 'simple'  for basic user interface
+    *    - 'load:<path/script.js>' list of user-specific scripts at the end of kind string
+    *
+    * One could combine several compopnents, separating them by semicolon.
+    * Depending of available components, either require.js or plain script loading will be used
+    *
+    * @param {string} kind - modules to load
+    * @param {function} callback - called when all specified modules are loaded
+    *
+    * @example
+    * JSROOT.AssertPrerequisites("io;tree", function() {
+    *    var selector = new JSROOT.TSelector;
+    * });
+    */
+
    JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
-      //     'io'  TFile functionality
-      //   'tree'  TTree support
-      //     '2d'  basic 2d graphic (TCanvas/TPad/TFrame)
-      //     '3d'  basic 3d graphic (three.js)
-      //   'hist'  histograms 2d graphic
-      // 'hist3d'  histograms 3d graphic
-      // 'more2d'  extra 2d graphic (TGraph, TF1)
-      //     'v7'  ROOT v7 graphics
-      // 'v7hist'  ROOT v7 histograms
-      // 'v7more'  ROOT v7 special classes
-      //   'math'  some methods from TMath class
-      //     'jq'  jQuery and jQuery-ui
-      // 'hierarchy' hierarchy browser
-      //   'jq2d'  jQuery-dependent part of hierarchy
-      // 'openui5'  OpenUI5 and related functionality
-      //   'geom'  TGeo support
-      // 'simple'  for basic user interface
-      //  'load:'  list of user-specific scripts at the end of kind string
 
       var jsroot = JSROOT;
 
