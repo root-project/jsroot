@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 13/03/2018";
+   JSROOT.version = "dev 14/03/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1283,30 +1283,38 @@
    // required functionality will be loaded automatically
    // if painter pointer required, one should load '2d' functionality itself
    // or use callback function which provides painter pointer as first argument
+   // defined in JSRootPainter.js
    JSROOT.draw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.draw(divid, obj, opt, callback);
       });
    }
 
+   // redraw object on given element
+   // defined in JSRootPainter.js
    JSROOT.redraw = function(divid, obj, opt, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.redraw(divid, obj, opt, callback);
       });
    }
 
+   // Create SVG, defined in JSRootPainter.js
    JSROOT.MakeSVG = function(args, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.MakeSVG(args, callback);
       });
    }
 
+   // Save DOM element as SVG - defined in saveSvgAsPng.js
    JSROOT.saveSvgAsPng = function(el, options, callback) {
       JSROOT.AssertPrerequisites("savepng", function() {
          JSROOT.saveSvgAsPng(el, options, callback);
       });
    }
 
+   /** Method to build JSROOT GUI with browser
+    * @private
+    */
    JSROOT.BuildSimpleGUI = function(user_scripts, andThen) {
       if (typeof user_scripts == 'function') {
          andThen = user_scripts;
@@ -1346,8 +1354,7 @@
    };
 
    JSROOT.Create = function(typename, target) {
-      var obj = target;
-      if (obj == null) obj = { _typename: typename };
+      var obj = target || {};
 
       switch (typename) {
          case 'TObject':
@@ -1695,11 +1702,11 @@
 
    JSROOT.methodsCache = {}; // variable used to keep methods for known classes
 
+   /** Returns methods for given typename */
    JSROOT.getMethods = function(typename, obj) {
 
-      var m = JSROOT.methodsCache[typename];
-
-      var has_methods = (m!==undefined);
+      var m = JSROOT.methodsCache[typename],
+          has_methods = (m!==undefined);
 
       if (!has_methods) m = {};
 
@@ -2007,8 +2014,9 @@
 
       JSROOT.methodsCache[typename] = m;
       return m;
-   };
+   }
 
+   /** Returns true if object represents basic ROOT collections */
    JSROOT.IsRootCollection = function(lst, typename) {
       if (lst && (typeof lst === 'object')) {
          if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
@@ -2019,16 +2027,25 @@
              (typename === 'TObjArray') || (typename === 'TClonesArray');
    }
 
+   /** Adds specific methods to the object.
+    *
+    * JSROOT implements some basic methods for different ROOT classes.
+    * @param {object} obj - object where methods are assigned
+    * @param {string} typename - optional typename, if not specified, obj._typename will be used
+    */
    JSROOT.addMethods = function(obj, typename) {
       this.extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
-   };
+   }
 
    JSROOT.lastFFormat = "";
 
+   /** Converts numeric value to string according to specified format.
+    *
+    * @param {number} value - value to convert
+    * @param {strting} fmt - format can be like 5.4g or 4.2e or 6.4f
+    * @returns {string} - converted value
+    */
    JSROOT.FFormat = function(value, fmt) {
-      // method used to convert numeric value to string according specified format
-      // format can be like 5.4g or 4.2e or 6.4f
-      // function saves actual format in JSROOT.lastFFormat variable
       if (!fmt) fmt = "6.4g";
 
       JSROOT.lastFFormat = "";
@@ -2100,17 +2117,17 @@
       return sg;
    }
 
-   // Provide log10, which is used in many places
+   /** Implements log10 */
    JSROOT.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    }
 
-   // dummy function, will be redefined when JSRootPainter is loaded
+   // Dummy function, will be redefined when JSRootPainter is loaded
    JSROOT.progress = function(msg, tmout) {
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
    }
 
-   /// connect to the TWebWindow instance
+   // connect to the TWebWindow instance
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
       JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
@@ -2118,6 +2135,10 @@
       }, (arg ? arg.prereq_logdiv : undefined));
    }
 
+   /** Initialize JSROOT.
+    * Called when script is loaded. Process URL parameters, supplied with JSRootCore.js script
+    * @private
+    */
    JSROOT.Initialize = function() {
 
       if (JSROOT.source_fullpath.length === 0) return this;

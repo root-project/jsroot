@@ -5346,17 +5346,34 @@
       return res;
    }
 
-   // returns array with supported draw options for the specified class
+   /** Returns array with supported draw options for the specified kind
+    * @private */
    JSROOT.getDrawOptions = function(kind, selector) {
       return JSROOT.getDrawSettings(kind).opts;
    }
 
+   /** Returns true if provided object class can be drawn */
    JSROOT.canDraw = function(classname) {
       return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
 
-   /** @fn JSROOT.draw(divid, obj, opt, callback)
-    * Draw object in specified HTML element with given draw options  */
+   /**
+    * Draw object in specified HTML element with given draw options.
+    *
+    * @param {string|object} divid - id of div element to draw or directly DOMElement
+    * @param {object} obj - object to draw, object type should be registered before in JSROOT
+    * @param {string} opt - draw options
+    * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
+    *
+    * @example
+    * var filename = "https://root.cern/js/files/hsimple.root";
+    * JSROOT.OpenFile(filename, function(file) {
+    *    file.ReadObject("hpxpy;1", function(obj) {
+    *       JSROOT.draw("drawing", obj, "colz");
+    *    });
+    * });
+    *
+    */
    JSROOT.draw = function(divid, obj, opt, drawcallback) {
 
       var isdirectdraw = true; // indicates if extra callbacks (via AssertPrerequisites) was invoked to process
@@ -5461,11 +5478,13 @@
       return painter;
    }
 
-   /** @fn JSROOT.redraw(divid, obj, opt)
-    * Redraw object in specified HTML element with given draw options
-    * If drawing was not exists, it will be performed with JSROOT.draw.
-    * If drawing was already done, that content will be updated */
-
+   /**
+    * Redraw object in specified HTML element with given draw options.
+    *
+    * If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
+    * If drawing was already done, that content will be updated
+    * See {@link JSROOT.draw} for meaning of arguments and return vlues
+    */
    JSROOT.redraw = function(divid, obj, opt, callback) {
       if (!obj) return JSROOT.CallBack(callback, null);
 
@@ -5507,6 +5526,8 @@
    /** Save object, drawn in specified element, as JSON.
     *
     * Normally it is TCanvas object with list of primitives
+    * @param {string|object} divid - top element id or DOMElement
+    * @returns {string} produced JSON string
     */
 
    JSROOT.StoreJSON = function(divid) {
@@ -5521,12 +5542,13 @@
    /** Create SVG image for provided object.
     *
     * Function especially useful in Node.js environment to generate images for
-    * supported ROOT classes. Following arguments can be provided:
-    *    - args.object - object for the drawing
-    *    - args.option - draw options
-    *    - args.width - result image width (default 1200)
-    *    - args.height - result image height (default 800)
-    * @param {object} args contains object and different settings
+    * supported ROOT classes
+    *
+    * @param {object} args - contains different settings
+    * @param {object} args.object - object for the drawing
+    * @param {string} args.option - draw options
+    * @param {number} args.width - image width (default 1200)
+    * @param {number} args.height - image height (default 800)
     * @param {function} callback called with svg code as string argument
     */
    JSROOT.MakeSVG = function(args, callback) {
@@ -5594,12 +5616,14 @@
       }
    }
 
-   // Check resize of drawn element
-   // As first argument divid one should use same argument as for the drawing
-   // As second argument, one could specify "true" value to force redrawing of
-   // the element even after minimal resize of the element
-   // Or one just supply object with exact sizes like { width:300, height:200, force:true };
-
+   /**
+    * Check resize of drawn element
+    *
+    * As first argument divid one should use same argument as for the drawing
+    * As second argument, one could specify "true" value to force redrawing of
+    * the element even after minimal resize of the element
+    * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+    */
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
@@ -5612,10 +5636,13 @@
       return done;
    }
 
-   // for compatibility, keep old name
+   /**
+    * For compatibility, see {@link JSROOT.resize}
+    * @private
+    */
    JSROOT.CheckElementResize = JSROOT.resize;
 
-   // safely remove all JSROOT objects from specified element
+   /** Safely remove all JSROOT objects from specified element */
    JSROOT.cleanup = function(divid) {
       var dummy = new TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
@@ -5627,9 +5654,13 @@
       return lst;
    }
 
-   // function to display progress message in the left bottom corner
-   // previous message will be overwritten
-   // if no argument specified, any shown messages will be removed
+   /** Display progress message in the left bottom corner.
+    *
+    * Previous message will be overwritten
+    * if no argument specified, any shown messages will be removed
+    * @param {string} msg - message to display
+    * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+    */
    JSROOT.progress = function(msg, tmout) {
       if (JSROOT.BatchMode || !document) return;
       var id = "jsroot_progressbox",
