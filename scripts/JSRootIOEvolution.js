@@ -845,7 +845,14 @@
    //    ----->          DATA      = Data bytes associated to the object
    //
 
-   // ctor
+   /**
+    * @summary Interface to read objects from ROOT files.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @param {string} url - file URL
+    * @param {function} newfile_callback - function called when file header is read
+    */
    function TFile(url, newfile_callback) {
       this._typename = "TFile";
       this.fEND = 0;
@@ -907,6 +914,8 @@
       return this;
    }
 
+   /** @summary read buffer(s) from the file
+    * @private */
    TFile.prototype.ReadBuffer = function(place, result_callback, filename, progress_callback) {
 
       if ((this.fFileContent!==null) && !filename && (!this.fAcceptRanges || this.fFileContent.can_extract(place)))
@@ -1121,8 +1130,9 @@
       send_new_request(true);
    }
 
+   /** @summary Get directory with given name and cycle
+    * @private */
    TFile.prototype.GetDir = function(dirname, cycle) {
-      // check first that directory with such name exists
 
       if ((cycle === undefined) && (typeof dirname == 'string')) {
          var pos = dirname.lastIndexOf(';');
@@ -1138,9 +1148,10 @@
       return null;
    }
 
+   /** @summary Retrieve a key by its name and cycle in the list of keys
+    * @desc callback used when keys must be read first from the directory
+    * @private */
    TFile.prototype.GetKey = function(keyname, cycle, getkey_callback) {
-      // retrieve a key by its name and cycle in the list of keys
-      // one should call_back when keys must be read first from the directory
 
       if (typeof cycle != 'number') cycle = -1;
       var bestkey = null;
@@ -1179,8 +1190,9 @@
       return null;
    }
 
+   /** @summary Read and inflate object buffer described by its key
+    * @private */
    TFile.prototype.ReadObjBuffer = function(key, callback) {
-      // read and inflate object buffer described by its key
 
       var file = this;
 
@@ -1204,8 +1216,9 @@
       });
    }
 
+   /** @summary Method called when TTree object is streamed
+    * @private */
    TFile.prototype.AddReadTree = function(obj) {
-      // method called when TTree object is streamed
 
       if (JSROOT.TreeMethods)
          return JSROOT.extend(obj, JSROOT.TreeMethods);
@@ -1215,11 +1228,14 @@
       if (this.readTrees.indexOf(obj)<0) this.readTrees.push(obj);
    }
 
+   /** @summary Read any object from a root file
+    * @desc One could specify cycle number in the object name or as separate argument
+    * Last argument should be callback function, while data reading from file is asynchron
+    * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
+    * @param {number} [cycle=undefined] - cycle number
+    * @param {function} user_call_back - function called when object read from the file
+    */
    TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
-      // Read any object from a root file
-      // One could specify cycle number in the object name or as separate argument
-      // Last argument should be callback function, while data reading from file is asynchron
-
       if (typeof cycle == 'function') { user_call_back = cycle; cycle = -1; }
 
       var pos = obj_name.lastIndexOf(";");
@@ -1282,6 +1298,8 @@
       }); // end of GetKey callback
    }
 
+   /** @summary read formulas from the file
+    * @private */
    TFile.prototype.ReadFormulas = function(tf1, user_call_back, cnt) {
 
       var indx = cnt;
@@ -1300,6 +1318,8 @@
       });
    }
 
+   /** @summary extract streamer infos
+    * @private */
    TFile.prototype.ExtractStreamerInfos = function(buf) {
       if (!buf) return;
 
@@ -1356,9 +1376,9 @@
       }
    }
 
-
+   /** @summary Read file keys
+    * @private */
    TFile.prototype.ReadKeys = function(readkeys_callback) {
-      // read keys only in the root file
 
       var file = this;
 
@@ -1462,10 +1482,13 @@
       });
    };
 
+   /** @summary Read the directory content from  a root file
+    * @desc do not read directory if it is already exists
+    * Same functionality as {@link ReadObject}
+    * @param {string} dir_name - directory name
+    * @param {number} cycle - directory cycle
+    * @param {function} readdir_callback - callback with read directory */
    TFile.prototype.ReadDirectory = function(dir_name, cycle, readdir_callback) {
-      // read the directory content from  a root file
-      // do not read directory if it is already exists
-
       return this.ReadObject(dir_name, cycle, readdir_callback);
    };
 
@@ -1488,6 +1511,8 @@
       return streamer;
    }
 
+   /** @summary Search for class streamer info
+    * @private */
    TFile.prototype.FindStreamerInfo = function(clname, clversion, clchecksum) {
       if (this.fStreamerInfos)
          for (var i=0; i < this.fStreamerInfos.arr.length; ++i) {
@@ -2100,9 +2125,10 @@
       return member;
    }
 
+   /** @summary Returns streamer for the class 'clname',
+    * @desc From the list of streamers or generate it from the streamer infos and add it to the list
+    * @private */
    TFile.prototype.GetStreamer = function(clname, ver, s_i) {
-      // return the streamer for the class 'clname', from the list of streamers
-      // or generate it from the streamer infos and add it to the list
 
       // these are special cases, which are handled separately
       if (clname == 'TQObject' || clname == "TBasket") return null;
@@ -2155,9 +2181,9 @@
       return JSROOT.IO.AddClassMethods(clname, streamer);
    }
 
+   /** @summary Here we produce list of members, resolving all base classes
+    * @private */
    TFile.prototype.GetSplittedStreamer = function(streamer, tgt) {
-      // here we produce list of members, resolving all base classes
-
       if (!streamer) return tgt;
 
       if (!tgt) tgt = [];
@@ -2920,6 +2946,21 @@
 
       return res;
    }
+
+   /**
+    * @summary Open ROOT file for reading
+    *
+    * @desc depending from file location, different class will be created to provide
+    * access to objects from the file
+    * @param {string} filename - name of file to open
+    * @param {File} filename - JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
+    * @param {function} callback - function called with file handle
+    * @example
+    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root", function(f) {
+    *    console.log("Open file", f.fFileName);
+    * });
+    */
+
 
    JSROOT.OpenFile = function(filename, callback) {
       if (JSROOT.nodejs) {

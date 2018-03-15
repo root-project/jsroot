@@ -242,7 +242,8 @@
     * @private */
    JSROOT.BIT = function(n) { return 1 << (n); }
 
-   /** TH1 status bits */
+   /** TH1 status bits
+    * @private */
    JSROOT.TH1StatusBits = {
          kNoStats       : JSROOT.BIT(9),  // don't draw stats box
          kUserContour   : JSROOT.BIT(10), // user specified contour levels
@@ -263,7 +264,8 @@
          console.log(value);
    }
 
-   /** Wrapper for alert, throws Error in Node.js */
+   /** @summary Wrapper for alert, throws Error in Node.js
+    * @private */
    JSROOT.alert = function(msg) {
       if (this.nodeis) throw new Error(msg);
       if (typeof alert === 'function') alert(msg);
@@ -273,6 +275,7 @@
    /**
     * @summary Seed simple random generator
     *
+    * @private
     * @param {number} i seed value
     */
    JSROOT.seed = function(i) {
@@ -287,9 +290,9 @@
     * @summary Simple random generator
     *
     * @desc Works like Math.random(), but with configurable seed - see {@link JSROOT.seed}
-    *
+    * @private
     * @returns {number} random value between 0 (inclusive) and 1.0 (exclusive)
-    * */
+    */
    JSROOT.random = function() {
       if (this.m_z===undefined) return Math.random();
       this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
@@ -420,7 +423,8 @@
    JSROOT.debug = 0;
 
    /** @summary Just copies (not clone) all fields from source to the target object
-    * @desc This is simple replacement of jQuery.extend method */
+    * @desc This is simple replacement of jQuery.extend method
+    * @private */
    JSROOT.extend = function(tgt, src) {
       if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
@@ -622,6 +626,7 @@
     * @param {string} opt option to search
     * @param {string} full URL with options, document.URL will be used when not specified
     * @returns {string|null} found value
+    * @private
     */
    JSROOT.GetUrlOption = function(opt, url, dflt) {
 
@@ -671,6 +676,8 @@
     *
     * @desc It could be just simple string:  "value" or
     * array with or without string quotes:  [element], ['elem1',elem2]
+    *
+    * @private
     */
    JSROOT.ParseAsArray = function(val) {
 
@@ -754,6 +761,8 @@
     * @summary Find function with given name.
     *
     * @desc Function name may include several namespaces like 'JSROOT.Painter.drawFrame'
+    *
+    * @private
     */
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
@@ -775,6 +784,8 @@
     * { obj: object_pointer, func: name of method to call }
     * @param arg1 first optional argument of callback
     * @param arg2 second optional argument of callback
+    *
+    * @private
     */
    JSROOT.CallBack = function(func, arg1, arg2) {
 
@@ -912,13 +923,14 @@
    /**
     * @summary Dynamic script loader
     *
-    * @private
     * @desc One could specify list of scripts or style files, separated by semicolon ';'
     * one can prepend file name with '$$$' - than file will be loaded from JSROOT location
     * This location can be set by JSROOT.source_dir or it will be detected automatically
     * by the position of JSRootCore.js file, which must be loaded by normal methods:
     * <script type="text/javascript" src="scripts/JSRootCore.js"></script>
     * When all scripts are loaded, callback function will be called
+    *
+    * @private
     */
    JSROOT.loadScript = function(urllist, callback, debugout, from_previous) {
 
@@ -1745,7 +1757,9 @@
 
    JSROOT.methodsCache = {}; // variable used to keep methods for known classes
 
-   /** Returns methods for given typename */
+   /** @summary Returns methods for given typename
+    * @private
+    */
    JSROOT.getMethods = function(typename, obj) {
 
       var m = JSROOT.methodsCache[typename],
@@ -2059,7 +2073,8 @@
       return m;
    }
 
-   /** Returns true if object represents basic ROOT collections */
+   /** @summary Returns true if object represents basic ROOT collections
+    * @private */
    JSROOT.IsRootCollection = function(lst, typename) {
       if (lst && (typeof lst === 'object')) {
          if ((lst.$kind === "TList") || (lst.$kind === "TObjArray")) return true;
@@ -2070,11 +2085,12 @@
              (typename === 'TObjArray') || (typename === 'TClonesArray');
    }
 
-   /** Adds specific methods to the object.
+   /** @summary Adds specific methods to the object.
     *
     * JSROOT implements some basic methods for different ROOT classes.
     * @param {object} obj - object where methods are assigned
     * @param {string} typename - optional typename, if not specified, obj._typename will be used
+    * @private
     */
    JSROOT.addMethods = function(obj, typename) {
       this.extend(obj, JSROOT.getMethods(typename || obj._typename, obj));
@@ -2082,11 +2098,12 @@
 
    JSROOT.lastFFormat = "";
 
-   /** Converts numeric value to string according to specified format.
+   /** @summary Converts numeric value to string according to specified format.
     *
     * @param {number} value - value to convert
     * @param {strting} fmt - format can be like 5.4g or 4.2e or 6.4f
     * @returns {string} - converted value
+    * @private
     */
    JSROOT.FFormat = function(value, fmt) {
       if (!fmt) fmt = "6.4g";
@@ -2160,7 +2177,8 @@
       return sg;
    }
 
-   /** Implements log10 */
+   /** @summary Implements log10
+    * @private */
    JSROOT.log10 = function(n) {
       return Math.log(n) / Math.log(10);
    }

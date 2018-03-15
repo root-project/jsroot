@@ -116,7 +116,7 @@
 
    // ==========================================================================================
 
-   /** Draw options interpreter.
+   /** @summary Draw options interpreter.
     * @constructor
     * @memberof JSROOT
     */
@@ -125,17 +125,17 @@
       this.part = "";
    }
 
-   /** Returns true if remaining options are empty. */
+   /** @summary Returns true if remaining options are empty. */
    DrawOptions.prototype.empty = function() {
       return this.opt.length === 0;
    }
 
-   /** Returns remaining part of the draw options. */
+   /** @summary Returns remaining part of the draw options. */
    DrawOptions.prototype.remain = function() {
       return this.opt;
    }
 
-   /** Checks if given option exists */
+   /** @summary Checks if given option exists */
    DrawOptions.prototype.check = function(name,postpart) {
       var pos = this.opt.indexOf(name);
       if (pos < 0) return false;
@@ -152,7 +152,7 @@
       return true;
    }
 
-   /** Returns remaining part of found option as integer. */
+   /** @summary Returns remaining part of found option as integer. */
    DrawOptions.prototype.partAsInt = function(offset, dflt) {
       var val = this.part.replace( /^\D+/g, '');
       val = val ? parseInt(val,10) : Number.NaN;
@@ -161,8 +161,6 @@
 
    // ============================================================================================
 
-   /** @namespace Painter
-    * @memberof JSROOT */
    var Painter = {
          Coord: {
             kCARTESIAN : 1,
@@ -595,30 +593,31 @@
     * Color palette handle.
     * @constructor
     * @memberof JSROOT
+    * @private
     */
 
    function ColorPalette(arr) {
       this.palette = arr;
    }
 
-   /** Returns color index which correspond to contour index of provided length */
+   /** @summary Returns color index which correspond to contour index of provided length */
    ColorPalette.prototype.calcColorIndex = function(i,len) {
       var theColor = Math.floor((i+0.99)*this.palette.length/(len-1));
       if (theColor > this.palette.length-1) theColor = this.palette.length-1;
       return theColor;
    }
 
-   /** Returns color with provided index */
+   /** @summary Returns color with provided index */
    ColorPalette.prototype.getColor = function(indx) {
       return this.palette[indx];
    }
 
-   /** Returns number of colors in the palette */
+   /** @summary Returns number of colors in the palette */
    ColorPalette.prototype.getLength = function() {
       return this.palette.length;
    }
 
-   /** Calculate color for given i and len */
+   /** @summary Calculate color for given i and len */
    ColorPalette.prototype.calcColor = function(i,len) {
       var indx = this.calcColorIndex(i,len);
       return this.getColor(indx);
@@ -962,9 +961,10 @@
 
 
    /**
-    * Handle for fill attributes.
+    * @summary Handle for fill attributes.
     * @constructor
     * @memberof JSROOT
+    * @param {object} args - different arguments to set fill attributes
     * @param {number} [args.kind = 2] - 1 means object drawing where combination fillcolor==0 and fillstyle==1001 means no filling,  2 means all other objects where such combination is white-color filling
     */
 
@@ -981,7 +981,7 @@
       this.changed = false; // unset change property that
    }
 
-   /** Set fill style as arguments */
+   /** @summary Set fill style as arguments */
    TAttFillHandler.prototype.SetArgs = function(args) {
       if (args.attr && (typeof args.attr == 'object')) {
          if ((args.pattern===undefined) && (args.attr.fFillStyle!==undefined)) args.pattern = args.attr.fFillStyle;
@@ -990,7 +990,7 @@
       this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
    }
 
-   /** Apply fill style to selection */
+   /** @summary Apply fill style to selection */
    TAttFillHandler.prototype.Apply = function(selection) {
       this.used = true;
 
@@ -1003,38 +1003,42 @@
          selection.style('antialias', this.antialias);
    }
 
-   /** Returns fill color (or pattern url). */
+   /** @summary Returns fill color (or pattern url) */
    TAttFillHandler.prototype.fillcolor = function() {
       return this.pattern_url || this.color;
    }
 
-   /** Returns fill color without pattern url.
+   /** @summary Returns fill color without pattern url.
     *
-    * If empty, alternative color will be provided */
+    * @desc If empty, alternative color will be provided
+    * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
+    * @private */
    TAttFillHandler.prototype.fillcoloralt = function(altern) {
       return this.color && (this.color!="none") ? this.color : altern;
    }
 
-   /** Returns true if color not specified or fill style not specified */
+   /** @summary Returns true if color not specified or fill style not specified */
    TAttFillHandler.prototype.empty = function() {
       var fill = this.fillcolor();
       return !fill || (fill == 'none');
    }
 
-   /** Set solid fill color as fill pattern */
+   /** @summary Set solid fill color as fill pattern
+    * @param {string} col - solid color */
    TAttFillHandler.prototype.SetSolidColor = function(col) {
       delete this.pattern_url;
       this.color = col;
       this.pattern = 1001;
    }
 
-   /** Check if solid fill is used, also color can be checked */
+   /** @summary Check if solid fill is used, also color can be checked
+    * @param {string} [solid_color = undefined] - when specified, checks if fill color matches */
    TAttFillHandler.prototype.isSolid = function(solid_color) {
       if (this.pattern !== 1001) return false;
       return !solid_color || solid_color==this.color;
    }
 
-   /** Method used when color or pattern were changed with OpenUi5 widgets
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets
     * @private */
    TAttFillHandler.prototype.verifyDirectChange = function(painter) {
       if (typeof this.pattern == 'string') this.pattern = parseInt(this.pattern);
@@ -1043,7 +1047,7 @@
       this.Change(this.color, this.pattern, painter ? painter.svg_canvas() : null, true);
    }
 
-   /** Method to change fill attributes.
+   /** @summary Method to change fill attributes.
     *
     * @param {number} color - color index
     * @param {number} pattern - pattern index
@@ -1233,7 +1237,8 @@
       return true;
    }
 
-   /** Create sample of fill pattern inside SVG */
+   /** @summary Create sample of fill pattern inside SVG
+    * @private */
    TAttFillHandler.prototype.CreateSample = function(sample_svg, width, height) {
 
       // we need to create extra handle to change
@@ -3558,8 +3563,9 @@
       menu.add("endsub:");
    }
 
+   /** @summary execute selected menu command, either locally or remotely
+    * @private */
    TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
-      // execute selected menu command, either locally or remotely
 
       if (method.fName == "Inspect") {
          this.ShowInpsector();
@@ -3583,6 +3589,8 @@
       return false;
    }
 
+   /** @summary Fill object menu in web canvas
+    * @private */
    TObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
 
       var canvp = this.canv_painter();
@@ -3653,8 +3661,9 @@
       setTimeout(canvp._getmenu_callback, 2000); // set timeout to avoid menu hanging
    }
 
+   /** @summary remove all created draw attributes
+    * @private */
    TObjectPainter.prototype.DeleteAtt = function() {
-      // remove all created draw attributes
       delete this.lineatt;
       delete this.fillatt;
       delete this.markeratt;
@@ -3794,10 +3803,12 @@
       menu.add("endsub:");
    }
 
+   /** @symmary Show object in inspector */
    TObjectPainter.prototype.ShowInpsector = function() {
       JSROOT.draw(this.divid, this.GetObject(), 'inspect');
    }
 
+   /** @symmary Fill context menu for the object */
    TObjectPainter.prototype.FillContextMenu = function(menu) {
 
       var title = this.GetTipName();
@@ -3875,7 +3886,7 @@
       return null;
    }
 
-   /// remove painter from list of painters and cleanup all drawings
+   /** @summary Remove painter from list of painters and cleanup all drawings */
    TObjectPainter.prototype.DeleteThis = function() {
       var pp = this.pad_painter();
       if (pp) {
@@ -3886,10 +3897,14 @@
       this.Cleanup();
    }
 
+   /** @summary Configure user-defined tooltip callback
+    *
+    * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
+    * call_back function will be called every time when new data is selected
+    * when mouse leave frame area, call_back(null) will be called
+    */
+
    TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
-      // hook for the users to get tooltip information when mouse cursor moves over frame area
-      // call_back function will be called every time when new data is selected
-      // when mouse leave frame area, call_back(null) will be called
 
       if ((call_back === undefined) || (typeof call_back !== 'function')) {
          delete this.UserTooltipCallback;
@@ -3928,9 +3943,14 @@
       }.bind(this, data), this.UserTooltipTimeout);
    }
 
+   /** @summary Redraw object
+    *
+    * @desc Basic method, should be reimplemented in all derived objects
+    * for the case when drawing should be repeated
+    * @abstract
+    */
+
    TObjectPainter.prototype.Redraw = function() {
-      // basic method, should be reimplemented in all derived objects
-      // for the case when drawing should be repeated
    }
 
    /** @summary Start text drawing
@@ -5375,6 +5395,7 @@
     * resize will be handled with delay after last resize event
     * handle can be function or object with CheckResize function
     * one could specify delay after which resize event will be handled
+    * @private
     */
    JSROOT.RegisterForResize = function(handle, delay) {
 
@@ -5559,8 +5580,12 @@
       return first;
    }
 
+   /** @summary Scan streamer infos for derived classes
+    * @desc Assign draw functions for such derived classes
+    * @private
+    */
    JSROOT.addStreamerInfos = function(lst) {
-      if (lst === null) return;
+      if (!lst) return;
 
       function CheckBaseClasses(si, lvl) {
          if (si.fElements == null) return null;
@@ -5602,6 +5627,9 @@
       }
    }
 
+   /** @summary Provide draw settings for specified class or kind
+    * @private
+    */
    JSROOT.getDrawSettings = function(kind, selector) {
       var res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
@@ -5651,7 +5679,8 @@
       return JSROOT.getDrawSettings(kind).opts;
    }
 
-   /** Returns true if provided object class can be drawn */
+   /** @summary Returns true if provided object class can be drawn
+    * @private */
    JSROOT.canDraw = function(classname) {
       return JSROOT.getDrawSettings("ROOT." + classname).opts !== null;
    }
@@ -5782,7 +5811,10 @@
     *
     * @desc If drawing was not drawn before, it will be performed with {@link JSROOT.draw}.
     * If drawing was already done, that content will be updated
-    * See {@link JSROOT.draw} for meaning of arguments and return vlues
+    * @param {string|object} divid - id of div element to draw or directly DOMElement
+    * @param {object} obj - object to draw, object type should be registered before in JSROOT
+    * @param {string} opt - draw options
+    * @param {function} callback - function called when drawing is completed, first argument will be object painter instance
     */
    JSROOT.redraw = function(divid, obj, opt, callback) {
       if (!obj) return JSROOT.CallBack(callback, null);
@@ -5959,6 +5991,7 @@
     * if no argument specified, any shown messages will be removed
     * @param {string} msg - message to display
     * @param {number} tmout - optional timeout in milliseconds, after message will disappear
+    * @private
     */
    JSROOT.progress = function(msg, tmout) {
       if (JSROOT.BatchMode || !document) return;
