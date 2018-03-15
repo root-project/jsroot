@@ -5954,6 +5954,12 @@
     * As second argument, one could specify "true" value to force redrawing of
     * the element even after minimal resize of the element
     * Or one just supply object with exact sizes like { width:300, height:200, force:true };
+    * @param {string|object} divid - id or DOM element
+    * @param {boolean|object} arg - options on how to resize
+    *
+    * @example
+    * JSROOT.resize("drawing", { width: 500, height: 200 } );
+    * JSROOT.resize(document.querySelector("#drawing"), true);
     */
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
@@ -5973,7 +5979,15 @@
     */
    JSROOT.CheckElementResize = JSROOT.resize;
 
-   /** @summary Safely remove all JSROOT objects from specified element */
+   /**
+    * @summary Safely remove all JSROOT objects from specified element
+    *
+    * @param {string|object} divid - id or DOM element
+    *
+    * @example
+    * JSROOT.cleanup("drawing");
+    * JSROOT.cleanup(document.querySelector("#drawing"));
+    */
    JSROOT.cleanup = function(divid) {
       var dummy = new TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
