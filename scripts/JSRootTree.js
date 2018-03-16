@@ -2664,11 +2664,14 @@
       return true;
    }
 
-   if (JSROOT.Painter)
-   JSROOT.Painter.drawTree = function(divid, obj, opt) {
-      // this is function called from JSROOT.draw()
-      // just envelope for real TTree::Draw method which do the main job
-      // Can be also used for the branch and leaf object
+   /** @summary function called from JSROOT.draw()
+    * @desc just envelope for real TTree::Draw method which do the main job
+    * Can be also used for the branch and leaf object
+    * @private */
+   JSROOT.drawTree = function(divid, obj, opt) {
+
+      if (!JSROOT.TObjectPainter)
+         return console.error("Painting functionality not loaded for drawTree");
 
       var painter = new JSROOT.TObjectPainter(obj),
           tree = obj, args = opt;
