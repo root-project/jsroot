@@ -5595,12 +5595,12 @@
    JSROOT.addDrawFunc({ name: "kind:Command", icon: "img_execute", execute: true });
    JSROOT.addDrawFunc({ name: "TFolder", icon: "img_folder", icon2: "img_folderopen", noinspect: true, prereq: "hierarchy", expand: "JSROOT.Painter.FolderHierarchy" });
    JSROOT.addDrawFunc({ name: "TTask", icon: "img_task", prereq: "hierarchy", expand: "JSROOT.Painter.TaskHierarchy", for_derived: true });
-   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", prereq: "tree", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
-   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", prereq: "tree", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
-   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", prereq: "tree", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
-   JSROOT.addDrawFunc({ name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree", func: 'JSROOT.drawTree', opt: ";dump", noinspect: true });
-   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", prereq: "tree", func: 'JSROOT.drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true });
-   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", prereq: "tree", noexpand: true, func: 'JSROOT.drawTree', opt: ";dump", ctrl: "dump", ignore_online: true });
+   JSROOT.addDrawFunc({ name: "TTree", icon: "img_tree", prereq: "tree;more2d", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
+   JSROOT.addDrawFunc({ name: "TNtuple", icon: "img_tree", prereq: "tree;more2d", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
+   JSROOT.addDrawFunc({ name: "TNtupleD", icon: "img_tree", prereq: "tree;more2d", expand: 'JSROOT.Painter.TreeHierarchy', func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: "player;testio", shift: "inspect" });
+   JSROOT.addDrawFunc({ name: "TBranchFunc", icon: "img_leaf_method", prereq: "tree;more2d", func: 'JSROOT.Painter.drawTree', opt: ";dump", noinspect: true });
+   JSROOT.addDrawFunc({ name: /^TBranch/, icon: "img_branch", prereq: "tree;more2d", func: 'JSROOT.Painter.drawTree', dflt: "expand", opt: ";dump", ctrl: "dump", shift: "inspect", ignore_online: true });
+   JSROOT.addDrawFunc({ name: /^TLeaf/, icon: "img_leaf", prereq: "tree;more2d", noexpand: true, func: 'JSROOT.Painter.drawTree', opt: ";dump", ctrl: "dump", ignore_online: true });
    JSROOT.addDrawFunc({ name: "TList", icon: "img_list", prereq: "hierarchy", func: "JSROOT.Painter.drawList", expand: "JSROOT.Painter.ListHierarchy", dflt: "expand" });
    JSROOT.addDrawFunc({ name: "THashList", sameas: "TList" });
    JSROOT.addDrawFunc({ name: "TObjArray", sameas: "TList" });
