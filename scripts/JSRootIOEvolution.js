@@ -848,6 +848,7 @@
    /**
     * @summary Interface to read objects from ROOT files.
     *
+    * @desc Use {@link JSROOT.OpenFile} to create instance of the class
     * @constructor
     * @memberof JSROOT
     * @param {string} url - file URL

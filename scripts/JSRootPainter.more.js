@@ -500,6 +500,15 @@
 
    // ===================================================================================
 
+   /**
+    * @summary Painter for TF1 object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} tf1 - TF1 object to draw
+    */
+
    function TF1Painter(tf1) {
       JSROOT.TObjectPainter.call(this, tf1);
       this.bins = null;
@@ -776,6 +785,15 @@
    }
 
    // =======================================================================
+
+   /**
+    * @summary Painter for TGraph object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} graph - TGraph object to draw
+    */
 
    function TGraphPainter(graph) {
       JSROOT.TObjectPainter.call(this, graph);

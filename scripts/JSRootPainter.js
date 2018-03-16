@@ -49,9 +49,17 @@
    // list of user painters, called with arguments func(vis, obj, opt)
    JSROOT.DrawFuncs = { lst:[], cache:{} };
 
-   // add draw function for the class
-   // List of supported draw options could be provided, separated  with ';'
-   // Several different draw functions for the same class or kind could be specified
+   /** @summary Register draw function for the class
+    * @desc List of supported draw options could be provided, separated  with ';'
+    * Several different draw functions for the same class or kind could be specified
+    * @param {object} args - arguments
+    * @param {string} args.name - class name
+    * @param {string} [args.prereq] - prerequicities to load before search for the draw function
+    * @param {string} args.func - name of draw function for the class
+    * @param {string} [args.direct=false] - if true, function is just Redraw() method of TObjectPainter
+    * @param {string} args.opt - list of supported draw options (separated with semicolon) like "col;scat;"
+    * @param {string} [args.icon] - icon name shown for the class in hierarchy browser
+    */
    JSROOT.addDrawFunc = function(_name, _func, _opt) {
       if ((arguments.length == 1) && (typeof arguments[0] == 'object')) {
          JSROOT.DrawFuncs.lst.push(arguments[0]);
@@ -626,7 +634,7 @@
    // =============================================================================
 
    /**
-    * Handle for marker attributes.
+    * @summary Handle for marker attributes.
     * @constructor
     * @memberof JSROOT
     */
@@ -651,7 +659,7 @@
       this.changed = false;
    }
 
-   /** Set marker attributes.
+   /** @summary Set marker attributes.
     *
     * @param {object} args - arguments can be
     * @param {object} args.attr - instance of TAttrMarker (or derived class) or
@@ -671,15 +679,15 @@
       this.Change(args.color, args.style, args.size);
    }
 
-   /** Reset position, used for optimization of drawing of multiple markers
+   /** @summary Reset position, used for optimization of drawing of multiple markers
     * @private */
    TAttMarkerHandler.prototype.reset_pos = function() {
       this.lastx = this.lasty = null;
    }
 
-   /** Create marker path for given position.
+   /** @summary Create marker path for given position.
     *
-    * When drawing many elementary points, created path may depend from previously produced markers.
+    * @desc When drawing many elementary points, created path may depend from previously produced markers.
     *
     * @param {number} x - first coordinate
     * @param {number} y - second coordinate
@@ -696,17 +704,17 @@
       return (m2.length < m1.length) ? m2 : m1;
    }
 
-   /** Returns full size of marker */
+   /** @summary Returns full size of marker */
    TAttMarkerHandler.prototype.GetFullSize = function() {
       return this.scale*this.size;
    }
 
-   /** Returns approximate length of produced marker string */
+   /** @summary Returns approximate length of produced marker string */
    TAttMarkerHandler.prototype.MarkerLength = function() {
       return this.marker ? this.marker.length : 10;
    }
 
-   /** Change marker attributes.
+   /** @summary Change marker attributes.
     *
     *  @param {string} color - marker color
     *  @param {number} style - marker style
@@ -808,8 +816,7 @@
       return true;
    }
 
-   /** Apply marker styles to created element
-    * @private */
+   /** @summary Apply marker styles to created element */
    TAttMarkerHandler.prototype.Apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
       selection.style('fill', this.fill ? this.color : "none");
@@ -821,7 +828,7 @@
       this.Change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
-   /** Create sample with marker in given SVG element
+   /** @summary Create sample with marker in given SVG element
     *
     * @param {selection} svg - SVG element
     * @param {number} width - width of sample SVG
@@ -853,7 +860,7 @@
    }
 
    /**
-    * Set line attributes.
+    * @summary Set line attributes.
     *
     * @param {object} args - specify attributes by different ways
     * @param {object} args.attr - TAttLine object with appropriate data members or
@@ -895,7 +902,7 @@
    }
 
    /**
-    * Change exclusion attributes.
+    * @summary Change exclusion attributes.
     * @private
     */
 
@@ -909,7 +916,7 @@
    }
 
    /**
-    * Returns true if line attribute is empty and will not be applied.
+    * @summary Returns true if line attribute is empty and will not be applied.
     */
 
    TAttLineHandler.prototype.empty = function() {
@@ -917,9 +924,9 @@
    }
 
    /**
-    * Applies line attribute to selection.
+    * @summary Applies line attribute to selection.
     *
-    * @param {d3.selection} selection is d3 object
+    * @param {object} selection - d3.js selection
     */
 
    TAttLineHandler.prototype.Apply = function(selection) {
@@ -935,7 +942,7 @@
    }
 
    /**
-    * Change line attributes
+    * @summary Change line attributes
     * @private
     */
 
@@ -1935,13 +1942,14 @@
       retry_open(true); // call for the first time
    }
 
-   /** Method used to initialize connection to web window.
+   /** @summary Method used to initialize connection to web window.
     *
-    * @param {string} [arg.prereq = undefined] - prerequicities, which should be loaded
-    * @param {string} [arg.socket_kind = undefined] - kind of connection longpoll|cef3|qt5, normally undefined and extracted from URL
+    * @param {object} arg - arguemnts
+    * @param {string} [arg.prereq] - prerequicities, which should be loaded
+    * @param {string} [arg.socket_kind] - kind of connection longpoll|cef3|qt5, normally detected automatically from URL
     * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
     * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
-    * @param {string} [arg.prereq2 = undefined] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
+    * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
     * @param {function} arg.callback  - function which is called with WebWindowHandle or when establish connection and get first portion of data
     */
 
@@ -2007,7 +2015,7 @@
    // ========================================================================================
 
    /**
-    * Basic painter class.
+    * @summary Basic painter class.
     * @constructor
     * @memberof JSROOT
     */
@@ -2016,13 +2024,14 @@
       this.divid = null; // either id of element (preferable) or element itself
    }
 
-   /** Access painter reference, stored in first child element.
+   /** @summary Access painter reference, stored in first child element.
     *
     *    - on === true - set *this* as painter
     *    - on === false - delete painter reference
     *    - on === undefined - return painter
     *
     * @param {boolean} on - that to perfrom
+    * @private
     */
    TBasePainter.prototype.AccessTopPainter = function(on) {
       var main = this.select_main().node(),
@@ -2033,7 +2042,7 @@
       return chld.painter;
    }
 
-   /** Generic method to cleanup painter */
+   /** @summary Generic method to cleanup painter */
    TBasePainter.prototype.Cleanup = function(keep_origin) {
 
       var origin = this.select_main('origin');
@@ -2051,7 +2060,8 @@
       delete this._hpainter;
    }
 
-   /** Function should be called by the painter when first drawing is completed */
+   /** @summary Function should be called by the painter when first drawing is completed
+    * @private */
 
    TBasePainter.prototype.DrawingReady = function(res_painter) {
 
@@ -2069,7 +2079,7 @@
       return this;
    }
 
-   /** Call back will be called when painter ready with the drawing
+   /** @summary Call back will be called when painter ready with the drawing
     *
     * @private
     */
@@ -2080,7 +2090,7 @@
       this._ready_callback_.push(callback);
    }
 
-   /** Should returns drawn object.
+   /** @summary Returns drawn object
     *
     * @abstract
     */
@@ -2088,30 +2098,30 @@
       return null;
    }
 
-   /** Returns true if type match with drawn object type.
-   *
-   * @abstract
-   */
+   /** @summary Returns true if type match with drawn object type
+    * @abstract
+    * @private
+    */
    TBasePainter.prototype.MatchObjectType = function(typ) {
       return false;
    }
 
-   /** Called to update drawn object content
-   *
-   * @abstract
-   */
+   /** @summary Called to update drawn object content
+    * @abstract
+    * @private */
    TBasePainter.prototype.UpdateObject = function(obj) {
       return false;
    }
 
-   /** Redraw all objects in current pad
-   *
-   * @abstract
-   */
+   /** @summary Redraw all objects in current pad
+    * @abstract
+    * @private */
    TBasePainter.prototype.RedrawPad = function(resize) {
    }
 
-   /** Updates object and readraw it */
+   /** @summary Updates object and readraw it
+    * @param {object} obj - new version of object, values will be updated in original object
+    * @returns {boolean} true if object updated and redrawn */
    TBasePainter.prototype.RedrawObject = function(obj) {
       if (!this.UpdateObject(obj)) return false;
       var current = document.body.style.cursor;
@@ -2121,23 +2131,25 @@
       return true;
    }
 
-   /** Checks if draw elements were resized and drawing should be updated
-    * @abstract */
+   /** @summary Checks if draw elements were resized and drawing should be updated
+    * @abstract
+    * @private */
    TBasePainter.prototype.CheckResize = function(arg) {
       return false;
    }
 
-   /** Method called when interactively changes attribute in given class
-    * @abstract */
+   /** @summary Method called when interactively changes attribute in given class
+    * @abstract
+    * @private */
    TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
       // function called when user interactively changes attribute in given class
 
       // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
-   /** Returns d3.select for main element for drawing, defined with this.divid.
+   /** @summary Returns d3.select for main element for drawing, defined with this.divid.
     *
-    * if main element was layouted, returns main element inside layout */
+    * @desc if main element was layouted, returns main element inside layout */
    TBasePainter.prototype.select_main = function(is_direct) {
 
       if (!this.divid) return d3.select(null);
@@ -2158,7 +2170,7 @@
       return res;
    }
 
-   /** Returns layout kind
+   /** @summary Returns layout kind
     * @private
     */
    TBasePainter.prototype.get_layout_kind = function() {
@@ -2168,7 +2180,7 @@
       return layout || 'simple';
    }
 
-   /** Set layout kind
+   /** @summary Set layout kind
     * @private
     */
    TBasePainter.prototype.set_layout_kind = function(kind, main_selector) {
@@ -2182,9 +2194,9 @@
       }
    }
 
-   /** Function checks if geometry of main div was changed.
+   /** @summary Function checks if geometry of main div was changed.
     *
-    * returns size of area when main div is drawn
+    * @desc returns size of area when main div is drawn
     * take into account enlarge state
     *
     * @private
@@ -2240,9 +2252,9 @@
       return rect;
    }
 
-   /** Try enlarge main drawing element to full HTML page.
+   /** @summary Try enlarge main drawing element to full HTML page.
     *
-    * Possible values for parameter:
+    * @desc Possible values for parameter:
     *
     *    - true - try to enlarge
     *    - false - cancel enlarge state
@@ -2251,6 +2263,8 @@
     *    - 'verify' - check if element can be enlarged
     *
     * if action not specified, just return possibility to enlarge main div
+    *
+    * @private
     */
    TBasePainter.prototype.enlarge_main = function(action, skip_warning) {
 
@@ -2310,7 +2324,7 @@
       return false;
    }
 
-   /** Return CSS value in given HTML element
+   /** @summary Return CSS value in given HTML element
     * @private */
    TBasePainter.prototype.GetStyleValue = function(elem, name) {
       if (!elem || elem.empty()) return 0;
@@ -2320,7 +2334,8 @@
       return isNaN(value) ? 0 : Math.round(value);
    }
 
-   /** Returns rect with width/height which correspond to the visible area of drawing region of element. */
+   /** @summary Returns rect with width/height which correspond to the visible area of drawing region of element.
+    * @private */
    TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
 
       if (JSROOT.nodejs)
@@ -2338,10 +2353,12 @@
       return res;
    }
 
-   /** Assign painter to specified element
+   /** @summary Assign painter to specified element
     *
-    * base painter does not creates canvas or frames
+    * @desc base painter does not creates canvas or frames
     * it registered in the first child element
+    *
+    * @param {string|object} divid - element ID or DOM Element
     */
    TBasePainter.prototype.SetDivId = function(divid) {
       if (arguments.length > 0)
@@ -2350,9 +2367,10 @@
       this.AccessTopPainter(true);
    }
 
-   /** Set item name, associated with the painter
+   /** @summary Set item name, associated with the painter
     *
-    * Used by {@link JSROOT.HiearchyPainter}
+    * @desc Used by {@link JSROOT.HiearchyPainter}
+    * @private
     */
    TBasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
@@ -2363,23 +2381,26 @@
       this._hpainter = hpainter;
    }
 
-   /** Returns assigned item name */
+   /** @summary Returns assigned item name
+    * @private */
    TBasePainter.prototype.GetItemName = function() {
       return ('_hitemname' in this) ? this._hitemname : null;
    }
 
-   /** Returns assigned item draw option */
+   /** @summary Returns assigned item draw option
+    * @private */
    TBasePainter.prototype.GetItemDrawOpt = function() {
       return ('_hdrawopt' in this) ? this._hdrawopt : "";
    }
 
-   /** Check if it makes sense to zoom inside specified axis range
+   /** @summary Check if it makes sense to zoom inside specified axis range
     *
     * @param {string} axis - name of axis like 'x', 'y', 'z'
     * @param {number} left - left axis range
     * @param {number} right - right axis range
     * @returns true is zooming makes sense
     * @abstract
+    * @private
     */
    TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
       return false;
@@ -2405,9 +2426,9 @@
 
    TObjectPainter.prototype = Object.create(TBasePainter.prototype);
 
-   /** Generic method to cleanup painter.
+   /** @summary Generic method to cleanup painter.
     *
-    * Remove object drawing and in case of main painter - also main HTML components
+    * @desc Remove object drawing and in case of main painter - also main HTML components
     */
    TObjectPainter.prototype.Cleanup = function() {
 
@@ -2437,18 +2458,18 @@
       TBasePainter.prototype.Cleanup.call(this, keep_origin);
    }
 
-   /** Returns drawn object */
+   /** @summary Returns drawn object */
    TObjectPainter.prototype.GetObject = function() {
       return this.draw_object;
    }
 
-   /** Returns drawn object class name */
+   /** @summary Returns drawn object class name */
    TObjectPainter.prototype.GetClassName = function() {
       var res = this.draw_object ? this.draw_object._typename : "";
       return res || "";
    }
 
-   /** Checks if drawn object matches with provided typename
+   /** @summary Checks if drawn object matches with provided typename
     *
     * @param {string} arg - typename
     * @param {string} arg._typename - if arg is object, use its typename
@@ -2460,9 +2481,10 @@
       return this.draw_object._typename.match(arg);
    }
 
-   /** Changes item name.
+   /** @summary Changes item name.
     *
-    * When available, used for svg:title proprty */
+    * @desc When available, used for svg:title proprty
+    * @private */
    TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
       TBasePainter.prototype.SetItemName.call(this, name, opt, hpainter);
       if (this.no_default_title || (name=="")) return;
@@ -2471,7 +2493,7 @@
                    else this.select_main().attr("title", name);
    }
 
-   /** Store actual options together with original string
+   /** @summary Store actual options together with original string
     * @private */
    TObjectPainter.prototype.OptionsStore = function(original) {
       if (!this.options) return;
@@ -2479,7 +2501,7 @@
       this.options_store = JSROOT.extend({}, this.options);
    }
 
-   /** Checks if any draw options were changed
+   /** @summary Checks if any draw options were changed
     *
     * @private
     */
@@ -2493,7 +2515,7 @@
       return false;
    }
 
-   /** Return actual draw options as string
+   /** @summary Return actual draw options as string
     * @private
     */
    TObjectPainter.prototype.OptionsAsString = function() {
@@ -2508,9 +2530,10 @@
       return this.options.original || ""; // nothing better, return original draw option
    }
 
-   /** Generic method to update object content.
+   /** @summary Generic method to update object content.
     *
-    * Just copy all members from source object
+    * @desc Just copy all members from source object
+    * @param {object} obj - object with new data
     */
    TObjectPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
@@ -2518,9 +2541,10 @@
       return true;
    }
 
-   /** Returns string which either item or object name.
+   /** @summary Returns string which either item or object name.
     *
-    * Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
+    * @desc Such string can be used as tooltip. If result string larger than 20 symbols, it will be cutted.
+    * @private
     */
    TObjectPainter.prototype.GetTipName = function(append) {
       var res = this.GetItemName(), obj = this.GetObject();
@@ -2530,16 +2554,22 @@
       return res;
    }
 
+   /** @summary returns pad painter for specified pad
+    * @private */
    TObjectPainter.prototype.pad_painter = function(pad_name) {
       var elem = this.svg_pad(typeof pad_name == "string" ? pad_name : undefined);
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
+   /** @summary returns canvas painter
+    * @private */
    TObjectPainter.prototype.canv_painter = function() {
       var elem = this.svg_canvas();
       return elem.empty() ? null : elem.property('pad_painter');
    }
 
+   /** @summary returns color from current list of colors
+    * @private */
    TObjectPainter.prototype.get_color = function(indx) {
       var jsarr = this.root_colors;
 
@@ -2551,6 +2581,8 @@
       return jsarr[indx];
    }
 
+   /** @summary add color to list of colors
+    * @private */
    TObjectPainter.prototype.add_color = function(color) {
       var jsarr = this.root_colors;
       if (!jsarr) {
@@ -2563,9 +2595,10 @@
       return jsarr.length-1;
    }
 
-   /** Checks if draw elements were resized and drawing should be updated.
+   /** @summary Checks if draw elements were resized and drawing should be updated.
     *
-    * Redirects to {@link TPadPainter.CheckCanvasResize} */
+    * @desc Redirects to {@link TPadPainter.CheckCanvasResize}
+    * @private */
    TObjectPainter.prototype.CheckResize = function(arg) {
       var pad_painter = this.canv_painter();
       if (!pad_painter) return false;
@@ -2575,30 +2608,36 @@
       return true;
    }
 
+   /** @summary removes <g> element with object drawing
+    * @desc generic method to delete all graphical elements, associated with painter */
    TObjectPainter.prototype.RemoveDrawG = function() {
-      // generic method to delete all graphical elements, associated with painter
       if (this.draw_g) {
          this.draw_g.remove();
          this.draw_g = null;
       }
    }
 
+   /** @summary recreates <g> element for object drawing
+    * @desc obsolete function, will be removed soon
+    * @private */
    TObjectPainter.prototype.RecreateDrawG = function(usepad, layer) {
       // keep old function for a while - later
       console.warn("Obsolete RecreateDrawG is used, will be removed soon. Change to CreateG");
       return this.CreateG(usepad ? undefined : layer);
    }
 
-   /** function (re)creates svg:g element used for specific object drawings
-     *  either one attach svg:g to pad list of primitives (default)
-     *  or svg:g element created in specified frame layer (default main_layer) */
+   /** @summary (re)creates svg:g element for object drawings
+    *
+    * @desc either one attach svg:g to pad list of primitives (default)
+    * or svg:g element created in specified frame layer (default main_layer)
+    * @param {string} [frame_layer=undefined] - when specified, <g> element will be created inside frame layer, otherwise in pad primitives list
+    */
    TObjectPainter.prototype.CreateG = function(frame_layer) {
       if (this.draw_g) {
          // one should keep svg:g element on its place
          // d3.selectAll(this.draw_g.node().childNodes).remove();
          this.draw_g.selectAll('*').remove();
-      } else
-      if (frame_layer) {
+      } else if (frame_layer) {
          var frame = this.svg_frame();
          if (frame.empty()) return frame;
          if (typeof frame_layer != 'string') frame_layer = "main_layer";
@@ -2626,12 +2665,14 @@
       return this.draw_g;
    }
 
-   /** This is main graphical SVG element, where all drawings are performed */
+   /** @summary This is main graphical SVG element, where all drawings are performed
+    * @private */
    TObjectPainter.prototype.svg_canvas = function() {
       return this.select_main().select(".root_canvas");
    }
 
-   /** This is SVG element, correspondent to current pad */
+   /** @summary This is SVG element, correspondent to current pad
+    * @private */
    TObjectPainter.prototype.svg_pad = function(pad_name) {
       if (pad_name === undefined) pad_name = this.pad_name;
       //if (pad_name && this._pads_cache) {
@@ -2648,7 +2689,8 @@
       return c;
    }
 
-   /** Method selects immediate layer under canvas/pad main element */
+   /** @summary Method selects immediate layer under canvas/pad main element
+    * @private */
    TObjectPainter.prototype.svg_layer = function(name, pad_name) {
       var svg = this.svg_pad(pad_name);
       if (svg.empty()) return svg;
@@ -2668,6 +2710,9 @@
       return d3.select(null);
    }
 
+   /** @summary Method returns current pad name
+    * @param {string} [new_name = undefined] - when specified, new current pad name will be configured
+    * @private */
    TObjectPainter.prototype.CurrentPadName = function(new_name) {
       var svg = this.svg_canvas();
       if (svg.empty()) return "";
@@ -2676,12 +2721,15 @@
       return curr;
    }
 
+   /** @summary Returns ROOT TPad object
+    * @private */
    TObjectPainter.prototype.root_pad = function() {
       var pad_painter = this.pad_painter();
       return pad_painter ? pad_painter.pad : null;
    }
 
-   /** Converts pad x or y coordinate into NDC value */
+   /** @summary Converts pad x or y coordinate into NDC value
+    * @private */
    TObjectPainter.prototype.ConvertToNDC = function(axis, value, isndc) {
       if (isndc) return value;
       var pad = this.root_pad();
@@ -2697,12 +2745,13 @@
       return (value - pad.fX1) / (pad.fX2 - pad.fX1);
    }
 
-   /** Converts x or y coordinate into SVG pad or frame coordinates.
+   /** @summary Converts x or y coordinate into SVG pad or frame coordinates.
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
     *  @param {boolean} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
     *  @returns {number} rounded value of requested coordiantes
+    *  @private
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
       var main = this.frame_painter();
@@ -2717,16 +2766,18 @@
       return Math.round(value);
    }
 
-   /** Returns svg frame element.
+   /** @summary Returns svg element for the frame.
     *
-    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn */
+    * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+    * @private */
    TObjectPainter.prototype.svg_frame = function(pad_name) {
       return this.svg_layer("primitives_layer", pad_name).select(".root_frame");
    }
 
-   /** Returns pad width.
+   /** @summary Returns pad width.
     *
     * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+    * @private
     */
    TObjectPainter.prototype.pad_width = function(pad_name) {
       var res = this.svg_pad(pad_name);
@@ -2734,9 +2785,10 @@
       return isNaN(res) ? 0 : res;
    }
 
-   /** Returns pad height
+   /** @summary Returns pad height
     *
     * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn
+    * @private
     */
    TObjectPainter.prototype.pad_height = function(pad_name) {
       var res = this.svg_pad(pad_name);
@@ -2744,46 +2796,46 @@
       return isNaN(res) ? 0 : res;
    }
 
-   /** Returns frame painter in current pad
+   /** @summary Returns frame painter in current pad
     * @private */
    TObjectPainter.prototype.frame_painter = function() {
       var pp = this.pad_painter();
       return pp ? pp.frame_painter_ref : null;
    }
 
-   /** Returns property of the frame painter
+   /** @summary Returns property of the frame painter
     * @private */
    TObjectPainter.prototype.frame_property = function(name) {
       var pp = this.frame_painter();
       return pp && pp[name] ? pp[name] : 0;
    }
 
-   /** Returns frame X coordinate relative to current pad */
+   /** @summary Returns frame X coordinate relative to current pad */
    TObjectPainter.prototype.frame_x = function() {
       return this.frame_property("_frame_x");
    }
 
-   /** Returns frame Y coordinate relative to current pad */
+   /** @summary Returns frame Y coordinate relative to current pad */
    TObjectPainter.prototype.frame_y = function() {
       return this.frame_property("_frame_y");
    }
 
-   /** Returns frame width */
+   /** @summary Returns frame width */
    TObjectPainter.prototype.frame_width = function() {
       return this.frame_property("_frame_width");
    }
 
-   /** Returns frame height */
+   /** @summary Returns frame height */
    TObjectPainter.prototype.frame_height = function() {
       return this.frame_property("_frame_height");
    }
 
-   /** Returns embed mode for 3D drawings (three.js) inside SVG.
+   /** @summary Returns embed mode for 3D drawings (three.js) inside SVG.
     *
     *    - 0  no embedding, 3D drawing take full size of canvas
     *    - 1  no embedding, canvas placed over svg with proper size (resize problem may appear)
     *    - 2  normall embedding via ForeginObject, works only with Firefox
-    *     - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
+    *    - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
     *
     *  @private
     */
@@ -2795,7 +2847,7 @@
       return 1; // default is overlay
    }
 
-   /** Access current 3d mode
+   /** @summary Access current 3d mode
     *
     * @param {string} [new_value = undefined] - when specified, set new 3d mode
     * @private
@@ -2810,9 +2862,9 @@
       return ((kind===null) || (kind===undefined)) ? -1 : kind;
    }
 
-   /** Returns size which availble for 3D drawing.
+   /** @summary Returns size which availble for 3D drawing.
     *
-    * One uses frame sizes for the 3D drawing - like TH2/TH3 objects
+    * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
     * @private
     */
    TObjectPainter.prototype.size_for_3d = function(can3d) {
@@ -2873,9 +2925,8 @@
       return size;
    }
 
-   /** Clear all 3D drawings
-    * @private
-    */
+   /** @summary Clear all 3D drawings
+    * @private */
    TObjectPainter.prototype.clear_3d_canvas = function() {
       var can3d = this.access_3d_kind(null);
       if (can3d < 0) return;
@@ -2894,7 +2945,7 @@
       }
    }
 
-   /** Add 3D canvas
+   /** @summary Add 3D canvas
     * @private */
    TObjectPainter.prototype.add_3d_canvas = function(size, canv) {
 
@@ -2930,7 +2981,7 @@
       }
    }
 
-   /** Apply size to 3D elements
+   /** @summary Apply size to 3D elements
     * @private */
    TObjectPainter.prototype.apply_3d_size = function(size, onlyget) {
 
@@ -3007,9 +3058,11 @@
       return elem;
    }
 
-   /** Returns main object painter on the pad.
+   /** @summary Returns main object painter on the pad.
     *
-    * Normally this is first histogram drawn on the pad, which also draws all axes */
+    * @desc Normally this is first histogram drawn on the pad, which also draws all axes
+    * @param {boolean} [not_store = undefined] - if true, prevent temporary store of main painter reference
+    * @param {string} [pad_name = undefined] - when specified, returns main painter from specified pad */
    TObjectPainter.prototype.main_painter = function(not_store, pad_name) {
       var res = this.main;
       if (!res) {
@@ -3025,14 +3078,14 @@
       return res;
    }
 
-   /** Returns true if this is main painter */
+   /** @summary Returns true if this is main painter */
    TObjectPainter.prototype.is_main_painter = function() {
       return this === this.main_painter();
    }
 
-   /** Assigns id of top element (normally <div></div> where drawing is done).
+   /** @summary Assigns id of top element (normally div where drawing is done).
     *
-    * In some situations canvas may not exists - for instance object drawn as html, not as svg.
+    * @desc In some situations canvas may not exists - for instance object drawn as html, not as svg.
     * In such case the only painter will be assigned to the first element
     *
     * Following value of is_main parameter is allowed:
@@ -3044,9 +3097,9 @@
     *     4 - major objects like TH3 (required canvas and frame in 3d mode)
     *     5 - major objects like TGeoVolume (do not require canvas)
     *
-    *  @param {string|DOMElement} divid - element to which painter is assigned
+    *  @param {string|object} divid - id of div element or directly DOMElement
     *  @param {number} [kind = 0] - kind of object drawn with painter
-    *  @paran {string} [pad_name = undefined] - when specified, subpad name used for object drawin
+    *  @param {string} [pad_name = undefined] - when specified, subpad name used for object drawin
     */
    TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
 
@@ -3104,10 +3157,8 @@
          svg_p.property('mainpainter', this);
    }
 
-   /** Calculate absolute position of provided selection.
-    *
-    * @private
-    */
+   /** @summary Calculate absolute position of provided selection.
+    * @private */
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
       while (!sel.empty() && !sel.classed('root_canvas')) {
          var cl = sel.attr("class");
@@ -3120,11 +3171,13 @@
       return pos;
    }
 
-   /** Creates marker attributes object.
+   /** @summary Creates marker attributes object.
     *
-    * Can be used to produce markers in painter.
+    * @desc Can be used to produce markers in painter.
     * See {@link JSROOT.TAttMarkerHandler} for more info.
     * Instance assigned as this.markeratt data member, recognized by GED editor
+    * @param {object} args - either TAttMarker or see arguments of {@link JSROOT.TAttMarkerHandler}
+    * @returns created handler
     */
    TObjectPainter.prototype.createAttMarker = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
@@ -3144,11 +3197,12 @@
    }
 
 
-   /** Creates line attributes object.
+   /** @summary Creates line attributes object.
    *
-   * Can be used to produce lines in painter.
+   * @desc Can be used to produce lines in painter.
    * See {@link JSROOT.TAttLineHandler} for more info.
    * Instance assigned as this.lineatt data member, recognized by GED editor
+   * @param {object} args - either TAttLine or see constructor arguments of {@link JSROOT.TAttLineHandler}
    */
    TObjectPainter.prototype.createAttLine = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
@@ -3167,20 +3221,21 @@
       return handler;
    }
 
-   /** Creates fill attributes object.
+   /** @summary Creates fill attributes object.
     *
-    * Method dedicated to create fill attributes, bound to canvas SVG
+    * @desc Method dedicated to create fill attributes, bound to canvas SVG
     * otherwise newly created patters will not be usable in the canvas
     * See {@link JSROOT.TAttFillHandler} for more info.
     * Instance assigned as this.fillatt data member, recognized by GED editor
 
+    * @param {object} args - for special cases one can specify TAttFill as args or number of parameters
     * @param {boolean} [args.std = true] - this is standard fill attribute for object and should be used as this.fillatt
     * @param {object} [args.attr = null] - object, derived from TAttFill
     * @param {number} [args.pattern = undefined] - integer index of fill pattern
     * @param {number} [args.color = undefined] - integer index of fill color
     * @param {string} [args.color_as_svg = undefined] - color will be specified as SVG string, not as index from color palette
     * @param {number} [args.kind = undefined] - some special kind which is handled differently from normal patterns
-    * @param {object} args - for special cases one can specify TAttFill as args
+    * @returns created handle
    */
    TObjectPainter.prototype.createAttFill = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
@@ -3202,6 +3257,8 @@
       return handler;
    }
 
+   /** @summary call function for each painter in the pad
+    * @private */
    TObjectPainter.prototype.ForEachPainter = function(userfunc, kind) {
       // Iterate over all known painters
 
@@ -3217,8 +3274,9 @@
       if (pp) pp.ForEachPainterInPad(userfunc, kind);
    }
 
-   // indicate that redraw was invoked via interactive action (like context menu)
-   // use to catch such action by GED
+   /** @summary indicate that redraw was invoked via interactive action (like context menu)
+    * desc  use to catch such action by GED
+    * @private */
    TObjectPainter.prototype.InteractiveRedraw = function(arg, info) {
 
       if (arg == "pad") this.RedrawPad(); else
@@ -3235,12 +3293,14 @@
          canp.ProcessChanges(info, this.pad_painter());
    }
 
-   //  Redraw all objects in correspondent pad
+   /** @summary Redraw all objects in correspondent pad */
    TObjectPainter.prototype.RedrawPad = function() {
       var pad_painter = this.pad_painter();
       if (pad_painter) pad_painter.Redraw();
    }
 
+   /** @summary Switch tooltip mode in frame painter
+    * @private */
    TObjectPainter.prototype.SwitchTooltip = function(on) {
       var fp = this.frame_painter();
       if (fp) fp.ProcessTooltipEvent(null, on);
@@ -3249,6 +3309,8 @@
          this.control.SwitchTooltip(on);
    }
 
+   /** @summary Add drag interactive elements
+    * @private */
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
@@ -3474,6 +3536,8 @@
       MakeResizeElements(this.draw_g, rect_width(), rect_height(), drag_resize);
    }
 
+   /** @summary Activate context menu via touch events
+    * @private */
    TObjectPainter.prototype.startTouchMenu = function(kind) {
       // method to let activate context menu via touch handler
 
@@ -3492,6 +3556,8 @@
                       .on("touchend", this.endTouchMenu.bind(this, kind));
    }
 
+   /** @summary Close context menu, started via touch events
+    * @private */
    TObjectPainter.prototype.endTouchMenu = function(kind) {
       var fld = "touch_" + kind;
 
@@ -3514,6 +3580,8 @@
       delete this[fld];
    }
 
+   /** @summary Add color selection menu entries
+    * @private */
    TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, value, set_func, fill_kind) {
       if (value === undefined) return;
       menu.add("sub:"+name, function() {
@@ -3541,6 +3609,8 @@
       menu.add("endsub:");
    }
 
+   /** @summary Add size selection menu entries
+    * @private */
    TObjectPainter.prototype.AddSizeMenuEntry = function(menu, name, min, max, step, value, set_func) {
       if (value === undefined) return;
 
@@ -3669,6 +3739,8 @@
       delete this.markeratt;
    }
 
+   /** @summary Fill context menu for graphical attributes
+    * @private */
    TObjectPainter.prototype.FillAttContextMenu = function(menu, preffix) {
       // this method used to fill entries for different attributes of the object
       // like TAttFill, TAttLine, ....
@@ -3770,6 +3842,8 @@
       }
    }
 
+   /** @summary Fill context menu for text attributes
+    * @private */
    TObjectPainter.prototype.TextAttContextMenu = function(menu, prefix) {
       // for the moment, text attributes accessed directly from objects
 
@@ -3808,7 +3882,8 @@
       JSROOT.draw(this.divid, this.GetObject(), 'inspect');
    }
 
-   /** @symmary Fill context menu for the object */
+   /** @symmary Fill context menu for the object
+    * @private */
    TObjectPainter.prototype.FillContextMenu = function(menu) {
 
       var title = this.GetTipName();
@@ -3824,6 +3899,8 @@
       return menu.size() > 0;
    }
 
+   /** @symmary returns function used to display object status
+    * @private */
    TObjectPainter.prototype.GetShowStatusFunc = function() {
       // return function used to display object status
       // automatically disabled when drawing is enlarged - status line will be invisible
@@ -3837,6 +3914,8 @@
       return res;
    }
 
+   /** @symmary shows objects status
+    * @private */
    TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element
 
@@ -3847,9 +3926,10 @@
    }
 
 
+   /** @summary try to find object by name in list of pad primitives
+    * @desc used to find title drawing
+    * @private */
    TObjectPainter.prototype.FindInPrimitives = function(objname) {
-      // try to find object by name in list of pad primitives
-      // used to find title drawing
 
       var painter = this.pad_painter();
       if ((painter === null) || (painter.pad === null)) return null;
@@ -3863,10 +3943,11 @@
       return null;
    }
 
+   /** @summary Try to find painter for specified object
+    * @desc can be used to find painter for some special objects, registered as
+    * histogram functions
+    * @private */
    TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
-      // try to find painter for specified object
-      // can be used to find painter for some special objects, registered as
-      // histogram functions
 
       var painter = this.pad_painter();
       var painters = (painter === null) ? null : painter.painters;
@@ -3902,6 +3983,7 @@
     * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
     * call_back function will be called every time when new data is selected
     * when mouse leave frame area, call_back(null) will be called
+    * @private
     */
 
    TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
@@ -3917,10 +3999,16 @@
       this.UserTooltipTimeout = user_timeout;
    }
 
+   /** @summary Check if user-defined tooltip callback is configured
+    * @returns {Boolean}
+    * @private */
    TObjectPainter.prototype.IsUserTooltipCallback = function() {
       return typeof this.UserTooltipCallback == 'function';
    }
 
+   /** @summary Provide tooltips data to user-defained function
+    * @param {object} data - tooltip data
+    * @private */
    TObjectPainter.prototype.ProvideUserTooltip = function(data) {
 
       if (!this.IsUserTooltipCallback()) return;
@@ -3974,17 +4062,18 @@
             .property('max_font_size', max_font_size);
    }
 
+   /** @summary function used to remember maximal text scaling factor
+    * @private */
    TObjectPainter.prototype.TextScaleFactor = function(value, draw_g) {
-      // function used to remember maximal text scaling factor
       if (!draw_g) draw_g = this.draw_g;
       if (value && (value > draw_g.property('text_factor'))) draw_g.property('text_factor', value);
    }
 
+   /** @summary getBBox does not work in mozilla when object is not displayed or not visible :(
+    * getBoundingClientRect() returns wrong sizes for MathJax
+    * are there good solution?
+    * @private */
    TObjectPainter.prototype.GetBoundarySizes = function(elem) {
-      // getBBox does not work in mozilla when object is not displayed or not visible :(
-      // getBoundingClientRect() returns wrong sizes for MathJax
-      // are there good solution?
-
       if (elem===null) { console.warn('empty node in GetBoundarySizes'); return { width:0, height:0 }; }
       var box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
       if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
@@ -5857,7 +5946,7 @@
    /** @summary Save object, drawn in specified element, as JSON.
     *
     * @desc Normally it is TCanvas object with list of primitives
-    * @param {string|object} divid - top element id or DOMElement
+    * @param {string|object} divid - id of top div element or directly DOMElement
     * @returns {string} produced JSON string
     */
 
@@ -5877,9 +5966,9 @@
     *
     * @param {object} args - contains different settings
     * @param {object} args.object - object for the drawing
-    * @param {string} args.option - draw options
-    * @param {number} args.width - image width (default 1200)
-    * @param {number} args.height - image height (default 800)
+    * @param {string} [args.option] - draw options
+    * @param {number} [args.width = 1200] - image width
+    * @param {number} [args.height = 800] - image height
     * @param {function} callback called with svg code as string argument
     */
    JSROOT.MakeSVG = function(args, callback) {

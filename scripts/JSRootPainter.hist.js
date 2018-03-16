@@ -1866,6 +1866,16 @@
 
    // ==============================================================================
 
+
+   /**
+    * @summary Basic painter for histogram classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} histo - histogram object
+    */
+
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
       this.histo = histo;
@@ -3251,7 +3261,16 @@
       return res;
    }
 
-   // ======= TH1 painter================================================
+   // ========================================================================
+
+   /**
+    * @summary Painter for TH1 classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.THistPainter
+    * @param {object} histo - histogram object
+    */
 
    function TH1Painter(histo) {
       THistPainter.call(this, histo);
@@ -4292,7 +4311,16 @@
       return painter;
    }
 
-   // ==================== painter for TH2 histograms ==============================
+   // ========================================================================
+
+   /**
+    * @summary Painter for TH2 classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.THistPainter
+    * @param {object} histo - histogram object
+    */
 
    function TH2Painter(histo) {
       THistPainter.call(this, histo);

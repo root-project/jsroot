@@ -28,6 +28,17 @@
 
    // =======================================================================
 
+
+   /**
+    * @summary Painter for TAxis/TGaxis objects.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} axis - object to draw
+    * @param {boolean} embedded - if true, painter used in other objects painters
+    */
+
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -819,6 +830,15 @@
    }
 
    // ===============================================
+
+   /**
+    * @summary Painter for TFrame object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} tframe - TFrame object to draw
+    */
 
    function TFramePainter(tframe) {
       if (tframe && tframe.$dummy) tframe = null;
@@ -2611,6 +2631,16 @@
 
    // ===========================================================================
 
+   /**
+    * @summary Painter for TPad object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} pad - TPad object to draw
+    * @param {boolean} iscan - if TCanvas object
+    */
+
    function TPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.pad = pad;
@@ -4065,8 +4095,16 @@
 
    // ==========================================================================================
 
+   /**
+    * @summary Painter for TCanvas object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TPadPainter
+    * @param {object} canvas - TCanvas object to draw
+    */
+
    function TCanvasPainter(canvas) {
-      // used for online canvas painter
       TPadPainter.call(this, canvas, true);
       this._websocket = null;
    }

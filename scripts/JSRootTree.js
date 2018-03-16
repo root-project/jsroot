@@ -34,8 +34,14 @@
       kDoNotUseBufferMap: JSROOT.BIT(22) // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
    }
 
-    function TSelector() {
-      // class to read data from TTree
+
+   /**
+    * @summary class to read data from TTree
+    *
+    * @constructor
+    * @memberof JSROOT
+    */
+   function TSelector() {
       this.branches = []; // list of branches to read
       this.names = []; // list of member names for each branch in tgtobj
       this.directs = []; // indication if only branch without any children should be read
@@ -43,13 +49,16 @@
       this.tgtobj = {};
    }
 
-   TSelector.prototype.AddBranch = function(branch, name, direct) {
-      // Add branch to the selector
-      // Either branch name or branch itself should be specified
-      // Second parameter defines member name in the tgtobj
-      // If selector.AddBranch("px", "read_px") is called,
-      // branch will be read into selector.tgtobj.read_px member
+   /** @summary Add branch to the selector
+    * @desc Either branch name or branch itself should be specified
+    * Second parameter defines member name in the tgtobj
+    * If selector.AddBranch("px", "read_px") is called,
+    * branch will be read into selector.tgtobj.read_px member
+    * @param {string} branch - name of branch (or branch object itself}
+    * @param {string} name - member name in tgtobj where data will be read
+    */
 
+   TSelector.prototype.AddBranch = function(branch, name, direct) {
       if (!name)
          name = (typeof branch === 'string') ? branch : ("br" + this.branches.length);
       this.branches.push(branch);
@@ -70,21 +79,30 @@
       // this function can be used to check current TTree progress
    }
 
+   /** @summary call this function to abort processing */
    TSelector.prototype.Abort = function() {
-      // call this function to abort processing
       this.break_execution = -1111;
    }
 
+   /** @summary function called before start processing
+    * @abstract
+    * @param {object} tree - tree object
+    */
    TSelector.prototype.Begin = function(tree) {
-      // function called before start processing
    }
 
+   /** @summary function called when next entry extracted from the tree
+    * @abstract
+    * @param {number} entry - read entry number
+    */
    TSelector.prototype.Process = function(entry) {
-      // function called when next entry extracted from the tree
    }
 
+   /** @summary function called at the very end of processing
+    * @abstract
+    * @param {boolean} res - true if all data were correctly processed
+    */
    TSelector.prototype.Terminate = function(res) {
-      // function called at the very end of processing
    }
 
    // =================================================================
@@ -498,6 +516,13 @@
 
    // =============================================================================
 
+   /**
+    * @summary Selector class for TTree::Draw function
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TSelector
+    */
    function TDrawSelector(callback) {
       TSelector.call(this);
 
@@ -621,7 +646,6 @@
       var expr = this.ParseParameters(tree, args, args.expr), cut = "";
 
       // parse option for histogram creation
-
       this.hist_title = "drawing '" + expr + "' from " + tree.fName;
 
       var pos = 0;
@@ -1323,10 +1347,13 @@
       return clname;
    }
 
-   /** @namespace JSROOT.TreeMethods */
-   JSROOT.TreeMethods = {}; // these are only TTree methods, which are automatically assigned to every TTree
+   /** @namespace JSROOT.TreeMethods
+    * @summary these are TTree methods, which are automatically assigned to every TTree */
+   JSROOT.TreeMethods = {};
 
-   /** @memberOf JSROOT.TreeMethods  */
+   /** @summary Process selector
+    * @param {object} selector - instance of JSROOT.TSelector class
+    * @param {object} args - different arguments */
    JSROOT.TreeMethods.Process = function(selector, args) {
       // function similar to the TTree::Process
 
@@ -2324,9 +2351,10 @@
       return true; // indicate that reading of tree will be performed
    }
 
+   /** @summary Search branch with specified name
+    * @desc if complex enabled, search branch and rest part
+    * @private */
    JSROOT.TreeMethods.FindBranch = function(name, complex, lst) {
-      // search branch with specified name
-      // if complex enabled, search branch and rest part
 
       var top_search = false, search = name, res = null;
 
@@ -2378,16 +2406,18 @@
       return complex ? res : res.branch;
    }
 
+   /** @summary  this is JSROOT implementation of TTree::Draw
+     * @disc in callback returns histogram and draw options
+     * @param {object} args - different setting or simply draw expression
+     * @param {string} args.expr - draw expression
+     * @param {string} [args.cut=undefined]   - cut expression (also can be part of 'expr' after '::')
+     * @param {string} [args.drawopt=undefined] - draw options for result histogram
+     * @param {number} [args.firstentry=0] - first entry to process
+     * @param {number} [args.numentries=undefined] - number of entries to process, all by default
+     * @param {object} [args.branch=undefined] - TBranch object from TTree itself for the direct drawing
+     * @param {function} result_callback - function called when draw is completed
+     */
    JSROOT.TreeMethods.Draw = function(args, result_callback) {
-      // this is JSROOT implementation of TTree::Draw
-      // in callback returns histogram and draw options
-      // following arguments allowed in args
-      //    expr       - draw expression
-      //    cut        - cut expression (also can be part of 'expr' after '::'
-      //    drawopt    - draw options for result histogram
-      //    firstentry - first entry to process
-      //    numentries - number of entries to process
-      //    branch     - TBranch object from TTree itself for the direct drawing
 
       if (typeof args === 'string') args = { expr: args };
 
