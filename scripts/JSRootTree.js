@@ -872,6 +872,8 @@
          res.max = this.hist_args[axisid*3+2];
       } else {
 
+         
+
          res.min = Math.min.apply(null, arr);
          res.max = Math.max.apply(null, arr);
 
@@ -1147,7 +1149,7 @@
 
       var var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
-      if (this.arr_limit) {
+      if (this.arr_limit && cut.value != 0) {
          switch(this.ndim) {
             case 1:
               for (var n0=0;n0<var0.length;++n0) {
