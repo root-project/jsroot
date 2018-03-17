@@ -3158,8 +3158,11 @@
          histo.fTitle = mgraph.fTitle;
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
-      }
 
+         //I think it's probably a good idea to save it? Real ROOT does something like this, I think. 
+         mgraph.fHistogram = histo; 
+     }
+ 
       histo.fYaxis.fXmin = minimum;
       histo.fYaxis.fXmax = maximum;
 
