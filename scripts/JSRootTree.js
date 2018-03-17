@@ -1175,10 +1175,13 @@
 
       this.globals.entry = entry; // can be used in any expression
 
+      this.cut.Produce(this.tgtobj);
+
+      if (this.cut.value == 0) return; 
+
       for (var n=0;n<this.ndim;++n)
          this.vars[n].Produce(this.tgtobj);
 
-      this.cut.Produce(this.tgtobj);
 
       var var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
