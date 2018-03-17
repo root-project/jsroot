@@ -606,7 +606,7 @@
                args.drawopt = parvalue;
                break;
             case "graph": 
-               if (intvalue) this.graph = intvalue; 
+               if (intvalue) args.graph = intvalue; 
                break; 
          }
       }
@@ -624,7 +624,7 @@
             args.dump = true;
          } else if (harg.indexOf("Graph") == 0)
          {
-           this.graph = true; 
+           args.graph = true; 
          }
          else if (pos<0) {
             this.hist_name = harg;
@@ -711,6 +711,8 @@
       if (is_direct) this.ProcessArrays = this.ProcessArraysFunc;
 
       this.monitoring = args.monitoring;
+
+      this.graph = args.graph; 
 
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
