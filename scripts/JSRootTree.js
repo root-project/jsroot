@@ -951,6 +951,7 @@
         else if(this.ndim == 2) 
         {
            this.hist = JSROOT.CreateTGraph(N,this.vars[0].buf, this.vars[1].buf); 
+           delete this.vars[1].buf; 
         }
 
         this.hist.fTitle = this.hist_title; 
