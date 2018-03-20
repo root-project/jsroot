@@ -1582,6 +1582,7 @@
       this.path = addr;
       this.connid = null;
       this.req = null;
+      this.raw = JSROOT.browser.qt5;
 
       this.nextrequest("", "connect");
    }
@@ -1590,6 +1591,8 @@
       var url = this.path, sync = "";
       if (kind === "connect") {
          url+="?connect";
+         if (this.raw) url+="_raw"; // raw mode, use only response body
+         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
          if ((this.connid===null) || (this.connid==="close")) return;
@@ -1610,12 +1613,58 @@
          url += post;
       }
 
-      var req = JSROOT.NewHttpRequest(url, "text" + sync, function(res) {
-         if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+      var req = JSROOT.NewHttpRequest(url, "buf" + sync, function(res) {
+         // this set to the request itself, res is response
+
+         // if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+
          if (this.handle.req === this)
             this.handle.req = null; // get response for existing dummy request
-         if (res == "<<nope>>") res = "";
-         this.handle.processreq(res);
+
+         if (res === null)
+            return this.handle.processreq(null);
+
+         if (this.handle.raw) {
+
+            var str = "", u8Arr = new Uint8Array(res), i = 0, offset = 0;
+            while(i<4) str += String.fromCharCode(u8Arr[i++]);
+
+            console.log('Get raw hdr ' + str);
+
+            if (str == "bin:")
+               return this.handle.processreq(res, 4);
+
+            if (str == "hdr:") {
+               var lenstr = "";
+               while (String.fromCharCode(u8Arr[i]) != ':') lenstr+= String.fromCharCode(u8Arr[i++]);
+               ++i;
+               offset = i + parseInt(lenstr);
+            } else {
+               offset = u8Arr.length;
+            }
+
+            str = "";
+            while (i<offset) str += String.fromCharCode(u8Arr[i++]);
+
+            this.handle.processreq(str);
+            if (offset < u8Arr.length)
+               this.handle.processreq(res, offset);
+         } else if (this.getResponseHeader("Content-Type") != "application/x-binary") {
+
+            var str = "", u8Arr = new Uint8Array(res);
+            // console.log('longpoll content type ' + this.getResponseHeader("Content-Type") + ' len ' + u8Arr.length + ' hdrs = ' + this.getAllResponseHeaders() + ' ready = ' + this.readyState + ' status = ' + this.status + ' ' + this.statusText + ' responseType ' + this.responseType);
+
+            for (var i = 0; i < u8Arr.length; ++i)
+               str += String.fromCharCode(u8Arr[i]);
+            res = str;
+            if (res == "<<nope>>") res = "";
+            this.handle.processreq(res);
+         } else {
+            var extra_hdr = this.getResponseHeader("LongpollHeader");
+            // if (extra_hdr) console.log("extra longpoll header " + extra_hdr);
+            if (extra_hdr) this.handle.processreq(extra_hdr);
+            this.handle.processreq(res, 0);
+         }
       });
 
       req.handle = this;
@@ -1623,7 +1672,7 @@
       req.send();
    }
 
-   LongPollSocket.prototype.processreq = function(res) {
+   LongPollSocket.prototype.processreq = function(res, _offset) {
       if (res===null) {
          if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
          // if (typeof this.onclose === 'function') this.onclose();
@@ -1648,7 +1697,7 @@
          // console.log("longpoll recv " + res.length);
 
          if ((typeof this.onmessage==='function') && res)
-            this.onmessage({ data: res });
+            this.onmessage({ data: res, offset: _offset });
       }
       if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
    }
@@ -1660,6 +1709,8 @@
    LongPollSocket.prototype.close = function() {
       this.nextrequest("", "close");
    }
+
+   // ==========================================================================================
 
    function Cef3QuerySocket(addr) {
       // make very similar to longpoll
@@ -1770,9 +1821,9 @@
 
    /** Invoke method in the receiver.
     * @private */
-   WebWindowHandle.prototype.InvokeReceiver = function(method, arg) {
+   WebWindowHandle.prototype.InvokeReceiver = function(method, arg, arg2) {
       if (this.receiver && (typeof this.receiver[method] == 'function'))
-         this.receiver[method](this, arg);
+         this.receiver[method](this, arg, arg2);
    }
 
    /** Close connection. */
@@ -1871,6 +1922,7 @@
             path += "root.longpoll";
             console.log('configure longpoll ' + path);
             conn = new LongPollSocket(path);
+            if (JSROOT.browser.qt5) conn.raw = true; // use raw mode for qt5
          }
 
          if (!conn) return;
@@ -1890,8 +1942,21 @@
 
             if (pthis.next_binary) {
                delete pthis.next_binary;
-               console.log('expecting binary, got' + (typeof msg));
-               return pthis.InvokeReceiver('OnWebsocketMsg', msg);
+
+               if (msg instanceof Blob) {
+                  console.log('Get Blob object - convert to buffer array');
+                  var reader = new FileReader;
+                  reader.onload = function(event) {
+                     // The file's text will be printed here
+                     pthis.InvokeReceiver('OnWebsocketMsg', event.target.result);
+                  }
+                  reader.readAsArrayBuffer(msg, e.offset || 0);
+               } else {
+                  console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  pthis.InvokeReceiver('OnWebsocketMsg', msg, e.offset || 0);
+               }
+
+               return;
             }
 
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
@@ -1977,6 +2042,9 @@
          else if (JSROOT.GetUrlOption("qt5")!==null) { JSROOT.browser.qt5 = true; arg.socket_kind = "longpoll"; }
          else arg.socket_kind = "websocket";
       }
+
+      // REMOVE THIS
+      arg.socket_kind = "longpoll";
 
       var handle = new WebWindowHandle(arg.socket_kind);
 
