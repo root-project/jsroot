@@ -1887,6 +1887,13 @@
 
          conn.onmessage = function(e) {
             var msg = e.data;
+
+            if (pthis.next_binary) {
+               delete pthis.next_binary;
+               console.log('expecting binary, got' + (typeof msg));
+               return pthis.InvokeReceiver('OnWebsocketMsg', msg);
+            }
+
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
             var i1 = msg.indexOf(":"),
@@ -1909,6 +1916,8 @@
                   pthis.Close(true); // force closing of socket
                   pthis.InvokeReceiver('OnWebsocketClosed');
                }
+            } else if (msg == "$$binary$$") {
+               pthis.next_binary = true;
             } else {
                pthis.InvokeReceiver('OnWebsocketMsg', msg);
             }
