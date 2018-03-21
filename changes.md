@@ -3,6 +3,8 @@
 ## Changes in 5.4.x
 1. Fix - monitoring mode in draw.htm page
 2. Fix - zooming in colz palette 
+3. Fix - support both 9.x and 10.x jsdom version in Node.js (#149)
+4. Fix - draw axis main line with appropriate attributes (#150)
 
 
 ## Changes in 5.4.0
