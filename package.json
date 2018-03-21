@@ -16,7 +16,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "jsdom": "*",
+    "jsdom": "< 10.0.0",
     "xhr2": "*",
     "mathjax-node": "*" 
   },
