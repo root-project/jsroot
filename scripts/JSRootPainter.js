@@ -1578,17 +1578,18 @@
 
    // ==============================================================================
 
-   function LongPollSocket(addr) {
+   function LongPollSocket(addr, _raw) {
       this.path = addr;
       this.connid = null;
       this.req = null;
-      this.raw = JSROOT.browser.qt5;
+      if (_raw === undefined) _raw = JSROOT.browser.qt5;
+      this.raw = _raw;
 
       this.nextrequest("", "connect");
    }
 
    LongPollSocket.prototype.nextrequest = function(data, kind) {
-      var url = this.path, sync = "";
+      var url = this.path, reqmode = "buf";
       if (kind === "connect") {
          url+="?connect";
          if (this.raw) url+="_raw"; // raw mode, use only response body
@@ -1598,7 +1599,7 @@
          if ((this.connid===null) || (this.connid==="close")) return;
          url+="?connection="+this.connid + "&close";
          this.connid = "close";
-         if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
+         reqmode += ";sync"; // use sync mode to close connection before browser window closed
       } else if ((this.connid===null) || (typeof this.connid!=='number')) {
          return console.error("No connection");
       } else {
@@ -1613,10 +1614,8 @@
          url += post;
       }
 
-      var req = JSROOT.NewHttpRequest(url, "buf" + sync, function(res) {
+      var req = JSROOT.NewHttpRequest(url, reqmode, function(res) {
          // this set to the request itself, res is response
-
-         // if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
 
          if (this.handle.req === this)
             this.handle.req = null; // get response for existing dummy request
@@ -1625,45 +1624,39 @@
             return this.handle.processreq(null);
 
          if (this.handle.raw) {
+            // raw mode - all kind of reply data packed into binary buffer
+            // first 4 bytes header "txt:" or "bin:"
+            // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
+            // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
 
-            var str = "", u8Arr = new Uint8Array(res), i = 0, offset = 0;
+            var str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
             while(i<4) str += String.fromCharCode(u8Arr[i++]);
-
-            console.log('Get raw hdr ' + str);
-
-            if (str == "bin:")
-               return this.handle.processreq(res, 4);
-
-            if (str == "hdr:") {
-               var lenstr = "";
-               while (String.fromCharCode(u8Arr[i]) != ':') lenstr+= String.fromCharCode(u8Arr[i++]);
+            if (str != "txt:") {
+               str = "";
+               while (String.fromCharCode(u8Arr[i]) != ':') str += String.fromCharCode(u8Arr[i++]);
                ++i;
-               offset = i + parseInt(lenstr);
-            } else {
-               offset = u8Arr.length;
+               offset = i + parseInt(str.trim());
             }
 
             str = "";
             while (i<offset) str += String.fromCharCode(u8Arr[i++]);
 
-            this.handle.processreq(str);
+            if (str)
+               this.handle.processreq(str);
             if (offset < u8Arr.length)
                this.handle.processreq(res, offset);
-         } else if (this.getResponseHeader("Content-Type") != "application/x-binary") {
-
-            var str = "", u8Arr = new Uint8Array(res);
-            // console.log('longpoll content type ' + this.getResponseHeader("Content-Type") + ' len ' + u8Arr.length + ' hdrs = ' + this.getAllResponseHeaders() + ' ready = ' + this.readyState + ' status = ' + this.status + ' ' + this.statusText + ' responseType ' + this.responseType);
-
-            for (var i = 0; i < u8Arr.length; ++i)
-               str += String.fromCharCode(u8Arr[i]);
-            res = str;
-            if (res == "<<nope>>") res = "";
-            this.handle.processreq(res);
-         } else {
+         } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
+            // binary reply with optional header
             var extra_hdr = this.getResponseHeader("LongpollHeader");
-            // if (extra_hdr) console.log("extra longpoll header " + extra_hdr);
             if (extra_hdr) this.handle.processreq(extra_hdr);
             this.handle.processreq(res, 0);
+         } else {
+            // text reply
+            var str = "", u8Arr = new Uint8Array(res);
+            for (var i = 0; i < u8Arr.length; ++i)
+               str += String.fromCharCode(u8Arr[i]);
+            if (str == "<<nope>>") str = "";
+            this.handle.processreq(str);
          }
       });
 
@@ -1922,7 +1915,6 @@
             path += "root.longpoll";
             console.log('configure longpoll ' + path);
             conn = new LongPollSocket(path);
-            if (JSROOT.browser.qt5) conn.raw = true; // use raw mode for qt5
          }
 
          if (!conn) return;
@@ -2043,7 +2035,7 @@
          else arg.socket_kind = "websocket";
       }
 
-      // REMOVE THIS
+      // only for debug purposes
       arg.socket_kind = "longpoll";
 
       var handle = new WebWindowHandle(arg.socket_kind);
