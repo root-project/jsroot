@@ -1610,8 +1610,8 @@
       if (d.check('NOTOOLTIP') && fp) fp.tooltip_allowed = false;
       if (d.check('TOOLTIP') && fp) fp.tooltip_allowed = true;
 
-      if (d.check('LOGX') && pad) pad.fLogx = 1;
-      if (d.check('LOGY') && pad) pad.fLogy = 1;
+      if (d.check('LOGX') && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+      if (d.check('LOGY') && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
       if (d.check('LOGZ') && pad) pad.fLogz = 1;
       if (d.check('GRIDXY') && pad) pad.fGridx = pad.fGridy = 1;
       if (d.check('GRIDX') && pad) pad.fGridx = 1;
