@@ -474,14 +474,14 @@
             axis_g = layer.append("svg:g").attr("class",this.name + "_container");
          else
             axis_g.selectAll("*").remove();
-      } else {
-         if (!disable_axis_drawing && draw_lines)
-            axis_g.append("svg:line")
-                  .attr("x1",0).attr("y1",0)
-                  .attr("x1",vertical ? 0 : w)
-                  .attr("y1", vertical ? h : 0)
-                  .call(this.lineatt.func);
       }
+
+      if (!disable_axis_drawing && draw_lines)
+         axis_g.append("svg:line")
+               .attr("x1",0).attr("y1",0)
+               .attr("x2",vertical ? 0 : w)
+               .attr("y2", vertical ? h : 0)
+               .call(this.lineatt.func);
 
       axis_g.attr("transform", transform || null);
 
