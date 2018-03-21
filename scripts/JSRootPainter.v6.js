@@ -1268,8 +1268,7 @@
       var pad = this.root_pad(),
           h = this.frame_height(),
           w = this.frame_width(),
-          grid, grid_style = JSROOT.gStyle.fGridStyle,
-          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
+          grid, grid_style = JSROOT.gStyle.fGridStyle;
 
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
@@ -1282,12 +1281,15 @@
             else
                grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
+         var colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
+             grid_color = this.get_color(colid) || "black";
+
          if (grid.length > 0)
-          layer.append("svg:path")
-               .attr("class", "xgrid")
-               .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+           layer.append("svg:path")
+                .attr("class", "xgrid")
+                .attr("d", grid)
+                .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -1299,12 +1301,15 @@
             else
                grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
 
+         var colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
+             grid_color = this.get_color(colid) || "black";
+
          if (grid.length > 0)
-          layer.append("svg:path")
-               .attr("class", "ygrid")
-               .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+           layer.append("svg:path")
+                .attr("class", "ygrid")
+                .attr("d", grid)
+                .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
    }
 
