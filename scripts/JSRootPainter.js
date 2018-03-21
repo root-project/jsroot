@@ -6086,11 +6086,17 @@
 
       if (!JSROOT.nodejs) {
          build(d3.select(window.document).append("div").style("visible", "hidden"));
-      } else
-      if (JSROOT.nodejs_document) {
+      } else if (JSROOT.nodejs_document) {
          build(JSROOT.nodejs_window.d3.select('body').append('div'));
       } else {
-         var jsdom = require('jsdom');
+
+         var jsdom;
+         try {
+           jsdom = require("jsdom/lib/old-api.js"); // jsdom >= 10.x
+         } catch (e) {
+           jsdom = require("jsdom"); // jsdom <= 9.x
+         }
+
          jsdom.env({
             html:'',
             features:{ QuerySelector:true }, //you need query selector for D3 to work
