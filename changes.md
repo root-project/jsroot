@@ -6,6 +6,7 @@
 3. Fix - support both 9.x and 10.x jsdom version in Node.js (#149)
 4. Fix - draw axis main line with appropriate attributes (#150)
 5. Fix - use axis color when drawing grids lines (#150)
+6. Fix - when set pad logx/logy, reset existing user ranges in pad
 
 
 ## Changes in 5.4.0
