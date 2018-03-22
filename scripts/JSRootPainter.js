@@ -5849,14 +5849,17 @@
     *
     * @param {string|object} divid - id of div element to draw or directly DOMElement
     * @param {object} obj - object to draw, object type should be registered before in JSROOT
-    * @param {string} opt - draw options
+    * @param {string} opt - draw options separated by space, comma or semicolon
     * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
+    *
+    * @desc
+    * A complete list of options can be found depending of the object's ROOT class to draw: {@link https://root.cern/js/latest/examples.htm}
     *
     * @example
     * var filename = "https://root.cern/js/files/hsimple.root";
     * JSROOT.OpenFile(filename, function(file) {
     *    file.ReadObject("hpxpy;1", function(obj) {
-    *       JSROOT.draw("drawing", obj, "colz");
+    *       JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy");
     *    });
     * });
     *
