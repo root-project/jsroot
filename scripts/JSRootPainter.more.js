@@ -3397,6 +3397,24 @@
       return painter.DrawingReady();
    }
 
+   JSROOT.Painter.drawASImage = function(divid, obj, opt) {
+      var painter = new JSROOT.TBasePainter();
+      painter.SetDivId(divid);
+
+      var main = painter.select_main(); // this is d3 selection of main element for image drawing
+
+      // from here one should insert PNG image
+
+      // this is example how external image can be inserted
+      // main.append("img").attr("src","https://root.cern/js/files/img/tf1.png");
+
+      // this is potential example how image can be generated
+      // one could use TASImage member like obj.fPngBuf
+      // main.append("img").attr("src","data:image/png;base64,xxxxxxxxx..");
+
+      return painter.DrawingReady();
+   }
+
    // ==================================================================================================
 
    JSROOT.Painter.CreateBranchItem = function(node, branch, tree, parent_branch) {
