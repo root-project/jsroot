@@ -5852,6 +5852,9 @@
     * @param {string} opt - draw options separated by space, comma or semicolon
     * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
     *
+    * @desc
+    * A complete list of options can be found depending of the object's ROOT class to draw: {@link https://root.cern/js/latest/examples.htm}
+    *
     * @example
     * var filename = "https://root.cern/js/files/hsimple.root";
     * JSROOT.OpenFile(filename, function(file) {
