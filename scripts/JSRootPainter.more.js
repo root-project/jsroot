@@ -3424,7 +3424,7 @@
       var main = painter.select_main();
 
       // this is example how external image can be inserted
-      var img = main.append("img").attr("src", obj.fName);
+      var img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
 
       if (opt && opt.indexOf("scale")>=0) {
          img.style("width","100%").style("height","100%");

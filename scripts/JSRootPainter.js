@@ -1761,8 +1761,22 @@
       } else if (this.connid==="close") {
          if (typeof this.onclose == 'function') this.onclose();
       } else {
-         if ((typeof this.onmessage==='function') && response)
-            this.onmessage({ data: response });
+         if ((typeof this.onmessage==='function') && response) {
+            if (response.indexOf("txt:")==0) {
+               this.onmessage({ data: response.substr(4) });
+            } else if (response.indexOf("bin:")==0) {
+               var str = window.atob(response.substr(4));
+               var buf = new ArrayBuffer(str.length);
+               var bufView = new Uint8Array(buf);
+               for (var i=0, strLen=str.length; i<strLen; i++) {
+                 bufView[i] = str.charCodeAt(i);
+               }
+               this.onmessage({ data: buf, offset: 0 });
+            } else {
+               console.log("Get CEF msg without prefix - " + response.substr(0,30));
+               // this.onmessage({ data: response });
+            }
+         }
       }
    }
 
@@ -2036,7 +2050,7 @@
       }
 
       // only for debug purposes
-      arg.socket_kind = "longpoll";
+      // arg.socket_kind = "longpoll";
 
       var handle = new WebWindowHandle(arg.socket_kind);
 
