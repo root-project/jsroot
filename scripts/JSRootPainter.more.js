@@ -3399,7 +3399,7 @@
 
    JSROOT.Painter.drawASImage = function(divid, obj, opt) {
       var painter = new JSROOT.TBasePainter();
-      painter.SetDivId(divid);
+      painter.SetDivId(divid, -1);
 
       var main = painter.select_main(); // this is d3 selection of main element for image drawing
 
@@ -3412,8 +3412,27 @@
       // one could use TASImage member like obj.fPngBuf
       // main.append("img").attr("src","data:image/png;base64,xxxxxxxxx..");
 
+      painter.SetDivId(divid);
+
       return painter.DrawingReady();
    }
+
+   JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
+      var painter = new JSROOT.TBasePainter();
+      painter.SetDivId(divid, -1);
+
+      var main = painter.select_main();
+
+      // this is example how external image can be inserted
+      var img = main.append("img").attr("src", obj.fName);
+
+      if (opt && opt.indexOf("scale")>=0) img.style("width","100%").style("height","100%");
+
+      painter.SetDivId(divid);
+
+      return painter.DrawingReady();
+   }
+
 
    // ==================================================================================================
 
