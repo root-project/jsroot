@@ -3426,7 +3426,13 @@
       // this is example how external image can be inserted
       var img = main.append("img").attr("src", obj.fName);
 
-      if (opt && opt.indexOf("scale")>=0) img.style("width","100%").style("height","100%");
+      if (opt && opt.indexOf("scale")>=0)
+         img.style("width","100%").style("height","100%");
+      else if (opt && opt.indexOf("center")>=0)
+         img.style("display", "block")
+            .style("margin-left", "auto")
+            .style("margin-right", "auto")
+            .style("width", "50%");
 
       painter.SetDivId(divid);
 
