@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 16/03/2018";
+   JSROOT.version = "dev 23/03/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -871,7 +871,7 @@
 
          if (xhr.readyState != 4) return;
 
-         if ((xhr.status != 200) && (xhr.status != 206) &&
+         if ((xhr.status != 200) && (xhr.status != 206) && !JSROOT.browser.qt5 &&
                ((xhr.status !== 0) || (url.indexOf("file://")!==0))) {
             return callback(null);
          }

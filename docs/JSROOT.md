@@ -69,6 +69,8 @@ Following layouts are supported:
 
 When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`.
 
+As item name, URL to existing image can be provided like `item=img:http://server/image.png`. Such image will be just inserted in the existing layout. One could specify option `"scale"` to automatically scale image to available space. 
+
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.
 
 One can very easy integrate JSROOT graphic into arbitrary HTML pages using a __iframe__ tag:

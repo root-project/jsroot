@@ -485,14 +485,14 @@
             axis_g = layer.append("svg:g").attr("class",this.name + "_container");
          else
             axis_g.selectAll("*").remove();
-      } else {
-         if (!disable_axis_drawing && draw_lines)
-            axis_g.append("svg:line")
-                  .attr("x1",0).attr("y1",0)
-                  .attr("x1",vertical ? 0 : w)
-                  .attr("y1", vertical ? h : 0)
-                  .call(this.lineatt.func);
       }
+
+      if (!disable_axis_drawing && draw_lines)
+         axis_g.append("svg:line")
+               .attr("x1",0).attr("y1",0)
+               .attr("x2",vertical ? 0 : w)
+               .attr("y2", vertical ? h : 0)
+               .call(this.lineatt.func);
 
       axis_g.attr("transform", transform || null);
 
@@ -1268,8 +1268,7 @@
       var pad = this.root_pad(),
           h = this.frame_height(),
           w = this.frame_width(),
-          grid, grid_style = JSROOT.gStyle.fGridStyle,
-          grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
+          grid, grid_style = JSROOT.gStyle.fGridStyle;
 
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
@@ -1282,12 +1281,15 @@
             else
                grid += "M"+this.x_handle.ticks[n]+",0v"+h;
 
+         var colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("x") ? this.GetAxis("x").fAxisColor : 1),
+             grid_color = this.get_color(colid) || "black";
+
          if (grid.length > 0)
-          layer.append("svg:path")
-               .attr("class", "xgrid")
-               .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+           layer.append("svg:path")
+                .attr("class", "xgrid")
+                .attr("d", grid)
+                .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
 
       // add a grid on y axis, if the option is set
@@ -1299,12 +1301,15 @@
             else
                grid += "M0,"+this.y_handle.ticks[n]+"h"+w;
 
+         var colid = (JSROOT.gStyle.fGridColor > 0) ? JSROOT.gStyle.fGridColor : (this.GetAxis("y") ? this.GetAxis("y").fAxisColor : 1),
+             grid_color = this.get_color(colid) || "black";
+
          if (grid.length > 0)
-          layer.append("svg:path")
-               .attr("class", "ygrid")
-               .attr("d", grid)
-               .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
-               .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
+           layer.append("svg:path")
+                .attr("class", "ygrid")
+                .attr("d", grid)
+                .style('stroke',grid_color).style("stroke-width",JSROOT.gStyle.fGridWidth)
+                .style("stroke-dasharray", JSROOT.Painter.root_line_styles[grid_style]);
       }
    }
 
@@ -4043,8 +4048,8 @@
       if (d.check("CP",true)) this.options.CreatePalette = d.partAsInt(0,0);
 
       if (d.check('WHITE')) pad.fFillColor = 0;
-      if (d.check('LOGX')) pad.fLogx = 1;
-      if (d.check('LOGY')) pad.fLogy = 1;
+      if (d.check('LOGX')) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
+      if (d.check('LOGY')) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
       if (d.check('LOGZ')) pad.fLogz = 1;
       if (d.check('LOG')) pad.fLogx = pad.fLogy = pad.fLogz = 1;
       if (d.check('GRIDX')) pad.fGridx = 1;

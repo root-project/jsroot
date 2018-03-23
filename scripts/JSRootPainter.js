@@ -1578,24 +1578,28 @@
 
    // ==============================================================================
 
-   function LongPollSocket(addr) {
+   function LongPollSocket(addr, _raw) {
       this.path = addr;
       this.connid = null;
       this.req = null;
+      if (_raw === undefined) _raw = JSROOT.browser.qt5;
+      this.raw = _raw;
 
       this.nextrequest("", "connect");
    }
 
    LongPollSocket.prototype.nextrequest = function(data, kind) {
-      var url = this.path, sync = "";
+      var url = this.path, reqmode = "buf";
       if (kind === "connect") {
          url+="?connect";
+         if (this.raw) url+="_raw"; // raw mode, use only response body
+         console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
          if ((this.connid===null) || (this.connid==="close")) return;
          url+="?connection="+this.connid + "&close";
          this.connid = "close";
-         if (JSROOT.browser.qt5) sync = ";sync"; // use sync mode to close qt5 webengine
+         reqmode += ";sync"; // use sync mode to close connection before browser window closed
       } else if ((this.connid===null) || (typeof this.connid!=='number')) {
          return console.error("No connection");
       } else {
@@ -1610,12 +1614,50 @@
          url += post;
       }
 
-      var req = JSROOT.NewHttpRequest(url, "text" + sync, function(res) {
-         if (res===null) res = this.response; // workaround for WebEngine - it does not handle content correctly
+      var req = JSROOT.NewHttpRequest(url, reqmode, function(res) {
+         // this set to the request itself, res is response
+
          if (this.handle.req === this)
             this.handle.req = null; // get response for existing dummy request
-         if (res == "<<nope>>") res = "";
-         this.handle.processreq(res);
+
+         if (res === null)
+            return this.handle.processreq(null);
+
+         if (this.handle.raw) {
+            // raw mode - all kind of reply data packed into binary buffer
+            // first 4 bytes header "txt:" or "bin:"
+            // after the "bin:" there is length of optional text argument like "bin:14  :optional_text"
+            // and immedaitely after text binary data. Server sends binary data so, that offset should be multiple of 8
+
+            var str = "", i = 0, u8Arr = new Uint8Array(res), offset = u8Arr.length;
+            while(i<4) str += String.fromCharCode(u8Arr[i++]);
+            if (str != "txt:") {
+               str = "";
+               while (String.fromCharCode(u8Arr[i]) != ':') str += String.fromCharCode(u8Arr[i++]);
+               ++i;
+               offset = i + parseInt(str.trim());
+            }
+
+            str = "";
+            while (i<offset) str += String.fromCharCode(u8Arr[i++]);
+
+            if (str)
+               this.handle.processreq(str);
+            if (offset < u8Arr.length)
+               this.handle.processreq(res, offset);
+         } else if (this.getResponseHeader("Content-Type") == "application/x-binary") {
+            // binary reply with optional header
+            var extra_hdr = this.getResponseHeader("LongpollHeader");
+            if (extra_hdr) this.handle.processreq(extra_hdr);
+            this.handle.processreq(res, 0);
+         } else {
+            // text reply
+            var str = "", u8Arr = new Uint8Array(res);
+            for (var i = 0; i < u8Arr.length; ++i)
+               str += String.fromCharCode(u8Arr[i]);
+            if (str == "<<nope>>") str = "";
+            this.handle.processreq(str);
+         }
       });
 
       req.handle = this;
@@ -1623,7 +1665,7 @@
       req.send();
    }
 
-   LongPollSocket.prototype.processreq = function(res) {
+   LongPollSocket.prototype.processreq = function(res, _offset) {
       if (res===null) {
          if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
          // if (typeof this.onclose === 'function') this.onclose();
@@ -1648,7 +1690,7 @@
          // console.log("longpoll recv " + res.length);
 
          if ((typeof this.onmessage==='function') && res)
-            this.onmessage({ data: res });
+            this.onmessage({ data: res, offset: _offset });
       }
       if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
    }
@@ -1660,6 +1702,8 @@
    LongPollSocket.prototype.close = function() {
       this.nextrequest("", "close");
    }
+
+   // ==========================================================================================
 
    function Cef3QuerySocket(addr) {
       // make very similar to longpoll
@@ -1717,8 +1761,22 @@
       } else if (this.connid==="close") {
          if (typeof this.onclose == 'function') this.onclose();
       } else {
-         if ((typeof this.onmessage==='function') && response)
-            this.onmessage({ data: response });
+         if ((typeof this.onmessage==='function') && response) {
+            if (response.indexOf("txt:")==0) {
+               this.onmessage({ data: response.substr(4) });
+            } else if (response.indexOf("bin:")==0) {
+               var str = window.atob(response.substr(4));
+               var buf = new ArrayBuffer(str.length);
+               var bufView = new Uint8Array(buf);
+               for (var i=0, strLen=str.length; i<strLen; i++) {
+                 bufView[i] = str.charCodeAt(i);
+               }
+               this.onmessage({ data: buf, offset: 0 });
+            } else {
+               console.log("Get CEF msg without prefix - " + response.substr(0,30));
+               // this.onmessage({ data: response });
+            }
+         }
       }
    }
 
@@ -1770,9 +1828,9 @@
 
    /** Invoke method in the receiver.
     * @private */
-   WebWindowHandle.prototype.InvokeReceiver = function(method, arg) {
+   WebWindowHandle.prototype.InvokeReceiver = function(method, arg, arg2) {
       if (this.receiver && (typeof this.receiver[method] == 'function'))
-         this.receiver[method](this, arg);
+         this.receiver[method](this, arg, arg2);
    }
 
    /** Close connection. */
@@ -1887,6 +1945,26 @@
 
          conn.onmessage = function(e) {
             var msg = e.data;
+
+            if (pthis.next_binary) {
+               delete pthis.next_binary;
+
+               if (msg instanceof Blob) {
+                  console.log('Get Blob object - convert to buffer array');
+                  var reader = new FileReader;
+                  reader.onload = function(event) {
+                     // The file's text will be printed here
+                     pthis.InvokeReceiver('OnWebsocketMsg', event.target.result);
+                  }
+                  reader.readAsArrayBuffer(msg, e.offset || 0);
+               } else {
+                  console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  pthis.InvokeReceiver('OnWebsocketMsg', msg, e.offset || 0);
+               }
+
+               return;
+            }
+
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
             var i1 = msg.indexOf(":"),
@@ -1909,6 +1987,8 @@
                   pthis.Close(true); // force closing of socket
                   pthis.InvokeReceiver('OnWebsocketClosed');
                }
+            } else if (msg == "$$binary$$") {
+               pthis.next_binary = true;
             } else {
                pthis.InvokeReceiver('OnWebsocketMsg', msg);
             }
@@ -1968,6 +2048,9 @@
          else if (JSROOT.GetUrlOption("qt5")!==null) { JSROOT.browser.qt5 = true; arg.socket_kind = "longpoll"; }
          else arg.socket_kind = "websocket";
       }
+
+      // only for debug purposes
+      // arg.socket_kind = "longpoll";
 
       var handle = new WebWindowHandle(arg.socket_kind);
 
@@ -5586,6 +5669,8 @@
    JSROOT.addDrawFunc({ name: "TAxis3D", prereq: "v6;hist3d", func: "JSROOT.Painter.drawAxis3D" });
    JSROOT.addDrawFunc({ name: "TMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawMarker", direct: true });
    JSROOT.addDrawFunc({ name: "TPolyMarker", icon: 'img_graph', prereq: "more2d", func: "JSROOT.Painter.drawPolyMarker", direct: true });
+   JSROOT.addDrawFunc({ name: "TASImage", icon: 'img_mgraph', prereq: "more2d", func: "JSROOT.Painter.drawASImage" });
+   JSROOT.addDrawFunc({ name: "TJSImage", icon: 'img_mgraph', prereq: "more2d", func: "JSROOT.Painter.drawJSImage", opt: ";scale;center" });
    JSROOT.addDrawFunc({ name: "TGeoVolume", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt:";more;all;count;projx;projz;dflt", ctrl: "dflt" });
    JSROOT.addDrawFunc({ name: "TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;dflt", ctrl: "dflt"  });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::TEveGeoShapeExtract", icon: 'img_histo3d', prereq: "geom", func: "JSROOT.Painter.drawGeoObject", expand: "JSROOT.GEO.expandObject", opt: ";more;all;count;projx;projz;dflt", ctrl: "dflt"  });
@@ -5779,14 +5864,17 @@
     *
     * @param {string|object} divid - id of div element to draw or directly DOMElement
     * @param {object} obj - object to draw, object type should be registered before in JSROOT
-    * @param {string} opt - draw options
+    * @param {string} opt - draw options separated by space, comma or semicolon
     * @param {function} drawcallback - function called when drawing is completed, first argument is object painter instance
+    *
+    * @desc
+    * A complete list of options can be found depending of the object's ROOT class to draw: {@link https://root.cern/js/latest/examples.htm}
     *
     * @example
     * var filename = "https://root.cern/js/files/hsimple.root";
     * JSROOT.OpenFile(filename, function(file) {
     *    file.ReadObject("hpxpy;1", function(obj) {
-    *       JSROOT.draw("drawing", obj, "colz");
+    *       JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy");
     *    });
     * });
     *
@@ -6017,11 +6105,17 @@
 
       if (!JSROOT.nodejs) {
          build(d3.select(window.document).append("div").style("visible", "hidden"));
-      } else
-      if (JSROOT.nodejs_document) {
+      } else if (JSROOT.nodejs_document) {
          build(JSROOT.nodejs_window.d3.select('body').append('div'));
       } else {
-         var jsdom = require('jsdom');
+
+         var jsdom;
+         try {
+           jsdom = require("jsdom/lib/old-api.js"); // jsdom >= 10.x
+         } catch (e) {
+           jsdom = require("jsdom"); // jsdom <= 9.x
+         }
+
          jsdom.env({
             html:'',
             features:{ QuerySelector:true }, //you need query selector for D3 to work

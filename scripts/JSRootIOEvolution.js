@@ -2628,17 +2628,17 @@
       cs['TStreamerString'] = cs['TStreamerObjectPointer'] = function(buf, elem) {
          if (buf.last_read_version > 1)
             buf.ClassStreamer(elem, "TStreamerElement");
-      };
+      }
 
       cs['TStreamerObjectAnyPointer'] = function(buf, elem) {
          if (buf.last_read_version > 0)
             buf.ClassStreamer(elem, "TStreamerElement");
-      };
+      }
 
       cs['TTree'] = {
          name: '$file',
          func: function(buf,obj) { obj.$kind = "TTree"; obj.$file = buf.fFile; buf.fFile.AddReadTree(obj); }
-      };
+      }
 
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
 
@@ -2657,7 +2657,7 @@
       cs['RooAbsBinning'] = function(buf,obj) {
          buf.ClassStreamer(obj, (buf.last_read_version==1) ? "TObject" : "TNamed");
          buf.ClassStreamer(obj, "RooPrintable");
-      };
+      }
 
       cs['RooCategory'] = function(buf,obj) {
          var v = buf.last_read_version;
@@ -2683,13 +2683,31 @@
          if (v>1) obj._name = buf.ReadTString();
       };
 
+      cs['TASImage'] = function(buf,obj) {
+         if ((buf.last_read_version==1) && (buf.fFile.fVersion>0) && (buf.fFile.fVersion<50000)) {
+            return console.warn("old TASImage version - not yet supported");
+         }
+
+         buf.ClassStreamer(obj, "TNamed");
+
+         if (buf.ntou1() != 0) {
+            var size = buf.ntoi4();
+            obj.fPngBuf = buf.ReadFastArray(size, JSROOT.IO.kUChar);
+         } else {
+            buf.ClassStreamer(obj, "TAttImage");
+            obj.fWidth = buf.ntoi4();
+            obj.fHeight = buf.ntoi4();
+            obj.fImgBuf = buf.ReadFastArray(obj.fWidth*obj.fHeight, JSROOT.IO.kDouble);
+         }
+      }
+
       // these are direct streamers - not follow version/checksum logic
 
       var ds = JSROOT.IO.DirectStreamers;
 
       ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function(buf,obj) {
          // do nothing
-      };
+      }
 
       ds['TDatime'] = function(buf,obj) {
          obj.fDatime = buf.ntou4();
@@ -2802,6 +2820,7 @@
             for (var j=i;j<obj.fNcols;++j)
                obj.fElements[j*obj.fNcols+i] = obj.fElements[i*obj.fNcols+j] = arr[cnt++];
       }
+
    }
 
    JSROOT.IO.CreateStreamerElement = function(name, typename, file) {
