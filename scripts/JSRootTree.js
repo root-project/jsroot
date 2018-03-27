@@ -534,7 +534,7 @@
       this.histo_drawopt = "";
       this.hist_name = "$htemp";
       this.hist_title = "Result of TTree::Draw";
-      this.graph = false; 
+      this.graph = false;
       this.hist_args = []; // arguments for histogram creation
       this.arr_limit = 1000;  // number of accumulated items before create histogram
       this.htype = "F";
@@ -605,9 +605,9 @@
             case "drawopt":
                args.drawopt = parvalue;
                break;
-            case "graph": 
-               if (intvalue) args.graph = intvalue; 
-               break; 
+            case "graph":
+               if (intvalue) args.graph = intvalue;
+               break;
          }
       }
 
@@ -624,7 +624,7 @@
             args.dump = true;
          } else if (harg.indexOf("Graph") == 0)
          {
-           args.graph = true; 
+           args.graph = true;
          }
          else if (pos<0) {
             this.hist_name = harg;
@@ -712,7 +712,7 @@
 
       this.monitoring = args.monitoring;
 
-      this.graph = args.graph; 
+      this.graph = args.graph;
 
       if (args.drawopt !== undefined)
          this.histo_drawopt = args.drawopt;
@@ -882,7 +882,7 @@
          res.max = this.hist_args[axisid*3+2];
       } else {
 
-         
+
 
          res.min = Math.min.apply(null, arr);
          res.max = Math.max.apply(null, arr);
@@ -936,9 +936,9 @@
 
          // reassign fill method
          this.Fill1DHistogram = this.Fill2DHistogram = this.Fill3DHistogram = this.DumpValue;
-      } else if (this.graph) 
+      } else if (this.graph)
       {
-        var N = this.vars[0].buf.length; 
+        var N = this.vars[0].buf.length;
 
         if(this.ndim == 1)
         {
@@ -948,15 +948,15 @@
 
 
         }
-        else if(this.ndim == 2) 
+        else if(this.ndim == 2)
         {
-           this.hist = JSROOT.CreateTGraph(N,this.vars[0].buf, this.vars[1].buf); 
-           delete this.vars[1].buf; 
+           this.hist = JSROOT.CreateTGraph(N,this.vars[0].buf, this.vars[1].buf);
+           delete this.vars[1].buf;
         }
 
-        this.hist.fTitle = this.hist_title; 
-        this.hist.fName = "Graph"; 
-     
+        this.hist.fTitle = this.hist_title;
+        this.hist.fName = "Graph";
+
       } else {
 
          this.x = this.GetMinMaxBins(0, (this.ndim > 1) ? 50 : 200);
@@ -993,7 +993,7 @@
 
       var var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
 
-      if (!this.graph) 
+      if (!this.graph)
       {
         switch (this.ndim) {
            case 1:
@@ -1177,16 +1177,14 @@
       this.globals.entry = entry; // can be used in any expression
 
       this.cut.Produce(this.tgtobj);
-
-      if (this.cut.value == 0) return; 
+      if (!this.dump_values && !this.cut.value) return;
 
       for (var n=0;n<this.ndim;++n)
          this.vars[n].Produce(this.tgtobj);
 
-
       var var0 = this.vars[0], var1 = this.vars[1], var2 = this.vars[2], cut = this.cut;
 
-      if ((this.graph || this.arr_limit) && cut.value != 0) {
+      if (this.graph || this.arr_limit) {
          switch(this.ndim) {
             case 1:
               for (var n0=0;n0<var0.length;++n0) {
