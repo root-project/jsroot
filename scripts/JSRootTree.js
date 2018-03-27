@@ -1102,11 +1102,10 @@
       // function used when all branches can be read as array
       // most typical usage - histogramming of single branch
 
-
       if (this.arr_limit || this.graph) {
          var var0 = this.vars[0], len = this.tgtarr.br0.length,
              var1 = this.vars[1], var2 = this.vars[2];
-         if ((var0.buf.length===0) && (len>=this.arr_limit)) {
+         if ((var0.buf.length===0) && (len>=this.arr_limit) && !this.graph) {
             // special use case - first array large enough to create histogram directly base on it
             var0.buf = this.tgtarr.br0;
             if (var1) var1.buf = this.tgtarr.br1;
@@ -1121,12 +1120,13 @@
          if (var1) var1.kind = "number";
          if (var2) var2.kind = "number";
          this.cut.buf = null; // do not create buffer for cuts
-         if (!this.graph && var0.buf.length >= this.arr_limit) {
+         if (!this.graph && (var0.buf.length >= this.arr_limit)) {
             this.CreateHistogram();
             this.arr_limit = 0;
          }
       } else {
          var br0 = this.tgtarr.br0, len = br0.length;
+         console.log("Fill histos", len);
          switch(this.ndim) {
             case 1:
                for (var k=0;k<len;++k)
