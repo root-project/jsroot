@@ -3158,8 +3158,9 @@
          histo.fTitle = mgraph.fTitle;
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
-      }
 
+     }
+ 
       histo.fYaxis.fXmin = minimum;
       histo.fYaxis.fXmax = maximum;
 
