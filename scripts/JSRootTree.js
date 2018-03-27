@@ -606,7 +606,7 @@
                args.drawopt = parvalue;
                break;
             case "graph":
-               if (intvalue) args.graph = intvalue;
+               args.graph = intvalue || true;
                break;
          }
       }
@@ -622,11 +622,9 @@
          }
          if (harg === "dump") {
             args.dump = true;
-         } else if (harg.indexOf("Graph") == 0)
-         {
+         } else if (harg.indexOf("Graph") == 0) {
            args.graph = true;
-         }
-         else if (pos<0) {
+         } else if (pos<0) {
             this.hist_name = harg;
          } else  if ((harg[0]=="(") && (harg[harg.length-1]==")"))  {
             harg = harg.substr(1,harg.length-2).split(",");
@@ -936,20 +934,13 @@
 
          // reassign fill method
          this.Fill1DHistogram = this.Fill2DHistogram = this.Fill3DHistogram = this.DumpValue;
-      } else if (this.graph)
-      {
+      } else if (this.graph) {
         var N = this.vars[0].buf.length;
 
-        if(this.ndim == 1)
-        {
+        if(this.ndim == 1) {
           // A 1-dimensional graph will just have the x axis as an index
-
           this.hist = JSROOT.CreateTGraph(N, Array.from(Array(N).keys()), this.vars[0].buf);
-
-
-        }
-        else if(this.ndim == 2)
-        {
+        } else if(this.ndim == 2) {
            this.hist = JSROOT.CreateTGraph(N,this.vars[0].buf, this.vars[1].buf);
            delete this.vars[1].buf;
         }
@@ -993,8 +984,7 @@
 
       var var0 = this.vars[0].buf, cut = this.cut.buf, len = var0.length;
 
-      if (!this.graph)
-      {
+      if (!this.graph) {
         switch (this.ndim) {
            case 1:
               for (var n=0;n<len;++n)

@@ -213,6 +213,10 @@ Like in ROOT, one could configure histogram binning and range directly:
 
    - [opt=px:py>>h(50,-5,5,50,-5,5)](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
+One and two dimensional draw expressions can be resulted into TGraph object, using ">>Graph" as output:
+
+   - [opt=px:py>>Graph](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py>>Graph)
+
 For any integer value one can accumulate histogram with value bits distribution, specifying as output ">>bits(16)" or ">>bits":
 
    - [opt=event.fTracks.fBits>>bits](https://root.cern/js/latest/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
@@ -269,6 +273,7 @@ Following parameters are supported:
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
   - "hbins" - number of bins on each histogram axis
   - "drawopt" - drawing option for produced histogram
+  - "graph" - draw into TGraph object
 
 Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
