@@ -853,7 +853,7 @@
       var pthis = this, method = "GET", async = true, p = kind.indexOf(";sync");
       if (p>0) { kind.substr(0,p); async = false; }
       if (kind === "head") method = "HEAD"; else
-      if ((kind === "multi") || (kind==="posttext")) method = "POST";
+      if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
 
       xhr.onreadystatechange = function() {
 

@@ -1607,16 +1607,14 @@
          if (kind==="dummy") url+="&dummy";
       }
 
-      // console.log('requst = ' + kind + ' url = ' + url);
-
       if (data) {
-         if (this.raw || true) {
+         if (this.raw) {
             // special workaround to avoid POST request, use base64 coding
             url += "&post=" + btoa(data);
          } else {
-            // not yet working - check why
-            reqmode = "posttext";
-            post = data; // post text message
+            // send data with post request - most efficient way
+            reqmode = "post";
+            post = data;
          }
       }
 
