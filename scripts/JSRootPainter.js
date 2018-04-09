@@ -4671,7 +4671,8 @@
    TooltipHandler.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
       if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
-      return ! (this.hints_layer().select(".objects_hints").empty());
+      var hintsg = this.hints_layer().select(".objects_hints");
+      return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
    }
 
    TooltipHandler.prototype.ProcessTooltipEvent = function(pnt, enabled) {
@@ -4793,7 +4794,8 @@
 
       // copy transform attributes from frame itself
       hintsg.attr("transform", trans)
-            .property("last_point", pnt);
+            .property("last_point", pnt)
+            .property("hints_pad", this.pad_name);
 
       var viewmode = hintsg.property('viewmode') || "",
           actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
