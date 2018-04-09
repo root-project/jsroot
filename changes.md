@@ -7,6 +7,7 @@
 4. Fix - draw axis main line with appropriate attributes (#150)
 5. Fix - use axis color when drawing grids lines (#150)
 6. Fix - when set pad logx/logy, reset existing user ranges in pad
+7. Fix - avoid too deep calling stack when drawing many graphs or histos (#154) 
 
 
 ## Changes in 5.4.0
