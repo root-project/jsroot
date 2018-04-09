@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 5.4.x
+## Changes in 5.4.1
 1. Fix - monitoring mode in draw.htm page
 2. Fix - zooming in colz palette
 3. Fix - support both 9.x and 10.x jsdom version in Node.js (#149)

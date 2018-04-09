@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "5.4.0",
+  "version": "5.4.1",
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "main": "./scripts/JSRootCore.js",
