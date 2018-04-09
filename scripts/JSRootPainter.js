@@ -1611,9 +1611,8 @@
 
       if (data) {
          if (this.raw || true) {
-            // special workaround to avoid POST request, which is not supported in WebEngine
-            url += "&post=";
-            for (var k=0;k<data.length;++k) url += data.charCodeAt(k).toString(16);
+            // special workaround to avoid POST request, use base64 coding
+            url += "&post=" + btoa(data);
          } else {
             // not yet working - check why
             reqmode = "posttext";
