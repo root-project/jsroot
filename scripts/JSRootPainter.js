@@ -1960,15 +1960,17 @@
                delete pthis.next_binary;
 
                if (msg instanceof Blob) {
-                  console.log('Get Blob object - convert to buffer array');
+                  // this is case of websocket
+                  // console.log('Get Blob object - convert to buffer array');
                   var reader = new FileReader;
                   reader.onload = function(event) {
                      // The file's text will be printed here
-                     pthis.InvokeReceiver('OnWebsocketMsg', event.target.result);
+                     pthis.InvokeReceiver('OnWebsocketMsg', event.target.result, 0);
                   }
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
-                  console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
+                  // this is from CEF or LongPoll handler
                   pthis.InvokeReceiver('OnWebsocketMsg', msg, e.offset || 0);
                }
 
