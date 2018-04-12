@@ -490,10 +490,10 @@
       if ((mathjax!==null) && (mathjax!="0") && (latex===null)) latex = "math";
       if (latex!==null) JSROOT.gStyle.Latex = latex; // decoding will be performed with the first text drawing
 
-      if (JSROOT.GetUrlOption("nomenu", url)!=null) JSROOT.gStyle.ContextMenu = false;
-      if (JSROOT.GetUrlOption("noprogress", url)!=null) JSROOT.gStyle.ProgressBox = false;
-      if (JSROOT.GetUrlOption("notouch", url)!=null) JSROOT.touches = false;
-      if (JSROOT.GetUrlOption("adjframe", url)!=null) JSROOT.gStyle.CanAdjustFrame = true;
+      if (JSROOT.GetUrlOption("nomenu", url)!==null) JSROOT.gStyle.ContextMenu = false;
+      if (JSROOT.GetUrlOption("noprogress", url)!==null) JSROOT.gStyle.ProgressBox = false;
+      if (JSROOT.GetUrlOption("notouch", url)!==null) JSROOT.touches = false;
+      if (JSROOT.GetUrlOption("adjframe", url)!==null) JSROOT.gStyle.CanAdjustFrame = true;
 
       JSROOT.gStyle.fOptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.fOptStat);
       JSROOT.gStyle.fOptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.fOptFit);
@@ -501,9 +501,12 @@
       JSROOT.gStyle.fFitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.fFitFormat);
 
       var toolbar = JSROOT.GetUrlOption("toolbar", url);
-      if (toolbar !== null)
-         if (toolbar==='popup') JSROOT.gStyle.ToolBar = 'popup';
-                           else JSROOT.gStyle.ToolBar = (toolbar !== "0") && (toolbar !== "false");
+      if (toolbar !== null) {
+         if (toolbar.indexOf('popup')>=0) JSROOT.gStyle.ToolBar = 'popup'; else
+            JSROOT.gStyle.ToolBar = (toolbar.indexOf("0")<0) && (toolbar.indexOf("false")<0);
+         if (toolbar.indexOf('left')>=0) JSROOT.gStyle.ToolBarSide = 'left';
+         if (toolbar.indexOf('right')>=0) JSROOT.gStyle.ToolBarSide = 'right';
+      }
 
       var palette = JSROOT.GetUrlOption("palette", url);
       if (palette!==null) {

@@ -46,7 +46,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - mathjax - use MathJax for latex output
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor
 - style - name of TStyle object to define global JSROOT style
-- toolbar - show canvas tool buttons 'off', 'on' and 'popup'
+- toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position
 
 For instance:
 
