@@ -1585,7 +1585,6 @@
       this.path = addr;
       this.connid = null;
       this.req = null;
-      if (_raw === undefined) _raw = JSROOT.browser.qt5;
       this.raw = _raw;
 
       this.nextrequest("", "connect");
@@ -1666,11 +1665,14 @@
             this.handle.processreq(res, 0);
          } else {
             // text reply
-            var str = "", u8Arr = new Uint8Array(res);
-            for (var i = 0; i < u8Arr.length; ++i)
-               str += String.fromCharCode(u8Arr[i]);
-            if (str == "<<nope>>") str = "";
-            this.handle.processreq(str);
+            if (res && typeof res !== "string") {
+               var str = "", u8Arr = new Uint8Array(res);
+               for (var i = 0; i < u8Arr.length; ++i)
+                  str += String.fromCharCode(u8Arr[i]);
+               res = str;
+            }
+            if (res == "<<nope>>") res = "";
+            this.handle.processreq(res);
          }
       });
 
@@ -1716,93 +1718,6 @@
       this.nextrequest("", "close");
    }
 
-   // ==========================================================================================
-
-   function Cef3QuerySocket(addr) {
-      // make very similar to longpoll
-      // create persistent CEF requests which could be use from client application at eny time
-
-      if (!window || !('cefQuery' in window)) return null;
-
-      this.path = addr;
-      this.connid = null;
-      this.nextrequest("","connect");
-   }
-
-   Cef3QuerySocket.prototype.nextrequest = function(data, kind) {
-      var req = { request: "", persistent: false };
-      if (kind === "connect") {
-         req.request = "connect";
-         req.persistent = true; // this initial request will be used for all messages from the server
-         this.connid = "connect";
-      } else if (kind === "close") {
-         if ((this.connid===null) || (this.connid==="close")) return;
-         req.request = this.connid + '::close';
-         this.connid = "close";
-      } else if ((this.connid===null) || (typeof this.connid!=='number')) {
-         return console.error("No connection");
-      } else {
-         req.request = this.connid + '::post';
-         if (data) req.request += "::" + data;
-      }
-
-      if (!req.request) return console.error("No CEF request");
-
-      req.request = this.path + "::" + req.request; // URL always preceed any command
-
-      req.onSuccess = this.onSuccess.bind(this);
-      req.onFailure = this.onFailure.bind(this);
-
-      this.cefid = window.cefQuery(req); // equvalent to req.send
-
-      return this;
-   }
-
-   Cef3QuerySocket.prototype.onFailure = function(error_code, error_message) {
-      console.log("CEF_ERR: " + error_code);
-      if (typeof this.onerror === 'function') this.onerror("failure with connid " + (this.connid || "---"));
-      this.connid = null;
-   }
-
-   Cef3QuerySocket.prototype.onSuccess = function(response) {
-      if (!response) return; // normal situation when request does not send any reply
-
-      if (this.connid==="connect") {
-         this.connid = parseInt(response);
-         console.log('Get new CEF connection with id ' + this.connid);
-         if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid==="close") {
-         if (typeof this.onclose == 'function') this.onclose();
-      } else {
-         if ((typeof this.onmessage==='function') && response) {
-            if (response.indexOf("txt:")==0) {
-               this.onmessage({ data: response.substr(4) });
-            } else if (response.indexOf("bin:")==0) {
-               var str = window.atob(response.substr(4));
-               var buf = new ArrayBuffer(str.length);
-               var bufView = new Uint8Array(buf);
-               for (var i=0, strLen=str.length; i<strLen; i++) {
-                 bufView[i] = str.charCodeAt(i);
-               }
-               this.onmessage({ data: buf, offset: 0 });
-            } else {
-               console.log("Get CEF msg without prefix - " + response.substr(0,30));
-               // this.onmessage({ data: response });
-            }
-         }
-      }
-   }
-
-   Cef3QuerySocket.prototype.send = function(str) {
-      this.nextrequest(str);
-   }
-
-   Cef3QuerySocket.prototype.close = function() {
-      this.nextrequest("", "close");
-      if (this.cefid) window.cefQueryCancel(this.cefid);
-      delete this.cefid;
-   }
-
    // ========================================================================================
 
 
@@ -1814,8 +1729,6 @@
     * @memberof JSROOT
     */
    function WebWindowHandle(socket_kind) {
-      if (socket_kind=='cefquery' && (!window || !('cefQuery' in window))) socket_kind = 'longpoll';
-
       this.kind = socket_kind;
       this.state = 0;
       this.cansend = 10;
@@ -1930,18 +1843,14 @@
 
          var path = href;
 
-         if (pthis.kind == 'cefquery') {
-            if (path.indexOf("rootscheme://rootserver")==0) path = path.substr(23);
-            console.log('configure cefquery ' + path);
-            conn = new Cef3QuerySocket(path);
-         } else if ((pthis.kind !== 'longpoll') && first_time) {
+         if ((pthis.kind === 'websocket') && first_time) {
             path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
             console.log('configure websocket ' + path);
             conn = new WebSocket(path);
          } else {
             path += "root.longpoll";
             console.log('configure longpoll ' + path);
-            conn = new LongPollSocket(path);
+            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'));
          }
 
          if (!conn) return;
@@ -2057,11 +1966,23 @@
             delete arg.prereq; JSROOT.ConnectWebWindow(arg);
          }, arg.prereq_logdiv);
 
+      if (!arg.platform)
+         arg.platform = JSROOT.GetUrlOption("platform");
+
+      if (arg.platform == "qt5") JSROOT.browser.qt5 = true; else
+      if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
+
+      if (arg.batch === undefined)
+         arg.batch = (JSROOT.GetUrlOption("batch")!==null) && (JSROOT.browser.qt5 || JSROOT.browser.cef3);
+
+      if (arg.batch) JSROOT.BatchMode = true;
+
+      if (!arg.socket_kind)
+         arg.socket_kind = JSROOT.GetUrlOption("ws");
+
       if (!arg.socket_kind) {
-         if (JSROOT.GetUrlOption("longpoll")!==null) arg.socket_kind = "longpoll";
-         else if (JSROOT.GetUrlOption("cef3")!==null) arg.socket_kind = "cefquery";
-         else if (JSROOT.GetUrlOption("qt5")!==null) { JSROOT.browser.qt5 = true; arg.socket_kind = "longpoll"; }
-         else arg.socket_kind = "websocket";
+         if (JSROOT.browser.qt5) arg.socket_kind = "rawlongpoll"; else
+         if (JSROOT.browser.cef3) arg.socket_kind = "longpoll"; else arg.socket_kind = "websocket";
       }
 
       // only for debug purposes
@@ -2081,7 +2002,7 @@
             },
 
             OnWebsocketMsg: function(handle, msg) {
-                console.log('Get message ' + msg + ' handle ' + !!handle);
+                // console.log('Get message ' + msg + ' handle ' + !!handle);
                 if (msg.indexOf(arg.first_recv)!=0)
                    return handle.Close();
                 arg.first_msg = msg.substr(arg.first_recv.length);
@@ -6244,7 +6165,6 @@
    Painter.createRootColors();
 
    JSROOT.LongPollSocket = LongPollSocket;
-   JSROOT.Cef3QuerySocket = Cef3QuerySocket;
    JSROOT.WebWindowHandle = WebWindowHandle;
    JSROOT.DrawOptions = DrawOptions;
    JSROOT.ColorPalette = ColorPalette;
