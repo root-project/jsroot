@@ -1761,12 +1761,13 @@
 
    /** Close connection. */
    WebWindowHandle.prototype.Close = function(force) {
+
       if (this.timerid) {
          clearTimeout(this.timerid);
          delete this.timerid;
       }
 
-      if (this._websocket && this.state > 0) {
+      if (this._websocket && (this.state > 0)) {
          this.state = force ? -1 : 0; // -1 prevent socket from reopening
          this._websocket.onclose = null; // hide normal handler
          this._websocket.close();
@@ -1791,6 +1792,7 @@
          if (this.timerid) clearTimeout(this.timerid);
          this.timerid = setTimeout(this.KeepAlive.bind(this), 10000);
       }
+
       return true;
    }
 
@@ -1931,15 +1933,16 @@
          }
 
          conn.onerror = function (err) {
-            console.log("websocket error", err);
+            console.log("websocket error " + err);
             if (pthis.state > 0) {
                pthis.InvokeReceiver('OnWebsocketError', err);
                pthis.state = 0;
             }
          }
 
-         // console.log('Set timeout', (new Date()).getTime());
-         setTimeout(retry_open, 3000); // after 3 seconds try again
+         // only in interactive mode try to reconnect
+         if (!JSROOT.BatchMode)
+            setTimeout(retry_open, 3000); // after 3 seconds try again
 
       } // retry_open
 
@@ -1973,7 +1976,7 @@
       if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
 
       if (arg.batch === undefined)
-         arg.batch = (JSROOT.GetUrlOption("batch")!==null) && (JSROOT.browser.qt5 || JSROOT.browser.cef3);
+         arg.batch = (JSROOT.GetUrlOption("batch_mode")!==null); //  && (JSROOT.browser.qt5 || JSROOT.browser.cef3 || JSROOT.browser.isChrome);
 
       if (arg.batch) JSROOT.BatchMode = true;
 
@@ -1986,12 +1989,12 @@
       }
 
       // only for debug purposes
-      // arg.socket_kind = "longpoll";
+      arg.socket_kind = "longpoll";
 
       var handle = new WebWindowHandle(arg.socket_kind);
 
       if (window) {
-         window.onbeforeunload = handle.Close.bind(handle);
+         window.onbeforeunload = handle.Close.bind(handle, true);
          if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
       }
 
