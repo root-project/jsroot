@@ -67,8 +67,9 @@
        w            = this.pad_height(),
        h            = this.pad_height(),
        line_width   = opts.fLineWidth.fAttr,
-       line_style   = opts.fLineStyle.fAttr,
-       line_opacity = opts.fLineOpacity.fAttr;
+       line_opacity = opts.fLineOpacity.fAttr,
+       line_style   = opts.fLineStyle.fAttr;
+      
 
     var linecolor = pp.GetNewColor(opts.fLineColor);
 
@@ -82,8 +83,8 @@
         .attr("y2", h - line.fY2*h)
         .style("stroke", linecolor)
         .attr("stroke-width", line_width)
-        .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style])
         .attr("stroke-opacity", line_opacity)
+        .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style])
 
 
 
