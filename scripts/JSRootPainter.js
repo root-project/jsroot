@@ -2019,7 +2019,7 @@
 
             OnWebsocketClosed: function(handle) {
                // when connection closed, close panel as well
-               if (window) window.close();
+               JSROOT.CloseCurrentWindow();
             }
          };
       }
@@ -6167,6 +6167,18 @@
          box.property("with_timeout", true);
          setTimeout(JSROOT.progress.bind(JSROOT,'',-1), tmout);
       }
+   }
+
+   /** Tries to close current browser tab
+   *
+   * Many browsers do not allow simple window.close() call,
+   * therefore try several workarounds
+   */
+
+   JSROOT.CloseCurrentWindow = function() {
+      if (!window) return;
+      window.close();
+      window.open('','_self').close();
    }
 
    Painter.createRootColors();

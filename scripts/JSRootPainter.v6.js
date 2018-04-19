@@ -4286,7 +4286,7 @@
    }
 
    TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
-      if (window) window.close(); // close window when socket disapper
+      JSROOT.CloseCurrentWindow();
    }
 
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
