@@ -34,10 +34,22 @@
       if (!pnt) return res;
 
       var w = this.pad_width(),
-          h = this.pad_height();
+          h = this.pad_height(),
+          pp = this.pad_painter();
 
-      res.x = pnt.fHoriz.fNormal.fVal*w;
-      res.y = (1 - pnt.fVert.fNormal.fVal)*h;
+      function CalcCoord(val, coord) {
+         if (!coord || !val.fUser.fVal)
+            return val.fNormal.fVal;
+         return (val.fUser.fVal - coord.fBegin) / (coord.fEnd - coord.fBegin);
+      }
+
+      if (!pp.pad_frame || !pp.pad_frame.fUserCoord) {
+         res.x = pnt.fHoriz.fNormal.fVal*w;
+         res.y = (1 - pnt.fVert.fNormal.fVal) * h;
+      } else {
+         res.x = CalcCoord(pnt.fHoriz, pp.pad_frame.fUserCoord[0]) * w;
+         res.y = (1 - CalcCoord(pnt.fVert, pp.pad_frame.fUserCoord[1])) * h;
+      }
       return res;
    }
 
