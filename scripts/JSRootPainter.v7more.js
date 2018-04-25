@@ -78,8 +78,6 @@
         y1 = line.fP1.fVert.fNormal.fVal,
         y2 = line.fP2.fVert.fNormal.fVal;
 
-    console.log("x1 = ", x1);
-
     this.CreateG();
 
     this.draw_g
@@ -93,12 +91,7 @@
         .attr("stroke-opacity", line_opacity)
         .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
 
-
-
    }
-
-
-
 
    // ================================================================================
 
