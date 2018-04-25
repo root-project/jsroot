@@ -64,27 +64,34 @@
        var line     = this.GetObject(),
        opts         = line.fOpts,
        pp           = this.canv_painter(),
-       w            = this.pad_height(),
+       w            = this.pad_width(),
        h            = this.pad_height(),
        line_width   = opts.fLineWidth.fAttr,
        line_opacity = opts.fLineOpacity.fAttr,
        line_style   = opts.fLineStyle.fAttr;
-      
+
 
     var linecolor = pp.GetNewColor(opts.fLineColor);
+
+    var x1 = line.fP1.fHoriz.fNormal.fVal,
+        x2 = line.fP2.fHoriz.fNormal.fVal,
+        y1 = line.fP1.fVert.fNormal.fVal,
+        y2 = line.fP2.fVert.fNormal.fVal;
+
+    console.log("x1 = ", x1);
 
     this.CreateG();
 
     this.draw_g
         .append("svg:line")
-        .attr("x1", line.fX1*w)
-        .attr("y1", h - line.fY1*h)
-        .attr("x2", line.fX2*w)
-        .attr("y2", h - line.fY2*h)
+        .attr("x1", x1*w)
+        .attr("y1", h - y1*h)
+        .attr("x2", x2*w)
+        .attr("y2", h - y2*h)
         .style("stroke", linecolor)
         .attr("stroke-width", line_width)
         .attr("stroke-opacity", line_opacity)
-        .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style])
+        .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
 
 
 
