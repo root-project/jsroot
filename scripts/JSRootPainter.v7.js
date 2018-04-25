@@ -28,6 +28,19 @@
 
    JSROOT.v7 = {}; // placeholder for all v7-relevant code
 
+   JSROOT.TObjectPainter.prototype.GetCoordinate = function(pnt) {
+      var res = { x: 0, y: 0 };
+
+      if (!pnt) return res;
+
+      var w = this.pad_width(),
+          h = this.pad_height();
+
+      res.x = pnt.fHoriz.fNormal.fVal*w;
+      res.y = (1 - pnt.fVert.fNormal.fVal)*h;
+      return res;
+   }
+
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -2499,6 +2512,8 @@
       delete this.frame_painter_ref;
       this.painters = [];
       this.pad = null;
+      this.draw_object = null;
+      this.pad_frame = null;
       this.this_pad_name = "";
       this.has_canvas = false;
 
@@ -3221,6 +3236,7 @@
 
          this.draw_object = padattr;
          this.pad = padattr;
+         this.pad_frame = snap.fFrame;
          // this._fixed_size = true;
 
          // if canvas size not specified in batch mode, temporary use 900x700 size
