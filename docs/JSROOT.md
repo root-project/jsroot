@@ -47,6 +47,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor
 - style - name of TStyle object to define global JSROOT style
 - toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position
+- divsize - fixed size in pixels for main div element like &dvisize=700x400
 
 For instance:
 
