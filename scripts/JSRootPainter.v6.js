@@ -3624,6 +3624,9 @@
    TPadPainter.prototype.CreateImage = function(format, call_back) {
       if (format=="svg") {
          JSROOT.CallBack(call_back, btoa(this.CreateSvg()));
+      } else if (format=="pdf") {
+         // use https://github.com/MrRio/jsPDF in the future here
+         JSROOT.CallBack(call_back, btoa("dummy PDF file"));
       } else if ((format=="png") || (format=="jpeg")) {
          this.ProduceImage(true, 'any.' + format, function(can) {
             var res = can.toDataURL('image/' + format),
