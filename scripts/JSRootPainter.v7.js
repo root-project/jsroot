@@ -37,18 +37,21 @@
           h = this.pad_height(),
           pp = this.pad_painter();
 
-      function CalcCoord(val, coord) {
-         if (!coord || !val.fUser.fVal)
-            return val.fNormal.fVal;
-         return (val.fUser.fVal - coord.fBegin) / (coord.fEnd - coord.fBegin);
+      function CalcCoord(val, coord, grsize) {
+         var res = val.fNormal.fVal * grsize + val.fPixel.fVal;
+
+         if (val.fUser.fVal)
+            res += (val.fUser.fVal - coord.fBegin) / (coord.fEnd - coord.fBegin) * grsize;
+
+         return res;
       }
 
-      if (!pp.pad_frame || !pp.pad_frame.fUserCoord) {
+      if (!pp.pad_frame) {
          res.x = pnt.fHoriz.fNormal.fVal*w;
-         res.y = (1 - pnt.fVert.fNormal.fVal) * h;
+         res.y = h - pnt.fVert.fNormal.fVal*h;
       } else {
-         res.x = CalcCoord(pnt.fHoriz, pp.pad_frame.fUserCoord[0]) * w;
-         res.y = (1 - CalcCoord(pnt.fVert, pp.pad_frame.fUserCoord[1])) * h;
+         res.x = CalcCoord(pnt.fHoriz, pp.pad_frame.fUserCoord[0], w);
+         res.y = h - CalcCoord(pnt.fVert, pp.pad_frame.fUserCoord[1], h);
       }
       return res;
    }
