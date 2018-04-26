@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.4.x
+1. Fix - Take into account extra quotes in multipart http reply (#157)
+
+
 ## Changes in 5.4.1
 1. Fix - monitoring mode in draw.htm page
 2. Fix - zooming in colz palette
