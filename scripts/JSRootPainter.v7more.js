@@ -64,11 +64,11 @@
        var line         = this.GetObject(),
            opts         = line.fOpts,
            pp           = this.canv_painter(),
-           line_width   = opts.fLineWidth.fAttr,
-           line_opacity = opts.fLineOpacity.fAttr,
-           line_style   = opts.fLineStyle.fAttr;
+           line_width   = opts.fWidth.fAttr,
+           line_opacity = opts.fOpacity.fAttr,
+           line_style   = opts.fStyle.fAttr;
 
-    var linecolor = pp.GetNewColor(opts.fLineColor);
+    var linecolor = pp.GetNewColor(opts.fColor);
 
     var p1 = this.GetCoordinate(line.fP1),
         p2 = this.GetCoordinate(line.fP2);
