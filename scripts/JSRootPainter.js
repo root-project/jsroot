@@ -1502,8 +1502,11 @@
          var vvv = Math.round(val);
          if ((ndig==0) || (vvv===val)) return vvv.toString();
          var str = val.toFixed(ndig);
-         if ((str[str.length-1] == '0') && (str.indexOf(".") < str.length-1))
+         while ((str[str.length-1] == '0') && (str.lastIndexOf(".") < str.length-1))
             str = str.substr(0,str.length-1);
+         if (str[str.length-1] == '.')
+            str = str.substr(0,str.length-1);
+         if (str == "-0") str = "0";
          return str;
       }
 
