@@ -84,10 +84,25 @@
         .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
    }
 
+   function drawMarker() {
+       var marker         = this.GetObject(),
+           opts           = marker.fOpts,
+           pp             = this.canv_painter(),
+           marker_size    = opts.fSize.fAttr,
+           marker_opacity = opts.fOpacity.fAttr,
+           marker_style   = opts.fStyle.fAttr,
+           marker_color   = pp.GetNewColor(opts.fColor),
+           p              = this.GetCoordinate(marker.fP);
+
+           //var clone = new TAttMarkerHandler({ style: marker_style, color: marker_color, size: marker_size });
+
+   }
+
    // ================================================================================
 
    JSROOT.v7.drawText = drawText;
    JSROOT.v7.drawLine = drawLine;
+   JSROOT.v7.drawMarker = drawMarker;
 
    return JSROOT;
 
