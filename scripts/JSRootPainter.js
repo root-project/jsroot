@@ -5119,7 +5119,6 @@
       this.FinishTextDrawing(draw_g); // check if all other elements are completed
    }
 
-
    // ===========================================================
 
    function TooltipHandler(obj) {
@@ -6111,6 +6110,16 @@
     * @private
     */
    JSROOT.CheckElementResize = JSROOT.resize;
+
+   /** @summary Returns main painter object for specified HTML element
+    * @param {string|object} divid - id or DOM element
+    */
+
+   JSROOT.GetMainPainter = function(divid) {
+      var dummy = new JSROOT.TObjectPainter();
+      dummy.SetDivId(divid, -1);
+      return dummy.main_painter(true);
+   }
 
    /**
     * @summary Safely remove all JSROOT objects from specified element

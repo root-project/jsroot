@@ -2431,7 +2431,6 @@
    MDIDisplay.prototype = Object.create(JSROOT.TBasePainter.prototype);
 
    MDIDisplay.prototype.BeforeCreateFrame = function(title) {
-
       this.active_frame_title = title;
    }
 
