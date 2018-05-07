@@ -2794,13 +2794,20 @@
    GridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
-      var frame = this.GetFrame(this.getcnt);
-      if (!this.simple_layout && this.framecnt)
-         this.getcnt = (this.getcnt+1) % this.framecnt;
+      var frame = null, maxloop = this.framecnt || 2;
 
-      d3.select(frame).attr('frame_title', title);
+      while (!frame && maxloop--) {
+         frame = this.GetFrame(this.getcnt);
+         if (!this.simple_layout && this.framecnt)
+            this.getcnt = (this.getcnt+1) % this.framecnt;
 
-      JSROOT.cleanup(frame);
+         if (d3.select(frame).classed("jsroot_fixed_frame")) frame = null;
+      }
+
+      if (frame) {
+         this.CleanupFrame(frame);
+         d3.select(frame).attr('frame_title', title);
+      }
 
       return frame;
    }
