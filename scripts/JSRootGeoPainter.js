@@ -3140,7 +3140,7 @@
 
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
-      painter.options = painter.decodeOptions(opt);
+      painter.options = painter.decodeOptions(opt || "");
 
       if (painter.options._yup === undefined)
          painter.options._yup = painter.svg_canvas().empty();
