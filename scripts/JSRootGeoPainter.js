@@ -1922,6 +1922,8 @@
 
    TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt, call_back) {
 
+      console.log('Calling perform drop');
+
       if (obj && (obj.$kind==='TTree')) {
          // drop tree means function call which must extract tracks from provided tree
 
@@ -1940,16 +1942,15 @@
 
          return func(obj, opt, function(tracks) {
             if (tracks) {
-               geo_painter.drawExtras(tracks);
+               geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
                geo_painter.Render3D(100);
             }
             JSROOT.CallBack(call_back); // finally callback
          });
       }
 
-      if (this.drawExtras(obj, itemname, true)) {
+      if (this.drawExtras(obj, itemname)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
-         this.Render3D(100);
       }
 
       JSROOT.CallBack(call_back);
@@ -2018,7 +2019,7 @@
          this._toplevel.traverse(function(node) { if (node.geo_object === obj) mesh = node; });
 
          if (mesh) mesh.visible = res; else
-         if (res) this.drawExtras(obj);
+         if (res) this.drawExtras(obj, "", false);
 
          if (mesh || res) this.Render3D();
       }
@@ -2033,7 +2034,11 @@
       // if object was hidden via menu, do not redraw it with next draw call
       if (!add_objects && obj.$hidden_via_menu) return false;
 
-      var isany = false;
+      var isany = false, do_render = false;
+      if (add_objects === undefined) {
+         add_objects = true;
+         do_render = true;
+      }
 
       if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
          if (!obj.arr) return false;
@@ -2060,6 +2065,8 @@
          isany = this.drawExtraShape(obj, itemname);
       }
 
+      if (isany && do_render)
+         this.Render3D(100);
 
       return isany;
    }
@@ -2892,7 +2899,7 @@
       this.getExtrasContainer("delete"); // delete old container
 
       var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
-      this.drawExtras(extras);
+      this.drawExtras(extras, "", false);
 
       this.Render3D(0, true);
 

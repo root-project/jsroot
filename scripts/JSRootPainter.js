@@ -5852,7 +5852,7 @@
          return painter;
       }
 
-      if ((obj===null) || (typeof obj !== 'object')) return completeDraw(null);
+      if ((obj === null) || (typeof obj !== 'object')) return completeDraw(null);
 
       if (opt == 'inspect') {
          var func = JSROOT.findFunction("JSROOT.Painter.drawInspector");
@@ -5872,7 +5872,15 @@
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw(divid, obj[handle.draw_field], opt, drawcallback);
 
-      if (!handle.func) return completeDraw(null);
+      if (!handle.func) {
+         if (opt && (opt.indexOf("same")>=0)) {
+            var main_painter = JSROOT.GetMainPainter(divid);
+            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
+               return main_painter.PerformDrop(obj, "", null, opt, completeDraw);
+         }
+
+         return completeDraw(null);
+      }
 
       function performDraw() {
          if (handle.direct) {

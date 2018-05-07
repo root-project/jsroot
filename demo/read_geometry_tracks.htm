@@ -18,9 +18,11 @@
         JSROOT.draw("drawing", obj, "", function(geo_painter) {
            JSROOT.OpenFile(tracks_file, function(file) {
               file.ReadObject("tracks;1", function(tracks) {
-                 if (geo_painter.drawExtras(tracks, "tracks", true)) {
-                    geo_painter.Render3D(100);
-                 }
+                 // one could simply draw list of tracks
+                 // JSROOT.draw("drawing", tracks, "same");
+                 
+                 // or use method of TGeoPainter to draw extras
+                 geo_painter.drawExtras(tracks, "tracks");
               });
            });
         });

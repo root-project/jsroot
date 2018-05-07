@@ -43,7 +43,7 @@
            while (++this.indx < this.lst.arr.length) {
               var handle = { func: this.draw_bind },
                   item = this.lst.arr[this.indx],
-                  opt = this.lst.opt ? this.lst.opt[this.indx] : this.opt;
+                  opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
               if (!item) continue;
               JSROOT.draw(this.divid, item, opt, handle);
               if (!handle.completed) return;
@@ -1096,9 +1096,7 @@
       h.get(itemname, function(item, obj) {
          if (!obj) return JSROOT.CallBack(call_back);
 
-         var dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(divid, -1);
-         var main_painter = dummy.main_painter(true);
+         var main_painter = JSROOT.GetMainPainter(divid);
 
          if (main_painter && (typeof main_painter.PerformDrop === 'function'))
             return main_painter.PerformDrop(obj, itemname, item, opt, drop_callback);
