@@ -15,7 +15,15 @@
          tracks_file = "../../files/geom/eve_tracks.root";
      
      JSROOT.NewHttpRequest(geom_file, 'object', function(obj) {
-        JSROOT.draw("drawing", obj);
+        JSROOT.draw("drawing", obj, "", function(geo_painter) {
+           JSROOT.OpenFile(tracks_file, function(file) {
+              file.ReadObject("tracks;1", function(tracks) {
+                 if (geo_painter.drawExtras(tracks, "tracks", true)) {
+                    geo_painter.Render3D(100);
+                 }
+              });
+           });
+        });
      }).send();
      
    </script>
