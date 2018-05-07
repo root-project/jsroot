@@ -2011,6 +2011,10 @@
          });
    }
 
+   /** \brief Creates configured JSROOT.MDIDisplay object
+    *
+    * @param callback - called when mdi object created
+    */
    HierarchyPainter.prototype.CreateDisplay = function(callback) {
 
       if ('disp' in this) {
@@ -2024,15 +2028,40 @@
          return JSROOT.CallBack(callback, null);
 
       if ((this.disp_kind == "simple") ||
-          (this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0))
+          ((this.disp_kind.indexOf("grid") == 0) && (this.disp_kind.indexOf("gridi") < 0)))
            this.disp = new GridDisplay(this.disp_frameid, this.disp_kind);
       else
-         return JSROOT.AssertPrerequisites('jq2d', this.CreateDisplay.bind(this,callback));
+         return JSROOT.AssertPrerequisites('jq2d', this.CreateDisplay.bind(this, callback));
 
       if (this.disp)
          this.disp.CleanupFrame = this.CleanupFrame.bind(this);
 
       JSROOT.CallBack(callback, this.disp);
+   }
+
+   /** \brief If possible, creates custom JSROOT.MDIDisplay for given item
+   *
+   * @param itemname - name of item, for which drawing is created
+   * @param custom_kind - display kind
+   * @param callback - callback function, called when mdi object created
+   */
+   HierarchyPainter.prototype.CreateCustomDisplay = function(itemname, custom_kind, callback) {
+
+      if (this.disp_kind != "simple")
+         return this.CreateDisplay(callback);
+
+      this.disp_kind = custom_kind;
+
+      // check if display can be erased
+      if (this.disp) {
+         var num = this.disp.NumDraw();
+         if ((num>1) || ((num==1) && !this.disp.FindFrame(itemname)))
+            return this.CreateDisplay(callback);
+         this.disp.Reset();
+         delete this.disp;
+      }
+
+      this.CreateDisplay(callback);
    }
 
    HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {

@@ -1148,7 +1148,13 @@
       return false;
    }
 
+   /** \brief Creates configured JSROOT.MDIDisplay object
+   *
+   * @param callback - called when mdi object created
+   */
+
    HierarchyPainter.prototype.CreateDisplay = function(callback) {
+
       if ('disp' in this) {
          if (this.disp.NumDraw() > 0) return JSROOT.CallBack(callback, this.disp);
          this.disp.Reset();
