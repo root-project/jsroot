@@ -1867,7 +1867,7 @@
           node = this.Find(itemname),
           sett = JSROOT.getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = JSROOT.getDrawHandle(node._kind),
-          root_type = ('_kind' in node) ? node._kind.indexOf("ROOT.") == 0 : false;
+          root_type = (typeof node._kind == 'string') ? node._kind.indexOf("ROOT.") == 0 : false;
 
       if (sett.opts && (node._can_draw !== false)) {
          sett.opts.push('inspect');
