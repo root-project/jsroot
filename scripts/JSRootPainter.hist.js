@@ -2217,6 +2217,9 @@
       if (!fp)
          return console.warn("histogram drawn without frame - not supported");
 
+      // artifically add y range to display axes
+      if (this.ymin === this.ymax) this.ymax += 1;
+
       fp.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
