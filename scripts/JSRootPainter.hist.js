@@ -3919,30 +3919,26 @@
           histo = this.GetHisto(),
           x1 = histo.fXaxis.GetBinLowEdge(bin+1),
           x2 = histo.fXaxis.GetBinLowEdge(bin+2),
-          cont = histo.getBinContent(bin+1);
+          cont = histo.getBinContent(bin+1),
+          xlbl = "", xnormal = false;
 
       if (name.length>0) tips.push(name);
 
+      if (pmain.x_kind === 'labels') xlbl = pmain.AxisAsText("x", x1); else
+      if (pmain.x_kind === 'time') xlbl = pmain.AxisAsText("x", (x1+x2)/2); else
+       { xnormal = true; xlbl = "[" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")"; }
+
       if (this.options.Error || this.options.Mark) {
-         tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
+         tips.push("x = " + xlbl);
          tips.push("y = " + pmain.AxisAsText("y", cont));
          if (this.options.Error) {
-            tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
+            if (xnormal) tips.push("error x = " + ((x2 - x1) / 2).toPrecision(4));
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
          tips.push("bin = " + (bin+1));
-
-         if (pmain.x_kind === 'labels')
-            tips.push("x = " + pmain.AxisAsText("x", x1));
-         else
-         if (pmain.x_kind === 'time')
-            tips.push("x = " + pmain.AxisAsText("x", (x1+x2)/2));
-         else
-            tips.push("x = [" + pmain.AxisAsText("x", x1) + ", " + pmain.AxisAsText("x", x2) + ")");
-
+         tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
-
          if (cont === Math.round(cont))
             tips.push("entries = " + cont);
          else
