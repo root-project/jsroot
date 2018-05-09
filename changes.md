@@ -1,7 +1,8 @@
 # JSROOT changelog
 
 ## Changes in 5.4.x
-1. Fix - Take into account extra quotes in multipart http reply (#157)
+1. Fix - take into account extra quotes in multipart http reply (#157)
+2. Fix - display of labels on X axis with TProfile
 
 
 ## Changes in 5.4.1
