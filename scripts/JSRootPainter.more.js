@@ -814,6 +814,9 @@
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
+      if ((typeof opt == "string") && (opt.indexOf("same ")==0))
+         opt = opt.substr(5);
+
       var graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt);
 

@@ -1094,6 +1094,7 @@
       }
 
       h.get(itemname, function(item, obj) {
+
          if (!obj) return JSROOT.CallBack(call_back);
 
          var main_painter = JSROOT.GetMainPainter(divid);
@@ -1286,9 +1287,14 @@
          items_wait[n] = 0;
          var fname = items[n], k = 0;
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
-
-         while (frame_names.indexOf(fname)>=0)
-            fname = items[n] + "_" + k++;
+         var p = options[n].indexOf("frameid:");
+         if (p>=0) {
+            fname = options[n].substr(p+8);
+            options[n] = options[n].substr(0,p);
+         } else {
+            while (frame_names.indexOf(fname)>=0)
+               fname = items[n] + "_" + k++;
+         }
          frame_names[n] = fname;
       }
 
