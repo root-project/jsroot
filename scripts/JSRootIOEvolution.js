@@ -1865,7 +1865,7 @@
             }
             break;
          case JSROOT.IO.kChar:
-            member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); } break;
+            member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
          case JSROOT.IO.kCharStar:
             member.func = function(buf,obj) {
                var len = buf.ntoi4();
@@ -1874,12 +1874,12 @@
             };
             break;
          case JSROOT.IO.kTString:
-            member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }
+            member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
             break;
          case JSROOT.IO.kTObject:
          case JSROOT.IO.kTNamed:
             member.typename = element.fTypeName;
-            member.func = function(buf,obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); }
+            member.func = function(buf,obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); };
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kTObject:
@@ -1892,7 +1892,7 @@
                   return buf.ClassStreamer({}, handle.typename);
                });
                buf.CheckBytecount(ver, this.typename + "[]");
-            }
+            };
             break;
          case JSROOT.IO.kStreamLoop:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kStreamLoop:
