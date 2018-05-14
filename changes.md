@@ -3,6 +3,7 @@
 ## Changes in 5.4.x
 1. Fix - take into account extra quotes in multipart http reply (#157)
 2. Fix - display of labels on X axis with TProfile
+3. Fix - support time display in TMultiGraph
 
 
 ## Changes in 5.4.1
