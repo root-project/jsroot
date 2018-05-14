@@ -125,14 +125,6 @@
       return 1;
    }
 
-   THistPainter.prototype.GetAutoColor = function(col) {
-      if (this.options.AutoColor<=0) return col;
-
-      var id = this.options.AutoColor;
-      this.options.AutoColor = id % 8 + 1;
-      return JSROOT.Painter.root_colors[id];
-   }
-
    THistPainter.prototype.ScanContent = function(when_axis_changed) {
       // function will be called once new histogram or
       // new histogram content is assigned
@@ -159,10 +151,7 @@
 
          var pp = this.pad_painter();
          if (this.palette && pp) {
-            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
-
-            var color = this.palette.calcColor(indx, num);
-            var icolor = this.add_color(color);
+            var icolor = pp.GetAutoColor(this);
 
             if (this.options._pfc) { this.histo.fFillColor = icolor; delete this.fillatt; }
             if (this.options._plc) { this.histo.fLineColor = icolor; delete this.lineatt; }

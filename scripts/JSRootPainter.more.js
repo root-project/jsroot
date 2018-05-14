@@ -1053,27 +1053,19 @@
           w = this.frame_width(),
           h = this.frame_height(),
           graph = this.GetObject(),
-          excl_width = 0;
+          excl_width = 0,
+          pp = this.pad_painter();
 
       if (!pmain) return;
 
       this.CreateG(!pmain.pad_layer);
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.pallette && JSROOT.Painter.GetColorPalette)
-            this.palette = JSROOT.Painter.GetColorPalette();
+      if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
+         var icolor = pp.CreateAutoColor(this);
 
-         var pp = this.pad_painter();
-         if (this.palette && pp) {
-            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
-
-            var color = this.palette.calcColor(indx, num);
-            var icolor = this.add_color(color);
-
-            if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
-         }
+         if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
+         if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
+         if (this.options._pmc) { graph.fMarkerColor = icolor; delete this.markeratt; }
 
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }

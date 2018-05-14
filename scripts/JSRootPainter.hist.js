@@ -1575,7 +1575,7 @@
               Spec: false, Pie: false, List: false, Zscale: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
-              AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
+              AutoColor: false, NoStat: false, ForceStat: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
@@ -1601,7 +1601,7 @@
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
 
-      if (d.check('AUTOCOL')) this.AutoColor = 1; // color index
+      if (d.check('AUTOCOL')) this.AutoColor = true;
       if (d.check('AUTOZOOM')) this.AutoZoom = true;
 
       if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
@@ -1762,7 +1762,7 @@
       if ((hdim==3) && d.check('BB')) this.BackBox = false;
 
       this._pfc = d.check("PFC");
-      this._plc = d.check("PLC");
+      this._plc = d.check("PLC") || this.AutoColor;
       this._pmc = d.check("PMC");
 
       if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
@@ -1992,14 +1992,6 @@
       }, "objects");
    }
 
-   THistPainter.prototype.GetAutoColor = function(col) {
-      if (this.options.AutoColor<=0) return col;
-
-      var id = this.options.AutoColor;
-      this.options.AutoColor = id % 8 + 1;
-      return JSROOT.Painter.root_colors[id];
-   }
-
    THistPainter.prototype.ScanContent = function(when_axis_changed) {
       // function will be called once new histogram or
       // new histogram content is assigned
@@ -2018,39 +2010,20 @@
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-      var histo = this.GetHisto();
+      var histo = this.GetHisto(),
+          pp = this.pad_painter();
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.pallette && JSROOT.Painter.GetColorPalette)
-            this.palette = JSROOT.Painter.GetColorPalette();
-
-         var pp = this.pad_painter();
-         if (this.palette && pp) {
-            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
-
-            var color = this.palette.calcColor(indx, num);
-            var icolor = this.add_color(color);
-
-            if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
-         }
-
+      if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
+         var icolor = pp.CreateAutoColor();
+         if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
+         if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
+         if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 
       this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
 
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
-
-      if (!this.lineatt.changed) {
-         var main = this.main_painter();
-
-         if (main) {
-            var newcol = main.GetAutoColor(this.lineatt.color);
-            if (newcol !== this.lineatt.color) { this.lineatt.color = newcol; this.lineatt.changed = true; }
-         }
-      }
    }
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {

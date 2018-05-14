@@ -8,6 +8,7 @@
 4. Let configure "&toolbar=right" in URL to change position of tool buttons
 5. Let configure "&divsize=500x400" in URL of size of main div element (default - full browser)  
 6. Implement "optstat1001" and "optfit101" draw options for histograms
+7. Remove "autocol" options - standard "plc" should be used instead
 
 
 ## Changes in 5.4.0

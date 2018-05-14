@@ -2697,12 +2697,13 @@
       }
    }
 
-   TPadPainter.prototype.GetCurrentPrimitiveIndx = function() {
-      return this._current_primitive_indx || 0;
-   }
-
-   TPadPainter.prototype.GetNumPrimitives = function() {
-      return this._num_primitives || 1;
+   /** @summary Generates automatic color for some objects painters
+    * @private
+    */
+   TPadPainter.prototype.CreateAutoColor = function() {
+      var indx = this._auto_color || 0;
+      this._auto_color = (indx + 1) % 8;
+      return indx+2;
    }
 
    /// call function for each painter
@@ -3124,6 +3125,7 @@
 
          if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
             delete this._doing_pad_draw;
+            delete this._current_primitive_indx;
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
                if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
@@ -3401,6 +3403,7 @@
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
+            delete this._current_primitive_indx;
             return JSROOT.CallBack(call_back, this);
          }
 

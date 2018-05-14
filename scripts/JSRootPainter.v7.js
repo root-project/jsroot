@@ -2547,14 +2547,6 @@
       }
    }
 
-   TPadPainter.prototype.GetCurrentPrimitiveIndx = function() {
-      return this._current_primitive_indx || 0;
-   }
-
-   TPadPainter.prototype.GetNumPrimitives = function() {
-      return this._num_primitives || 1;
-   }
-
    /// call function for each painter
    /// kind == "all" for all objects (default)
    /// kind == "pads" only pads and subpads
@@ -2895,6 +2887,7 @@
 
          if (!this.pad || (indx >= this.pad.fPrimitives.length)) {
             delete this._doing_pad_draw;
+            delete this._current_primitive_indx;
 
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
@@ -3135,6 +3128,7 @@
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
+            delete this._current_primitive_indx;
             return JSROOT.CallBack(call_back, this);
          }
 
