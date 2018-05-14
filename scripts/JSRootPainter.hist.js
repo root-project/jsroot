@@ -2457,7 +2457,7 @@
 
       if (optfit !== undefined) {
          if (stats) stats.fOptFit = optfit;
-         delete this.options.optstat;
+         delete this.options.optfit;
       } else {
          optfit = st.fOptFit;
       }
@@ -2466,7 +2466,7 @@
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: optfit,
+                             fOptStat: optstat,
                              fOptFit: optfit,
                              fBorderSize : 1} );
 
