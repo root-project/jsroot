@@ -792,6 +792,10 @@
       return null;
    }
 
+   TDirectory.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
+      this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle, user_call_back);
+   }
+
    TDirectory.prototype.ReadKeys = function(objbuf, readkeys_callback) {
 
       objbuf.ClassStreamer(this, 'TDirectory');
@@ -1136,12 +1140,13 @@
    }
 
    /** @summary Get directory with given name and cycle
+    * @desc Function only can be used for already read directories, which are preserved in the memory
     * @private */
    TFile.prototype.GetDir = function(dirname, cycle) {
 
       if ((cycle === undefined) && (typeof dirname == 'string')) {
          var pos = dirname.lastIndexOf(';');
-         if (pos>0) { cycle = dirname.substr(pos+1); dirname = dirname.substr(0,pos); }
+         if (pos>0) { cycle = parseInt(dirname.substr(pos+1)); dirname = dirname.substr(0,pos); }
       }
 
       for (var j=0; j < this.fDirectories.length; ++j) {
