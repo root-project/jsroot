@@ -3093,9 +3093,10 @@
    TMultiGraphPainter.prototype.ScanGraphsRange = function(graphs, histo, pad) {
       var mgraph = this.GetObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
+          time_display = false, time_format = "",
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
 
-      if (pad!=null) {
+      if (pad) {
          logx = pad.fLogx;
          logy = pad.fLogy;
          rw.xmin = pad.fUxmin;
@@ -3104,10 +3105,10 @@
          rw.ymax = pad.fUymax;
          rw.first = false;
       }
-      if (histo!=null) {
+      if (histo) {
          minimum = histo.fYaxis.fXmin;
          maximum = histo.fYaxis.fXmax;
-         if (pad!=null) {
+         if (pad) {
             uxmin = this.padtoX(pad, rw.xmin);
             uxmax = this.padtoX(pad, rw.xmax);
          }
@@ -3116,6 +3117,11 @@
 
          for (var i = 0; i < graphs.arr.length; ++i)
             this.ComputeGraphRange(rw, graphs.arr[i]);
+
+         if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
+            time_display = true;
+            time_format = graphs.arr[0].fHistogram.fXaxis.fTimeFormat;
+         }
 
          if (rw.xmin == rw.xmax) rw.xmax += 1.;
          if (rw.ymin == rw.ymax) rw.ymax += 1.;
@@ -3160,7 +3166,8 @@
          histo.fTitle = mgraph.fTitle;
          histo.fXaxis.fXmin = uxmin;
          histo.fXaxis.fXmax = uxmax;
-
+         histo.fXaxis.fTimeDisplay = time_display;
+         if (time_display) histo.fXaxis.fTimeFormat = time_format;
      }
 
       histo.fYaxis.fXmin = minimum;
