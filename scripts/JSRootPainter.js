@@ -495,8 +495,10 @@
       if (JSROOT.GetUrlOption("notouch", url)!==null) JSROOT.touches = false;
       if (JSROOT.GetUrlOption("adjframe", url)!==null) JSROOT.gStyle.CanAdjustFrame = true;
 
-      JSROOT.gStyle.fOptStat = JSROOT.GetUrlOption("optstat", url, JSROOT.gStyle.fOptStat);
-      JSROOT.gStyle.fOptFit = JSROOT.GetUrlOption("optfit", url, JSROOT.gStyle.fOptFit);
+      var optstat = JSROOT.GetUrlOption("optstat", url);
+      if (optstat!==null) JSROOT.gStyle.fOptStat = parseInt(optstat);
+      var optfit = JSROOT.GetUrlOption("optfit", url);
+      if (optfit!==null) JSROOT.gStyle.fOptFit = parseInt(optfit);
       JSROOT.gStyle.fStatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.fStatFormat);
       JSROOT.gStyle.fFitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.fFitFormat);
 
