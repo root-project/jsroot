@@ -4,6 +4,7 @@
 1. Fix - take into account extra quotes in multipart http reply (#157)
 2. Fix - display of labels on X axis with TProfile
 3. Fix - support time display in TMultiGraph
+4. Fix - correctly parse "optstat" and "optfit" in URL
 
 
 ## Changes in 5.4.1
