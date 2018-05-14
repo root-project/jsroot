@@ -1865,7 +1865,7 @@
             }
             break;
          case JSROOT.IO.kChar:
-            member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); }; break;
+            member.func = function(buf,obj) { obj[this.name] = buf.ntoi1(); } break;
          case JSROOT.IO.kCharStar:
             member.func = function(buf,obj) {
                var len = buf.ntoi4();
@@ -1874,12 +1874,12 @@
             };
             break;
          case JSROOT.IO.kTString:
-            member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); };
+            member.func = function(buf,obj) { obj[this.name] = buf.ReadTString(); }
             break;
          case JSROOT.IO.kTObject:
          case JSROOT.IO.kTNamed:
             member.typename = element.fTypeName;
-            member.func = function(buf,obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); };
+            member.func = function(buf,obj) { obj[this.name] = buf.ClassStreamer({}, this.typename); }
             break;
          case JSROOT.IO.kOffsetL+JSROOT.IO.kTString:
          case JSROOT.IO.kOffsetL+JSROOT.IO.kTObject:
@@ -1911,14 +1911,12 @@
                member.readitem = function(buf) { return buf.ReadObjectAny(); }
             } else {
                member.arrkind = JSROOT.IO.GetArrayKind(member.typename);
-               if (member.arrkind > 0) {
-                  member.readitem = function(buf) { return buf.ReadFastArray(buf.ntou4(), this.arrkind); };
-               } else
-               if (member.arrkind === 0) {
+               if (member.arrkind > 0)
+                  member.readitem = function(buf) { return buf.ReadFastArray(buf.ntou4(), this.arrkind); }
+               else if (member.arrkind === 0)
                   member.readitem = function(buf) { return buf.ReadTString(); }
-               } else {
+               else
                   member.readitem = function(buf) { return buf.ClassStreamer({}, this.typename); }
-               }
             }
 
             if (member.readitem !== undefined) {
@@ -1996,12 +1994,12 @@
                member.typeid = JSROOT.IO.GetTypeId(member.conttype);
                if ((member.typeid<0) && file.fBasicTypes[member.conttype]) {
                   member.typeid = file.fBasicTypes[member.conttype];
-                  console.log('!!! Reuse basic type ',member.conttype,' from file streamer infos');
+                  console.log('!!! Reuse basic type', member.conttype, 'from file streamer infos');
                }
 
                // check
                if (element.fCtype && (element.fCtype < 20) && (element.fCtype !== member.typeid)) {
-                  console.warn('Contained type ', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
+                  console.warn('Contained type', member.conttype, 'not recognized as basic type', element.fCtype, 'FORCE');
                   member.typeid = element.fCtype;
                }
 
