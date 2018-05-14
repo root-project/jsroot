@@ -1244,8 +1244,9 @@
     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
     * @param {number} [cycle=undefined] - cycle number
     * @param {function} user_call_back - function called when object read from the file
+    * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
     */
-   TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
+   TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back, only_dir) {
       if (typeof cycle == 'function') { user_call_back = cycle; cycle = -1; }
 
       var pos = obj_name.lastIndexOf(";");
@@ -1265,7 +1266,7 @@
       // in such situation calls are asynchrone
       this.GetKey(obj_name, cycle, function(key) {
 
-         if (key == null)
+         if (!key)
             return JSROOT.CallBack(user_call_back, null);
 
          if ((obj_name=="StreamerInfo") && (key.fClassName=="TList"))
@@ -1277,6 +1278,9 @@
             var dir = file.GetDir(obj_name, cycle);
             if (dir) return JSROOT.CallBack(user_call_back, dir);
          }
+
+         if (!isdir && only_dir)
+            return JSROOT.CallBack(user_call_back, null);
 
          file.ReadObjBuffer(key, function(buf) {
             if (!buf) return JSROOT.CallBack(user_call_back, null);
@@ -1490,17 +1494,17 @@
             });
          });
       });
-   };
+   }
 
    /** @summary Read the directory content from  a root file
-    * @desc do not read directory if it is already exists
-    * Same functionality as {@link ReadObject}
+    * @desc If directory was already read - return previously read object
+    * Same functionality as {@link TFile.ReadObject}
     * @param {string} dir_name - directory name
     * @param {number} cycle - directory cycle
     * @param {function} readdir_callback - callback with read directory */
    TFile.prototype.ReadDirectory = function(dir_name, cycle, readdir_callback) {
-      return this.ReadObject(dir_name, cycle, readdir_callback);
-   };
+      this.ReadObject(dir_name, cycle, readdir_callback, true);
+   }
 
    JSROOT.IO.AddClassMethods = function(clname, streamer) {
       // create additional entries in the streamer, which sets all methods of the class
