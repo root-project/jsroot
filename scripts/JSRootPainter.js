@@ -5707,8 +5707,7 @@
 
    /** @summary Scan streamer infos for derived classes
     * @desc Assign draw functions for such derived classes
-    * @private
-    */
+    * @private */
    JSROOT.addStreamerInfos = function(lst) {
       if (!lst) return;
 

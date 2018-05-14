@@ -1093,6 +1093,12 @@
          JSROOT.CallBack(call_back);
       }
 
+      if (itemname == "$legend")
+         return JSROOT.AssertPrerequisites("v6;hist", function() {
+            var res = JSROOT.Painter.produceLegend(divid, opt);
+            JSROOT.CallBack(drop_callback, res);
+         });
+
       h.get(itemname, function(item, obj) {
 
          if (!obj) return JSROOT.CallBack(call_back);

@@ -9,6 +9,8 @@
 5. Let configure "&divsize=500x400" in URL of size of main div element (default - full browser)  
 6. Implement "optstat1001" and "optfit101" draw options for histograms
 7. Remove "autocol" options - standard "plc" should be used instead
+8. Provide drawing of artificial "$legend" item - it creates TLegend for all primitives in pad
+   Can be used when several histograms or several graphs superimposed.
 
 
 ## Changes in 5.4.0

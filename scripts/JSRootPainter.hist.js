@@ -1556,6 +1556,43 @@
       return painter.DrawingReady();
    }
 
+   /** @summary Produce and draw TLegend object for the specified divid
+    * @desc Should be called when all other objects are painted
+    * Invoked when item "$legend" specified in JSROOT URL string
+    * @private */
+   function produceLegend(divid) {
+      var main_painter = JSROOT.GetMainPainter(divid);
+      if (!divid) return;
+
+      var pp = main_painter.pad_painter(),
+          pad = main_painter.root_pad();
+      if (!pp || !pad) return;
+
+      var leg = JSROOT.Create("TLegend");
+
+      JSROOT.extend(leg, { fX1NDC:(pad.fLeftMargin + 1 - pad.fRightMargin)*0.5, fY1NDC: 0.75*(1-pad.fTopMargin) + 0.25*pad.fBottomMargin, fX2NDC: (1-pad.fRightMargin), fY2NDC: (1-pad.fTopMargin) });
+      leg.fFillStyle = 1001;
+
+      for (var k=0;k<pp.painters.length;++k) {
+         var painter = pp.painters[k],
+             obj = painter.GetObject();
+
+         if (!obj || !painter.GetItemName()) continue;
+
+         var entry = JSROOT.Create("TLegendEntry");
+         entry.fObject = obj;
+         entry.fLabel = painter.GetItemName();
+         entry.fOption = "";
+         if (painter.lineatt && painter.lineatt.used) entry.fOption+="l";
+         if (painter.fillatt && painter.fillatt.used) entry.fOption+="f";
+         if (painter.markeratt && painter.markeratt.used) entry.fOption+="m";
+         if (!entry.fOption) entry.fOption = "l";
+
+         leg.fPrimitives.Add(entry);
+      }
+
+      return drawPave(divid, leg);
+   }
 
    // ==============================================================================
 
@@ -6613,6 +6650,7 @@
    JSROOT.Painter.drawPaveText = drawPave;
 
    JSROOT.Painter.drawPave = drawPave;
+   JSROOT.Painter.produceLegend = produceLegend;
    JSROOT.Painter.drawPaletteAxis = drawPaletteAxis;
    JSROOT.Painter.drawHistogram1D = drawHistogram1D;
    JSROOT.Painter.drawHistogram2D = drawHistogram2D;
