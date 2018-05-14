@@ -1604,6 +1604,9 @@
       if (d.check('AUTOCOL')) this.AutoColor = 1; // color index
       if (d.check('AUTOZOOM')) this.AutoZoom = true;
 
+      if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
+      if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
+
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
@@ -2442,15 +2445,29 @@
 
       this.create_stats = true;
 
-      var stats = this.FindStat();
-      if (stats) return stats;
+      var stats = this.FindStat(), st = JSROOT.gStyle,
+          optstat = this.options.optstat, optfit = this.options.optfit;
 
-      var st = JSROOT.gStyle;
+      if (optstat !== undefined) {
+         if (stats) stats.fOptStat = optstat;
+         delete this.options.optstat;
+      } else {
+         optstat = this.histo.$custom_stat || st.fOptStat;
+      }
+
+      if (optfit !== undefined) {
+         if (stats) stats.fOptFit = optfit;
+         delete this.options.optstat;
+      } else {
+         optfit = st.fOptFit;
+      }
+
+      if (stats) return stats;
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: this.histo.$custom_stat || st.fOptStat,
-                             fOptFit: st.fOptFit,
+                             fOptStat: optfit,
+                             fOptFit: optfit,
                              fBorderSize : 1} );
 
       stats.fX1NDC = st.fStatX - st.fStatW;
