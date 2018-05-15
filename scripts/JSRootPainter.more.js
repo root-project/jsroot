@@ -796,7 +796,7 @@
 
    function TGraphPainter(graph) {
       JSROOT.TObjectPainter.call(this, graph);
-      this.ownhisto = false; // indicate if graph histogram was drawn for axes
+      this.axes_draw = false; // indicate if graph histogram was drawn for axes
       this.bins = null;
       this.xmin = this.ymin = this.xmax = this.ymax = 0;
       this.wheel_zoomy = true;
@@ -934,7 +934,7 @@
    }
 
    TGraphPainter.prototype.CreateHistogram = function() {
-      // bins should be created
+      // bins should be created when calling this function
 
       var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax;
 
@@ -1767,9 +1767,9 @@
       this.CreateBins();
 
       // if our own histogram was used as axis drawing, we need update histogram  as well
-      if (this.ownhisto) {
+      if (this.axes_draw) {
          var main = this.main_painter();
-         if (obj.fHistogram) main.UpdateObject(obj.fHistogram);
+         main.UpdateObject(obj.fHistogram || this.CreateHistogram());
          main.GetObject().fTitle = graph.fTitle; // copy title
       }
 
@@ -1898,7 +1898,7 @@
    }
 
    TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
-      if (hpainter) this.ownhisto = true;
+      if (hpainter) this.axes_draw = true;
       this.SetDivId(divid);
       this.DrawBins();
       this.DrawNextFunction(0, this.DrawingReady.bind(this));

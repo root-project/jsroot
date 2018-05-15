@@ -2125,14 +2125,14 @@
          function CopyAxis(tgt,src) {
             tgt.fTitle = src.fTitle;
             tgt.fLabels = src.fLabels;
+            tgt.fXmin = src.fXmin;
+            tgt.fXmax = src.fXmax;
          }
          CopyAxis(histo.fXaxis, obj.fXaxis);
          CopyAxis(histo.fYaxis, obj.fYaxis);
          CopyAxis(histo.fZaxis, obj.fZaxis);
          if (!fp.zoom_changed_interactive) {
             function CopyZoom(tgt,src) {
-               tgt.fXmin = src.fXmin;
-               tgt.fXmax = src.fXmax;
                tgt.fFirst = src.fFirst;
                tgt.fLast = src.fLast;
                tgt.fBits = src.fBits;
