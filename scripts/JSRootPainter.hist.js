@@ -1560,9 +1560,9 @@
     * @desc Should be called when all other objects are painted
     * Invoked when item "$legend" specified in JSROOT URL string
     * @private */
-   function produceLegend(divid) {
+   function produceLegend(divid, opt) {
       var main_painter = JSROOT.GetMainPainter(divid);
-      if (!divid) return;
+      if (!main_painter) return;
 
       var pp = main_painter.pad_painter(),
           pad = main_painter.root_pad();
@@ -1570,19 +1570,18 @@
 
       var leg = JSROOT.Create("TLegend");
 
-      JSROOT.extend(leg, { fX1NDC:(pad.fLeftMargin + 1 - pad.fRightMargin)*0.5, fY1NDC: 0.75*(1-pad.fTopMargin) + 0.25*pad.fBottomMargin, fX2NDC: (1-pad.fRightMargin), fY2NDC: (1-pad.fTopMargin) });
-      leg.fFillStyle = 1001;
-
       for (var k=0;k<pp.painters.length;++k) {
          var painter = pp.painters[k],
              obj = painter.GetObject();
 
-         if (!obj || !painter.GetItemName()) continue;
+         if (!obj) continue;
 
          var entry = JSROOT.Create("TLegendEntry");
          entry.fObject = obj;
-         entry.fLabel = painter.GetItemName();
+         entry.fLabel = (opt == "all") ? obj.fName : painter.GetItemName();
          entry.fOption = "";
+         if (!entry.fLabel) continue;
+
          if (painter.lineatt && painter.lineatt.used) entry.fOption+="l";
          if (painter.fillatt && painter.fillatt.used) entry.fOption+="f";
          if (painter.markeratt && painter.markeratt.used) entry.fOption+="m";
@@ -1590,6 +1589,20 @@
 
          leg.fPrimitives.Add(entry);
       }
+
+      // no entries - no need to draw legend
+      var szx = 0.4, szy = leg.fPrimitives.arr.length;
+      if (!szy) return;
+      if (szy>8) szy = 8;
+      szy *= 0.1;
+
+      JSROOT.extend(leg, {
+         fX1NDC: szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin),
+         fY1NDC: (1-szy)*(1-pad.fTopMargin) + szy*pad.fBottomMargin,
+         fX2NDC: 0.99-pad.fRightMargin,
+         fY2NDC: 0.99-pad.fTopMargin
+      });
+      leg.fFillStyle = 1001;
 
       return drawPave(divid, leg);
    }
