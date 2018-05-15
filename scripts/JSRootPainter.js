@@ -508,8 +508,9 @@
          if (toolbar.indexOf('popup')>=0) val = 'popup';
          if (toolbar.indexOf('left')>=0) { JSROOT.gStyle.ToolBarSide = 'left'; val = 'popup'; }
          if (toolbar.indexOf('right')>=0) { JSROOT.gStyle.ToolBarSide = 'right'; val = 'popup'; }
+         if (toolbar.indexOf('vert')>=0) JSROOT.gStyle.ToolBarVert = true;
          if (toolbar.indexOf('show')>=0) val = true;
-         JSROOT.gStyle.ToolBar = val || ((toolbar.indexOf("0")<0) && (toolbar.indexOf("false")<0));
+         JSROOT.gStyle.ToolBar = val || ((toolbar.indexOf("0")<0) && (toolbar.indexOf("false")<0) && (toolbar.indexOf("off")<0));
       }
 
       var palette = JSROOT.GetUrlOption("palette", url);

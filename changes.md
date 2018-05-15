@@ -11,6 +11,7 @@
 7. Remove "autocol" options - standard "plc" should be used instead
 8. Provide drawing of artificial "$legend" item - it creates TLegend for all primitives in pad
    Can be used when several histograms or several graphs superimposed.
+9. Let configure "&toolbar=vert" in URL to change orientation of tool buttons
 
 
 ## Changes in 5.4.0
