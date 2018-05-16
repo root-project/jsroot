@@ -1797,7 +1797,7 @@
             var func = gr.fFunctions.arr[i];
             if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
          }
-      return func;
+      return null;
    }
 
    TGraphPainter.prototype.FindStat = function() {
