@@ -6,6 +6,7 @@
 3. Fix - support time display in TMultiGraph
 4. Fix - correctly parse "optstat" and "optfit" in URL
 5. Fix - correctly update TGraph drawing when X range is changing
+6. Fix - return only TF1/TF2 object when searching function (#158)
 
 
 ## Changes in 5.4.1
