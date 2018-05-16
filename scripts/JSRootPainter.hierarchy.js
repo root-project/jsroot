@@ -530,6 +530,10 @@
       return btns;
    }
 
+   BrowserLayout.prototype.RemoveBrowserBtns = function() {
+      this.main().select(".jsroot_browser").select(".jsroot_browser_btns").remove();
+   }
+
    BrowserLayout.prototype.SetBrowserContent = function(guiCode) {
       var main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
@@ -2141,10 +2145,11 @@
           style = GetOptionAsArray("#style"),
           statush = 0, status = GetOption("status"),
           browser_kind = GetOption("browser"),
+          browser_configured = !!browser_kind,
           title = GetOption("title");
 
-      if (GetOption("float")!==null) browser_kind='float'; else
-      if (GetOption("fix")!==null) browser_kind='fix';
+      if (GetOption("float")!==null) { browser_kind='float'; browser_configured = true; } else
+      if (GetOption("fix")!==null) { browser_kind='fix'; browser_configured = true; }
 
       this.no_select = GetOption("noselect");
 
@@ -2202,9 +2207,6 @@
 
       this._topname = GetOption("topname");
 
-      if (gui_div)
-         this.PrepareGuiDiv(gui_div, this.disp_kind);
-
       function OpenAllFiles(res) {
          if (browser_kind) { hpainter.CreateBrowser(browser_kind); browser_kind = ""; }
          if (status!==null) { hpainter.CreateStatusLine(statush, status); status = null; }
@@ -2229,6 +2231,11 @@
       function AfterOnlineOpened() {
          // check if server enables monitoring
 
+         if (('_browser' in hpainter.h) && !browser_configured) {
+            browser_kind = hpainter.h._browser;
+            if (browser_kind==="off") { browser_kind = ""; status = null; hpainter.exclude_browser = true; }
+         }
+
          if (('_monitoring' in hpainter.h) && !monitor)
             monitor = hpainter.h._monitoring;
 
@@ -2243,6 +2250,9 @@
             optionsarr = JSROOT.ParseAsArray(hpainter.h._drawopt);
          }
 
+         if (gui_div)
+            hpainter.PrepareGuiDiv(gui_div, hpainter.disp_kind);
+
          OpenAllFiles();
       }
 
@@ -2252,8 +2262,13 @@
          if (typeof h0 !== 'object') h0 = "";
       }
 
-      if (h0!==null) hpainter.OpenOnline(h0, AfterOnlineOpened);
-      else if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, OpenAllFiles);
+      if (h0!==null)
+         return this.OpenOnline(h0, AfterOnlineOpened);
+
+      if (gui_div)
+         this.PrepareGuiDiv(gui_div, this.disp_kind);
+
+      if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, OpenAllFiles);
       else OpenAllFiles();
    }
 
