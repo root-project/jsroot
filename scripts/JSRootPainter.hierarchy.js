@@ -2250,6 +2250,9 @@
             optionsarr = JSROOT.ParseAsArray(hpainter.h._drawopt);
          }
 
+         if (('_toptitle' in hpainter.h) && hpainter.exclude_browser && document)
+            document.title = hpainter.h._toptitle;
+
          if (gui_div)
             hpainter.PrepareGuiDiv(gui_div, hpainter.disp_kind);
 
