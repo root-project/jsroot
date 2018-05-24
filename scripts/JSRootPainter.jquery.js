@@ -1402,6 +1402,14 @@
       }
    }
 
+   HierarchyPainter.prototype.EnableMonitoring = function(on) {
+      this._monitoring_on = on;
+
+      var chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      if (!chkbox.empty() && (chkbox.property('checked') !== on))
+         chkbox.property('checked', on);
+   }
+
    HierarchyPainter.prototype.CreateStatusLine = function(height, mode) {
       if (this.status_disabled || !this.gui_div || !this.brlayout) return '';
       return this.brlayout.CreateStatusLine(height, mode);
