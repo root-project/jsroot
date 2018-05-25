@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 24/05/2018";
+   JSROOT.version = "dev 25/05/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -849,6 +849,8 @@
          // we set pointer on request when calling callback
          if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
       }
+
+      if (!kind) kind = "buf";
 
       var pthis = this, method = "GET", async = true, p = kind.indexOf(";sync");
       if (p>0) { kind.substr(0,p); async = false; }
