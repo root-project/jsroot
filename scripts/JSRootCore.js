@@ -184,7 +184,6 @@
          fOptDate : 0,
          fOptFile : 0,
          fOptFit  : 0,
-         fOptStat : 1,
          fOptTitle : 1,
          fPadBottomMargin : 0.1,
          fPadTopMargin : 0.1,
