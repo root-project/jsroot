@@ -1615,10 +1615,10 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false, Hist: true,
-              Line: false, Fill: false,
+            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false,
+              Hist: true, Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: true,
+              Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
@@ -1687,8 +1687,8 @@
       if (d.check('X+')) this.AxisPos = 10;
       if (d.check('Y+')) this.AxisPos += 1;
 
-      if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
-      if (d.check('SAME')) { this.Same = 1; this.Func = true; }
+      if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
+      if (d.check('SAME')) { this.Same = true; this.Func = true; }
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
