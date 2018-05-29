@@ -1634,7 +1634,7 @@
       if (d.check('Y+')) this.AxisPos += 1;
 
       if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
-      if (d.check('SAME')) { this.Same = 1; this.Func = false; }
+      if (d.check('SAME')) { this.Same = 1; this.Func = true; }
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
