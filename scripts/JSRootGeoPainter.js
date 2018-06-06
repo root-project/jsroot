@@ -2047,20 +2047,20 @@
             var sname = (itemname === undefined) ? obj.opt[n] : (itemname + "/[" + n + "]");
             if (this.drawExtras(sobj, sname, add_objects)) isany = true;
          }
-      } else
-      if (obj._typename === 'TGeoTrack') {
+      } else if (obj._typename === 'THREE.Mesh') {
+         // adding mesh as is
+         this.getExtrasContainer().add(obj);
+         isany = true;
+      } else if (obj._typename === 'TGeoTrack') {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawGeoTrack(obj, itemname);
-      } else
-      if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
+      } else if ((obj._typename === 'TEveTrack') || (obj._typename === 'ROOT::Experimental::TEveTrack')) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawEveTrack(obj, itemname);
-      } else
-      if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
+      } else if ((obj._typename === 'TEvePointSet') || (obj._typename === "ROOT::Experimental::TEvePointSet") || (obj._typename === "TPolyMarker3D")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawHit(obj, itemname);
-      } else
-      if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
+      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
          if (add_objects && !this.addExtra(obj, itemname)) return false;
          isany = this.drawExtraShape(obj, itemname);
       }
@@ -2402,13 +2402,23 @@
 
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
+      // first delete clones (if any)
+      delete this._clones;
+
       if (this._main_painter) {
 
          this._clones_owner = false;
-         this._clones = null;
+
          this._clones = this._main_painter._clones;
 
          console.log('Reuse clones', this._clones.nodes.length, 'from main painter');
+
+      } else if (!draw_obj) {
+
+         this._clones_owner = false;
+
+         this._clones = null;
+
       } else {
 
          this._start_drawing_time = new Date().getTime();
@@ -2454,9 +2464,10 @@
 
       this.CreateToolbar();
 
-      this.showDrawInfo("Drawing geometry");
-
-      this.startDrawGeometry(true);
+      if (this._clones) {
+         this.showDrawInfo("Drawing geometry");
+         this.startDrawGeometry(true);
+      }
    }
 
    TGeoPainter.prototype.showDrawInfo = function(msg) {
