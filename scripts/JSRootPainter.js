@@ -2455,10 +2455,14 @@
       this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
-      this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
+      this.AssignObject(obj);
    }
 
    TObjectPainter.prototype = Object.create(TBasePainter.prototype);
+
+   TObjectPainter.prototype.AssignObject = function(obj) {
+      this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
+   }
 
    /** @summary Generic method to cleanup painter.
     *
