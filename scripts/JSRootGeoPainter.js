@@ -1333,7 +1333,7 @@
       box3.makeEmpty();
 
       topitem.traverse(function(mesh) {
-         if ((mesh instanceof THREE.Mesh) && (mesh.stack || check_any)) JSROOT.GEO.getBoundingBox(mesh, box3);
+         if (check_any || ((mesh instanceof THREE.Mesh) && mesh.stack)) JSROOT.GEO.getBoundingBox(mesh, box3);
       });
 
       if (scalar !== undefined) box3.expandByVector(box3.getSize().multiplyScalar(scalar));
