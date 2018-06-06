@@ -246,7 +246,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false,
-                   project: '', is_main: false, tracks: false,
+                   project: '', is_main: false, tracks: false, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "box" };
@@ -288,6 +288,7 @@
       if (d.check("MAIN")) res.is_main = true;
 
       if (d.check("TRACKS")) res.tracks = true;
+      if (d.check("ORTHO_CAMERA")) res.ortho_camera = true;
 
       if (d.check("DEPTHRAY") || d.check("DRAY")) res.depthMethod = "ray";
       if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
@@ -898,7 +899,7 @@
 
       this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
-      if (this.options.project) this._controls.enableRotate = false;
+      if (this.options.project || this.options.ortho_camera) this._controls.enableRotate = false;
 
       this._controls.ContextMenu = this.OrbitContext.bind(this);
 
@@ -1405,9 +1406,13 @@
       this._scene_width = w;
       this._scene_height = h;
 
-      this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
+      if (this.options.ortho_camera) {
+         this._camera =  new THREE.OrthographicCamera(-600, 600, -600, 600, 1, 10000);
+      } else {
+         this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
+         this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+      }
 
-      this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       this._scene.add( this._camera );
 
       this._selected_mesh = null;
@@ -1660,6 +1665,7 @@
       this._scene.fog.far = this._overall_size * 12;
       this._camera.far = this._overall_size * 12;
 
+
       if (this._webgl) {
          this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
          this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
@@ -1671,20 +1677,28 @@
          this.clipZ = midz;
       }
 
+      if (this.options.ortho_camera) {
+         this._camera.left = box.min.x;
+         this._camera.right = box.max.x;
+         this._camera.top = box.min.y;
+         this._camera.bottom = box.max.y;
+      }
+
       // this._camera.far = 100000000000;
 
       this._camera.updateProjectionMatrix();
 
       var k = 2*this.options.zoom;
 
-      if (this.options.project) {
+      if (this.options.ortho_camera) {
+         this._camera.position.set(0, 0, Math.max(sizey,sizez));
+      } else if (this.options.project) {
          switch (this.options.project) {
             case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break
             case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break
             case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break
          }
-      } else
-      if (this.options._yup) {
+      } else if (this.options._yup) {
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
