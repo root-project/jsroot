@@ -1322,7 +1322,7 @@
    }
 
    TGeoPainter.prototype.getGeomBoundingBox = function(topitem, scalar) {
-      var box3 = new THREE.Box3();
+      var box3 = new THREE.Box3(), check_any = !this._clones;
 
       if (!topitem) {
          box3.min.x = box3.min.y = box3.min.z = -1;
@@ -1333,7 +1333,7 @@
       box3.makeEmpty();
 
       topitem.traverse(function(mesh) {
-         if ((mesh instanceof THREE.Mesh) && mesh.stack) JSROOT.GEO.getBoundingBox(mesh, box3);
+         if ((mesh instanceof THREE.Mesh) && (mesh.stack || check_any)) JSROOT.GEO.getBoundingBox(mesh, box3);
       });
 
       if (scalar !== undefined) box3.expandByVector(box3.getSize().multiplyScalar(scalar));
@@ -2467,6 +2467,8 @@
       if (this._clones) {
          this.showDrawInfo("Drawing geometry");
          this.startDrawGeometry(true);
+      } else {
+         this.completeDraw();
       }
    }
 
@@ -2874,11 +2876,21 @@
 
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
-      var call_ready = false;
+      var call_ready = false, check_extras = true;
 
       if (!this.options) {
          console.warn('options object does not exist in completeDraw - something went wrong');
          return;
+      }
+
+      if (!this._clones) {
+         check_extras = false;
+         // if extra object where append, redraw them at the end
+         this.getExtrasContainer("delete"); // delete old container
+         var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
+
+         console.log("EXTRAS HERE", extras);
+         this.drawExtras(extras, "", false);
       }
 
       if (this._first_drawing) {
@@ -2906,11 +2918,12 @@
 
       this._scene.overrideMaterial = null;
 
-      // if extra object where append, redraw them at the end
-      this.getExtrasContainer("delete"); // delete old container
-
-      var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
-      this.drawExtras(extras, "", false);
+      if (check_extras) {
+         // if extra object where append, redraw them at the end
+         this.getExtrasContainer("delete"); // delete old container
+         var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
+         this.drawExtras(extras, "", false);
+      }
 
       this.Render3D(0, true);
 
