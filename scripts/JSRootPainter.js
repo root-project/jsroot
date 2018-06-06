@@ -1767,6 +1767,37 @@
          this.receiver[method](this, arg, arg2);
    }
 
+   /** Provide data for receiver. When no queue - do it directly.
+    * @private */
+   WebWindowHandle.prototype.ProvideData = function(_msg, _len) {
+      if (!this.msgqueue)
+         return this.InvokeReceiver("OnWebsocketMsg", _msg, _len);
+      this.msgqueue.push({ ready: true, msg: _msg, len: _len});
+   }
+
+   /** Reserver entry in queue for data, which is not yet decoded.
+    * @private */
+   WebWindowHandle.prototype.ReserveQueueItem = function() {
+      if (!this.msgqueue) this.msgqueue = [];
+      var item = { ready: false, msg: null, len: 0 };
+      this.msgqueue.push(item);
+      return item;
+   }
+
+   /** Reserver entry in queue for data, which is not yet decoded.
+    * @private */
+   WebWindowHandle.prototype.DoneItem = function(item, _msg, _len) {
+      item.ready = true;
+      item.msg = _msg;
+      item.len = _len;
+      while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
+         this.InvokeReceiver("OnWebsocketMsg", this.msgqueue[0].msg, this.msgqueue[0].len);
+         this.msgqueue.shift();
+      }
+      if (this.msgqueue.length == 0)
+         delete this.msgqueue;
+   }
+
    /** Close connection. */
    WebWindowHandle.prototype.Close = function(force) {
 
@@ -1888,16 +1919,16 @@
                if (msg instanceof Blob) {
                   // this is case of websocket
                   // console.log('Get Blob object - convert to buffer array');
-                  var reader = new FileReader;
+                  var reader = new FileReader, qitem = pthis.ReserveQueueItem();
                   reader.onload = function(event) {
                      // The file's text will be printed here
-                     pthis.InvokeReceiver('OnWebsocketMsg', event.target.result, 0);
+                     pthis.DoneItem(qitem, event.target.result, 0);
                   }
                   reader.readAsArrayBuffer(msg, e.offset || 0);
                } else {
                   // console.log('got array ' + (typeof msg) + ' len = ' + msg.byteLength);
                   // this is from CEF or LongPoll handler
-                  pthis.InvokeReceiver('OnWebsocketMsg', msg, e.offset || 0);
+                  pthis.ProvideData(msg, e.offset || 0);
                }
 
                return;
@@ -1928,7 +1959,7 @@
             } else if (msg == "$$binary$$") {
                pthis.next_binary = true;
             } else {
-               pthis.InvokeReceiver('OnWebsocketMsg', msg);
+               pthis.ProvideData(msg);
             }
 
             if (pthis.ackn > 7)
