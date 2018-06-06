@@ -2460,7 +2460,7 @@
    }
 
    TGeoPainter.prototype.showDrawInfo = function(msg) {
-      // methods show info when first geometry drawing is perfromed
+      // methods show info when first geometry drawing is performed
 
       if (!this._first_drawing || !this._start_drawing_time) return;
 
@@ -3100,29 +3100,41 @@
       this.Render3D();
    }
 
-   JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
-      if (!obj) return null;
-
+   JSROOT.Painter.CreateGeoPainter = function(divid, obj, opt) {
       JSROOT.GEO.GradPerSegm = JSROOT.gStyle.GeoGradPerSegm;
       JSROOT.GEO.CompressComp = JSROOT.gStyle.GeoCompressComp;
 
-      var shape = null, is_manager = false;
+      var painter = new TGeoPainter(obj);
+
+      painter.SetDivId(divid, 5);
+
+      painter._usesvg = JSROOT.BatchMode;
+
+      painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
+
+      painter.options = painter.decodeOptions(opt || "");
+
+      if (painter.options._yup === undefined)
+         painter.options._yup = painter.svg_canvas().empty();
+
+      return painter;
+   }
+
+   JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
+      if (!obj) return null;
+
+      var shape = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
-      } else
-      if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
+      } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
-      } else
-      if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
+      } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
          shape = obj.fShape;
-      } else
-      if (obj._typename === 'TGeoManager') {
+      } else if (obj._typename === 'TGeoManager') {
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
-         is_manager = true;
-      } else
-      if ('fVolume' in obj) {
+      } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
          obj = null;
@@ -3139,18 +3151,7 @@
 
       if (!obj) return null;
 
-      var painter = new TGeoPainter(obj, is_manager);
-
-      painter.SetDivId(divid, 5);
-
-      painter._usesvg = JSROOT.BatchMode;
-
-      painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
-
-      painter.options = painter.decodeOptions(opt || "");
-
-      if (painter.options._yup === undefined)
-         painter.options._yup = painter.svg_canvas().empty();
+      var painter = JSROOT.Painter.CreateGeoPainter(divid, obj, opt);
 
       if (painter.options.is_main && !obj.$geo_painter)
          obj.$geo_painter = painter;
@@ -3160,7 +3161,7 @@
          painter._main_painter._slave_painters.push(painter);
       }
 
-      // this.options.script_name = 'http://jsroot.gsi.de/files/geom/geomAlice.C'
+      // this.options.script_name = 'https://root.cern/js/files/geom/geomAlice.C'
 
       painter.checkScript(painter.options.script_name, painter.prepareObjectDraw.bind(painter));
 
