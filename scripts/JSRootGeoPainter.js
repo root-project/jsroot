@@ -843,8 +843,13 @@
          active_mesh = [ active_mesh ];
       }
 
+      if (active_mesh && !active_mesh.length) active_mesh = null;
+
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
+         if (!active_mesh[0]) console.log("GOT", active_mesh)
+
+
          if (active_mesh[0].geo_object) {
             if (!this.options.highlight_scene) active_mesh = null;
          } else {
