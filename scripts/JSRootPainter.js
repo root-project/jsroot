@@ -2145,7 +2145,6 @@
    }
 
    /** @summary Call back will be called when painter ready with the drawing
-    *
     * @private
     */
    TBasePainter.prototype.WhenReady = function(callback) {
@@ -2153,6 +2152,14 @@
       if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
       if (this._ready_callback_ === undefined) this._ready_callback_ = [];
       this._ready_callback_.push(callback);
+   }
+
+   /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
+   * @private
+   */
+   TBasePainter.prototype.ResetReady = function() {
+      delete this._ready_called_;
+      delete this._ready_callback_;
    }
 
    /** @summary Returns drawn object
