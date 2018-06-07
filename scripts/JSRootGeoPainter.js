@@ -865,7 +865,7 @@
 
       if (curr_mesh === active_mesh) return;
 
-      if (curr_mesh !== null) {
+      if (curr_mesh) {
          curr_mesh.material.color = curr_mesh.originalColor;
          delete curr_mesh.originalColor;
          if (curr_mesh.normalLineWidth)
@@ -2457,24 +2457,27 @@
             return this.drawCount(uniquevis, spent);
       }
 
-      // this is limit for the visible faces, number of volumes does not matter
-      this.options.maxlimit = (this._webgl ? 200000 : 100000) * this.options.more;
+      if (!this._scene) {
 
-      this._first_drawing = true;
+         // this is limit for the visible faces, number of volumes does not matter
+         this.options.maxlimit = (this._webgl ? 200000 : 100000) * this.options.more;
 
-      // activate worker
-      if (this.options.use_worker > 0) this.startWorker();
+         this._first_drawing = true;
 
-      var size = this.size_for_3d(this._usesvg ? 3 : undefined);
+         // activate worker
+         if (this.options.use_worker > 0) this.startWorker();
 
-      this._fit_main_area = (size.can3d === -1);
+         var size = this.size_for_3d(this._usesvg ? 3 : undefined);
 
-      this.createScene(this._usesvg, this._webgl, size.width, size.height);
+         this._fit_main_area = (size.can3d === -1);
 
-      this.add_3d_canvas(size, this._renderer.domElement);
+         this.createScene(this._usesvg, this._webgl, size.width, size.height);
 
-      // set top painter only when first child exists
-      this.AccessTopPainter(true);
+         this.add_3d_canvas(size, this._renderer.domElement);
+
+         // set top painter only when first child exists
+         this.AccessTopPainter(true);
+      }
 
       this.CreateToolbar();
 
