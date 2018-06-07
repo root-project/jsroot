@@ -831,8 +831,7 @@
          if (extras && extras.children)
             for (var k=0;k<extras.children.length;++k)
                if (extras.children[k].geo_object === geo_object) { active_mesh = extras.children[k]; break; }
-      } else
-      if (geo_stack && this._toplevel) {
+      } else if (geo_stack && this._toplevel) {
          this._toplevel.traverse(function(mesh) {
             if ((mesh instanceof THREE.Mesh) && (mesh.stack===geo_stack)) active_mesh = mesh;
          });
@@ -855,7 +854,7 @@
             if (!geo_stack) geo_stack = active_mesh.stack;
          }
 
-         var lst = !this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]);
+         var lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
          for (var k=0;k<lst.length;++k)
             if (lst[k]!==this) lst[k].HighlightMesh(null, color, geo_object, geo_stack, true);
@@ -876,7 +875,7 @@
 
       this._selected_mesh = active_mesh;
 
-      if (active_mesh !== null) {
+      if (active_mesh && active_mesh.material) {
          active_mesh.originalColor = active_mesh.material.color;
          active_mesh.material.color = new THREE.Color( color || 0xffaa33 );
 
