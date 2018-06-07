@@ -865,7 +865,7 @@
 
       if (curr_mesh === active_mesh) return;
 
-      if (curr_mesh) {
+      if (curr_mesh && curr_mesh.material) {
          curr_mesh.material.color = curr_mesh.originalColor;
          delete curr_mesh.originalColor;
          if (curr_mesh.normalLineWidth)
