@@ -2917,7 +2917,7 @@
 
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
-      var call_ready = false, check_extras = true;
+      var first_time = false, check_extras = true;
 
       if (!this.options) {
          console.warn('options object does not exist in completeDraw - something went wrong');
@@ -2929,8 +2929,6 @@
          // if extra object where append, redraw them at the end
          this.getExtrasContainer("delete"); // delete old container
          var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
-
-         console.log("EXTRAS HERE", extras);
          this.drawExtras(extras, "", false);
       }
 
@@ -2938,7 +2936,7 @@
          this.adjustCameraPosition(true);
          this.showDrawInfo();
          this._first_drawing = false;
-         call_ready = true;
+         first_time = true;
 
          if (this._webgl) {
             this.enableX = this.options.clipx;
@@ -2953,9 +2951,10 @@
       if (this.options.transparency!==0)
          this.changeGlobalTransparency(this.options.transparency, true);
 
-      this.completeScene();
-
-      if (this.options._axis) this.toggleAxisDraw(true);
+      if (first_time) {
+         this.completeScene();
+         if (this.options._axis) this.toggleAxisDraw(true);
+      }
 
       this._scene.overrideMaterial = null;
 
@@ -2974,7 +2973,7 @@
 
       this.addTransformControl();
 
-      if (call_ready) {
+      if (first_time) {
 
          // after first draw check if highlight can be enabled
          if (this.options.highlight === false)
@@ -2987,9 +2986,9 @@
          // if rotation was enabled, do it
          if (this._webgl && this.options.autoRotate && !this.options.project) this.autorotate(2.5);
          if (!this._usesvg && this.options.show_controls) this.showControlOptions(true);
-
-         this.DrawingReady();
       }
+
+      this.DrawingReady();
 
       if (this._draw_nodes_again)
          return this.startDrawGeometry(); // relaunch drawing

@@ -2129,7 +2129,6 @@
     * @private */
 
    TBasePainter.prototype.DrawingReady = function(res_painter) {
-
       this._ready_called_ = true;
       if (this._ready_callback_ !== undefined) {
          var callbacks = this._ready_callback_;
