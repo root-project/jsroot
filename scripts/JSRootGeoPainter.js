@@ -827,19 +827,25 @@
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_stack, no_recursive) {
 
       if (geo_object) {
+         active_mesh = [];
          var extras = this.getExtrasContainer();
          if (extras && extras.children)
             for (var k=0;k<extras.children.length;++k)
-               if (extras.children[k].geo_object === geo_object) { active_mesh = extras.children[k]; break; }
+               if (extras.children[k].geo_object === geo_object) {
+                  active_mesh.push(extras.children[k]);
+               }
       } else if (geo_stack && this._toplevel) {
+         active_mesh = [];
          this._toplevel.traverse(function(mesh) {
-            if ((mesh instanceof THREE.Mesh) && (mesh.stack===geo_stack)) active_mesh = mesh;
+            if ((mesh instanceof THREE.Mesh) && (mesh.stack===geo_stack)) active_mesh.push(mesh);
          });
+      } else if (active_mesh) {
+         active_mesh = [ active_mesh ];
       }
 
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
-         if (active_mesh.geo_object) {
+         if (active_mesh[0].geo_object) {
             if (!this.options.highlight_scene) active_mesh = null;
          } else {
             if (!this.options.highlight) active_mesh = null;
@@ -850,8 +856,8 @@
          // check all other painters
 
          if (active_mesh) {
-            if (!geo_object) geo_object = active_mesh.geo_object;
-            if (!geo_stack) geo_stack = active_mesh.stack;
+            if (!geo_object) geo_object = active_mesh[0].geo_object;
+            if (!geo_stack) geo_stack = active_mesh[0].stack;
          }
 
          var lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
@@ -862,28 +868,42 @@
 
       var curr_mesh = this._selected_mesh;
 
-      if (curr_mesh === active_mesh) return;
-
-      if (curr_mesh && curr_mesh.material) {
-         curr_mesh.material.color = curr_mesh.originalColor;
-         delete curr_mesh.originalColor;
-         if (curr_mesh.normalLineWidth)
-            curr_mesh.material.linewidth = curr_mesh.normalLineWidth;
-         if (curr_mesh.normalMarkerSize)
-            curr_mesh.material.size = curr_mesh.normalMarkerSize;
+      // check if selections are the same
+      if (!curr_mesh && !active_mesh) return;
+      var same = false;
+      if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
+         same = true;
+         for (var k=0;k<curr_mesh.length;++k)
+            if (curr_mesh[k] !== active_mesh[k]) same = false;
       }
+      if (same) return;
+
+      if (curr_mesh)
+         for (var k=0;k<curr_mesh.length;++k) {
+            var c = curr_mesh[k];
+            if (!c.material) continue;
+            c.material.color = c.originalColor;
+            delete c.originalColor;
+            if (c.normalLineWidth)
+               c.material.linewidth = c.normalLineWidth;
+            if (c.normalMarkerSize)
+               c.material.size = c.normalMarkerSize;
+         }
 
       this._selected_mesh = active_mesh;
 
-      if (active_mesh && active_mesh.material) {
-         active_mesh.originalColor = active_mesh.material.color;
-         active_mesh.material.color = new THREE.Color( color || 0xffaa33 );
+      if (active_mesh)
+         for (var k=0;k<active_mesh.length;++k) {
+            var a = active_mesh[k];
+            if (!a.material) continue;
+            a.originalColor = a.material.color;
+            a.material.color = new THREE.Color( color || 0xffaa33 );
 
-         if (active_mesh.hightlightLineWidth)
-            active_mesh.material.linewidth = active_mesh.hightlightLineWidth;
-         if (active_mesh.highlightMarkerSize)
-            active_mesh.material.size = active_mesh.highlightMarkerSize;
-      }
+            if (a.hightlightLineWidth)
+               a.material.linewidth = a.hightlightLineWidth;
+            if (a.highlightMarkerSize)
+               a.material.size = a.highlightMarkerSize;
+         }
 
       this.Render3D(0);
    }
