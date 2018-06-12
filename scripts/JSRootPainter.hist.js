@@ -5817,7 +5817,7 @@
          for (var ngr=0;ngr<numgraphs;++ngr) {
             if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
 
-            for (n=0;n<gr.fNpoints;++n) {
+            for (var n=0;n<gr.fNpoints;++n) {
                ++numpoints;
                realx += gr.fX[n];
                realy += gr.fY[n];
