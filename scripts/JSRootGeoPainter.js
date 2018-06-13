@@ -3075,6 +3075,7 @@
    TGeoPainter.prototype.CheckResize = function(size) {
       var pad_painter = this.canv_painter();
 
+
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
@@ -3088,9 +3089,17 @@
       this._scene_width = sz.width;
       this._scene_height = sz.height;
 
-      this._camera.aspect = this._scene_width / this._scene_height;
-      this._camera.updateProjectionMatrix();
-
+      if ( this._camera.type == "OrthographicCamera")
+      {
+         this._camera.left = -sz.width;
+         this._camera.right = sz.width;
+         this._camera.top = -sz.height;
+         this._camera.bottom = sz.height;
+      }
+      else {
+         this._camera.aspect = this._scene_width / this._scene_height;
+      }
+      this._camera.updateProjectionMatrix();   
       this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
 
       this.Render3D();
