@@ -3,6 +3,7 @@
 ## Changes in 5.4.x
 1. Fix - draw functions also when histogram "same" option used (#159)
 2. Fix - when draw histogram as markers improve optimization algorithm
+3. Fix - correct histogram Y-axis range selection in logarithmic scale
 
 
 ## Changes in 5.4.2
