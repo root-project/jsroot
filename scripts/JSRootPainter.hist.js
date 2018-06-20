@@ -1699,14 +1699,7 @@
 
       this.Box = this.BoxStyle > 0;
 
-      if (d.check('COL', true)) {
-         this.Color = true;
-
-         if ((d.part.indexOf('0')>=0) || (d.part.indexOf('1')>=0)) this.Zero = false; // do not draw zero values
-         if (d.part.indexOf('Z')>=0) this.Zscale = true;
-         if (d.part.indexOf('A')>=0) this.Axis = -1;
-      }
-
+      if (d.check('COL')) this.Color = true;
       if (d.check('CHAR')) this.Char = 1;
       if (d.check('FUNC')) { this.Func = true; this.Hist = false; }
       if (d.check('AXIS')) this.Axis = 1;
@@ -1798,6 +1791,7 @@
       }
       if (d.check('9')) this.HighRes = 1;
       if (d.check('0')) this.Zero = false;
+      if (this.Color && d.check('1')) this.Zero = false;
 
       // flag identifies 3D drawing mode for histogram
       if ((this.Lego > 0) || (hdim == 3) ||
