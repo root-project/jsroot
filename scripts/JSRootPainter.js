@@ -5531,7 +5531,7 @@
          if (!mathjax && !('as_is' in this.txt)) {
             var arr = txt.split("\n"); txt = "";
             for (var i = 0; i < arr.length; ++i)
-               txt += "<pre>" + arr[i] + "</pre>";
+               txt += "<pre style='margin:0'>" + arr[i] + "</pre>";
          }
 
          var frame = this.select_main(),
