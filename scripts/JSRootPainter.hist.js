@@ -2224,6 +2224,7 @@
       fp.CreateXY({ ndim: this.Dimension(),
                     check_pad_range: this.check_pad_range,
                     create_canvas: this.create_canvas,
+                    ymin_nz: this.ymin_nz,
                     swap_xy: (this.options.BarStyle >= 20),
                     reverse_x: this.options.RevX,
                     reverse_y: this.options.RevY,

@@ -1175,8 +1175,8 @@
                if (this.scale_ymin>0) break;
             }
 
-         if ((this.scale_ymin <= 0) && ('ymin_nz' in this) && (this.ymin_nz > 0) && (this.ymin_nz < 1e-2*this.ymax))
-            this.scale_ymin = 0.3*this.ymin_nz;
+         if ((this.scale_ymin <= 0) && (opts.ymin_nz) && (opts.ymin_nz < 1e-2*this.ymax))
+            this.scale_ymin = 0.3 * opts.ymin_nz;
 
          if ((this.scale_ymin <= 0) || (this.scale_ymin >= this.scale_ymax))
             this.scale_ymin = 3e-4 * this.scale_ymax;
