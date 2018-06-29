@@ -3809,7 +3809,7 @@
          //rrr.setSize(sz.width, sz.height);
          //rrr.render(main.scene, main.camera);
 
-          main.insert("g",".primitives_layer")             // create special group
+          elem.insert("g",".primitives_layer")             // create special group
               .attr("class","temp_saveaspng")
               .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
               .node().appendChild(svg3d);      // add code
