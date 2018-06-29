@@ -5,6 +5,7 @@
 2. Fix - when draw histogram as markers improve optimization algorithm
 3. Fix - correct histogram Y-axis range selection in logarithmic scale
 4. Fix - for TH2 draw options allow combination "colztext" (#162)
+5. Fix - PNG file generation with 3D drawings inside
 
 
 ## Changes in 5.4.2
