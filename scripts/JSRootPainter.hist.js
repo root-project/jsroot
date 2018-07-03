@@ -3840,7 +3840,7 @@
       // check if we should draw markers or error marks directly, skipping optimization
       if (do_marker || do_err)
          if (!JSROOT.gStyle.OptimizeDraw || ((right-left<50000) && (JSROOT.gStyle.OptimizeDraw==1))) {
-            for (i = left; i <= right; ++i) {
+            for (i = left; i < right; ++i) {
                if (extract_bin(i)) {
                   if (path_marker !== null)
                      path_marker += pthis.markeratt.create(midx, my);
