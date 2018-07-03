@@ -3708,7 +3708,8 @@
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
+          do_marker = false, do_err = false,
+          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           mpath = "", text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
@@ -3717,8 +3718,10 @@
       if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                               else path_fill = "";
-      } else
-      if (this.options.Error) path_err = "";
+      } else if (this.options.Error) {
+         path_err = "";
+         do_err = true;
+      }
 
       if (show_line) path_line = "";
 
@@ -3728,6 +3731,7 @@
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
+            do_marker = true;
             this.markeratt.reset_pos();
          } else {
             show_markers = false;
@@ -3775,22 +3779,36 @@
 
       if (draw_any_but_hist) use_minmax = true;
 
-      function draw_bin(besti) {
-         bincont = histo.getBinContent(besti+1);
-         if (!exclude_zero || (bincont!==0)) {
-            mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+1)));
-            mx2 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+2)));
-            midx = Math.round((mx1+mx2)/2);
-            my = Math.round(pmain.gry(bincont));
-            yerr1 = yerr2 = 20;
-            if (show_errors) {
-               binerr = histo.getBinError(besti+1);
-               yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
-               yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
-            }
+      // just to get correct values for the specified bin
+      function extract_bin(bin) {
+         bincont = histo.getBinContent(bin+1);
+         if (exclude_zero && (bincont===0)) return false;
+         mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(bin+1)));
+         mx2 = Math.round(pmain.grx(xaxis.GetBinLowEdge(bin+2)));
+         midx = Math.round((mx1+mx2)/2);
+         my = Math.round(pmain.gry(bincont));
+         yerr1 = yerr2 = 20;
+         if (show_errors) {
+            binerr = histo.getBinError(bin+1);
+            yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
+            yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
+         }
+         return true;
+      }
 
+      function draw_errbin(bin) {
+         if (pthis.options.errorX > 0) {
+            mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX);
+            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
+            path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
+         }
+         path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+      }
+
+      function draw_bin(bin) {
+         if (extract_bin(bin)) {
             if (show_text) {
-               var cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
+               var cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
                if (cont!==0) {
                   var lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
@@ -3810,20 +3828,29 @@
                   if (path_fill !== null)
                      path_fill += "M" + mx1 +","+(my-yerr1) +
                                   "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                  if (path_marker !== null)
+                  if ((path_marker !== null) && do_marker)
                      path_marker += pthis.markeratt.create(midx, my);
-                  if (path_err !== null) {
-                     if (pthis.options.errorX > 0) {
-                        var mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX),
-                            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
-                        path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
-                     }
-                     path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
-                  }
+                  if ((path_err !== null) && do_err)
+                     draw_errbin(bin);
                }
             }
          }
       }
+
+      // check if we should draw markers or error marks directly, skipping optimization
+      if (do_marker || do_err)
+         if (!JSROOT.gStyle.OptimizeDraw || ((right-left<50000) && (JSROOT.gStyle.OptimizeDraw==1))) {
+            for (i = left; i <= right; ++i) {
+               if (extract_bin(i)) {
+                  if (path_marker !== null)
+                     path_marker += pthis.markeratt.create(midx, my);
+                  if (path_err !== null)
+                     draw_errbin(i);
+               }
+            }
+            do_err = do_marker = false;
+         }
+
 
       for (i = left; i <= right; ++i) {
 
