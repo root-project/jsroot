@@ -953,16 +953,28 @@
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      var histo = JSROOT.CreateHistogram("TH1I", 100);
-      histo.fName = graph.fName + "_h";
-      histo.fTitle = graph.fTitle;
+      var kResetHisto = JSROOT.BIT(17);   ///< fHistogram must be reset in GetHistogram
+
+      var histo = graph.fHistogram;
+
+      if (histo) {
+         // make logic like in the TGraph::GetHistogram
+         if (!graph.TestBit(kResetHisto)) return histo;
+         graph.InvertBit(kResetHisto);
+      } else {
+         graph.fHistogram = histo = JSROOT.CreateHistogram("TH1I", 100);
+         histo.fName = graph.fName + "_h";
+         histo.fTitle = graph.fTitle;
+         histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+      }
+
       histo.fXaxis.fXmin = uxmin;
       histo.fXaxis.fXmax = uxmax;
       histo.fYaxis.fXmin = minimum;
       histo.fYaxis.fXmax = maximum;
       histo.fMinimum = minimum;
       histo.fMaximum = maximum;
-      histo.fBits = histo.fBits | JSROOT.TH1StatusBits.kNoStats;
+
       return histo;
    }
 
@@ -1918,9 +1930,7 @@
       painter.CreateStat();
 
       if (!painter.main_painter() && painter.options.Axis) {
-         if (!graph.fHistogram)
-            graph.fHistogram = painter.CreateHistogram();
-         JSROOT.draw(divid, graph.fHistogram, painter.options.Axis, painter.PerformDrawing.bind(painter, divid));
+         JSROOT.draw(divid, painter.CreateHistogram(), painter.options.Axis, painter.PerformDrawing.bind(painter, divid));
       } else {
          painter.PerformDrawing(divid);
       }
