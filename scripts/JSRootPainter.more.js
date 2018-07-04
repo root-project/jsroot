@@ -817,6 +817,8 @@
       if ((typeof opt == "string") && (opt.indexOf("same ")==0))
          opt = opt.substr(5);
 
+      if (!opt && !this.main_painter()) opt = "alp";
+
       var graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt);
 
