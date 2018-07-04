@@ -1302,7 +1302,7 @@
    }
 
    Painter.chooseTimeFormat = function(awidth, ticks) {
-      if (awidth < .5) return ticks ? "%S.%L" : "%M:%S.%L";
+      if (awidth < .5) return ticks ? "%S.%L" : "%H:%M:%S.%L";
       if (awidth < 30) return ticks ? "%Mm%S" : "%H:%M:%S";
       awidth /= 60; if (awidth < 30) return ticks ? "%Hh%M" : "%d/%m %H:%M";
       awidth /= 60; if (awidth < 12) return ticks ? "%d-%Hh" : "%d/%m/%y %Hh";
