@@ -814,10 +814,10 @@
 
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
+      if (!opt) opt = this.main_painter() ? "lp" : "alp";
+
       if ((typeof opt == "string") && (opt.indexOf("same ")==0))
          opt = opt.substr(5);
-
-      if (!opt && !this.main_painter()) opt = "alp";
 
       var graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt);
