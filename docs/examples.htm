@@ -123,14 +123,14 @@
          
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
-                filepath = "http://jsroot.gsi.de/files/"; 
+                filepath = "https://root.cern/js/files/"; 
          }
          
          if ((window.location.protocol == "file:") || (window.location.host.indexOf('rawgit.com') >= 0)) { 
             scripts = "../scripts/";
             jsroot_path = "../index.htm";
             demo_path = "../demo/",
-            filepath = "http://jsroot.gsi.de/files/";
+            filepath = "https://root.cern/js/files/";
             use_requirejs = false;
             icon.setAttribute('src', "../img/RootIcon.ico");
          }

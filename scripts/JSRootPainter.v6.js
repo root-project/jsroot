@@ -28,6 +28,17 @@
 
    // =======================================================================
 
+
+   /**
+    * @summary Painter for TAxis/TGaxis objects.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} axis - object to draw
+    * @param {boolean} embedded - if true, painter used in other objects painters
+    */
+
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -819,6 +830,15 @@
    }
 
    // ===============================================
+
+   /**
+    * @summary Painter for TFrame object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} tframe - TFrame object to draw
+    */
 
    function TFramePainter(tframe) {
       if (tframe && tframe.$dummy) tframe = null;
@@ -2616,6 +2636,16 @@
 
    // ===========================================================================
 
+   /**
+    * @summary Painter for TPad object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} pad - TPad object to draw
+    * @param {boolean} iscan - if TCanvas object
+    */
+
    function TPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.pad = pad;
@@ -2667,12 +2697,13 @@
       }
    }
 
-   TPadPainter.prototype.GetCurrentPrimitiveIndx = function() {
-      return this._current_primitive_indx || 0;
-   }
-
-   TPadPainter.prototype.GetNumPrimitives = function() {
-      return this._num_primitives || 1;
+   /** @summary Generates automatic color for some objects painters
+    * @private
+    */
+   TPadPainter.prototype.CreateAutoColor = function() {
+      var indx = this._auto_color || 0;
+      this._auto_color = (indx + 1) % 8;
+      return indx+2;
    }
 
    /// call function for each painter
@@ -2755,7 +2786,7 @@
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
-      var factor = null, svg = null, lmt = 5, rect = null;
+      var factor = null, svg = null, lmt = 5, rect = null, btns;
 
       if (check_resize > 0) {
 
@@ -2770,6 +2801,8 @@
          rect = this.check_main_resize(check_resize, null, factor);
 
          if (!rect.changed) return false;
+
+         btns = this.svg_layer("btns_layer");
 
       } else {
 
@@ -2796,7 +2829,9 @@
 
          svg.append("svg:g").attr("class","primitives_layer");
          svg.append("svg:g").attr("class","info_layer");
-         svg.append("svg:g").attr("class","btns_layer");
+         btns = svg.append("svg:g").attr("class","btns_layer")
+                                   .property('leftside', JSROOT.gStyle.ToolBarSide == 'left')
+                                   .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu)
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
@@ -2860,9 +2895,7 @@
 
       this.DrawActiveBorder(fill_rect);
 
-      this.svg_layer("btns_layer")
-          .attr("transform","translate(2," + (rect.height - this.ButtonSize(1.25)) + ")")
-          .attr("display", svg.property("pad_enlarged") ? "none" : null); // hide buttons when sub-pad is enlarged
+      this.AlignBtns(btns, rect.width, rect.height, svg);
 
       return true;
    }
@@ -2929,7 +2962,9 @@
          svg_rect = svg_pad.append("svg:rect").attr("class", "root_pad_border");
 
          svg_pad.append("svg:g").attr("class","primitives_layer");
-         btns = svg_pad.append("svg:g").attr("class","btns_layer");
+         btns = svg_pad.append("svg:g").attr("class","btns_layer")
+                                       .property('leftside', JSROOT.gStyle.ToolBarSide != 'left')
+                                       .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu)
             svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
@@ -2973,7 +3008,7 @@
               .select(".draw3d_" + this.this_pad_name)
               .style('display', pad_visible ? '' : 'none');
 
-      btns.attr("transform","translate("+ (w - (btns.property('nextx') || 0) - this.ButtonSize(1.25)) + "," + (h - this.ButtonSize(1.25)) + ")");
+      this.AlignBtns(btns, w, h);
 
       return pad_visible;
    }
@@ -3091,6 +3126,7 @@
 
          if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
             delete this._doing_pad_draw;
+            delete this._current_primitive_indx;
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
                if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
@@ -3368,6 +3404,7 @@
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
+            delete this._current_primitive_indx;
             return JSROOT.CallBack(call_back, this);
          }
 
@@ -3591,6 +3628,9 @@
    TPadPainter.prototype.CreateImage = function(format, call_back) {
       if (format=="svg") {
          JSROOT.CallBack(call_back, btoa(this.CreateSvg()));
+      } else if (format=="pdf") {
+         // use https://github.com/MrRio/jsPDF in the future here
+         JSROOT.CallBack(call_back, btoa("dummy PDF file"));
       } else if ((format=="png") || (format=="jpeg")) {
          this.ProduceImage(true, 'any.' + format, function(can) {
             var res = can.toDataURL('image/' + format),
@@ -3882,15 +3922,12 @@
    }
 
    TPadPainter.prototype.FindButton = function(keyname) {
-      var group = this.svg_layer("btns_layer", this.this_pad_name);
-      if (group.empty()) return;
-
-      var found_func = "";
-
-      group.selectAll("svg").each(function() {
-         if (d3.select(this).attr("key") === keyname)
-            found_func = d3.select(this).attr("name");
-      });
+      var group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
+      if (!group.empty())
+         group.selectAll("svg").each(function() {
+            if (d3.select(this).attr("key") === keyname)
+               found_func = d3.select(this).attr("name");
+         });
 
       return found_func;
    }
@@ -3949,27 +3986,32 @@
       // avoid buttons with duplicate names
       if (!group.select("[name='" + funcname + "']").empty()) return;
 
-      var iscan = this.iscan || !this.has_canvas, ctrl;
+      var iscan = this.iscan || !this.has_canvas, ctrl,
+          x = group.property("nextx"), y = 0;
 
-      var x = group.property("nextx");
       if (!x) {
          ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
-         ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0).attr("normalx",0)
+         ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
              .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
              .on("click", this.toggleButtonsVisibility.bind(this, 'toggle'))
              .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enable'))
              .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'disable'));
 
-         x = iscan ? this.ButtonSize(1.25) : 0;
+         x = group.property('leftside') ? this.ButtonSize(1.25) : 0;
       } else {
          ctrl = group.select("[name='Toggle']");
       }
 
       var svg = JSROOT.ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
-            tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
+                    tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
 
-      svg.attr("name", funcname).attr("x", x).attr("y", 0).attr("normalx",x)
+      if (group.property('vertical'))
+         svg.attr("x", y).attr("y", x);
+      else
+         svg.attr("x", x).attr("y", y);
+
+      svg.attr("name", funcname)
          .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
          .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enterbtn'))
          .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'leavebtn'));
@@ -3980,13 +4022,30 @@
 
       group.property("nextx", x + this.ButtonSize(1.25));
 
-      if (!iscan) {
-         group.attr("transform","translate("+ (this.pad_width(this.this_pad_name) - group.property('nextx') - this.ButtonSize(1.25)) + "," + (this.pad_height(this.this_pad_name)-this.ButtonSize(1.25)) + ")");
+      this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
+
+      if (group.property('vertical'))
+         ctrl.attr("y", group.property('nextx'));
+      else if (!group.property('leftside'))
          ctrl.attr("x", group.property('nextx'));
-      }
 
       if (!iscan && (funcname.indexOf("Pad")!=0) && (this.canv_painter()!==this) && (funcname !== "EnlargePad"))
          this.canv_painter().AddButton(btn, tooltip, funcname);
+   }
+
+   TPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
+      var sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0,
+          btns_x = 0, btns_y = 0;
+      if (btns.property('vertical')) {
+         btns_x = btns.property('leftside') ? 2 : (width - sz0);
+         btns_y = height - nextx;
+      } else {
+         btns_x = btns.property('leftside') ? 2 : (width - nextx);
+         btns_y = height - sz0;
+      }
+
+      btns.attr("transform","translate("+btns_x+","+btns_y+")");
+      if (svg) btns.attr("display", svg.property("pad_enlarged") ? "none" : null); // hide buttons when sub-pad is enlarged
    }
 
    TPadPainter.prototype.DrawingReady = function(res_painter) {
@@ -4070,8 +4129,16 @@
 
    // ==========================================================================================
 
+   /**
+    * @summary Painter for TCanvas object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TPadPainter
+    * @param {object} canvas - TCanvas object to draw
+    */
+
    function TCanvasPainter(canvas) {
-      // used for online canvas painter
       TPadPainter.call(this, canvas, true);
       this._websocket = null;
    }
@@ -4248,7 +4315,7 @@
    }
 
    TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
-      if (window) window.close(); // close window when socket disapper
+      JSROOT.CloseCurrentWindow();
    }
 
    TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
@@ -4478,6 +4545,30 @@
       return bits;
    }
 
+   /// produce JSON for TCanvas, which can be used to display canvas once again
+   TCanvasPainter.prototype.ProduceJSON = function() {
+
+      var canv = this.GetObject();
+
+      if (!this.normal_canvas) {
+
+         // fill list of primitives from painters
+         this.ForEachPainterInPad(function(p) {
+            if (p.$secondary) return; // ignore all secoandry painters
+
+            var subobj = p.GetObject();
+            if (subobj && subobj._typename)
+               canv.fPrimitives.Add(subobj, p.OptionsAsString());
+         }, "objects");
+      }
+
+      var res = JSROOT.toJSON(canv);
+
+      if (!this.normal_canvas)
+         canv.fPrimitives.Clear();
+
+      return res;
+   }
 
    function drawCanvas(divid, can, opt) {
       var nocanvas = (can===null);

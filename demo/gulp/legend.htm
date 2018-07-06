@@ -14,7 +14,7 @@
 
      JSROOT.gStyle.Latex = "MathJax";
 
-     var filename = "http://jsroot.gsi.de/files/legends.root";
+     var filename = "https://root.cern/js/files/legends.root";
      JSROOT.OpenFile(filename, function(file) {
         file.ReadObject("legends;1", function(obj) {
            JSROOT.draw("drawing", obj, "");

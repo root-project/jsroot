@@ -1,0 +1,51 @@
+{
+   "plugins": [
+        "plugins/markdown",
+        "plugins/summarize"
+    ],
+    "recurseDepth": 10,
+    "source": {
+        "include": [ "scripts/JSRootCore.js", 
+                     "scripts/JSRootIOEvolution.js",
+                     "scripts/JSRootTree.js",
+                     "scripts/JSRootPainter.js", 
+                     "scripts/JSRootPainter.v6.js", 
+                     "scripts/JSRootPainter.hist.js",
+                     "scripts/JSRootPainter.hist3d.js",
+                     "scripts/JSRootPainter.more.js" ],
+        "includePattern": ".+\\.js(doc|x)?$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "sourceType": "module",
+    "opts": {
+       "destination": "./jsdoc"
+    }, 
+    "tags": {
+        "allowUnknownTags": true,
+        "dictionaries": ["jsdoc","closure"]
+    },
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": true,
+        "name": "JSROOT",
+        "default": {
+			   "outputSourceFiles" : true
+		   },
+		   "applicationName": "JavaScript ROOT",
+		   "disqus": "",
+		   "googleAnalytics": "",
+		   "openGraph": {
+   			"title": "",
+			   "type": "website",
+			   "image": "",
+			   "site_name": "",
+			   "url": ""
+		   },
+		   "meta": {
+   			"title": "",
+			   "description": "",
+			   "keyword": ""
+		   },
+         "linenums": false
+    }
+}

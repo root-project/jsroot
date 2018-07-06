@@ -126,12 +126,12 @@
 
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
-                filepath = "http://jsroot.gsi.de/files/"; 
+                filepath = "https://root.cern/js/files/"; 
              }
              
          if (window.location.protocol == "file:") { 
-            jsroot_path = "http://jsroot.gsi.de/dev/";
-            filepath = "http://jsroot.gsi.de/files/";
+            jsroot_path = "https://root.cern/js/dev/";
+            filepath = "https://root.cern/js/files/";
          }    
 
          var examples = {
@@ -149,11 +149,12 @@
               { name: "Horizontal layout", url: "?file=" + filepath + "hsimple.root&layout=horiz32_12&items=[ntuple,ntuple,ntuple,hpx,hpxpy]&opts=[px:py,px:pz,py:pz,hist,lego2]", title: "Display several items in horizontal layout, adjust size ratio" },
               { name: "Inspector", url: "?file=" + filepath + "hsimple.root&item=hpx;1&opt=inspect", title: "Show objects data memebers" },
               { name: "Projection", url: "?nobrowser&file=" + filepath + "hsimple.root&item=hpxpy;1&opt=col,projx3", title: "Enable X projection with 3 bins" },
+              { name: "Images", url: "?path=" + filepath + "&layout=grid2x2&file=hsimple.root&items=[hpx;1,hpxpy;1,img:../files/img/ALICE.png,img:../files/img/ATLAS.png]&opts=[hist,colz,scale,center]", title: "Example of adding images from the web server" },
               { name: "Use JSON", url: "?nobrowser&json=" + filepath + "danilo6.json", title: "Read and display data from JSON file, produced with TBufferJSON class"  },
               { name: "Superimpose", url: "?file=" + filepath + "fillrandom.root&item=h1f;1+sqroot;1", title: "Superimpose histogram and function" },
               { name: "Several files", url: "?layout=grid2x2&path=" + filepath + "&files=[hsimple.root,graph.root,ct.root]&items=[hsimple.root/[1],graph.root/[11],graph.root/[3],ct.root/[0]]&opts=[lego]", title: "Open several files simultaneusely"  },
               { name: "Superimpose 2 files", url: "?files=[" + filepath + "hsimple.root," + filepath + "graph.root]&item=graph.root/Graph;1+hsimple.root/hprof;1", title: "Superimpose items from two different files"  },
-              { name: "Superimpose 3 files", url: "?path=" + filepath + "&files=[temp44.root,temp35.root,temp28.root]&item=temp44.root/Histograms/TDC_C100/Ch1/TDC_C100_Ch1_RisingCalibr;1+temp35.root/_same_+temp28.root/_same_&opt=autocol,nostat&tooltip=2", title: "Superimpose same item from three different files" },
+              { name: "Superimpose 3 files", url: "?path=" + filepath + "&files=[temp44.root,temp35.root,temp28.root]&item=temp44.root/Histograms/TDC_C100/Ch1/TDC_C100_Ch1_RisingCalibr;1+temp35.root/_same_+temp28.root/_same_&opt=plc,nostat+plc+plc&tooltip=2", title: "Superimpose same item from three different files" },
               { name: "Use autozoom", url: "?layout=grid1x3&path=" + filepath + "&files=[temp44.root,temp35.root,temp28.root]&items=[temp44.root/Histograms/TDC_C100/Ch3/TDC_C100_Ch3_RisingRef;1,temp35.root/_same_,temp28.root/_same_]&opts=[autozoom,autozoom,autozoom]", title: "Let display only non-empty bins of the histogram(s)" }
             ],
             'Custom HTML' : [
@@ -168,6 +169,7 @@
               { name: "THStack", url: "demo/thstack.htm", title: "Produce and draw THStack", src: true },
               { name: "TMultiGraph", url: "demo/multigraph.htm", title: "Produce and update TMultiGraph in JavaScript", src: true },
               { name: "TLegend", url: "demo/multigraph_legend.htm", title: "Show and update TLegend with multi-graph", src: true },
+              { name: "TGeo", url: "demo/read_geometry_tracks.htm", title : "Example how to draw geometry with tracks", src: true },
               { name: "Tooltip hanlder", url: "demo/tooltip.htm", title: "User handler function called when tooltip is shown, let build custom UI", src: true },
               { name: "Update drawing", url: "demo/update_draw.htm", title: "Update drawing, reading 20 histograms in loop", src: true },
               { name: "Update in grid", url: "demo/update_draw.htm?layout=grid3x2", title: "Update drawing on the grid layout", src: "demo/update_draw.htm" },
@@ -175,6 +177,7 @@
               { name: "File hierarchy", url: "demo/file_hierarchy.htm", title: "Use HierarchyPainter to display file objects hierarchy", src: true },
               { name: "Zooming", url: "demo/zoom_handler.htm", title: "Redefine Zoom function to make synchronous zooming in other histogram", src: true },
               { name: "User IO", url: "index.htm?file=" + filepath + "amore.root&item=moH1F_0;1&load=demo/amore.js", title : "Example of custom streamer and custom draw function (AMORE)", src: "demo/amore.js" },
+              { name: "Store JSON", url: "demo/store_json.htm", title: "Store drawn objects into JSON, can be reused to display once again", src: true },
               { name: "Geometry", url: "demo/tgeo_build.htm", title : "Example how one can create three.js model for TGeo object, using JSROOT.GEO.build function", src: "demo/tgeo_build.htm" },
               { name: "OpenUI5", url: "demo/openui5/", title : "Use of JSROOT graphics inside OpenUI5", src: "demo/openui5/Readme.md" }
             ],

@@ -1339,6 +1339,7 @@
             break;
          case "TPaveStats":
             painter.PaveDrawFunc = painter.DrawPaveStats;
+            painter.$secondary = true; // indicates that painter created from others
             break;
          case "TPaveText":
          case "TPavesText":
@@ -1555,6 +1556,56 @@
       return painter.DrawingReady();
    }
 
+   /** @summary Produce and draw TLegend object for the specified divid
+    * @desc Should be called when all other objects are painted
+    * Invoked when item "$legend" specified in JSROOT URL string
+    * @private */
+   function produceLegend(divid, opt) {
+      var main_painter = JSROOT.GetMainPainter(divid);
+      if (!main_painter) return;
+
+      var pp = main_painter.pad_painter(),
+          pad = main_painter.root_pad();
+      if (!pp || !pad) return;
+
+      var leg = JSROOT.Create("TLegend");
+
+      for (var k=0;k<pp.painters.length;++k) {
+         var painter = pp.painters[k],
+             obj = painter.GetObject();
+
+         if (!obj) continue;
+
+         var entry = JSROOT.Create("TLegendEntry");
+         entry.fObject = obj;
+         entry.fLabel = (opt == "all") ? obj.fName : painter.GetItemName();
+         entry.fOption = "";
+         if (!entry.fLabel) continue;
+
+         if (painter.lineatt && painter.lineatt.used) entry.fOption+="l";
+         if (painter.fillatt && painter.fillatt.used) entry.fOption+="f";
+         if (painter.markeratt && painter.markeratt.used) entry.fOption+="m";
+         if (!entry.fOption) entry.fOption = "l";
+
+         leg.fPrimitives.Add(entry);
+      }
+
+      // no entries - no need to draw legend
+      var szx = 0.4, szy = leg.fPrimitives.arr.length;
+      if (!szy) return;
+      if (szy>8) szy = 8;
+      szy *= 0.1;
+
+      JSROOT.extend(leg, {
+         fX1NDC: szx*pad.fLeftMargin + (1-szx)*(1-pad.fRightMargin),
+         fY1NDC: (1-szy)*(1-pad.fTopMargin) + szy*pad.fBottomMargin,
+         fX2NDC: 0.99-pad.fRightMargin,
+         fY2NDC: 0.99-pad.fTopMargin
+      });
+      leg.fFillStyle = 1001;
+
+      return drawPave(divid, leg);
+   }
 
    // ==============================================================================
 
@@ -1564,17 +1615,17 @@
 
    THistDrawOptions.prototype.Reset = function() {
       JSROOT.extend(this,
-            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false, Hist: true,
-              Line: false, Fill: false,
+            { Axis: 0, RevX: false, RevY: false, Bar: false, BarStyle: 0, Curve: false,
+              Hist: true, Line: false, Fill: false,
               Error: false, ErrorKind: -1, errorX: JSROOT.gStyle.fErrorX,
-              Mark: false, Same: 0, Scat: false, ScatCoef: 1., Func: true,
+              Mark: false, Same: false, Scat: false, ScatCoef: 1., Func: true,
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
               Spec: false, Pie: false, List: false, Zscale: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
-              AutoColor: 0, NoStat: false, ForceStat: false, AutoZoom: false,
+              AutoColor: false, NoStat: false, ForceStat: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
@@ -1600,8 +1651,11 @@
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
 
-      if (d.check('AUTOCOL')) this.AutoColor = 1; // color index
+      if (d.check('AUTOCOL')) this.AutoColor = true;
       if (d.check('AUTOZOOM')) this.AutoZoom = true;
+
+      if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
+      if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
 
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
@@ -1633,8 +1687,8 @@
       if (d.check('X+')) this.AxisPos = 10;
       if (d.check('Y+')) this.AxisPos += 1;
 
-      if (d.check('SAMES')) { this.Same = 2; this.ForceStat = true; }
-      if (d.check('SAME')) { this.Same = 1; this.Func = true; }
+      if (d.check('SAMES')) { this.Same = true; this.ForceStat = true; }
+      if (d.check('SAME')) { this.Same = true; this.Func = true; }
 
       if (d.check('SPEC')) this.Spec = true; // not used
 
@@ -1751,7 +1805,7 @@
       if ((hdim==3) && d.check('BB')) this.BackBox = false;
 
       this._pfc = d.check("PFC");
-      this._plc = d.check("PLC");
+      this._plc = d.check("PLC") || this.AutoColor;
       this._pmc = d.check("PMC");
 
       if (d.check('L')) { this.Line = true; this.Hist = false; this.Error = false; }
@@ -1858,6 +1912,16 @@
    }
 
    // ==============================================================================
+
+
+   /**
+    * @summary Basic painter for histogram classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.TObjectPainter
+    * @param {object} histo - histogram object
+    */
 
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
@@ -1972,14 +2036,6 @@
       }, "objects");
    }
 
-   THistPainter.prototype.GetAutoColor = function(col) {
-      if (this.options.AutoColor<=0) return col;
-
-      var id = this.options.AutoColor;
-      this.options.AutoColor = id % 8 + 1;
-      return JSROOT.Painter.root_colors[id];
-   }
-
    THistPainter.prototype.ScanContent = function(when_axis_changed) {
       // function will be called once new histogram or
       // new histogram content is assigned
@@ -1998,39 +2054,20 @@
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-      var histo = this.GetHisto();
+      var histo = this.GetHisto(),
+          pp = this.pad_painter();
 
-      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.pallette && JSROOT.Painter.GetColorPalette)
-            this.palette = JSROOT.Painter.GetColorPalette();
-
-         var pp = this.pad_painter();
-         if (this.palette && pp) {
-            var indx = pp.GetCurrentPrimitiveIndx(), num = pp.GetNumPrimitives();
-
-            var color = this.palette.calcColor(indx, num);
-            var icolor = this.add_color(color);
-
-            if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
-         }
-
+      if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
+         var icolor = pp.CreateAutoColor();
+         if (this.options._pfc) { histo.fFillColor = icolor; delete this.fillatt; }
+         if (this.options._plc) { histo.fLineColor = icolor; delete this.lineatt; }
+         if (this.options._pmc) { histo.fMarkerColor = icolor; delete this.markeratt; }
          this.options._pfc = this.options._plc = this.options._pmc = false;
       }
 
       this.createAttFill({ attr: histo, color: this.options.histoFillColor, kind: 1 });
 
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
-
-      if (!this.lineatt.changed) {
-         var main = this.main_painter();
-
-         if (main) {
-            var newcol = main.GetAutoColor(this.lineatt.color);
-            if (newcol !== this.lineatt.color) { this.lineatt.color = newcol; this.lineatt.changed = true; }
-         }
-      }
    }
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
@@ -2394,20 +2431,26 @@
       return indx;
    }
 
-   THistPainter.prototype.FindStat = function() {
-      if (this.histo.fFunctions !== null)
-         for (var i = 0; i < this.histo.fFunctions.arr.length; ++i) {
-            var func = this.histo.fFunctions.arr[i];
+   THistPainter.prototype.FindFunction = function(type_name, obj_name) {
+      var histo = this.GetObject(),
+          funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
 
-            if ((func._typename == 'TPaveStats') &&
-                (func.fName == 'stats')) return func;
-         }
+      if (!funcs) return null;
+
+      for (var i = 0; i < funcs.length; ++i) {
+         if (obj_name && (funcs[i].fName !== obj_name)) continue;
+         if (funcs[i]._typename === type_name) return funcs[i];
+      }
 
       return null;
    }
 
+   THistPainter.prototype.FindStat = function() {
+      return this.FindFunction('TPaveStats', 'stats');
+   }
+
    THistPainter.prototype.IgnoreStatsFill = function() {
-      return !this.histo || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
+      return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
    THistPainter.prototype.CreateStat = function(force) {
@@ -2420,15 +2463,29 @@
 
       this.create_stats = true;
 
-      var stats = this.FindStat();
-      if (stats) return stats;
+      var stats = this.FindStat(), st = JSROOT.gStyle,
+          optstat = this.options.optstat, optfit = this.options.optfit;
 
-      var st = JSROOT.gStyle;
+      if (optstat !== undefined) {
+         if (stats) stats.fOptStat = optstat;
+         delete this.options.optstat;
+      } else {
+         optstat = this.histo.$custom_stat || st.fOptStat;
+      }
+
+      if (optfit !== undefined) {
+         if (stats) stats.fOptFit = optfit;
+         delete this.options.optfit;
+      } else {
+         optfit = st.fOptFit;
+      }
+
+      if (stats) return stats;
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
-                             fOptStat: this.histo.$custom_stat || st.fOptStat,
-                             fOptFit: st.fOptFit,
+                             fOptStat: optstat,
+                             fOptFit: optfit,
                              fBorderSize : 1} );
 
       stats.fX1NDC = st.fStatX - st.fStatW;
@@ -2468,16 +2525,6 @@
          histo.fFunctions.AddFirst(obj);
       else
          histo.fFunctions.Add(obj);
-   }
-
-   THistPainter.prototype.FindFunction = function(type_name) {
-      var funcs = this.GetObject().fFunctions;
-      if (funcs === null) return null;
-
-      for (var i = 0; i < funcs.arr.length; ++i)
-         if (funcs.arr[i]._typename === type_name) return funcs.arr[i];
-
-      return null;
    }
 
    THistPainter.prototype.DrawNextFunction = function(indx, callback) {
@@ -3080,6 +3127,9 @@
          pal_painter.DrawPave(arg);
       }
 
+      // mark painter as secondary - not in list of TCanvas primitives
+      pal_painter.$secondary = true;
+
       // make dummy redraw, palette will be updated only from histogram painter
       pal_painter.Redraw = function() {};
 
@@ -3249,7 +3299,16 @@
       return res;
    }
 
-   // ======= TH1 painter================================================
+   // ========================================================================
+
+   /**
+    * @summary Painter for TH1 classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.THistPainter
+    * @param {object} histo - histogram object
+    */
 
    function TH1Painter(histo) {
       THistPainter.call(this, histo);
@@ -3649,7 +3708,8 @@
           show_text = this.options.Text,
           text_profile = show_text && (this.options.TextKind == "E") && this.IsTProfile() && histo.fBinEntries,
           path_fill = null, path_err = null, path_marker = null, path_line = null,
-          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
+          do_marker = false, do_err = false,
+          endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           mpath = "", text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
@@ -3658,8 +3718,10 @@
       if (this.options.ErrorKind === 2) {
          if (this.fillatt.empty()) show_markers = true;
                               else path_fill = "";
-      } else
-      if (this.options.Error) path_err = "";
+      } else if (this.options.Error) {
+         path_err = "";
+         do_err = true;
+      }
 
       if (show_line) path_line = "";
 
@@ -3669,6 +3731,7 @@
          if (this.markeratt.size > 0) {
             // simply use relative move from point, can optimize in the future
             path_marker = "";
+            do_marker = true;
             this.markeratt.reset_pos();
          } else {
             show_markers = false;
@@ -3716,22 +3779,36 @@
 
       if (draw_any_but_hist) use_minmax = true;
 
-      function draw_bin(besti) {
-         bincont = histo.getBinContent(besti+1);
-         if (!exclude_zero || (bincont!==0)) {
-            mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+1)));
-            mx2 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+2)));
-            midx = Math.round((mx1+mx2)/2);
-            my = Math.round(pmain.gry(bincont));
-            yerr1 = yerr2 = 20;
-            if (show_errors) {
-               binerr = histo.getBinError(besti+1);
-               yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
-               yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
-            }
+      // just to get correct values for the specified bin
+      function extract_bin(bin) {
+         bincont = histo.getBinContent(bin+1);
+         if (exclude_zero && (bincont===0)) return false;
+         mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(bin+1)));
+         mx2 = Math.round(pmain.grx(xaxis.GetBinLowEdge(bin+2)));
+         midx = Math.round((mx1+mx2)/2);
+         my = Math.round(pmain.gry(bincont));
+         yerr1 = yerr2 = 20;
+         if (show_errors) {
+            binerr = histo.getBinError(bin+1);
+            yerr1 = Math.round(my - pmain.gry(bincont + binerr)); // up
+            yerr2 = Math.round(pmain.gry(bincont - binerr) - my); // down
+         }
+         return true;
+      }
 
+      function draw_errbin(bin) {
+         if (pthis.options.errorX > 0) {
+            mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX);
+            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
+            path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
+         }
+         path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
+      }
+
+      function draw_bin(bin) {
+         if (extract_bin(bin)) {
             if (show_text) {
-               var cont = text_profile ? histo.fBinEntries[besti+1] : bincont;
+               var cont = text_profile ? histo.fBinEntries[bin+1] : bincont;
 
                if (cont!==0) {
                   var lbl = (cont === Math.round(cont)) ? cont.toString() : JSROOT.FFormat(cont, JSROOT.gStyle.fPaintTextFormat);
@@ -3751,20 +3828,29 @@
                   if (path_fill !== null)
                      path_fill += "M" + mx1 +","+(my-yerr1) +
                                   "h" + (mx2-mx1) + "v" + (yerr1+yerr2+1) + "h-" + (mx2-mx1) + "z";
-                  if (path_marker !== null)
+                  if ((path_marker !== null) && do_marker)
                      path_marker += pthis.markeratt.create(midx, my);
-                  if (path_err !== null) {
-                     if (pthis.options.errorX > 0) {
-                        var mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX),
-                            mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
-                        path_err += "M" + (mmx1+dend) +","+ my + endx + "h" + (mmx2-mmx1-2*dend) + endx;
-                     }
-                     path_err += "M" + midx +"," + (my-yerr1+dend) + endy + "v" + (yerr1+yerr2-2*dend) + endy;
-                  }
+                  if ((path_err !== null) && do_err)
+                     draw_errbin(bin);
                }
             }
          }
       }
+
+      // check if we should draw markers or error marks directly, skipping optimization
+      if (do_marker || do_err)
+         if (!JSROOT.gStyle.OptimizeDraw || ((right-left<50000) && (JSROOT.gStyle.OptimizeDraw==1))) {
+            for (i = left; i < right; ++i) {
+               if (extract_bin(i)) {
+                  if (path_marker !== null)
+                     path_marker += pthis.markeratt.create(midx, my);
+                  if (path_err !== null)
+                     draw_errbin(i);
+               }
+            }
+            do_err = do_marker = false;
+         }
+
 
       for (i = left; i <= right; ++i) {
 
@@ -4295,7 +4381,16 @@
       return painter;
    }
 
-   // ==================== painter for TH2 histograms ==============================
+   // ========================================================================
+
+   /**
+    * @summary Painter for TH2 classes
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @augments JSROOT.THistPainter
+    * @param {object} histo - histogram object
+    */
 
    function TH2Painter(histo) {
       THistPainter.call(this, histo);
@@ -6599,6 +6694,7 @@
    JSROOT.Painter.drawPaveText = drawPave;
 
    JSROOT.Painter.drawPave = drawPave;
+   JSROOT.Painter.produceLegend = produceLegend;
    JSROOT.Painter.drawPaletteAxis = drawPaletteAxis;
    JSROOT.Painter.drawHistogram1D = drawHistogram1D;
    JSROOT.Painter.drawHistogram2D = drawHistogram2D;

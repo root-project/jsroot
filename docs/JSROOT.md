@@ -46,7 +46,8 @@ To automate files loading and objects drawing, one can provide number of URL par
 - mathjax - use MathJax for latex output
 - latex - 'off', 'symbols', 'normal', 'mathjax', 'alwaysmath' control of TLatex processor
 - style - name of TStyle object to define global JSROOT style
-- toolbar - show canvas tool buttons 'off', 'on' and 'popup'
+- toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position, 'vert' for vertical
+- divsize - fixed size in pixels for main div element like &dvisize=700x400
 
 For instance:
 
@@ -68,6 +69,8 @@ Following layouts are supported:
   - [horiz32_12](https://root.cern//js/latest/api.htm#url_syntax_horizontal_layout) - 2 horizontal frames with 3 and 2 subframes, and 1/3 and 2/3 as relative size
 
 When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`.
+
+As item name, URL to existing image can be provided like `item=img:http://server/image.png`. Such image will be just inserted in the existing layout. One could specify option `"scale"` to automatically scale image to available space. 
 
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.
 
@@ -211,6 +214,10 @@ Like in ROOT, one could configure histogram binning and range directly:
 
    - [opt=px:py>>h(50,-5,5,50,-5,5)](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py>>h%2850,-5,5,50,-5,5%29)
 
+One and two dimensional draw expressions can be resulted into TGraph object, using ">>Graph" as output:
+
+   - [opt=px:py>>Graph](https://root.cern/js/latest/?file=../files/hsimple.root&item=ntuple&opt=px:py>>Graph)
+
 For any integer value one can accumulate histogram with value bits distribution, specifying as output ">>bits(16)" or ">>bits":
 
    - [opt=event.fTracks.fBits>>bits](https://root.cern/js/latest/?file=https://root.cern/files/Event100000.root&item=T;2&opt=event.fTracks.fBits>>bits)
@@ -267,6 +274,7 @@ Following parameters are supported:
   - "htype" - last letter in histogram type like "I", "F", "D", "S", "L", "C"
   - "hbins" - number of bins on each histogram axis
   - "drawopt" - drawing option for produced histogram
+  - "graph" - draw into TGraph object
 
 Example - [opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25](https://root.cern/js/latest/?file=https://root.cern/files/event/event_0.root&item=EventTree&opt=event.fTracks[].fTriggerBits;entries:1000;first:200;maxrange:25)
 
