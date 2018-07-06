@@ -10,7 +10,7 @@
 6. Implement "optstat1001" and "optfit101" draw options for histograms
 7. Remove "autocol" options - standard "plc" should be used instead
 8. Provide drawing of artificial "$legend" item - it creates TLegend for all primitives in pad
-   Can be used when several histograms or several graphs superimposed.
+   Can be used when several histograms or several graphs superimposed
 9. Let configure "&toolbar=vert" in URL to change orientation of tool buttons
 10. Improve markers and error bars drawing for TH1/TProfile
 
