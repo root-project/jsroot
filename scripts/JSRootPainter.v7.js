@@ -3192,7 +3192,7 @@
 
          var handle = { func: draw_callback };
 
-         if (snap._typename === "ROOT::Experimental::TObjectDisplayItem")
+         if (snap._typename === "ROOT::Experimental::RObjectDisplayItem")
             if (!this.frame_painter())
                return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "", function() {
                   handle.func("workaround"); // call function with "workaround" as argument
