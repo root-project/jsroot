@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in dev
+1. Implement 'nocache' option for JSROOT scripts lodaing. When specified in URL with
+   JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs. 
+
+
 ## Changes in 5.5.0
 1. Introduce JSROOT.StoreJSON() function. It creates JSON code for the 
    TCanvas with all drawn objects inside. Allows to store current canvas state
