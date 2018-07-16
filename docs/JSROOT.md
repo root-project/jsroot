@@ -549,6 +549,7 @@ In URL string with JSRootCore.js script one can specify which JSROOT functionali
     + 'gui' default gui for offline/online applications
     + 'load' name of user script(s) to load
     + 'onload' name of function to call when scripts loading completed
+    + 'nocache' avoid use of cache for loading of JSROOT scripts 
 
 For instance, to load functionality with normal 2D graphics and binary ROOT files support, one should specify:
 
