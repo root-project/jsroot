@@ -3,6 +3,8 @@
 ## Changes in 5.5.1
 1. Implement 'nocache' option for JSROOT scripts lodaing. When specified in URL with
    JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs.
+2. Adjust v7 part to new class naming convention, started with R
+3. Show RCanvas title
 
 
 ## Changes in 5.5.0
