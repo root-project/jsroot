@@ -5,6 +5,7 @@
    JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs.
 2. Adjust v7 part to new class naming convention, started with R
 3. Show RCanvas title
+4. Provide simple drawing for TObjString (#164) 
 
 
 ## Changes in 5.5.0
