@@ -2323,11 +2323,10 @@
       } else
       if (draw_title && !tpainter && histo.fTitle) {
          pavetext = JSROOT.Create("TPaveText");
-
          JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
          pavetext.AddText(histo.fTitle);
-
-         JSROOT.Painter.drawPave(this.divid, pavetext);
+         tpainter = JSROOT.Painter.drawPave(this.divid, pavetext);
+         if (tpainter) tpainter.$secondary = true;
       }
    }
 
