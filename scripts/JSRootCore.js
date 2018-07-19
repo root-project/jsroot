@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 16/07/2018";
+   JSROOT.version = "dev 19/07/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1632,7 +1632,8 @@
             break;
          case 'TCanvas':
             JSROOT.Create("TPad", obj);
-            JSROOT.extend(obj, { fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
+            JSROOT.extend(obj, { fNumPaletteColor: 0, fNextPaletteColor: 0, fDISPLAY: "$DISPLAY",
+                                 fDoubleBuffer: 0, fRetained: true, fXsizeUser: 0,
                                  fYsizeUser: 0, fXsizeReal: 20, fYsizeReal: 10,
                                  fWindowTopX: 0, fWindowTopY: 0, fWindowWidth: 0, fWindowHeight: 0,
                                  fCw: 500, fCh: 300, fCatt: JSROOT.Create("TAttCanvas"),
