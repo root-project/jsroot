@@ -1488,6 +1488,16 @@
             JSROOT.Create("TAttMarker", obj);
             JSROOT.extend(obj, { fLabel: "", fObject: null, fOption: "" });
             break;
+         case 'TText':
+            JSROOT.Create("TNamed", obj);
+            JSROOT.Create("TAttText", obj);
+            JSROOT.extend(obj, { fLimitFactorSize: 3, fOriginSize: 0.04 });
+            break;
+         case 'TLatex':
+            JSROOT.Create("TText", obj);
+            JSROOT.Create("TAttLine", obj);
+            JSROOT.extend(obj, { fX: 0, fY: 0 });
+            break;
          case 'TObjString':
             JSROOT.Create("TObject", obj);
             JSROOT.extend(obj, { fString: "" });
