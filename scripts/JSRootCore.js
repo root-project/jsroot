@@ -1813,7 +1813,10 @@
 
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
-            this.fLines.Add({ _typename: 'TLatex', fTitle: txt, fTextColor: 1 });
+            // this.fLines.Add({ _typename: 'TLatex', fTitle: txt, fTextColor: 1 });
+            var line = JSROOT.Create("TLatex");
+            line.fTitle = txt;
+            this.fLines.Add(line);
          }
          m.Clear = function() {
             this.fLines.Clear();
