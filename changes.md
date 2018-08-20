@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Implement 'nocache' option for JSROOT scripts lodaing. When specified in URL with
+1. Implement 'nocache' option for JSROOT scripts loading. When specified in URL with
    JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs. 
 
 

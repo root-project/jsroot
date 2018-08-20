@@ -1999,8 +1999,11 @@
       if (this.options.Axis > 0) { // Paint histogram axis only
          this.draw_content = false;
       } else {
-         // used to enable/disable stat box
          this.draw_content = this.gmaxbin > 0;
+         if (!this.draw_content  && this.options.Zero && this.IsTH2Poly()) {
+            this.draw_content = true;
+            this.options.Line = 1;
+         }
       }
    }
 
@@ -2587,7 +2590,10 @@
          bin = histo.fBins.arr[i];
          colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
-         if ((bin.fContent === 0) && !this.options.Zero) continue;
+         if (bin.fContent === 0) {
+            if (!this.options.Zero || !this.options.Line) continue;
+            colindx = 0;
+         }
 
          // check if bin outside visible range
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
@@ -2608,7 +2614,7 @@
             item = this.draw_g
                      .append("svg:path")
                      .attr("palette-index", colindx)
-                     .attr("fill", this.fPalette.getColor(colindx))
+                     .attr("fill", colindx ? this.fPalette.getColor(colindx) : "none")
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
