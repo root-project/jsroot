@@ -1,9 +1,13 @@
 # JSROOT changelog
 
+## Changes in 5.5.x
+1. Fix - draw TH2Poly bins outline when no content specified
+
+
 ## Changes in 5.5.1
 1. Fix - adjust v7 part to new class naming convention, started with R
 2. Fix - show RCanvas title
-3. New - implement 'nocache' option for JSROOT scripts lodaing. When specified in URL with
+3. New - implement 'nocache' option for JSROOT scripts loading. When specified in URL with
    JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs
 4. New - provide simple drawing for TObjString (#164) 
 
