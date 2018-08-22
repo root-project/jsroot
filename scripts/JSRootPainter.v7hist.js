@@ -55,10 +55,14 @@
       this.SetDivId(divid, 1);
    }
 
-   THistPainter.prototype.GetHisto = function() {
-      var obj = this.GetObject(), histo = null;
+   THistPainter.prototype.GetHImpl = function(obj) {
       if (obj && obj.fHistImpl)
-         histo = obj.fHistImpl.fIsWeak ? obj.fHistImpl.fWeakForIO : obj.fHistImpl.fUnique;
+         return obj.fHistImpl.fIsWeak ? obj.fHistImpl.fWeakForIO : obj.fHistImpl.fUnique;
+      return null;
+   }
+
+   THistPainter.prototype.GetHisto = function() {
+      var obj = this.GetObject(), histo = this.GetHImpl(obj);
 
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._1) {
@@ -174,11 +178,19 @@
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
-      var histo = this.GetObject();
+      var origin = this.GetObject();
 
-      if (obj !== histo) {
+      if (obj !== origin) {
 
          if (!this.MatchObjectType(obj)) return false;
+
+         var horigin = this.GetHImpl(origin),
+             hobj = this.GetHImpl(obj);
+
+         if (!horigin || !hobj) return false;
+
+         // make it easy - copy statistics without axes
+         horigin.fStatistics = hobj.fStatistics;
 
          // special tratement for webcanvas - also name can be changed
          // if (this.snapid !== undefined)
