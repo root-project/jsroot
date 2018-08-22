@@ -142,8 +142,15 @@
       // return true when axes was drawn
       var main = this.frame_painter();
       if (!main) return false;
-      if (this.draw_content)
+
+      if (this.is_main_painter() && this.draw_content) {
+         main.CleanupAxes();
+         main.xmin = main.xmax = 0;
+         main.ymin = main.ymax = 0;
+         main.zmin = main.zmax = 0;
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax);
+      }
+
       return main.DrawAxes(true);
    }
 
@@ -1733,6 +1740,9 @@
 
       if (this.DrawAxes())
          this.DrawBins();
+      else
+         console.log('FAIL DARWING AXES');
+
       // this.DrawTitle();
       // this.UpdateStatWebCanvas();
       this.AddInteractive();
