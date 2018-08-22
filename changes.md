@@ -1,8 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Implement 'nocache' option for JSROOT scripts loading. When specified in URL with
-   JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs. 
+1. Fix drawing and update v7 histograms 
 
 
 ## Changes in 5.5.0
