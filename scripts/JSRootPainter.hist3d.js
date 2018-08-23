@@ -133,14 +133,16 @@
 
       if (this.usesvg) {
          // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
+         console.log('CREATE RENDERER ourself 2');
          this.renderer = THREE.CreateSVGRenderer(true, 0);
-         if (this.renderer.outerHTML !== undefined) {
+         if (this.renderer.makeOuterHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
             this.renderer.workaround_id = JSROOT.svg_workaround.length;
-            this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
             JSROOT.svg_workaround[this.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+
+            this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
          }
       } else {
          this.webgl = JSROOT.Painter.TestWebGL();
@@ -243,6 +245,7 @@
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // var rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
+         console.log('CREATE RENDERER ourself 1');
          var rrr = THREE.CreateSVGRenderer(true, 0);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
@@ -288,7 +291,7 @@
 
          // when using SVGrenderer producing text output, provide result
          if (this.renderer.workaround_id !== undefined)
-            JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.outerHTML;
+            JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.makeOuterHTML();
 
          return;
       }
