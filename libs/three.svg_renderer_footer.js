@@ -56,9 +56,9 @@
          var _textClearAttr = '';
 
 
-            ' style="background:' + svg_color + '"';
+         //    ' style="background:' + svg_color + '"';
 
-         return '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr + '>' + wrap.accPath + '</svg>';
+         return '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr + _textClearAttr + '>' + wrap.accPath + '</svg>';
       }
    }
 

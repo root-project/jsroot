@@ -2,6 +2,8 @@
 
 ## Changes in dev
 1. Fix drawing and update v7 histograms 
+2. Provide workaround for standard THREE.SVGRenderer. 
+   This will allows to use standard three.js version in the future. 
 
 
 ## Changes in 5.5.0

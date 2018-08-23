@@ -3419,7 +3419,7 @@
 
          var svg3d = main.Render3D(-1111); // render SVG
 
-         //var rrr = new THREE.SVGRenderer({precision:0});
+         //var rrr = THREE.CreateSVGRenderer(true, 0);
          //rrr.setSize(sz.width, sz.height);
          //rrr.render(main.scene, main.camera);
 

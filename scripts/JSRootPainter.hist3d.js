@@ -133,7 +133,6 @@
 
       if (this.usesvg) {
          // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
-         console.log('CREATE RENDERER ourself 2');
          this.renderer = THREE.CreateSVGRenderer(false, 0);
          if (this.renderer.makeOuterHTML !== undefined) {
             // this is indication of new three.js functionality
@@ -246,14 +245,13 @@
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
          // var rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
-         console.log('CREATE RENDERER ourself 1');
-         var rrr = THREE.CreateSVGRenderer(true, 0);
+         var rrr = THREE.CreateSVGRenderer(false, 0);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
-         if (rrr.outerHTML) {
+         if (rrr.makeOuterHTML) {
             // use text mode, it is faster
             var d = document.createElement('div');
-            d.innerHTML = rrr.outerHTML;
+            d.innerHTML = rrr.makeOuterHTML();
             return d.childNodes[0];
          }
          return rrr.domElement;
