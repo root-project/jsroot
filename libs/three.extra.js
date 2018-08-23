@@ -2219,7 +2219,15 @@ THREE.CanvasRenderer = function ( parameters ) {
 
 };
 
-// Content of examples/js/renderers/SVGRenderer.js
+// wrapper for THREE.SVGRenderer trying to optimize creation of many small SVG elements
+
+THREE.CreateSVGRenderer = function(as_is, precision) {
+
+
+   function Create(document) {
+
+// now include original THREE.SVGRenderer
+//
 /**
  * @author mrdoob / http://mrdoob.com/
  */
@@ -2235,152 +2243,14 @@ THREE.SVGObject = function ( node ) {
 THREE.SVGObject.prototype = Object.create( THREE.Object3D.prototype );
 THREE.SVGObject.prototype.constructor = THREE.SVGObject;
 
-THREE.SVGElementsProducer = function ( renderer ) {
-
-	var _renderer = renderer,
-	_svg = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
-	_pathCount = 0,
-	_svgPathPool = [],
-	_svgNode,
-	_quality = 1;
-
-	renderer.domElement = _svg;
-
-	this.setQuality = function( quality ) {
-
-		_quality = quality;
-
-	};
-
-	this.setSize = function ( left, top, width, height ) {
-
-		_svg.setAttribute( 'viewBox', left + ' ' + top + ' ' + width + ' ' + height );
-		_svg.setAttribute( 'width', width );
-		_svg.setAttribute( 'height', height );
-
-	};
-
-	this.clear = function( svg_color ) {
-
-		_pathCount = 0;
-
-		if ( typeof _svg.innerHTML !== 'undefined' ) {
-
-			_svg.innerHTML = '';
-
-		} else {
-
-			while ( _svg.childNodes.length > 0 ) {
-
-				_svg.removeChild( _svg.childNodes[ 0 ] );
-
-			}
-
-		}
-
-		_svg.style.backgroundColor = svg_color;
-
-	};
-
-	this.before = function () {};
-
-	this.createPath = function ( path, style ) {
-
-		_svgNode = getPathNode( _pathCount ++ );
-		_svgNode.setAttribute( 'd', path );
-		_svgNode.setAttribute( 'style', style );
-		_svg.appendChild( _svgNode );
-
-	}
-
-	this.appendChild = function ( node ) {
-
-		_svg.appendChild( node );
-
-	}
-
-	this.after = function () { };
-
-	function getPathNode( id ) {
-
-		if ( _svgPathPool[ id ] == null ) {
-
-			_svgPathPool[ id ] = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
-
-			if ( _quality == 0 ) {
-
-				_svgPathPool[ id ].setAttribute( 'shape-rendering', 'crispEdges' ); //optimizeSpeed
-
-			}
-
-		}
-
-		return _svgPathPool[ id ];
-
-	}
-
-};
-
-
-THREE.SVGTextProducer = function ( renderer ) {
-
-	var _renderer = renderer,
-	_textSizeAttr = '',
-	_textClearAttr = '',
-	_accumulatedPath;
-	_renderer.outerHTML = ''; // can be used to identify text mode
-	_renderer.innerHTML = ''; // can be used to identify text mode
-
-	this.setQuality = function( quality ) { };
-
-	this.setSize = function ( left, top, width, height ) {
-
-		_textSizeAttr = ' viewBox="' + left + ' ' + top + ' ' + width + ' ' + height + '"' +
-			' width="' + width + '" height="' + height + '"';
-
-	};
-
-	this.clear = function( svg_color ) {
-
-		_textClearAttr = ' style="background:' + svg_color + '"';
-
-	};
-
-	this.before = function () { _accumulatedPath = ''; };
-
-	this.createPath = function( path, style ) {
-
-		_accumulatedPath += '<path style="' + style + '" d="' + path + '"/>';
-
-	};
-
-	this.appendChild = function ( node ) {
-
-		_accumulatedPath += node.outerHTML;
-
-	};
-
-	this.after = function () {
-
-		_renderer.innerHTML = _accumulatedPath;
-
-		_renderer.outerHTML = '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr  + _textClearAttr + '>' + _accumulatedPath + '</svg>';
-
-	};
-
-};
-
-
-THREE.SVGRenderer = function ( parameters ) {
+THREE.SVGRenderer = function () {
 
 	console.log( 'THREE.SVGRenderer', THREE.REVISION );
-
-	parameters = parameters || {};
 
 	var _this = this,
 	_renderData, _elements, _lights,
 	_projector = new THREE.Projector(),
-	_producer = parameters.astext ? new THREE.SVGTextProducer( this ) : new THREE.SVGElementsProducer( this ),
+	_svg = document.createElementNS( 'http://www.w3.org/2000/svg', 'svg' ),
 	_svgWidth, _svgHeight, _svgWidthHalf, _svgHeightHalf,
 
 	_v1, _v2, _v3, _v4,
@@ -2404,9 +2274,14 @@ THREE.SVGRenderer = function ( parameters ) {
 	_viewMatrix = new THREE.Matrix4(),
 	_viewProjectionMatrix = new THREE.Matrix4(),
 
+	_svgPathPool = [],
+	_svgNode, _pathCount = 0,
+
 	_currentPath, _currentStyle,
 
-	_precision = parameters.precision !== undefined ? parameters.precision : null;
+	_quality = 1, _precision = null;
+
+	this.domElement = _svg;
 
 	this.autoClear = true;
 	this.sortObjects = true;
@@ -2427,8 +2302,8 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		switch ( quality ) {
 
-			case "high": _producer.setQuality( 1 ); break;
-			case "low": _producer.setQuality( 0 ); break;
+			case "high": _quality = 1; break;
+			case "low": _quality = 0; break;
 
 		}
 
@@ -2453,7 +2328,9 @@ THREE.SVGRenderer = function ( parameters ) {
 		_svgWidth = width; _svgHeight = height;
 		_svgWidthHalf = _svgWidth / 2; _svgHeightHalf = _svgHeight / 2;
 
-		_producer.setSize(- _svgWidthHalf ,  - _svgHeightHalf , _svgWidth , _svgHeight);
+		_svg.setAttribute( 'viewBox', ( - _svgWidthHalf ) + ' ' + ( - _svgHeightHalf ) + ' ' + _svgWidth + ' ' + _svgHeight );
+		_svg.setAttribute( 'width', _svgWidth );
+		_svg.setAttribute( 'height', _svgHeight );
 
 		_clipBox.min.set( - _svgWidthHalf, - _svgHeightHalf );
 		_clipBox.max.set( _svgWidthHalf, _svgHeightHalf );
@@ -2465,6 +2342,18 @@ THREE.SVGRenderer = function ( parameters ) {
 		_precision = precision;
 
 	};
+
+	function removeChildNodes() {
+
+		_pathCount = 0;
+
+		while ( _svg.childNodes.length > 0 ) {
+
+			_svg.removeChild( _svg.childNodes[ 0 ] );
+
+		}
+
+	}
 
 	function getSvgColor ( color, opacity ) {
 
@@ -2484,7 +2373,8 @@ THREE.SVGRenderer = function ( parameters ) {
 
 	this.clear = function () {
 
-		_producer.clear( getSvgColor( _clearColor, _clearAlpha ) );
+		removeChildNodes();
+		_svg.style.backgroundColor = getSvgColor( _clearColor, _clearAlpha );
 
 	};
 
@@ -2501,7 +2391,8 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		if ( background && background.isColor ) {
 
-			_producer.clear( getSvgColor( background ) );
+			removeChildNodes();
+			_svg.style.backgroundColor = getSvgColor( background );
 
 		} else if ( this.autoClear === true ) {
 
@@ -2512,7 +2403,7 @@ THREE.SVGRenderer = function ( parameters ) {
 		_this.info.render.vertices = 0;
 		_this.info.render.faces = 0;
 
-		_viewMatrix.copy( camera.matrixWorldInverse.getInverse( camera.matrixWorld ) );
+		_viewMatrix.copy( camera.matrixWorldInverse );
 		_viewProjectionMatrix.multiplyMatrices( camera.projectionMatrix, _viewMatrix );
 
 		_renderData = _projector.projectScene( scene, camera, this.sortObjects, this.sortElements );
@@ -2523,11 +2414,10 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		calculateLights( _lights );
 
-		// reset accumulated path
+		 // reset accumulated path
+
 		_currentPath = '';
 		_currentStyle = '';
-
-		_producer.before();
 
 		for ( var e = 0, el = _elements.length; e < el; e ++ ) {
 
@@ -2588,11 +2478,11 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		}
 
-		if ( _currentPath ) _producer.createPath( _currentPath, _currentStyle );
+		flushPath(); // just to flush last svg:path
 
 		scene.traverseVisible( function ( object ) {
 
-			if ( object instanceof THREE.SVGObject ) {
+			 if ( object instanceof THREE.SVGObject ) {
 
 				_vector3.setFromMatrixPosition( object.matrixWorld );
 				_vector3.applyMatrix4( _viewProjectionMatrix );
@@ -2601,15 +2491,13 @@ THREE.SVGRenderer = function ( parameters ) {
 				var y = - _vector3.y * _svgHeightHalf;
 
 				var node = object.node;
-				node.setAttribute( 'transform', 'translate(' + convert( x ) + ',' + convert( y ) + ')' );
+				node.setAttribute( 'transform', 'translate(' + x + ',' + y + ')' );
 
-				_producer.appendChild( node );
+				_svg.appendChild( node );
 
 			}
 
 		} );
-
-		_producer.after();
 
 	};
 
@@ -2720,9 +2608,15 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		var path = 'M' + convert( v1.positionScreen.x ) + ',' + convert( v1.positionScreen.y ) + 'L' + convert( v2.positionScreen.x ) + ',' + convert( v2.positionScreen.y );
 
-		if ( material instanceof THREE.LineBasicMaterial ) {
+		if ( material.isLineBasicMaterial ) {
 
-			var style = 'fill:none;stroke:' + getSvgColor( material.color, material.opacity ) + ';stroke-width:' + material.linewidth + ';stroke-linecap:' + material.linecap + ';stroke-linejoin:' + material.linejoin;
+			var style = 'fill:none;stroke:' + getSvgColor( material.color, material.opacity ) + ';stroke-width:' + material.linewidth + ';stroke-linecap:' + material.linecap;
+
+			addPath( style, path );
+
+		} else if ( material.isLineDashedMaterial ) {
+
+			var style = 'fill:none;stroke:' + getSvgColor( material.color, material.opacity ) + ';stroke-width:' + material.linewidth + ';stroke-dasharray:' + material.dashSize + "," + material.gapSize;
 
 			addPath( style, path );
 
@@ -2792,11 +2686,11 @@ THREE.SVGRenderer = function ( parameters ) {
 
 		if ( _currentStyle === style ) {
 
-			_currentPath += path;
+			_currentPath += path
 
 		} else {
 
-			if ( _currentPath ) _producer.createPath( _currentPath, _currentStyle );
+			flushPath();
 
 			_currentStyle = style;
 			_currentPath = path;
@@ -2805,9 +2699,69 @@ THREE.SVGRenderer = function ( parameters ) {
 
 	}
 
+	function flushPath() {
+
+		if ( _currentPath ) {
+
+			_svgNode = getPathNode( _pathCount ++ );
+			_svgNode.setAttribute( 'd', _currentPath );
+			_svgNode.setAttribute( 'style', _currentStyle );
+			_svg.appendChild( _svgNode );
+
+		}
+
+		_currentPath = '';
+		_currentStyle = '';
+
+	}
+
+	function getPathNode( id ) {
+
+		if ( _svgPathPool[ id ] == null ) {
+
+			_svgPathPool[ id ] = document.createElementNS( 'http://www.w3.org/2000/svg', 'path' );
+
+			if ( _quality == 0 ) {
+
+				_svgPathPool[ id ].setAttribute( 'shape-rendering', 'crispEdges' ); //optimizeSpeed
+
+			}
+
+			return _svgPathPool[ id ];
+
+		}
+
+		return _svgPathPool[ id ];
+
+	}
 
 };
 
+// END of SVGRenderer.js
+
+     return new THREE.SVGRenderer();
+
+   }
+
+   var rndr = null;
+
+   if (as_is) {
+      rndr = Create(document);
+   } else {
+      var doc_wrapper = {
+
+      };
+
+      rndr = Create(doc_wrapper);
+
+      rndr.doc_wrapper = doc_wrapper; // use it to get final SVG code
+   }
+
+   rndr.setPrecision(precision);
+
+   return rndr;
+
+}
 // Content of examples/js/controls/OrbitControls.js
 /**
  * @author qiao / https://github.com/qiao

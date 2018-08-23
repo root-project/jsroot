@@ -1448,7 +1448,8 @@
       this._scene.add(this._toplevel);
 
       if (usesvg) {
-         this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
+         // this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
+         this._renderer = THREE.CreateSVGRenderer(true, 0);
          if (this._renderer.outerHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
@@ -3122,7 +3123,7 @@
       else {
          this._camera.aspect = this._scene_width / this._scene_height;
       }
-      this._camera.updateProjectionMatrix();   
+      this._camera.updateProjectionMatrix();
       this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
 
       this.Render3D();
