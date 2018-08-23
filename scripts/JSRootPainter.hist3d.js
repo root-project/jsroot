@@ -134,13 +134,14 @@
       if (this.usesvg) {
          // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
          console.log('CREATE RENDERER ourself 2');
-         this.renderer = THREE.CreateSVGRenderer(true, 0);
+         this.renderer = THREE.CreateSVGRenderer(false, 0);
          if (this.renderer.makeOuterHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
             this.renderer.workaround_id = JSROOT.svg_workaround.length;
             JSROOT.svg_workaround[this.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
 
+            // replace DOM element in renderer
             this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
             this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
          }
