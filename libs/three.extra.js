@@ -2221,8 +2221,7 @@ THREE.CanvasRenderer = function ( parameters ) {
 
 // wrapper for THREE.SVGRenderer trying to optimize creation of many small SVG elements
 
-THREE.CreateSVGRenderer = function(as_is, precision) {
-
+THREE.CreateSVGRenderer = function(as_is, precision, doc) {
 
    function Create(document) {
 
@@ -2746,7 +2745,9 @@ THREE.SVGRenderer = function () {
    var rndr = null;
 
    if (as_is) {
-      rndr = Create(document);
+      if ((typeof doc=='undefined') && (typeof window=='object')) doc = window.document;
+
+      rndr = Create(doc);
    } else {
       var doc_wrapper = {
         svg_attr: {},
@@ -2754,30 +2755,34 @@ THREE.SVGRenderer = function () {
         path_attr: {},
         accPath: "",
         createElementNS: function(ns,kind) {
-           if (kind == 'svg')
-              return {
-                 _wrapper: doc_wrapper,
-                 childNodes: [], // may be accessed - make dummy
-                 style: {}, // maybe configured
-                 setAttribute: function(name, value) {
-                    this._wrapper.svg_attr[name] = value;
-                 },
-                 appendChild: function(node) {
-                    this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
-                    this._wrapper.path_attr = {};
-                 },
-                 removeChild: function(node) {
-                    this.childNodes = [];
-                 }
-              };
            if (kind == 'path')
               return {
-                 _wrapper: doc_wrapper,
+                 _wrapper: this,
                  setAttribute: function(name, value) {
                     this._wrapper.path_attr[name] = value;
                  }
               }
 
+           if (kind != 'svg') {
+              console.error('not supported element for SVGRenderer', kind);
+              return null;
+           }
+
+           return {
+              _wrapper: this,
+              childNodes: [], // may be accessed - make dummy
+              style: this.svg_style, // for background color
+              setAttribute: function(name, value) {
+                 this._wrapper.svg_attr[name] = value;
+              },
+              appendChild: function(node) {
+                 this._wrapper.accPath += '<path style="' + this._wrapper.path_attr['style'] + '" d="' + this._wrapper.path_attr['d'] + '"/>';
+                 this._wrapper.path_attr = {};
+              },
+              removeChild: function(node) {
+                 this.childNodes = [];
+              }
+           };
         }
       };
 
@@ -2793,8 +2798,7 @@ THREE.SVGRenderer = function () {
 
          var _textClearAttr = '';
 
-
-         //    ' style="background:' + svg_color + '"';
+         if (wrap.svg_style.backgroundColor) _textClearAttr = ' style="background:' + wrap.svg_style.backgroundColor + '"';
 
          return '<svg xmlns="http://www.w3.org/2000/svg"' + _textSizeAttr + _textClearAttr + '>' + wrap.accPath + '</svg>';
       }

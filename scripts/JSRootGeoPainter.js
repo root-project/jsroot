@@ -8,7 +8,8 @@
    if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
       if (!jsroot.nodejs && (typeof window != 'undefined')) require("./dat.gui.min.js");
-      factory(jsroot, require("./d3.min.js"), require("./three.min.js"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"));
+      factory(jsroot, require("./d3.min.js"), require("./three.min.js"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
+              jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -28,11 +29,13 @@
 
       factory( JSROOT, d3, THREE );
    }
-} (function( JSROOT, d3, THREE ) {
+} (function( JSROOT, d3, THREE, _3d, _geo, document ) {
 
    "use strict";
 
    JSROOT.sources.push("geom");
+
+   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
    if ( typeof define === "function" && define.amd )
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
@@ -1449,15 +1452,15 @@
 
       if (usesvg) {
          // this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
-         this._renderer = THREE.CreateSVGRenderer(true, 0);
-         if (this._renderer.outerHTML !== undefined) {
+         this._renderer = THREE.CreateSVGRenderer(false, 0, document);
+         if (this._renderer.makeOuterHTML !== undefined) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            var doc = (typeof document === 'undefined') ? JSROOT.nodejs_document : document;
-            this._renderer.domElement = doc.createElementNS( 'http://www.w3.org/2000/svg', 'path');
             this._renderer.workaround_id = JSROOT.svg_workaround.length;
-            this._renderer.domElement.setAttribute('jsroot_svg_workaround', this._renderer.workaround_id);
             JSROOT.svg_workaround[this._renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+
+            this._renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            this._renderer.domElement.setAttribute('jsroot_svg_workaround', this._renderer.workaround_id);
          }
       } else {
          this._renderer = webgl ?
@@ -2662,7 +2665,7 @@
 
          // when using SVGrenderer producing text output, provide result
          if (this._renderer.workaround_id !== undefined)
-            JSROOT.svg_workaround[this._renderer.workaround_id] = this._renderer.outerHTML;
+            JSROOT.svg_workaround[this._renderer.workaround_id] = this._renderer.makeOuterHTML();
 
          return;
       }
