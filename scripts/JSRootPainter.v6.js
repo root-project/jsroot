@@ -3848,6 +3848,138 @@
 
    }
 
+   TPadPainter.prototype.ProduceImageNew = function(full_canvas, filename, call_back) {
+
+      var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
+
+      if (elem.empty()) return;
+
+      var painter = full_canvas ? this.canv_painter() : this;
+
+//      document.body.style.cursor = 'wait';
+
+      painter.ForEachPainterInPad(function(pp) {
+
+         var main = pp.frame_painter_ref;
+         if (!main || (typeof main.Render3D !== 'function')) return;
+
+         var can3d = main.access_3d_kind();
+         if ((can3d !== 1) && (can3d !== 2)) return;
+
+         var sz = main.size_for_3d(2); // get size of DOM element as it will be embed
+
+         console.log('Render 3D', sz);
+
+         var canvas = main.renderer.domElement;
+         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
+         var dataUrl = canvas.toDataURL("image/png");
+
+         console.log('origin width height', canvas.width, canvas.height);
+
+         console.log('produced png image len = ', dataUrl.length, 'begin', dataUrl.substr(0,100));
+
+         // remove 3D drawing
+         var origin = main.apply_3d_size(main.size_for_3d(), true);
+         origin.remove();
+
+         // add svg image
+         var img = elem.insert("image",".primitives_layer")             // create image object
+                       .attr("class","image_3d")
+                       .attr("x", sz.x)
+                       .attr("y", sz.y)
+                       .attr("width", canvas.width)
+                       .attr("height", canvas.height)
+                       .attr("href", dataUrl);
+         //     .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
+
+
+         // var svg3d = main.Render3D(-1111); // render SVG
+
+         //var rrr = THREE.CreateSVGRenderer(true, 0);
+         //rrr.setSize(sz.width, sz.height);
+         //rrr.render(main.scene, main.camera);
+
+         // elem.insert("g",".primitives_layer")             // create special group
+         //     .attr("class","temp_saveaspng")
+         //     .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
+         //     .node().appendChild(svg3d);      // add code
+      }, "pads");
+
+//      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
+           // this was saving of image buffer from 3D render
+//         var canvas = main.renderer.domElement;
+//         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
+//         var dataUrl = canvas.toDataURL("image/png");
+//         dataUrl.replace("image/png", "image/octet-stream");
+//         var link = document.createElement('a');
+//         if (typeof link.download === 'string') {
+//            document.body.appendChild(link); //Firefox requires the link to be in the body
+//            link.download = filename;
+//            link.href = dataUrl;
+//            link.click();
+//            document.body.removeChild(link); //remove the link when done
+//         }
+//      } else
+
+
+
+      function reEncode(data) {
+         data = encodeURIComponent(data);
+         data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
+           var c = String.fromCharCode('0x'+p1);
+           return c === '%' ? '%25' : c;
+         });
+         return decodeURIComponent(data);
+      }
+
+
+      var image = new Image();
+      image.onload = function() {
+         // if (options.result==="image") return JSROOT.CallBack(call_back, image);
+
+         console.log('GOT IMAGE', image.width, image.height);
+
+
+         var canvas = document.createElement('canvas');
+         canvas.width = image.width;
+         canvas.height = image.height;
+         var context = canvas.getContext('2d');
+         //if(options && options.backgroundColor){
+         //   context.fillStyle = options.backgroundColor;
+         //   context.fillRect(0, 0, canvas.width, canvas.height);
+         //}
+         context.drawImage(image, 0, 0);
+
+         // if (options.result==="canvas") return JSROOT.CallBack(call_back, canvas);
+
+         var a = document.createElement('a');
+         a.download = "file.png";
+         a.href = canvas.toDataURL('image/png');
+         document.body.appendChild(a);
+         a.addEventListener("click", function(e) {
+            a.parentNode.removeChild(a);
+            JSROOT.CallBack(call_back, true);
+         });
+         a.click();
+      }
+
+      image.onerror = function(arg) {
+         console.log('IMAGE ERROR', arg);
+         JSROOT.CallBack(call_back, null);
+      }
+
+      var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg">' +
+                 elem.node().innerHTML +
+                 '</svg>';
+
+      console.log('produced svg is ', svg.length, svg.substr(0,100));
+
+      image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
+
+   }
+
    TPadPainter.prototype.PadButtonClick = function(funcname) {
 
       if (funcname == "CanvasSnapShot") return this.SaveAsPng(true);
