@@ -6201,7 +6201,7 @@
     * @private
     */
    JSROOT.progress = function(msg, tmout) {
-      if (JSROOT.BatchMode || !document) return;
+      if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       var id = "jsroot_progressbox",
           box = d3.select("#"+id);
 

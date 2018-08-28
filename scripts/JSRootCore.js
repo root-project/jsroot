@@ -79,10 +79,11 @@
    if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
       // processing with Node.js or CommonJS
 
-      factory(exports);
-
       //  mark JSROOT as used with Node.js
       exports.BatchMode = exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');
+
+      factory(exports);
+
    } else {
 
       if (typeof JSROOT != 'undefined')
@@ -106,7 +107,8 @@
    JSROOT.sources = ['core']; // indicates which major sources were loaded
 
    JSROOT.id_counter = 0;
-   JSROOT.BatchMode = false; // when true, disables all kind of interactive features
+   if (JSROOT.BatchMode === undefined)
+      JSROOT.BatchMode = false; // when true, disables all kind of interactive features
 
    // JSROOT.use_full_libs = true;
 
@@ -167,7 +169,8 @@
          // MathJax : 0,  // depricated, will be supported till JSROOT 6.0, use Latex variable  0 - never, 1 - only for complex cases, 2 - always
          ProgressBox : true,  // show progress box
          Embed3DinSVG : 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
-         ImageSVG : true, // when producing SVG images, use <image> elements to insert 3D drawings from three.js
+         ImageSVG : !JSROOT.nodejs, // when producing SVG images, use <image> elements to insert 3D drawings from three.js,
+                                    // To enable on nodejs, one should call "npm install canvas"
          NoWebGL : false, // if true, WebGL will be disabled
          GeoGradPerSegm : 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
