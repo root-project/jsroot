@@ -1424,7 +1424,7 @@
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
     }
 
-   TGeoPainter.prototype.createScene = function(usesvg, webgl, w, h) {
+   TGeoPainter.prototype.createScene = function(w, h) {
       // three.js 3D drawing
       this._scene = new THREE.Scene();
       this._scene.fog = new THREE.Fog(0xffffff, 1, 10000);
@@ -1450,7 +1450,19 @@
 
       this._scene.add(this._toplevel);
 
-      if (usesvg) {
+      var rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._webgl,
+            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+
+      this._webgl = rrr.usewebgl;
+      this._renderer = rrr.renderer;
+
+      if (this._renderer.setPixelRatio && !JSROOT.nodejs)
+         this._renderer.setPixelRatio(window.devicePixelRatio);
+      this._renderer.setSize(w, h, !this._fit_main_area);
+      this._renderer.localClippingEnabled = true;
+
+
+/*      if (usesvg) {
          // this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
          this._renderer = THREE.CreateSVGRenderer(false, 0, document);
          if (this._renderer.makeOuterHTML !== undefined) {
@@ -1473,7 +1485,9 @@
       this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
 
-      if (this._fit_main_area && !usesvg) {
+      */
+
+      if (this._fit_main_area && !this._usesvg) {
          this._renderer.domElement.style.width = "100%";
          this._renderer.domElement.style.height = "100%";
          var main = this.select_main();
@@ -1536,7 +1550,7 @@
 
       this._enableSSAO = this.options.ssao;
 
-      if (webgl) {
+      if (this._webgl) {
          var renderPass = new THREE.RenderPass( this._scene, this._camera );
          // Setup depth pass
          this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
@@ -1562,6 +1576,16 @@
 
       this._advceOptions = {};
       this.resetAdvanced();
+
+      if (this._fit_main_area && this._usesvg) {
+         // create top-most SVG for geomtery drawings
+         var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+         svg.appendChild(rrr.dom);
+
+         return svg;
+      }
+
+      return rrr.dom;
    }
 
 
@@ -2499,9 +2523,9 @@
 
          this._fit_main_area = (size.can3d === -1);
 
-         this.createScene(this._usesvg, this._webgl, size.width, size.height);
+         var dom = this.createScene(size.width, size.height);
 
-         this.add_3d_canvas(size, this._renderer.domElement);
+         this.add_3d_canvas(size, dom);
 
          // set top painter only when first child exists
          this.AccessTopPainter(true);
@@ -2663,9 +2687,7 @@
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
 
-         // when using SVGrenderer producing text output, provide result
-         if (this._renderer.workaround_id !== undefined)
-            JSROOT.svg_workaround[this._renderer.workaround_id] = this._renderer.makeOuterHTML();
+         JSROOT.Painter.AfterRender3D(this._renderer);
 
          return;
       }

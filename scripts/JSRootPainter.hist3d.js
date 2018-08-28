@@ -135,7 +135,7 @@
       var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg);
 
       this.renderer = res.renderer;
-      this.webgl = res.webgl;
+      this.webgl = res.usewebgl;
       this.add_3d_canvas(sz, res.dom);
 
       this.first_render_tm = 0;

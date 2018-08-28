@@ -56,12 +56,22 @@
    }
 
 
-   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg) {
+   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg, usewebgl, args) {
       var res = {
          renderer: null,
          dom: null,
          usesvg: usesvg,
          usesvgimg: usesvg && JSROOT.gStyle.ImageSVG
+      }
+
+      if (!args) args = { antialias: true, alpha: true };
+
+      if (JSROOT.nodejs) {
+         res.usewebgl = false;
+      } else if (usewebgl !== undefined) {
+         res.usewebgl = usewebgl;
+      } else {
+         res.usewebgl = JSROOT.Painter.TestWebGL();
       }
 
       if (usesvg) {
@@ -79,17 +89,13 @@
          }
 
          if (res.usesvgimg) {
-            res.webgl = !JSROOT.nodejs && JSROOT.Painter.TestWebGL();
-
-            var canv;
 
             if (nodejs_canvas) {
-               canv = new nodejs_canvas(width, height);
-               canv.style = {};
+               args.canvas = new nodejs_canvas(width, height);
+               args.canvas.style = {};
             }
 
-            res.renderer = res.webgl ? new THREE.WebGLRenderer({ antialias: true, alpha: true }) :
-                                       new THREE.CanvasRenderer({ canvas: canv, antialias: true, alpha: true });
+            res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.CanvasRenderer(args);
          } else {
             // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
             res.renderer = THREE.CreateSVGRenderer(false, 0, document);
@@ -106,9 +112,7 @@
             res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
          }
       } else {
-         res.webgl = JSROOT.Painter.TestWebGL();
-         res.renderer = res.webgl ? new THREE.WebGLRenderer({ antialias: true, alpha: true }) :
-                                    new THREE.CanvasRenderer({ antialias: true, alpha: true });
+         res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.CanvasRenderer(args);
       }
 
       //renderer.setClearColor(0xffffff, 1);
@@ -133,6 +137,15 @@
          }
       }
    }
+
+   JSROOT.Painter.ProcessSVGWorkarounds = function(svg) {
+      if (!JSROOT.svg_workaround) return svg;
+      for (var k=0;k<JSROOT.svg_workaround.length;++k)
+         svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
+      JSROOT.svg_workaround = undefined;
+      return svg;
+   }
+
 
    JSROOT.Painter.TooltipFor3D = function(prnt, canvas) {
       this.tt = null;

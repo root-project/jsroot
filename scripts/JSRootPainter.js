@@ -6079,26 +6079,18 @@
 
          JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
 
+            var has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
+
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
+                              .attr("xmlns:xlink", has_workarounds ? "http://www.w3.org/2000/svg" : null)
                               .attr("width", args.width)
                               .attr("height", args.height)
-                              .attr("style", "").attr("style", null)
-                              .attr("class", null).attr("x", null).attr("y", null);
+                              .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
             var svg = main.html();
 
-            if (JSROOT.svg_workaround) {
-               var has_xlink = false;
-
-               for (var k=0;k<JSROOT.svg_workaround.length;++k) {
-                  if (JSROOT.svg_workaround[k].indexOf("xlink:href")>=0) has_xlink = true;
-                  svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
-               }
-               JSROOT.svg_workaround = undefined;
-
-               if (has_xlink)
-                  main.select('svg').attr("xmlns:xlink", "http://www.w3.org/2000/svg");
-            }
+            if (has_workarounds)
+               svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
                      .replace(/ class=\"\w*\"/g,"")                                // remove all classes
