@@ -1439,7 +1439,7 @@
             JSROOT.Create("TNamed", obj);
             JSROOT.Create("TAttAxis", obj);
             JSROOT.extend(obj, { fNbins: 0, fXmin: 0, fXmax: 0, fXbins : [], fFirst: 0, fLast: 0,
-                                 fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null });
+                                 fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null, fModLabs: null });
             break;
          case 'TAttLine':
             JSROOT.extend(obj, { fLineColor: 1, fLineStyle: 1, fLineWidth: 1 });
