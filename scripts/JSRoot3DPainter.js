@@ -55,6 +55,85 @@
        return this._Detect_WebGL;
    }
 
+
+   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg) {
+      var res = {
+         renderer: null,
+         dom: null,
+         usesvg: usesvg,
+         usesvgimg: usesvg && JSROOT.gStyle.ImageSVG
+      }
+
+      if (usesvg) {
+
+         var nodejs_canvas = null;
+
+         if (JSROOT.nodejs && res.usesvgimg) {
+            try {
+               nodejs_canvas = require('canvas');
+            } catch (er) {
+               nodejs_canvas = null;
+               res.usesvgimg = false;
+               JSROOT.gStyle.ImageSVG = false; // no need to try once again
+            }
+         }
+
+         if (res.usesvgimg) {
+            res.webgl = !JSROOT.nodejs && JSROOT.Painter.TestWebGL();
+
+            var canv;
+
+            if (nodejs_canvas) {
+               canv = new nodejs_canvas(width, height);
+               canv.style = {};
+            }
+
+            res.renderer = res.webgl ? new THREE.WebGLRenderer({ antialias: true, alpha: true }) :
+                                       new THREE.CanvasRenderer({ canvas: canv, antialias: true, alpha: true });
+         } else {
+            // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
+            res.renderer = THREE.CreateSVGRenderer(false, 0, document);
+         }
+
+         if (res.usesvgimg || (res.renderer.makeOuterHTML !== undefined)) {
+            // this is indication of new three.js functionality
+            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+            res.renderer.workaround_id = JSROOT.svg_workaround.length;
+            JSROOT.svg_workaround[res.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+
+            // replace DOM element in renderer
+            res.dom = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
+         }
+      } else {
+         res.webgl = JSROOT.Painter.TestWebGL();
+         res.renderer = res.webgl ? new THREE.WebGLRenderer({ antialias: true, alpha: true }) :
+                                    new THREE.CanvasRenderer({ antialias: true, alpha: true });
+      }
+
+      //renderer.setClearColor(0xffffff, 1);
+      // renderer.setClearColor(0x0, 0);
+      res.renderer.setSize(width, height);
+
+      if (!res.dom) res.dom = res.renderer.domElement;
+
+      return res;
+   }
+
+   JSROOT.Painter.AfterRender3D = function(renderer) {
+      // when using SVGrenderer producing text output, provide result
+      if (renderer.workaround_id !== undefined) {
+         if (typeof renderer.makeOuterHTML == 'function') {
+            JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
+         } else {
+            var canvas = renderer.domElement;
+            var dataUrl = canvas.toDataURL("image/png");
+            var svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+            JSROOT.svg_workaround[renderer.workaround_id] = svg;
+         }
+      }
+   }
+
    JSROOT.Painter.TooltipFor3D = function(prnt, canvas) {
       this.tt = null;
       this.cont = null;
