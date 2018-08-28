@@ -1508,7 +1508,7 @@
                fMaximum: -1111., fMinimum: -1111, fNormFactor: 0., fContour: [],
                fSumw2: [], fOption: "",
                fFunctions: JSROOT.Create("TList"),
-               fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0 });
+               fBufferSize: 0, fBuffer: [], fBinStatErrOpt: 0, fStatOverflows: 2 });
             break;
          case 'TH1I':
          case 'TH1F':
