@@ -6088,9 +6088,16 @@
             var svg = main.html();
 
             if (JSROOT.svg_workaround) {
-               for (var k=0;k<JSROOT.svg_workaround.length;++k)
-                 svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
+               var has_xlink = false;
+
+               for (var k=0;k<JSROOT.svg_workaround.length;++k) {
+                  if (JSROOT.svg_workaround[k].indexOf("xlink:href")>=0) has_xlink = true;
+                  svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
+               }
                JSROOT.svg_workaround = undefined;
+
+               if (has_xlink)
+                  main.select('svg').attr("xmlns:xlink", "http://www.w3.org/2000/svg");
             }
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL

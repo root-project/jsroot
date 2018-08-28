@@ -91,6 +91,7 @@
       }
 
       this.usesvg = JSROOT.BatchMode; // SVG used in batch mode
+      if (this.usesvg) this.usesvgimg = true;
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
@@ -131,30 +132,48 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
+      var dom_elem = null;
+
       if (this.usesvg) {
-         // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
-         this.renderer = THREE.CreateSVGRenderer(false, 0, document);
-         if (this.renderer.makeOuterHTML !== undefined) {
+         console.log('Creating svg', sz.can3d, sz.width + 'x' + sz.height, 'webgl', JSROOT.Painter.TestWebGL());
+
+         if (this.usesvgimg) {
+            this.webgl = JSROOT.Painter.TestWebGL();
+
+            var node_canvas = require('canvas');
+            var canv = new node_canvas(sz.width, sz.height);
+            canv.style = {};
+
+            console.log('canvas property', canv.width, canv.height, 'style', canv.style);
+
+            this.renderer = this.webgl ? new THREE.WebGLRenderer({ canvas: canv, antialias: true, alpha: true }) :
+                                         new THREE.CanvasRenderer({ canvas: canv, antialias: true, alpha: true });
+         } else {
+            // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
+            this.renderer = THREE.CreateSVGRenderer(false, 0, document);
+         }
+
+         if (this.usesvgimg || (this.renderer.makeOuterHTML !== undefined)) {
             // this is indication of new three.js functionality
             if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
             this.renderer.workaround_id = JSROOT.svg_workaround.length;
             JSROOT.svg_workaround[this.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
 
             // replace DOM element in renderer
-            this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
-            this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
+            dom_elem = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            dom_elem.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
          }
       } else {
          this.webgl = JSROOT.Painter.TestWebGL();
-         this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                      new THREE.CanvasRenderer({ antialias : true, alpha: true });
+         this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias: true, alpha: true }) :
+                                      new THREE.CanvasRenderer({ antialias: true, alpha: true });
       }
 
       //renderer.setClearColor(0xffffff, 1);
       // renderer.setClearColor(0x0, 0);
       this.renderer.setSize(this.scene_width, this.scene_height);
 
-      this.add_3d_canvas(sz, this.renderer.domElement);
+      this.add_3d_canvas(sz, dom_elem || this.renderer.domElement);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
@@ -289,8 +308,16 @@
          }
 
          // when using SVGrenderer producing text output, provide result
-         if (this.renderer.workaround_id !== undefined)
-            JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.makeOuterHTML();
+         if (this.renderer.workaround_id !== undefined) {
+            if (this.usesvgimg) {
+               var canvas = this.renderer.domElement;
+               var dataUrl = canvas.toDataURL("image/png");
+               var svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+               JSROOT.svg_workaround[this.renderer.workaround_id] = svg;
+            } else {
+               JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.makeOuterHTML();
+            }
+         }
 
          return;
       }
