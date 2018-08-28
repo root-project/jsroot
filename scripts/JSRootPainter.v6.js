@@ -3780,7 +3780,7 @@
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
          filename += ".png";
       }
-      this.ProduceImage(full_canvas, filename)
+      this.ProduceImageNew(full_canvas, filename)
    }
 
    TPadPainter.prototype.ProduceImage = function(full_canvas, filename, call_back) {
@@ -3884,7 +3884,7 @@
 
          // remove 3D drawings
 
-         var item = { prnt: main.svg_pad() };
+         var item = { prnt: pp.svg_pad() };
          items.push(item);
 
          if (can3d == 2) {
@@ -3892,8 +3892,19 @@
             item.foreign.remove();
          }
 
-         item.frame = main.svg_frame();
-         item.frame.remove();
+         var svg_frame = main.svg_frame();
+         item.frame_node = svg_frame.node();
+         if (item.frame_node)
+            item.frame_next = item.frame_node.nextSibling;
+         svg_frame.remove();
+
+         var btns = pp.svg_layer("btns_layer");
+         item.btns_node = btns.node();
+         if (item.btns_node) {
+            item.btns_prnt = item.btns_node.parentNode;
+            item.btns_next = item.btns_node.nextSibling;
+         }
+         btns.remove();
 
          //var origin = main.apply_3d_size(sz3d, true);
          //origin.remove();
@@ -3929,8 +3940,11 @@
             if (item.foreign) // reinsert foreign object
                item.prnt.node().insertBefore(item.foreign.node(), prim.node());
 
-            if (item.frame.node()) // reinsert frame as first in list of primitives
-               prim.node().insertBefore(item.frame.node(), prim.node().firstChild);
+            if (item.frame_node) // reinsert frame as first in list of primitives
+               prim.node().insertBefore(item.frame_node, item.frame_next);
+
+            if (item.btns_node) // reinsert buttons
+               item.btns_prnt.insertBefore(item.btns_node, item.btns_next);
          }
 
          JSROOT.CallBack(call_back, res);
