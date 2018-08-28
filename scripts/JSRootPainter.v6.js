@@ -3850,6 +3850,8 @@
 
    TPadPainter.prototype.ProduceImageNew = function(full_canvas, filename, call_back) {
 
+      console.log('Produce image full', full_canvas, 'name', filename);
+
       var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
 
       if (elem.empty()) return;
@@ -3861,6 +3863,20 @@
 //      document.body.style.cursor = 'wait';
 
       painter.ForEachPainterInPad(function(pp) {
+
+         // console.log('Check painter pp', pp.this_pad_name);
+
+         var item = { prnt: pp.svg_pad(pp.this_pad_name) };
+         items.push(item);
+
+         // remove buttons from each subpad
+         var btns = pp.svg_layer("btns_layer", pp.this_pad_name);
+         item.btns_node = btns.node();
+         if (item.btns_node) {
+            item.btns_prnt = item.btns_node.parentNode;
+            item.btns_next = item.btns_node.nextSibling;
+            btns.remove();
+         }
 
          var main = pp.frame_painter_ref;
          if (!main || (typeof main.Render3D !== 'function')) return;
@@ -3878,14 +3894,11 @@
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          var dataUrl = canvas.toDataURL("image/png");
 
-         // console.log('origin width height', canvas.width, canvas.height);
+         // console.log('canvas width height', canvas.width, canvas.height);
 
          // console.log('produced png image len = ', dataUrl.length, 'begin', dataUrl.substr(0,100));
 
          // remove 3D drawings
-
-         var item = { prnt: pp.svg_pad() };
-         items.push(item);
 
          if (can3d == 2) {
             item.foreign = item.prnt.select("." + sz2.clname);
@@ -3894,17 +3907,10 @@
 
          var svg_frame = main.svg_frame();
          item.frame_node = svg_frame.node();
-         if (item.frame_node)
+         if (item.frame_node) {
             item.frame_next = item.frame_node.nextSibling;
-         svg_frame.remove();
-
-         var btns = pp.svg_layer("btns_layer");
-         item.btns_node = btns.node();
-         if (item.btns_node) {
-            item.btns_prnt = item.btns_node.parentNode;
-            item.btns_next = item.btns_node.nextSibling;
+            svg_frame.remove();
          }
-         btns.remove();
 
          //var origin = main.apply_3d_size(sz3d, true);
          //origin.remove();
@@ -3933,7 +3939,8 @@
          for (var k=0;k<items.length;++k) {
             var item = items[k];
 
-            item.img.remove(); // delete embed image
+            if (item.img)
+               item.img.remove(); // delete embed image
 
             var prim = item.prnt.select(".primitives_layer");
 
@@ -3969,9 +3976,9 @@
          // if (options.result==="canvas") return JSROOT.CallBack(call_back, canvas);
 
          var a = document.createElement('a');
-         a.download = "file.png";
+         a.download = filename;
          a.href = canvas.toDataURL('image/png');
-         a.style.display = 'none';
+         // a.style.display = 'none';
 
          document.body.appendChild(a);
          a.addEventListener("click", function(e) {
