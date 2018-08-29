@@ -112,8 +112,6 @@
          res.usewebgl = JSROOT.Painter.TestWebGL();
       }
 
-      JSROOT.extra_debug.push("Create3DRenderer svg = " + usesvg + " iswebgl = " + res.usewebgl);
-
       if (usesvg) {
 
          var nodejs_canvas = null;
@@ -152,8 +150,6 @@
             res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
          }
       } else {
-         JSROOT.extra_debug.push("CreateNormalRenderer iswebgl = " + res.usewebgl);
-
          res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.CanvasRenderer(args);
       }
 
@@ -166,8 +162,7 @@
          if (!usesvg && makeimage) {
             res.dom = res.renderer.svgImage = document.createElementNS('http://www.w3.org/2000/svg','image');
             d3.select(res.dom).attr("width", width)
-                              .attr("height", height)
-                              .attr("xlink:href", "");
+                              .attr("height", height);
          }
       }
 
@@ -177,7 +172,8 @@
    JSROOT.Painter.AfterRender3D = function(renderer) {
       if (renderer.svgImage) {
          var dataUrl = renderer.domElement.toDataURL("image/png");
-         d3.select(renderer.svgImage).attr("xlink:href", dataUrl);
+         var attrname = JSROOT.nodejs ? "xlink_href_nodejs" : "xlink:href";
+         d3.select(renderer.svgImage).attr(attrname, dataUrl);
       }
 
       // when using SVGrenderer producing text output, provide result

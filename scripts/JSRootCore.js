@@ -99,8 +99,6 @@
 
    JSROOT.version = "dev 29/08/2018";
 
-   JSROOT.extra_debug = [];
-
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script

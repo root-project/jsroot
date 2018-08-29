@@ -2818,6 +2818,12 @@
              .property('current_pad', "") // this is custom property
              .property('redraw_by_resize', false); // could be enabled to force redraw by each resize
 
+         if (JSROOT.BatchMode) {
+            svg.attr("xmlns", "http://www.w3.org/2000/svg");
+            svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
+            console.log('Set extra attributes for SVG canvas')
+         }
+
          svg.append("svg:title").text("ROOT canvas");
          var frect = svg.append("svg:rect").attr("class","canvas_fillrect")
                                .attr("x",0).attr("y",0);
@@ -3911,8 +3917,6 @@
 
          var can3d = main.access_3d_kind();
 
-         JSROOT.extra_debug.push("found 3D render function can3d = " + can3d);
-
          if ((can3d !== 1) && (can3d !== 2)) return;
 
          var sz2 = main.size_for_3d(2); // get size of DOM element as it will be embed
@@ -3924,8 +3928,6 @@
          var canvas = main.renderer.domElement;
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          var dataUrl = canvas.toDataURL("image/png");
-
-         JSROOT.extra_debug.push("Create dataUrl len = " + dataUrl.length + " image dim = " + canvas.width + "X"+ canvas.height + " data = " + dataUrl.substr(0,50));
 
          // console.log('canvas width height', canvas.width, canvas.height);
 
@@ -3993,8 +3995,6 @@
                  elem.node().innerHTML +
                  '</svg>';
 
-      JSROOT.extra_debug.push('produced svg is len = ' + svg.length + " code = " + svg.substr(0, 300));
-
       if (file_format == "svg")
          return reconstruct(svg); // return SVG file as is
 
@@ -4004,9 +4004,7 @@
       image.onload = function() {
          // if (options.result==="image") return JSROOT.CallBack(call_back, image);
 
-         console.log('GOT IMAGE', image.width, image.height);
-
-         JSROOT.extra_debug.push('GOT IMAGE = ' + image.width + " x " + image.height);
+         // console.log('GOT IMAGE', image.width, image.height);
 
          var canvas = document.createElement('canvas');
          canvas.width = image.width;
@@ -4019,7 +4017,6 @@
 
       image.onerror = function(arg) {
          console.log('IMAGE ERROR', arg);
-         JSROOT.extra_debug.push('GOT IMAGE ERROR');
          reconstruct(null);
       }
 

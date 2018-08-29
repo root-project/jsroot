@@ -6083,12 +6083,15 @@
             var has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
-                              .attr("xmlns:xlink", has_workarounds ? "http://www.w3.org/2000/svg" : null)
+                              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
                               .attr("width", args.width)
                               .attr("height", args.height)
                               .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
             var svg = main.html();
+
+            if (JSROOT.nodejs)
+               svg = svg.replace(/xlink_href_nodejs=/g,"xlink:href=");
 
             if (has_workarounds)
                svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);

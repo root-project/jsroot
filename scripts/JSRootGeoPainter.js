@@ -154,7 +154,7 @@
    TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    TGeoPainter.prototype.CreateToolbar = function(args) {
-      if (this._toolbar || this._usesvg) return;
+      if (this._toolbar || this._usesvg || this._usesvgimg) return;
       var painter = this;
       var buttonList = [{
          name: 'toImage',
@@ -918,7 +918,7 @@
 
    TGeoPainter.prototype.addOrbitControls = function() {
 
-      if (this._controls || this._usesvg) return;
+      if (this._controls || this._usesvg || JSROOT.BatchMode) return;
 
       var painter = this;
 
@@ -1450,7 +1450,7 @@
 
       this._scene.add(this._toplevel);
 
-      var rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, false, this._webgl,
+      var rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._usesvgimg, this._webgl,
             { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = rrr.usewebgl;
@@ -1577,11 +1577,10 @@
       this._advceOptions = {};
       this.resetAdvanced();
 
-      if (this._fit_main_area && this._usesvg) {
+      if (this._fit_main_area && (this._usesvg || this._usesvgimg)) {
          // create top-most SVG for geomtery drawings
          var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
          svg.appendChild(rrr.dom);
-
          return svg;
       }
 
@@ -3011,7 +3010,7 @@
 
          // if rotation was enabled, do it
          if (this._webgl && this.options.autoRotate && !this.options.project) this.autorotate(2.5);
-         if (!this._usesvg && this.options.show_controls) this.showControlOptions(true);
+         if (!this._usesvg && this.options.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
       }
 
       this.DrawingReady();
@@ -3208,6 +3207,8 @@
       painter.SetDivId(divid, 5);
 
       painter._usesvg = JSROOT.Painter.UseSVGFor3D();
+
+      painter._usesvgimg = !painter._usesvg && JSROOT.BatchMode;
 
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
