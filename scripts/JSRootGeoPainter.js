@@ -1450,7 +1450,7 @@
 
       this._scene.add(this._toplevel);
 
-      var rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._webgl,
+      var rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, false, this._webgl,
             { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = rrr.usewebgl;
@@ -3207,7 +3207,7 @@
 
       painter.SetDivId(divid, 5);
 
-      painter._usesvg = JSROOT.BatchMode;
+      painter._usesvg = JSROOT.Painter.UseSVGFor3D();
 
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 

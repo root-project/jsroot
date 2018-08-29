@@ -2911,11 +2911,12 @@
     *    - 1  no embedding, canvas placed over svg with proper size (resize problem may appear)
     *    - 2  normall embedding via ForeginObject, works only with Firefox
     *    - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
+    *    - 4  embed 3D drawing as <image> element
     *
     *  @private
     */
    TObjectPainter.prototype.embed_3d = function() {
-      if (JSROOT.BatchMode) return 3;
+      if (JSROOT.BatchMode) return 4; // in batch - directly create svg::image after rendering
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
@@ -3073,8 +3074,8 @@
 
          var svg = this.svg_pad();
 
-         if (size.can3d === 3) {
-            // this is SVG mode
+         if ((size.can3d === 3) || (size.can3d === 4)) {
+            // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
                elem = svg.insert("g",".primitives_layer").attr("class", size.clname);

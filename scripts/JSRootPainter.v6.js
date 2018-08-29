@@ -3642,6 +3642,23 @@
       }
    }
 
+   TPadPainter.prototype.CreateImageNew = function(format, call_back) {
+      if (format=="pdf") {
+         // use https://github.com/MrRio/jsPDF in the future here
+         JSROOT.CallBack(call_back, btoa("dummy PDF file"));
+      } else if ((format=="png") || (format=="jpeg") || (format=="svg")) {
+         this.ProduceImageNew(true, format, function(res) {
+            if ((format=="svg") || !res)
+               return JSROOT.CallBack(call_back, res);
+            var separ = res.indexOf("base64,");
+            JSROOT.CallBack(call_back, (separ>0) ? res.substr(separ+7) : "");
+         });
+      } else {
+         JSROOT.CallBack(call_back, "");
+      }
+   }
+
+
    TPadPainter.prototype.GetAllRanges = function(arg) {
       var is_top = (arg === undefined), elem = null;
       if (is_top) arg = [];
@@ -3893,6 +3910,9 @@
          if (!main || (typeof main.Render3D !== 'function')) return;
 
          var can3d = main.access_3d_kind();
+
+         JSROOT.extra_debug.push("found 3D render function can3d = " + can3d);
+
          if ((can3d !== 1) && (can3d !== 2)) return;
 
          var sz2 = main.size_for_3d(2); // get size of DOM element as it will be embed
@@ -3904,6 +3924,8 @@
          var canvas = main.renderer.domElement;
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          var dataUrl = canvas.toDataURL("image/png");
+
+         JSROOT.extra_debug.push("Create dataUrl len = " + dataUrl.length + " image dim = " + canvas.width + "X"+ canvas.height + " data = " + dataUrl.substr(0,50));
 
          // console.log('canvas width height', canvas.width, canvas.height);
 
@@ -3927,8 +3949,7 @@
          //origin.remove();
 
          // add svg image
-         item.img = item.prnt.insert("image",".primitives_layer")             // create image object
-                        .attr("class","image_3d")
+         item.img = item.prnt.insert("image",".primitives_layer")     // create image object
                         .attr("x", sz2.x)
                         .attr("y", sz2.y)
                         .attr("width", canvas.width)
@@ -3936,7 +3957,6 @@
                         .attr("href", dataUrl);
 
       }, "pads");
-
 
       function reEncode(data) {
          data = encodeURIComponent(data);
@@ -3969,22 +3989,24 @@
          JSROOT.CallBack(call_back, res);
       }
 
-      var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg">' +
+      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                  elem.node().innerHTML +
                  '</svg>';
 
-      console.log('produced svg is ', svg.length, svg.substr(0,100));
+      JSROOT.extra_debug.push('produced svg is len = ' + svg.length + " code = " + svg.substr(0, 300));
 
       if (file_format == "svg")
          return reconstruct(svg); // return SVG file as is
+
+      var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
 
       var image = new Image();
       image.onload = function() {
          // if (options.result==="image") return JSROOT.CallBack(call_back, image);
 
          console.log('GOT IMAGE', image.width, image.height);
+
+         JSROOT.extra_debug.push('GOT IMAGE = ' + image.width + " x " + image.height);
 
          var canvas = document.createElement('canvas');
          canvas.width = image.width;
@@ -3997,6 +4019,7 @@
 
       image.onerror = function(arg) {
          console.log('IMAGE ERROR', arg);
+         JSROOT.extra_debug.push('GOT IMAGE ERROR');
          reconstruct(null);
       }
 

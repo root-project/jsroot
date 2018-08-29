@@ -90,7 +90,7 @@
          return;
       }
 
-      this.usesvg = JSROOT.BatchMode; // SVG used in batch mode
+      this.usesvg = JSROOT.Painter.UseSVGFor3D(); // SVG used in batch mode
       //if (this.usesvg) this.usesvgimg = JSROOT.gStyle.ImageSVG;  // use svg images to insert graphics
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
@@ -132,7 +132,7 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
-      var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg);
+      var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg, (sz.can3d == 4));
 
       this.renderer = res.renderer;
       this.webgl = res.usewebgl;
@@ -241,7 +241,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || this.usesvg) {
+      if ((tmout <= 0) || this.usesvg || JSROOT.BatchMode) {
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
          } else {
