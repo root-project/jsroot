@@ -16,7 +16,6 @@
             'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate.min',
             'MathJax'              : 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
-            'saveSvgAsPng'         : dir+'saveSvgAsPng.min',
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
             'threejs_all'          : dir+'three.extra.min',
@@ -1171,11 +1170,6 @@
          }
       }
 
-      if ((kind.indexOf('savepng;')>=0) && (jsroot.sources.indexOf("savepng")<0)) {
-         modules.push('saveSvgAsPng');
-         mainfiles += '&&&scripts/saveSvgAsPng.min.js;';
-      }
-
       if (kind.indexOf('jq;')>=0) need_jquery = true;
 
       if (((kind.indexOf('hist;')>=0) || (kind.indexOf('hist3d;')>=0)) && (jsroot.sources.indexOf("hist")<0)) {
@@ -1357,13 +1351,6 @@
    JSROOT.MakeSVG = function(args, callback) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.MakeSVG(args, callback);
-      });
-   }
-
-   // Save DOM element as SVG - defined in saveSvgAsPng.js
-   JSROOT.saveSvgAsPng = function(el, options, callback) {
-      JSROOT.AssertPrerequisites("savepng", function() {
-         JSROOT.saveSvgAsPng(el, options, callback);
       });
    }
 
