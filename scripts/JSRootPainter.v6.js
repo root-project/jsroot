@@ -3780,7 +3780,18 @@
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
          filename += ".png";
       }
-      this.ProduceImageNew(full_canvas, filename)
+      this.ProduceImageNew(full_canvas, "png", function(pngdata) {
+         var a = document.createElement('a');
+         a.download = filename;
+         a.href = pngdata;
+         // a.style.display = 'none';
+
+         document.body.appendChild(a);
+         a.addEventListener("click", function(e) {
+            a.parentNode.removeChild(a);
+         });
+         a.click();
+      });
    }
 
    TPadPainter.prototype.ProduceImage = function(full_canvas, filename, call_back) {
@@ -3848,13 +3859,13 @@
 
    }
 
-   TPadPainter.prototype.ProduceImageNew = function(full_canvas, filename, call_back) {
+   TPadPainter.prototype.ProduceImageNew = function(full_canvas, file_format, call_back) {
 
-      console.log('Produce image full', full_canvas, 'name', filename);
+      console.log('Produce image full', full_canvas, 'name', file_format);
 
       var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
 
-      if (elem.empty()) return;
+      if (elem.empty()) return JSROOT.CallBack(call_back);
 
       var painter = full_canvas ? this.canv_painter() : this;
 
@@ -3926,6 +3937,7 @@
 
       }, "pads");
 
+
       function reEncode(data) {
          data = encodeURIComponent(data);
          data = data.replace(/%([0-9A-F]{2})/g, function(match, p1) {
@@ -3957,6 +3969,17 @@
          JSROOT.CallBack(call_back, res);
       }
 
+      var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg">' +
+                 elem.node().innerHTML +
+                 '</svg>';
+
+      console.log('produced svg is ', svg.length, svg.substr(0,100));
+
+      if (file_format == "svg")
+         return reconstruct(svg); // return SVG file as is
+
       var image = new Image();
       image.onload = function() {
          // if (options.result==="image") return JSROOT.CallBack(call_back, image);
@@ -3967,39 +3990,15 @@
          canvas.width = image.width;
          canvas.height = image.height;
          var context = canvas.getContext('2d');
-         //if(options && options.backgroundColor){
-         //   context.fillStyle = options.backgroundColor;
-         //   context.fillRect(0, 0, canvas.width, canvas.height);
-         //}
          context.drawImage(image, 0, 0);
 
-         // if (options.result==="canvas") return JSROOT.CallBack(call_back, canvas);
-
-         var a = document.createElement('a');
-         a.download = filename;
-         a.href = canvas.toDataURL('image/png');
-         // a.style.display = 'none';
-
-         document.body.appendChild(a);
-         a.addEventListener("click", function(e) {
-            a.parentNode.removeChild(a);
-            reconstruct(true);
-         });
-         a.click();
+         reconstruct(canvas.toDataURL('image/' + file_format));
       }
 
       image.onerror = function(arg) {
          console.log('IMAGE ERROR', arg);
          reconstruct(null);
       }
-
-      var doctype = '<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
-
-      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg">' +
-                 elem.node().innerHTML +
-                 '</svg>';
-
-      console.log('produced svg is ', svg.length, svg.substr(0,100));
 
       image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
    }
