@@ -1790,10 +1790,8 @@
       });
       this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", function(arg) {
-         var top = this.svg_frame();
-         if (!top.empty())
-            JSROOT.saveSvgAsPng(top.node(), { name: "frame.png" } );
+      menu.add("Save as frame.png", function() {
+         this.pad_painter().SaveAsPng('frame', 'frame.png');
       });
 
       return true;
@@ -3632,28 +3630,11 @@
    }
 
    TPadPainter.prototype.CreateImage = function(format, call_back) {
-      if (format=="svg") {
-         JSROOT.CallBack(call_back, btoa(this.CreateSvg()));
-      } else if (format=="pdf") {
-         // use https://github.com/MrRio/jsPDF in the future here
-         JSROOT.CallBack(call_back, btoa("dummy PDF file"));
-      } else if ((format=="png") || (format=="jpeg")) {
-         this.ProduceImage(true, 'any.' + format, function(can) {
-            var res = can.toDataURL('image/' + format),
-                separ = res.indexOf("base64,");
-            JSROOT.CallBack(call_back, (separ>0) ? res.substr(separ+7) : "");
-         });
-      } else {
-         JSROOT.CallBack(call_back, "");
-      }
-   }
-
-   TPadPainter.prototype.CreateImageNew = function(format, call_back) {
       if (format=="pdf") {
          // use https://github.com/MrRio/jsPDF in the future here
          JSROOT.CallBack(call_back, btoa("dummy PDF file"));
       } else if ((format=="png") || (format=="jpeg") || (format=="svg")) {
-         this.ProduceImageNew(true, format, function(res) {
+         this.ProduceImage(true, format, function(res) {
             if ((format=="svg") || !res)
                return JSROOT.CallBack(call_back, res);
             var separ = res.indexOf("base64,");
@@ -3663,7 +3644,6 @@
          JSROOT.CallBack(call_back, "");
       }
    }
-
 
    TPadPainter.prototype.GetAllRanges = function(arg) {
       var is_top = (arg === undefined), elem = null;
@@ -3780,30 +3760,13 @@
        });
    }
 
-   TPadPainter.prototype.CreateSvg = function() {
-      var main = this.svg_canvas(),
-          svg = main.html();
-
-      svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
-               .replace(/ class=\"\w*\"/g,"")                                // remove all classes
-               .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
-               .replace(/<g><\/g>/g,"");                                     // remove all empty groups
-
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"' +
-            ' viewBox="0 0 ' + main.property('draw_width') + ' ' + main.property('draw_height') + '"' +
-            ' width="' + main.property('draw_width') + '"' +
-            ' height="' + main.property('draw_height') + '">' + svg + '</svg>';
-
-       return svg;
-   }
-
    TPadPainter.prototype.SaveAsPng = function(full_canvas, filename) {
       if (!filename) {
          filename = this.this_pad_name;
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
          filename += ".png";
       }
-      this.ProduceImageNew(full_canvas, "png", function(pngdata) {
+      this.ProduceImage(full_canvas, "png", function(pngdata) {
          var a = document.createElement('a');
          a.download = filename;
          a.href = pngdata;
@@ -3817,85 +3780,21 @@
       });
    }
 
-   TPadPainter.prototype.ProduceImage = function(full_canvas, filename, call_back) {
+   TPadPainter.prototype.ProduceImage = function(full_canvas, file_format, call_back) {
 
-      var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
+      var use_frame = (full_canvas === "frame");
 
-      if (elem.empty()) return;
-
-      var painter = full_canvas ? this.canv_painter() : this;
-
-      document.body.style.cursor = 'wait';
-
-      painter.ForEachPainterInPad(function(pp) {
-
-         var main = pp.frame_painter_ref;
-         if (!main || (typeof main.Render3D !== 'function')) return;
-
-         var can3d = main.access_3d_kind();
-         if ((can3d !== 1) && (can3d !== 2)) return;
-
-         var sz = main.size_for_3d(3); // get size for SVG canvas
-
-         var svg3d = main.Render3D(-1111); // render SVG
-
-         //var rrr = THREE.CreateSVGRenderer(true, 0);
-         //rrr.setSize(sz.width, sz.height);
-         //rrr.render(main.scene, main.camera);
-
-          elem.insert("g",".primitives_layer")             // create special group
-              .attr("class","temp_saveaspng")
-              .attr("transform", "translate(" + sz.x + "," + sz.y + ")")
-              .node().appendChild(svg3d);      // add code
-      }, "pads");
-
-//      if (((can3d === 1) || (can3d === 2)) && main && main.Render3D) {
-           // this was saving of image buffer from 3D render
-//         var canvas = main.renderer.domElement;
-//         main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
-//         var dataUrl = canvas.toDataURL("image/png");
-//         dataUrl.replace("image/png", "image/octet-stream");
-//         var link = document.createElement('a');
-//         if (typeof link.download === 'string') {
-//            document.body.appendChild(link); //Firefox requires the link to be in the body
-//            link.download = filename;
-//            link.href = dataUrl;
-//            link.click();
-//            document.body.removeChild(link); //remove the link when done
-//         }
-//      } else
-
-
-      var options = { name: filename, removeClass: "btns_layer" };
-      if (call_back) options.result = "canvas";
-
-      JSROOT.saveSvgAsPng(elem.node(), options, function(res) {
-
-         if (res===null) console.warn('problem when produce image');
-
-         elem.selectAll(".temp_saveaspng").remove();
-
-         document.body.style.cursor = 'auto';
-
-         if (call_back) JSROOT.CallBack(call_back, res);
-      });
-
-   }
-
-   TPadPainter.prototype.ProduceImageNew = function(full_canvas, file_format, call_back) {
-
-      console.log('Produce image full', full_canvas, 'name', file_format);
-
-      var elem = full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name);
+      var elem = use_frame ? this.svg_frame() : (full_canvas ? this.svg_canvas() : this.svg_pad(this.this_pad_name));
 
       if (elem.empty()) return JSROOT.CallBack(call_back);
 
-      var painter = full_canvas ? this.canv_painter() : this;
+      var painter = (full_canvas && !use_frame) ? this.canv_painter() : this;
 
-      var items = [];
+      var items = []; // keep list of replaced elements, which should be moved back at the end
 
 //      document.body.style.cursor = 'wait';
 
+      if (!use_frame) // do not make transformations for the frame
       painter.ForEachPainterInPad(function(pp) {
 
          // console.log('Check painter pp', pp.this_pad_name);
@@ -3991,7 +3890,10 @@
          JSROOT.CallBack(call_back, res);
       }
 
-      var svg = '<svg width="' + elem.property('draw_width') + '" height="' + elem.property('draw_height') + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+      var width = elem.property('draw_width'), height = elem.property('draw_height');
+      if (use_frame) { width = this.frame_width(); height = this.frame_height(); }
+
+      var svg = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                  elem.node().innerHTML +
                  '</svg>';
 
