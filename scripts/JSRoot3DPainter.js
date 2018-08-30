@@ -104,11 +104,6 @@
 
       if (!args) args = { antialias: true, alpha: true };
 
-      // solves problem with toDataUrl in headless mode of chrome
-      // found https://stackoverflow.com/questions/48011613
-      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless)
-         args.premultipliedAlpha = false;
-
       if (JSROOT.nodejs) {
          res.usewebgl = false;
       } else if (usewebgl !== undefined) {
@@ -116,6 +111,11 @@
       } else {
          res.usewebgl = JSROOT.Painter.TestWebGL();
       }
+
+      // solves problem with toDataUrl in headless mode of chrome
+      // found https://stackoverflow.com/questions/48011613
+      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless && res.usewebgl)
+         args.premultipliedAlpha = false;
 
       if (usesvg) {
 
