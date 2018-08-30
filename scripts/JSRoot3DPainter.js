@@ -44,7 +44,7 @@
    JSROOT.Painter.TestWebGL = function() {
 
       // WebGL is not yet working in batch mode
-      if (JSROOT.gStyle.NoWebGL || JSROOT.BatchMode) return false;
+      if (JSROOT.gStyle.NoWebGL /* || JSROOT.BatchMode */) return false;
 
       if ('_Detect_WebGL' in this) return this._Detect_WebGL;
 
@@ -103,6 +103,11 @@
       }
 
       if (!args) args = { antialias: true, alpha: true };
+
+      // solves problem with toDataUrl in headless mode of chrome
+      // found https://stackoverflow.com/questions/48011613
+      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless)
+         args.premultipliedAlpha = false;
 
       if (JSROOT.nodejs) {
          res.usewebgl = false;

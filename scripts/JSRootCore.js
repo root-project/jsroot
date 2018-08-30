@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 29/08/2018";
+   JSROOT.version = "dev 30/08/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -138,6 +138,7 @@
       JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
       JSROOT.browser.isIE = false || !!document.documentMode;
       JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
+      JSROOT.browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    }
 
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
