@@ -2012,6 +2012,10 @@
             delete arg.prereq; JSROOT.ConnectWebWindow(arg);
          }, arg.prereq_logdiv);
 
+      // special hold script, prevents headless browser from too early exit
+      if ((JSROOT.GetUrlOption("batch_mode")!==null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
+         JSROOT.loadScript("root_batch_holder.js?key=" + JSROOT.GetUrlOption("key"));
+
       if (!arg.platform)
          arg.platform = JSROOT.GetUrlOption("platform");
 
