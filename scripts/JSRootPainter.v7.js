@@ -3095,6 +3095,10 @@
    TPadPainter.prototype.UpdateObject = function(obj) {
       if (!obj) return false;
 
+      this.pad.fCw = obj.fCw;
+      this.pad.fCh = obj.fCh;
+      this.pad.fTitle = obj.fTitle;
+
       return true;
    }
 
@@ -3235,7 +3239,11 @@
 
       if (!snap || !snap.fPrimitives) return;
 
-      var padattr = snap.fPadAttributes || { fCw: 0, fCh: 0 }; // for the moment no canvas attributes are provided
+      // for the moment only window size attributes are provided
+      var padattr = { fCw: snap.fWinSize[0].fVal, fCh: snap.fWinSize[1].fVal, fTitle: snap.fTitle };
+
+      // if canvas size not specified in batch mode, temporary use 900x700 size
+      if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
       if (this.iscan && snap.fTitle && document)
          document.title = snap.fTitle;
@@ -3248,13 +3256,9 @@
          this.draw_object = padattr;
          this.pad = padattr;
          this.pad_frame = snap.fFrame;
-         // this._fixed_size = true;
 
-         // if canvas size not specified in batch mode, temporary use 900x700 size
-         if (this.batch_mode && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
-
-         // case of ROOT7 with always dummy TPad as first entry
-         if (!padattr.fCw || !padattr.fCh) this._fixed_size = false;
+         if (this.batch_mode && this.iscan)
+             this._fixed_size = true;
 
          this.CreateCanvasSvg(0);
          this.SetDivId(this.divid);  // now add to painters list
@@ -3265,7 +3269,8 @@
          return;
       }
 
-      this.UpdateObject(padattr); // update only object attributes
+      // update only pad/canvas attributes
+      this.UpdateObject(padattr);
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
