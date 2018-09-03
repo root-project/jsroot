@@ -1589,11 +1589,12 @@
 
    // ==============================================================================
 
-   function LongPollSocket(addr, _raw) {
+   function LongPollSocket(addr, _raw, _args) {
       this.path = addr;
       this.connid = null;
       this.req = null;
       this.raw = _raw;
+      this.args = _args;
 
       this.nextrequest("", "connect");
    }
@@ -1601,8 +1602,8 @@
    LongPollSocket.prototype.nextrequest = function(data, kind) {
       var url = this.path, reqmode = "buf", post = null;
       if (kind === "connect") {
-         url+="?connect";
-         if (this.raw) url+="_raw"; // raw mode, use only response body
+         url += this.raw ? "?raw_connect" : "?txt_connect";
+         if (this.args) url += "&" + this.args;
          console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
@@ -1859,7 +1860,7 @@
 
       this.Close();
 
-      var pthis = this, ntry = 0;
+      var pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
 
       function retry_open(first_time) {
 
@@ -1886,12 +1887,13 @@
 
          if ((pthis.kind === 'websocket') && first_time) {
             path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
+            if (args) path += "?" + args;
             console.log('configure websocket ' + path);
             conn = new WebSocket(path);
          } else {
             path += "root.longpoll";
             console.log('configure longpoll ' + path);
-            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'));
+            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'), args);
          }
 
          if (!conn) return;
@@ -1902,9 +1904,7 @@
             if (ntry > 2) JSROOT.progress();
             pthis.state = 1;
 
-            var key = JSROOT.GetUrlOption("key") || "unknown";
-
-            console.log('websocket initialized key=' + key);
+            var key = pthis.key || "";
 
             pthis.Send("READY=" + key, 0); // need to confirm connection
             pthis.InvokeReceiver('OnWebsocketOpened');
@@ -2066,6 +2066,8 @@
             }
          };
       }
+
+      handle.key = JSROOT.GetUrlOption("key");
 
       if (!arg.receiver)
          return JSROOT.CallBack(arg.callback, handle, arg);

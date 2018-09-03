@@ -3981,6 +3981,7 @@
       this.CloseWebsocket();
 
       this._websocket = handle;
+      console.log('Use websocket', this._websocket.key);
       this._websocket.SetReceiver(this);
       this._websocket.Connect();
    }
