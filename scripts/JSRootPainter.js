@@ -2076,11 +2076,15 @@
       handle.SetReceiver(arg.receiver);
       handle.Connect();
 
-      if (arg.prereq2)
+      if (arg.prereq2) {
          JSROOT.AssertPrerequisites(arg.prereq2, function() {
-            delete arg.prereq2;
-            if (arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
+            delete arg.prereq2; // indicate that func is loaded
+            if (!arg.first_recv || arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
          });
+      } else if (!arg.first_recv) {
+         JSROOT.CallBack(arg.callback, handle, arg);
+      }
+
    }
 
    // ========================================================================================
