@@ -877,7 +877,14 @@
             var dy = (hmax - hmin) * 0.05;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-            this.ymax = hmax + dy;
+
+            if (this.options.Text) {
+               var pad = this.root_pad();
+               if (pad && pad.fLogy && hmin_nz) this.ymax = Math.exp(Math.log(hmax)*1.25 - Math.log(hmin_nz)*0.25);
+                                           else this.ymax = hmax + 4*dy;
+            } else {
+               this.ymax = hmax + dy;
+            }
          }
       }
    }
