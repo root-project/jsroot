@@ -1763,7 +1763,6 @@
          this.Text = true;
          this.Hist = false;
          this.TextAngle = Math.min(d.partAsInt(), 90);
-
          if (d.part.indexOf('N')>=0) this.TextKind = "N";
          if (d.part.indexOf('E')>=0) this.TextKind = "E";
       }
@@ -3408,9 +3407,9 @@
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             if (this.options.Text) {
-               var pad = this.root_pad();
-               if (pad && pad.fLogy && hmin_nz) this.ymax = Math.exp(Math.log(hmax)*1.25 - Math.log(hmin_nz)*0.25);
-                                           else this.ymax = hmax + 4*dy;
+               var pad = this.root_pad(), log_scale = pad && ((this.options.BarStyle >= 20) ? pad.fLogx : pad.fLogy);
+               if (log_scale && hmin_nz) this.ymax = Math.exp(Math.log(hmax)*1.25 - Math.log(hmin_nz)*0.25);
+                                    else this.ymax = hmax + 4*dy;
             } else {
                this.ymax = hmax + dy;
             }
@@ -3581,6 +3580,7 @@
           pad = this.root_pad(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
           pthis = this,
+          show_text = this.options.Text, text_col, text_angle, text_size,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
           side = (this.options.BarStyle > 10) ? this.options.BarStyle % 10 : 0;
@@ -3590,6 +3590,18 @@
       if ((this.options.BaseLine !== false) && !isNaN(this.options.BaseLine))
          if (this.options.BaseLine >= pmain.scale_ymin)
             gry2 = Math.round(pmain.gry(this.options.BaseLine));
+
+      if (show_text) {
+         text_col = this.get_color(histo.fMarkerColor);
+         text_angle = -1*this.options.TextAngle;
+         text_size = 20;
+
+         if ((histo.fMarkerSize!==1) && text_angle)
+            text_size = 0.02*height*histo.fMarkerSize;
+
+         this.StartTextDrawing(42, text_size, this.draw_g, text_size);
+      }
+
 
       for (i = left; i < right; ++i) {
          x1 = xaxis.GetBinLowEdge(i+1);
@@ -3624,6 +3636,17 @@
                barsr += "M"+grx2+","+gry1 + "h"+(-w) + "v"+(gry2-gry1) + "h"+w + "z";
             }
          }
+
+         if (show_text && y) {
+            var lbl = (y === Math.round(y)) ? y.toString() : JSROOT.FFormat(y, JSROOT.gStyle.fPaintTextFormat);
+
+            if (pmain.swap_xy)
+               this.DrawText({ align: 12, x: Math.round(gry1 + text_size/2), y: Math.round(grx1+0.1), height: Math.round(w*0.8), text: lbl, color: text_col, latex: 0 });
+            else if (text_angle)
+               this.DrawText({ align: 12, x: grx1+w/2, y: Math.round(gry1 - 2 - text_size/5), width: 0, height: 0, rotate: text_angle, text: lbl, color: text_col, latex: 0 });
+            else
+               this.DrawText({ align: 22, x: Math.round(grx1 + w*0.1), y: Math.round(gry1-2-text_size), width: Math.round(w*0.8), height: text_size, text: lbl, color: text_col, latex: 0 });
+         }
       }
 
       if (bars)
@@ -3642,6 +3665,9 @@
                .attr("d", barsr)
                .call(this.fillatt.func)
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
+
+      if (show_text)
+         this.FinishTextDrawing(this.draw_g);
    }
 
    TH1Painter.prototype.DrawFilledErrors = function(width, height) {
@@ -3717,7 +3743,7 @@
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
           mpath = "", text_col, text_angle, text_size;
 
-      if (show_errors && !show_markers && (this.histo.fMarkerStyle > 1))
+      if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
          show_markers = true;
 
       if (this.options.ErrorKind === 2) {
@@ -3753,12 +3779,12 @@
       this.CreateG(true);
 
       if (show_text) {
-         text_col = this.get_color(this.histo.fMarkerColor);
+         text_col = this.get_color(histo.fMarkerColor);
          text_angle = -1*this.options.TextAngle;
          text_size = 20;
 
-         if ((this.histo.fMarkerSize!==1) && text_angle)
-            text_size = 0.02*height*this.histo.fMarkerSize;
+         if ((histo.fMarkerSize!==1) && text_angle)
+            text_size = 0.02*height*histo.fMarkerSize;
 
          if (!text_angle && !this.options.TextKind) {
              var space = width / (right - left + 1);
