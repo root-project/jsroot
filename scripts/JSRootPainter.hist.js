@@ -2258,7 +2258,8 @@
                     swap_xy: (this.options.BarStyle >= 20),
                     reverse_x: this.options.RevX,
                     reverse_y: this.options.RevY,
-                    Proj: this.options.Proj });
+                    Proj: this.options.Proj,
+                    extra_y_space: this.options.Text });
       delete this.check_pad_range;
    }
 
@@ -3406,13 +3407,7 @@
             var dy = (hmax - hmin) * 0.05;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-            if (this.options.Text) {
-               var pad = this.root_pad(), log_scale = pad && ((this.options.BarStyle >= 20) ? pad.fLogx : pad.fLogy);
-               if (log_scale && hmin_nz) this.ymax = Math.exp(Math.log(hmax)*1.25 - Math.log(hmin_nz)*0.25);
-                                    else this.ymax = hmax + 4*dy;
-            } else {
-               this.ymax = hmax + dy;
-            }
+            this.ymax = hmax + dy;
          }
       }
 
