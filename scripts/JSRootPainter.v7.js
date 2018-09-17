@@ -2327,6 +2327,14 @@
       this.scale_ymin = this.ymin;
       this.scale_ymax = this.ymax;
 
+      // if (opts.extra_y_space) {
+      //    var log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
+      //    if (log_scale && (this.scale_ymax > 0))
+      //       this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
+      //    else
+      //       this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
+      // }
+
       //if (typeof this.RecalculateRange == "function")
       //   this.RecalculateRange();
 

@@ -1088,12 +1088,11 @@
 
       if (opts.extra_y_space) {
          var log_scale = this.swap_xy ? pad.fLogx : pad.fLogy;
-         if (log_scale)
+         if (log_scale && (this.scale_ymax > 0))
             this.scale_ymax = Math.exp(Math.log(this.scale_ymax)*1.1);
          else
             this.scale_ymax += (this.scale_ymax - this.scale_ymin) * 0.1;
       }
-
 
       if (opts.check_pad_range) {
          // take zooming out of pad or axis attributes
