@@ -3365,11 +3365,11 @@
 
          if ((i<left) || (i>=right)) continue;
 
-         if (value > 0)
-            if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
+         if ((value > 0) && ((hmin_nz == 0) || (value < hmin_nz))) hmin_nz = value;
+
          if (first) {
             hmin = hmax = value;
-            first = false;;
+            first = false;
          }
 
          err = this.options.Error ? this.histo.getBinError(i + 1) : 0;
@@ -3400,14 +3400,20 @@
 
       if (this.draw_content) {
          if (hmin >= hmax) {
-            if (hmin == 0) { this.ymin = 0; this.ymax = 1; } else
-               if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
-               else { this.ymin = 0; this.ymax = hmin * 2; }
+            if (hmin == 0) { this.ymin = 0; this.ymax = 1; }
+            else if (hmin < 0) { this.ymin = 2 * hmin; this.ymax = 0; }
+            else { this.ymin = 0; this.ymax = hmin * 2; }
          } else {
             var dy = (hmax - hmin) * 0.05;
             this.ymin = hmin - dy;
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
-            this.ymax = hmax + dy;
+            if (this.options.Text) {
+               var pad = this.root_pad();
+               if (pad && pad.fLogy && hmin_nz) this.ymax = Math.exp(Math.log(hmax)*1.25 - Math.log(hmin_nz)*0.25);
+                                           else this.ymax = hmax + 4*dy;
+            } else {
+               this.ymax = hmax + dy;
+            }
          }
       }
 
