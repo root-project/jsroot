@@ -6092,7 +6092,8 @@
 
             var has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
-            main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
+            main.select('svg').attr("xmlns", null) // just to keep namespace at the end of attributes list
+                              .attr("xmlns", "http://www.w3.org/2000/svg")
                               .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
                               .attr("width", args.width)
                               .attr("height", args.height)
@@ -6110,6 +6111,9 @@
                      .replace(/ class=\"\w*\"/g,"")                                // remove all classes
                      .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
                      .replace(/<g><\/g>/g,"");                                     // remove all empty groups
+
+            if (svg.indexOf("xlink:href")<0)
+               svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g,"");
 
             main.remove();
 

@@ -2259,7 +2259,7 @@
                     reverse_x: this.options.RevX,
                     reverse_y: this.options.RevY,
                     Proj: this.options.Proj,
-                    extra_y_space: this.options.Text });
+                    extra_y_space: this.options.Text && (this.options.BarStyle > 0) });
       delete this.check_pad_range;
    }
 
