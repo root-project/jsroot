@@ -2827,7 +2827,6 @@
          if (JSROOT.BatchMode) {
             svg.attr("xmlns", "http://www.w3.org/2000/svg");
             svg.attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-            console.log('Set extra attributes for SVG canvas')
          }
 
          svg.append("svg:title").text("ROOT canvas");
