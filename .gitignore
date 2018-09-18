@@ -1,0 +1,12 @@
+ddemo/
+jsdoc/
+/scripts/three.js
+/scripts/three.extra.js
+/scripts/jquery.mousewheel.js
+.settings
+.project
+.gitattributes
+*.root
+demo/node/node_modules
+demo/node/*.svg
+node_modules
