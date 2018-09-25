@@ -2716,6 +2716,8 @@
       //   .attr("height", rect.height)
       //   .call(this.fillatt.func);
 
+      this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
+
       this.AlignBtns(btns, rect.width, rect.height, svg);
 
       return true;
@@ -2826,6 +2828,8 @@
               .attr("height", h)
               .call(this.fillatt.func)
               .call(this.lineatt.func);
+
+      this._fast_drawing = JSROOT.gStyle.SmallPad && ((w < JSROOT.gStyle.SmallPad.width) || (h < JSROOT.gStyle.SmallPad.height));
 
       if (svg_pad.property('can3d') === 1)
          // special case of 3D canvas overlay
@@ -3739,8 +3743,7 @@
    }
 
    TPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
-      var sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0,
-          btns_x = 0, btns_y = 0;
+      var sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
       if (btns.property('vertical')) {
           btns_x = btns.property('leftside') ? 2 : (width - sz0);
           btns_y = height - nextx;
@@ -3750,7 +3753,10 @@
       }
 
       btns.attr("transform","translate("+btns_x+","+btns_y+")");
-      if (svg) btns.attr("display", svg.property("pad_enlarged") ? "none" : null); // hide buttons when sub-pad is enlarged
+
+      var displ = this._fast_drawing ? "none" : null;  // no buttons with fast drawing
+      if (svg && svg.property("pad_enlarged")) displ = "none";  // hide buttons when any canvas sub-pad is enlarged
+      btns.attr("display", displ);
    }
 
 //   TPadPainter.prototype.DrawingReady = function(res_painter) {
