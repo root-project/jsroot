@@ -364,7 +364,7 @@
 
    THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter();
-      if (!pp) return;
+      if (!pp || pp._fast_drawing) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");

@@ -1241,11 +1241,15 @@
    }
 
    TPavePainter.prototype.FillStatistic = function() {
+
+      var pp = this.pad_painter();
+      if (pp && pp._fast_drawing) return false;
+
       var pave = this.GetObject(),
           main = pave.$main_painter || this.main_painter();
 
       if (pave.fName !== "stats") return false;
-      if (!main || typeof main.FillStatistic !== 'function') return false;
+      if (!main || (typeof main.FillStatistic !== 'function')) return false;
 
       var dostat = parseInt(pave.fOptStat), dofit = parseInt(pave.fOptFit);
       if (isNaN(dostat)) dostat = JSROOT.gStyle.fOptStat;
@@ -2838,7 +2842,7 @@
 
    THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter();
-      if (!pp) return;
+      if (!pp || pp._fast_drawing) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");

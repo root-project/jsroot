@@ -755,7 +755,7 @@
 
       this.position = 0;
 
-      if ('getBoundingClientRect' in axis_g.node()) {
+      if (!disable_axis_drawing && ('getBoundingClientRect' in axis_g.node())) {
          var rect1 = axis_g.node().getBoundingClientRect(),
              rect2 = this.svg_pad().node().getBoundingClientRect();
 
@@ -1380,6 +1380,11 @@
       var draw_horiz = this.swap_xy ? this.y_handle : this.x_handle,
           draw_vertical = this.swap_xy ? this.x_handle : this.y_handle;
 
+      if (!disable_axis_draw) {
+         var pp = this.pad_painter();
+         if (pp && pp._fast_drawing) disable_axis_draw = true;
+      }
+
       draw_horiz.DrawAxis(false, layer, w, h,
                           draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
                           false, pad.fTickx ? -h : 0, disable_axis_draw);
@@ -1391,7 +1396,7 @@
 
       this.DrawGrids();
 
-      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame) {
+      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame && !disable_axis_draw) {
 
          var shrink = 0., ypos = draw_vertical.position;
 
