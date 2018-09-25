@@ -1645,11 +1645,7 @@
          this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
                         redraw: this.SizeChanged.bind(this) });
 
-      if (tooltip_rect.empty()) {
-
-         var close_handler = this.ProcessTooltipEvent.bind(this, null),
-             mouse_handler = this.ProcessTooltipEvent.bind(this, { handler: true, touch: false });
-
+      if (tooltip_rect.empty())
          tooltip_rect =
             this.draw_g
                 .append("rect")
@@ -1657,12 +1653,21 @@
                 .style('opacity',0)
                 .style('fill',"none")
                 .style("pointer-events","visibleFill")
-                .on('mouseenter', mouse_handler)
-                .on('mousemove', mouse_handler)
-                .on('mouseleave', close_handler);
+                .property('handlers_set', 0);
+
+      var handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
+
+      if (tooltip_rect.property('handlers_set') != handlers_set) {
+         var close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
+              mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+
+         tooltip_rect.property('handlers_set', handlers_set)
+                     .on('mouseenter', mouse_handler)
+                     .on('mousemove', mouse_handler)
+                     .on('mouseleave', close_handler);
 
          if (JSROOT.touches) {
-            var touch_handler = this.ProcessTooltipEvent.bind(this, { handler: true, touch: true });
+            var touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
             tooltip_rect.on("touchstart", touch_handler)
                         .on("touchmove", touch_handler)
