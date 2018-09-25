@@ -2203,6 +2203,8 @@
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg };
 
+      if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
+      if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
          if (arg && arg.prereq) delete arg.prereq;
          JSROOT.ConnectWebWindow(arg);

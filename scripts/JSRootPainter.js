@@ -1861,8 +1861,6 @@
    /** Create configured socket for current object. */
    WebWindowHandle.prototype.Connect = function(href) {
 
-      console.log('WebWindowHandle Connect', href);
-
       this.Close();
 
       var pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
@@ -2001,6 +1999,8 @@
     *
     * @param {object} arg - arguemnts
     * @param {string} [arg.prereq] - prerequicities, which should be loaded
+    * @param {string} [arg.openui5src] - source of openui5, either URL like "https://openui5.hana.ondemand.com" or "jsroot" which provides its own reduced openui5 package
+    * @param {string} [arg.openui5libs] - list of openui5 libraries loaded, default is "sap.m, sap.ui.layout, sap.ui.unified"
     * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
     * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
     * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
@@ -2012,10 +2012,13 @@
       if (typeof arg == 'function') arg = { callback: arg }; else
       if (!arg || (typeof arg != 'object')) arg = {};
 
-      if (arg.prereq)
+      if (arg.prereq) {
+         if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
+         if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
          return JSROOT.AssertPrerequisites(arg.prereq, function() {
             delete arg.prereq; JSROOT.ConnectWebWindow(arg);
          }, arg.prereq_logdiv);
+      }
 
       // special hold script, prevents headless browser from too early exit
       if ((JSROOT.GetUrlOption("batch_mode")!==null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
