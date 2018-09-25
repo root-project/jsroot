@@ -1791,12 +1791,15 @@
       item.ready = true;
       item.msg = _msg;
       item.len = _len;
+      if (this._loop_msgqueue) return;
+      this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-         this.InvokeReceiver("OnWebsocketMsg", this.msgqueue[0].msg, this.msgqueue[0].len);
-         this.msgqueue.shift();
+         var front = this.msgqueue.shift();
+         this.InvokeReceiver("OnWebsocketMsg", front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
          delete this.msgqueue;
+      delete this._loop_msgqueue;
    }
 
    /** Close connection. */
@@ -1857,6 +1860,8 @@
 
    /** Create configured socket for current object. */
    WebWindowHandle.prototype.Connect = function(href) {
+
+      console.log('WebWindowHandle Connect', href);
 
       this.Close();
 
@@ -4138,6 +4143,8 @@
 
       var font = (font_size==='font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
 
+      var pp = this.pad_painter();
+
       draw_g.call(font.func);
 
       draw_g.property('draw_text_completed', false)
@@ -4145,7 +4152,11 @@
             .property('mathjax_use', false)
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
-            .property('max_font_size', max_font_size);
+            .property('max_font_size', max_font_size)
+            .property("_fast_drawing", pp && pp._fast_drawing);
+
+      if (draw_g.property("_fast_drawing"))
+         draw_g.property("_font_too_small", (max_font_size && (max_font_size<5)) || (font.size < 4));
    }
 
    /** @summary function used to remember maximal text scaling factor
@@ -4990,6 +5001,19 @@
       arg.scale = arg.width && arg.height && !arg.font_size;
       arg.width = arg.width || 0;
       arg.height = arg.height || 0;
+
+      if (arg.draw_g.property("_fast_drawing")) {
+         if (arg.scale) {
+            // area too small - ignore such drawing
+            if (arg.height < 4) return 0;
+         } else if (arg.font_size) {
+            // font size too small
+            if (arg.font_size < 4) return 0;
+         } else if (arg.draw_g.property("_font_too_small")) {
+            // configure font is too small - ignore drawing
+            return 0;
+         }
+      }
 
       if (JSROOT.gStyle.MathJax !== undefined) {
          switch (JSROOT.gStyle.MathJax) {

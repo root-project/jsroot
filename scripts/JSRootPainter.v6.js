@@ -2904,6 +2904,8 @@
          .attr("height", rect.height)
          .call(this.fillatt.func);
 
+      this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
+
       this.DrawActiveBorder(fill_rect);
 
       this.AlignBtns(btns, rect.width, rect.height, svg);
@@ -3012,6 +3014,8 @@
               .call(this.lineatt.func);
 
       this.DrawActiveBorder(svg_rect);
+
+      this._fast_drawing = JSROOT.gStyle.SmallPad && ((w < JSROOT.gStyle.SmallPad.width) || (h < JSROOT.gStyle.SmallPad.height));
 
       if (svg_pad.property('can3d') === 1)
          // special case of 3D canvas overlay
@@ -3140,7 +3144,7 @@
             delete this._current_primitive_indx;
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
-               if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+               if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
                delete this._start_tm;
                delete this._lasttm_tm;
             }
@@ -3162,7 +3166,7 @@
 
          if (!JSROOT.BatchMode && this.iscan) {
             var curtm = new Date().getTime();
-            if (curtm > this._lasttm_tm + 500) {
+            if (curtm > this._lasttm_tm + 15000) {
                this._lasttm_tm = curtm;
                ppainter._primitive = true; // mark primitive ourself
                return requestAnimationFrame(handle.func);

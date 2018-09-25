@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 18/09/2018";
+   JSROOT.version = "dev 25/09/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -176,6 +176,7 @@
          GeoCompressComp : true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions : false, // if true, ignore all kind of URL options in the browser URL
          HierarchyLimit : 250,   // how many items shown on one level of hierarchy
+         SmallPad : { width : 150, height : 100 },   // size of pad, where many features will be deactivated like text draw or zooming
 
          // XValuesFormat : "6.4g",   // custom format for all X values
          // YValuesFormat : "6.4g",   // custom format for all Y values
