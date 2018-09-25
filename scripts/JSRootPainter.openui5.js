@@ -36,12 +36,18 @@
    JSROOT.completeUI5Loading = function() {
       // console.log('complete ui5 loading', typeof sap);
       JSROOT.sap = sap;
+
+      // var cust_style = document.createElement("link");
+      // cust_style.setAttribute("rel", "stylesheet");
+      // cust_style.setAttribute("type", "text/css");
+      // cust_style.setAttribute("href", JSROOT.source_dir + "openui5/custom.css");
+      // document.getElementsByTagName("head")[0].appendChild(cust_style);
+
       JSROOT.CallBack(load_callback);
       load_callback = null;
    }
 
    var element = document.createElement("script");
-
    element.setAttribute('type', "text/javascript");
    element.setAttribute('id', "sap-ui-bootstrap");
    // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js

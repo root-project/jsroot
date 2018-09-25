@@ -1,0 +1,23 @@
+.sap-desktop .sapUiSizeSuperCompact .sapMTreeItemBase {
+   font-size: 0.6rem;
+   min-height: 0.8rem;
+}
+
+.sap-desktop .sapUiSizeSuperCompact .sapMTreeItemBaseWrapping {
+   min-height: 0.8rem;
+}
+
+.sap-desktop .sapUiSizeSuperCompact .sapMTreeItemBaseExpander {
+   font-size: 0.6rem;
+   width: 2rem;
+   height: 0.8rem;
+   line-height: 0.8rem;
+}
+
+.sap-desktop .sapUiSizeSuperCompact .sapMTreeItemBaseLeaf > .sapMTreeItemBaseExpander {
+   opacity: 0;
+}
+
+.sap-desktop .sapUiSizeSuperCompact .sapMSlt {
+   margin: 0;
+}
