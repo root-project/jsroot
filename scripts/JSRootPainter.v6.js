@@ -2587,6 +2587,9 @@
 
       if (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) return;
 
+      var pp = this.pad_painter();
+      if (pp && pp._fast_drawing) return;
+
       var svg = this.svg_frame();
 
       if (svg.empty() || svg.property('interactive_set')) return;

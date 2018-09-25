@@ -3408,7 +3408,8 @@
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this, drag_rect = null;
+      var pthis = this, drag_rect = null, pp = this.pad_painter();
+      if (pp && pp._fast_drawing) return;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -5205,7 +5206,7 @@
 
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
-      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
+      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltip
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
    }
 
