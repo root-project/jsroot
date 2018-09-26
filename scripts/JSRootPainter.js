@@ -4348,7 +4348,7 @@
 
          if (JSROOT.nodejs) {
             if (arg.scale && (f>0)) { arg.box.width = arg.box.width/f; arg.box.height = arg.box.height/f; }
-         } else if (!arg.plain) {
+         } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
             arg.box = painter.GetBoundarySizes(txt.node());
          }
@@ -5072,7 +5072,7 @@
          }
 
          // complete rectangle with very rougth size estimations
-         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize ? this.GetBoundarySizes(txt.node()) :
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
                      (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
 
          txt.attr('class','hidden_text')

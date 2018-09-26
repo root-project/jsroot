@@ -810,6 +810,7 @@
           tcolor = this.get_color(pt.fTextColor),
           nlines = 0, lines = [],
           can_height = this.pad_height(),
+          pp = this.pad_painter(),
           individual_positioning = false,
           draw_header = (pt.fLabel.length>0);
 
@@ -826,7 +827,8 @@
          }
       }
 
-      var nline = 0;
+      var fast_draw = (nlines==1) && pp && pp._fast_drawing, nline = 0;
+
       // now draw TLine and TBox objects
       for (var j=0;j<pt.fLines.arr.length;++j) {
          var entry = pt.fLines.arr[j],
@@ -852,7 +854,7 @@
                   this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, text_g);
 
                   this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
-                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g });
+                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g, fast: fast_draw });
 
                   this.FinishTextDrawing(text_g, this.FinishPave);
 
@@ -918,6 +920,7 @@
             arg.draw_g = text_g;
             arg.latex = (lj._typename == "TText" ? 0 : 1);
             arg.text = lj.fTitle;
+            arg.fast = fast_draw;
             if (!arg.color) { this.UseTextColor = true; arg.color = tcolor; }
 
             this.DrawText(arg);
