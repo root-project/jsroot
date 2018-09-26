@@ -852,7 +852,7 @@
                   this.StartTextDrawing(pt.fTextFont, (entry.fTextSize || pt.fTextSize) * can_height, text_g);
 
                   this.DrawText({ align: entry.fTextAlign || pt.fTextAlign, x: lx, y: ly, text: entry.fTitle, color: jcolor,
-                                   latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g });
+                                  latex: (entry._typename == "TText") ? 0 : 1,  draw_g: text_g });
 
                   this.FinishTextDrawing(text_g, this.FinishPave);
 

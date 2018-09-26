@@ -852,6 +852,10 @@
 
    TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
+   TFramePainter.prototype.frame_painter = function() {
+      return this;
+   }
+
    TFramePainter.prototype.GetTipName = function(append) {
       var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
       if (append) res+=append;
