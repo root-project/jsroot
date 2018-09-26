@@ -2768,17 +2768,17 @@
     * @private */
    TObjectPainter.prototype.svg_pad = function(pad_name) {
       if (pad_name === undefined) pad_name = this.pad_name;
-      //if (pad_name && this._pads_cache) {
-      //   var d = this._pads_cache[pad_name];
-      //   if (d) return d3.select(d);
-      //}
 
       var c = this.svg_canvas();
-      if (pad_name && !c.empty()) {
-         c = c.select(".primitives_layer .__root_pad_" + pad_name);
-         // if (!this._pads_cache) this._pads_cache = {};
-         // this._pads_cache[pad_name] = c.node();
-      }
+      if (!pad_name || c.empty()) return c;
+
+      var cp = c.property('pad_painter');
+      if (cp.pads_cache && cp.pads_cache[pad_name])
+         return d3.select(cp.pads_cache[pad_name]);
+
+      c = c.select(".primitives_layer .__root_pad_" + pad_name);
+      if (!cp.pads_cache) cp.pads_cache = {};
+      cp.pads_cache[pad_name] = c.node();
       return c;
    }
 

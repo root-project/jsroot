@@ -2547,6 +2547,7 @@
       }
 
       delete this.frame_painter_ref;
+      delete this.pads_cache;
       this.painters = [];
       this.pad = null;
       this.draw_object = null;
