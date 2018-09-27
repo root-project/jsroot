@@ -1961,6 +1961,8 @@
                }
             } else if (msg == "$$binary$$") {
                pthis.next_binary = true;
+            } else if (msg == "$$nullbinary$$") {
+               pthis.ProvideData(new ArrayBuffer(0), 0);
             } else {
                pthis.ProvideData(msg);
             }
