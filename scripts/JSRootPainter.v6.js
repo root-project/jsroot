@@ -1391,16 +1391,18 @@
          if (pp && pp._fast_drawing) disable_axis_draw = true;
       }
 
-      draw_horiz.DrawAxis(false, layer, w, h,
-                          draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
-                          false, pad.fTickx ? -h : 0, disable_axis_draw);
+      if (!disable_axis_draw) {
+         draw_horiz.DrawAxis(false, layer, w, h,
+                             draw_horiz.invert_side ? undefined : "translate(0," + h + ")",
+                             false, pad.fTickx ? -h : 0, disable_axis_draw);
 
-      draw_vertical.DrawAxis(true, layer, w, h,
-                             draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
-                             false, pad.fTicky ? w : 0, disable_axis_draw,
-                             draw_vertical.invert_side ? 0 : this.frame_x());
+         draw_vertical.DrawAxis(true, layer, w, h,
+                                draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
+                                false, pad.fTicky ? w : 0, disable_axis_draw,
+                                draw_vertical.invert_side ? 0 : this.frame_x());
 
-      this.DrawGrids();
+         this.DrawGrids();
+      }
 
       if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame && !disable_axis_draw) {
 
