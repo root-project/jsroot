@@ -2845,7 +2845,7 @@
 
    THistPainter.prototype.FillToolbar = function() {
       var pp = this.pad_painter();
-      if (!pp || pp._fast_drawing) return;
+      if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Toggle between unzoom and autozoom-in', 'ToggleZoom', "Ctrl *");
       pp.AddButton(JSROOT.ToolbarIcons.arrow_right, "Toggle log x", "ToggleLogX", "PageDown");
@@ -4582,7 +4582,7 @@
       THistPainter.prototype.FillToolbar.call(this);
 
       var pp = this.pad_painter();
-      if (pp===null) return;
+      if (!pp) return;
 
       if (!this.IsTH2Poly())
          pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");

@@ -2957,7 +2957,12 @@
          console.error('missmatch with pad double click events');
       }
 
+      var was_fast = this._fast_drawing;
+
       this.CheckResize({ force: true });
+
+      if (this._fast_drawing != was_fast)
+         this.ShowButtons();
    }
 
    TPadPainter.prototype.CreatePadSvg = function(only_resize) {
@@ -4076,6 +4081,8 @@
    }
 
    TPadPainter.prototype.RemoveButtons = function() {
+      console.log('Remove BUTTONS');
+
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (!group.empty()) {
          group.selectAll("*").remove();
@@ -4083,21 +4090,43 @@
       }
    }
 
-   TPadPainter.prototype.AddButton = function(btn, tooltip, funcname, keyname) {
-
-      // do not add buttons when not allowed
+   TPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
       if (!JSROOT.gStyle.ToolBar) return;
+
+      if (!this._buttons) this._buttons = [];
+      // check if there are duplications
+
+      for (var k=0;k<this._buttons.length;++k)
+         if (this._buttons[k].funcname == _funcname) return;
+
+      this._buttons.push({ btn: _btn, tooltip: _tooltip, funcname: _funcname, keyname: _keyname });
+
+      var iscan = this.iscan || !this.has_canvas;
+      if (!iscan && (_funcname.indexOf("Pad")!=0) && (_funcname !== "EnlargePad")) {
+         var cp = this.canv_painter();
+         if (cp && (cp!==this)) cp.AddButton(_btn, _tooltip, _funcname);
+      }
+   }
+
+   TPadPainter.prototype.ShowButtons = function() {
+
+      if (!this._buttons) return;
 
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (group.empty()) return;
 
-      // avoid buttons with duplicate names
-      if (!group.select("[name='" + funcname + "']").empty()) return;
+      // clean all previous buttons
+      group.selectAll("*").remove();
 
       var iscan = this.iscan || !this.has_canvas, ctrl,
-          x = group.property("nextx"), y = 0;
+          x = group.property('leftside') ? this.ButtonSize(1.25) : 0, y = 0;
 
-      if (!x) {
+      if (this._fast_drawing) {
+         ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.circle, this.ButtonSize(), "EnlargePad");
+         ctrl.attr("name", "Enlarge").attr("x", 0).attr("y", 0)
+             // .property("buttons_state", (JSROOT.gStyle.ToolBar!=='popup'))
+             .on("click", this.PadButtonClick.bind(this, "EnlargePad"));
+      } else {
          ctrl = JSROOT.ToolbarIcons.CreateSVG(group, JSROOT.ToolbarIcons.rect, this.ButtonSize(), "Toggle tool buttons");
 
          ctrl.attr("name", "Toggle").attr("x", 0).attr("y", 0)
@@ -4106,39 +4135,36 @@
              .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enable'))
              .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'disable'));
 
-         x = group.property('leftside') ? this.ButtonSize(1.25) : 0;
-      } else {
-         ctrl = group.select("[name='Toggle']");
+         for (var k=0;k<this._buttons.length;++k) {
+            var item = this._buttons[k];
+
+            var svg = JSROOT.ToolbarIcons.CreateSVG(group, item.btn, this.ButtonSize(),
+                        item.tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (item.keyname ? " (keyshortcut " + item.keyname + ")" : ""));
+
+            if (group.property('vertical'))
+                svg.attr("x", y).attr("y", x);
+            else
+               svg.attr("x", x).attr("y", y);
+
+            svg.attr("name", item.funcname)
+               .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
+               .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enterbtn'))
+               .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'leavebtn'));
+
+            if (item.keyname) svg.attr("key", item.keyname);
+
+            svg.on("click", this.PadButtonClick.bind(this, item.funcname));
+
+            x += this.ButtonSize(1.25);
+         }
       }
 
-      var svg = JSROOT.ToolbarIcons.CreateSVG(group, btn, this.ButtonSize(),
-                    tooltip + (iscan ? "" : (" on pad " + this.this_pad_name)) + (keyname ? " (keyshortcut " + keyname + ")" : ""));
-
-      if (group.property('vertical'))
-         svg.attr("x", y).attr("y", x);
-      else
-         svg.attr("x", x).attr("y", y);
-
-      svg.attr("name", funcname)
-         .style('display', (ctrl.property("buttons_state") ? '' : 'none'))
-         .on("mouseenter", this.toggleButtonsVisibility.bind(this, 'enterbtn'))
-         .on("mouseleave", this.toggleButtonsVisibility.bind(this, 'leavebtn'));
-
-      if (keyname) svg.attr("key", keyname);
-
-      svg.on("click", this.PadButtonClick.bind(this, funcname));
-
-      group.property("nextx", x + this.ButtonSize(1.25));
+      group.property("nextx", x);
 
       this.AlignBtns(group, this.pad_width(this.this_pad_name), this.pad_height(this.this_pad_name));
 
-      if (group.property('vertical'))
-         ctrl.attr("y", group.property('nextx'));
-      else if (!group.property('leftside'))
-         ctrl.attr("x", group.property('nextx'));
-
-      if (!iscan && (funcname.indexOf("Pad")!=0) && (this.canv_painter()!==this) && (funcname !== "EnlargePad"))
-         this.canv_painter().AddButton(btn, tooltip, funcname);
+      if (group.property('vertical')) ctrl.attr("y", x);
+      else if (!group.property('leftside')) ctrl.attr("x", x);
    }
 
    TPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
@@ -4153,10 +4179,6 @@
       }
 
       btns.attr("transform","translate("+btns_x+","+btns_y+")");
-
-      var displ = this._fast_drawing ? "none" : null;   // no buttons with fast drawing
-      if (svg && svg.property("pad_enlarged")) displ = "none";  // hide buttons when any canvas sub-pad is enlarged
-      btns.attr("display", displ);
    }
 
    TPadPainter.prototype.DrawingReady = function(res_painter) {
@@ -4231,6 +4253,7 @@
       // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, function() {
          // we restore previous pad name
+         painter.ShowButtons();
          painter.CurrentPadName(prev_name);
          painter.DrawingReady();
       });
@@ -4364,13 +4387,11 @@
       }
    }
 
-
    TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
       JSROOT.draw(side.node(), canv, opt, call_back);
    }
-
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
       JSROOT.progress(msg, 7000);
@@ -4709,7 +4730,7 @@
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
 
-      painter.DrawPrimitives(0, function() { painter.DrawingReady(); });
+      painter.DrawPrimitives(0, function() { painter.ShowButtons(); painter.DrawingReady(); });
       return painter;
    }
 
@@ -4732,7 +4753,7 @@
 
       // JSROOT.Painter.drawFrame(divid, null);
 
-      painter.RedrawPadSnap(snap, function() { painter.DrawingReady(); });
+      painter.RedrawPadSnap(snap, function() { painter.ShowButtons(); painter.DrawingReady(); });
 
       return painter;
    }
