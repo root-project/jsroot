@@ -4081,8 +4081,6 @@
    }
 
    TPadPainter.prototype.RemoveButtons = function() {
-      console.log('Remove BUTTONS');
-
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (!group.empty()) {
          group.selectAll("*").remove();
@@ -4252,8 +4250,8 @@
 
       // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, function() {
-         // we restore previous pad name
          painter.ShowButtons();
+         // we restore previous pad name
          painter.CurrentPadName(prev_name);
          painter.DrawingReady();
       });
