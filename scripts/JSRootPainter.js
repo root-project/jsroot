@@ -2136,6 +2136,7 @@
          this.set_layout_kind('simple');
       this.AccessTopPainter(false);
       this.divid = null;
+      delete this._selected_main;
 
       if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
 
@@ -2244,10 +2245,21 @@
    TBasePainter.prototype.select_main = function(is_direct) {
 
       if (!this.divid) return d3.select(null);
-      var id = this.divid;
-      if ((typeof id == "string") && (id[0]!='#')) id = "#" + id;
-      var res = d3.select(id);
-      if (res.empty() || (is_direct==='origin')) return res;
+
+      var res = this._selected_main;
+      if (!res) {
+         if (typeof this.divid == "string") {
+            var id = this.divid;
+            if (id[0]!='#') id = "#" + id;
+            res = d3.select(id);
+            if (!res.empty()) this.divid = res.node();
+         } else {
+            res = d3.select(this.divid);
+         }
+         this._selected_main = res;
+      }
+
+      if (!res || res.empty() || (is_direct==='origin')) return res;
 
       var use_enlarge = res.property('use_enlarge'),
           layout = res.property('layout') || 'simple',
@@ -2452,8 +2464,10 @@
     * @param {string|object} divid - element ID or DOM Element
     */
    TBasePainter.prototype.SetDivId = function(divid) {
-      if (arguments.length > 0)
+      if (divid !== undefined) {
          this.divid = divid;
+         delete this._selected_main;
+      }
 
       this.AccessTopPainter(true);
    }
