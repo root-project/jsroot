@@ -302,6 +302,7 @@
       if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
 
       if (d.check('BLACK')) res.background = "#000000";
+      if (d.check('WHITE')) res.background = "#FFFFFF";
 
       if (d.check('BKGR_', true)) {
          var bckgr = null;
@@ -1461,6 +1462,7 @@
       this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
 
+      this._renderer.setClearColor(this.options.background, 1);
 
 /*      if (usesvg) {
          // this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
@@ -1481,7 +1483,6 @@
                            new THREE.CanvasRenderer({ antialias: true });
          this._renderer.setPixelRatio(window.devicePixelRatio);
       }
-      this._renderer.setClearColor(this.options.background, 1);
       this._renderer.setSize(w, h, !this._fit_main_area);
       this._renderer.localClippingEnabled = true;
 
