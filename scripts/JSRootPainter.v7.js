@@ -1592,13 +1592,16 @@
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
 
-      if (this._dblclick_handler)
+      var valid_x = (m[0] >= 0) && (m[0] <= this.frame_width()),
+          valid_y = (m[1] >= 0) && (m[1] <= this.frame_height());
+
+      if (valid_x && valid_y && this._dblclick_handler)
          if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
 
       var kind = "xyz";
-      if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
-      if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
-      this.Unzoom(kind);
+      if (!valid_x) kind = this.swap_xy ? "x" : "y"; else
+      if (!valid_y) kind = this.swap_xy ? "y" : "x";
+      if (this.Unzoom(kind)) return;
    }
 
    TFramePainter.prototype.FindAlternativeClickHandler = function(pos) {
