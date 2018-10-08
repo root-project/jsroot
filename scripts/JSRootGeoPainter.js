@@ -760,6 +760,11 @@
 
    TGeoPainter.prototype.FilterIntersects = function(intersects) {
 
+      // check redirections
+      for (var n=0;n<intersects.length;++n)
+         if (intersects[n].object.geo_highlight)
+            intersects[n].object = intersects[n].object.geo_highlight;
+
       // remove all elements without stack - indicator that this is geometry object
       for (var n=intersects.length-1; n>=0; --n) {
 
@@ -836,7 +841,7 @@
          if (extras && extras.children)
             for (var k=0;k<extras.children.length;++k)
                if (extras.children[k].geo_object === geo_object) {
-                  active_mesh.push(extras.children[k]);
+                  active_mesh.push(extras.children[k].geo_highlight || extras.children[k]);
                }
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
