@@ -8,7 +8,10 @@
    Before SVGRenderer was used, which is not optimal for complex drawings.
 4. Let use WebGL renderer in Chrome headless mode for generation of images
 5. Fix - when drawing text, reserve extra y range to show it correctly
-6. Support text drawing with TH1 bar option 
+6. Support text drawing with TH1 bar option
+7. Speed up (factor 10) drawing of canvas with many small sub-pads. 
+   Provide simple shortcut to enlarge such small sub-pads
+8. Let configure user click and double-click handlers 
 
 
 ## Changes in 5.5.0

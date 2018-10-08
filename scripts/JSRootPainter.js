@@ -4094,13 +4094,13 @@
     * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
     * call_back function will be called every time when new data is selected
     * when mouse leave frame area, call_back(null) will be called
-    * @private
     */
 
    TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
 
-      if ((call_back === undefined) || (typeof call_back !== 'function')) {
+      if (!call_back || (typeof call_back !== 'function')) {
          delete this.UserTooltipCallback;
+         delete this.UserTooltipTimeout;
          return;
       }
 
@@ -4109,6 +4109,34 @@
       this.UserTooltipCallback = call_back;
       this.UserTooltipTimeout = user_timeout;
    }
+
+   /** @summary Configure user-defined click handler
+   *
+   * @desc Function will be called every time when frame click was perfromed
+   * As argument, tooltip object with selected bins will be provided
+   * If function returns true, default handling of click will be disabled
+   */
+
+  TObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
+
+     var fp = this.frame_painter();
+     if (fp && typeof fp.ConfigureUserClickHandler == 'function')
+        fp.ConfigureUserClickHandler(handler);
+  }
+
+   /** @summary Configure user-defined dblclick handler
+   *
+   * @desc Function will be called every time when double click was called
+   * As argument, tooltip object with selected bins will be provided
+   * If function returns true, default handling of dblclick (unzoom) will be disabled
+   */
+
+  TObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+
+     var fp = this.frame_painter();
+     if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
+        fp.ConfigureUserDblclickHandler(handler);
+  }
 
    /** @summary Check if user-defined tooltip callback is configured
     * @returns {Boolean}

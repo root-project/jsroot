@@ -1272,6 +1272,8 @@
       }
 
       this.draw_g = null;
+      delete this._click_handler;
+      delete this._dblclick_handler;
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -1442,7 +1444,18 @@
       //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
       //      else console.log('Click frame', pnt);
 
+      if (exact && this._click_handler)
+         if (this._click_handler(exact, pnt)) return;
+
       pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
+   }
+
+   TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
+      this._click_handler = handler && (typeof handler == 'function') ? handler : null;
+   }
+
+   TFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+      this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
    TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
