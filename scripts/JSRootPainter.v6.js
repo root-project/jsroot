@@ -1859,7 +1859,7 @@
       var pos = { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) };
 
       if (exact && this._click_handler)
-         if (this._click_handler(exact, pnt)) return;
+         if (this._click_handler(exact.user_info, pnt)) return;
 
       pp.SelectObjectPainter(exact ? exact.painter : this, pos);
    }
@@ -3228,6 +3228,7 @@
 
       painters.forEach(function(obj) {
          var hint = obj.ProcessTooltip(pnt);
+         if (!hint) hint = { user_info: null };
          hints.push(hint);
          if (hint && pnt && pnt.painters) hint.painter = obj;
       });

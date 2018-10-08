@@ -2985,6 +2985,7 @@
 
       painters.forEach(function(obj) {
          var hint = obj.ProcessTooltip(pnt);
+         if (!hint) hint = { user_info: null };
          hints.push(hint);
          if (hint && pnt && pnt.painters) hint.painter = obj;
       });

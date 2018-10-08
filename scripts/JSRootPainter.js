@@ -4114,11 +4114,10 @@
    *
    * @desc Function will be called every time when frame click was perfromed
    * As argument, tooltip object with selected bins will be provided
-   * If function returns true, default handling of click will be disabled
+   * If handler function returns true, default handling of click will be disabled
    */
 
   TObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
-
      var fp = this.frame_painter();
      if (fp && typeof fp.ConfigureUserClickHandler == 'function')
         fp.ConfigureUserClickHandler(handler);
@@ -4128,11 +4127,10 @@
    *
    * @desc Function will be called every time when double click was called
    * As argument, tooltip object with selected bins will be provided
-   * If function returns true, default handling of dblclick (unzoom) will be disabled
+   * If handler function returns true, default handling of dblclick (unzoom) will be disabled
    */
 
   TObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
-
      var fp = this.frame_painter();
      if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
         fp.ConfigureUserDblclickHandler(handler);
@@ -5301,15 +5299,20 @@
 
       if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
+      if (pnt) pnt.painters = true; // get also painter
 
       // collect tooltips from pad painter - it has list of all drawn objects
       if (pp) hints = pp.GetTooltips(pnt);
 
       if (pnt && pnt.touch) textheight = 15;
 
-      for (var n=0; n < hints.length; ++n) {
+      for (var n = 0; n < hints.length; ++n) {
          var hint = hints[n];
          if (!hint) continue;
+
+         if (hint.painter && (hint.user_info!==undefined))
+            if (hint.painter.ProvideUserTooltip(hint.user_info));
+
          if (!hint.lines || (hint.lines.length===0)) {
             hints[n] = null; continue;
          }

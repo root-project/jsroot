@@ -4056,7 +4056,6 @@
       if ((pnt === null) || !this.draw_content || !this.draw_g || this.options.Mode3D) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -4216,7 +4215,6 @@
 
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -4279,11 +4277,10 @@
                   .property("current_bin", findbin);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed) {
-         this.ProvideUserTooltip({ obj: this.histo,  name: this.histo.fName,
-                                   bin: findbin, cont: this.histo.getBinContent(findbin+1),
-                                   grx: midx, gry: midy });
-      }
+      if (res.changed)
+         res.user_info = { obj: this.histo,  name: this.histo.fName,
+                           bin: findbin, cont: this.histo.getBinContent(findbin+1),
+                           grx: midx, gry: midy };
 
       return res;
    }
@@ -5984,7 +5981,6 @@
       if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle || this.options.Proj) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -6029,7 +6025,6 @@
 
          if (foundindx < 0) {
             ttrect.remove();
-            this.ProvideUserTooltip(null);
             return null;
          }
 
@@ -6058,11 +6053,11 @@
                         .property("current_bin", foundindx);
          }
 
-         if (this.IsUserTooltipCallback() && res.changed)
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
-                                      bin: foundindx,
-                                      cont: bin.fContent,
-                                      grx: pnt.x, gry: pnt.y });
+         if (res.changed)
+            res.user_info = { obj: histo, name: histo.fName,
+                              bin: foundindx,
+                              cont: bin.fContent,
+                              grx: pnt.x, gry: pnt.y };
 
          return res;
 
@@ -6078,7 +6073,6 @@
 
          if (i>=h.candle.length) {
             ttrect.remove();
-            this.ProvideUserTooltip(null);
             return null;
          }
 
@@ -6109,11 +6103,10 @@
                      .property("current_bin", i);
          }
 
-         if (this.IsUserTooltipCallback() && res.changed) {
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName,
-                                      bin: i+1, cont: p.median, binx: i+1, biny: 1,
-                                      grx: pnt.x, gry: pnt.y });
-         }
+         if (res.changed)
+            res.user_info = { obj: histo,  name: histo.fName,
+                              bin: i+1, cont: p.median, binx: i+1, biny: 1,
+                              grx: pnt.x, gry: pnt.y };
 
          return res;
       }
@@ -6161,7 +6154,6 @@
 
       if (colindx === null) {
          ttrect.remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -6218,10 +6210,10 @@
             this.RedrawProjection(i1, i2, j1, j2);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed)
-         this.ProvideUserTooltip({ obj: histo, name: histo.fName,
-                                   bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
-                                   grx: pnt.x, gry: pnt.y });
+      if (res.changed)
+         res.user_info = { obj: histo, name: histo.fName,
+                           bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
+                           grx: pnt.x, gry: pnt.y };
 
       return res;
    }
