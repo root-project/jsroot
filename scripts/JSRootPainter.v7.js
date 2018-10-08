@@ -1427,7 +1427,7 @@
       }
    }
 
-   TFramePainter.prototype.ProcessFrameClick = function(pnt) {
+   TFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
       // function called when frame is clicked and object selection can be performed
       // such event can be used to select
 
@@ -1444,10 +1444,18 @@
       //if (exact) console.log('Click exact', pnt, exact.painter.GetTipName());
       //      else console.log('Click frame', pnt);
 
-      if (exact && this._click_handler)
-         if (this._click_handler(exact, pnt)) return;
+      var res;
 
-      pp.SelectObjectPainter(exact ? exact.painter : this, pnt);
+      if (exact) {
+         var handler = dblckick ? this._dblclick_handler : this._click_handler;
+         if (handler) res = handler(exact.user_info, pnt);
+      }
+
+      if (!dblckick)
+         pp.SelectObjectPainter(exact ? exact.painter : this,
+               { x: pnt.x + (this._frame_x || 0),  y: pnt.y + (this._frame_y || 0) });
+
+      return res;
    }
 
    TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
@@ -1583,6 +1591,10 @@
       d3.event.preventDefault();
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
+
+      if (this._dblclick_handler)
+         if (this.ProcessFrameClick({ x: m[0], y: m[1] }, true)) return;
+
       var kind = "xyz";
       if ((m[0] < 0) || (m[0] > this.frame_width())) kind = this.swap_xy ? "x" : "y"; else
       if ((m[1] < 0) || (m[1] > this.frame_height())) kind = this.swap_xy ? "y" : "x";
