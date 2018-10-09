@@ -105,6 +105,8 @@
    JSROOT.nocache = false;
    JSROOT.sources = ['core']; // indicates which major sources were loaded
 
+   // JSROOT.openui5src = 'jsroot'; // use in ROOT distribution for local copy of OpenUI5
+
    JSROOT.id_counter = 0;
    if (JSROOT.BatchMode === undefined)
       JSROOT.BatchMode = false; // when true, disables all kind of interactive features
