@@ -54,7 +54,7 @@
 
    // where to take openui5 sources
    var src = "https://openui5.hana.ondemand.com/";
-   if (JSROOT.openui5src == 'jsroot') src = JSROOT.source_dir + "openui5/"; else
+   if (JSROOT.openui5src == 'jsroot') src = JSROOT.source_dir + "openui5dist/"; else
    if (typeof JSROOT.openui5src == 'string') src = JSROOT.openui5src;
 
    console.log('Use openui5 from ', src);
