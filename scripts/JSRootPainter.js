@@ -3224,8 +3224,9 @@
       var svg_p = this.svg_pad();
       if (svg_p.empty()) return;
 
-      if (svg_p.property('pad_painter') !== this)
-         svg_p.property('pad_painter').painters.push(this);
+      var pp = svg_p.property('pad_painter');
+      if (pp && (pp !== this))
+          pp.painters.push(this);
 
       if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && !svg_p.property('mainpainter'))
          // when this is first main painter in the pad
@@ -4007,7 +4008,7 @@
    TObjectPainter.prototype.FindInPrimitives = function(objname) {
 
       var painter = this.pad_painter();
-      if ((painter === null) || (painter.pad === null)) return null;
+      if (!painter || !painter.pad) return null;
 
       if (painter.pad.fPrimitives)
          for (var n=0;n<painter.pad.fPrimitives.arr.length;++n) {
@@ -4025,7 +4026,7 @@
    TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
 
       var painter = this.pad_painter();
-      var painters = (painter === null) ? null : painter.painters;
+      var painters = painter ? painter.painters : null;
       if (!painters) return null;
 
       for (var n = 0; n < painters.length; ++n) {
