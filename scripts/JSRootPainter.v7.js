@@ -2123,26 +2123,28 @@
    TFramePainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
-      if (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu) return;
+      if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
 
       var pp = this.pad_painter();
       if (pp && pp._fast_drawing) return;
 
       var svg = this.svg_frame();
 
-      if (svg.empty() || svg.property('interactive_set')) return;
+      if (svg.empty()) return;
 
       var svg_x = svg.selectAll(".xaxis_container"),
           svg_y = svg.selectAll(".yaxis_container");
 
-      this.AddKeysHandler();
+      if (!svg.property('interactive_set')) {
+         this.AddKeysHandler();
 
-      this.last_touch = new Date(0);
-      this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
-      this.zoom_rect = null;
-      this.zoom_origin = null;  // original point where zooming started
-      this.zoom_curr = null;    // current point for zooming
-      this.touch_cnt = 0;
+         this.last_touch = new Date(0);
+         this.zoom_kind = 0; // 0 - none, 1 - XY, 2 - only X, 3 - only Y, (+100 for touches)
+         this.zoom_rect = null;
+         this.zoom_origin = null;  // original point where zooming started
+         this.zoom_curr = null;    // current point for zooming
+         this.touch_cnt = 0;
+      }
 
       if (JSROOT.gStyle.Zooming && (!this.options || !this.options.Proj)) {
          if (JSROOT.gStyle.ZoomMouse) {
