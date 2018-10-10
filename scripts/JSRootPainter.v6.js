@@ -3538,7 +3538,7 @@
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
 
       var first = snap.fSnapshot;
-      first.fPrimitives = null; // primitives are not interesting, just cannot disable it in IO
+      first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
 
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
@@ -3588,7 +3588,7 @@
          var sub = this.painters[k];
          if (sub.snapid===undefined) continue; // look only for painters with snapid
 
-         for (var i=9;i<snap.fPrimitives.length;++i)
+         for (var i=0;i<snap.fPrimitives.length;++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
