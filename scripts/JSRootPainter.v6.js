@@ -1818,9 +1818,8 @@
       });
       this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
-      menu.add("Save as frame.png", function() {
-         this.pad_painter().SaveAsPng('frame', 'frame.png');
-      });
+      menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
+      menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
 
       return true;
    }
@@ -3298,9 +3297,9 @@
 
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
-      fname += ".png";
 
-      menu.add("Save as "+fname, fname, this.SaveAsPng.bind(this, false));
+      menu.add("Save as "+ fname+".png", fname+".png", this.SaveAs.bind(this, "png", false));
+      menu.add("Save as "+ fname+".svg", fname+".svg", this.SaveAs.bind(this, "svg", false));
 
       return true;
    }
@@ -3827,18 +3826,16 @@
        });
    }
 
-   TPadPainter.prototype.SaveAsPng = function(full_canvas, filename) {
+   TPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
       if (!filename) {
          filename = this.this_pad_name;
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
-         filename += ".png";
+         filename += "." + kind;
       }
-      this.ProduceImage(full_canvas, "png", function(pngdata) {
+      this.ProduceImage(full_canvas, kind, function(imgdata) {
          var a = document.createElement('a');
          a.download = filename;
-         a.href = pngdata;
-         // a.style.display = 'none';
-
+         a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
          document.body.appendChild(a);
          a.addEventListener("click", function(e) {
             a.parentNode.removeChild(a);
@@ -3994,11 +3991,11 @@
 
    TPadPainter.prototype.PadButtonClick = function(funcname) {
 
-      if (funcname == "CanvasSnapShot") return this.SaveAsPng(true);
+      if (funcname == "CanvasSnapShot") return this.SaveAs("png", true);
 
       if (funcname == "EnlargePad") return this.EnlargePad();
 
-      if (funcname == "PadSnapShot") return this.SaveAsPng(false);
+      if (funcname == "PadSnapShot") return this.SaveAs("png", false);
 
       if (funcname == "PadContextMenus") {
 
