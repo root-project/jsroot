@@ -700,7 +700,7 @@
              title_offest_k = 1.6*(axis.fTitleSize<1 ? axis.fTitleSize : axis.fTitleSize/(this.pad_height("") || 10)),
              center = axis.TestBit(JSROOT.EAxisBits.kCenterTitle),
              rotate = axis.TestBit(JSROOT.EAxisBits.kRotateTitle) ? -1 : 1,
-             title_color = this.get_color(axis.fTitleColor),
+             title_color = this.get_color(is_gaxis ? axis.fTextColor : axis.fTitleColor),
              shift_x = 0, shift_y = 0;
 
          this.StartTextDrawing(axis.fTitleFont, title_fontsize, title_g);
