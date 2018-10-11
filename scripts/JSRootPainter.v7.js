@@ -4250,7 +4250,7 @@
       var nocanvas = !can;
       if (nocanvas) {
          console.log("No canvas specified");
-         return null,
+         return null;
          can = JSROOT.Create("ROOT::Experimental::TCanvas");
       }
 

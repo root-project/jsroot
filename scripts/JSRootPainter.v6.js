@@ -4737,7 +4737,7 @@
    }
 
    function drawCanvas(divid, can, opt) {
-      var nocanvas = (can===null);
+      var nocanvas = !can;
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
       var painter = new TCanvasPainter(can);
