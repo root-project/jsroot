@@ -3101,9 +3101,11 @@
          JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
 
-         JSROOT.extend(pal.fAxis, { fTitle: this.GetObject().fZaxis.fTitle, fChopt: "+",
-                                    fLineColor: 1, fLineSyle: 1, fLineWidth: 1,
-                                    fTextAngle: 0, fTextSize: 0.04, fTextAlign: 11, fTextColor: 1, fTextFont: 42 });
+         var zaxis = this.GetHisto().fZaxis;
+
+         JSROOT.extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fTextColor: zaxis.fTitleColor, fChopt: "+",
+                                    fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
+                                    fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11, fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.AddFunction(pal, true);
