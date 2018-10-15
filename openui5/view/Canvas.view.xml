@@ -25,9 +25,8 @@
                            </items>
                         </MenuItem>
                         <MenuItem text="Save as ..." icon="sap-icon://save" />
-                        <MenuItem text="Interrupt"
-                           startsSection="true" icon="sap-icon://stop" />
-                        <MenuItem text="Quit ROOT" icon="sap-icon://system-exit" />
+                        <MenuItem text="Interrupt" startsSection="true" icon="sap-icon://stop" />
+                        <MenuItem text="Quit ROOT" icon="sap-icon://log" />
 
                      </items>
                   </Menu>
