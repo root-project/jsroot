@@ -149,8 +149,10 @@ sap.ui.define([
             case "Canvas.svg":
                p.SaveCanvasAsFile(name);
                break;
-            case "Canvas.pdf":
             case "Canvas.root":
+            case "Canvas.pdf":
+            case "Canvas.ps":
+            case "Canvas.C":
                p.SendSaveCommand(name);
                break;
          }
