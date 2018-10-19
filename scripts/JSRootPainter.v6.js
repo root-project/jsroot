@@ -3623,9 +3623,13 @@
          // case of ROOT7 with always dummy TPad as first entry
          if (!first.fCw || !first.fCh) this._fixed_size = false;
 
-         if (JSROOT.BrowserLayout && (typeof this.divid == 'string') && !this.batch_mode) {
-            this.brlayout = new JSROOT.BrowserLayout(this.divid, null, this);
-            this.brlayout.Create(this.divid, true);
+         var mainid = this.divid;
+         if (mainid && (typeof mainid == 'object'))
+            mainid = d3.select(mainid).attr("id");
+
+         if (JSROOT.BrowserLayout && mainid && (typeof mainid == "string") && !this.batch_mode && !this.use_openui) {
+            this.brlayout = new JSROOT.BrowserLayout(mainid, null, this);
+            this.brlayout.Create(mainid, true);
             // this.brlayout.ToggleBrowserKind("float");
             this.SetDivId(this.brlayout.drawing_divid(), -1);  // assign id for drawing
             JSROOT.RegisterForResize(this.brlayout);
