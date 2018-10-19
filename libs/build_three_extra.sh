@@ -7,8 +7,8 @@ tgt=three.extra.js
 
 src=/d/three.js-r86
 #src=/home/linev/git/threejs
-#src2=/d/three.js-r85
-src2=/home/linev/git/threejs
+src2=/d/three.js-r86
+#src2=/home/linev/git/threejs
 
 rm -rf $tgt
 touch $tgt
@@ -29,8 +29,9 @@ echo "// Content of examples/js/renderers/CanvasRenderer.js" >> $tgt
 cat $src/examples/js/renderers/CanvasRenderer.js >> $tgt
 echo "" >> $tgt
 
-echo "// Content of examples/js/renderers/SVGRenderer.js" >> $tgt 
+cat ./three.svg_renderer_header.js >> $tgt
 cat $src2/examples/js/renderers/SVGRenderer.js >> $tgt
+cat ./three.svg_renderer_footer.js >> $tgt
 echo "" >> $tgt
  
 echo "// Content of examples/js/controls/OrbitControls.js" >> $tgt 

@@ -55,10 +55,14 @@
       this.SetDivId(divid, 1);
    }
 
-   THistPainter.prototype.GetHisto = function() {
-      var obj = this.GetObject(), histo = null;
+   THistPainter.prototype.GetHImpl = function(obj) {
       if (obj && obj.fHistImpl)
-         histo = obj.fHistImpl.fIsWeak ? obj.fHistImpl.fWeakForIO : obj.fHistImpl.fUnique;
+         return obj.fHistImpl.fIsWeak ? obj.fHistImpl.fWeakForIO : obj.fHistImpl.fUnique;
+      return null;
+   }
+
+   THistPainter.prototype.GetHisto = function() {
+      var obj = this.GetObject(), histo = this.GetHImpl(obj);
 
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._1) {
@@ -138,8 +142,15 @@
       // return true when axes was drawn
       var main = this.frame_painter();
       if (!main) return false;
-      if (this.draw_content)
+
+      if (this.is_main_painter() && this.draw_content) {
+         main.CleanupAxes();
+         main.xmin = main.xmax = 0;
+         main.ymin = main.ymax = 0;
+         main.zmin = main.zmax = 0;
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax);
+      }
+
       return main.DrawAxes(true);
    }
 
@@ -174,11 +185,19 @@
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
-      var histo = this.GetObject();
+      var origin = this.GetObject();
 
-      if (obj !== histo) {
+      if (obj !== origin) {
 
          if (!this.MatchObjectType(obj)) return false;
+
+         var horigin = this.GetHImpl(origin),
+             hobj = this.GetHImpl(obj);
+
+         if (!horigin || !hobj) return false;
+
+         // make it easy - copy statistics without axes
+         horigin.fStatistics = hobj.fStatistics;
 
          // special tratement for webcanvas - also name can be changed
          // if (this.snapid !== undefined)
@@ -343,7 +362,7 @@
       return false;
    }
 
-   THistPainter.prototype.FillToolbar = function() {
+   THistPainter.prototype.FillToolbar = function(not_shown) {
       var pp = this.pad_painter();
       if (!pp) return;
 
@@ -354,6 +373,7 @@
          pp.AddButton(JSROOT.ToolbarIcons.arrow_diag, "Toggle log z", "ToggleLogZ");
       if (this.draw_content)
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+      if (!not_shown) pp.ShowButtons();
    }
 
    THistPainter.prototype.Get3DToolTip = function(indx) {
@@ -1410,7 +1430,6 @@
       if ((pnt === null) || !this.draw_content || this.options.Mode3D) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -1568,7 +1587,6 @@
 
       if ((findbin === null) || ((gry2 <= 0) || (gry1 >= height))) {
          ttrect.remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -1630,10 +1648,10 @@
                   .property("current_bin", findbin);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed)
-         this.ProvideUserTooltip({ obj: histo,  name: "histo",
-                                   bin: findbin, cont: histo.getBinContent(findbin+1),
-                                   grx: midx, gry: midy });
+      if (res.changed)
+         res.user_info = { obj: histo,  name: "histo",
+                           bin: findbin, cont: histo.getBinContent(findbin+1),
+                           grx: midx, gry: midy };
 
       return res;
    }
@@ -1721,6 +1739,9 @@
 
       if (this.DrawAxes())
          this.DrawBins();
+      else
+         console.log('FAIL DARWING AXES');
+
       // this.DrawTitle();
       // this.UpdateStatWebCanvas();
       this.AddInteractive();
@@ -1874,15 +1895,16 @@
    }
 
    TH2Painter.prototype.FillToolbar = function() {
-      THistPainter.prototype.FillToolbar.call(this);
+      THistPainter.prototype.FillToolbar.call(this, true);
 
       var pp = this.pad_painter();
-      if (pp===null) return;
+      if (!pp) return;
 
       if (!this.IsTH2Poly())
          pp.AddButton(JSROOT.ToolbarIcons.th2color, "Toggle color", "ToggleColor");
       pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
       pp.AddButton(JSROOT.ToolbarIcons.th2draw3d, "Toggle 3D mode", "Toggle3D");
+      pp.ShowButtons();
    }
 
    TH2Painter.prototype.ToggleColor = function() {
@@ -1999,8 +2021,11 @@
       if (this.options.Axis > 0) { // Paint histogram axis only
          this.draw_content = false;
       } else {
-         // used to enable/disable stat box
          this.draw_content = this.gmaxbin > 0;
+         if (!this.draw_content  && this.options.Zero && this.IsTH2Poly()) {
+            this.draw_content = true;
+            this.options.Line = 1;
+         }
       }
    }
 
@@ -2587,7 +2612,10 @@
          bin = histo.fBins.arr[i];
          colindx = this.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
-         if ((bin.fContent === 0) && !this.options.Zero) continue;
+         if (bin.fContent === 0) {
+            if (!this.options.Zero || !this.options.Line) continue;
+            colindx = 0;
+         }
 
          // check if bin outside visible range
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
@@ -2608,7 +2636,7 @@
             item = this.draw_g
                      .append("svg:path")
                      .attr("palette-index", colindx)
-                     .attr("fill", this.fPalette.getColor(colindx))
+                     .attr("fill", colindx ? this.fPalette.getColor(colindx) : "none")
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
@@ -3262,7 +3290,6 @@
       if (!pnt || !this.draw_content || !this.draw_g || !this.tt_handle || this.options.Proj) {
          if (this.draw_g !== null)
             this.draw_g.select(".tooltip_bin").remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -3307,7 +3334,6 @@
 
          if (foundindx < 0) {
             ttrect.remove();
-            this.ProvideUserTooltip(null);
             return null;
          }
 
@@ -3336,11 +3362,11 @@
                         .property("current_bin", foundindx);
          }
 
-         if (this.IsUserTooltipCallback() && res.changed)
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName || "histo",
-                                      bin: foundindx,
-                                      cont: bin.fContent,
-                                      grx: pnt.x, gry: pnt.y });
+         if (res.changed)
+            res.user_info = { obj: histo,  name: histo.fName || "histo",
+                              bin: foundindx,
+                              cont: bin.fContent,
+                              grx: pnt.x, gry: pnt.y };
 
          return res;
 
@@ -3358,7 +3384,6 @@
 
          if (i>=h.candle.length) {
             ttrect.remove();
-            this.ProvideUserTooltip(null);
             return null;
          }
 
@@ -3389,10 +3414,10 @@
                      .property("current_bin", i);
          }
 
-         if (this.IsUserTooltipCallback() && res.changed)
-            this.ProvideUserTooltip({ obj: histo,  name: histo.fName || "histo",
-                                      bin: i+1, cont: p.median, binx: i+1, biny: 1,
-                                      grx: pnt.x, gry: pnt.y });
+         if (res.changed)
+            res.user_info = { obj: histo,  name: histo.fName || "histo",
+                              bin: i+1, cont: p.median, binx: i+1, biny: 1,
+                              grx: pnt.x, gry: pnt.y };
 
          return res;
       }
@@ -3420,7 +3445,6 @@
 
       if (colindx === null) {
          ttrect.remove();
-         this.ProvideUserTooltip(null);
          return null;
       }
 
@@ -3481,10 +3505,10 @@
             this.RedrawProjection(i1, i2, j1, j2);
       }
 
-      if (this.IsUserTooltipCallback() && res.changed)
-         this.ProvideUserTooltip({ obj: histo, name: histo.fName || "histo",
-                                   bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
-                                   grx: pnt.x, gry: pnt.y });
+      if (res.changed)
+         res.user_info = { obj: histo, name: histo.fName || "histo",
+                           bin: histo.getBin(i+1, j+1), cont: binz, binx: i+1, biny: j+1,
+                           grx: pnt.x, gry: pnt.y };
 
       return res;
    }

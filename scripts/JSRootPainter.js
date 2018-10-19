@@ -1589,11 +1589,12 @@
 
    // ==============================================================================
 
-   function LongPollSocket(addr, _raw) {
+   function LongPollSocket(addr, _raw, _args) {
       this.path = addr;
       this.connid = null;
       this.req = null;
       this.raw = _raw;
+      this.args = _args;
 
       this.nextrequest("", "connect");
    }
@@ -1601,8 +1602,8 @@
    LongPollSocket.prototype.nextrequest = function(data, kind) {
       var url = this.path, reqmode = "buf", post = null;
       if (kind === "connect") {
-         url+="?connect";
-         if (this.raw) url+="_raw"; // raw mode, use only response body
+         url += this.raw ? "?raw_connect" : "?txt_connect";
+         if (this.args) url += "&" + this.args;
          console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
@@ -1790,12 +1791,15 @@
       item.ready = true;
       item.msg = _msg;
       item.len = _len;
+      if (this._loop_msgqueue) return;
+      this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
-         this.InvokeReceiver("OnWebsocketMsg", this.msgqueue[0].msg, this.msgqueue[0].len);
-         this.msgqueue.shift();
+         var front = this.msgqueue.shift();
+         this.InvokeReceiver("OnWebsocketMsg", front.msg, front.len);
       }
       if (this.msgqueue.length == 0)
          delete this.msgqueue;
+      delete this._loop_msgqueue;
    }
 
    /** Close connection. */
@@ -1859,7 +1863,7 @@
 
       this.Close();
 
-      var pthis = this, ntry = 0;
+      var pthis = this, ntry = 0, args = (this.key ? ("key=" + this.key) : "");
 
       function retry_open(first_time) {
 
@@ -1886,12 +1890,13 @@
 
          if ((pthis.kind === 'websocket') && first_time) {
             path = path.replace("http://", "ws://").replace("https://", "wss://") + "root.websocket";
+            if (args) path += "?" + args;
             console.log('configure websocket ' + path);
             conn = new WebSocket(path);
          } else {
             path += "root.longpoll";
             console.log('configure longpoll ' + path);
-            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'));
+            conn = new LongPollSocket(path, (pthis.kind === 'rawlongpoll'), args);
          }
 
          if (!conn) return;
@@ -1902,9 +1907,7 @@
             if (ntry > 2) JSROOT.progress();
             pthis.state = 1;
 
-            var key = JSROOT.GetUrlOption("key") || "unknown";
-
-            console.log('websocket initialized key=' + key);
+            var key = pthis.key || "";
 
             pthis.Send("READY=" + key, 0); // need to confirm connection
             pthis.InvokeReceiver('OnWebsocketOpened');
@@ -1958,6 +1961,8 @@
                }
             } else if (msg == "$$binary$$") {
                pthis.next_binary = true;
+            } else if (msg == "$$nullbinary$$") {
+               pthis.ProvideData(new ArrayBuffer(0), 0);
             } else {
                pthis.ProvideData(msg);
             }
@@ -1996,6 +2001,8 @@
     *
     * @param {object} arg - arguemnts
     * @param {string} [arg.prereq] - prerequicities, which should be loaded
+    * @param {string} [arg.openui5src] - source of openui5, either URL like "https://openui5.hana.ondemand.com" or "jsroot" which provides its own reduced openui5 package
+    * @param {string} [arg.openui5libs] - list of openui5 libraries loaded, default is "sap.m, sap.ui.layout, sap.ui.unified"
     * @param {string} [arg.socket_kind] - kind of connection longpoll|websocket, detected automatically from URL
     * @param {object} arg.receiver - instance of receiver for websocket events, allows to initiate connection immediately
     * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
@@ -2007,10 +2014,17 @@
       if (typeof arg == 'function') arg = { callback: arg }; else
       if (!arg || (typeof arg != 'object')) arg = {};
 
-      if (arg.prereq)
+      if (arg.prereq) {
+         if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
+         if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
          return JSROOT.AssertPrerequisites(arg.prereq, function() {
             delete arg.prereq; JSROOT.ConnectWebWindow(arg);
          }, arg.prereq_logdiv);
+      }
+
+      // special hold script, prevents headless browser from too early exit
+      if ((JSROOT.GetUrlOption("batch_mode")!==null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
+         JSROOT.loadScript("root_batch_holder.js?key=" + JSROOT.GetUrlOption("key"));
 
       if (!arg.platform)
          arg.platform = JSROOT.GetUrlOption("platform");
@@ -2063,6 +2077,8 @@
          };
       }
 
+      handle.key = JSROOT.GetUrlOption("key");
+
       if (!arg.receiver)
          return JSROOT.CallBack(arg.callback, handle, arg);
 
@@ -2070,11 +2086,15 @@
       handle.SetReceiver(arg.receiver);
       handle.Connect();
 
-      if (arg.prereq2)
+      if (arg.prereq2) {
          JSROOT.AssertPrerequisites(arg.prereq2, function() {
-            delete arg.prereq2;
-            if (arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
+            delete arg.prereq2; // indicate that func is loaded
+            if (!arg.first_recv || arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
          });
+      } else if (!arg.first_recv) {
+         JSROOT.CallBack(arg.callback, handle, arg);
+      }
+
    }
 
    // ========================================================================================
@@ -2116,6 +2136,7 @@
          this.set_layout_kind('simple');
       this.AccessTopPainter(false);
       this.divid = null;
+      delete this._selected_main;
 
       if (this._hpainter && typeof this._hpainter.ClearPainter === 'function') this._hpainter.ClearPainter(this);
 
@@ -2224,10 +2245,21 @@
    TBasePainter.prototype.select_main = function(is_direct) {
 
       if (!this.divid) return d3.select(null);
-      var id = this.divid;
-      if ((typeof id == "string") && (id[0]!='#')) id = "#" + id;
-      var res = d3.select(id);
-      if (res.empty() || (is_direct==='origin')) return res;
+
+      var res = this._selected_main;
+      if (!res) {
+         if (typeof this.divid == "string") {
+            var id = this.divid;
+            if (id[0]!='#') id = "#" + id;
+            res = d3.select(id);
+            if (!res.empty()) this.divid = res.node();
+         } else {
+            res = d3.select(this.divid);
+         }
+         this._selected_main = res;
+      }
+
+      if (!res || res.empty() || (is_direct==='origin')) return res;
 
       var use_enlarge = res.property('use_enlarge'),
           layout = res.property('layout') || 'simple',
@@ -2432,8 +2464,10 @@
     * @param {string|object} divid - element ID or DOM Element
     */
    TBasePainter.prototype.SetDivId = function(divid) {
-      if (arguments.length > 0)
+      if (divid !== undefined) {
          this.divid = divid;
+         delete this._selected_main;
+      }
 
       this.AccessTopPainter(true);
    }
@@ -2750,17 +2784,17 @@
     * @private */
    TObjectPainter.prototype.svg_pad = function(pad_name) {
       if (pad_name === undefined) pad_name = this.pad_name;
-      //if (pad_name && this._pads_cache) {
-      //   var d = this._pads_cache[pad_name];
-      //   if (d) return d3.select(d);
-      //}
 
       var c = this.svg_canvas();
-      if (pad_name && !c.empty()) {
-         c = c.select(".primitives_layer .__root_pad_" + pad_name);
-         // if (!this._pads_cache) this._pads_cache = {};
-         // this._pads_cache[pad_name] = c.node();
-      }
+      if (!pad_name || c.empty()) return c;
+
+      var cp = c.property('pad_painter');
+      if (cp.pads_cache && cp.pads_cache[pad_name])
+         return d3.select(cp.pads_cache[pad_name]);
+
+      c = c.select(".primitives_layer .__root_pad_" + pad_name);
+      if (!cp.pads_cache) cp.pads_cache = {};
+      cp.pads_cache[pad_name] = c.node();
       return c;
    }
 
@@ -2911,11 +2945,12 @@
     *    - 1  no embedding, canvas placed over svg with proper size (resize problem may appear)
     *    - 2  normall embedding via ForeginObject, works only with Firefox
     *    - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
+    *    - 4  embed 3D drawing as <image> element
     *
     *  @private
     */
    TObjectPainter.prototype.embed_3d = function() {
-      if (JSROOT.BatchMode) return 3;
+      if (JSROOT.BatchMode) return 4; // in batch - directly create svg::image after rendering
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
       if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
@@ -3073,8 +3108,8 @@
 
          var svg = this.svg_pad();
 
-         if (size.can3d === 3) {
-            // this is SVG mode
+         if ((size.can3d === 3) || (size.can3d === 4)) {
+            // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
                elem = svg.insert("g",".primitives_layer").attr("class", size.clname);
@@ -3178,8 +3213,10 @@
     */
    TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
 
-      if (divid !== undefined)
+      if (divid !== undefined) {
          this.divid = divid;
+         delete this._selected_main;
+      }
 
       if (!is_main) is_main = 0;
 
@@ -3390,7 +3427,8 @@
    TObjectPainter.prototype.AddDrag = function(callback) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this, drag_rect = null;
+      var pthis = this, drag_rect = null, pp = this.pad_painter();
+      if (pp && pp._fast_drawing) return;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -4059,13 +4097,13 @@
     * @desc Hook for the users to get tooltip information when mouse cursor moves over frame area
     * call_back function will be called every time when new data is selected
     * when mouse leave frame area, call_back(null) will be called
-    * @private
     */
 
    TObjectPainter.prototype.ConfigureUserTooltipCallback = function(call_back, user_timeout) {
 
-      if ((call_back === undefined) || (typeof call_back !== 'function')) {
+      if (!call_back || (typeof call_back !== 'function')) {
          delete this.UserTooltipCallback;
+         delete this.UserTooltipTimeout;
          return;
       }
 
@@ -4074,6 +4112,32 @@
       this.UserTooltipCallback = call_back;
       this.UserTooltipTimeout = user_timeout;
    }
+
+   /** @summary Configure user-defined click handler
+   *
+   * @desc Function will be called every time when frame click was perfromed
+   * As argument, tooltip object with selected bins will be provided
+   * If handler function returns true, default handling of click will be disabled
+   */
+
+  TObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
+     var fp = this.frame_painter();
+     if (fp && typeof fp.ConfigureUserClickHandler == 'function')
+        fp.ConfigureUserClickHandler(handler);
+  }
+
+   /** @summary Configure user-defined dblclick handler
+   *
+   * @desc Function will be called every time when double click was called
+   * As argument, tooltip object with selected bins will be provided
+   * If handler function returns true, default handling of dblclick (unzoom) will be disabled
+   */
+
+  TObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+     var fp = this.frame_painter();
+     if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
+        fp.ConfigureUserDblclickHandler(handler);
+  }
 
    /** @summary Check if user-defined tooltip callback is configured
     * @returns {Boolean}
@@ -4128,6 +4192,8 @@
 
       var font = (font_size==='font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
 
+      var pp = this.pad_painter();
+
       draw_g.call(font.func);
 
       draw_g.property('draw_text_completed', false)
@@ -4135,7 +4201,11 @@
             .property('mathjax_use', false)
             .property('text_factor', 0.)
             .property('max_text_width', 0) // keep maximal text width, use it later
-            .property('max_font_size', max_font_size);
+            .property('max_font_size', max_font_size)
+            .property("_fast_drawing", pp && pp._fast_drawing);
+
+      if (draw_g.property("_fast_drawing"))
+         draw_g.property("_font_too_small", (max_font_size && (max_font_size<5)) || (font.size < 4));
    }
 
    /** @summary function used to remember maximal text scaling factor
@@ -4323,7 +4393,7 @@
 
          if (JSROOT.nodejs) {
             if (arg.scale && (f>0)) { arg.box.width = arg.box.width/f; arg.box.height = arg.box.height/f; }
-         } else if (!arg.plain) {
+         } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
             arg.box = painter.GetBoundarySizes(txt.node());
          }
@@ -4981,6 +5051,19 @@
       arg.width = arg.width || 0;
       arg.height = arg.height || 0;
 
+      if (arg.draw_g.property("_fast_drawing")) {
+         if (arg.scale) {
+            // area too small - ignore such drawing
+            if (arg.height < 4) return 0;
+         } else if (arg.font_size) {
+            // font size too small
+            if (arg.font_size < 4) return 0;
+         } else if (arg.draw_g.property("_font_too_small")) {
+            // configure font is too small - ignore drawing
+            return 0;
+         }
+      }
+
       if (JSROOT.gStyle.MathJax !== undefined) {
          switch (JSROOT.gStyle.MathJax) {
             case 0: JSROOT.gStyle.Latex = 2; break;
@@ -5034,7 +5117,7 @@
          }
 
          // complete rectangle with very rougth size estimations
-         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize ? this.GetBoundarySizes(txt.node()) :
+         arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
                      (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
 
          txt.attr('class','hidden_text')
@@ -5168,7 +5251,7 @@
 
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
-      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltib
+      this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltip
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
    }
 
@@ -5219,15 +5302,20 @@
 
       if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
+      if (pnt) pnt.painters = true; // get also painter
 
       // collect tooltips from pad painter - it has list of all drawn objects
       if (pp) hints = pp.GetTooltips(pnt);
 
       if (pnt && pnt.touch) textheight = 15;
 
-      for (var n=0; n < hints.length; ++n) {
+      for (var n = 0; n < hints.length; ++n) {
          var hint = hints[n];
          if (!hint) continue;
+
+         if (hint.painter && (hint.user_info!==undefined))
+            if (hint.painter.ProvideUserTooltip(hint.user_info));
+
          if (!hint.lines || (hint.lines.length===0)) {
             hints[n] = null; continue;
          }
@@ -6080,24 +6168,29 @@
 
          JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
 
+            var has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
+
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
+                              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
                               .attr("width", args.width)
                               .attr("height", args.height)
-                              .attr("style", "").attr("style", null)
-                              .attr("class", null).attr("x", null).attr("y", null);
+                              .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
             var svg = main.html();
 
-            if (JSROOT.svg_workaround) {
-               for (var k=0;k<JSROOT.svg_workaround.length;++k)
-                 svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
-               JSROOT.svg_workaround = undefined;
-            }
+            if (JSROOT.nodejs)
+               svg = svg.replace(/xlink_href_nodejs=/g,"xlink:href=");
+
+            if (has_workarounds)
+               svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
                      .replace(/ class=\"\w*\"/g,"")                                // remove all classes
                      .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
                      .replace(/<g><\/g>/g,"");                                     // remove all empty groups
+
+            if (svg.indexOf("xlink:href")<0)
+               svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g,"");
 
             main.remove();
 
@@ -6110,25 +6203,11 @@
       } else if (JSROOT.nodejs_document) {
          build(JSROOT.nodejs_window.d3.select('body').append('div'));
       } else {
-
-         var jsdom;
-         try {
-           jsdom = require("jsdom/lib/old-api.js"); // jsdom >= 10.x
-         } catch (e) {
-           jsdom = require("jsdom"); // jsdom <= 9.x
-         }
-
-         jsdom.env({
-            html:'',
-            features:{ QuerySelector:true }, //you need query selector for D3 to work
-            done:function(errors, window) {
-
-               window.d3 = d3.select(window.document); //get d3 into the dom
-               JSROOT.nodejs_window = window;
-               JSROOT.nodejs_document = window.document; // used with three.js
-
-               build(window.d3.select('body').append('div'));
-            }});
+         // use eval while old minifier is not able to parse newest Node.js syntax
+         eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
+         JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
+         JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+         build(JSROOT.nodejs_window.d3.select('body').append('div'));
       }
    }
 
@@ -6203,7 +6282,7 @@
     * @private
     */
    JSROOT.progress = function(msg, tmout) {
-      if (JSROOT.BatchMode || !document) return;
+      if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       var id = "jsroot_progressbox",
           box = d3.select("#"+id);
 

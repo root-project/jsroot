@@ -1,17 +1,15 @@
 # JSROOT changelog
 
-## Changes in 5.5.2
-1. Fix - draw TH2Poly bins outline when no content specified
-2. Fix - always set axis interactive handlers (#170)
-3. Fix - take into account zaxis properties when drawing color palette (#171)
-
-
-## Changes in 5.5.1
-1. Fix - adjust v7 part to new class naming convention, started with R
-2. Fix - show RCanvas title
-3. New - implement 'nocache' option for JSROOT scripts loading. When specified in URL with
-   JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs
-4. New - provide simple drawing for TObjString (#164) 
+## Changes in 5.6.0
+1. By drawing outline speed up (factor 10) canvas with many small sub-pads 
+2. Let configure user click and double-click handlers, extend tooltip.htm example
+3. Implement workaround for standard THREE.SVGRenderer - no need for patched version  
+4. When producing 3D graphical images in batch, use normal THREE.CanvasRenderer
+5. Use WebGL renderer in Chrome headless mode for 3D images generation
+6. Provide possibility to create SVG files for canvas or frame (#172)
+7. Support text drawing with TH1 bar option
+8. Fix - when drawing text, reserve extra y range to show it correctly
+9. Migrate to Node.js 8, do not support older versions 
 
 
 ## Changes in 5.5.0
@@ -24,7 +22,7 @@
 6. Implement "optstat1001" and "optfit101" draw options for histograms
 7. Remove "autocol" options - standard "plc" should be used instead
 8. Provide drawing of artificial "$legend" item - it creates TLegend for all primitives in pad
-   Can be used when several histograms or several graphs superimposed.
+   Can be used when several histograms or several graphs superimposed
 9. Let configure "&toolbar=vert" in URL to change orientation of tool buttons
 10. Improve markers and error bars drawing for TH1/TProfile
 

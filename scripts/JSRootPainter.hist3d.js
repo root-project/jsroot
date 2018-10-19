@@ -90,7 +90,8 @@
          return;
       }
 
-      this.usesvg = JSROOT.BatchMode; // SVG used in batch mode
+      this.usesvg = JSROOT.Painter.UseSVGFor3D(); // SVG used in batch mode
+      //if (this.usesvg) this.usesvgimg = JSROOT.gStyle.ImageSVG;  // use svg images to insert graphics
 
       var sz = this.size_for_3d(this.usesvg ? 3 : undefined);
 
@@ -131,27 +132,11 @@
       this.camera.lookAt(lookat);
       this.scene.add( this.camera );
 
-      if (this.usesvg) {
-         this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
-         if (this.renderer.outerHTML !== undefined) {
-            // this is indication of new three.js functionality
-            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            this.renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
-            this.renderer.workaround_id = JSROOT.svg_workaround.length;
-            this.renderer.domElement.setAttribute('jsroot_svg_workaround', this.renderer.workaround_id);
-            JSROOT.svg_workaround[this.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
-         }
-      } else {
-         this.webgl = JSROOT.Painter.TestWebGL();
-         this.renderer = this.webgl ? new THREE.WebGLRenderer({ antialias : true, alpha: true }) :
-                                      new THREE.CanvasRenderer({ antialias : true, alpha: true });
-      }
+      var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg, (sz.can3d == 4));
 
-      //renderer.setClearColor(0xffffff, 1);
-      // renderer.setClearColor(0x0, 0);
-      this.renderer.setSize(this.scene_width, this.scene_height);
-
-      this.add_3d_canvas(sz, this.renderer.domElement);
+      this.renderer = res.renderer;
+      this.webgl = res.usewebgl;
+      this.add_3d_canvas(sz, res.dom);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
@@ -241,13 +226,14 @@
       if (tmout === -1111) {
          // special handling for direct SVG renderer
          // probably, here one can use canvas renderer - after modifications
-         var rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
+         // var rrr = new THREE.SVGRenderer({ precision: 0, astext: true });
+         var rrr = THREE.CreateSVGRenderer(false, 0, document);
          rrr.setSize(this.scene_width, this.scene_height);
          rrr.render(this.scene, this.camera);
-         if (rrr.outerHTML) {
+         if (rrr.makeOuterHTML) {
             // use text mode, it is faster
             var d = document.createElement('div');
-            d.innerHTML = rrr.outerHTML;
+            d.innerHTML = rrr.makeOuterHTML();
             return d.childNodes[0];
          }
          return rrr.domElement;
@@ -255,7 +241,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || this.usesvg) {
+      if ((tmout <= 0) || this.usesvg || JSROOT.BatchMode) {
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
          } else {
@@ -274,6 +260,8 @@
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
 
+         JSROOT.Painter.AfterRender3D(this.renderer);
+
          var tm2 = new Date();
 
          delete this.render_tmout;
@@ -284,9 +272,6 @@
             console.log('First render tm = ' + this.first_render_tm);
          }
 
-         // when using SVGrenderer producing text output, provide result
-         if (this.renderer.workaround_id !== undefined)
-            JSROOT.svg_workaround[this.renderer.workaround_id] = this.renderer.outerHTML;
 
          return;
       }
@@ -399,12 +384,11 @@
 
       if (changed) this.Render3D();
 
-      if (this.IsUserTooltipCallback() && this.GetObject()) {
+      if (this.GetObject())
          this.ProvideUserTooltip({ obj: this.GetObject(),  name: this.GetObject().fName,
                                    bin: tip.bin, cont: tip.value,
                                    binx: tip.ix, biny: tip.iy, binz: tip.iz,
                                    grx: (tip.x1+tip.x2)/2, gry: (tip.y1+tip.y2)/2, grz: (tip.z1+tip.z2)/2 });
-      }
    }
 
    JSROOT.TFramePainter.prototype.TestAxisVisibility = function(camera, toplevel, fb, bb) {
@@ -2918,11 +2902,12 @@
 
    TH3Painter.prototype.FillToolbar = function() {
       var pp = this.pad_painter();
-      if (pp===null) return;
+      if (!pp) return;
 
       pp.AddButton(JSROOT.ToolbarIcons.auto_zoom, 'Unzoom all axes', 'ToggleZoom', "Ctrl *");
       if (this.draw_content)
          pp.AddButton(JSROOT.ToolbarIcons.statbox, 'Toggle stat box', "ToggleStatBox");
+      pp.ShowButtons();
    }
 
    TH3Painter.prototype.CanZoomIn = function(axis,min,max) {

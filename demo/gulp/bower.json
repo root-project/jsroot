@@ -4,7 +4,7 @@
   "description": "Example of building lib.js with gulp for JavaScript ROOT",
   "main": "example.htm",
   "dependencies": {
-    "jsroot": "^5.3.0"
+    "jsroot": "^5.6.0"
   },
   "overrides": {
      "MathJax": {
@@ -22,7 +22,6 @@
            "scripts/JSRootPainter.hist.js",
            "scripts/JSRootPainter.hierarchy.js",
            "scripts/JSRootPainter.jquery.js",
-           "scripts/saveSvgAsPng.min.js",
            "scripts/JSRoot3DPainter.js",
            "scripts/JSRootPainter.hist3d.js",
            "scripts/three.extra.min.js",
