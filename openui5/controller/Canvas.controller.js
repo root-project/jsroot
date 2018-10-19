@@ -184,6 +184,8 @@ sap.ui.define([
 
       showGeEditor : function(new_state) {
          this.showLeftArea(new_state ? "Ged" : "");
+         this.getView().getModel().setProperty("/GedIcon", new_state ? "sap-icon://accept" : "");
+
       },
 
       cleanupIfGed : function() {

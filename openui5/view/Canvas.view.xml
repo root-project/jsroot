@@ -38,10 +38,10 @@
                <menu>
                   <Menu itemSelected="onViewMenuAction">
                      <items>
-                        <MenuItem text="Editor" icon="sap-icon://user-edit" tooltip="Toggle graphics attribute editor"/>
-                        <MenuItem text="Toolbar" icon="" tooltip="Toolbar with several shortcuts"/>
-                        <MenuItem text="Event statusbar" icon="" />
-                        <MenuItem text="Tooltip info" icon="" />
+                        <MenuItem text="Editor" icon="{/GedIcon}" tooltip="Toggle graphics attribute editor"/>
+                        <MenuItem text="Toolbar" icon="{/ToolbarIcon}" tooltip="Toolbar with several shortcuts"/>
+                        <MenuItem text="Event statusbar" icon="{/StatusIcon}" />
+                        <MenuItem text="Tooltip info" icon="{/TooltipIcon}" />
                         <MenuItem text="Colors" startsSection="true" enabled="false"/>
                         <MenuItem text="Fonts" enabled="false"/>
                         <MenuItem text="Markers" enabled="false"/>
