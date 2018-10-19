@@ -3213,8 +3213,10 @@
     */
    TObjectPainter.prototype.SetDivId = function(divid, is_main, pad_name) {
 
-      if (divid !== undefined)
+      if (divid !== undefined) {
          this.divid = divid;
+         delete this._selected_main;
+      }
 
       if (!is_main) is_main = 0;
 
