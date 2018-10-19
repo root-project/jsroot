@@ -6201,19 +6201,11 @@
       } else if (JSROOT.nodejs_document) {
          build(JSROOT.nodejs_window.d3.select('body').append('div'));
       } else {
-
-         var jsdom = require("jsdom");
-         var { JSDOM } = jsdom;
-
-         var dom = new JSDOM("<!DOCTYPE html>hello");
-
-         JSROOT.nodejs_window = dom.window;
-         JSROOT.nodejs_document = dom.window.document; // used with three.js
-
-         dom.window.d3 = d3.select(dom.window.document); //get d3 into the dom
-
-         build(dom.window.d3.select('body').append('div'));
-
+         // use eval while old minifier is not able to parse newest Node.js syntax
+         eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
+         JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
+         JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+         build(JSROOT.nodejs_window.d3.select('body').append('div'));
       }
    }
 
