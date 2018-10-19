@@ -12,6 +12,20 @@
 9. Migrate to Node.js 8, do not support older versions 
 
 
+## Changes in 5.5.2
+1. Fix - draw TH2Poly bins outline when no content specified
+2. Fix - always set axis interactive handlers (#170)
+3. Fix - take into account zaxis properties when drawing color palette (#171)
+
+
+## Changes in 5.5.1
+1. Fix - adjust v7 part to new class naming convention, started with R
+2. Fix - show RCanvas title
+3. New - implement 'nocache' option for JSROOT scripts loading. When specified in URL with
+   JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs
+4. New - provide simple drawing for TObjString (#164) 
+
+
 ## Changes in 5.5.0
 1. Introduce JSROOT.StoreJSON() function. It creates JSON code for the
    TCanvas with all drawn objects inside. Allows to store current canvas state
