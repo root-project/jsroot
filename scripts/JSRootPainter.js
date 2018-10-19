@@ -6202,24 +6202,18 @@
          build(JSROOT.nodejs_window.d3.select('body').append('div'));
       } else {
 
-         var jsdom;
-         try {
-           jsdom = require("jsdom/lib/old-api.js"); // jsdom >= 10.x
-         } catch (e) {
-           jsdom = require("jsdom"); // jsdom <= 9.x
-         }
+         var jsdom = require("jsdom");
+         var { JSDOM } = jsdom;
 
-         jsdom.env({
-            html:'',
-            features:{ QuerySelector:true }, //you need query selector for D3 to work
-            done:function(errors, window) {
+         var dom = new JSDOM("<!DOCTYPE html>hello");
 
-               window.d3 = d3.select(window.document); //get d3 into the dom
-               JSROOT.nodejs_window = window;
-               JSROOT.nodejs_document = window.document; // used with three.js
+         JSROOT.nodejs_window = dom.window;
+         JSROOT.nodejs_document = dom.window.document; // used with three.js
 
-               build(window.d3.select('body').append('div'));
-            }});
+         dom.window.d3 = d3.select(dom.window.document); //get d3 into the dom
+
+         build(dom.window.d3.select('body').append('div'));
+
       }
    }
 

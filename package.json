@@ -1,6 +1,6 @@
 {
   "name": "jsroot",
-  "version": "5.5.0",
+  "version": "5.6.0",
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
   "main": "./scripts/JSRootCore.js",
@@ -16,15 +16,18 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "jsdom": "< 10.0.0",
-    "xhr2": "*",
-    "mathjax-node": "*"
+    "jsdom": "^12.2.0",
+    "mathjax-node": "*",
+    "xhr2": "*"
   },
-  "repository" : { "type" : "git" , "url" : "https://github.com/root-project/jsroot.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/root-project/jsroot.git"
+  },
   "files": [
     "scripts/*",
     "openui5/*",
     "style/*",
-    "/LICENSE"
-   ]
+    "LICENSE"
+  ]
 }
