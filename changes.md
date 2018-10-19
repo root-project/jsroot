@@ -1,7 +1,9 @@
 # JSROOT changelog
 
-## Changes in 5.5.x
+## Changes in 5.5.2
 1. Fix - draw TH2Poly bins outline when no content specified
+2. Fix - always set axis interactive handlers (#170)
+3. Fix - take into account zaxis properties when drawing color palette (#171)
 
 
 ## Changes in 5.5.1
