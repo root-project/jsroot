@@ -4438,6 +4438,10 @@
       })
    }
 
+   TCanvasPainter.prototype.SendSaveCommand = function(fname) {
+      this.SendWebsocket("PRODUCE:" + fname);
+   }
+
    TCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
       // when window closed, close socket
       this.CloseWebsocket(true);
