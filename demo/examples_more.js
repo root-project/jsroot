@@ -90,7 +90,6 @@ examples_more = {
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
      { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" },
      { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" },
-     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
      { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" }
    ],
    TGeo : [

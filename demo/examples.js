@@ -116,7 +116,8 @@ examples_main = {
      { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
      { name:"legend", asurl: true, file: "legends.root", item: "legends;1", latex: "mathjax", title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
-     { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
+     { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
+     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" }
    ],
    TGeo : [
      { name:"logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
