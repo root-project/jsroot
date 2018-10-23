@@ -2273,6 +2273,20 @@
       return res;
    }
 
+   /** @summary Returns string with value of main element id attribute
+   *
+   * @desc if main element does not have id, it will be generated */
+   TBasePainter.prototype.get_main_id = function() {
+      var elem = this.select_main();
+      if (elem.empty()) return "";
+      var id = elem.attr("id");
+      if (!id) {
+         id = "jsroot_element_" + JSROOT.id_counter++;
+         elem.attr("id", id);
+      }
+      return id;
+   }
+
    /** @summary Returns layout kind
     * @private
     */
