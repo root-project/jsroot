@@ -27,7 +27,7 @@
    JSROOT.sources.push("v6");
 
    // identifier used in TWebCanvas painter
-   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kPalette: 5 };
+   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4 };
 
    // =======================================================================
 
@@ -3532,13 +3532,15 @@
             if (this.options && this.options.LocalColors)
                this.root_colors = JSROOT.Painter.extendRootColors(null, ListOfColors);
 
-            continue;
-         }
+            // set palette
+            if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+               var palette = [];
+               for (var n=0;n<snap.fSnapshot.fBuf.length;++n)
+                  palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
 
-         // palette
-         if (snap.fKind === JSROOT.WebSnapIds.kPalette) {
-            if (!this.options || !this.options.IgnorePalette)
-               this.CanvasPalette = new JSROOT.ColorPalette(snap.fSnapshot.fOper);
+               this.CanvasPalette = new JSROOT.ColorPalette(palette);
+            }
+
             continue;
          }
 
