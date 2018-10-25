@@ -3286,7 +3286,7 @@
       }
 
       painter.Redraw = function() {
-         var obj = this.GetObject(), indx = 0, isndc = false, attr = {};
+         var obj = this.GetObject(), indx = 0, isndc = false, attr = {}, lastpath = null, lastpathd = "";
          if (!obj || !obj.fOper) return;
 
          this.CreateG();
@@ -3296,16 +3296,24 @@
             switch (oper.substr(0, 5)) {
                case "lattr":
                   this.createAttLine({ attr: this.ReadAttr(oper, ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
+                  if (lastpath) lastpath.attr("d", lastpathd);
+                  lastpath = null; lastpathd = "";
                   continue;
                case "fattr":
                   this.createAttFill({ attr: this.ReadAttr(oper, ["fFillColor", "fFillStyle"]), force: true });
+                  if (lastpath) lastpath.attr("d", lastpathd);
+                  lastpath = null; lastpathd = "";
                   continue;
                case "mattr":
                   this.createAttMarker({ attr: this.ReadAttr(oper, ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
+                  if (lastpath) lastpath.attr("d", lastpathd);
+                  lastpath = null; lastpathd = "";
                   continue;
                case "tattr":
                   attr = this.ReadAttr(oper, ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
+                  if (lastpath) lastpath.attr("d", lastpathd);
+                  lastpath = null; lastpathd = "";
                   continue;
                case "rect":
                case "bbox": {
@@ -3314,17 +3322,13 @@
                       x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
                       y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  var rect = this.draw_g
-                     .append("svg:rect")
-                     .attr("x", Math.min(x1,x2))
-                     .attr("y", Math.min(y1,y2))
-                     .attr("width", Math.abs(x2-x1))
-                     .attr("height", Math.abs(y1-y2));
+                  lastpathd += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
 
-                  if (oper == "bbox") {
-                     rect.call(this.fillatt.func).style('stroke','none');
+                  if (lastpath) {
+                  } else if (oper == "bbox") {
+                     lastpath = this.draw_g.append("svg:path").call(this.fillatt.func).style('stroke','none');
                   } else {
-                     rect.call(this.lineatt.func).style('fill','none');
+                     lastpath = this.draw_g.append("svg:path").call(this.lineatt.func).style('fill','none');
                   }
 
                   continue;
@@ -3340,13 +3344,13 @@
                             this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
                   if (dofill) cmd+="Z";
+                  lastpathd += cmd;
 
-                  var path = this.draw_g.append("svg:path").attr("d", cmd);
-
-                  if (dofill) {
-                     path.call(this.fillatt.func).attr('stroke','none');
+                  if (lastpath) {
+                  } else if (dofill) {
+                     lastpath = this.draw_g.append("svg:path").call(this.fillatt.func).attr('stroke','none');
                   } else {
-                     path.call(this.lineatt.func).attr('fill', 'none');
+                     lastpath = this.draw_g.append("svg:path").call(this.lineatt.func).attr('fill', 'none');
                   }
 
                   continue;
@@ -3360,8 +3364,10 @@
                      cmd += this.markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
                                                   this.AxisToSvg("y", obj.fBuf[indx++], false));
 
-                  if (cmd)
-                     this.draw_g.append("svg:path").attr("d", cmd).call(this.markeratt.func);
+                  lastpathd += cmd;
+
+                  if (!lastpath)
+                     lastpath = this.draw_g.append("svg:path").call(this.markeratt.func);
 
                   continue;
                }
@@ -3392,8 +3398,10 @@
                default:
                   console.log('unsupported operation ' + oper);
             }
-
          }
+
+         if (lastpath) lastpath.attr("d", lastpathd);
+
       }
 
       painter.SetDivId(divid);
