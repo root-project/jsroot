@@ -1000,7 +1000,6 @@
     */
 
    function TAttFillHandler(args) {
-
       this.color = "none";
       this.colorindx = 0;
       this.pattern = 0;
@@ -1086,7 +1085,6 @@
     * @param {string} [color_as_svg = undefined] - color as HTML string index
     */
    TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
-
       delete this.pattern_url;
       this.changed = true;
 
@@ -1120,7 +1118,7 @@
 
       if (color_as_svg) {
          this.color = color;
-         indx = 10000 + JSROOT.id_counter++; // use fictial unique index far away from existing color indexes
+         indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
          this.color = JSROOT.Painter.root_colors[indx];
       }
@@ -3331,7 +3329,7 @@
       var handler = args.std ? this.markeratt : null;
 
       if (!handler) handler = new TAttMarkerHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.markeratt = handler;
 
@@ -3356,7 +3354,7 @@
       var handler = args.std ? this.lineatt : null;
 
       if (!handler) handler = new TAttLineHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.lineatt = handler;
 
@@ -3391,7 +3389,7 @@
       if (!args.svg) args.svg = this.svg_canvas();
 
       if (!handler) handler = new TAttFillHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.fillatt = handler;
 

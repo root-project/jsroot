@@ -3275,19 +3275,18 @@
          return true;
       }
 
-      painter.ReadAttr = function(str, obj, names) {
-         var lastp = str.indexOf(":");
+      painter.ReadAttr = function(str, names) {
+         var lastp = str.indexOf(":"), obj = { _typename: "any" };
          for (var k=0;k<names.length;++k) {
             var p = str.indexOf(":", lastp+1);
             obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
             lastp = p;
          }
+         return obj;
       }
 
       painter.Redraw = function() {
-         var obj = this.GetObject(), indx = 0, isndc = false,
-             line_obj = {}, fill_obj = {}, marker_obj = {}, attr = {},
-             lineatt = null, fillatt = null, markeratt = null;
+         var obj = this.GetObject(), indx = 0, isndc = false, attr = {};
          if (!obj || !obj.fOper) return;
 
          this.CreateG();
@@ -3296,19 +3295,16 @@
             var oper = obj.fOper[k];
             switch (oper.substr(0, 5)) {
                case "lattr":
-                  this.ReadAttr(oper, line_obj, ["fLineColor", "fLineStyle", "fLineWidth"]);
-                  lineatt = null;
+                  this.createAttLine({ attr: this.ReadAttr(oper, ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
                   continue;
                case "fattr":
-                  this.ReadAttr(oper, fill_obj, ["fFillColor", "fFillStyle"]);
-                  fillatt = null;
+                  this.createAttFill({ attr: this.ReadAttr(oper, ["fFillColor", "fFillStyle"]), force: true });
                   continue;
                case "mattr":
-                  this.ReadAttr(oper, marker_obj, ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]);
-                  markeratt = null;
+                  this.createAttMarker({ attr: this.ReadAttr(oper, ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
                   continue;
                case "tattr":
-                  this.ReadAttr(oper, attr, ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
+                  attr = this.ReadAttr(oper, ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   continue;
                case "rect":
@@ -3326,11 +3322,9 @@
                      .attr("height", Math.abs(y1-y2));
 
                   if (oper == "bbox") {
-                     if (!fillatt) fillatt = this.createAttFill({ attr: fill_obj });
-                     rect.call(fillatt.func).style('stroke','none');
+                     rect.call(this.fillatt.func).style('stroke','none');
                   } else {
-                     if (!lineatt) lineatt = this.createAttLine({ attr: line_obj });
-                     rect.call(lineatt.func).style('fill','none');
+                     rect.call(this.lineatt.func).style('fill','none');
                   }
 
                   continue;
@@ -3350,11 +3344,9 @@
                   var path = this.draw_g.append("svg:path").attr("d", cmd);
 
                   if (dofill) {
-                     if (!fillatt) fillatt = this.createAttFill({ attr: fill_obj });
-                     path.call(fillatt.func).attr('stroke','none');
+                     path.call(this.fillatt.func).attr('stroke','none');
                   } else {
-                     if (!lineatt) lineatt = this.createAttLine({ attr: line_obj });
-                     path.call(lineatt.func).attr('fill', 'none');
+                     path.call(this.lineatt.func).attr('fill', 'none');
                   }
 
                   continue;
@@ -3363,15 +3355,13 @@
                case "pmark": {
                   var npoints = parseInt(oper.substr(6)), cmd = "";
 
-                  if (!markeratt) markeratt = this.createAttMarker({ attr: marker_obj });
-
-                  markeratt.reset_pos();
+                  this.markeratt.reset_pos();
                   for (var n=0;n<npoints;++n)
-                     cmd += markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
-                                             this.AxisToSvg("y", obj.fBuf[indx++], false));
+                     cmd += this.markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
+                                                  this.AxisToSvg("y", obj.fBuf[indx++], false));
 
                   if (cmd)
-                     this.draw_g.append("svg:path").attr("d", cmd).call(markeratt.func);
+                     this.draw_g.append("svg:path").attr("d", cmd).call(this.markeratt.func);
 
                   continue;
                }
