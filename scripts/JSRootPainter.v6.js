@@ -3118,7 +3118,9 @@
          var arr = [], missing = false;
          for (var n = 0; n < obj.arr.length; ++n) {
             var col = obj.arr[n];
-            if (col && (col._typename == 'TColor')) {
+            if (typeof col == "string") {
+               arr[n] = col;
+            } else if (col && (col._typename == 'TColor')) {
                arr[n] = JSROOT.Painter.MakeColorRGB(col);
             } else {
                console.log('Missing color with index ' + n); missing = true;
@@ -3520,7 +3522,42 @@
          }
 
          if (snap.fKind === JSROOT.WebSnapIds.kSpecial) { // specials like list of colors
-            this.CheckSpecial(snap.fSnapshot);
+
+            var ListOfColors = {
+              _typename : "TObjArray",
+               name : "ListOfColors",
+               arr : []
+            };
+
+            var bbb = 0, ispalette = false;
+
+            // first restore colors
+            for (var n=0;n<snap.fSnapshot.fOper.length;++n) {
+               var name = snap.fSnapshot.fOper[n];
+               var colnumber = parseInt(name.substr(4));
+               if (ispalette || (name.substr(0,4) == "col:")) {
+                  ispalette = true;
+                  ListOfColors.arr.push(this.get_color(colnumber));
+               } else {
+                  var col = {
+                      _typename: "TColor",
+                      fNumber: colnumber,
+                      fRed: snap.fSnapshot.fBuf[bbb++] / 255.,
+                      fGreen: snap.fSnapshot.fBuf[bbb++] / 255.,
+                      fBlue: snap.fSnapshot.fBuf[bbb++] / 255.,
+                      fAlpha: 1
+                  };
+                  if (name.substr(0,4) == "rga:")
+                    col.fAlpha = snap.fSnapshot.fBuf[bbb++] / 1000.;
+                  ListOfColors.arr.push(col);
+               }
+            }
+
+            if (ispalette)
+               ListOfColors.name = "CurrentColorPalette";
+
+            this.CheckSpecial(ListOfColors);
+
             continue;
          }
 
