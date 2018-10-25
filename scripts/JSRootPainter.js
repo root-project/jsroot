@@ -583,24 +583,40 @@
 
    /** Add new colors from object array. */
    Painter.extendRootColors = function(jsarr, objarr) {
-      if (!objarr || !objarr.arr) return;
-
-      for (var n = 0; n < objarr.arr.length; ++n) {
-         var col = objarr.arr[n];
-         if (!col || (col._typename != 'TColor')) continue;
-
-         var num = col.fNumber;
-         if ((num<0) || (num>10000)) continue;
-
-         var rgb = Painter.MakeColorRGB(col);
-         if (rgb && (jsarr[num] != rgb)) jsarr[num] = rgb;
+      if (!jsarr) {
+         jsarr = [];
+         for (var n=0;n<this.root_colors.length;++n)
+            jsarr[n] = this.root_colors[n];
       }
+
+      if (!objarr) return jsarr;
+
+      var rgb_array = objarr;
+      if (objarr._typename && objarr.arr) {
+         rgb_array = [];
+         for (var n = 0; n < objarr.arr.length; ++n) {
+            var col = objarr.arr[n];
+            if (!col || (col._typename != 'TColor')) continue;
+
+            if ((col.fNumber>=0) && (col.fNumber<=10000))
+               rgb_array[col.fNumber] = Painter.MakeColorRGB(col);
+         }
+      }
+
+
+      for (var n = 0; n < rgb_array.length; ++n)
+         if (rgb_array[n] && (jsarr[n] != rgb_array[n]))
+            jsarr[n] = rgb_array[n];
+
+      return jsarr;
    }
 
-   /** Use TObjArray of TColor instances, typically stored together with TCanvas primitives
+   /** Set global list of colors.
+    * Either TObjArray of TColor instances or just plain array with rgb() code.
+    * List of colors typically stored together with TCanvas primitives
     * @private */
    Painter.adoptRootColors = function(objarr) {
-      Painter.extendRootColors(Painter.root_colors, objarr);
+      this.extendRootColors(this.root_colors, objarr);
    }
 
    // =====================================================================

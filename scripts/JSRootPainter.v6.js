@@ -27,7 +27,7 @@
    JSROOT.sources.push("v6");
 
    // identifier used in TWebCanvas painter
-   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kSpecial: 4 };
+   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kPalette: 5 };
 
    // =======================================================================
 
@@ -3085,7 +3085,7 @@
       return pad_visible;
    }
 
-   TPadPainter.prototype.CheckSpecial = function(obj) {
+   TPadPainter.prototype.CheckSpecial = function(obj, kind) {
 
       if (!obj || (obj._typename!=="TObjArray")) return false;
 
@@ -3104,13 +3104,9 @@
          if (!this.options || this.options.GlobalColors) // set global list of colors
             JSROOT.Painter.adoptRootColors(obj);
 
-         if (this.options && this.options.LocalColors) {
-            // copy existing colors and extend with new values
-            this.root_colors = [];
-            for (var n=0;n<JSROOT.Painter.root_colors.length;++n)
-               this.root_colors[n] = JSROOT.Painter.root_colors[n];
-            JSROOT.Painter.extendRootColors(this.root_colors, obj);
-         }
+         // copy existing colors and extend with new values
+         if (this.options && this.options.LocalColors)
+            this.root_colors = JSROOT.Painter.extendRootColors(null, obj);
          return true;
       }
 
@@ -3118,9 +3114,7 @@
          var arr = [], missing = false;
          for (var n = 0; n < obj.arr.length; ++n) {
             var col = obj.arr[n];
-            if (typeof col == "string") {
-               arr[n] = col;
-            } else if (col && (col._typename == 'TColor')) {
+            if (col && (col._typename == 'TColor')) {
                arr[n] = JSROOT.Painter.MakeColorRGB(col);
             } else {
                console.log('Missing color with index ' + n); missing = true;
@@ -3521,43 +3515,30 @@
             continue; // call next
          }
 
-         if (snap.fKind === JSROOT.WebSnapIds.kSpecial) { // specials like list of colors
+         // list of colors
+         if (snap.fKind === JSROOT.WebSnapIds.kColors) {
 
-            var ListOfColors = {
-              _typename : "TObjArray",
-               name : "ListOfColors",
-               arr : []
-            };
-
-            var bbb = 0, ispalette = false;
-
-            // first restore colors
+            var ListOfColors = [];
             for (var n=0;n<snap.fSnapshot.fOper.length;++n) {
-               var name = snap.fSnapshot.fOper[n];
-               var colnumber = parseInt(name.substr(4));
-               if (ispalette || (name.substr(0,4) == "col:")) {
-                  ispalette = true;
-                  ListOfColors.arr.push(this.get_color(colnumber));
-               } else {
-                  var col = {
-                      _typename: "TColor",
-                      fNumber: colnumber,
-                      fRed: snap.fSnapshot.fBuf[bbb++] / 255.,
-                      fGreen: snap.fSnapshot.fBuf[bbb++] / 255.,
-                      fBlue: snap.fSnapshot.fBuf[bbb++] / 255.,
-                      fAlpha: 1
-                  };
-                  if (name.substr(0,4) == "rga:")
-                    col.fAlpha = snap.fSnapshot.fBuf[bbb++] / 1000.;
-                  ListOfColors.arr.push(col);
-               }
+               var name = snap.fSnapshot.fOper[n], p = name.indexOf(":");
+               ListOfColors[parseInt(name.substr(0,p))] = name.substr(p+1);
             }
 
-            if (ispalette)
-               ListOfColors.name = "CurrentColorPalette";
+            // set global list of colors
+            if (!this.options || this.options.GlobalColors)
+               JSROOT.Painter.adoptRootColors(ListOfColors);
 
-            this.CheckSpecial(ListOfColors);
+            // copy existing colors and extend with new values
+            if (this.options && this.options.LocalColors)
+               this.root_colors = JSROOT.Painter.extendRootColors(null, ListOfColors);
 
+            continue;
+         }
+
+         // palette
+         if (snap.fKind === JSROOT.WebSnapIds.kPalette) {
+            if (!this.options || !this.options.IgnorePalette)
+               this.CanvasPalette = new JSROOT.ColorPalette(snap.fSnapshot.fOper);
             continue;
          }
 
