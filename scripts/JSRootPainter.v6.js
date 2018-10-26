@@ -3085,7 +3085,7 @@
       return pad_visible;
    }
 
-   TPadPainter.prototype.CheckSpecial = function(obj, kind) {
+   TPadPainter.prototype.CheckSpecial = function(obj) {
 
       if (!obj || (obj._typename!=="TObjArray")) return false;
 
