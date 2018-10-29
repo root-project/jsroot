@@ -352,7 +352,7 @@
             var geom = new THREE.BufferGeometry();
             geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
             geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-            var mater = new THREE.MeshBasicMaterial( { color: color, opacity: opacity, shading: THREE.SmoothShading  } );
+            var mater = new THREE.MeshBasicMaterial( { color: color, opacity: opacity, flatShading: true } );
             tooltip_mesh = new THREE.Mesh(geom, mater);
          } else {
             pos = tooltip_mesh.geometry.attributes.position.array;
@@ -1256,7 +1256,7 @@
          }
 
          //var material = new THREE.MeshLambertMaterial( { color: fcolor } );
-         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, flatShading: true } );
 
          var mesh = new THREE.Mesh(geometry, material);
 
@@ -1307,7 +1307,7 @@
             var color2 = (rootcolor<2) ? new THREE.Color(0xFF0000) :
                             new THREE.Color(d3.rgb(fcolor).darker(0.5).toString());
 
-            var material2 = new THREE.MeshBasicMaterial( { color: color2, shading: THREE.SmoothShading } );
+            var material2 = new THREE.MeshBasicMaterial( { color: color2, flatShading: true } );
 
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.bins_index = indx2;
@@ -1980,7 +1980,7 @@
                 geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
                 var fcolor = palette.getColor(colindx);
-                var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading, side: THREE.DoubleSide, opacity: 0.5  } );
+                var material = new THREE.MeshBasicMaterial( { color: fcolor, flatShading: true, side: THREE.DoubleSide, opacity: 0.5  } );
                 var mesh = new THREE.Mesh(geometry, material);
                 mesh.painter = this;
                 main.toplevel.add(mesh);
@@ -2246,7 +2246,7 @@
          geometry.computeVertexNormals();
 
          var fcolor = this.fPalette.getColor(colindx);
-         var material = new THREE.MeshBasicMaterial( { color: fcolor, shading: THREE.SmoothShading  } );
+         var material = new THREE.MeshBasicMaterial( { color: fcolor, flatShading: true } );
          var mesh = new THREE.Mesh(geometry, material);
 
          pmain.toplevel.add(mesh);
