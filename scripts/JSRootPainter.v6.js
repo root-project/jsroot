@@ -1124,6 +1124,11 @@
          }
       }
 
+      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoom_changed_interactive) {
+         this.zoom_ymin = opts.zoom_ymin;
+         this.zoom_ymax = opts.zoom_ymax;
+      }
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;

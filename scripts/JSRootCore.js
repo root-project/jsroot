@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 26/10/2018";
+   JSROOT.version = "dev 30/10/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -111,7 +111,7 @@
    if (JSROOT.BatchMode === undefined)
       JSROOT.BatchMode = false; // when true, disables all kind of interactive features
 
-   // JSROOT.use_full_libs = true;
+   JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };

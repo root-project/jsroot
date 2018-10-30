@@ -680,7 +680,7 @@
             var v1 = raycaster.ray.origin.clone(),
                 v2 = v1.clone().addScaledVector(raycaster.ray.direction, 1e10);
 
-            var pnt = plane.intersectLine(new THREE.Line3(v1,v2));
+            var pnt = plane.intersectLine(new THREE.Line3(v1,v2), new THREE.Vector3());
 
             if (!pnt) return undefined;
 
