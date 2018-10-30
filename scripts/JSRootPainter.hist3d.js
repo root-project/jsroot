@@ -1160,14 +1160,14 @@
 
          var positions = new Float32Array(numvertices*3),
              normals = new Float32Array(numvertices*3),
-             bins_index = use16indx ? new Uint16Array(numvertices) : new Uint32Array(numvertices),
-             pos2 = null, norm2 = null, indx2 = null,
+             face_to_bins_index = use16indx ? new Uint16Array(numvertices/3) : new Uint32Array(numvertices/3),
+             pos2 = null, norm2 = null, face_to_bins_indx2 = null,
              v = 0, v2 = 0, vert, bin, k, nn;
 
          if (num2vertices > 0) {
             pos2 = new Float32Array(num2vertices*3);
             norm2 = new Float32Array(num2vertices*3);
-            indx2 = use16indx ? new Uint16Array(num2vertices) : new Uint32Array(num2vertices);
+            face_to_bins_indx2 = use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3);
          }
 
          for (i=i1;i<i2;++i) {
@@ -1211,8 +1211,7 @@
                      norm2[v2] = vnormals[nn];
                      norm2[v2+1] = vnormals[nn+1];
                      norm2[v2+2] = vnormals[nn+2];
-
-                     indx2[v2/3] = bin_index; // remember which bin corresponds to the vertex
+                     if (v2%9===0) face_to_bins_indx2[v2/9] = bin_index; // remember which bin corresponds to the face
                      v2+=3;
                   } else {
                      positions[v]   = x1 + vert.x * (x2 - x1);
@@ -1222,7 +1221,7 @@
                      normals[v] = vnormals[nn];
                      normals[v+1] = vnormals[nn+1];
                      normals[v+2] = vnormals[nn+2];
-                     bins_index[v/3] = bin_index; // remember which bin corresponds to the vertex
+                     if (v%9===0) face_to_bins_index[v/9] = bin_index; // remember which bin corresponds to the face
                      v+=3;
                   }
 
@@ -1260,7 +1259,7 @@
 
          var mesh = new THREE.Mesh(geometry, material);
 
-         mesh.bins_index = bins_index;
+         mesh.face_to_bins_index = face_to_bins_index;
          mesh.painter = this;
          mesh.zmin = axis_zmin;
          mesh.zmax = axis_zmax;
@@ -1269,12 +1268,18 @@
          mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
-            if ((intersect.index<0) || (intersect.index >= this.bins_index.length)) return null;
+            if (intersect.faceIndex === undefined) {
+               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               return null;
+            }
+
+            if ((intersect.faceIndex < 0) || (intersect.faceIndex >= this.face_to_bins_index.length)) return null;
+
             var p = this.painter,
                 handle = this.handle,
                 main = p.frame_painter(),
                 histo = p.GetHisto(),
-                tip = p.Get3DToolTip( this.bins_index[intersect.index] );
+                tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
 
             tip.x1 = Math.max(-main.size_xy3d,  handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
             tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
@@ -1310,7 +1315,7 @@
             var material2 = new THREE.MeshBasicMaterial( { color: color2, flatShading: true } );
 
             var mesh2 = new THREE.Mesh(geom2, material2);
-            mesh2.bins_index = indx2;
+            mesh2.face_to_bins_index = face_to_bins_indx2;
             mesh2.painter = this;
             mesh2.tooltip = mesh.tooltip;
             mesh2.zmin = mesh.zmin;
