@@ -1268,7 +1268,7 @@
          mesh.handle = handle;
 
          mesh.tooltip = function(intersect) {
-            if (intersect.faceIndex === undefined) {
+            if (isNaN(intersect.faceIndex)) {
                console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
                return null;
             }
@@ -2009,6 +2009,7 @@
           return !pthis._show_empty_bins;
        }
 
+       // loop over the points - first loop counts points, second fill arrays
        for (var loop=0;loop<2;++loop) {
 
           for (i=handle.i1;i<handle.i2;++i) {
@@ -2070,6 +2071,11 @@
        line.tip_color = (this.GetObject().fLineColor===3) ? 0xFF0000 : 0x00FF00;
 
        line.tooltip = function(intersect) {
+          if (isNaN(intersect.index)) {
+             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r97');
+             return null;
+          }
+
           var pos = Math.floor(intersect.index / 6);
           if ((pos<0) || (pos >= this.intersect_index.length)) return null;
           var p = this.painter,
@@ -2550,6 +2556,11 @@
       mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
 
       mesh.tooltip = function(intersect) {
+         if (isNaN(intersect.index)) {
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+            return null;
+         }
+
          var indx = Math.floor(intersect.index / this.nvertex);
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
@@ -2831,7 +2842,7 @@
          var combined_bins = new THREE.Mesh(all_bins_buffgeom, material);
 
          combined_bins.bins = bin_tooltips[nseq];
-         combined_bins.bins_faces = buffer_size/3;
+         combined_bins.bins_faces = buffer_size/9;
          combined_bins.painter = this;
 
          combined_bins.scalex = tipscale*scalex;
@@ -2841,7 +2852,11 @@
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {
-            var indx = Math.floor(intersect.index / this.bins_faces);
+            if (isNaN(intersect.faceIndex)) {
+               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               return null;
+            }
+            var indx = Math.floor(intersect.faceIndex / this.bins_faces);
             if ((indx<0) || (indx >= this.bins.length)) return null;
 
             var p = this.painter,
