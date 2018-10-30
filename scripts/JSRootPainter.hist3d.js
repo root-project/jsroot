@@ -3121,6 +3121,11 @@
    }
 
    TGraph2DPainter.prototype.Graph2DTooltip = function(intersect) {
+      if (isNaN(intersect.index)) {
+         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+         return null;
+      }
+
       var indx = Math.floor(intersect.index / this.nvertex);
       if ((indx<0) || (indx >= this.index.length)) return null;
 
@@ -3433,6 +3438,10 @@
          mesh.index = index;
 
          mesh.tooltip = function(intersect) {
+            if (isNaN(intersect.index)) {
+               console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+               return null;
+            }
             var indx = Math.floor(intersect.index / this.nvertex);
             if ((indx<0) || (indx >= this.index.length)) return null;
 
