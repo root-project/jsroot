@@ -30,12 +30,16 @@
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
-      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
+      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="5"))  {
+         if (d3.version !== '5.7.0')
+            console.log('Reuse existing d3.js ' + d3.version + ", expected 5.7.0");
+         JSROOT._test_d3_ = 5;
+      } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
          if (d3.version !== '4.4.4')
-            console.log('Reuse existing d3.js ' + d3.version + ", expected 4.4.4");
+            console.warn('Try to use older d3.js ' + d3.version + ", expected 5.7.0");
          JSROOT._test_d3_ = 4;
       } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
-         console.log("Older d3.js version " + d3.version + " found, try to adjust");
+         console.error("Very old d3.js " + d3.version + " found, please UPGRADE");
          d3.timeFormat = d3.time.format;
          d3.scaleTime = d3.time.scale;
          d3.scaleLog = d3.scale.log;
