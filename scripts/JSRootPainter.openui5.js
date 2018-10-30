@@ -34,7 +34,7 @@
    delete JSROOT.complete_script_load; // normal callback is intercepted - we need to instantiate openui5
 
    JSROOT.completeUI5Loading = function() {
-      // console.log('complete ui5 loading', typeof sap);
+      console.log('complete ui5 loading');
       JSROOT.sap = sap;
 
       // var cust_style = document.createElement("link");
@@ -57,7 +57,9 @@
    if (JSROOT.openui5src == 'jsroot') src = JSROOT.source_dir + "openui5dist/"; else
    if (typeof JSROOT.openui5src == 'string') src = JSROOT.openui5src;
 
-   console.log('Use openui5 from ', src);
+   if ((src.indexOf("roothandler")==0) && (src.indexOf("://")<0)) src = src.replace(/\:\//g,"://");
+
+   console.log('Use openui5 from ' + src);
 
    // this is location of openui5 scripts when working with THttpServer or when scripts are installed inside JSROOT
    element.setAttribute('src', src + "resources/sap-ui-core-nojQuery.js"); // latest openui5 version
