@@ -853,6 +853,7 @@
       this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
+      this.ranges_set = false;
       this.axes_drawn = false;
       this.keys_handler = null;
       this.projection = 0; // different projections
@@ -997,6 +998,8 @@
 
    TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       // if (this.axes_drawn) return;
+
+      this.ranges_set = true;
 
       this.xaxis = xaxis;
       this.xmin = xmin;
@@ -1248,7 +1251,7 @@
 
    /** Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
-      if (!pad) return;
+      if (!pad || !this.ranges_set) return;
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT

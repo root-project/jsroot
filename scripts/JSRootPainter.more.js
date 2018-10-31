@@ -3286,6 +3286,7 @@
       }
 
       painter.Redraw = function() {
+
          var obj = this.GetObject(), indx = 0, isndc = false, attr = {}, lastpath = null, lastpathd = "";
          if (!obj || !obj.fOper) return;
 
@@ -3345,6 +3346,8 @@
 
                   if (dofill) cmd+="Z";
                   lastpathd += cmd;
+
+                  console.log(indx, 'cmd', cmd);
 
                   if (lastpath) {
                   } else if (dofill) {
