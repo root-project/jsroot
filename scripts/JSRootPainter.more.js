@@ -3372,7 +3372,7 @@
                   continue;
                }
 
-               case "text": {
+               case "text:": {
                   var xx = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
                       yy = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
@@ -3388,7 +3388,7 @@
 
                      // todo - correct support of angle
                      this.DrawText({ align: attr.fTextAlign, x: xx, y: yy, rotate: angle,
-                                     text: obj.fOper.arr[k].fString, color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
+                                     text: obj.fOper[k].substr(5), color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }
