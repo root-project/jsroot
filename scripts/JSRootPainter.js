@@ -2896,7 +2896,7 @@
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
       var main = this.frame_painter();
-      if (main && !kind) {
+      if (main && !kind && main.grx && main.gry) {
          // this is frame coordinates
          value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
