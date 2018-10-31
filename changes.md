@@ -4,7 +4,8 @@
 1. Add TMath.BreitWigner function
 2. Support custom streamers for TMaterial and TMixture (very old examples)
 3. Fix Y-scale drawing of THStack (https://root-forum.cern.ch/t/31266)
-
+4. Fix - select palette from colz element
+ 
 
 ## Changes in 5.6.0
 1. By drawing outline speed up (factor 10) canvas with many small sub-pads 
