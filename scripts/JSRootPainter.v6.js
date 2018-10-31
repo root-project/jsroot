@@ -1464,7 +1464,7 @@
             this.fillatt.SetSolidColor('white');
       }
 
-      if (pad && pad.fFrameLineColor!==undefined)
+      if (!tframe && pad && (pad.fFrameLineColor!==undefined))
          this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
       else
          this.createAttLine({ attr: tframe, color: 'black' });
