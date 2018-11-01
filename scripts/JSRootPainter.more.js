@@ -3287,8 +3287,27 @@
 
          if (!obj || !obj.fOper || !func) return;
 
-         var indx = 0, attr = {}, lastpath = null, d = "",
+         var indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
              oper, k, npoints, n, arr = obj.fOper.split(";");
+
+         function check_attributes(painter, kind) {
+            if (kind == lastkind) return;
+
+            if (lastpath) {
+               lastpath.attr("d", d); // flush previous
+               d = ""; lastpath = null; lastkind = "none";
+            }
+
+            if (!kind) return;
+
+            lastkind = kind;
+            lastpath = painter.draw_g.append("svg:path");
+            switch (kind) {
+               case "f": lastpath.call(painter.fillatt.func).attr('stroke', 'none'); break;
+               case "l": lastpath.call(painter.lineatt.func).attr('fill', 'none'); break;
+               case "m": lastpath.call(painter.markeratt.func); break;
+            }
+         }
 
          this.CreateG();
 
@@ -3297,23 +3316,26 @@
             switch (oper) {
                case "z":
                   this.createAttLine({ attr: this.ReadAttr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
-                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
+                  check_attributes();
                   continue;
                case "y":
                   this.createAttFill({ attr: this.ReadAttr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
-                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
+                  check_attributes();
                   continue;
                case "x":
                   this.createAttMarker({ attr: this.ReadAttr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
-                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
+                  check_attributes();
                   continue;
                case "o":
                   attr = this.ReadAttr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
-                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
+                  check_attributes();
                   continue;
                case "r":
                case "b": {
+
+                  check_attributes(this, (oper == "b") ? "f" : "l");
+
                   var x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
                       x2 = func.x(obj.fBuf[indx++]),
@@ -3321,18 +3343,13 @@
 
                   d += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
 
-                  if (!lastpath) {
-                     lastpath = this.draw_g.append("svg:path");
-                     if (oper == "b")
-                        lastpath.call(this.fillatt.func).attr('stroke', 'none');
-                     else
-                        lastpath.call(this.lineatt.func).attr('fill', 'none');
-                  }
-
                   continue;
                }
                case "l":
                case "f": {
+
+                  check_attributes(this, oper);
+
                   npoints = parseInt(arr[k].substr(1));
 
                   for (n=0;n<npoints;++n)
@@ -3341,26 +3358,18 @@
 
                   if (oper == "f") d+="Z";
 
-                  if (!lastpath) {
-                     lastpath = this.draw_g.append("svg:path");
-                     if (oper == "f")
-                        lastpath.call(this.fillatt.func).attr('stroke','none');
-                     else
-                        lastpath.call(this.lineatt.func).attr('fill', 'none');
-                  }
-
                   continue;
                }
 
                case "m": {
+
+                  check_attributes(this, oper);
+
                   npoints = parseInt(arr[k].substr(1));
 
                   this.markeratt.reset_pos();
                   for (n=0;n<npoints;++n)
                      d += this.markeratt.create(func.x(obj.fBuf[indx++]), func.y(obj.fBuf[indx++]));
-
-                  if (!lastpath)
-                     lastpath = this.draw_g.append("svg:path").call(this.markeratt.func);
 
                   continue;
                }
@@ -3368,6 +3377,9 @@
                case "h":
                case "t": {
                   if (attr.fTextSize) {
+
+                     check_attributes();
+
                      var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
 
                      var group = this.draw_g.append("svg:g");
@@ -3404,7 +3416,7 @@
             }
          }
 
-         if (lastpath) lastpath.attr("d", d);
+         check_attributes();
       }
 
       painter.SetDivId(divid);
