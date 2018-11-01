@@ -3347,7 +3347,7 @@
                   if (dofill) cmd+="Z";
                   lastpathd += cmd;
 
-                  console.log(indx, 'cmd', cmd);
+                  // console.log(indx, 'cmd', cmd);
 
                   if (lastpath) {
                   } else if (dofill) {

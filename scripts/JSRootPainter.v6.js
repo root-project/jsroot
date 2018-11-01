@@ -3788,14 +3788,14 @@
       var main = this.frame_painter_ref,
           p = this.svg_pad(this.this_pad_name);
 
-      r.ranges = main ? true : false; // indicate that ranges are assigned
+      r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
 
-      r.ux1 = r.px1 = main ? main.scale_xmin : 0; // need to initialize for JSON reader
-      r.uy1 = r.py1 = main ? main.scale_ymin : 0;
-      r.ux2 = r.px2 = main ? main.scale_xmax : 0;
-      r.uy2 = r.py2 = main ? main.scale_ymax : 0;
+      r.ux1 = r.px1 = r.ranges ? main.scale_xmin : 0; // need to initialize for JSON reader
+      r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
+      r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
+      r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
 
-      if (!main || p.empty()) return true;
+      if (!r.ranges || p.empty()) return true;
 
       // calculate user range for full pad
       var same = function(x) { return x; },
@@ -4534,7 +4534,7 @@
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetAllRanges();
             if (ranges) {
-               // console.log("ranges: " + ranges);
+               console.log("ranges: " + ranges);
                ranges = ":" + ranges;
             }
             handle.Send("READY6:" + snapid + ranges); // send ready message back when drawing completed
