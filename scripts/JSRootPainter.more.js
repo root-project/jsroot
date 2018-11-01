@@ -3272,7 +3272,7 @@
       }
 
       painter.ReadAttr = function(str, names) {
-         var lastp = str.indexOf(":"), obj = { _typename: "any" };
+         var lastp = 0, obj = { _typename: "any" };
          for (var k=0;k<names.length;++k) {
             var p = str.indexOf(":", lastp+1);
             obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
@@ -3293,27 +3293,27 @@
          this.CreateG();
 
          for (var k=0;k<arr.length;++k) {
-            var oper = arr[k];
-            switch (oper.substr(0, 5)) {
-               case "lattr":
-                  this.createAttLine({ attr: this.ReadAttr(oper, ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
+            var oper = arr[k][0];
+            switch (oper) {
+               case "z":
+                  this.createAttLine({ attr: this.ReadAttr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
                   if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
-               case "fattr":
-                  this.createAttFill({ attr: this.ReadAttr(oper, ["fFillColor", "fFillStyle"]), force: true });
+               case "y":
+                  this.createAttFill({ attr: this.ReadAttr(arr[k], ["fFillColor", "fFillStyle"]), force: true });
                   if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
-               case "mattr":
-                  this.createAttMarker({ attr: this.ReadAttr(oper, ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
+               case "x":
+                  this.createAttMarker({ attr: this.ReadAttr(arr[k], ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
                   if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
-               case "tattr":
-                  attr = this.ReadAttr(oper, ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
+               case "o":
+                  attr = this.ReadAttr(arr[k], ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
                   if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
-               case "rect":
-               case "bbox": {
+               case "r":
+               case "b": {
                   var x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
                       x2 = func.x(obj.fBuf[indx++]),
@@ -3323,28 +3323,27 @@
 
                   if (!lastpath) {
                      lastpath = this.draw_g.append("svg:path");
-                     if (oper == "bbox")
-                        lastpath.call(this.fillatt.func).attr('stroke','none');
+                     if (oper == "b")
+                        lastpath.call(this.fillatt.func).attr('stroke', 'none');
                      else
                         lastpath.call(this.lineatt.func).attr('fill', 'none');
                   }
 
                   continue;
                }
-               case "pline":
-               case "pfill": {
-                  npoints = parseInt(oper.substr(6));
-                  dofill = (oper.substr(0, 5) == "pfill");
+               case "l":
+               case "f": {
+                  npoints = parseInt(arr[k].substr(1));
 
                   for (n=0;n<npoints;++n)
                      d += ((n>0) ? "L" : "M") +
                            func.x(obj.fBuf[indx++]) + "," + func.y(obj.fBuf[indx++]);
 
-                  if (dofill) d+="Z";
+                  if (oper == "f") d+="Z";
 
                   if (!lastpath) {
                      lastpath = this.draw_g.append("svg:path");
-                     if (dofill)
+                     if (oper == "f")
                         lastpath.call(this.fillatt.func).attr('stroke','none');
                      else
                         lastpath.call(this.lineatt.func).attr('fill', 'none');
@@ -3353,8 +3352,8 @@
                   continue;
                }
 
-               case "pmark": {
-                  npoints = parseInt(oper.substr(6));
+               case "m": {
+                  npoints = parseInt(arr[k].substr(1));
 
                   this.markeratt.reset_pos();
                   for (n=0;n<npoints;++n)
@@ -3366,7 +3365,7 @@
                   continue;
                }
 
-               case "text:": {
+               case "t": {
                   if (attr.fTextSize) {
                      var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
 
@@ -3382,7 +3381,7 @@
                                      x: func.x(obj.fBuf[indx++]),
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: angle,
-                                     text: oper.substr(5),
+                                     text: arr[k].substr(1),
                                      color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
