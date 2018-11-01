@@ -36,6 +36,10 @@ examples_more = {
    TH3 : [
       { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
    ],
+   TWebCanvas: [
+      { name: "greyscale", json: "web6canv/greyscale.json.gz", title: "40K TBox objects with different fill attributes" },
+      { name: "para", json: "web6canv/StandAloneaPara.json.gz", title: "TTree drawing into TParallelCoord object" }
+   ],
 //   v7 : [
 //      { name: "th1", opt: "", file: "v7.root", item: "th1", title: "v7 TH1 class" },
 //      { name: "th2", opt: "", file: "v7.root", item: "th2", title: "v7 TH2 class" },
@@ -43,7 +47,7 @@ examples_more = {
 //   ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
-      { name: "json", title: "Draw stack from JSON file", json: "thstack.json.gz", title: "some special stack from JSON file" }
+      { name: "json", json: "thstack.json.gz", title: "some special stack from JSON file" }
    ],
    TTree : [
       { name: "wjets", asurl: true, file: "WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
