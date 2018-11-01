@@ -3526,9 +3526,9 @@
          // list of colors
          if (snap.fKind === JSROOT.WebSnapIds.kColors) {
 
-            var ListOfColors = [];
-            for (var n=0;n<snap.fSnapshot.fOper.length;++n) {
-               var name = snap.fSnapshot.fOper[n], p = name.indexOf(":");
+            var ListOfColors = [], arr = snap.fSnapshot.fOper.split(";");
+            for (var n=0;n<arr.length;++n) {
+               var name = arr[n], p = name.indexOf(":");
                ListOfColors[parseInt(name.substr(0,p))] = name.substr(p+1);
             }
 

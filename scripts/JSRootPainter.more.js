@@ -3285,12 +3285,15 @@
 
          var obj = this.GetObject(), indx = 0, attr = {}, lastpath = null, d = "",
              npoints, n, dofill, func = this.AxisToSvgFunc(false);
+
          if (!obj || !obj.fOper || !func) return;
+
+         var arr = obj.fOper.split(";");
 
          this.CreateG();
 
-         for (var k=0;k<obj.fOper.length;++k) {
-            var oper = obj.fOper[k];
+         for (var k=0;k<arr.length;++k) {
+            var oper = arr[k];
             switch (oper.substr(0, 5)) {
                case "lattr":
                   this.createAttLine({ attr: this.ReadAttr(oper, ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
@@ -3379,7 +3382,7 @@
                                      x: func.x(obj.fBuf[indx++]),
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: angle,
-                                     text: obj.fOper[k].substr(5),
+                                     text: oper.substr(5),
                                      color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
