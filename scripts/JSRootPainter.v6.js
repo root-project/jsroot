@@ -3529,7 +3529,12 @@
             var ListOfColors = [], arr = snap.fSnapshot.fOper.split(";");
             for (var n=0;n<arr.length;++n) {
                var name = arr[n], p = name.indexOf(":");
-               ListOfColors[parseInt(name.substr(0,p))] = name.substr(p+1);
+               if (p>0) {
+                  ListOfColors[parseInt(name.substr(0,p))] = "rgb(" + name.substr(p+1) + ")";
+               } else {
+                  p = name.indexOf("=");
+                  ListOfColors[parseInt(name.substr(0,p))] = "rgba(" + name.substr(p+1) + ")";
+               }
             }
 
             // set global list of colors

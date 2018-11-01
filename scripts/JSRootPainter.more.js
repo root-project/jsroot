@@ -3283,17 +3283,17 @@
 
       painter.Redraw = function() {
 
-         var obj = this.GetObject(), indx = 0, attr = {}, lastpath = null, d = "",
-             npoints, n, dofill, func = this.AxisToSvgFunc(false);
+         var obj = this.GetObject(), func = this.AxisToSvgFunc(false);
 
          if (!obj || !obj.fOper || !func) return;
 
-         var arr = obj.fOper.split(";");
+         var indx = 0, attr = {}, lastpath = null, d = "",
+             oper, k, npoints, n, arr = obj.fOper.split(";");
 
          this.CreateG();
 
-         for (var k=0;k<arr.length;++k) {
-            var oper = arr[k][0];
+         for (k=0;k<arr.length;++k) {
+            oper = arr[k][0];
             switch (oper) {
                case "z":
                   this.createAttLine({ attr: this.ReadAttr(arr[k], ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
