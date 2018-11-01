@@ -3287,7 +3287,8 @@
 
       painter.Redraw = function() {
 
-         var obj = this.GetObject(), indx = 0, isndc = false, attr = {}, lastpath = null, lastpathd = "";
+         var obj = this.GetObject(), indx = 0, isndc = false, attr = {}, lastpath = null, d = "",
+             npoints, n, dofill;
          if (!obj || !obj.fOper) return;
 
          this.CreateG();
@@ -3297,24 +3298,20 @@
             switch (oper.substr(0, 5)) {
                case "lattr":
                   this.createAttLine({ attr: this.ReadAttr(oper, ["fLineColor", "fLineStyle", "fLineWidth"]), force: true });
-                  if (lastpath) lastpath.attr("d", lastpathd);
-                  lastpath = null; lastpathd = "";
+                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
                case "fattr":
                   this.createAttFill({ attr: this.ReadAttr(oper, ["fFillColor", "fFillStyle"]), force: true });
-                  if (lastpath) lastpath.attr("d", lastpathd);
-                  lastpath = null; lastpathd = "";
+                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
                case "mattr":
                   this.createAttMarker({ attr: this.ReadAttr(oper, ["fMarkerColor", "fMarkerStyle", "fMarkerSize"]), force: true })
-                  if (lastpath) lastpath.attr("d", lastpathd);
-                  lastpath = null; lastpathd = "";
+                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
                case "tattr":
                   attr = this.ReadAttr(oper, ["fTextColor", "fTextFont", "fTextSize", "fTextAlign", "fTextAngle" ]);
                   if (attr.fTextSize < 0) attr.fTextSize *= -0.001;
-                  if (lastpath) lastpath.attr("d", lastpathd);
-                  lastpath = null; lastpathd = "";
+                  if (lastpath) { lastpath.attr("d", d); lastpath = null; d = ""; }
                   continue;
                case "rect":
                case "bbox": {
@@ -3323,51 +3320,48 @@
                       x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
                       y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  lastpathd += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
+                  d += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
 
-                  if (lastpath) {
-                  } else if (oper == "bbox") {
-                     lastpath = this.draw_g.append("svg:path").call(this.fillatt.func).style('stroke','none');
-                  } else {
-                     lastpath = this.draw_g.append("svg:path").call(this.lineatt.func).style('fill','none');
+                  if (!lastpath) {
+                     lastpath = this.draw_g.append("svg:path");
+                     if (oper == "bbox")
+                        lastpath.call(this.fillatt.func).attr('stroke','none');
+                     else
+                        lastpath.call(this.lineatt.func).attr('fill', 'none');
                   }
 
                   continue;
                }
                case "pline":
                case "pfill": {
-                  var npoints = parseInt(oper.substr(6)), cmd = "",
-                      dofill = (oper.substr(0, 5) == "pfill");
+                  npoints = parseInt(oper.substr(6));
+                  dofill = (oper.substr(0, 5) == "pfill");
 
-                  for (var n=0;n<npoints;++n)
-                     cmd += ((n>0) ? "L" : "M") +
-                            this.AxisToSvg("x", obj.fBuf[indx++], isndc) + "," +
-                            this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+                  for (n=0;n<npoints;++n)
+                     d += ((n>0) ? "L" : "M") +
+                           this.AxisToSvg("x", obj.fBuf[indx++], isndc) + "," +
+                           this.AxisToSvg("y", obj.fBuf[indx++], isndc);
 
-                  if (dofill) cmd+="Z";
-                  lastpathd += cmd;
+                  if (dofill) d+="Z";
 
-                  // console.log(indx, 'cmd', cmd);
-
-                  if (lastpath) {
-                  } else if (dofill) {
-                     lastpath = this.draw_g.append("svg:path").call(this.fillatt.func).attr('stroke','none');
-                  } else {
-                     lastpath = this.draw_g.append("svg:path").call(this.lineatt.func).attr('fill', 'none');
+                  if (!lastpath) {
+                     lastpath = this.draw_g.append("svg:path");
+                     if (dofill)
+                        lastpath.call(this.fillatt.func).attr('stroke','none');
+                     else
+                        lastpath.call(this.lineatt.func).attr('fill', 'none');
                   }
 
                   continue;
                }
 
                case "pmark": {
-                  var npoints = parseInt(oper.substr(6)), cmd = "";
+                  npoints = parseInt(oper.substr(6));
 
                   this.markeratt.reset_pos();
-                  for (var n=0;n<npoints;++n)
-                     cmd += this.markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
-                                                  this.AxisToSvg("y", obj.fBuf[indx++], false));
-
-                  lastpathd += cmd;
+                  for (n=0;n<npoints;++n)
+                     d += this.markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
+                                                this.AxisToSvg("y", obj.fBuf[indx++], false));
 
                   if (!lastpath)
                      lastpath = this.draw_g.append("svg:path").call(this.markeratt.func);
@@ -3403,8 +3397,7 @@
             }
          }
 
-         if (lastpath) lastpath.attr("d", lastpathd);
-
+         if (lastpath) lastpath.attr("d", d);
       }
 
       painter.SetDivId(divid);

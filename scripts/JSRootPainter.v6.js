@@ -4534,7 +4534,7 @@
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetAllRanges();
             if (ranges) {
-               console.log("ranges: " + ranges);
+               // console.log("ranges: " + ranges);
                ranges = ":" + ranges;
             }
             handle.Send("READY6:" + snapid + ranges); // send ready message back when drawing completed
