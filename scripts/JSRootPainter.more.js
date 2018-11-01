@@ -3365,6 +3365,7 @@
                   continue;
                }
 
+               case "h":
                case "t": {
                   if (attr.fTextSize) {
                      var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
@@ -3376,12 +3377,21 @@
                      var angle = attr.fTextAngle;
                      angle -= Math.floor(angle/360) * 360;
 
+                     var txt = arr[k].substr(1);
+
+                     if (oper == "h") {
+                        var res = "";
+                        for (n=0;n<txt.length;n+=2)
+                           res += String.fromCharCode(parseInt(txt.substr(n,2), 16));
+                        txt = res;
+                     }
+
                      // todo - correct support of angle
                      this.DrawText({ align: attr.fTextAlign,
                                      x: func.x(obj.fBuf[indx++]),
                                      y: func.y(obj.fBuf[indx++]),
                                      rotate: angle,
-                                     text: arr[k].substr(1),
+                                     text: txt,
                                      color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
