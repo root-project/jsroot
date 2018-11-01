@@ -100,15 +100,13 @@
           fillatt = this.createAttFill(polyline),
           kPolyLineNDC = JSROOT.BIT(14),
           isndc = polyline.TestBit(kPolyLineNDC),
-          cmd = "";
+          cmd = "", func = this.AxisToSvgFunc(isndc);
 
       // create svg:g container for polyline drawing
       this.CreateG();
 
       for (var n=0;n<=polyline.fLastPoint;++n)
-         cmd += ((n>0) ? "L" : "M") +
-                this.AxisToSvg("x", polyline.fX[n], isndc) + "," +
-                this.AxisToSvg("y", polyline.fY[n], isndc);
+         cmd += ((n>0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
 
       if (polyline._typename != "TPolyLine") fillatt.SetSolidColor("none");
 
@@ -341,16 +339,14 @@
    function drawPolyMarker() {
       var poly = this.GetObject(),
           att = new JSROOT.TAttMarkerHandler(poly),
-          isndc = false;
+          func = this.AxisToSvgFunc(false),
+          path = "";
 
       // create svg:g container for box drawing
       this.CreateG();
 
-      var path = "";
-
       for (var n=0;n<poly.fN;++n)
-         path += att.create(this.AxisToSvg("x", poly.fX[n], isndc),
-                            this.AxisToSvg("y", poly.fY[n], isndc));
+         path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
       if (path)
          this.draw_g.append("svg:path")
@@ -3287,9 +3283,9 @@
 
       painter.Redraw = function() {
 
-         var obj = this.GetObject(), indx = 0, isndc = false, attr = {}, lastpath = null, d = "",
-             npoints, n, dofill;
-         if (!obj || !obj.fOper) return;
+         var obj = this.GetObject(), indx = 0, attr = {}, lastpath = null, d = "",
+             npoints, n, dofill, func = this.AxisToSvgFunc(false);
+         if (!obj || !obj.fOper || !func) return;
 
          this.CreateG();
 
@@ -3315,10 +3311,10 @@
                   continue;
                case "rect":
                case "bbox": {
-                  var x1 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
-                      y1 = this.AxisToSvg("y", obj.fBuf[indx++], isndc),
-                      x2 = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
-                      y2 = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+                  var x1 = func.x(obj.fBuf[indx++]),
+                      y1 = func.y(obj.fBuf[indx++]),
+                      x2 = func.x(obj.fBuf[indx++]),
+                      y2 = func.y(obj.fBuf[indx++]);
 
                   d += "M"+x1+","+y1+"h"+(x2-x1)+"v"+(y2-y1)+"h"+(x1-x2)+"z";
 
@@ -3339,8 +3335,7 @@
 
                   for (n=0;n<npoints;++n)
                      d += ((n>0) ? "L" : "M") +
-                           this.AxisToSvg("x", obj.fBuf[indx++], isndc) + "," +
-                           this.AxisToSvg("y", obj.fBuf[indx++], isndc);
+                           func.x(obj.fBuf[indx++]) + "," + func.y(obj.fBuf[indx++]);
 
                   if (dofill) d+="Z";
 
@@ -3360,8 +3355,7 @@
 
                   this.markeratt.reset_pos();
                   for (n=0;n<npoints;++n)
-                     d += this.markeratt.create(this.AxisToSvg("x", obj.fBuf[indx++], false),
-                                                this.AxisToSvg("y", obj.fBuf[indx++], false));
+                     d += this.markeratt.create(func.x(obj.fBuf[indx++]), func.y(obj.fBuf[indx++]));
 
                   if (!lastpath)
                      lastpath = this.draw_g.append("svg:path").call(this.markeratt.func);
@@ -3370,9 +3364,6 @@
                }
 
                case "text:": {
-                  var xx = this.AxisToSvg("x", obj.fBuf[indx++], isndc),
-                      yy = this.AxisToSvg("y", obj.fBuf[indx++], isndc);
-
                   if (attr.fTextSize) {
                      var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
 
@@ -3384,8 +3375,12 @@
                      angle -= Math.floor(angle/360) * 360;
 
                      // todo - correct support of angle
-                     this.DrawText({ align: attr.fTextAlign, x: xx, y: yy, rotate: angle,
-                                     text: obj.fOper[k].substr(5), color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
+                     this.DrawText({ align: attr.fTextAlign,
+                                     x: func.x(obj.fBuf[indx++]),
+                                     y: func.y(obj.fBuf[indx++]),
+                                     rotate: angle,
+                                     text: obj.fOper[k].substr(5),
+                                     color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
                      this.FinishTextDrawing(group);
                   }

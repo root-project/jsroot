@@ -2890,7 +2890,7 @@
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
-    *  @param {boolean} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+    *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
     *  @returns {number} rounded value of requested coordiantes
     *  @private
     */
@@ -2906,6 +2906,31 @@
       }
       return Math.round(value);
    }
+
+  /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
+   *
+   * Produce functor can convert x and y value by calling func.x(x) and func.y(y)
+   *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+   *  @private
+   */
+  TObjectPainter.prototype.AxisToSvgFunc = function(kind) {
+     var func = { kind: kind }, main = this.frame_painter();
+     if (main && !kind && main.grx && main.gry) {
+        func.main = main;
+        func.offx = main.frame_x();
+        func.offy = main.frame_y();
+        func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
+        func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
+     } else {
+        if (kind !== true) func.p = this; // need for NDC conversion
+        func.padh = this.pad_height();
+        func.padw = this.pad_width();
+        func.x = function(x) { if (this.p) x = this.p.ConvertToNDC("x", x); return Math.round(x*this.padw); }
+        func.y = function(y) { if (this.p) y = this.p.ConvertToNDC("y", y); return Math.round((1-y)*this.padh); }
+     }
+     return func;
+  }
+
 
    /** @summary Returns svg element for the frame.
     *
