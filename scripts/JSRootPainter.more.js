@@ -515,6 +515,13 @@
       return this.GetObject().evalPar(x);
    }
 
+   //TF1Painter.prototype.UpdateObject = function(obj, opt) {
+   //   if (!this.MatchObjectType(obj)) return false;
+   //   var tf1 = this.GetObject();
+   //   tf1.fSave = obj.fSave;
+   //   return true;
+   //}
+
    TF1Painter.prototype.CreateBins = function(ignore_zoom) {
       var main = this.frame_painter(),
           gxmin = 0, gxmax = 0, tf1 = this.GetObject();
@@ -570,7 +577,7 @@
          var xx = xmin + n*dx;
          if (logx) xx = Math.exp(xx);
          var yy = this.Eval(xx);
-         if (!isNaN(yy)) res.push({ x : xx, y : yy });
+         if (!isNaN(yy)) res.push({ x: xx, y: yy });
       }
       return res;
    }
@@ -764,7 +771,7 @@
       return this.DrawingReady();
    }
 
-   JSROOT.Painter.drawFunction = function(divid, tf1, opt) {
+   function drawFunction(divid, tf1, opt) {
 
       var painter = new TF1Painter(tf1);
 
@@ -3682,6 +3689,7 @@
    JSROOT.Painter.drawWebPainting = drawWebPainting;
    JSROOT.Painter.drawRooPlot = drawRooPlot;
    JSROOT.Painter.drawGraph = drawGraph;
+   JSROOT.Painter.drawFunction = drawFunction;
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
