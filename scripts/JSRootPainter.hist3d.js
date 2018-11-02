@@ -35,19 +35,27 @@
 
    JSROOT.TFramePainter.prototype.SetCameraPosition = function(pad, first_time) {
       var max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
-      this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
+
+      if (first_time)
+         this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
 
       if (pad && (first_time || !this.zoom_changed_interactive))
-         if ((pad.fTheta!==undefined) && (pad.fPhi!==undefined) && (pad.fTheta !== 30) || (pad.fPhi !== 30)) {
+         if (!isNaN(pad.fTheta) && !isNaN(pad.fPhi) && ((pad.fTheta !== this.camera_Theta) || (pad.fPhi !== this.camera_Phi))) {
             max3d = 3*Math.max(this.size_xy3d, this.size_z3d);
             var phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
+
+            this.camera_Phi = pad.fPhi;
+            this.camera_Theta = pad.fTheta;
 
             this.camera.position.set(max3d*Math.cos(phi)*Math.cos(theta),
                                      max3d*Math.sin(phi)*Math.cos(theta),
                                      this.size_z3d + max3d*Math.sin(theta));
+
+            first_time = true;
          }
 
-      this.camera.lookAt(this.lookat);
+      if (first_time)
+         this.camera.lookAt(this.lookat);
    }
 
    JSROOT.TFramePainter.prototype.Create3DScene = function(arg) {
@@ -127,6 +135,9 @@
       this.scene_height = sz.height;
 
       this.camera = new THREE.PerspectiveCamera(45, this.scene_width / this.scene_height, 1, 40*this.size_z3d);
+
+      this.camera_Phi = 30;
+      this.camera_Theta = 30;
 
       this.pointLight = new THREE.PointLight(0xffffff,1);
       this.camera.add(this.pointLight);
