@@ -881,7 +881,7 @@
          // either graph drawn directly or
          // graph is first object in list of primitives
          var pad = this.root_pad();
-         if (!pad || !pad.fPrimitives || (pad.fPrimitives.arr[0] === graph)) res.Axis = "AXIS";
+         if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
       } else if (res.Axis.indexOf("A")<0) {
          res.Axis = "AXIS," + res.Axis;
       }
