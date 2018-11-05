@@ -3270,7 +3270,7 @@
 
    function drawWebPainting(divid, obj, opt) {
 
-      var painter = new JSROOT.TObjectPainter(obj);
+      var painter = new JSROOT.TObjectPainter(obj, opt);
 
       painter.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
@@ -3427,8 +3427,6 @@
       }
 
       painter.SetDivId(divid);
-
-      painter.options = opt;
 
       painter.Redraw();
 

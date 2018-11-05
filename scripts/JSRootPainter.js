@@ -2558,11 +2558,12 @@
     * @augments JSROOT.TBasePainter
     * @param {object} obj - object to draw
     */
-   function TObjectPainter(obj) {
+   function TObjectPainter(obj, opt) {
       TBasePainter.call(this);
       this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
+      if (typeof opt == "string") this.options = { original: opt };
       this.AssignObject(obj);
    }
 
@@ -6079,10 +6080,9 @@
 
       function performDraw() {
          if (handle.direct) {
-            painter = new TObjectPainter(obj);
+            painter = new TObjectPainter(obj, opt);
             painter.SetDivId(divid, 2);
             painter.Redraw = handle.func;
-            painter.options = { original: opt || "" };
             painter.Redraw();
             painter.DrawingReady();
          } else {
