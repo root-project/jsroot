@@ -38,7 +38,8 @@ examples_more = {
    ],
    TWebCanvas: [
       { name: "greyscale", json: "web6canv/greyscale.json.gz", title: "40K TBox objects with different fill attributes" },
-      { name: "para", json: "web6canv/StandAloneaPara.json.gz", title: "TTree drawing into TParallelCoord object" }
+      { name: "para", json: "web6canv/StandAloneaPara.json.gz", title: "TTree drawing into TParallelCoord object" },
+      { name: "pie", json: "web6canv/piechart.json.gz", title: "Testing native TPie painting" }
    ],
 //   v7 : [
 //      { name: "th1", opt: "", file: "v7.root", item: "th1", title: "v7 TH1 class" },
