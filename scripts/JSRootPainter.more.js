@@ -3394,7 +3394,7 @@
                      this.StartTextDrawing(attr.fTextFont, height, group);
 
                      var angle = attr.fTextAngle;
-                     angle -= Math.floor(angle/360) * 360;
+                     if (angle >= 360) angle -= Math.floor(angle/360) * 360;
 
                      var txt = arr[k].substr(1);
 
@@ -3409,7 +3409,7 @@
                      this.DrawText({ align: attr.fTextAlign,
                                      x: func.x(obj.fBuf[indx++]),
                                      y: func.y(obj.fBuf[indx++]),
-                                     rotate: angle,
+                                     rotate: -angle,
                                      text: txt,
                                      color: JSROOT.Painter.root_colors[attr.fTextColor], latex: 0, draw_g: group });
 
