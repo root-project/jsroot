@@ -1427,7 +1427,7 @@
          if (nbr1<=0) nbr1 = 8;
          axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
 
-         if (contour) {
+         if (contour && framep) {
             zmin = Math.min(contour[0], framep.zmin);
             zmax = Math.max(contour[contour.length-1], framep.zmax);
          } else
@@ -2351,10 +2351,14 @@
          pavetext.Clear();
          if (draw_title) pavetext.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
-      } else
-      if (draw_title && !tpainter && histo.fTitle) {
+      } else if (draw_title && !tpainter && histo.fTitle) {
          pavetext = JSROOT.Create("TPaveText");
-         JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
+         if (JSROOT.gStyle.fTitleW && JSROOT.gStyle.fTitleH) {
+            var fp = this.frame_painter(), midx = 0.5, midy = (fp && fp.fY2NDC) ? (1+fp.fY2NDC)/2 : 0.95;
+            JSROOT.extend(pavetext, { fName: "title", fX1NDC: midx - JSROOT.gStyle.fTitleW/2, fY1NDC: midy - JSROOT.gStyle.fTitleH/2, fX2NDC: midx + JSROOT.gStyle.fTitleW/2, fY2NDC: midy + JSROOT.gStyle.fTitleH/2 } );
+         } else {
+            JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
+         }
          pavetext.AddText(histo.fTitle);
          tpainter = JSROOT.Painter.drawPave(this.divid, pavetext);
          if (tpainter) tpainter.$secondary = true;
@@ -2491,8 +2495,6 @@
          if (!this.draw_content || !this.is_main_painter()) return null;
       }
 
-      this.create_stats = true;
-
       var stats = this.FindStat(), st = JSROOT.gStyle,
           optstat = this.options.optstat, optfit = this.options.optfit;
 
@@ -2510,13 +2512,17 @@
          optfit = st.fOptFit;
       }
 
+      if (!stats && !optstat && !optfit) return null;
+
+      this.create_stats = true;
+
       if (stats) return stats;
 
       stats = JSROOT.Create('TPaveStats');
-      JSROOT.extend(stats, { fName : 'stats',
+      JSROOT.extend(stats, { fName: 'stats',
                              fOptStat: optstat,
                              fOptFit: optfit,
-                             fBorderSize : 1} );
+                             fBorderSize: 1 });
 
       stats.fX1NDC = st.fStatX - st.fStatW;
       stats.fY1NDC = st.fStatY - st.fStatH;
