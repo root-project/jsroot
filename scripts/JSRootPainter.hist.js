@@ -3039,8 +3039,10 @@
 
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
-         var pp = this.options.Palette ? null : this.canv_painter();
-         this.fPalette = (pp && pp.CanvasPalette) ? pp.CanvasPalette : JSROOT.Painter.GetColorPalette(this.options.Palette);
+         if (this.options.Palette)
+            this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
+         else
+            this.fPalette = this.get_palette();
       }
       return this.fPalette;
    }

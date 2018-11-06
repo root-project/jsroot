@@ -2742,6 +2742,25 @@
       return jsarr.length-1;
    }
 
+   /** @summary returns custom palette for the object. If forced, will be created
+    * @private */
+   TObjectPainter.prototype.get_palette = function(force) {
+      var pp = this.pad_painter();
+      if (!pp) return null;
+      if (pp.custom_palette) return pp.custom_palette;
+
+      var cp = this.canv_painter();
+      if (!cp) return null;
+      if (cp.custom_palette) return cp.custom_palette;
+
+      if (force && JSROOT.Painter.GetColorPalette)
+         cp.custom_palette = JSROOT.Painter.GetColorPalette();
+
+      return cp.custom_palette;
+   }
+
+
+
    /** @summary Checks if draw elements were resized and drawing should be updated.
     *
     * @desc Redirects to {@link TPadPainter.CheckCanvasResize}

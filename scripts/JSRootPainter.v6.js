@@ -2742,6 +2742,7 @@
 
       delete this.frame_painter_ref;
       delete this.pads_cache;
+      delete this.custom_palette;
 
       this.painters = [];
       this.pad = null;
@@ -2771,18 +2772,17 @@
           pad = this.root_pad(),
           numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
 
-      if (pp && !pp.CanvasPalette && JSROOT.Painter.GetColorPalette)
-         pp.CanvasPalette = JSROOT.Painter.GetColorPalette();
+      var pal = this.get_palette(true);
 
       var indx = this._auto_color || 0;
       this._auto_color = indx+1;
 
-      if (pp && pp.CanvasPalette) {
+      if (pal) {
          if (numprimitives<2) numprimitives = 2;
          if (indx >= numprimitives) indx = numprimitives - 1;
-         var palindx = Math.round(indx * (pp.CanvasPalette.getLength()-3) / (numprimitives-1));
-         var colvalue = pp.CanvasPalette.getColor(palindx);
-         var colindx = pp.add_color(colvalue);
+         var palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
+         var colvalue = pal.getColor(palindx);
+         var colindx = this.add_color(colvalue);
          return colindx;
       }
 
@@ -3124,7 +3124,7 @@
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
-            if (arr) this.CanvasPalette = new JSROOT.ColorPalette(arr);
+            if (arr) this.custom_palette = new JSROOT.ColorPalette(arr);
          }
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
@@ -3146,7 +3146,8 @@
                console.log('Missing color with index ' + n); missing = true;
             }
          }
-         if (!this.options || (!missing && !this.options.IgnorePalette)) this.CanvasPalette = new JSROOT.ColorPalette(arr);
+         if (!this.options || (!missing && !this.options.IgnorePalette))
+            this.custom_palette = new JSROOT.ColorPalette(arr);
          return true;
       }
 
@@ -3546,7 +3547,6 @@
 
          // gStyle object
          if (snap.fKind === JSROOT.WebSnapIds.kStyle) {
-            console.log('APPLY STYLE');
             JSROOT.extend(JSROOT.gStyle, snap.fSnapshot);
             continue;
          }
@@ -3579,7 +3579,7 @@
                for (var n=0;n<snap.fSnapshot.fBuf.length;++n)
                   palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
 
-               this.CanvasPalette = new JSROOT.ColorPalette(palette);
+               this.custom_palette = new JSROOT.ColorPalette(palette);
             }
 
             continue;
