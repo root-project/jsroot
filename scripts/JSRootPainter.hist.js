@@ -1325,8 +1325,19 @@
             pave.fOptFit = obj.fOptFit;
             return true;
          case 'TLegend':
+            var oldprim = pave.fPrimitives;
             pave.fPrimitives = obj.fPrimitives;
             pave.fNColumns = obj.fNColumns;
+            if (oldprim && oldprim.arr && pave.fPrimitives && pave.fPrimitives.arr && (oldprim.arr.length == pave.fPrimitives.arr.length)) {
+               // try to sync object reference, new object does not displayed automatically
+               // in ideal case one should use snapids in the entries
+               for (var k=0;k<oldprim.arr.length;++k) {
+                  var oldobj = oldprim.arr[k].fObject, newobj = pave.fPrimitives.arr[k].fObject;
+
+                  if (oldobj && newobj && oldobj._typename == newobj._typename && oldobj.fName == newobj.fName)
+                     pave.fPrimitives.arr[k].fObject = oldobj;
+               }
+            }
             return true;
       }
 
