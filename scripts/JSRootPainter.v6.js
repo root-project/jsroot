@@ -27,7 +27,7 @@
    JSROOT.sources.push("v6");
 
    // identifier used in TWebCanvas painter
-   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4 };
+   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
    // =======================================================================
 
@@ -3542,6 +3542,13 @@
             }
 
             continue; // call next
+         }
+
+         // gStyle object
+         if (snap.fKind === JSROOT.WebSnapIds.kStyle) {
+            console.log('APPLY STYLE');
+            JSROOT.extend(JSROOT.gStyle, snap.fSnapshot);
+            continue;
          }
 
          // list of colors

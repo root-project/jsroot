@@ -2160,6 +2160,8 @@
             tgt.fLabels = src.fLabels;
             tgt.fXmin = src.fXmin;
             tgt.fXmax = src.fXmax;
+            tgt.fTimeDisplay = src.fTimeDisplay;
+            tgt.fTimeFormat = src.fTimeFormat;
          }
          CopyAxis(histo.fXaxis, obj.fXaxis);
          CopyAxis(histo.fYaxis, obj.fYaxis);
