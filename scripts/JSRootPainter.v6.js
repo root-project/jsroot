@@ -2767,8 +2767,26 @@
     * @private
     */
    TPadPainter.prototype.CreateAutoColor = function() {
+      var pp = this.canv_painter(),
+          pad = this.root_pad(),
+          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+
+      if (pp && !pp.CanvasPalette && JSROOT.Painter.GetColorPalette)
+         pp.CanvasPalette = JSROOT.Painter.GetColorPalette();
+
       var indx = this._auto_color || 0;
-      this._auto_color = (indx + 1) % 8;
+      this._auto_color = indx+1;
+
+      if (pp && pp.CanvasPalette) {
+         if (numprimitives<2) numprimitives = 2;
+         if (indx >= numprimitives) indx = numprimitives - 1;
+         var palindx = Math.round(indx * (pp.CanvasPalette.getLength()-3) / (numprimitives-1));
+         var colvalue = pp.CanvasPalette.getColor(palindx);
+         var colindx = pp.add_color(colvalue);
+         return colindx;
+      }
+
+      this._auto_color = this._auto_color % 8;
       return indx+2;
    }
 
