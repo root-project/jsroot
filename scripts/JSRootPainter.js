@@ -4360,12 +4360,16 @@
           svg_factor = 0,
           f = draw_g.property('text_factor'),
           font = draw_g.property('text_font'),
+          max_sz = draw_g.property('max_font_size'),
           font_size = font.size;
 
-      if ((f>0) && ((f<0.9) || (f>1.))) {
+      if ((f > 0) && ((f < 0.9) || (f > 1)))
          font.size = Math.floor(font.size/f);
-         if (draw_g.property('max_font_size') && (font.size > draw_g.property('max_font_size')))
-            font.size = draw_g.property('max_font_size');
+
+      if (max_sz && (font.size > max_sz))
+          font.size = max_sz;
+
+      if (font.size != font_size) {
          draw_g.call(font.func);
          font_size = font.size;
       }

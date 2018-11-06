@@ -911,21 +911,28 @@
       } else {
 
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-         var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width;
+         var stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width, max_font_size = 0;
 
-         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g);
+         // for single line (typically title) limit font size
+         if ((nlines == 1) && (pt.fTextSize > 0)) {
+            max_font_size = Math.round(pt.fTextSize*can_height);
+            if (max_font_size < 3) max_font_size = 3;
+         }
+
+         this.StartTextDrawing(pt.fTextFont, height/(nlines * 1.2), text_g, max_font_size);
 
          for (var j = 0; j < nlines; ++j) {
             var arg = null, lj = lines[j];
 
             if (nlines == 1) {
-               arg = { align: pt.fTextAlign, x:0, y:0, width: width, height: height };
+               arg = { x:0, y:0, width: width, height: height };
             } else {
-               arg = { align: pt.fTextAlign, x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
+               arg = { x: margin_x, y: j*stepy, width: width-2*margin_x, height: stepy };
                if (lj.fTextColor) arg.color = this.get_color(lj.fTextColor);
                if (lj.fTextSize) arg.font_size = Math.round(lj.fTextSize*can_height);
             }
 
+            arg.align = pt.fTextAlign;
             arg.draw_g = text_g;
             arg.latex = (lj._typename == "TText" ? 0 : 1);
             arg.text = lj.fTitle;
@@ -2338,43 +2345,42 @@
       // case when histogram drawn over other histogram (same option)
       if (!this.is_main_painter() || this.options.Same) return;
 
-      var histo = this.GetHisto(),
+      var histo = this.GetHisto(), st = JSROOT.gStyle,
           tpainter = this.FindPainterFor(null, "title"),
-          pavetext = tpainter ? tpainter.GetObject() : null;
+          pt = tpainter ? tpainter.GetObject() : null;
 
-      if (!pavetext) pavetext = this.FindInPrimitives("title");
-      if (pavetext && (pavetext._typename !== "TPaveText")) pavetext = null;
+      if (!pt) pt = this.FindInPrimitives("title");
+      if (pt && (pt._typename !== "TPaveText")) pt = null;
 
-      var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (JSROOT.gStyle.fOptTitle > 0);
+      var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      if (pavetext) {
-         pavetext.Clear();
-         if (draw_title) pavetext.AddText(histo.fTitle);
+      if (pt) {
+         pt.Clear();
+         if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
       } else if (draw_title && !tpainter && histo.fTitle) {
-         pavetext = JSROOT.Create("TPaveText");
+         pt = JSROOT.Create("TPaveText");
 
-         var fp = this.frame_painter(), st = JSROOT.gStyle,
-             midx = st.fTitleX, y2 = st.fTitleY-0.015, w = st.fTitleW, h = st.fTitleH;
-         if (!h && fp) h = (y2-fp.fY2NDC)*0.8;
+         var fp = this.frame_painter(), midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+         if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
          if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
          if (!h || isNaN(h) || (h<0)) h = 0.06;
          if (!w || isNaN(w) || (w<0)) w = 0.44;
-         pavetext.fName = "title";
-         pavetext.fX1NDC = midx - w/2;
-         pavetext.fY1NDC = y2 - h;
-         pavetext.fX2NDC = midx + w/2;
-         pavetext.fY2NDC = y2;
-         pavetext.fTextFont = st.fTitleFont;
-         pavetext.fTextSize = st.fTitleFontSize;
-         pavetext.fTextColor = st.fTitleTextColor;
-         pavetext.fTextAlign = st.fTitleAlign;
-         pavetext.fFillColor = st.fTitleColor;
-         pavetext.fFillStyle = st.fTitleStyle;
-         pavetext.fBorderSize = st.fTitleBorderSize;
+         pt.fName = "title";
+         pt.fX1NDC = midx - w/2;
+         pt.fY1NDC = y2 - h;
+         pt.fX2NDC = midx + w/2;
+         pt.fY2NDC = y2;
+         pt.fTextFont = st.fTitleFont;
+         pt.fTextSize = st.fTitleFontSize;
+         pt.fTextColor = st.fTitleTextColor;
+         pt.fTextAlign = st.fTitleAlign;
+         pt.fFillColor = st.fTitleColor;
+         pt.fFillStyle = st.fTitleStyle;
+         pt.fBorderSize = st.fTitleBorderSize;
 
-         pavetext.AddText(histo.fTitle);
-         tpainter = JSROOT.Painter.drawPave(this.divid, pavetext);
+         pt.AddText(histo.fTitle);
+         tpainter = JSROOT.Painter.drawPave(this.divid, pt);
          if (tpainter) tpainter.$secondary = true;
       }
    }
@@ -2389,9 +2395,9 @@
       if (arg==="check")
          return (!this.is_main_painter() || this.options.Same) ? null : histo;
 
-      var pavetext = tpainter.GetObject();
-      pavetext.Clear();
-      pavetext.AddText(histo.fTitle);
+      var pt = tpainter.GetObject();
+      pt.Clear();
+      pt.AddText(histo.fTitle);
 
       tpainter.Redraw();
    }
