@@ -3038,12 +3038,8 @@
    }
 
    THistPainter.prototype.GetPalette = function(force) {
-      if (!this.fPalette || force) {
-         if (this.options.Palette)
-            this.fPalette = JSROOT.Painter.GetColorPalette(this.options.Palette);
-         else
-            this.fPalette = this.get_palette();
-      }
+      if (!this.fPalette || force)
+         this.fPalette = this.get_palette(true, this.options.Palette);
       return this.fPalette;
    }
 

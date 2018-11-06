@@ -2744,17 +2744,19 @@
 
    /** @summary returns custom palette for the object. If forced, will be created
     * @private */
-   TObjectPainter.prototype.get_palette = function(force) {
-      var pp = this.pad_painter();
-      if (!pp) return null;
-      if (pp.custom_palette) return pp.custom_palette;
+   TObjectPainter.prototype.get_palette = function(force, palettedid) {
+      if (!palettedid) {
+         var pp = this.pad_painter();
+         if (!pp) return null;
+         if (pp.custom_palette) return pp.custom_palette;
+      }
 
       var cp = this.canv_painter();
       if (!cp) return null;
-      if (cp.custom_palette) return cp.custom_palette;
+      if (cp.custom_palette && !palettedid) return cp.custom_palette;
 
       if (force && JSROOT.Painter.GetColorPalette)
-         cp.custom_palette = JSROOT.Painter.GetColorPalette();
+         cp.custom_palette = JSROOT.Painter.GetColorPalette(palettedid);
 
       return cp.custom_palette;
    }
