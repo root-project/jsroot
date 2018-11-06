@@ -2353,12 +2353,26 @@
          if (tpainter) tpainter.Redraw();
       } else if (draw_title && !tpainter && histo.fTitle) {
          pavetext = JSROOT.Create("TPaveText");
-         if (JSROOT.gStyle.fTitleW && JSROOT.gStyle.fTitleH) {
-            var fp = this.frame_painter(), midx = 0.5, midy = (fp && fp.fY2NDC) ? (1+fp.fY2NDC)/2 : 0.95;
-            JSROOT.extend(pavetext, { fName: "title", fX1NDC: midx - JSROOT.gStyle.fTitleW/2, fY1NDC: midy - JSROOT.gStyle.fTitleH/2, fX2NDC: midx + JSROOT.gStyle.fTitleW/2, fY2NDC: midy + JSROOT.gStyle.fTitleH/2 } );
-         } else {
-            JSROOT.extend(pavetext, { fName: "title", fX1NDC: 0.28, fY1NDC: 0.94, fX2NDC: 0.72, fY2NDC: 0.99 } );
-         }
+
+         var fp = this.frame_painter(), st = JSROOT.gStyle,
+             midx = st.fTitleX, y2 = st.fTitleY-0.015, w = st.fTitleW, h = st.fTitleH;
+         if (!h && fp) h = (y2-fp.fY2NDC)*0.8;
+         if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+         if (!h || isNaN(h) || (h<0)) h = 0.06;
+         if (!w || isNaN(w) || (w<0)) w = 0.44;
+         pavetext.fName = "title";
+         pavetext.fX1NDC = midx - w/2;
+         pavetext.fY1NDC = y2 - h;
+         pavetext.fX2NDC = midx + w/2;
+         pavetext.fY2NDC = y2;
+         pavetext.fTextFont = st.fTitleFont;
+         pavetext.fTextSize = st.fTitleFontSize;
+         pavetext.fTextColor = st.fTitleTextColor;
+         pavetext.fTextAlign = st.fTitleAlign;
+         pavetext.fFillColor = st.fTitleColor;
+         pavetext.fFillStyle = st.fTitleStyle;
+         pavetext.fBorderSize = st.fTitleBorderSize;
+
          pavetext.AddText(histo.fTitle);
          tpainter = JSROOT.Painter.drawPave(this.divid, pavetext);
          if (tpainter) tpainter.$secondary = true;
