@@ -499,8 +499,6 @@
 
       axis_g.attr("transform", transform || null);
 
-      console.log('OPTION', chOpt, "size", tickSize);
-
       var side = 1, ticks_plusminus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
           optionPlus = (chOpt.indexOf("+")>=0),
@@ -524,9 +522,6 @@
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
-
-      console.log('FINAL SIZE', tickSize);
-
 
       this.CreateFormatFuncs();
 
@@ -582,7 +577,7 @@
       if (!disable_axis_drawing && !optionUnlab) {
 
          var label_color = this.get_color(axis.fLabelColor),
-             labeloffset = Math.round(axis.fLabelOffset*text_scaling_size),
+             labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,

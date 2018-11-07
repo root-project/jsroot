@@ -14,3 +14,4 @@ openui5/resources/
 openui5/*.txt
 openui5/*.tar.gz
 package-lock.json
+/demo/
