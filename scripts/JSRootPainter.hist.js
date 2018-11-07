@@ -1483,7 +1483,7 @@
                           .property("fill0", col)
                           .property("fill1", d3.rgb(col).darker(0.5).toString())
 
-               if (framep && framep.tooltip_allowed)
+               if (this.IsTooltipAllowed())
                   r.on('mouseover', function() {
                      d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
                   }).on('mouseout', function() {
@@ -1667,7 +1667,7 @@
               minimum: -1111, maximum: -1111 });
    }
 
-   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, fp) {
+   THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
       this.orginal = opt;
 
       var d = new JSROOT.DrawOptions(opt), check3dbox = "";
@@ -1694,8 +1694,8 @@
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
-      if (d.check('NOTOOLTIP') && fp) fp.tooltip_allowed = false;
-      if (d.check('TOOLTIP') && fp) fp.tooltip_allowed = true;
+      if (d.check('NOTOOLTIP') && painter) painter.SetTooltipAllowed(false);
+      if (d.check('TOOLTIP') && painter) painter.SetTooltipAllowed(true);
 
       if (d.check('LOGX') && pad) { pad.fLogx = 1; pad.fUxmin = 0; pad.fUxmax = 1; pad.fX1 = 0; pad.fX2 = 1; }
       if (d.check('LOGY') && pad) { pad.fLogy = 1; pad.fUymin = 0; pad.fUymax = 1; pad.fY1 = 0; pad.fY2 = 1; }
@@ -2030,15 +2030,14 @@
       /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
           hdim = this.Dimension(),
-          pad = this.root_pad(),
-          fp = this.frame_painter();
+          pad = this.root_pad();
 
       if (!this.options)
          this.options = new THistDrawOptions;
       else
          this.options.Reset();
 
-      this.options.Decode(opt || histo.fOption, hdim, histo, pad, fp);
+      this.options.Decode(opt || histo.fOption, hdim, histo, pad, this);
 
       this.OptionsStore(opt); // opt will be return as default draw option, used in webcanvas
    }
@@ -2817,8 +2816,8 @@
 
          var main = this.main_painter() || this;
 
-         menu.addchk(fp.tooltip_allowed, 'Show tooltips', function() {
-            fp.tooltip_allowed = !fp.tooltip_allowed;
+         menu.addchk(main.IsTooltipAllowed(), 'Show tooltips', function() {
+            main.SetTooltipAllowed("toggle");
          });
 
          menu.addchk(fp.enable_highlight, 'Highlight bins', function() {

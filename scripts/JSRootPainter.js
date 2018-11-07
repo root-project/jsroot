@@ -2742,6 +2742,20 @@
       return jsarr.length-1;
    }
 
+   /** @summary returns tooltip allowed flag. Check canvas painter
+    * @private */
+   TObjectPainter.prototype.IsTooltipAllowed = function() {
+      var src = this.canv_painter() || this;
+      return src.tooltip_allowed ? true : false;
+   }
+
+   /** @summary returns tooltip allowed flag
+    * @private */
+   TObjectPainter.prototype.SetTooltipAllowed = function(on) {
+      var src = this.canv_painter() || this;
+      src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
+   }
+
    /** @summary returns custom palette for the object. If forced, will be created
     * @private */
    TObjectPainter.prototype.get_palette = function(force, palettedid) {
@@ -5340,7 +5354,6 @@
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
       this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltip
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
    }
 
    TooltipHandler.prototype = Object.create(TObjectPainter.prototype);
@@ -5355,7 +5368,7 @@
 
    TooltipHandler.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
-      if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
+      if (!this.tooltip_enabled || !this.IsTooltipAllowed()) return false;
       var hintsg = this.hints_layer().select(".objects_hints");
       return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
    }
@@ -5386,7 +5399,7 @@
           pp = this.pad_painter(),
           font = JSROOT.Painter.getFontDetails(160, textheight),
           status_func = this.GetShowStatusFunc(),
-          disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
+          disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
 
       if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
