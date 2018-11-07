@@ -1993,7 +1993,7 @@
    }
 
    THistPainter.prototype.IsTH2Poly = function() {
-      return this.MatchObjectType(/^TH2Poly/);
+      return this.MatchObjectType(/^TH2Poly/) || this.MatchObjectType(/^TProfile2Poly/);
    }
 
    THistPainter.prototype.Clear3DScene = function() {
