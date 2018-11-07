@@ -2556,7 +2556,7 @@
       //   return;
       //}
 
-      var menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
+      var menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
 
       if (!evnt) {
          d3.event.preventDefault();
@@ -2569,7 +2569,7 @@
                 pp = this.pad_painter(),
                 pnt = null, sel = null;
 
-            fp = this.frame_painter();
+            fp = this;
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
@@ -2584,17 +2584,20 @@
                   }
             }
 
-            if (sel!==null) menu_painter = sel; else
-            if (fp!==null) kind = "frame";
+            if (sel) menu_painter = sel; else kind = "frame";
 
-            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
 
-            if (fp) fp.SetLastEventPos(pnt);
+            fp.SetLastEventPos(pnt);
+         } else if ((kind=="x") || (kind=="y") || (kind=="z")) {
+            exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
          }
       }
 
       // one need to copy event, while after call back event may be changed
       menu_painter.ctx_menu_evnt = evnt;
+
+      if (!exec_painter) exec_painter = menu_painter;
 
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
          var domenu = menu.painter.FillContextMenu(menu, kind, obj);
@@ -2604,10 +2607,10 @@
             domenu = fp.FillContextMenu(menu);
 
          if (domenu)
-            menu.painter.FillObjectExecMenu(menu, kind, function() {
+            exec_painter.FillObjectExecMenu(menu, kind, function() {
                 // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
+                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true));
             });
 
       });  // end menu creation

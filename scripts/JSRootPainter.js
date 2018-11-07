@@ -3881,19 +3881,20 @@
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         var canvp = this.canv_painter(),
-             item = this.args_menu_items[parseInt(arg)];
+         var execp = this.exec_painter || this,
+             canvp = execp.canv_painter(),
+             item = execp.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
-            return canvp.MethodsDialog(this, item, this.args_menu_id);
+            return canvp.MethodsDialog(execp, item, execp.args_menu_id);
 
-         if (this.ExecuteMenuCommand(item)) return;
+         if (execp.ExecuteMenuCommand(item)) return;
 
-         if (canvp._websocket && this.args_menu_id) {
-            console.log('execute method ' + item.fExec + ' for object ' + this.args_menu_id);
-            canvp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + item.fExec);
+         if (canvp._websocket && execp.args_menu_id) {
+            console.log('execute method ' + item.fExec + ' for object ' + execp.args_menu_id);
+            canvp.SendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + item.fExec);
          }
       }
 
@@ -3935,6 +3936,10 @@
 
       var reqid = this.snapid;
       if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
+
+      // if menu painter differs from this, remember it for further usage
+      if (menu.painter)
+         menu.painter.exec_painter = (menu.painter !== this) ? this : undefined;
 
       canvp._getmenu_callback = DoFillMenu.bind(this, menu, reqid, call_back);
 
