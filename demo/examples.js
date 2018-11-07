@@ -59,7 +59,8 @@ examples_main = {
       { opt: "col0z", title: "suppress empty bins with 0 option" },
       { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
       { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
-      { name: "fibonacci", file: "tutorials_hist.root", item: 'Fibonacci',  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" }
+      { name: "fibonacci", file: "tutorials_hist.root", item: "Fibonacci",  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" },
+      { name: "tprofile2poly", file: "tprofile2poly.root", item: "c2", title: "Example of TProfile2Poly class, see $ROOTSYS/tutorials/hist/tprofile2polyRealistic.C output" }
    ],
    TH3 : [
      { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
