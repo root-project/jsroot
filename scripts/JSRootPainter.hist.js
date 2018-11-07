@@ -2168,6 +2168,18 @@
             tgt.fXmax = src.fXmax;
             tgt.fTimeDisplay = src.fTimeDisplay;
             tgt.fTimeFormat = src.fTimeFormat;
+            // copy attributes
+            tgt.fAxisColor = src.fAxisColor;
+            tgt.fLabelColor = src.fLabelColor;
+            tgt.fLabelFont = src.fLabelFont;
+            tgt.fLabelOffset = src.fLabelOffset;
+            tgt.fLabelSize = src.fLabelSize;
+            tgt.fNdivisions = src.fNdivisions;
+            tgt.fTickLength = src.fTickLength;
+            tgt.fTitleColor = src.fTitleColor;
+            tgt.fTitleFont = src.fTitleFont;
+            tgt.fTitleOffset = src.fTitleOffset;
+            tgt.fTitleSize = src.fTitleSize;
          }
          CopyAxis(histo.fXaxis, obj.fXaxis);
          CopyAxis(histo.fYaxis, obj.fYaxis);

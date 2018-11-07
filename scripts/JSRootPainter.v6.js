@@ -499,6 +499,8 @@
 
       axis_g.attr("transform", transform || null);
 
+      console.log('OPTION', chOpt, "size", tickSize);
+
       var side = 1, ticks_plusminus = 0,
           text_scaling_size = Math.min(pad_w, pad_h),
           optionPlus = (chOpt.indexOf("+")>=0),
@@ -522,6 +524,9 @@
       tickSize = Math.round((optionSize ? tickSize : 0.03) * scaling_size);
 
       if (this.max_tick_size && (tickSize > this.max_tick_size)) tickSize = this.max_tick_size;
+
+      console.log('FINAL SIZE', tickSize);
+
 
       this.CreateFormatFuncs();
 
