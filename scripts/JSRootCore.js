@@ -1840,8 +1840,9 @@
                  }
                  if (this.fFormula.fClingParameters && this.fFormula.fParams) {
                     for (var i=0;i<this.fFormula.fParams.length;++i) {
-                       var regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g');
-                       _func = _func.replace(regex, this.fFormula.fClingParameters[this.fFormula.fParams[i].second]);
+                       var regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g'),
+                           parvalue = this.fFormula.fClingParameters[this.fFormula.fParams[i].second];
+                       _func = _func.replace(regex, (parvalue < 0) ? "(" + parvalue + ")" : parvalue);
                     }
                  }
               }
