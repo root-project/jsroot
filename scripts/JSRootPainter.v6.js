@@ -3709,7 +3709,7 @@
          this.CreatePadSvg(true);
       }
 
-      var isanyfound = false;
+      var isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
       for (var k=0;k<this.painters.length;++k) {
@@ -3724,10 +3724,13 @@
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
+            isanyremove = true;
          }
       }
 
-      // return JSROOT.CallBack(call_back, padpainter);
+      if (isanyremove) {
+         delete this.pads_cache;
+      }
 
       if (!isanyfound) {
          var svg_p = this.svg_pad(this.this_pad_name),
