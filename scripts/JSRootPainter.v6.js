@@ -1531,6 +1531,8 @@
       this.CleanupAxes();
       this.CleanXY();
 
+      this.ranges_set = false;
+
       this.xmin = this.xmax = 0;
       this.ymin = this.ymax = 0;
       this.zmin = this.zmax = 0;
