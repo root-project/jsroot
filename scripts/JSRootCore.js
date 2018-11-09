@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 8/11/2018";
+   JSROOT.version = "master 9/11/2018";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -108,6 +108,8 @@
    JSROOT.id_counter = 0;
    if (JSROOT.BatchMode === undefined)
       JSROOT.BatchMode = false; // when true, disables all kind of interactive features
+
+   //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
    // JSROOT.use_full_libs = true;
 
