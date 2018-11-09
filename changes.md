@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.6.2
+1. Fix - correctly handle negative parameter values in TF1/TF2
+
+
 ## Changes in 5.6.1
 1. Add TMath.BreitWigner function
 2. Support custom streamers for TMaterial and TMixture (very old examples)
