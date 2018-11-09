@@ -36,6 +36,12 @@ examples_more = {
    TH3 : [
       { name: "subpads", opt: "", file: "glc.root", item: "glc;1", title: "canvas with two subpads, both with 3D plotls" }
    ],
+   TWebCanvas: [
+      { name: "greyscale", json: "web6canv/greyscale.json.gz", title: "40K TBox objects with different fill attributes" },
+      { name: "para", json: "web6canv/StandAloneaPara.json.gz", title: "TTree drawing into TParallelCoord object" },
+      { name: "pie", json: "web6canv/piechart.json.gz", title: "Testing native TPie painting" },
+      { name: "trans", json: "web6canv/transparency.json.gz", title: "Testing with TGraph without axes" }
+   ],
 //   v7 : [
 //      { name: "th1", opt: "", file: "v7.root", item: "th1", title: "v7 TH1 class" },
 //      { name: "th2", opt: "", file: "v7.root", item: "th2", title: "v7 TH2 class" },
@@ -43,7 +49,7 @@ examples_more = {
 //   ],
    THStack : [
       { opt: "orig", file: "stacks.root", item: "stacks;1", title: "original example used for JSROOT testing since a while" },
-      { name: "json", title: "Draw stack from JSON file", json: "thstack.json.gz", title: "some special stack from JSON file" }
+      { name: "json", json: "thstack.json.gz", title: "some special stack from JSON file" }
    ],
    TTree : [
       { name: "wjets", asurl: true, file: "WJets.root", item: "t;1/met", title: "Histogram data of branch with vectors" },
@@ -90,7 +96,6 @@ examples_more = {
      { name: "wtmass", file: "WtMass.root", item: "WtMass;1", title: "Histogram with absolute axis font size" },
      { name: "multi", file: "general.root", item: "canvas_0;1", title: "many superimposed histograms and graphs" },
      { name: "greyscale", json: "greyscale.json.gz", title: "produced from tutorials/hist/greyscale.C macro" },
-     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" },
      { name: "atlas", file: "AtlasExample.root", item: "c1", style: "style", title: "ATLAS style example, https://root-forum.cern.ch/t/27751" }
    ],
    TGeo : [

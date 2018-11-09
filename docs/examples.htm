@@ -135,6 +135,8 @@
             icon.setAttribute('src', "../img/RootIcon.ico");
          }
          
+         if (window.location.protocol == "file:") filepath = "http://jsroot.gsi.de/files/";
+         
          document.getElementsByTagName("head")[0].appendChild(icon);
          
          function loadScript(name, load_callback) {

@@ -30,12 +30,16 @@
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
-      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
+      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="5"))  {
+         if (d3.version !== '5.7.0')
+            console.log('Reuse existing d3.js ' + d3.version + ", expected 5.7.0");
+         JSROOT._test_d3_ = 5;
+      } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
          if (d3.version !== '4.4.4')
-            console.log('Reuse existing d3.js ' + d3.version + ", expected 4.4.4");
+            console.warn('Try to use older d3.js ' + d3.version + ", expected 5.7.0");
          JSROOT._test_d3_ = 4;
       } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
-         console.log("Older d3.js version " + d3.version + " found, try to adjust");
+         console.error("Very old d3.js " + d3.version + " found, please UPGRADE");
          d3.timeFormat = d3.time.format;
          d3.scaleTime = d3.time.scale;
          d3.scaleLog = d3.scale.log;
@@ -583,24 +587,40 @@
 
    /** Add new colors from object array. */
    Painter.extendRootColors = function(jsarr, objarr) {
-      if (!objarr || !objarr.arr) return;
-
-      for (var n = 0; n < objarr.arr.length; ++n) {
-         var col = objarr.arr[n];
-         if (!col || (col._typename != 'TColor')) continue;
-
-         var num = col.fNumber;
-         if ((num<0) || (num>10000)) continue;
-
-         var rgb = Painter.MakeColorRGB(col);
-         if (rgb && (jsarr[num] != rgb)) jsarr[num] = rgb;
+      if (!jsarr) {
+         jsarr = [];
+         for (var n=0;n<this.root_colors.length;++n)
+            jsarr[n] = this.root_colors[n];
       }
+
+      if (!objarr) return jsarr;
+
+      var rgb_array = objarr;
+      if (objarr._typename && objarr.arr) {
+         rgb_array = [];
+         for (var n = 0; n < objarr.arr.length; ++n) {
+            var col = objarr.arr[n];
+            if (!col || (col._typename != 'TColor')) continue;
+
+            if ((col.fNumber>=0) && (col.fNumber<=10000))
+               rgb_array[col.fNumber] = Painter.MakeColorRGB(col);
+         }
+      }
+
+
+      for (var n = 0; n < rgb_array.length; ++n)
+         if (rgb_array[n] && (jsarr[n] != rgb_array[n]))
+            jsarr[n] = rgb_array[n];
+
+      return jsarr;
    }
 
-   /** Use TObjArray of TColor instances, typically stored together with TCanvas primitives
+   /** Set global list of colors.
+    * Either TObjArray of TColor instances or just plain array with rgb() code.
+    * List of colors typically stored together with TCanvas primitives
     * @private */
    Painter.adoptRootColors = function(objarr) {
-      Painter.extendRootColors(Painter.root_colors, objarr);
+      this.extendRootColors(this.root_colors, objarr);
    }
 
    // =====================================================================
@@ -984,7 +1004,6 @@
     */
 
    function TAttFillHandler(args) {
-
       this.color = "none";
       this.colorindx = 0;
       this.pattern = 0;
@@ -1070,7 +1089,6 @@
     * @param {string} [color_as_svg = undefined] - color as HTML string index
     */
    TAttFillHandler.prototype.Change = function(color, pattern, svg, color_as_svg) {
-
       delete this.pattern_url;
       this.changed = true;
 
@@ -1104,7 +1122,7 @@
 
       if (color_as_svg) {
          this.color = color;
-         indx = 10000 + JSROOT.id_counter++; // use fictial unique index far away from existing color indexes
+         indx = 10000 + JSROOT.id_counter++; // use fictional unique index far away from existing color indexes
       } else {
          this.color = JSROOT.Painter.root_colors[indx];
       }
@@ -1781,7 +1799,7 @@
       this.msgqueue.push({ ready: true, msg: _msg, len: _len});
    }
 
-   /** Reserver entry in queue for data, which is not yet decoded.
+   /** Reserve entry in queue for data, which is not yet decoded.
     * @private */
    WebWindowHandle.prototype.ReserveQueueItem = function() {
       if (!this.msgqueue) this.msgqueue = [];
@@ -1821,6 +1839,11 @@
          this._websocket.close();
          delete this._websocket;
       }
+   }
+
+   /** Returns if one can send text message to server. Checks number of send credits */
+   WebWindowHandle.prototype.CanSend = function(numsend) {
+      return (this.cansend >= (numsend || 1));
    }
 
    /** Send text message via the connection. */
@@ -2540,11 +2563,12 @@
     * @augments JSROOT.TBasePainter
     * @param {object} obj - object to draw
     */
-   function TObjectPainter(obj) {
+   function TObjectPainter(obj, opt) {
       TBasePainter.call(this);
       this.draw_g = null; // container for all drawn objects
       this.pad_name = ""; // name of pad where object is drawn
       this.main = null;  // main painter, received from pad
+      if (typeof opt == "string") this.options = { original: opt };
       this.AssignObject(obj);
    }
 
@@ -2723,6 +2747,41 @@
       return jsarr.length-1;
    }
 
+   /** @summary returns tooltip allowed flag. Check canvas painter
+    * @private */
+   TObjectPainter.prototype.IsTooltipAllowed = function() {
+      var src = this.canv_painter() || this;
+      return src.tooltip_allowed ? true : false;
+   }
+
+   /** @summary returns tooltip allowed flag
+    * @private */
+   TObjectPainter.prototype.SetTooltipAllowed = function(on) {
+      var src = this.canv_painter() || this;
+      src.tooltip_allowed = (on == "toggle") ? !src.tooltip_allowed : on;
+   }
+
+   /** @summary returns custom palette for the object. If forced, will be created
+    * @private */
+   TObjectPainter.prototype.get_palette = function(force, palettedid) {
+      if (!palettedid) {
+         var pp = this.pad_painter();
+         if (!pp) return null;
+         if (pp.custom_palette) return pp.custom_palette;
+      }
+
+      var cp = this.canv_painter();
+      if (!cp) return null;
+      if (cp.custom_palette && !palettedid) return cp.custom_palette;
+
+      if (force && JSROOT.Painter.GetColorPalette)
+         cp.custom_palette = JSROOT.Painter.GetColorPalette(palettedid);
+
+      return cp.custom_palette;
+   }
+
+
+
    /** @summary Checks if draw elements were resized and drawing should be updated.
     *
     * @desc Redirects to {@link TPadPainter.CheckCanvasResize}
@@ -2877,13 +2936,13 @@
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
-    *  @param {boolean} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+    *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
     *  @returns {number} rounded value of requested coordiantes
     *  @private
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
       var main = this.frame_painter();
-      if (main && !kind) {
+      if (main && !kind && main["gr"+axis]) {
          // this is frame coordinates
          value = (axis=="y") ? main.gry(value) + main.frame_y()
                              : main.grx(value) + main.frame_x();
@@ -2893,6 +2952,31 @@
       }
       return Math.round(value);
    }
+
+  /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
+   *
+   * Produce functor can convert x and y value by calling func.x(x) and func.y(y)
+   *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+   *  @private
+   */
+  TObjectPainter.prototype.AxisToSvgFunc = function(kind) {
+     var func = { kind: kind }, main = this.frame_painter();
+     if (main && !kind && main.grx && main.gry) {
+        func.main = main;
+        func.offx = main.frame_x();
+        func.offy = main.frame_y();
+        func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
+        func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
+     } else {
+        if (kind !== true) func.p = this; // need for NDC conversion
+        func.padh = this.pad_height();
+        func.padw = this.pad_width();
+        func.x = function(x) { if (this.p) x = this.p.ConvertToNDC("x", x); return Math.round(x*this.padw); }
+        func.y = function(y) { if (this.p) y = this.p.ConvertToNDC("y", y); return Math.round((1-y)*this.padh); }
+     }
+     return func;
+  }
+
 
    /** @summary Returns svg element for the frame.
     *
@@ -3320,7 +3404,7 @@
       var handler = args.std ? this.markeratt : null;
 
       if (!handler) handler = new TAttMarkerHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.markeratt = handler;
 
@@ -3345,7 +3429,7 @@
       var handler = args.std ? this.lineatt : null;
 
       if (!handler) handler = new TAttLineHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.lineatt = handler;
 
@@ -3380,7 +3464,7 @@
       if (!args.svg) args.svg = this.svg_canvas();
 
       if (!handler) handler = new TAttFillHandler(args);
-      else if (!handler.changed) handler.SetArgs(args);
+      else if (!handler.changed || args.force) handler.SetArgs(args);
 
       if (args.std) this.fillatt = handler;
 
@@ -3802,19 +3886,20 @@
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {
-         var canvp = this.canv_painter(),
-             item = this.args_menu_items[parseInt(arg)];
+         var execp = this.exec_painter || this,
+             canvp = execp.canv_painter(),
+             item = execp.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
-            return canvp.MethodsDialog(this, item, this.args_menu_id);
+            return canvp.MethodsDialog(execp, item, execp.args_menu_id);
 
-         if (this.ExecuteMenuCommand(item)) return;
+         if (execp.ExecuteMenuCommand(item)) return;
 
-         if (canvp._websocket && this.args_menu_id) {
-            console.log('execute method ' + item.fExec + ' for object ' + this.args_menu_id);
-            canvp.SendWebsocket('OBJEXEC:' + this.args_menu_id + ":" + item.fExec);
+         if (canvp._websocket && execp.args_menu_id) {
+            console.log('execute method ' + item.fExec + ' for object ' + execp.args_menu_id);
+            canvp.SendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + item.fExec);
          }
       }
 
@@ -3856,6 +3941,10 @@
 
       var reqid = this.snapid;
       if (kind) reqid += "#" + kind; // use # to separate object id from member specifier like 'x' or 'z'
+
+      // if menu painter differs from this, remember it for further usage
+      if (menu.painter)
+         menu.painter.exec_painter = (menu.painter !== this) ? this : undefined;
 
       canvp._getmenu_callback = DoFillMenu.bind(this, menu, reqid, call_back);
 
@@ -4295,12 +4384,16 @@
           svg_factor = 0,
           f = draw_g.property('text_factor'),
           font = draw_g.property('text_font'),
+          max_sz = draw_g.property('max_font_size'),
           font_size = font.size;
 
-      if ((f>0) && ((f<0.9) || (f>1.))) {
+      if ((f > 0) && ((f < 0.9) || (f > 1)))
          font.size = Math.floor(font.size/f);
-         if (draw_g.property('max_font_size') && (font.size > draw_g.property('max_font_size')))
-            font.size = draw_g.property('max_font_size');
+
+      if (max_sz && (font.size > max_sz))
+          font.size = max_sz;
+
+      if (font.size != font_size) {
          draw_g.call(font.func);
          font_size = font.size;
       }
@@ -5271,7 +5364,6 @@
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
       this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltip
-      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0); // this is interactively changed property
    }
 
    TooltipHandler.prototype = Object.create(TObjectPainter.prototype);
@@ -5286,7 +5378,7 @@
 
    TooltipHandler.prototype.IsTooltipShown = function() {
       // return true if tooltip is shown, use to prevent some other action
-      if (!this.tooltip_allowed || !this.tooltip_enabled) return false;
+      if (!this.tooltip_enabled || !this.IsTooltipAllowed()) return false;
       var hintsg = this.hints_layer().select(".objects_hints");
       return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
    }
@@ -5317,7 +5409,7 @@
           pp = this.pad_painter(),
           font = JSROOT.Painter.getFontDetails(160, textheight),
           status_func = this.GetShowStatusFunc(),
-          disable_tootlips = !this.tooltip_allowed || !this.tooltip_enabled;
+          disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
 
       if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
@@ -5722,6 +5814,7 @@
    JSROOT.addDrawFunc({ name: /^TH1/, icon: "img_histo1d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram1D", opt:";hist;P;P0;E;E1;E2;E3;E4;E1X0;L;LF2;B;B1;A;TEXT;LEGO;same", ctrl: "l" });
    JSROOT.addDrawFunc({ name: "TProfile", icon: "img_profile", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram1D", opt:";E0;E1;E2;p;AH;hist"});
    JSROOT.addDrawFunc({ name: "TH2Poly", icon: "img_histo2d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COL0;COLZ;LCOL;LCOL0;LCOLZ;LEGO;same", expand_item: "fBins", theonly: true });
+   JSROOT.addDrawFunc({ name: "TProfile2Poly", sameas: "TH2Poly" });
    JSROOT.addDrawFunc({ name: "TH2PolyBin", icon: "img_histo2d", draw_field: "fPoly" });
    JSROOT.addDrawFunc({ name: /^TH2/, icon: "img_histo2d", prereq: "v6;hist", func: "JSROOT.Painter.drawHistogram2D", opt:";COL;COLZ;COL0;COL1;COL0Z;COL1Z;COLA;BOX;BOX1;SCAT;TEXT;CONT;CONT1;CONT2;CONT3;CONT4;ARR;SURF;SURF1;SURF2;SURF4;SURF6;E;A;LEGO;LEGO0;LEGO1;LEGO2;LEGO3;LEGO4;same", ctrl: "colz" });
    JSROOT.addDrawFunc({ name: "TProfile2D", sameas: "TH2" });
@@ -5747,7 +5840,7 @@
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy",  func: "JSROOT.Painter.drawStreamerInfo" });
    JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "v6;hist", func: "JSROOT.Painter.drawPaletteAxis" });
    JSROOT.addDrawFunc({ name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" });
-   JSROOT.addDrawFunc({ name: "TPadWebSnapshot", icon: "img_canvas", func: JSROOT.Painter.drawPadSnapshot });
+   JSROOT.addDrawFunc({ name: "TPadWebSnapshot", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPadSnapshot" });
    JSROOT.addDrawFunc({ name: "kind:Text", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TObjString", icon: "img_text", func: JSROOT.Painter.drawRawText });
    JSROOT.addDrawFunc({ name: "TF1", icon: "img_tf1", prereq: "math;more2d", func: "JSROOT.Painter.drawFunction" });
@@ -6036,10 +6129,9 @@
 
       function performDraw() {
          if (handle.direct) {
-            painter = new TObjectPainter(obj);
+            painter = new TObjectPainter(obj, opt);
             painter.SetDivId(divid, 2);
             painter.Redraw = handle.func;
-            painter.options = { original: opt || "" };
             painter.Redraw();
             painter.DrawingReady();
          } else {

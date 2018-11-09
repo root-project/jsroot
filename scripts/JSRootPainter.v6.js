@@ -27,7 +27,7 @@
    JSROOT.sources.push("v6");
 
    // identifier used in TWebCanvas painter
-   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kSpecial: 4 };
+   JSROOT.WebSnapIds = { kNone: 0,  kObject: 1, kSVG: 2, kSubPad: 3, kColors: 4, kStyle: 5 };
 
    // =======================================================================
 
@@ -577,7 +577,7 @@
       if (!disable_axis_drawing && !optionUnlab) {
 
          var label_color = this.get_color(axis.fLabelColor),
-             labeloffset = Math.round(axis.fLabelOffset*text_scaling_size),
+             labeloffset = Math.round(Math.abs(axis.fLabelOffset)*text_scaling_size),
              center_lbls = this.IsCenterLabels(),
              rotate_lbls = axis.TestBit(JSROOT.EAxisBits.kLabelsVert),
              textscale = 1, maxtextlen = 0, lbls_tilt = false, labelfont = null,
@@ -853,6 +853,7 @@
       this.y_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
       this.xmin = this.xmax = 0; // no scale specified, wait for objects drawing
       this.ymin = this.ymax = 0; // no scale specified, wait for objects drawing
+      this.ranges_set = false;
       this.axes_drawn = false;
       this.keys_handler = null;
       this.projection = 0; // different projections
@@ -998,6 +999,8 @@
    TFramePainter.prototype.SetAxesRanges = function(xaxis, xmin, xmax, yaxis, ymin, ymax, zaxis, zmin, zmax) {
       // if (this.axes_drawn) return;
 
+      this.ranges_set = true;
+
       this.xaxis = xaxis;
       this.xmin = xmin;
       this.xmax = xmax;
@@ -1124,6 +1127,11 @@
          }
       }
 
+      if ((this.zoom_ymin == this.zoom_ymax) && (opts.zoom_ymin != opts.zoom_ymax) && !this.zoom_changed_interactive) {
+         this.zoom_ymin = opts.zoom_ymin;
+         this.zoom_ymax = opts.zoom_ymax;
+      }
+
       if (this.zoom_xmin != this.zoom_xmax) {
          this.scale_xmin = this.zoom_xmin;
          this.scale_xmax = this.zoom_xmax;
@@ -1243,7 +1251,7 @@
 
    /** Set selected range back to TPad object */
    TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
-      if (!pad) return;
+      if (!pad || !this.ranges_set) return;
 
       if (is3d) {
          // this is fake values, algorithm should be copied from TView3D class of ROOT
@@ -1459,7 +1467,7 @@
             this.fillatt.SetSolidColor('white');
       }
 
-      if (pad && pad.fFrameLineColor!==undefined)
+      if (!tframe && pad && (pad.fFrameLineColor!==undefined))
          this.createAttLine({ color: pad.fFrameLineColor, width: pad.fFrameLineWidth, style: pad.fFrameLineStyle });
       else
          this.createAttLine({ attr: tframe, color: 'black' });
@@ -1522,6 +1530,8 @@
 
       this.CleanupAxes();
       this.CleanXY();
+
+      this.ranges_set = false;
 
       this.xmin = this.xmax = 0;
       this.ymin = this.ymax = 0;
@@ -1701,7 +1711,7 @@
 
       var hintsg = this.hints_layer().select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
-      if (!hintsg.empty() && this.tooltip_allowed && (hintsg.property("hints_pad") == this.pad_name))
+      if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
          setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
    }
 
@@ -1816,8 +1826,8 @@
          menu.add("separator");
       }
 
-      menu.addchk(this.tooltip_allowed, "Show tooltips", function() {
-         this.tooltip_allowed = !this.tooltip_allowed;
+      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
+         this.SetTooltipAllowed("toggle");
       });
       this.FillAttContextMenu(menu,alone ? "" : "Frame ");
       menu.add("separator");
@@ -2548,7 +2558,7 @@
       //   return;
       //}
 
-      var menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
+      var menu_painter = this, exec_painter = null, frame_corner = false, fp = null; // object used to show context menu
 
       if (!evnt) {
          d3.event.preventDefault();
@@ -2561,7 +2571,7 @@
                 pp = this.pad_painter(),
                 pnt = null, sel = null;
 
-            fp = this.frame_painter();
+            fp = this;
 
             if (tch.length === 1) pnt = { x: tch[0][0], y: tch[0][1], touch: true }; else
             if (ms.length === 2) pnt = { x: ms[0], y: ms[1], touch: false };
@@ -2576,17 +2586,20 @@
                   }
             }
 
-            if (sel!==null) menu_painter = sel; else
-            if (fp!==null) kind = "frame";
+            if (sel) menu_painter = sel; else kind = "frame";
 
-            if (pnt!==null) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
+            if (pnt) frame_corner = (pnt.x>0) && (pnt.x<20) && (pnt.y>0) && (pnt.y<20);
 
-            if (fp) fp.SetLastEventPos(pnt);
+            fp.SetLastEventPos(pnt);
+         } else if ((kind=="x") || (kind=="y") || (kind=="z")) {
+            exec_painter = this.main_painter(); // histogram painter delivers items for axis menu
          }
       }
 
       // one need to copy event, while after call back event may be changed
       menu_painter.ctx_menu_evnt = evnt;
+
+      if (!exec_painter) exec_painter = menu_painter;
 
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
          var domenu = menu.painter.FillContextMenu(menu, kind, obj);
@@ -2596,10 +2609,10 @@
             domenu = fp.FillContextMenu(menu);
 
          if (domenu)
-            menu.painter.FillObjectExecMenu(menu, kind, function() {
+            exec_painter.FillObjectExecMenu(menu, kind, function() {
                 // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
+                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true));
             });
 
       });  // end menu creation
@@ -2734,6 +2747,7 @@
 
       delete this.frame_painter_ref;
       delete this.pads_cache;
+      delete this.custom_palette;
 
       this.painters = [];
       this.pad = null;
@@ -2759,8 +2773,25 @@
     * @private
     */
    TPadPainter.prototype.CreateAutoColor = function() {
+      var pp = this.canv_painter(),
+          pad = this.root_pad(),
+          numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
+
+      var pal = this.get_palette(true);
+
       var indx = this._auto_color || 0;
-      this._auto_color = (indx + 1) % 8;
+      this._auto_color = indx+1;
+
+      if (pal) {
+         if (numprimitives<2) numprimitives = 2;
+         if (indx >= numprimitives) indx = numprimitives - 1;
+         var palindx = Math.round(indx * (pal.getLength()-3) / (numprimitives-1));
+         var colvalue = pal.getColor(palindx);
+         var colindx = this.add_color(colvalue);
+         return colindx;
+      }
+
+      this._auto_color = this._auto_color % 8;
       return indx+2;
    }
 
@@ -2781,16 +2812,6 @@
 
    TPadPainter.prototype.ButtonSize = function(fact) {
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
-   }
-
-   TPadPainter.prototype.IsTooltipAllowed = function() {
-      var fp = this.frame_painter();
-      return fp ? fp.tooltip_allowed : undefined;
-   }
-
-   TPadPainter.prototype.SetTooltipAllowed = function(on) {
-      var fp = this.frame_painter();
-      if (fp) fp.tooltip_allowed = on;
    }
 
    /// Retrive different event when object selected or pad is redrawn
@@ -3098,19 +3119,15 @@
                if (!col) { console.log('Fail to create color for palette'); arr = null; break; }
                arr.push(col);
             }
-            if (arr) this.CanvasPalette = new JSROOT.ColorPalette(arr);
+            if (arr) this.custom_palette = new JSROOT.ColorPalette(arr);
          }
 
          if (!this.options || this.options.GlobalColors) // set global list of colors
             JSROOT.Painter.adoptRootColors(obj);
 
-         if (this.options && this.options.LocalColors) {
-            // copy existing colors and extend with new values
-            this.root_colors = [];
-            for (var n=0;n<JSROOT.Painter.root_colors.length;++n)
-               this.root_colors[n] = JSROOT.Painter.root_colors[n];
-            JSROOT.Painter.extendRootColors(this.root_colors, obj);
-         }
+         // copy existing colors and extend with new values
+         if (this.options && this.options.LocalColors)
+            this.root_colors = JSROOT.Painter.extendRootColors(null, obj);
          return true;
       }
 
@@ -3124,7 +3141,8 @@
                console.log('Missing color with index ' + n); missing = true;
             }
          }
-         if (!this.options || (!missing && !this.options.IgnorePalette)) this.CanvasPalette = new JSROOT.ColorPalette(arr);
+         if (!this.options || (!missing && !this.options.IgnorePalette))
+            this.custom_palette = new JSROOT.ColorPalette(arr);
          return true;
       }
 
@@ -3260,9 +3278,7 @@
       else
          menu.add("header: Canvas");
 
-      var tooltipon = this.IsTooltipAllowed();
-      if (tooltipon !== undefined)
-         menu.addchk(tooltipon, "Show tooltips", this.SetTooltipAllowed.bind(this, !tooltipon));
+      menu.addchk(this.IsTooltipAllowed(), "Show tooltips", this.SetTooltipAllowed.bind(this, "toggle"));
 
       if (!this._websocket) {
 
@@ -3431,6 +3447,9 @@
       this.pad.fLineStyle = obj.fLineStyle;
       this.pad.fLineWidth = obj.fLineWidth;
 
+      this.pad.fPhi = obj.fPhi;
+      this.pad.fTheta = obj.fTheta;
+
       if (this.iscan) this.CheckSpecialsInPrimitives(obj);
 
       var fp = this.frame_painter();
@@ -3519,8 +3538,43 @@
             continue; // call next
          }
 
-         if (snap.fKind === JSROOT.WebSnapIds.kSpecial) { // specials like list of colors
-            this.CheckSpecial(snap.fSnapshot);
+         // gStyle object
+         if (snap.fKind === JSROOT.WebSnapIds.kStyle) {
+            JSROOT.extend(JSROOT.gStyle, snap.fSnapshot);
+            continue;
+         }
+
+         // list of colors
+         if (snap.fKind === JSROOT.WebSnapIds.kColors) {
+
+            var ListOfColors = [], arr = snap.fSnapshot.fOper.split(";");
+            for (var n=0;n<arr.length;++n) {
+               var name = arr[n], p = name.indexOf(":");
+               if (p>0) {
+                  ListOfColors[parseInt(name.substr(0,p))] = "rgb(" + name.substr(p+1) + ")";
+               } else {
+                  p = name.indexOf("=");
+                  ListOfColors[parseInt(name.substr(0,p))] = "rgba(" + name.substr(p+1) + ")";
+               }
+            }
+
+            // set global list of colors
+            if (!this.options || this.options.GlobalColors)
+               JSROOT.Painter.adoptRootColors(ListOfColors);
+
+            // copy existing colors and extend with new values
+            if (this.options && this.options.LocalColors)
+               this.root_colors = JSROOT.Painter.extendRootColors(null, ListOfColors);
+
+            // set palette
+            if (snap.fSnapshot.fBuf && (!this.options || !this.options.IgnorePalette)) {
+               var palette = [];
+               for (var n=0;n<snap.fSnapshot.fBuf.length;++n)
+                  palette[n] = ListOfColors[Math.round(snap.fSnapshot.fBuf[n])];
+
+               this.custom_palette = new JSROOT.ColorPalette(palette);
+            }
+
             continue;
          }
 
@@ -3657,7 +3711,7 @@
          this.CreatePadSvg(true);
       }
 
-      var isanyfound = false;
+      var isanyfound = false, isanyremove = false;
 
       // find and remove painters which no longer exists in the list
       for (var k=0;k<this.painters.length;++k) {
@@ -3672,10 +3726,13 @@
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
+            isanyremove = true;
          }
       }
 
-      // return JSROOT.CallBack(call_back, padpainter);
+      if (isanyremove) {
+         delete this.pads_cache;
+      }
 
       if (!isanyfound) {
          var svg_p = this.svg_pad(this.this_pad_name),
@@ -3760,14 +3817,14 @@
       var main = this.frame_painter_ref,
           p = this.svg_pad(this.this_pad_name);
 
-      r.ranges = main ? true : false; // indicate that ranges are assigned
+      r.ranges = main && main.ranges_set ? true : false; // indicate that ranges are assigned
 
-      r.ux1 = r.px1 = main ? main.scale_xmin : 0; // need to initialize for JSON reader
-      r.uy1 = r.py1 = main ? main.scale_ymin : 0;
-      r.ux2 = r.px2 = main ? main.scale_xmax : 0;
-      r.uy2 = r.py2 = main ? main.scale_ymax : 0;
+      r.ux1 = r.px1 = r.ranges ? main.scale_xmin : 0; // need to initialize for JSON reader
+      r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
+      r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
+      r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
 
-      if (!main || p.empty()) return true;
+      if (!r.ranges || p.empty()) return true;
 
       // calculate user range for full pad
       var same = function(x) { return x; },
@@ -4308,6 +4365,7 @@
    function TCanvasPainter(canvas) {
       TPadPainter.call(this, canvas, true);
       this._websocket = null;
+      this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
    }
 
    TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
@@ -4447,9 +4505,12 @@
       this.CloseWebsocket(true);
    }
 
-   TCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
-      if (this._websocket)
-         this._websocket.Send(msg, chid);
+   TCanvasPainter.prototype.SendWebsocket = function(msg) {
+      if (!this._websocket) return;
+      if (this._websocket.CanSend())
+         this._websocket.Send(msg);
+      else
+         console.warn("DROP SEND: " + msg);
    }
 
    TCanvasPainter.prototype.CloseWebsocket = function(force) {
@@ -4667,7 +4728,8 @@
    /// method informs that something was changed in the canvas
    /// used to update information on the server (when used with web6gui)
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
-      if (!this._websocket) return;
+      // check if we could send at least one message more - for some meaningful actions
+      if (!this._websocket || !this._websocket.CanSend(2)) return;
 
       var msg = (kind == "sbits") ? "STATUSBITS:" + this.GetStatusBits() : "RANGES6:" + this.GetAllRanges();
 
@@ -4701,8 +4763,8 @@
          if (click_pos.dbl) arg.dbl = true;
       }
 
-      if (this._websocket && arg && ischanged)
-         this._websocket.Send("PADCLICKED:" + JSROOT.toJSON(arg));
+      if (arg && ischanged)
+         this.SendWebsocket("PADCLICKED:" + JSROOT.toJSON(arg));
    }
 
    TCanvasPainter.prototype.GetStatusBits = function() {

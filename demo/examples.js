@@ -59,7 +59,8 @@ examples_main = {
       { opt: "col0z", title: "suppress empty bins with 0 option" },
       { name: "europe", item: "europe;1", opt: "", title: "Europe map (relatively old)" },
       { name: "usa", item: "usa;1", opt: "l,col,pal50", title: "USA map" },
-      { name: "fibonacci", file: "tutorials_hist.root", item: 'Fibonacci',  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" }
+      { name: "fibonacci", file: "tutorials_hist.root", item: "Fibonacci",  title: "Macro outputs from $ROOTSYS/tutorials/hist/Fibonacci.C" },
+      { name: "tprofile2poly", file: "tprofile2poly.root", item: "c2", title: "Example of TProfile2Poly class, see $ROOTSYS/tutorials/hist/tprofile2polyRealistic.C output" }
    ],
    TH3 : [
      { opt: "", file: "histpainter6.root", item: "draw_th3_scat;1" },
@@ -116,7 +117,8 @@ examples_main = {
      { name:"zdemo", file: "zdemo.root", item: "zdemo;1" },
      { name:"legend", asurl: true, file: "legends.root", item: "legends;1", latex: "mathjax", title: "TCanvas with TLegend, use MathJax.js" },
      { name:"time", file: "ct.root", item: "ct;1" },
-     { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" }
+     { name:"2d+3d", file: "mix2d3d.root", item: "Canvas;1", title: "Mixture of 2D and 3D drawings on the same canvas (work properly in Firefox and Chrome)" },
+     { name: "big", file: "bigcanvas.root", item: "big", title: "100 histograms in subpads, for performance testing" }
    ],
    TGeo : [
      { name:"logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
