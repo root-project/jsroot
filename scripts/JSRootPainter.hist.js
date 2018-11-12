@@ -6646,7 +6646,7 @@
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
       if (indx>=nhists) {
-         this._pfc = this._plc = this._pmc = false; // disable auto coloring at the end
+         this.options._pfc = this.options._plc = this.options._pmc = false; // disable auto coloring at the end
          return this.DrawingReady();
       }
 
@@ -6662,16 +6662,16 @@
          hopt += " same nostat";
 
          // if there is auto colors assignment, try to provide it
-         if (this._pfc || this._plc || this._pmc) {
+         if (this.options._pfc || this.options._plc || this.options._pmc) {
             if (!this.pallette && JSROOT.Painter.GetColorPalette)
                this.palette = JSROOT.Painter.GetColorPalette();
             if (this.palette) {
                var color = this.palette.calcColor(rindx, nhists+1);
                var icolor = this.add_color(color);
 
-               if (this._pfc) hist.fFillColor = icolor;
-               if (this._plc) hist.fLineColor = icolor;
-               if (this._pmc) hist.fMarkerColor = icolor;
+               if (this.options._pfc) hist.fFillColor = icolor;
+               if (this.options._plc) hist.fLineColor = icolor;
+               if (this.options._pmc) hist.fMarkerColor = icolor;
             }
          }
 
@@ -6688,6 +6688,36 @@
       JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
    }
 
+   THStackPainter.prototype.DecodeOptions = function(opt) {
+      if (!this.options) this.options = {};
+      JSROOT.extend(this.options, { ndim: 1, nostack: false, same: false, hopt: "", original: opt });
+
+      var stack = this.GetObject(),
+          hist = stack.fHistogram || (stack.fHists ? stack.fHists.arr[0] : null) || (stack.fStack ? stack.fStack.arr[0] : null);
+
+      if (hist && (hist._typename.indexOf("TH2")==0)) this.options.ndim = 2;
+
+      if ((this.options.ndim==2) && !opt) opt = "lego1";
+
+      var d = new JSROOT.DrawOptions(opt);
+
+      this.options.nostack = d.check("NOSTACK");
+      if (d.check("STACK")) this.options.nostack = false;
+      this.options.same = d.check("SAME");
+
+      this.options._pfc = d.check("PFC");
+      this.options._plc = d.check("PLC");
+      this.options._pmc = d.check("PMC");
+
+      this.options.hopt = d.remain(); // use remaining draw options for histogram draw
+
+      this.options.dolego = d.check("LEGO");
+
+      // this.options.errors = d.check("E");
+
+      // if (!this.options.nostack && this.haserrors && !this.options.dolego && !d.check("HIST") && (opt.indexOf("E")<0)) this.draw_errors = true;
+   }
+
    THStackPainter.prototype.drawStack = function(opt) {
 
       var pad = this.root_pad(),
@@ -6699,15 +6729,10 @@
       if ((nhists>0) && (histos.arr[0]._typename.indexOf("TH2")==0)) ndim = 2;
       if ((ndim==2) && !opt) opt = "lego1";
 
-      var d = new JSROOT.DrawOptions(opt),
-          lsame = d.check("SAME");
+      var d = new JSROOT.DrawOptions(opt);
 
       this.nostack = d.check("NOSTACK");
       if (d.check("STACK")) this.nostack = false;
-
-      this._pfc = d.check("PFC");
-      this._plc = d.check("PLC");
-      this._pmc = d.check("PMC");
 
       opt = d.remain(); // use remaining draw options for histogram draw
 
@@ -6727,7 +6752,7 @@
 
       var histo = stack.fHistogram;
 
-      if (!histo) {
+      if (!histo && !this.options.same) {
 
          // compute the min/max of each axis
          var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
@@ -6767,7 +6792,7 @@
          mm.max*=kmax;
       }
 
-      this.DrawNextHisto(!lsame ? -1 : 0, opt, mm);
+      this.DrawNextHisto(this.options.same ? 0 : -1, this.options.hopt, mm);
       return this;
    }
 
@@ -6799,6 +6824,8 @@
       var painter = new THStackPainter(stack);
 
       painter.SetDivId(divid, -1); // it maybe no element to set divid
+
+      painter.DecodeOptions(opt);
 
       if (!stack.fHists || (stack.fHists.arr.length == 0)) return painter.DrawingReady();
 
