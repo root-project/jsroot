@@ -1564,14 +1564,14 @@
 
       var last = this.zoom_changed_interactive;
 
-      if (dox || doy || dox) this.zoom_changed_interactive = 2;
+      if (dox || doy || doz) this.zoom_changed_interactive = 2;
 
       var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,
                               doz ? 0 : undefined, doz ? 0 : undefined);
 
       // if unzooming has no effect, decrease counter
-      if ((dox || doy || dox) && !changed)
+      if ((dox || doy || doz) && !changed)
          this.zoom_changed_interactive = (!isNaN(last) && (last>0)) ? last - 1 : 0;
 
       return changed;
