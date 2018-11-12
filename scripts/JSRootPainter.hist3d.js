@@ -1331,6 +1331,7 @@
             var mesh2 = new THREE.Mesh(geom2, material2);
             mesh2.face_to_bins_index = face_to_bins_indx2;
             mesh2.painter = this;
+            mesh2.handle = mesh.handle;
             mesh2.tooltip = mesh.tooltip;
             mesh2.zmin = mesh.zmin;
             mesh2.zmax = mesh.zmax;
