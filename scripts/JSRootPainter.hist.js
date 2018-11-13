@@ -6507,6 +6507,8 @@
    THStackPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    THStackPainter.prototype.Cleanup = function() {
+      var pp = this.pad_painter();
+      if (pp) pp.CleanPrimitives(this.Selector.bind(this, true));
       delete this.firstpainter;
       delete this.painters;
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
@@ -6628,7 +6630,7 @@
       return res;
    }
 
-   THStackPainter.prototype.DrawNextHisto = function(indx, opt, mm, subp, reenter) {
+   THStackPainter.prototype.DrawNextHisto = function(indx, mm, subp, reenter) {
       if (mm === "callback") {
          mm = null; // just misuse min/max argument to indicate callback
          if (indx<0) this.firstpainter = subp;
@@ -6644,13 +6646,13 @@
       if (indx>=nhists) return this.DrawingReady();
 
       if ((indx % 500 === 499) && !reenter)
-         return setTimeout(this.DrawNextHisto.bind(this, indx, opt, mm, subp, true), 0);
+         return setTimeout(this.DrawNextHisto.bind(this, indx, mm, subp, true), 0);
 
       if (indx>=0) {
          rindx = this.options.horder ? indx : nhists-indx-1;
          hist = hlst.arr[rindx];
-         hopt = hlst.opt[rindx] || hist.fOption || opt;
-         if (hopt.toUpperCase().indexOf(opt)<0) hopt += opt;
+         hopt = hlst.opt[rindx] || hist.fOption || this.options.hopt;
+         if (hopt.toUpperCase().indexOf(this.options.hopt)<0) hopt += this.options.hopt;
          if (this.options.draw_errors && !hopt) hopt = "E";
          hopt += " same nostat";
 
@@ -6669,7 +6671,7 @@
          }
 
       } else {
-         hopt = (opt || "") + " axis";
+         hopt = this.options.hopt + " axis";
          // if (mm && (!this.options.nostack || (hist.fMinimum==-1111 && hist.fMaximum==-1111))) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
          if (mm) hopt += ";minimum:" + mm.min + ";maximum:" + mm.max;
       }
@@ -6678,7 +6680,7 @@
       // also used to provide tooltips
       if ((rindx > 0) && !this.options.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
-      JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, opt, "callback"));
+      JSROOT.draw(this.divid, hist, hopt, this.DrawNextHisto.bind(this, indx, "callback"));
    }
 
    THStackPainter.prototype.DecodeOptions = function(opt) {
@@ -6767,7 +6769,7 @@
 
       var mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
-      this.DrawNextHisto(this.options.same ? 0 : -1, this.options.hopt, mm);
+      this.DrawNextHisto(this.options.same ? 0 : -1, mm);
       return this;
    }
 
@@ -6806,20 +6808,10 @@
 
       // try fully remove old histogram painters
       var pp = this.pad_painter();
-      if (pp) pp.CleanPrimitives(this.Selector.bind(this));
+      if (pp) pp.CleanPrimitives(this.Selector.bind(this, false));
       this.painters = [];
 
-      // this was old code trying to update content in exists painters - do not do this
-      /*
-      var lst = this.options.nostack ? stack.fHists : stack.fStack;
-      if (!lst) return false;
-      var nhists = Math.min(lst.arr.length, this.painters.length);
-
-      for (var i = 0; i < nhists; ++i) {
-         var hist = lst.arr[this.options.horder ? i : nhists - i - 1];
-         if (this.painters[i].UpdateObject(hist)) isany = true;
-      }
-      */
+      console.log('After update PP has painters ' + pp.painters.length);
 
       this.did_update = isany;
 
@@ -6827,24 +6819,23 @@
    }
 
    /** @summary Returns true if painter belongs to stack, used in cleanup */
-   THStackPainter.prototype.Selector = function(painter) {
+   THStackPainter.prototype.Selector = function(fullclear, painter) {
+      if (fullclear && (painter===this.firstpainter)) return true;
       return this.painters.indexOf(painter) >= 0;
    }
 
    /** @summary Redraw THStack, changes output only if Update was performed before */
    THStackPainter.prototype.Redraw = function() {
-      if (!this.did_update) return; // do nothing in case of simple redraw
+      // do nothing in case of simple redraw
+      if (!this.did_update) return;
 
+      // remove flag set in update
       delete this.did_update;
 
       if (this.firstpainter)
          this.firstpainter.Redraw();
 
-      this.DrawNextHisto(0, this.options.hopt, null);
-
-     // if (this.painters)
-     //    for (var i = 0; i < this.painters.length; ++i)
-     //       this.painters[i].Redraw();
+      this.DrawNextHisto(0, null);
    }
 
    function drawHStack(divid, stack, opt) {
