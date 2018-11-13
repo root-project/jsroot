@@ -6722,11 +6722,40 @@
       this.options.horder = this.options.nostack || dolego;
    }
 
+   THStackPainter.prototype.CreateHistogram = function(stack) {
+      var histos = stack.fHists,
+          numhistos = histos ? histos.arr.length : 0;
+
+      if (!numhistos)
+         return JSROOT.CreateHistogram("TH1I", 100);
+
+      var h0 = histos.arr[0];
+      var histo = JSROOT.CreateHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
+      histo.fName = "axis_hist";
+      JSROOT.extend(histo.fXaxis, h0.fXaxis);
+      if (this.options.ndim==2)
+         JSROOT.extend(histo.fYaxis, h0.fYaxis);
+
+      for (var n=1;n<numhistos;++n) {
+         var h = histos.arr[n];
+
+         if (!histo.fXaxis.fLabels) {
+            histo.fXaxis.fXmin = Math.min(histo.fXaxis.fXmin, h.fXaxis.fXmin);
+            histo.fXaxis.fXmax = Math.max(histo.fXaxis.fXmax, h.fXaxis.fXmax);
+         }
+
+         if ((this.options.ndim==2) && !histo.fYaxis.fLabels) {
+            histo.fYaxis.fXmin = Math.min(histo.fYaxis.fXmin, h.fYaxis.fXmin);
+            histo.fYaxis.fXmax = Math.max(histo.fYaxis.fXmax, h.fYaxis.fXmax);
+         }
+      }
+
+      return histo;
+   }
+
    THStackPainter.prototype.drawStack = function(opt) {
 
-      var stack = this.GetObject(),
-          histos = stack.fHists,
-          nhists = histos.arr.length;
+      var stack = this.GetObject();
 
       // when building stack, one could fail to sum up histograms
       if (!this.options.nostack)
@@ -6734,39 +6763,10 @@
 
       var histo = stack.fHistogram;
 
-      if (!histo && !this.options.same) {
+      if (!histo && !this.options.same)
+         histo = stack.fHistogram = this.CreateHistogram(stack);
 
-         // compute the min/max of each axis
-         var xmin = 0, xmax = 0, ymin = 0, ymax = 0;
-         for (var i = 0; i < nhists; ++i) {
-            var h = histos.arr[i];
-            if (i == 0 || h.fXaxis.fXmin < xmin)
-               xmin = h.fXaxis.fXmin;
-            if (i == 0 || h.fXaxis.fXmax > xmax)
-               xmax = h.fXaxis.fXmax;
-            if (i == 0 || h.fYaxis.fXmin < ymin)
-               ymin = h.fYaxis.fXmin;
-            if (i == 0 || h.fYaxis.fXmax > ymax)
-               ymax = h.fYaxis.fXmax;
-         }
-
-         var h = stack.fHists.arr[0];
-
-         histo = JSROOT.CreateHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h.fXaxis.fNbins, h.fYaxis.fNbins);
-         histo.fName = "axis_hist";
-         histo.fXaxis = JSROOT.clone(h.fXaxis);
-         histo.fXaxis.fXmin = xmin;
-         histo.fXaxis.fXmax = xmax;
-         if (this.options.ndim==2) {
-            histo.fYaxis = JSROOT.clone(h.fYaxis);
-            histo.fYaxis.fXmin = ymin;
-            histo.fYaxis.fXmax = ymax;
-         }
-
-         stack.fHistogram = histo;
-      }
-
-      histo.fTitle = stack.fTitle;
+      if (histo) histo.fTitle = stack.fTitle;
 
       var mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
@@ -6788,7 +6788,11 @@
 
       var isany = false;
       if (this.firstpainter) {
-         if (obj.fHistogram) this.firstpainter.UpdateObject(obj.fHistogram);
+         var src = obj.fHistogram;
+         if (!src)
+            src = stack.fHistogram = this.CreateHistogram(stack);
+
+         this.firstpainter.UpdateObject(src);
 
          var mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
@@ -6803,6 +6807,13 @@
          isany = true;
       }
 
+      // try fully remove old histogram painters
+      var pp = this.pad_painter();
+      if (pp) pp.CleanPrimitives(this.Selector.bind(this));
+      this.painters = [];
+
+      // this was old code trying to update content in exists painters - do not do this
+      /*
       var lst = this.options.nostack ? stack.fHists : stack.fStack;
       if (!lst) return false;
       var nhists = Math.min(lst.arr.length, this.painters.length);
@@ -6811,17 +6822,25 @@
          var hist = lst.arr[this.options.horder ? i : nhists - i - 1];
          if (this.painters[i].UpdateObject(hist)) isany = true;
       }
+      */
 
       return isany;
+   }
+
+   /** @summary Returns true if painter belongs to stack, used in cleanup */
+   THStackPainter.prototype.Selector = function(painter) {
+      return this.painteres.indexOf(painter) >= 0;
    }
 
    THStackPainter.prototype.Redraw = function() {
       if (this.firstpainter)
          this.firstpainter.Redraw();
 
-      if (this.painters)
-         for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw();
+      this.DrawNextHisto(0, this.options.hopt, null);
+
+     // if (this.painters)
+     //    for (var i = 0; i < this.painters.length; ++i)
+     //       this.painters[i].Redraw();
    }
 
    function drawHStack(divid, stack, opt) {
