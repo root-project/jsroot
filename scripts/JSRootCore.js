@@ -1672,10 +1672,18 @@
       return obj;
    }
 
-   // obsolete functions, can be removed by next JSROOT release
+   /** @summary Create TList - obsolete, use JSROOT.Create("TList") instead */
    JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
+
+   /** @summary Create TAxis - obsolete, use JSROOT.Create("TAxis") instead */
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
+   /** @summary Create histogram object
+    * @param {string} typename - histogram typename like TH1I or TH2F
+    * @param {number} nbinsx - number of bins on X-axis
+    * @param {number} [nbinsy] - number of bins on Y-axis (for 2D/3D histograms)
+    * @param {number} [nbinsz] - number of bins on Z-axis (for 3D histograms)
+    */
    JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
       // create histogram object of specified type
       // if bins numbers are specified, appropriate typed array will be created
@@ -1705,14 +1713,20 @@
       return histo;
    }
 
+   /** @summary Create 1-d histogram
+    * @desc obsolete, use JSROOT.CreateHistogram() instead */
    JSROOT.CreateTH1 = function(nbinsx) {
       return JSROOT.CreateHistogram("TH1I", nbinsx);
    }
 
+   /** @summary Create 2-d histogram
+    * @desc obsolete, use JSROOT.CreateHistogram() instead */
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
       return JSROOT.CreateHistogram("TH2I", nbinsx, nbinsy);
    }
 
+   /** @summary Create 3-d histogram
+    * @desc obsolete, use JSROOT.CreateHistogram() instead */
    JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz) {
       return JSROOT.CreateHistogram("TH3I", nbinsx, nbinsy, nbinsz);
    }

@@ -16,7 +16,7 @@
       function updateGUI() {
 
          // this is just generation of histogram
-         var histo = jsroot.CreateTH2(20, 20);
+         var histo = jsroot.CreateHistogram("TH2I", 20, 20);
          for (var iy=0;iy<20;iy++)
             for (var ix=0;ix<20;ix++) {
                var bin = histo.getBin(ix+1, iy+1), val = 0;

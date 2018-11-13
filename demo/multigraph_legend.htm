@@ -56,7 +56,7 @@
          var mgraph = JSROOT.CreateTMultiGraph(graph1, graph2);
          mgraph.fTitle = "Drawing " + cnt++;
 
-         var h1 = JSROOT.CreateTH1(20);
+         var h1 = JSROOT.CreateHistogram("TH1I", 20);
          h1.fName = "axis_draw";
          h1.fTitle = mgraph.fTitle;
          h1.fXaxis.fTitle = "xaxis"+cnt;

@@ -38,7 +38,7 @@
          // set tooltip info
          d3.select("#user_tooltip").html("name: " + info.name + "  bin: " + info.bin + "  cont: " + info.cont);
 
-         var h1 = JSROOT.CreateTH1(20);
+         var h1 = JSROOT.CreateHistogram("TH1I", 20);
          // copy content from TH2 to TH1
          for (var n=0;n<20;n++)
             h1.setBinContent(n+1, info.obj.getBinContent(n+1, info.biny));
@@ -53,7 +53,7 @@
          // var histo = JSROOT.parse(your_json_string);
 
          // this is just generation of histogram
-         var histo = JSROOT.CreateTH2(20, 20);
+         var histo = JSROOT.CreateHistogram("TH2I", 20, 20);
          for (var iy=0;iy<20;iy++)
             for (var ix=0;ix<20;ix++) {
                var bin = histo.getBin(ix+1, iy+1), val = 0;

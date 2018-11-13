@@ -31,7 +31,7 @@ If panel already exists, one can use drawModel() method to display it:
 If JSROOT object already loaded from the file (or created by other means), 
 it can be drawn directly:
 
-    var histo = JSROOT.CreateTH1(100);
+    var histo = JSROOT.CreateHistogram("TH1I", 100);
     panel.getController().drawObject(histo, "hist");
 
 If one should access object painter, one should do:

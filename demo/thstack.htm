@@ -25,7 +25,7 @@
         var stack = JSROOT.Create("THStack");
  
        for (var n=0;n<5;n++) {
-           var hist = JSROOT.CreateTH1(10);
+           var hist = JSROOT.CreateHistogram("TH1I", 10);
            hist.fName ="hist"+n;
            hist.Fill(n*2,10);
            if (loop%5 === n) hist.Fill(n*2,2);
