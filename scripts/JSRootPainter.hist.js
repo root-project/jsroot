@@ -6735,6 +6735,7 @@
       if (this.options.ndim==2)
          JSROOT.extend(histo.fYaxis, h0.fYaxis);
 
+      // this code is not exists in ROOT painter, can be skipped?
       for (var n=1;n<numhistos;++n) {
          var h = histos.arr[n];
 
@@ -6810,8 +6811,6 @@
       var pp = this.pad_painter();
       if (pp) pp.CleanPrimitives(this.Selector.bind(this, false));
       this.painters = [];
-
-      console.log('After update PP has painters ' + pp.painters.length);
 
       this.did_update = isany;
 

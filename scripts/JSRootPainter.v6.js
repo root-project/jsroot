@@ -2760,16 +2760,18 @@
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
+   /** @summary Cleanup primitives from pad - selector lets define which painters to remove
+    * @private
+    */
+
    TPadPainter.prototype.CleanPrimitives = function(selector) {
       if (!selector || (typeof selector !== 'function')) return;
 
-      for (var k=this.painters.length-1;k>=0;--k) {
-         var p = this.painters[k];
-         if (selector(p)) {
-            p.Cleanup();
+      for (var k = this.painters.length-1; k >= 0; --k)
+         if (selector(this.painters[k])) {
+            this.painters[k].Cleanup();
             this.painters.splice(k, 1);
          }
-      }
    }
 
    /** @summary Generates automatic color for some objects painters
