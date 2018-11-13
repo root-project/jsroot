@@ -2599,7 +2599,7 @@
          var p = this.painters[k];
          if (selector(p)) {
             p.Cleanup();
-            this.painters.splice(k--, 1);
+            this.painters.splice(k, 1);
          }
       }
    }
