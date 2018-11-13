@@ -6725,8 +6725,11 @@
       var histos = stack.fHists,
           numhistos = histos ? histos.arr.length : 0;
 
-      if (!numhistos)
-         return JSROOT.CreateHistogram("TH1I", 100);
+      if (!numhistos) {
+         var histo = JSROOT.CreateHistogram("TH1I", 100);
+         histo.fTitle = stack.fTitle;
+         return histo;
+      }
 
       var h0 = histos.arr[0];
       var histo = JSROOT.CreateHistogram((this.options.ndim==1) ? "TH1I" : "TH2I", h0.fXaxis.fNbins, h0.fYaxis.fNbins);
@@ -6750,6 +6753,8 @@
          }
       }
 
+      histo.fTitle = stack.fTitle;
+
       return histo;
    }
 
@@ -6761,12 +6766,8 @@
       if (!this.options.nostack)
          this.options.nostack = ! this.BuildStack(stack);
 
-      var histo = stack.fHistogram;
-
-      if (!histo && !this.options.same)
-         histo = stack.fHistogram = this.CreateHistogram(stack);
-
-      if (histo) histo.fTitle = stack.fTitle;
+      if (!stack.fHistogram && !this.options.same)
+         stack.fHistogram = this.CreateHistogram(stack);
 
       var mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
