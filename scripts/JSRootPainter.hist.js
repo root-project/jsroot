@@ -6641,10 +6641,7 @@
           hlst = this.options.nostack ? stack.fHists : stack.fStack,
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
-      if (indx>=nhists) {
-         this.options._pfc = this.options._plc = this.options._pmc = false; // disable auto coloring at the end
-         return this.DrawingReady();
-      }
+      if (indx>=nhists) return this.DrawingReady();
 
       if ((indx % 500 === 499) && !reenter)
          return setTimeout(this.DrawNextHisto.bind(this, indx, opt, mm, subp, true), 0);
@@ -6753,7 +6750,7 @@
       return histo;
    }
 
-   THStackPainter.prototype.drawStack = function(opt) {
+   THStackPainter.prototype.drawStack = function() {
 
       var stack = this.GetObject();
 
@@ -6824,15 +6821,22 @@
       }
       */
 
+      this.did_update = isany;
+
       return isany;
    }
 
    /** @summary Returns true if painter belongs to stack, used in cleanup */
    THStackPainter.prototype.Selector = function(painter) {
-      return this.painteres.indexOf(painter) >= 0;
+      return this.painters.indexOf(painter) >= 0;
    }
 
+   /** @summary Redraw THStack, changes output only if Update was performed before */
    THStackPainter.prototype.Redraw = function() {
+      if (!this.did_update) return; // do nothing in case of simple redraw
+
+      delete this.did_update;
+
       if (this.firstpainter)
          this.firstpainter.Redraw();
 
@@ -6855,7 +6859,7 @@
 
       if (!stack.fHists || (stack.fHists.arr.length == 0)) return painter.DrawingReady();
 
-      painter.drawStack(opt);
+      painter.drawStack();
 
       painter.SetDivId(divid); // only when first histogram drawn, we could assign divid
 
