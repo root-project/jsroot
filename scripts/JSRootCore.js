@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "master 13/11/2018";
+   JSROOT.version = "ROOT 6.16.00";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1672,10 +1672,14 @@
       return obj;
    }
 
-   /** @summary Create TList - obsolete, use JSROOT.Create("TList") instead */
+   /** @summary Create TList
+    * @desc obsolete, use JSROOT.Create("TList") instead
+    * @deprecated */
    JSROOT.CreateTList = function() { return JSROOT.Create("TList"); }
 
-   /** @summary Create TAxis - obsolete, use JSROOT.Create("TAxis") instead */
+   /** @summary Create TAxis
+    * @desc obsolete, use JSROOT.Create("TAxis") instead
+    * @deprecated */
    JSROOT.CreateTAxis = function() { return JSROOT.Create("TAxis"); }
 
    /** @summary Create histogram object
@@ -1714,23 +1718,29 @@
    }
 
    /** @summary Create 1-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead */
+    * @desc obsolete, use JSROOT.CreateHistogram() instead
+    * @deprecated */
    JSROOT.CreateTH1 = function(nbinsx) {
       return JSROOT.CreateHistogram("TH1I", nbinsx);
    }
 
    /** @summary Create 2-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead */
+    * @desc obsolete, use JSROOT.CreateHistogram() instead
+    * @deprecated */
    JSROOT.CreateTH2 = function(nbinsx, nbinsy) {
       return JSROOT.CreateHistogram("TH2I", nbinsx, nbinsy);
    }
 
    /** @summary Create 3-d histogram
-    * @desc obsolete, use JSROOT.CreateHistogram() instead */
+    * @desc obsolete, use JSROOT.CreateHistogram() instead
+    * @deprecated */
    JSROOT.CreateTH3 = function(nbinsx, nbinsy, nbinsz) {
       return JSROOT.CreateHistogram("TH3I", nbinsx, nbinsy, nbinsz);
    }
 
+   /** @summary Creates TPolyLine object
+    * @param {number} npoints - number of points
+    * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
    JSROOT.CreateTPolyLine = function(npoints, use_int32) {
       var poly = JSROOT.Create("TPolyLine");
       if (npoints) {
@@ -1747,6 +1757,10 @@
       return poly;
    }
 
+   /** @summary Creates TGraph object
+    * @param {number} npoints - number of points in TGraph
+    * @param {array} [xpts] - array with X coordinates
+    * @param {array} [ypts] - array with Y coordinates */
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
       var graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x3000408, fName: "graph", fTitle: "title" });
 
@@ -1765,6 +1779,16 @@
       return graph;
    }
 
+   /** @summary Creates THStack object
+    * @desc
+    * As arguments one could specify any number of histograms objects
+    * @example
+    * var nbinsx = 20;
+    * var h1 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * var h2 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * var h3 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * var stack = JSROOT.CreateTHStack(h1, h2, h3);
+    * */
    JSROOT.CreateTHStack = function() {
       var stack = JSROOT.Create("THStack");
       for(var i=0; i<arguments.length; ++i)
@@ -1772,6 +1796,9 @@
       return stack;
    }
 
+   /** @summary Creates TMultiGraph object
+    * @desc
+    * As arguments one could specify any number of TGraph objects */
    JSROOT.CreateTMultiGraph = function() {
       var mgraph = JSROOT.Create("TMultiGraph");
       for(var i=0; i<arguments.length; ++i)
