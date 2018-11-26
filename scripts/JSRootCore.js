@@ -882,7 +882,7 @@
          if (xhr.readyState != 4) return;
 
          if ((xhr.status != 200) && (xhr.status != 206) && !JSROOT.browser.qt5 &&
-               ((xhr.status !== 0) || (url.indexOf("file://")!==0))) {
+               ((xhr.status !== 0) || (url.indexOf("file://")!==0) && (url.indexOf("blob:")!==0))) {
             return callback(null);
          }
 
