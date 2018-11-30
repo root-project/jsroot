@@ -19,6 +19,7 @@
     "jsdom": "^12.2.0",
     "mathjax-node": "*",
     "xhr2": "*"
+    "zlib": "^1.0.5"
   },
   "repository": {
     "type": "git",

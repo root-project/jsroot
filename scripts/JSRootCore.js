@@ -888,7 +888,7 @@
          }
 
          if (JSROOT.nodejs && (method == "GET") && (kind === "object") &&
-             (xhr.responseType = 'arraybuffer') && (xhr.getResponseHeader("content-encoding")=="gzip")) {
+             (xhr.responseType == "arraybuffer") && (xhr.getResponseHeader("content-encoding") == "gzip")) {
             // special handling of gzipped JSON objects in Node.js
             var zlib = require('zlib'),
                 str = zlib.unzipSync(Buffer.from(xhr.response));
