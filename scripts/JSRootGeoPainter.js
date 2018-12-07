@@ -1926,7 +1926,7 @@
             var boxHelper = new THREE.BoxHelper(this._toplevel);
             this._scene.add( boxHelper );
          }
-         this._scene.add( new THREE.AxisHelper( 2 * this._overall_size ) );
+         this._scene.add( new THREE.AxesHelper( 2 * this._overall_size ) );
          this._scene.add( new THREE.GridHelper( Math.ceil( this._overall_size), Math.ceil( this._overall_size ) / 50 ) );
          this.helpText("<font face='verdana' size='1' color='red'><center>Transform Controls<br>" +
                "'T' translate | 'R' rotate | 'S' scale<br>" +
