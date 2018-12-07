@@ -3212,6 +3212,10 @@
 
       var painter = new TGeoPainter(obj);
 
+      // one could use TGeoManager setting, but for some example JSROOT does not build composites
+      // if (obj && obj._typename=='TGeoManager' && (obj.fNsegments > 3))
+      //   JSROOT.GEO.GradPerSegm = 360/obj.fNsegments;
+
       painter.SetDivId(divid, 5);
 
       painter._usesvg = JSROOT.Painter.UseSVGFor3D();
