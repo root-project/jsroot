@@ -818,8 +818,8 @@
     * @desc One should call req.send() to submit request
     * kind of the request can be:
     *
-    *    - "bin" - abstract binary data, result as string (default)
-    *    - "buf" - abstract binary data, result as BufferArray
+    *    - "bin" - abstract binary data, result as string
+    *    - "buf" - abstract binary data, result as ArrayBuffer (default)
     *    - "text" - returns req.responseText
     *    - "object" - returns JSROOT.parse(req.responseText)
     *    - "multi" - returns correctly parsed multi.json request
