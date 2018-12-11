@@ -1770,7 +1770,7 @@
       if (this.protocol[this.cnt] == "send") {
          this.cnt++;
          // use timeout to let process other callbacks before next portion will be produced
-         setTimeout(this.next_operation.bind(this), 100);
+         setTimeout(this.next_operation.bind(this), 10);
       }
    }
 
@@ -1781,16 +1781,18 @@
       var fname = this.protocol[this.cnt];
       if (!fname) return;
       if (fname == "send") return; // waiting for send
-      JSROOT.NewHttpRequest(fname, "text", this.get_file.bind(this)).send();
+      // console.log("getting file", fname);
+      JSROOT.NewHttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text"), this.get_file.bind(this)).send();
       this.cnt++;
    }
 
    FileDumpSocket.prototype.get_file = function(res) {
+      // console.log('got file', typeof res, !!res, res);
       if (!res) return;
       if (this.receiver.ProvideData)
-         this.receiver.ProvideData(res);
+         this.receiver.ProvideData(res, 0);
       // use timeout to let process other callbacks before next portion will be produced
-      setTimeout(this.next_operation.bind(this), 100);
+      setTimeout(this.next_operation.bind(this), 10);
    }
 
    // ========================================================================================
@@ -2168,7 +2170,6 @@
       } else if (!arg.first_recv) {
          JSROOT.CallBack(arg.callback, handle, arg);
       }
-
    }
 
    // ========================================================================================
