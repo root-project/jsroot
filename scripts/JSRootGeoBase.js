@@ -2242,10 +2242,12 @@
        // do sorting once
        sortarr.sort(function(a,b) { return b.vol - a.vol; });
 
-       // remember sort map
+       // remember sort map and also sortid
        this.sortmap = new Int32Array(this.nodes.length);
-       for (var n=0;n<this.nodes.length;++n)
+       for (var n=0;n<this.nodes.length;++n) {
           this.sortmap[n] = sortarr[n].id;
+          sortarr[n].sortid = n;
+       }
    }
 
 
@@ -2544,14 +2546,17 @@
    }
 
    JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
+
+      var result = { min: 0, max: 1, sortidcut: 0 };
+
       if (!this.sortmap) {
          console.error('sorting map do not exist');
-         return { min: 0, max: 1 };
+         return result;
       }
 
-      var maxNode, currNode, cnt=0, facecnt = 0;
+      var maxNode, currNode, cnt=0, facecnt=0;
 
-      for (var n=0; (n<this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit);++n) {
+      for (var n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
          var id = this.sortmap[n];
          if (viscnt[id] === 0) continue;
          currNode = this.nodes[id];
@@ -2562,14 +2567,15 @@
 
       if (!currNode) {
          console.error('no volumes selected');
-         return { min: 0, max: 1 };
+         return result;
       }
 
       // console.log('Volume boundary ' + currNode.vol + '  cnt ' + cnt + '  faces ' + facecnt);
-
-      return { min: currNode.vol, max: maxNode.vol };
+      result.max = maxNode.vol;
+      result.min = currNode.vol;
+      result.sortidcut = currNode.sortid; // latest node is not included
+      return result;
    }
-
 
    JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum, maxnumnodes) {
       // function collects visible nodes, using maxlimit
@@ -2590,7 +2596,7 @@
 
       for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
-      var total = this.ScanVisible(arg), minVol = 0, maxVol = 0, camVol = -1, camFact = 10;
+      var total = this.ScanVisible(arg), minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
       // console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
@@ -2604,6 +2610,7 @@
 
          minVol = boundary.min;
          maxVol = boundary.max;
+         sortidcut = boundary.sortidcut;
 
          if (frustum) {
              arg.domatrix = true;
@@ -2637,7 +2644,7 @@
       arg.items = [];
 
       arg.func = function(node) {
-         if (node.vol > minVol) {
+         if (node.sortid < sortidcut) {
             this.items.push(this.CopyStack());
          } else
          if ((camVol >= 0) && (node.vol > camVol))
