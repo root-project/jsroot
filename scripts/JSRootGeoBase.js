@@ -2520,6 +2520,7 @@
          obj3d = new THREE.Object3D();
 
          if (node.matrix) {
+            // console.log(stack.toString(), lvl, 'matrix ', node.matrix.toString());
             obj3d.matrix.fromArray(node.matrix);
             obj3d.matrix.decompose( obj3d.position, obj3d.quaternion, obj3d.scale );
          }
@@ -2880,8 +2881,33 @@
          if (shape.geom.type == 'BufferGeometry') {
 
             var pos = shape.geom.getAttribute('position').array,
-                norm = shape.geom.getAttribute('normal').array,
-                len = pos.length, n, shift = 0,
+                norm = shape.geom.getAttribute('normal').array;
+
+            var index = shape.geom.getIndex();
+
+            if (index) {
+               // we need to unfold all points to
+               var arr = index.array,
+                   i0 = shape.geom.drawRange.start,
+                   ilen = shape.geom.drawRange.count;
+               if (i0 + ilen > arr.length) ilen = arr.length - i0;
+
+               var dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+               for (var ii = 0; ii < ilen; ++ii) {
+                  var k = arr[i0 + ii];
+                  if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
+                  dpos[ii*3] = pos[k*3];
+                  dpos[ii*3+1] = pos[k*3+1];
+                  dpos[ii*3+2] = pos[k*3+2];
+                  dnorm[ii*3] = norm[k*3];
+                  dnorm[ii*3+1] = norm[k*3+1];
+                  dnorm[ii*3+2] = norm[k*3+2];
+               }
+
+               pos = dpos; norm = dnorm;
+            }
+
+            var len = pos.length, n, shift = 0,
                 newpos = new Float32Array(len),
                 newnorm = new Float32Array(len);
 
