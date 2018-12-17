@@ -1561,7 +1561,7 @@
             matrix.set(node.fTrans[0],  node.fTrans[4],  node.fTrans[8],  0,
                        node.fTrans[1],  node.fTrans[5],  node.fTrans[9],  0,
                        node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
-                                    0,               0,               0, 1);
+                                    0,               0,               0,  1);
             // second - set position with proper sign
             matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
          }
@@ -1603,10 +1603,10 @@
 
               matrix = new THREE.Matrix4();
 
-              matrix.set(_cos, -_sin, 0,  0,
-                         _sin,  _cos, 0,  0,
-                            0,     0, 1,  0,
-                            0,     0, 0,  1);
+              matrix.set(_cos, -_sin,  0,  0,
+                         _sin,  _cos,  0,  0,
+                            0,     0,  1,  0,
+                            0,     0,  0,  1);
               break;
 
            case 'TGeoPatternCylR':
@@ -2398,7 +2398,21 @@
 
       if (clone.kind === 2) {
          var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
+         var _transparent = false, _opacity = 1.0;
+         prop.fillcolor = new THREE.Color( "blue" );
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                          opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                          side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                          overdraw: 0., depthWrite: !_transparent } );
+         prop.material.alwaysTransparent = _transparent;
+         prop.material.inherentOpacity = _opacity;
+
          return prop;
+      }
+
+      if (!this.origin) {
+         console.error('origin not there - kind', clone.kind, nodeid, clone);
+         return null;
       }
 
       var node = this.origin[nodeid];

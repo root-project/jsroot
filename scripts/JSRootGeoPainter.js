@@ -1237,17 +1237,15 @@
 
          // final stage, create all meshes
 
-         console.log('NOW TRY TO CREATE MESHES!!!!');
-
          var tm0 = new Date().getTime(), ready = true,
              toplevel = this.options.project ? this._full_geom : this._toplevel;
 
-         for (var n=0; n<this._draw_nodes.length;++n) {
+         for (var n = 0; n < this._draw_nodes.length; ++n) {
             var entry = this._draw_nodes[n];
             if (entry.done) continue;
 
             /// shape can be provided with entry itself
-            var shape = entry.shape || this._build_shapes[entry.shapeid];
+            var shape = entry.server_shape || this._build_shapes[entry.shapeid];
             if (!shape.ready) {
                if (this.drawing_stage === 8) console.warn('shape marked as not ready when should');
                ready = false;
