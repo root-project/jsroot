@@ -105,78 +105,6 @@
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
-   /** @memberOf JSROOT.GEO */
-   JSROOT.GEO.getNodeProperties = function(kind, node, visible) {
-      // function return different properties for specified node
-      // Only if node visible, material will be created
-
-      if (kind === 1) {
-         // special handling for EVE nodes
-
-         var prop = { name: JSROOT.GEO.ObjectName(node), nname: JSROOT.GEO.ObjectName(node), shape: node.fShape, material: null, chlds: null };
-
-         if (node.fElements !== null) prop.chlds = node.fElements.arr;
-
-         if (visible) {
-            var _transparent = false, _opacity = 1.0;
-            if ( node.fRGBA[3] < 1.0) {
-               _transparent = true;
-               _opacity = node.fRGBA[3];
-            }
-            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                             side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0., depthWrite: !_transparent } );
-            prop.material.alwaysTransparent = _transparent;
-            prop.material.inherentOpacity = _opacity;
-         }
-
-         return prop;
-      }
-
-      var volume = node.fVolume;
-
-      var prop = { name: JSROOT.GEO.ObjectName(volume), nname: JSROOT.GEO.ObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
-
-      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
-
-      if (visible) {
-         var _transparent = false, _opacity = 1.0;
-         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
-         else
-         if (volume.fLineColor >= 0)
-            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
-
-         if (volume.fMedium && volume.fMedium.fMaterial) {
-            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
-            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
-            if (transparency > 0) {
-               _transparent = true;
-               _opacity = (100.0 - transparency) / 100.0;
-            }
-            if (prop.fillcolor === undefined)
-               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
-         }
-         if (prop.fillcolor === undefined)
-            prop.fillcolor = "lightgrey";
-
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
-                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
-                              side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0., depthWrite: !_transparent } );
-         prop.material.alwaysTransparent = _transparent;
-         prop.material.inherentOpacity = _opacity;
-
-         //console.log('opacity', _opacity, 'transp', _transparent);
-         //console.log('material', prop.material);
-
-      }
-
-      return prop;
-   }
-
    JSROOT.GEO.CountNumShapes = function(shape) {
       if (!shape) return 0;
       if (shape._typename!=='TGeoCompositeShape') return 1;
@@ -2461,6 +2389,89 @@
       return stack;
    }
 
+   /** returns different properties of requested nodeid */
+   JSROOT.GEO.ClonedNodes.prototype.getNodeProperties = function(nodeid, visible) {
+      // function return different properties for specified node
+      // Only if node visible, material will be created
+
+      var clone = this.nodes[nodeid]
+
+      if (clone.kind === 2) {
+         var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
+         return prop;
+      }
+
+      var node = this.origin[nodeid];
+
+      if (clone.kind === 1) {
+         // special handling for EVE nodes
+
+         var prop = { name: JSROOT.GEO.ObjectName(node), nname: JSROOT.GEO.ObjectName(node), shape: node.fShape, material: null, chlds: null };
+
+         if (node.fElements !== null) prop.chlds = node.fElements.arr;
+
+         if (visible) {
+            var _transparent = false, _opacity = 1.0;
+            if ( node.fRGBA[3] < 1.0) {
+               _transparent = true;
+               _opacity = node.fRGBA[3];
+            }
+            prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                             opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                             side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
+                             overdraw: 0., depthWrite: !_transparent } );
+            prop.material.alwaysTransparent = _transparent;
+            prop.material.inherentOpacity = _opacity;
+         }
+
+         return prop;
+      }
+
+      var volume = node.fVolume;
+
+      var prop = { name: JSROOT.GEO.ObjectName(volume), nname: JSROOT.GEO.ObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+
+      if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
+
+      if (volume) prop.linewidth = volume.fLineWidth;
+
+      if (visible) {
+         var _transparent = false, _opacity = 1.0;
+         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
+         else
+         if (volume.fLineColor >= 0)
+            prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
+
+         if (volume.fMedium && volume.fMedium.fMaterial) {
+            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
+            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+            if (transparency > 0) {
+               _transparent = true;
+               _opacity = (100.0 - transparency) / 100.0;
+            }
+            if (prop.fillcolor === undefined)
+               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
+         }
+         if (prop.fillcolor === undefined)
+            prop.fillcolor = "lightgrey";
+
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
+                              side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
+                              overdraw: 0., depthWrite: !_transparent } );
+         prop.material.alwaysTransparent = _transparent;
+         prop.material.inherentOpacity = _opacity;
+
+         //console.log('opacity', _opacity, 'transp', _transparent);
+         //console.log('material', prop.material);
+
+      }
+
+      return prop;
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
       // create hierarchy of Object3D for given stack entry
       // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
@@ -2726,8 +2737,10 @@
       // as last action set current shape id to each entry
       for (var i=0;i<lst.length;++i) {
          var entry = lst[i];
-         entry.shapeid = entry.shape.id; // keep only id for the entry
-         delete entry.shape; // remove direct references
+         if (entry.shape) {
+            entry.shapeid = entry.shape.id; // keep only id for the entry
+            delete entry.shape; // remove direct references
+         }
       }
 
       return shapes;
@@ -3180,9 +3193,7 @@
             continue;
          }
 
-         var nodeobj = clones.origin[entry.nodeid];
-         var clone = clones.nodes[entry.nodeid];
-         var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
+         var prop = clones.getNodeProperties(entry.nodeid, true);
 
          opt.res_mesh++;
          opt.res_faces += shape.nfaces;

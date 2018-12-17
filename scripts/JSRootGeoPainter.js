@@ -1060,6 +1060,15 @@
 
       if (this.drawing_stage == 1) {
 
+         // when draw nodes already provided - just immdidately use it
+         if (this._provided_draw_nodes) {
+            this._new_draw_nodes = this._provided_draw_nodes;
+            delete this._provided_draw_nodes;
+            this._draw_all_nodes = false;
+            this.drawing_stage = 3;
+            return true;
+         }
+
          // wait until worker is really started
          if (this.options.use_worker>0) {
             if (!this._worker) { this.startWorker(); return 1; }
@@ -1228,6 +1237,8 @@
 
          // final stage, create all meshes
 
+         console.log('NOW TRY TO CREATE MESHES!!!!');
+
          var tm0 = new Date().getTime(), ready = true,
              toplevel = this.options.project ? this._full_geom : this._toplevel;
 
@@ -1235,7 +1246,8 @@
             var entry = this._draw_nodes[n];
             if (entry.done) continue;
 
-            var shape = this._build_shapes[entry.shapeid];
+            /// shape can be provided with entry itself
+            var shape = entry.shape || this._build_shapes[entry.shapeid];
             if (!shape.ready) {
                if (this.drawing_stage === 8) console.warn('shape marked as not ready when should');
                ready = false;
@@ -1251,9 +1263,7 @@
                continue;
             }
 
-            var nodeobj = this._clones.origin[entry.nodeid];
-            var clone = this._clones.nodes[entry.nodeid];
-            var prop = JSROOT.GEO.getNodeProperties(clone.kind, nodeobj, true);
+            var prop = this._clones.getNodeProperties(entry.nodeid, true);
 
             this._num_meshes++;
             this._num_faces += shape.nfaces;
@@ -1287,7 +1297,7 @@
 
             if (this.options._debug || this.options._full) {
                var wfg = new THREE.WireframeGeometry( mesh.geometry ),
-                   wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: (nodeobj && nodeobj.fVolume) ? nodeobj.fVolume.fLineWidth : 1  } ),
+                   wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
                    helper = new THREE.LineSegments(wfg, wfm);
                obj3d.add(helper);
             }
@@ -2473,12 +2483,22 @@
       }).send();
    }
 
+   /** Assign clones, created outside.
+    * Used by geometry painter, where clones are handled by the server */
+   TGeoPainter.prototype.assignClones = function(clones) {
+      this._clones_owner = true;
+      this._clones = clones;
+   }
+
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
-      // first delete clones (if any)
-      delete this._clones;
+      if ((name_prefix == "__geom_viewer_selection__") && this._clones) {
+         // case of display visible
+         this._provided_draw_nodes = draw_obj;
 
-      if (this._main_painter) {
+         this.options.use_worker = 0;
+
+      } else if (this._main_painter) {
 
          this._clones_owner = false;
 
