@@ -26,8 +26,8 @@ sap.ui.define([
          this.resize_id = ResizeHandler.register(this, this.onResize.bind(this));
       },
 
-      destroy: function() {
-         console.log('destroy SVG');
+      exit: function() {
+         console.log('destroy SVGSample');
       },
 
       renderer: function(oRm,oControl){
