@@ -147,6 +147,7 @@
 
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
+      this.drawing_stage = 0; //
 
       this.Cleanup(true);
    }
@@ -366,6 +367,10 @@
       if (d.check("F")) res._full = true;
       if (d.check("Y")) res._yup = true;
       if (d.check("Z")) res._yup = false;
+
+      // when drawing geometry without TCanvas, yup = true by default
+      if (res._yup === undefined)
+         res._yup = this.svg_canvas().empty();
 
       return res;
    }
@@ -3146,37 +3151,36 @@
       JSROOT.progress(msg);
    }
 
-   TGeoPainter.prototype.CheckResize = function(size) {
+   TGeoPainter.prototype.CheckResize = function(arg) {
       var pad_painter = this.canv_painter();
-
 
       // firefox is the only browser which correctly supports resize of embedded canvas,
       // for others we should force canvas redrawing at every step
       if (pad_painter)
-         if (!pad_painter.CheckCanvasResize(size)) return false;
+         if (!pad_painter.CheckCanvasResize(arg)) return false;
 
       var sz = this.size_for_3d();
 
       if ((this._scene_width === sz.width) && (this._scene_height === sz.height)) return false;
-      if ((sz.width<10) || (sz.height<10)) return;
+      if ((sz.width<10) || (sz.height<10)) return false;
 
       this._scene_width = sz.width;
       this._scene_height = sz.height;
 
-      if ( this._camera.type == "OrthographicCamera")
-      {
-         this._camera.left = -sz.width;
-         this._camera.right = sz.width;
-         this._camera.top = -sz.height;
-         this._camera.bottom = sz.height;
-      }
-      else {
-         this._camera.aspect = this._scene_width / this._scene_height;
-      }
-      this._camera.updateProjectionMatrix();
-      this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
+      if (this._camera && this._renderer) {
+         if (this._camera.type == "OrthographicCamera") {
+            this._camera.left = -sz.width;
+            this._camera.right = sz.width;
+            this._camera.top = -sz.height;
+            this._camera.bottom = sz.height;
+         } else {
+            this._camera.aspect = this._scene_width / this._scene_height;
+         }
+         this._camera.updateProjectionMatrix();
+         this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
 
-      this.Render3D();
+         if (!this.drawing_stage) this.Render3D();
+      }
 
       return true;
    }
@@ -3243,9 +3247,6 @@
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
       painter.options = painter.decodeOptions(opt || "");
-
-      if (painter.options._yup === undefined)
-         painter.options._yup = painter.svg_canvas().empty();
 
       return painter;
    }
