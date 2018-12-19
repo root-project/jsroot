@@ -243,6 +243,8 @@
    }
 
    TGeoPainter.prototype.decodeOptions = function(opt) {
+      if (typeof opt != "string") opt = "";
+
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: false, _axis_center: false,
                   _count: false, wireframe: false,
@@ -3246,7 +3248,7 @@
 
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
-      painter.options = painter.decodeOptions(opt || "");
+      painter.options = painter.decodeOptions(opt);
 
       return painter;
    }
