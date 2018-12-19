@@ -2389,17 +2389,18 @@
       return stack;
    }
 
-   /** returns different properties of requested nodeid */
-   JSROOT.GEO.ClonedNodes.prototype.getNodeProperties = function(nodeid, visible) {
+   /** returns different properties of draw entry nodeid */
+   JSROOT.GEO.ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
       // function return different properties for specified node
       // Only if node visible, material will be created
 
-      var clone = this.nodes[nodeid]
+      var clone = this.nodes[entry.nodeid];
+      var visible = true;
 
       if (clone.kind === 2) {
          var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         var _transparent = false, _opacity = 1.0;
-         prop.fillcolor = new THREE.Color( "blue" );
+         var _transparent = (entry.opacity < 1), _opacity = entry.opacity;
+         prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
@@ -3233,7 +3234,7 @@
             continue;
          }
 
-         var prop = clones.getNodeProperties(entry.nodeid, true);
+         var prop = clones.getDrawEntryProperties(entry);
 
          opt.res_mesh++;
          opt.res_faces += shape.nfaces;

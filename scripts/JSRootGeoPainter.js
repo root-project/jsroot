@@ -1261,7 +1261,7 @@
                continue;
             }
 
-            var prop = this._clones.getNodeProperties(entry.nodeid, true);
+            var prop = this._clones.getDrawEntryProperties(entry);
 
             this._num_meshes++;
             this._num_faces += shape.nfaces;
