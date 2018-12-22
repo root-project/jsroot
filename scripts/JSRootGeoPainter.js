@@ -230,12 +230,96 @@
 
    TGeoPainter.prototype.InitVRMode = function() {
       var pthis = this;
+      // Dolly contains camera and controllers in VR Mode
+      // Allows moving the user in the scene
+      this._dolly = new THREE.Group();
+      this._scene.add(this._dolly);
+      this._standingMatrix = new THREE.Matrix4();
+
+      // Raycaster temp variables to avoid one per frame allocation.
+      this._raycasterEnd = new THREE.Vector3();
+      this._raycasterOrigin = new THREE.Vector3();
+
       navigator.getVRDisplays().then(function (displays) {
          var vrDisplay = displays[0];
          if (!vrDisplay) return;
          pthis._renderer.vr.setDevice(vrDisplay);
          pthis._vrDisplay = vrDisplay;
+         pthis._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+         pthis.InitVRControllersGeometry();
       });
+   }
+
+   TGeoPainter.prototype.InitVRControllersGeometry = function() {
+      let geometry = new THREE.SphereGeometry(0.025, 18, 36);
+      let material = new THREE.MeshBasicMaterial({color: 'grey'});
+      let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
+      let rayGeometry = new THREE.BoxBufferGeometry(0.001, 0.001, 2);
+      let ray1Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
+      let ray2Mesh = new THREE.Mesh(rayGeometry, rayMaterial);
+      let sphere1 = new THREE.Mesh(geometry, material);
+      let sphere2 = new THREE.Mesh(geometry, material);
+
+      this._controllersMeshes = [];
+      this._controllersMeshes.push(sphere1);
+      this._controllersMeshes.push(sphere2);
+      ray1Mesh.position.z -= 1;
+      ray2Mesh.position.z -= 1;
+      sphere1.add(ray1Mesh);
+      sphere2.add(ray2Mesh);
+      this._dolly.add(sphere1);
+      this._dolly.add(sphere2);
+      // Controller mesh hidden by default
+      sphere1.visible = false;
+      sphere2.visible = false;
+   }
+
+   TGeoPainter.prototype.UpdateVRControllersList = function() {
+      var gamepads = navigator.getGamepads && navigator.getGamepads();
+      // Has controller list changed?
+      if (this.vrControllers && (gamepads.length === this.vrControllers.length)) { return; }
+      // Hide meshes.
+      this._controllersMeshes.forEach(function (mesh) { mesh.visible = false; });
+      this._vrControllers = [];
+      for (var i = 0; i < gamepads.length; ++i) {
+         if (!gamepads[i].pose) { continue; }
+         this._vrControllers.push({
+            gamepad: gamepads[i],
+            mesh: this._controllersMeshes[i]
+         });
+         this._controllersMeshes[i].visible = true;
+      }
+   }
+
+   TGeoPainter.prototype.ProcessVRControllerIntersections = function() {
+      var intersects = []
+      for (var i = 0; i < this._vrControllers.length; ++i) {
+         let controller = this._vrControllers[i].mesh;
+         let end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1));
+         let origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
+         end.sub(origin).normalize();
+         intersects = intersects.concat(this._controls.GetOriginDirectionIntersects(origin, end));
+      }
+      // Remove duplicates.
+      intersects = intersects.filter(function (item, pos) {return intersects.indexOf(item) === pos});
+      this._controls.ProcessMouseMove(intersects);
+   }
+
+   TGeoPainter.prototype.UpdateVRControllers = function() {
+      this.UpdateVRControllersList();
+      // Update pose.
+      for (var i = 0; i < this._vrControllers.length; ++i) {
+         let controller = this._vrControllers[i];
+         let orientation = controller.gamepad.pose.orientation;
+         let position = controller.gamepad.pose.position;
+         let controllerMesh = controller.mesh;
+         if (orientation) { controllerMesh.quaternion.fromArray(orientation); }
+         if (position) { controllerMesh.position.fromArray(position); }
+         controllerMesh.updateMatrix();
+         controllerMesh.applyMatrix(this._standingMatrix);
+         controllerMesh.matrixWorldNeedsUpdate = true;
+      }
+      this.ProcessVRControllerIntersections();
    }
 
    TGeoPainter.prototype.ToggleVRMode = function() {
@@ -249,8 +333,15 @@
       this._previousCameraPosition = this._camera.position.clone();
       this._previousCameraRotation = this._camera.rotation.clone();
       this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(function() {
+         pthis._previousCameraNear = pthis._camera.near;
+         pthis._dolly.add(pthis._camera);
+         pthis._camera.near = 0.1;
+         pthis._camera.updateProjectionMatrix();
          pthis._renderer.vr.enabled = true;
-         pthis._renderer.setAnimationLoop(function () { pthis.Render3D(0); });
+         pthis._renderer.setAnimationLoop(function () {
+            pthis.UpdateVRControllers();
+            pthis.Render3D(0);
+         });
       });
       this._renderer.vr.enabled = true;
 
@@ -264,11 +355,15 @@
       var pthis = this;
       if (!this._vrDisplay.isPresenting) return;
       this._renderer.vr.enabled = false;
+      this._dolly.remove(this._camera);
+      this._scene.add(this._camera);
       // Restore Camera pose
       this._camera.position.copy(this._previousCameraPosition);
       this._previousCameraPosition = undefined;
       this._camera.rotation.copy(this._previousCameraRotation);
       this._previousCameraRotation = undefined;
+      this._camera.near = this._previousCameraNear;
+      this._camera.updateProjectionMatrix();
       this._vrDisplay.exitPresent();
    }
 
