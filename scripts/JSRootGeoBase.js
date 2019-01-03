@@ -3020,7 +3020,7 @@
                mesh.$jsroot_box3 = box3 = JSROOT.GEO.getBoundingBox(mesh);
 
             if (method === 'size') {
-               mesh.$jsroot_distance = box3.getSize();
+               mesh.$jsroot_distance = box3.getSize(new THREE.Vector3());
                continue;
             }
 
