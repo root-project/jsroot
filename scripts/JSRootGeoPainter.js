@@ -987,7 +987,6 @@
    TGeoPainter.prototype.GetStackFullName = function(stack) {
       var mainitemname = this.GetItemName(),
           sub = this.ResolveStack(stack);
-
       if (!sub || !sub.name) return mainitemname;
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }

@@ -2347,13 +2347,18 @@
          for(var lvl=0;lvl<stack.length;++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
+
+            var subname = "";
             if (this.origin) {
                res.obj = this.origin[res.id];
+               subname = JSROOT.GEO.ObjectName(res.obj);
+            } else if (res.node && res.node.name) {
+               subname = res.node.name;
+            }
 
-               if (res.obj.fName) {
-                  if (res.name.length>0) res.name += "/";
-                  res.name += JSROOT.GEO.ObjectName(res.obj);
-               }
+            if (subname) {
+               if (res.name.length>0) res.name += "/";
+               res.name += subname;
             }
 
             if (withmatrix && res.node.matrix)
