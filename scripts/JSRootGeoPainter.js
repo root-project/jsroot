@@ -638,16 +638,18 @@
       });
    }
 
+   /** Method used to set transparency for all geometrical shapes
+    * As transperency one could provide function */
    TGeoPainter.prototype.changeGlobalTransparency = function(transparency, skip_render) {
-      var value = 1 - transparency;
+      var func = null, dflt = this.options.transparency;
+      if (typeof transparency == 'function') func = transparency;
       this._toplevel.traverse( function (node) {
-         if (node instanceof THREE.Mesh) {
-            if (node.material.alwaysTransparent !== undefined) {
-               if (!node.material.alwaysTransparent) {
-                  node.material.transparent = value !== 1.0;
-               }
-               node.material.opacity = Math.min(value, node.material.inherentOpacity);
-            }
+         if (node && node.material && (node.material.alwaysTransparent !== undefined)) {
+            if (func) transparency = func(node);
+            if (transparency === undefined) transparency = dflt;
+            var opacity = 1 - transparency;
+            node.material.transparent = (node.material.alwaysTransparent && !func) || (opacity !== 1);
+            node.material.opacity = Math.min(opacity, node.material.inherentOpacity);
          }
       });
       if (!skip_render) this.Render3D(0);
