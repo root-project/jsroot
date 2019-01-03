@@ -745,7 +745,7 @@
          if (!value) painter.HighlightMesh(null);
      });
 
-      appearance.add(this.options, 'transparency', 0.0, 1.0)
+      appearance.add(this.options, 'transparency', 0.0, 1.0, 0.001)
                      .listen().onChange(this.changeGlobalTransparency.bind(this));
 
       appearance.add(this.options, 'wireframe').name('Wireframe').listen().onChange( function (value) {
