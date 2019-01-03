@@ -963,6 +963,24 @@
          intersects = clippedIntersects;
       }
 
+      /*
+      var nopaque = 0, iopaque = 0, ntransp = 0, itransp = 0;
+      for (var i = 0; i < intersects.length; ++i) {
+         var obj = intersects[i].object;
+         if (obj.material && obj.material.opacity !== undefined) {
+            if (obj.material.opacity <= 0.1) { if (ntransp++==0) itransp = i; } else
+            if (obj.material.opacity >= 0.9) { if (nopaque++==0) iopaque = i; }
+         }
+      }
+
+      // when both transparent and opaque volumes are there - swap them in intersects lists
+      if ((nopaque > 0) && (ntransp > 0) && (itransp < iopaque)) {
+         var tmp = intersects[itransp];
+         intersects[itransp] = intersects[iopaque];
+         intersects[iopaque] = tmp;
+      }
+      */
+
       return intersects;
    }
 
