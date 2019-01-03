@@ -1057,7 +1057,9 @@
             var c = curr_mesh[k];
             if (!c.material) continue;
             c.material.color = c.originalColor;
+            c.material.opacity = c.originalOpacity;
             delete c.originalColor;
+            delete c.originalOpacity;
             if (c.normalLineWidth)
                c.material.linewidth = c.normalLineWidth;
             if (c.normalMarkerSize)
@@ -1071,7 +1073,10 @@
             var a = active_mesh[k];
             if (!a.material) continue;
             a.originalColor = a.material.color;
+            a.originalOpacity = a.material.opacity;
+
             a.material.color = new THREE.Color( color || 0xffaa33 );
+            a.material.opacity = 1.;
 
             if (a.hightlightLineWidth)
                a.material.linewidth = a.hightlightLineWidth;
