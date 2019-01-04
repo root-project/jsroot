@@ -2021,6 +2021,18 @@
       return geom.vertices.length;
    }
 
+   /** Checks if two stack arrays are identical
+    * @memberOf JSROOT.GEO */
+   JSROOT.GEO.IsSameStack = function(stack1, stack2) {
+      if (!stack1 || !stack2) return false;
+      if (stack1 === stack2) return true;
+      if (stack1.length !== stack2.length) return false;
+      for (var k=0;k<stack1.length;++k)
+         if (stack1[k] !== stack2[k]) return false;
+      return true;
+   }
+
+
    // ====================================================================
 
    // class for working with cloned nodes
@@ -2368,6 +2380,34 @@
       return res;
    }
 
+   /** Create stack array based on nodes ids array.
+    * Ids list should correspond to existing nodes hierarchy */
+   JSROOT.GEO.ClonedNodes.prototype.MakeStackByIds = function(ids) {
+      var stack = [];
+
+      if (ids[0] !== 0) {
+         console.error('wrong ids - first should be 0');
+         return null;
+      }
+
+      var node = this.nodes[0];
+
+      for (var k=1;k<ids.length;++k) {
+         var nodeid = ids[k];
+         var chindx = node.chlds.indexOf(nodeid);
+         if (chindx < 0) {
+            console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
+            return null;
+         }
+
+         stack.push(chindx);
+         node = this.nodes[nodeid];
+      }
+
+      return stack;
+   }
+
+   /** find stack by name which include names of all parents */
    JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
       if (!this.origin) return null;
 

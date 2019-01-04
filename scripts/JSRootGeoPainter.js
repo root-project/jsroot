@@ -1016,7 +1016,7 @@
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(function(mesh) {
-            if ((mesh instanceof THREE.Mesh) && (mesh.stack===geo_stack)) active_mesh.push(mesh);
+            if ((mesh instanceof THREE.Mesh) && JSROOT.GEO.IsSameStack(mesh.stack, geo_stack)) active_mesh.push(mesh);
          });
       } else {
          active_mesh = active_mesh ? [ active_mesh ] : [];
