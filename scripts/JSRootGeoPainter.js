@@ -639,17 +639,18 @@
    }
 
    /** Method used to set transparency for all geometrical shapes
-    * As transperency one could provide function */
+    * As transperency value one could provide function */
    TGeoPainter.prototype.changeGlobalTransparency = function(transparency, skip_render) {
-      var func = null, dflt = this.options.transparency;
-      if (typeof transparency == 'function') func = transparency;
+      var func = (typeof transparency == 'function') ? transparency : null;
+      if (func) transparency = this.options.transparency;
       this._toplevel.traverse( function (node) {
-         if (node && node.material && (node.material.alwaysTransparent !== undefined)) {
-            if (func) transparency = func(node);
-            if (transparency === undefined) transparency = dflt;
-            var opacity = 1 - transparency;
-            node.material.transparent = (node.material.alwaysTransparent && !func) || (opacity !== 1);
-            node.material.opacity = Math.min(opacity, node.material.inherentOpacity);
+         if (node && node.material && (node.material.inherentOpacity !== undefined)) {
+            var t = func ? func(node) : undefined;
+            if (t !== undefined)
+               node.material.opacity = 1 - t;
+            else
+               node.material.opacity = Math.min(1 - (transparency || 0), node.material.inherentOpacity);
+            node.material.transparent = node.material.opacity < 1;
          }
       });
       if (!skip_render) this.Render3D(0);
@@ -927,11 +928,15 @@
             intersects[n].object = intersects[n].object.geo_highlight;
 
       // remove all elements without stack - indicator that this is geometry object
+      // also remove all objects which are mostly transparent
       for (var n=intersects.length-1; n>=0; --n) {
 
          var obj = intersects[n].object;
 
          var unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
+
+         if (unique && obj.material && (obj.material.opacity !== undefined))
+            unique = obj.material.opacity >= 0.1;
 
          for (var k=0;(k<n) && unique;++k)
             if (intersects[k].object === obj) unique = false;
@@ -962,24 +967,6 @@
 
          intersects = clippedIntersects;
       }
-
-      /*
-      var nopaque = 0, iopaque = 0, ntransp = 0, itransp = 0;
-      for (var i = 0; i < intersects.length; ++i) {
-         var obj = intersects[i].object;
-         if (obj.material && obj.material.opacity !== undefined) {
-            if (obj.material.opacity <= 0.1) { if (ntransp++==0) itransp = i; } else
-            if (obj.material.opacity >= 0.9) { if (nopaque++==0) iopaque = i; }
-         }
-      }
-
-      // when both transparent and opaque volumes are there - swap them in intersects lists
-      if ((nopaque > 0) && (ntransp > 0) && (itransp < iopaque)) {
-         var tmp = intersects[itransp];
-         intersects[itransp] = intersects[iopaque];
-         intersects[iopaque] = tmp;
-      }
-      */
 
       return intersects;
    }

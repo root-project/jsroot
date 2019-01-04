@@ -2404,13 +2404,12 @@
 
       if (clone.kind === 2) {
          var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         var _transparent = (entry.opacity < 1), _opacity = entry.opacity;
+         var _opacity = entry.opacity;
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                          overdraw: 0., depthWrite: !_transparent } );
-         prop.material.alwaysTransparent = _transparent;
+                          overdraw: 0., depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
 
          return prop;
@@ -2431,17 +2430,12 @@
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
          if (visible) {
-            var _transparent = false, _opacity = 1.0;
-            if ( node.fRGBA[3] < 1.0) {
-               _transparent = true;
-               _opacity = node.fRGBA[3];
-            }
+            var _opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
-            prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+            prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0., depthWrite: !_transparent } );
-            prop.material.alwaysTransparent = _transparent;
+                             overdraw: 0., depthWrite: _opacity == 1 } );
             prop.material.inherentOpacity = _opacity;
          }
 
@@ -2457,7 +2451,7 @@
       if (volume) prop.linewidth = volume.fLineWidth;
 
       if (visible) {
-         var _transparent = false, _opacity = 1.0;
+         var _opacity = 1.0;
          if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
          else
@@ -2467,25 +2461,19 @@
          if (volume.fMedium && volume.fMedium.fMaterial) {
             var fillstyle = volume.fMedium.fMaterial.fFillStyle;
             var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
-            if (transparency > 0) {
-               _transparent = true;
+            if (transparency > 0)
                _opacity = (100.0 - transparency) / 100.0;
-            }
             if (prop.fillcolor === undefined)
                prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
          }
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
 
-         prop.material = new THREE.MeshLambertMaterial( { transparent: _transparent,
+         prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0., depthWrite: !_transparent } );
-         prop.material.alwaysTransparent = _transparent;
+                              overdraw: 0., depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
-
-         //console.log('opacity', _opacity, 'transp', _transparent);
-         //console.log('material', prop.material);
 
       }
 
