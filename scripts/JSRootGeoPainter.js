@@ -998,6 +998,14 @@
       return mainitemname ? (mainitemname + "/" + sub.name) : sub.name;
    }
 
+   /** Add handler which will be called when element is highlighted in geometry drawing
+    * Handler should have HighlightMesh function with same arguments as TGeoPainter  */
+   TGeoPainter.prototype.AddHighlightHandler = function(handler) {
+      if (!handler || typeof handler.HighlightMesh != 'function') return;
+      if (!this._highlight_handlers) this._highlight_handlers = [];
+      this._highlight_handlers.push(handler);
+   }
+
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_stack, no_recursive) {
 
       // if selected mesh has geo_object property, try to highligh all correspondent objects from extras
