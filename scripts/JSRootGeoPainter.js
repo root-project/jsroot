@@ -1058,14 +1058,14 @@
       var curr_mesh = this._selected_mesh;
 
       // check if selections are the same
-      if (!curr_mesh && !active_mesh) return;
+      if (!curr_mesh && !active_mesh) return false;
       var same = false;
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
          for (var k=0;k<curr_mesh.length;++k)
             if (curr_mesh[k] !== active_mesh[k]) same = false;
       }
-      if (same) return;
+      if (same) return !!curr_mesh;
 
       if (curr_mesh)
          for (var k=0;k<curr_mesh.length;++k) {
@@ -1100,6 +1100,8 @@
          }
 
       this.Render3D(0);
+
+      return !!active_mesh;
    }
 
    TGeoPainter.prototype.addOrbitControls = function() {
@@ -1547,7 +1549,7 @@
 
       if (!nodes) return;
 
-      var is_any_shape = false;
+      var real_nodes = [];
 
       for (var k=0;k<nodes.length;++k) {
          var entry = nodes[k];
@@ -1557,7 +1559,6 @@
 
          entry.done = true;
          shape.used = true; // indicate that shape was used in building
-         is_any_shape = true;
 
          if (!shape.geom || (shape.nfaces === 0)) {
             // node is visible, but shape does not created
@@ -1592,10 +1593,12 @@
 
          // keep hierarchy level
          mesh.$jsroot_order = obj3d.$jsroot_depth;
+
+         real_nodes.push(entry);
       }
 
       // remember additional nodes only if they include shape - otherwise one can ignore them
-      if (is_any_shape) this._more_nodes = nodes;
+      if (real_nodes) this._more_nodes = real_nodes;
 
       if (!from_drawing) this.Render3D();
    }
