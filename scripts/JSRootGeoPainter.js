@@ -1529,6 +1529,77 @@
       return false;
    }
 
+   /** function used by geometry viewer to show more nodes
+    * These nodes excluded from selecton logic and always inserted into the model
+    * Shape already should be created and assigned to the node */
+   TGeoPainter.prototype.appendMoreNodes = function(nodes, from_drawing) {
+      if (this.drawing_stage && !from_drawing) {
+         this._provided_more_nodes = nodes;
+         return;
+      }
+
+      // delete old nodes
+      if (this._more_nodes)
+         for (var n=0;n<this._more_nodes.length;++n)
+            this._clones.CreateObject3D(this._more_nodes[n].stack, this._toplevel, 'delete_mesh');
+
+      delete this._more_nodes;
+
+      if (!nodes) return;
+
+      var is_any_shape = false;
+
+      for (var k=0;k<nodes.length;++k) {
+         var entry = nodes[k];
+
+         var shape = entry.server_shape;
+         if (!shape || !shape.ready) continue;
+
+         entry.done = true;
+         shape.used = true; // indicate that shape was used in building
+         is_any_shape = true;
+
+         if (!shape.geom || (shape.nfaces === 0)) {
+            // node is visible, but shape does not created
+            this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
+            continue;
+         }
+
+         var prop = this._clones.getDrawEntryProperties(entry);
+
+         this._num_meshes++;
+         this._num_faces += shape.nfaces;
+
+         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
+
+         prop.material.wireframe = this.options.wireframe;
+
+         prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
+
+         var mesh;
+
+         if (obj3d.matrixWorld.determinant() > -0.9) {
+            mesh = new THREE.Mesh( shape.geom, prop.material );
+         } else {
+            mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
+         }
+
+         obj3d.add(mesh);
+
+         // keep full stack of nodes
+         mesh.stack = entry.stack;
+         mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
+
+         // keep hierarchy level
+         mesh.$jsroot_order = obj3d.$jsroot_depth;
+      }
+
+      // remember additional nodes only if they include shape - otherwise one can ignore them
+      if (is_any_shape) this._more_nodes = nodes;
+
+      if (!from_drawing) this.Render3D();
+   }
+
    TGeoPainter.prototype.getProjectionSource = function() {
       if (this._clones_owner)
          return this._full_geom;
@@ -2669,11 +2740,10 @@
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
       if ((name_prefix == "__geom_viewer_selection__") && this._clones) {
-         // case of display visible
+
+         // these are selection done from geom viewer
          this._provided_draw_nodes = draw_obj;
-
          this.options.use_worker = 0;
-
       } else if (this._main_painter) {
 
          this._clones_owner = false;
@@ -3186,6 +3256,11 @@
       }
 
       this._scene.overrideMaterial = null;
+
+      if (this._provided_more_nodes !== undefined) {
+         this.appendMoreNodes(this._provided_more_nodes, true);
+         delete this._provided_more_nodes;
+      }
 
       if (check_extras) {
          // if extra object where append, redraw them at the end
