@@ -1435,54 +1435,9 @@
             entry.done = true;
             shape.used = true; // indicate that shape was used in building
 
-            if (!shape.geom || (shape.nfaces === 0)) {
-               // node is visible, but shape does not created
-               this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
-               continue;
-            }
-
-            var prop = this._clones.getDrawEntryProperties(entry);
-
-            this._num_meshes++;
-            this._num_faces += shape.nfaces;
-
-            var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
-
-            prop.material.wireframe = this.options.wireframe;
-
-            prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
-
-            var mesh;
-
-            if (obj3d.matrixWorld.determinant() > -0.9) {
-               mesh = new THREE.Mesh( shape.geom, prop.material );
-            } else {
-               mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
-            }
-
-            obj3d.add(mesh);
-
-            // keep full stack of nodes
-            mesh.stack = entry.stack;
-            mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
-
-            // keep hierarchy level
-            mesh.$jsroot_order = obj3d.$jsroot_depth;
-
-            // set initial render order, when camera moves, one must refine it
-            //mesh.$jsroot_order = mesh.renderOrder =
-            //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
-
-            if (this.options._debug || this.options._full) {
-               var wfg = new THREE.WireframeGeometry( mesh.geometry ),
-                   wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
-                   helper = new THREE.LineSegments(wfg, wfm);
-               obj3d.add(helper);
-            }
-
-            if (this.options._bound || this.options._full) {
-               var boxHelper = new THREE.BoxHelper( mesh );
-               obj3d.add( boxHelper );
+            if (this.createEntryMesh(entry, shape, toplevel)) {
+               this._num_meshes++;
+               this._num_faces += shape.nfaces;
             }
 
             var tm1 = new Date().getTime();
@@ -1531,9 +1486,63 @@
       return false;
    }
 
+   /** Insert appropriate mesh for given entry
+    * @private*/
+   TGeoPainter.prototype.createEntryMesh = function(entry, shape, toplevel) {
+      if (!shape.geom || (shape.nfaces === 0)) {
+         // node is visible, but shape does not created
+         this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
+         return false;
+      }
+
+      var prop = this._clones.getDrawEntryProperties(entry);
+
+      var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
+
+      prop.material.wireframe = this.options.wireframe;
+
+      prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
+
+      var mesh;
+
+      if (obj3d.matrixWorld.determinant() > -0.9) {
+         mesh = new THREE.Mesh( shape.geom, prop.material );
+      } else {
+         mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
+      }
+
+      obj3d.add(mesh);
+
+      // keep full stack of nodes
+      mesh.stack = entry.stack;
+      mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
+
+      // keep hierarchy level
+      mesh.$jsroot_order = obj3d.$jsroot_depth;
+
+      // set initial render order, when camera moves, one must refine it
+      //mesh.$jsroot_order = mesh.renderOrder =
+      //   this._clones.maxdepth - ((obj3d.$jsroot_depth !== undefined) ? obj3d.$jsroot_depth : entry.stack.length);
+
+      if (this.options._debug || this.options._full) {
+         var wfg = new THREE.WireframeGeometry( mesh.geometry ),
+             wfm = new THREE.LineBasicMaterial( { color: prop.fillcolor, linewidth: prop.linewidth || 1 } ),
+             helper = new THREE.LineSegments(wfg, wfm);
+         obj3d.add(helper);
+      }
+
+      if (this.options._bound || this.options._full) {
+         var boxHelper = new THREE.BoxHelper( mesh );
+         obj3d.add( boxHelper );
+      }
+
+      return true;
+   }
+
    /** function used by geometry viewer to show more nodes
     * These nodes excluded from selecton logic and always inserted into the model
-    * Shape already should be created and assigned to the node */
+    * Shape already should be created and assigned to the node
+    * @private */
    TGeoPainter.prototype.appendMoreNodes = function(nodes, from_drawing) {
       if (this.drawing_stage && !from_drawing) {
          this._provided_more_nodes = nodes;
@@ -1553,54 +1562,31 @@
 
       for (var k=0;k<nodes.length;++k) {
          var entry = nodes[k];
-
          var shape = entry.server_shape;
          if (!shape || !shape.ready) continue;
 
          entry.done = true;
          shape.used = true; // indicate that shape was used in building
 
-         if (!shape.geom || (shape.nfaces === 0)) {
-            // node is visible, but shape does not created
-            this._clones.CreateObject3D(entry.stack, toplevel, 'delete_mesh');
-            continue;
-         }
-
-         var prop = this._clones.getDrawEntryProperties(entry);
-
-         this._num_meshes++;
-         this._num_faces += shape.nfaces;
-
-         var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, this.options);
-
-         prop.material.wireframe = this.options.wireframe;
-
-         prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
-
-         var mesh;
-
-         if (obj3d.matrixWorld.determinant() > -0.9) {
-            mesh = new THREE.Mesh( shape.geom, prop.material );
-         } else {
-            mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
-         }
-
-         obj3d.add(mesh);
-
-         // keep full stack of nodes
-         mesh.stack = entry.stack;
-         mesh.renderOrder = this._clones.maxdepth - entry.stack.length; // order of transparency handling
-
-         // keep hierarchy level
-         mesh.$jsroot_order = obj3d.$jsroot_depth;
-
-         real_nodes.push(entry);
+         if (this.createEntryMesh(entry, shape, this._toplevel))
+            real_nodes.push(entry);
       }
 
       // remember additional nodes only if they include shape - otherwise one can ignore them
       if (real_nodes) this._more_nodes = real_nodes;
 
       if (!from_drawing) this.Render3D();
+   }
+
+   /** Insert or remove single entry, which should be highlighted. Used in geometry viewer
+    * @private */
+   TGeoPainter.prototype.explicitHighlight = function(entry, create_entry) {
+      if (create_entry) {
+         this.createEntryMesh(entry, entry.server_shape, this._toplevel);
+      } else {
+         this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+      }
+      this.Render3D(0);
    }
 
    TGeoPainter.prototype.getProjectionSource = function() {
