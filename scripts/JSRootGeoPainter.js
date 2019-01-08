@@ -2077,7 +2077,7 @@
       var oldTarget = this._controls.target;
 
       // probably, reduce number of frames
-      var frames = 200, step = 0;
+      var frames = 50, step = 0;
 
       // Amount to change camera position at each step
       var posIncrement = position.sub(this._camera.position).divideScalar(frames);
@@ -2125,14 +2125,18 @@
          painter._lookat = oldTarget;
          painter._camera.lookAt( painter._lookat );
          painter._camera.updateProjectionMatrix();
+
+         var tm1 = new Date().getTime();
          if (autoClip) {
             painter.clipX += incrementX * smoothFactor;
             painter.clipY += incrementY * smoothFactor;
             painter.clipZ += incrementZ * smoothFactor;
             painter.updateClipping();
          } else {
-            painter.Render3D();
+            painter.Render3D(0);
          }
+         var tm2 = new Date().getTime();
+         if ((step==0) && (tm2-tm1 > 200)) frames = 20;
          step++;
          painter._animating = step < frames;
       }
