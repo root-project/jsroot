@@ -251,6 +251,7 @@
    }
 
    TGeoPainter.prototype.InitVRControllersGeometry = function() {
+      /// comment
       let geometry = new THREE.SphereGeometry(0.025, 18, 36);
       let material = new THREE.MeshBasicMaterial({color: 'grey'});
       let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
@@ -529,14 +530,14 @@
       return res;
    }
 
-   TGeoPainter.prototype.ActiavteInBrowser = function(names, force) {
+   TGeoPainter.prototype.ActivateInBrowser = function(names, force) {
       // if (this.GetItemName() === null) return;
 
       if (typeof names == 'string') names = [ names ];
 
       if (this._hpainter) {
          // show browser if it not visible
-         this._hpainter.actiavte(names, force);
+         this._hpainter.activate(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
          if (!this.options.update_browser)
@@ -605,7 +606,7 @@
 
       menu.addchk(this.options.update_browser, "Browser update", function() {
          this.options.update_browser = !this.options.update_browser;
-         if (!this.options.update_browser) this.ActiavteInBrowser([]);
+         if (!this.options.update_browser) this.ActivateInBrowser([]);
       });
       menu.addchk(this.options.show_controls, "Show Controls", function() {
          this.showControlOptions('toggle');
@@ -839,9 +840,9 @@
                   continue;
 
 
-               menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
+               menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActivateInBrowser([arg], true); });
 
-               menu.add("Browse", itemname, function(arg) { this.ActiavteInBrowser([arg], true); });
+               menu.add("Browse", itemname, function(arg) { this.ActivateInBrowser([arg], true); });
 
                if (menu.painter._hpainter)
                   menu.add("Inspect", itemname, function(arg) { this._hpainter.display(itemname, "inspect"); });
@@ -1146,7 +1147,7 @@
 
          if (painter.options.update_browser) {
             if (painter.options.highlight && tooltip) names = [ tooltip ];
-            painter.ActiavteInBrowser(names);
+            painter.ActivateInBrowser(names);
          }
 
          if (!resolve || !resolve.obj) return tooltip;
@@ -1159,7 +1160,7 @@
 
       this._controls.ProcessMouseLeave = function() {
          if (painter.options.update_browser)
-            painter.ActiavteInBrowser([]);
+            painter.ActivateInBrowser([]);
       }
 
       this._controls.ProcessDblClick = function() {
