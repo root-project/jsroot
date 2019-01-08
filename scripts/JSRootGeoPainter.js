@@ -2076,8 +2076,9 @@
       var dist = this._camera.position.distanceTo(target);
       var oldTarget = this._controls.target;
 
-      var frames = 200;
-      var step = 0;
+      // probably, reduce number of frames
+      var frames = 200, step = 0;
+
       // Amount to change camera position at each step
       var posIncrement = position.sub(this._camera.position).divideScalar(frames);
       // Amount to change "lookAt" so it will end pointed at target
@@ -2115,7 +2116,8 @@
          if (painter._animating) {
             requestAnimationFrame( animate );
          } else {
-            painter.startDrawGeometry();
+            if (!painter._geom_viewer)
+               painter.startDrawGeometry();
          }
          var smoothFactor = -Math.cos( ( 2.0 * Math.PI * step ) / frames ) + 1.0;
          painter._camera.position.add( posIncrement.clone().multiplyScalar( smoothFactor ) );
@@ -2134,10 +2136,10 @@
          step++;
          painter._animating = step < frames;
       }
+
       animate();
 
    //   this._controls.update();
-
    }
 
    TGeoPainter.prototype.autorotate = function(speed) {
@@ -2732,6 +2734,7 @@
          // these are selection done from geom viewer
          this._provided_draw_nodes = draw_obj;
          this.options.use_worker = 0;
+         this._geom_viewer = true; // indicate that working with geom viewer
       } else if (this._main_painter) {
 
          this._clones_owner = false;
