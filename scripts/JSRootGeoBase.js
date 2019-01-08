@@ -2996,10 +2996,10 @@
    JSROOT.GEO.cleanupShape = function(shape) {
       if (!shape) return;
 
-      if (shape.geom || (typeof shape.geom.dispose == 'funciton'))
+      if (shape.geom && (typeof shape.geom.dispose == 'funciton'))
          shape.geom.dispose();
 
-      if (shape.geomZ || (typeof shape.geomZ.dispose == 'funciton'))
+      if (shape.geomZ && (typeof shape.geomZ.dispose == 'funciton'))
          shape.geomZ.dispose();
 
       delete shape.geom;
