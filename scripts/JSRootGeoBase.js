@@ -2342,6 +2342,18 @@
       return res;
    }
 
+   /** Return node name with given id.
+    * Either original object or description is used
+    * @private */
+   JSROOT.GEO.ClonedNodes.prototype.GetNodeName = function(nodeid) {
+      if (this.origin) {
+         var obj = this.origin[nodeid];
+         return obj ? JSROOT.GEO.ObjectName(obj) : "";
+      }
+      var node = this.nodes[nodeid];
+      return node ? node.name : "";
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
       var res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
@@ -2353,23 +2365,23 @@
          if (res.node.matrix) res.matrix.fromArray(res.node.matrix);
       }
 
-      if (this.origin) res.obj = this.origin[0];
+      if (this.origin)
+         res.obj = this.origin[0];
+
+      //if (!res.name)
+      //   res.name = this.GetNodeName(0);
 
       if (stack)
          for(var lvl=0;lvl<stack.length;++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
 
-            var subname = "";
-            if (this.origin) {
+            if (this.origin)
                res.obj = this.origin[res.id];
-               subname = JSROOT.GEO.ObjectName(res.obj);
-            } else if (res.node && res.node.name) {
-               subname = res.node.name;
-            }
 
+            var subname = this.GetNodeName(res.id);
             if (subname) {
-               if (res.name.length>0) res.name += "/";
+               if (res.name) res.name+="/";
                res.name += subname;
             }
 
@@ -2409,22 +2421,18 @@
 
    /** find stack by name which include names of all parents */
    JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
-      if (!this.origin) return null;
 
-      var names = fullname.split('/'),
-          currid = 0, stack = [],
-          top = this.origin[0];
+      var names = fullname.split('/'), currid = 0, stack = [];
 
-      if (!top || (JSROOT.GEO.ObjectName(top)!==names[0])) return null;
+      if (this.GetNodeName(currid) !== names[0]) return null;
 
       for (var n=1;n<names.length;++n) {
          var node = this.nodes[currid];
          if (!node.chlds) return null;
 
          for (var k=0;k<node.chlds.length;++k) {
-            var chldid = node.chlds[k],
-                obj = this.origin[chldid];
-            if (obj && (JSROOT.GEO.ObjectName(obj) === names[n])) { stack.push(k); currid = chldid; break; }
+            var chldid = node.chlds[k];
+            if (this.GetNodeName(chldid) === names[n]) { stack.push(k); currid = chldid; break; }
          }
 
          // no new entry - not found stack
