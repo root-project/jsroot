@@ -1551,8 +1551,13 @@
 
       // delete old nodes
       if (this._more_nodes)
-         for (var n=0;n<this._more_nodes.length;++n)
-            this._clones.CreateObject3D(this._more_nodes[n].stack, this._toplevel, 'delete_mesh');
+         for (var n=0;n<this._more_nodes.length;++n) {
+            var entry = this._more_nodes[n];
+            var obj3d = this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+            JSROOT.Painter.DisposeThreejsObject(obj3d);
+            JSROOT.GEO.cleanupShape(entry.server_shape);
+            delete entry.server_shape;
+         }
 
       delete this._more_nodes;
 
@@ -1578,16 +1583,9 @@
       if (!from_drawing) this.Render3D();
    }
 
-   /** Insert or remove single entry, which should be highlighted. Used in geometry viewer
+   /** Returns hierarchy of 3D objects used to produce projection.
+    * Typically external master painter is used, but also intenral data can be used
     * @private */
-   TGeoPainter.prototype.explicitHighlight = function(entry, create_entry) {
-      if (create_entry) {
-         this.createEntryMesh(entry, entry.server_shape, this._toplevel);
-      } else {
-         this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
-      }
-      this.Render3D(0);
-   }
 
    TGeoPainter.prototype.getProjectionSource = function() {
       if (this._clones_owner)

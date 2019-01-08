@@ -2588,13 +2588,14 @@
 
          if ((options === 'mesh') || !mesh) return mesh;
 
+         var res = three_prnt;
          while (mesh && (mesh !== toplevel)) {
             three_prnt = mesh.parent;
             three_prnt.remove(mesh);
             mesh = (three_prnt.children.length == 0) ? three_prnt : null;
          }
 
-         return null;
+         return res;
       }
 
       if (three_prnt) {
@@ -2970,9 +2971,9 @@
 
             shape.geomZ.scale(flip.x, flip.y, flip.z);
 
-            var face, d;
-            for (var n=0;n<shape.geomZ.faces.length;++n) {
-               face = geom.faces[n];
+            var face, d, n = 0;
+            while(n < shape.geomZ.faces.length) {
+               face = geom.faces[n++];
                d = face.b; face.b = face.c; face.c = d;
             }
 
@@ -2990,6 +2991,20 @@
       return mesh;
    }
 
+   /** Cleanup shape entity
+    * @private */
+   JSROOT.GEO.cleanupShape = function(shape) {
+      if (!shape) return;
+
+      if (shape.geom || (typeof shape.geom.dispose == 'funciton'))
+         shape.geom.dispose();
+
+      if (shape.geomZ || (typeof shape.geomZ.dispose == 'funciton'))
+         shape.geomZ.dispose();
+
+      delete shape.geom;
+      delete shape.geomZ;
+   }
 
    JSROOT.GEO.produceRenderOrder = function(toplevel, origin, method, clones) {
       // function scans throug hierarchy of objects and try to set renderOrder
