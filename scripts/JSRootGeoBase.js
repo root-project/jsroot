@@ -2753,7 +2753,6 @@
       return del; //
    }
 
-
    JSROOT.GEO.ClonedNodes.prototype.CollectShapes = function(lst) {
       // based on list of visible nodes, collect all uniques shapes which should be build
 

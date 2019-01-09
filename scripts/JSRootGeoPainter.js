@@ -1241,10 +1241,7 @@
 
       if (this.drawing_stage == 1) {
 
-         // when draw nodes already provided - just immdidately use it
-         if (this._provided_draw_nodes) {
-            this._new_draw_nodes = this._provided_draw_nodes;
-            delete this._provided_draw_nodes;
+         if (this._geom_viewer) {
             this._draw_all_nodes = false;
             this.drawing_stage = 3;
             return true;
@@ -1335,9 +1332,19 @@
 
          this.drawing_log = "Analyse visibles";
 
-         if (this._draw_nodes) {
+         if (this._new_append_nodes) {
 
-            var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes);
+            this._new_draw_nodes = this._draw_nodes.concat(this._new_append_nodes);
+
+            delete this._new_append_nodes;
+
+         } else if (this._draw_nodes) {
+
+            var del;
+            if (this._geom_viewer)
+               del = this._draw_nodes;
+            else
+               del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes);
 
             // remove should be fast, do it here
             for (var n=0;n<del.length;++n)
@@ -2735,10 +2742,13 @@
 
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
-      if ((name_prefix == "__geom_viewer_selection__") && this._clones) {
-
+      if (name_prefix == "__geom_viewer_append__") {
+         this._new_append_nodes = draw_obj;
+         this.options.use_worker = 0;
+         this._geom_viewer = true; // indicate that working with geom viewer
+      } else if ((name_prefix == "__geom_viewer_selection__") && this._clones) {
          // these are selection done from geom viewer
-         this._provided_draw_nodes = draw_obj;
+         this._new_draw_nodes = draw_obj;
          this.options.use_worker = 0;
          this._geom_viewer = true; // indicate that working with geom viewer
       } else if (this._main_painter) {
@@ -3301,13 +3311,12 @@
    TGeoPainter.prototype.RemoveDrawnNode = function(nodeid) {
       if (!this._draw_nodes) return;
 
-      var new_nodes = [], cnt;
+      var new_nodes = [];
 
       for (var n=0;n<this._draw_nodes.length;++n) {
          var entry = this._draw_nodes[n];
          if (entry.nodeid === nodeid) {
             this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
-            console.log('Deleting stack', entry.stack);
          } else {
             new_nodes.push(entry);
          }
@@ -3317,9 +3326,6 @@
          this._draw_nodes = new_nodes;
          this.Render3D();
       }
-
-      console.log('Deleting nodes for ', nodeid);
-
    }
 
    TGeoPainter.prototype.Cleanup = function(first_time) {
@@ -3401,6 +3407,7 @@
       delete this._drawing_ready;
       delete this._build_shapes;
       delete this._new_draw_nodes;
+      delete this._new_append_nodes;
 
       this.first_render_tm = 0;
       this.last_render_tm = 2000;
