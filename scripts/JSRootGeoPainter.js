@@ -1336,7 +1336,9 @@
          this.drawing_log = "Analyse visibles";
 
          if (this._draw_nodes) {
+
             var del = this._clones.MergeVisibles(this._new_draw_nodes, this._draw_nodes);
+
             // remove should be fast, do it here
             for (var n=0;n<del.length;++n)
                this._clones.CreateObject3D(del[n].stack, this._toplevel, 'delete_mesh');
@@ -3293,6 +3295,31 @@
          return this.startDrawGeometry(); // relaunch drawing
 
       this._drawing_ready = true; // indicate that drawing is completed
+   }
+
+   /** Remove already drawn node. Used by geom viewer */
+   TGeoPainter.prototype.RemoveDrawnNode = function(nodeid) {
+      if (!this._draw_nodes) return;
+
+      var new_nodes = [], cnt;
+
+      for (var n=0;n<this._draw_nodes.length;++n) {
+         var entry = this._draw_nodes[n];
+         if (entry.nodeid === nodeid) {
+            this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
+            console.log('Deleting stack', entry.stack);
+         } else {
+            new_nodes.push(entry);
+         }
+      }
+
+      if (new_nodes.length < this._draw_nodes.length) {
+         this._draw_nodes = new_nodes;
+         this.Render3D();
+      }
+
+      console.log('Deleting nodes for ', nodeid);
+
    }
 
    TGeoPainter.prototype.Cleanup = function(first_time) {
