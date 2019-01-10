@@ -1071,10 +1071,14 @@
             c.material.opacity = c.originalOpacity;
             delete c.originalColor;
             delete c.originalOpacity;
-            if (c.normalLineWidth)
-               c.material.linewidth = c.normalLineWidth;
-            if (c.normalMarkerSize)
-               c.material.size = c.normalMarkerSize;
+            if (c.originalWidth) {
+               c.material.linewidth = c.originalWidth;
+               delete c.originalWidth;
+            }
+            if (c.originalSize) {
+               c.material.size = c.originalSize;
+               delete c.originalSize;
+            }
          }
 
       this._selected_mesh = active_mesh;
@@ -1089,10 +1093,14 @@
             a.material.color = new THREE.Color( color || 0xffaa33 );
             a.material.opacity = 1.;
 
-            if (a.hightlightLineWidth)
-               a.material.linewidth = a.hightlightLineWidth;
-            if (a.highlightMarkerSize)
-               a.material.size = a.highlightMarkerSize;
+            if (a.hightlightWidthScale && !JSROOT.browser.isWin) {
+               a.originalWidth = a.material.linewidth;
+               a.material.linewidth *= a.hightlightWidthScale;
+            }
+            if (a.highlightScale) {
+               a.originalSize = a.material.size;
+               a.material.size *= a.highlightScale;
+            }
          }
 
       this.Render3D(0);
@@ -2472,10 +2480,7 @@
 
       line.geo_name = itemname;
       line.geo_object = track;
-      if (!JSROOT.browser.isWin) {
-         line.hightlightLineWidth = track_width*3;
-         line.normalLineWidth = track_width;
-      }
+      line.hightlightWidthScale = 2;
 
       this.getExtrasContainer().add(line);
 
@@ -2511,10 +2516,7 @@
 
       line.geo_name = itemname;
       line.geo_object = track;
-      if (!JSROOT.browser.isWin) {
-         line.hightlightLineWidth = track_width*3;
-         line.normalLineWidth = track_width;
-      }
+      line.hightlightWidthScale = 2;
 
       this.getExtrasContainer().add(line);
 
@@ -2539,8 +2541,7 @@
 
       var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)");
 
-      mesh.highlightMarkerSize = hit_size*3;
-      mesh.normalMarkerSize = hit_size;
+      mesh.highlightScale = 2;
 
       mesh.geo_name = itemname;
       mesh.geo_object = hit;
