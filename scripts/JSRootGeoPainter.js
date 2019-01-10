@@ -251,7 +251,6 @@
    }
 
    TGeoPainter.prototype.InitVRControllersGeometry = function() {
-      /// comment
       let geometry = new THREE.SphereGeometry(0.025, 18, 36);
       let material = new THREE.MeshBasicMaterial({color: 'grey'});
       let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
@@ -1913,9 +1912,11 @@
       this.Render3D(0);
    }
 
-   /** Assign clipping attributes to the meshes
+   /** Assign clipping attributes to the meshes - supported only for webgl
     * @private */
    TGeoPainter.prototype.updateClipping = function(without_render) {
+      if (!this._webgl) return;
+
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
@@ -2260,8 +2261,6 @@
 
    TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt, call_back) {
 
-      console.log('Calling perform drop');
-
       if (obj && (obj.$kind==='TTree')) {
          // drop tree means function call which must extract tracks from provided tree
 
@@ -2281,6 +2280,7 @@
          return func(obj, opt, function(tracks) {
             if (tracks) {
                geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
+               this.updateClipping(true);
                geo_painter.Render3D(100);
             }
             JSROOT.CallBack(call_back); // finally callback
@@ -2357,14 +2357,16 @@
          this._toplevel.traverse(function(node) { if (node.geo_object === obj) mesh = node; });
 
          if (mesh) mesh.visible = res; else
-         if (res) this.drawExtras(obj, "", false);
+         if (res) {
+            this.drawExtras(obj, "", false);
+            this.updateClipping(true);
+         }
 
          if (mesh || res) this.Render3D();
       }
 
       return res;
    }
-
 
    TGeoPainter.prototype.drawExtras = function(obj, itemname, add_objects) {
       if (!obj || obj._typename===undefined) return false;
@@ -2403,8 +2405,10 @@
          isany = this.drawExtraShape(obj, itemname);
       }
 
-      if (isany && do_render)
+      if (isany && do_render) {
+         this.updateClipping(true);
          this.Render3D(100);
+      }
 
       return isany;
    }
@@ -3258,9 +3262,6 @@
             this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
-      if (this._webgl)
-         this.updateClipping(true); // do not render
-
       if (this.options.transparency!==0)
          this.changeGlobalTransparency(this.options.transparency, true);
 
@@ -3282,6 +3283,8 @@
          var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
          this.drawExtras(extras, "", false);
       }
+
+      this.updateClipping(true); // do not render
 
       this.Render3D(0, true);
 
