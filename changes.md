@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.6.x
+1. Fix - support clipping for tracks and points in geo painter
+
+
 ## Changes in 5.6.2
 1. Fix - correctly handle negative parameter values in TF1/TF2
 
