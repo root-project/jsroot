@@ -251,6 +251,7 @@
    }
 
    TGeoPainter.prototype.InitVRControllersGeometry = function() {
+
       let geometry = new THREE.SphereGeometry(0.025, 18, 36);
       let material = new THREE.MeshBasicMaterial({color: 'grey'});
       let rayMaterial = new THREE.MeshBasicMaterial({color: 'fuchsia'});
@@ -946,19 +947,19 @@
          if (!unique) intersects.splice(n,1);
       }
 
-      if (this.enableX || this.enableY || this.enableZ ) {
+      if (this.enableX || this.enableY || this.enableZ) {
          var clippedIntersects = [];
 
          function myXor(a,b) { return ( a && !b ) || (!a && b); }
 
          for (var i = 0; i < intersects.length; ++i) {
-            var point = intersects[i].point, special = intersects[i].object.type == "Points";
+            var point = intersects[i].point, special = (intersects[i].object.type == "Points"), clipped = true;
 
-            if (this.enableX && myXor(this._clipPlanes[0].normal.dot(point) < this._clipPlanes[0].constant, special)) continue;
-            if (this.enableY && myXor(this._clipPlanes[1].normal.dot(point) < this._clipPlanes[1].constant, special)) continue;
-            if (this.enableZ && (this._clipPlanes[2].normal.dot(point) < this._clipPlanes[2].constant)) continue;
+            if (this.enableX && myXor(this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant, special)) clipped = false;
+            if (this.enableY && myXor(this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant, special)) clipped = false;
+            if (this.enableZ && (this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant)) clipped = false;
 
-            clippedIntersects.push(intersects[i]);
+            if (!clipped) clippedIntersects.push(intersects[i]);
          }
 
          intersects = clippedIntersects;
