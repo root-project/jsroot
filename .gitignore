@@ -13,5 +13,6 @@ node_modules
 openui5/resources/
 openui5/*.txt
 openui5/*.tar.gz
+openui5dist/
 package-lock.json
 /demo/
