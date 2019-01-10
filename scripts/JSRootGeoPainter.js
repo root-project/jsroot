@@ -922,6 +922,8 @@
 
    TGeoPainter.prototype.FilterIntersects = function(intersects) {
 
+      if (!intersects.length) return intersects;
+
       // check redirections
       for (var n=0;n<intersects.length;++n)
          if (intersects[n].object.geo_highlight)
@@ -947,22 +949,16 @@
       if (this.enableX || this.enableY || this.enableZ ) {
          var clippedIntersects = [];
 
+         function myXor(a,b) { return ( a && !b ) || (!a && b); }
+
          for (var i = 0; i < intersects.length; ++i) {
-            var clipped = false;
-            var point = intersects[i].point;
+            var point = intersects[i].point, special = intersects[i].object.type == "Points";
 
-            if (this.enableX && this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant ) {
-               clipped = true;
-            }
-            if (this.enableY && this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant ) {
-               clipped = true;
-            }
-            if (this.enableZ && this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant ) {
-               clipped = true;
-            }
+            if (this.enableX && myXor(this._clipPlanes[0].normal.dot(point) < this._clipPlanes[0].constant, special)) continue;
+            if (this.enableY && myXor(this._clipPlanes[1].normal.dot(point) < this._clipPlanes[1].constant, special)) continue;
+            if (this.enableZ && (this._clipPlanes[2].normal.dot(point) < this._clipPlanes[2].constant)) continue;
 
-            if (clipped)
-               clippedIntersects.push(intersects[i]);
+            clippedIntersects.push(intersects[i]);
          }
 
          intersects = clippedIntersects;
