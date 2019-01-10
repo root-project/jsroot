@@ -1913,36 +1913,39 @@
       this.Render3D(0);
    }
 
-   TGeoPainter.prototype.updateMaterialSide = function(both_sides, force) {
-      if ((this.bothSides === both_sides) && !force) return;
-
-      this._scene.traverse( function(obj) {
-         if (obj.hasOwnProperty("material") && ('emissive' in obj.material)) {
-            obj.material.side = both_sides ? THREE.DoubleSide : THREE.FrontSide;
-            obj.material.needsUpdate = true;
-        }
-      });
-
-      this.bothSides = both_sides;
-   }
-
+   /** Assign clipping attributes to the meshes
+    * @private */
    TGeoPainter.prototype.updateClipping = function(without_render) {
       this._clipPlanes[0].constant = this.clipX;
       this._clipPlanes[1].constant = -this.clipY;
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
 
-      var painter = this;
+      var panels = [];
+      if (this.enableX) panels.push(this._clipPlanes[0]);
+      if (this.enableY) panels.push(this._clipPlanes[1]);
+      if (this.enableZ) panels.push(this._clipPlanes[2]);
+      if (panels.length == 0) panels = null;
+
+      var any_clipping = !!panels, ci = this.clipIntersection,
+          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
+
       this._scene.traverse( function (node) {
          if (node instanceof THREE.Mesh) {
-            node.material.clipIntersection = painter.clipIntersection;
-            node.material.clippingPlanes = [];
-            if (painter.enableX) node.material.clippingPlanes.push(painter._clipPlanes[0]);
-            if (painter.enableY) node.material.clippingPlanes.push(painter._clipPlanes[1]);
-            if (painter.enableZ) node.material.clippingPlanes.push(painter._clipPlanes[2]);
+            if (node.material.clippingPlanes !== panels) {
+               node.material.clipIntersection = ci;
+               node.material.clippingPlanes = panels;
+               node.material.needsUpdate = true;
+            }
+         }
+         if (node.hasOwnProperty("material") && ('emissive' in node.material)) {
+            if (node.material.side != material_side) {
+               node.material.side = material_side;
+               node.material.needsUpdate = true;
+            }
          }
       });
 
-      this.updateMaterialSide(this.enableX || this.enableY || this.enableZ);
+      this.bothSides = any_clipping;
 
       if (!without_render) this.Render3D(0);
    }
@@ -3248,11 +3251,13 @@
             this.enableX = this.options.clipx;
             this.enableY = this.options.clipy;
             this.enableZ = this.options.clipz;
-            this.updateClipping(true); // only set clip panels, do not render
          }
          if (this.options.tracks && this.geo_manager && this.geo_manager.fTracks)
             this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
+
+      if (this._webgl)
+         this.updateClipping(true); // do not render
 
       if (this.options.transparency!==0)
          this.changeGlobalTransparency(this.options.transparency, true);
