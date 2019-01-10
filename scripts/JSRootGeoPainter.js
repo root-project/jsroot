@@ -1930,17 +1930,19 @@
           material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       this._scene.traverse( function (node) {
-         if (node instanceof THREE.Mesh) {
+         if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
+
             if (node.material.clippingPlanes !== panels) {
                node.material.clipIntersection = ci;
                node.material.clippingPlanes = panels;
                node.material.needsUpdate = true;
             }
-         }
-         if (node.hasOwnProperty("material") && ('emissive' in node.material)) {
-            if (node.material.side != material_side) {
-               node.material.side = material_side;
-               node.material.needsUpdate = true;
+
+            if (node.material.emissive !== undefined) {
+               if (node.material.side != material_side) {
+                  node.material.side = material_side;
+                  node.material.needsUpdate = true;
+               }
             }
          }
       });
