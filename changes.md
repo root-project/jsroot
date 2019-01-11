@@ -10,6 +10,7 @@
 7. Support eve7 geometry viewer - render data generated in ROOT itself
 8. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)    
 9. Fix - support clipping for tracks and points in geo painter
+10. Fix - drawing of TGeoNode with finder   
 
  
 ## Changes in 5.6.2
