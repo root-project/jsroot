@@ -2,6 +2,7 @@
 
 ## Changes in 5.6.x
 1. Fix - support clipping for tracks and points in geo painter
+2. Fix - geometry with TGeoNodeOffset was not correctly drawn
 
 
 ## Changes in 5.6.2
