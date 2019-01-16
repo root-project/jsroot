@@ -1005,19 +1005,20 @@
 
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_stack, no_recursive) {
 
-      // if selected mesh has geo_object property, try to highligh all correspondent objects from extras
+      // if selected mesh has geo_object property, try to highlight all correspondent objects from extras
       if (!geo_object && active_mesh && active_mesh.geo_object)
          geo_object = active_mesh.geo_object;
 
       if (geo_object) {
          active_mesh = active_mesh ? [ active_mesh ] : [];
          var extras = this.getExtrasContainer();
-         if (extras && extras.children)
-            for (var k=0;k<extras.children.length;++k)
-               if (extras.children[k].geo_object === geo_object) {
-                  var elem = extras.children[k].geo_highlight || extras.children[k];
+         if (extras)
+            extras.traverse(function(obj3d) {
+               if (obj3d.geo_object === geo_object) {
+                  var elem = obj3d.geo_highlight || obj3d;
                   if (active_mesh.indexOf(elem)<0) active_mesh.push(elem);
                }
+            });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
          this._toplevel.traverse(function(mesh) {
