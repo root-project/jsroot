@@ -803,6 +803,27 @@
       return pnts;
    }
 
+   /** function assigned to the created points mesh to support highlighting, used in geo painter */
+   JSROOT.Painter.PointsHighlight = function(color, index) {
+      if (color === null) {
+         if (this._ph) {
+            this.parent.remove(this._ph);
+            JSROOT.Painter.DisposeThreejsObject(this._ph);
+            delete this._ph;
+         }
+         return;
+      }
+
+      var geom = new THREE.BufferGeometry();
+      geom.addAttribute( 'position', this.geometry.getAttribute("position"));
+      if (index !== undefined) geom.setDrawRange(index, 1);
+      var material = new THREE.PointsMaterial( { size: this.material.size*2, color: color } );
+      material.sizeAttenuation = this.material.sizeAttenuation;
+
+      this._ph = new THREE.Points(geom, material);
+      this.parent.add(this._ph);
+   }
+
    // ==============================================================================
 
    function Create3DLineMaterial(painter, obj) {

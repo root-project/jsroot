@@ -1003,7 +1003,7 @@
       this._highlight_handlers.push(handler);
    }
 
-   TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_stack, no_recursive) {
+   TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
       // if selected mesh has geo_object property, try to highlight all correspondent objects from extras
       if (!geo_object && active_mesh && active_mesh.geo_object)
@@ -1045,12 +1045,13 @@
          if (active_mesh) {
             if (!geo_object) geo_object = active_mesh[0].geo_object;
             if (!geo_stack) geo_stack = active_mesh[0].stack;
+            if ((geo_index===undefined) && active_mesh[0].geo_highlight_index) geo_index = active_mesh[0].last_highlight_index;
          }
 
          var lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
 
          for (var k=0;k<lst.length;++k)
-            if (lst[k]!==this) lst[k].HighlightMesh(null, color, geo_object, geo_stack, true);
+            if (lst[k]!==this) lst[k].HighlightMesh(null, color, geo_object, geo_index, geo_stack, true);
       }
 
       var curr_mesh = this._selected_mesh;
@@ -1061,7 +1062,8 @@
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
          for (var k=0;k<curr_mesh.length;++k)
-            if (curr_mesh[k] !== active_mesh[k]) same = false;
+            if ((curr_mesh[k] !== active_mesh[k]) ||
+                (curr_mesh[k].last_highlight_index !== undefined)) same = false;
       }
       if (same) return !!curr_mesh;
 
@@ -1069,6 +1071,11 @@
          for (var k=0;k<curr_mesh.length;++k) {
             var c = curr_mesh[k];
             if (!c.material) continue;
+            if (c.geo_create_highlight) {
+               c.geo_create_highlight(null);
+               continue;
+            }
+
             c.material.color = c.originalColor;
             c.material.opacity = c.originalOpacity;
             delete c.originalColor;
@@ -1089,6 +1096,12 @@
          for (var k=0;k<active_mesh.length;++k) {
             var a = active_mesh[k];
             if (!a.material) continue;
+
+            if (a.geo_create_highlight) {
+               a.geo_create_highlight(color || 0xffaa33, a.last_highlight_index);
+               continue;
+            }
+
             a.originalColor = a.material.color;
             a.originalOpacity = a.material.opacity;
 
@@ -1135,6 +1148,8 @@
             if (obj.geo_object) info = obj.geo_name; else
             if (obj.stack) info = painter.GetStackFullName(obj.stack);
             if (info===null) continue;
+            if (obj.geo_extract_index)
+               obj.last_highlight_index = obj.geo_extract_index(intersects[k]);
 
             if (info.indexOf("<prnt>")==0)
                info = painter.GetItemName() + info.substr(6);
