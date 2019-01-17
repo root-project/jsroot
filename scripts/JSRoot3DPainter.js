@@ -700,6 +700,7 @@
       delete obj.bins_index;
       delete obj.tooltip;
       delete obj.stack; // used in geom painter
+      delete obj.drawn_highlight; // special highlight object
 
       obj = undefined;
    }
@@ -806,10 +807,10 @@
    /** function assigned to the created points mesh to support highlighting, used in geo painter */
    JSROOT.Painter.PointsHighlight = function(color, index) {
       if (color === null) {
-         if (this._ph) {
-            this.parent.remove(this._ph);
-            JSROOT.Painter.DisposeThreejsObject(this._ph);
-            delete this._ph;
+         if (this.drawn_highlight) {
+            this.remove(this.drawn_highlight);
+            JSROOT.Painter.DisposeThreejsObject(this.drawn_highlight);
+            delete this.drawn_highlight;
          }
          return;
       }
@@ -820,8 +821,8 @@
       var material = new THREE.PointsMaterial( { size: this.material.size*2, color: color } );
       material.sizeAttenuation = this.material.sizeAttenuation;
 
-      this._ph = new THREE.Points(geom, material);
-      this.parent.add(this._ph);
+      this.drawn_highlight = new THREE.Points(geom, material);
+      this.add(this.drawn_highlight);
    }
 
    // ==============================================================================
