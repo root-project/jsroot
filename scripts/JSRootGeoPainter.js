@@ -1007,12 +1007,6 @@
 
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
-      // if selected mesh has geo_object property, try to highlight all correspondent objects from extras
-      if (!geo_object && active_mesh && active_mesh.geo_object) {
-         geo_object = active_mesh.geo_object;
-         geo_index = active_mesh.last_highlight_index;
-      }
-
       if (geo_object) {
          active_mesh = active_mesh ? [ active_mesh ] : [];
          var extras = this.getExtrasContainer();
@@ -1021,7 +1015,6 @@
                if (obj3d.geo_object === geo_object) {
                   var elem = obj3d.geo_highlight || obj3d;
                   if (active_mesh.indexOf(elem)<0) active_mesh.push(elem);
-                  elem.last_highlight_index = geo_index;
                }
             });
       } else if (geo_stack && this._toplevel) {
@@ -1050,7 +1043,6 @@
          if (active_mesh) {
             if (!geo_object) geo_object = active_mesh[0].geo_object;
             if (!geo_stack) geo_stack = active_mesh[0].stack;
-            if ((geo_index===undefined) && active_mesh[0].geo_extract_index) geo_index = active_mesh[0].last_highlight_index;
          }
 
          var lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
@@ -1067,8 +1059,7 @@
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
          for (var k=0;k<curr_mesh.length;++k)
-            if ((curr_mesh[k] !== active_mesh[k]) ||
-                (curr_mesh[k].last_highlight_index !== undefined)) same = false;
+            if ((curr_mesh[k] !== active_mesh[k]) || (geo_index !== curr_mesh[k].h_index)) same = false;
       }
       if (same) return !!curr_mesh;
 
@@ -1076,8 +1067,8 @@
          for (var k=0;k<curr_mesh.length;++k) {
             var c = curr_mesh[k];
             if (!c.material) continue;
-            if (c.geo_create_highlight) {
-               c.geo_create_highlight(null);
+            if (c.get_ctrl) {
+               c.get_ctrl().setHighlight();
                continue;
             }
 
@@ -1102,8 +1093,8 @@
             var a = active_mesh[k];
             if (!a.material) continue;
 
-            if (a.geo_create_highlight) {
-               a.geo_create_highlight(color || 0xffaa33, a.last_highlight_index);
+            if (a.get_ctrl) {
+               a.get_ctrl().setHighlight(color || 0xffaa33, geo_index);
                continue;
             }
 
@@ -1129,16 +1120,17 @@
    }
 
    TGeoPainter.prototype.ProcessMouseClick = function(pnt, intersects) {
-      console.log("click pnt", pnt);
-
       if (!intersects.length) return;
 
       var mesh = intersects[0].object;
-      if (!mesh.geo_extract_index) return;
+      if (!mesh.get_ctrl) return;
 
-      var click_indx = mesh.geo_extract_index(intersects[0]);
+      var ctrl = mesh.get_ctrl();
 
-      console.log("CLICK INDEX", click_indx);
+      var click_indx = ctrl.extractIndex(intersects[0]);
+
+      if (ctrl.setSelected("blue", click_indx))
+         this.Render3D();
    }
 
    TGeoPainter.prototype.addOrbitControls = function() {
@@ -1157,7 +1149,7 @@
 
       this._controls.ProcessMouseMove = function(intersects) {
 
-         var active_mesh = null, tooltip = null, resolve = null, names = [];
+         var active_mesh = null, tooltip = null, resolve = null, names = [], geo_object, geo_index;
 
          // try to find mesh from intersections
          for (var k=0;k<intersects.length;++k) {
@@ -1166,8 +1158,6 @@
             if (obj.geo_object) info = obj.geo_name; else
             if (obj.stack) info = painter.GetStackFullName(obj.stack);
             if (info===null) continue;
-            if (obj.geo_extract_index)
-               obj.last_highlight_index = obj.geo_extract_index(intersects[k]);
 
             if (info.indexOf("<prnt>")==0)
                info = painter.GetItemName() + info.substr(6);
@@ -1177,11 +1167,13 @@
             if (!active_mesh) {
                active_mesh = obj;
                tooltip = info;
+               geo_object = obj.geo_object;
+               if (obj.get_ctrl) geo_index = obj.get_ctrl().extractIndex(intersects[k]);
                if (active_mesh.stack) resolve = painter.ResolveStack(active_mesh.stack);
             }
          }
 
-         painter.HighlightMesh(active_mesh);
+         painter.HighlightMesh(active_mesh, undefined, geo_object, geo_index);
 
          if (painter.options.update_browser) {
             if (painter.options.highlight && tooltip) names = [ tooltip ];

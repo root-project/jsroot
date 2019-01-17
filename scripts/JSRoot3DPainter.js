@@ -813,6 +813,73 @@
 
    // ==============================================================================
 
+   /** Special class to control highliht and selection of single points, used in geo painter
+    * @private */
+   function PointsControl(mesh) {
+      this.mesh = mesh;
+   }
+
+   PointsControl.prototype.cleanup = function() {
+      if (!this.mesh) return;
+      delete this.mesh.is_selected;
+      this.createSpecial(null);
+      delete this.mesh;
+   }
+
+   PointsControl.prototype.extractIndex = function(intersect) {
+      return intersect && intersect.index!==undefined ? intersect.index : undefined;
+   }
+
+   PointsControl.prototype.isSelected = function() { return !!this.mesh.select_col; }
+
+   PointsControl.prototype.setSelected = function(col, indx) {
+      var m = this.mesh;
+      if ((m.select_col == col) && (m.select_indx == indx)) {
+         console.log("Reset selection");
+         col = null; indx = undefined;
+      }
+      m.select_col = col;
+      m.select_indx = indx;
+      this.createSpecial(col, indx);
+      return true;
+   }
+
+   PointsControl.prototype.setHighlight = function(col, indx) {
+      var m = this.mesh;
+      m.h_index = indx;
+      if (col)
+         this.createSpecial(col, indx);
+      else
+         this.createSpecial(m.select_col, m.select_indx);
+   }
+
+   PointsControl.prototype.createSpecial = function(color, index) {
+      var m = this.mesh;
+      if (!color) {
+         if (m.js_special) {
+            m.remove(m.js_special);
+            JSROOT.Painter.DisposeThreejsObject(m.js_special);
+            delete m.js_special;
+         }
+         return;
+      }
+
+      if (!m.js_special) {
+         var geom = new THREE.BufferGeometry();
+         geom.addAttribute( 'position', m.geometry.getAttribute("position"));
+         var material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
+         material.sizeAttenuation = m.material.sizeAttenuation;
+
+         m.js_special = new THREE.Points(geom, material);
+         m.js_special.jsroot_special = true; // special object, exclude from intersections
+         m.add(m.js_special);
+      }
+
+      if (color) m.js_special.material.color = new THREE.Color(color);
+      if (index !== undefined) m.js_special.geometry.setDrawRange(index, 1);
+   }
+
+
    function PointsCreator(size, iswebgl, scale) {
       this.webgl = (iswebgl === undefined) ? true : iswebgl;
       this.scale = scale || 1.;
@@ -837,28 +904,6 @@
       var pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
       return pnts;
-   }
-
-   /** function assigned to the created points mesh to support highlighting, used in geo painter */
-   JSROOT.Painter.PointsHighlight = function(color, index) {
-      if (color === null) {
-         if (this.drawn_highlight) {
-            this.remove(this.drawn_highlight);
-            JSROOT.Painter.DisposeThreejsObject(this.drawn_highlight);
-            delete this.drawn_highlight;
-         }
-         return;
-      }
-
-      var geom = new THREE.BufferGeometry();
-      geom.addAttribute( 'position', this.geometry.getAttribute("position"));
-      if (index !== undefined) geom.setDrawRange(index, 1);
-      var material = new THREE.PointsMaterial( { size: this.material.size*2, color: color } );
-      material.sizeAttenuation = this.material.sizeAttenuation;
-
-      this.drawn_highlight = new THREE.Points(geom, material);
-      this.drawn_highlight.jsroot_special = true; // special object, exclude from intersections
-      this.add(this.drawn_highlight);
    }
 
    // ==============================================================================
@@ -915,6 +960,7 @@
 
 
    JSROOT.Painter.PointsCreator = PointsCreator;
+   JSROOT.Painter.PointsControl = PointsControl;
 
    JSROOT.Painter.drawPolyLine3D = drawPolyLine3D;
 
