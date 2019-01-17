@@ -941,6 +941,8 @@
          if (unique && obj.material && (obj.material.opacity !== undefined))
             unique = obj.material.opacity >= 0.1;
 
+         if (obj.jsroot_special) unique = false;
+
          for (var k=0;(k<n) && unique;++k)
             if (intersects[k].object === obj) unique = false;
 
@@ -1124,6 +1126,19 @@
       this.Render3D(0);
 
       return !!active_mesh;
+   }
+
+   TGeoPainter.prototype.ProcessMouseClick = function(pnt, intersects) {
+      console.log("click pnt", pnt);
+
+      if (!intersects.length) return;
+
+      var mesh = intersects[0].object;
+      if (!mesh.geo_extract_index) return;
+
+      var click_indx = mesh.geo_extract_index(intersects[0]);
+
+      console.log("CLICK INDEX", click_indx);
    }
 
    TGeoPainter.prototype.addOrbitControls = function() {

@@ -318,7 +318,10 @@
       if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
 
-      if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
+      var enable_zoom = JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse,
+          enable_select = typeof painter.ProcessMouseClick == "function";
+
+      if (enable_zoom || enable_select) {
          renderer.domElement.addEventListener( 'mousedown', control_mousedown);
          renderer.domElement.addEventListener( 'mouseup', control_mouseup);
       }
@@ -349,11 +352,13 @@
       control.control_changed = false;
       control.control_active = false;
       control.mouse_ctxt = { x:0, y: 0, on: false };
+      control.enable_zoom = enable_zoom;
+      control.enable_select = enable_select;
 
       control.Cleanup = function() {
          if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
             this.domElement.removeEventListener( 'wheel', control_mousewheel);
-         if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse) {
+         if (this.enable_zoom || this.enable_select) {
             this.domElement.removeEventListener( 'mousedown', control_mousedown);
             this.domElement.removeEventListener( 'mouseup', control_mouseup);
          }
@@ -433,7 +438,6 @@
          }
          // this.painter.Render3D();
       }
-
 
       control.ChangeEvent = function() {
          this.mouse_ctxt.on = false; // disable context menu if any changes where done by orbit control
@@ -603,6 +607,7 @@
       }
 
       function control_mousedown(evnt) {
+
          // function used to hide some events from orbit control and redirect them to zooming rect
 
          if (control.mouse_zoom_mesh) {
@@ -615,15 +620,23 @@
          if ((evnt.button!==undefined) && (evnt.button !==0)) return;
          if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
 
-         control.mouse_zoom_mesh = control.DetectZoomMesh(evnt);
-         if (!control.mouse_zoom_mesh) return;
+         if (control.enable_zoom) {
+            control.mouse_zoom_mesh = control.DetectZoomMesh(evnt);
+            if (control.mouse_zoom_mesh) {
+               // just block orbit control
+               evnt.stopImmediatePropagation();
+               evnt.stopPropagation();
+               return;
+            }
+         }
 
-         // just block orbit control
-         evnt.stopImmediatePropagation();
-         evnt.stopPropagation();
+         if (control.enable_select) {
+            control.mouse_select_pnt = control.GetMousePos(evnt, {});
+         }
       }
 
       function control_mouseup(evnt) {
+
          if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.Get3DZoomCoord) {
 
             var kind = control.mouse_zoom_mesh.object.zoom,
@@ -643,7 +656,25 @@
          }
 
          // if selection was drawn, it should be removed and picture rendered again
-         control.RemoveZoomMesh();
+         if (control.enable_zoom)
+            control.RemoveZoomMesh();
+
+         // only left-button is considered
+         //if ((evnt.button!==undefined) && (evnt.button !==0)) return;
+         //if ((evnt.buttons!==undefined) && (evnt.buttons !== 1)) return;
+
+         if (control.enable_select && control.mouse_select_pnt) {
+
+            var pnt = control.GetMousePos(evnt, {});
+
+            var same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+            delete control.mouse_select_pnt;
+
+            if (same_pnt) {
+               var intersects = control.GetMouseIntersects(pnt);
+               control.painter.ProcessMouseClick(pnt, intersects);
+            }
+         }
       }
 
       control.MainProcessDblClick = function(evnt) {
@@ -666,6 +697,10 @@
 
       return control;
    }
+
+   /** Method cleanup three.js object as much as possible.
+    * Simplify JS engine to remove it from memory
+    * @private */
 
    JSROOT.Painter.DisposeThreejsObject = function(obj, only_childs) {
       if (!obj) return;
@@ -822,6 +857,7 @@
       material.sizeAttenuation = this.material.sizeAttenuation;
 
       this.drawn_highlight = new THREE.Points(geom, material);
+      this.drawn_highlight.jsroot_special = true; // special object, exclude from intersections
       this.add(this.drawn_highlight);
    }
 
