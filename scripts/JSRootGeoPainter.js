@@ -1006,8 +1006,10 @@
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
       // if selected mesh has geo_object property, try to highlight all correspondent objects from extras
-      if (!geo_object && active_mesh && active_mesh.geo_object)
+      if (!geo_object && active_mesh && active_mesh.geo_object) {
          geo_object = active_mesh.geo_object;
+         geo_index = active_mesh.last_highlight_index;
+      }
 
       if (geo_object) {
          active_mesh = active_mesh ? [ active_mesh ] : [];
@@ -1017,6 +1019,7 @@
                if (obj3d.geo_object === geo_object) {
                   var elem = obj3d.geo_highlight || obj3d;
                   if (active_mesh.indexOf(elem)<0) active_mesh.push(elem);
+                  elem.last_highlight_index = geo_index;
                }
             });
       } else if (geo_stack && this._toplevel) {
@@ -1045,7 +1048,7 @@
          if (active_mesh) {
             if (!geo_object) geo_object = active_mesh[0].geo_object;
             if (!geo_stack) geo_stack = active_mesh[0].stack;
-            if ((geo_index===undefined) && active_mesh[0].geo_highlight_index) geo_index = active_mesh[0].last_highlight_index;
+            if ((geo_index===undefined) && active_mesh[0].geo_extract_index) geo_index = active_mesh[0].last_highlight_index;
          }
 
          var lst = this._highlight_handlers || (!this._main_painter ? this._slave_painters : this._main_painter._slave_painters.concat([this._main_painter]));
