@@ -1005,6 +1005,52 @@
       this._highlight_handlers.push(handler);
    }
 
+   //////////////////////
+
+   function GeoDrawingControl(mesh) {
+      JSROOT.Painter.InteractiveControl.call(this);
+      this.mesh = mesh.material  ? mesh : null;
+   }
+
+   GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
+
+   GeoDrawingControl.prototype.setHighlight = function(col, indx) {
+      var c = this.mesh;
+      if (!c) return;
+
+      if (!col) {
+         c.material.color = c.originalColor;
+         c.material.opacity = c.originalOpacity;
+         delete c.originalColor;
+         delete c.originalOpacity;
+         if (c.originalWidth) {
+            c.material.linewidth = c.originalWidth;
+            delete c.originalWidth;
+         }
+         if (c.originalSize) {
+            c.material.size = c.originalSize;
+            delete c.originalSize;
+         }
+      } else {
+         c.originalColor = c.material.color;
+         c.originalOpacity = c.material.opacity;
+
+         c.material.color = new THREE.Color( col );
+         c.material.opacity = 1.;
+
+         if (c.hightlightWidthScale && !JSROOT.browser.isWin) {
+            c.originalWidth = c.material.linewidth;
+            c.material.linewidth *= c.hightlightWidthScale;
+         }
+         if (c.highlightScale) {
+            c.originalSize = c.material.size;
+            c.material.size *= c.highlightScale;
+         }
+      }
+   }
+
+   ////////////////////////
+
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
       if (geo_object) {
@@ -1053,66 +1099,30 @@
 
       var curr_mesh = this._selected_mesh;
 
+      function get_ctrl(mesh) {
+         return mesh.get_ctrl ? mesh.get_ctrl() : new GeoDrawingControl(mesh);
+      }
+
       // check if selections are the same
       if (!curr_mesh && !active_mesh) return false;
       var same = false;
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
-         for (var k=0;k<curr_mesh.length;++k)
-            if ((curr_mesh[k] !== active_mesh[k]) || (geo_index !== curr_mesh[k].h_index)) same = false;
+         for (var k=0;(k<curr_mesh.length) && same;++k) {
+            if ((curr_mesh[k] !== active_mesh[k]) || (get_ctrl(curr_mesh[k]).getHighlightIndex() != geo_index)) same = false;
+         }
       }
       if (same) return !!curr_mesh;
 
       if (curr_mesh)
-         for (var k=0;k<curr_mesh.length;++k) {
-            var c = curr_mesh[k];
-            if (!c.material) continue;
-            if (c.get_ctrl) {
-               c.get_ctrl().setHighlight();
-               continue;
-            }
-
-            c.material.color = c.originalColor;
-            c.material.opacity = c.originalOpacity;
-            delete c.originalColor;
-            delete c.originalOpacity;
-            if (c.originalWidth) {
-               c.material.linewidth = c.originalWidth;
-               delete c.originalWidth;
-            }
-            if (c.originalSize) {
-               c.material.size = c.originalSize;
-               delete c.originalSize;
-            }
-         }
+         for (var k=0;k<curr_mesh.length;++k)
+            get_ctrl(curr_mesh[k]).setHighlight();
 
       this._selected_mesh = active_mesh;
 
       if (active_mesh)
-         for (var k=0;k<active_mesh.length;++k) {
-            var a = active_mesh[k];
-            if (!a.material) continue;
-
-            if (a.get_ctrl) {
-               a.get_ctrl().setHighlight(color || 0xffaa33, geo_index);
-               continue;
-            }
-
-            a.originalColor = a.material.color;
-            a.originalOpacity = a.material.opacity;
-
-            a.material.color = new THREE.Color( color || 0xffaa33 );
-            a.material.opacity = 1.;
-
-            if (a.hightlightWidthScale && !JSROOT.browser.isWin) {
-               a.originalWidth = a.material.linewidth;
-               a.material.linewidth *= a.hightlightWidthScale;
-            }
-            if (a.highlightScale) {
-               a.originalSize = a.material.size;
-               a.material.size *= a.highlightScale;
-            }
-         }
+         for (var k=0;k<active_mesh.length;++k)
+            get_ctrl(active_mesh[k]).setHighlight(color || 0xffaa33, geo_index);
 
       this.Render3D(0);
 

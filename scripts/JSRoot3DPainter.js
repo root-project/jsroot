@@ -813,11 +813,30 @@
 
    // ==============================================================================
 
+   function InteractiveControl() {}
+
+   InteractiveControl.prototype.cleanup = function() {}
+
+   InteractiveControl.prototype.extractIndex = function(intersect) { return undefined; }
+
+   InteractiveControl.prototype.isSelected = function() { return false; }
+
+   InteractiveControl.prototype.setSelected = function(col, indx) {}
+
+   InteractiveControl.prototype.setHighlight = function(col, indx) {}
+
+   InteractiveControl.prototype.getHighlightIndex = function() { return undefined; }
+
+   // ==============================================================================
+
    /** Special class to control highliht and selection of single points, used in geo painter
     * @private */
    function PointsControl(mesh) {
+      InteractiveControl.call(this);
       this.mesh = mesh;
    }
+
+   PointsControl.prototype = Object.create(InteractiveControl.prototype);
 
    PointsControl.prototype.cleanup = function() {
       if (!this.mesh) return;
@@ -960,6 +979,7 @@
 
 
    JSROOT.Painter.PointsCreator = PointsCreator;
+   JSROOT.Painter.InteractiveControl = InteractiveControl;
    JSROOT.Painter.PointsControl = PointsControl;
 
    JSROOT.Painter.drawPolyLine3D = drawPolyLine3D;
