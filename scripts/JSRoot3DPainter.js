@@ -870,6 +870,7 @@
          this.createSpecial(col, indx);
       else
          this.createSpecial(m.select_col, m.select_indx);
+      return true;
    }
 
    PointsControl.prototype.createSpecial = function(color, index) {

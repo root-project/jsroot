@@ -1032,6 +1032,7 @@
             c.material.linewidth = c.origin.width * c.hightlightWidthScale;
          if (c.highlightScale)
             c.material.size = c.origin.size * c.highlightScale;
+         return true;
       } else if (c.origin) {
          c.material.color = c.origin.color;
          c.material.opacity = c.origin.opacity;
@@ -1039,6 +1040,7 @@
             c.material.linewidth = c.origin.width;
          if (c.highlightScale)
             c.material.size = c.origin.size;
+         return true;
       }
    }
 
@@ -1051,10 +1053,7 @@
          var extras = this.getExtrasContainer();
          if (extras)
             extras.traverse(function(obj3d) {
-               if (obj3d.geo_object === geo_object) {
-                  var elem = obj3d.geo_highlight || obj3d;
-                  if (active_mesh.indexOf(elem)<0) active_mesh.push(elem);
-               }
+               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(elem);
             });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
