@@ -1016,36 +1016,29 @@
 
    GeoDrawingControl.prototype.setHighlight = function(col, indx) {
       var c = this.mesh;
-      if (!c) return;
+      if (!c || !c.material) return;
 
-      if (!col) {
-         c.material.color = c.originalColor;
-         c.material.opacity = c.originalOpacity;
-         delete c.originalColor;
-         delete c.originalOpacity;
-         if (c.originalWidth) {
-            c.material.linewidth = c.originalWidth;
-            delete c.originalWidth;
-         }
-         if (c.originalSize) {
-            c.material.size = c.originalSize;
-            delete c.originalSize;
-         }
-      } else {
-         c.originalColor = c.material.color;
-         c.originalOpacity = c.material.opacity;
-
+      if (col) {
+         if (!c.origin)
+            c.origin = {
+              color: c.material.color,
+              opacity: c.material.opacity,
+              width: c.material.linewidth,
+              size: c.material.size
+           };
          c.material.color = new THREE.Color( col );
          c.material.opacity = 1.;
-
-         if (c.hightlightWidthScale && !JSROOT.browser.isWin) {
-            c.originalWidth = c.material.linewidth;
-            c.material.linewidth *= c.hightlightWidthScale;
-         }
-         if (c.highlightScale) {
-            c.originalSize = c.material.size;
-            c.material.size *= c.highlightScale;
-         }
+         if (c.hightlightWidthScale && !JSROOT.browser.isWin)
+            c.material.linewidth = c.origin.width * c.hightlightWidthScale;
+         if (c.highlightScale)
+            c.material.size = c.origin.size * c.highlightScale;
+      } else if (c.origin) {
+         c.material.color = c.origin.color;
+         c.material.opacity = c.origin.opacity;
+         if (c.hightlightWidthScale)
+            c.material.linewidth = c.origin.width;
+         if (c.highlightScale)
+            c.material.size = c.origin.size;
       }
    }
 
