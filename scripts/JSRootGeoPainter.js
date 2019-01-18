@@ -1009,7 +1009,7 @@
 
    function GeoDrawingControl(mesh) {
       JSROOT.Painter.InteractiveControl.call(this);
-      this.mesh = mesh.material  ? mesh : null;
+      this.mesh = (mesh && mesh.material) ? mesh : null;
    }
 
    GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
@@ -4067,6 +4067,8 @@
    JSROOT.addDrawFunc({ name: "TEveTrack", icon_get: JSROOT.GEO.getBrowserIcon, icon_click: JSROOT.GEO.browserIconClick });
 
    JSROOT.TGeoPainter = TGeoPainter;
+
+   JSROOT.Painter.GeoDrawingControl = GeoDrawingControl;
 
    return JSROOT.Painter;
 
