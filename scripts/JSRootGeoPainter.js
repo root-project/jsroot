@@ -1053,7 +1053,7 @@
          var extras = this.getExtrasContainer();
          if (extras)
             extras.traverse(function(obj3d) {
-               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(elem);
+               if ((obj3d.geo_object === geo_object) && (active_mesh.indexOf(obj3d)<0)) active_mesh.push(obj3d);
             });
       } else if (geo_stack && this._toplevel) {
          active_mesh = [];
