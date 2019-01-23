@@ -1121,7 +1121,7 @@
       return !!active_mesh;
    }
 
-   TGeoPainter.prototype.ProcessMouseClick = function(pnt, intersects) {
+   TGeoPainter.prototype.ProcessMouseClick = function(pnt, intersects, evnt) {
       if (!intersects.length) return;
 
       var mesh = intersects[0].object;
@@ -1131,8 +1131,12 @@
 
       var click_indx = ctrl.extractIndex(intersects[0]);
 
+      ctrl.evnt = evnt;
+
       if (ctrl.setSelected("blue", click_indx))
          this.Render3D();
+
+      ctrl.evnt = null;
    }
 
    TGeoPainter.prototype.addOrbitControls = function() {

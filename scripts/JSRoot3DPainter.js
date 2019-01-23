@@ -672,7 +672,7 @@
 
             if (same_pnt) {
                var intersects = control.GetMouseIntersects(pnt);
-               control.painter.ProcessMouseClick(pnt, intersects);
+               control.painter.ProcessMouseClick(pnt, intersects, evnt);
             }
          }
       }
