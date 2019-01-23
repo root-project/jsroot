@@ -1769,8 +1769,7 @@
    FileDumpSocket.prototype.send = function(str) {
       if (this.protocol[this.cnt] == "send") {
          this.cnt++;
-         // use timeout to let process other callbacks before next portion will be produced
-         setTimeout(this.next_operation.bind(this), 10);
+         setTimeout(this.next_operation.bind(this),10);
       }
    }
 
@@ -1778,21 +1777,24 @@
    }
 
    FileDumpSocket.prototype.next_operation = function() {
+      // when file request running - just ignore
+      if (this.wait_for_file) return;
       var fname = this.protocol[this.cnt];
       if (!fname) return;
       if (fname == "send") return; // waiting for send
-      // console.log("getting file", fname);
-      JSROOT.NewHttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text"), this.get_file.bind(this)).send();
+      // console.log("getting file", fname, "wait", this.wait_for_file);
+      this.wait_for_file = true;
+      JSROOT.NewHttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text"), this.get_file.bind(this, fname)).send();
       this.cnt++;
    }
 
-   FileDumpSocket.prototype.get_file = function(res) {
-      // console.log('got file', typeof res, !!res, res);
+   FileDumpSocket.prototype.get_file = function(fname, res) {
+      // console.log('got file', fname, typeof res, !!res);
+      this.wait_for_file = false;
       if (!res) return;
       if (this.receiver.ProvideData)
          this.receiver.ProvideData(res, 0);
-      // use timeout to let process other callbacks before next portion will be produced
-      setTimeout(this.next_operation.bind(this), 10);
+      setTimeout(this.next_operation.bind(this),10);
    }
 
    // ========================================================================================
@@ -1812,7 +1814,7 @@
       this.ackn = 10;
    }
 
-   /** Set callbacks receiever.
+   /** Set callbacks reciever.
     *
     * Following function can be defined in receiver object:
     *    - OnWebsocketMsg
@@ -1839,7 +1841,7 @@
    /** Provide data for receiver. When no queue - do it directly.
     * @private */
    WebWindowHandle.prototype.ProvideData = function(_msg, _len) {
-      if (!this.msgqueue)
+      if (!this.msgqueue || !this.msgqueue.length)
          return this.InvokeReceiver("OnWebsocketMsg", _msg, _len);
       this.msgqueue.push({ ready: true, msg: _msg, len: _len});
    }
