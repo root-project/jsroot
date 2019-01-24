@@ -1199,8 +1199,7 @@
       }
 
       this._controls.ProcessMouseLeave = function() {
-         if (painter.options.update_browser)
-            painter.ActivateInBrowser([]);
+         this.ProcessMouseMove([]); // to disable highlight and reset browser
       }
 
       this._controls.ProcessDblClick = function() {
