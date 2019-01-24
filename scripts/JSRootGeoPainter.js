@@ -1178,7 +1178,10 @@
                active_mesh = obj;
                tooltip = info;
                geo_object = obj.geo_object;
-               if (obj.get_ctrl) geo_index = obj.get_ctrl().extractIndex(intersects[k]);
+               if (obj.get_ctrl) {
+                  geo_index = obj.get_ctrl().extractIndex(intersects[k]);
+                  if ((geo_index !== undefined) && (typeof tooltip == "string")) tooltip += " indx:" + JSON.stringify(geo_index);
+               }
                if (active_mesh.stack) resolve = painter.ResolveStack(active_mesh.stack);
             }
          }
