@@ -819,13 +819,11 @@
 
    InteractiveControl.prototype.extractIndex = function(intersect) { return undefined; }
 
-   InteractiveControl.prototype.isSelected = function() { return false; }
-
    InteractiveControl.prototype.setSelected = function(col, indx) {}
 
    InteractiveControl.prototype.setHighlight = function(col, indx) {}
 
-   InteractiveControl.prototype.getHighlightIndex = function() { return undefined; }
+   InteractiveControl.prototype.checkHighlightIndex = function(indx) { return undefined; }
 
    // ==============================================================================
 
@@ -848,8 +846,6 @@
    PointsControl.prototype.extractIndex = function(intersect) {
       return intersect && intersect.index!==undefined ? intersect.index : undefined;
    }
-
-   PointsControl.prototype.isSelected = function() { return !!this.mesh.select_col; }
 
    PointsControl.prototype.setSelected = function(col, indx) {
       var m = this.mesh;

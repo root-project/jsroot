@@ -1015,6 +1015,10 @@
    GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
 
    GeoDrawingControl.prototype.setHighlight = function(col, indx) {
+      return this.drawSpecial(col, indx);
+   }
+
+   GeoDrawingControl.prototype.drawSpecial = function(col, indx) {
       var c = this.mesh;
       if (!c || !c.material) return;
 
@@ -1101,7 +1105,7 @@
       if (curr_mesh && active_mesh && (curr_mesh.length == active_mesh.length)) {
          same = true;
          for (var k=0;(k<curr_mesh.length) && same;++k) {
-            if ((curr_mesh[k] !== active_mesh[k]) || (get_ctrl(curr_mesh[k]).getHighlightIndex() != geo_index)) same = false;
+            if ((curr_mesh[k] !== active_mesh[k]) || get_ctrl(curr_mesh[k]).checkHighlightIndex(geo_index)) same = false;
          }
       }
       if (same) return !!curr_mesh;
