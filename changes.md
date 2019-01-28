@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 5.6.x
+## Changes in 5.6.3
 1. Fix - support clipping for tracks and points in geo painter
 2. Fix - geometry with TGeoNodeOffset was not correctly drawn
 3. Fix - use proper formatting for entries and integral (#179)
