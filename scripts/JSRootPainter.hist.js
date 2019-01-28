@@ -977,7 +977,7 @@
       switch(fmt) {
          case "stat" : fmt = pave.fStatFormat || JSROOT.gStyle.fStatFormat; break;
          case "fit": fmt = pave.fFitFormat || JSROOT.gStyle.fFitFormat; break;
-         case "entries": if (value < 1e9) return value.toFixed(0); fmt = "14.7g"; break;
+         case "entries": if ((Math.abs(value) < 1e9) && (Math.round(value) == value)) return value.toFixed(0); fmt = "14.7g"; break;
          case "last": fmt = this.lastformat; break;
       }
 
