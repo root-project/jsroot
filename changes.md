@@ -3,6 +3,8 @@
 ## Changes in 5.6.x
 1. Fix - support clipping for tracks and points in geo painter
 2. Fix - geometry with TGeoNodeOffset was not correctly drawn
+3. Fix - use proper formatting for entries and integral (#179)
+4. Fix - TTree::Draw for 3d histogram was not properly performed
 
 
 ## Changes in 5.6.2
