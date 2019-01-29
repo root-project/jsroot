@@ -48,6 +48,14 @@ To automate files loading and objects drawing, one can provide number of URL par
 - style - name of TStyle object to define global JSROOT style
 - toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position, 'vert' for vertical
 - divsize - fixed size in pixels for main div element like &dvisize=700x400
+- optstat -  settings for stat box, default 1111 (see TStyle::SetOptStat) 
+- optfit - fit parameters settings for stat box, default 0 (see TStyle::SetOptFit)
+- statfmt - formatting for float values in stat box, default 6.4g (see TStyle::SetStatFormat)
+- fitfmt - formatting for fit values in stat box, default 5.4g (see TStyle::SetFitFormat)
+- nomenu - disable content menu
+- notouch - disable touch events handling
+- noprogress - do not show progress messages like scripts loading
+
 
 For instance:
 
@@ -319,6 +327,11 @@ Following draw options could be specified (separated by semicolon or ';'):
    - dsize - use volume size as rendering order
    - ddflt - let three.js to calculate rendering order
 
+In the URL string several global settings can be changed:
+
+   - geosegm - grads per segment is cylindrical shapes, default is 6 
+   - geocomp - compress results of composite shape production, default is true
+     
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:
 
