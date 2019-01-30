@@ -552,7 +552,7 @@
             this.tooltip.check_parent(this.painter.select_main().node());
 
             this.tooltip.show(tip, mouse);
-            this.tooltip.pos(evnt)
+            this.tooltip.pos(evnt);
          } else {
             this.tooltip.hide();
             if (intersects)
