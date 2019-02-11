@@ -5410,6 +5410,37 @@
 
    // ===========================================================
 
+   /** @summary Set active pad painter
+    *
+    * @desc Should be used to handle key press events, which are global in the web browser
+    *  @param {object} args - functions arguments
+    *  @param {object} args.pp - pad painter
+    *  @param {boolean} [args.active = false] - is pad activated or not
+    * @private */
+   Painter.SelectActivePad = function(args) {
+      if (args.active) {
+         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
+            this.$active_pp.SetActive(false);
+
+         this.$active_pp = args.pp;
+
+         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
+            this.$active_pp.SetActive(true);
+      } else if (this.$active_pp === args.pp) {
+         delete this.$active_pp;
+      }
+   }
+
+   /** @summary Returns current active pad
+    * @desc Should be used only for keyboard handling
+    * @private */
+
+   Painter.GetActivePad = function() {
+      return this.$active_pp;
+   }
+
+   // =====================================================================
+
    function TooltipHandler(obj) {
       JSROOT.TObjectPainter.call(this, obj);
       this.tooltip_enabled = true;  // this is internally used flag to temporary disbale/enable tooltip
