@@ -5425,6 +5425,14 @@
       }
    }
 
+   /** @summary Returns current active pad
+    * @desc Should be used only for keyboard handling
+    * @private */
+
+   Painter.GetActivePad = function() {
+      return this.$active_pp;
+   }
+
    // =====================================================================
 
    function TooltipHandler(obj) {

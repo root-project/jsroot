@@ -3891,6 +3891,8 @@
       // we select current pad, where all drawing is performed
       var prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
 
+      JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
+
       // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, function() {
          painter.ShowButtons();
@@ -4270,6 +4272,8 @@
 
       if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+
+      JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
 
       painter.DrawPrimitives(0, function() {
          painter.ShowButtons();

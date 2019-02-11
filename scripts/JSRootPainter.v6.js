@@ -4349,6 +4349,9 @@
       // we select current pad, where all drawing is performed
       var prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
 
+      // set active pad
+      JSROOT.Painter.SelectActivePad({ pp: painter, active: true });
+
       // flag used to prevent immediate pad redraw during first draw
       painter.DrawPrimitives(0, function() {
          painter.ShowButtons();
@@ -4837,6 +4840,9 @@
 
       if (nocanvas && opt.indexOf("noframe") < 0)
          JSROOT.Painter.drawFrame(divid, null);
+
+      // select global reference - required for keys handling
+      JSROOT.Painter.SelectActivePad({ pp: painter, active: true });
 
       painter.DrawPrimitives(0, function() { painter.ShowButtons(); painter.DrawingReady(); });
       return painter;
