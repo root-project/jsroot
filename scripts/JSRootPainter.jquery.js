@@ -1684,6 +1684,16 @@
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
+   /** @brief Popup window on the top
+    * @private */
+   FlexibleDisplay.prototype.PopupWindow = function(div) {
+      div.appendTo(div.parent());
+
+      var dummy = new JSROOT.TObjectPainter();
+      dummy.SetDivId(div.find(".flex_draw").get(0), -1);
+      JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+   }
+
    FlexibleDisplay.prototype.CreateFrame = function(title) {
 
       this.BeforeCreateFrame(title);
@@ -1768,7 +1778,7 @@
             helper: "jsroot-flex-resizable-helper",
             start: function(event, ui) {
                // bring element to front when start resizing
-               $(this).appendTo($(this).parent());
+               mdi.PopupWindow($(this));
             },
             stop: function(event, ui) {
                var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
@@ -1779,7 +1789,8 @@
             containment: "parent",
             start: function(event, ui) {
                // bring element to front when start dragging
-               $(this).appendTo($(this).parent());
+               mdi.PopupWindow($(this));
+
                var ddd = $(this).find(".flex_draw");
 
                // block dragging when mouse below header
@@ -1793,7 +1804,8 @@
          // .hover(function() { $(this).toggleClass("ui-state-hover"); })
          .click(function() {
             var div = $(this).parent();
-            div.appendTo(div.parent());
+
+            mdi.PopupWindow(div);
          })
         .find("button")
            .first()

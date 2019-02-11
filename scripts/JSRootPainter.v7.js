@@ -2592,6 +2592,8 @@
       this.this_pad_name = "";
       this.has_canvas = false;
 
+      JSROOT.Painter.SelectActivePad({ pp: this, active: false });
+
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
@@ -2641,6 +2643,8 @@
 
       if (pos && !istoppad)
           this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
+
+      JSROOT.Painter.SelectActivePad({ pp: pp, active: true });
 
       if (typeof canp.SelectActivePad == "function")
           canp.SelectActivePad(pp, _painter, pos);
