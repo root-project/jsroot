@@ -1753,12 +1753,12 @@
              .toggleClass("ui-icon-triangle-2-n-s", state=="maximal");
 
          switch (state) {
-            case "minimal" :
+            case "minimal":
                main.height(main.find('.flex_header').height()).width("auto");
                main.find(".flex_draw").css("display","none");
                main.find(".ui-resizable-handle").css("display","none");
                break;
-            case "maximal" :
+            case "maximal":
                main.height("100%").width("100%").css('left','').css('top','');
                main.find(".flex_draw").css("display","");
                main.find(".ui-resizable-handle").css("display","none");
@@ -1815,6 +1815,13 @@
          // .hover(function() { $(this).toggleClass("ui-state-hover"); })
          .click(function() {
             PopupWindow($(this).parent());
+         })
+         .dblclick(function() {
+            var main = $(this).parent();
+            if (main.prop('state') == "normal")
+               ChangeWindowState(main, "maximal");
+            else
+               ChangeWindowState(main, "normal");
          })
         .find("button")
            .first()
