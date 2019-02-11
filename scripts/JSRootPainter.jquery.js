@@ -1678,7 +1678,6 @@
       return found;
    }
 
-
    FlexibleDisplay.prototype.ActivateFrame = function(frame) {
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
@@ -1712,17 +1711,24 @@
 
       function PopupWindow(div) {
          if (div === 'first') {
-            div = $('#' + topid + ' .flex_draw');
-            if (!div.length) return;
-            div = div.first();
-         } else {
-            div.appendTo(div.parent());
-            div = div.find(".flex_draw");
+            div = null;
+            $('#' + topid + ' .flex_frame').each(function() {
+               if (!$(this).is(":hidden") && ($(this).prop('state') != "minimal")) div = $(this);
+            });
+            if (!div) return;
          }
+
+         if (div.prop('state') == "minimal") return;
+
+         div.appendTo(div.parent());
+         div = div.find(".flex_draw");
+         div.attr('frame_active', 'true');
 
          var dummy = new JSROOT.TObjectPainter();
          dummy.SetDivId(div.get(0), -1);
          JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+
+         JSROOT.resize(div.get(0));
       }
 
       function ChangeWindowState(main, state) {
@@ -1767,10 +1773,10 @@
                       .css('top', main.prop('original_top'));
          }
 
-         main.find(".flex_draw").attr('frame_active', (state !== "minimal") ? "true" : "false");
-
          if (state !== "minimal")
-            JSROOT.resize(main.find(".flex_draw").get(0));
+            PopupWindow(main);
+         else
+            PopupWindow("first");
       }
 
       $("#" + subid)
@@ -1804,7 +1810,7 @@
                if (isparent) return false;
             }
          })
-        .click(function() { PopupWindow($(this)); })
+       .click(function() { PopupWindow($(this)); })
        .find('.flex_header')
          // .hover(function() { $(this).toggleClass("ui-state-hover"); })
          .click(function() {

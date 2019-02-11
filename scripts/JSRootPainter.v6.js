@@ -1904,7 +1904,7 @@
       var main = this.select_main();
       if (main.empty()) return;
       var isactive = main.attr('frame_active');
-      if (isactive && (isactive!=='true')) return;
+      if (isactive && (typeof isactive == 'true') && (isactive!=='true')) return;
 
       var key = "";
       switch (evnt.keyCode) {
