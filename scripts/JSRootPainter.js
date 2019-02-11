@@ -5418,14 +5418,11 @@
     *  @param {boolean} [args.active = false] - is pad activated or not
     * @private */
    Painter.SelectActivePad = function(args) {
-
       if (args.active) {
          this.$active_pp = args.pp;
       } else if (this.$active_pp === args.pp) {
          delete this.$active_pp;
       }
-
-      console.log('Select active pp', this.$active_pp ? "painter" : null);
    }
 
    // =====================================================================

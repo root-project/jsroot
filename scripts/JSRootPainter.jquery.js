@@ -1684,16 +1684,6 @@
       this.active_frame_title = d3.select(frame).attr('frame_title');
    }
 
-   /** @brief Popup window on the top
-    * @private */
-   FlexibleDisplay.prototype.PopupWindow = function(div) {
-      div.appendTo(div.parent());
-
-      var dummy = new JSROOT.TObjectPainter();
-      dummy.SetDivId(div.find(".flex_draw").get(0), -1);
-      JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
-   }
-
    FlexibleDisplay.prototype.CreateFrame = function(title) {
 
       this.BeforeCreateFrame(title);
@@ -1720,6 +1710,22 @@
                  '</div>';
 
       top.append(entry);
+
+      function PopupWindow(div) {
+         if (div === 'first') {
+            div = $('#' + topid + ' .flex_draw');
+            if (!div.length) return;
+            div = div.first();
+         } else {
+            div.appendTo(div.parent());
+            div = div.find(".flex_draw");
+         }
+
+         var dummy = new JSROOT.TObjectPainter();
+         dummy.SetDivId(div.get(0), -1);
+         JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
+      }
+
 
       function ChangeWindowState(main, state) {
          var curr = main.prop('state');
@@ -1778,7 +1784,7 @@
             helper: "jsroot-flex-resizable-helper",
             start: function(event, ui) {
                // bring element to front when start resizing
-               mdi.PopupWindow($(this));
+               PopupWindow($(this));
             },
             stop: function(event, ui) {
                var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
@@ -1789,7 +1795,7 @@
             containment: "parent",
             start: function(event, ui) {
                // bring element to front when start dragging
-               mdi.PopupWindow($(this));
+               PopupWindow($(this));
 
                var ddd = $(this).find(".flex_draw");
 
@@ -1800,12 +1806,11 @@
                if (isparent) return false;
             }
          })
+        .click(function() { PopupWindow($(this)); })
        .find('.flex_header')
          // .hover(function() { $(this).toggleClass("ui-state-hover"); })
          .click(function() {
-            var div = $(this).parent();
-
-            mdi.PopupWindow(div);
+            PopupWindow($(this).parent());
          })
         .find("button")
            .first()
@@ -1815,6 +1820,7 @@
               var main = $(this).parent().parent();
               mdi.CleanupFrame(main.find(".flex_draw").get(0));
               main.remove();
+              PopupWindow('first'); // set active as first window
            })
            .next()
            .attr('title','maximize canvas')
