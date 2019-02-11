@@ -11,6 +11,7 @@
 8. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)    
 9. Fix - support clipping for tracks and points in geo painter
 10. Fix - drawing of TGeoNode with finder   
+11. Fix - key press events processed only in actvie pad (ROOT-9128)  
 
  
 ## Changes in 5.6.2
