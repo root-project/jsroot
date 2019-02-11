@@ -870,6 +870,12 @@
       return this;
    }
 
+   /** @summary Set active flag for frame - can block some events
+    * @private */
+   TFramePainter.prototype.SetActive = function(on) {
+      // do nothing here - key handler is handled differently
+   }
+
    TFramePainter.prototype.GetTipName = function(append) {
       var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
       if (append) res+=append;
@@ -1894,10 +1900,11 @@
    }
 
    TFramePainter.prototype.ProcessKeyPress = function(evnt) {
+
       var main = this.select_main();
       if (main.empty()) return;
       var isactive = main.attr('frame_active');
-      if (isactive && isactive!=='true') return;
+      if (isactive && (isactive!=='true')) return;
 
       var key = "";
       switch (evnt.keyCode) {
@@ -1911,6 +1918,9 @@
          case 106: key = "*"; break;
          default: return false;
       }
+
+      var pp = this.pad_painter();
+      if (JSROOT.Painter.GetActivePad() !== pp) return;
 
       if (evnt.shiftKey) key = "Shift " + key;
       if (evnt.altKey) key = "Alt " + key;
@@ -1939,8 +1949,7 @@
          evnt.stopPropagation();
          evnt.preventDefault();
       } else {
-         var pp = this.pad_painter(),
-             func = pp ? pp.FindButton(key) : "";
+         var func = pp ? pp.FindButton(key) : "";
          if (func) {
             pp.PadButtonClick(func);
             evnt.stopPropagation();
@@ -2853,6 +2862,15 @@
          canp.pad_events_receiver({ what: "redraw", padpainter: pp, painter: _painter });
    }
 
+   /** @brief Called by framework when pad is supposed to be active and get focus
+    * @private */
+   TPadPainter.prototype.SetActive = function(on) {
+      var fp = this.frame_painter();
+      if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
+   }
+
+   /** @brief Draw pad active border
+    * @private */
    TPadPainter.prototype.DrawActiveBorder = function(svg_rect, is_active) {
       if (is_active !== undefined) {
          if (this.is_active_pad === is_active) return;

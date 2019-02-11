@@ -1608,12 +1608,11 @@
                        .tabs({
                           heightStyle : "fill",
                           activate : function (event,ui) {
-                             console.log('tabs activate');
                              $(ui.oldPanel).attr('frame_active', 'false');
                              $(ui.newPanel).css('overflow', 'hidden').attr('frame_active', 'true');
                              JSROOT.resize($(ui.newPanel).attr('id'));
                            }
-                          });
+                        });
 
          tabs.delegate("span.ui-icon-close", "click", function() {
             var panelId = $(this).closest("li").remove().attr("aria-controls");
@@ -1726,7 +1725,6 @@
          JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
       }
 
-
       function ChangeWindowState(main, state) {
          var curr = main.prop('state');
          if (!curr) curr = "normal";
@@ -1769,7 +1767,7 @@
                       .css('top', main.prop('original_top'));
          }
 
-         main.find(".flex_draw").attr('frame_active', state !== "minimal" ? "true" : "false");
+         main.find(".flex_draw").attr('frame_active', (state !== "minimal") ? "true" : "false");
 
          if (state !== "minimal")
             JSROOT.resize(main.find(".flex_draw").get(0));

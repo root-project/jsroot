@@ -5419,7 +5419,13 @@
     * @private */
    Painter.SelectActivePad = function(args) {
       if (args.active) {
+         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
+            this.$active_pp.SetActive(false);
+
          this.$active_pp = args.pp;
+
+         if (this.$active_pp && (typeof this.$active_pp.SetActive == 'function'))
+            this.$active_pp.SetActive(true);
       } else if (this.$active_pp === args.pp) {
          delete this.$active_pp;
       }
