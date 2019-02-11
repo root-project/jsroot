@@ -859,6 +859,12 @@
       return this;
    }
 
+   /** @summary Set active flag for frame - can block some events
+    * @private */
+   TFramePainter.prototype.SetActive = function(on) {
+      // do nothing here - key handler is handled differently
+   }
+
    TFramePainter.prototype.GetTipName = function(append) {
       var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
       if (append) res+=append;
@@ -2651,6 +2657,13 @@
 
       if (canp.pad_events_receiver)
          canp.pad_events_receiver({ what: "select", padpainter: pp, painter: _painter, position: pos });
+   }
+
+   /** @brief Called by framework when pad is supposed to be active and get focus
+    * @private */
+   TPadPainter.prototype.SetActive = function(on) {
+      var fp = this.frame_painter();
+      if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
    TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
