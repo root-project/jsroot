@@ -1715,17 +1715,16 @@
             if (!div) return;
          }
 
+         div.appendTo(div.parent());
+
          if (div.prop('state') == "minimal") return;
 
-         div.appendTo(div.parent());
-         div = div.find(".flex_draw");
-         div.attr('frame_active', 'true');
-
+         div = div.find(".flex_draw").get(0);
          var dummy = new JSROOT.TObjectPainter();
-         dummy.SetDivId(div.get(0), -1);
+         dummy.SetDivId(div, -1);
          JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
 
-         JSROOT.resize(div.get(0));
+         JSROOT.resize(div);
       }
 
       function ChangeWindowState(main, state) {
