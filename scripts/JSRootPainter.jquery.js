@@ -1516,9 +1516,8 @@
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
                      var sub = $(this).next(), hide_drawing = sub.is(":hidden");
-                     sub.attr('frame_active', hide_drawing ? "false" : "true")
-                        .css('display', hide_drawing ? 'none' : '');
-                     if (!hide_drawing) JSROOT.resize(sub.attr('id'));
+                     sub.css('display', hide_drawing ? 'none' : '');
+                     if (!hide_drawing) JSROOT.resize(sub.get(0));
                   })
             .next()
             .addClass("ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom")
@@ -1608,9 +1607,8 @@
                        .tabs({
                           heightStyle : "fill",
                           activate : function (event,ui) {
-                             $(ui.oldPanel).attr('frame_active', 'false');
-                             $(ui.newPanel).css('overflow', 'hidden').attr('frame_active', 'true');
-                             JSROOT.resize($(ui.newPanel).attr('id'));
+                             $(ui.newPanel).css('overflow', 'hidden');
+                             JSROOT.resize($(ui.newPanel).get(0));
                            }
                         });
 
@@ -1632,7 +1630,6 @@
       $('#' + hid)
          .empty()
          .css('overflow', 'hidden')
-         .attr('frame_active', 'true')
          .attr('frame_title', title);
 
       return $('#' + hid).get(0);
