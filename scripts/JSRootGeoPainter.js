@@ -897,6 +897,7 @@
                   this.focusCamera(intersects[indx].object);
                });
 
+               if (!menu.painter._geom_viewer)
                menu.add("Hide", n, function(indx) {
                   var resolve = menu.painter._clones.ResolveStack(intersects[indx].object.stack);
 
