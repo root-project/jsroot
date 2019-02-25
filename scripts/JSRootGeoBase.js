@@ -2021,8 +2021,21 @@
       return geom.vertices.length;
    }
 
+   /** Compares two stacks. Returns length where stacks are the same
+    * @memberOf JSROOT.GEO
+    * @private */
+   JSROOT.GEO.CompareStacks = function(stack1, stack2) {
+      if (!stack1 || !stack2) return 0;
+      if (stack1 === stack2) return stack1.length;
+      var len = Math.min(stack1.length, stack2.length);
+      for (var k=0;k<len;++k)
+         if (stack1[k] !== stack2[k]) return k;
+      return len;
+   }
+
    /** Checks if two stack arrays are identical
-    * @memberOf JSROOT.GEO */
+    * @memberOf JSROOT.GEO
+    * @private */
    JSROOT.GEO.IsSameStack = function(stack1, stack2) {
       if (!stack1 || !stack2) return false;
       if (stack1 === stack2) return true;
