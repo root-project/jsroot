@@ -3148,7 +3148,7 @@
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
           colors = ["red","green","blue"],
-          specials = [false, false, false], // special handling for ortho camera
+          ortho = this.options.ortho_camera,
           yup = [this.options._yup, this.options._yup, this.options._yup],
           numaxis = 3;
 
@@ -3165,7 +3165,7 @@
          labels[0] = labels[2];
          colors[0] = colors[2];
          yup[0] = yup[2];
-         specials[0] = true;
+         ortho = true;
       }
 
       for (var naxis=0;naxis<numaxis;++naxis) {
@@ -3190,9 +3190,9 @@
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; if (yup[naxis] && !specials[naxis]) lbl = labels[naxis] + " " + lbl; else lbl += " " + labels[naxis]; break;
-           case 1: buf[4] = box.max.y; if (yup[naxis]) lbl += " " + labels[naxis]; else lbl = labels[naxis] + " " + lbl; break;
-           case 2: buf[5] = box.max.z; lbl += " " + labels[naxis]; break;
+           case 0: buf[3] = box.max.x; if (yup[0] && !ortho) lbl = labels[0] + " " + lbl; else lbl += " " + labels[0]; break;
+           case 1: buf[4] = box.max.y; if (yup[1]) lbl += " " + labels[1]; else lbl = labels[1] + " " + lbl; break;
+           case 2: buf[5] = box.max.z; lbl += " " + labels[2]; break;
          }
 
          if (this.options._axis_center)
@@ -3227,11 +3227,24 @@
          if (yup[naxis]) {
             switch (naxis) {
                case 0:
-                  if (!specials[0]) mesh.rotateY(Math.PI);
-                  if (!specials[0]) mesh.translateX(-textbox.max.x-text_size*0.5); else mesh.translateX(text_size*0.5);
+                  if (!ortho) {
+                     mesh.rotateY(Math.PI);
+                     mesh.translateX(-textbox.max.x-text_size*0.5);
+                  } else {
+                     mesh.translateX(text_size*0.5);
+                  }
                   mesh.translateY(-textbox.max.y/2);
                   break;
-               case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 1:
+                  if (!ortho) {
+                     mesh.rotateX(-Math.PI/2);
+                     mesh.rotateY(-Math.PI/2);
+                  } else {
+                     mesh.rotateZ(Math.PI/2);
+                  }
+                  mesh.translateX(text_size*0.5);
+                  mesh.translateY(-textbox.max.y/2);
+                  break;
                case 2: mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
            }
          } else {
@@ -3256,11 +3269,24 @@
          if (yup[naxis]) {
             switch (naxis) {
                case 0:
-                  if (!specials[0]) mesh.rotateY(Math.PI);
-                  if (!specials[0]) mesh.translateX(text_size*0.5); else mesh.translateX(-textbox.max.x-text_size*0.5);
+                  if (!ortho) {
+                     mesh.rotateY(Math.PI);
+                     mesh.translateX(text_size*0.5);
+                  } else {
+                     mesh.translateX(-textbox.max.x-text_size*0.5);
+                  }
                   mesh.translateY(-textbox.max.y/2);
                   break;
-               case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(-textbox.max.x-text_size*0.5); break;
+               case 1:
+                  if (!ortho) {
+                     mesh.rotateX(-Math.PI/2);
+                     mesh.rotateY(-Math.PI/2);
+                  } else {
+                     mesh.rotateZ(Math.PI/2);
+                  }
+                  mesh.translateY(-textbox.max.y/2);
+                  mesh.translateX(-textbox.max.x-text_size*0.5);
+                  break;
                case 2: mesh.rotateY(-Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
             }
          } else {
