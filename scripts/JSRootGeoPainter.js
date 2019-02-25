@@ -3141,7 +3141,12 @@
       var container = this.getExtrasContainer('create', 'axis');
 
       var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
-          names = ['x','y','z'], center = [0,0,0];
+          center = [0,0,0],
+          names = ['x','y','z'],
+          labels = ['X','Y','Z'],
+          colors = ["red","green","blue"],
+          yup = [this.options._yup, this.options._yup, this.options._yup],
+          numaxis = 3;
 
       if (this.options._axis_center)
          for (var naxis=0;naxis<3;++naxis) {
@@ -3150,9 +3155,16 @@
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 
-      for (var naxis=0;naxis<3;++naxis) {
+      if (this.options.ortho_camera) {
+         numaxis = 2; // show only two axis, X dimension used as Z
+         labels[0] = labels[2];
+         colors[0] = colors[2];
+         // yup[0] = !yup[2];
+      }
 
-         var buf = new Float32Array(6), axiscol, name = names[naxis];
+      for (var naxis=0;naxis<numaxis;++naxis) {
+
+         var buf = new Float32Array(6), axiscol = colors[naxis], name = names[naxis];
 
          function Convert(value) {
             var range = box.max[name] - box.min[name];
@@ -3172,9 +3184,9 @@
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; axiscol = "red"; if (this.options._yup) lbl = "X "+lbl; else lbl+=" X"; break;
-           case 1: buf[4] = box.max.y; axiscol = "green"; if (this.options._yup) lbl+=" Y"; else lbl = "Y " + lbl; break;
-           case 2: buf[5] = box.max.z; axiscol = "blue"; lbl += " Z"; break;
+           case 0: buf[3] = box.max.x; if (yup[naxis]) lbl = labels[naxis] + " " + lbl; else lbl += " " + labels[naxis]; break;
+           case 1: buf[4] = box.max.y; if (yup[naxis]) lbl += " " + labels[naxis]; else lbl = labels[naxis] + " " + lbl; break;
+           case 2: buf[5] = box.max.z; lbl += " " + labels[naxis]; break;
          }
 
          if (this.options._axis_center)
@@ -3206,7 +3218,7 @@
          mesh.translateY(buf[4]);
          mesh.translateZ(buf[5]);
 
-         if (this.options._yup) {
+         if (yup[naxis]) {
             switch (naxis) {
                case 0: mesh.rotateY(Math.PI); mesh.translateX(-textbox.max.x - text_size*0.5); mesh.translateY(-textbox.max.y/2);  break;
                case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
@@ -3231,7 +3243,7 @@
          mesh.translateY(buf[1]);
          mesh.translateZ(buf[2]);
 
-         if (this.options._yup) {
+         if (yup[naxis]) {
             switch (naxis) {
                case 0: mesh.rotateY(Math.PI); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
                case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(-textbox.max.x-text_size*0.5); break;
