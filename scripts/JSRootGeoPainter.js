@@ -3545,14 +3545,8 @@
       this._scene_height = sz.height;
 
       if (this._camera && this._renderer) {
-         if (this._camera.type == "OrthographicCamera") {
-            this._camera.left = -sz.width;
-            this._camera.right = sz.width;
-            this._camera.top = -sz.height;
-            this._camera.bottom = sz.height;
-         } else {
+         if (this._camera.type == "PerspectiveCamera")
             this._camera.aspect = this._scene_width / this._scene_height;
-         }
          this._camera.updateProjectionMatrix();
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
 
