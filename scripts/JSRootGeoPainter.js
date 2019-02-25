@@ -2014,6 +2014,9 @@
 
       var box = this.getGeomBoundingBox(this._toplevel);
 
+      // if detect of coordinates fails - ignore
+      if (isNaN(box.min.x)) return;
+
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
           sizez = box.max.z - box.min.z,
@@ -3145,6 +3148,7 @@
           names = ['x','y','z'],
           labels = ['X','Y','Z'],
           colors = ["red","green","blue"],
+          specials = [false, false, false], // special handling for ortho camera
           yup = [this.options._yup, this.options._yup, this.options._yup],
           numaxis = 3;
 
@@ -3155,11 +3159,13 @@
             center[naxis] = (box.min[name] + box.max[name])/2;
          }
 
+      // only two dimensions are seen by ortho camera, X draws Z, can be configured better later
       if (this.options.ortho_camera) {
-         numaxis = 2; // show only two axis, X dimension used as Z
+         numaxis = 2;
          labels[0] = labels[2];
          colors[0] = colors[2];
-         // yup[0] = !yup[2];
+         yup[0] = yup[2];
+         specials[0] = true;
       }
 
       for (var naxis=0;naxis<numaxis;++naxis) {
@@ -3184,7 +3190,7 @@
          buf[5] = box.min.z;
 
          switch (naxis) {
-           case 0: buf[3] = box.max.x; if (yup[naxis]) lbl = labels[naxis] + " " + lbl; else lbl += " " + labels[naxis]; break;
+           case 0: buf[3] = box.max.x; if (yup[naxis] && !specials[naxis]) lbl = labels[naxis] + " " + lbl; else lbl += " " + labels[naxis]; break;
            case 1: buf[4] = box.max.y; if (yup[naxis]) lbl += " " + labels[naxis]; else lbl = labels[naxis] + " " + lbl; break;
            case 2: buf[5] = box.max.z; lbl += " " + labels[naxis]; break;
          }
@@ -3220,7 +3226,11 @@
 
          if (yup[naxis]) {
             switch (naxis) {
-               case 0: mesh.rotateY(Math.PI); mesh.translateX(-textbox.max.x - text_size*0.5); mesh.translateY(-textbox.max.y/2);  break;
+               case 0:
+                  if (!specials[0]) mesh.rotateY(Math.PI);
+                  if (!specials[0]) mesh.translateX(-textbox.max.x-text_size*0.5); else mesh.translateX(text_size*0.5);
+                  mesh.translateY(-textbox.max.y/2);
+                  break;
                case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
                case 2: mesh.rotateY(-Math.PI/2); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
            }
@@ -3245,7 +3255,11 @@
 
          if (yup[naxis]) {
             switch (naxis) {
-               case 0: mesh.rotateY(Math.PI); mesh.translateX(text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
+               case 0:
+                  if (!specials[0]) mesh.rotateY(Math.PI);
+                  if (!specials[0]) mesh.translateX(text_size*0.5); else mesh.translateX(-textbox.max.x-text_size*0.5);
+                  mesh.translateY(-textbox.max.y/2);
+                  break;
                case 1: mesh.rotateX(-Math.PI/2); mesh.rotateY(-Math.PI/2); mesh.translateY(-textbox.max.y/2); mesh.translateX(-textbox.max.x-text_size*0.5); break;
                case 2: mesh.rotateY(-Math.PI/2);  mesh.translateX(-textbox.max.x-text_size*0.5); mesh.translateY(-textbox.max.y/2); break;
             }
