@@ -2043,8 +2043,8 @@
       if (this.options.ortho_camera) {
          this._camera.left = box.min.x;
          this._camera.right = box.max.x;
-         this._camera.top = box.min.y;
-         this._camera.bottom = box.max.y;
+         this._camera.top = box.max.y;
+         this._camera.bottom = box.min.y;
       }
 
       // this._camera.far = 100000000000;
@@ -2054,12 +2054,12 @@
       var k = 2*this.options.zoom;
 
       if (this.options.ortho_camera) {
-         this._camera.position.set(0, 0, Math.max(sizey,sizez));
+         this._camera.position.set(midx, midy, Math.max(sizex,sizey));
       } else if (this.options.project) {
          switch (this.options.project) {
-            case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break
-            case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break
-            case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break
+            case 'x': this._camera.position.set(k*1.5*Math.max(sizey,sizez), 0, 0); break;
+            case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break;
+            case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
          }
       } else if (this.options._yup) {
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
