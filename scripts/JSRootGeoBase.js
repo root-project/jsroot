@@ -2432,6 +2432,22 @@
       return stack;
    }
 
+   /** Returns true if stack includes at any place provided nodeid */
+   JSROOT.GEO.ClonedNodes.prototype.IsNodeInStack = function(nodeid, stack) {
+
+      if (!nodeid) return true;
+
+      var node = this.nodes[0], id = 0;
+
+      for(var lvl = 0; lvl < stack.length; ++lvl) {
+         id = node.chlds[stack[lvl]];
+         if (id == nodeid) return true;
+         node = this.nodes[id];
+      }
+
+      return false;
+   }
+
    /** find stack by name which include names of all parents */
    JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
 

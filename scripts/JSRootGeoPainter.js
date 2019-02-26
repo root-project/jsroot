@@ -3413,9 +3413,9 @@
 
       var new_nodes = [];
 
-      for (var n=0;n<this._draw_nodes.length;++n) {
+      for (var n = 0; n < this._draw_nodes.length; ++n) {
          var entry = this._draw_nodes[n];
-         if (entry.nodeid === nodeid) {
+         if ((entry.nodeid === nodeid) || (this._clones.IsNodeInStack(nodeid, entry.stack))) {
             this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
          } else {
             new_nodes.push(entry);
