@@ -37,6 +37,16 @@
       console.log('complete ui5 loading');
       JSROOT.sap = sap;
 
+      var rootui5sys = JSROOT.source_dir.replace(/jsrootsys/g, "rootui5sys");
+
+      sap.ui.loader.config({
+         paths: {
+            "jsroot": JSROOT.source_dir,
+            "rootui5": rootui5sys
+         }
+      });
+
+
       // var cust_style = document.createElement("link");
       // cust_style.setAttribute("rel", "stylesheet");
       // cust_style.setAttribute("type", "text/css");
@@ -71,7 +81,7 @@
       element.setAttribute('data-sap-ui-preload', 'async'); // '' to disable Component-preload.js
 
       // configure path for openui5 scripts
-      element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "' + JSROOT.source_dir + 'openui5/" }');
+      // element.setAttribute('data-sap-ui-resourceroots', '{ "sap.ui.jsroot": "' + JSROOT.source_dir + 'openui5/" }');
 
       element.setAttribute('data-sap-ui-evt-oninit', "JSROOT.completeUI5Loading()");
 
@@ -89,20 +99,24 @@
       document.getElementsByTagName("head")[0].appendChild(element);
    }
 
-   var sources = [], openui5_dflt = "https://openui5.hana.ondemand.com/", openui5_jsroot = JSROOT.source_dir + "openui5dist/";
+   var sources = [],
+       openui5_dflt = "https://openui5.hana.ondemand.com/",
+       openui5_root = JSROOT.source_dir.replace(/jsrootsys/g, "ui5rootsys/distribution");
+
+   if (openui5_root == JSROOT.source_dir) openui5_root = "";
 
    if (typeof JSROOT.openui5src == 'string') {
       switch (JSROOT.openui5src) {
          case "nodefault": openui5_dflt = ""; break;
          case "default": sources.push(openui5_dflt); openui5_dflt = ""; break;
-         case "nojsroot": openui5_jsroot = ""; break;
-         case "jsroot": sources.push(openui5_jsroot); openui5_jsroot = ""; break;
+         case "nojsroot": openui5_root = ""; break;
+         case "jsroot": sources.push(openui5_root); openui5_root = ""; break;
          default: sources.push(JSROOT.openui5src); break;
       }
 
    }
 
-   if (openui5_jsroot && (sources.indexOf(openui5_jsroot)<0)) sources.push(openui5_jsroot);
+   if (openui5_root && (sources.indexOf(openui5_root)<0)) sources.push(openui5_root);
    if (openui5_dflt && (sources.indexOf(openui5_dflt)<0)) sources.push(openui5_dflt);
 
    TryOpenOpenUI(sources);
