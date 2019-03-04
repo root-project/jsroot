@@ -4668,15 +4668,16 @@
    }
 
    TCanvasPainter.prototype.HasGed = function() {
-      if (this.use_openui)
-         return this.openuiHasGed();
-
       return this.brlayout ? this.brlayout.HasContent() : false;
    }
 
    TCanvasPainter.prototype.RemoveGed = function() {
-      if (typeof this.CleanupGed == 'function')
-         this.CleanupGed();
+      this.RegisterForPadEvents(null);
+
+      if (this.ged_panelid) {
+         sap.ui.getCore().byId(this.ged_panelid).getController().cleanupGed();
+         delete this.ged_panelid;
+      }
       if (this.brlayout)
          this.brlayout.DeleteContent();
 
@@ -4686,10 +4687,6 @@
 
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to activate GED
-
-      if (this.use_openui)
-         return this.openuiActivateGed(objpainter, kind, mode);
-
       if (!this.brlayout) return;
 
       if (this.brlayout.HasContent()) {
@@ -4719,8 +4716,33 @@
       var pthis = this;
 
       JSROOT.AssertPrerequisites('openui5', function() {
-         pthis.ShowGed(objpainter);
-         pthis.ProcessChanges("sbits", pthis);
+
+         d3.select("#ged_placeholder").text("");
+
+         sap.ui.define(["sap/ui/model/json/JSONModel", "sap/ui/core/mvc/XMLView"],
+                       function(JSONModel,XMLView) {
+
+            pthis.ged_panelid = "CanvasGedId";
+
+            var oModel = new JSONModel({ handle: null });
+
+            sap.ui.getCore().setModel(oModel, pthis.ged_panelid);
+
+            XMLView.create({
+               id: pthis.ged_panelid,
+               viewName : "rootui5.canv.view.Ged"
+            }).then(function(oGed) {
+
+               oGed.placeAt("ged_placeholder");
+
+               // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
+               pthis.RegisterForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
+
+               pthis.SelectObjectPainter(objpainter);
+
+               pthis.ProcessChanges("sbits", pthis);
+            });
+         });
       });
    }
 
