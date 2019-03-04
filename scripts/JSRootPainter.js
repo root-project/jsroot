@@ -3904,6 +3904,7 @@
    TObjectPainter.prototype.ExecuteMenuCommand = function(method) {
 
       if (method.fName == "Inspect") {
+         // primitve inspector, keep it here
          this.ShowInpsector();
          return true;
       }
@@ -3943,6 +3944,9 @@
 
          if (canvp.MethodsDialog && (item.fArgs!==undefined))
             return canvp.MethodsDialog(execp, item, execp.args_menu_id);
+
+         if ((item.fName == "Inspect") && canvp.showInspector)
+            return canvp.showInspector(execp.GetObject());
 
          if (execp.ExecuteMenuCommand(item)) return;
 

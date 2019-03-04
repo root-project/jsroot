@@ -353,21 +353,6 @@
       return menu;
    }
 
-   JSROOT.TObjectPainter.prototype.ShowInpsector = function() {
-      var handle = {}; // should be controller?
-      handle.closeObjectInspector = function() {
-         this.dialog.close();
-         this.dialog.destroy();
-      }
-      handle.dialog = JSROOT.sap.ui.xmlfragment("sap.ui.jsroot.view.Inspector", handle);
-
-      // FIXME: global id is used, should find better solution later
-      var view = sap.ui.getCore().byId("object_inspector");
-      view.getController().setObject(this.GetObject());
-
-      handle.dialog.open();
-   }
-
    // ===================================================================================================
 
    JSROOT.TCanvasPainter.prototype.ShowGed = function(objpainter) {
