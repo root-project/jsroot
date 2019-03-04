@@ -353,45 +353,6 @@
       return menu;
    }
 
-   // ===================================================================================================
-
-   JSROOT.TCanvasPainter.prototype.openuiHasEventStatus = function() {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      return main ? main.getController().isStatusShown() : false;
-   }
-
-   JSROOT.TCanvasPainter.prototype.openuiToggleEventStatus = function() {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().toggleShowStatus();
-   }
-
-   JSROOT.TCanvasPainter.prototype.fullShowStatus = function(lbl1,lbl2,lbl3,lbl4) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().ShowCanvasStatus(lbl1,lbl2,lbl3,lbl4);
-   }
-
-   JSROOT.TCanvasPainter.prototype.ShowUI5ProjectionArea = function(kind, call_back) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().showProjectionArea(kind, call_back);
-   }
-
-   JSROOT.TCanvasPainter.prototype.DrawInUI5ProjectionArea = function(obj, opt, call_back) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().drawInProjectionArea(obj, opt, call_back);
-   }
-
-   JSROOT.TCanvasPainter.prototype.ShowMessage = function(msg) {
-      if (!this.use_openui)
-         return JSROOT.progress(msg, 7000);
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().showMessage(msg);
-   }
-
-   JSROOT.TCanvasPainter.prototype.fullShowSection = function(that, on) {
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (main) main.getController().showSection(that, on);
-   }
-
    // ====================================================================================
 
    if (JSROOT.v7 && JSROOT.v7.TCanvasPainter)

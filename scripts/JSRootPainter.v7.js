@@ -3983,7 +3983,7 @@
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
 
-      if (this.use_openui && this.ShowUI5ProjectionArea)
+      if (this.ShowUI5ProjectionArea)
          return this.ShowUI5ProjectionArea(kind, call_back);
 
       var layout = 'simple';
@@ -4019,7 +4019,7 @@
 
          canv.fPrimitives.Add(hist, "hist");
 
-         if (this.use_openui && this.DrawInUI5ProjectionArea ) {
+         if (this.DrawInUI5ProjectionArea) {
             // copy frame attributes
             this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          } else {

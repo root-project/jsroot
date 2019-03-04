@@ -4168,7 +4168,7 @@
 
       var pp = this.canv_painter(), res = JSROOT.Painter.ShowStatus;
 
-      if (pp && pp.use_openui && (typeof pp.fullShowStatus === 'function')) res = pp.fullShowStatus.bind(pp);
+      if (pp && pp.use_openui && (typeof pp.ShowCanvasStatus === 'function')) res = pp.ShowCanvasStatus.bind(pp);
 
       if (res && (this.enlarge_main('state')==='on')) res = null;
 

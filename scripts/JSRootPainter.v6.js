@@ -4455,7 +4455,7 @@
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
 
-      if (this.use_openui && this.ShowUI5ProjectionArea)
+      if (this.ShowUI5ProjectionArea)
          return this.ShowUI5ProjectionArea(kind, call_back);
 
       var layout = 'simple';
@@ -4493,7 +4493,7 @@
 
          canv.fPrimitives.Add(hist, "hist");
 
-         if (this.use_openui && this.DrawInUI5ProjectionArea) {
+         if (this.DrawInUI5ProjectionArea) {
             // copy frame attributes
             this.DrawInUI5ProjectionArea(canv, drawopt, function(painter) { pthis.proj_painter = painter; })
          } else {
@@ -4652,16 +4652,8 @@
       TPadPainter.prototype.PadButtonClick.call(this, funcname);
    }
 
-   TCanvasPainter.prototype.HasEventStatus = function() {
-      if (this.use_openui) return this.openuiHasEventStatus();
-
-      return this.brlayout ? this.brlayout.HasStatus() : false;
-   }
-
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
-      if (this.use_openui)
-         this.openuiToggleEventStatus(state);
-      else if (this.brlayout)
+      if (this.brlayout)
          this.brlayout.CreateStatusLine(23, state);
 
       this.ProcessChanges("sbits", this);
@@ -4747,9 +4739,6 @@
    }
 
    TCanvasPainter.prototype.ShowSection = function(that, on) {
-      if (this.use_openui)
-         return this.fullShowSection(that, on);
-
       console.log('Show section ' + that + ' flag = ' + on);
 
       switch(that) {
