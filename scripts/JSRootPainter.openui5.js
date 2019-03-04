@@ -482,31 +482,6 @@
       if (main) main.getController().showSection(that, on);
    }
 
-   JSROOT.TCanvasPainter.prototype.MethodsDialog = function(painter, method, menu_obj_id) {
-
-      var main = JSROOT.sap.ui.getCore().byId("TopCanvasId");
-      if (!main) return;
-
-      var pthis = this;
-
-      method.fClassName = painter.GetClassName();
-      // TODO: deliver class name together with menu items
-      if ((menu_obj_id.indexOf("#x")>0) || (menu_obj_id.indexOf("#y")>0) || (menu_obj_id.indexOf("#z")>0)) method.fClassName = "TAxis";
-
-      main.getController().showMethodsDialog(method, function(args) {
-
-         if (painter.ExecuteMenuCommand(method, args)) return;
-
-         var exec = method.fExec;
-         if (args) exec = exec.substr(0,exec.length-1) + args + ')';
-
-         // invoked only when user press Ok button
-         console.log('execute method for object ' + menu_obj_id + ' exec= ' + exec);
-
-         pthis.SendWebsocket('OBJEXEC:' + menu_obj_id + ":" + exec);
-      });
-   }
-
    // ====================================================================================
 
    if (JSROOT.v7 && JSROOT.v7.TCanvasPainter)
