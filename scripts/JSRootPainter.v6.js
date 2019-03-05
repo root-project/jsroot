@@ -4513,6 +4513,7 @@
    }
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
+      if (this.testUI5()) return;
       JSROOT.progress(msg, 7000);
    }
 
@@ -4652,18 +4653,32 @@
       TPadPainter.prototype.PadButtonClick.call(this, funcname);
    }
 
+   TCanvasPainter.prototype.testUI5 = function() {
+      if (!this.use_openui) return false;
+      console.warn("full ui5 should be used - not loaded yet? Please check!!");
+      return true;
+   }
+
+   TCanvasPainter.prototype.HasEventStatus = function() {
+      if (this.testUI5()) return false;
+      return this.brlayout ? this.brlayout.HasStatus() : false;
+   }
+
    TCanvasPainter.prototype.ActivateStatusBar = function(state) {
+      if (this.testUI5()) return;
       if (this.brlayout)
          this.brlayout.CreateStatusLine(23, state);
-
       this.ProcessChanges("sbits", this);
    }
 
    TCanvasPainter.prototype.HasGed = function() {
+      if (this.testUI5()) return false;
       return this.brlayout ? this.brlayout.HasContent() : false;
    }
 
    TCanvasPainter.prototype.RemoveGed = function() {
+      if (this.testUI5()) return;
+
       this.RegisterForPadEvents(null);
 
       if (this.ged_panelid) {
@@ -4676,10 +4691,9 @@
       this.ProcessChanges("sbits", this);
    }
 
-
    TCanvasPainter.prototype.ActivateGed = function(objpainter, kind, mode) {
       // function used to activate GED
-      if (!this.brlayout) return;
+      if (this.testUI5() || !this.brlayout) return;
 
       if (this.brlayout.HasContent()) {
          if ((mode === "toggle") || (mode === false))
@@ -4739,6 +4753,8 @@
    }
 
    TCanvasPainter.prototype.ShowSection = function(that, on) {
+      if (this.testUI5()) return;
+
       console.log('Show section ' + that + ' flag = ' + on);
 
       switch(that) {
