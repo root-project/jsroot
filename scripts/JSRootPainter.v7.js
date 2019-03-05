@@ -4141,7 +4141,7 @@
          } else if (cmd.indexOf("ADDPANEL:") == 0) {
             var relative_path = cmd.substr(9);
             console.log('request panel = ' + relative_path);
-            if (!this.ActivatePanel) {
+            if (!this.ShowUI5Panel) {
                handle.Send(reply + "false");
             } else {
 
@@ -4160,7 +4160,7 @@
                      var panel_name = (msg.indexOf("SHOWPANEL:")==0) ? msg.substr(10) : "";
                      console.log('Panel get message ' + msg + " show " + panel_name);
 
-                     this.cpainter.ActivatePanel(panel_name, panel_handle, function(res) {
+                     this.cpainter.ShowUI5Panel(panel_name, panel_handle, function(res) {
                         handle.Send(reply + (res ? "true" : "false"));
                      });
                   },
