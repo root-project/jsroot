@@ -40,5 +40,3 @@ JavaScript ROOT [changelog](changes.md)
 
 [JSROOT API examples](https://root.cern/js/latest/api.htm)
 
-[UI](https://rawgit.com/root-project/jsroot/master/index.htm?path=https://root.cern/js/files/) and [examples](https://rawgit.com/root-project/jsroot/master/docs/examples.htm) via rawgit.com
-
