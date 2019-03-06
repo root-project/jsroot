@@ -821,16 +821,14 @@ First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 U
               src="https://root.cern/js/latest/scripts/JSRootCore.min.js?openui5&onload=doInit">
       </script>
  
- JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, 
- specified initialization function will be called, where `JSROOT.sap` can be used as normal `sap` variable.
- Simple way to start any custom application is:
+ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
  
       <script type="text/javascript">
          function doInit() {
             jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "./");
-            new JSROOT.sap.m.App ({
+            new sap.m.App ({
               pages: [
-                new JSROOT.sap.m.Page({
+                new sap.m.Page({
                   title: "Nav Container",
                     enableScrolling : true,
                     content: [ new sap.ui.core.ComponentContainer({

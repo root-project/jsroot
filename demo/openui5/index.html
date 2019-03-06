@@ -10,10 +10,9 @@
       <script type="text/javascript" src="../../scripts/JSRootCore.js"></script>
 
       <!-- Application launch configuration -->
-      <script>
+      <script type="text/javascript">
 
       JSROOT.AssertPrerequisites('openui5', function() {
-         // from here you can use  JSROOT.sap variable like
 
          jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "./");
 
@@ -44,9 +43,9 @@
          });
          sap.ui.getCore().setModel(oModel4, "panel4");
 
-         new JSROOT.sap.m.App ({
+         new sap.m.App ({
             pages: [
-               new JSROOT.sap.m.Page({
+               new sap.m.Page({
                   title: "Nav Container",
                   enableScrolling : true,
                   content: [ new sap.ui.core.ComponentContainer({

@@ -5,7 +5,7 @@ This example shows how JSROOT graphics can be used inside OpenUI5
 JSROOT provides method to load openui5 functionality. Just do:
 
       JSROOT.AssertPrerequisites('openui5', function() {
-          // use JSROOT.sap variable as entry point
+          // use sap variable from this point
       });
 
 To embed JSROOT graphics into openui5-beased webpage, use:
