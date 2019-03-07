@@ -1403,7 +1403,7 @@
    }
 
    HierarchyPainter.prototype.EnableMonitoring = function(on) {
-      this._monitoring_on = on;
+      this.SetMonitoring(undefined, on);
 
       var chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
       if (!chkbox.empty() && (chkbox.property('checked') !== on))

@@ -679,6 +679,12 @@
       return folder;
    }
 
+   /** @summary Iterate over all items in hierarchy
+    * @param {function} callback - function called for every item
+    * @param {object} [top = null] - top item to start from
+    * @private
+    */
+
    HierarchyPainter.prototype.ForEach = function(callback, top) {
 
       if (!top) top = this.h;
@@ -1919,39 +1925,45 @@
       this.RefreshHtml();
    }
 
-   HierarchyPainter.prototype.SetMonitoring = function(interval, flag) {
+   /** Configures monitoring interval
+    * @param interval - repetition interval in ms
+    * @param flag - initial monitoring state
+    * @private */
+   HierarchyPainter.prototype.SetMonitoring = function(interval, monitor_on) {
 
-      if (interval!==undefined) {
-         this._monitoring_on = false;
-         this._monitoring_interval = 3000;
-
-         interval = !interval ? 0 : parseInt(interval);
-
-         if (!isNaN(interval) && (interval>0)) {
-            this._monitoring_on = true;
+      if (interval) {
+         interval = parseInt(interval);
+         if (!isNaN(interval) && (interval > 0)) {
             this._monitoring_interval = Math.max(100,interval);
+            monitor_on = true;
+         } else {
+            this._monitoring_interval = 3000;
          }
       }
 
-      if (flag !== undefined)
-         this._monitoring_on = flag;
+      this._monitoring_on = monitor_on;
 
       // first clear old handle
-      if (this._monitoring_handle) clearInterval(this._monitoring_handle);
+      if (this._monitoring_handle) {
+         clearInterval(this._monitoring_handle);
+         delete this._monitoring_handle;
+      }
 
-      // now set new interval (if necessary)
-      this._monitoring_handle = setInterval(this.updateAll.bind(this, "monitoring"),  this._monitoring_interval);
+      if (this._monitoring_on)
+         this._monitoring_handle = setInterval(this.updateAll.bind(this, "monitoring"),  this.MonitoringInterval());
    }
 
+   /** Returns configured monitoring interval in ms */
    HierarchyPainter.prototype.MonitoringInterval = function(val) {
-      // returns interval
-      return ('_monitoring_interval' in this) ? this._monitoring_interval : 3000;
+      return this._monitoring_interval || 3000;
    }
 
+   /** Enable/disable monitoring */
    HierarchyPainter.prototype.EnableMonitoring = function(on) {
-      this._monitoring_on = on;
+      this.SetMonitoring(undefined, on);
    }
 
+   /** Returns true when monitoring is enabled */
    HierarchyPainter.prototype.IsMonitoring = function() {
       return this._monitoring_on;
    }
@@ -1999,11 +2011,7 @@
 
       if (withbrowser) {
 
-         if (this._monitoring_handle) {
-            clearInterval(this._monitoring_handle);
-            delete this._monitoring_handle;
-         }
-
+         this.EnableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
          plainarr.forEach(function(d) { delete d._parent; delete d._childs; delete d._obj; delete d._d3cont; });
