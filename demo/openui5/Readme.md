@@ -10,7 +10,7 @@ JSROOT provides method to load openui5 functionality. Just do:
 
 To embed JSROOT graphics into openui5-beased webpage, use:
 
-    <mvc:XMLView id="panelId" viewName="sap.ui.jsroot.view.Panel">
+    <mvc:XMLView id="panelId" viewName="sap.m.sample.NavContainer.Panel">
     </mvc:XMLView>
 
 If panel should be configured before drawing, special model should be used,
