@@ -2,7 +2,7 @@ sap.ui.define(['sap/ui/core/mvc/Controller', 'sap/m/MessageToast'],
    function(Controller, MessageToast) {
    "use strict";
 
-   var CController = Controller.extend("NavExample.C", {
+   var CController = Controller.extend("NavExample.controller.Main", {
 
       handleNav: function(evt) {
          var navCon = this.getView().byId("navCon");

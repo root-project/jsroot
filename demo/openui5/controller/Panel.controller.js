@@ -4,10 +4,9 @@ sap.ui.define([
 ], function (Controller, ResizeHandler) {
    "use strict";
 
-   return Controller.extend("NavExample.Panel", {
+   return Controller.extend("NavExample.controller.Panel", {
 
       onBeforeRendering: function() {
-         console.log("Cleanup Panel", this.getView().getId());
          if (this.object_painter) {
             this.object_painter.Cleanup();
             delete this.object_painter;

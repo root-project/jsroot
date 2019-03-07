@@ -5,22 +5,22 @@ sap.ui.define(['sap/ui/core/UIComponent'],
 
    var Component = UIComponent.extend("NavExample.Component", {
       metadata : {
-         rootView : "NavExample.V",
+         rootView : "NavExample.view.Main",
          dependencies : {
             libs : [
                "sap.m",
                "sap.ui.layout"
             ]
          },
-         includes : [ "style.css" ],
+         includes : [ "css/style.css" ],
          config : {
             sample : {
                files : [
-                  "V.view.xml",
-                  "C.controller.js",
-                  "Panel.view.xml",
-                  "Panel.controller.js",
-                  "style.css"
+                  "view/Main.view.xml",
+                  "view/Panel.view.xml",
+                  "controller/Main.controller.js",
+                  "controller/Panel.controller.js",
+                  "css/style.css"
                ]
             }
          }
