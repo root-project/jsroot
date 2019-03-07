@@ -24,16 +24,15 @@ sap.ui.define([
             return;
          }
 
-         var oController = this;
-         oController.object = obj;
-         d3.select(oController.getView().getDomRef()).style('overflow','hidden');
+         this.object = obj;
+         this.getView().$().css('overflow','hidden');
 
-         JSROOT.draw(oController.getView().getDomRef(), oController.object, options, function(painter) {
+         JSROOT.draw(this.getView().getDomRef(), obj, options, function(painter) {
             console.log("object painting finished");
-            oController.object_painter = painter;
-            oController.get_callbacks.forEach(function(cb) { JSROOT.CallBack(cb,painter); });
-            oController.get_callbacks = [];
-         });
+            this.object_painter = painter;
+            this.get_callbacks.forEach(function(cb) { JSROOT.CallBack(cb,painter); });
+            this.get_callbacks = [];
+         }.bind(this));
       },
 
       drawModel: function(model) {
