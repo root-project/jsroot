@@ -4,7 +4,7 @@ sap.ui.define([
 ], function (Controller, ResizeHandler) {
    "use strict";
 
-   return Controller.extend("sap.m.sample.NavContainer.Panel", {
+   return Controller.extend("NavExample.Panel", {
 
       onBeforeRendering: function() {
          console.log("Cleanup Panel", this.getView().getId());

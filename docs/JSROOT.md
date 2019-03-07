@@ -812,7 +812,7 @@ Such JSON string could be parsed by any other JSROOT-based application.
 
 ### Use with OpenUI5
 
-[OpenUI5](http://openui5.org/) is  a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
+[OpenUI5](http://openui5.org/) is a web toolkit for developers to ease and speed up the development of full-blown HTML5 web applications. Since version 5.3.0 JSROOT provides possibility to use OpenUI5 functionality together with JSROOT.
 
 First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 URL parameter when loading JSROOT:
 
@@ -821,18 +821,18 @@ First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 U
               src="https://root.cern/js/latest/scripts/JSRootCore.min.js?openui5&onload=doInit">
       </script>
  
- JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
+JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
  
       <script type="text/javascript">
          function doInit() {
-            jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "./");
+            jQuery.sap.registerModulePath("NavExample", "./");
             new sap.m.App ({
               pages: [
                 new sap.m.Page({
                   title: "Nav Container",
                     enableScrolling : true,
                     content: [ new sap.ui.core.ComponentContainer({
-                         name : "sap.m.sample.NavContainer"
+                         name : "NavExample"
                     })]
                 })
               ]
@@ -843,5 +843,7 @@ First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 U
 There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified 
 as `jsrootsys/scripts/JSRootCore.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
 
-    jQuery.sap.registerModulePath("sap.m.sample.NavContainer", "/currentdir/");
+    jQuery.sap.registerModulePath("NavExample", "/currentdir/");
     
+JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
+[source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository. 

@@ -1,10 +1,11 @@
 sap.ui.define(['sap/ui/core/UIComponent'],
    function(UIComponent) {
+
    "use strict";
 
-   var Component = UIComponent.extend("sap.m.sample.NavContainer.Component", {
+   var Component = UIComponent.extend("NavExample.Component", {
       metadata : {
-         rootView : "sap.m.sample.NavContainer.V",
+         rootView : "NavExample.V",
          dependencies : {
             libs : [
                "sap.m",
@@ -17,6 +18,8 @@ sap.ui.define(['sap/ui/core/UIComponent'],
                files : [
                   "V.view.xml",
                   "C.controller.js",
+                  "Panel.view.xml",
+                  "Panel.controller.js",
                   "style.css"
                ]
             }
