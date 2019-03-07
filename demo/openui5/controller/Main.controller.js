@@ -20,13 +20,10 @@ sap.ui.define(['sap/ui/core/mvc/Controller', 'sap/m/MessageToast'],
          var page = navCon.getCurrentPage();
          console.log('page id', page.getId());
          var panel = page.getContent()[0];
-         console.log('panel id', panel.getId());
 
-         var obj_painter = null;
-         panel.getController().getPainter(function(painter) {
-            obj_painter = painter;
+         var painter = panel.getPainter();
+         if (painter)
             MessageToast.show("Access painter for " + painter.GetClassName());
-         });
 
       }
    });

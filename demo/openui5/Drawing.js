@@ -70,6 +70,10 @@ sap.ui.define([
                });
             });
          }
+      },
+
+      getPainter: function() {
+         return this.object_painter;
       }
 
    });
