@@ -20,6 +20,7 @@ sap.ui.define(['sap/ui/core/UIComponent'],
                   "view/Panel.view.xml",
                   "controller/Main.controller.js",
                   "controller/Panel.controller.js",
+                  "Drawing.js",
                   "css/style.css"
                ]
             }
