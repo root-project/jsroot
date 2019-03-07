@@ -8,36 +8,15 @@ JSROOT provides method to load openui5 functionality. Just do:
           // use sap variable from this point
       });
 
-To embed JSROOT graphics into openui5-beased webpage, use:
+To embed JSROOT graphics into openui5-beased webpage, use provided `Drawing` control:
 
-    <mvc:XMLView id="panelId" viewName="NavExample.view.Panel">
-    </mvc:XMLView>
+     <example:Drawing file="https://root.cern/js/files/hsimple.root" item="hpx" drawopt="">
+     </example:Drawing>
 
-If panel should be configured before drawing, special model should be used,
-which corresponds with panel id:
+If has following parameters:
 
-     var oModel = JSONModel({ 
-         filename: "https://root.cern/js/files/hsimple.root", 
-         itemname: "hpx", 
-         opt: "" 
-      });
-      sap.ui.getCore().setModel(oModel, "panel1");
-
-If panel already exists, one can use drawModel() method to display it: 
-
-    panel = sap.ui.getCore().byId("panel1");
-    panel.getController().drawModel(oModel);
-
-If JSROOT object already loaded from the file (or created by other means), 
-it can be drawn directly:
-
-    var histo = JSROOT.CreateHistogram("TH1I", 100);
-    panel.getController().drawObject(histo, "hist");
-
-If one should access object painter, one should do:
-
-    var panel = sap.ui.getCore().byId("PanelId");
-    var object_painter = null;
-    panel.getController().getPainter(funciton(painter) {
-       object_painter = painter;
-    });
+    file - name of root file
+    item - item name in root file
+    drawopt - drawing option
+    jsonfile - name of JSON file
+  

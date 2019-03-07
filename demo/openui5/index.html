@@ -22,29 +22,9 @@
             }
          });
          
-         sap.ui.require(["sap/ui/core/ComponentContainer", "sap/ui/model/json/JSONModel", "sap/m/App", "sap/m/Page" ],
+         sap.ui.require(["sap/ui/core/ComponentContainer", "sap/m/App", "sap/m/Page" ],
                
-            function(ComponentContainer, JSONModel, mApp, mPage) {
-
-               var oModel2 = new JSONModel({ 
-                  filename: "https://root.cern/js/files/hsimple.root", 
-                  itemname: "hpxpy", 
-                  opt: "lego2" 
-               });
-               sap.ui.getCore().setModel(oModel2, "panel2");
-
-               var oModel3 = new JSONModel({ 
-                  filename: "https://root.cern/js/files/zdemo.root", 
-                  itemname: "zdemo", 
-                  opt: "" 
-               });
-               sap.ui.getCore().setModel(oModel3, "panel3");
-
-               var oModel4 = new JSONModel({ 
-                  jsonfilename: "https://root.cern/js/files/simple_alice.json.gz", 
-                  opt: "" 
-               });
-               sap.ui.getCore().setModel(oModel4, "panel4");
+            function(ComponentContainer, mApp, mPage) {
 
                new mApp ({
                   pages: [

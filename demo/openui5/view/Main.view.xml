@@ -18,20 +18,20 @@
          </Page>
          <Page id="p2" title="TH2 lego drawing" >
             <content>
-               <mvc:XMLView id="panel2" width="100%" height="100%" viewName="NavExample.view.Panel">
-               </mvc:XMLView>
+               <example:Drawing file="https://root.cern/js/files/hsimple.root" item="hpxpy" drawopt="lego2">
+               </example:Drawing>
             </content>
          </Page>
          <Page id="p3" title="TCanvas drawing" >
             <content>
-               <mvc:XMLView id="panel3" width="100%" height="100%" viewName="NavExample.view.Panel">
-               </mvc:XMLView>
+               <example:Drawing file="https://root.cern/js/files/zdemo.root" item="zdemo" drawopt="">
+               </example:Drawing>
             </content>
          </Page>
          <Page id="p4" title="Geometry drawing" >
             <content>
-               <mvc:XMLView id="panel4" width="100%" height="100%" viewName="NavExample.view.Panel">
-               </mvc:XMLView>
+               <example:Drawing jsonfile="https://root.cern/js/files/simple_alice.json.gz" drawopt="">
+               </example:Drawing>
             </content>
          </Page>
       </NavContainer>
