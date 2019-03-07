@@ -23,6 +23,7 @@
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
             'JSRootTree'           : dir+'JSRootTree'+ext,
+            'JSRoot.openui5'       : dir+'JSRoot.openui5'+ext,
             'JSRootPainter'        : dir+'JSRootPainter'+ext,
             'JSRootPainter.v6'     : dir+'JSRootPainter.v6'+ext,
             'JSRootPainter.hist'   : dir+'JSRootPainter.hist'+ext,
@@ -30,7 +31,6 @@
             'JSRootPainter.more'   : dir+'JSRootPainter.more'+ext,
             'JSRootPainter.hierarchy' : dir+'JSRootPainter.hierarchy'+ext,
             'JSRootPainter.jquery' : dir+'JSRootPainter.jquery'+ext,
-            'JSRootPainter.openui5': dir+'JSRootPainter.openui5'+ext,
             'JSRootPainter.v7'     : dir+'JSRootPainter.v7'+ext,
             'JSRootPainter.v7hist' : dir+'JSRootPainter.v7hist'+ext,
             'JSRootPainter.v7more' : dir+'JSRootPainter.v7more'+ext,
@@ -1159,7 +1159,7 @@
          }
 
       if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
-          (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0) || (kind.indexOf("openui5;")>=0)) {
+          (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
           if (!use_require && (typeof d3 != 'object') && (jsroot._test_d3_ === undefined)) {
              mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
              jsroot._test_d3_ = null;
@@ -1207,20 +1207,21 @@
          modules.push('JSRootPainter.more');
       }
 
-      if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0) || (kind.indexOf('openui5;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
+      if (((kind.indexOf('hierarchy;')>=0) || (kind.indexOf('jq2d;')>=0)) && (jsroot.sources.indexOf("hierarchy")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.hierarchy' + ext + ".js;";
          modules.push('JSRootPainter.hierarchy');
       }
 
-      if (((kind.indexOf('jq2d;')>=0) || (kind.indexOf('openui5;')>=0)) && (jsroot.sources.indexOf("jq2d")<0)) {
+      if ((kind.indexOf('jq2d;')>=0) && (jsroot.sources.indexOf("jq2d")<0)) {
          mainfiles += '$$$scripts/JSRootPainter.jquery' + ext + ".js;";
          modules.push('JSRootPainter.jquery');
          need_jquery = true;
       }
 
       if ((kind.indexOf('openui5;')>=0) && (jsroot.sources.indexOf("openui5")<0)) {
-         mainfiles += '$$$scripts/JSRootPainter.openui5' + ext + ".js;";
-         modules.push('JSRootPainter.openui5');
+         mainfiles += '$$$scripts/JSRoot.openui5' + ext + ".js;";
+         modules.push('JSRoot.openui5');
+         need_jquery = true;
       }
 
       if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
