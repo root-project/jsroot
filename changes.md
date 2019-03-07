@@ -10,10 +10,18 @@
 7. Support eve7 geometry viewer - render data generated in ROOT itself
 8. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
 9. Improve windows handling in flex(ible) layout    
-10. Fix - support clipping for tracks and points in geo painter
-11. Fix - drawing of TGeoNode with finder   
-12. Fix - key press events processed only in actvie pad (ROOT-9128)  
-13. Move most of ui5-specific code into ROOT repository, where it will be maintained 
+10. Use requestAnimationFrame when perform monitoring, improves performance
+11. Fix - support clipping for tracks and points in geo painter
+12. Fix - drawing of TGeoNode with finder   
+13. Fix - key press events processed only in actvie pad (ROOT-9128)  
+14. Move most of ui5-specific code into ROOT repository, where it will be maintained 
+
+
+## Changes in 5.6.3
+1. Fix - support clipping for tracks and points in geo painter
+2. Fix - geometry with TGeoNodeOffset was not correctly drawn
+3. Fix - use proper formatting for entries and integral (#179)
+4. Fix - TTree::Draw for 3d histogram was not properly performed
 
  
 ## Changes in 5.6.2

@@ -1931,6 +1931,8 @@
     * @private */
    HierarchyPainter.prototype.SetMonitoring = function(interval, monitor_on) {
 
+      this._runMonitoring("cleanup");
+
       if (interval) {
          interval = parseInt(interval);
          if (!isNaN(interval) && (interval > 0)) {
@@ -1943,14 +1945,38 @@
 
       this._monitoring_on = monitor_on;
 
-      // first clear old handle
-      if (this._monitoring_handle) {
-         clearInterval(this._monitoring_handle);
-         delete this._monitoring_handle;
+      if (this.IsMonitoring())
+         this._runMonitoring();
+   }
+
+   /** Runs monitoring event loop, @private */
+   HierarchyPainter.prototype._runMonitoring = function(arg) {
+      if ((arg == "cleanup") || !this.IsMonitoring()) {
+         if (this._monitoring_handle) {
+            clearTimeout(this._monitoring_handle);
+            delete this._monitoring_handle;
+         }
+
+         if (this._monitoring_frame) {
+            cancelAnimationFrame(this._monitoring_frame);
+            delete this._monitoring_frame;
+         }
+         return;
       }
 
-      if (this._monitoring_on)
-         this._monitoring_handle = setInterval(this.updateAll.bind(this, "monitoring"),  this.MonitoringInterval());
+      if (arg == "frame") {
+         // process of timeout, request animation frame
+         delete this._monitoring_handle;
+         this._monitoring_frame = requestAnimationFrame(this._runMonitoring.bind(this,"draw"));
+         return;
+      }
+
+      if (arg == "draw") {
+         delete this._monitoring_frame;
+         this.updateAll("monitoring");
+      }
+
+      this._monitoring_handle = setTimeout(this._runMonitoring.bind(this,"frame"), this.MonitoringInterval());
    }
 
    /** Returns configured monitoring interval in ms */
@@ -2010,7 +2036,7 @@
       });
 
       if (withbrowser) {
-
+         // cleanup all monitoring loops
          this.EnableMonitoring(false);
          // simplify work for javascript and delete all (ok, most of) cross-references
          this.select_main().html("");
