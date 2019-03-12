@@ -5879,26 +5879,28 @@
           h = this.frame_height(),
           handle = null;
 
-      if (this.IsTH2Poly())
+      if (this.IsTH2Poly()) {
          handle = this.DrawPolyBinsColor(w, h);
-      else if (this.options.Scat)
-         handle = this.DrawBinsScatter(w, h);
-      else if (this.options.Color)
-         handle = this.DrawBinsColor(w, h);
-      else if (this.options.Box)
-         handle = this.DrawBinsBox(w, h);
-      else if (this.options.Arrow)
-         handle = this.DrawBinsArrow(w, h);
-      else if (this.options.Contour)
-         handle = this.DrawBinsContour(w, h);
-      else if (this.options.Candle)
-         handle = this.DrawCandle(w, h);
+      } else {
+         if (this.options.Scat)
+            handle = this.DrawBinsScatter(w, h);
+         else if (this.options.Color)
+            handle = this.DrawBinsColor(w, h);
+         else if (this.options.Box)
+            handle = this.DrawBinsBox(w, h);
+         else if (this.options.Arrow)
+            handle = this.DrawBinsArrow(w, h);
+         else if (this.options.Contour)
+            handle = this.DrawBinsContour(w, h);
+         else if (this.options.Candle)
+            handle = this.DrawCandle(w, h);
 
-      if (this.options.Text)
-         handle = this.DrawBinsText(w, h, handle);
+         if (this.options.Text)
+            handle = this.DrawBinsText(w, h, handle);
 
-      if (!handle)
-         handle = this.DrawBinsScatter(w, h);
+         if (!handle)
+            handle = this.DrawBinsScatter(w, h);
+      }
 
       this.tt_handle = handle;
    }
