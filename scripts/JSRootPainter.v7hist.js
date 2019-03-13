@@ -2552,13 +2552,23 @@
       return handle;
    }
 
-   TH2Painter.prototype.CreatePolyBin = function(pmain, bin) {
+   TH2Painter.prototype.CreatePolyBin = function(pmain, bin, text_pos) {
       var cmd = "", ngr, ngraphs = 1, gr = null;
 
       if (bin.fPoly._typename=='TMultiGraph')
          ngraphs = bin.fPoly.fGraphs.arr.length;
       else
          gr = bin.fPoly;
+
+      if (text_pos)
+         bin._sumx = bin._sumy = bin._suml = 0;
+
+      function AddPoint(x1,y1,x2,y2) {
+         var len = Math.sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
+         bin._sumx += (x1+x2)*len/2;
+         bin._sumy += (y1+y2)*len/2;
+         bin._suml += len;
+      }
 
       for (ngr = 0; ngr < ngraphs; ++ ngr) {
          if (!gr || (ngr>0)) gr = bin.fPoly.fGraphs.arr[ngr];
@@ -2576,6 +2586,7 @@
          for (n=1;n<npnts;++n) {
             nextx = Math.round(pmain.grx(x[n]));
             nexty = Math.round(pmain.gry(y[n]));
+            if (text_pos) AddPoint(grx,gry, nextx, nexty);
             if ((grx!==nextx) || (gry!==nexty)) {
                if (grx===nextx) cmd += "v" + (nexty - gry); else
                   if (gry===nexty) cmd += "h" + (nextx - grx); else
@@ -2584,7 +2595,18 @@
             grx = nextx; gry = nexty;
          }
 
+         if (text_pos) AddPoint(grx, gry, Math.round(pmain.grx(x[0])), Math.round(pmain.gry(y[0])));
          cmd += "z";
+      }
+
+      if (text_pos) {
+         if (bin._suml > 0) {
+            bin._midx = Math.round(bin._sumx / bin._suml);
+            bin._midy = Math.round(bin._sumy / bin._suml);
+         } else {
+            bin._midx = Math.round(pmain.grx((bin.fXmin + bin.fXmax)/2));
+            bin._midy = Math.round(pmain.gry((bin.fYmin + bin.fYmax)/2));
+         }
       }
 
       return cmd;
@@ -2619,7 +2641,7 @@
          if ((bin.fXmin > pmain.scale_xmax) || (bin.fXmax < pmain.scale_xmin) ||
              (bin.fYmin > pmain.scale_ymax) || (bin.fYmax < pmain.scale_ymin)) continue;
 
-         cmd = this.CreatePolyBin(pmain, bin);
+         cmd = this.CreatePolyBin(pmain, bin, this.options.Text && bin.fContent);
 
          if (colPaths[colindx] === undefined)
             colPaths[colindx] = cmd;
@@ -2654,9 +2676,7 @@
          for (i = 0; i < textbins.length; ++ i) {
             bin = textbins[i];
 
-            var posx = Math.round(pmain.x((bin.fXmin + bin.fXmax)/2)),
-                posy = Math.round(pmain.y((bin.fYmin + bin.fYmax)/2)),
-                lbl = "";
+            var lbl = "";
 
             if (!this.options.TextKind) {
                lbl = (Math.round(bin.fContent) === bin.fContent) ? bin.fContent.toString() :
@@ -2667,7 +2687,7 @@
                if (!lbl) lbl = bin.fNumber;
             }
 
-            this.DrawText({ align: 22, x: posx, y: posy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.DrawText({ align: 22, x: bin._midx, y: bin._midy, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
          }
 
          this.FinishTextDrawing(text_g, null);
