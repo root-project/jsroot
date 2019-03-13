@@ -2156,6 +2156,7 @@
                histo.fZaxis.fNbins = obj.fZaxis.fNbins;
             }
          }
+
          histo.fArray = obj.fArray;
          histo.fNcells = obj.fNcells;
          histo.fTitle = obj.fTitle;
@@ -2198,10 +2199,11 @@
 
          if (this.IsTProfile()) {
             histo.fBinEntries = obj.fBinEntries;
-         }
-         if (this.IsTH1K()) {
+         } else if (this.IsTH1K()) {
             histo.fNIn = obj.fNIn;
             histo.fReady = false;
+         } else if (this.IsTH2Poly()) {
+            histo.fBins = obj.fBins;
          }
 
          this.DecomposeTitle();
