@@ -11,10 +11,11 @@
 8. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
 9. Improve windows handling in flex(ible) layout    
 10. Use requestAnimationFrame when perform monitoring, improves performance
-11. Fix - support clipping for tracks and points in geo painter
-12. Fix - drawing of TGeoNode with finder   
-13. Fix - key press events processed only in actvie pad (ROOT-9128)  
-14. Move most of ui5-specific code into ROOT repository, where it will be maintained 
+11. Better position for text in TH2Poly drawings
+12. Fix - support clipping for tracks and points in geo painter
+13. Fix - drawing of TGeoNode with finder   
+14. Fix - key press events processed only in actvie pad (ROOT-9128)  
+15. Move most of ui5-specific code into ROOT repository, where it will be maintained 
 
 
 ## Changes in 5.6.3
