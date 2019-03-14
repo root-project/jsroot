@@ -3156,9 +3156,10 @@
 
          var zaxis = this.GetHisto().fZaxis;
 
-         JSROOT.extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fTextColor: zaxis.fTitleColor, fChopt: "+",
+         JSROOT.extend(pal.fAxis, { fTitle: zaxis.fTitle, fTitleSize: zaxis.fTitleSize, fChopt: "+",
                                     fLineColor: zaxis.fAxisColor, fLineSyle: 1, fLineWidth: 1,
-                                    fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11, fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
+                                    fTextAngle: 0, fTextSize: zaxis.fLabelSize, fTextAlign: 11,
+                                    fTextColor: zaxis.fLabelColor, fTextFont: zaxis.fLabelFont });
 
          // place colz in the beginning, that stat box is always drawn on the top
          this.AddFunction(pal, true);
