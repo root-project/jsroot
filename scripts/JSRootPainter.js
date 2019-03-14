@@ -2262,16 +2262,14 @@
 
    /** @summary Returns drawn object
     *
-    * @abstract
-    */
+    * @abstract */
    TBasePainter.prototype.GetObject = function() {
       return null;
    }
 
    /** @summary Returns true if type match with drawn object type
     * @abstract
-    * @private
-    */
+    * @private */
    TBasePainter.prototype.MatchObjectType = function(typ) {
       return false;
    }
@@ -2312,8 +2310,6 @@
     * @abstract
     * @private */
    TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
-      // function called when user interactively changes attribute in given class
-
       // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
@@ -5496,7 +5492,7 @@
          if (!hint) continue;
 
          if (hint.painter && (hint.user_info!==undefined))
-            if (hint.painter.ProvideUserTooltip(hint.user_info));
+            if (hint.painter.ProvideUserTooltip(hint.user_info)) {};
 
          if (!hint.lines || (hint.lines.length===0)) {
             hints[n] = null; continue;
