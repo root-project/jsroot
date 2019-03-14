@@ -101,13 +101,7 @@ One can find example of command interface usage in [tutorials/http/httpcontrol.C
 
 ## Customize user interface
 
-JSROOT is used to implement UI for the THttpServer. Defualt webpage shows list of registered objects on the left side and drawing area on the right side: 
-   
-    https://root.cern/js/latest/httpserver.C/  
- 
- JSROOT allows to configure different parameters via URL. Like monitoring interval or name of displayed item:
- 
-    https://root.cern/js/latest/httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000 
+JSROOT is used to implement UI for the THttpServer. Defualt webpage shows list of registered objects on the left side and drawing area on the right side - [see example](https://root.cern/js/latest/httpserver.C/). JSROOT allows to configure different parameters via URL - like monitoring interval or name of displayed items [item=Files/job1.root/hpxpy&opt=colz&monitoring=1000](https://root.cern/js/latest/httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000). 
 
 Some of such parameters can be configured already on the server:
 
