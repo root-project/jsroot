@@ -463,10 +463,9 @@
          if (this.mouse_ctxt.on) {
             this.mouse_ctxt.on = false;
             this.ContextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
-         } else
-         if (this.control_changed) {
+         } /* else if (this.control_changed) {
             // react on camera change when required
-         }
+         } */
          this.control_changed = false;
       }
 
