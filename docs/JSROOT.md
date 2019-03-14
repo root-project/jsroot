@@ -32,7 +32,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - opt - drawing option for the item
 - items - array of items name
 - opts - array of drawing options for the items
-- title - set browser title  
+- title - set browser title
 - layout - can be 'simple', 'flex', 'collapsible', 'tabs', 'gridNxM', 'horizNMK', 'vertNMK'
 - browser - layout of the browser 'fix' (default), 'float', 'no' (hidden), 'off' (fully disabled)
 - nobrowser - do not display file browser (same as browser=no)
@@ -48,7 +48,7 @@ To automate files loading and objects drawing, one can provide number of URL par
 - style - name of TStyle object to define global JSROOT style
 - toolbar - show canvas tool buttons 'off', 'on' and 'popup', 'left' or 'right' for position, 'vert' for vertical
 - divsize - fixed size in pixels for main div element like &dvisize=700x400
-- optstat -  settings for stat box, default 1111 (see TStyle::SetOptStat) 
+- optstat -  settings for stat box, default 1111 (see TStyle::SetOptStat)
 - optfit - fit parameters settings for stat box, default 0 (see TStyle::SetOptFit)
 - statfmt - formatting for float values in stat box, default 6.4g (see TStyle::SetStatFormat)
 - fitfmt - formatting for fit values in stat box, default 5.4g (see TStyle::SetFitFormat)
@@ -78,7 +78,7 @@ Following layouts are supported:
 
 When specifying `files`, `items` or `opts` parameters, array of strings could be provided  like `files=['file1.root','file2.root']`.  One could skip quotes when specifying elements names `items=[file1.root/hpx,file2.root/hpy]` or `opts=['',colz]`.
 
-As item name, URL to existing image can be provided like `item=img:http://server/image.png`. Such image will be just inserted in the existing layout. One could specify option `"scale"` to automatically scale image to available space. 
+As item name, URL to existing image can be provided like `item=img:http://server/image.png`. Such image will be just inserted in the existing layout. One could specify option `"scale"` to automatically scale image to available space.
 
 Many examples of URL string usage can be found on [JSROOT examples](https://root.cern/js/latest/api.htm) page.
 
@@ -329,9 +329,9 @@ Following draw options could be specified (separated by semicolon or ';'):
 
 In the URL string several global settings can be changed:
 
-   - geosegm - grads per segment is cylindrical shapes, default is 6 
+   - geosegm - grads per segment is cylindrical shapes, default is 6
    - geocomp - compress results of composite shape production, default is true
-     
+
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:
 
@@ -392,14 +392,14 @@ Either one do it interactively by drag and drop, or superimpose drawing with `+`
 - [item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits](https://root.cern/js/latest/?nobrowser&json=../files/geom/simple_alice.json.gz&file=../files/geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks+tracks_hits.root/hits)
 
 
-There is a problem of correct rendering of transparent volumes. To solve problem in general is very expensive 
-(in terms of computing power), therefore several approximation solution can be applied: 
+There is a problem of correct rendering of transparent volumes. To solve problem in general is very expensive
+(in terms of computing power), therefore several approximation solution can be applied:
    * **dpnt**: distance from camera view to the volume center used as rendering order
    * **dbox**: distance to nearest point from bonding box used as rendering order (**default**)
    * **dsize**: volume size is used as rendreing order, can be used for centered volumes with many shells around
    * **dray**: use raycasting to sort volumes in order they appear along rays, comming out of camera point
-   * **ddflt**: default three.js method for rendering transparent volumes       
-For different geometries different methods can be applied. In any case, all opaque volumes rendered first. 
+   * **ddflt**: default three.js method for rendering transparent volumes
+For different geometries different methods can be applied. In any case, all opaque volumes rendered first.
 
 
 ## Reading ROOT files from other servers
@@ -562,7 +562,7 @@ In URL string with JSRootCore.js script one can specify which JSROOT functionali
     + 'gui' default gui for offline/online applications
     + 'load' name of user script(s) to load
     + 'onload' name of function to call when scripts loading completed
-    + 'nocache' avoid use of cache for loading of JSROOT scripts 
+    + 'nocache' avoid use of cache for loading of JSROOT scripts
 
 For instance, to load functionality with normal 2D graphics and binary ROOT files support, one should specify:
 
@@ -579,14 +579,14 @@ Or specify custom format for the X/Y object values:
 
     JSROOT.gStyle.XValuesFormat = "4.2g"
     JSROOT.gStyle.YValuesFormat = "6.1f"
- 
+
 When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:
 
     <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
 
 Bower support will be automatically enabled when script path conatin __"bower_components/jsroot/"__ string.
 
-One also could use bower and gulp to produce single script with all libraries included.  
+One also could use bower and gulp to produce single script with all libraries included.
 This is shown in the example <https://github.com/root-project/jsroot/tree/master/demo/gulp>
 
 
@@ -639,7 +639,7 @@ Here is complete [running example](https://root.cern/js/latest/api.htm#custom_ht
     }).send();
 
 In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
-call back (forth argument) like: 
+call back (forth argument) like:
 
     JSROOT.draw("drawing", obj, "colz", function(painter) {
        console.log('Object type in painter', painter.GetObject()._typename);
@@ -765,8 +765,8 @@ When transparent volumes appeared in the model, one could use JSROOT.GEO.produce
 to correctly set rendering order. It should be used as:
 
     JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
-    
-Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.    
+
+Following methods can be applied: "box", "pnt", "size", "ray" and "dflt". See more info in draw options description for TGeo classes.
 
 Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geometry) and [source code](https://github.com/root-project/jsroot/blob/master/demo/tgeo_build.htm).
 
@@ -776,11 +776,11 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_geomet
 Starting from version 5.2.0, JSROOT can be used in Node.js. To install it, use:
 
     [shell] npm install jsroot
-    
+
 To use in the Node.js scripts, one should add following line:
 
      var jsroot = require('jsroot');
-     
+
 Using JSROOT functionality, one can open binary ROOT files (local and remote), parse ROOT JSON,
 create SVG output. For example, to create SVG image with lego plot, one should do:
 
@@ -793,8 +793,8 @@ create SVG output. For example, to create SVG image with lego plot, one should d
              fs.writeFileSync("lego2.svg", svg);
           });
        });
-     });               
- 
+     });
+
 It is also possible to convert any JavaScript object into ROOT JSON string, using **JSROOT.toJSON()** function. Like:
 
     var jsroot = require("jsroot");
@@ -803,12 +803,12 @@ It is also possible to convert any JavaScript object into ROOT JSON string, usin
     jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
        file.ReadObject("hpxpy;1", function(obj) {
           var json = jsroot.toJSON(obj);
-          fs.writrFileSync("hpxpy.json", json); 
+          fs.writrFileSync("hpxpy.json", json);
        });
-    });               
- 
-Such JSON string could be parsed by any other JSROOT-based application.  
- 
+    });
+
+Such JSON string could be parsed by any other JSROOT-based application.
+
 
 ### Use with OpenUI5
 
@@ -816,13 +816,13 @@ Such JSON string could be parsed by any other JSROOT-based application.
 
 First problem is bootstraping of OpenUI5. Most easy solution - specify openui5 URL parameter when loading JSROOT:
 
-   
-      <script type="text/javascript" 
+
+      <script type="text/javascript"
               src="https://root.cern/js/latest/scripts/JSRootCore.min.js?openui5&onload=doInit">
       </script>
- 
+
 JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of OpenUI5. After loading is completed, one can use `sap` to access openui5 functionality. Like:
- 
+
       <script type="text/javascript">
          function doInit() {
             jQuery.sap.registerModulePath("NavExample", "./");
@@ -837,13 +837,13 @@ JSROOT uses https://openui5.hana.ondemand.com to load latest stable version of O
                 })
               ]
             }).placeAt("content");
-         } 
+         }
       </script>
 
-There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified 
+There are small details when using OpenUI5 with THttpServer. First of all, location of JSROOT scripts should be specified
 as `jsrootsys/scripts/JSRootCore.js`. And when trying to access files from local disk, one should specify `/currentdir/` folder:
 
     jQuery.sap.registerModulePath("NavExample", "/currentdir/");
-    
+
 JSROOT provides [example](https://root.cern/js/latest/demo/openui5/) showing usage of JSROOT drawing in the OpenUI5,
-[source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository. 
+[source code](https://github.com/root-project/jsroot/tree/master/demo/openui5) can be found in repository.
