@@ -2261,24 +2261,23 @@
    }
 
    /** @summary Returns drawn object
-    *
     * @abstract */
    TBasePainter.prototype.GetObject = function() {
-      return null;
    }
 
    /** @summary Returns true if type match with drawn object type
+    * @param {string} typename - type name to check with
+    * @returns {boolean} true if draw objects matches with provided type name
     * @abstract
     * @private */
-   TBasePainter.prototype.MatchObjectType = function(typ) {
-      return false;
+   TBasePainter.prototype.MatchObjectType = function(typename) {
    }
 
    /** @summary Called to update drawn object content
+    * @returns {boolean} true if update can be performed
     * @abstract
     * @private */
    TBasePainter.prototype.UpdateObject = function(obj) {
-      return false;
    }
 
    /** @summary Redraw all objects in current pad
@@ -2300,10 +2299,10 @@
    }
 
    /** @summary Checks if draw elements were resized and drawing should be updated
+    * @returns {boolean} true if resize was detected
     * @abstract
     * @private */
    TBasePainter.prototype.CheckResize = function(arg) {
-      return false;
    }
 
    /** @summary Method called when interactively changes attribute in given class
@@ -2313,9 +2312,10 @@
       // console.log("Changed attribute", class_name, member_name, new_value);
    }
 
-   /** @summary Returns d3.select for main element for drawing, defined with this.divid.
-    *
-    * @desc if main element was layouted, returns main element inside layout */
+   /** @summary access to main HTML element used for drawing - typically <div> element
+     * @desc if main element was layouted, returns main element inside layout
+    * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
+    * @returns {object} d3.select for main element for drawing, defined with this.divid. */
    TBasePainter.prototype.select_main = function(is_direct) {
 
       if (!this.divid) return d3.select(null);
@@ -2587,7 +2587,6 @@
    }
 
    /** @summary Check if it makes sense to zoom inside specified axis range
-    *
     * @param {string} axis - name of axis like 'x', 'y', 'z'
     * @param {number} left - left axis range
     * @param {number} right - right axis range
@@ -2596,7 +2595,6 @@
     * @private
     */
    TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
-      return false;
    }
 
    // ==============================================================================
@@ -4286,7 +4284,7 @@
   }
 
    /** @summary Check if user-defined tooltip callback is configured
-    * @returns {Boolean}
+    * @returns {boolean}
     * @private */
    TObjectPainter.prototype.IsUserTooltipCallback = function() {
       return typeof this.UserTooltipCallback == 'function';
