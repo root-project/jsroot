@@ -3551,7 +3551,7 @@
       // draw new palette, resize frame if required
       // var pp = this.DrawColorPalette(this.options.Zscale && (this.options.Color || this.options.Contour), true);
 
-      if (this.DrawAxes());
+      if (this.DrawAxes())
          this.DrawBins();
 
       // redraw palette till the end when contours are available
