@@ -2182,8 +2182,8 @@
           browser_configured = !!browser_kind,
           title = GetOption("title");
 
-      if (GetOption("float")!==null) { browser_kind='float'; browser_configured = true; } else
-      if (GetOption("fix")!==null) { browser_kind='fix'; browser_configured = true; }
+      if (GetOption("float")!==null) { browser_kind = 'float'; browser_configured = true; } else
+      if (GetOption("fix")!==null) { browser_kind = 'fix'; browser_configured = true; }
 
       this.no_select = GetOption("noselect");
 
@@ -2206,7 +2206,7 @@
       if ((jsonarr.length==1) && (itemsarr.length==0) && (expanditems.length==0)) itemsarr.push("");
 
       if (!this.disp_kind) {
-         if ((typeof layout == "string") && (layout.length>0))
+         if ((typeof layout == "string") && (layout.length > 0))
             this.disp_kind = layout;
          else
          switch (itemsarr.length) {
@@ -2265,16 +2265,13 @@
       function AfterOnlineOpened() {
          // check if server enables monitoring
 
-         if (('_browser' in hpainter.h) && !browser_configured) {
+         if (!hpainter.exclude_browser && !browser_configured && ('_browser' in hpainter.h)) {
             browser_kind = hpainter.h._browser;
             if (browser_kind==="off") { browser_kind = ""; status = null; hpainter.exclude_browser = true; }
          }
 
          if (('_monitoring' in hpainter.h) && !monitor)
             monitor = hpainter.h._monitoring;
-
-         if (('_layout' in hpainter.h) && !layout)
-            hpainter.disp_kind = hpainter.h._layout;
 
          if (('_loadfile' in hpainter.h) && (filesarr.length==0))
             filesarr = JSROOT.ParseAsArray(hpainter.h._loadfile);
@@ -2283,6 +2280,9 @@
             itemsarr = JSROOT.ParseAsArray(hpainter.h._drawitem);
             optionsarr = JSROOT.ParseAsArray(hpainter.h._drawopt);
          }
+
+         if (('_layout' in hpainter.h) && !layout && ((hpainter.is_online != "draw") || (itemsarr.length > 1)))
+            hpainter.disp_kind = hpainter.h._layout;
 
          if (('_toptitle' in hpainter.h) && hpainter.exclude_browser && document)
             document.title = hpainter.h._toptitle;
@@ -2299,7 +2299,7 @@
          if (typeof h0 !== 'object') h0 = "";
       }
 
-      if (h0!==null)
+      if (h0 !== null)
          return this.OpenOnline(h0, AfterOnlineOpened);
 
       if (gui_div)
@@ -2383,7 +2383,7 @@
 
       var hpainter = new JSROOT.HierarchyPainter('root', null);
 
-      hpainter.is_online = online;
+      if (online) hpainter.is_online = drawing ? "draw" : "online";
       if (drawing) hpainter.exclude_browser = true;
 
       hpainter.start_without_browser = true; // indicate that browser not required at the beginning

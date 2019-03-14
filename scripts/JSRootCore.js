@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 13/03/2019";
+   JSROOT.version = "dev 14/03/2019";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1380,9 +1380,14 @@
          debugout = 'simpleGUI';
          if (JSROOT.GetUrlOption('file') || JSROOT.GetUrlOption('files')) requirements += "io;";
          if (simplegui.getAttribute('nobrowser') && (simplegui.getAttribute('nobrowser')!="false")) nobrowser = true;
-      } else if (document.getElementById('onlineGUI')) { debugout = 'onlineGUI';
-      } else if (document.getElementById('drawGUI')) { debugout = 'drawGUI'; nobrowser = true;
-      } else requirements += "io;";
+      } else if (document.getElementById('onlineGUI')) {
+         debugout = 'onlineGUI';
+      } else if (document.getElementById('drawGUI')) {
+         debugout = 'drawGUI';
+         nobrowser = true;
+      } else {
+         requirements += "io;";
+      }
 
       if (user_scripts == 'check_existing_elements') {
          user_scripts = null;
