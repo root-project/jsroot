@@ -46,7 +46,7 @@
          d3.scaleLinear = d3.scale.linear;
          JSROOT._test_d3_ = 3;
       } else {
-         console.error('Fail to identify d3.js version '  + (d3 ? d3.version : "???"));
+         console.error('Fail to identify d3.js version ' + (d3 ? d3.version : "???"));
       }
    }
 
@@ -132,7 +132,7 @@
     * @constructor
     * @memberof JSROOT
     */
-   var DrawOptions = function(opt) {
+   function DrawOptions(opt) {
       this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
       this.part = "";
    }
@@ -982,7 +982,7 @@
    }
 
    /**
-    * Create sample element inside primitive SVG - used in context menu
+    * @summary Create sample element inside primitive SVG - used in context menu
     * @private
     */
 
@@ -6422,24 +6422,18 @@
    JSROOT.CheckElementResize = JSROOT.resize;
 
    /** @summary Returns main painter object for specified HTML element
-    * @param {string|object} divid - id or DOM element
-    */
-
+     * @param {string|object} divid - id or DOM element */
    JSROOT.GetMainPainter = function(divid) {
       var dummy = new JSROOT.TObjectPainter();
       dummy.SetDivId(divid, -1);
       return dummy.main_painter(true);
    }
 
-   /**
-    * @summary Safely remove all JSROOT objects from specified element
-    *
-    * @param {string|object} divid - id or DOM element
-    *
-    * @example
-    * JSROOT.cleanup("drawing");
-    * JSROOT.cleanup(document.querySelector("#drawing"));
-    */
+   /** @summary Safely remove all JSROOT objects from specified element
+     * @param {string|object} divid - id or DOM element
+     * @example
+     * JSROOT.cleanup("drawing");
+     * JSROOT.cleanup(document.querySelector("#drawing")); */
    JSROOT.cleanup = function(divid) {
       var dummy = new TObjectPainter(), lst = [];
       dummy.SetDivId(divid, -1);
@@ -6451,9 +6445,8 @@
       return lst;
    }
 
-   /** Display progress message in the left bottom corner.
-    *
-    * Previous message will be overwritten
+   /** @summary Display progress message in the left bottom corner.
+    *  @desc Previous message will be overwritten
     * if no argument specified, any shown messages will be removed
     * @param {string} msg - message to display
     * @param {number} tmout - optional timeout in milliseconds, after message will disappear
@@ -6493,11 +6486,9 @@
       }
    }
 
-   /** Tries to close current browser tab
-   *
-   * Many browsers do not allow simple window.close() call,
-   * therefore try several workarounds
-   */
+   /** @summary Tries to close current browser tab
+     * @desc Many browsers do not allow simple window.close() call,
+     * therefore try several workarounds */
 
    JSROOT.CloseCurrentWindow = function() {
       if (!window) return;

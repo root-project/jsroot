@@ -132,7 +132,9 @@
    };
 
    /**
-    * @class JSROOT.TGeoPainter Holder of different functions and classes for drawing geometries
+    * @class TGeoPainter
+    * @desc Holder of different functions and classes for drawing geometries
+    * @memberof JSROOT
     */
 
    function TGeoPainter(obj) {
