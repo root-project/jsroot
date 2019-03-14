@@ -18,7 +18,7 @@
 
          // here set of generated json files are used
          // One could specify addres of running THttpServer like http://localhost:8080/Canvases/c1/root.json.gz?compact=23
-         // Or one can create root.json file in the application and place it on the webserver 
+         // Or one can create root.json file in the application and place it on the webserver
          // To run demo, one should generate rootXX.json files using demo.C macro
 
          var request_addr = "root" + (cnt%20) + ".json";
@@ -26,17 +26,17 @@
          // "dummy=xxxx" URL parameter can be used to prevent browser cashing
          // request_addr+= "?dummy=" + cnt;
 
-         if (addr!=null) request_addr = addr; 
+         if (addr!=null) request_addr = addr;
 
          var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
             if (!histo) {
-               d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>"); 
+               d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>");
                return;
             }
 
             var frame = 'drawing';
 
-            // when use grid layout, use counter value stored in request itself 
+            // when use grid layout, use counter value stored in request itself
             if (mdi!=null) frame = mdi.FindFrame("item" + (this.cnt % mdi.NumGridFrames()), true);
 
             // redraw histogram at specified frame
@@ -44,7 +44,7 @@
          });
 
          req.send(null);
- 
+
          req.cnt = cnt++; // remember counter to find correct frame later
       }
 
@@ -53,7 +53,7 @@
          d3.select('body').style({'min-height':'100%', 'margin':'0px', "overflow" :"hidden"});
 
          var monitor = JSROOT.GetUrlOption("monitoring");
-         if ((monitor == "") || (monitor==null)) 
+         if ((monitor == "") || (monitor==null))
             monitor = 1000;
          else
             monitor = parseInt(monitor);

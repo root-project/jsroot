@@ -14,19 +14,19 @@
      var filename = "../../files/hsimple.root";
      JSROOT.OpenFile(filename, function(file) {
         file.ReadObject("ntuple;1", function(tree) {
-              
+
               var selector = new JSROOT.TSelector();
-              
-              selector.AddBranch("px"); 
+
+              selector.AddBranch("px");
               selector.AddBranch("py");
-              
+
               var cnt = 0, sumpx = 0, sumpy = 0;
-              
+
               selector.Begin = function() {
                  // function called before reading of TTree starts
                  document.getElementById('p_start').innerHTML = "Start reading TTree";
               }
-              
+
               selector.Process = function() {
                  // function called for every entry
                  sumpx += this.tgtobj.px;
@@ -34,19 +34,19 @@
                  cnt++;
                  document.getElementById('p_process').innerHTML = "Process " + cnt + " entries";
               }
-              
+
               selector.Terminate = function(res) {
                  // function called when processing finishes
-                 if (!res || (cnt===0)) { 
-                    res = "Fail to process TTree"; 
+                 if (!res || (cnt===0)) {
+                    res = "Fail to process TTree";
                  } else {
                     var meanpx = sumpx/cnt, meanpy = sumpy/cnt;
                     res = 'MeanPX = ' + meanpx.toFixed(4) + '  MeanPY = ' + meanpy.toFixed(4);
-                 } 
-                                   
+                 }
+
                  document.getElementById('p_ready').innerHTML = res;
               }
-              
+
               tree.Process(selector);
         });
      });

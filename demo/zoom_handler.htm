@@ -14,13 +14,13 @@
 
    <script type='text/javascript'>
 
-      var h1painter = null, 
+      var h1painter = null,
           filename = "https://root.cern/js/files/hsimple.root";
-      
+
       JSROOT.OpenFile(filename, function(file) {
          file.ReadObject("hpx;1", function(obj) {
-            JSROOT.draw("drawth1", obj, "hist", function(painter) { 
-               h1painter = painter; 
+            JSROOT.draw("drawth1", obj, "hist", function(painter) {
+               h1painter = painter;
             });
          });
          file.ReadObject("hpxpy;1", function(obj) {

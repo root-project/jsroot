@@ -21,7 +21,7 @@
 
       <script src="https://threejs.org/examples/js/Detector.js"></script>
       <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
-      
+
       <script src="../scripts/JSRootCore.js?geom&onload=init" type="text/javascript"></script>
 
       <script>
@@ -31,24 +31,24 @@
          var container, stats;
 
          var camera, scene, renderer, geom_size = 400, dummy = null;
-         
+
          function add_geometry(obj) {
-            
-            // options for building three.js model 
+
+            // options for building three.js model
             var opt = { numfaces: 100000, numnodes: 1000 };
 
-            // function demonstrate creation of three.js model 
+            // function demonstrate creation of three.js model
             var obj3d = JSROOT.GEO.build(obj, opt);
-            
+
             if (!obj3d) return;
             scene.remove( dummy );
             scene.add( obj3d );
-               
+
             var box3 = new THREE.Box3().setFromObject(obj3d);
-               
+
             geom_size = box3.getSize().length();
-               
-            camera.far = geom_size*5; 
+
+            camera.far = geom_size*5;
             camera.updateProjectionMatrix();
          }
 
@@ -66,13 +66,13 @@
             var light = new THREE.DirectionalLight( 0xffffff );
             light.position.set( 0, 1, 0 );
             scene.add( light );
-            
+
             // ------------------- reading geometry object --------------------------
-            
+
             var filename = JSROOT.GetUrlOption("file") || "https://root.cern/js/files/geom/simple_alice.json.gz";
-            
+
             // filename = "https://root.cern/files/tank.root";
-            
+
             if (filename.indexOf(".root")>0) {
                // load geometry from ROOT file
                var itemname = JSROOT.GetUrlOption("item") || "geom";
@@ -85,7 +85,7 @@
             }
 
             // ------------------- end of reading geometry object --------------------------
-            
+
             // dummy object, seen in the beginning
             var material = new THREE.MeshLambertMaterial( { side: THREE.DoubleSide } );
             dummy = new THREE.Mesh( new THREE.TetrahedronGeometry( 75, 0 ), material );
@@ -145,7 +145,7 @@
                object.rotation.y = timer * 2.5;
 
             }
-            
+
             // set rendering order for transparent volumes, create with JSROOT
             JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
 

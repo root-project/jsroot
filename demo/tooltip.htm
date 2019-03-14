@@ -14,13 +14,13 @@
 <body>
 
   <div id="user_tooltip">Place for info</div>
-  
+
   <form action="">
-     <input type="radio" name="kind" id="btn1" value="Tooltip"> Tooltip 
-     <input type="radio" name="kind" id="btn2" value="Click"> Click 
+     <input type="radio" name="kind" id="btn1" value="Tooltip"> Tooltip
+     <input type="radio" name="kind" id="btn2" value="Click"> Click
      <input type="radio" name="kind" id="btn3" value="Dblclick"> Doubleclk
   </form>
-  
+
   <div id="object_draw" style="width:800px; height:600px"></div>
 
   <div id="tooltip_draw" style="width:400px; height:300px"></div>
@@ -28,13 +28,13 @@
 <script type='text/javascript'>
 
       var cnt = 0, kind = "";
-      
+
       function UserHandler(info) {
          if (!info)  {
             d3.select("#user_tooltip").html("No tooltip");
             return false;
          }
-         
+
          // set tooltip info
          d3.select("#user_tooltip").html("name: " + info.name + "  bin: " + info.bin + "  cont: " + info.cont);
 
@@ -73,24 +73,24 @@
             // in callback call painter object is returned
             if (!painter) return;
 
-            var chkd = document.getElementById("btn1").checked; 
-            
+            var chkd = document.getElementById("btn1").checked;
+
             painter.ConfigureUserTooltipCallback(chkd ? UserHandler : null);
 
-            chkd = document.getElementById("btn2").checked; 
+            chkd = document.getElementById("btn2").checked;
 
             painter.ConfigureUserClickHandler(chkd ? UserHandler : null);
-            
-            chkd = document.getElementById("btn3").checked; 
-            
+
+            chkd = document.getElementById("btn3").checked;
+
             painter.ConfigureUserDblclickHandler(chkd ? UserHandler : null);
          });
       }
 
       updateGUI();
-      
+
       // update drawing every 3 sec
-      setInterval(updateGUI, 3000); 
+      setInterval(updateGUI, 3000);
 
    </script>
 

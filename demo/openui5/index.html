@@ -13,17 +13,17 @@
       <script type="text/javascript">
 
       JSROOT.openui5libs = "sap.ui.core, sap.m";
-      
+
       JSROOT.AssertPrerequisites('openui5', function() {
-         
+
          sap.ui.loader.config({
             paths: {
                "NavExample": "./"
             }
          });
-         
+
          sap.ui.require(["sap/ui/core/ComponentContainer", "sap/m/App", "sap/m/Page" ],
-               
+
             function(ComponentContainer, mApp, mPage) {
 
                new mApp ({
@@ -37,9 +37,9 @@
                     })
                  ]
                }).placeAt("content");
-               
+
            }); // sap.ui.require
-         
+
       }); // JSROOT.AssertPrerequisites
 
       </script>

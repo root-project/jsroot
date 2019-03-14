@@ -23,22 +23,22 @@
       var cnt = 0, drawing_ready = true;
 
       function CreateLegendEntry(obj, lbl) {
-         var entry = JSROOT.Create("TLegendEntry"); 
+         var entry = JSROOT.Create("TLegendEntry");
          entry.fObject = obj;
          entry.fLabel = lbl;
          entry.fOption = "l";
-         return entry; 
+         return entry;
       }
 
       function updateGUI() {
          if (!drawing_ready) return;
-         
+
         // this is just generation of graph
          var npoints = 20;
          var xpts = [], ypts = [];
          for (var i=0; i<npoints; i++) {
-            xpts.push(i); 
-            ypts.push(50*Math.sin((i+cnt))); 
+            xpts.push(i);
+            ypts.push(50*Math.sin((i+cnt)));
          }
          var graph1 = JSROOT.CreateTGraph(npoints, xpts, ypts);
          graph1.fLineColor = 2;
@@ -46,8 +46,8 @@
 
          xpts = []; ypts = [];
          for (var i=0; i<npoints; i++) {
-            xpts.push(i); 
-            ypts.push(50*Math.cos((i+cnt))); 
+            xpts.push(i);
+            ypts.push(50*Math.cos((i+cnt)));
          }
          var graph2 = JSROOT.CreateTGraph(npoints, xpts, ypts);
          graph2.fLineColor = 3;
@@ -66,7 +66,7 @@
          for (var i=0; i<npoints; i++) {
             var lbl = JSROOT.Create("TObjString");
             lbl.fString = 'pnt'+((i+cnt)%20);
-            lbl.fUniqueID = i+1; 
+            lbl.fUniqueID = i+1;
             h1.fXaxis.fLabels.Add(lbl, "");
          }
          h1.fYaxis.fXmin = -60;
@@ -85,9 +85,9 @@
          // set fixed Y-range if required
          // mgraph.fMinimum = 0;
          // mgraph.fMaximum = 400;
-         
+
          drawing_ready = false;
-         
+
          JSROOT.redraw('object_draw', mgraph, "", function() { drawing_ready = true; });
       }
 

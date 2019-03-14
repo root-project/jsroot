@@ -65,7 +65,7 @@
          #panel #content {
             padding: 0px 20px;
          }
-            
+
          #panel img {
             border: 1px solid #ccc;
          }
@@ -84,7 +84,7 @@
             height: 100%;
             overflow: hidden;
          }
-         
+
          #srcviewer {
             display : none;
             position: absolute;
@@ -95,9 +95,9 @@
             overflow: auto;
             margin: 5px;
          }
-         
+
          #srcviewer pre {
-            margin: 3px; 
+            margin: 3px;
          }
 
          .link:hover {
@@ -113,7 +113,7 @@
          <div id="content"></div>
          <br/>
       </div>
-      
+
       <iframe id="viewer"></iframe>
 
       <div id="srcviewer"></div>
@@ -121,18 +121,18 @@
       <script>
          var jsroot_path = "./";
          var filepath = "../files/";
-         
+
          document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
          if ((window.location.host.indexOf('jsroot.gsi.de') < 0) &&
              (window.location.host.indexOf('root.cern') < 0)) {
-                filepath = "https://root.cern/js/files/"; 
+                filepath = "https://root.cern/js/files/";
              }
-             
-         if (window.location.protocol == "file:") { 
+
+         if (window.location.protocol == "file:") {
             jsroot_path = "https://root.cern/js/dev/";
             filepath = "https://root.cern/js/files/";
-         }    
+         }
 
          var examples = {
             'URL syntax': [
@@ -225,22 +225,22 @@
               { name: "Terminal", url: "Go4ExampleSimple/?item=Control/Terminal", title : "Analysis terminal output plus sveral control elements" }
             ]
          };
-         
+
          var content = document.getElementById('content');
-         
+
          function ProcessClick(durl) {
             var viewer = document.getElementById( 'viewer' );
             var srcviewer = document.getElementById( 'srcviewer' );
             viewer.style.display = '';
             srcviewer.style.display = 'none';
-             
+
              if (durl.indexOf("http")==0)
                 viewer.src = durl;
              else
                 viewer.src = jsroot_path + durl;
              viewer.focus();
          }
-         
+
          function SetListener(elem, shortname, durl) {
              elem.addEventListener( 'click', function (event) {
                 event.preventDefault();
@@ -248,15 +248,15 @@
                 ProcessClick(durl);
              });
          }
-         
+
          function ProcessSourceClick(entry) {
-            
+
             var srcload = entry.srcload || entry.src;
             if (srcload === "github")
-               srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + 
-                          ((JSROOT.source_dir.indexOf("/dev/")>0) ? "dev/" : "master/") + 
+               srcload = "https://raw.githubusercontent.com/root-project/jsroot/" +
+                          ((JSROOT.source_dir.indexOf("/dev/")>0) ? "dev/" : "master/") +
                           entry.src;
-         
+
             JSROOT.NewHttpRequest(srcload, "text", function(res) {
                if (!res) return console.error("Cannot find " + srcload);
 
@@ -265,7 +265,7 @@
                viewer.style.display = 'none';
                srcviewer.style.display = 'block';
                srcviewer.innerHTML = "";
-               
+
                var lines = res.split("\n");
                for (var k=0;k<lines.length;++k) {
                   var pre = document.createElement('pre');
@@ -273,7 +273,7 @@
                   srcviewer.appendChild(pre);
                }
                srcviewer.focus();
-               
+
             }).send();
          }
 
@@ -286,14 +286,14 @@
          }
 
          function MakeShortName(name1, name2) {
-            return name1.toLowerCase().replace(" ","_").replace(".","_") + "_" + 
-                   name2.toLowerCase().replace(" (2)","_2").replace(" (1)","_1").replace("(","").replace(")","").replace(".","_").replace(" ","_").replace(" ","_");         
-         } 
-         
+            return name1.toLowerCase().replace(" ","_").replace(".","_") + "_" +
+                   name2.toLowerCase().replace(" (2)","_2").replace(" (1)","_1").replace("(","").replace(")","").replace(".","_").replace(" ","_").replace(" ","_");
+         }
+
          for (var key in examples) {
-         
+
             var opts = examples[key];
-         
+
             var div = document.createElement( 'h2' );
             if ('link' in opts[0]) {
                var ll = document.createElement( 'a' );
@@ -304,40 +304,40 @@
             } else {
                div.textContent = key;
             }
-            
+
             content.appendChild( div );
-            
+
             for (var n=0; n<opts.length;++n) {
                var entry = opts[n];
 
                if (!('name' in entry)) continue;
-               
+
                var shortname = MakeShortName(key, entry.name);
-            
+
                var url = entry.url;
 
-               if (url) {               
+               if (url) {
                   var aaa = document.createElement( 'a' );
                   aaa.textContent = entry.name;
                   aaa.href = jsroot_path + url;
-                  if ('title' in entry) aaa.title = entry.title; 
+                  if ('title' in entry) aaa.title = entry.title;
                   content.appendChild( aaa );
                   SetListener(aaa, shortname, url);
                }
-                 
+
                if ('src' in entry) {
-                  
-                  var srcurl = "", github = "https://github.com/root-project/jsroot/blob/"; 
+
+                  var srcurl = "", github = "https://github.com/root-project/jsroot/blob/";
                   if (JSROOT.source_dir.indexOf("/dev/")>0) github+="dev/"; else github+="master/";
                   if (entry.src===true) {
-                     srcurl = github + url; 
-                     entry.src = JSROOT.source_dir + url;  
-                  } else 
+                     srcurl = github + url;
+                     entry.src = JSROOT.source_dir + url;
+                  } else
                   if (entry.src.indexOf("http")===0) srcurl = entry.src; else
                                srcurl = github + entry.src;
-                  
+
                   var saaa = document.createElement( 'a' );
-                  
+
                   if (url) {
                      saaa.textContent = " (src)";
                      saaa.title = "Click to see source of the example";
@@ -345,26 +345,26 @@
                      saaa.textContent = entry.name;
                      saaa.title = entry.title;
                   }
-                  
+
                   saaa.href = srcurl;
                   content.appendChild( saaa );
                   SetSourceListener(saaa, shortname + "_src", entry);
-                  
+
                   if ((window.location.hash == "#" + shortname + "_src") || (entry.syn && window.location.hash == "#" + entry.syn + "_src")) {
                      saaa.focus();
                      ProcessSourceClick(entry);
                   }
-               } 
-                 
+               }
+
                content.appendChild(document.createElement('br'));
-               
+
               if ((window.location.hash == "#" + shortname) || (entry.syn && window.location.hash == "#" + entry.syn)) {
                  aaa.focus();
                  ProcessClick(url);
               }
             }
          }
-         
+
 
       </script>
 
