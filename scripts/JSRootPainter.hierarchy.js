@@ -2267,6 +2267,7 @@
 
          if (!hpainter.exclude_browser && !browser_configured && ('_browser' in hpainter.h)) {
             browser_kind = hpainter.h._browser;
+            if (browser_kind==="no") browser_kind = ""; else
             if (browser_kind==="off") { browser_kind = ""; status = null; hpainter.exclude_browser = true; }
          }
 

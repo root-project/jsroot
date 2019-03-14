@@ -118,7 +118,7 @@ One also can configure to display several items at once. For that one also can c
     
 One also can change appearance of hierarchy browser on the left side of the web page:    
     
-    serv->SetItemField("/", "_browser", "off");    // allowed "fix" (default) "float", "off"
+    serv->SetItemField("/", "_browser", "off");    // allowed "fix" (default), "float", "no", "off"
     serv->SetItemField("/", "_toptitle", "Custom title");    // title of web page, shown when browser off
     
 If necessary, one also can automatically open ROOT file when web page is opened:    
