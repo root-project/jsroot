@@ -99,6 +99,39 @@ string to the icon name to let browser show command as extra button. In last cas
 One can find example of command interface usage in [tutorials/http/httpcontrol.C](https://github.com/root-project/root/blob/master/tutorials/http/httpcontrol.C) macro.
 
 
+## Customize user interface
+
+JSROOT is used to implement UI for the THttpServer. Defualt webpage shows list of registered objects on the left side and drawing area on the right side: 
+   
+    https://root.cern/js/latest/httpserver.C/  
+ 
+ JSROOT allows to configure different parameters via URL. Like monitoring interval or name of displayed item:
+ 
+    https://root.cern/js/latest/httpserver.C/?item=Files/job1.root/hpxpy&opt=colz&monitoring=1000 
+
+Some of such parameters can be configured already on the server:
+
+    serv->SetItemField("/", "_monitoring", "1000");   // monitoring interval in ms
+    serv->SetItemField("/", "_drawitem", "Files/job1.root/hpxpy");  // item to draw
+    serv->SetItemField("/", "_drawopt", "colz");
+
+In such case URL parameters are not required - specified item will be displayed automatically when web page is opened.
+One also can configure to display several items at once. For that one also can configure layout of the drtawing area:
+ 
+    serv->SetItemField("/", "_layout", "grid2x2");    // layout for drawing area
+    serv->SetItemField("/", "_drawitem", "[Files/job1.root/hpxpy,Files/job1.root/hpx]");  // items
+    serv->SetItemField("/", "_drawopt", "[colz,hist]");  // options
+    
+One also can change appearance of hierarchy browser on the left side of the web page:    
+    
+    serv->SetItemField("/", "_browser", "off");    // allowed "fix" (default) "float", "off"
+    serv->SetItemField("/", "_toptitle", "Custom title");    // title of web page, shown when browser off
+    
+If necessary, one also can automatically open ROOT file when web page is opened:    
+    
+    serv->SetItemField("/", "_loadfile", "currentdir/hsimple.root"); // name of ROOT file to load 
+
+
 ## Configuring user access
 
 By default, the http server is open for anonymous access. One could restrict the access to the server for authenticated users only. First of all, one should create a password file, using the **htdigest** utility.
