@@ -2041,7 +2041,7 @@
             var axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
                 bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
                 bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins),
-                bin2 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
+                bin3 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
             if (bin1 < 0) bin1 = 0; else
             if (bin1 > axis1.fNbins + 1) bin1 = axis1.fNbins + 1;
             if (bin2 < 0) bin2 = 0; else
