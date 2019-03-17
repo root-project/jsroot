@@ -12,10 +12,10 @@
 9. Improve windows handling in flex(ible) layout
 10. Use requestAnimationFrame when perform monitoring, improves performance
 11. Better position for text in TH2Poly drawings
-12. Use d3 from npm when running with node.js
+12. Use d3.js and three.js from npm when running with node.js
 13. Fix - support clipping for tracks and points in geo painter
 14. Fix - drawing of TGeoNode with finder
-15. Fix - key press events processed only in actvie pad (ROOT-9128)
+15. Fix - key press events processed only in active pad (ROOT-9128)
 16. Move most of ui5-specific code into ROOT repository, where it will be maintained
 
 

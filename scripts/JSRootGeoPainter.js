@@ -8,7 +8,7 @@
    if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
       if (!jsroot.nodejs && (typeof window != 'undefined')) require("./dat.gui.min.js");
-      factory(jsroot, require("d3"), require("./three.min.js"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
+      factory(jsroot, require("d3"), require("three"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 

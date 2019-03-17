@@ -6,7 +6,7 @@
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("./three.min.js"), jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
+      factory(jsroot, require("three"), jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 
       if (typeof JSROOT == 'undefined')

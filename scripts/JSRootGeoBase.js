@@ -6,7 +6,7 @@
       define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"), require("./three.min.js"), require("./ThreeCSG.js"));
+      factory(require("./JSRootCore.js"), require("three"), require("./ThreeCSG.js"));
    } else {
 
       if (typeof JSROOT == 'undefined')
