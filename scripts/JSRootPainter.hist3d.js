@@ -7,7 +7,7 @@
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("./d3.min.js"), require("./JSRootPainter.hist.js"), require("./three.min.js"), require("./three.extra.min.js"),
+      factory(jsroot, require("d3"), require("./JSRootPainter.hist.js"), require("./three.min.js"), require("./three.extra.min.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
 

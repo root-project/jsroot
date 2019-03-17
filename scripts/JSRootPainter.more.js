@@ -7,7 +7,7 @@
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootCore.js"), require("./d3.min.js"), require("./JSRootMath.js"));
+       factory(require("./JSRootCore.js"), require("d3"), require("./JSRootMath.js"));
    } else {
 
       if (typeof d3 != 'object')
