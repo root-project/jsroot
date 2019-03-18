@@ -2258,7 +2258,7 @@
 
       var last = this.zoom_changed_interactive;
 
-      if (dox || doy || doz) this.zoom_changed_interactive = 2;
+      if (dox || doy || doz) this.zoom_changed_interactive = 1;
 
       var changed = this.Zoom(dox ? 0 : undefined, dox ? 0 : undefined,
                               doy ? 0 : undefined, doy ? 0 : undefined,

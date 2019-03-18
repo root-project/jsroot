@@ -1815,8 +1815,13 @@
 
       // if our own histogram was used as axis drawing, we need update histogram  as well
       if (this.axes_draw) {
-         var main = this.main_painter();
-         main.UpdateObject(obj.fHistogram || this.CreateHistogram());
+         var main = this.main_painter(),
+             fp = this.frame_painter();
+
+         // if zoom was changed - do not update histogram
+         if (!fp.zoom_changed_interactive)
+            main.UpdateObject(obj.fHistogram || this.CreateHistogram());
+
          main.GetObject().fTitle = graph.fTitle; // copy title
       }
 
