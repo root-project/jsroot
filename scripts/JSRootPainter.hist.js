@@ -2284,10 +2284,10 @@
       AssignFuncs(histo.fZaxis);
    }
 
+   /** @summary Create x,y objects which maps user coordinates into pixels
+    *  @desc Now moved into TFramePainter
+    *  @private */
    THistPainter.prototype.CreateXY = function() {
-      // Create x,y objects which maps user coordinates into pixels
-      // Now moved into TFramePainter
-
       if (!this.is_main_painter()) return;
 
       var histo = this.GetHisto(),
