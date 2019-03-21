@@ -4515,7 +4515,7 @@
 
    TH2Painter.prototype.ToggleProjection = function(kind, width) {
 
-      if (kind=="Projections") kind = "";
+      if ((kind=="Projections") || (kind=="Off")) kind = "";
 
       if ((typeof kind == 'string') && (kind.length>1)) {
           width = parseInt(kind.substr(1));
@@ -4614,6 +4614,7 @@
       var kind = this.is_projection || "";
       if (kind) kind += this.projection_width;
       var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
+      if (this.is_projection) kinds.push("Off");
       for (var k=0;k<kinds.length;++k)
          menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
       menu.add("endsub:");
