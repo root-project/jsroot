@@ -3,7 +3,7 @@
 ## Changes in 5.6.4
 1. Fix - try workaround corrupted data in TTree
 2. Fix - support min0 draw option like ROOT does
-3. Fix - correctly handle TH2Poly draw options
+3. Fix - correctly handle TH2Poly draw options, better place text
 4. Fix - seldom error in JSROOT.cleanup
 5. Fix - repair TTree player UI
 6. Fix - error in TH3 filling
