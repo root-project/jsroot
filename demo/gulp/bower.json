@@ -4,16 +4,16 @@
   "description": "Example of building lib.js with gulp for JavaScript ROOT",
   "main": "example.htm",
   "dependencies": {
-    "jsroot": "^5.6.3"
+    "jsroot": "^5.6.4"
   },
   "overrides": {
      "MathJax": {
         "main" : [ ]
      },
      "jsroot": {
-        "main": [ 
+        "main": [
            "scripts/JSRootCore.js",
-           "scripts/rawinflate.min.js", 
+           "scripts/rawinflate.min.js",
            "scripts/JSRootIOEvolution.js",
            "scripts/JSRootMath.js",
            "scripts/JSRootTree.js",

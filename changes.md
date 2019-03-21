@@ -1,5 +1,15 @@
 # JSROOT changelog
 
+## Changes in 5.6.4
+1. Fix - try workaround corrupted data in TTree
+2. Fix - support min0 draw option like ROOT does
+3. Fix - correctly handle TH2Poly draw options
+4. Fix - seldom error in JSROOT.cleanup
+5. Fix - repair TTree player UI
+6. Fix - error in TH3 filling
+7. Fix - correctly access top element in simple layout
+
+
 ## Changes in 5.6.3
 1. Fix - support clipping for tracks and points in geo painter
 2. Fix - geometry with TGeoNodeOffset was not correctly drawn
@@ -17,18 +27,18 @@
 3. Fix Y-scale drawing of THStack (https://root-forum.cern.ch/t/31266)
 4. Fix - select palette from colz element
 5. Fix - LZ4 uncompression of large buffers
- 
+
 
 ## Changes in 5.6.0
-1. By drawing outline speed up (factor 10) canvas with many small sub-pads 
+1. By drawing outline speed up (factor 10) canvas with many small sub-pads
 2. Let configure user click and double-click handlers, extend tooltip.htm example
-3. Implement workaround for standard THREE.SVGRenderer - no need for patched version  
+3. Implement workaround for standard THREE.SVGRenderer - no need for patched version
 4. When producing 3D graphical images in batch, use normal THREE.CanvasRenderer
 5. Use WebGL renderer in Chrome headless mode for 3D images generation
 6. Provide possibility to create SVG files for canvas or frame (#172)
 7. Support text drawing with TH1 bar option
 8. Fix - when drawing text, reserve extra y range to show it correctly
-9. Migrate to Node.js 8, do not support older versions 
+9. Migrate to Node.js 8, do not support older versions
 
 
 ## Changes in 5.5.2
@@ -42,7 +52,7 @@
 2. Fix - show RCanvas title
 3. New - implement 'nocache' option for JSROOT scripts loading. When specified in URL with
    JSRootCore.js script, tries to avoid scripts caching problem by adding stamp parameter to all URLs
-4. New - provide simple drawing for TObjString (#164) 
+4. New - provide simple drawing for TObjString (#164)
 
 
 ## Changes in 5.5.0
@@ -121,7 +131,7 @@
    - let combine "L" or "C" TGraph draw option with others
    - correct positioning of custom axis labels
    - correctly toggle lin/log axes in lego plot
-   - let correctly change marker attributes interactively 
+   - let correctly change marker attributes interactively
 
 
 ## Changes in 5.3.5
@@ -138,7 +148,7 @@
 
 
 ## Changes in 5.3.3
-1. Use latest jsdom and mathjax-node packages (Node.js only) 
+1. Use latest jsdom and mathjax-node packages (Node.js only)
 
 
 ## Changes in 5.3.2
