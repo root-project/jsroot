@@ -8,6 +8,7 @@
 5. Fix - repair TTree player UI
 6. Fix - error in TH3 filling
 7. Fix - correctly access top element in simple layout
+8. Fix - exclude duplicated points when drawing TH2 with SURF3 options
 
 
 ## Changes in 5.6.3
