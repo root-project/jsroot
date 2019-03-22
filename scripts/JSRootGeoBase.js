@@ -2062,6 +2062,12 @@
       if (clones) this.nodes = clones;
    }
 
+   /** Insert node into existing array */
+   JSROOT.GEO.ClonedNodes.prototype.updateNode = function(node) {
+      if (node && !isNaN(node.id) && (node.id < this.nodes.length))
+         this.nodes[node.id] = node;
+   }
+
    JSROOT.GEO.ClonedNodes.prototype.GetNodeShape = function(indx) {
       if (!this.origin || !this.nodes) return null;
       var obj = this.origin[indx], clone = this.nodes[indx];
