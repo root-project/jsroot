@@ -4610,16 +4610,18 @@
    TH2Painter.prototype.FillHistContextMenu = function(menu) {
       // painter automatically bind to menu callbacks
 
-      menu.add("sub:Projections", this.ToggleProjection);
-      var kind = this.is_projection || "";
-      if (kind) kind += this.projection_width;
-      var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
-      if (this.is_projection) kinds.push("Off");
-      for (var k=0;k<kinds.length;++k)
-         menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
-      menu.add("endsub:");
+      if (!this.IsTH2Poly()) {
+         menu.add("sub:Projections", this.ToggleProjection);
+         var kind = this.is_projection || "";
+         if (kind) kind += this.projection_width;
+         var kinds = ["X1", "X2", "X3", "X5", "X10", "Y1", "Y2", "Y3", "Y5", "Y10"];
+         if (this.is_projection) kinds.push("Off");
+         for (var k=0;k<kinds.length;++k)
+            menu.addchk(kind==kinds[k], kinds[k], kinds[k], this.ToggleProjection);
+         menu.add("endsub:");
 
-      menu.add("Auto zoom-in", this.AutoZoom);
+         menu.add("Auto zoom-in", this.AutoZoom);
+      }
 
       var sett = JSROOT.getDrawSettings("ROOT." + this.GetObject()._typename, 'nosame');
 
