@@ -347,6 +347,7 @@
          case "ToggleZoom":
             if ((this.zoom_xmin !== this.zoom_xmax) || (this.zoom_ymin !== this.zoom_ymax) || (this.zoom_zmin !== this.zoom_zmax)) {
                this.Unzoom();
+               var fp = this.frame_painter(); if (fp) fp.zoom_changed_interactive = 0;
                return true;
             }
             if (this.draw_content && (typeof this.AutoZoom === 'function')) {

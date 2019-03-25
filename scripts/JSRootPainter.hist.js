@@ -2891,6 +2891,7 @@
          case "ToggleZoom":
             if ((fp.zoom_xmin !== fp.zoom_xmax) || (fp.zoom_ymin !== fp.zoom_ymax) || (fp.zoom_zmin !== fp.zoom_zmax)) {
                fp.Unzoom();
+               fp.zoom_changed_interactive = 0;
                return true;
             }
             if (this.draw_content && (typeof this.AutoZoom === 'function')) {
