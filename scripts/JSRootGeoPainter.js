@@ -1786,7 +1786,7 @@
          this._renderer = webgl ?
                            new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: false,
                                                      preserveDrawingBuffer: true }) :
-                           new THREE.CanvasRenderer({ antialias: true });
+                           new THREE.SoftwareRenderer({ antialias: true });
          this._renderer.setPixelRatio(window.devicePixelRatio);
       }
       this._renderer.setSize(w, h, !this._fit_main_area);

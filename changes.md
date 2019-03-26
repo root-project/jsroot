@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Upgrade three.js 86 -> 97
+1. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
 2. Upgrade d3.js 4.4.4 -> 5.7.0
 3. Many adjustment with new TWebCanvas
 4. Implement update of TF2 drawings, see tutorials/graphics/anim.C
