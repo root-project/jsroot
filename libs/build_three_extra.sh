@@ -5,7 +5,7 @@
 
 tgt=three.extra.js
 
-src=/d/three.js-r97
+src=/d/three.js-r102
 #src=/home/linev/git/threejs
 
 rm -rf $tgt
@@ -23,15 +23,15 @@ echo "// Content of examples/js/renderers/Projector.js" >> $tgt
 cat $src/examples/js/renderers/Projector.js >> $tgt
 echo "" >> $tgt
 
-echo "// Content of examples/js/renderers/CanvasRenderer.js" >> $tgt
-cat $src/examples/js/renderers/CanvasRenderer.js >> $tgt
+echo "// Content of examples/js/renderers/SoftwareRenderer.js" >> $tgt
+cat $src/examples/js/renderers/SoftwareRenderer.js >> $tgt
 echo "" >> $tgt
 
 cat ./three.svg_renderer_header.js >> $tgt
 cat $src/examples/js/renderers/SVGRenderer.js >> $tgt
 cat ./three.svg_renderer_footer.js >> $tgt
 echo "" >> $tgt
- 
+
 echo "// Content of examples/js/controls/OrbitControls.js" >> $tgt
 cat $src/examples/js/controls/OrbitControls.js >> $tgt
 echo "" >> $tgt
