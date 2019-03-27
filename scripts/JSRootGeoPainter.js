@@ -686,52 +686,6 @@
 
       main.node().appendChild(this._datgui.domElement);
 
-      if (this.options.project) {
-
-         var bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01);
-
-         var axis = this.options.project;
-
-         if (this.options.projectPos === undefined)
-            this.options.projectPos = (bound.min[axis] + bound.max[axis])/2;
-
-         this._datgui.add(this.options, 'projectPos', bound.min[axis], bound.max[axis])
-             .name(axis.toUpperCase() + ' projection')
-             .onChange(function (value) {
-               painter.startDrawGeometry();
-           });
-
-      } else {
-         // Clipping Options
-
-         var bound = this.getGeomBoundingBox(this._toplevel, 0.01);
-
-         var clipFolder = this._datgui.addFolder('Clipping');
-
-         for (var naxis=0;naxis<3;++naxis) {
-            var axis = !naxis ? "x" : ((naxis===1) ? "y" : "z"),
-                  axisC = axis.toUpperCase();
-
-            clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
-            .listen() // react if option changed outside
-            .onChange( function (value) {
-               if (value) painter._enableSSAO = false;
-               painter.updateClipping();
-            });
-
-            var clip = "clip" + axisC;
-            if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
-
-            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis])
-                   .name(axisC + ' Position')
-                   .onChange(function (value) {
-                     if (painter[this.enbale_flag]) painter.updateClipping();
-                    });
-
-            item.enbale_flag = "enable"+axisC;
-         }
-      }
-
       function createSSAOgui(is_on) {
          if (!is_on) {
             if (painter._datgui._ssao) {
@@ -775,29 +729,64 @@
          });
       }
 
+      if (this.options.project) {
 
+         var bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01);
 
+         var axis = this.options.project;
+
+         if (this.options.projectPos === undefined)
+            this.options.projectPos = (bound.min[axis] + bound.max[axis])/2;
+
+         this._datgui.add(this.options, 'projectPos', bound.min[axis], bound.max[axis])
+             .name(axis.toUpperCase() + ' projection')
+             .onChange(function (value) {
+               painter.startDrawGeometry();
+           });
+
+      } else {
+         // Clipping Options
+
+         var bound = this.getGeomBoundingBox(this._toplevel, 0.01);
+
+         var clipFolder = this._datgui.addFolder('Clipping');
+
+         for (var naxis=0;naxis<3;++naxis) {
+            var axis = !naxis ? "x" : ((naxis===1) ? "y" : "z"),
+                  axisC = axis.toUpperCase();
+
+            clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
+            .listen() // react if option changed outside
+            .onChange( function (value) {
+               if (value) {
+                  createSSAOgui(false);
+                  painter._enableSSAO = false;
+                  painter._enableClipping = true;
+               }
+               painter.updateClipping();
+            });
+
+            var clip = "clip" + axisC;
+            if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
+
+            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis])
+                   .name(axisC + ' Position')
+                   .onChange(function (value) {
+                     if (painter[this.enbale_flag]) painter.updateClipping();
+                    });
+
+            item.enbale_flag = "enable"+axisC;
+         }
+      }
 
 
       // Appearance Options
 
       var appearance = this._datgui.addFolder('Appearance');
 
-      if (this._webgl) {
-         appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
-            if (painter._enableSSAO) {
-               painter.enableX = painter.enableY = painter.enableZ = false;
-               painter.updateClipping();
-               painter.createSSAO();
-            }
-            createSSAOgui(painter._enableSSAO);
-            painter.Render3D();
-         }).listen();
-      }
-
       appearance.add(this.options, 'highlight').name('Highlight Selection').listen().onChange( function (value) {
          if (!value) painter.HighlightMesh(null);
-     });
+      });
 
       appearance.add(this.options, 'transparency', 0.0, 1.0, 0.001)
                      .listen().onChange(this.changeGlobalTransparency.bind(this));
@@ -820,12 +809,20 @@
       if (this._webgl) {
          var advanced = this._datgui.addFolder('Advanced');
 
-         advanced.add( this._advceOptions, 'clipIntersection').listen().onChange( function (value) {
-            painter.clipIntersection = value;
+         advanced.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
+            if (painter._enableSSAO)
+               painter.createSSAO();
+            createSSAOgui(painter._enableSSAO);
+
+            painter._enableClipping = !painter._enableSSAO;
+            painter.updateClipping();
+         }).listen();
+
+         advanced.add( this, '_clipIntersection').name("Clip intersection").listen().onChange( function (value) {
             painter.updateClipping();
          });
 
-         advanced.add(this._advceOptions, 'depthTest').onChange( function (value) {
+         advanced.add(this, '_depthTest').name("Depth test").onChange( function (value) {
             painter._toplevel.traverse( function (node) {
                if (node instanceof THREE.Mesh) {
                   node.material.depthTest = value;
@@ -845,7 +842,7 @@
 
       // var renderPass = new THREE.RenderPass( this._scene, this._camera );
 
-      this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+      // this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
       // Setup SSAO pass
       this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
       this._ssaoPass.kernelRadius = 16;
@@ -1859,7 +1856,7 @@
 
       // Clipping Planes
 
-      this.clipIntersection = true;
+      this._clipIntersection = true;
       this.bothSides = false; // which material kind should be used
       this.enableX = this.enableY = this.enableZ = false;
       this.clipX = this.clipY = this.clipZ = 0.0;
@@ -1899,18 +1896,17 @@
 
       // Default Settings
 
-      this._defaultAdvanced = { clipIntersection: true, depthTest: true };
+      this._depthTest = true;
 
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
+      // these two parameters are exclusive - either SSAO or clipping can work at same time
       this._enableSSAO = this.options.ssao;
+      this._enableClipping = !this._enableSSAO;
 
       if (this._enableSSAO)
          this.createSSAO();
-
-      this._advceOptions = {};
-      this.resetAdvanced();
 
       if (this._fit_main_area && (this._usesvg || this._usesvgimg)) {
          // create top-most SVG for geomtery drawings
@@ -1964,19 +1960,18 @@
    }
 
    TGeoPainter.prototype.resetAdvanced = function() {
-      if (this._webgl && this._ssaoPass) {
+      if (this._ssaoPass) {
          this._ssaoPass.kernelRadius = 16;
          this._ssaoPass.output = THREE.SSAOPass.OUTPUT.Default;
       }
 
-      this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
-      this._advceOptions.clipIntersection = this._defaultAdvanced.clipIntersection;
-      this.clipIntersection = this._defaultAdvanced.clipIntersection;
+      this._depthTest = true;
+      this._clipIntersection = true;
 
       var painter = this;
       this._toplevel.traverse( function (node) {
          if (node instanceof THREE.Mesh) {
-            node.material.depthTest = painter._defaultAdvanced.depthTest;
+            node.material.depthTest = painter._depthTest;
          }
       });
 
@@ -1993,12 +1988,14 @@
       this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
 
       var panels = [];
-      if (this.enableX) panels.push(this._clipPlanes[0]);
-      if (this.enableY) panels.push(this._clipPlanes[1]);
-      if (this.enableZ) panels.push(this._clipPlanes[2]);
+      if (this._enableClipping) {
+         if (this.enableX) panels.push(this._clipPlanes[0]);
+         if (this.enableY) panels.push(this._clipPlanes[1]);
+         if (this.enableZ) panels.push(this._clipPlanes[2]);
+      }
       if (panels.length == 0) panels = null;
 
-      var any_clipping = !!panels, ci = this.clipIntersection,
+      var any_clipping = !!panels, ci = this._clipIntersection,
           material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       this._scene.traverse( function (node) {
