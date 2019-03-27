@@ -730,8 +730,54 @@
 
             item.enbale_flag = "enable"+axisC;
          }
-
       }
+
+      function createSSAOgui(is_on) {
+         if (!is_on) {
+            if (painter._datgui._ssao) {
+               // there is no method to destroy folder - why?
+               var dom = painter._datgui._ssao.domElement;
+               dom.parentNode.removeChild(dom);
+               painter._datgui._ssao.destroy();
+               if (painter._datgui.__folders && painter._datgui.__folders['SSAO'])
+                  painter._datgui.__folders['SSAO'] = undefined;
+            }
+            delete painter._datgui._ssao;
+            return;
+         }
+
+         if (painter._datgui._ssao) return;
+
+         painter._datgui._ssao = painter._datgui.addFolder('SSAO');
+
+         painter._datgui._ssao.add( painter._ssaoPass, 'output', {
+             'Default': THREE.SSAOPass.OUTPUT.Default,
+             'SSAO Only': THREE.SSAOPass.OUTPUT.SSAO,
+             'SSAO Only + Blur': THREE.SSAOPass.OUTPUT.Blur,
+             'Beauty': THREE.SSAOPass.OUTPUT.Beauty,
+             'Depth': THREE.SSAOPass.OUTPUT.Depth,
+             'Normal': THREE.SSAOPass.OUTPUT.Normal
+         } ).onChange( function ( value ) {
+            painter._ssaoPass.output = parseInt( value );
+            painter.Render3D();
+         } );
+
+         painter._datgui._ssao.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
+            painter.Render3D();
+         });
+
+         painter._datgui._ssao.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
+            painter.Render3D();
+         });
+
+         painter._datgui._ssao.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
+            painter.Render3D();
+         });
+      }
+
+
+
+
 
       // Appearance Options
 
@@ -744,6 +790,7 @@
                painter.updateClipping();
                painter.createSSAO();
             }
+            createSSAOgui(painter._enableSSAO);
             painter.Render3D();
          }).listen();
       }
@@ -790,34 +837,8 @@
          advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
-      if (this._enableSSAO && this._ssaoPass) {
-         var ssaoGui = this._datgui.addFolder('SSAO');
-
-         ssaoGui.add( painter._ssaoPass, 'output', {
-              'Default': THREE.SSAOPass.OUTPUT.Default,
-              'SSAO Only': THREE.SSAOPass.OUTPUT.SSAO,
-              'SSAO Only + Blur': THREE.SSAOPass.OUTPUT.Blur,
-              'Beauty': THREE.SSAOPass.OUTPUT.Beauty,
-              'Depth': THREE.SSAOPass.OUTPUT.Depth,
-              'Normal': THREE.SSAOPass.OUTPUT.Normal
-         } ).onChange( function ( value ) {
-            painter._ssaoPass.output = parseInt( value );
-         } );
-
-         ssaoGui.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
-            painter.Render3D();
-         });
-
-         ssaoGui.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
-            painter.Render3D();
-         });
-
-         ssaoGui.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
-            painter.Render3D();
-         });
-      }
+      createSSAOgui(this._enableSSAO && this._ssaoPass);
    }
-
 
    TGeoPainter.prototype.createSSAO = function() {
       if (!this._webgl || this._ssaoPass) return;
