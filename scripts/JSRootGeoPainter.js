@@ -831,7 +831,18 @@
             painter.Render3D(0);
          }).listen();
 
-         advanced.add(this, 'resetAdvanced').name('Reset');
+         advanced.add( this.options, 'depthMethod', {
+            'Default': "dflt",
+            'Raytraicing': "ray",
+            'Boundary box': "box",
+            'Mesh size': "size",
+            'Central point': "pnt"
+        } ).name("Rendering order").onChange( function ( value ) {
+           delete painter._last_camera_position; // used for testing depth
+           painter.Render3D();
+        } );
+
+        advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
       createSSAOgui(this._enableSSAO && this._ssaoPass);
@@ -1967,6 +1978,7 @@
 
       this._depthTest = true;
       this._clipIntersection = true;
+      this.options.depthMethod = "ray";
 
       var painter = this;
       this._toplevel.traverse( function (node) {
@@ -3519,6 +3531,7 @@
       delete this._build_shapes;
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
+      delete this._last_camera_position;
 
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
