@@ -64,6 +64,14 @@ echo "// Content of examples/js/shaders/SSAOShader.js" >> $tgt
 cat $src/examples/js/shaders/SSAOShader.js >> $tgt
 echo "" >> $tgt
 
+echo "// Content of examples/js/postprocessing/SSAOPass.js" >> $tgt
+cat $src/examples/js/postprocessing/SSAOPass.js >> $tgt
+echo "" >> $tgt
+
+echo "// Content of examples/js/SimplexNoise.js" >> $tgt
+cat $src/examples/js/SimplexNoise.js >> $tgt
+echo "" >> $tgt
+
 echo "" >> $tgt
 echo "}));" >> $tgt
 

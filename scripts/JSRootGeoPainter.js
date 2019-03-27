@@ -1845,9 +1845,8 @@
 
       // Default Settings
 
-      this._defaultAdvanced = { aoClamp: 0.70,
-                                lumInfluence: 0.4,
-                              //  shininess: 100,
+      this._defaultAdvanced = { kernelRadius: 16,
+                                ssaoPassOutput: THREE.SSAOPass.OUTPUT.Default,
                                 clipIntersection: true,
                                 depthTest: true
                               };
@@ -1858,7 +1857,8 @@
       this._enableSSAO = this.options.ssao;
 
       if (this._webgl) {
-         var renderPass = new THREE.RenderPass( this._scene, this._camera );
+         // var renderPass = new THREE.RenderPass( this._scene, this._camera );
+
          // Setup depth pass
          this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
          this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
@@ -1866,18 +1866,13 @@
          var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
          this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
          // Setup SSAO pass
-         this._ssaoPass = new THREE.ShaderPass( THREE.SSAOShader );
+         this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, w, h );
+         this._ssaoPass.kernelRadius = 16;
          this._ssaoPass.renderToScreen = true;
-         this._ssaoPass.uniforms[ "tDepth" ].value = this._depthRenderTarget.texture;
-         this._ssaoPass.uniforms[ 'size' ].value.set( w, h );
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;
-         this._ssaoPass.uniforms[ 'onlyAO' ].value = false;//( postprocessing.renderMode == 1 );
-         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
-         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+
          // Add pass to effect composer
          this._effectComposer = new THREE.EffectComposer( this._renderer );
-         this._effectComposer.addPass( renderPass );
+         //this._effectComposer.addPass( renderPass );
          this._effectComposer.addPass( this._ssaoPass );
       }
 
@@ -1937,11 +1932,11 @@
 
    TGeoPainter.prototype.resetAdvanced = function() {
       if (this._webgl) {
-         this._advceOptions.aoClamp = this._defaultAdvanced.aoClamp;
-         this._advceOptions.lumInfluence = this._defaultAdvanced.lumInfluence;
+         this._advceOptions.kernelRadius = this._defaultAdvanced.kernelRadius;
+         this._advceOptions.ssaoPassOutput = this._defaultAdvanced.ssaoPassOutput;
 
-         this._ssaoPass.uniforms[ 'aoClamp' ].value = this._defaultAdvanced.aoClamp;
-         this._ssaoPass.uniforms[ 'lumInfluence' ].value = this._defaultAdvanced.lumInfluence;
+         this._ssaoPass.kernelRadius = this._defaultAdvanced.kernelRadius;
+         this._ssaoPass.output = this._defaultAdvanced.ssaoPassOutput;
       }
 
       this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
@@ -2034,10 +2029,10 @@
       this._camera.far = this._overall_size * 12;
 
 
-      if (this._webgl) {
-         this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
-         this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
-      }
+      //if (this._webgl) {
+      //   this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
+      //   this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
+      //}
 
       if (first_time) {
          this.clipX = midx;
@@ -3551,6 +3546,7 @@
             this._camera.aspect = this._scene_width / this._scene_height;
          this._camera.updateProjectionMatrix();
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
+         if (this._ssaoPass) this._ssaoPass.setSize( this._scene_width, this._scene_height );
 
          if (!this.drawing_stage) this.Render3D();
       }
