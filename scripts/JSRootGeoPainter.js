@@ -2977,8 +2977,7 @@
 
       this._last_camera_position = origin; // remember current camera position
 
-      if (this._webgl)
-         JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
+      JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
    }
 
    TGeoPainter.prototype.Render3D = function(tmout, measure) {
