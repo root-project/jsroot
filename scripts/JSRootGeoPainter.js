@@ -152,7 +152,6 @@
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
-      this._enableSSAO = false;
 
       this.Cleanup(true);
    }
@@ -814,7 +813,7 @@
 
 
    TGeoPainter.prototype.createSSAO = function() {
-      if (!this.webgl || this._ssaoPass) return;
+      if (!this._webgl || this._ssaoPass) return;
 
       // var renderPass = new THREE.RenderPass( this._scene, this._camera );
 
@@ -823,9 +822,9 @@
       this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
       this._depthMaterial.blending = THREE.NoBlending;
 
-      this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+      this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
       // Setup SSAO pass
-      this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, w, h );
+      this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
       this._ssaoPass.kernelRadius = 16;
       this._ssaoPass.renderToScreen = true;
 
@@ -1877,9 +1876,7 @@
 
       // Default Settings
 
-      this._defaultAdvanced = { clipIntersection: true,
-                                depthTest: true
-                              };
+      this._defaultAdvanced = { clipIntersection: true, depthTest: true };
 
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
@@ -2996,10 +2993,10 @@
 
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO && this._ssaoPass) {
-            this._scene.overrideMaterial = this._depthMaterial;
+            // this._scene.overrideMaterial = this._depthMaterial;
         //    this._renderer.logarithmicDepthBuffer = false;
-            this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
-            this._scene.overrideMaterial = null;
+            // this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
+            // this._scene.overrideMaterial = null;
             this._effectComposer.render();
          } else {
        //     this._renderer.logarithmicDepthBuffer = true;
