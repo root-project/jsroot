@@ -410,7 +410,7 @@
                    project: '', is_main: false, tracks: false, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
-                   depthMethod: "box" };
+                   depthMethod: "ray" };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;

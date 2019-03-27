@@ -3048,9 +3048,12 @@
       delete shape.geomZ;
    }
 
+   /** @brief Set rendering order for created hierarchy
+    * @desc depending from provided method sort differently objects
+    * @param toplevel - top element
+    * @param origin - camera position used to provide sorting
+    * @param method - name of sorting method like "pnt", "ray", "size", "dflt"  */
    JSROOT.GEO.produceRenderOrder = function(toplevel, origin, method, clones) {
-      // function scans throug hierarchy of objects and try to set renderOrder
-      // algorithm is not perfect, but better then nothing
 
       var raycast = new THREE.Raycaster();
 
@@ -3094,6 +3097,9 @@
             return false;
          }
 
+
+         var tmp_vect = new THREE.Vector3();
+
          // first calculate distance to the camera
          // it gives preliminary order of volumes
 
@@ -3110,7 +3116,7 @@
             }
 
             if (method === "pnt") {
-               mesh.$jsroot_distance = origin.distanceTo(box3.getCenter());
+               mesh.$jsroot_distance = origin.distanceTo(box3.getCenter(tmp_vect));
                continue;
             }
 
@@ -3148,7 +3154,7 @@
          for (var i=arr.length-1;i>=0;--i) {
             var mesh = arr[i],
                 box3 = mesh.$jsroot_box3,
-                direction = box3.getCenter();
+                direction = box3.getCenter(tmp_vect);
 
             for(var ntry=0; ntry<2;++ntry) {
 
