@@ -2492,7 +2492,7 @@
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
                           side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                          overdraw: 0., depthWrite: _opacity == 1 } );
+                          depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
 
          return prop;
@@ -2518,7 +2518,7 @@
             prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
                              side: THREE.FrontSide /* THREE.DoubleSide*/, vertexColors: THREE.NoColors /*THREE.VertexColors */,
-                             overdraw: 0., depthWrite: _opacity == 1 } );
+                             depthWrite: _opacity == 1 } );
             prop.material.inherentOpacity = _opacity;
          }
 
@@ -2555,7 +2555,7 @@
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                               opacity: _opacity, wireframe: false, color: prop.fillcolor,
                               side: THREE.FrontSide /* THREE.DoubleSide */, vertexColors: THREE.NoColors /*THREE.VertexColors*/,
-                              overdraw: 0., depthWrite: _opacity == 1 } );
+                              depthWrite: _opacity == 1 } );
          prop.material.inherentOpacity = _opacity;
 
       }
