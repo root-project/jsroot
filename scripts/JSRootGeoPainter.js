@@ -152,6 +152,7 @@
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
+      this._enableSSAO = false;
 
       this.Cleanup(true);
    }
@@ -715,7 +716,7 @@
             clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
             .listen() // react if option changed outside
             .onChange( function (value) {
-               painter._enableSSAO = value ? false : painter._enableSSAO;
+               if (value) painter._enableSSAO = false;
                painter.updateClipping();
             });
 
@@ -739,11 +740,11 @@
 
       if (this._webgl) {
          appearance.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
-            painter._renderer.antialias = !painter._renderer.antialias;
-            painter.enableX = value ? false : painter.enableX;
-            painter.enableY = value ? false : painter.enableY;
-            painter.enableZ = value ? false : painter.enableZ;
-            painter.updateClipping();
+            if (painter._enableSSAO) {
+               painter.enableX = painter.enableY = painter.enableZ = false;
+               painter.updateClipping();
+               painter.createSSAO();
+            }
          }).listen();
       }
 
@@ -772,18 +773,6 @@
       if (this._webgl) {
          var advanced = this._datgui.addFolder('Advanced');
 
-         advanced.add( this._advceOptions, 'aoClamp', 0.0, 1.0).listen().onChange( function (value) {
-            painter._ssaoPass.uniforms[ 'aoClamp' ].value = value;
-            painter._enableSSAO = true;
-            painter.Render3D(0);
-         });
-
-         advanced.add( this._advceOptions, 'lumInfluence', 0.0, 1.0).listen().onChange( function (value) {
-            painter._ssaoPass.uniforms[ 'lumInfluence' ].value = value;
-            painter._enableSSAO = true;
-            painter.Render3D(0);
-         });
-
          advanced.add( this._advceOptions, 'clipIntersection').listen().onChange( function (value) {
             painter.clipIntersection = value;
             painter.updateClipping();
@@ -800,8 +789,51 @@
 
          advanced.add(this, 'resetAdvanced').name('Reset');
       }
+
+      if (this._enableSSAO && this._ssaoPass) {
+         var ssaoGui = this._datgui.addFolder('SSAO');
+
+         ssaoGui.add( painter._ssaoPass, 'output', {
+              'Default': THREE.SSAOPass.OUTPUT.Default,
+              'SSAO Only': THREE.SSAOPass.OUTPUT.SSAO,
+              'SSAO Only + Blur': THREE.SSAOPass.OUTPUT.Blur,
+              'Beauty': THREE.SSAOPass.OUTPUT.Beauty,
+              'Depth': THREE.SSAOPass.OUTPUT.Depth,
+              'Normal': THREE.SSAOPass.OUTPUT.Normal
+         } ).onChange( function ( value ) {
+            painter._ssaoPass.output = parseInt( value );
+         } );
+
+         ssaoGui.add( painter._ssaoPass, 'kernelRadius', 0, 32);
+
+         ssaoGui.add( painter._ssaoPass, 'minDistance', 0.001, 0.02);
+
+         ssaoGui.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3);
+      }
    }
 
+
+   TGeoPainter.prototype.createSSAO = function() {
+      if (!this.webgl || this._ssaoPass) return;
+
+      // var renderPass = new THREE.RenderPass( this._scene, this._camera );
+
+      // Setup depth pass
+      this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
+      this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
+      this._depthMaterial.blending = THREE.NoBlending;
+
+      this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
+      // Setup SSAO pass
+      this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, w, h );
+      this._ssaoPass.kernelRadius = 16;
+      this._ssaoPass.renderToScreen = true;
+
+      // Add pass to effect composer
+      this._effectComposer = new THREE.EffectComposer( this._renderer );
+      //this._effectComposer.addPass( renderPass );
+      this._effectComposer.addPass( this._ssaoPass );
+   }
 
    TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
 
@@ -1845,9 +1877,7 @@
 
       // Default Settings
 
-      this._defaultAdvanced = { kernelRadius: 16,
-                                ssaoPassOutput: THREE.SSAOPass.OUTPUT.Default,
-                                clipIntersection: true,
+      this._defaultAdvanced = { clipIntersection: true,
                                 depthTest: true
                               };
 
@@ -1856,25 +1886,8 @@
 
       this._enableSSAO = this.options.ssao;
 
-      if (this._webgl) {
-         // var renderPass = new THREE.RenderPass( this._scene, this._camera );
-
-         // Setup depth pass
-         this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
-         this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
-         this._depthMaterial.blending = THREE.NoBlending;
-         var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
-         this._depthRenderTarget = new THREE.WebGLRenderTarget( w, h, pars );
-         // Setup SSAO pass
-         this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, w, h );
-         this._ssaoPass.kernelRadius = 16;
-         this._ssaoPass.renderToScreen = true;
-
-         // Add pass to effect composer
-         this._effectComposer = new THREE.EffectComposer( this._renderer );
-         //this._effectComposer.addPass( renderPass );
-         this._effectComposer.addPass( this._ssaoPass );
-      }
+      if (this._enableSSAO)
+         this.createSSAO();
 
       this._advceOptions = {};
       this.resetAdvanced();
@@ -1931,12 +1944,9 @@
    }
 
    TGeoPainter.prototype.resetAdvanced = function() {
-      if (this._webgl) {
-         this._advceOptions.kernelRadius = this._defaultAdvanced.kernelRadius;
-         this._advceOptions.ssaoPassOutput = this._defaultAdvanced.ssaoPassOutput;
-
-         this._ssaoPass.kernelRadius = this._defaultAdvanced.kernelRadius;
-         this._ssaoPass.output = this._defaultAdvanced.ssaoPassOutput;
+      if (this._webgl && this._ssaoPass) {
+         this._ssaoPass.kernelRadius = 16;
+         this._ssaoPass.output = THREE.SSAOPass.OUTPUT.Default;
       }
 
       this._advceOptions.depthTest = this._defaultAdvanced.depthTest;
@@ -2027,12 +2037,6 @@
       this._camera.near = this._overall_size / 350;
       this._scene.fog.far = this._overall_size * 12;
       this._camera.far = this._overall_size * 12;
-
-
-      //if (this._webgl) {
-      //   this._ssaoPass.uniforms[ 'cameraNear' ].value = this._camera.near;//*this._nFactor;
-      //   this._ssaoPass.uniforms[ 'cameraFar' ].value = this._camera.far;///this._nFactor;
-      //}
 
       if (first_time) {
          this.clipX = midx;
@@ -2991,7 +2995,7 @@
          this.TestCameraPosition();
 
          // do rendering, most consuming time
-         if (this._webgl && this._enableSSAO) {
+         if (this._webgl && this._enableSSAO && this._ssaoPass) {
             this._scene.overrideMaterial = this._depthMaterial;
         //    this._renderer.logarithmicDepthBuffer = false;
             this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
