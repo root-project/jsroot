@@ -2988,7 +2988,7 @@
 
       this._last_camera_position = origin; // remember current camera position
 
-      if (!this.options.project)
+      if (!this.options.project && this._webgl)
          JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
    }
 
