@@ -2941,7 +2941,6 @@
             if (this._first_drawing && this._webgl && (this._num_meshes - this._last_render_meshes > 100) && (now - this._last_render_tm > 2.5*interval)) {
                this.adjustCameraPosition();
                this.Render3D(-1);
-               this._last_render_tm = new Date().getTime();
                this._last_render_meshes = this._num_meshes;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
@@ -2981,14 +2980,14 @@
          JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
    }
 
+   /** @brief Call 3D rendering of the geometry
+     * @param tmout - specifies delay, after which actual rendering will be invoked
+     * Timeout used to avoid multiple rendering of the picture when several 3D drawings
+     * superimposed with each other. If tmeout<=0, rendering performed immediately
+     * Several special values are used:
+     *   -2222 - rendering performed only if there were previous calls, which causes timeout activation */
+
    TGeoPainter.prototype.Render3D = function(tmout, measure) {
-      // call 3D rendering of the geometry drawing
-      // tmout specifies delay, after which actual rendering will be invoked
-      // Timeout used to avoid multiple rendering of the picture when several 3D drawings
-      // superimposed with each other.
-      // If tmeout<=0, rendering performed immediately
-      // Several special values are used:
-      //   -2222 - rendering performed only if there were previous calls, which causes timeout activation
 
       if (!this._renderer) {
          console.warn('renderer object not exists - check code');
@@ -3021,18 +3020,16 @@
 
          var tm2 = new Date();
 
-         this.last_render_tm = tm2.getTime() - tm1.getTime();
+         this.last_render_tm = tm2.getTime();
 
          delete this.render_tmout;
 
          if ((this.first_render_tm === 0) && measure) {
-            this.first_render_tm = this.last_render_tm;
+            this.first_render_tm = tm2.getTime() - tm1.getTime();
             JSROOT.console('First render tm = ' + this.first_render_tm);
          }
 
-         JSROOT.Painter.AfterRender3D(this._renderer);
-
-         return;
+         return JSROOT.Painter.AfterRender3D(this._renderer);
       }
 
       // do not shoot timeout many times
@@ -3523,8 +3520,8 @@
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
 
-      this.first_render_tm = 0;
-      this.last_render_tm = 2000;
+      this.first_render_tm = 0; // time needed for first rendering
+      this.last_render_tm = 0;
 
       this.drawing_stage = 0;
       delete this.drawing_log;
