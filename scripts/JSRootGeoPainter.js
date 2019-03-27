@@ -744,6 +744,7 @@
                painter.updateClipping();
                painter.createSSAO();
             }
+            painter.Render3D();
          }).listen();
       }
 
@@ -803,11 +804,17 @@
             painter._ssaoPass.output = parseInt( value );
          } );
 
-         ssaoGui.add( painter._ssaoPass, 'kernelRadius', 0, 32);
+         ssaoGui.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
+            painter.Render3D();
+         });
 
-         ssaoGui.add( painter._ssaoPass, 'minDistance', 0.001, 0.02);
+         ssaoGui.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
+            painter.Render3D();
+         });
 
-         ssaoGui.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3);
+         ssaoGui.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
+            painter.Render3D();
+         });
       }
    }
 
@@ -816,11 +823,6 @@
       if (!this._webgl || this._ssaoPass) return;
 
       // var renderPass = new THREE.RenderPass( this._scene, this._camera );
-
-      // Setup depth pass
-      this._depthMaterial = new THREE.MeshDepthMaterial( { side: THREE.DoubleSide });
-      this._depthMaterial.depthPacking = THREE.RGBADepthPacking;
-      this._depthMaterial.blending = THREE.NoBlending;
 
       this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
       // Setup SSAO pass
@@ -2993,10 +2995,6 @@
 
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO && this._ssaoPass) {
-            // this._scene.overrideMaterial = this._depthMaterial;
-        //    this._renderer.logarithmicDepthBuffer = false;
-            // this._renderer.render(this._scene, this._camera, this._depthRenderTarget, true);
-            // this._scene.overrideMaterial = null;
             this._effectComposer.render();
          } else {
        //     this._renderer.logarithmicDepthBuffer = true;
