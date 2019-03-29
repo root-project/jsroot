@@ -2414,14 +2414,14 @@
    /** Create stack array based on nodes ids array.
     * Ids list should correspond to existing nodes hierarchy */
    JSROOT.GEO.ClonedNodes.prototype.MakeStackByIds = function(ids) {
-      var stack = [];
+      if (!ids) return null;
 
       if (ids[0] !== 0) {
          console.error('wrong ids - first should be 0');
          return null;
       }
 
-      var node = this.nodes[0];
+      var node = this.nodes[0], stack = [];
 
       for (var k=1;k<ids.length;++k) {
          var nodeid = ids[k];
@@ -2436,6 +2436,18 @@
       }
 
       return stack;
+   }
+
+   /** Retuns ids array which correspond to the stack */
+   JSROOT.GEO.ClonedNodes.prototype.MakeIdsByStack = function(stack) {
+      if (!stack) return null;
+      var node = this.nodes[0], ids = [0];
+      for (var k=0;k<stack.length;++k) {
+         var id = node.chlds[stack[k]];
+         ids.push(id);
+         node = this.nodes[id];
+      }
+      return ids;
    }
 
    /** Returns true if stack includes at any place provided nodeid */
