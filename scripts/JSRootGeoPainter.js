@@ -656,7 +656,7 @@
             node.material.transparent = node.material.opacity < 1;
          }
       });
-      if (!skip_render) this.Render3D(0);
+      if (!skip_render) this.Render3D(-1);
    }
 
    TGeoPainter.prototype.showControlOptions = function(on) {
@@ -2975,12 +2975,12 @@
       this.completeDraw(true);
    }
 
-   TGeoPainter.prototype.TestCameraPosition = function() {
+   TGeoPainter.prototype.TestCameraPosition = function(force) {
 
       this._camera.updateMatrixWorld();
       var origin = this._camera.position.clone();
 
-      if (this._last_camera_position) {
+      if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          var dist = this._last_camera_position.distanceTo(origin);
          if (dist < (this._overall_size || 1000)/1e4) return;
@@ -2997,7 +2997,8 @@
      * Timeout used to avoid multiple rendering of the picture when several 3D drawings
      * superimposed with each other. If tmeout<=0, rendering performed immediately
      * Several special values are used:
-     *   -2222 - rendering performed only if there were previous calls, which causes timeout activation */
+     *   -2222 - rendering performed only if there were previous calls, which causes timeout activation
+     *   -1    - force recheck of rendering order based on camera position */
 
    TGeoPainter.prototype.Render3D = function(tmout, measure) {
 
@@ -3020,7 +3021,7 @@
          if (typeof this.TestAxisVisibility === 'function')
             this.TestAxisVisibility(this._camera, this._toplevel);
 
-         this.TestCameraPosition();
+         this.TestCameraPosition(tmout === -1);
 
          // do rendering, most consuming time
          if (this._webgl && this._enableSSAO && this._ssaoPass) {

@@ -2425,6 +2425,7 @@
 
       for (var k=1;k<ids.length;++k) {
          var nodeid = ids[k];
+         if (!node) return null;
          var chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
             console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
