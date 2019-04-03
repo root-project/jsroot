@@ -1298,20 +1298,23 @@
 
       for (var layer = 0; layer < shape.fNz-1; ++layer) {
          var z1 = shape.fZ[layer], scale1 = shape.fScale[layer],
-             z2 = shape.fZ[layer+1], scale2 = shape.fScale[layer+1];
+             z2 = shape.fZ[layer+1], scale2 = shape.fScale[layer+1],
+             x01 = shape.fX0[layer], x02 = shape.fX0[layer+1],
+             y01 = shape.fY0[layer], y02 = shape.fY0[layer+1];
 
          for (var vert1 = 0; vert1 < shape.fNvert; ++vert1) {
             var vert2 = (vert1+1) % shape.fNvert;
-            creator.AddFace4(scale1 * shape.fX[vert1], scale1 * shape.fY[vert1], z1,
-                             scale2 * shape.fX[vert1], scale2 * shape.fY[vert1], z2,
-                             scale2 * shape.fX[vert2], scale2 * shape.fY[vert2], z2,
-                             scale1 * shape.fX[vert2], scale1 * shape.fY[vert2], z1);
+            creator.AddFace4(scale1 * shape.fX[vert1] + x01, scale1 * shape.fY[vert1] + y01, z1,
+                             scale2 * shape.fX[vert1] + x02, scale2 * shape.fY[vert1] + y02, z2,
+                             scale2 * shape.fX[vert2] + x02, scale2 * shape.fY[vert2] + y02, z2,
+                             scale1 * shape.fX[vert2] + x01, scale1 * shape.fY[vert2] + y01, z1);
             creator.CalcNormal();
          }
       }
 
       for (layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
-         var z = shape.fZ[layer], scale = shape.fScale[layer];
+         var z = shape.fZ[layer], scale = shape.fScale[layer],
+             x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
          for (var n=0;n<faces.length;++n) {
             var face = faces[n],
@@ -1319,9 +1322,9 @@
                 pnt2 = pnts[face[(layer===0) ? 2 : 1]],
                 pnt3 = pnts[face[(layer===0) ? 1 : 2]];
 
-            creator.AddFace3(scale * pnt1.x, scale * pnt1.y, z,
-                             scale * pnt2.x, scale * pnt2.y, z,
-                             scale * pnt3.x, scale * pnt3.y, z);
+            creator.AddFace3(scale * pnt1.x + x0, scale * pnt1.y + y0, z,
+                             scale * pnt2.x + x0, scale * pnt2.y + y0, z,
+                             scale * pnt3.x + x0, scale * pnt3.y + y0, z);
             creator.SetNormal(0,0,layer===0 ? -1 : 1);
          }
       }
