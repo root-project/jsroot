@@ -1838,7 +1838,7 @@
       menu.addchk(this.IsTooltipAllowed(), "Show tooltips", function() {
          this.SetTooltipAllowed("toggle");
       });
-      this.FillAttContextMenu(menu,alone ? "" : "Frame ");
+      this.FillAttContextMenu(menu, alone ? "" : "Frame ");
       menu.add("separator");
       menu.add("Save as frame.png", function() { this.pad_painter().SaveAs("png", 'frame', 'frame.png'); });
       menu.add("Save as frame.svg", function() { this.pad_painter().SaveAs("svg", 'frame', 'frame.svg'); });
@@ -1852,7 +1852,7 @@
             snapid: this.snapid.toString(),
             opt: "$frame$", fopt: []
       };
-      res.fopt.push(this.xmin || 0, this.ymin || 0, this.xmax || 0, this.ymax || 0);
+      res.fopt.push(this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0);
       return res;
    }
 
@@ -2567,6 +2567,7 @@
    }
 
    TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
+
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
@@ -4800,6 +4801,8 @@
       if (!this._websocket || !this._websocket.CanSend(2)) return;
 
       var msg = (kind == "sbits") ? "STATUSBITS:" + this.GetStatusBits() : "RANGES6:" + this.GetAllRanges();
+
+      console.log("Sending " + msg.length + "  " + msg.substr(0,40));
 
       this._websocket.Send(msg);
    }

@@ -4143,7 +4143,6 @@
    /** @symmary Fill context menu for the object
     * @private */
    TObjectPainter.prototype.FillContextMenu = function(menu) {
-
       var title = this.GetTipName();
       if (this.GetObject() && ('_typename' in this.GetObject()))
          title = this.GetObject()._typename + "::" + title;

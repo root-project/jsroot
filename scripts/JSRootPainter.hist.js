@@ -1182,8 +1182,7 @@
          menu.add("endsub:");
 
          menu.add("separator");
-      } else
-      if (pave.fName === "title")
+      } else if (pave.fName === "title")
          menu.add("Default position", function() {
             pave.fX1NDC = 0.28;
             pave.fY1NDC = 0.94;
@@ -1210,9 +1209,14 @@
          evnt = d3.event;
       }
 
+      this.ctx_menu_evnt = evnt;
+
       JSROOT.Painter.createMenu(this, function(menu) {
          menu.painter.FillContextMenu(menu);
-         menu.show(evnt);
+
+         menu.painter.FillObjectExecMenu(menu, "title", function() {
+            menu.show(menu.painter.ctx_menu_evnt);
+        });
       }); // end menu creation
    }
 
