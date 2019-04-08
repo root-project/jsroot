@@ -2360,30 +2360,36 @@
 
       var histo = this.GetHisto(), st = JSROOT.gStyle,
           tpainter = this.FindPainterFor(null, "title"),
-          pt = tpainter ? tpainter.GetObject() : null;
+          pt = tpainter ? tpainter.GetObject() : null,
+          fp = this.frame_painter();
 
       if (!pt) pt = this.FindInPrimitives("title");
       if (pt && (pt._typename !== "TPaveText")) pt = null;
 
       var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
+      function position_title() {
+         var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+         if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
+         if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+         if (!h || isNaN(h) || (h<0)) h = 0.06;
+         if (!w || isNaN(w) || (w<0)) w = 0.44;
+         pt.fX1NDC = midx - w/2;
+         pt.fY1NDC = y2 - h;
+         pt.fX2NDC = midx + w/2;
+         pt.fY2NDC = y2;
+      }
+
       if (pt) {
+         // special args for web6 canvas title
+         if (!pt.fX1NDC && !pt.fY1NDC && !pt.fX2NDC && !pt.fY2NDC) position_title();
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
       } else if (draw_title && !tpainter && histo.fTitle) {
          pt = JSROOT.Create("TPaveText");
-
-         var fp = this.frame_painter(), midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
-         if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
-         if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
-         if (!h || isNaN(h) || (h<0)) h = 0.06;
-         if (!w || isNaN(w) || (w<0)) w = 0.44;
+         position_title();
          pt.fName = "title";
-         pt.fX1NDC = midx - w/2;
-         pt.fY1NDC = y2 - h;
-         pt.fX2NDC = midx + w/2;
-         pt.fY2NDC = y2;
          pt.fTextFont = st.fTitleFont;
          pt.fTextSize = st.fTitleFontSize;
          pt.fTextColor = st.fTitleTextColor;
