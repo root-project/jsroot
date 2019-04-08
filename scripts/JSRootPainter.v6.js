@@ -1846,6 +1846,16 @@
       return true;
    }
 
+   TFramePainter.prototype.GetWebObjectOptions = function() {
+      var res = {
+            _typename: "TWebObjectOptions",
+            snapid: this.snapid.toString(),
+            opt: "$frame$", fopt: []
+      };
+      res.fopt.push(this.xmin || 0, this.ymin || 0, this.xmax || 0, this.ymax || 0);
+      return res;
+   }
+
    TFramePainter.prototype.GetFrameRect = function() {
       // returns frame rectangle plus extra info for hint display
 
@@ -3826,8 +3836,12 @@
          var sub = this.painters[k];
          if (typeof sub.GetAllRanges == "function")
             sub.GetAllRanges(arg);
-         else if (sub.snapid)
-            elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString() });
+         else if (sub.snapid) {
+            if (typeof sub.GetWebObjectOptions == "function")
+               elem.primitives.push(sub.GetWebObjectOptions());
+            else
+               elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString(), fopt: [] });
+         }
       }
 
       if (is_top) return JSROOT.toJSON(arg);
