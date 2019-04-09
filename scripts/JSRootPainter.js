@@ -3539,23 +3539,32 @@
       if (pp) pp.ForEachPainterInPad(userfunc, kind);
    }
 
-   /** @summary indicate that redraw was invoked via interactive action (like context menu)
-    * desc  use to catch such action by GED
+   /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
+    * @desc Use to catch such action by GED
     * @private */
    TObjectPainter.prototype.InteractiveRedraw = function(arg, info) {
 
-      if (arg == "pad") this.RedrawPad(); else
-      if (arg !== true) this.Redraw();
+      if (arg == "pad") {
+         this.RedrawPad();
+      } else if (arg == "axes") {
+         var main = this.main_painter(true, this.this_pad_name); // works for pad and any object drawn in the pad
+         if (main && (typeof main.DrawAxes == 'function'))
+            main.DrawAxes();
+         else
+            this.RedrawPad();
+      } else {
+         this.Redraw();
+      }
 
       // inform GED that something changes
-      var pad_painter = this.pad_painter();
-      if (pad_painter && pad_painter.InteractiveObjectRedraw)
-         pad_painter.InteractiveObjectRedraw(this);
+      var pp = this.pad_painter();
+      if (pp && pp.InteractiveObjectRedraw)
+         pp.InteractiveObjectRedraw(this);
 
       // inform server that drawopt changes
       var canp = this.canv_painter();
       if (canp && canp.ProcessChanges)
-         canp.ProcessChanges(info, this.pad_painter());
+         canp.ProcessChanges(info, this);
    }
 
    /** @summary Redraw all objects in correspondent pad */

@@ -748,7 +748,7 @@
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
    }
 
-   TPavePainter.prototype.GetWebObjectOptions = function(res) {
+   TPavePainter.prototype.FillWebObjectOptions = function(res) {
       var pave = this.GetObject();
       if (pave && pave.fInit) {
         res.fcust = "pave";
