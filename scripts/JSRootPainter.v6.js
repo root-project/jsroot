@@ -3248,7 +3248,7 @@
             delete this._current_primitive_indx;
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
-               if (spenttm > 200) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+               if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
                delete this._start_tm;
                delete this._lasttm_tm;
             }
