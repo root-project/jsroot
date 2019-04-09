@@ -3552,7 +3552,7 @@
             main.DrawAxes();
          else
             this.RedrawPad();
-      } else if (arg) {
+      } else if (arg !== false) {
          this.Redraw();
       }
 
