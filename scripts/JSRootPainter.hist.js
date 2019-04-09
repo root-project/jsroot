@@ -584,6 +584,23 @@
       this.FinishPave = func.bind(this);
    }
 
+   TPavePainter.prototype.PositionTitle = function(pt, fp) {
+      var st = JSROOT.gStyle;
+      if (!st || !fp || !st) return false;
+
+      var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+      if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
+      if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+      if (!h || isNaN(h) || (h<0)) h = 0.06;
+      if (!w || isNaN(w) || (w<0)) w = 0.44;
+      pt.fX1NDC = midx - w/2;
+      pt.fY1NDC = y2 - h;
+      pt.fX2NDC = midx + w/2;
+      pt.fY2NDC = y2;
+      pt.fInit = 1;
+      return true;
+   }
+
    TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
@@ -729,6 +746,16 @@
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
+   }
+
+   TPavePainter.prototype.GetWebObjectOptions = function(res) {
+      var pave = this.GetObject();
+      if (pave && pave.fInit) {
+        res.fcust = "pave";
+        res.fopt = [pave.fX1NDC,pave.fY1NDC,pave.fX2NDC,pave.fY2NDC];
+      }
+      // console.log("creating pave opts", this.snapid, res.fopt, pave ? pave._typename : "---");
+      return res;
    }
 
    TPavePainter.prototype.DrawPaveLabel = function(_width, _height) {
@@ -1381,7 +1408,10 @@
 
       if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
          var tpainter = painter.FindPainterFor(null, "title");
-         if (tpainter && (tpainter !== painter)) tpainter.DeleteThis();
+         if (tpainter && (tpainter !== painter))
+            tpainter.DeleteThis();
+         else if (!pave.fInit && !pave.fX1 && !pave.fX2 && !pave.fY1 && !pave.fY2)
+            painter.PositionTitle(pave, painter.frame_painter());
       }
 
       switch (pave._typename) {
@@ -1676,7 +1706,7 @@
               Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
-              AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, AutoZoom: false,
+              AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, PadTitle: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
@@ -1697,6 +1727,7 @@
 
       if (d.check("USE_PAD_STATS")) this.PadStats = true;
       if (d.check("USE_PAD_PALETTE")) this.PadPalette = true;
+      if (d.check("USE_PAD_TITLE")) this.PadTitle = true;
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
@@ -2381,34 +2412,23 @@
 
       var histo = this.GetHisto(), st = JSROOT.gStyle,
           tpainter = this.FindPainterFor(null, "title"),
-          pt = tpainter ? tpainter.GetObject() : null,
-          fp = this.frame_painter();
+          pt = tpainter ? tpainter.GetObject() : null;
 
       if (!pt) pt = this.FindInPrimitives("title");
       if (pt && (pt._typename !== "TPaveText")) pt = null;
 
       var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
-      function position_title() {
-         var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
-         if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
-         if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
-         if (!h || isNaN(h) || (h<0)) h = 0.06;
-         if (!w || isNaN(w) || (w<0)) w = 0.44;
-         pt.fX1NDC = midx - w/2;
-         pt.fY1NDC = y2 - h;
-         pt.fX2NDC = midx + w/2;
-         pt.fY2NDC = y2;
-      }
-
       if (pt) {
          // special args for web6 canvas title
-         if (!pt.fX1NDC && !pt.fY1NDC && !pt.fX2NDC && !pt.fY2NDC) position_title();
+         // if (!pt.fX1NDC && !pt.fY1NDC && !pt.fX2NDC && !pt.fY2NDC && fp) position_title();
+
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
-      } else if (draw_title && !tpainter && histo.fTitle) {
+      } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = JSROOT.Create("TPaveText");
+         TPavePainter.prototype.PositionTitle(pt, this.frame_painter());
          position_title();
          pt.fName = "title";
          pt.fTextFont = st.fTitleFont;

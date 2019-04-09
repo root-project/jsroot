@@ -1482,10 +1482,12 @@
          this.createAttLine({ attr: tframe, color: 'black' });
    }
 
+   /** Function called at the end of resize of frame
+     * One should apply changes to the pad
+     * @private */
    TFramePainter.prototype.SizeChanged = function() {
-      // function called at the end of resize of frame
-      // One should apply changes to the pad
 
+      console.log("FRAME CHANGED");
       var pad = this.root_pad();
 
       if (pad) {
@@ -1846,13 +1848,9 @@
       return true;
    }
 
-   TFramePainter.prototype.GetWebObjectOptions = function() {
-      var res = {
-            _typename: "TWebObjectOptions",
-            snapid: this.snapid.toString(),
-            opt: "$frame$", fopt: []
-      };
-      res.fopt.push(this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0);
+   TFramePainter.prototype.GetWebObjectOptions = function(res) {
+      res.fcust = "frame",
+      res.fopt = [this.scale_xmin || 0, this.scale_ymin || 0, this.scale_xmax || 0, this.scale_ymax || 0];
       return res;
    }
 
@@ -3835,13 +3833,13 @@
 
       for (var k=0;k<this.painters.length;++k) {
          var sub = this.painters[k];
-         if (typeof sub.GetAllRanges == "function")
+         if (typeof sub.GetAllRanges == "function") {
             sub.GetAllRanges(arg);
-         else if (sub.snapid) {
+         } else if (sub.snapid) {
+            var opt = {  _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString(), fcust: "", fopt: [] };
             if (typeof sub.GetWebObjectOptions == "function")
-               elem.primitives.push(sub.GetWebObjectOptions());
-            else
-               elem.primitives.push({ _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString(), fopt: [] });
+               opt = sub.GetWebObjectOptions(opt);
+            elem.primitives.push(opt);
          }
       }
 
@@ -4794,8 +4792,9 @@
       this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
    }
 
-   /// method informs that something was changed in the canvas
-   /// used to update information on the server (when used with web6gui)
+   /** Method informs that something was changed in the canvas
+     * used to update information on the server (when used with web6gui)
+     * @private */
    TCanvasPainter.prototype.ProcessChanges = function(kind, source_pad) {
       // check if we could send at least one message more - for some meaningful actions
       if (!this._websocket || !this._websocket.CanSend(2)) return;
