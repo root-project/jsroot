@@ -2693,7 +2693,10 @@
     * @private */
    TObjectPainter.prototype.OptionsStore = function(original) {
       if (!this.options) return;
-      this.options.original = original || "";
+      if (!original) original = "";
+      var pp = original.indexOf(";;");
+      if (pp>=0) original = original.substr(0,pp);
+      this.options.original = original;
       this.options_store = JSROOT.extend({}, this.options);
    }
 

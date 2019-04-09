@@ -599,7 +599,20 @@
          pt.fInit = 1;
          var pad = this.root_pad();
 
-         if (opt.indexOf("NDC")>=0) {
+         if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
+            var fp = this.frame_painter();
+            if (fp) {
+              pt.fX1NDC = fp.fX2NDC + 0.01;
+              pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
+              pt.fY1NDC = fp.fY1NDC;
+              pt.fY2NDC = fp.fY2NDC;
+            } else {
+               pt.fX2NDC = 0.8;
+               pt.fX1NDC = 0.9;
+               pt.fY1NDC = 0.1;
+               pt.fY2NDC = 0.9;
+            }
+         } else if (opt.indexOf("NDC")>=0) {
             pt.fX1NDC = pt.fX1; pt.fX2NDC = pt.fX2;
             pt.fY1NDC = pt.fY1; pt.fY2NDC = pt.fY2;
          } else if (pad) {
@@ -1422,7 +1435,7 @@
          var pthis = this,
              palette = this.GetObject(),
              axis = palette.fAxis,
-             can_move = (typeof arg == 'string') && (arg.indexOf('canmove')>0),
+             can_move = (typeof arg == 'string') && (arg.indexOf('can_move')>0),
              postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0),
              nbr1 = axis.fNdiv % 100,
              pos_x = parseInt(this.draw_g.attr("x")), // pave position
@@ -1660,7 +1673,7 @@
               Arrow: false, Box: false, BoxStyle: 0,
               Text: false, TextAngle: 0, TextKind: "", Char: 0, Color: false, Contour: 0,
               Lego: 0, Surf: 0, Off: 0, Tri: 0, Proj: 0, AxisPos: 0,
-              Spec: false, Pie: false, List: false, Zscale: false, Candle: "",
+              Spec: false, Pie: false, List: false, Zscale: false, PadPalette: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
               AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, AutoZoom: false,
@@ -1672,7 +1685,7 @@
    }
 
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
-      this.orginal = opt;
+      this.orginal = opt; // will be overwritten by OptionsStore call
 
       var d = new JSROOT.DrawOptions(opt), check3dbox = "";
 
@@ -1681,6 +1694,9 @@
             if (histo.fSumw2[n] > 0) { this.Error = true; this.Hist = false; this.Zero = false; break; }
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
+
+      if (d.check("USE_PAD_STATS")) this.PadStats = true;
+      if (d.check("USE_PAD_PALETTE")) this.PadPalette = true;
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
@@ -1695,7 +1711,6 @@
       if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
 
-      if (d.check('USE_PAD_STATS')) this.PadStats = true;
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
@@ -2031,8 +2046,9 @@
       return 1;
    }
 
+   /** Decode options string opt and fill the option structure
+    * @private */
    THistPainter.prototype.DecodeOptions = function(opt) {
-      /* decode string 'opt' and fill the option structure */
       var histo = this.GetHisto(),
           hdim = this.Dimension(),
           pad = this.root_pad();
@@ -3170,6 +3186,9 @@
       }
 
       if (!pal) {
+
+         if (this.options.PadPalette) return null;
+
          pal = JSROOT.Create('TPave');
 
          JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
@@ -3205,9 +3224,9 @@
 
       var arg = "";
       if (postpone_draw) arg+=";postpone";
-      if (can_move && !this.do_redraw_palette) arg+=";canmove"
+      if (can_move && !this.do_redraw_palette) arg+=";can_move";
 
-      if (pal_painter === null) {
+      if (!pal_painter) {
          // when histogram drawn on sub pad, let draw new axis object on the same pad
          var prev = this.CurrentPadName(this.pad_name);
          // CAUTION!!! This is very special place where return value of JSROOT.draw is allowed
@@ -3225,6 +3244,7 @@
       // make dummy redraw, palette will be updated only from histogram painter
       pal_painter.Redraw = function() {};
 
+      // special code to adjust frame position to actual position of palette
       if (can_move && frame_painter && (pal.fX1NDC-0.005 < frame_painter.fX2NDC) && !this.do_redraw_palette) {
 
          this.do_redraw_palette = true;
