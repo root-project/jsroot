@@ -4021,7 +4021,7 @@
       if (this.lineatt && this.lineatt.used) {
          menu.add("sub:"+preffix+"Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(this));
+                               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
                           function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(); }.bind(this));
          menu.add("sub:style", function() {

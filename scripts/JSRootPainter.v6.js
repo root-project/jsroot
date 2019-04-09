@@ -4789,7 +4789,7 @@
      * @private */
    TCanvasPainter.prototype.ProcessChanges = function(kind, painter) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.CanSend(2)) return;
+      if (!this._websocket || !this._websocket.CanSend(2) || (typeof kind !== "string")) return;
 
       var msg = "";
       if (!painter) painter = this;
@@ -4811,7 +4811,17 @@
             }
             break;
          default:
-            console.log("UNPROCESSED CHANGES", kind);
+            if ((kind.substr(0,5) == "exec:") && painter && painter.snapid) {
+               msg = "PRIMIT6:" + JSROOT.toJSON({
+                  _typename: "TWebObjectOptions",
+                  snapid: painter.snapid.toString(),
+                  opt: kind.substr(5),
+                  fcust: "exec",
+                  fopt: []
+               });
+            } else {
+               console.log("UNPROCESSED CHANGES", kind);
+            }
       }
 
       if (msg) {
