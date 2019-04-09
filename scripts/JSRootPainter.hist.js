@@ -584,23 +584,6 @@
       this.FinishPave = func.bind(this);
    }
 
-   TPavePainter.prototype.PositionTitle = function(pt, fp) {
-      var st = JSROOT.gStyle;
-      if (!st || !fp || !st) return false;
-
-      var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
-      if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
-      if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
-      if (!h || isNaN(h) || (h<0)) h = 0.06;
-      if (!w || isNaN(w) || (w<0)) w = 0.44;
-      pt.fX1NDC = midx - w/2;
-      pt.fY1NDC = y2 - h;
-      pt.fX2NDC = midx + w/2;
-      pt.fY2NDC = y2;
-      pt.fInit = 1;
-      return true;
-   }
-
    TPavePainter.prototype.DrawPave = function(arg) {
       // this draw only basic TPave
 
@@ -1419,8 +1402,21 @@
          var tpainter = painter.FindPainterFor(null, "title");
          if (tpainter && (tpainter !== painter))
             tpainter.DeleteThis();
-         else if (!pave.fInit && !pave.fX1 && !pave.fX2 && !pave.fY1 && !pave.fY2)
-            painter.PositionTitle(pave, painter.frame_painter());
+         else if ((opt == "postitle") || (!pave.fInit && !pave.fX1 && !pave.fX2 && !pave.fY1 && !pave.fY2)) {
+            var st = JSROOT.gStyle, fp = painter.frame_painter();
+            if (st && fp) {
+               var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
+               if (!h && fp) h = (y2-fp.fY2NDC)*0.7;
+               if (!w && fp) w = fp.fX2NDC - fp.fX1NDC;
+               if (!h || isNaN(h) || (h<0)) h = 0.06;
+               if (!w || isNaN(w) || (w<0)) w = 0.44;
+               pave.fX1NDC = midx - w/2;
+               pave.fY1NDC = y2 - h;
+               pave.fX2NDC = midx + w/2;
+               pave.fY2NDC = y2;
+               pave.fInit = 1;
+            }
+         }
       }
 
       switch (pave._typename) {
@@ -2429,16 +2425,11 @@
       var draw_title = !histo.TestBit(JSROOT.TH1StatusBits.kNoTitle) && (st.fOptTitle > 0);
 
       if (pt) {
-         // special args for web6 canvas title
-         // if (!pt.fX1NDC && !pt.fY1NDC && !pt.fX2NDC && !pt.fY2NDC && fp) position_title();
-
          pt.Clear();
          if (draw_title) pt.AddText(histo.fTitle);
          if (tpainter) tpainter.Redraw();
       } else if (draw_title && !tpainter && histo.fTitle && !this.options.PadTitle) {
          pt = JSROOT.Create("TPaveText");
-         TPavePainter.prototype.PositionTitle(pt, this.frame_painter());
-         position_title();
          pt.fName = "title";
          pt.fTextFont = st.fTitleFont;
          pt.fTextSize = st.fTitleFontSize;
@@ -2449,7 +2440,7 @@
          pt.fBorderSize = st.fTitleBorderSize;
 
          pt.AddText(histo.fTitle);
-         tpainter = JSROOT.Painter.drawPave(this.divid, pt);
+         tpainter = JSROOT.Painter.drawPave(this.divid, pt, "postitle");
          if (tpainter) tpainter.$secondary = true;
       }
    }
