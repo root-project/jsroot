@@ -619,10 +619,10 @@
          if ((pt._typename == "TPaletteAxis") && !pt.fX1 && !pt.fX2 && !pt.fY1 && !pt.fY2) {
             var fp = this.frame_painter();
             if (fp) {
-              pt.fX1NDC = fp.fX2NDC + 0.01;
-              pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
-              pt.fY1NDC = fp.fY1NDC;
-              pt.fY2NDC = fp.fY2NDC;
+               pt.fX1NDC = fp.fX2NDC + 0.01;
+               pt.fX2NDC = Math.min(0.96, fp.fX2NDC + 0.06);
+               pt.fY1NDC = fp.fY1NDC;
+               pt.fY2NDC = fp.fY2NDC;
             } else {
                pt.fX2NDC = 0.8;
                pt.fX1NDC = 0.9;
@@ -741,20 +741,29 @@
                  .attr("height", height);
 
       this.AddDrag({ obj: pt, minwidth: 10, minheight: 20, canselect: true,
-                     redraw: this.DrawPave.bind(this),
+                     redraw: this.DragRedraw.bind(this),
                      ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
    }
 
+   TPavePainter.prototype.DragRedraw = function() {
+      this.InteractiveRedraw(false, "pave_moved");
+      this.DrawPave();
+   }
+
    TPavePainter.prototype.FillWebObjectOptions = function(res) {
+      if (!res) {
+         if (!this.snapid) return null;
+         res = { _typename: "TWebObjectOptions", snapid: this.snapid.toString(), opt: this.OptionsAsString(), fcust: "", fopt: [] };
+      }
+
       var pave = this.GetObject();
       if (pave && pave.fInit) {
-        res.fcust = "pave";
-        res.fopt = [pave.fX1NDC,pave.fY1NDC,pave.fX2NDC,pave.fY2NDC];
+         res.fcust = "pave";
+         res.fopt = [pave.fX1NDC,pave.fY1NDC,pave.fX2NDC,pave.fY2NDC];
       }
-      // console.log("creating pave opts", this.snapid, res.fopt, pave ? pave._typename : "---");
       return res;
    }
 

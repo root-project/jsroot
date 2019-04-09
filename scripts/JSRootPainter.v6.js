@@ -4804,6 +4804,12 @@
             if (typeof painter.GetWebPadInfo == "function")
                msg = "RANGES6:" + painter.GetWebPadInfo("only_this");
             break;
+         case "pave_moved":
+            if (painter.FillWebObjectOptions) {
+               var info = painter.FillWebObjectOptions();
+               if (info) msg = "PRIMIT6:" + JSROOT.toJSON(info);
+            }
+            break;
          default:
             console.log("UNPROCESSED CHANGES", kind);
       }
