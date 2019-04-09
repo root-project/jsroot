@@ -1663,7 +1663,7 @@
               Spec: false, Pie: false, List: false, Zscale: false, Candle: "",
               GLBox: 0, GLColor: false, Project: "",
               System: JSROOT.Painter.Coord.kCARTESIAN,
-              AutoColor: false, NoStat: false, ForceStat: false, AutoZoom: false,
+              AutoColor: false, NoStat: false, ForceStat: false, PadStats: false, AutoZoom: false,
               HighRes: 0, Zero: true, Palette: 0, BaseLine: false,
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
@@ -1695,6 +1695,7 @@
       if (d.check('OPTSTAT',true)) this.optstat = d.partAsInt();
       if (d.check('OPTFIT',true)) this.optfit = d.partAsInt();
 
+      if (d.check('USE_PAD_STATS')) this.PadStats = true;
       if (d.check('NOSTAT')) this.NoStat = true;
       if (d.check('STAT')) this.ForceStat = true;
 
@@ -2440,8 +2441,8 @@
 
       if (!arg) arg = "";
 
-      if (stat == null) {
-         if (arg.indexOf('-check')>0) return false;
+      if (!stat) {
+         if (arg.indexOf('-check') > 0) return false;
          // when statbox created first time, one need to draw it
          stat = this.CreateStat(true);
       } else {
@@ -2522,7 +2523,14 @@
       return null;
    }
 
+   /** Find stats box - either in list of functions or as object of correspondent painter
+    * @private */
    THistPainter.prototype.FindStat = function() {
+      if (this.options.PadStats) {
+         var p = this.FindPainterFor(null,"stats", "TPaveStats");
+         return p ? p.GetObject() : null;
+      }
+
       return this.FindFunction('TPaveStats', 'stats');
    }
 
@@ -2531,6 +2539,8 @@
    }
 
    THistPainter.prototype.CreateStat = function(force) {
+
+      if (this.options.PadStats) return null;
 
       if (!force && !this.options.ForceStat) {
          if (this.options.NoStat || this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
