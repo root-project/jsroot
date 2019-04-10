@@ -646,7 +646,7 @@
           pos_y = Math.round((1.0 - pt.fY2NDC) * this.pad_height()),
           width = Math.round((pt.fX2NDC - pt.fX1NDC) * this.pad_width()),
           height = Math.round((pt.fY2NDC - pt.fY1NDC) * this.pad_height()),
-          lwidth = pt.fBorderSize,
+          brd = pt.fBorderSize,
           dx = (opt.indexOf("L")>=0) ? -1 : ((opt.indexOf("R")>=0) ? 1 : 0),
           dy = (opt.indexOf("T")>=0) ? -1 : ((opt.indexOf("B")>=0) ? 1 : 0);
 
@@ -656,9 +656,9 @@
       this.draw_g.attr("transform", "translate(" + pos_x + "," + pos_y + ")");
 
       //if (!this.lineatt)
-      //   this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
+      //   this.lineatt = new JSROOT.TAttLineHandler(pt, brd>0 ? 1 : 0);
 
-      this.createAttLine({ attr: pt, width: (lwidth > 0) ? pt.fLineWidth : 0 });
+      this.createAttLine({ attr: pt, width: (brd > 0) ? pt.fLineWidth : 0 });
 
       this.createAttFill({ attr: pt });
 
@@ -666,9 +666,9 @@
          var h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = "l"+w2+",-"+h2 + "l"+w2+","+h2 + "l-"+w2+","+h2+"z";
 
-         if ((lwidth > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
+         if ((brd > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
             this.draw_g.append("svg:path")
-                 .attr("d","M0,"+(h2+lwidth) + dpath)
+                 .attr("d","M0,"+(h2+brd) + dpath)
                  .style("fill", this.get_color(pt.fShadowColor))
                  .style("stroke", this.get_color(pt.fShadowColor))
                  .style("stroke-width", "1px");
@@ -687,16 +687,16 @@
       }
 
       // add shadow decoration before main rect
-      if ((lwidth > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
+      if ((brd > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
          var spath = "", scol = this.get_color(pt.fShadowColor);
          if (this.fillatt.empty()) {
             if ((dx<0) && (dy<0))
-               spath = "M0,0v"+(height-lwidth)+"h-"+lwidth+"v-"+height+"h"+width+"v"+lwidth;
+               spath = "M0,0v"+(height-brd)+"h-"+brd+"v-"+height+"h"+width+"v"+brd;
             else // ((dx<0) && (dy>0))
-               spath = "M0,"+height+"v-"+(height-lwidth)+"h-"+lwidth+"v"+height+"h"+width+"v-"+lwidth;
+               spath = "M0,"+height+"v-"+(height-brd)+"h-"+brd+"v"+height+"h"+width+"v-"+brd;
          } else {
             // when main is filled, one also can use fill for shadow to avoid complexity
-            spath = "M"+(dx*lwidth)+","+(dy*lwidth) + "v"+height + "h"+width + "v-"+height
+            spath = "M"+(dx*brd)+","+(dy*brd) + "v"+height + "h"+width + "v-"+height
          }
          this.draw_g.append("svg:path")
                     .attr("d", spath + "z")
