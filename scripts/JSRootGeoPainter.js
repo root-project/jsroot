@@ -888,11 +888,12 @@
 
                if (obj.geo_name) {
                   itemname = obj.geo_name;
+                  if (itemname.indexOf("<prnt>") == 0)
+                     itemname = (this.GetItemName() || "top") + itemname.substr(6);
                   name = itemname.substr(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
                   hdr = name;
-               } else
-               if (obj.stack) {
+               } else if (obj.stack) {
                   name = menu.painter._clones.ResolveStack(obj.stack).name;
                   itemname = menu.painter.GetStackFullName(obj.stack);
                   hdr = menu.painter.GetItemName();
@@ -902,7 +903,6 @@
 
                } else
                   continue;
-
 
                menu.add((many ? "sub:" : "header:") + hdr, itemname, function(arg) { this.ActivateInBrowser([arg], true); });
 
@@ -1232,7 +1232,7 @@
             if (!obj) continue;
             if (obj.geo_object) info = obj.geo_name; else
             if (obj.stack) info = painter.GetStackFullName(obj.stack);
-            if (info===null) continue;
+            if (!info) continue;
 
             if (info.indexOf("<prnt>")==0)
                info = painter.GetItemName() + info.substr(6);
@@ -2409,11 +2409,10 @@
       this.Render3D();
    }
 
+   /** Register extra objects like tracks or hits
+    * @desc Rendered after main geometry volumes are created
+    * Check if object already exists to prevent duplication */
    TGeoPainter.prototype.addExtra = function(obj, itemname) {
-
-      // register extra objects like tracks or hits
-      // Check if object already exists to prevent duplication
-
       if (this._extraObjects === undefined)
          this._extraObjects = JSROOT.Create("TList");
 
@@ -2477,8 +2476,8 @@
       if ((obj._typename === "TList") || (obj._typename === "TObjArray")) {
          if (!obj.arr) return false;
          for (var n=0;n<obj.arr.length;++n) {
-            var sobj = obj.arr[n];
-            var sname = (itemname === undefined) ? obj.opt[n] : (itemname + "/[" + n + "]");
+            var sobj = obj.arr[n], sname = obj.opt[n];
+            if (!sname) sname = (itemname || "<prnt>") + "/[" + n + "]";
             if (this.drawExtras(sobj, sname, add_objects)) isany = true;
          }
       } else if (obj._typename === 'THREE.Mesh') {
@@ -3674,7 +3673,7 @@
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (!obj) return null;
 
-      var shape = null, extras = null;
+      var shape = null, extras = null, extras_path = "";
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
@@ -3686,7 +3685,7 @@
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
-         extras = obj.fMarker;
+         extras = obj.fMarker; extras_path = "<prnt>/fMarker";
          obj = JSROOT.GEO.buildOverlapVolume(obj);
          if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
@@ -3717,7 +3716,7 @@
       }
 
       if (extras)
-         painter.addExtra(extras);
+         painter.addExtra(extras, extras_path);
 
       // this.options.script_name = 'https://root.cern/js/files/geom/geomAlice.C'
 
