@@ -1701,7 +1701,7 @@
    }
 
    /** Returns hierarchy of 3D objects used to produce projection.
-    * Typically external master painter is used, but also intenral data can be used
+    * Typically external master painter is used, but also internal data can be used
     * @private */
 
    TGeoPainter.prototype.getProjectionSource = function() {
@@ -2042,6 +2042,23 @@
          for (var k=0;k<extras.length;++k) this._toplevel.add(extras[k]);
 
       return box;
+   }
+
+   TGeoPainter.prototype.getOverallSize = function(force) {
+      if (!this._overall_size || force) {
+         var box = this.getGeomBoundingBox(this._toplevel);
+
+         // if detect of coordinates fails - ignore
+         if (isNaN(box.min.x)) return 1000;
+
+         var sizex = box.max.x - box.min.x,
+             sizey = box.max.y - box.min.y,
+             sizez = box.max.z - box.min.z;
+
+         this._overall_size = 2 * Math.max(sizex, sizey, sizez);
+      }
+
+      return this._overall_size;
    }
 
    TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
@@ -2596,11 +2613,17 @@
       return true;
    }
 
+   /** Drawing different hits types like TPolyMarker3d
+    * @private */
    TGeoPainter.prototype.drawHit = function(hit, itemname) {
       if (!hit || !hit.fN || (hit.fN < 0)) return false;
 
-      var hit_size = 8*hit.fMarkerSize,
-          size = hit.fN,
+      // make hit size scaling factor of overall geometry size
+      // otherwise it is not possible to correctly see hits at all
+      var hit_size = hit.fMarkerSize * this.getOverallSize() * 0.005;
+      if (hit_size <= 0) hit_size = 1;
+
+      var size = hit.fN,
           projv = this.options.projectPos,
           projx = (this.options.project === "x"),
           projy = (this.options.project === "y"),
@@ -3651,7 +3674,7 @@
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (!obj) return null;
 
-      var shape = null;
+      var shape = null, extras = null;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
@@ -3663,6 +3686,7 @@
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
+         extras = obj.fMarker;
          obj = JSROOT.GEO.buildOverlapVolume(obj);
          if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
@@ -3691,6 +3715,9 @@
          painter._main_painter = obj.$geo_painter;
          painter._main_painter._slave_painters.push(painter);
       }
+
+      if (extras)
+         painter.addExtra(extras);
 
       // this.options.script_name = 'https://root.cern/js/files/geom/geomAlice.C'
 
@@ -3752,11 +3779,13 @@
       node1.fName = "Overlap1";
       node1.fMatrix = overlap.fMatrix1;
       node1.fVolume = overlap.fVolume1;
+      node1.fVolume.fLineColor = 2;
 
       var node2 = JSROOT.Create("TGeoNodeMatrix");
       node2.fName = "Overlap2";
       node2.fMatrix = overlap.fMatrix2;
       node2.fVolume = overlap.fVolume2;
+      node2.fVolume.fLineColor = 3;
 
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);
