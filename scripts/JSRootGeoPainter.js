@@ -1612,6 +1612,12 @@
          return false;
       }
 
+      // workaround for the TGeoOverlap, where two branches should get predefined color
+      if (this._splitColors && entry.stack) {
+         if (entry.stack[0]===0) entry.custom_color = "green"; else
+         if (entry.stack[0]===1) entry.custom_color = "blue";
+      }
+
       var prop = this._clones.getDrawEntryProperties(entry);
 
       var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
@@ -1657,7 +1663,7 @@
    }
 
    /** function used by geometry viewer to show more nodes
-    * These nodes excluded from selecton logic and always inserted into the model
+    * These nodes excluded from selection logic and always inserted into the model
     * Shape already should be created and assigned to the node
     * @private */
    TGeoPainter.prototype.appendMoreNodes = function(nodes, from_drawing) {
@@ -3715,8 +3721,10 @@
          painter._main_painter._slave_painters.push(painter);
       }
 
-      if (extras)
+      if (extras) {
+         painter._splitColors = true;
          painter.addExtra(extras, extras_path);
+      }
 
       // this.options.script_name = 'https://root.cern/js/files/geom/geomAlice.C'
 
@@ -3778,13 +3786,13 @@
       node1.fName = overlap.fVolume1.fName || "Overlap1";
       node1.fMatrix = overlap.fMatrix1;
       node1.fVolume = overlap.fVolume1;
-      node1.fVolume.fLineColor = 2;
+      // node1.fVolume.fLineColor = 2; // color assigned with _splitColors
 
       var node2 = JSROOT.Create("TGeoNodeMatrix");
       node2.fName = overlap.fVolume2.fName || "Overlap2";
       node2.fMatrix = overlap.fMatrix2;
       node2.fVolume = overlap.fVolume2;
-      node2.fVolume.fLineColor = 3;
+      // node2.fVolume.fLineColor = 3;  // color assigned with _splitColors
 
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);

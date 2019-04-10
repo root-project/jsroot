@@ -2551,15 +2551,16 @@
 
       if (visible) {
          var _opacity = 1.0;
-         if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
+         if (entry.custom_color)
+            prop.fillcolor = entry.custom_color;
+         else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fFillColor];
-         else
-         if (volume.fLineColor >= 0)
+         else if (volume.fLineColor >= 0)
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
 
          if (volume.fMedium && volume.fMedium.fMaterial) {
-            var fillstyle = volume.fMedium.fMaterial.fFillStyle;
-            var transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+            var fillstyle = volume.fMedium.fMaterial.fFillStyle,
+                transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
             if (transparency > 0)
                _opacity = (100.0 - transparency) / 100.0;
             if (prop.fillcolor === undefined)
