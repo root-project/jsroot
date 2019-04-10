@@ -1352,7 +1352,6 @@
             if (this.stored.fY1NDC != obj.fY1NDC) pave.fY1NDC = obj.fY1NDC;
             if (this.stored.fY2NDC != obj.fY2NDC) pave.fY2NDC = obj.fY2NDC;
          } else {
-            pave.fOption = obj.fOption;
             pave.fInit = obj.fInit;
             pave.fX1 = obj.fX1; pave.fX2 = obj.fX2;
             pave.fY1 = obj.fY1; pave.fY2 = obj.fY2;
@@ -1360,8 +1359,11 @@
             pave.fY1NDC = obj.fY1NDC; pave.fY2NDC = obj.fY2NDC;
          }
 
-         this.stored = JSROOT.extend({}, obj); // store latest coordiantes
+         this.stored = JSROOT.extend({}, obj); // store latest coordinates
       }
+
+      pave.fOption = obj.fOption;
+      pave.fBorderSize = obj.fBorderSize;
 
       switch (obj._typename) {
          case 'TPaveText':
