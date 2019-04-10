@@ -136,7 +136,8 @@ examples_main = {
      { name:"eve", asurl: true, json: "geom/evegeoshape.json.gz", title: "Example of drawing snapshot of volumes from EVE" },
      { name:"tracks", url: "?nobrowser&json=$$$geom/evegeoshape.json.gz&file=$$$geom/eve_tracks.root&item=evegeoshape.json.gz+eve_tracks.root/tracks;1", title:"Overlap of geometry with tracks, read from separate file" },
      { name:"tracks+hits", url: "?nobrowser&json=$$$geom/simple_alice.json.gz&file=$$$geom/tracks_hits.root&item=simple_alice.json.gz+tracks_hits.root/tracks;1+tracks_hits.root/hits;1&opt=black", title:"Overlap of simple ALICE geometry with tracks and hits, read from separate file" },
-     { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz;black,projx;black]", title: "Simple ALICE geometry and two projections" }
+     { name: "proj", url: "?nobrowser&layout=h12_21&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[[0]/Gentle,[1]/tracks],[0]/Gentle,[0]/Gentle]&opts=[main;black,projz;black,projx;black]", title: "Simple ALICE geometry and two projections" },
+     { name: "overlap", asurl: true, file: "geom/overlap.root", item: "default/Overlaps/ov00010", title: "example of TGeoOverlap", notest: true }
    ],
    TGraph : [
      { opt: "", file: "graph.root", item: "Graph;1" },
