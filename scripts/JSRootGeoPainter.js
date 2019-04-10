@@ -4102,6 +4102,7 @@
          JSROOT.GEO.createList(parent, obj.fMaterials, "Materials", "list of materials");
          JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
          JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
+         JSROOT.GEO.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
 
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          JSROOT.GEO.createItem(parent, obj.fMasterVolume);
