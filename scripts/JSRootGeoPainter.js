@@ -3664,6 +3664,7 @@
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
          obj = JSROOT.GEO.buildOverlapVolume(obj);
+         if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
