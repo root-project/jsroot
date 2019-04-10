@@ -658,7 +658,7 @@
       //if (!this.lineatt)
       //   this.lineatt = new JSROOT.TAttLineHandler(pt, lwidth>0 ? 1 : 0);
 
-      this.createAttLine({ attr: pt, width: lwidth>0 ? 1 : 0 });
+      this.createAttLine({ attr: pt, width: (lwidth > 0) ? pt.fLineWidth : 0 });
 
       this.createAttFill({ attr: pt });
 
@@ -666,7 +666,7 @@
          var h2 = Math.round(height/2), w2 = Math.round(width/2),
              dpath = "l"+w2+",-"+h2 + "l"+w2+","+h2 + "l-"+w2+","+h2+"z";
 
-         if ((lwidth > 1) && (pt.fShadowColor > 0) && (dx || dy))
+         if ((lwidth > 1) && (pt.fShadowColor > 0) && (dx || dy) && !this.fillatt.empty())
             this.draw_g.append("svg:path")
                  .attr("d","M0,"+(h2+lwidth) + dpath)
                  .style("fill", this.get_color(pt.fShadowColor))
@@ -687,12 +687,23 @@
       }
 
       // add shadow decoration before main rect
-      if ((lwidth > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy))
+      if ((lwidth > 1) && (pt.fShadowColor > 0) && !pt.fNpaves && (dx || dy)) {
+         var spath = "", scol = this.get_color(pt.fShadowColor);
+         if (this.fillatt.empty()) {
+            if ((dx<0) && (dy<0))
+               spath = "M0,0v"+(height-lwidth)+"h-"+lwidth+"v-"+height+"h"+width+"v"+lwidth;
+            else // ((dx<0) && (dy>0))
+               spath = "M0,"+height+"v-"+(height-lwidth)+"h-"+lwidth+"v"+height+"h"+width+"v-"+lwidth;
+         } else {
+            // when main is filled, one also can use fill for shadow to avoid complexity
+            spath = "M"+(dx*lwidth)+","+(dy*lwidth) + "v"+height + "h"+width + "v-"+height
+         }
          this.draw_g.append("svg:path")
-            .attr("d","M"+(dx*lwidth)+","+(dy*lwidth) + "v"+height + "h"+width + "v-"+height + "z")
-            .style("fill", this.get_color(pt.fShadowColor))
-            .style("stroke", this.get_color(pt.fShadowColor))
-            .style("stroke-width", "1px");
+                    .attr("d", spath + "z")
+                    .style("fill", scol)
+                    .style("stroke", scol)
+                    .style("stroke-width", "1px");
+      }
 
       if (pt.fNpaves)
          for (var n = pt.fNpaves-1; n>0; --n)
