@@ -3685,7 +3685,7 @@
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
-         extras = obj.fMarker; extras_path = "<prnt>/fMarker";
+         extras = obj.fMarker; extras_path = "<prnt>/Marker";
          obj = JSROOT.GEO.buildOverlapVolume(obj);
          if (!opt) opt = "wire";
       } else if ('fVolume' in obj) {
@@ -3775,13 +3775,13 @@
       vol.fName = "";
 
       var node1 = JSROOT.Create("TGeoNodeMatrix");
-      node1.fName = "Overlap1";
+      node1.fName = overlap.fVolume1.fName || "Overlap1";
       node1.fMatrix = overlap.fMatrix1;
       node1.fVolume = overlap.fVolume1;
       node1.fVolume.fLineColor = 2;
 
       var node2 = JSROOT.Create("TGeoNodeMatrix");
-      node2.fName = "Overlap2";
+      node2.fName = overlap.fVolume2.fName || "Overlap2";
       node2.fMatrix = overlap.fMatrix2;
       node2.fVolume = overlap.fVolume2;
       node2.fVolume.fLineColor = 3;
@@ -4151,9 +4151,10 @@
       var isnode = (obj._typename.indexOf('TGeoNode') === 0),
           isvolume = (obj._typename.indexOf('TGeoVolume') === 0),
           ismanager = (obj._typename === 'TGeoManager'),
-          iseve = ((obj._typename === 'TEveGeoShapeExtract')||(obj._typename === 'ROOT::Experimental::TEveGeoShapeExtract'));
+          iseve = ((obj._typename === 'TEveGeoShapeExtract') || (obj._typename === 'ROOT::Experimental::TEveGeoShapeExtract')),
+          isoverlap = (obj._typename === 'TGeoOverlap');
 
-      if (!isnode && !isvolume && !ismanager && !iseve) return false;
+      if (!isnode && !isvolume && !ismanager && !iseve && !isoverlap) return false;
 
       if (parent._childs) return true;
 
@@ -4165,6 +4166,13 @@
 
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          JSROOT.GEO.createItem(parent, obj.fMasterVolume);
+         return true;
+      }
+
+      if (isoverlap) {
+         JSROOT.GEO.createItem(parent, obj.fVolume1);
+         JSROOT.GEO.createItem(parent, obj.fVolume2);
+         JSROOT.GEO.createItem(parent, obj.fMarker, 'Marker');
          return true;
       }
 
