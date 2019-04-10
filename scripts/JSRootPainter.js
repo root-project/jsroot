@@ -4015,7 +4015,8 @@
    TObjectPainter.prototype.GetColorExec = function(col, method) {
       var id = -1;
       if (typeof col == "string") {
-         for (var k=0;k<JSROOT.Painter.root_colors.length;++k)
+         if (!col || (col == "none")) id = 0; else
+         for (var k=1;k<JSROOT.Painter.root_colors.length;++k)
             if (JSROOT.Painter.root_colors[k] == col) {
                id = k; break
             }
