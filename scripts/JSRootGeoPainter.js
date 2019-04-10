@@ -3662,6 +3662,8 @@
       } else if (obj._typename === 'TGeoManager') {
          JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
+      } else if (obj._typename === 'TGeoOverlap') {
+         obj = JSROOT.GEO.buildOverlapVolume(obj);
       } else if ('fVolume' in obj) {
          if (obj.fVolume) shape = obj.fVolume.fShape;
       } else {
@@ -3701,8 +3703,9 @@
 
    // ===============================================================================
 
+   /** Function used to build hierarchy of elements of composite shapes
+    * @private */
    JSROOT.GEO.buildCompositeVolume = function(comp, side) {
-      // function used to build hierarchy of elements of composite shapes
 
       var vol = JSROOT.Create("TGeoVolume");
       if (side && (comp._typename!=='TGeoCompositeShape')) {
@@ -3726,6 +3729,33 @@
       node2.fName = "Right";
       node2.fMatrix = comp.fNode.fRightMat;
       node2.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fRight, "Right");
+
+      vol.fNodes = JSROOT.Create("TList");
+      vol.fNodes.Add(node1);
+      vol.fNodes.Add(node2);
+
+      return vol;
+   }
+
+   /** Function used to build hierarchy of elements of overlap object
+    * @private */
+   JSROOT.GEO.buildOverlapVolume = function(overlap) {
+
+      var vol = JSROOT.Create("TGeoVolume");
+
+      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
+      vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
+      vol.fName = "";
+
+      var node1 = JSROOT.Create("TGeoNodeMatrix");
+      node1.fName = "Overlap1";
+      node1.fMatrix = overlap.fMatrix1;
+      node1.fVolume = overlap.fVolume1;
+
+      var node2 = JSROOT.Create("TGeoNodeMatrix");
+      node2.fName = "Overlap2";
+      node2.fMatrix = overlap.fMatrix2;
+      node2.fVolume = overlap.fVolume2;
 
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);
