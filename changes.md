@@ -3,21 +3,22 @@
 ## Changes in dev
 1. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
 2. Upgrade d3.js 4.4.4 -> 5.7.0
-3. Many adjustment with new TWebCanvas
+3. Many adjustment with new TWebCanvas - interactivity, attributes/position updates
 4. Implement update of TF2 drawings, see tutorials/graphics/anim.C
 5. Use gStyle attributes to draw histogram title
 6. Add support of TProfile2Poly class
-7. Support eve7 geometry viewer - render data generated in ROOT itself
-8. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
-9. Improve windows handling in flex(ible) layout
-10. Use requestAnimationFrame when do monitoring, improves performance
-11. Better position for text in TH2Poly drawings
-12. Use d3.js and three.js from npm when running with node.js
-13. Fix - support clipping for tracks and points in geo painter
-14. Fix - drawing of TGeoNode with finder
-15. Fix - key press events processed only in active pad (ROOT-9128)
-16. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
-17. Move most of ui5-specific code into ROOT repository, where it will be maintained
+7. Add support of TGeoOverlap class, access them from TGeoManager
+8. Support eve7 geometry viewer - render data generated in ROOT itself
+9. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
+10. Improve windows handling in flex(ible) layout
+11. Use requestAnimationFrame when do monitoring, improves performance
+12. Better position for text in TH2Poly drawings
+13. Use d3.js and three.js from npm when running with node.js
+14. Fix - support clipping for tracks and points in geo painter
+15. Fix - drawing of TGeoNode with finder
+16. Fix - key press events processed only in active pad (ROOT-9128)
+17. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
+18. Move most of ui5-specific code into ROOT repository, where it will be maintained
 
 
 ## Changes in 5.6.3
