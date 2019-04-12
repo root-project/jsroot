@@ -4262,19 +4262,20 @@
       return col;
    }
 
-   TCanvasPainter.prototype.GetNewOpt = function(opts, name) {
-      if (!opts || !opts.fHolderIO || !name) return;
+   TCanvasPainter.prototype.GetNewOpt = function(opts, name, dflt) {
+      if (!opts || !opts.fHolderIO || !name) return dflt;
 
       var map = opts.fHolderIO.fAttrNameVals;
-      if (!map || !map.length) return;
+      if (!map || !map.length) return dflt;
 
       for (var i=0; i<map.length; ++i)
          if (map[i].first === name)
             return map[i].second;
+      return dflt;
    }
 
-   TCanvasPainter.prototype.GetNewColor = function(opts, name) {
-      var val = this.GetNewOpt(opts,name);
+   TCanvasPainter.prototype.GetNewColor = function(opts, name, dflt) {
+      var val = this.GetNewOpt(opts,name,dflt);
       // can convert color, but also can be used as is
       return val;
    }
