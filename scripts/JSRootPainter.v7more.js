@@ -65,8 +65,8 @@
            opts         = line.fOpts,
            pp           = this.canv_painter(),
 
-           line_width   = pp.GetNewOpt(opts, "line.width", 1),
-           line_style   = 1,
+           line_width   = pp.GetNewOpt(opts, "line.width", 1.),
+           line_style   = pp.GetNewOpt(opts, "line.style", 1),
            line_color   = pp.GetNewColor(opts, "line.color", "black"),
            line_opacity = pp.GetNewColor(opts, "line.opacity", 1.),
            p1           = this.GetCoordinate(line.fP1),
