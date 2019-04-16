@@ -412,7 +412,7 @@
 
       if (changed) this.Render3D();
 
-      if (changed && tip.$painter && tip.$painter.is_projection)
+      if (changed && tip.$painter && (typeof tip.$painter.RedrawProjection == 'function'))
          tip.$painter.RedrawProjection(tip.ix-1, tip.ix, tip.iy-1, tip.iy);
 
       if (this.GetObject())
@@ -1329,7 +1329,7 @@
 
             tip.color = this.tip_color;
 
-            tip.$painter = p;
+            if (p.is_projection && (p.Dimension()==2)) tip.$painter = p; // used only for projections
 
             return tip;
          }
