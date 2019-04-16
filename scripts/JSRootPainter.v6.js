@@ -4453,6 +4453,9 @@
 
          pthis.set_layout_kind(layout_kind, ".central_panel");
 
+         // remove reference to MDIDisplay, solves resize problem
+         origin.property('mdi', null);
+
          JSROOT.CallBack(call_back, true);
       });
    }
