@@ -1,24 +1,36 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
-2. Upgrade d3.js 4.4.4 -> 5.7.0
-3. Many adjustment with new TWebCanvas - interactivity, attributes/position updates
-4. Implement update of TF2 drawings, see tutorials/graphics/anim.C
-5. Use gStyle attributes to draw histogram title
-6. Add support of TProfile2Poly class
-7. Add support of TGeoOverlap class, access them from TGeoManager
-8. Support eve7 geometry viewer - render data generated in ROOT itself
-9. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
-10. Improve windows handling in flex(ible) layout
-11. Use requestAnimationFrame when do monitoring, improves performance
-12. Better position for text in TH2Poly drawings
-13. Use d3.js and three.js from npm when running with node.js
-14. Fix - support clipping for tracks and points in geo painter
-15. Fix - drawing of TGeoNode with finder
-16. Fix - key press events processed only in active pad (ROOT-9128)
-17. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
-18. Move most of ui5-specific code into ROOT repository, where it will be maintained
+1. Add support of TProfile2Poly class
+2. Add support of TGeoOverlap class, provide access from TGeoManager
+3. Implement TF2 drawings update, see tutorials/graphics/anim.C
+4. Improve windows handling in flex(ible) layout
+5. Better position for text in TH2Poly drawings
+6. Enable projections drawing also with TH2 lego plots
+7. Use gStyle attributes to draw histogram title
+8. Use requestAnimationFrame when do monitoring, improves performance
+9. Support eve7 geometry viewer - render data generated in ROOT itself
+10. Many adjustment with new TWebCanvas - interactivity, attributes/position updates
+11. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
+12. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
+13. Upgrade d3.js 4.4.4 -> 5.7.0
+14. Use d3.js and three.js from npm when running with node.js
+15. Fix - support clipping for tracks and points in geo painter
+16. Fix - drawing of TGeoNode with finder
+17. Fix - key press events processed only in active pad (ROOT-9128)
+18. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
+19. Move most of ui5-specific code into ROOT repository, where it will be maintained
+
+
+## Changes in 5.6.4
+1. Fix - try workaround corrupted data in TTree
+2. Fix - support min0 draw option like ROOT does
+3. Fix - correctly handle TH2Poly draw options
+4. Fix - seldom error in JSROOT.cleanup
+5. Fix - repair TTree player UI
+6. Fix - error in TH3 filling
+7. Fix - correctly access top element in simple layout
+8. Fix - exclude duplicated points when drawing TH2 with SURF3 options
 
 
 ## Changes in 5.6.3
