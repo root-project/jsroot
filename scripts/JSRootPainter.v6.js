@@ -4426,7 +4426,7 @@
          for (var k=0;k<lst.length;++k)
             main.node().appendChild(lst[k]);
          this.set_layout_kind(layout_kind);
-         // JSROOT.resize(main.node());
+         JSROOT.resize(main.node());
          return JSROOT.CallBack(call_back, true);
       }
 
@@ -4456,6 +4456,9 @@
          // remove reference to MDIDisplay, solves resize problem
          origin.property('mdi', null);
 
+         // resize main drawing and let draw extras
+         JSROOT.resize(main.node());
+
          JSROOT.CallBack(call_back, true);
       });
    }
@@ -4477,6 +4480,7 @@
    }
 
    TCanvasPainter.prototype.DrawProjection = function(kind,hist) {
+
       if (!this.proj_painter) return; // ignore drawing if projection not configured
 
       if (this.proj_painter === 1) {
