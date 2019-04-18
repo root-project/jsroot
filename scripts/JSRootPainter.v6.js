@@ -3804,13 +3804,13 @@
    }
 
    /** Collects pad information for TWebCanvas, need to update different states */
-   TPadPainter.prototype.GetWebPadInfo = function(arg) {
+   TPadPainter.prototype.GetWebPadOptions = function(arg) {
       var is_top = (arg === undefined), elem = null, scan_subpads = true;
       if (arg === "only_this") { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
 
       if (this.snapid) {
-         elem = { _typename: "TWebPadRange", snapid: this.snapid.toString(),
+         elem = { _typename: "TWebPadOptions", snapid: this.snapid.toString(),
                   active: !!this.is_active_pad,
                   bits: 0, primitives: [],
                   logx: this.pad.fLogx, logy: this.pad.fLogy, logz: this.pad.fLogz,
@@ -3829,8 +3829,8 @@
 
       for (var k=0; k<this.painters.length; ++k) {
          var sub = this.painters[k];
-         if (typeof sub.GetWebPadInfo == "function") {
-            if (scan_subpads) sub.GetWebPadInfo(arg);
+         if (typeof sub.GetWebPadOptions == "function") {
+            if (scan_subpads) sub.GetWebPadOptions(arg);
          } else if (sub.snapid) {
             var opt = { _typename: "TWebObjectOptions", snapid: sub.snapid.toString(), opt: sub.OptionsAsString(), fcust: "", fopt: [] };
             if (typeof sub.FillWebObjectOptions == "function")
@@ -4609,7 +4609,7 @@
 
          this.RedrawPadSnap(snap, function() {
             pthis.CompeteCanvasSnapDrawing();
-            var ranges = pthis.GetWebPadInfo(); // all data, including subpads
+            var ranges = pthis.GetWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
             handle.Send("READY6:" + snapid + ranges); // send ready message back when drawing completed
          });
@@ -4803,10 +4803,10 @@
             break;
          case "frame": // when moving frame
          case "zoom":  // when changing zoom inside frame
-            if (!painter.GetWebPadInfo)
+            if (!painter.GetWebPadOptions)
                painter = painter.pad_painter();
-            if (typeof painter.GetWebPadInfo == "function")
-               msg = "RANGES6:" + painter.GetWebPadInfo("only_this");
+            if (typeof painter.GetWebPadOptions == "function")
+               msg = "OPTIONS6:" + painter.GetWebPadOptions("only_this");
             break;
          case "pave_moved":
             if (painter.FillWebObjectOptions) {
