@@ -1903,7 +1903,7 @@
 
       var prefix = this.ackn + ":" + this.cansend + ":" + chid + ":";
       this.ackn = 0;
-      this.cansend--; // decrease number of allowed sebd packets
+      this.cansend--; // decrease number of allowed send packets
 
       this._websocket.send(prefix + msg);
       if (this.kind === "websocket") {
@@ -3930,7 +3930,7 @@
 
       var canvp = this.canv_painter();
 
-      if (!this.snapid || !canvp || !canvp._websocket || canvp._getmenu_callback)
+      if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket || canvp._getmenu_callback)
          return JSROOT.CallBack(call_back);
 
       function DoExecMenu(arg) {

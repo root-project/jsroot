@@ -3687,6 +3687,7 @@
       if (!snap || !snap.fPrimitives) return;
 
       this.is_active_pad = !!snap.fActive; // enforce boolean flag
+      this._readonly = (snap.fReadOnly === undefined) ? true : snap.fReadOnly; // readonly flag
 
       var first = snap.fSnapshot;
       first.fPrimitives = null; // primitives are not interesting, they are disabled in IO
@@ -4796,7 +4797,7 @@
      * @private */
    TCanvasPainter.prototype.ProcessChanges = function(kind, painter) {
       // check if we could send at least one message more - for some meaningful actions
-      if (!this._websocket || !this._websocket.CanSend(2) || (typeof kind !== "string")) return;
+      if (!this._websocket || this._readonly || !this._websocket.CanSend(2) || (typeof kind !== "string")) return;
 
       var msg = "";
       if (!painter) painter = this;
