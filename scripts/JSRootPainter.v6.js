@@ -4615,13 +4615,9 @@
          });
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
-         msg = msg.substr(5);
-         var p1 = msg.indexOf(":"),
-             menuid = msg.substr(0,p1),
-             lst = JSROOT.parse(msg.substr(p1+1));
-         // console.log("get MENUS ", typeof lst, 'nitems', lst.length, msg.length-4);
+         var lst = JSROOT.parse(msg.substr(5));
          if (typeof this._getmenu_callback == 'function')
-            this._getmenu_callback(lst, menuid);
+            this._getmenu_callback(lst);
       } else if (msg.substr(0,4)=='CMD:') {
          msg = msg.substr(4);
          var p1 = msg.indexOf(":"),

@@ -3951,21 +3951,23 @@
          }
       }
 
-      function DoFillMenu(_menu, _reqid, _call_back, items, replyid) {
+      function DoFillMenu(_menu, _reqid, _call_back, reply) {
 
          // avoid multiple call of the callback after timeout
          if (!canvp._getmenu_callback) return;
          delete canvp._getmenu_callback;
 
-         if (_reqid !== replyid)
-            console.error('missmatch between request ' + _reqid + ' and reply ' + replyid + ' identifiers');
+         if (_reqid !== reply.fId)
+            console.error('missmatch between request ' + _reqid + ' and reply ' + reply.fId + ' identifiers');
+
+         var items = reply.fItems;
 
          if (items && items.length) {
             _menu.add("separator");
             _menu.add("sub:Online");
 
             this.args_menu_items = items;
-            this.args_menu_id = replyid;
+            this.args_menu_id = reply.fId;
 
             var lastclname;
 
