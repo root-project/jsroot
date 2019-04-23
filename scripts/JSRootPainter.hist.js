@@ -4632,7 +4632,7 @@
 
       var canp = this.canv_painter();
 
-      if (canp && (this.snapid !== undefined)) {
+      if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
          var exec = "EXECANDSEND:D" + this.is_projection + "PROJ:" + this.snapid + ":";
          if (this.is_projection == "X")

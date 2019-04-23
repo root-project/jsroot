@@ -2540,7 +2540,8 @@
 
       var pp = this.pad_painter(), canp = this.canv_painter();
       if (pp && pp.snapid && canp && canp._websocket) {
-         canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
+         console.warn('Change log scale on server here!!!!');
+         // canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
       } else {
          pad["fLog" + axis] = curr ? 0 : 1;
          painter.RedrawPad();
