@@ -4689,9 +4689,10 @@
 
       this.RegisterForPadEvents(null);
 
-      if (this.ged_panelid) {
-         sap.ui.getCore().byId(this.ged_panelid).getController().cleanupGed();
-         delete this.ged_panelid;
+      if (this.ged_view) {
+         this.ged_view.getController().cleanupGed();
+         this.ged_view.destroy();
+         delete this.ged_view;
       }
       if (this.brlayout)
          this.brlayout.DeleteContent();
@@ -4736,18 +4737,17 @@
          sap.ui.define(["sap/ui/model/json/JSONModel", "sap/ui/core/mvc/XMLView"],
                        function(JSONModel,XMLView) {
 
-            pthis.ged_panelid = "CanvasGedId";
-
             var oModel = new JSONModel({ handle: null });
 
-            sap.ui.getCore().setModel(oModel, pthis.ged_panelid);
-
             XMLView.create({
-               id: pthis.ged_panelid,
                viewName : "rootui5.canv.view.Ged"
             }).then(function(oGed) {
 
+               oGed.setModel(oModel);
+
                oGed.placeAt("ged_placeholder");
+
+               pthis.ged_view = oGed;
 
                // TODO: should be moved into Ged controller - it must be able to detect canvas painter itself
                pthis.RegisterForPadEvents(oGed.getController().padEventsReceiver.bind(oGed.getController()));
