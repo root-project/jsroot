@@ -561,8 +561,8 @@
    // ============================================================
 
    // painter class for objects, derived from TPave
-   function TPavePainter(pave, opt) {
-      JSROOT.TObjectPainter.call(this, pave, opt);
+   function TPavePainter(pave) {
+      JSROOT.TObjectPainter.call(this, pave);
       this.Enabled = true;
       this.UseContextMenu = true;
       this.UseTextColor = false; // indicates if text color used, enabled menu entry
@@ -1158,13 +1158,11 @@
 
    TPavePainter.prototype.DrawPaletteAxis = function(s_width, s_height, arg) {
 
-      console.log('DrawPaletteAxis from here!!!!');
-
       var pthis = this,
           palette = this.GetObject(),
           axis = palette.fAxis,
-          can_move = (typeof arg == 'string') && (arg.indexOf('can_move')>0),
-          postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0),
+          can_move = (typeof arg == "string") && (arg.indexOf('can_move') > 0),
+          postpone_draw = (typeof arg == "string") && (arg.indexOf('postpone') > 0),
           nbr1 = axis.fNdiv % 100,
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
@@ -1584,7 +1582,7 @@
    }
 
    TPavePainter.prototype.Redraw = function() {
-      this.DrawPave(this.OptionsAsString());
+      this.DrawPave();
    }
 
    TPavePainter.prototype.Cleanup = function() {
@@ -1604,7 +1602,7 @@
          opt = "";
       }
 
-      var painter = new JSROOT.TPavePainter(pave, opt);
+      var painter = new JSROOT.TPavePainter(pave);
 
       painter.SetDivId(divid, 2, onpad);
 
@@ -1665,214 +1663,10 @@
             break;
       }
 
-      painter.Redraw();
+      painter.DrawPave(opt);
 
       // drawing ready handled in special painters, if not exists - drawing is done
       return painter.PaveDrawFunc ? painter : painter.DrawingReady();
-   }
-
-   function drawPaletteAxis(divid, palette, opt) {
-
-      // disable draw of shadow element of TPave
-      palette.fBorderSize = 1;
-      palette.fShadowColor = 0;
-
-      var painter = new JSROOT.TPavePainter(palette);
-
-      painter.SetDivId(divid);
-
-      // check some default values of TGaxis object, otherwise axis will not be drawn
-      if (palette.fAxis) {
-         if (!palette.fAxis.fChopt) palette.fAxis.fChopt = "+";
-         if (!palette.fAxis.fNdiv) palette.fAxis.fNdiv = 12;
-         if (!palette.fAxis.fLabelOffset) palette.fAxis.fLabelOffset = 0.005;
-      }
-
-      painter.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
-      painter.z_handle.SetDivId(divid, -1);
-
-      painter.Cleanup = function() {
-         if (this.z_handle) {
-            this.z_handle.Cleanup();
-            delete this.z_handle;
-         }
-
-         JSROOT.TObjectPainter.prototype.Cleanup.call(this);
-      }
-
-      painter.PaveDrawFunc = function(s_width, s_height, arg) {
-
-         var pthis = this,
-             palette = this.GetObject(),
-             axis = palette.fAxis,
-             can_move = (typeof arg == 'string') && (arg.indexOf('can_move')>0),
-             postpone_draw = (typeof arg == 'string') && (arg.indexOf('postpone')>0),
-             nbr1 = axis.fNdiv % 100,
-             pos_x = parseInt(this.draw_g.attr("x")), // pave position
-             pos_y = parseInt(this.draw_g.attr("y")),
-             width = this.pad_width(),
-             height = this.pad_height(),
-             axisOffset = axis.fLabelOffset * width,
-             main = this.main_painter(),
-             framep = this.frame_painter(),
-             zmin = 0, zmax = 100,
-             contour = main.fContour;
-
-         if (nbr1<=0) nbr1 = 8;
-         axis.fTickSize = 0.6 * s_width / width; // adjust axis ticks size
-
-         if (contour && framep) {
-            zmin = Math.min(contour[0], framep.zmin);
-            zmax = Math.max(contour[contour.length-1], framep.zmax);
-         } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
-            // this is case of TH2 (needs only for size adjustment)
-            zmin = main.gminbin; zmax = main.gmaxbin;
-         } else if ((main.hmin!==undefined) && (main.hmax!==undefined)) {
-            // this is case of TH1
-            zmin = main.hmin; zmax = main.hmax;
-         }
-
-         var z = null, z_kind = "normal";
-
-         if (this.root_pad().fLogz) {
-            z = d3.scaleLog();
-            z_kind = "log";
-         } else {
-            z = d3.scaleLinear();
-         }
-         z.domain([zmin, zmax]).range([s_height,0]);
-
-         this.draw_g.selectAll("rect").style("fill", 'white');
-
-         if (!contour || postpone_draw)
-            // we need such rect to correctly calculate size
-            this.draw_g.append("svg:rect")
-                       .attr("x", 0)
-                       .attr("y",  0)
-                       .attr("width", s_width)
-                       .attr("height", s_height)
-                       .style("fill", 'white');
-         else
-            for (var i=0;i<contour.length-1;++i) {
-               var z0 = z(contour[i]),
-                   z1 = z(contour[i+1]),
-                   col = main.getContourColor((contour[i]+contour[i+1])/2);
-
-               var r = this.draw_g.append("svg:rect")
-                          .attr("x", 0)
-                          .attr("y",  Math.round(z1))
-                          .attr("width", s_width)
-                          .attr("height", Math.round(z0) - Math.round(z1))
-                          .style("fill", col)
-                          .style("stroke", col)
-                          .property("fill0", col)
-                          .property("fill1", d3.rgb(col).darker(0.5).toString())
-
-               if (this.IsTooltipAllowed())
-                  r.on('mouseover', function() {
-                     d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
-                  }).on('mouseout', function() {
-                     d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
-                  }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
-
-               if (JSROOT.gStyle.Zooming)
-                  r.on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
-            }
-
-
-         this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
-
-         this.z_handle.max_tick_size = Math.round(s_width*0.7);
-
-         this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
-
-         if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-            var rect = this.draw_g.node().getBoundingClientRect();
-
-            var shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
-
-            if (shift>0) {
-               this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-                          .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
-               palette.fX1NDC -= shift/width;
-               palette.fX2NDC -= shift/width;
-            }
-         }
-
-         if (!JSROOT.gStyle.Zooming) return;
-
-         var evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
-
-         function moveRectSel() {
-
-            if (!doing_zoom) return;
-
-            d3.event.preventDefault();
-            var m = d3.mouse(evnt);
-
-            if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
-
-            zoom_rect.attr("y", sel1)
-                     .attr("height", Math.abs(sel2-sel1));
-         }
-
-         function endRectSel() {
-            if (!doing_zoom) return;
-
-            d3.event.preventDefault();
-            d3.select(window).on("mousemove.colzoomRect", null)
-                             .on("mouseup.colzoomRect", null);
-            zoom_rect.remove();
-            zoom_rect = null;
-            doing_zoom = false;
-
-            var zmin = Math.min(z.invert(sel1), z.invert(sel2)),
-                zmax = Math.max(z.invert(sel1), z.invert(sel2));
-
-            pthis.frame_painter().Zoom("z", zmin, zmax);
-         }
-
-         function startRectSel() {
-            // ignore when touch selection is activated
-            if (doing_zoom) return;
-            doing_zoom = true;
-
-            d3.event.preventDefault();
-
-            evnt = this;
-            var origin = d3.mouse(evnt);
-
-            sel1 = sel2 = origin[1];
-
-            zoom_rect = pthis.draw_g
-                   .append("svg:rect")
-                   .attr("class", "zoom")
-                   .attr("id", "colzoomRect")
-                   .attr("x", "0")
-                   .attr("width", s_width)
-                   .attr("y", sel1)
-                   .attr("height", 5);
-
-            d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-                             .on("mouseup.colzoomRect", endRectSel, true);
-
-            d3.event.stopPropagation();
-         }
-
-         this.draw_g.select(".axis_zoom")
-                    .on("mousedown", startRectSel)
-                    .on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
-      }
-
-      painter.ShowContextMenu = function(evnt) {
-         this.frame_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
-      }
-
-      painter.UseContextMenu = true;
-
-      painter.DrawPave(opt);
-
-      return painter.DrawingReady();
    }
 
    /** @summary Produce and draw TLegend object for the specified divid
@@ -7183,7 +6977,6 @@
 
    JSROOT.Painter.drawPave = drawPave;
    JSROOT.Painter.produceLegend = produceLegend;
-   JSROOT.Painter.drawPaletteAxis = drawPaletteAxis;
    JSROOT.Painter.drawHistogram1D = drawHistogram1D;
    JSROOT.Painter.drawHistogram2D = drawHistogram2D;
    JSROOT.Painter.drawTF2 = drawTF2;
