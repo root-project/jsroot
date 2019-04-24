@@ -1473,6 +1473,13 @@
 
       painter.SetDivId(divid);
 
+      // check some default values of TGaxis object, otherwise axis will not be drawn
+      if (palette.fAxis) {
+         if (!palette.fAxis.fChopt) palette.fAxis.fChopt = "+";
+         if (!palette.fAxis.fNdiv) palette.fAxis.fNdiv = 12;
+         if (!palette.fAxis.fLabelOffset) palette.fAxis.fLabelOffset = 0.005;
+      }
+
       painter.z_handle = new JSROOT.TAxisPainter(palette.fAxis, true);
       painter.z_handle.SetDivId(divid, -1);
 
@@ -1509,12 +1516,10 @@
          if (contour && framep) {
             zmin = Math.min(contour[0], framep.zmin);
             zmax = Math.max(contour[contour.length-1], framep.zmax);
-         } else
-         if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
+         } else if ((main.gmaxbin!==undefined) && (main.gminbin!==undefined)) {
             // this is case of TH2 (needs only for size adjustment)
             zmin = main.gminbin; zmax = main.gmaxbin;
-         } else
-         if ((main.hmin!==undefined) && (main.hmax!==undefined)) {
+         } else if ((main.hmin!==undefined) && (main.hmax!==undefined)) {
             // this is case of TH1
             zmin = main.hmin; zmax = main.hmax;
          }
@@ -3245,11 +3250,6 @@
          this.AddFunction(pal, true);
 
          can_move = true;
-      } else if (pal.fAxis) {
-         // check some default values of TGaxis object
-         if (!pal.fAxis.fChopt) pal.fAxis.fChopt = "+";
-         if (!pal.fAxis.fNdiv) pal.fAxis.fNdiv = 12;
-         if (!pal.fAxis.fLabelOffset) pal.fAxis.fLabelOffset = 0.005;
       }
 
       var frame_painter = this.frame_painter();
