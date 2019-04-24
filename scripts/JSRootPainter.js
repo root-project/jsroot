@@ -3370,7 +3370,7 @@
          delete this._selected_main;
       }
 
-      if (!is_main) is_main = 0;
+      if (!is_main || isNaN(is_main)) is_main = 0;
 
       // check if element really exists
       if ((is_main >= 0) && this.select_main(true).empty()) {
@@ -3415,7 +3415,7 @@
 
       var pp = svg_p.property('pad_painter');
       if (pp && (pp !== this))
-          pp.painters.push(this);
+         pp.painters.push(this);
 
       if (((is_main === 1) || (is_main === 4) || (is_main === 5)) && !svg_p.property('mainpainter'))
          // when this is first main painter in the pad
