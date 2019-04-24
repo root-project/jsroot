@@ -5936,7 +5936,7 @@
    JSROOT.addDrawFunc({ name: "RooPlot", icon: "img_canvas", prereq: "more2d", func: "JSROOT.Painter.drawRooPlot" });
    JSROOT.addDrawFunc({ name: "TMultiGraph", icon: "img_mgraph", prereq: "more2d", func: "JSROOT.Painter.drawMultiGraph", expand_item: "fGraphs" });
    JSROOT.addDrawFunc({ name: "TStreamerInfoList", icon: 'img_question', prereq: "hierarchy",  func: "JSROOT.Painter.drawStreamerInfo" });
-   JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "v6;hist", func: "JSROOT.Painter.drawPaletteAxis" });
+   JSROOT.addDrawFunc({ name: "TPaletteAxis", icon: "img_colz", prereq: "v6;hist", func: "JSROOT.Painter.drawPave" });
    JSROOT.addDrawFunc({ name: "TWebPainting", icon: "img_graph", prereq: "more2d", func: "JSROOT.Painter.drawWebPainting" });
    JSROOT.addDrawFunc({ name: "TCanvasWebSnapshot", icon: "img_canvas", prereq: "v6", func: "JSROOT.Painter.drawPadSnapshot" });
    JSROOT.addDrawFunc({ name: "TPadWebSnapshot", sameas: "TCanvasWebSnapshot" });
