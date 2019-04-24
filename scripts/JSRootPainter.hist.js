@@ -560,7 +560,7 @@
 
    // ============================================================
 
-   // base class for all objects, derived from TPave
+   // painter class for objects, derived from TPave
    function TPavePainter(pave) {
       JSROOT.TObjectPainter.call(this, pave);
       this.Enabled = true;
@@ -754,6 +754,7 @@
       }
 
       var pave = this.GetObject();
+
       if (pave && pave.fInit) {
          res.fcust = "pave";
          res.fopt = [pave.fX1NDC,pave.fY1NDC,pave.fX2NDC,pave.fY2NDC];
@@ -1335,12 +1336,18 @@
       return true;
    }
 
+   TPavePainter.prototype.IsDummyPos = function(p) {
+      if (!p) return true;
+
+      return !p.fInit && !p.fX1 && !p.fX2 && !p.fY1 && !p.fY2 && !p.fX1NDC && !p.fX2NDC && !p.fY1NDC && !p.fY2NDC;
+   }
+
    TPavePainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
       var pave = this.GetObject();
 
-      if (!pave.modified_NDC) {
+      if (!pave.modified_NDC && !this.IsDummyPos(obj)) {
          // if position was not modified interactively, update from source object
 
          if (this.stored && !obj.fInit && (this.stored.fX1 == obj.fX1)
@@ -1413,9 +1420,9 @@
 
       if ((pave.fName === "title") && (pave._typename === "TPaveText")) {
          var tpainter = painter.FindPainterFor(null, "title");
-         if (tpainter && (tpainter !== painter))
+         if (tpainter && (tpainter !== painter)) {
             tpainter.DeleteThis();
-         else if ((opt == "postitle") || (!pave.fInit && !pave.fX1 && !pave.fX2 && !pave.fY1 && !pave.fY2)) {
+         } else if ((opt == "postitle") || painter.IsDummyPos(pave)) {
             var st = JSROOT.gStyle, fp = painter.frame_painter();
             if (st && fp) {
                var midx = st.fTitleX, y2 = st.fTitleY, w = st.fTitleW, h = st.fTitleH;
