@@ -3806,6 +3806,8 @@
    /** Collects pad information for TWebCanvas, need to update different states */
    TPadPainter.prototype.GetWebPadOptions = function(arg) {
       var is_top = (arg === undefined), elem = null, scan_subpads = true;
+      // no any options need to be collected in readonly mode
+      if (is_top && this._readonly) return "";
       if (arg === "only_this") { is_top = true; scan_subpads = false; }
       if (is_top) arg = [];
 
@@ -4601,17 +4603,13 @@
       } else if (msg.substr(0,6)=='SNAP6:') {
          // This is snapshot, produced with ROOT6
 
-         msg = msg.substr(6);
-         var p1 = msg.indexOf(":"),
-             snapid = msg.substr(0,p1),
-             snap = JSROOT.parse(msg.substr(p1+1)),
-             pthis = this;
+         var snap = JSROOT.parse(msg.substr(6)), pthis = this;
 
          this.RedrawPadSnap(snap, function() {
             pthis.CompeteCanvasSnapDrawing();
             var ranges = pthis.GetWebPadOptions(); // all data, including subpads
             if (ranges) ranges = ":" + ranges;
-            handle.Send("READY6:" + snapid + ranges); // send ready message back when drawing completed
+            handle.Send("READY6:" + snap.fVersion + ranges); // send ready message back when drawing completed
          });
       } else if (msg.substr(0,5)=='MENU:') {
          // this is menu with exact identifier for object
