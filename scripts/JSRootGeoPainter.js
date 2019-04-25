@@ -2324,6 +2324,13 @@
 
             nshapes += JSROOT.GEO.CountNumShapes(painter._clones.GetNodeShape(node.id));
 
+            // for debugginf - search if there some TGeoHalfSpace
+            //if (JSROOT.GEO.HalfSpace) {
+            //    var entry = this.CopyStack();
+            //    var res = painter._clones.ResolveStack(entry.stack);
+            //    console.log('SAW HALF SPACE', res.name);
+            //    JSROOT.GEO.HalfSpace = false;
+            //}
             return true;
          }
       };

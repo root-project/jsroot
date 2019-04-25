@@ -108,7 +108,7 @@
     * @memberOf JSROOT.GEO */
    JSROOT.GEO.CountNumShapes = function(shape) {
       if (!shape) return 0;
-      if (shape._typename=="TGeoHalfSpace") JSROOT.GEO.HalfSpace = true;
+      // if (shape._typename=="TGeoHalfSpace") JSROOT.GEO.HalfSpace = true;
       if (shape._typename!=='TGeoCompositeShape') return 1;
       return JSROOT.GEO.CountNumShapes(shape.fNode.fLeft) + JSROOT.GEO.CountNumShapes(shape.fNode.fRight);
    }
@@ -1636,7 +1636,6 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
-
       /*
       if ((faces_limit === -1) || (faces_limit === 0))  {
          var cnt = JSROOT.GEO.CountNumShapes(shape);
@@ -1664,7 +1663,7 @@
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
-      // seems to be, IE has smaller stack for functions calls and ThreeCSG fails with large shapes
+      // seems to be, IE has smaller stack for functions calls and ThreeCSG fails with larger shapes
       if (faces_limit === 0) faces_limit = (JSROOT.browser && JSROOT.browser.isIE) ? 2000 : 4000;
                         else return_bsp = true;
 
@@ -1674,7 +1673,12 @@
       if (matrix2 && (matrix2.determinant() < -0.9))
          JSROOT.GEO.warn('Axis reflections in right composite shape - not supported');
 
-      geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit);
+      if (shape.fNode.fLeft._typename == "TGeoHalfSpace") {
+         geom1 = JSROOT.GEO.createHalfSpace(shape.fNode.fLeft);
+      } else {
+         geom1 = JSROOT.GEO.createGeometry(shape.fNode.fLeft, faces_limit);
+      }
+
       if (!geom1) return null;
 
       var n1 = JSROOT.GEO.numGeometryFaces(geom1), n2 = 0;
@@ -1828,41 +1832,46 @@
    JSROOT.GEO.createHalfSpace = function(shape, geom) {
       if (!shape || !shape.fN || !shape.fP) return null;
 
+      // shape.fP = [0,0,15]; shape.fN = [0,1,1];
+
       var vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
 
       var normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
       normal.normalize();
 
-      var sz = 1e6;
+      var sz = 1e10;
       if (geom) {
+         // using real size of other geometry, we probably improve precision
          var box = JSROOT.GEO.geomBoundingBox(geom);
          if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
       }
 
+      // console.log('normal', normal, 'vertex', vertex, 'size', sz);
+
       var v1 = new THREE.Vector3(-sz, -sz/2, 0),
           v2 = new THREE.Vector3(0, sz, 0),
           v3 = new THREE.Vector3(sz, -sz/2, 0),
-          v4 = new THREE.Vector3(0, 0, sz);
+          v4 = new THREE.Vector3(0, 0, -sz);
 
       var geometry = new THREE.Geometry();
 
       geometry.vertices.push(v1, v2, v3, v4);
 
-      geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+      geometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
       geometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
       geometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
       geometry.faces.push( new THREE.Face3( 2, 0, 3 ) );
 
-      geometry.computeBoundingSphere();
-
       geometry.lookAt(normal);
-
-      geometry.computeBoundingSphere();
       geometry.computeFaceNormals();
 
-      /*
+      v1.add(vertex);
+      v2.add(vertex);
+      v3.add(vertex);
+      v4.add(vertex);
 
-      // it suppose to be top corenr of thetraeder
+      /*
+      // it suppose to be top corner of tetrahedron
       var v0 = vertex.clone().addScaledVector(normal, sz);
 
       // plane to verify our calculations
@@ -1870,20 +1879,17 @@
 
       // translate all vertices and plane
       plane.translate(vertex);
-      v1.add(vertex);
-      v2.add(vertex);
-      v3.add(vertex);
-      v4.add(vertex);
 
-      console.log('Distance to fP', plane.distanceToPoint(vertex));
-      console.log('Distance to v0', plane.distanceToPoint(v0), sz);
-      console.log('Distance to v1', plane.distanceToPoint(v1), sz);
-      console.log('Distance to v2', plane.distanceToPoint(v2), sz);
-      console.log('Distance to v3', plane.distanceToPoint(v3), sz);
-      console.log('Distance to v4', plane.distanceToPoint(v4), sz);
-      console.log('Distoance v0 to v4', v0.distanceTo(v4), sz);
+      console.log('Distance plane to fP', plane.distanceToPoint(vertex), "expect 0");
+      console.log('Distance plane to v0', plane.distanceToPoint(v0), "expect", sz);
+      console.log('Distance plane to v1', plane.distanceToPoint(v1), "expect 0");
+      console.log('Distance plane to v2', plane.distanceToPoint(v2), "expect 0");
+      console.log('Distance plane to v3', plane.distanceToPoint(v3), "expect 0");
+      console.log('Distance plane to v4', plane.distanceToPoint(v4), "expect", sz);
+      console.log('Distoance v0 to v4', v0.distanceTo(v4), "expect 0");
       */
 
+      // return null;
       return geometry;
    }
 

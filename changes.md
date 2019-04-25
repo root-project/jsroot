@@ -3,23 +3,24 @@
 ## Changes in dev
 1. Add support of TProfile2Poly class
 2. Add support of TGeoOverlap class, provide access from TGeoManager
-3. Implement TF2 drawings update, see tutorials/graphics/anim.C
-4. Improve windows handling in flex(ible) layout
-5. Better position for text in TH2Poly drawings
-6. Enable projections drawing also with TH2 lego plots
-7. Use gStyle attributes to draw histogram title
-8. Use requestAnimationFrame when do monitoring, improves performance
-9. Support eve7 geometry viewer - render data generated in ROOT itself
-10. Many adjustment with new TWebCanvas - interactivity, attributes/position updates
-11. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
-12. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
-13. Upgrade d3.js 4.4.4 -> 5.7.0
-14. Use d3.js and three.js from npm when running with node.js
-15. Fix - support clipping for tracks and points in geo painter
-16. Fix - drawing of TGeoNode with finder
-17. Fix - key press events processed only in active pad (ROOT-9128)
-18. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
-19. Move most of ui5-specific code into ROOT repository, where it will be maintained
+3. Add support of TGeoHalfSpace for composites
+4. Implement TF2 drawings update, see tutorials/graphics/anim.C
+5. Improve windows handling in flex(ible) layout
+6. Better position for text in TH2Poly drawings
+7. Enable projections drawing also with TH2 lego plots
+8. Use gStyle attributes to draw histogram title
+9. Use requestAnimationFrame when do monitoring, improves performance
+10. Support eve7 geometry viewer - render data generated in ROOT itself
+11. Many adjustment with new TWebCanvas - interactivity, attributes/position updates
+12. Provide initial WebVR support (#176), thanks to Diego Marcos (@dmarcos)
+13. Upgrade three.js 86 -> 102, use SoftwareRenderer instead of CanvasRenderer
+14. Upgrade d3.js 4.4.4 -> 5.7.0
+15. Use d3.js and three.js from npm when running with node.js
+16. Fix - support clipping for tracks and points in geo painter
+17. Fix - drawing of TGeoNode with finder
+18. Fix - key press events processed only in active pad (ROOT-9128)
+19. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
+20. Move most of ui5-specific code into ROOT repository, where it will be maintained
 
 
 ## Changes in 5.6.4
