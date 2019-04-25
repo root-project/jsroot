@@ -3964,10 +3964,10 @@
          if (!canvp._getmenu_callback) return;
          delete canvp._getmenu_callback;
 
-         if (_reqid !== reply.fId)
+         if (reply && (_reqid !== reply.fId))
             console.error('missmatch between request ' + _reqid + ' and reply ' + reply.fId + ' identifiers');
 
-         var items = reply.fItems;
+         var items = reply ? reply.fItems : null;
 
          if (items && items.length) {
             _menu.add("separator");
