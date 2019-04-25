@@ -3740,6 +3740,35 @@
 
       var isanyfound = false, isanyremove = false;
 
+      // check if frame or title was recreated, we could reassign handlers for them directly
+
+      function MatchPrimitive(painters, primitives, class_name, obj_name) {
+         var painter, primitive;
+         for (var k=0;k<painters.length;++k) {
+            if (painters[k].snapid === undefined) continue;
+            if (!painters[k].MatchObjectType(class_name)) continue;
+            if (obj_name && (!painters[k].GetObject() || (painters[k].GetObject().fName !== obj_name))) continue;
+            painter = painters[k];
+            break;
+         }
+         if (!painter) return;
+         for (var k=0;k<primitives.length;++k) {
+            if ((primitives[k].fKind !== 1) || !primitives[k].fSnapshot || (primitives[k].fSnapshot._typename !== class_name)) continue;
+            if (obj_name && (primitives[k].fSnapshot.fName !== obj_name)) continue;
+            primitive = primitives[k];
+            break;
+         }
+         if (!primitive) return;
+
+         // force painter to use new object id
+         if (painter.snapid !== primitive.fObjectID)
+            painter.snapid = primitive.fObjectID;
+      }
+
+      // while this is temporary objects, which can be recreated very often, try to catch such situation ourselfs
+      MatchPrimitive(this.painters, snap.fPrimitives, "TFrame");
+      MatchPrimitive(this.painters, snap.fPrimitives, "TPaveText", "title");
+
       // find and remove painters which no longer exists in the list
       for (var k=0;k<this.painters.length;++k) {
          var sub = this.painters[k];
@@ -3749,7 +3778,7 @@
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
 
          if (sub) {
-            // console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.GetObject()._typename);
+            console.log('Remove painter' + k + ' from ' + this.painters.length + ' ' + sub.GetObject()._typename);
             // remove painter which does not found in the list of snaps
             this.painters.splice(k--,1);
             sub.Cleanup(); // cleanup such painter
