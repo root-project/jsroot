@@ -3935,19 +3935,26 @@
 
       function DoExecMenu(arg) {
          var execp = this.exec_painter || this,
-             canvp = execp.canv_painter(),
+             cp = execp.canv_painter(),
              item = execp.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
 
-         if (typeof canvp.executeObjectMethod == 'function')
-            if (canvp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
+         // this is special entry, produced by TWebMenuItem, which recognizes editor entries itself
+         if (item.fExec == "Show:Editor") {
+            if (cp && (typeof cp.ActivateGed == 'function'))
+               cp.ActivateGed(execp);
+            return;
+         }
+
+         if (cp && (typeof cp.executeObjectMethod == 'function'))
+            if (cp.executeObjectMethod(execp, item, execp.args_menu_id)) return;
 
          if (execp.ExecuteMenuCommand(item)) return;
 
-         if (canvp._websocket && execp.args_menu_id) {
+         if (cp._websocket && execp.args_menu_id && !cp._readonly) {
             console.log('execute method ' + item.fExec + ' for object ' + execp.args_menu_id);
-            canvp.SendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + item.fExec);
+            cp.SendWebsocket('OBJEXEC:' + execp.args_menu_id + ":" + item.fExec);
          }
       }
 
