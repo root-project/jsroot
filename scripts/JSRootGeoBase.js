@@ -1683,11 +1683,11 @@
       if (n1 < faces_limit) {
 
          if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
-            var box = JSROOT.GEO.geomBoundingBox(geom1);
-            console.log('Building half space???', box);
+            geom2 = JSROOT.GEO.createHalfSpace(shape.fNode.fRight, geom1);
+         } else {
+            geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit);
          }
 
-         geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit);
          n2 = JSROOT.GEO.numGeometryFaces(geom2);
       }
 
@@ -1763,8 +1763,7 @@
       return bsp2.toBufferGeometry();
    }
 
-   /**
-    * Creates geometry model for the provided shape
+   /** Creates geometry model for the provided shape
     * @memberOf JSROOT.GEO
     *
     * If @par limit === 0 (or undefined) returns THREE.BufferGeometry
@@ -1820,6 +1819,72 @@
       }
 
       return limit < 0 ? 0 : null;
+   }
+
+   /** Creates half-space geometry for given shape
+    * Just big-enough triangle to make BSP calculations
+    * @memberOf JSROOT.GEO */
+
+   JSROOT.GEO.createHalfSpace = function(shape, geom) {
+      if (!shape || !shape.fN || !shape.fP) return null;
+
+      var vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
+
+      var normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
+      normal.normalize();
+
+      var sz = 1e6;
+      if (geom) {
+         var box = JSROOT.GEO.geomBoundingBox(geom);
+         if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
+      }
+
+      var v1 = new THREE.Vector3(-sz, -sz/2, 0),
+          v2 = new THREE.Vector3(0, sz, 0),
+          v3 = new THREE.Vector3(sz, -sz/2, 0),
+          v4 = new THREE.Vector3(0, 0, sz);
+
+      var geometry = new THREE.Geometry();
+
+      geometry.vertices.push(v1, v2, v3, v4);
+
+      geometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+      geometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
+      geometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
+      geometry.faces.push( new THREE.Face3( 2, 0, 3 ) );
+
+      geometry.computeBoundingSphere();
+
+      geometry.lookAt(normal);
+
+      geometry.computeBoundingSphere();
+      geometry.computeFaceNormals();
+
+      /*
+
+      // it suppose to be top corenr of thetraeder
+      var v0 = vertex.clone().addScaledVector(normal, sz);
+
+      // plane to verify our calculations
+      var plane = new THREE.Plane(normal);
+
+      // translate all vertices and plane
+      plane.translate(vertex);
+      v1.add(vertex);
+      v2.add(vertex);
+      v3.add(vertex);
+      v4.add(vertex);
+
+      console.log('Distance to fP', plane.distanceToPoint(vertex));
+      console.log('Distance to v0', plane.distanceToPoint(v0), sz);
+      console.log('Distance to v1', plane.distanceToPoint(v1), sz);
+      console.log('Distance to v2', plane.distanceToPoint(v2), sz);
+      console.log('Distance to v3', plane.distanceToPoint(v3), sz);
+      console.log('Distance to v4', plane.distanceToPoint(v4), sz);
+      console.log('Distoance v0 to v4', v0.distanceTo(v4), sz);
+      */
+
+      return geometry;
    }
 
    /** Provides info about geo object, used for tooltip info */
