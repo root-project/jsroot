@@ -93,20 +93,22 @@
       console.warn(msg);
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** @brief Returns kind of the geo node
+    *  @desc  0 - TGeoNode
+    *         1 - TEveGeoNode
+    *        -1 - unsupported
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.NodeKind = function(obj) {
-      // return kind of the geo nodes
-      // 0 - TGeoNode
-      // 1 - TEveGeoNode
-      // -1 - unsupported type
-
       if ((obj === undefined) || (obj === null) || (typeof obj !== 'object')) return -1;
-
       return ('fShape' in obj) && ('fTrans' in obj) ? 1 : 0;
    }
 
+   /** @brief Returns number of shapes
+    *  @desc Used to count total shapes number in composites
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.CountNumShapes = function(shape) {
       if (!shape) return 0;
+      if (shape._typename=="TGeoHalfSpace") JSROOT.GEO.HalfSpace = true;
       if (shape._typename!=='TGeoCompositeShape') return 1;
       return JSROOT.GEO.CountNumShapes(shape.fNode.fLeft) + JSROOT.GEO.CountNumShapes(shape.fNode.fRight);
    }
@@ -1679,6 +1681,12 @@
       if (geom1._exceed_limit) n1 += faces_limit;
 
       if (n1 < faces_limit) {
+
+         if (shape.fNode.fRight._typename == "TGeoHalfSpace") {
+            var box = JSROOT.GEO.geomBoundingBox(geom1);
+            console.log('Building half space???', box);
+         }
+
          geom2 = JSROOT.GEO.createGeometry(shape.fNode.fRight, faces_limit);
          n2 = JSROOT.GEO.numGeometryFaces(geom2);
       }
@@ -1796,6 +1804,9 @@
                   res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
                return res;
             }
+            case "TGeoHalfSpace":
+               if (limit < 0) return 1; // half space if just plane used in composite
+               // no break here - warning should appear
             default: JSROOT.GEO.warn('unsupported shape type ' + shape._typename);
          }
       } catch(e) {
@@ -1989,7 +2000,9 @@
       return false;
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** Returns number of faces for provided geometry
+    * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryFaces = function(geom) {
       if (!geom) return 0;
 
@@ -2002,12 +2015,15 @@
       }
 
       // special array of polygons
-      if (geom && geom.polygons) return geom.polygons.length;
+      if (geom.polygons)
+         return geom.polygons.length;
 
       return geom.faces.length;
    }
 
-   /** @memberOf JSROOT.GEO */
+   /** Returns number of faces for provided geometry
+    * @param geom  - can be THREE.Geometry, THREE.BufferGeometry, ThreeBSP.Geometry or interim array of polygons
+    * @memberOf JSROOT.GEO */
    JSROOT.GEO.numGeometryVertices = function(geom) {
       if (!geom) return 0;
 
@@ -2019,9 +2035,37 @@
          return attr ? attr.count : 0;
       }
 
-      if (geom && geom.polygons) return geom.polygons.length * 4;
+      if (geom.polygons)
+         return geom.polygons.length * 4;
 
       return geom.vertices.length;
+   }
+
+   /** Returns bounding box
+    * @memberOf JSROOT.GEO */
+   JSROOT.GEO.geomBoundingBox = function(geom) {
+      if (!geom) return null;
+
+      var polygons = null;
+
+      if (geom instanceof ThreeBSP.Geometry)
+         polygons = geom.tree.collectPolygons([]);
+      else if (geom.polygons)
+         polygons = geom.polygons;
+
+      if (polygons!==null) {
+         var box = new THREE.Box3();
+         for (var n=0;n<polygons.length;++n) {
+            var polygon = polygons[n], nvert = polygon.vertices.length;
+            for (var k=0;k<nvert;++k)
+               box.expandByPoint(polygon.vertices[k]);
+         }
+         return box;
+      }
+
+      if (!geom.boundingBox) geom.computeBoundingBox();
+
+      return geom.boundingBox.clone();
    }
 
    /** Compares two stacks. Returns length where stacks are the same
@@ -2767,11 +2811,10 @@
       arg.func = function(node) {
          if (node.sortid < sortidcut) {
             this.items.push(this.CopyStack());
-         } else
-         if ((camVol >= 0) && (node.vol > camVol))
-            if (this.frustum.CheckShape(this.getmatrix(), node)) {
+         } else if ((camVol >= 0) && (node.vol > camVol)) {
+            if (this.frustum.CheckShape(this.getmatrix(), node))
                this.items.push(this.CopyStack(camFact));
-            }
+         }
          return true;
       }
 
