@@ -4020,20 +4020,27 @@
 
    /** @summary Produce exec string for WebCanas to set color value
     * @desc Color can be id or string, but should belong to list of known colors
+    * For higher color numbers TColor::GetColor(r,g,b) will be invoked to ensure color is exists
     * @private */
    TObjectPainter.prototype.GetColorExec = function(col, method) {
-      var id = -1;
+      var id = -1, arr = JSROOT.Painter.root_colors;
       if (typeof col == "string") {
          if (!col || (col == "none")) id = 0; else
-         for (var k=1;k<JSROOT.Painter.root_colors.length;++k)
-            if (JSROOT.Painter.root_colors[k] == col) {
-               id = k; break
-            }
-      } else if (!isNaN(col) && JSROOT.Painter.root_colors[col]) {
+         for (var k=1;k<arr.length;++k)
+            if (arr[k] == col) { id = k; break; }
+      } else if (!isNaN(col) && arr[col]) {
          id = col;
       }
 
-      return (id < 0) ? "" : "exec:" + method + "(" + id + ")";
+      if (id < 0) return "";
+
+      if (id >= 50) {
+         // for higher color numbers ensure that such color exists
+         var c = d3.color(arr[id]);
+         id = "TColor::GetColor(" + c.r + "," + c.g + "," + c.b + ")";
+      }
+
+      return "exec:" + method + "(" + id + ")";
    }
 
    /** @summary Fill context menu for graphical attributes
@@ -4050,7 +4057,7 @@
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); });
+                          function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -4090,7 +4097,7 @@
       if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }, this.fillatt.kind);
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
          menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
@@ -4132,7 +4139,7 @@
                 svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,8) + "'></path></svg>";
 
             menu.addchk(this.markeratt.style == supported[n], svg, supported[n],
-                     function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + parseInt(arg) + ")"); }.bind(this));
+                     function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -4149,7 +4156,7 @@
 
       menu.add("sub:" + (prefix ? prefix : "Text"));
       this.AddColorMenuEntry(menu, "color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); });
+            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
 
       var align = [11, 12, 13, 21, 22, 23, 31, 32, 33],
           hnames = ['left', 'centered' , 'right'],
@@ -4160,14 +4167,14 @@
          menu.addchk(align[n] == obj.fTextAlign,
                   align[n], align[n],
                   // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
-                  function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(); }.bind(this));
+                  function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign("+arg+")"); }.bind(this));
       }
       menu.add("endsub:");
 
       menu.add("sub:font");
       for (var n=1; n<16; ++n) {
          menu.addchk(n == Math.floor(obj.fTextFont/10), n, n,
-                  function(arg) { this.GetObject().fTextFont = parseInt(arg)*10+2; this.InteractiveRedraw(); }.bind(this));
+                  function(arg) { this.GetObject().fTextFont = parseInt(arg)*10+2; this.InteractiveRedraw(true, "exec:SetTextFont("+this.GetObject().fTextFont+")"); }.bind(this));
       }
       menu.add("endsub:");
 
