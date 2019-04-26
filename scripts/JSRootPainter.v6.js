@@ -3511,8 +3511,13 @@
 
          if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
             // keep snap id in painter, will be used for the
-            if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
+            var pi = this.painters.indexOf(objpainter);
+            if (pi<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
+            if (objpainter.$primary && (pi>0) && this.painters[pi-1].$secondary) {
+               this.painters[pi-1].snapid = objpainter.snapid + "#hist";
+               console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
+            }
          }
 
          objpainter = null;
