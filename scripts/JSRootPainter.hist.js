@@ -1744,7 +1744,7 @@
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: -1111, maximum: -1111 });
+              minimum: -1111, maximum: -1111, ymin:0, ymax:0 });
    }
 
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
@@ -1763,8 +1763,13 @@
       this.PadTitle = d.check("USE_PAD_TITLE");
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
+      // this is zooming of histo content
       if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;
       if (d.check('MAXIMUM:', true)) this.maximum = parseFloat(d.part); else this.maximum = histo.fMaximum;
+      // this is actual range of data - used by graph drawing
+      if (d.check('YMIN:', true)) this.ymin = parseFloat(d.part);
+      if (d.check('YMAX:', true)) this.ymax = parseFloat(d.part);
+
 
       if (d.check('NOOPTIMIZE')) this.Optimize = 0;
       if (d.check('OPTIMIZE')) this.Optimize = 2;
@@ -3549,11 +3554,10 @@
 
       this.ymin_nz = hmin_nz; // value can be used to show optimal log scale
 
-      if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300 && Math.abs(hmax) < 1e-300))) {
+      if ((this.nbinsx == 0) || ((Math.abs(hmin) < 1e-300) && (Math.abs(hmax) < 1e-300)))
          this.draw_content = false;
-         hmin = this.ymin;
-         hmax = this.ymax;
-      }
+
+      var set_zoom = false, set_zoom2 = false;
 
       if (this.draw_content) {
          if (hmin >= hmax) {
@@ -3566,6 +3570,10 @@
             if ((this.ymin < 0) && (hmin >= 0)) this.ymin = 0;
             this.ymax = hmax + dy;
          }
+      } else if (this.options.ymin !== this.options.ymax) {
+         this.ymin = this.options.ymin;
+         this.ymax = this.options.ymax;
+         set_zoom2 = true;
       }
 
       hmin = this.options.minimum;
@@ -3579,8 +3587,7 @@
          }
       }
 
-      var set_zoom = false;
-      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content) {
+      if ((hmin != -1111) && (hmax != -1111) && !this.draw_content && !set_zoom2) {
          this.ymin = hmin;
          this.ymax = hmax;
       } else {
@@ -3593,7 +3600,7 @@
       }
 
       if (!when_axis_changed) {
-         if (set_zoom && this.draw_content) {
+         if (set_zoom && (this.draw_content || set_zoom2)) {
             this.zoom_ymin = (hmin == -1111) ? this.ymin : hmin;
             this.zoom_ymax = (hmax == -1111) ? this.ymax : hmax;
          } else {
