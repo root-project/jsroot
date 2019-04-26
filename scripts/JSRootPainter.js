@@ -3542,7 +3542,7 @@
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
     * @desc Use to catch such action by GED
     * @private */
-   TObjectPainter.prototype.InteractiveRedraw = function(arg, info) {
+   TObjectPainter.prototype.InteractiveRedraw = function(arg, info, subelem) {
 
       if (arg == "pad") {
          this.RedrawPad();
@@ -3558,13 +3558,13 @@
 
       // inform GED that something changes
       var pp = this.pad_painter();
-      if (pp && pp.InteractiveObjectRedraw)
+      if (pp && (typeof pp.InteractiveObjectRedraw == 'function'))
          pp.InteractiveObjectRedraw(this);
 
       // inform server that drawopt changes
       var canp = this.canv_painter();
-      if (canp && canp.ProcessChanges)
-         canp.ProcessChanges(info, this);
+      if (canp && (typeof canp.ProcessChanges == 'function'))
+         canp.ProcessChanges(info, this, subelem);
    }
 
    /** @summary Redraw all objects in correspondent pad */
@@ -4033,7 +4033,7 @@
          id = col;
       }
 
-      return id < 0 ? "" : "exec:" + method + "(" + id + ")";
+      return (id < 0) ? "" : "exec:" + method + "(" + id + ")";
    }
 
    /** @summary Fill context menu for graphical attributes
@@ -4050,7 +4050,7 @@
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
                                function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
+                          function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); });
          menu.add("sub:style", function() {
             var id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -4090,7 +4090,7 @@
       if (this.fillatt && this.fillatt.used) {
          menu.add("sub:"+preffix+"Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
+               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }, this.fillatt.kind);
          menu.add("sub:style", function() {
             var id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
@@ -4149,7 +4149,7 @@
 
       menu.add("sub:" + (prefix ? prefix : "Text"));
       this.AddColorMenuEntry(menu, "color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(); }.bind(this));
+            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); });
 
       var align = [11, 12, 13, 21, 22, 23, 31, 32, 33],
           hnames = ['left', 'centered' , 'right'],
