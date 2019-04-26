@@ -1847,7 +1847,7 @@
       var main = this.frame_painter();
       if (!main) return false;
 
-      if ((this.xmin===this.xmax) && (this.ymin = this.ymax)) return false;
+      if ((this.xmin===this.xmax) && (this.ymin===this.ymax)) return false;
 
       main.Zoom(this.xmin, this.xmax, this.ymin, this.ymax);
 
