@@ -1333,28 +1333,34 @@
             pave.fY2NDC = JSROOT.gStyle.fStatY;
             pave.fY1NDC = pave.fY2NDC - JSROOT.gStyle.fStatH;
             pave.fInit = 1;
-            this.Redraw();
+            this.InteractiveRedraw(true, "pave_moved")
          });
 
          menu.add("SetStatFormat", function() {
             var fmt = prompt("Enter StatFormat", pave.fStatFormat);
-            if (fmt!=null) {
+            if (fmt) {
                pave.fStatFormat = fmt;
-               this.Redraw();
+               this.InteractiveRedraw(true, 'exec:SetStatFormat("'+fmt+'")');
             }
          });
          menu.add("SetFitFormat", function() {
             var fmt = prompt("Enter FitFormat", pave.fFitFormat);
-            if (fmt!=null) {
+            if (fmt) {
                pave.fFitFormat = fmt;
-               this.Redraw();
+               this.InteractiveRedraw(true, 'exec:SetFitFormat("'+fmt+'")');
             }
          });
          menu.add("separator");
          menu.add("sub:SetOptStat", function() {
             // todo - use jqury dialog here
             var fmt = prompt("Enter OptStat", pave.fOptStat);
-            if (fmt!=null) { pave.fOptStat = parseInt(fmt); this.Redraw(); }
+            if (fmt) {
+               fmt = parseInt(fmt);
+               if (!isNaN(fmt) && (fmt>=0)) {
+                  pave.fOptStat = parseInt(fmt);
+                  this.InteractiveRedraw(true, "exec:SetOptStat("+fmt+")");
+               }
+            }
          });
          function AddStatOpt(pos, name) {
             var opt = (pos<10) ? pave.fOptStat : pave.fOptFit;
@@ -1363,9 +1369,13 @@
                var newopt = (arg % 100 < 10) ? pave.fOptStat : pave.fOptFit;
                var oldopt = parseInt(arg / 100);
                newopt -= (oldopt>0 ? oldopt : -1) * parseInt(Math.pow(10, arg % 10));
-               if (arg % 100 < 10) pave.fOptStat = newopt;
-               else pave.fOptFit = newopt;
-               this.Redraw();
+               if (arg % 100 < 10) {
+                  pave.fOptStat = newopt;
+                  this.InteractiveRedraw(true, "exec:SetOptStat("+newopt+")");
+               } else {
+                  pave.fOptFit = newopt;
+                  this.InteractiveRedraw(true, "exec:SetOptFit("+newopt+")");
+               }
             });
          }
 
@@ -1383,7 +1393,13 @@
          menu.add("sub:SetOptFit", function() {
             // todo - use jqury dialog here
             var fmt = prompt("Enter OptStat", pave.fOptFit);
-            if (fmt!=null) { pave.fOptFit = parseInt(fmt); this.Redraw(); }
+            if (fmt) {
+               fmt = parseInt(fmt);
+               if (!isNaN(fmt) && (fmt>=0)) {
+                  pave.fOptFit = fmt;
+                  this.InteractiveRedraw(true, "exec:SetOptFit("+fmt+")");
+               }
+            }
          });
          AddStatOpt(10, "Fit parameters");
          AddStatOpt(11, "Par errors");
@@ -1399,7 +1415,7 @@
             pave.fX2NDC = 0.72;
             pave.fY2NDC = 0.99;
             pave.fInit = 1;
-            this.Redraw();
+            this.InteractiveRedraw(true, "pave_moved");
          });
 
       if (this.UseTextColor)
