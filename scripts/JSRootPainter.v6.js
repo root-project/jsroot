@@ -3516,8 +3516,8 @@
             if (pi<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
             if (objpainter.$primary && (pi>0) && this.painters[pi-1].$secondary) {
-               this.painters[pi-1].$snapid = objpainter.snapid + "#hist";
-               console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].$snapid);
+               this.painters[pi-1].snapid = objpainter.snapid + "#hist";
+               console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
             }
          }
 
@@ -3778,7 +3778,7 @@
       // find and remove painters which no longer exists in the list
       for (var k=0;k<this.painters.length;++k) {
          var sub = this.painters[k];
-         if (sub.snapid===undefined) continue; // look only for painters with snapid
+         if ((sub.snapid===undefined) || sub.$secondary) continue; // look only for painters with snapid
 
          for (var i=0;i<snap.fPrimitives.length;++i)
             if (snap.fPrimitives[i].fObjectID === sub.snapid) { sub = null; isanyfound = true; break; }
@@ -3854,7 +3854,8 @@
                   gridx: this.pad.fGridx, gridy: this.pad.fGridy,
                   tickx: this.pad.fTickx, ticky: this.pad.fTicky,
                   mleft: this.pad.fLeftMargin, mright: this.pad.fRightMargin,
-                  mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin };
+                  mtop: this.pad.fTopMargin, mbottom: this.pad.fBottomMargin,
+                  zx1:0, zx2:0, zy1:0, zy2:0, zz1:0, zz2:0 };
 
          if (this.iscan) elem.bits = this.GetStatusBits();
 
@@ -3893,6 +3894,18 @@
       r.uy1 = r.py1 = r.ranges ? main.scale_ymin : 0;
       r.ux2 = r.px2 = r.ranges ? main.scale_xmax : 0;
       r.uy2 = r.py2 = r.ranges ? main.scale_ymax : 0;
+
+      if (main.zoom_xmin !== main.zoom_xmax) {
+         r.zx1 = main.zoom_xmin; r.zx2 = main.zoom_xmax;
+      }
+
+      if (main.zoom_ymin !== main.zoom_ymax) {
+         r.zy1 = main.zoom_ymin; r.zy2 = main.zoom_ymax;
+      }
+
+      if (main.zoom_zmin !== main.zoom_zmax) {
+         r.zz1 = main.zoom_zmin; r.zz2 = main.zoom_zmax;
+      }
 
       if (!r.ranges || p.empty()) return true;
 
