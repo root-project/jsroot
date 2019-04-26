@@ -1757,9 +1757,9 @@
 
       this.ndim = hdim || 1; // keep dimensions, used for now in GED
 
-      if (d.check("USE_PAD_STATS")) this.PadStats = true;
-      if (d.check("USE_PAD_PALETTE")) this.PadPalette = true;
-      if (d.check("USE_PAD_TITLE")) this.PadTitle = true;
+      this.PadStats = d.check("USE_PAD_STATS");
+      this.PadPalette = d.check("USE_PAD_PALETTE");
+      this.PadTitle = d.check("USE_PAD_TITLE");
 
       if (d.check('PAL', true)) this.Palette = d.partAsInt();
       if (d.check('MINIMUM:', true)) this.minimum = parseFloat(d.part); else this.minimum = histo.fMinimum;

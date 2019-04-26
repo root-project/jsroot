@@ -3377,7 +3377,8 @@
    TPadPainter.prototype.Redraw = function(resize) {
 
       // prevent redrawing
-      if (this._doing_pad_draw) return console.log('Prevent redrawing', this.pad.fName);
+      if (this._doing_pad_draw)
+         return console.log('Prevent redrawing', this.pad.fName);
 
       var showsubitems = true;
 
@@ -3515,8 +3516,8 @@
             if (pi<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
             if (objpainter.$primary && (pi>0) && this.painters[pi-1].$secondary) {
-               this.painters[pi-1].snapid = objpainter.snapid + "#hist";
-               console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
+               this.painters[pi-1].$snapid = objpainter.snapid + "#hist";
+               console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].$snapid);
             }
          }
 
@@ -3524,7 +3525,7 @@
 
          ++indx; // change to the next snap
 
-         if (!lst || indx >= lst.length) {
+         if (!lst || (indx >= lst.length)) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
             delete this._current_primitive_indx;

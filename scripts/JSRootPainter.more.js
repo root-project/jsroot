@@ -827,10 +827,15 @@
 
       if (!this.options) this.options = {};
 
-      JSROOT.extend(this.options, { Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
-                                   MainError: 1, Ends: 1, Axis: "", original: opt });
+      JSROOT.extend(this.options, {
+         Line: 0, Curve: 0, Rect: 0, Mark: 0, Bar: 0, OutRange: 0,  EF:0, Fill: 0, NoOpt: 0,
+         MainError: 1, Ends: 1, Axis: "", PadStats: false, PadTitle: false, original: opt
+       });
 
       var res = this.options;
+
+      res.PadStats = d.check("USE_PAD_STATS");
+      res.PadTitle = d.check("USE_PAD_TITLE");
 
       res._pfc = d.check("PFC");
       res._plc = d.check("PLC");
@@ -888,6 +893,8 @@
       } else if (res.Axis.indexOf("A")<0) {
          res.Axis = "AXIS," + res.Axis;
       }
+
+      if (res.PadTitle) res.Axis += ";USE_PAD_TITLE";
    }
 
    TGraphPainter.prototype.CreateBins = function() {
@@ -1813,7 +1820,7 @@
       graph.fNpoints = obj.fNpoints;
       this.CreateBins();
 
-      // if our own histogram was used as axis drawing, we need update histogram  as well
+      // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
          var main = this.main_painter(),
              fp = this.frame_painter();
@@ -1885,6 +1892,8 @@
       // do not create stats box when drawing canvas
       var pp = this.canv_painter();
       if (pp && pp.normal_canvas) return null;
+
+      if (this.options.PadStats) return null;
 
       this.create_stats = true;
 
