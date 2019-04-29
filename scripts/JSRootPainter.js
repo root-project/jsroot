@@ -4197,7 +4197,10 @@
                      .style('left', w)
                      .style('right', w);
 
-      JSROOT.draw(id, obj || this.GetObject(), 'inspect');
+      if (!obj || (typeof obj !== 'object') || !obj._typename)
+         obj = this.GetObject();
+
+      JSROOT.draw(id, obj, 'inspect');
    }
 
    /** @summary Fill context menu for the object
@@ -4211,7 +4214,8 @@
 
       this.FillAttContextMenu(menu);
 
-      if (menu.size()>0) menu.add('Inspect', this.ShowInspector);
+      if (menu.size() > 0)
+         menu.add('Inspect', this.ShowInspector);
 
       return menu.size() > 0;
    }
