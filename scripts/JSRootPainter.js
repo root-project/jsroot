@@ -3986,7 +3986,7 @@
                }
                if (lastclname != item.fClassName) {
                   lastclname = item.fClassName;
-                  _menu.add("sub:" + lastclname);
+                  _menu.add("sub:" + lastclname, undefined, null, "Context menu for class " + lastclname);
                }
 
                if ((item.fChecked === undefined) || (item.fChecked < 0))

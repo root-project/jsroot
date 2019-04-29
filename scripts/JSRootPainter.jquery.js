@@ -39,7 +39,7 @@
 
       var menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
-      menu.add = function(name, arg, func) {
+      menu.add = function(name, arg, func, title) {
          if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
 
          if (name.indexOf("header:")==0) {
@@ -50,6 +50,7 @@
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
 
          var item = "", close_tag = "</li>";
+         title = title ? " title='" + title + "'" : "";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
          if (typeof arg == 'function') { func = arg; arg = name;  }
@@ -63,7 +64,7 @@
          else if ($.ui.version.indexOf("1.11")==0)
             item += name;
          else
-            item = "<div>" + item + name + "</div>";
+            item = "<div" + title + ">" + item + name + "</div>";
 
          this.code += "<li cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
