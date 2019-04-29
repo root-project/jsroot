@@ -3914,7 +3914,7 @@
 
       if (method.fName == "Inspect") {
          // primitve inspector, keep it here
-         this.ShowInpsector();
+         this.ShowInspector();
          return true;
       }
 
@@ -4181,12 +4181,31 @@
       menu.add("endsub:");
    }
 
-   /** @symmary Show object in inspector */
-   TObjectPainter.prototype.ShowInpsector = function() {
-      JSROOT.draw(this.divid, this.GetObject(), 'inspect');
+   /** @summary Show object in inspector */
+   TObjectPainter.prototype.ShowInspector = function() {
+      var main = this.select_main();
+
+      var rect = this.get_visible_rect(main);
+
+      var w = Math.round(rect.width*0.05) + "px",
+          h = Math.round(rect.height*0.05) + "px",
+          id = "root_inspector_" + JSROOT.id_counter++;
+
+      var cont = main.append("div")
+                     .attr("id", id)
+                     .attr("class", "jsroot_inspector")
+                     .style('position', 'absolute')
+                     .style('top',h)
+                     .style('bottom',h)
+                     .style('left',w)
+                     .style('right',w)
+                     .style('opacity',"0.98")
+                     .style('background-color','white');
+
+      JSROOT.draw(id, this.GetObject(), 'inspect');
    }
 
-   /** @symmary Fill context menu for the object
+   /** @summary Fill context menu for the object
     * @private */
    TObjectPainter.prototype.FillContextMenu = function(menu) {
       var title = this.GetTipName();
@@ -4197,12 +4216,12 @@
 
       this.FillAttContextMenu(menu);
 
-      if (menu.size()>0) menu.add('Inspect', this.ShowInpsector);
+      if (menu.size()>0) menu.add('Inspect', this.ShowInspector);
 
       return menu.size() > 0;
    }
 
-   /** @symmary returns function used to display object status
+   /** @summary returns function used to display object status
     * @private */
    TObjectPainter.prototype.GetShowStatusFunc = function() {
       // return function used to display object status
@@ -4217,7 +4236,7 @@
       return res;
    }
 
-   /** @symmary shows objects status
+   /** @summary shows objects status
     * @private */
    TObjectPainter.prototype.ShowObjectStatus = function() {
       // method called normally when mouse enter main object element

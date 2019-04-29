@@ -4466,7 +4466,6 @@
       return res;
    }
 
-
    TH1Painter.prototype.FillHistContextMenu = function(menu) {
 
       menu.add("Auto zoom-in", this.AutoZoom);
@@ -4475,7 +4474,7 @@
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return JSROOT.draw(this.divid, this.GetObject(), arg);
+            return this.ShowInspector();
 
          this.DecodeOptions(arg);
 
@@ -4738,7 +4737,7 @@
 
       menu.addDrawMenu("Draw with", sett.opts, function(arg) {
          if (arg==='inspect')
-            return JSROOT.draw(this.divid, this.GetObject(), arg);
+            return this.ShowInspector();
          this.DecodeOptions(arg);
          this.InteractiveRedraw("pad", "drawopt");
       });
