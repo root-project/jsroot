@@ -1423,6 +1423,9 @@
 
       this.FillAttContextMenu(menu);
 
+      if (menu.size() > 0)
+         menu.add('Inspect', this.ShowInspector);
+
       return menu.size() > 0;
    }
 
