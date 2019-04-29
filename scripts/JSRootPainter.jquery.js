@@ -40,10 +40,7 @@
       var menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
       menu.add = function(name, arg, func) {
-         var item = "", close_tag = "</li>", st = "";
-             // st = this.no_new_line ? " style='display:inline-block; width:auto'" : "";
-
-         if (name == "separator") { this.code += "<li" + st + ">-</li>"; this.separ = true; return; }
+         if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
 
          if (name.indexOf("header:")==0) {
             this.code += "<li class='ui-widget-header' style='padding:3px; padding-left:5px;'>"+name.substr(7)+"</li>";
@@ -51,6 +48,8 @@
          }
 
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
+
+         var item = "", close_tag = "</li>";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
          if (typeof arg == 'function') { func = arg; arg = name;  }
@@ -64,9 +63,9 @@
          else if ($.ui.version.indexOf("1.11")==0)
             item += name;
          else
-            item = "<div" + st + ">" + item + name + "</div>";
+            item = "<div>" + item + name + "</div>";
 
-         this.code += "<li" + st + " cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
+         this.code += "<li cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
 
          this.cnt++;
