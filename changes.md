@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in dev
+## Changes in 5.7.0
 1. Add support of TProfile2Poly class
 2. Add support of TGeoOverlap class, provide access from TGeoManager
 3. Add support of TGeoHalfSpace for composites
