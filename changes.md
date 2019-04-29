@@ -21,6 +21,7 @@
 18. Fix - key press events processed only in active pad (ROOT-9128)
 19. Fix - use X0/Y0 in xtru shape (#182), thanks to @altavir
 20. Move most of ui5-specific code into ROOT repository, where it will be maintained
+21. Provide special widget for object inspector
 
 
 ## Changes in 5.6.4
