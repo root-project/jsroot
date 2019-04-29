@@ -33,7 +33,6 @@
   },
   "files": [
     "scripts/*",
-    "openui5/*",
     "style/*",
     "LICENSE"
   ]
