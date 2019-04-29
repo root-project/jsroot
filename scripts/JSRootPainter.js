@@ -4182,27 +4182,22 @@
    }
 
    /** @summary Show object in inspector */
-   TObjectPainter.prototype.ShowInspector = function() {
-      var main = this.select_main();
-
-      var rect = this.get_visible_rect(main);
-
-      var w = Math.round(rect.width*0.05) + "px",
+   TObjectPainter.prototype.ShowInspector = function(obj) {
+      var main = this.select_main(),
+          rect = this.get_visible_rect(main),
+          w = Math.round(rect.width*0.05) + "px",
           h = Math.round(rect.height*0.05) + "px",
-          id = "root_inspector_" + JSROOT.id_counter++;
-
-      var cont = main.append("div")
+          id = "root_inspector_" + JSROOT.id_counter++,
+          cont = main.append("div")
                      .attr("id", id)
                      .attr("class", "jsroot_inspector")
                      .style('position', 'absolute')
-                     .style('top',h)
-                     .style('bottom',h)
-                     .style('left',w)
-                     .style('right',w)
-                     .style('opacity',"0.98")
-                     .style('background-color','white');
+                     .style('top', h)
+                     .style('bottom', h)
+                     .style('left', w)
+                     .style('right', w);
 
-      JSROOT.draw(id, this.GetObject(), 'inspect');
+      JSROOT.draw(id, obj || this.GetObject(), 'inspect');
    }
 
    /** @summary Fill context menu for the object
