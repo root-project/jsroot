@@ -40,7 +40,10 @@
       var menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
       menu.add = function(name, arg, func) {
-         if (name == "separator") { this.code += "<li>-</li>"; this.separ = true; return; }
+         var item = "", close_tag = "</li>", st = "";
+             // st = this.no_new_line ? " style='display:inline-block; width:auto'" : "";
+
+         if (name == "separator") { this.code += "<li" + st + ">-</li>"; this.separ = true; return; }
 
          if (name.indexOf("header:")==0) {
             this.code += "<li class='ui-widget-header' style='padding:3px; padding-left:5px;'>"+name.substr(7)+"</li>";
@@ -48,12 +51,9 @@
          }
 
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
-         var close_tag = "</li>", style = "";
-         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag="<ul>"; /* style += ";padding-right:2em" */}
+         if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
          if (typeof arg == 'function') { func = arg; arg = name;  }
-
-         var item = "";
 
          if (name.indexOf("chk:")==0) { item = "<span class='ui-icon ui-icon-check' style='margin:1px'></span>"; name = name.substr(4); } else
          if (name.indexOf("unk:")==0) { item = "<span class='ui-icon ui-icon-blank' style='margin:1px'></span>"; name = name.substr(4); }
@@ -61,13 +61,12 @@
          // special handling of first versions with menu support
          if (($.ui.version.indexOf("1.10")==0) || ($.ui.version.indexOf("1.9")==0))
             item = '<a href="#">' + item + name + '</a>';
-         else
-         if ($.ui.version.indexOf("1.11")==0)
+         else if ($.ui.version.indexOf("1.11")==0)
             item += name;
          else
-            item = '<div>' + item + name + '</div>';
+            item = "<div" + st + ">" + item + name + "</div>";
 
-         this.code += "<li cnt='" + this.cnt + "' arg='" + arg + "' style='" + style + "'>" + item + close_tag;
+         this.code += "<li" + st + " cnt='" + this.cnt + ((arg !== undefined) ? "' arg='" + arg : "") + "'>" + item + close_tag;
          if (typeof func == 'function') this.funcs[this.cnt] = func; // keep call-back function
 
          this.cnt++;
