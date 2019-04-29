@@ -1,8 +1,5 @@
 ddemo/
 jsdoc/
-/scripts/three.js
-/scripts/three.extra.js
-/scripts/jquery.mousewheel.js
 .settings
 .project
 .gitattributes
@@ -10,7 +7,6 @@ jsdoc/
 *.json
 demo/node/node_modules
 demo/node/*.svg
-node_modules
+node_modules/
 openui5dist
 package-lock.json
-/demo/
