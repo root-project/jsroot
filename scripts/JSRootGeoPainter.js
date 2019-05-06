@@ -3629,8 +3629,10 @@
             this._camera.aspect = this._scene_width / this._scene_height;
          this._camera.updateProjectionMatrix();
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
-         this._effectComposer.setSize( this._scene_width, this._scene_height );
-         this._effectFXAA.uniforms[ 'resolution' ].value.set( 1 / this._scene_width, 1 / this._scene_height );
+         if (this._effectComposer)
+            this._effectComposer.setSize( this._scene_width, this._scene_height );
+         if (this._effectFXAA)
+            this._effectFXAA.uniforms[ 'resolution' ].value.set( 1 / this._scene_width, 1 / this._scene_height );
 
          if (!this.drawing_stage) this.Render3D();
       }
