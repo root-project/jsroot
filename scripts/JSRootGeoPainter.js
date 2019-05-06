@@ -3079,7 +3079,7 @@
          this.TestCameraPosition(tmout === -1);
 
          // its needed for outlinePass - do rendering, most consuming time
-         if ((this._webgl && this._enableSSAO && this._ssaoPass) || (this._effectComposer && (this._effectComposer.passes.length > 1)) {
+         if ((this._webgl && this._enableSSAO && this._ssaoPass) || (this._effectComposer && (this._effectComposer.passes.length > 1))) {
             this._effectComposer.render();
          } else {
        //     this._renderer.logarithmicDepthBuffer = true;
