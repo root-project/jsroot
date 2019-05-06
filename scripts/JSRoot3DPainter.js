@@ -503,6 +503,18 @@
       }
 
       control.MainProcessMouseMove = function(evnt) {
+
+         // check timeout
+         const toutval = 100;
+
+         // https://radiatingstar.com/blog/the-fastest-way-to-get-time-stamps-in-javascript/
+         var cT = Date.now();
+         if (this.tt !== undefined && (cT - this.tt) < 100) {
+            return;
+         } else {
+            this.tt = cT;
+         }
+
          if (this.control_active && evnt.buttons && (evnt.buttons & 2))
             this.block_ctxt = true; // if right button in control was active, block next context menu
 
