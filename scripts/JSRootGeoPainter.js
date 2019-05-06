@@ -1925,29 +1925,13 @@
          this._effectComposer = new THREE.EffectComposer( this._renderer );
          this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
 
-         if (this.options.outline && THREE.OutlinePass && THREE.FXAAShader && THREE.ShaderPass) {
+         if (this.options.outline && (typeof this.createOutline == "function")) {
 
-            this._outlinePass = new THREE.OutlinePass( new THREE.Vector2( w, h ), this._scene, this._camera );
-            this._outlinePass.edgeStrength = 5.5;
-            this._outlinePass.edgeGlow = 0.7;
-            this._outlinePass.edgeThickness = 1.5;
-            this._outlinePass.usePatternTexture = false;
-            this._outlinePass.downSampleRatio = 1;
-            this._outlinePass.glowDownSampleRatio = 3;
+            this.createOutline(w, h);
 
-            // const sh = THREE.OutlinePass.selection_enum["select"]; // doesnt stand for spherical harmonics :P
-            // THREE.OutlinePass.selection_atts[sh].visibleEdgeColor.set('#dd1111');
-            // THREE.OutlinePass.selection_atts[sh].hiddenEdgeColor.set('#1111dd');
+         } else if (this.options.ssao && (typeof this.createSSAO == "function")) {
 
-            this._effectComposer.addPass( this._outlinePass );
-
-            this._effectFXAA = new THREE.ShaderPass( THREE.FXAAShader );
-            this._effectFXAA.uniforms[ 'resolution' ].value.set( 1 / w, 1 / h );
-            this._effectFXAA.renderToScreen = true;
-            this._effectComposer.addPass( this._effectFXAA );
-         } else if (this.options.ssao) {
-
-            this.createSSAO();
+            this.createSSAO(w, h);
 
          }
       }
@@ -3638,8 +3622,6 @@
          this._renderer.setSize( this._scene_width, this._scene_height, !this._fit_main_area );
          if (this._effectComposer)
             this._effectComposer.setSize( this._scene_width, this._scene_height );
-         if (this._effectFXAA)
-            this._effectFXAA.uniforms[ 'resolution' ].value.set( 1 / this._scene_width, 1 / this._scene_height );
 
          if (!this.drawing_stage) this.Render3D();
       }
