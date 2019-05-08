@@ -247,7 +247,9 @@
          if (!vrDisplay) return;
          pthis._renderer.vr.setDevice(vrDisplay);
          pthis._vrDisplay = vrDisplay;
-         pthis._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+         if (vrDisplay.stageParameters) {
+            this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+         }
          pthis.InitVRControllersGeometry();
       });
    }
@@ -285,7 +287,7 @@
       this._controllersMeshes.forEach(function (mesh) { mesh.visible = false; });
       this._vrControllers = [];
       for (var i = 0; i < gamepads.length; ++i) {
-         if (!gamepads[i].pose) { continue; }
+         if (!gamepads[i] || !gamepads[i].pose) { continue; }
          this._vrControllers.push({
             gamepad: gamepads[i],
             mesh: this._controllersMeshes[i]
