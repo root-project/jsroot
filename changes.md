@@ -1,5 +1,9 @@
 # JSROOT changelog
 
+## Changes in 5.7.x
+1. Fix - cover for WebVR API inconsistencies in Android devices (#184)
+
+
 ## Changes in 5.7.0
 1. Add support of TProfile2Poly class
 2. Add support of TGeoOverlap class, provide access from TGeoManager
