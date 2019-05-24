@@ -1950,9 +1950,9 @@
          }
          m.GetParName = function(n) {
 	    if (this.fFormula && this.fFormula.fParams) return this.fFormula.fParams[n].first;
+            if (this.fNames && this.fNames[n]) return this.fNames[n];
             if (this.fParams.fParNames[n]!==undefined) return this.fParams.fParNames[n];
-	    if (this.fNames && this.fNames[n]) return this.fNames[n];
-            return "p"+n;
+	    return "p"+n;
          }
          m.GetParValue = function(n) {
 	    if (this.fFormula && this.fFormula.fClingParameters) return this.fFormula.fClingParameters[n];
