@@ -299,9 +299,9 @@
    TGeoPainter.prototype.ProcessVRControllerIntersections = function() {
       var intersects = []
       for (var i = 0; i < this._vrControllers.length; ++i) {
-         let controller = this._vrControllers[i].mesh;
-         let end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1));
-         let origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
+         var controller = this._vrControllers[i].mesh;
+         var end = controller.localToWorld(this._raycasterEnd.set(0, 0, -1));
+         var origin = controller.localToWorld(this._raycasterOrigin.set(0, 0, 0));
          end.sub(origin).normalize();
          intersects = intersects.concat(this._controls.GetOriginDirectionIntersects(origin, end));
       }
@@ -314,10 +314,10 @@
       this.UpdateVRControllersList();
       // Update pose.
       for (var i = 0; i < this._vrControllers.length; ++i) {
-         let controller = this._vrControllers[i];
-         let orientation = controller.gamepad.pose.orientation;
-         let position = controller.gamepad.pose.position;
-         let controllerMesh = controller.mesh;
+         var controller = this._vrControllers[i];
+         var orientation = controller.gamepad.pose.orientation;
+         var position = controller.gamepad.pose.position;
+         var controllerMesh = controller.mesh;
          if (orientation) { controllerMesh.quaternion.fromArray(orientation); }
          if (position) { controllerMesh.position.fromArray(position); }
          controllerMesh.updateMatrix();
