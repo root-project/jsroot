@@ -3503,6 +3503,7 @@
    TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
+         this.clear_3d_canvas(); // remove 3d canvas from main HTML element
 
          this.AccessTopPainter(false); // remove as pointer
 
