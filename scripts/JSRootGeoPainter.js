@@ -2873,8 +2873,8 @@
    /** Prepare drawings */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
-      // if there are no options - painter was cleaned up
-      if (!this.options)
+      // if did cleanup - ignore all kind of activity
+      if (this.did_cleanup)
          return;
 
       if (name_prefix == "__geom_viewer_append__") {
@@ -2917,8 +2917,6 @@
             uniquevis = this._clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
 
          var spent = new Date().getTime() - this._start_drawing_time;
-
-         console.log('DID CLEANUP', this.did_cleanup, typeof this.options)
 
          console.log('Creating clones', this._clones.nodes.length, 'takes', spent, 'uniquevis', uniquevis);
 
