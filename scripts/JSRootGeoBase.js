@@ -2343,6 +2343,7 @@
 
       var node = {
             id: 0, sortid: 0, kind: 2, numvischld: 0, idshift: 0,
+            name: "Shape",
             nfaces: obj.nfaces,
             fDX: 1, fDY: 1, fDZ: 1, vol: 1,
             vis: true
@@ -2633,17 +2634,16 @@
       return stack;
    }
 
-   /** returns different properties of draw entry nodeid */
+   /** @brief Provide different properties of draw entry nodeid
+    * @desc Only if node visible, material will be created*/
    JSROOT.GEO.ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
-      // function return different properties for specified node
-      // Only if node visible, material will be created
 
       var clone = this.nodes[entry.nodeid];
       var visible = true;
 
       if (clone.kind === 2) {
          var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         var _opacity = entry.opacity;
+         var _opacity = entry.opacity || 1;
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
