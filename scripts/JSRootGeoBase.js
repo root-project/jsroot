@@ -3058,13 +3058,13 @@
          if (res.done) { item.ready = true; continue; }
 
          if (!item.ready) {
+            item._typename = "$$Shape$$"; // let reuse item for direct drawing
+            item.ready = true;
             if (item.geom === undefined) {
                item.geom = JSROOT.GEO.createGeometry(item.shape);
                if (item.geom) created++; // indicate that at least one shape was created
             }
             item.nfaces = JSROOT.GEO.numGeometryFaces(item.geom);
-            item.ready = true;
-            item._typename = "$$Shape$$"; // let reuse item for direct drawing
          }
 
          res.shapes++;
