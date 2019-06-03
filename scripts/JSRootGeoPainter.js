@@ -2934,7 +2934,7 @@
          // activate worker
          if (this.options.use_worker > 0) this.startWorker();
 
-         var size = this.size_for_3d(this._usesvg ? 3 : -1);
+         var size = this.size_for_3d(this._usesvg ? 3 : undefined);
 
          this._fit_main_area = (size.can3d === -1);
 
@@ -3514,7 +3514,7 @@
 
          this.AccessTopPainter(false); // remove as pointer
 
-         this.clear_3d_canvas(); // remove 3d canvas from main HTML element
+         var can3d = this.clear_3d_canvas(); // remove 3d canvas from main HTML element
 
          if (this._toolbar) this._toolbar.Cleanup(); // remove toolbar
 
@@ -3562,7 +3562,7 @@
 
          this.did_cleanup = true;
 
-         this.select_main().html("");
+         if (can3d < 0) this.select_main().html("");
       }
 
       if (this._slave_painters)
