@@ -319,6 +319,9 @@ Following draw options could be specified (separated by semicolon or ';'):
    - dflt - set default volumes colors as TGeoManager::DefaultColors() does
    - transpXY - set global transparency value (XY is number between 1 and 99)
    - zoomFACTOR - set initial zoom factor (FACTOR is integer value from 1 to 10000, default is 100)
+   - rotxANGLE - set X rotation angle in degrees (like rotx90)
+   - rotyANGLE - set Y rotation angle in degrees (like roty10)
+   - rotzANGLE - set Z rotation angle in degrees (like rotz20)
    - rotate - enable automatic rotation of the geometry
    - tracks - show tracks from TGeoManager
    - dray - calculate rendering order using raytracing (extensive calculations)
