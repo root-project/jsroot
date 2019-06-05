@@ -408,7 +408,7 @@
       var res = { _grid: false, _bound: false, _debug: false,
                   _full: false, _axis: false, _axis_center: false,
                   _count: false, wireframe: false,
-                   scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatex: 0, rotatey: 0, rotatez: 0,
+                   scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false,
@@ -463,7 +463,6 @@
       if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "dflt";
 
       if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
-      if (d.check("ROTX", true)) res.rotatex = d.partAsInt(0, 0);
       if (d.check("ROTY", true)) res.rotatey = d.partAsInt(0, 0);
       if (d.check("ROTZ", true)) res.rotatez = d.partAsInt(0, 0);
 
@@ -2126,17 +2125,37 @@
 
       this._camera.updateProjectionMatrix();
 
-      var k = 2*this.options.zoom;
+      var k = 2*this.options.zoom, max_all = Math.max(sizex,sizey,sizez);
 
-      if (this.options.rotatex || this.options.rotatey || this.options.rotatez) {
-         this._camera.position.set(midx-k*Math.max(sizex,sizey,sizez), midy, midz);
+      if (this.options.rotatey || this.options.rotatez) {
 
-         var m1 = new THREE.Matrix4(), m2 = new THREE.Matrix4(), m3 = new THREE.Matrix4();
-         m1.makeRotationX(this.options.rotatex/180*Math.PI);
-         m2.makeRotationY(this.options.rotatey/180*Math.PI);
-         m3.makeRotationZ(this.options.rotatez/180*Math.PI);
+         this._camera.position.set(-k*max_all, 0, 0);
 
-         this._camera.position.applyMatrix4(m1.multiply(m2).multiply(m3));
+         var a = new THREE.Euler( 0, this.options.rotatey/180.*Math.PI, this.options.rotatez/180.*Math.PI, 'YZX' );
+
+         this._camera.position.applyEuler(a);
+
+         this._camera.position.add(new THREE.Vector3(midx,midy,midz));
+
+
+         // console.log('Quenterion', this._camera.quaternion);
+
+         var pos0 = new THREE.Vector3(midx, midy, midz);
+         var pos1 = new THREE.Vector3(midx-k*max_all, midy, midz);
+         var pos2 = new THREE.Vector3().add(this._camera.position);
+
+         pos1.sub(pos0).normalize();
+         pos2.sub(pos0).normalize();
+
+         var quant1 = new THREE.Quaternion();
+         quant1.setFromUnitVectors(pos1, pos2);
+
+         var b = new THREE.Euler();
+         b.setFromQuaternion(quant1, "YZX");
+
+         console.log('Euler y ', Math.round( b.y / Math.PI * 180) );
+         console.log('Euler z ', Math.round( b.z / Math.PI * 180) );
+
       } else if (this.options.ortho_camera) {
          this._camera.position.set(midx, midy, Math.max(sizex,sizey));
       } else if (this.options.project) {
@@ -2152,6 +2171,7 @@
       }
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
+      this._camera0pos = new THREE.Vector3(-k*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
       this._pointLight.position.set(sizex/5, sizey/5, sizez/5);

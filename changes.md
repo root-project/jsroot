@@ -1,7 +1,7 @@
 # JSROOT changelog
 
 ## Changes in dev
-1. Add "rotxNN", "rotyNN", "rotzNN" options to Geo painter - let customize camera position
+1. Add "rotyNN" and "rotzNN" options to Geo painter - let customize camera position
 
 
 ## Changes in 5.7.0
