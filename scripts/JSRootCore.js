@@ -374,18 +374,31 @@
             }
             for (var k=0;k<value.len;++k) arr[k] = dflt;
 
-            var nkey = 2, p = 0;
-            while (nkey<len) {
-               if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
-               if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
-               var v = value[ks[nkey++]]; // value
-               if (typeof v === 'object') {
-                  for (var k=0;k<v.length;++k) arr[p++] = v[k];
-               } else {
-                  arr[p++] = v;
-                  if ((nkey<len) && (ks[nkey][0]=='n')) {
-                     var cnt = value[ks[nkey++]]; // counter
-                     while (--cnt) arr[p++] = v;
+            if (value.b !== undefined) {
+               // base64 coding
+               var buf = atob(value.b);
+
+               if (arr.buffer) {
+                  var dv = new DataView(arr.buffer, value.o || 0),
+                      len = Math.min(buf.length, dv.byteLength);
+                  for (var k=0; k<len; ++k)
+                     dv.setUint8(k, data.charCodeAt(k));
+               }
+            } else {
+               // compressed coding
+               var nkey = 2, p = 0;
+               while (nkey<len) {
+                  if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
+                  if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
+                  var v = value[ks[nkey++]]; // value
+                  if (typeof v === 'object') {
+                     for (var k=0;k<v.length;++k) arr[p++] = v[k];
+                  } else {
+                     arr[p++] = v;
+                     if ((nkey<len) && (ks[nkey][0]=='n')) {
+                        var cnt = value[ks[nkey++]]; // counter
+                        while (--cnt) arr[p++] = v;
+                     }
                   }
                }
             }
