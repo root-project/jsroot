@@ -383,6 +383,8 @@
                       len = Math.min(buf.length, dv.byteLength);
                   for (var k=0; k<len; ++k)
                      dv.setUint8(k, data.charCodeAt(k));
+               } else {
+                  throw new Error('base64 coding supported only for native arrays with binary data');
                }
             } else {
                // compressed coding
