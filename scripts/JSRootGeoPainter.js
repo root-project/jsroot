@@ -639,7 +639,7 @@
          this.Render3D();
       });
       menu.add("Get camera position", function() {
-         alert("Position: " + this.produceCameraUrl());
+         alert("Position (as url): &opt=" + this.produceCameraUrl());
       });
       if (!this.options.project)
          menu.addchk(this.options.autoRotate, "Autorotate", function() {

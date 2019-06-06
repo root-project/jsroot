@@ -2,6 +2,7 @@
 
 ## Changes in dev
 1. Add "rotyNN" and "rotzNN" options to Geo painter - let customize camera position
+2. Provide context menu command to show current camera position
 
 
 ## Changes in 5.7.0
