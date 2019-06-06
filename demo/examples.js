@@ -124,6 +124,7 @@ examples_main = {
    ],
    TGeo : [
      { name:"logo", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", title:"Geometry from rootgeom.C example" },
+     { name:"camera", asurl: true, file: "geom/rootgeom.root", item: "simple1;1", opt:"roty88,rotz357,zoom149", title:"Change camera position and zoom via URL parameters" },
      { name:"prim", file: "geom/geodemo.root", layout: "vert333", items: ['box','para','arb8','trap','gtra','trd1','trd2','xtru'], opts: ['z','z','z','z','z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
      { name:"prim2", file: "geom/geodemo.root", layout: "vert333", items: ['cone','coneseg','tube','tubeseg','ctub','eltu','pcon','pgon'], opts: ['z','z','z','z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
      { name:"prim3", file: "geom/geodemo.root", layout: "grid3x2", items: ['sphere','torus','parab','hype','comp'], opts: ['z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
