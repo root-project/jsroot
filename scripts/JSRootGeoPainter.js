@@ -638,6 +638,9 @@
          this.focusCamera();
          this.Render3D();
       });
+      menu.add("Get camera position", function() {
+         alert("Position: " + this.produceCameraUrl());
+      });
       if (!this.options.project)
          menu.addchk(this.options.autoRotate, "Autorotate", function() {
             this.options.autoRotate = !this.options.autoRotate;
@@ -2088,6 +2091,7 @@
    /** @brief Returns url parameters defining camera position.
     * @desc It is zoom, roty, rotz parameters
     * These parameters applied from default position which is shift along X axis */
+
    TGeoPainter.prototype.produceCameraUrl = function() {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.options) return;
@@ -3127,8 +3131,6 @@
             this.TestAxisVisibility(this._camera, this._toplevel);
 
          this.TestCameraPosition(tmout === -1);
-
-         // console.log('URL', this.produceCameraUrl());
 
          // its needed for outlinePass - do rendering, most consuming time
          if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0)) {
