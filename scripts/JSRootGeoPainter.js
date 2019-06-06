@@ -2085,6 +2085,41 @@
       return this._overall_size;
    }
 
+   /** @brief Returns url parameters defining camera position.
+    * @desc It is zoom, roty, rotz parameters
+    * These parameters applied from default position which is shift along X axis */
+   TGeoPainter.prototype.produceCameraUrl = function() {
+
+      if (!this._lookat || !this._camera0pos || !this._camera || !this.options) return;
+
+      var pos1 = new THREE.Vector3().add(this._camera0pos);
+      var pos2 = new THREE.Vector3().add(this._camera.position);
+
+      pos1.sub(this._lookat);
+      pos2.sub(this._lookat);
+
+      var len1 = pos1.length(), len2 = pos2.length();
+      var zoom = Math.round(this.options.zoom * len2 / len1 * 100);
+      if (zoom < 1) zoom = 1; else if (zoom>10000) zoom = 10000;
+
+      pos1.normalize();
+      pos2.normalize();
+
+      var quat = new THREE.Quaternion();
+      quat.setFromUnitVectors(pos1, pos2);
+
+      var euler = new THREE.Euler();
+      euler.setFromQuaternion(quat, "YZX");
+
+      var roty = Math.round( euler.y / Math.PI * 180),
+          rotz = Math.round( euler.z / Math.PI * 180);
+
+      if (roty<0) roty += 360;
+      if (rotz<0) rotz += 360;
+
+      return "roty" + roty + ",rotz" + rotz + ",zoom" + zoom;
+   }
+
    TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
 
       if (!this._toplevel) return;
@@ -2131,30 +2166,11 @@
 
          this._camera.position.set(-k*max_all, 0, 0);
 
-         var a = new THREE.Euler( 0, this.options.rotatey/180.*Math.PI, this.options.rotatez/180.*Math.PI, 'YZX' );
+         var euler = new THREE.Euler( 0, this.options.rotatey/180.*Math.PI, this.options.rotatez/180.*Math.PI, 'YZX' );
 
-         this._camera.position.applyEuler(a);
+         this._camera.position.applyEuler(euler);
 
          this._camera.position.add(new THREE.Vector3(midx,midy,midz));
-
-
-         // console.log('Quenterion', this._camera.quaternion);
-
-         var pos0 = new THREE.Vector3(midx, midy, midz);
-         var pos1 = new THREE.Vector3(midx-k*max_all, midy, midz);
-         var pos2 = new THREE.Vector3().add(this._camera.position);
-
-         pos1.sub(pos0).normalize();
-         pos2.sub(pos0).normalize();
-
-         var quant1 = new THREE.Quaternion();
-         quant1.setFromUnitVectors(pos1, pos2);
-
-         var b = new THREE.Euler();
-         b.setFromQuaternion(quant1, "YZX");
-
-         console.log('Euler y ', Math.round( b.y / Math.PI * 180) );
-         console.log('Euler z ', Math.round( b.z / Math.PI * 180) );
 
       } else if (this.options.ortho_camera) {
          this._camera.position.set(midx, midy, Math.max(sizex,sizey));
@@ -3111,6 +3127,8 @@
             this.TestAxisVisibility(this._camera, this._toplevel);
 
          this.TestCameraPosition(tmout === -1);
+
+         // console.log('URL', this.produceCameraUrl());
 
          // its needed for outlinePass - do rendering, most consuming time
          if (this._webgl && this._effectComposer && (this._effectComposer.passes.length > 0)) {
