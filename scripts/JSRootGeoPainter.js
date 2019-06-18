@@ -251,7 +251,7 @@
          pthis._renderer.vr.setDevice(vrDisplay);
          pthis._vrDisplay = vrDisplay;
          if (vrDisplay.stageParameters) {
-            this._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
+            pthis._standingMatrix.fromArray(vrDisplay.stageParameters.sittingToStandingTransform);
          }
          pthis.InitVRControllersGeometry();
       });
