@@ -342,6 +342,8 @@
       this._previousCameraRotation = this._camera.rotation.clone();
       this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(function() {
          pthis._previousCameraNear = pthis._camera.near;
+         pthis._dolly.position.set(pthis._camera.position.x/4, - pthis._camera.position.y/8, - pthis._camera.position.z/4);
+         pthis._camera.position.set(0,0,0);
          pthis._dolly.add(pthis._camera);
          pthis._camera.near = 0.1;
          pthis._camera.updateProjectionMatrix();
