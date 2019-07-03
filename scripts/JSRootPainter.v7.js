@@ -2831,10 +2831,10 @@
           svg_pad = null, svg_rect = null, btns = null;
 
       if (this.pad && this.pad.fDrawOpts && this.pad.fSize) {
+         x = Math.round(width * this.pad.fPos.fHoriz.fNormal.fVal);
+         y = Math.round(height * this.pad.fPos.fVert.fNormal.fVal);
          w = Math.round(width * this.pad.fSize.fHoriz.fNormal.fVal);
          h = Math.round(height * this.pad.fSize.fVert.fNormal.fVal);
-         x = Math.round(width * this.pad.fDrawOpts.fPos.fAttr.fHoriz.fNormal.fVal);
-         y = Math.round(height * this.pad.fDrawOpts.fPos.fAttr.fVert.fNormal.fVal);
       }
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }
