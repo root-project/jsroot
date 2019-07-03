@@ -464,9 +464,9 @@
       if (d.check("DEPTHSIZE") || d.check("DSIZE")) res.depthMethod = "size";
       if (d.check("DEPTHDFLT") || d.check("DDFLT")) res.depthMethod = "dflt";
 
-      if (d.check("ZOOM", true)) res.zoom = d.partAsInt(0, 100) / 100;
-      if (d.check("ROTY", true)) res.rotatey = d.partAsInt(0, 0);
-      if (d.check("ROTZ", true)) res.rotatez = d.partAsInt(0, 0);
+      if (d.check("ZOOM", true)) res.zoom = d.partAsFloat(0, 100) / 100;
+      if (d.check("ROTY", true)) res.rotatey = d.partAsFloat();
+      if (d.check("ROTZ", true)) res.rotatez = d.partAsFloat();
 
       if (d.check('BLACK')) res.background = "#000000";
       if (d.check('WHITE')) res.background = "#FFFFFF";
@@ -2094,7 +2094,7 @@
     * @desc It is zoom, roty, rotz parameters
     * These parameters applied from default position which is shift along X axis */
 
-   TGeoPainter.prototype.produceCameraUrl = function() {
+   TGeoPainter.prototype.produceCameraUrl = function(prec) {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.options) return;
 
@@ -2105,7 +2105,7 @@
       pos2.sub(this._lookat);
 
       var len1 = pos1.length(), len2 = pos2.length();
-      var zoom = Math.round(this.options.zoom * len2 / len1 * 100);
+      var zoom = this.options.zoom * len2 / len1 * 100;
       if (zoom < 1) zoom = 1; else if (zoom>10000) zoom = 10000;
 
       pos1.normalize();
@@ -2117,13 +2117,13 @@
       var euler = new THREE.Euler();
       euler.setFromQuaternion(quat, "YZX");
 
-      var roty = Math.round( euler.y / Math.PI * 180),
-          rotz = Math.round( euler.z / Math.PI * 180);
+      var roty = euler.y / Math.PI * 180,
+          rotz = euler.z / Math.PI * 180;
 
       if (roty<0) roty += 360;
       if (rotz<0) rotz += 360;
 
-      return "roty" + roty + ",rotz" + rotz + ",zoom" + zoom;
+      return "roty" + roty.toFixed(prec || 0) + ",rotz" + rotz.toFixed(prec || 0) + ",zoom" + zoom.toFixed(prec || 0);
    }
 
    TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
