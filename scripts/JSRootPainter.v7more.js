@@ -65,10 +65,10 @@
            opts         = line.fOpts,
            pp           = this.canv_painter(),
 
-           line_width   = pp.GetNewOpt(opts, "line.width", 1.),
+           line_width   = pp.GetNewOpt(opts, "line.width", 1),
            line_style   = pp.GetNewOpt(opts, "line.style", 1),
            line_color   = pp.GetNewColor(opts, "line.color", "black"),
-           line_opacity = pp.GetNewColor(opts, "line.opacity", 1.),
+           line_opacity = pp.GetNewOpt(opts, "line.opacity", 1),
            p1           = this.GetCoordinate(line.fP1),
            p2           = this.GetCoordinate(line.fP2);
 
@@ -92,15 +92,15 @@
        var box          = this.GetObject(),
            opts         = box.fOpts,
            pp           = this.canv_painter(),
-           line_width   = opts.fLineWidth.fAttr,
-           line_opacity = opts.fLineOpacity.fAttr,
-           line_style   = opts.fLineStyle.fAttr,
-           line_color   = pp.GetOldColor(opts.fLineColor),
-           fill_opacity = opts.fFillOpacity.fAttr,
-           fill_color   = pp.GetOldColor(opts.fFillColor),
-           fill_style   = opts.fFillStyle.fAttr,
-           round_width  = opts.fRoundWidth.fAttr,
-           round_height = opts.fRoundHeight.fAttr,
+           line_width   = pp.GetNewOpt(opts, "box.border.width", 1),
+           line_opacity = pp.GetNewOpt(opts, "box.border.opacity", 1),
+           line_style   = pp.GetNewOpt(opts, "box.border.style", 1),
+           line_color   = pp.GetNewColor(opts, "box.border.color", "black"),
+           fill_opacity = pp.GetNewOpt(opts, "box.fill.opacity", 1),
+           fill_color   = pp.GetNewColor(opts, "box.fill.color", "white"),
+           fill_style   = pp.GetNewOpt(opts, "box.fill.style", 1),
+           round_width  = pp.GetNewOpt(opts, "box.round.width", 0),
+           round_height = pp.GetNewOpt(opts, "box.round.height", 0),
            p1           = this.GetCoordinate(box.fP1),
            p2           = this.GetCoordinate(box.fP2);
 
