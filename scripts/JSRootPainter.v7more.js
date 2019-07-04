@@ -129,10 +129,10 @@
        var marker         = this.GetObject(),
            opts           = marker.fOpts,
            pp             = this.canv_painter(),
-           marker_size    = opts.fSize.fAttr,
-           marker_opacity = opts.fOpacity.fAttr,
-           marker_style   = opts.fStyle.fAttr,
-           marker_color   = pp.GetOldColor(opts.fColor),
+           marker_size    = pp.GetNewOpt(opts, "marker.size", 1),
+           marker_opacity = pp.GetNewOpt(opts, "marker.opacity", 1),
+           marker_style   = pp.GetNewOpt(opts, "marker.style", 1),
+           marker_color   = pp.GetNewColor(opts, "marker.color", "black"),
            p              = this.GetCoordinate(marker.fP);
 
            var att = new JSROOT.TAttMarkerHandler({ style: marker_style, color: marker_color, size: marker_size });
