@@ -36,11 +36,11 @@
           w            = this.pad_width(),
           h            = this.pad_height(),
           use_frame    = false,
-          text_size    = opts.fTextSize.fAttr,
-          text_angle   = -opts.fTextAngle.fAttr,
-          text_align   = opts.fTextAlign.fAttr,
-          text_color   = pp.GetOldColor(opts.fTextColor),
-          text_font    = opts.fTextFont.fAttr,
+          text_size    = pp.GetNewOpt(opts, "text.size", 12),
+          text_angle   = -pp.GetNewOpt(opts, "text.angle", 0),
+          text_align   = pp.GetNewOpt(opts, "text.align", 22),
+          text_color   = pp.GetNewColor(opts, "text.color", "black"),
+          text_font    = pp.GetNewOpt(opts, "text.font", 41),
           p            = this.GetCoordinate(text.fP);
 
       this.CreateG(use_frame);
