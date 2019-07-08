@@ -414,7 +414,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false,
-                   project: '', is_main: false, tracks: false, ortho_camera: false,
+                   project: '', is_main: false, tracks: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "ray" };
@@ -456,7 +456,8 @@
       if (d.check("MAIN")) res.is_main = true;
 
       if (d.check("TRACKS")) res.tracks = true;
-      if (d.check("ORTHO_CAMERA")) res.ortho_camera = true;
+      if (d.check("ORTHO_CAMERA_ROTATE")) { res.ortho_camera = true; res.can_rotate = true; }
+      if (d.check("ORTHO_CAMERA")) { res.ortho_camera = true; res.can_rotate = false; }
 
       if (d.check("DEPTHRAY") || d.check("DRAY")) res.depthMethod = "ray";
       if (d.check("DEPTHBOX") || d.check("DBOX")) res.depthMethod = "box";
@@ -1229,7 +1230,7 @@
 
       this._controls.mouse_tmout = 100; // set larger timeout for geometry processing
 
-      if (this.options.project || this.options.ortho_camera) this._controls.enableRotate = false;
+      if (this.options.project || !this.options.can_rotate) this._controls.enableRotate = false;
 
       this._controls.ContextMenu = this.OrbitContext.bind(this);
 
