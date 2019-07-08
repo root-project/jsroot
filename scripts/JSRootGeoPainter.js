@@ -492,9 +492,9 @@
       if (d.check("CLIPZ")) res.clipz = true;
       if (d.check("CLIP")) res.clipx = res.clipy = res.clipz = true;
 
-      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
-      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
-      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); }
+      if (d.check("PROJX", true)) { res.project = 'x'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
+      if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
       if (d.check("DFLT_COLORS") || d.check("DFLT")) this.SetRootDefaultColors();
       if (d.check("SSAO")) res.ssao = true;
@@ -1230,7 +1230,7 @@
 
       this._controls.mouse_tmout = 100; // set larger timeout for geometry processing
 
-      if (this.options.project || !this.options.can_rotate) this._controls.enableRotate = false;
+      if (!this.options.can_rotate) this._controls.enableRotate = false;
 
       this._controls.ContextMenu = this.OrbitContext.bind(this);
 
@@ -2169,7 +2169,7 @@
 
       var k = 2*this.options.zoom, max_all = Math.max(sizex,sizey,sizez);
 
-      if (this.options.rotatey || this.options.rotatez) {
+      if ((this.options.rotatey || this.options.rotatez) && this.options.can_rotate) {
 
          this._camera.position.set(-k*max_all, 0, 0);
 
