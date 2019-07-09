@@ -1748,7 +1748,9 @@
       box3.makeEmpty();
 
       topitem.traverse(function(mesh) {
-         if (check_any || ((mesh instanceof THREE.Mesh) && mesh.stack)) JSROOT.GEO.getBoundingBox(mesh, box3);
+         if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh))
+             || (mesh.main_track && (mesh instanceof THREE.LineSegments)))
+            JSROOT.GEO.getBoundingBox(mesh, box3);
       });
 
       if (scalar !== undefined) box3.expandByVector(box3.getSize(new THREE.Vector3()).multiplyScalar(scalar));
@@ -2143,14 +2145,22 @@
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
 
-      console.log('adjust ', first_time, sizex);
+      /** Code to adjust size base on master volume, need to be adjusted */
+      //if (this.geo_manager && this.geo_manager.fMasterVolume) {
+      //   var shape = this.geo_manager.fMasterVolume.fShape;
+      //   if (shape && shape.fDX && shape.fDX && shape.fDZ) {
+      //      sizex = Math.max(sizex, shape.fDX*2);
+      //      sizey = Math.max(sizey, shape.fDY*2);
+      //      sizez = Math.max(sizez, shape.fDZ*2);
+      //   }
+      // }
 
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
-      this._scene.fog.near = this._overall_size * 2;
       this._camera.near = this._overall_size / 350;
-      this._scene.fog.far = this._overall_size * 12;
       this._camera.far = this._overall_size * 12;
+      this._scene.fog.near = this._overall_size * 2;
+      this._scene.fog.far = this._overall_size * 12;
 
       if (first_time) {
          this.clipX = midx;
@@ -2658,6 +2668,9 @@
       line.geo_name = itemname;
       line.geo_object = track;
       line.hightlightWidthScale = 2;
+
+      if (itemname && itemname.indexOf("<prnt>/Tracks")==0)
+         line.main_track = true;
 
       this.getExtrasContainer().add(line);
 
@@ -3475,11 +3488,9 @@
          this.getExtrasContainer("delete"); // delete old container
          var extras = (this._main_painter ? this._main_painter._extraObjects : null) || this._extraObjects;
          this.drawExtras(extras, "", false);
-      }
-
-      if (this._first_drawing || this._full_redrawing) {
+      } else if (this._first_drawing || this._full_redrawing) {
          if (this.options.tracks && this.geo_manager && this.geo_manager.fTracks)
-            this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
+            this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
       if (this._full_redrawing) {
@@ -3622,6 +3633,8 @@
             var slave = this._slave_painters[k];
             if (slave && (slave._main_painter===this)) slave._main_painter = null;
          }
+
+         delete this.geo_manager;
 
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
 
