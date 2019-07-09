@@ -324,6 +324,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotate - enable automatic rotation of the geometry
    - tracks - show tracks from TGeoManager
    - showtop - show top-level volume of TGeoManager (default off)
+   - no_screen - let ignore kVisOnScreen bits for nodes visibility
    - dray - calculate rendering order using raytracing (extensive calculations)
    - dbox - use distance to nearest point from bounding box for rendering order (default)
    - dpnt - use distance to shape center as rendering order

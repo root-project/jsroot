@@ -5,6 +5,7 @@
 2. Provide context menu command to show current camera position
 3. Implement monitoring of TGeoManager with THttpServer
 4. Provide "showtop" option for TGeoManager (equivalent to gGeoManager->SetTopVisible())
+5. Provide "no_screen" option to let ignore kVisOnScreen bits for display, checked first by default
 
 
 ## Changes in 5.7.0
