@@ -3781,8 +3781,6 @@
       delete this._draw_nodes;
       delete this._drawing_ready;
       delete this._build_shapes;
-      delete this._new_draw_nodes;
-      delete this._new_append_nodes;
 
       delete this._extraObjects;
 
