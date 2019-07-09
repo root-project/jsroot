@@ -3474,6 +3474,15 @@
          this.drawExtras(extras, "", false);
       }
 
+      if (this._first_drawing || this._full_redrawing) {
+         if (this.options.tracks && this.geo_manager && this.geo_manager.fTracks)
+            this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
+      }
+
+      if (this._full_redrawing) {
+         this._full_redrawing = false;
+      }
+
       if (this._first_drawing) {
          this.adjustCameraPosition(true);
          this.showDrawInfo();
@@ -3485,8 +3494,6 @@
             this.enableY = this.options.clipy;
             this.enableZ = this.options.clipz;
          }
-         if (this.options.tracks && this.geo_manager && this.geo_manager.fTracks)
-            this.addExtra(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
       if (this.options.transparency!==0)
@@ -3776,11 +3783,15 @@
       delete this._build_shapes;
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
-      delete this._last_camera_position;
+
+      delete this._extraObjects;
 
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
 
+      this._full_redrawing = true;
+
       this.prepareObjectDraw(this.GetGeometry());
+
       return true;
    }
 
