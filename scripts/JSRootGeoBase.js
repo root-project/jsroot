@@ -3443,7 +3443,7 @@
          shape = obj.fShape;
       } else if (obj._typename === 'TGeoManager') {
          obj = obj.fMasterVolume;
-         hide_top = true;
+         hide_top = !opt.showtop;
          shape = obj.fShape;
       } else if (obj.fVolume) {
          shape = obj.fVolume.fShape;

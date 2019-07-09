@@ -414,7 +414,7 @@
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false,
-                   project: '', is_main: false, tracks: false, can_rotate: true, ortho_camera: false,
+                   project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "ray" };
@@ -455,7 +455,8 @@
 
       if (d.check("MAIN")) res.is_main = true;
 
-      if (d.check("TRACKS")) res.tracks = true;
+      if (d.check("TRACKS")) res.tracks = true; // only for TGeoManager
+      if (d.check("SHOWTOP")) res.showtop = true; // only for TGeoManager
       if (d.check("ORTHO_CAMERA_ROTATE")) { res.ortho_camera = true; res.can_rotate = true; }
       if (d.check("ORTHO_CAMERA")) { res.ortho_camera = true; res.can_rotate = false; }
 
@@ -2975,7 +2976,7 @@
 
          var uniquevis = this._clones.MarkVisibles(true);
          if (uniquevis <= 0)
-            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager);
+            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager && !this.options.showtop);
          else
             uniquevis = this._clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
 
