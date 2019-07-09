@@ -1373,7 +1373,7 @@
          }
 
          // first copy visibility flags and check how many unique visible nodes exists
-         var numvis = this._clones.MarkVisisble(),
+         var numvis = this._clones.CountVisibles() || this._clones.MarkVisibles(),
              matrix = null, frustum = null;
 
          if (this.options.select_in_view && !this._first_drawing) {
@@ -1411,12 +1411,12 @@
             this.startWorker(); // we starting worker, but it may not be ready so fast
 
          if (!need_worker || !this._worker_ready) {
-            //var tm1 = new Date().getTime();
+            // var tm1 = new Date().getTime();
             var res = this._clones.CollectVisibles(this._current_face_limit, frustum, this._current_nodes_limit);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
-            //var tm2 = new Date().getTime();
-            //console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
+            // var tm2 = new Date().getTime();
+            // console.log('Collect visibles', this._new_draw_nodes.length, 'takes', tm2-tm1);
             this.drawing_stage = 3;
             return true;
          }
@@ -2144,16 +2144,6 @@
           midx = (box.max.x + box.min.x)/2,
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
-
-      /** Code to adjust size base on master volume, need to be adjusted */
-      //if (this.geo_manager && this.geo_manager.fMasterVolume) {
-      //   var shape = this.geo_manager.fMasterVolume.fShape;
-      //   if (shape && shape.fDX && shape.fDX && shape.fDZ) {
-      //      sizex = Math.max(sizex, shape.fDX*2);
-      //      sizey = Math.max(sizey, shape.fDY*2);
-      //      sizez = Math.max(sizez, shape.fDZ*2);
-      //   }
-      // }
 
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
@@ -2942,7 +2932,8 @@
       this._clones = clones;
    }
 
-   /** Prepare drawings */
+   /** @brief Prepare drawings
+    * @private */
    TGeoPainter.prototype.prepareObjectDraw = function(draw_obj, name_prefix) {
 
       // if did cleanup - ignore all kind of activity
@@ -2982,11 +2973,11 @@
 
          this._clones.name_prefix = name_prefix;
 
-         var uniquevis = this._clones.MarkVisisble(true);
+         var uniquevis = this._clones.MarkVisibles(true);
          if (uniquevis <= 0)
-            uniquevis = this._clones.MarkVisisble(false);
+            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager);
          else
-            uniquevis = this._clones.MarkVisisble(true, true); // copy bits once and use normal visibility bits
+            uniquevis = this._clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
 
          var spent = new Date().getTime() - this._start_drawing_time;
 
@@ -3776,7 +3767,6 @@
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {
          this.geo_manager = obj;
-         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          this.AssignObject({ _typename:"TGeoNode", fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
          return true;
       }
@@ -3848,7 +3838,6 @@
       } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
          shape = obj.fShape;
       } else if (obj._typename === 'TGeoManager') {
-         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
          extras = obj.fMarker; extras_path = "<prnt>/Marker";
@@ -4331,8 +4320,6 @@
          JSROOT.GEO.createList(parent, obj.fMedia, "Media", "list of media");
          JSROOT.GEO.createList(parent, obj.fTracks, "Tracks", "list of tracks");
          JSROOT.GEO.createList(parent, obj.fOverlaps, "Overlaps", "list of detected overlaps");
-
-         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          JSROOT.GEO.createItem(parent, obj.fMasterVolume);
          return true;
       }
