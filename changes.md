@@ -3,6 +3,8 @@
 ## Changes in dev
 1. Add "rotyNN" and "rotzNN" options to Geo painter - let customize camera position
 2. Provide context menu command to show current camera position
+3. Implement monitoring of TGeoManager with THttpServer
+4. Provide "showtop" option for TGeoManager (equivalent to gGeoManager->SetTopVisible())
 
 
 ## Changes in 5.7.0

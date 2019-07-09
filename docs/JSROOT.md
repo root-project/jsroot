@@ -323,6 +323,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotzANGLE - set Z rotation angle in degrees (like rotz20)
    - rotate - enable automatic rotation of the geometry
    - tracks - show tracks from TGeoManager
+   - showtop - show top-level volume of TGeoManager (default off)
    - dray - calculate rendering order using raytracing (extensive calculations)
    - dbox - use distance to nearest point from bounding box for rendering order (default)
    - dpnt - use distance to shape center as rendering order
