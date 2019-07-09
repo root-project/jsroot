@@ -1367,7 +1367,7 @@
          }
 
          // wait until worker is really started
-         if (this.options.use_worker>0) {
+         if (this.options.use_worker > 0) {
             if (!this._worker) { this.startWorker(); return 1; }
             if (!this._worker_ready) return 1;
          }
@@ -2974,7 +2974,8 @@
 
          var spent = new Date().getTime() - this._start_drawing_time;
 
-         console.log('Creating clones', this._clones.nodes.length, 'takes', spent, 'uniquevis', uniquevis);
+         if (!this._scene)
+            console.log('Creating clones', this._clones.nodes.length, 'takes', spent, 'uniquevis', uniquevis);
 
          if (this.options._count)
             return this.drawCount(uniquevis, spent);
@@ -3766,7 +3767,20 @@
       if (!this.UpdateObject(obj))
          return false;
 
-      this.startDrawGeometry();
+      if (this._clones && this._clones_owner)
+         this._clones.Cleanup(this._draw_nodes, this._build_shapes);
+      delete this._clones;
+      delete this._clones_owner;
+      delete this._draw_nodes;
+      delete this._drawing_ready;
+      delete this._build_shapes;
+      delete this._new_draw_nodes;
+      delete this._new_append_nodes;
+      delete this._last_camera_position;
+
+      JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
+
+      this.prepareObjectDraw(this.GetGeometry());
       return true;
    }
 
