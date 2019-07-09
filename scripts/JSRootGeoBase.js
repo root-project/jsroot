@@ -3465,14 +3465,11 @@
 
       var clones = new JSROOT.GEO.ClonedNodes(obj);
 
-      var uniquevis = clones.MarkVisibles(true);
-
+      var uniquevis = opt.screen ? clones.MarkVisibles(true) : 0;
       if (uniquevis <= 0)
          uniquevis = clones.MarkVisibles(false, false, null, hide_top);
       else
          uniquevis = clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
-
-      var numvis = clones.MarkVisibles();
 
       var frustum = null;
 
