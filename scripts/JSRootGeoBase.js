@@ -3465,7 +3465,7 @@
 
       var clones = new JSROOT.GEO.ClonedNodes(obj);
 
-      var uniquevis = opt.screen ? clones.MarkVisibles(true) : 0;
+      var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)
          uniquevis = clones.MarkVisibles(false, false, null, hide_top);
       else

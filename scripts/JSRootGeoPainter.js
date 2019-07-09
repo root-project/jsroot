@@ -413,7 +413,7 @@
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000, maxnodeslimit: 3000,
                    use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false, highlight_scene: false, select_in_view: false, use_screen: false,
+                   highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
@@ -457,7 +457,7 @@
 
       if (d.check("TRACKS")) res.tracks = true; // only for TGeoManager
       if (d.check("SHOWTOP")) res.showtop = true; // only for TGeoManager
-      if (d.check("SCREEN")) res.use_screen = true; // use kVisOnScreen bits as visibility
+      if (d.check("NO_SCREEN")) res.no_screen = true; // use kVisOnScreen bits as visibility
 
       if (d.check("ORTHO_CAMERA_ROTATE")) { res.ortho_camera = true; res.can_rotate = true; }
       if (d.check("ORTHO_CAMERA")) { res.ortho_camera = true; res.can_rotate = false; }
@@ -2976,10 +2976,7 @@
 
          this._clones.name_prefix = name_prefix;
 
-         var uniquevis = 0;
-
-         if (this.options.use_screen)
-            uniquevis = this._clones.MarkVisibles(true);
+         var uniquevis = this.options.no_screen ? 0 : this._clones.MarkVisibles(true);
 
          if (uniquevis <= 0)
             uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager && !this.options.showtop);
