@@ -2143,6 +2143,8 @@
           midy = (box.max.y + box.min.y)/2,
           midz = (box.max.z + box.min.z)/2;
 
+      console.log('adjust ', first_time, sizex);
+
       this._overall_size = 2 * Math.max(sizex, sizey, sizez);
 
       this._scene.fog.near = this._overall_size * 2;
@@ -2224,7 +2226,8 @@
 
    TGeoPainter.prototype.focusCamera = function( focus, clip ) {
 
-      if (this.options.project) return this.adjustCameraPosition();
+      if (this.options.project)
+         return this.adjustCameraPosition();
 
       var autoClip = clip === undefined ? false : clip;
 
@@ -3760,6 +3763,7 @@
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {
          this.geo_manager = obj;
+         JSROOT.GEO.SetBit(obj.fMasterVolume, JSROOT.GEO.BITS.kVisThis, false);
          this.AssignObject({ _typename:"TGeoNode", fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
          return true;
       }
@@ -3788,7 +3792,10 @@
 
       this._full_redrawing = true;
 
-      this.prepareObjectDraw(this.GetGeometry());
+      var draw_obj = this.GetGeometry(), name_prefix = "";
+      if (this.geo_manager) name_prefix = draw_obj.fName;
+
+      this.prepareObjectDraw(draw_obj, name_prefix);
 
       return true;
    }
