@@ -3739,13 +3739,35 @@
       return obj.material.wireframe;
    }
 
-
    TGeoPainter.prototype.changeWireFrame = function(obj, on) {
       var painter = this;
 
       obj.traverse(function(obj2) { painter.accessObjectWireFrame(obj2, on); });
 
       this.Render3D();
+   }
+
+   TGeoPainter.prototype.UpdateObject = function(obj) {
+      if (!obj || !obj._typename) return false;
+
+      if (this.geo_manager && (obj._typename == "TGeoManager")) {
+         this.geo_manager = obj;
+         this.AssignObject({ _typename:"TGeoNode", fVolume: obj.fMasterVolume, fName: obj.fMasterVolume.fName, $geoh: obj.fMasterVolume.$geoh, _proxy: true });
+         return true;
+      }
+
+      if (!this.MatchObjectType(obj._typename)) return false;
+
+      this.AssignObject(obj);
+      return true;
+   }
+
+   TGeoPainter.prototype.RedrawObject = function(obj) {
+      if (!this.UpdateObject(obj))
+         return false;
+
+      this.startDrawGeometry();
+      return true;
    }
 
    JSROOT.Painter.CreateGeoPainter = function(divid, obj, opt) {
