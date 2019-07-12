@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 9/07/2019";
+   JSROOT.version = "dev 12/07/2019";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -563,9 +563,8 @@
     */
    JSROOT.parse = function(json) {
       if (!json) return null;
-      var obj = JSON.parse(json);
-      if (obj) obj = this.JSONR_unref(obj);
-      return obj;
+      var obj = (typeof json === 'object') ? json : JSON.parse(json);
+      return obj ? this.JSONR_unref(obj) : obj;
    }
 
    /**
