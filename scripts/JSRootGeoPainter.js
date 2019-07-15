@@ -1054,7 +1054,6 @@
 
       if (!this.options.select_in_view || this._draw_all_nodes) return;
 
-
       var matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
 
       var frustum = JSROOT.GEO.CreateFrustum(matrix);
@@ -3490,6 +3489,7 @@
 
       if (this._full_redrawing) {
          this._full_redrawing = false;
+         this.TestCameraPosition(true); // recheck position
       }
 
       if (this._first_drawing) {
