@@ -2216,7 +2216,7 @@
       if (!this.options) return;
       this.options.rotatey = rotatey || 0;
       this.options.rotatez = rotatez || 0;
-      this.options.zoom = zoom || 1.;
+      if (zoom && !isNaN(zoom)) this.options.zoom = zoom;
       this.adjustCameraPosition();
    }
 
@@ -3472,8 +3472,13 @@
            this.TestAxisVisibility(null, this._toplevel);
       } else {
          this.drawSimpleAxis();
+         if (force_draw !== true)
+            this.TestCameraPosition(true);
+            this.Render3D();
       }
    }
+
+
 
    /** Toggle wireframe mode */
    TGeoPainter.prototype.toggleWireFrame = function() {
