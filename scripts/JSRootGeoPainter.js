@@ -628,7 +628,7 @@
          this.showControlOptions('toggle');
       });
       menu.addchk(this.TestAxisVisibility, "Show axes", function() {
-         this.toggleAxisDraw();
+         this.toggleAxesDraw();
       });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
          this.toggleWireFrame();
@@ -3466,23 +3466,37 @@
    }
 
    /** Toggle axes visibility */
-   TGeoPainter.prototype.toggleAxisDraw = function(force_draw) {
+   TGeoPainter.prototype.toggleAxesDraw = function(force_draw) {
       if (this.TestAxisVisibility) {
-         if (!force_draw)
+         if (!force_draw) {
            this.TestAxisVisibility(null, this._toplevel);
+           this.options._axis = false;
+         }
       } else {
+         this.options._axis = true;
          this.drawSimpleAxis();
-         if (force_draw !== true)
+         if (force_draw !== true) {
             this.TestCameraPosition(true);
             this.Render3D();
+         }
       }
    }
 
-
+   /** set axes visibility */
+   TGeoPainter.prototype.setAxesDraw = function(on) {
+      if (on != this.options._axis)
+         this.toggleAxesDraw();
+   }
 
    /** Toggle wireframe mode */
    TGeoPainter.prototype.toggleWireFrame = function() {
       this.options.wireframe = !this.options.wireframe;
+      this.changeWireFrame(this._scene, this.options.wireframe);
+   }
+
+   /** Specify wireframe mode */
+   TGeoPainter.prototype.setWireFrame = function(on) {
+      this.options.wireframe = on ? true : false;
       this.changeWireFrame(this._scene, this.options.wireframe);
    }
 
@@ -3529,7 +3543,7 @@
 
       if (first_time) {
          this.completeScene();
-         if (this.options._axis) this.toggleAxisDraw(true);
+         if (this.options._axis) this.toggleAxesDraw(true);
       }
 
       this._scene.overrideMaterial = null;
