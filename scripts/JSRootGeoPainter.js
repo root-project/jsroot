@@ -3502,7 +3502,7 @@
 
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
-      var first_time = false, check_extras = true;
+      var first_time = false, full_redraw = false, check_extras = true;
 
       if (!this.options) {
          console.warn('options object does not exist in completeDraw - something went wrong');
@@ -3522,6 +3522,7 @@
 
       if (this._full_redrawing) {
          this._full_redrawing = false;
+         full_redraw = true;
          this.TestCameraPosition(true); // recheck position
       }
 
@@ -3530,6 +3531,7 @@
          this.showDrawInfo();
          this._first_drawing = false;
          first_time = true;
+         full_redraw = true;
 
          if (this._webgl) {
             this.enableX = this.options.clipx;
@@ -3541,10 +3543,11 @@
       if (this.options.transparency!==0)
          this.changeGlobalTransparency(this.options.transparency, true);
 
-      if (first_time) {
+      if (first_time)
          this.completeScene();
-         if (this.options._axis) this.toggleAxesDraw(true);
-      }
+
+      if (full_redraw && this.options._axis)
+         this.toggleAxesDraw(true);
 
       this._scene.overrideMaterial = null;
 
@@ -3707,6 +3710,7 @@
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
       delete this._last_camera_position;
+      delete this.TestAxisVisibility;
 
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
@@ -3827,6 +3831,7 @@
       delete this._build_shapes;
 
       delete this._extraObjects;
+      delete this.TestAxisVisibility; // allow draw of axes again
 
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
 
