@@ -901,7 +901,7 @@
                if (obj.geo_name) {
                   itemname = obj.geo_name;
                   if (itemname.indexOf("<prnt>") == 0)
-                     itemname = (this.GetItemName() || "top") + itemname.substr(6);
+                     itemname = (menu.painter.GetItemName() || "top") + itemname.substr(6);
                   name = itemname.substr(itemname.lastIndexOf("/")+1);
                   if (!name) name = itemname;
                   hdr = name;
