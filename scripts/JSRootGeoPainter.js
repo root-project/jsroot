@@ -631,8 +631,7 @@
          this.toggleAxisDraw();
       });
       menu.addchk(this.options.wireframe, "Wire frame", function() {
-         this.options.wireframe = !this.options.wireframe;
-         this.changeWireFrame(this._scene, this.options.wireframe);
+         this.toggleWireFrame();
       });
       menu.addchk(this.options.highlight, "Highlight volumes", function() {
          this.options.highlight = !this.options.highlight;
@@ -3458,6 +3457,7 @@
       }
    }
 
+   /** Toggle axes visibility */
    TGeoPainter.prototype.toggleAxisDraw = function(force_draw) {
       if (this.TestAxisVisibility) {
          if (!force_draw)
@@ -3465,6 +3465,12 @@
       } else {
          this.drawSimpleAxis();
       }
+   }
+
+   /** Toggle wireframe mode */
+   TGeoPainter.prototype.toggleWireFrame = function() {
+      this.options.wireframe = !this.options.wireframe;
+      this.changeWireFrame(this._scene, this.options.wireframe);
    }
 
    TGeoPainter.prototype.completeDraw = function(close_progress) {
