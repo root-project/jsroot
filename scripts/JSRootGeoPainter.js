@@ -2212,6 +2212,14 @@
          this.startDrawGeometry();
    }
 
+   TGeoPainter.prototype.setCameraPosition = function(rotatey, rotatez, zoom) {
+      if (!this.options) return;
+      this.options.rotatey = rotatey || 0;
+      this.options.rotatez = rotatez || 0;
+      this.options.zoom = zoom || 1.;
+      this.adjustCameraPosition();
+   }
+
    TGeoPainter.prototype.focusOnItem = function(itemname) {
 
       if (!itemname || !this._clones) return;
