@@ -5002,9 +5002,27 @@
       if (painter.enlarge_main('verify'))
          painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
 
+      function performDrawing() {
+         painter.RedrawPadSnap(snap, function() { painter.ShowButtons(); painter.DrawingReady(); });
+      }
+
+      if (snap.fScripts && (typeof snap.fScripts == "string")) {
+         var arg = "";
+
+         if (snap.fScripts.indexOf("load:") == 0) arg = snap.fScripts; else
+         if (snap.fScripts.indexOf("assert:") == 0) arg = snap.fScripts.substr(7);
+         if (arg) {
+            JSROOT.AssertPrerequisites(arg, performDrawing);
+         } else {
+            eval(snap.fScripts);
+            performDrawing();
+         }
+      } else {
+         performDrawing();
+      }
+
       // JSROOT.Painter.drawFrame(divid, null);
 
-      painter.RedrawPadSnap(snap, function() { painter.ShowButtons(); painter.DrawingReady(); });
 
       return painter;
    }
