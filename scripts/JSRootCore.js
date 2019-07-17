@@ -96,7 +96,7 @@
 
    "use strict";
 
-   JSROOT.version = "dev 16/07/2019";
+   JSROOT.version = "dev 17/07/2019";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
@@ -1264,8 +1264,8 @@
       if (kind.indexOf("mathjax;")>=0) {
 
          if (typeof MathJax == 'undefined') {
-            mainfiles += (use_bower ? "###MathJax/MathJax.js" : "https://root.cern/js/mathjax/latest/MathJax.js") +
-                           "?config=TeX-AMS-MML_SVG&delayStartupUntil=configured;";
+            mainfiles += (use_bower ? "###MathJax" : "https://root.cern/js/mathjax/latest") +
+                          "/MathJax.js?config=TeX-AMS-MML_SVG&delayStartupUntil=configured;";
             modules.push('MathJax');
 
             load_callback = function() {
