@@ -2,6 +2,9 @@
 
 ## Changes in 5.7.x
 1. Fix - cover for WebVR API inconsistencies in Android devices (#184)
+2. Fix - add more checks in TF1 GetParName/GetParValue methods (#185)
+3. Fix - bins highlight in lego drawing with "zero" option
+4. Fix - drawing tracks with geoemtry from TObjArray
 
 
 ## Changes in 5.7.0
