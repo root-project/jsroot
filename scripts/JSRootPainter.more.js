@@ -1747,6 +1747,8 @@
    TGraphPainter.prototype.endPntHandler = function() {
       if (this.interactive_bin) {
          var exec = "SetPoint(" + this.interactive_bin.indx + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
+         if ((this.interactive_bin.indx == 0) && this.MatchObjectType('TCutG'))
+            exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
          this.WebCanvasExec(exec);
       }
 
