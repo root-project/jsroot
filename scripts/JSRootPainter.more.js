@@ -815,6 +815,12 @@
       this.DrawBins();
    }
 
+   TGraphPainter.prototype.Cleanup = function() {
+      delete this.interactive_bin; // break mouse handling
+      delete this.bins;
+      JSROOT.TObjectPainter.prototype.Cleanup.call(this);
+   }
+
    TGraphPainter.prototype.DecodeOptions = function(opt) {
 
       if (!opt) opt = this.main_painter() ? "lp" : "alp";
