@@ -297,8 +297,8 @@
       return false;
    }
 
-   THistPainter.prototype.DecomposeTitle = function() {
-   }
+//   THistPainter.prototype.DecomposeTitle = function() {
+//   }
 
    THistPainter.prototype.DrawTitle = function() {
    }
