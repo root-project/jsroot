@@ -375,10 +375,12 @@
       // create svg:g container for line drawing
       this.CreateG();
 
-      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc);
-      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc);
-      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc);
-      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc);
+      var args = { ndc: this.isndc, frame: false, noround: true };
+
+      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, args);
+      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, args);
+      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, args);
+      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, args);
 
       var right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
           left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
