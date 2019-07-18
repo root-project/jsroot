@@ -370,11 +370,12 @@
       // create svg:g container for line drawing
       this.CreateG();
 
-      var x1 = this.AxisToSvg("x", arrow.fX1, this.isndc),
-          y1 = this.AxisToSvg("y", arrow.fY1, this.isndc),
-          x2 = this.AxisToSvg("x", arrow.fX2, this.isndc),
-          y2 = this.AxisToSvg("y", arrow.fY2, this.isndc),
-          right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
+      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc);
+      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc);
+      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc);
+      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc);
+
+      var right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
           left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
           m_start = null, m_mid = null, m_end = null, defs = null,
           oo = arrow.fOption, oolen = oo.length;
@@ -398,11 +399,11 @@
          if (closed) {
             pbeg.call(this.fillatt.func);
             if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pbeg.style('stroke-width',1);
-            var dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx + dy*dy);
+            var dx = this.x2-this.x1, dy = this.y2-this.y1, len = Math.sqrt(dx*dx + dy*dy);
             if (len>wsize) {
                var ratio = wsize/len;
-               x1 += ratio*dx;
-               y1 += ratio*dy;
+               this.x1 += ratio*dx;
+               this.y1 += ratio*dy;
                mbeg.attr("refX", wsize);
             }
          }
@@ -456,30 +457,22 @@
          if (closed) {
             pend.call(this.fillatt.func);
             if (this.fillatt.isSolid(this.lineatt.color)) pend.style('stroke-width',1);
-            var dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx + dy*dy);
+            var dx = this.x2-this.x1, dy = this.y2-this.y1, len = Math.sqrt(dx*dx + dy*dy);
             if (len>wsize) {
                var ratio = wsize/len;
-               x2 -= ratio*dx;
-               y2 -= ratio*dy;
+               this.x2 -= ratio*dx;
+               this.y2 -= ratio*dy;
                mend.attr("refX", 0);
             }
          }
       }
 
-      this.x1 = x1; this.y1 = y1;
-      this.x2 = x2; this.y2 = y2;
       this.no_middle = !m_mid;
 
       this.createPath = function() {
          return "M"+Math.round(this.x1)+","+Math.round(this.y1) +
                 (this.no_middle ? "" : "L" + Math.round(this.x1/2+this.x2/2) + "," + Math.round(this.y1/2+this.y2/2)) +
                 "L"+Math.round(this.x2)+","+Math.round(this.y2);
-      }
-
-      this.movePath = function(dx,dy) {
-         this.x1 += dx; this.y1 += dy;
-         this.x2 += dx; this.y2 += dy;
-         d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
       }
 
       var path = this.draw_g
@@ -491,7 +484,24 @@
       if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
       if (m_end) path.style("marker-end","url(#" + m_end + ")");
 
-      this.AddMove({ move: this.movePath.bind(this) });
+      this.AddMove({ move: function(dx,dy) {
+                             this.ox1 += dx; this.oy1 += dy;
+                             this.ox2 += dx; this.oy2 += dy;
+                             this.x1 += dx; this.y1 += dy;
+                             this.x2 += dx; this.y2 += dy;
+                             d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
+                     }.bind(this),
+                     complete: function() {
+                        var arrow = this.GetObject();
+                        arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
+                        arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
+                        arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
+                        arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
+                        this.WebCanvasExec("SetX1(" + arrow.fX1 + ");;" +
+                                           "SetY1(" + arrow.fY1 + ");;" +
+                                           "SetX2(" + arrow.fX2 + ");;" +
+                                           "SetY2(" + arrow.fY2 + ");;");
+                     }.bind(this)});
    }
 
    // =================================================================================

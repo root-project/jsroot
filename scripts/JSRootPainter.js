@@ -2971,7 +2971,7 @@
       return pad_painter ? pad_painter.pad : null;
    }
 
-   /** @summary Converts pad x or y coordinate into NDC value
+   /** @summary Converts user pad x or y coordinate into NDC value
     * @private */
    TObjectPainter.prototype.ConvertToNDC = function(axis, value, isndc) {
       if (isndc) return value;
@@ -2988,7 +2988,24 @@
       return (value - pad.fX1) / (pad.fX2 - pad.fX1);
    }
 
-   /** @summary Converts x or y coordinate into SVG pad or frame coordinates.
+   /** @summary Converts NDC x or y coordinate into pad user coordinate
+    * @private */
+   TObjectPainter.prototype.ConvertFromNDC = function(axis, value) {
+      var pad = this.root_pad();
+      if (!pad) return value;
+
+      if (axis=="y") {
+         value = pad.fY1  + value * (pad.fY2 - pad.fY1);
+         if (pad.fLogy) value = Math.pow(10, value);
+      } else {
+         value = pad.fX1 + value * (pad.fX2 - pad.fX1);
+         if (pad.fLogx) value = Math.pow(10, value);
+      }
+
+      return value;
+   }
+
+   /** @summary Converts x or y coordinate into SVG pad coordinates.
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
@@ -3007,6 +3024,27 @@
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
       return Math.round(value);
+   }
+
+   /** @summary Converts pad SVG x or y coordinates into axis values.
+   *
+   *  @param {string} axis - name like "x" or "y"
+   *  @param {number} coord - graphics coordiante.
+   *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+   *  @returns {number} rounded value of requested coordiantes
+   *  @private
+   */
+
+   TObjectPainter.prototype.SvgToAxis = function(axis, coord, kind) {
+      var main = this.frame_painter();
+
+      // use frame methods for conversion
+      if (main && !kind)
+         return (axis=="y") ? main.RevertY(coord - main.frame_y())
+                            : main.RevertX(coord - main.frame_x());
+
+      var ndc = (axis=="y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
+      return kind ? ndc : this.ConvertFromNDC(axis, ndc);
    }
 
   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
@@ -3638,9 +3676,8 @@
 
        }).on("drag", function() {
 
-            var handle = pthis.draw_g.property('move_handle');
-
-            if (!handle) return;
+            // var handle = pthis.draw_g.property('move_handle');
+            // if (!handle) return;
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -3650,6 +3687,8 @@
        }).on(prefix+"end", function() {
 
             d3.event.sourceEvent.preventDefault();
+
+            if (args.complete) args.complete();
 
             // var handle = pthis.draw_g.property('move_handle');
             // if (handle) {
