@@ -3009,21 +3009,33 @@
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
-    *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+    *  @param {boolean|object} kind - false or undefined is normal coordinate
+    *                               - true is NDC coordinates
+    *                               kind.ndc - boolean flag as before
+    *                               kind.frame - true use frame coordinates, frame should be there
+    *                               kind.noround - if true, not round value
     *  @returns {number} rounded value of requested coordiantes
     *  @private
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
-      var main = this.frame_painter();
-      if (main && !kind && main["gr"+axis]) {
-         // this is frame coordinates
-         value = (axis=="y") ? main.gry(value) + main.frame_y()
-                             : main.grx(value) + main.frame_x();
+      var ndc = false, use_frame, main = null, noround = false;
+      if (kind === true) { ndc = true; use_frame = false; }
+      else if (kind === false) { ndc = false; use_frame = false; }
+      else if (kind && (typeof kind == 'object')) { ndc = kind.ndc || false; use_frame = kind.frame; noround = kind.noround; }
+
+      if (use_frame !== false) main = this.frame_painter();
+
+      if ((use_frame !== false) && main && main["gr"+axis]) {
+         value = (axis=="y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
+                             : main.grx(value) + (use_frame ? 0 : main.frame_x());
+      } else if (use_frame) {
+         value = 0; // in principal error, while frame calculation requested
       } else {
-         if (kind !== true) value = this.ConvertToNDC(axis, value);
+         if (!ndc) value = this.ConvertToNDC(axis, value);
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
-      return Math.round(value);
+
+      return noround ? value : Math.round(value);
    }
 
    /** @summary Converts pad SVG x or y coordinates into axis values.

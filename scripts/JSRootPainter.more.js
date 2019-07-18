@@ -34,25 +34,30 @@
           tcolor = this.get_color(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
-          main = this.frame_painter();
+          main = this.frame_painter(),
+          args = { ndc: false, frame: false };
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
-         pos_x = pos_x * w;
-         pos_y = (1 - pos_y) * h;
+         args.ndc = true;
       } else if (main && !main.mode3d) {
-         w = this.frame_width(); h = this.frame_height(); use_frame = "upper_layer";
-         pos_x = main.grx(pos_x);
-         pos_y = main.gry(pos_y);
+         // frame coordiantes
+         args.frame = true;
+         w = this.frame_width();
+         h = this.frame_height();
+         use_frame = "upper_layer";
       } else if (this.root_pad() !== null) {
-         pos_x = this.ConvertToNDC("x", pos_x) * w;
-         pos_y = (1 - this.ConvertToNDC("y", pos_y)) * h;
+         // force pad coordiantes
       } else {
+         // place in the middle
+         args.ndc = true;
+         pos_x = pos_y = 0.5;
          text.fTextAlign = 22;
-         pos_x = w/2;
-         pos_y = h/2;
          if (!tcolor) tcolor = 'black';
       }
+
+      pos_x = this.AxisToSvg("x", pos_x, args);
+      pos_y = this.AxisToSvg("y", pos_y, args);
 
       this.CreateG(use_frame);
 
