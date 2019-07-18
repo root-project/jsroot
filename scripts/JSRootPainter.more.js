@@ -359,7 +359,10 @@
    function drawArrow() {
       var arrow = this.GetObject(),
           wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
-          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180));
+          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180)),
+          kLineNDC = JSROOT.BIT(14);
+
+      this.isndc = arrow.TestBit(kLineNDC);
 
       this.createAttLine({ attr: arrow });
       this.createAttFill({ attr: arrow });
@@ -367,10 +370,10 @@
       // create svg:g container for line drawing
       this.CreateG();
 
-      var x1 = this.AxisToSvg("x", arrow.fX1, false),
-          y1 = this.AxisToSvg("y", arrow.fY1, false),
-          x2 = this.AxisToSvg("x", arrow.fX2, false),
-          y2 = this.AxisToSvg("y", arrow.fY2, false),
+      var x1 = this.AxisToSvg("x", arrow.fX1, this.isndc),
+          y1 = this.AxisToSvg("y", arrow.fY1, this.isndc),
+          x2 = this.AxisToSvg("x", arrow.fX2, this.isndc),
+          y2 = this.AxisToSvg("y", arrow.fY2, this.isndc),
           right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
           left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
           m_start = null, m_mid = null, m_end = null, defs = null,
@@ -379,7 +382,7 @@
       if (oo.indexOf("<")==0) {
          var closed = (oo.indexOf("<|") == 0);
          if (!defs) defs = this.draw_g.append("defs");
-         m_start = "jsroot_arrowmarker_" +  JSROOT.id_counter++;
+         m_start = "jsroot_arrowmarker_" + JSROOT.id_counter++;
          var mbeg = defs.append("svg:marker")
                        .attr("id", m_start)
                        .attr("markerWidth", wsize)
@@ -426,9 +429,8 @@
                       .attr("markerUnits", "userSpaceOnUse")
                       .append("svg:path")
                       .style("fill","none")
-                      .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) +
-                            ((midkind > 10) ? "Z" : ""))
-                            .call(this.lineatt.func);
+                      .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) + ((midkind > 10) ? "Z" : ""))
+                      .call(this.lineatt.func);
          if (midkind > 10) {
             pmid.call(this.fillatt.func);
             if (this.fillatt.isSolid(this.lineatt.color)) pmid.style('stroke-width',1);
@@ -464,16 +466,32 @@
          }
       }
 
+      this.x1 = x1; this.y1 = y1;
+      this.x2 = x2; this.y2 = y2;
+      this.no_middle = !m_mid;
+
+      this.createPath = function() {
+         return "M"+Math.round(this.x1)+","+Math.round(this.y1) +
+                (this.no_middle ? "" : "L" + Math.round(this.x1/2+this.x2/2) + "," + Math.round(this.y1/2+this.y2/2)) +
+                "L"+Math.round(this.x2)+","+Math.round(this.y2);
+      }
+
+      this.movePath = function(dx,dy) {
+         this.x1 += dx; this.y1 += dy;
+         this.x2 += dx; this.y2 += dy;
+         d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
+      }
+
       var path = this.draw_g
-           .append("svg:path")
-           .attr("d",  "M"+Math.round(x1)+","+Math.round(y1) +
-                       ((m_mid == null) ? "" : "L" + Math.round(x1/2+x2/2) + "," + Math.round(y1/2+y2/2)) +
-                       "L"+Math.round(x2)+","+Math.round(y2))
-            .call(this.lineatt.func);
+                     .append("svg:path")
+                     .attr("d", this.createPath())
+                     .call(this.lineatt.func);
 
       if (m_start) path.style("marker-start","url(#" + m_start + ")");
       if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
       if (m_end) path.style("marker-end","url(#" + m_end + ")");
+
+      this.AddMove({ move: this.movePath.bind(this) });
    }
 
    // =================================================================================

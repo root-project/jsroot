@@ -3601,10 +3601,70 @@
          this.control.SwitchTooltip(on);
    }
 
-   /** @summary Add drag interactive elements
+   /** @summary Add move handlers for drawn element
+    * @private */
+   TObjectPainter.prototype.AddMove = function(args) {
+
+      if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode) return;
+
+      function detectRightButton(event) {
+         if ('buttons' in event) return event.buttons === 2;
+         else if ('which' in event) return event.which === 3;
+         else if ('button' in event) return event.button === 2;
+         return false;
+      }
+
+      var prefix = "", drag_move, drag_resize, pthis = this;
+      if (JSROOT._test_d3_ === 3) {
+         prefix = "drag";
+         drag_move = d3.behavior.drag().origin(Object);
+      } else {
+         drag_move = d3.drag().subject(Object);
+      }
+
+      drag_move
+        .on(prefix+"start",  function() {
+            if (detectRightButton(d3.event.sourceEvent)) return;
+
+            JSROOT.Painter.closeMenu(); // close menu
+
+            pthis.SwitchTooltip(false); // disable tooltip
+
+            d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
+            // var handle = { acc_x1: 0, acc_y1: 0, drag_tm: new Date() };
+            // pthis.draw_g.property('move_handle', handle);
+
+       }).on("drag", function() {
+
+            var handle = pthis.draw_g.property('move_handle');
+
+            if (!handle) return;
+
+            d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
+
+            if (args.move) args.move(d3.event.dx, d3.event.dy);
+
+       }).on(prefix+"end", function() {
+
+            d3.event.sourceEvent.preventDefault();
+
+            // var handle = pthis.draw_g.property('move_handle');
+            // if (handle) {
+            //    pthis.draw_g.property('move_handle', null);
+            //   console.log('Finish moving', handle.acc_x1, handle.acc_y1);
+            // }
+      });
+
+      this.draw_g.style("cursor", "move").call(drag_move);
+   }
+
+   /** @summary Add drag for interactive rectangular elements
     * @private */
    TObjectPainter.prototype.AddDrag = function(callback) {
-      if (!JSROOT.gStyle.MoveResize) return;
+      if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode) return;
 
       var pthis = this, drag_rect = null, pp = this.pad_painter();
       if (pp && pp._fast_drawing) return;
