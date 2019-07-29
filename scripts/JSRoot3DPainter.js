@@ -951,10 +951,33 @@
       this.indx+=3;
    }
 
-   PointsCreator.prototype.CreatePoints = function(mcolor) {
-      // only plain geometry and sprite material is supported by SoftwareRenderer, but it cannot be scaled
+   // var test_image = null;
 
-      var material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
+   PointsCreator.prototype.CreatePoints = function(mcolor) {
+      var material = null;
+
+      if (true) {
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
+      } else {
+         var plainSVG = '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                        '<circle cx="32" cy="32" r="30" stroke="black" stroke-width="3" fill="red"/>' +
+                        '</svg>';
+         var doctype = '<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+
+         var test_image = new Image();
+         //test_image.onload = function() {
+         //}
+         test_image.src = 'data:image/svg+xml;base64,' + window.btoa(doctype + plainSVG);
+         var texture = new THREE.Texture();
+         texture.image = test_image;
+
+         // JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
+         var isJPEG = false;
+         texture.format = isJPEG ? THREE.RGBFormat : THREE.RGBAFormat;
+         texture.needsUpdate = true;
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture } );
+      }
+
       var pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
       return pnts;
@@ -1013,6 +1036,7 @@
    // ==============================================================================================
 
 
+
    JSROOT.Painter.PointsCreator = PointsCreator;
    JSROOT.Painter.InteractiveControl = InteractiveControl;
    JSROOT.Painter.PointsControl = PointsControl;
@@ -1020,7 +1044,6 @@
    JSROOT.Painter.drawPolyLine3D = drawPolyLine3D;
 
    JSROOT.Painter.Create3DLineMaterial = Create3DLineMaterial;
-
 
    return JSROOT;
 
