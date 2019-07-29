@@ -2102,14 +2102,11 @@
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.options) return;
 
-      var pos1 = new THREE.Vector3().add(this._camera0pos);
-      var pos2 = new THREE.Vector3().add(this._camera.position);
+      var pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
+          pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat),
+          len1 = pos1.length(), len2 = pos2.length(),
+          zoom = this.options.zoom * len2 / len1 * 100;
 
-      pos1.sub(this._lookat);
-      pos2.sub(this._lookat);
-
-      var len1 = pos1.length(), len2 = pos2.length();
-      var zoom = this.options.zoom * len2 / len1 * 100;
       if (zoom < 1) zoom = 1; else if (zoom>10000) zoom = 10000;
 
       pos1.normalize();
@@ -2170,7 +2167,14 @@
 
       this._camera.updateProjectionMatrix();
 
-      var k = 2*this.options.zoom, max_all = Math.max(sizex,sizey,sizez);
+      var k = 2, max_all = Math.max(sizex,sizey,sizez);
+
+      if (this.options.zoom1) {
+         k = 2*this.options.zoom1;
+         delete this.options.zoom1;
+      } else {
+         k = 2*this.options.zoom;
+      }
 
       if ((this.options.rotatey || this.options.rotatez) && this.options.can_rotate) {
 
@@ -2197,7 +2201,7 @@
       }
 
       this._lookat = new THREE.Vector3(midx, midy, midz);
-      this._camera0pos = new THREE.Vector3(-k*max_all, 0, 0); // virtual 0 position, where rotation starts
+      this._camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
       this._pointLight.position.set(sizex/5, sizey/5, sizez/5);
@@ -2216,7 +2220,14 @@
       if (!this.options) return;
       this.options.rotatey = rotatey || 0;
       this.options.rotatez = rotatez || 0;
-      if (zoom && !isNaN(zoom)) this.options.zoom = zoom;
+      if (zoom && !isNaN(zoom)) {
+         this.options.zoom = zoom;
+      } else if (this._camera0pos && this._camera && this._lookat) {
+         var pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
+             pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
+
+         this.options.zoom1 = pos2.length() / pos1.length();
+      }
       this.adjustCameraPosition();
    }
 
@@ -3696,9 +3707,11 @@
       this._scene_height = 0;
       this._renderer = null;
       this._toplevel = null;
-      this._full_geom = null;
-      this._camera = null;
-      this._selected_mesh = null;
+      delete this._full_geom;
+      delete this._camera;
+      delete this._camera0pos;
+      delete this._lookat;
+      delete this._selected_mesh;
 
       if (this._clones && this._clones_owner)
          this._clones.Cleanup(this._draw_nodes, this._build_shapes);
