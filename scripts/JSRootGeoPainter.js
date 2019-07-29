@@ -2745,7 +2745,9 @@
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      var mesh = pnts.CreatePoints(JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)");
+      var mesh = pnts.CreatePoints( { color: JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
+                                      style: hit.fMarkerStyle,
+                                      callback: function(delayed) { if (delayed) this.Render3D(100); }.bind(this)});
 
       mesh.highlightScale = 2;
 

@@ -2619,7 +2619,6 @@
          return tip;
       }
 
-
       return true;
    }
 
