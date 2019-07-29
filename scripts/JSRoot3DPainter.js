@@ -980,7 +980,7 @@
          texture.image.src = 'data:image/svg+xml;utf8,' + plainSVG;
 
          // JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture } );
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture, transparent: true } );
       }
 
       var pnts = new THREE.Points(this.geom, material);

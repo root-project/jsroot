@@ -2675,6 +2675,7 @@
       var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = JSROOT.Painter.createLineSegments(buf, lineMaterial);
 
+      line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
       line.geo_object = track;
       line.hightlightWidthScale = 2;
@@ -2714,6 +2715,7 @@
       var lineMaterial = new THREE.LineBasicMaterial({ color: track_color, linewidth: track_width }),
           line = JSROOT.Painter.createLineSegments(buf, lineMaterial);
 
+      line.renderOrder = 1000000; // to bring line to the front
       line.geo_name = itemname;
       line.geo_object = track;
       line.hightlightWidthScale = 2;
@@ -2745,10 +2747,11 @@
                        projy ? projv : hit.fP[i*3+1],
                        projz ? projv : hit.fP[i*3+2]);
 
-      var mesh = pnts.CreatePoints( { color: JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
-                                      style: hit.fMarkerStyle,
-                                      callback: function(delayed) { if (delayed) this.Render3D(100); }.bind(this)});
+      var mesh = pnts.CreatePoints({ color: JSROOT.Painter.root_colors[hit.fMarkerColor] || "rgb(0,0,255)",
+                                     style: hit.fMarkerStyle,
+                                     callback: function(delayed) { if (delayed) this.Render3D(100); }.bind(this) });
 
+      mesh.renderOrder = 1000000; // to bring points to the front
       mesh.highlightScale = 2;
 
       mesh.geo_name = itemname;
