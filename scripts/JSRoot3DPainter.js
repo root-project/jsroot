@@ -974,8 +974,8 @@
          texture.image = document.createElement('img');
 
          texture.image.onload = function() {
+            if ( texture.onUpdate ) texture.onUpdate( texture );
             JSROOT.CallBack(args.callback, true);
-            // if ( texture.onUpdate ) texture.onUpdate( texture );
          }
          texture.image.src = 'data:image/svg+xml;utf8,' + plainSVG;
 
