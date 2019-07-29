@@ -3121,8 +3121,11 @@
       this.completeDraw(true);
    }
 
+   /** @brief Checks camera position and recalculate rendering order if needed
+    * @param force - if specified, forces calculations of render order
+    * @private
+    */
    TGeoPainter.prototype.TestCameraPosition = function(force) {
-
       this._camera.updateMatrixWorld();
       var origin = this._camera.position.clone();
 
