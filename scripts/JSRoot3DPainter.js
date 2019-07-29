@@ -958,27 +958,27 @@
          material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
       } else {
 
+
+
          var handler = new JSROOT.TAttMarkerHandler({ style: mstyle, color: mcolor, size: 8 });
 
          var path = handler.create(32,32);
 
-         var plainSVG = '<?xml version="1.0" standalone="no"?>' +
-                        '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">' +
-                        '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+         var plainSVG = '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
                         '<path d="' + path + '" stroke="none" fill="' + mcolor + '"/>' +
                         '</svg>';
 
-         var image = new Image();
-         image.onload = function() {
-         }
-         image.src = 'data:image/svg+xml;base64,' + window.btoa(plainSVG);
          var texture = new THREE.Texture();
-         texture.image = image;
+         texture.needsUpdate = true;
+         texture.format = THREE.RGBAFormat;
+         texture.image = new Image();
+
+         texture.image.onload = function() {
+            if ( texture.onUpdate ) texture.onUpdate( texture );
+         }
+         texture.image.src = 'data:image/svg+xml;utf8,' + plainSVG;
 
          // JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
-         var isJPEG = false;
-         texture.format = isJPEG ? THREE.RGBFormat : THREE.RGBAFormat;
-         texture.needsUpdate = true;
          material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, map: texture } );
       }
 
