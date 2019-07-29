@@ -956,10 +956,16 @@
       if (typeof args !== 'object') args = { color: args };
       if (!args.color) args.color = 'black';
 
-      var material = null;
+      var material = null, k = 1;
 
-      if (!args.style || JSROOT.BatchMode) {
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: args.color } );
+      // special dots
+      if (args.style === 1) k = 0.3; else
+      if (args.style === 6) k = 0.5; else
+      if (args.style === 7) k = 0.7;
+
+      if (!args.style || (k !== 1) || JSROOT.BatchMode) {
+
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale * k, color: args.color } );
          JSROOT.CallBack(args.callback, false);
       } else {
 
