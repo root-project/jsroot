@@ -951,30 +951,31 @@
       this.indx+=3;
    }
 
-   PointsCreator.prototype.CreatePoints = function(mcolor, mstyle) {
+   PointsCreator.prototype.CreatePoints = function(args) {
+
+      if (typeof args !== 'object') args = { color: args };
+      if (!args.color) args.color = 'black';
+
       var material = null;
 
-      if (!mstyle) {
-         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
+      if (!args.style || JSROOT.BatchMode) {
+         material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: args.color } );
+         JSROOT.CallBack(args.callback, false);
       } else {
 
+         var handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
-
-         var handler = new JSROOT.TAttMarkerHandler({ style: mstyle, color: mcolor, size: 8 });
-
-         var path = handler.create(32,32);
-
-         var plainSVG = '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="' + path + '" stroke="none" fill="' + mcolor + '"/>' +
-                        '</svg>';
+         var plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path d="' + handler.create(32,32) + '" stroke="none" fill="' + args.color + '"/></svg>';
 
          var texture = new THREE.Texture();
          texture.needsUpdate = true;
          texture.format = THREE.RGBAFormat;
-         texture.image = new Image();
+         texture.image = document.createElement('img');
 
          texture.image.onload = function() {
-            if ( texture.onUpdate ) texture.onUpdate( texture );
+            JSROOT.CallBack(args.callback, true);
+            // if ( texture.onUpdate ) texture.onUpdate( texture );
          }
          texture.image.src = 'data:image/svg+xml;utf8,' + plainSVG;
 
