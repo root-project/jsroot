@@ -951,25 +951,29 @@
       this.indx+=3;
    }
 
-   // var test_image = null;
-
-   PointsCreator.prototype.CreatePoints = function(mcolor) {
+   PointsCreator.prototype.CreatePoints = function(mcolor, mstyle) {
       var material = null;
 
-      if (true) {
+      if (!mstyle) {
          material = new THREE.PointsMaterial( { size: (this.webgl ? 3 : 1) * this.scale, color: mcolor || 'black' } );
       } else {
-         var plainSVG = '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-                        '<circle cx="32" cy="32" r="30" stroke="black" stroke-width="3" fill="red"/>' +
-                        '</svg>';
-         var doctype = '<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
 
-         var test_image = new Image();
-         //test_image.onload = function() {
-         //}
-         test_image.src = 'data:image/svg+xml;base64,' + window.btoa(doctype + plainSVG);
+         var handler = new JSROOT.TAttMarkerHandler({ style: mstyle, color: mcolor, size: 8 });
+
+         var path = handler.create(32,32);
+
+         var plainSVG = '<?xml version="1.0" standalone="no"?>' +
+                        '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">' +
+                        '<svg width="64" height="64" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                        '<path d="' + path + '" stroke="none" fill="' + mcolor + '"/>' +
+                        '</svg>';
+
+         var image = new Image();
+         image.onload = function() {
+         }
+         image.src = 'data:image/svg+xml;base64,' + window.btoa(plainSVG);
          var texture = new THREE.Texture();
-         texture.image = test_image;
+         texture.image = image;
 
          // JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
          var isJPEG = false;

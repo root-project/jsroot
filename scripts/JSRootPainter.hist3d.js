@@ -3371,7 +3371,7 @@
                fcolor = palette ? palette.calcColor(lvl, levels.length) :
                                   this.get_color(graph.fMarkerColor);
 
-            var mesh = pnts.CreatePoints(fcolor);
+            var mesh = pnts.CreatePoints(fcolor, this.options.Circles ? 4 : graph.fMarkerStyle);
 
             fp.toplevel.add(mesh);
 
