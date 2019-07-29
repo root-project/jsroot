@@ -3473,7 +3473,9 @@
             pnts.AddPoint(fp.grx(poly.fP[i]), fp.gry(poly.fP[i+1]), fp.grz(poly.fP[i+2]));
          }
 
-         var mesh = pnts.CreatePoints(this.get_color(poly.fMarkerColor));
+         var mesh = pnts.CreatePoints({ color: this.get_color(poly.fMarkerColor),
+                                        style: poly.fMarkerStyle,
+                                        callback: function(delayed) { if (delayed) fp.Render3D(100); } });
 
          fp.toplevel.add(mesh);
 
