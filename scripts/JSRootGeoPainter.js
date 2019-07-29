@@ -812,10 +812,10 @@
       });
 
       appearance.addColor(this.options, 'background').name('Background').onChange( function() {
-          painter._renderer.setClearColor(painter.options.background, 1);
-          painter.Render3D(0);
-          var bkgr = new THREE.Color(painter.options.background);
-          painter._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
+         painter._renderer.setClearColor(painter.options.background, 1);
+         painter.Render3D(0);
+         var bkgr = new THREE.Color(painter.options.background);
+         painter._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
       });
 
       appearance.add(this, 'focusCamera').name('Reset camera position');

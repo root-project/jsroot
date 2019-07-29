@@ -157,8 +157,8 @@
          res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.SoftwareRenderer(args);
       }
 
-      //renderer.setClearColor(0xffffff, 1);
-      // renderer.setClearColor(0x0, 0);
+      // res.renderer.setClearColor("#000000", 1);
+      // res.renderer.setClearColor(0x0, 0);
       res.renderer.setSize(width, height);
 
       if (!res.dom) {
