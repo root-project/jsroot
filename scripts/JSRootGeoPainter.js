@@ -854,7 +854,7 @@
             'Mesh size': "size",
             'Central point': "pnt"
         } ).name("Rendering order").onChange( function ( value ) {
-           delete painter._last_camera_position; // used for testing depth
+           painter._forceProduceRenderOrder();
            painter.Render3D();
         } );
 
@@ -3132,7 +3132,7 @@
       if (!force && this._last_camera_position) {
          // if camera position does not changed a lot, ignore such change
          var dist = this._last_camera_position.distanceTo(origin);
-         if (dist < (this._overall_size || 1000)/1e4) return;
+         if (dist < (this._overall_size || 1000)*1e-4) return;
       }
 
       this._last_camera_position = origin; // remember current camera position
@@ -3495,13 +3495,18 @@
          this.options._axis = true;
          this.drawSimpleAxis();
          if (force_draw !== true) {
-            this.TestCameraPosition(true);
+            this._forceProduceRenderOrder(); // used for testing depth
             this.Render3D();
          }
       }
    }
 
-   /** set axes visibility */
+   /** @brief Forces recalculation of rendering order before next rendering @private */
+   TGeoPainter.prototype._forceProduceRenderOrder = function() {
+      delete this._last_camera_position;
+   }
+
+   /** @brief Set axes visibility */
    TGeoPainter.prototype.setAxesDraw = function(on) {
       if (on != this.options._axis)
          this.toggleAxesDraw();
@@ -3542,7 +3547,7 @@
       if (this._full_redrawing) {
          this._full_redrawing = false;
          full_redraw = true;
-         this.TestCameraPosition(true); // recheck position
+         this._forceProduceRenderOrder();
       }
 
       if (this._first_drawing) {
