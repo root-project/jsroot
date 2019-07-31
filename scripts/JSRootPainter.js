@@ -3020,7 +3020,7 @@
       var use_frame = this.draw_g && this.draw_g.property('in_frame'),
           main = use_frame ? this.frame_painter() : null;
 
-      if ((use_frame!==false) && main && main["gr"+axis]) {
+      if (use_frame && main && main["gr"+axis]) {
          value = (axis=="y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
                              : main.grx(value) + (use_frame ? 0 : main.frame_x());
       } else if (use_frame) {
@@ -3037,17 +3037,14 @@
    *
    *  @param {string} axis - name like "x" or "y"
    *  @param {number} coord - graphics coordiante.
-   *  @param {boolean|object} - false or undefined is normal coordinate
-   *                          - true is NDC coordinates
-   *                          kind.ndc - boolean flag as before
-   *                          kind.frame - true use frame coordinates, frame should be there
+   *  @param {boolean} ndc - kind of return value
    *  @returns {number} value of requested coordiantes
    *  @private
    */
 
    TObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
       var use_frame = this.draw_g && this.draw_g.property('in_frame'),
-           main = use_frame ? this.frame_painter() : null;
+          main = use_frame ? this.frame_painter() : null;
 
       if (use_frame) main = this.frame_painter();
 
@@ -3065,19 +3062,19 @@
   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
    *
    * Produce functor can convert x and y value by calling func.x(x) and func.y(y)
-   *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
+   *  @param {boolean} isndc - if NDC coordinates will be used
    *  @private
    */
-  TObjectPainter.prototype.AxisToSvgFunc = function(kind) {
-     var func = { kind: kind }, main = this.frame_painter();
-     if (main && !kind && main.grx && main.gry) {
-        func.main = main;
-        func.offx = main.frame_x();
-        func.offy = main.frame_y();
+  TObjectPainter.prototype.AxisToSvgFunc = function(isndc) {
+     var func = { isndc: isndc}, use_frame = this.draw_g && this.draw_g.property('in_frame');
+     if (use_frame) func.main = this.frame_painter();
+     if (func.main && !isndc && func.main.grx && func.main.gry) {
+        func.offx = func.main.frame_x();
+        func.offy = func.main.frame_y();
         func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
         func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
      } else {
-        if (kind !== true) func.p = this; // need for NDC conversion
+        if (!isndc) func.p = this; // need for NDC conversion
         func.padh = this.pad_height();
         func.padw = this.pad_width();
         func.x = function(x) { if (this.p) x = this.p.ConvertToNDC("x", x); return Math.round(x*this.padw); }
