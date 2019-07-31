@@ -3059,8 +3059,8 @@
       if (use_frame !== false) main = this.frame_painter();
 
       if ((use_frame !== false) && main) {
-         return  (axis=="y") ? main.RevertY(coord - (use_frame ? main.frame_y() : 0))
-                             : main.RevertX(coord - (use_frame ? main.frame_x() : 0));
+         return  (axis=="y") ? main.RevertY(coord - (use_frame ? 0 : main.frame_y()))
+                             : main.RevertX(coord - (use_frame ? 0 : main.frame_x()));
       } else if (use_frame) {
          return 0; // in principal error, while frame calculation requested
       }
