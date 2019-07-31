@@ -7,6 +7,7 @@
 4. Provide "showtop" option for TGeoManager (equivalent to gGeoManager->SetTopVisible())
 5. Provide "no_screen" option to let ignore kVisOnScreen bits for display, checked first by default
 6. Support different marker styles in 3D drawings
+7. Implement interactive movement of TArrow class
 
 
 ## Changes in 5.7.0

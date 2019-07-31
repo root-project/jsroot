@@ -491,23 +491,32 @@
       if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
       if (m_end) path.style("marker-end","url(#" + m_end + ")");
 
-      this.AddMove({ move: function(dx,dy) {
-                             this.ox1 += dx; this.oy1 += dy;
-                             this.ox2 += dx; this.oy2 += dy;
-                             this.x1 += dx; this.y1 += dy;
-                             this.x2 += dx; this.y2 += dy;
+      this.AddMove({ begin: function(x,y) {
+                        var fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
+                            sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
+                            sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
+                        if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
+                     }.bind(this),
+                     move: function(dx,dy) {
+                             if (this.side != 1) {
+                                this.ox1 += dx; this.oy1 += dy;
+                                this.x1 += dx; this.y1 += dy;
+                             }
+                             if (this.side != -1) {
+                                this.ox2 += dx; this.oy2 += dy;
+                                this.x2 += dx; this.y2 += dy;
+                             }
                              d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
                      }.bind(this),
                      complete: function() {
-                        var arrow = this.GetObject();
+                        var arrow = this.GetObject(), exec = "";
                         arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
                         arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
                         arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
                         arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
-                        this.WebCanvasExec("SetX1(" + arrow.fX1 + ");;" +
-                                           "SetY1(" + arrow.fY1 + ");;" +
-                                           "SetX2(" + arrow.fX2 + ");;" +
-                                           "SetY2(" + arrow.fY2 + ");;");
+                        if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
+                        if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
+                        this.WebCanvasExec(exec);
                      }.bind(this)});
    }
 

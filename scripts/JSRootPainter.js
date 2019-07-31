@@ -3664,7 +3664,7 @@
          return false;
       }
 
-      var prefix = "", drag_move, drag_resize, pthis = this;
+      var prefix = "", drag_move;
       if (JSROOT._test_d3_ === 3) {
          prefix = "drag";
          drag_move = d3.behavior.drag().origin(Object);
@@ -3675,38 +3675,21 @@
       drag_move
         .on(prefix+"start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
-
             JSROOT.Painter.closeMenu(); // close menu
-
-            pthis.SwitchTooltip(false); // disable tooltip
-
+            this.SwitchTooltip(false); // disable tooltip
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
-
-            // var handle = { acc_x1: 0, acc_y1: 0, drag_tm: new Date() };
-            // pthis.draw_g.property('move_handle', handle);
-
-       }).on("drag", function() {
-
-            // var handle = pthis.draw_g.property('move_handle');
-            // if (!handle) return;
-
+            if (args.begin) {
+               var pos = d3.mouse(this.draw_g.node());
+               args.begin(pos[0], pos[1]);
+            }
+       }.bind(this)).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
-
             if (args.move) args.move(d3.event.dx, d3.event.dy);
-
        }).on(prefix+"end", function() {
-
             d3.event.sourceEvent.preventDefault();
-
             if (args.complete) args.complete();
-
-            // var handle = pthis.draw_g.property('move_handle');
-            // if (handle) {
-            //    pthis.draw_g.property('move_handle', null);
-            //   console.log('Finish moving', handle.acc_x1, handle.acc_y1);
-            // }
       });
 
       this.draw_g.style("cursor", "move").call(drag_move);
