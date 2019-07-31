@@ -2903,6 +2903,8 @@
          this.draw_g.attr('objtype', encodeURI(this.draw_object._typename || "type"));
       }
 
+      this.draw_g.property('in_frame', !!frame_layer); // indicates coordinate system
+
       return this.draw_g;
    }
 
@@ -3009,23 +3011,16 @@
     *
     *  @param {string} axis - name like "x" or "y"
     *  @param {number} value - axis value to convert.
-    *  @param {boolean|object} kind - false or undefined is normal coordinate
-    *                               - true is NDC coordinates
-    *                               kind.ndc - boolean flag as before
-    *                               kind.frame - true use frame coordinates, frame should be there
-    *                               kind.noround - if true, not round value
+    *  @param {boolean} ndc - is value in NDC coordinates
+    *  @param {boolean} noround - skip rounding
     *  @returns {number} value of requested coordiantes, rounded if kind.noround not specified
     *  @private
     */
-   TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
-      var ndc = false, use_frame, main = null, noround = false;
-      if (kind === true) { ndc = true; use_frame = false; }
-      else if (kind === false) { ndc = false; use_frame = false; }
-      else if (kind && (typeof kind == 'object')) { ndc = kind.ndc || false; use_frame = kind.frame; noround = kind.noround; }
+   TObjectPainter.prototype.AxisToSvg = function(axis, value, ndc, noround) {
+      var use_frame = this.draw_g && this.draw_g.property('in_frame'),
+          main = use_frame ? this.frame_painter() : null;
 
-      if (use_frame !== false) main = this.frame_painter();
-
-      if ((use_frame !== false) && main && main["gr"+axis]) {
+      if ((use_frame!==false) && main && main["gr"+axis]) {
          value = (axis=="y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
                              : main.grx(value) + (use_frame ? 0 : main.frame_x());
       } else if (use_frame) {
@@ -3050,15 +3045,13 @@
    *  @private
    */
 
-   TObjectPainter.prototype.SvgToAxis = function(axis, coord, kind) {
-      var ndc = false, use_frame, main = null;
-      if (kind === true) { ndc = true; use_frame = false; }
-      else if (kind === false) { ndc = false; use_frame = false; }
-      else if (kind && (typeof kind == 'object')) { ndc = kind.ndc || false; use_frame = kind.frame; }
+   TObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
+      var use_frame = this.draw_g && this.draw_g.property('in_frame'),
+           main = use_frame ? this.frame_painter() : null;
 
-      if (use_frame !== false) main = this.frame_painter();
+      if (use_frame) main = this.frame_painter();
 
-      if ((use_frame !== false) && main) {
+      if (use_frame && main) {
          return  (axis=="y") ? main.RevertY(coord - (use_frame ? 0 : main.frame_y()))
                              : main.RevertX(coord - (use_frame ? 0 : main.frame_x()));
       } else if (use_frame) {

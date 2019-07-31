@@ -34,15 +34,13 @@
           tcolor = this.get_color(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
-          main = this.frame_painter(),
-          args = { ndc: false, frame: false };
+          main = this.frame_painter(),  isndc = false;
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
-         args.ndc = true;
+         isndc = true;
       } else if (main && !main.mode3d) {
          // frame coordiantes
-         args.frame = true;
          w = this.frame_width();
          h = this.frame_height();
          use_frame = "upper_layer";
@@ -50,16 +48,16 @@
          // force pad coordiantes
       } else {
          // place in the middle
-         args.ndc = true;
+         isndc = true;
          pos_x = pos_y = 0.5;
          text.fTextAlign = 22;
          if (!tcolor) tcolor = 'black';
       }
 
-      pos_x = this.AxisToSvg("x", pos_x, args);
-      pos_y = this.AxisToSvg("y", pos_y, args);
-
       this.CreateG(use_frame);
+
+      pos_x = this.AxisToSvg("x", pos_x, isndc);
+      pos_y = this.AxisToSvg("y", pos_y, isndc);
 
       var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: 0 };
 
@@ -100,15 +98,15 @@
 
    function drawPolyLine() {
 
+      // create svg:g container for polyline drawing
+      this.CreateG();
+
       var polyline = this.GetObject(),
           lineatt = new JSROOT.TAttLineHandler(polyline),
           fillatt = this.createAttFill(polyline),
           kPolyLineNDC = JSROOT.BIT(14),
           isndc = polyline.TestBit(kPolyLineNDC),
           cmd = "", func = this.AxisToSvgFunc(isndc);
-
-      // create svg:g container for polyline drawing
-      this.CreateG();
 
       for (var n=0;n<=polyline.fLastPoint;++n)
          cmd += ((n>0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
@@ -342,13 +340,14 @@
    // =============================================================================
 
    function drawPolyMarker() {
-      var poly = this.GetObject(),
-          att = new JSROOT.TAttMarkerHandler(poly),
-          func = this.AxisToSvgFunc(false),
-          path = "";
 
       // create svg:g container for box drawing
       this.CreateG();
+
+      var poly = this.GetObject(),
+          att = new JSROOT.TAttMarkerHandler(poly),
+          path = "",
+          func = this.AxisToSvgFunc(false);
 
       for (var n=0;n<poly.fN;++n)
          path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
@@ -372,15 +371,12 @@
       this.createAttLine({ attr: arrow });
       this.createAttFill({ attr: arrow });
 
-      // create svg:g container for line drawing
       this.CreateG();
 
-      this.args = { ndc: this.isndc, frame: false, noround: true };
-
-      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.args);
-      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.args);
-      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.args);
-      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.args);
+      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc, true);
+      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc, true);
+      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc, true);
+      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
 
       var right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
           left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
@@ -511,10 +507,10 @@
          }.bind(this),
          complete: function() {
             var arrow = this.GetObject(), exec = "";
-            arrow.fX1 = this.SvgToAxis("x", this.ox1, this.args);
-            arrow.fX2 = this.SvgToAxis("x", this.ox2, this.args);
-            arrow.fY1 = this.SvgToAxis("y", this.oy1, this.args);
-            arrow.fY2 = this.SvgToAxis("y", this.oy2, this.args);
+            arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
+            arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
+            arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
+            arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
             if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
             if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
             this.WebCanvasExec(exec + "Notify();;");

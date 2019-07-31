@@ -685,10 +685,10 @@
       }
 
       if (JSROOT.gStyle.Zooming && !this.disable_zooming) {
-         var r =  axis_g.append("svg:rect")
-                        .attr("class", "axis_zoom")
-                        .style("opacity", "0")
-                        .style("cursor", "crosshair");
+         var r = axis_g.append("svg:rect")
+                       .attr("class", "axis_zoom")
+                       .style("opacity", "0")
+                       .style("cursor", "crosshair");
 
          if (vertical)
             r.attr("x", (side>0) ? (-2*labelsize - 3) : 3)
@@ -772,10 +772,10 @@
    TAxisPainter.prototype.Redraw = function() {
 
       var gaxis = this.GetObject(),
-          x1 = this.AxisToSvg("x", gaxis.fX1, "pad"),
-          y1 = this.AxisToSvg("y", gaxis.fY1, "pad"),
-          x2 = this.AxisToSvg("x", gaxis.fX2, "pad"),
-          y2 = this.AxisToSvg("y", gaxis.fY2, "pad"),
+          x1 = this.AxisToSvg("x", gaxis.fX1),
+          y1 = this.AxisToSvg("y", gaxis.fY1),
+          x2 = this.AxisToSvg("x", gaxis.fX2),
+          y2 = this.AxisToSvg("y", gaxis.fY2),
           w = x2 - x1, h = y1 - y2,
           vertical = Math.abs(w) < Math.abs(h),
           func = null, reverse = false, kind = "normal",
