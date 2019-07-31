@@ -5655,7 +5655,7 @@
 
       if (pnt && pnt.handler) {
          // special use of interactive handler in the frame painter
-         var rect = this.draw_g ? this.draw_g.select(".interactive_rect") : null;
+         var rect = this.draw_g ? this.draw_g.select(".main_layer") : null;
          if (!rect || rect.empty()) {
             pnt = null; // disable
          } else if (pnt.touch) {
