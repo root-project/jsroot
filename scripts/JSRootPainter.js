@@ -3014,7 +3014,7 @@
     *                               kind.ndc - boolean flag as before
     *                               kind.frame - true use frame coordinates, frame should be there
     *                               kind.noround - if true, not round value
-    *  @returns {number} rounded value of requested coordiantes
+    *  @returns {number} value of requested coordiantes, rounded if kind.noround not specified
     *  @private
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, kind) {
@@ -3042,21 +3042,31 @@
    *
    *  @param {string} axis - name like "x" or "y"
    *  @param {number} coord - graphics coordiante.
-   *  @param {boolean|string} kind - false or undefined is coordinate inside frame, true - when NDC pad coordinates are used, "pad" - when pad coordinates relative to pad ranges are specified
-   *  @returns {number} rounded value of requested coordiantes
+   *  @param {boolean|object} - false or undefined is normal coordinate
+   *                          - true is NDC coordinates
+   *                          kind.ndc - boolean flag as before
+   *                          kind.frame - true use frame coordinates, frame should be there
+   *  @returns {number} value of requested coordiantes
    *  @private
    */
 
    TObjectPainter.prototype.SvgToAxis = function(axis, coord, kind) {
-      var main = this.frame_painter();
+      var ndc = false, use_frame, main = null;
+      if (kind === true) { ndc = true; use_frame = false; }
+      else if (kind === false) { ndc = false; use_frame = false; }
+      else if (kind && (typeof kind == 'object')) { ndc = kind.ndc || false; use_frame = kind.frame; }
 
-      // use frame methods for conversion
-      if (main && !kind)
-         return (axis=="y") ? main.RevertY(coord - main.frame_y())
-                            : main.RevertX(coord - main.frame_x());
+      if (use_frame !== false) main = this.frame_painter();
 
-      var ndc = (axis=="y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
-      return kind ? ndc : this.ConvertFromNDC(axis, ndc);
+      if ((use_frame !== false) && main) {
+         return  (axis=="y") ? main.RevertY(coord - (use_frame ? main.frame_y() : 0))
+                             : main.RevertX(coord - (use_frame ? main.frame_x() : 0));
+      } else if (use_frame) {
+         return 0; // in principal error, while frame calculation requested
+      }
+
+      var value = (axis=="y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
+      return ndc ? value : this.ConvertFromNDC(axis, value);
    }
 
   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
