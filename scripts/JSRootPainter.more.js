@@ -516,7 +516,7 @@
                         arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
                         if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
                         if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
-                        this.WebCanvasExec(exec);
+                        this.WebCanvasExec(exec + "Notify();;");
                      }.bind(this)});
    }
 
