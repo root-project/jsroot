@@ -2973,23 +2973,6 @@
       return pad_painter ? pad_painter.pad : null;
    }
 
-   /** @summary Converts user pad x or y coordinate into NDC value
-    * @private */
-   TObjectPainter.prototype.ConvertToNDC = function(axis, value, isndc) {
-      if (isndc) return value;
-      var pad = this.root_pad();
-      if (!pad) return value;
-
-      if (axis=="y") {
-         if (pad.fLogy)
-            value = (value>0) ? JSROOT.log10(value) : pad.fUymin;
-         return (value - pad.fY1) / (pad.fY2 - pad.fY1);
-      }
-      if (pad.fLogx)
-         value = (value>0) ? JSROOT.log10(value) : pad.fUxmin;
-      return (value - pad.fX1) / (pad.fX2 - pad.fX1);
-   }
-
    /** @summary Converts x or y coordinate into SVG pad coordinates.
     *
     *  @param {string} axis - name like "x" or "y"
@@ -3009,7 +2992,18 @@
       } else if (use_frame) {
          value = 0; // in principal error, while frame calculation requested
       } else {
-         if (!ndc) value = this.ConvertToNDC(axis, value);
+         var pad = ndc ? null : this.root_pad();
+         if (pad) {
+            if (axis=="y") {
+               if (pad.fLogy)
+                  value = (value>0) ? JSROOT.log10(value) : pad.fUymin;
+               value = (value - pad.fY1) / (pad.fY2 - pad.fY1);
+            } else {
+               if (pad.fLogx)
+                  value = (value>0) ? JSROOT.log10(value) : pad.fUxmin;
+               value = (value - pad.fX1) / (pad.fX2 - pad.fX1);
+            }
+         }
          value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
       }
 
@@ -3061,7 +3055,7 @@
    *  @private
    */
   TObjectPainter.prototype.AxisToSvgFunc = function(isndc) {
-     var func = { isndc: isndc}, use_frame = this.draw_g && this.draw_g.property('in_frame');
+     var func = {isndc: isndc}, use_frame = this.draw_g && this.draw_g.property('in_frame');
      if (use_frame) func.main = this.frame_painter();
      if (func.main && !isndc && func.main.grx && func.main.gry) {
         func.offx = func.main.frame_x();
@@ -3069,11 +3063,25 @@
         func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
         func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
      } else {
-        if (!isndc) func.p = this; // need for NDC conversion
+        if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
         func.padh = this.pad_height();
         func.padw = this.pad_width();
-        func.x = function(x) { if (this.p) x = this.p.ConvertToNDC("x", x); return Math.round(x*this.padw); }
-        func.y = function(y) { if (this.p) y = this.p.ConvertToNDC("y", y); return Math.round((1-y)*this.padh); }
+        func.x = function(x) {
+           if (this.pad) {
+              if (this.pad.fLogx)
+                 value = (value>0) ? JSROOT.log10(value) : this.pad.fUxmin;
+              value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+           }
+           return Math.round(value*this.padw);
+        }
+        func.y = function(value) {
+           if (this.pad) {
+              if (this.pad.fLogy)
+                 value = (value>0) ? JSROOT.log10(value) : this.pad.fUymin;
+               value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
+           }
+           return Math.round((1-value)*this.padh);
+        }
      }
      return func;
   }
