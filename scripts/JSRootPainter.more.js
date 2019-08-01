@@ -363,6 +363,129 @@
    function drawArrow() {
       var arrow = this.GetObject(),
           wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
+          kLineNDC = JSROOT.BIT(14),
+          oo = arrow.fOption, oolen = oo.length, path = "";
+
+      function rotate(angle, x0, y0) {
+         angle = angle / 180 * Math.PI;
+         var dx = wsize * Math.cos(angle),
+             dy = wsize * Math.sin(angle),
+             res = "";
+         if ((x0 !== undefined) && (y0 !== undefined)) {
+            res =  "M" + Math.round(x0-dx) + "," + Math.round(y0-dy);
+         } else {
+            dx = -dx; dy = -dy;
+         }
+         res += "l"+Math.round(dx) + "," + Math.round(dy);
+         if (x0 && (y0 === undefined)) res+="z";
+         return res;
+      }
+
+      this.isndc = arrow.TestBit(kLineNDC);
+
+      this.createAttLine({ attr: arrow });
+      this.createAttFill({ attr: arrow });
+
+      this.CreateG();
+
+      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc);
+      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc);
+      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc);
+      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc);
+
+      var angle = Math.atan2(this.y1 - this.y2, this.x1 - this.x2)/ Math.PI * 180;
+
+      var closed_beg = false, closed_mid = false, closed_end = false;
+
+      if (oo.indexOf("<")==0) {
+         closed_beg = (oo.indexOf("<|") == 0);
+         path += rotate(angle - arrow.fAngle/2, this.x1, this.y1) + rotate(angle + arrow.fAngle/2, closed_beg);
+      }
+
+      angle += 180;
+
+      var midkind = 0;
+      if (oo.indexOf("->-")>=0)  midkind = 1; else
+      if (oo.indexOf("-|>-")>=0) midkind = 11; else
+      if (oo.indexOf("-<-")>=0) midkind = 2; else
+      if (oo.indexOf("-<|-")>=0) midkind = 12;
+
+      if (midkind) {
+         closed_mid = midkind > 10;
+
+         path += rotate(angle - arrow.fAngle/2, (this.x1 + this.x2)/2, (this.y1 + this.y2)/2) + rotate(angle + arrow.fAngle/2, closed_mid);
+      }
+
+      if (oo.lastIndexOf(">") == oolen-1) {
+         closed_end = (oo.lastIndexOf("|>") == oolen-2) && (oolen>1);
+
+         path += rotate(angle - arrow.fAngle/2, this.x2, this.y2) + rotate(angle + arrow.fAngle/2, closed_end);
+      }
+
+      if (closed_beg) {
+         var dlen = wsize * Math.cos(arrow.fAngle/2/180*Math.PI);
+         this.x1 += dlen*Math.cos(angle/180*Math.PI);
+         this.y1 += dlen*Math.sin(angle/180*Math.PI);
+      }
+
+      if (closed_end) {
+         var dlen = wsize * Math.cos(arrow.fAngle/2/180*Math.PI);
+         this.x2 -= dlen*Math.cos(angle/180*Math.PI);
+         this.y2 -= dlen*Math.sin(angle/180*Math.PI);
+      }
+
+
+
+      path = "M"+this.x1+","+this.y1 + "L"+this.x2+","+this.y2 + path;
+
+      this.createPath = function() {
+         return path;
+      }
+
+      var elem = this.draw_g.append("svg:path")
+                     .attr("d", path)
+                     .call(this.lineatt.func);
+
+      if (closed_beg || closed_end)
+         elem.call(this.fillatt.func);
+      else
+         elem.style('fill','none');
+
+/*
+      this.AddMove({
+         begin: function(x,y) {
+            var fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
+                sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
+                sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
+            if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
+         }.bind(this),
+         move: function(dx,dy) {
+            if (this.side != 1) {
+               this.ox1 += dx; this.oy1 += dy;
+               this.x1 += dx; this.y1 += dy;
+            }
+            if (this.side != -1) {
+               this.ox2 += dx; this.oy2 += dy;
+               this.x2 += dx; this.y2 += dy;
+            }
+            d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
+         }.bind(this),
+         complete: function() {
+            var arrow = this.GetObject(), exec = "";
+            arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
+            arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
+            arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
+            arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
+            if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
+            if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
+            this.WebCanvasExec(exec + "Notify();;");
+         }.bind(this)});
+*/
+   }
+
+   function drawArrowOld() {
+      var arrow = this.GetObject(),
+          wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
           hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180)),
           kLineNDC = JSROOT.BIT(14);
 
