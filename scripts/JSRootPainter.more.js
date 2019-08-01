@@ -361,11 +361,9 @@
    // ======================================================================================
 
    function drawArrow() {
-      var arrow = this.GetObject(),
-          wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
-          kLineNDC = JSROOT.BIT(14),
-          oo = arrow.fOption, path = "";
+      var arrow = this.GetObject(), kLineNDC = JSROOT.BIT(14), oo = arrow.fOption;
 
+      this.wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize));
       this.isndc = arrow.TestBit(kLineNDC);
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
@@ -377,7 +375,7 @@
       if (oo.indexOf("-<-")>=0) this.mid = 2; else
       if (oo.indexOf("-<|-")>=0) this.mid = 12;
       if (oo.lastIndexOf(">") == oo.length-1)
-         this.end = (oo.lastIndexOf("|>") == oo.length-2) && (oo.length>1) ? 11 : 1;
+         this.end = ((oo.lastIndexOf("|>") == oo.length-2) && (oo.length>1)) ? 11 : 1;
 
       this.createAttLine({ attr: arrow });
 
@@ -388,8 +386,8 @@
       this.x2 = this.AxisToSvg("x", arrow.fX2, this.isndc, true);
       this.y2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
 
-      function rotate(angle, x0, y0) {
-         var dx = wsize * Math.cos(angle), dy = wsize * Math.sin(angle), res = "";
+      this.rotate = function(angle, x0, y0) {
+         var dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
          if ((x0 !== undefined) && (y0 !== undefined)) {
             res =  "M" + Math.round(x0-dx) + "," + Math.round(y0-dy);
          } else {
@@ -401,32 +399,32 @@
       }
 
       this.createPath = function() {
-         var angle = Math.atan2(this.y1 - this.y2, this.x1 - this.x2), path = "";
+         var angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1),
+             dlen = this.wsize * Math.cos(this.angle2),
+             dx = dlen*Math.cos(angle), dy = dlen*Math.sin(angle),
+             path = "";
 
          if (this.beg)
-            path += rotate(angle - this.angle2, this.x1, this.y1) + rotate(angle + this.angle2, this.beg > 10);
+            path += this.rotate(angle - Math.PI - this.angle2, this.x1, this.y1) +
+                    this.rotate(angle - Math.PI + this.angle2, this.beg > 10);
 
-         angle += Math.PI;
+         if (this.mid % 10 == 2)
+            path += this.rotate(angle - Math.PI - this.angle2, (this.x1+this.x2-dx)/2, (this.y1+this.y2-dy)/2) +
+                    this.rotate(angle - Math.PI + this.angle2, this.mid > 10);
 
-         if (this.mid)
-            path += rotate(angle - this.angle2, (this.x1 + this.x2)/2, (this.y1 + this.y2)/2) + rotate(angle + this.angle2, this.mid > 0);
+         if (this.mid % 10 == 1)
+            path += this.rotate(angle - this.angle2, (this.x1+this.x2+dx)/2, (this.y1+this.y2+dy)/2) +
+                    this.rotate(angle + this.angle2, this.mid > 10);
 
          if (this.end)
-            path += rotate(angle - this.angle2, this.x2, this.y2) + rotate(angle + this.angle2, this.end > 10);
+            path += this.rotate(angle - this.angle2, this.x2, this.y2) +
+                    this.rotate(angle + this.angle2, this.end > 10);
 
-         var dlen = wsize * Math.cos(this.angle2), dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
-
-         if (this.beg > 10) {
-            dx1 = dlen*Math.cos(angle);
-            dy1 = dlen*Math.sin(angle);
-         }
-
-         if (this.end > 10) {
-            dx2 = dlen*Math.cos(angle);
-            dy2 = dlen*Math.sin(angle);
-         }
-
-         return "M"+Math.round(this.x1+dx1)+","+Math.round(this.y1+dy1) + "L"+Math.round(this.x2-dx2)+","+Math.round(this.y2-dy2) + path;
+         return "M" + Math.round(this.x1 + (this.beg > 10 ? dx : 0)) + "," +
+                      Math.round(this.y1 + (this.beg > 10 ? dy : 0)) +
+                "L" + Math.round(this.x2 - (this.end > 10 ? dx : 0)) + "," +
+                      Math.round(this.y2 - (this.end > 10 ? dy : 0)) +
+                path;
       }
 
       var elem = this.draw_g.append("svg:path")
