@@ -3066,7 +3066,7 @@
         if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
         func.padh = this.pad_height();
         func.padw = this.pad_width();
-        func.x = function(x) {
+        func.x = function(value) {
            if (this.pad) {
               if (this.pad.fLogx)
                  value = (value>0) ? JSROOT.log10(value) : this.pad.fUxmin;
