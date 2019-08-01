@@ -363,7 +363,7 @@
    function drawArrow() {
       var arrow = this.GetObject(), kLineNDC = JSROOT.BIT(14), oo = arrow.fOption;
 
-      this.wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize));
+      this.wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize*0.8));
       this.isndc = arrow.TestBit(kLineNDC);
       this.angle2 = arrow.fAngle/2/180 * Math.PI;
       this.beg = this.mid = this.end = 0;
