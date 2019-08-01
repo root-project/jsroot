@@ -8,6 +8,7 @@
 5. Provide "no_screen" option to let ignore kVisOnScreen bits for display, checked first by default
 6. Support different marker styles in 3D drawings
 7. Implement interactive movement of TArrow class
+8. New and simpler TArrow drawing without use of svg markers
 
 
 ## Changes in 5.7.0

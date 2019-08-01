@@ -364,251 +364,81 @@
       var arrow = this.GetObject(),
           wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
           kLineNDC = JSROOT.BIT(14),
-          oo = arrow.fOption, oolen = oo.length, path = "";
+          oo = arrow.fOption, path = "";
+
+      this.isndc = arrow.TestBit(kLineNDC);
+      this.angle2 = arrow.fAngle/2/180 * Math.PI;
+      this.beg = this.mid = this.end = 0;
+
+      if (oo.indexOf("<")==0)
+         this.beg = (oo.indexOf("<|") == 0) ? 12 : 2;
+      if (oo.indexOf("->-")>=0)  this.mid = 1; else
+      if (oo.indexOf("-|>-")>=0) this.mid = 11; else
+      if (oo.indexOf("-<-")>=0) this.mid = 2; else
+      if (oo.indexOf("-<|-")>=0) this.mid = 12;
+      if (oo.lastIndexOf(">") == oo.length-1)
+         this.end = (oo.lastIndexOf("|>") == oo.length-2) && (oo.length>1) ? 11 : 1;
+
+      this.createAttLine({ attr: arrow });
+
+      this.CreateG();
+
+      this.x1 = this.AxisToSvg("x", arrow.fX1, this.isndc, true);
+      this.y1 = this.AxisToSvg("y", arrow.fY1, this.isndc, true);
+      this.x2 = this.AxisToSvg("x", arrow.fX2, this.isndc, true);
+      this.y2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
 
       function rotate(angle, x0, y0) {
-         angle = angle / 180 * Math.PI;
-         var dx = wsize * Math.cos(angle),
-             dy = wsize * Math.sin(angle),
-             res = "";
+         var dx = wsize * Math.cos(angle), dy = wsize * Math.sin(angle), res = "";
          if ((x0 !== undefined) && (y0 !== undefined)) {
             res =  "M" + Math.round(x0-dx) + "," + Math.round(y0-dy);
          } else {
             dx = -dx; dy = -dy;
          }
-         res += "l"+Math.round(dx) + "," + Math.round(dy);
-         if (x0 && (y0 === undefined)) res+="z";
+         res += "l"+Math.round(dx)+","+Math.round(dy);
+         if (x0 && (y0===undefined)) res+="z";
          return res;
       }
 
-      this.isndc = arrow.TestBit(kLineNDC);
-
-      this.createAttLine({ attr: arrow });
-      this.createAttFill({ attr: arrow });
-
-      this.CreateG();
-
-      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc);
-      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc);
-      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc);
-      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc);
-
-      var angle = Math.atan2(this.y1 - this.y2, this.x1 - this.x2)/ Math.PI * 180;
-
-      var closed_beg = false, closed_mid = false, closed_end = false;
-
-      if (oo.indexOf("<")==0) {
-         closed_beg = (oo.indexOf("<|") == 0);
-         path += rotate(angle - arrow.fAngle/2, this.x1, this.y1) + rotate(angle + arrow.fAngle/2, closed_beg);
-      }
-
-      angle += 180;
-
-      var midkind = 0;
-      if (oo.indexOf("->-")>=0)  midkind = 1; else
-      if (oo.indexOf("-|>-")>=0) midkind = 11; else
-      if (oo.indexOf("-<-")>=0) midkind = 2; else
-      if (oo.indexOf("-<|-")>=0) midkind = 12;
-
-      if (midkind) {
-         closed_mid = midkind > 10;
-
-         path += rotate(angle - arrow.fAngle/2, (this.x1 + this.x2)/2, (this.y1 + this.y2)/2) + rotate(angle + arrow.fAngle/2, closed_mid);
-      }
-
-      if (oo.lastIndexOf(">") == oolen-1) {
-         closed_end = (oo.lastIndexOf("|>") == oolen-2) && (oolen>1);
-
-         path += rotate(angle - arrow.fAngle/2, this.x2, this.y2) + rotate(angle + arrow.fAngle/2, closed_end);
-      }
-
-      if (closed_beg) {
-         var dlen = wsize * Math.cos(arrow.fAngle/2/180*Math.PI);
-         this.x1 += dlen*Math.cos(angle/180*Math.PI);
-         this.y1 += dlen*Math.sin(angle/180*Math.PI);
-      }
-
-      if (closed_end) {
-         var dlen = wsize * Math.cos(arrow.fAngle/2/180*Math.PI);
-         this.x2 -= dlen*Math.cos(angle/180*Math.PI);
-         this.y2 -= dlen*Math.sin(angle/180*Math.PI);
-      }
-
-
-
-      path = "M"+this.x1+","+this.y1 + "L"+this.x2+","+this.y2 + path;
-
       this.createPath = function() {
-         return path;
+         var angle = Math.atan2(this.y1 - this.y2, this.x1 - this.x2), path = "";
+
+         if (this.beg)
+            path += rotate(angle - this.angle2, this.x1, this.y1) + rotate(angle + this.angle2, this.beg > 10);
+
+         angle += Math.PI;
+
+         if (this.mid)
+            path += rotate(angle - this.angle2, (this.x1 + this.x2)/2, (this.y1 + this.y2)/2) + rotate(angle + this.angle2, this.mid > 0);
+
+         if (this.end)
+            path += rotate(angle - this.angle2, this.x2, this.y2) + rotate(angle + this.angle2, this.end > 10);
+
+         var dlen = wsize * Math.cos(this.angle2), dx1 = 0, dx2 = 0, dy1 = 0, dy2 = 0;
+
+         if (this.beg > 10) {
+            dx1 = dlen*Math.cos(angle);
+            dy1 = dlen*Math.sin(angle);
+         }
+
+         if (this.end > 10) {
+            dx2 = dlen*Math.cos(angle);
+            dy2 = dlen*Math.sin(angle);
+         }
+
+         return "M"+Math.round(this.x1+dx1)+","+Math.round(this.y1+dy1) + "L"+Math.round(this.x2-dx2)+","+Math.round(this.y2-dy2) + path;
       }
 
       var elem = this.draw_g.append("svg:path")
-                     .attr("d", path)
-                     .call(this.lineatt.func);
-
-      if (closed_beg || closed_end)
-         elem.call(this.fillatt.func);
-      else
-         elem.style('fill','none');
-
-/*
-      this.AddMove({
-         begin: function(x,y) {
-            var fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
-                sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
-                sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
-            if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
-         }.bind(this),
-         move: function(dx,dy) {
-            if (this.side != 1) {
-               this.ox1 += dx; this.oy1 += dy;
-               this.x1 += dx; this.y1 += dy;
-            }
-            if (this.side != -1) {
-               this.ox2 += dx; this.oy2 += dy;
-               this.x2 += dx; this.y2 += dy;
-            }
-            d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
-         }.bind(this),
-         complete: function() {
-            var arrow = this.GetObject(), exec = "";
-            arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
-            arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
-            arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
-            arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
-            if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
-            if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
-            this.WebCanvasExec(exec + "Notify();;");
-         }.bind(this)});
-*/
-   }
-
-   function drawArrowOld() {
-      var arrow = this.GetObject(),
-          wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize)),
-          hsize = Math.round(wsize * Math.tan(arrow.fAngle/2*Math.PI/180)),
-          kLineNDC = JSROOT.BIT(14);
-
-      this.isndc = arrow.TestBit(kLineNDC);
-
-      this.createAttLine({ attr: arrow });
-      this.createAttFill({ attr: arrow });
-
-      this.CreateG();
-
-      this.x1 = this.ox1 = this.AxisToSvg("x", arrow.fX1, this.isndc, true);
-      this.y1 = this.oy1 = this.AxisToSvg("y", arrow.fY1, this.isndc, true);
-      this.x2 = this.ox2 = this.AxisToSvg("x", arrow.fX2, this.isndc, true);
-      this.y2 = this.oy2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
-
-      var right_arrow = "M0,0" + "L"+wsize+","+hsize + "L0,"+(2*hsize),
-          left_arrow =  "M"+wsize+",0" + "L0,"+hsize + "L"+wsize+","+(2*hsize),
-          m_start = null, m_mid = null, m_end = null, defs = null,
-          oo = arrow.fOption, oolen = oo.length;
-
-      if (oo.indexOf("<")==0) {
-         var closed = (oo.indexOf("<|") == 0);
-         if (!defs) defs = this.draw_g.append("defs");
-         m_start = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-         var mbeg = defs.append("svg:marker")
-                       .attr("id", m_start)
-                       .attr("markerWidth", wsize)
-                       .attr("markerHeight", 2*hsize)
-                       .attr("refX", 0)
-                       .attr("refY", hsize)
-                       .attr("orient", "auto")
-                       .attr("markerUnits", "userSpaceOnUse");
-         var pbeg = mbeg.append("svg:path")
-                       .style("fill","none")
-                       .attr("d", left_arrow + (closed ? "Z" : ""))
-                       .call(this.lineatt.func);
-         if (closed) {
-            pbeg.call(this.fillatt.func);
-            if ((this.fillatt.color == this.lineatt.color) && this.fillatt.isSolid()) pbeg.style('stroke-width',1);
-            var dx = this.x2-this.x1, dy = this.y2-this.y1, len = Math.sqrt(dx*dx + dy*dy);
-            if (len>wsize) {
-               var ratio = wsize/len;
-               this.x1 += ratio*dx;
-               this.y1 += ratio*dy;
-               mbeg.attr("refX", wsize);
-            }
-         }
-      }
-
-      var midkind = 0;
-      if (oo.indexOf("->-")>=0)  midkind = 1; else
-      if (oo.indexOf("-|>-")>=0) midkind = 11; else
-      if (oo.indexOf("-<-")>=0) midkind = 2; else
-      if (oo.indexOf("-<|-")>=0) midkind = 12;
-
-      if (midkind > 0) {
-         var closed = midkind > 10;
-         if (!defs) defs = this.draw_g.append("defs");
-         m_mid = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-
-         var pmid = defs.append("svg:marker")
-                      .attr("id", m_mid)
-                      .attr("markerWidth", wsize)
-                      .attr("markerHeight", 2*hsize)
-                      .attr("refX", Math.round(wsize*0.5))
-                      .attr("refY", hsize)
-                      .attr("orient", "auto")
-                      .attr("markerUnits", "userSpaceOnUse")
-                      .append("svg:path")
-                      .style("fill","none")
-                      .attr("d", ((midkind % 10 == 1) ? right_arrow : left_arrow) + ((midkind > 10) ? "Z" : ""))
-                      .call(this.lineatt.func);
-         if (midkind > 10) {
-            pmid.call(this.fillatt.func);
-            if (this.fillatt.isSolid(this.lineatt.color)) pmid.style('stroke-width',1);
-         }
-      }
-
-      if (oo.lastIndexOf(">") == oolen-1) {
-         var closed = (oo.lastIndexOf("|>") == oolen-2) && (oolen>1);
-         if (!defs) defs = this.draw_g.append("defs");
-         m_end = "jsroot_arrowmarker_" + JSROOT.id_counter++;
-         var mend = defs.append("svg:marker")
-                       .attr("id", m_end)
-                       .attr("markerWidth", wsize)
-                       .attr("markerHeight", 2*hsize)
-                       .attr("refX", wsize)
-                       .attr("refY", hsize)
-                       .attr("orient", "auto")
-                       .attr("markerUnits", "userSpaceOnUse");
-         var pend = mend.append("svg:path")
-                       .style("fill","none")
-                       .attr("d", right_arrow + (closed ? "Z" : ""))
-                       .call(this.lineatt.func);
-         if (closed) {
-            pend.call(this.fillatt.func);
-            if (this.fillatt.isSolid(this.lineatt.color)) pend.style('stroke-width',1);
-            var dx = this.x2-this.x1, dy = this.y2-this.y1, len = Math.sqrt(dx*dx + dy*dy);
-            if (len>wsize) {
-               var ratio = wsize/len;
-               this.x2 -= ratio*dx;
-               this.y2 -= ratio*dy;
-               mend.attr("refX", 0);
-            }
-         }
-      }
-
-      this.no_middle = !m_mid;
-
-      this.createPath = function() {
-         return "M"+Math.round(this.x1)+","+Math.round(this.y1) +
-                (this.no_middle ? "" : "L" + Math.round(this.x1/2+this.x2/2) + "," + Math.round(this.y1/2+this.y2/2)) +
-                "L"+Math.round(this.x2)+","+Math.round(this.y2);
-      }
-
-      var path = this.draw_g
-                     .append("svg:path")
                      .attr("d", this.createPath())
                      .call(this.lineatt.func);
 
-      if (m_start) path.style("marker-start","url(#" + m_start + ")");
-      if (m_mid) path.style("marker-mid","url(#" + m_mid + ")");
-      if (m_end) path.style("marker-end","url(#" + m_end + ")");
+      if ((this.beg > 10) || (this.end > 10)) {
+         this.createAttFill({ attr: arrow });
+         elem.call(this.fillatt.func);
+      } else {
+         elem.style('fill','none');
+      }
 
       this.AddMove({
          begin: function(x,y) {
@@ -618,22 +448,16 @@
             if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
          }.bind(this),
          move: function(dx,dy) {
-            if (this.side != 1) {
-               this.ox1 += dx; this.oy1 += dy;
-               this.x1 += dx; this.y1 += dy;
-            }
-            if (this.side != -1) {
-               this.ox2 += dx; this.oy2 += dy;
-               this.x2 += dx; this.y2 += dy;
-            }
-            d3.select(this.draw_g.node().lastChild).attr("d", this.createPath());
+            if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
+            if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
+            this.draw_g.select('path').attr("d", this.createPath());
          }.bind(this),
          complete: function() {
             var arrow = this.GetObject(), exec = "";
-            arrow.fX1 = this.SvgToAxis("x", this.ox1, this.isndc);
-            arrow.fX2 = this.SvgToAxis("x", this.ox2, this.isndc);
-            arrow.fY1 = this.SvgToAxis("y", this.oy1, this.isndc);
-            arrow.fY2 = this.SvgToAxis("y", this.oy2, this.isndc);
+            arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
+            arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
+            arrow.fY1 = this.SvgToAxis("y", this.y1, this.isndc);
+            arrow.fY2 = this.SvgToAxis("y", this.y2, this.isndc);
             if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
             if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
             this.WebCanvasExec(exec + "Notify();;");
