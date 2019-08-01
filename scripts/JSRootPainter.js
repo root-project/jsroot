@@ -2990,23 +2990,6 @@
       return (value - pad.fX1) / (pad.fX2 - pad.fX1);
    }
 
-   /** @summary Converts NDC x or y coordinate into pad user coordinate
-    * @private */
-   TObjectPainter.prototype.ConvertFromNDC = function(axis, value) {
-      var pad = this.root_pad();
-      if (!pad) return value;
-
-      if (axis=="y") {
-         value = pad.fY1  + value * (pad.fY2 - pad.fY1);
-         if (pad.fLogy) value = Math.pow(10, value);
-      } else {
-         value = pad.fX1 + value * (pad.fX2 - pad.fX1);
-         if (pad.fLogx) value = Math.pow(10, value);
-      }
-
-      return value;
-   }
-
    /** @summary Converts x or y coordinate into SVG pad coordinates.
     *
     *  @param {string} axis - name like "x" or "y"
@@ -3056,7 +3039,19 @@
       }
 
       var value = (axis=="y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
-      return ndc ? value : this.ConvertFromNDC(axis, value);
+      var pad = ndc ? null : this.root_pad();
+
+      if (pad) {
+         if (axis=="y") {
+            value = pad.fY1  + value * (pad.fY2 - pad.fY1);
+            if (pad.fLogy) value = Math.pow(10, value);
+         } else {
+            value = pad.fX1 + value * (pad.fX2 - pad.fX1);
+            if (pad.fLogx) value = Math.pow(10, value);
+         }
+      }
+
+      return value;
    }
 
   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
