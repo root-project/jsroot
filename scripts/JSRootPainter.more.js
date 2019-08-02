@@ -134,24 +134,25 @@
       // create svg:g container for ellipse drawing
       this.CreateG();
 
-      var x = this.AxisToSvg("x", ellipse.fX1, false),
-          y = this.AxisToSvg("y", ellipse.fY1, false),
-          rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1, false) - x,
-          ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2, false);
+      var x = this.AxisToSvg("x", ellipse.fX1),
+          y = this.AxisToSvg("y", ellipse.fY1),
+          rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
+          ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2);
 
       if (ellipse._typename == "TCrown") {
          if (ellipse.fR1 <= 0) {
             // handle same as ellipse with equal radius
-            rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2, false) - x;
+            rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
          } else {
             var rx1 = rx, ry2 = ry,
-                ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1, false),
-                rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2, false) - x;
+                ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1),
+                rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
 
             var elem = this.draw_g
                           .attr("transform","translate("+x+","+y+")")
                           .append("svg:path")
-                          .call(this.lineatt.func).call(this.fillatt.func);
+                          .call(this.lineatt.func)
+                          .call(this.fillatt.func);
 
             if ((ellipse.fPhimin == 0) && (ellipse.fPhimax == 360)) {
                elem.attr("d", "M-"+rx1+",0" +
@@ -165,15 +166,15 @@
                var large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0;
 
                var a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
-                   dx1 = rx1 * Math.cos(a1), dy1 = ry1 * Math.sin(a1),
-                   dx2 = rx1 * Math.cos(a2), dy2 = ry1 * Math.sin(a2),
-                   dx3 = rx2 * Math.cos(a1), dy3 = ry2 * Math.sin(a1),
-                   dx4 = rx2 * Math.cos(a2), dy4 = ry2 * Math.sin(a2);
+                   dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
+                   dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
+                   dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
+                   dx4 = Math.round(rx2*Math.cos(a2)), dy4 = Math.round(ry2*Math.sin(a2));
 
-               elem.attr("d", "M"+Math.round(dx2)+","+Math.round(dy2)+
-                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+Math.round(dx1)+","+Math.round(dy1)+
-                              "L"+Math.round(dx3)+","+Math.round(dy3) +
-                              "A"+rx2+","+ry2+",0,"+large_arc+",1,"+Math.round(dx4)+","+Math.round(dy4)+"Z");
+               elem.attr("d", "M"+dx2+","+dy2+
+                              "A"+rx1+","+ry1+",0,"+large_arc+",0,"+dx1+","+dy1+
+                              "L"+dx3+","+dy3 +
+                              "A"+rx2+","+ry2+",0,"+large_arc+",1,"+dx4+","+dy4+"Z");
             }
 
             return;
@@ -191,8 +192,8 @@
 
       // here svg:path is used to draw more complex figure
 
-      var ct = Math.cos(Math.PI*ellipse.fTheta/180),
-          st = Math.sin(Math.PI*ellipse.fTheta/180),
+      var ct = Math.cos(ellipse.fTheta*Math.PI/180),
+          st = Math.sin(ellipse.fTheta*Math.PI/180),
           dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
           dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
           x1 =  dx1*ct - dy1*st,
@@ -265,10 +266,10 @@
       // create svg:g container for box drawing
       this.CreateG();
 
-      var x1 = this.AxisToSvg("x", box.fX1, false),
-          x2 = this.AxisToSvg("x", box.fX2, false),
-          y1 = this.AxisToSvg("y", box.fY1, false),
-          y2 = this.AxisToSvg("y", box.fY2, false),
+      var x1 = this.AxisToSvg("x", box.fX1),
+          x2 = this.AxisToSvg("x", box.fX2),
+          y1 = this.AxisToSvg("y", box.fY1),
+          y2 = this.AxisToSvg("y", box.fY2),
           xx = Math.min(x1,x2), yy = Math.min(y1,y2),
           ww = Math.abs(x2-x1), hh = Math.abs(y1-y2);
 
