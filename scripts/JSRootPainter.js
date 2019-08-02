@@ -3086,7 +3086,6 @@
      return func;
   }
 
-
    /** @summary Returns svg element for the frame.
     *
     * @param {string} [pad_name = undefined] - optional pad name, otherwise where object painter is drawn

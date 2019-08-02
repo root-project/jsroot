@@ -351,7 +351,7 @@
       var poly = this.GetObject(),
           att = new JSROOT.TAttMarkerHandler(poly),
           path = "",
-          func = this.AxisToSvgFunc(false);
+          func = this.AxisToSvgFunc();
 
       for (var n=0;n<poly.fN;++n)
          path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
@@ -3337,7 +3337,7 @@
 
       painter.Redraw = function() {
 
-         var obj = this.GetObject(), func = this.AxisToSvgFunc(false);
+         var obj = this.GetObject(), func = this.AxisToSvgFunc();
 
          if (!obj || !obj.fOper || !func) return;
 
