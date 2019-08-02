@@ -34,11 +34,11 @@
           tcolor = this.get_color(text.fTextColor),
           use_frame = false,
           fact = 1., textsize = text.fTextSize || 0.05,
-          main = this.frame_painter(),  isndc = false;
+          main = this.frame_painter();
 
       if (text.TestBit(JSROOT.BIT(14))) {
          // NDC coordinates
-         isndc = true;
+         this.isndc = true;
       } else if (main && !main.mode3d) {
          // frame coordiantes
          w = this.frame_width();
@@ -48,7 +48,7 @@
          // force pad coordiantes
       } else {
          // place in the middle
-         isndc = true;
+         this.isndc = true;
          pos_x = pos_y = 0.5;
          text.fTextAlign = 22;
          if (!tcolor) tcolor = 'black';
@@ -56,10 +56,11 @@
 
       this.CreateG(use_frame);
 
-      pos_x = this.AxisToSvg("x", pos_x, isndc);
-      pos_y = this.AxisToSvg("y", pos_y, isndc);
+      this.pos_x = this.AxisToSvg("x", pos_x, this.isndc);
+      this.pos_y = this.AxisToSvg("y", pos_y, this.isndc);
+      this.pos_dx = this.pos_dy = 0;
 
-      var arg = { align: text.fTextAlign, x: Math.round(pos_x), y: Math.round(pos_y), text: text.fTitle, color: tcolor, latex: 0 };
+      var arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
 
       if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
@@ -71,6 +72,18 @@
       this.DrawText(arg);
 
       this.FinishTextDrawing();
+
+      this.AddMove({
+         move: function(dx,dy) {
+            this.pos_dx += dx;
+            this.pos_dy += dy;
+            this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
+         }.bind(this),
+         complete: function() {
+            var x = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
+                y = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+            this.WebCanvasExec("SetX(" + x + ");;SetY(" + y + ");;");
+         }.bind(this)});
    }
 
    // =====================================================================================

@@ -1167,8 +1167,7 @@
 
       if (this.x_kind == 'time') {
          this.x = d3.scaleTime();
-      } else
-      if (this.swap_xy ? pad.fLogy : pad.fLogx) {
+      } else if (this.swap_xy ? pad.fLogy : pad.fLogx) {
          this.logx = true;
 
          if (this.scale_xmax <= 0) this.scale_xmax = 0;
@@ -1196,8 +1195,7 @@
       if (this.x_kind == 'time') {
          // we emulate scale functionality
          this.grx = function(val) { return this.x(this.ConvertX(val)); }
-      } else
-      if (this.logx) {
+      } else if (this.logx) {
          this.grx = function(val) { return (val < this.scale_xmin) ? (this.swap_xy ? this.x.range()[0]+5 : -5) : this.x(val); }
       } else {
          this.grx = this.x;
