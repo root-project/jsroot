@@ -220,36 +220,29 @@
       // create svg:g container for ellipse drawing
       this.CreateG();
 
-      var xc = this.AxisToSvg("x", pie.fX, false),
-          yc = this.AxisToSvg("y", pie.fY, false),
-          rx = this.AxisToSvg("x", pie.fX + pie.fRadius, false) - xc,
-          ry = this.AxisToSvg("y", pie.fY + pie.fRadius, false) - yc;
+      var xc = this.AxisToSvg("x", pie.fX),
+          yc = this.AxisToSvg("y", pie.fY),
+          rx = this.AxisToSvg("x", pie.fX + pie.fRadius) - xc,
+          ry = this.AxisToSvg("y", pie.fY + pie.fRadius) - yc;
 
       this.draw_g.attr("transform","translate("+xc+","+yc+")");
 
       // Draw the slices
-      var nb = pie.fPieSlices.length,
-          slice, title, value, total = 0, lineatt, fillatt;
+      var nb = pie.fPieSlices.length, total = 0,
+          af = (pie.fAngularOffset*Math.PI)/180,
+          x1 = rx*Math.cos(af), y1 = ry*Math.sin(af);
 
-      for (var n=0;n<nb; n++) {
-         slice = pie.fPieSlices[n];
-         total = total + slice.fValue;
-      }
+      for (var n=0;n<nb; n++)
+         total += pie.fPieSlices[n].fValue;
 
-      var af = (pie.fAngularOffset*Math.PI)/180.;
-      var x1 = rx*Math.cos(af);
-      var y1 = ry*Math.sin(af);
-      var x2, y2, a = af;
+      for (var n=0; n<nb; n++) {
+         var slice = pie.fPieSlices[n];
 
-      for (var n=0;n<nb; n++) {
-         slice = pie.fPieSlices[n];
-         lineatt = new JSROOT.TAttLineHandler(slice);
-         fillatt = this.createAttFill(slice);
-         value   = slice.fValue;
-         a       = a + ((2*Math.PI)/total)*value;
-         x2      = rx*Math.cos(a);
-         y2      = ry*Math.sin(a);
-         title   = slice.fTitle;
+         af += ((2*Math.PI)/total)*slice.fValue;
+
+         var lineatt = new JSROOT.TAttLineHandler(slice),
+             fillatt = this.createAttFill(slice),
+             x2 = rx*Math.cos(af), y2 = ry*Math.sin(af);
          this.draw_g
              .append("svg:path")
              .attr("d", "M0,0L"+x1.toFixed(1)+","+y1.toFixed(1)+"A"+
@@ -257,8 +250,7 @@
                         "Z")
              .call(lineatt.func)
              .call(fillatt.func);
-         x1 = x2;
-         y1 = y2;
+         x1 = x2; y1 = y2;
       }
    }
 
