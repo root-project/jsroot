@@ -230,24 +230,22 @@
       // Draw the slices
       var nb = pie.fPieSlices.length, total = 0,
           af = (pie.fAngularOffset*Math.PI)/180,
-          x1 = rx*Math.cos(af), y1 = ry*Math.sin(af);
+          x1 = Math.round(rx*Math.cos(af)), y1 = Math.round(ry*Math.sin(af));
 
       for (var n=0;n<nb; n++)
          total += pie.fPieSlices[n].fValue;
 
       for (var n=0; n<nb; n++) {
-         var slice = pie.fPieSlices[n];
+         var slice = pie.fPieSlices[n],
+             lineatt = new JSROOT.TAttLineHandler({attr: slice}),
+             fillatt = this.createAttFill(slice);
 
-         af += ((2*Math.PI)/total)*slice.fValue;
+         af += slice.fValue/total*2*Math.PI;
+         var x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
 
-         var lineatt = new JSROOT.TAttLineHandler(slice),
-             fillatt = this.createAttFill(slice),
-             x2 = rx*Math.cos(af), y2 = ry*Math.sin(af);
          this.draw_g
              .append("svg:path")
-             .attr("d", "M0,0L"+x1.toFixed(1)+","+y1.toFixed(1)+"A"+
-                         rx.toFixed(1)+","+ry.toFixed(1)+",0,0,0,"+x2.toFixed(1)+","+y2.toFixed(1)+
-                        "Z")
+             .attr("d", "M0,0L"+x1+","+y1+"A"+rx+","+ry+",0,0,0,"+x2+","+y2+"z")
              .call(lineatt.func)
              .call(fillatt.func);
          x1 = x2; y1 = y2;
