@@ -56,6 +56,8 @@
 
       this.CreateG(use_frame);
 
+      this.draw_g.attr("transform",null); // remove transofrm from interactive changes
+
       this.pos_x = this.AxisToSvg("x", pos_x, this.isndc);
       this.pos_y = this.AxisToSvg("y", pos_y, this.isndc);
       this.pos_dx = this.pos_dy = 0;
@@ -80,9 +82,10 @@
             this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
          }.bind(this),
          complete: function() {
-            var x = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
-                y = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
-            this.WebCanvasExec("SetX(" + x + ");;SetY(" + y + ");;");
+            var text = this.GetObject();
+            text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
+            text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
+            this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
          }.bind(this)});
    }
 
