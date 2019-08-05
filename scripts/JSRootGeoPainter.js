@@ -3690,6 +3690,7 @@
          }
 
          delete this.geo_manager;
+         delete this._highlight_handlers;
 
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
 
@@ -3844,10 +3845,7 @@
       return true;
    }
 
-   TGeoPainter.prototype.RedrawObject = function(obj) {
-      if (!this.UpdateObject(obj))
-         return false;
-
+   TGeoPainter.prototype.ClearDrawings = function() {
       if (this._clones && this._clones_owner)
          this._clones.Cleanup(this._draw_nodes, this._build_shapes);
       delete this._clones;
@@ -3862,6 +3860,13 @@
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
 
       this._full_redrawing = true;
+   }
+
+   TGeoPainter.prototype.RedrawObject = function(obj) {
+      if (!this.UpdateObject(obj))
+         return false;
+
+      this.ClearDrawings();
 
       var draw_obj = this.GetGeometry(), name_prefix = "";
       if (this.geo_manager) name_prefix = draw_obj.fName;
