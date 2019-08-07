@@ -2429,6 +2429,8 @@
 
             // when the only node is selected, draw it
             if ((n===0) && (this.nodes.length===1)) clone.vis = 2;
+
+            this.vislevel = 9999; // automatically take all volumes
          }
 
          // shape with zero volume or without faces will not be observed
@@ -2456,7 +2458,7 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = this.vislevel ? (this.vislevel) : 3; // default 3 in ROOT
+         vislvl = this.vislevel || 3; // default 3 in ROOT
          if (!arg) arg = {};
          arg.stack = new Array(100); // current stack
          arg.nodeid = 0;

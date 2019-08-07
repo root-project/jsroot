@@ -486,7 +486,7 @@
 
       if (d.check("MORE3")) res.more = 3;
       if (d.check("MORE")) res.more = 2;
-      if (d.check("ALL")) res.more = 100;
+      if (d.check("ALL")) { res.more = 100; res.vislevel = 9999; }
 
       if (d.check("CONTROLS") || d.check("CTRL")) res.show_controls = true;
 
