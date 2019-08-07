@@ -411,13 +411,16 @@
                   _full: false, _axis: false, _axis_center: false,
                   _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxlimit: 100000, maxnodeslimit: 3000,
+                   more: 1, maxlimit: 100000, maxnodeslimit: 3000, vislevel: 0,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "ray" };
+
+      if (this.geo_manager && this.geo_manager.fVisLevel)
+         res.vislevel = this.geo_manager.fVisLevel;
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -471,6 +474,7 @@
       if (d.check("ZOOM", true)) res.zoom = d.partAsFloat(0, 100) / 100;
       if (d.check("ROTY", true)) res.rotatey = d.partAsFloat();
       if (d.check("ROTZ", true)) res.rotatez = d.partAsFloat();
+      if (d.check("VISLVL", true)) res.vislevel = d.partAsInt();
 
       if (d.check('BLACK')) res.background = "#000000";
       if (d.check('WHITE')) res.background = "#FFFFFF";
@@ -2894,8 +2898,14 @@
             },
 
             SetMaxVisNodes: function(limit) {
-               console.log('Automatic visible depth for ' + limit + ' nodes');
+               console.log('Set maximal number of visible nodes ' + limit);
                if (limit>0) painter.options.maxnodeslimit = limit;
+            },
+
+            SetVisLevel: function(limit) {
+               console.log('Set maximal visible depth ' + limit);
+               painter.options.vislevel = parseInt(limit) || 0;
+
             }
           };
 
@@ -2925,6 +2935,7 @@
                line = line.replace('->Draw','.Draw');
                line = line.replace('->SetTransparency','.SetTransparency');
                line = line.replace('->SetLineColor','.SetLineColor');
+               line = line.replace('->SetVisLevel','.SetVisLevel');
                if (line.indexOf('->')>=0) continue;
 
                // console.log(line);
@@ -2994,6 +3005,7 @@
          this._clones_owner = true;
 
          this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
+         this._clones.SetVisLevel(this.options.vislevel);
 
          this._clones.name_prefix = name_prefix;
 
@@ -3231,7 +3243,7 @@
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, browser: JSROOT.browser, tm0: new Date().getTime(), clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
+      this._worker.postMessage( { init: true, browser: JSROOT.browser, tm0: new Date().getTime(), vislevel: this._clones.vislevel, clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
    }
 
    TGeoPainter.prototype.canSubmitToWorker = function(force) {

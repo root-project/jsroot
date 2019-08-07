@@ -2170,6 +2170,7 @@
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
+      this.vislevel = 3;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
 
       if (obj) {
          if (obj.$geoh) this.toplevel = false;
@@ -2177,6 +2178,11 @@
       } else if (clones) {
          this.nodes = clones;
       }
+   }
+
+   /** Set maximal depth for nodes visibility */
+   JSROOT.GEO.ClonedNodes.prototype.SetVisLevel = function(lvl) {
+      this.vislevel = lvl && !isNaN(lvl) ? lvl : 3;
    }
 
    /** Insert node into existing array */
@@ -2450,7 +2456,7 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = 99999;
+         vislvl = this.vislevel ? (this.vislevel+1) : 4; // default 3 in ROOT
          if (!arg) arg = {};
          arg.stack = new Array(100); // current stack
          arg.nodeid = 0;
@@ -3473,6 +3479,7 @@
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       var clones = new JSROOT.GEO.ClonedNodes(obj);
+      clones.SetVisLevel(5);
 
       var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)

@@ -26,6 +26,7 @@ onmessage = function(e) {
       if (nodes) {
          // console.log('get clones ' + nodes.length);
          clones = new JSROOT.GEO.ClonedNodes(null, nodes);
+         clones.SetVisLevel(e.data.vislevel); // TODO: option
          delete e.data.clones;
          clones.sortmap = e.data.sortmap;
       }
