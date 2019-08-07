@@ -130,7 +130,7 @@ examples_main = {
      { name:"prim3", file: "geom/geodemo.root", layout: "grid3x2", items: ['sphere','torus','parab','hype','comp'], opts: ['z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
      { name:"comp", url: "?nobrowser&file=$$$geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[az,az,comp_az,az]", title:"Components of composite shape" },
      { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
-     { name:"alice", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C;black", title: "ALICE geometry" },
+     { name:"alice", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C;black;vislvl2", title: "ALICE geometry" },
      { name:"atlas", asurl: true, file: "https://root.cern/files/atlas.root", item: "atlas;1", opt: "dflt;black", title:"ATLAS geometry" },
      { name:"cms", asurl: true, file: "https://root.cern/files/cms.root", item: "cms;1", opt: "macro:https://root.cern/files/cms_cmse.C;clipxyz;black", title: "CMS geomtery" },
      { name:"lhcb", asurl: true, file: "https://root.cern/files/lhcbfull.root", item: "Geometry;1", opt: "all;dflt;black", title: "LHCb geometry" },

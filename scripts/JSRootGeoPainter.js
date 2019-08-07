@@ -419,9 +419,6 @@
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "ray" };
 
-      if (this.geo_manager && this.geo_manager.fVisLevel)
-         res.vislevel = this.geo_manager.fVisLevel;
-
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
       var _opt = JSROOT.GetUrlOption('_debug');
@@ -2904,8 +2901,8 @@
 
             SetVisLevel: function(limit) {
                console.log('Set maximal visible depth ' + limit);
-               painter.options.vislevel = parseInt(limit) || 0;
-
+               if (!painter.options.vislevel)
+                  painter.options.vislevel = parseInt(limit) || 0;
             }
           };
 
@@ -3005,7 +3002,11 @@
          this._clones_owner = true;
 
          this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
-         this._clones.SetVisLevel(this.options.vislevel);
+         var lvl = this.options.vislevel;
+         if (!lvl && this.geo_manager && this.geo_manager.fVisLevel)
+            lvl = this.geo_manager.fVisLevel;
+
+         this._clones.SetVisLevel(lvl);
 
          this._clones.name_prefix = name_prefix;
 

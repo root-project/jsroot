@@ -72,8 +72,8 @@
       if (flag===undefined) flag = true;
 
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisThis, !flag);
-      JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
-      JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisOneLevel, false);
+      // JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
+      // JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisOneLevel, false);
 
       if (this.fNodes)
          for (var n=0;n<this.fNodes.arr.length;++n) {
@@ -2456,7 +2456,7 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = this.vislevel ? (this.vislevel+1) : 4; // default 3 in ROOT
+         vislvl = this.vislevel ? (this.vislevel) : 3; // default 3 in ROOT
          if (!arg) arg = {};
          arg.stack = new Array(100); // current stack
          arg.nodeid = 0;
