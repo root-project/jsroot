@@ -2218,9 +2218,12 @@
          }
       }
 
-      if (this.nodes)
-         for (var n=0;n<this.nodes.length;++n)
-            delete this.nodes[n].chlds;
+      if (this.nodes) {
+         for (var n=0;n<this.nodes.length;++n) {
+            if (this.nodes[n])
+               delete this.nodes[n].chlds;
+         }
+      }
 
       delete this.nodes;
       delete this.origin;
