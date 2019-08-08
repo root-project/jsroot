@@ -89,6 +89,8 @@ onmessage = function(e) {
       clones.MarkVisibles(false, false, e.data.visible);
       delete e.data.visible;
 
+      clones.ProduceIdShits();
+
       var matrix = null;
       if (e.data.matrix)
          matrix = new THREE.Matrix4().fromArray(e.data.matrix);

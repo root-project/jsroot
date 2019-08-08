@@ -3017,6 +3017,8 @@
          else
             uniquevis = this._clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
 
+         this._clones.ProduceIdShits();
+
          var spent = new Date().getTime() - this._start_drawing_time;
 
          if (!this._scene)
