@@ -411,7 +411,8 @@
                   _full: false, _axis: false, _axis_center: false,
                   _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
-                   more: 1, maxlimit: 100000, maxnodeslimit: 3000, vislevel: 0,
+                   more: 1, maxlimit: 100000,
+                   vislevel: undefined, maxnodes: undefined,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
@@ -486,7 +487,7 @@
 
       if (d.check("MORE3")) res.more = 3;
       if (d.check("MORE")) res.more = 2;
-      if (d.check("ALL")) { res.more = 100; res.vislevel = 9999; }
+      if (d.check("ALL")) { res.more = 10; res.vislevel = 9; }
 
       if (d.check("CONTROLS") || d.check("CTRL")) res.show_controls = true;
 
@@ -1392,11 +1393,7 @@
          }
 
          this._current_face_limit = this.options.maxlimit;
-         this._current_nodes_limit = this.options.maxnodeslimit;
-         if (matrix) {
-            this._current_face_limit*=1.25;
-            this._current_nodes_limit*=1.25;
-         }
+         if (matrix) this._current_face_limit*=1.25;
 
          // here we decide if we need worker for the drawings
          // main reason - too large geometry and large time to scan all camera positions
@@ -1413,7 +1410,7 @@
 
          if (!need_worker || !this._worker_ready) {
             // var tm1 = new Date().getTime();
-            var res = this._clones.CollectVisibles(this._current_face_limit, frustum, this._current_nodes_limit);
+            var res = this._clones.CollectVisibles(this._current_face_limit, frustum);
             this._new_draw_nodes = res.lst;
             this._draw_all_nodes = res.complete;
             // var tm2 = new Date().getTime();
@@ -1424,7 +1421,6 @@
 
          var job = {
                collect: this._current_face_limit,   // indicator for the command
-               collect_nodes: this._current_nodes_limit,
                visible: this._clones.GetVisibleFlags(),
                matrix: matrix ? matrix.elements : null
          };
@@ -2895,12 +2891,11 @@
             },
 
             SetMaxVisNodes: function(limit) {
-               console.log('Set maximal number of visible nodes ' + limit);
-               if (limit>0) painter.options.maxnodeslimit = limit;
+               if (!painter.options.maxnodes)
+                  painter.options.maxnodes = pasrseInt(limit) || 0;
             },
 
             SetVisLevel: function(limit) {
-               console.log('Set maximal visible depth ' + limit);
                if (!painter.options.vislevel)
                   painter.options.vislevel = parseInt(limit) || 0;
             }
@@ -3002,11 +2997,17 @@
          this._clones_owner = true;
 
          this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
-         var lvl = this.options.vislevel;
-         if (!lvl && this.geo_manager && this.geo_manager.fVisLevel)
-            lvl = this.geo_manager.fVisLevel;
+
+         var lvl = this.options.vislevel, maxnodes = this.options.maxnodes;
+         if (this.geo_manager) {
+            if (!lvl && this.geo_manager.fVisLevel)
+               lvl = this.geo_manager.fVisLevel;
+            if (maxnodes === undefined)
+               maxnodes = this.geo_manager.fMaxVisNodes;
+         }
 
          this._clones.SetVisLevel(lvl);
+         this._clones.SetMaxVisNodes(maxnodes);
 
          this._clones.name_prefix = name_prefix;
 
@@ -3246,7 +3247,14 @@
       };
 
       // send initialization message with clones
-      this._worker.postMessage( { init: true, browser: JSROOT.browser, tm0: new Date().getTime(), vislevel: this._clones.vislevel, clones: this._clones.nodes, sortmap: this._clones.sortmap  } );
+      this._worker.postMessage( {
+         init: true,   // indicate init command for worker
+         browser: JSROOT.browser,
+         tm0: new Date().getTime(),
+         vislevel: this._clones.GetVisLevel(),
+         maxvisnodes: this._clones.GetMaxVisNodes(),
+         clones: this._clones.nodes,
+         sortmap: this._clones.sortmap  } );
    }
 
    TGeoPainter.prototype.canSubmitToWorker = function(force) {
@@ -3923,14 +3931,14 @@
    JSROOT.Painter.drawGeoObject = function(divid, obj, opt) {
       if (!obj) return null;
 
-      var shape = null, extras = null, extras_path = "";
+      var shape = null, extras = null, extras_path = "", is_eve = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
       } else if ((obj._typename === 'TGeoVolumeAssembly') || (obj._typename === 'TGeoVolume')) {
          shape = obj.fShape;
       } else if ((obj._typename === "TEveGeoShapeExtract") || (obj._typename === "ROOT::Experimental::TEveGeoShapeExtract")) {
-         shape = obj.fShape;
+         shape = obj.fShape; is_eve = true;
       } else if (obj._typename === 'TGeoManager') {
          shape = obj.fMasterVolume.fShape;
       } else if (obj._typename === 'TGeoOverlap') {
@@ -3963,6 +3971,9 @@
          painter._main_painter = obj.$geo_painter;
          painter._main_painter._slave_painters.push(painter);
       }
+
+      if (is_eve && !painter.options.vislevel || (painter.options.vislevel < 9))
+         painter.options.vislevel = 9;
 
       if (extras) {
          painter._splitColors = true;

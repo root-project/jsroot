@@ -2168,7 +2168,8 @@
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
-      this.vislevel = 3;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
+      this.fVisLevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
+      this.fMaxVisNodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
 
       if (obj) {
          if (obj.$geoh) this.toplevel = false;
@@ -2180,7 +2181,20 @@
 
    /** Set maximal depth for nodes visibility */
    JSROOT.GEO.ClonedNodes.prototype.SetVisLevel = function(lvl) {
-      this.vislevel = lvl && !isNaN(lvl) ? lvl : 3;
+      this.fVisLevel = lvl && !isNaN(lvl) ? lvl : 4;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.GetVisLevel = function() {
+      return this.fVisLevel;
+   }
+
+   /** Set maximal depth for nodes visibility */
+   JSROOT.GEO.ClonedNodes.prototype.SetMaxVisNodes = function(v) {
+      this.fMaxVisNodes = !isNaN(v) ? v : 10000;
+   }
+
+   JSROOT.GEO.ClonedNodes.prototype.GetMaxVisNodes = function() {
+      return this.fMaxVisNodes;
    }
 
    /** Insert node into existing array */
@@ -2436,20 +2450,22 @@
    }
 
    /** After visibility flags is set, produce idshift for all nodes as it would be maximum level @private */
-   JSROOT.GEO.ClonedNodes.prototype.ProduceIdShits = function(node) {
-      if (node===undefined)
-         return this.ProduceIdShits(this.nodes[0]);
+   JSROOT.GEO.ClonedNodes.prototype.ProduceIdShits = function() {
+      for (var k=0;k<this.nodes.length;++k)
+         this.nodes[k].idshift = -1;
 
-      if (node.idshift === undefined) {
-         node.idshift = 0;
-         if (node.chlds && !node.nochlds) {
-            for(var k = 0; k<node.chlds.length; ++k) {
-               node.idshift += this.ProduceIdShits(this.nodes[node.chlds[k]]);
-            }
+      function scan_func(nodes, node) {
+         if (node.idshift < 0) {
+            node.idshift = 0;
+            if (node.chlds)
+               for(var k = 0; k<node.chlds.length; ++k)
+                  node.idshift += scan_func(nodes, nodes[node.chlds[k]]);
          }
+
+         return node.idshift + 1;
       }
 
-      return node.idshift + 1;
+      scan_func(this.nodes, this.nodes[0]);
    }
 
    /** Extract only visibility flags, used to transfer them to the worker @private */
@@ -2468,10 +2484,11 @@
       if (!this.nodes) return 0;
 
       if (vislvl === undefined) {
-         vislvl = this.vislevel || 5; // default 3 in ROOT
+         if (!arg) arg = {};
+
+         vislvl = arg.vislvl || this.vislevel || 4; // default 3 in ROOT
          if (vislvl > 88) vislvl = 88;
 
-         if (!arg) arg = {};
          arg.stack = new Array(100); // current stack
          arg.nodeid = 0;
          arg.counter = 0; // sequence ID of the node, used to identify it later
@@ -2875,28 +2892,46 @@
 
    /** @brief Collects visible nodes, using maxlimit
      * @desc One can use map to define cut based on the volume or serious of cuts */
-   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum, maxnumnodes) {
+   JSROOT.GEO.ClonedNodes.prototype.CollectVisibles = function(maxnumfaces, frustum) {
 
       // in simple case shape as it is
       if (this.plain_shape)
          return { lst: [ { nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape } ], complete: true };
 
-      if (!maxnumnodes) maxnumnodes = maxnumfaces/100;
-
-      var arg = {
+      var total = 0, arg = {
          facecnt: 0,
          viscnt: new Array(this.nodes.length), // counter for each node
+         reset: function() {
+            this.total = 0;
+            this.facecnt = 0;
+            for (var n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
+         },
          // nodes: this.nodes,
          func: function(node) {
+            this.total++;
             this.facecnt += node.nfaces;
             this.viscnt[node.id]++;
             return true;
          }
       };
 
-      for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
+      arg.vislvl = this.GetVisLevel();
 
-      var total = this.ScanVisible(arg), minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
+      arg.reset();
+      total = this.ScanVisible(arg);
+
+      var maxnumnodes = this.GetMaxVisNodes();
+
+
+      if (maxnumnodes > 0) {
+         while ((total > maxnumnodes) && (arg.vislvl > 1)) {
+            arg.vislvl--;
+            arg.reset();
+            total = this.ScanVisible(arg);
+         }
+      }
+
+      var minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
       console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
@@ -3450,6 +3485,7 @@
       if (!opt) opt = {};
       if (!opt.numfaces) opt.numfaces = 100000;
       if (!opt.numnodes) opt.numnodes = 1000;
+      if (!opt.frustum) opt.frustum = null;
 
       opt.res_mesh = opt.res_faces = 0;
 
@@ -3484,7 +3520,8 @@
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
       var clones = new JSROOT.GEO.ClonedNodes(obj);
-      clones.SetVisLevel(5);
+      clones.SetVisLevel(opt.vislevel);
+      clones.SetMaxVisNodes(opt.numnodes);
 
       var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)
@@ -3494,10 +3531,8 @@
 
       clones.ProduceIdShits();
 
-      var frustum = null;
-
       // collect visible nodes
-      var res = clones.CollectVisibles(opt.numfaces, frustum, opt.numnodes);
+      var res = clones.CollectVisibles(opt.numfaces, opt.frustum);
 
       var draw_nodes = res.lst;
 
