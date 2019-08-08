@@ -4047,10 +4047,8 @@
          return obj.fRnrSelf ? " geovis_this" : "";
 
       var vis = !JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisNone) &&
-                JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisThis);
-
-      var chld = JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisDaughters) ||
-                 JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisOneLevel);
+                JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisThis),
+          chld = JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisDaughters);
 
       if (chld && (!obj.fNodes || (obj.fNodes.arr.length === 0))) chld = false;
 
@@ -4290,8 +4288,6 @@
                JSROOT.GEO.BITS.kVisThis, ToggleMenuBit);
          menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisDaughters), "Daughters",
                JSROOT.GEO.BITS.kVisDaughters, ToggleMenuBit);
-         menu.addchk(JSROOT.GEO.TestBit(vol, JSROOT.GEO.BITS.kVisOneLevel), "1lvl daughters",
-               JSROOT.GEO.BITS.kVisOneLevel, ToggleMenuBit);
       }
 
       return true;

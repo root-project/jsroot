@@ -73,14 +73,12 @@
 
       JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisThis, !flag);
       // JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
-      // JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisOneLevel, false);
 
       if (this.fNodes)
          for (var n=0;n<this.fNodes.arr.length;++n) {
             var sub = this.fNodes.arr[n].fVolume;
             JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisThis, !flag);
             // JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisDaughters, !flag);
-            //JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisOneLevel, false);
          }
    }
 
@@ -2411,8 +2409,7 @@
                                JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisThis) ? 2 : 0;
 
                   if (!JSROOT.GEO.TestBit(obj, JSROOT.GEO.BITS.kVisDaughters) ||
-                      !JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters))
-                     clone.depth = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOneLevel) ? 1 : 0;
+                      !JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisDaughters)) clone.depth = 0;
 
                   // node with childs only shown in case if it is last level in hierarchy
                   if ((clone.vis == 2) && clone.chlds && (clone.depth !== 0)) clone.vis = 1;
