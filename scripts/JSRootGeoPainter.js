@@ -418,7 +418,7 @@
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
-                   depthMethod: "ray" };
+                   depthMethod: "ray", mouse_tmout: 50 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -1220,6 +1220,22 @@
       ctrl.evnt = null;
    }
 
+   /** Configure mouse delay, required for complex geometries */
+   TGeoPainter.prototype.setMouseTmout = function(val) {
+      if (this.options)
+         this.options.mouse_tmout = val;
+
+      if (this._controls)
+         this._controls.mouse_tmout = val;
+   }
+
+   /** Configure depth method, used for render order production.
+    * Allowed values: "ray", "box","pnt", "size","dflt" */
+   TGeoPainter.prototype.setDepthMethod = function(val) {
+      if (this.options)
+         this.options.depthMethod = val;
+   }
+
    TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls || this._usesvg || JSROOT.BatchMode) return;
@@ -1230,7 +1246,7 @@
 
       this._controls = JSROOT.Painter.CreateOrbitControl(this, this._camera, this._scene, this._renderer, this._lookat);
 
-      this._controls.mouse_tmout = 100; // set larger timeout for geometry processing
+      this._controls.mouse_tmout = this.options.mouse_tmout; // set larger timeout for geometry processing
 
       if (!this.options.can_rotate) this._controls.enableRotate = false;
 
