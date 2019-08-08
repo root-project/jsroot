@@ -2922,7 +2922,6 @@
 
       var maxnumnodes = this.GetMaxVisNodes();
 
-
       if (maxnumnodes > 0) {
          while ((total > maxnumnodes) && (arg.vislvl > 1)) {
             arg.vislvl--;
@@ -2930,6 +2929,8 @@
             total = this.ScanVisible(arg);
          }
       }
+
+      this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
 
       var minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
