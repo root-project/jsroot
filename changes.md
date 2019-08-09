@@ -6,6 +6,7 @@
 3. Fix - bins highlight in lego drawing with "zero" option
 4. Fix - drawing tracks with geoemtry from TObjArray
 5. Fix - interactive TGraph point move on time scale
+6. Fix - arb8 shapes faces building
 
 
 ## Changes in 5.7.0
