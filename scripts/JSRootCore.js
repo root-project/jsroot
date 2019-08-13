@@ -74,8 +74,7 @@
      if (norjs || !require.specified("jsroot"))
         define('jsroot', [], jsroot);
 
-   } else
-   if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
+   } else if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
       // processing with Node.js or CommonJS
 
       //  mark JSROOT as used with Node.js

@@ -1,22 +1,17 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootCore', 'd3'], factory );
-   } else
-   if (typeof exports === 'object' && typeof module !== 'undefined') {
+   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"));
       if (jsroot.nodejs) jsroot.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
    } else {
-
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootPainter.js');
-
       if (typeof d3 != 'object')
          throw new Error('d3 is not defined', 'JSRootPainter.js');
-
       if (typeof JSROOT.Painter == 'object')
          throw new Error('JSROOT.Painter already defined', 'JSRootPainter.js');
-
       factory(JSROOT, d3);
    }
 } (function(JSROOT, d3) {

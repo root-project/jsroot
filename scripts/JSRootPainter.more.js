@@ -5,20 +5,15 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
-   } else
-   if (typeof exports === 'object' && typeof module !== 'undefined') {
+   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
        factory(require("./JSRootCore.js"), require("d3"), require("./JSRootMath.js"));
    } else {
-
       if (typeof d3 != 'object')
-         throw new Error('This extension requires d3.v3.js', 'JSRootPainter.more.js');
-
+         throw new Error('This extension requires d3.js', 'JSRootPainter.more.js');
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootPainter.more.js');
-
       if (typeof JSROOT.Painter != 'object')
          throw new Error('JSROOT.Painter not defined', 'JSRootPainter.more.js');
-
       factory(JSROOT, d3);
    }
 } (function(JSROOT, d3) {
