@@ -3,10 +3,9 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootPainter', 'd3', 'threejs', 'dat.gui', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
+      define( [ 'JSRootPainter', 'd3', 'threejs', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
-      if (!jsroot.nodejs && (typeof window != 'undefined')) require("./dat.gui.min.js");
       factory(jsroot, require("d3"), require("three"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
@@ -18,8 +17,6 @@
          throw new Error('d3 is not defined', 'JSRootGeoPainter.js');
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
-      if (typeof dat == 'undefined')
-         throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
       factory( JSROOT, d3, THREE );
    }
 } (function( JSROOT, d3, THREE, _3d, _geo, document ) {
@@ -30,7 +27,7 @@
 
    if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
 
-   if ( typeof define === "function" && define.amd )
+   if ((typeof define === "function") && define.amd)
       JSROOT.loadScript('$$$style/JSRootGeoPainter.css');
 
    if (typeof JSROOT.GEO !== 'object')
@@ -653,19 +650,33 @@
       if (!skip_render) this.Render3D(-1);
    }
 
+   /** Display control GUI */
    TGeoPainter.prototype.showControlOptions = function(on) {
-      if (on==='toggle') on = !this._datgui;
+      if (on === 'load') {
+         if (typeof dat == 'undefined')
+            throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
+         on = true;
+      } else if (on === 'toggle') {
+         on = !this._datgui;
+      } else if (on === undefined) {
+         on = this.options.show_controls;
+      }
 
       this.options.show_controls = on;
 
       if (this._datgui) {
-         if (on) return;
-         d3.select(this._datgui.domElement).remove();
-         this._datgui.destroy();
-         delete this._datgui;
+         if (!on) {
+            d3.select(this._datgui.domElement).remove();
+            this._datgui.destroy();
+            delete this._datgui;
+         }
          return;
       }
+
       if (!on) return;
+
+      if (typeof dat == 'undefined')
+         return JSROOT.AssertPrerequisites("datgui", this.showControlOptions.bind(this,"load"));
 
       var painter = this;
 
