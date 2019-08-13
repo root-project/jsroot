@@ -12,6 +12,15 @@
 9. Use TGeoManager::fVisLevel in geometry painter
 
 
+## Changes in 5.7.1
+1. Fix - cover for WebVR API inconsistencies in Android devices (#184)
+2. Fix - add more checks in TF1 GetParName/GetParValue methods (#185)
+3. Fix - bins highlight in lego drawing with "zero" option
+4. Fix - drawing tracks with geometry from TObjArray
+5. Fix - interactive TGraph point move on time scale
+6. Fix - arb8 shapes faces building
+
+
 ## Changes in 5.7.0
 1. Add support of TProfile2Poly class
 2. Add support of TGeoOverlap class, provide access from TGeoManager
