@@ -3,11 +3,11 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootPainter', 'd3', 'threejs', 'JSRoot3DPainter', 'JSRootGeoBase' ], factory );
+      define( [ 'JSRootPainter', 'd3', 'threejs', 'JSRoot3DPainter', 'JSRootGeoBase', 'dat.gui' ], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       var jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"), require("three"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
-              jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
+              undefined, jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootGeoPainter.js');
@@ -19,7 +19,7 @@
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
       factory( JSROOT, d3, THREE );
    }
-} (function( JSROOT, d3, THREE, _3d, _geo, document ) {
+} (function( JSROOT, d3, THREE, _3d, _geo, _dat, document ) {
 
    "use strict";
 
@@ -652,8 +652,12 @@
 
    /** Display control GUI */
    TGeoPainter.prototype.showControlOptions = function(on) {
+      var usedat = _dat;
+      if (!usedat && (typeof dat == 'object'))
+         usedat = dat;
+
       if (on === 'load') {
-         if (typeof dat == 'undefined')
+         if (typeof usedat == 'undefined')
             throw new Error('dat.gui is not defined', 'JSRootGeoPainter.js');
          on = true;
       } else if (on === 'toggle') {
@@ -675,12 +679,12 @@
 
       if (!on) return;
 
-      if (typeof dat == 'undefined')
+      if (typeof usedat == 'undefined')
          return JSROOT.AssertPrerequisites("datgui", this.showControlOptions.bind(this,"load"));
 
       var painter = this;
 
-      this._datgui = new dat.GUI({ autoPlace: false, width: Math.min(650, painter._renderer.domElement.width / 2) });
+      this._datgui = new usedat.GUI({ autoPlace: false, width: Math.min(650, painter._renderer.domElement.width / 2) });
 
       var main = this.select_main();
       if (main.style('position')=='static') main.style('position','relative');
