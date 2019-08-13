@@ -1,6 +1,6 @@
 # JSROOT changelog
 
-## Changes in 5.7.x
+## Changes in 5.7.1
 1. Fix - cover for WebVR API inconsistencies in Android devices (#184)
 2. Fix - add more checks in TF1 GetParName/GetParValue methods (#185)
 3. Fix - bins highlight in lego drawing with "zero" option
