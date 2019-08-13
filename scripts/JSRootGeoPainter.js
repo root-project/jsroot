@@ -145,6 +145,9 @@
       this.no_default_title = true; // do not set title to main DIV
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
+      this.ctrl = {
+         clip: [{ name:"x", enabled: true, value: 0, min: -50, max: 50}, { name:"y", enabled: false, value: 0, min: -200, max: 200}, { name:"z", enabled: false, value: 0, min: -100, max: 100}]
+      };
 
       this.Cleanup(true);
    }
@@ -762,18 +765,18 @@
 
          for (var naxis=0;naxis<3;++naxis) {
             var axis = !naxis ? "x" : ((naxis===1) ? "y" : "z"),
-                  axisC = axis.toUpperCase();
+                axisC = axis.toUpperCase();
 
             clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
-            .listen() // react if option changed outside
-            .onChange( function (value) {
-               if (value) {
-                  createSSAOgui(false);
-                  painter._enableSSAO = false;
-                  painter._enableClipping = true;
-               }
-               painter.updateClipping();
-            });
+                .listen() // react if option changed outside
+                .onChange( function (value) {
+                    if (value) {
+                       createSSAOgui(false);
+                       painter._enableSSAO = false;
+                       painter._enableClipping = true;
+                     }
+                    painter.updateClipping();
+                });
 
             var clip = "clip" + axisC;
             if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
@@ -2268,7 +2271,8 @@
       if (this.options.project)
          return this.adjustCameraPosition();
 
-      var autoClip = clip === undefined ? false : clip;
+      var autoClip = (clip === undefined) ? false : clip,
+          incrementX = 0, incrementY = 0, incrementZ = 0;
 
       var box = new THREE.Box3();
       if (focus === undefined) {
@@ -2297,8 +2301,6 @@
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
 
       var target = new THREE.Vector3(midx, midy, midz);
-      //console.log("Zooming to x: " + target.x + " y: " + target.y + " z: " + target.z );
-
 
       // Find to points to animate "lookAt" between
       var dist = this._camera.position.distanceTo(target);
@@ -2326,9 +2328,9 @@
          this.enableX = this.enableY = this.enableZ = true;
 
          // These should be center of volume, box may not be doing this correctly
-         var incrementX  = ((box.max.x + box.min.x) / 2 - this.clipX) / frames,
-             incrementY  = ((box.max.y + box.min.y) / 2 - this.clipY) / frames,
-             incrementZ  = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
+         incrementX = ((box.max.x + box.min.x) / 2 - this.clipX) / frames;
+         incrementY = ((box.max.y + box.min.y) / 2 - this.clipY) / frames;
+         incrementZ = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
 
          this.updateClipping();
       }
