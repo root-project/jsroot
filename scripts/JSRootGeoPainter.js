@@ -168,34 +168,18 @@
          name: 'toImage',
          title: 'Save as PNG',
          icon: JSROOT.ToolbarIcons.camera,
-         click: function() {
-            painter.Render3D(0);
-            var dataUrl = painter._renderer.domElement.toDataURL("image/png");
-            dataUrl.replace("image/png", "image/octet-stream");
-            var link = document.createElement('a');
-            if (typeof link.download === 'string') {
-               document.body.appendChild(link); //Firefox requires the link to be in the body
-               link.download = "geometry.png";
-               link.href = dataUrl;
-               link.click();
-               document.body.removeChild(link); //remove the link when done
-            }
-         }
-      }];
-
-      buttonList.push({
+         click: function() { painter.createSnapshot(); }
+      }, {
          name: 'control',
          title: 'Toggle control UI',
          icon: JSROOT.ToolbarIcons.rect,
          click: function() { painter.showControlOptions('toggle'); }
-      });
-
-      buttonList.push({
+      }, {
          name: 'enlarge',
          title: 'Enlarge geometry drawing',
          icon: JSROOT.ToolbarIcons.circle,
-         click: function() { painter.ToggleEnlarge(); }
-      });
+         click: function() { painter.toggleEnlarge(); }
+      }];
 
       // Only show VR icon if WebVR API available.
       if (navigator.getVRDisplays) {
@@ -203,7 +187,7 @@
             name: 'entervr',
             title: 'Enter VR (It requires a VR Headset connected)',
             icon: JSROOT.ToolbarIcons.vrgoggles,
-            click: function() { painter.ToggleVRMode(); }
+            click: function() { painter.toggleVRMode(); }
          });
          this.InitVRMode();
       }
@@ -330,14 +314,14 @@
       this.ProcessVRControllerIntersections();
    }
 
-   TGeoPainter.prototype.ToggleVRMode = function() {
-      var pthis = this;
+   TGeoPainter.prototype.toggleVRMode = function() {
       if (!this._vrDisplay) return;
       // Toggle VR mode off
       if (this._vrDisplay.isPresenting) {
          this.ExitVRMode();
          return;
       }
+      var pthis = this;
       this._previousCameraPosition = this._camera.position.clone();
       this._previousCameraRotation = this._camera.rotation.clone();
       this._vrDisplay.requestPresent([{ source: this._renderer.domElement }]).then(function() {
@@ -2106,10 +2090,25 @@
       return this._overall_size;
    }
 
+   /** @brief Create png image with drawing snapshot. */
+   TGeoPainter.prototype.createSnapshot = function(filename) {
+      if (!this._renderer) return;
+      this.Render3D(0);
+      var dataUrl = this._renderer.domElement.toDataURL("image/png");
+      dataUrl.replace("image/png", "image/octet-stream");
+      var link = document.createElement('a');
+      if (typeof link.download === 'string') {
+         document.body.appendChild(link); //Firefox requires the link to be in the body
+         link.download = filename || "geometry.png";
+         link.href = dataUrl;
+         link.click();
+         document.body.removeChild(link); //remove the link when done
+      }
+   }
+
    /** @brief Returns url parameters defining camera position.
     * @desc It is zoom, roty, rotz parameters
     * These parameters applied from default position which is shift along X axis */
-
    TGeoPainter.prototype.produceCameraUrl = function(prec) {
 
       if (!this._lookat || !this._camera0pos || !this._camera || !this.options) return;
@@ -3833,7 +3832,7 @@
       return true;
    }
 
-   TGeoPainter.prototype.ToggleEnlarge = function() {
+   TGeoPainter.prototype.toggleEnlarge = function() {
 
       if (d3.event) {
          d3.event.preventDefault();
