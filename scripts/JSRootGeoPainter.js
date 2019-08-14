@@ -146,6 +146,7 @@
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
       this.ctrl = {
+         clip_intersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
          ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
          highlight: false,
@@ -746,7 +747,8 @@
       } else {
          // Clipping Options
 
-         var clipFolder = this._datgui.addFolder('Clipping');
+         var clipFolder = this._datgui.addFolder('Clipping'),
+             clip_handler = this.changedClipping.bind(this, -1);
 
          for (var naxis=0;naxis<3;++naxis) {
             var cc = this.ctrl.clip[naxis],
@@ -755,12 +757,16 @@
             clipFolder.add(cc, 'enabled')
                 .name('Enable ' + axisC)
                 .listen() // react if option changed outside
-                .onChange(this.changedClipping.bind(this, -1));
+                .onChange(clip_handler);
 
             clipFolder.add(cc, "value", cc.min, cc.max)
                 .name(axisC + ' position')
                 .onChange(this.changedClipping.bind(this, naxis));
          }
+
+         clipFolder.add(this.ctrl, 'clip_intersect').name("Clip intersection")
+                   .listen().onChange(clip_handler);
+
       }
 
       // Appearance Options
@@ -791,10 +797,6 @@
 
       if (this._webgl) {
          var advanced = this._datgui.addFolder('Advanced');
-
-         advanced.add( this, '_clipIntersection').name("Clip intersection").listen().onChange( function (value) {
-            painter.updateClipping();
-         });
 
          advanced.add(this, '_depthTest').name("Depth test").onChange( function (value) {
             painter._toplevel.traverse( function (node) {
@@ -1896,7 +1898,6 @@
 
       // Clipping Planes
 
-      this._clipIntersection = true;
       this.bothSides = false; // which material kind should be used
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
                            new THREE.Plane(new THREE.Vector3(0, this.options._yup ? -1 : 1, 0), 0),
@@ -2007,7 +2008,7 @@
       this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
 
       this._depthTest = true;
-      this._clipIntersection = true;
+      this.ctrl.clip_intersect = true;
       this.options.depthMethod = "ray";
 
       var painter = this;
@@ -3527,7 +3528,7 @@
    TGeoPainter.prototype.changedClipping = function(naxis) {
       var clip = this.ctrl.clip;
 
-      if (naxis >= 0) {
+      if ((naxis !== undefined) && (naxis >= 0)) {
          if (!clip[naxis].enabled) return;
       }
 
@@ -3551,7 +3552,7 @@
 
       var clip = this.ctrl.clip, panels = [], changed = false,
           constants = [clip[0].value, -1 * clip[1].value, (this.options._yup ? -1 : 1) * clip[2].value ],
-          clip_cfg = this._clipIntersection ? 16 : 0;
+          clip_cfg = this.ctrl.clip_intersect ? 16 : 0;
 
       for (var k=0;k<3;++k) {
          if (clip[k].enabled) clip_cfg += 2 << k;
@@ -3573,7 +3574,7 @@
 
       this._clipCfg = clip_cfg;
 
-      var any_clipping = !!panels, ci = this._clipIntersection,
+      var any_clipping = !!panels, ci = this.ctrl.clip_intersect,
           material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       if (force_traverse || changed)
