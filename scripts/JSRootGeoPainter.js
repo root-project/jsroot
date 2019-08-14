@@ -218,7 +218,7 @@
          }
       });
 
-      var bkgr = new THREE.Color(this.options.background);
+      var bkgr = new THREE.Color(this.ctrl.background);
 
       this._toolbar = new Toolbar( this.select_main(), [buttonList], (bkgr.r + bkgr.g + bkgr.b) < 1);
    }
@@ -633,7 +633,6 @@
       });
       menu.add("Reset camera position", function() {
          this.focusCamera();
-         this.Render3D();
       });
       menu.add("Get camera position", function() {
          alert("Position (as url): &opt=" + this.produceCameraUrl());
@@ -664,6 +663,17 @@
          }
       });
       if (!skip_render) this.Render3D(-1);
+   }
+
+   TGeoPainter.prototype.changedBackground = function(val) {
+      if (val !== undefined) this.ctrl.background = val;
+      this._renderer.setClearColor(this.ctrl.background, 1);
+      this.Render3D(0);
+
+      if (this._toolbar) {
+         var bkgr = new THREE.Color(this.ctrl.background);
+         this._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
+      }
    }
 
    /** Method should be called when SSAO configuration changed @private */
@@ -780,16 +790,11 @@
       appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
                      .listen().onChange(this.changedGlobalTransparency.bind(this));
 
-      appearance.add(this.options, 'wireframe').name('Wireframe').listen().onChange( function (value) {
-         painter.changeWireFrame(painter._scene, painter.options.wireframe);
-      });
+      appearance.add(this.ctrl, 'wireframe').name('Wireframe')
+                     .listen().onChange(this.changedWireFrame.bind(this));
 
-      appearance.addColor(this.options, 'background').name('Background').onChange( function() {
-         painter._renderer.setClearColor(painter.options.background, 1);
-         painter.Render3D(0);
-         var bkgr = new THREE.Color(painter.options.background);
-         painter._toolbar.changeBrightness((bkgr.r + bkgr.g + bkgr.b) < 1);
-      });
+      appearance.addColor(this.ctrl, 'background')
+                .name('Background').onChange(this.changedBackground.bind(this));
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
@@ -3514,14 +3519,14 @@
 
    /** Toggle wireframe mode */
    TGeoPainter.prototype.toggleWireFrame = function() {
-      this.options.wireframe = !this.options.wireframe;
-      this.changeWireFrame(this._scene, this.options.wireframe);
+      this.ctrl.wireframe = !this.ctrl.wireframe;
+      this.changedWireFrame();
    }
 
    /** Specify wireframe mode */
    TGeoPainter.prototype.setWireFrame = function(on) {
-      this.options.wireframe = on ? true : false;
-      this.changeWireFrame(this._scene, this.options.wireframe);
+      this.ctrl.wireframe = on ? true : false;
+      this.changedWireFrame();
    }
 
    /** Should be called when configuration of particular axis is changed @private */
@@ -3895,10 +3900,12 @@
       return obj.material.wireframe;
    }
 
-   TGeoPainter.prototype.changeWireFrame = function(obj, on) {
-      var painter = this;
+   TGeoPainter.prototype.changedWireFrame = function() {
+      if (!this._scene) return;
 
-      obj.traverse(function(obj2) { painter.accessObjectWireFrame(obj2, on); });
+      var painter = this, on = this.ctrl.wireframe;
+
+      this._scene.traverse(function(obj) { painter.accessObjectWireFrame(obj, on); });
 
       this.Render3D();
    }
