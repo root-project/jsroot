@@ -146,8 +146,20 @@
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
       this.ctrl = {
-         clip: [{ name:"x", enabled: true, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}]
+         clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
+         ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
+         highlight: false,
+         highlight_scene: false
       };
+
+      this.ctrl.ssao.outputItems = [
+         {name: 'Default', value: THREE.SSAOPass.OUTPUT.Default},
+         {name: 'SSAO Only', value: THREE.SSAOPass.OUTPUT.SSAO},
+         {name: 'SSAO Only + Blur', value: THREE.SSAOPass.OUTPUT.Blur},
+         {name: 'Beauty', value: THREE.SSAOPass.OUTPUT.Beauty},
+         {name: 'Depth', value: THREE.SSAOPass.OUTPUT.Depth},
+         {name: 'Normal', value: THREE.SSAOPass.OUTPUT.Normal}
+      ];
 
       this.Cleanup(true);
    }
@@ -393,7 +405,7 @@
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
-                   clipx: false, clipy: false, clipz: false, ssao: false, outline: false,
+                   clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
                    depthMethod: "ray", mouse_tmout: 50 };
 
@@ -479,13 +491,13 @@
       if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
       if (d.check("DFLT_COLORS") || d.check("DFLT")) this.SetRootDefaultColors();
-      if (d.check("SSAO")) res.ssao = true;
+      if (d.check("SSAO")) res.usessao = true;
       if (d.check("OUTLINE")) res.outline = true;
 
       if (d.check("NOWORKER")) res.use_worker = -1;
       if (d.check("WORKER")) res.use_worker = 1;
 
-      if (d.check("NOHIGHLIGHT") || d.check("NOHIGH")) res.highlight = res.highlight_scene = 0;
+      if (d.check("NOHIGHLIGHT") || d.check("NOHIGH")) res.highlight_scene = res.highlight = 0;
       if (d.check("HIGHLIGHT")) res.highlight_scene = res.highlight = true;
       if (d.check("HSCENEONLY")) { res.highlight_scene = true; res.highlight = 0; }
       if (d.check("NOHSCENE")) res.highlight_scene = 0;
@@ -612,11 +624,11 @@
       menu.addchk(this.options.wireframe, "Wire frame", function() {
          this.toggleWireFrame();
       });
-      menu.addchk(this.options.highlight, "Highlight volumes", function() {
-         this.options.highlight = !this.options.highlight;
+      menu.addchk(this.ctrl.highlight, "Highlight volumes", function() {
+         this.ctrl.highlight = !this.ctrl.highlight;
       });
-      menu.addchk(this.options.highlight_scene, "Highlight scene", function() {
-         this.options.highlight_scene = !this.options.highlight_scene;
+      menu.addchk(this.ctrl.highlight_scene, "Highlight scene", function() {
+         this.ctrl.highlight_scene = !this.ctrl.highlight_scene;
       });
       menu.add("Reset camera position", function() {
          this.focusCamera();
@@ -637,9 +649,9 @@
 
    /** Method used to set transparency for all geometrical shapes
     * As transperency value one could provide function */
-   TGeoPainter.prototype.changeGlobalTransparency = function(transparency, skip_render) {
+   TGeoPainter.prototype.changedGlobalTransparency = function(transparency, skip_render) {
       var func = (typeof transparency == 'function') ? transparency : null;
-      if (func) transparency = this.options.transparency;
+      if (func || (transparency === undefined)) transparency = this.ctrl.transparency;
       this._toplevel.traverse( function (node) {
          if (node && node.material && (node.material.inherentOpacity !== undefined)) {
             var t = func ? func(node) : undefined;
@@ -651,6 +663,22 @@
          }
       });
       if (!skip_render) this.Render3D(-1);
+   }
+
+   /** Method should be called when SSAO configuration changed @private */
+   TGeoPainter.prototype.changedSSAO = function() {
+      if (!this.ctrl.ssao.enabled) {
+         this.removeSSAO();
+      } else {
+         this.createSSAO();
+
+         this._ssaoPass.output = this.ctrl.ssao.output;
+         this._ssaoPass.kernelRadius = this.ctrl.ssao.kernelRadius;
+         this._ssaoPass.minDistance = this.ctrl.ssao.minDistance;
+         this._ssaoPass.maxDistance = this.ctrl.ssao.maxDistance;
+      }
+
+      this.updateClipping();
    }
 
    /** Display control GUI */
@@ -700,49 +728,6 @@
 
       this._datgui.painter = this;
 
-      this._datgui.createSSAOgui = function(is_on) {
-         if (!is_on) {
-            if (this._ssao) {
-               // there is no method to destroy folder - why?
-               var dom = this._ssao.domElement;
-               dom.parentNode.removeChild(dom);
-               this._ssao.destroy();
-               if (this.__folders && this.__folders['SSAO'])
-                  this.__folders['SSAO'] = undefined;
-            }
-            delete this._ssao;
-            return;
-         }
-
-         if (this._ssao) return;
-
-         this._ssao = painter._datgui.addFolder('SSAO');
-
-         this._ssao.add( painter._ssaoPass, 'output', {
-             'Default': THREE.SSAOPass.OUTPUT.Default,
-             'SSAO Only': THREE.SSAOPass.OUTPUT.SSAO,
-             'SSAO Only + Blur': THREE.SSAOPass.OUTPUT.Blur,
-             'Beauty': THREE.SSAOPass.OUTPUT.Beauty,
-             'Depth': THREE.SSAOPass.OUTPUT.Depth,
-             'Normal': THREE.SSAOPass.OUTPUT.Normal
-         } ).onChange( function ( value ) {
-            painter._ssaoPass.output = parseInt( value );
-            painter.Render3D();
-         } );
-
-         this._ssao.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
-            painter.Render3D();
-         });
-
-         this._ssao.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
-            painter.Render3D();
-         });
-
-         this._ssao.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
-            painter.Render3D();
-         });
-      }
-
       if (this.options.project) {
 
          var bound = this.getGeomBoundingBox(this.getProjectionSource(), 0.01);
@@ -778,17 +763,16 @@
          }
       }
 
-
       // Appearance Options
 
       var appearance = this._datgui.addFolder('Appearance');
 
-      appearance.add(this.options, 'highlight').name('Highlight Selection').listen().onChange( function (value) {
-         if (!value) painter.HighlightMesh(null);
-      });
+      appearance.add(this.ctrl, 'highlight')
+                .name('Highlight Selection')
+                .listen().onChange(this.changedHighlight.bind(this));
 
-      appearance.add(this.options, 'transparency', 0.0, 1.0, 0.001)
-                     .listen().onChange(this.changeGlobalTransparency.bind(this));
+      appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
+                     .listen().onChange(this.changedGlobalTransparency.bind(this));
 
       appearance.add(this.options, 'wireframe').name('Wireframe').listen().onChange( function (value) {
          painter.changeWireFrame(painter._scene, painter.options.wireframe);
@@ -807,15 +791,6 @@
 
       if (this._webgl) {
          var advanced = this._datgui.addFolder('Advanced');
-
-         advanced.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
-            if (painter._enableSSAO)
-               painter.createSSAO();
-            painter._datgui.createSSAOgui(painter._enableSSAO);
-
-            painter._enableClipping = !painter._enableSSAO;
-            painter.updateClipping();
-         }).listen();
 
          advanced.add( this, '_clipIntersection').name("Clip intersection").listen().onChange( function (value) {
             painter.updateClipping();
@@ -844,20 +819,59 @@
         advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
-      this._datgui.createSSAOgui(this._enableSSAO && this._ssaoPass);
+      // no SSAO folder if outline is enabled
+      if (this.ctrl.outline) return;
+
+      var ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)');
+
+      var ssaocfg = {};
+      for (var k=0;k< this.ctrl.ssao.outputItems.length;++k) {
+         var item = this.ctrl.ssao.outputItems[k]
+         ssaocfg[item.name] = item.value;
+      }
+
+      ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
+                .listen().onChange( this.changedSSAO.bind(this));
+
+      ssaofolder.add( this.ctrl.ssao, 'output', ssaocfg).onChange( function ( value ) {
+         painter.ctrl.ssao.output = parseInt( value );
+         painter.changedSSAO();
+      } );
+
+      ssaofolder.add( this.ctrl.ssao, 'kernelRadius', 0, 32)
+                .listen().onChange(this.changedSSAO.bind(this));
+
+      ssaofolder.add( this.ctrl.ssao, 'minDistance', 0.001, 0.02)
+                .listen().onChange(this.changedSSAO.bind(this));
+
+      ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
+                .listen().onChange(this.changedSSAO.bind(this));
+   }
+
+   TGeoPainter.prototype.removeSSAO = function() {
+      // we cannot remove pass from composer - just disable it
+      delete this._ssaoPass;
+      delete this._effectComposer;
    }
 
    TGeoPainter.prototype.createSSAO = function() {
-      if (!this._webgl || this._ssaoPass) return;
+      if (!this._webgl) return;
 
       // this._depthRenderTarget = new THREE.WebGLRenderTarget( this._scene_width, this._scene_height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter } );
       // Setup SSAO pass
-      this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
-      this._ssaoPass.kernelRadius = 16;
-      this._ssaoPass.renderToScreen = true;
+      if (!this._ssaoPass) {
+         if (!this._effectComposer) {
+            this._effectComposer = new THREE.EffectComposer( this._renderer );
+            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
+         }
 
-      // Add pass to effect composer
-      this._effectComposer.addPass( this._ssaoPass );
+         this._ssaoPass = new THREE.SSAOPass( this._scene, this._camera, this._scene_width, this._scene_height );
+         this._ssaoPass.kernelRadius = 16;
+         this._ssaoPass.renderToScreen = true;
+
+         // Add pass to effect composer
+         this._effectComposer.addPass( this._ssaoPass );
+      }
    }
 
    TGeoPainter.prototype.OrbitContext = function(evnt, intersects) {
@@ -1134,9 +1148,9 @@
       if (active_mesh) {
          // check if highlight is disabled for correspondent objects kinds
          if (active_mesh[0].geo_object) {
-            if (!this.options.highlight_scene) active_mesh = null;
+            if (!this.ctrl.highlight_scene) active_mesh = null;
          } else {
-            if (!this.options.highlight) active_mesh = null;
+            if (!this.ctrl.highlight) active_mesh = null;
          }
       }
 
@@ -1268,7 +1282,7 @@
          painter.HighlightMesh(active_mesh, undefined, geo_object, geo_index);
 
          if (painter.options.update_browser) {
-            if (painter.options.highlight && tooltip) names = [ tooltip ];
+            if (painter.ctrl.highlight && tooltip) names = [ tooltip ];
             painter.ActivateInBrowser(names);
          }
 
@@ -1923,25 +1937,19 @@
 
       this._depthTest = true;
 
+      if (this.options.outline) this.ctrl.outline = true;
+
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
 
-      // these two parameters are exclusive - either SSAO or clipping can work at same time
-      this._enableSSAO = this.options.ssao;
-      this._enableClipping = !this._enableSSAO;
+      if (this._webgl && (this.ctrl.ssao.enabled || this.ctrl.outline)) {
 
-      if (this._webgl && (this.options.ssao || this.options.outline)) {
-         this._effectComposer = new THREE.EffectComposer( this._renderer );
-         this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
-
-         if (this.options.outline && (typeof this.createOutline == "function")) {
-
+         if (this.ctrl.outline && (typeof this.createOutline == "function")) {
+            this._effectComposer = new THREE.EffectComposer( this._renderer );
+            this._effectComposer.addPass( new THREE.RenderPass( this._scene, this._camera ) );
             this.createOutline(w, h);
-
-         } else if (this.options.ssao && (typeof this.createSSAO == "function")) {
-
-            this.createSSAO(w, h);
-
+         } else if (this.ctrl.ssao.enabled) {
+            this.createSSAO();
          }
       }
 
@@ -1997,10 +2005,8 @@
    }
 
    TGeoPainter.prototype.resetAdvanced = function() {
-      if (this._ssaoPass) {
-         this._ssaoPass.kernelRadius = 16;
-         this._ssaoPass.output = THREE.SSAOPass.OUTPUT.Default;
-      }
+      this.ctrl.ssao.kernelRadius = 16;
+      this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
 
       this._depthTest = true;
       this._clipIntersection = true;
@@ -3521,18 +3527,24 @@
 
    /** Should be called when configuration of particular axis is changed @private */
    TGeoPainter.prototype.changedClipping = function(naxis) {
-      if (naxis >= 0)
-         if (!this.ctrl.clip[naxis].enabled) return;
+      var clip = this.ctrl.clip;
 
-      if (!this._enableClipping)
-         this._enableClipping = true;
+      if (naxis >= 0) {
+         if (!clip[naxis].enabled) return;
+      }
 
-      if (this._enableSSAO) {
-         this._enableSSAO = false;
-         if (this._datgui) this._datgui.createSSAOgui(false);
+      if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
+         this.ctrl.ssao.enabled = false;
+         this.removeSSAO();
       }
 
       this.updateClipping();
+   }
+
+   /** Should be called when configuration of highlight is changed @private */
+   TGeoPainter.prototype.changedHighlight = function() {
+      if (!this.ctrl.highlight)
+         this.HighlightMesh(null);
    }
 
    /** Assign clipping attributes to the meshes - supported only for webgl @private */
@@ -3545,7 +3557,7 @@
       this._clipPlanes[1].constant = -1 * clip[1].value;
       this._clipPlanes[2].constant = (this.options._yup ? -1 : 1) * clip[2].value;
 
-      if (this._enableClipping) {
+      if (!this.ctrl.ssao.enabled) {
          if (clip[0].enabled) panels.push(this._clipPlanes[0]);
          if (clip[1].enabled) panels.push(this._clipPlanes[1]);
          if (clip[2].enabled) panels.push(this._clipPlanes[2]);
@@ -3612,8 +3624,8 @@
          full_redraw = true;
       }
 
-      if (this.options.transparency!==0)
-         this.changeGlobalTransparency(this.options.transparency, true);
+      if (this.ctrl.transparency!==0)
+         this.changedGlobalTransparency(this.ctrl.transparency, true);
 
       if (first_time)
          this.completeScene();
@@ -3648,12 +3660,12 @@
       if (first_time) {
 
          // after first draw check if highlight can be enabled
-         if (this.options.highlight === false)
-            this.options.highlight = (this.first_render_tm < 1000);
+         if (this.ctrl.highlight === false)
+            this.ctrl.highlight = (this.first_render_tm < 1000);
 
          // also highlight of scene object can be assigned at the first draw
-         if (this.options.highlight_scene === false)
-            this.options.highlight_scene = this.options.highlight;
+         if (this.ctrl.highlight_scene === false)
+            this.ctrl.highlight_scene = this.ctrl.highlight;
 
          // if rotation was enabled, do it
          if (this._webgl && this.options.autoRotate && !this.options.project) this.autorotate(2.5);
@@ -3692,6 +3704,8 @@
    TGeoPainter.prototype.Cleanup = function(first_time) {
 
       if (!first_time) {
+
+         this.removeSSAO();
 
          this.AccessTopPainter(false); // remove as pointer
 
@@ -3944,6 +3958,12 @@
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
 
+      // copy all attributes from options to control
+      JSROOT.extend(painter.ctrl, painter.options);
+
+      painter.ctrl.ssao.enabled = painter.options.usessao;
+
+      // special handling for array of clips
       painter.ctrl.clip[0].enabled = painter.options.clipx;
       painter.ctrl.clip[1].enabled = painter.options.clipy;
       painter.ctrl.clip[2].enabled = painter.options.clipz;
