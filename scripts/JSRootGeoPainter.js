@@ -672,7 +672,7 @@
       } else {
          this.createSSAO();
 
-         this._ssaoPass.output = this.ctrl.ssao.output;
+         this._ssaoPass.output = parseInt(this.ctrl.ssao.output);
          this._ssaoPass.kernelRadius = this.ctrl.ssao.kernelRadius;
          this._ssaoPass.minDistance = this.ctrl.ssao.minDistance;
          this._ssaoPass.maxDistance = this.ctrl.ssao.maxDistance;
@@ -822,30 +822,28 @@
       // no SSAO folder if outline is enabled
       if (this.ctrl.outline) return;
 
-      var ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)');
+      var ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
+          ssao_handler = this.changedSSAO.bind(this), ssaocfg = {};
 
-      var ssaocfg = {};
       for (var k=0;k< this.ctrl.ssao.outputItems.length;++k) {
          var item = this.ctrl.ssao.outputItems[k]
          ssaocfg[item.name] = item.value;
       }
 
       ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
-                .listen().onChange( this.changedSSAO.bind(this));
+                .listen().onChange(ssao_handler);
 
-      ssaofolder.add( this.ctrl.ssao, 'output', ssaocfg).onChange( function ( value ) {
-         painter.ctrl.ssao.output = parseInt( value );
-         painter.changedSSAO();
-      } );
+      ssaofolder.add( this.ctrl.ssao, 'output', ssaocfg)
+                .listen().onChange(ssao_handler);
 
       ssaofolder.add( this.ctrl.ssao, 'kernelRadius', 0, 32)
-                .listen().onChange(this.changedSSAO.bind(this));
+                .listen().onChange(ssao_handler);
 
       ssaofolder.add( this.ctrl.ssao, 'minDistance', 0.001, 0.02)
-                .listen().onChange(this.changedSSAO.bind(this));
+                .listen().onChange(ssao_handler);
 
       ssaofolder.add( this.ctrl.ssao, 'maxDistance', 0.01, 0.3)
-                .listen().onChange(this.changedSSAO.bind(this));
+                .listen().onChange(ssao_handler);
    }
 
    TGeoPainter.prototype.removeSSAO = function() {
@@ -3538,7 +3536,7 @@
          this.removeSSAO();
       }
 
-      this.updateClipping();
+      this.updateClipping(false, true);
    }
 
    /** Should be called when configuration of highlight is changed @private */
@@ -3548,25 +3546,37 @@
    }
 
    /** Assign clipping attributes to the meshes - supported only for webgl @private */
-   TGeoPainter.prototype.updateClipping = function(without_render) {
+   TGeoPainter.prototype.updateClipping = function(without_render, force_traverse) {
       if (!this._webgl) return;
 
-      var clip = this.ctrl.clip, panels = [];
+      var clip = this.ctrl.clip, panels = [], changed = false,
+          constants = [clip[0].value, -1 * clip[1].value, (this.options._yup ? -1 : 1) * clip[2].value ],
+          clip_cfg = this._clipIntersection ? 16 : 0;
 
-      this._clipPlanes[0].constant = clip[0].value;
-      this._clipPlanes[1].constant = -1 * clip[1].value;
-      this._clipPlanes[2].constant = (this.options._yup ? -1 : 1) * clip[2].value;
+      for (var k=0;k<3;++k) {
+         if (clip[k].enabled) clip_cfg += 2 << k;
+         if (this._clipPlanes[k].constant != constants[k]) {
+            changed = true;
+            this._clipPlanes[k].constant = constants[k];
+         }
+      }
 
       if (!this.ctrl.ssao.enabled) {
          if (clip[0].enabled) panels.push(this._clipPlanes[0]);
          if (clip[1].enabled) panels.push(this._clipPlanes[1]);
          if (clip[2].enabled) panels.push(this._clipPlanes[2]);
+         clip_cfg += panels.length*1000;
       }
       if (panels.length == 0) panels = null;
+
+      if (this._clipCfg !== clip_cfg) changed = true;
+
+      this._clipCfg = clip_cfg;
 
       var any_clipping = !!panels, ci = this._clipIntersection,
           material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
+      if (force_traverse || changed)
       this._scene.traverse( function (node) {
          if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
 
