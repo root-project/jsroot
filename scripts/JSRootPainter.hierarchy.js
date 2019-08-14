@@ -1122,9 +1122,9 @@
       return true;
    }
 
+   /** Argument is item name or array of string with items name
+     *only already drawn items will be update with same draw option */
    HierarchyPainter.prototype.updateItems = function(items) {
-      // argument is item name or array of string with items name
-      // only already drawn items will be update with same draw option
 
       if (!this.disp || !items) return;
 
@@ -1147,9 +1147,9 @@
    }
 
 
+   /** Method can be used to fetch new objects and update all existing drawings
+     * if only_auto_items specified, only automatic items will be updated */
    HierarchyPainter.prototype.updateAll = function(only_auto_items, only_items) {
-      // method can be used to fetch new objects and update all existing drawings
-      // if only_auto_items specified, only automatic items will be updated
 
       if (!this.disp) return;
 
