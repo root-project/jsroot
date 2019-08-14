@@ -146,7 +146,7 @@
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
       this.ctrl = {
-         clip: [{ name:"x", enabled: true, value: 0, min: -50, max: 50}, { name:"y", enabled: false, value: 0, min: -200, max: 200}, { name:"z", enabled: false, value: 0, min: -100, max: 100}]
+         clip: [{ name:"x", enabled: true, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}]
       };
 
       this.Cleanup(true);
@@ -698,25 +698,27 @@
 
       main.node().appendChild(this._datgui.domElement);
 
-      function createSSAOgui(is_on) {
+      this._datgui.painter = this;
+
+      this._datgui.createSSAOgui = function(is_on) {
          if (!is_on) {
-            if (painter._datgui._ssao) {
+            if (this._ssao) {
                // there is no method to destroy folder - why?
-               var dom = painter._datgui._ssao.domElement;
+               var dom = this._ssao.domElement;
                dom.parentNode.removeChild(dom);
-               painter._datgui._ssao.destroy();
-               if (painter._datgui.__folders && painter._datgui.__folders['SSAO'])
-                  painter._datgui.__folders['SSAO'] = undefined;
+               this._ssao.destroy();
+               if (this.__folders && this.__folders['SSAO'])
+                  this.__folders['SSAO'] = undefined;
             }
-            delete painter._datgui._ssao;
+            delete this._ssao;
             return;
          }
 
-         if (painter._datgui._ssao) return;
+         if (this._ssao) return;
 
-         painter._datgui._ssao = painter._datgui.addFolder('SSAO');
+         this._ssao = painter._datgui.addFolder('SSAO');
 
-         painter._datgui._ssao.add( painter._ssaoPass, 'output', {
+         this._ssao.add( painter._ssaoPass, 'output', {
              'Default': THREE.SSAOPass.OUTPUT.Default,
              'SSAO Only': THREE.SSAOPass.OUTPUT.SSAO,
              'SSAO Only + Blur': THREE.SSAOPass.OUTPUT.Blur,
@@ -728,15 +730,15 @@
             painter.Render3D();
          } );
 
-         painter._datgui._ssao.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
+         this._ssao.add( painter._ssaoPass, 'kernelRadius', 0, 32).listen().onChange(function() {
             painter.Render3D();
          });
 
-         painter._datgui._ssao.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
+         this._ssao.add( painter._ssaoPass, 'minDistance', 0.001, 0.02).listen().onChange(function() {
             painter.Render3D();
          });
 
-         painter._datgui._ssao.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
+         this._ssao.add( painter._ssaoPass, 'maxDistance', 0.01, 0.3).listen().onChange(function() {
             painter.Render3D();
          });
       }
@@ -759,35 +761,20 @@
       } else {
          // Clipping Options
 
-         var bound = this.getGeomBoundingBox(this._toplevel, 0.01);
-
          var clipFolder = this._datgui.addFolder('Clipping');
 
          for (var naxis=0;naxis<3;++naxis) {
-            var axis = !naxis ? "x" : ((naxis===1) ? "y" : "z"),
-                axisC = axis.toUpperCase();
+            var cc = this.ctrl.clip[naxis],
+                axisC = cc.name.toUpperCase();
 
-            clipFolder.add(this, 'enable' + axisC).name('Enable '+axisC)
+            clipFolder.add(cc, 'enabled')
+                .name('Enable ' + axisC)
                 .listen() // react if option changed outside
-                .onChange( function (value) {
-                    if (value) {
-                       createSSAOgui(false);
-                       painter._enableSSAO = false;
-                       painter._enableClipping = true;
-                     }
-                    painter.updateClipping();
-                });
+                .onChange(this.changedClipping.bind(this, -1));
 
-            var clip = "clip" + axisC;
-            if (this[clip] === 0) this[clip] = (bound.min[axis]+bound.max[axis])/2;
-
-            var item = clipFolder.add(this, clip, bound.min[axis], bound.max[axis])
-                   .name(axisC + ' Position')
-                   .onChange(function (value) {
-                     if (painter[this.enbale_flag]) painter.updateClipping();
-                    });
-
-            item.enbale_flag = "enable"+axisC;
+            clipFolder.add(cc, "value", cc.min, cc.max)
+                .name(axisC + ' position')
+                .onChange(this.changedClipping.bind(this, naxis));
          }
       }
 
@@ -824,7 +811,7 @@
          advanced.add(this, '_enableSSAO').name('Smooth Lighting (SSAO)').onChange( function (value) {
             if (painter._enableSSAO)
                painter.createSSAO();
-            createSSAOgui(painter._enableSSAO);
+            painter._datgui.createSSAOgui(painter._enableSSAO);
 
             painter._enableClipping = !painter._enableSSAO;
             painter.updateClipping();
@@ -857,7 +844,7 @@
         advanced.add(this, 'resetAdvanced').name('Reset');
       }
 
-      createSSAOgui(this._enableSSAO && this._ssaoPass);
+      this._datgui.createSSAOgui(this._enableSSAO && this._ssaoPass);
    }
 
    TGeoPainter.prototype.createSSAO = function() {
@@ -1012,7 +999,7 @@
          var unique = (obj.stack !== undefined) || (obj.geo_name !== undefined);
 
          if (unique && obj.material && (obj.material.opacity !== undefined))
-            unique = obj.material.opacity >= 0.1;
+            unique = (obj.material.opacity >= 0.1);
 
          if (obj.jsroot_special) unique = false;
 
@@ -1022,7 +1009,9 @@
          if (!unique) intersects.splice(n,1);
       }
 
-      if (this.enableX || this.enableY || this.enableZ) {
+      var clip = this.ctrl.clip;
+
+      if (clip[0].enabled || clip[1].enabled || clip[2].enabled) {
          var clippedIntersects = [];
 
          function myXor(a,b) { return ( a && !b ) || (!a && b); }
@@ -1030,9 +1019,9 @@
          for (var i = 0; i < intersects.length; ++i) {
             var point = intersects[i].point, special = (intersects[i].object.type == "Points"), clipped = true;
 
-            if (this.enableX && myXor(this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant, special)) clipped = false;
-            if (this.enableY && myXor(this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant, special)) clipped = false;
-            if (this.enableZ && (this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant)) clipped = false;
+            if (clip[0].enabled && myXor(this._clipPlanes[0].normal.dot(point) > this._clipPlanes[0].constant, special)) clipped = false;
+            if (clip[1].enabled && myXor(this._clipPlanes[1].normal.dot(point) > this._clipPlanes[1].constant, special)) clipped = false;
+            if (clip[2].enabled && (this._clipPlanes[2].normal.dot(point) > this._clipPlanes[2].constant)) clipped = false;
 
             if (!clipped) clippedIntersects.push(intersects[i]);
          }
@@ -1897,12 +1886,9 @@
 
       this._clipIntersection = true;
       this.bothSides = false; // which material kind should be used
-      this.enableX = this.enableY = this.enableZ = false;
-      this.clipX = this.clipY = this.clipZ = 0.0;
-
-      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3( 1, 0, 0), this.clipX),
-                           new THREE.Plane(new THREE.Vector3( 0, this.options._yup ? -1 : 1, 0), this.clipY),
-                           new THREE.Plane(new THREE.Vector3( 0, 0, this.options._yup ? 1 : -1), this.clipZ) ];
+      this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+                           new THREE.Plane(new THREE.Vector3(0, this.options._yup ? -1 : 1, 0), 0),
+                           new THREE.Plane(new THREE.Vector3(0, 0, this.options._yup ? 1 : -1), 0) ];
 
        // Lights
 
@@ -2030,49 +2016,6 @@
       this.Render3D(0);
    }
 
-   /** Assign clipping attributes to the meshes - supported only for webgl
-    * @private */
-   TGeoPainter.prototype.updateClipping = function(without_render) {
-      if (!this._webgl) return;
-
-      this._clipPlanes[0].constant = this.clipX;
-      this._clipPlanes[1].constant = -this.clipY;
-      this._clipPlanes[2].constant = this.options._yup ? -this.clipZ : this.clipZ;
-
-      var panels = [];
-      if (this._enableClipping) {
-         if (this.enableX) panels.push(this._clipPlanes[0]);
-         if (this.enableY) panels.push(this._clipPlanes[1]);
-         if (this.enableZ) panels.push(this._clipPlanes[2]);
-      }
-      if (panels.length == 0) panels = null;
-
-      var any_clipping = !!panels, ci = this._clipIntersection,
-          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
-
-      this._scene.traverse( function (node) {
-         if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
-
-            if (node.material.clippingPlanes !== panels) {
-               node.material.clipIntersection = ci;
-               node.material.clippingPlanes = panels;
-               node.material.needsUpdate = true;
-            }
-
-            if (node.material.emissive !== undefined) {
-               if (node.material.side != material_side) {
-                  node.material.side = material_side;
-                  node.material.needsUpdate = true;
-               }
-            }
-         }
-      });
-
-      this.bothSides = any_clipping;
-
-      if (!without_render) this.Render3D(0);
-   }
-
    TGeoPainter.prototype.getGeomBox = function() {
       var extras = this.getExtrasContainer('collect');
 
@@ -2172,11 +2115,21 @@
       this._scene.fog.near = this._overall_size * 2;
       this._scene.fog.far = this._overall_size * 12;
 
-      if (first_time) {
-         this.clipX = midx;
-         this.clipY = midy;
-         this.clipZ = midz;
-      }
+      if (first_time)
+         for (var naxis=0;naxis<3;++naxis) {
+            var cc = this.ctrl.clip[naxis];
+            cc.min = box.min[cc.name];
+            cc.max = box.max[cc.name];
+            var sz = cc.max - cc.min;
+            cc.max += sz*0.01;
+            cc.min -= sz*0.01;
+            if (!cc.value)
+               cc.value = (cc.min + cc.max) / 2;
+            else if (cc.value < cc.min)
+               cc.value = cc.min;
+            else if (cc.value > cc.max)
+               cc.value = cc.max;
+         }
 
       if (this.options.ortho_camera) {
          this._camera.left = box.min.x;
@@ -2266,13 +2219,10 @@
       this.focusCamera( info, false );
    }
 
-   TGeoPainter.prototype.focusCamera = function( focus, clip ) {
+   TGeoPainter.prototype.focusCamera = function( focus, autoClip ) {
 
       if (this.options.project)
          return this.adjustCameraPosition();
-
-      var autoClip = (clip === undefined) ? false : clip,
-          incrementX = 0, incrementY = 0, incrementZ = 0;
 
       var box = new THREE.Box3();
       if (focus === undefined) {
@@ -2315,23 +2265,15 @@
       var targetIncrement = target.sub(oldTarget).divideScalar(frames);
       // console.log( targetIncrement );
 
+      autoClip = autoClip && this._webgl;
+
       // Automatic Clipping
-
       if (autoClip) {
-
-         var topBox = this.getGeomBoundingBox(this._toplevel);
-
-         this.clipX = this.enableX ? this.clipX : topBox.min.x;
-         this.clipY = this.enableY ? this.clipY : topBox.min.y;
-         this.clipZ = this.enableZ ? this.clipZ : topBox.min.z;
-
-         this.enableX = this.enableY = this.enableZ = true;
-
-         // These should be center of volume, box may not be doing this correctly
-         incrementX = ((box.max.x + box.min.x) / 2 - this.clipX) / frames;
-         incrementY = ((box.max.y + box.min.y) / 2 - this.clipY) / frames;
-         incrementZ = ((box.max.z + box.min.z) / 2 - this.clipZ) / frames;
-
+         for (var axis = 0; axis<3; ++axis) {
+            var cc = this.ctrl.clip[axis];
+            if (!cc.enabled) { cc.value = cc.min; cc.enabled = true; }
+            cc.inc = ((cc.min + cc.max) / 2 - cc.value) / frames;
+         }
          this.updateClipping();
       }
 
@@ -2358,9 +2300,8 @@
 
          var tm1 = new Date().getTime();
          if (autoClip) {
-            painter.clipX += incrementX * smoothFactor;
-            painter.clipY += incrementY * smoothFactor;
-            painter.clipZ += incrementZ * smoothFactor;
+            for (var axis = 0; axis<3; ++axis)
+               painter.ctrl.clip[axis].value += painter.ctrl.clip[axis].inc * smoothFactor;
             painter.updateClipping();
          } else {
             painter.Render3D(0);
@@ -3578,6 +3519,65 @@
       this.changeWireFrame(this._scene, this.options.wireframe);
    }
 
+   /** Should be called when configuration of particular axis is changed @private */
+   TGeoPainter.prototype.changedClipping = function(naxis) {
+      if (naxis >= 0)
+         if (!this.ctrl.clip[naxis].enabled) return;
+
+      if (!this._enableClipping)
+         this._enableClipping = true;
+
+      if (this._enableSSAO) {
+         this._enableSSAO = false;
+         if (this._datgui) this._datgui.createSSAOgui(false);
+      }
+
+      this.updateClipping();
+   }
+
+   /** Assign clipping attributes to the meshes - supported only for webgl @private */
+   TGeoPainter.prototype.updateClipping = function(without_render) {
+      if (!this._webgl) return;
+
+      var clip = this.ctrl.clip, panels = [];
+
+      this._clipPlanes[0].constant = clip[0].value;
+      this._clipPlanes[1].constant = -1 * clip[1].value;
+      this._clipPlanes[2].constant = (this.options._yup ? -1 : 1) * clip[2].value;
+
+      if (this._enableClipping) {
+         if (clip[0].enabled) panels.push(this._clipPlanes[0]);
+         if (clip[1].enabled) panels.push(this._clipPlanes[1]);
+         if (clip[2].enabled) panels.push(this._clipPlanes[2]);
+      }
+      if (panels.length == 0) panels = null;
+
+      var any_clipping = !!panels, ci = this._clipIntersection,
+          material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
+
+      this._scene.traverse( function (node) {
+         if (node.hasOwnProperty("material") && node.material && (node.material.clippingPlanes !== undefined)) {
+
+            if (node.material.clippingPlanes !== panels) {
+               node.material.clipIntersection = ci;
+               node.material.clippingPlanes = panels;
+               node.material.needsUpdate = true;
+            }
+
+            if (node.material.emissive !== undefined) {
+               if (node.material.side != material_side) {
+                  node.material.side = material_side;
+                  node.material.needsUpdate = true;
+               }
+            }
+         }
+      });
+
+      this.bothSides = any_clipping;
+
+      if (!without_render) this.Render3D(0);
+   }
+
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var first_time = false, full_redraw = false, check_extras = true;
@@ -3610,12 +3610,6 @@
          this._first_drawing = false;
          first_time = true;
          full_redraw = true;
-
-         if (this._webgl) {
-            this.enableX = this.options.clipx;
-            this.enableY = this.options.clipy;
-            this.enableZ = this.options.clipz;
-         }
       }
 
       if (this.options.transparency!==0)
@@ -3949,6 +3943,10 @@
       painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
+
+      painter.ctrl.clip[0].enabled = painter.options.clipx;
+      painter.ctrl.clip[1].enabled = painter.options.clipy;
+      painter.ctrl.clip[2].enabled = painter.options.clipz;
 
       return painter;
    }
