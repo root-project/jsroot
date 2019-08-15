@@ -5560,12 +5560,13 @@
 
    TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
-          i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey,
+          i,j,binz,errz,colindx,binw,binh,lbl,posx,posy,sizex,sizey,
           text_col = this.get_color(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
-          profile2d = (this.options.TextKind == "E") && this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function');
+          profile2d = this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'),
+          show_err = (this.options.TextKind == "E");
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
@@ -5590,6 +5591,12 @@
             lbl = (binz === Math.round(binz)) ? binz.toString() :
                       JSROOT.FFormat(binz, JSROOT.gStyle.fPaintTextFormat);
 
+            if (show_err) {
+               errz = histo.getBinError(histo.getBin(i+1,j+1));
+               lbl = "#splitline{" + lbl + "}{#pm" + ((errz === Math.round(errz)) ? errz.toString() :
+                  JSROOT.FFormat(errz, JSROOT.gStyle.fPaintTextFormat)) + "}";
+            }
+
             if (text_angle /*|| (histo.fMarkerSize!==1)*/) {
                posx = Math.round(handle.grx[i] + binw*0.5);
                posy = Math.round(handle.gry[j+1] + binh*(0.5 + text_offset));
@@ -5602,7 +5609,7 @@
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: 0, draw_g: text_g });
+            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: show_err ? 1 : 0, draw_g: text_g });
          }
 
       this.FinishTextDrawing(text_g, null);
