@@ -967,7 +967,7 @@
          var handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
          var plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path d="' + handler.create(32,32) + '" stroke="none" fill="' + args.color + '"/></svg>';
+                        '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" fill="' + handler.getFillColor() + '"/></svg>';
 
          var texture = new THREE.Texture();
          texture.needsUpdate = true;

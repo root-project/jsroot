@@ -846,6 +846,14 @@
       return true;
    }
 
+   TAttMarkerHandler.prototype.getStrokeColor = function() {
+      return this.stroke ? this.color : "none";
+   }
+
+   TAttMarkerHandler.prototype.getFillColor = function() {
+      return this.fill ? this.color : "none";
+   }
+
    /** @summary Apply marker styles to created element */
    TAttMarkerHandler.prototype.Apply = function(selection) {
       selection.style('stroke', this.stroke ? this.color : "none");
