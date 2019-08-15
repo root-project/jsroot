@@ -1478,9 +1478,6 @@
       res.bin = d;
       res.binindx = d.indx;
 
-      // if (pnt.click_handler && res.exact && this.TestEditable())
-      //    res.click_handler = this.InvokeClickHandler.bind(this);
-
       return res;
    }
 
@@ -1659,9 +1656,6 @@
 
          res.menu = res.exact;
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
-
-         //if (pnt.click_handler && res.exact && this.TestEditable())
-         //   res.click_handler = this.InvokeClickHandler.bind(this);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
@@ -1725,45 +1719,6 @@
             }
          }
       }
-   }
-
-   TGraphPainter.prototype.movePntHandler = function(first_time) {
-      var pos = d3.mouse(this.svg_frame().node()),
-          main = this.frame_painter();
-
-      if (!main || !this.interactive_bin) return;
-
-      this.interactive_bin.x = main.RevertX(pos[0] + this.interactive_delta_x);
-      this.interactive_bin.y = main.RevertY(pos[1] + this.interactive_delta_y);
-      this.DrawBins();
-   }
-
-   TGraphPainter.prototype.endPntHandler = function() {
-      if (this.interactive_bin) {
-         var exec = "SetPoint(" + this.interactive_bin.indx + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
-         if ((this.interactive_bin.indx == 0) && this.MatchObjectType('TCutG'))
-            exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.interactive_bin.x + "," + this.interactive_bin.y + ")";
-         this.WebCanvasExec(exec);
-      }
-
-      delete this.interactive_bin;
-      d3.select(window).on("mousemove.graphPnt", null)
-                       .on("mouseup.graphPnt", null);
-   }
-
-   TGraphPainter.prototype.InvokeClickHandler = function(hint) {
-      if (!hint.bin) return; //
-
-      this.interactive_bin = hint.bin;
-
-      d3.select(window).on("mousemove.graphPnt", this.movePntHandler.bind(this))
-                       .on("mouseup.graphPnt", this.endPntHandler.bind(this), true);
-
-      var pos = d3.mouse(this.svg_frame().node()),
-          main = this.frame_painter();
-
-      this.interactive_delta_x = main ? main.grx(this.interactive_bin.x) - pos[0] : 0;
-      this.interactive_delta_y = main ? main.gry(this.interactive_bin.y) - pos[1] : 0;
    }
 
    /** Start moving of TGraph */
