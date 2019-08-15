@@ -3686,18 +3686,27 @@
             this.SwitchTooltip(false); // disable tooltip
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
-            if (args.begin) {
-               var pos = d3.mouse(this.draw_g.node());
+            var pos = d3.mouse(this.draw_g.node());
+            if (this.moveStart) {
+               this.moveStart(pos[0], pos[1]);
+            } else if (args && args.begin) {
                args.begin(pos[0], pos[1]);
             }
        }.bind(this)).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
-            if (args.move) args.move(d3.event.dx, d3.event.dy);
-       }).on(prefix+"end", function() {
+            if (this.moveDrag)
+               this.moveDrag(d3.event.dx, d3.event.dy);
+            else if (args && args.move)
+               args.move(d3.event.dx, d3.event.dy);
+       }.bind(this)).on(prefix+"end", function() {
             d3.event.sourceEvent.preventDefault();
-            if (args.complete) args.complete();
-      });
+            if (this.moveEnd)
+               this.moveEnd();
+            else if (args && args.complete)
+               args.complete();
+            this.SwitchTooltip(true); // enable tooltip back
+      }.bind(this));
 
       this.draw_g.style("cursor", "move").call(drag_move);
    }
