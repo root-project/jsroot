@@ -1478,8 +1478,8 @@
       res.bin = d;
       res.binindx = d.indx;
 
-      if (pnt.click_handler && res.exact && this.TestEditable())
-         res.click_handler = this.InvokeClickHandler.bind(this);
+      // if (pnt.click_handler && res.exact && this.TestEditable())
+      //    res.click_handler = this.InvokeClickHandler.bind(this);
 
       return res;
    }
@@ -1660,8 +1660,8 @@
          res.menu = res.exact;
          res.menu_dist = Math.sqrt((pnt.x-res.x)*(pnt.x-res.x) + Math.pow(Math.min(Math.abs(pnt.y-res.gry1),Math.abs(pnt.y-res.gry2)),2));
 
-         if (pnt.click_handler && res.exact && this.TestEditable())
-            res.click_handler = this.InvokeClickHandler.bind(this);
+         //if (pnt.click_handler && res.exact && this.TestEditable())
+         //   res.click_handler = this.InvokeClickHandler.bind(this);
       }
 
       if (this.fillatt && this.fillatt.used && !this.fillatt.empty()) res.color2 = this.fillatt.fillcolor();
@@ -1764,6 +1764,77 @@
 
       this.interactive_delta_x = main ? main.grx(this.interactive_bin.x) - pos[0] : 0;
       this.interactive_delta_y = main ? main.gry(this.interactive_bin.y) - pos[1] : 0;
+   }
+
+   TGraphPainter.prototype.MoveBins = function(dx,dy) {
+      var exec = "", main = this.frame_painter();
+
+      if (!main || !this.bins) return exec;
+
+      for (var k=0;k<this.bins.length;++k) {
+         var bin = this.bins[k];
+         bin.x = main.RevertX(main.grx(bin.x) + dx);
+         bin.y = main.RevertY(main.gry(bin.y) + dy);
+         exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
+         if ((bin.indx == 0) && this.MatchObjectType('TCutG'))
+            exec += "SetPoint(" + (this.GetObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
+      }
+
+      this.DrawBins();
+
+      return exec;
+   }
+
+   TGraphPainter.prototype.ConfigureMove = function() {
+
+      this.AddMove({
+         begin: function(x,y) {
+            this.pos_dx = this.pos_dy = 0;
+            var hint = this.ExtractTooltip({x:x, y:y});
+            if (hint && hint.exact && (hint.binindx !== undefined)) {
+               this.move_binindx = hint.binindx;
+               this.move_bin = hint.bin;
+               var main = this.frame_painter();
+               this.move_x0 = main ? main.grx(this.move_bin.x) : x;
+               this.move_y0 = main ? main.gry(this.move_bin.y) : y;
+            } else {
+               delete this.move_binindx;
+            }
+
+         }.bind(this),
+         move: function(dx,dy) {
+            this.pos_dx += dx;
+            this.pos_dy += dy;
+
+            if (this.move_binindx === undefined) {
+               this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
+            } else {
+               var main = this.frame_painter();
+               if (main && this.move_bin) {
+                  this.move_bin.x = main.RevertX(this.move_x0 + this.pos_dx);
+                  this.move_bin.y = main.RevertY(this.move_y0 + this.pos_dy);
+                  this.DrawBins();
+               }
+            }
+         }.bind(this),
+         complete: function() {
+            var exec = "";
+
+            if (this.move_binindx === undefined) {
+               this.draw_g.attr("transform", null);
+               exec = this.MoveBins(this.pos_dx, this.pos_dy);
+            } else {
+               var exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+               if ((this.move_bin.indx == 0) && this.MatchObjectType('TCutG'))
+                  exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+               delete this.move_binindx;
+            }
+
+            if (exec) {
+               console.log('exec', exec);
+               this.WebCanvasExec(exec);
+            }
+         }.bind(this)});
    }
 
    TGraphPainter.prototype.FillContextMenu = function(menu) {
@@ -1963,6 +2034,7 @@
       }
       this.SetDivId(divid);
       this.DrawBins();
+      this.ConfigureMove()
       this.DrawNextFunction(0, this.DrawingReady.bind(this));
       return this;
    }
