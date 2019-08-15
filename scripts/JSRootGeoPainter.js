@@ -178,7 +178,7 @@
    TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    TGeoPainter.prototype.CreateToolbar = function(args) {
-      if (this._toolbar || this._usesvg || this._usesvgimg) return;
+      if (this._toolbar || this._usesvg || this._usesvgimg || this.ctrl.notoolbar) return;
       var painter = this;
       var buttonList = [{
          name: 'toImage',
@@ -2004,7 +2004,7 @@
       this.ctrl.ssao.kernelRadius = 16;
       this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
 
-      this.crtl.depthTest = true;
+      this.ctrl.depthTest = true;
       this.ctrl.clipIntersect = true;
       this.ctrl.depthMethod = "ray";
 
