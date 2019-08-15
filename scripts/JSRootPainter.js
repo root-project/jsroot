@@ -3658,11 +3658,11 @@
          this.control.SwitchTooltip(on);
    }
 
-   /** @summary Add move handlers for drawn element
-    * @private */
-   TObjectPainter.prototype.AddMove = function(args) {
+   /** @summary Add move handlers for drawn element @private */
+   TObjectPainter.prototype.AddMove = function() {
 
-      if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode) return;
+      if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||
+          !this.draw_g || this.draw_g.property("assigned_move")) return;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -3685,27 +3685,24 @@
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             var pos = d3.mouse(this.draw_g.node());
-            if (this.moveStart) {
+            if (this.moveStart)
                this.moveStart(pos[0], pos[1]);
-            } else if (args && args.begin) {
-               args.begin(pos[0], pos[1]);
-            }
        }.bind(this)).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             if (this.moveDrag)
                this.moveDrag(d3.event.dx, d3.event.dy);
-            else if (args && args.move)
-               args.move(d3.event.dx, d3.event.dy);
        }.bind(this)).on(prefix+"end", function() {
             d3.event.sourceEvent.preventDefault();
+            d3.event.sourceEvent.stopPropagation();
             if (this.moveEnd)
                this.moveEnd();
-            else if (args && args.complete)
-               args.complete();
       }.bind(this));
 
-      this.draw_g.style("cursor", "move").call(drag_move);
+      this.draw_g
+          .style("cursor", "move")
+          .property("assigned_move", true)
+          .call(drag_move);
    }
 
    /** @summary Add drag for interactive rectangular elements

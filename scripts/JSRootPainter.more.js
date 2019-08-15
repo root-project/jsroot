@@ -1791,8 +1791,9 @@
       }
 
       if (exec) {
-         console.log('exec', exec);
+         console.log('graph exec = ' + exec);
          this.WebCanvasExec(exec);
+         console.log('done exec');
       }
    }
 
