@@ -985,8 +985,6 @@
 
       this._did_create = false;
 
-      args.style = 34;
-
       // special dots
       if (args.style === 1) this.k = 0.3; else
       if (args.style === 6) this.k = 0.5; else
