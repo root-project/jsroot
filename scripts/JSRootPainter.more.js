@@ -79,7 +79,8 @@
         }
 
       if (!this.moveEnd)
-         this.moveEnd = function() {
+         this.moveEnd = function(not_changed) {
+            if (not_changed) return;
             var text = this.GetObject();
             text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
             text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
@@ -461,7 +462,8 @@
          }
 
       if (!this.moveEnd)
-         this.moveEnd = function() {
+         this.moveEnd = function(not_changed) {
+            if (not_changed) return;
             var arrow = this.GetObject(), exec = "";
             arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
             arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
@@ -1765,13 +1767,15 @@
    }
 
    /** Complete moving */
-   TGraphPainter.prototype.moveEnd = function() {
+   TGraphPainter.prototype.moveEnd = function(not_changed) {
       var exec = "";
 
       if (this.move_binindx === undefined) {
-         var main = this.frame_painter();
 
-         if (main && this.bins)
+         this.draw_g.attr("transform", null);
+
+         var main = this.frame_painter();
+         if (main && this.bins && !not_changed) {
             for (var k=0;k<this.bins.length;++k) {
                var bin = this.bins[k];
                bin.x = main.RevertX(main.grx(bin.x) + this.pos_dx);
@@ -1780,9 +1784,8 @@
                if ((bin.indx == 0) && this.MatchObjectType('TCutG'))
                   exec += "SetPoint(" + (this.GetObject().fNpoints-1) + "," + bin.x + "," + bin.y + ");;";
             }
-
-         this.draw_g.attr("transform", null);
-         this.DrawBins();
+            this.DrawBins();
+         }
       } else {
          var exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          if ((this.move_bin.indx == 0) && this.MatchObjectType('TCutG'))
@@ -1790,7 +1793,7 @@
          delete this.move_binindx;
       }
 
-      if (exec) {
+      if (exec && !not_changed) {
          console.log('graph exec = ' + exec);
          this.WebCanvasExec(exec);
          console.log('done exec');

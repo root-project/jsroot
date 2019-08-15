@@ -3671,7 +3671,7 @@
          return false;
       }
 
-      var prefix = "", drag_move;
+      var prefix = "", drag_move, not_changed = true;
       if (JSROOT._test_d3_ === 3) {
          prefix = "drag";
          drag_move = d3.behavior.drag().origin(Object);
@@ -3685,18 +3685,20 @@
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             var pos = d3.mouse(this.draw_g.node());
+            not_changed = true;
             if (this.moveStart)
                this.moveStart(pos[0], pos[1]);
        }.bind(this)).on("drag", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
+            not_changed = false;
             if (this.moveDrag)
                this.moveDrag(d3.event.dx, d3.event.dy);
        }.bind(this)).on(prefix+"end", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             if (this.moveEnd)
-               this.moveEnd();
+               this.moveEnd(not_changed);
       }.bind(this));
 
       this.draw_g
