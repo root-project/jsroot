@@ -3529,6 +3529,12 @@
       this.changedWireFrame();
    }
 
+   /** Specify showtop draw options, relevant only for TGeoManager */
+   TGeoPainter.prototype.setShowTop = function(on) {
+      this.options.showtop = on ? true : false;
+      this.RedrawObject('same');
+   }
+
    /** Should be called when configuration of particular axis is changed @private */
    TGeoPainter.prototype.changedClipping = function(naxis) {
       var clip = this.ctrl.clip;
