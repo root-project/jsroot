@@ -6093,6 +6093,7 @@
       this.tt_handle = handle;
    }
 
+   /** Return text information about histogram bin */
    TH2Painter.prototype.GetBinTips = function (i, j) {
       var lines = [], pmain = this.frame_painter(),
           histo = this.GetHisto(),
@@ -6114,10 +6115,12 @@
 
       if (histo.$baseh) binz -= histo.$baseh.getBinContent(i+1,j+1);
 
-      if (binz === Math.round(binz))
-         lines.push("entries = " + binz);
-      else
-         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat));
+      lines.push("entries = " + ((binz === Math.round(binz)) ? binz : JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat)));
+
+      if ((this.options.TextKind == "E") || this.MatchObjectType('TProfile2D')) {
+         var errz = histo.getBinError(histo.getBin(i+1,j+1));
+         lines.push("error = " + ((errz === Math.round(errz)) ? errz.toString() : JSROOT.FFormat(errz, JSROOT.gStyle.fPaintTextFormat)));
+      }
 
       return lines;
    }
