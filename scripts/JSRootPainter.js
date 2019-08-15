@@ -3682,8 +3682,6 @@
       drag_move
         .on(prefix+"start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
-            JSROOT.Painter.closeMenu(); // close menu
-            this.SwitchTooltip(false); // disable tooltip
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             var pos = d3.mouse(this.draw_g.node());
@@ -3705,7 +3703,6 @@
                this.moveEnd();
             else if (args && args.complete)
                args.complete();
-            this.SwitchTooltip(true); // enable tooltip back
       }.bind(this));
 
       this.draw_g.style("cursor", "move").call(drag_move);
