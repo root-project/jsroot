@@ -3479,9 +3479,9 @@
       return isany;
    }
 
+   /** Fnction called when drawing next snapshot from the list
+     * it is also used as callback for drawing of previous snap */
    TPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
-      // function called when drawing next snapshot from the list
-      // it is also used as callback for drawing of previous snap
 
       if (indx === -1) {
          // flag used to prevent immediate pad redraw during first draw

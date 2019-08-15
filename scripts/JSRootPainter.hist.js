@@ -2289,7 +2289,8 @@
          CopyAxis(histo.fXaxis, obj.fXaxis);
          CopyAxis(histo.fYaxis, obj.fYaxis);
          CopyAxis(histo.fZaxis, obj.fZaxis);
-         if (!fp.zoom_changed_interactive) {
+
+         if (this.snapid || !fp || !fp.zoom_changed_interactive) {
             function CopyZoom(tgt,src) {
                tgt.fFirst = src.fFirst;
                tgt.fLast = src.fLast;
@@ -2331,7 +2332,8 @@
             this.DecodeOptions(opt || histo.fOption);
       }
 
-      // if (!fp.zoom_changed_interactive) this.CheckPadRange();
+      if (this.snapid || !fp || !fp.zoom_changed_interactive)
+         this.CheckPadRange();
 
       this.ScanContent();
 
