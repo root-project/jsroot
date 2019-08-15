@@ -146,12 +146,22 @@
       this.mode3d = true; // indication of 3D mode
       this.drawing_stage = 0; //
       this.ctrl = {
-         clip_intersect: true,
+         clipIntersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
          ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
          highlight: false,
-         highlight_scene: false
+         highlight_scene: false,
+         depthTest: true,
+         depthMethod: "dflt"
       };
+
+      this.ctrl.depthMethodItems = [
+         {name: 'Default', value: "dflt"},
+         {name: 'Raytraicing', value: "ray"},
+         {name: 'Boundary box', value: "box"},
+         {name: 'Mesh size', value: "size"},
+         {name: 'Central point', value: "pnt" }
+       ];
 
       this.ctrl.ssao.outputItems = [
          {name: 'Default', value: THREE.SSAOPass.OUTPUT.Default},
@@ -774,7 +784,7 @@
                 .onChange(this.changedClipping.bind(this, naxis));
          }
 
-         clipFolder.add(this.ctrl, 'clip_intersect').name("Clip intersection")
+         clipFolder.add(this.ctrl, 'clipIntersect').name("Clip intersection")
                    .listen().onChange(clip_handler);
 
       }
@@ -801,27 +811,15 @@
       // Advanced Options
 
       if (this._webgl) {
-         var advanced = this._datgui.addFolder('Advanced');
+         var advanced = this._datgui.addFolder('Advanced'), depthcfg = {};
+         this.ctrl.depthMethodItems.forEach(function(i) { depthcfg[i.name] = i.value; });
 
-         advanced.add(this, '_depthTest').name("Depth test").onChange( function (value) {
-            painter._toplevel.traverse( function (node) {
-               if (node instanceof THREE.Mesh) {
-                  node.material.depthTest = value;
-               }
-            });
-            painter.Render3D(0);
-         }).listen();
+         advanced.add(this.ctrl, 'depthTest').name("Depth test")
+            .listen().onChange(this.changedDepthTest.bind(this));
 
-         advanced.add( this.options, 'depthMethod', {
-            'Default': "dflt",
-            'Raytraicing': "ray",
-            'Boundary box': "box",
-            'Mesh size': "size",
-            'Central point': "pnt"
-        } ).name("Rendering order").onChange( function ( value ) {
-           painter._forceProduceRenderOrder();
-           painter.Render3D();
-        } );
+         advanced.add( this.ctrl, 'depthMethod', depthcfg)
+             .name("Rendering order")
+            .onChange(this.changedDepthMethod.bind(this));
 
         advanced.add(this, 'resetAdvanced').name('Reset');
       }
@@ -832,10 +830,7 @@
       var ssaofolder = this._datgui.addFolder('Smooth Lighting (SSAO)'),
           ssao_handler = this.changedSSAO.bind(this), ssaocfg = {};
 
-      for (var k=0;k< this.ctrl.ssao.outputItems.length;++k) {
-         var item = this.ctrl.ssao.outputItems[k]
-         ssaocfg[item.name] = item.value;
-      }
+      this.ctrl.ssao.outputItems.forEach(function(i) { ssaocfg[i.name] = i.value; });
 
       ssaofolder.add(this.ctrl.ssao, 'enabled').name('Enable SSAO')
                 .listen().onChange(ssao_handler);
@@ -1235,8 +1230,8 @@
    /** Configure depth method, used for render order production.
     * Allowed values: "ray", "box","pnt", "size","dflt" */
    TGeoPainter.prototype.setDepthMethod = function(val) {
-      if (this.options)
-         this.options.depthMethod = val;
+      if (this.ctrl)
+         this.ctrl.depthMethod = val;
    }
 
    TGeoPainter.prototype.addOrbitControls = function() {
@@ -1938,9 +1933,6 @@
       this._pointLight.position.set(10, 10, 10);
 
       // Default Settings
-
-      this._depthTest = true;
-
       if (this.options.outline) this.ctrl.outline = true;
 
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
@@ -2012,18 +2004,12 @@
       this.ctrl.ssao.kernelRadius = 16;
       this.ctrl.ssao.output = THREE.SSAOPass.OUTPUT.Default;
 
-      this._depthTest = true;
-      this.ctrl.clip_intersect = true;
-      this.options.depthMethod = "ray";
+      this.crtl.depthTest = true;
+      this.ctrl.clipIntersect = true;
+      this.ctrl.depthMethod = "ray";
 
-      var painter = this;
-      this._toplevel.traverse( function (node) {
-         if (node instanceof THREE.Mesh) {
-            node.material.depthTest = painter._depthTest;
-         }
-      });
-
-      this.Render3D(0);
+      this.changedDepthMethod("norender");
+      this.changedDepthTest();
    }
 
    TGeoPainter.prototype.getGeomBox = function() {
@@ -3129,7 +3115,7 @@
       this._last_camera_position = origin; // remember current camera position
 
       if (!this.options.project && this._webgl)
-         JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.options.depthMethod, this._clones);
+         JSROOT.GEO.produceRenderOrder(this._toplevel, origin, this.ctrl.depthMethod, this._clones);
    }
 
    /** @brief Call 3D rendering of the geometry
@@ -3492,16 +3478,9 @@
       } else {
          this.options._axis = true;
          this.drawSimpleAxis();
-         if (force_draw !== true) {
-            this._forceProduceRenderOrder(); // used for testing depth
-            this.Render3D();
-         }
+         if (force_draw !== true)
+            this.changedDepthMethod();
       }
-   }
-
-   /** @brief Forces recalculation of rendering order before next rendering @private */
-   TGeoPainter.prototype._forceProduceRenderOrder = function() {
-      delete this._last_camera_position;
    }
 
    /** @brief Set axes visibility */
@@ -3551,6 +3530,26 @@
       this.updateClipping(false, true);
    }
 
+   /** Should be called when depth test flag is changed @private */
+   TGeoPainter.prototype.changedDepthTest = function() {
+      if (!this._toplevel) return;
+      var flag = this.ctrl.depthTest;
+      this._toplevel.traverse( function (node) {
+         if (node instanceof THREE.Mesh) {
+            node.material.depthTest = flag;
+         }
+      });
+
+      this.Render3D(0);
+   }
+
+   /** Should be called when depth method is changed @private */
+   TGeoPainter.prototype.changedDepthMethod = function(arg) {
+      // force recalculatiion of render order
+      delete this._last_camera_position;
+      if (arg !== "norender") this.Render3D();
+   }
+
    /** Should be called when configuration of highlight is changed @private */
    TGeoPainter.prototype.changedHighlight = function() {
       if (!this.ctrl.highlight)
@@ -3563,7 +3562,7 @@
 
       var clip = this.ctrl.clip, panels = [], changed = false,
           constants = [clip[0].value, -1 * clip[1].value, (this.options._yup ? -1 : 1) * clip[2].value ],
-          clip_cfg = this.ctrl.clip_intersect ? 16 : 0;
+          clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
       for (var k=0;k<3;++k) {
          if (clip[k].enabled) clip_cfg += 2 << k;
@@ -3585,7 +3584,7 @@
 
       this._clipCfg = clip_cfg;
 
-      var any_clipping = !!panels, ci = this.ctrl.clip_intersect,
+      var any_clipping = !!panels, ci = this.ctrl.clipIntersect,
           material_side = any_clipping ? THREE.DoubleSide : THREE.FrontSide;
 
       if (force_traverse || changed)
@@ -3635,7 +3634,7 @@
       if (this._full_redrawing) {
          this._full_redrawing = false;
          full_redraw = true;
-         this._forceProduceRenderOrder();
+         this.changedDepthMethod("norender");
       }
 
       if (this._first_drawing) {
