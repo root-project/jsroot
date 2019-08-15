@@ -51,6 +51,8 @@ examples_main = {
      { opt: "lego3", title: "lego3 plot - lego1 without border lines" },
      { opt: "lego4", title: "lego4 plot - lego2 without border lines" },
      { opt: "text", title: "draw bins content as text, can be combined with col, box or scat options" },
+     { opt: "texte", title: "draw bins bins content as text and error in new line - using #splitline syntax" },
+     { opt: "texte0", title: "draw errors in the same line" },
      { opt: "scat", title: "scatter plot (used as default draw option)" },
      { name: "box", json: "hbox.json.gz", opt: "box", title: "boxes, area proportional to bin content" },
      { name: "box1", json: "hbox.json.gz", opt: "box1", title: "boxes, area proportional to bin content" }
