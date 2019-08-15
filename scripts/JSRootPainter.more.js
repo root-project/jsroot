@@ -55,7 +55,6 @@
 
       this.pos_x = this.AxisToSvg("x", pos_x, this.isndc);
       this.pos_y = this.AxisToSvg("y", pos_y, this.isndc);
-      this.pos_dx = this.pos_dy = 0;
 
       var arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
 
@@ -70,18 +69,24 @@
 
       this.FinishTextDrawing();
 
-      this.AddMove({
-         move: function(dx,dy) {
+      this.pos_dx = this.pos_dy = 0;
+
+      if (!this.moveDrag)
+         this.moveDrag = function(dx,dy) {
             this.pos_dx += dx;
             this.pos_dy += dy;
             this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
-         }.bind(this),
-         complete: function() {
+        }
+
+      if (!this.moveEnd)
+         this.moveEnd = function() {
             var text = this.GetObject();
             text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
             text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
             this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
-         }.bind(this)});
+         }
+
+      this.AddMove();
    }
 
    // =====================================================================================
@@ -440,19 +445,23 @@
          elem.style('fill','none');
       }
 
-      this.AddMove({
-         begin: function(x,y) {
+      if (!this.moveStart)
+         this.moveStart = function(x,y) {
             var fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
                 sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
                 sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
             if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
-         }.bind(this),
-         move: function(dx,dy) {
+         }
+
+      if (!this.moveDrag)
+         this.moveDrag = function(dx,dy) {
             if (this.side != 1) { this.x1 += dx; this.y1 += dy; }
             if (this.side != -1) { this.x2 += dx; this.y2 += dy; }
             this.draw_g.select('path').attr("d", this.createPath());
-         }.bind(this),
-         complete: function() {
+         }
+
+      if (!this.moveEnd)
+         this.moveEnd = function() {
             var arrow = this.GetObject(), exec = "";
             arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
             arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
@@ -461,7 +470,9 @@
             if (this.side != 1) exec += "SetX1(" + arrow.fX1 + ");;SetY1(" + arrow.fY1 + ");;";
             if (this.side != -1) exec += "SetX2(" + arrow.fX2 + ");;SetY2(" + arrow.fY2 + ");;";
             this.WebCanvasExec(exec + "Notify();;");
-         }.bind(this)});
+         }
+
+      this.AddMove();
    }
 
    // =================================================================================
