@@ -1901,6 +1901,7 @@
          this.Hist = false;
          this.TextAngle = Math.min(d.partAsInt(), 90);
          if (d.part.indexOf('N')>=0) this.TextKind = "N";
+         if (d.part.indexOf('E0')>=0) this.TextLine = true;
          if (d.part.indexOf('E')>=0) this.TextKind = "E";
       }
 
@@ -5560,13 +5561,14 @@
 
    TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
       var histo = this.GetObject(),
-          i,j,binz,errz,colindx,binw,binh,lbl,posx,posy,sizex,sizey,
+          i,j,binz,errz,colindx,binw,binh,lbl,lble,posx,posy,sizex,sizey,
           text_col = this.get_color(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
           text_size = 20, text_offset = 0,
           profile2d = this.MatchObjectType('TProfile2D') && (typeof histo.getBinEntries=='function'),
-          show_err = (this.options.TextKind == "E");
+          show_err = (this.options.TextKind == "E"),
+          use_latex = (show_err && !this.options.TextLine) ? 1 : 0;
 
       if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
 
@@ -5593,8 +5595,12 @@
 
             if (show_err) {
                errz = histo.getBinError(histo.getBin(i+1,j+1));
-               lbl = "#splitline{" + lbl + "}{#pm" + ((errz === Math.round(errz)) ? errz.toString() :
-                  JSROOT.FFormat(errz, JSROOT.gStyle.fPaintTextFormat)) + "}";
+               lble = (errz === Math.round(errz)) ? errz.toString() :
+                            JSROOT.FFormat(errz, JSROOT.gStyle.fPaintTextFormat);
+               if (this.options.TextLine)
+                  lbl += '\xB1' + lble;
+               else
+                  lbl = "#splitline{" + lbl + "}{#pm" + lble + "}";
             }
 
             if (text_angle /*|| (histo.fMarkerSize!==1)*/) {
@@ -5609,7 +5615,7 @@
                sizey = Math.round(binh*0.8);
             }
 
-            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: show_err ? 1 : 0, draw_g: text_g });
+            this.DrawText({ align: 22, x: posx, y: posy, width: sizex, height: sizey, rotate: text_angle, text: lbl, color: text_col, latex: use_latex, draw_g: text_g });
          }
 
       this.FinishTextDrawing(text_g, null);

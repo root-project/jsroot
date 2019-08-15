@@ -10,7 +10,7 @@
 7. Implement interactive movement of TArrow class
 8. New and simpler TArrow drawing without use of svg markers
 9. Use TGeoManager::fVisLevel in geometry painter
-10. Support "texte" draw options for TH2
+10. Support "texte" and "texte0" draw options for TH2/TProfile2D classes
 
 
 ## Changes in 5.7.1
