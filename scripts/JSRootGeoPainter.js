@@ -3911,7 +3911,9 @@
    }
 
    TGeoPainter.prototype.UpdateObject = function(obj) {
+      if (obj === "same") return true;
       if (!obj || !obj._typename) return false;
+      if (obj === this.GetObject()) return true;
 
       if (this.geo_manager && (obj._typename == "TGeoManager")) {
          this.geo_manager = obj;
