@@ -3699,6 +3699,8 @@
             d3.event.sourceEvent.stopPropagation();
             if (this.moveEnd)
                this.moveEnd(not_changed);
+            var cp = this.canv_painter();
+            if (cp) cp.SelectObjectPainter(this);
       }.bind(this));
 
       this.draw_g
@@ -4062,10 +4064,8 @@
       if (!snapid || (typeof snapid != 'string')) return;
 
       var canp = this.canv_painter();
-      if (canp && !canp._readonly && canp._websocket) {
-         console.log('execute ' + exec + ' for object ' + snapid);
+      if (canp && !canp._readonly && canp._websocket)
          canp.SendWebsocket("OBJEXEC:" + snapid + ":" + exec);
-      }
    }
 
    /** @summary Fill object menu in web canvas

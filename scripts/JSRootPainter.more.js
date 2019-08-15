@@ -1793,11 +1793,8 @@
          delete this.move_binindx;
       }
 
-      if (exec && !not_changed) {
-         console.log('graph exec = ' + exec);
+      if (exec && !not_changed)
          this.WebCanvasExec(exec);
-         console.log('done exec');
-      }
    }
 
    TGraphPainter.prototype.FillContextMenu = function(menu) {
