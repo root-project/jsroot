@@ -480,6 +480,9 @@
          scaling_size = (vertical ? pad_w : pad_h);
       }
 
+      // indicate that attributes created not for TAttLine, therefore cannot be updated as TAttLine in GED
+      this.lineatt.not_standard = true;
+
       if (!is_gaxis || (this.name === "zaxis")) {
          axis_g = layer.select("." + this.name + "_container");
          if (axis_g.empty())
