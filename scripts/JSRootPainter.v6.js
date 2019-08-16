@@ -4039,18 +4039,11 @@
 
          var sz = (can3d == 2) ? sz : main.size_for_3d(1);
 
-         // console.log('Render 3D', sz2);
-
          var canvas = main.renderer.domElement;
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          var dataUrl = canvas.toDataURL("image/png");
 
-         // console.log('canvas width height', canvas.width, canvas.height);
-
-         // console.log('produced png image len = ', dataUrl.length, 'begin', dataUrl.substr(0,100));
-
          // remove 3D drawings
-
          if (can3d == 2) {
             item.foreign = item.prnt.select("." + sz2.clname);
             item.foreign.remove();
@@ -4121,10 +4114,6 @@
 
       var image = new Image();
       image.onload = function() {
-         // if (options.result==="image") return JSROOT.CallBack(call_back, image);
-
-         // console.log('GOT IMAGE', image.width, image.height);
-
          var canvas = document.createElement('canvas');
          canvas.width = image.width;
          canvas.height = image.height;
