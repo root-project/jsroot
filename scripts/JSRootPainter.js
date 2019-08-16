@@ -2325,13 +2325,6 @@
    TBasePainter.prototype.CheckResize = function(arg) {
    }
 
-   /** @summary Method called when interactively changes attribute in given class
-    * @abstract
-    * @private */
-   TBasePainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
-      // console.log("Changed attribute", class_name, member_name, new_value);
-   }
-
    /** @summary access to main HTML element used for drawing - typically <div> element
      * @desc if main element was layouted, returns main element inside layout
     * @param {string} is_direct - if 'origin' specified, returns original element even if actual drawing moved to some other place
@@ -2847,6 +2840,38 @@
       return cp.custom_palette;
    }
 
+   /** @summary Method called when interactively changes attribute in given class
+    * @abstract
+    * @private */
+   TObjectPainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
+      // only for objects in web canvas make sense to handle attributes changes from GED
+
+      var obj = this.GetObject(), exec;
+      if (!this.snapid || !obj) return;
+
+      console.log("Changed attribute class = " + class_name + " member = " + member_name + " value = " + new_value);
+
+      function TestMembers(mbr1, mbr2, mbr3) {
+         if (obj[mbr1] === undefined) return false;
+         if (mbr2 && (obj[mbr2] === undefined)) return false;
+         if (mbr3 && (obj[mbr3] === undefined)) return false;
+         return true;
+      }
+
+      if (class_name === "TAttLine") {
+         if (TestMembers('fLineColor', 'fLineStyle', 'fLineWidth')) {
+            if (member_name == "attline/width") exec = "SetLineWidth(" + new_value + ")";
+            else if (member_name == "attline/style") exec = "SetLineStyle(" + new_value + ")";
+            else if (member_name == "attline/color");
+         }
+      }
+
+      if (exec) {
+         console.log('execute', exec);
+         this.WebCanvasExec(exec);
+      }
+
+   }
 
 
    /** @summary Checks if draw elements were resized and drawing should be updated.
@@ -4136,7 +4161,7 @@
                }
                if (lastclname != item.fClassName) {
                   lastclname = item.fClassName;
-                  _menu.add("sub:" + lastclname, undefined, null, "Context menu for class " + lastclname);
+                  _menu.add("sub:" + lastclname, undefined, null);
                }
 
                if ((item.fChecked === undefined) || (item.fChecked < 0))
