@@ -41,6 +41,8 @@
                opt.numnodes *= 100;
             }
 
+            if ((JSROOT.GetUrlOption("dflt") !== null) || (JSROOT.GetUrlOption("dflt_colors") !== null))
+               opt.dflt_colors = true;
 
             // function demonstrate creation of three.js model
             var obj3d = JSROOT.GEO.build(obj, opt);

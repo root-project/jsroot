@@ -1967,6 +1967,9 @@
          return;
       }
 
+      if (this._clones_owner && this._clones)
+         this._clones.SetDefaultColors(this.ctrl.dflt_colors);
+
       this._startm = new Date().getTime();
       this._last_render_tm = this._startm;
       this._last_render_meshes = 0;
@@ -2770,48 +2773,7 @@
       return res;
    }
 
-
-/*
-   TGeoPainter.prototype.SetRootDefaultColors = function() {
-      // set default colors like TGeoManager::DefaultColors() does
-
-      var dflt = { kWhite:0,  kBlack:1, kGray:920,
-                   kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
-                   kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
-
-      var nmax = 110, col = [];
-      for (var i=0;i<nmax;i++) col.push(dflt.kGray);
-
-      //here we should create a new TColor with the same rgb as in the default
-      //ROOT colors used below
-      col[ 3] = dflt.kYellow-10;
-      col[ 4] = col[ 5] = dflt.kGreen-10;
-      col[ 6] = col[ 7] = dflt.kBlue-7;
-      col[ 8] = col[ 9] = dflt.kMagenta-3;
-      col[10] = col[11] = dflt.kRed-10;
-      col[12] = dflt.kGray+1;
-      col[13] = dflt.kBlue-10;
-      col[14] = dflt.kOrange+7;
-      col[16] = dflt.kYellow+1;
-      col[20] = dflt.kYellow-10;
-      col[24] = col[25] = col[26] = dflt.kBlue-8;
-      col[29] = dflt.kOrange+9;
-      col[79] = dflt.kOrange-2;
-
-      var name = { test:function() { return true; }} // select all volumes
-
-      this.FindNodeWithVolume(name, function(arg) {
-         var vol = arg.node.fVolume;
-         var med = vol.fMedium;
-         if (!med) return null;
-         var mat = med.fMaterial;
-         var matZ = Math.round(mat.fZ);
-         vol.fLineColor = col[matZ];
-         if (mat.fDensity<0.1) mat.fFillStyle = 3000+60; // vol.SetTransparency(60)
-      });
-   }
-*/
-
+   /** Process script option - load and execute some gGeomManager-related calls */
    TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
       var painter = this, draw_obj = this.GetGeometry(), name_prefix = "";
@@ -2973,7 +2935,6 @@
 
          this._clones.SetVisLevel(lvl);
          this._clones.SetMaxVisNodes(maxnodes);
-         this._clones.SetDefaultColors(this.ctrl.dflt_colors);
 
          this._clones.name_prefix = name_prefix;
 

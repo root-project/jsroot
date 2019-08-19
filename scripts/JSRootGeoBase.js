@@ -591,6 +591,10 @@
             shape.fXY[7][0], shape.fXY[7][1],  shape.fDZ
          ],
          indicies = [
+            // old (good?) indicies
+            // 4,7,6,   6,5,4,   0,3,7,   7,4,0,
+            // 4,5,1,   1,0,4,   6,2,1,   1,5,6,
+            // new (error?) indicies
             4,7,6,   6,5,4,   0,3,4,   7,4,3,
             4,5,0,   1,0,5,   6,2,1,   1,5,6,
             7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
@@ -3564,6 +3568,9 @@
       var clones = new JSROOT.GEO.ClonedNodes(obj);
       clones.SetVisLevel(opt.vislevel);
       clones.SetMaxVisNodes(opt.numnodes);
+
+      if (opt.dflt_colors)
+         clones.SetDefaultColors(true);
 
       var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)
