@@ -412,13 +412,13 @@
                   _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000,
-                   vislevel: undefined, maxnodes: undefined,
+                   vislevel: undefined, maxnodes: undefined, dflt_colors: false,
                    use_worker: false, update_browser: true, show_controls: false,
                    highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
-                   depthMethod: "ray", mouse_tmout: 50 };
+                   depthMethod: "dflt", mouse_tmout: 50 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -501,7 +501,7 @@
       if (d.check("PROJY", true)) { res.project = 'y'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
       if (d.check("PROJZ", true)) { res.project = 'z'; if (d.partAsInt(1)>0) res.projectPos = d.partAsInt(); res.can_rotate = false; }
 
-      if (d.check("DFLT_COLORS") || d.check("DFLT")) this.SetRootDefaultColors();
+      if (d.check("DFLT_COLORS") || d.check("DFLT")) res.dflt_colors = true;
       if (d.check("SSAO")) res.usessao = true;
       if (d.check("OUTLINE")) res.outline = true;
 
@@ -2770,12 +2770,14 @@
       return res;
    }
 
+
+/*
    TGeoPainter.prototype.SetRootDefaultColors = function() {
       // set default colors like TGeoManager::DefaultColors() does
 
-      var dflt = { kWhite:0,   kBlack:1,   kGray:920,
-                     kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
-                     kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+      var dflt = { kWhite:0,  kBlack:1, kGray:920,
+                   kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
+                   kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
 
       var nmax = 110, col = [];
       for (var i=0;i<nmax;i++) col.push(dflt.kGray);
@@ -2808,7 +2810,7 @@
          if (mat.fDensity<0.1) mat.fFillStyle = 3000+60; // vol.SetTransparency(60)
       });
    }
-
+*/
 
    TGeoPainter.prototype.checkScript = function(script_name, call_back) {
 
@@ -2850,17 +2852,17 @@
             },
 
             DefaultColors: function() {
-               painter.SetRootDefaultColors();
+               painter.ctrl.dflt_colors = true;
             },
 
             SetMaxVisNodes: function(limit) {
-               if (!painter.options.maxnodes)
-                  painter.options.maxnodes = pasrseInt(limit) || 0;
+               if (!painter.ctrl.maxnodes)
+                  painter.ctrl.maxnodes = pasrseInt(limit) || 0;
             },
 
             SetVisLevel: function(limit) {
-               if (!painter.options.vislevel)
-                  painter.options.vislevel = parseInt(limit) || 0;
+               if (!painter.ctrl.vislevel)
+                  painter.ctrl.vislevel = parseInt(limit) || 0;
             }
           };
 
@@ -2961,23 +2963,24 @@
 
          this._clones = new JSROOT.GEO.ClonedNodes(draw_obj);
 
-         var lvl = this.options.vislevel, maxnodes = this.options.maxnodes;
+         var lvl = this.ctrl.vislevel, maxnodes = this.ctrl.maxnodes;
          if (this.geo_manager) {
             if (!lvl && this.geo_manager.fVisLevel)
                lvl = this.geo_manager.fVisLevel;
-            if (maxnodes === undefined)
+            if (!maxnodes)
                maxnodes = this.geo_manager.fMaxVisNodes;
          }
 
          this._clones.SetVisLevel(lvl);
          this._clones.SetMaxVisNodes(maxnodes);
+         this._clones.SetDefaultColors(this.ctrl.dflt_colors);
 
          this._clones.name_prefix = name_prefix;
 
          var uniquevis = this.options.no_screen ? 0 : this._clones.MarkVisibles(true);
 
          if (uniquevis <= 0)
-            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager && !this.options.showtop);
+            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager && !this.ctrl.showtop);
          else
             uniquevis = this._clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
 
@@ -3511,7 +3514,7 @@
 
    /** Specify showtop draw options, relevant only for TGeoManager */
    TGeoPainter.prototype.setShowTop = function(on) {
-      this.options.showtop = on ? true : false;
+      this.ctrl.showtop = on ? true : false;
       this.RedrawObject('same');
    }
 

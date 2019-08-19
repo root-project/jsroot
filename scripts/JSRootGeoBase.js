@@ -2164,8 +2164,8 @@
       this.toplevel = true; // indicate if object creates top-level structure with Nodes and Volumes folder
       this.name_prefix = ""; // name prefix used for nodes names
       this.maxdepth = 1;  // maximal hierarchy depth, required for transparency
-      this.fVisLevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
-      this.fMaxVisNodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
+      this.vislevel = 4;  // maximal depth of nodes visibility aka gGeoManager->SetVisLevel, same default
+      this.maxnodes = 10000; // maximal number of visisble nodes aka gGeoManager->fMaxVisNodes
 
       if (obj) {
          if (obj.$geoh) this.toplevel = false;
@@ -2177,20 +2177,21 @@
 
    /** Set maximal depth for nodes visibility */
    JSROOT.GEO.ClonedNodes.prototype.SetVisLevel = function(lvl) {
-      this.fVisLevel = lvl && !isNaN(lvl) ? lvl : 4;
+      this.vislevel = lvl && !isNaN(lvl) ? lvl : 4;
    }
 
+   /** Returns maximal depth for nodes visibility */
    JSROOT.GEO.ClonedNodes.prototype.GetVisLevel = function() {
-      return this.fVisLevel;
+      return this.vislevel;
    }
 
    /** Set maximal depth for nodes visibility */
    JSROOT.GEO.ClonedNodes.prototype.SetMaxVisNodes = function(v) {
-      this.fMaxVisNodes = !isNaN(v) ? v : 10000;
+      this.maxnodes = !isNaN(v) ? v : 10000;
    }
 
    JSROOT.GEO.ClonedNodes.prototype.GetMaxVisNodes = function() {
-      return this.fMaxVisNodes;
+      return this.maxnodes;
    }
 
    /** Insert node into existing array */
@@ -2682,6 +2683,38 @@
       return stack;
    }
 
+   /** @brief Set usage of default ROOT colors */
+   JSROOT.GEO.ClonedNodes.prototype.SetDefaultColors = function(on) {
+      this.use_dflt_colors = on;
+      if (this.use_dflt_colors && !this.dflt_table) {
+
+         var dflt = { kWhite:0,  kBlack:1, kGray:920,
+               kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
+               kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
+
+         var nmax = 110, col = [];
+         for (var i=0;i<nmax;i++) col.push(dflt.kGray);
+
+         //  here we should create a new TColor with the same rgb as in the default
+         //  ROOT colors used below
+         col[ 3] = dflt.kYellow-10;
+         col[ 4] = col[ 5] = dflt.kGreen-10;
+         col[ 6] = col[ 7] = dflt.kBlue-7;
+         col[ 8] = col[ 9] = dflt.kMagenta-3;
+         col[10] = col[11] = dflt.kRed-10;
+         col[12] = dflt.kGray+1;
+         col[13] = dflt.kBlue-10;
+         col[14] = dflt.kOrange+7;
+         col[16] = dflt.kYellow+1;
+         col[20] = dflt.kYellow-10;
+         col[24] = col[25] = col[26] = dflt.kBlue-8;
+         col[29] = dflt.kOrange+9;
+         col[79] = dflt.kOrange-2;
+
+         this.dflt_table = col;
+      }
+   }
+
    /** @brief Provide different properties of draw entry nodeid
     * @desc Only if node visible, material will be created*/
    JSROOT.GEO.ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
@@ -2738,6 +2771,7 @@
       if (volume) prop.linewidth = volume.fLineWidth;
 
       if (visible) {
+
          var _opacity = 1.0;
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
@@ -2747,12 +2781,21 @@
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
 
          if (volume.fMedium && volume.fMedium.fMaterial) {
-            var fillstyle = volume.fMedium.fMaterial.fFillStyle,
+            var mat = volume.fMedium.fMaterial,
+                fillstyle = mat.fFillStyle,
                 transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
+
+            if (this.use_dflt_colors) {
+               var matZ = Math.round(mat.fZ),
+                   icol = this.dflt_table[matZ];
+               prop.fillcolor = JSROOT.Painter.root_colors[icol];
+               if (mat.fDensity < 0.1) transparency = 60;
+            }
+
             if (transparency > 0)
                _opacity = (100.0 - transparency) / 100.0;
             if (prop.fillcolor === undefined)
-               prop.fillcolor = JSROOT.Painter.root_colors[volume.fMedium.fMaterial.fFillColor];
+               prop.fillcolor = JSROOT.Painter.root_colors[mat.fFillColor];
          }
          if (prop.fillcolor === undefined)
             prop.fillcolor = "lightgrey";
@@ -3150,6 +3193,8 @@
 
       return res;
    }
+
+   /// =====================================================================
 
    JSROOT.GEO.ObjectName = function(obj) {
       if (!obj || !obj.fName) return "";

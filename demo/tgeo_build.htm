@@ -36,6 +36,11 @@
 
             // options for building three.js model
             var opt = { numfaces: 100000, numnodes: 1000 };
+            if (JSROOT.GetUrlOption("all") !== null) {
+               opt.numfaces *= 100;
+               opt.numnodes *= 100;
+            }
+
 
             // function demonstrate creation of three.js model
             var obj3d = JSROOT.GEO.build(obj, opt);
