@@ -3519,6 +3519,13 @@
          process(toplevel, 0, 1, 1000000);
    }
 
+   /** @brief Build three.js model for given geometry object.
+    * @desc Following options can be provided:
+    * opt.vislevel - visibility level like TGeoManager::
+    * opt.numnodes - maximal number of visible nodes
+    * opt.numfaces - approx maximal number of created triangles
+    * opt.dflt_colors - use default ROOT colors
+    */
    JSROOT.GEO.build = function(obj, opt, call_back) {
       // function can be used to build three.js model for TGeo object
 
