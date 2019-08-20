@@ -559,7 +559,7 @@
          this._hpainter.activate(names, force);
 
          // if highlight in the browser disabled, suppress in few seconds
-         if (!this.options.update_browser)
+         if (!this.ctrl.update_browser)
             setTimeout(this._hpainter.activate.bind(this._hpainter, []), 2000);
       }
    }
@@ -623,9 +623,9 @@
    TGeoPainter.prototype.FillContextMenu = function(menu) {
       menu.add("header: Draw options");
 
-      menu.addchk(this.options.update_browser, "Browser update", function() {
-         this.options.update_browser = !this.options.update_browser;
-         if (!this.options.update_browser) this.ActivateInBrowser([]);
+      menu.addchk(this.ctrl.update_browser, "Browser update", function() {
+         this.ctrl.update_browser = !this.ctrl.update_browser;
+         if (!this.ctrl.update_browser) this.ActivateInBrowser([]);
       });
       menu.addchk(this.ctrl.show_controls, "Show Controls", function() {
          this.showControlOptions('toggle');
@@ -633,6 +633,11 @@
       menu.addchk(this.TestAxisVisibility, "Show axes", function() {
          this.toggleAxesDraw();
       });
+      if (this.geo_manager)
+         menu.addchk(this.ctrl.showtop, "Show top volume", function() {
+            this.setShowTop(!this.ctrl.showtop);
+         });
+
       menu.addchk(this.ctrl.wireframe, "Wire frame", function() {
          this.toggleWireFrame();
       });
@@ -1235,6 +1240,7 @@
          this.ctrl.depthMethod = val;
    }
 
+   /** Add orbit control @private */
    TGeoPainter.prototype.addOrbitControls = function() {
 
       if (this._controls || this._usesvg || JSROOT.BatchMode) return;
@@ -1282,7 +1288,7 @@
 
          painter.HighlightMesh(active_mesh, undefined, geo_object, geo_index);
 
-         if (painter.options.update_browser) {
+         if (painter.ctrl.update_browser) {
             if (painter.ctrl.highlight && tooltip) names = [ tooltip ];
             painter.ActivateInBrowser(names);
          }
@@ -3679,6 +3685,11 @@
          return this.startDrawGeometry(); // relaunch drawing
 
       this._drawing_ready = true; // indicate that drawing is completed
+   }
+
+   /** Returns true if geometry drawing is completed */
+   TGeoPainter.prototype.isDrawingReady = function() {
+      return this._drawing_ready || false;
    }
 
    /** Remove already drawn node. Used by geom viewer */
