@@ -149,6 +149,7 @@
          clipIntersect: true,
          clip: [{ name:"x", enabled: false, value: 0, min: -100, max: 100}, { name:"y", enabled: false, value: 0, min: -100, max: 100}, { name:"z", enabled: false, value: 0, min: -100, max: 100}],
          ssao: { enabled: false, output: THREE.SSAOPass.OUTPUT.Default, kernelRadius: 0, minDistance: 0.001, maxDistance: 0.1 },
+         info: { num_meshes: 0, num_faces: 0, num_shapes: 0 },
          highlight: false,
          highlight_scene: false,
          depthTest: true,
@@ -1366,11 +1367,13 @@
       this._tcontrols.addEventListener( 'change', function() { painter.Render3D(0); });
    }
 
+   /** Main function in geometry creation loop
+    * Return false when nothing todo
+    * return true if one could perform next action immediately
+    * return 1 when call after short timeout required
+    * return 2 when call must be done from processWorkerReply
+    * @private */
    TGeoPainter.prototype.nextDrawAction = function() {
-      // return false when nothing todo
-      // return true if one could perform next action immediately
-      // return 1 when call after short timeout required
-      // return 2 when call must be done from processWorkerReply
 
       if (!this._clones || (this.drawing_stage == 0)) return false;
 
@@ -1548,8 +1551,10 @@
             // building shapes
             var res = this._clones.BuildShapes(this._build_shapes, this._current_face_limit, 500);
             if (res.done) {
+               this.ctrl.info.num_shapes = this._build_shapes.length;
                this.drawing_stage = 8;
             } else {
+               this.ctrl.info.num_shapes = res.shapes;
                this.drawing_log = "Creating: " + res.shapes + " / " + this._build_shapes.length + " shapes,  "  + res.faces + " faces";
                if (res.notusedshapes < 30) return true;
             }
@@ -1576,8 +1581,8 @@
             shape.used = true; // indicate that shape was used in building
 
             if (this.createEntryMesh(entry, shape, toplevel)) {
-               this._num_meshes++;
-               this._num_faces += shape.nfaces;
+               this.ctrl.info.num_meshes++;
+               this.ctrl.info.num_faces += shape.nfaces;
             }
 
             var tm1 = new Date().getTime();
@@ -1597,7 +1602,7 @@
          }
 
          if (this.drawing_stage > 7)
-            this.drawing_log = "Building meshes " + this._num_meshes + " / " + this._num_faces;
+            this.drawing_log = "Building meshes " + this.ctrl.info.num_meshes + " / " + this.ctrl.info.num_faces;
          return true;
       }
 
@@ -1976,8 +1981,9 @@
       this.drawing_stage = 1;
       this._drawing_ready = false;
       this.drawing_log = "collect visible";
-      this._num_meshes = 0;
-      this._num_faces = 0;
+      this.ctrl.info.num_meshes = 0;
+      this.ctrl.info.num_faces = 0;
+      this.ctrl.info.num_shapes = 0;
       this._selected_mesh = null;
 
       if (this.options.project) {
@@ -3041,7 +3047,7 @@
             if (this._first_drawing && this._webgl && (this._num_meshes - this._last_render_meshes > 100) && (now - this._last_render_tm > 2.5*interval)) {
                this.adjustCameraPosition();
                this.Render3D(-1);
-               this._last_render_meshes = this._num_meshes;
+               this._last_render_meshes = this.ctrl.info.num_meshes;
             }
             if (res !== 2) setTimeout(this.continueDraw.bind(this), (res === 1) ? 100 : 1);
 
@@ -3052,7 +3058,7 @@
       var take_time = now - this._startm;
 
       if (this._first_drawing)
-         JSROOT.console('Create tm = ' + take_time + ' meshes ' + this._num_meshes + ' faces ' + this._num_faces);
+         JSROOT.console('Create tm = ' + take_time + ' meshes ' + this.ctrl.info.num_meshes + ' faces ' + this.ctrl.info.num_faces);
 
       if (take_time > 300) {
          JSROOT.progress('Rendering geometry');
@@ -3576,6 +3582,11 @@
       if (!without_render) this.Render3D(0);
    }
 
+   TGeoPainter.prototype.setCompleteHandler = function(callback) {
+      this._complete_handler = callback;
+   }
+
+   /** @brief complete drawing procedure @private */
    TGeoPainter.prototype.completeDraw = function(close_progress) {
 
       var first_time = false, full_redraw = false, check_extras = true;
@@ -3658,7 +3669,11 @@
          if (!this._usesvg && this.options.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
       }
 
+      // call it every time, in reality invoked only first time
       this.DrawingReady();
+
+      if (typeof this._complete_handler == 'function')
+         this._complete_handler(this);
 
       if (this._draw_nodes_again)
          return this.startDrawGeometry(); // relaunch drawing

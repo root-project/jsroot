@@ -2074,7 +2074,7 @@
 
       if (geom.type == 'BufferGeometry') {
          var attr = geom.getAttribute('position');
-         return attr ? attr.count / 3 : 0;
+         return attr && attr.count ? Math.round(attr.count / 3) : 0;
       }
 
       // special array of polygons
