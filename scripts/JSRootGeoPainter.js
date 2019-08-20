@@ -633,7 +633,7 @@
       menu.addchk(this.TestAxisVisibility, "Show axes", function() {
          this.toggleAxesDraw();
       });
-      menu.addchk(this.options.wireframe, "Wire frame", function() {
+      menu.addchk(this.ctrl.wireframe, "Wire frame", function() {
          this.toggleWireFrame();
       });
       menu.addchk(this.ctrl.highlight, "Highlight volumes", function() {
