@@ -627,7 +627,7 @@
          this.options.update_browser = !this.options.update_browser;
          if (!this.options.update_browser) this.ActivateInBrowser([]);
       });
-      menu.addchk(this.options.show_controls, "Show Controls", function() {
+      menu.addchk(this.ctrl.show_controls, "Show Controls", function() {
          this.showControlOptions('toggle');
       });
       menu.addchk(this.TestAxisVisibility, "Show axes", function() {
@@ -648,9 +648,9 @@
       menu.add("Get camera position", function() {
          alert("Position (as url): &opt=" + this.produceCameraUrl());
       });
-      if (!this.options.project)
-         menu.addchk(this.options.autoRotate, "Autorotate", function() {
-            this.setAutoRotate(!this.options.autoRotate);
+      if (!this.ctrl.project)
+         menu.addchk(this.ctrl.autoRotate, "Autorotate", function() {
+            this.setAutoRotate(!this.ctrl.autoRotate);
          });
       menu.addchk(this.options.select_in_view, "Select in view", function() {
          this.options.select_in_view = !this.options.select_in_view;
@@ -716,10 +716,10 @@
       } else if (on === 'toggle') {
          on = !this._datgui;
       } else if (on === undefined) {
-         on = this.options.show_controls;
+         on = this.ctrl.show_controls;
       }
 
-      this.options.show_controls = on;
+      this.ctrl.show_controls = on;
 
       if (this._datgui) {
          if (!on) {
@@ -2333,10 +2333,10 @@
 
          var current = new Date();
 
-         if ( painter.options.autoRotate ) requestAnimationFrame( animate );
+         if ( painter.ctrl.autoRotate ) requestAnimationFrame( animate );
 
          if (painter._controls) {
-            painter._controls.autoRotate = painter.options.autoRotate;
+            painter._controls.autoRotate = painter.ctrl.autoRotate;
             painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
             painter._controls.update();
          }
@@ -3277,10 +3277,10 @@
           labels = ['X','Y','Z'],
           colors = ["red","green","blue"],
           ortho = this.options.ortho_camera,
-          yup = [this.options._yup, this.options._yup, this.options._yup],
+          yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
           numaxis = 3;
 
-      if (this.options._axis_center)
+      if (this.ctrl._axis_center)
          for (var naxis=0;naxis<3;++naxis) {
             var name = names[naxis];
             if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
@@ -3323,7 +3323,7 @@
            case 2: buf[5] = box.max.z; lbl += " " + labels[2]; break;
          }
 
-         if (this.options._axis_center)
+         if (this.ctrl._axis_center)
             for (var k=0;k<6;++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
@@ -3335,7 +3335,7 @@
          var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
 
          if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
-           if (!this.options._axis_center || (naxis===0)) {
+           if (!this.ctrl._axis_center || (naxis===0)) {
                var geom = ortho ? new THREE.CircleBufferGeometry(text_size*0.25) :
                                   new THREE.SphereBufferGeometry(text_size*0.25);
                mesh = new THREE.Mesh(geom, textMaterial);
@@ -3444,10 +3444,10 @@
       if (this.TestAxisVisibility) {
          if (!force_draw) {
            this.TestAxisVisibility(null, this._toplevel);
-           this.options._axis = false;
+           this.ctrl._axis = false;
          }
       } else {
-         this.options._axis = true;
+         this.ctrl._axis = true;
          this.drawSimpleAxis();
          if (force_draw !== true)
             this.changedDepthMethod();
@@ -3456,14 +3456,14 @@
 
    /** @brief Set axes visibility */
    TGeoPainter.prototype.setAxesDraw = function(on) {
-      if (on != this.options._axis)
+      if (on != this.ctrl._axis)
          this.toggleAxesDraw();
    }
 
    /** @brief Set auto rotate mode */
    TGeoPainter.prototype.setAutoRotate = function(on) {
-      if (this.options.project) return;
-      this.options.autoRotate = on;
+      if (this.ctrl.project) return;
+      this.ctrl.autoRotate = on;
       this.autorotate(2.5);
    }
 
@@ -3627,7 +3627,7 @@
       if (first_time)
          this.completeScene();
 
-      if (full_redraw && this.options._axis)
+      if (full_redraw && this.ctrl._axis)
          this.toggleAxesDraw(true);
 
       this._scene.overrideMaterial = null;
@@ -3665,8 +3665,8 @@
             this.ctrl.highlight_scene = this.ctrl.highlight;
 
          // if rotation was enabled, do it
-         if (this._webgl && this.options.autoRotate && !this.options.project) this.autorotate(2.5);
-         if (!this._usesvg && this.options.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
+         if (this._webgl && this.ctrl.autoRotate && !this.ctrl.project) this.autorotate(2.5);
+         if (!this._usesvg && this.ctrl.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
       }
 
       // call it every time, in reality invoked only first time
@@ -3757,6 +3757,7 @@
 
          JSROOT.TObjectPainter.prototype.Cleanup.call(this);
 
+         delete this.ctrl;
          delete this.options;
 
          this.did_cleanup = true;
