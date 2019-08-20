@@ -517,7 +517,7 @@
       if (d.check("NOHSCENE")) res.highlight_scene = 0;
       if (d.check("HSCENE")) res.highlight_scene = true;
 
-      if (d.check("WIRE")) res.wireframe = true;
+      if (d.check("WIREFRAME") || d.check("WIRE")) res.wireframe = true;
       if (d.check("ROTATE")) res.autoRotate = true;
 
       if (d.check("INVX") || d.check("INVERTX")) res.scale.x = -1;
@@ -1772,8 +1772,8 @@
       box3.makeEmpty();
 
       topitem.traverse(function(mesh) {
-         if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh))
-             || (mesh.main_track && (mesh instanceof THREE.LineSegments)))
+         if (check_any || (mesh.stack && (mesh instanceof THREE.Mesh)) ||
+             (mesh.main_track && (mesh instanceof THREE.LineSegments)))
             JSROOT.GEO.getBoundingBox(mesh, box3);
       });
 
@@ -2103,8 +2103,20 @@
       return "roty" + roty.toFixed(prec || 0) + ",rotz" + rotz.toFixed(prec || 0) + ",zoom" + zoom.toFixed(prec || 0);
    }
 
-   TGeoPainter.prototype.adjustCameraPosition = function(first_time) {
+   /** Calculates current zoom factor */
+   TGeoPainter.prototype.calculateZoom = function() {
+      if (this._camera0pos && this._camera && this._lookat) {
+         var pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
+             pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
+         return pos2.length() / pos1.length();
+      }
 
+      return 0;
+   }
+
+
+   /** Place camera to default position */
+   TGeoPainter.prototype.adjustCameraPosition = function(first_time, keep_zoom) {
       if (!this._toplevel) return;
 
       var box = this.getGeomBoundingBox(this._toplevel);
@@ -2153,24 +2165,28 @@
 
       this._camera.updateProjectionMatrix();
 
-      var k = 2, max_all = Math.max(sizex,sizey,sizez);
-
-      if (this.ctrl.zoom1) {
-         k = 2*this.ctrl.zoom1;
-         delete this.ctrl.zoom1;
-      } else {
-         k = 2*this.ctrl.zoom;
-      }
+      var k = 2*this.ctrl.zoom,
+          max_all = Math.max(sizex,sizey,sizez);
 
       if ((this.ctrl.rotatey || this.ctrl.rotatez) && this.ctrl.can_rotate) {
 
-         this._camera.position.set(-k*max_all, 0, 0);
+         var prev_zoom = this.calculateZoom();
+         if (keep_zoom && prev_zoom) k = 2*prev_zoom;
 
          var euler = new THREE.Euler( 0, this.ctrl.rotatey/180.*Math.PI, this.ctrl.rotatez/180.*Math.PI, 'YZX' );
 
+         this._camera.position.set(-k*max_all, 0, 0);
          this._camera.position.applyEuler(euler);
-
          this._camera.position.add(new THREE.Vector3(midx,midy,midz));
+
+         if (keep_zoom && prev_zoom) {
+            var actual_zoom = this.calculateZoom();
+            k *= prev_zoom/actual_zoom;
+
+            this._camera.position.set(-k*max_all, 0, 0);
+            this._camera.position.applyEuler(euler);
+            this._camera.position.add(new THREE.Vector3(midx,midy,midz));
+         }
 
       } else if (this.ctrl.ortho_camera) {
          this._camera.position.set(midx, midy, Math.max(sizex,sizey));
@@ -2206,15 +2222,13 @@
       if (!this.ctrl) return;
       this.ctrl.rotatey = rotatey || 0;
       this.ctrl.rotatez = rotatez || 0;
+      var preserve_zoom = false;
       if (zoom && !isNaN(zoom)) {
          this.ctrl.zoom = zoom;
-      } else if (this._camera0pos && this._camera && this._lookat) {
-         var pos1 = new THREE.Vector3().add(this._camera0pos).sub(this._lookat),
-             pos2 = new THREE.Vector3().add(this._camera.position).sub(this._lookat);
-
-         this.ctrl.zoom1 = pos2.length() / pos1.length();
+      } else {
+         preserve_zoom = true;
       }
-      this.adjustCameraPosition();
+      this.adjustCameraPosition(false, preserve_zoom);
    }
 
    TGeoPainter.prototype.focusOnItem = function(itemname) {
@@ -3611,7 +3625,7 @@
          this.drawExtras(extras, "", false);
       } else if (this._first_drawing || this._full_redrawing) {
          if (this.ctrl.tracks && this.geo_manager)
-            this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks", true);
+            this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks");
       }
 
       if (this._full_redrawing) {
