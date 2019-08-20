@@ -1648,11 +1648,11 @@
 
       var prop = this._clones.getDrawEntryProperties(entry);
 
-      var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.options);
+      var obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.ctrl);
 
-      prop.material.wireframe = this.options.wireframe;
+      prop.material.wireframe = this.ctrl.wireframe;
 
-      prop.material.side = this.bothSides ? THREE.DoubleSide : THREE.FrontSide;
+      prop.material.side = this.ctrl.bothSides ? THREE.DoubleSide : THREE.FrontSide;
 
       var mesh;
 
@@ -1903,7 +1903,7 @@
 
       // Clipping Planes
 
-      this.bothSides = false; // which material kind should be used
+      this.ctrl.bothSides = false; // which material kind should be used
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
                            new THREE.Plane(new THREE.Vector3(0, this.options._yup ? -1 : 1, 0), 0),
                            new THREE.Plane(new THREE.Vector3(0, 0, this.options._yup ? 1 : -1), 0) ];
@@ -3577,7 +3577,7 @@
          }
       });
 
-      this.bothSides = any_clipping;
+      this.ctrl.bothSides = any_clipping;
 
       if (!without_render) this.Render3D(0);
    }
