@@ -153,7 +153,9 @@
          highlight: false,
          highlight_scene: false,
          depthTest: true,
-         depthMethod: "dflt"
+         depthMethod: "dflt",
+         select_in_view: false,
+         update_browser: true
       };
 
       this.ctrl.depthMethodItems = [
@@ -414,8 +416,8 @@
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000,
                    vislevel: undefined, maxnodes: undefined, dflt_colors: false,
-                   use_worker: false, update_browser: true, show_controls: false,
-                   highlight: false, highlight_scene: false, select_in_view: false, no_screen: false,
+                   use_worker: false, show_controls: false,
+                   highlight: false, highlight_scene: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
@@ -657,9 +659,9 @@
          menu.addchk(this.ctrl.autoRotate, "Autorotate", function() {
             this.setAutoRotate(!this.ctrl.autoRotate);
          });
-      menu.addchk(this.options.select_in_view, "Select in view", function() {
-         this.options.select_in_view = !this.options.select_in_view;
-         if (this.options.select_in_view) this.startDrawGeometry();
+      menu.addchk(this.ctrl.select_in_view, "Select in view", function() {
+         this.ctrl.select_in_view = !this.ctrl.select_in_view;
+         if (this.ctrl.select_in_view) this.startDrawGeometry();
       });
    }
 
@@ -1056,7 +1058,7 @@
       // function analyzes camera position and start redraw of geometry if
       // objects in view may be changed
 
-      if (!this.options.select_in_view || this._draw_all_nodes) return;
+      if (!this.ctrl.select_in_view || this._draw_all_nodes) return;
 
       var matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
 
@@ -1401,7 +1403,7 @@
          var numvis = this._clones.CountVisibles() || this._clones.MarkVisibles(),
              matrix = null, frustum = null;
 
-         if (this.options.select_in_view && !this._first_drawing) {
+         if (this.ctrl.select_in_view && !this._first_drawing) {
             // extract camera projection matrix for selection
 
             matrix = JSROOT.GEO.CreateProjectionMatrix(this._camera);
@@ -1848,7 +1850,7 @@
          this._camera =  new THREE.OrthographicCamera(-600, 600, -600, 600, 1, 10000);
       } else {
          this._camera = new THREE.PerspectiveCamera(25, w / h, 1, 10000);
-         this._camera.up = this.options._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
+         this._camera.up = this.ctrl._yup ? new THREE.Vector3(0,1,0) : new THREE.Vector3(0,0,1);
       }
 
       this._scene.add( this._camera );
@@ -1911,8 +1913,8 @@
 
       this.ctrl.bothSides = false; // which material kind should be used
       this._clipPlanes = [ new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
-                           new THREE.Plane(new THREE.Vector3(0, this.options._yup ? -1 : 1, 0), 0),
-                           new THREE.Plane(new THREE.Vector3(0, 0, this.options._yup ? 1 : -1), 0) ];
+                           new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
+                           new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
        // Lights
 
@@ -2181,7 +2183,7 @@
             case 'y': this._camera.position.set(0, k*1.5*Math.max(sizex,sizez), 0); break;
             case 'z': this._camera.position.set(0, 0, k*1.5*Math.max(sizex,sizey)); break;
          }
-      } else if (this.options._yup) {
+      } else if (this.ctrl._yup) {
          this._camera.position.set(midx-k*Math.max(sizex,sizez), midy+k*sizey, midz-k*Math.max(sizex,sizez));
       } else {
          this._camera.position.set(midx-k*Math.max(sizex,sizey), midy-k*Math.max(sizex,sizey), midz+k*sizez);
@@ -2199,7 +2201,7 @@
       }
 
       // recheck which elements to draw
-      if (this.options.select_in_view)
+      if (this.ctrl.select_in_view)
          this.startDrawGeometry();
    }
 
@@ -2257,7 +2259,7 @@
           midz = (box.max.z + box.min.z)/2;
 
       var position;
-      if (this.options._yup)
+      if (this.ctrl._yup)
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizez), midy+2*sizey, midz-2*Math.max(sizex,sizez));
       else
          position = new THREE.Vector3(midx-2*Math.max(sizex,sizey), midy-2*Math.max(sizex,sizey), midz+2*sizez);
@@ -3538,7 +3540,7 @@
       if (!this._webgl) return;
 
       var clip = this.ctrl.clip, panels = [], changed = false,
-          constants = [clip[0].value, -1 * clip[1].value, (this.options._yup ? -1 : 1) * clip[2].value ],
+          constants = [ clip[0].value, -1 * clip[1].value, (this.ctrl._yup ? -1 : 1) * clip[2].value ],
           clip_cfg = this.ctrl.clipIntersect ? 16 : 0;
 
       for (var k=0;k<3;++k) {
@@ -3935,6 +3937,7 @@
 
       delete this._extraObjects;
       delete this.TestAxisVisibility; // allow draw of axes again
+      delete this._clipCfg;
 
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
 
