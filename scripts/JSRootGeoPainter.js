@@ -3576,7 +3576,6 @@
             if (node.material.emissive !== undefined) {
                if (node.material.side != material_side) {
                   node.material.side = material_side;
-                  console.log("update material side", material_side);
                   node.material.needsUpdate = true;
                }
             }
@@ -3586,6 +3585,8 @@
       this.ctrl.bothSides = any_clipping;
 
       if (!without_render) this.Render3D(0);
+
+      return changed;
    }
 
    TGeoPainter.prototype.setCompleteHandler = function(callback) {
@@ -3610,7 +3611,7 @@
          this.drawExtras(extras, "", false);
       } else if (this._first_drawing || this._full_redrawing) {
          if (this.ctrl.tracks && this.geo_manager)
-            this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks");
+            this.drawExtras(this.geo_manager.fTracks, "<prnt>/Tracks", true);
       }
 
       if (this._full_redrawing) {
