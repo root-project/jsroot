@@ -19,14 +19,11 @@
       <!-- use three.js from JSROOT -->
       <!-- script src="https://threejs.org/build/three.js"></script-->
 
-      <script src="https://threejs.org/examples/js/Detector.js"></script>
       <script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
 
       <script src="../scripts/JSRootCore.js?geom&onload=init" type="text/javascript"></script>
 
       <script>
-
-         if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
          var container, stats;
 
@@ -53,7 +50,7 @@
 
             var box3 = new THREE.Box3().setFromObject(obj3d);
 
-            geom_size = box3.getSize().length();
+            geom_size = box3.getSize(new THREE.Vector3()).length();
 
             camera.far = geom_size*5;
             camera.updateProjectionMatrix();
@@ -154,7 +151,7 @@
             }
 
             // set rendering order for transparent volumes, create with JSROOT
-            JSROOT.GEO.produceRenderOrder(scene, camera.position, 'box');
+            JSROOT.GEO.produceRenderOrder(scene, camera.position, 'dflt');
 
             renderer.render( scene, camera );
 
