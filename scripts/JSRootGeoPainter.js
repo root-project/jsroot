@@ -155,7 +155,8 @@
          depthTest: true,
          depthMethod: "dflt",
          select_in_view: false,
-         update_browser: true
+         update_browser: true,
+         light: { top: false, bottom: false, left: false, right: false, front: false, specular: true }
       };
 
       this.ctrl.depthMethodItems = [
@@ -1835,7 +1836,40 @@
        if ((m1 === null) || (m2 === null)) return false;
 
        return (m1.fFillStyle === m2.fFillStyle) && (m1.fFillColor === m2.fFillColor);
-    }
+   }
+
+   TGeoPainter.prototype.changedLight = function(box) {
+      if (!this._camera) return;
+
+      var need_render = !box;
+
+     if (!box) box = this.getGeomBoundingBox(this._toplevel);
+
+      var sizex = box.max.x - box.min.x,
+          sizey = box.max.y - box.min.y,
+          sizez = box.max.z - box.min.z,
+          lights = [];
+
+      for (var k=0;k<this._camera.children.length;++k) {
+         var light = this._camera.children[k], enabled = false;
+         if (!light.isPointLight) continue;
+         switch (k) {
+            case 0: light.position.set(sizex/5, sizey/5, sizez/5); enabled = this.ctrl.light.specular; break;
+            case 1: light.position.set(0, 0, sizez/2); enabled = this.ctrl.light.front; break;
+            case 2: light.position.set(0, 2*sizey, 0); enabled = this.ctrl.light.top; break;
+            case 3: light.position.set(0, -2*sizey, 0); enabled = this.ctrl.light.bottom; break;
+            case 4: light.position.set(-2*sizex, 0, 0); enabled = this.ctrl.light.left; break;
+            case 5: light.position.set(2*sizex, 0, 0); enabled = this.ctrl.light.right; break;
+         }
+         light.power = enabled ? Math.PI*4 : 0;
+         if (enabled) lights.push(light);
+      }
+
+      // keep light power of all soources constant
+      lights.forEach(function(light) { light.power = 4*Math.PI/lights.length; })
+
+      if (need_render) this.Render3D();
+   }
 
    TGeoPainter.prototype.createScene = function(w, h) {
       // three.js 3D drawing
@@ -1916,34 +1950,13 @@
                            new THREE.Plane(new THREE.Vector3(0, this.ctrl._yup ? -1 : 1, 0), 0),
                            new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
-       // Lights
 
-      //var light = new THREE.HemisphereLight( 0xffffff, 0x999999, 0.5 );
-      //this._scene.add(light);
-
-      /*
-      var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.2 );
-      directionalLight.position.set( 0, 1, 0 );
-      this._scene.add( directionalLight );
-
-      this._lights = new THREE.Object3D();
-      var a = new THREE.PointLight(0xefefef, 0.2);
-      var b = new THREE.PointLight(0xefefef, 0.2);
-      var c = new THREE.PointLight(0xefefef, 0.2);
-      var d = new THREE.PointLight(0xefefef, 0.2);
-      this._lights.add(a);
-      this._lights.add(b);
-      this._lights.add(c);
-      this._lights.add(d);
-      this._camera.add( this._lights );
-      a.position.set( 20000, 20000, 20000 );
-      b.position.set( -20000, 20000, 20000 );
-      c.position.set( 20000, -20000, 20000 );
-      d.position.set( -20000, -20000, 20000 );
-      */
-      this._pointLight = new THREE.PointLight(0xefefef, 1);
-      this._camera.add( this._pointLight );
-      this._pointLight.position.set(10, 10, 10);
+      // Lights - add 6 sources, place them once dimension of geometry is known
+      for (var n=0;n<6;++n) {
+         var light = new THREE.PointLight(0xefefef, n==0 ? 1 : 0);
+         if (n==0) light.position.set(10, 10, 10);
+         this._camera.add( light );
+      }
 
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
@@ -2206,7 +2219,7 @@
       this._camera0pos = new THREE.Vector3(-2*max_all, 0, 0); // virtual 0 position, where rotation starts
       this._camera.lookAt(this._lookat);
 
-      this._pointLight.position.set(sizex/5, sizey/5, sizez/5);
+      this.changedLight(box);
 
       if (this._controls) {
          this._controls.target.copy(this._lookat);
