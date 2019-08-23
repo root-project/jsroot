@@ -2377,34 +2377,26 @@
    }
 
    /** Mark visisble nodes. Set only basic flags, actual visibility depends from hierarchy  */
-   JSROOT.GEO.ClonedNodes.prototype.MarkVisibles = function(on_screen, copy_bits, cloning, hide_top_volume) {
-      if (!this.nodes) return 0;
+   JSROOT.GEO.ClonedNodes.prototype.MarkVisibles = function(on_screen, copy_bits, hide_top_volume) {
       if (this.plain_shape) return 1;
+      if (!this.origin || !this.nodes) return 0;
 
-      var res = 0, simple_copy = cloning && (cloning.length === this.nodes.length);
-
-      if (!simple_copy && !this.origin) return 0;
+      var res = 0;
 
       for (var n=0;n<this.nodes.length;++n) {
-         var clone = this.nodes[n];
+         var clone = this.nodes[n],
+             obj = this.origin[n];
 
          clone.vis = 0; // 1 - only with last level
          delete clone.nochlds;
-
-         if (simple_copy) {
-            clone.vis = cloning[n].vis;
-            clone.nochlds = cloning[n].nochlds;
-            if (clone.vis) res++;
-            continue;
-         }
-
-         var obj = this.origin[n];
 
          if (clone.kind === 0) {
             if (obj.fVolume) {
                if (on_screen) {
                   // on screen bits used always, childs always checked
                   clone.vis = JSROOT.GEO.TestBit(obj.fVolume, JSROOT.GEO.BITS.kVisOnScreen) ? 99 : 0;
+
+                  if ((n==0) && clone.vis && hide_top_volume) clone.vis = 0;
 
                   if (copy_bits) {
                      JSROOT.GEO.SetBit(obj.fVolume, JSROOT.GEO.BITS.kVisNone, false);
@@ -2472,6 +2464,25 @@
          res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
       return res;
    }
+
+   /** Assign only visibility flags, extracted with GetVisibleFlags @private */
+   JSROOT.GEO.ClonedNodes.prototype.SetVisibleFlags = function(flags) {
+      if (!this.nodes || !flags || !flags.length != this.nodes.length)
+         return 0;
+
+      var res = 0;
+      for (var n=0;n<this.nodes.length;++n) {
+         var clone = this.nodes[n];
+
+         clone.vis = flags[n].vis;
+         clone.nochlds = flags[n].nochlds;
+         if (clone.vis) res++;
+      }
+
+      return res;
+   }
+
+
 
    /** Scan visible nodes in hierarchy, starting from nodeid
      * Each entry in hierarchy get its unique id, which is not changed with visibility flags
@@ -3577,9 +3588,9 @@
 
       var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)
-         uniquevis = clones.MarkVisibles(false, false, null, hide_top);
+         uniquevis = clones.MarkVisibles(false, false, hide_top);
       else
-         uniquevis = clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
+         uniquevis = clones.MarkVisibles(true, true, hide_top); // copy bits once and use normal visibility bits
 
       clones.ProduceIdShits();
 

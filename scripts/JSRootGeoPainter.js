@@ -1446,9 +1446,9 @@
          }
 
          var job = {
-               collect: this._current_face_limit,   // indicator for the command
-               visible: this._clones.GetVisibleFlags(),
-               matrix: matrix ? matrix.elements : null
+            collect: this._current_face_limit,   // indicator for the command
+            flags: this._clones.GetVisibleFlags(),
+            matrix: matrix ? matrix.elements : null
          };
 
          this.submitToWorker(job);
@@ -2976,12 +2976,14 @@
 
          this._clones.name_prefix = name_prefix;
 
-         var uniquevis = this.ctrl.no_screen ? 0 : this._clones.MarkVisibles(true);
+         var hide_top_volume = !!this.geo_manager && !this.ctrl.showtop;
+
+         var uniquevis = this.ctrl.no_screen ? 0 : this._clones.MarkVisibles(true, false, hide_top_volume);
 
          if (uniquevis <= 0)
-            uniquevis = this._clones.MarkVisibles(false, false, null, !!this.geo_manager && !this.ctrl.showtop);
+            uniquevis = this._clones.MarkVisibles(false, false, hide_top_volume);
          else
-            uniquevis = this._clones.MarkVisibles(true, true); // copy bits once and use normal visibility bits
+            uniquevis = this._clones.MarkVisibles(true, true, hide_top_volume); // copy bits once and use normal visibility bits
 
          this._clones.ProduceIdShits();
 
