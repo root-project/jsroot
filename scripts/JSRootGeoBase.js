@@ -2822,10 +2822,11 @@
       return prop;
    }
 
+   /** Creates hierarchy of Object3D for given stack entry
+     * such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
+     * also set renderOrder, required to handle transparency
+     * @private */
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
-      // create hierarchy of Object3D for given stack entry
-      // such hierarchy repeats hierarchy of TGeoNodes and set matrix for the objects drawing
-      // also set renderOrder, required to handle transparency
 
       var node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = (typeof options == 'object') || (options==='force');

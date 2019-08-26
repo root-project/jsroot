@@ -156,7 +156,8 @@
          depthMethod: "dflt",
          select_in_view: false,
          update_browser: true,
-         light: { top: false, bottom: false, left: false, right: false, front: false, specular: true }
+         light: { top: false, bottom: false, left: false, right: false, front: false, specular: true },
+         transform: { radial: 0, z: 0 }
       };
 
       this.ctrl.depthMethodItems = [
@@ -684,6 +685,49 @@
       if (!skip_render) this.Render3D(-1);
    }
 
+   /** Method should be called when transformation parameters were changed @private */
+   TGeoPainter.prototype.changedTransformation = function() {
+
+      if (!this._toplevel) return;
+
+      var tr = this.ctrl.transform;
+
+      // console.log("Multz = ", tr.z, typeof tr.z);
+
+      var //worldNew = new THREE.Matrix4(),
+          //parent_m = new THREE.Matrix4(),
+          //parent_inverse = new THREE.Matrix4(),
+          translation = new THREE.Matrix4(),
+          position = new THREE.Vector3(),
+          quaternion = new THREE.Quaternion(),
+          scale = new THREE.Vector3();
+
+      this._toplevel.traverse(function(node) {
+         if (node.stack === undefined) return;
+
+         node = node.parent;
+
+         if (node.z0 === undefined) {
+            node.matrix0 = node.matrix.clone();
+            node.matrixWorld.decompose(position, quaternion, scale);
+            node.z0 = position.z;
+         }
+
+         node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(0,0, tr.z * node.z0));
+         node.matrix.decompose( node.position, node.quaternion, node.scale );
+
+         node.updateMatrix();
+      });
+
+      this._toplevel.updateMatrixWorld();
+
+      if (this.ctrl._axis)
+         this.drawSimpleAxis();
+
+      this.Render3D();
+   }
+
+   /** Method should be called to change background color @private */
    TGeoPainter.prototype.changedBackground = function(val) {
       if (val !== undefined) this.ctrl.background = val;
       this._renderer.setClearColor(this.ctrl.background, 1);
@@ -831,6 +875,17 @@
             .onChange(this.changedDepthMethod.bind(this));
 
         advanced.add(this, 'resetAdvanced').name('Reset');
+      }
+
+      // Transformation Options
+      if (!this.ctrl.project) {
+         var transform = this._datgui.addFolder('Transform');
+         transform.add(this.ctrl.transform, 'z', 0., 1., 0.01)
+                     .name('Z axis')
+                     .listen().onChange(this.changedTransformation.bind(this));
+         transform.add(this.ctrl.transform, 'radial', 0., 1., 0.01)
+                  .name('Radial')
+                  .listen().onChange(this.changedTransformation.bind(this));
       }
 
       // no SSAO folder if outline is enabled
@@ -3730,7 +3785,7 @@
 
       for (var n = 0; n < this._draw_nodes.length; ++n) {
          var entry = this._draw_nodes[n];
-         if ((entry.nodeid === nodeid) || (this._clones.IsNodeInStack(nodeid, entry.stack))) {
+         if ((entry.nodeid === nodeid) || this._clones.IsNodeInStack(nodeid, entry.stack)) {
             this._clones.CreateObject3D(entry.stack, this._toplevel, 'delete_mesh');
          } else {
             new_nodes.push(entry);
