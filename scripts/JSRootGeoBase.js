@@ -3236,9 +3236,9 @@
       }
    }
 
+   /** When transformation matrix includes one or several inversion of axis,
+     * one should inverse geometry object, otherwise THREE.js cannot correctly draw it, @private */
    JSROOT.GEO.createFlippedMesh = function(parent, shape, material) {
-      // when transformation matrix includes one or several inversion of axis,
-      // one should inverse geometry object, otherwise THREE.js cannot correctly draw it
 
       var flip =  new THREE.Vector3(1,1,-1);
 
@@ -3247,9 +3247,8 @@
          if (shape.geom.type == 'BufferGeometry') {
 
             var pos = shape.geom.getAttribute('position').array,
-                norm = shape.geom.getAttribute('normal').array;
-
-            var index = shape.geom.getIndex();
+                norm = shape.geom.getAttribute('normal').array,
+                index = shape.geom.getIndex();
 
             if (index) {
                // we need to unfold all points to

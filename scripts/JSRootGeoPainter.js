@@ -694,10 +694,7 @@
 
       // console.log("Multz = ", tr.z, typeof tr.z);
 
-      var //worldNew = new THREE.Matrix4(),
-          //parent_m = new THREE.Matrix4(),
-          //parent_inverse = new THREE.Matrix4(),
-          translation = new THREE.Matrix4(),
+      var translation = new THREE.Matrix4(),
           position = new THREE.Vector3(),
           quaternion = new THREE.Quaternion(),
           scale = new THREE.Vector3();
@@ -711,12 +708,18 @@
             node.matrix0 = node.matrix.clone();
             node.matrixWorld.decompose(position, quaternion, scale);
             node.z0 = position.z;
+            node.minvert = new THREE.Matrix4().getInverse( node.matrixWorld );
          }
 
-         node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(0,0, tr.z * node.z0));
+         var vect1 = new THREE.Vector3(0,0, 0),
+             vect2 = new THREE.Vector3(0,0, tr.z * node.z0);
+         vect1.applyMatrix4(node.minvert);
+         vect2.applyMatrix4(node.minvert);
+
+         node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x-vect1.x, vect2.y-vect1.y, vect2.z-vect1.z));
          node.matrix.decompose( node.position, node.quaternion, node.scale );
 
-         node.updateMatrix();
+         node.matrixWorldNeedsUpdate = true;
       });
 
       this._toplevel.updateMatrixWorld();
