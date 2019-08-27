@@ -704,6 +704,8 @@
          node.matrixWorldNeedsUpdate = true;
 
          delete node.matrix0;
+         delete node.x0;
+         delete node.y0;
          delete node.z0;
          delete node.minvert;
       });
@@ -736,12 +738,14 @@
          if (node.z0 === undefined) {
             node.matrix0 = node.matrix.clone();
             node.matrixWorld.decompose(position, quaternion, scale);
+            node.x0 = position.x;
+            node.y0 = position.y;
             node.z0 = position.z;
             node.minvert = new THREE.Matrix4().getInverse( node.matrixWorld );
          }
 
          var vect1 = new THREE.Vector3(0,0, 0),
-             vect2 = new THREE.Vector3(0,0, tr.z * node.z0);
+             vect2 = new THREE.Vector3(tr.radial * node.x0, tr.radial * node.y0, tr.z * node.z0);
          vect1.applyMatrix4(node.minvert);
          vect2.applyMatrix4(node.minvert);
 
