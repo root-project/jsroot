@@ -685,14 +685,43 @@
       if (!skip_render) this.Render3D(-1);
    }
 
+   /** Reset transformation @private */
+   TGeoPainter.prototype.resetTransformation = function() {
+      if (!this._toplevel) return;
+
+      this.ctrl.transform.z = 0;
+      this.ctrl.transform.radial = 0;
+
+      this._toplevel.traverse(function(node) {
+         if (node.stack === undefined) return;
+
+         node = node.parent;
+         if (!node.matrix0) return;
+
+         node.matrix.copy(node.matrix0);
+         node.matrix.decompose( node.position, node.quaternion, node.scale );
+
+         node.matrixWorldNeedsUpdate = true;
+
+         delete node.matrix0;
+         delete node.z0;
+         delete node.minvert;
+      });
+
+      this._toplevel.updateMatrixWorld();
+
+      if (this.ctrl._axis)
+         this.drawSimpleAxis();
+
+      this.Render3D();
+   }
+
+
    /** Method should be called when transformation parameters were changed @private */
    TGeoPainter.prototype.changedTransformation = function() {
-
       if (!this._toplevel) return;
 
       var tr = this.ctrl.transform;
-
-      // console.log("Multz = ", tr.z, typeof tr.z);
 
       var translation = new THREE.Matrix4(),
           position = new THREE.Vector3(),
@@ -889,6 +918,8 @@
          transform.add(this.ctrl.transform, 'radial', 0., 1., 0.01)
                   .name('Radial')
                   .listen().onChange(this.changedTransformation.bind(this));
+
+         transform.add(this, 'resetTransformation').name('Reset');
       }
 
       // no SSAO folder if outline is enabled
