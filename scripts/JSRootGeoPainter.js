@@ -872,21 +872,30 @@
 
       var appearance = this._datgui.addFolder('Appearance');
 
-      appearance.add(this.ctrl, 'highlight')
-                .name('Highlight Selection')
+      appearance.add(this.ctrl, 'highlight').name('Highlight Selection')
                 .listen().onChange(this.changedHighlight.bind(this));
 
       appearance.add(this.ctrl, 'transparency', 0.0, 1.0, 0.001)
                      .listen().onChange(this.changedGlobalTransparency.bind(this));
 
+      appearance.addColor(this.ctrl, 'background').name('Background')
+                .onChange(this.changedBackground.bind(this));
+
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
                      .listen().onChange(this.changedWireFrame.bind(this));
 
-      appearance.add(this.ctrl, '_axis').name('Axes')
-                    .listen().onChange(this.changedAxesDraw.bind(this));
+      this.ctrl._axis_cfg = 0;
+      if (this.ctrl._axis) this.ctrl._axis_cfg = this.ctrl._axis_center ? 2 : 1;
+      appearance.add(this.ctrl, '_axis_cfg', { "none" : 0, "show": 1, "center": 2}).name('Axes')
+                    .onChange(function() {
+                       switch (parseInt(this.ctrl._axis_cfg)) {
+                          case 0: this.ctrl._axis = this.ctrl._axis_center = false; break;
+                          case 2: this.ctrl._axis = this.ctrl._axis_center = true; break;
+                          default: this.ctrl._axis = true; this.ctrl._axis_center = false; break;
 
-      appearance.addColor(this.ctrl, 'background')
-                .name('Background').onChange(this.changedBackground.bind(this));
+                       }
+                       this.changedAxesDraw();
+                    }.bind(this));
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
