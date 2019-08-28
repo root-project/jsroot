@@ -695,23 +695,17 @@
       if (!this._toplevel) return;
 
       var tr = this.ctrl.transform,
-          translation = new THREE.Matrix4();
-          // position = new THREE.Vector3(),
-          // quaternion = new THREE.Quaternion(),
-          // scale = new THREE.Vector3();
+          translation = new THREE.Matrix4(),
+          vect1 = new THREE.Vector3(),
+          vect2 = new THREE.Vector3();
 
       if (arg == "reset")
          tr.z = tr.radial = 0;
 
-      this._toplevel.traverse(function(node) {
-         if (node.stack === undefined) return;
+      this._toplevel.traverse(function(mesh) {
+         if (mesh.stack === undefined) return;
 
-         var mesh = node;
-
-         // if (mesh._flippedMesh) console.log('FLIPPED');
-
-
-         node = node.parent;
+         var node = mesh.parent;
 
          if (arg == "reset") {
             if (node.matrix0) {
@@ -731,27 +725,22 @@
             node.matrix0 = node.matrix.clone();
             node.minvert = new THREE.Matrix4().getInverse( node.matrixWorld );
 
-            var box3 = JSROOT.GEO.getBoundingBox(mesh, null, true), signz = 1;
-
-            if (mesh._flippedMesh) signz = -1;
+            var box3 = JSROOT.GEO.getBoundingBox(mesh, null, true),
+                signz = mesh._flippedMesh ? -1 : 1;
 
             // center of mesh in local coordinates
-            var vect2 = new THREE.Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2);
-            vect2.applyMatrix4(node.matrixWorld);
+            vect1.set((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2).applyMatrix4(node.matrixWorld);
 
-            node.x0 = vect2.x;
-            node.y0 = vect2.y;
-            node.z0 = vect2.z;
+            node.x0 = vect1.x;
+            node.y0 = vect1.y;
+            node.z0 = vect1.z;
          }
 
-         var vect1 = new THREE.Vector3(0,0, 0),
-             vect2 = new THREE.Vector3(tr.radial * node.x0, tr.radial * node.y0, tr.z * node.z0);
-         vect1.applyMatrix4(node.minvert);
-         vect2.applyMatrix4(node.minvert);
+         vect1.set(0,0, 0).applyMatrix4(node.minvert);
+         vect2.set(tr.radial * node.x0, tr.radial * node.y0, tr.z * node.z0).applyMatrix4(node.minvert);
 
          node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x-vect1.x, vect2.y-vect1.y, vect2.z-vect1.z));
          node.matrix.decompose( node.position, node.quaternion, node.scale );
-
          node.matrixWorldNeedsUpdate = true;
       });
 
