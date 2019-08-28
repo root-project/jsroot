@@ -687,53 +687,40 @@
 
    /** Reset transformation @private */
    TGeoPainter.prototype.resetTransformation = function() {
-      if (!this._toplevel) return;
-
-      this.ctrl.transform.z = 0;
-      this.ctrl.transform.radial = 0;
-
-      this._toplevel.traverse(function(node) {
-         if (node.stack === undefined) return;
-
-         node = node.parent;
-         if (!node.matrix0) return;
-
-         node.matrix.copy(node.matrix0);
-         node.matrix.decompose( node.position, node.quaternion, node.scale );
-
-         node.matrixWorldNeedsUpdate = true;
-
-         delete node.matrix0;
-         delete node.x0;
-         delete node.y0;
-         delete node.z0;
-         delete node.minvert;
-      });
-
-      this._toplevel.updateMatrixWorld();
-
-      if (this.ctrl._axis)
-         this.drawSimpleAxis();
-
-      this.Render3D();
+      this.changedTransformation("reset");
    }
 
-
    /** Method should be called when transformation parameters were changed @private */
-   TGeoPainter.prototype.changedTransformation = function() {
+   TGeoPainter.prototype.changedTransformation = function(arg) {
       if (!this._toplevel) return;
 
-      var tr = this.ctrl.transform;
-
-      var translation = new THREE.Matrix4(),
+      var tr = this.ctrl.transform,
+          translation = new THREE.Matrix4(),
           position = new THREE.Vector3(),
           quaternion = new THREE.Quaternion(),
           scale = new THREE.Vector3();
 
+      if (arg == "reset")
+         tr.z = tr.radial = 0;
+
       this._toplevel.traverse(function(node) {
          if (node.stack === undefined) return;
 
          node = node.parent;
+
+         if (arg == "reset") {
+            if (node.matrix0) {
+               node.matrix.copy(node.matrix0);
+               node.matrix.decompose( node.position, node.quaternion, node.scale );
+               node.matrixWorldNeedsUpdate = true;
+            }
+            delete node.matrix0;
+            delete node.x0;
+            delete node.y0;
+            delete node.z0;
+            delete node.minvert;
+            return;
+         }
 
          if (node.z0 === undefined) {
             node.matrix0 = node.matrix.clone();
@@ -916,10 +903,10 @@
       // Transformation Options
       if (!this.ctrl.project) {
          var transform = this._datgui.addFolder('Transform');
-         transform.add(this.ctrl.transform, 'z', 0., 1., 0.01)
+         transform.add(this.ctrl.transform, 'z', 0., 3., 0.01)
                      .name('Z axis')
                      .listen().onChange(this.changedTransformation.bind(this));
-         transform.add(this.ctrl.transform, 'radial', 0., 1., 0.01)
+         transform.add(this.ctrl.transform, 'radial', 0., 3., 0.01)
                   .name('Radial')
                   .listen().onChange(this.changedTransformation.bind(this));
 
