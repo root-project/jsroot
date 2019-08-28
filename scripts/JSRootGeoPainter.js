@@ -892,10 +892,13 @@
                           case 0: this.ctrl._axis = this.ctrl._axis_center = false; break;
                           case 2: this.ctrl._axis = this.ctrl._axis_center = true; break;
                           default: this.ctrl._axis = true; this.ctrl._axis_center = false; break;
-
                        }
                        this.changedAxesDraw();
                     }.bind(this));
+
+      if (!this.ctrl.project)
+         appearance.add(this.ctrl, 'autoRotate').name("Autorotate")
+                      .listen().onChange(this.setAutoRotate.bind(this));
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
@@ -3582,7 +3585,7 @@
    /** @brief Set auto rotate mode */
    TGeoPainter.prototype.setAutoRotate = function(on) {
       if (this.ctrl.project) return;
-      this.ctrl.autoRotate = on;
+      if (on !== undefined) this.ctrl.autoRotate = on;
       this.autorotate(2.5);
    }
 
