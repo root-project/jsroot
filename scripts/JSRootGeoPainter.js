@@ -157,7 +157,7 @@
          select_in_view: false,
          update_browser: true,
          light: { top: false, bottom: false, left: false, right: false, front: false, specular: true },
-         transform: { radial: 0, z: 0 }
+         trans_radial: 0, trans_z: 0
       };
 
       this.ctrl.depthMethodItems = [
@@ -423,7 +423,7 @@
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
                    script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
-                   depthMethod: "dflt", mouse_tmout: 50 };
+                   depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
       if (_opt !== null && _opt == "true") res._grid = true;
@@ -535,6 +535,9 @@
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
       if (d.check("AXISCENTER") || d.check("AC")) { res._axis = true; res._axis_center = true; }
+
+      if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
+      if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
 
       if (d.check("AXIS") || d.check("A")) res._axis = true;
 
@@ -694,12 +697,12 @@
    TGeoPainter.prototype.changedTransformation = function(arg) {
       if (!this._toplevel) return;
 
-      var tr = this.ctrl.transform,
+      var ctrl = this.ctrl,
           translation = new THREE.Matrix4(),
           vect2 = new THREE.Vector3();
 
       if (arg == "reset")
-         tr.z = tr.radial = 0;
+         ctrl.trans_z = ctrl.trans_radial = 0;
 
       this._toplevel.traverse(function(mesh) {
          if (mesh.stack === undefined) return;
@@ -731,7 +734,7 @@
             node.vect1 = new THREE.Vector3(0,0,0).applyMatrix4(node.minvert);
          }
 
-         vect2.set(tr.radial * node.vect0.x, tr.radial * node.vect0.y, tr.z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
+         vect2.set(ctrl.trans_radial * node.vect0.x, ctrl.trans_radial * node.vect0.y, ctrl.trans_z * node.vect0.z).applyMatrix4(node.minvert).sub(node.vect1);
 
          node.matrix.multiplyMatrices(node.matrix0, translation.makeTranslation(vect2.x, vect2.y, vect2.z));
          node.matrix.decompose( node.position, node.quaternion, node.scale );
@@ -740,9 +743,9 @@
 
       this._toplevel.updateMatrixWorld();
 
-      this.drawSimpleAxis(this.ctrl._axis);
-
-      this.Render3D();
+      // axes drawing always triggers rendering
+      if (arg != "norender")
+         this.drawSimpleAxis(this.ctrl._axis);
    }
 
    /** Method should be called when changing axes drawing @private */
@@ -906,10 +909,10 @@
       // Transformation Options
       if (!this.ctrl.project) {
          var transform = this._datgui.addFolder('Transform');
-         transform.add(this.ctrl.transform, 'z', 0., 3., 0.01)
+         transform.add(this.ctrl, 'trans_z', 0., 3., 0.01)
                      .name('Z axis')
                      .listen().onChange(this.changedTransformation.bind(this));
-         transform.add(this.ctrl.transform, 'radial', 0., 3., 0.01)
+         transform.add(this.ctrl, 'trans_radial', 0., 3., 0.01)
                   .name('Radial')
                   .listen().onChange(this.changedTransformation.bind(this));
 
@@ -3382,10 +3385,8 @@
    TGeoPainter.prototype.drawSimpleAxis = function(on, norender) {
       this.getExtrasContainer('delete', 'axis');
 
-      if (!on) {
-         if (!norender) this.Render3D();
-         return;
-      }
+      if (!on)
+         return norender ? null : this.Render3D();
 
       var box = this.getGeomBoundingBox(this._toplevel);
 
@@ -3550,7 +3551,7 @@
       }
 
       // after creating axes trigger rendering and recalculation of depth
-      this.changedDepthMethod(norender);
+      this.changedDepthMethod(norender ? "norender" : undefined);
    }
 
    /** @brief  Toggle axes visibility */
@@ -3736,8 +3737,11 @@
       if (first_time)
          this.completeScene();
 
+      if (full_redraw && (this.ctrl.trans_radial || this.ctrl.trans_z))
+         this.changedTransformation("norender");
+
       if (full_redraw && this.ctrl._axis)
-         this.drawSimpleAxis(true, "norender");
+         this.drawSimpleAxis(true, true);
 
       this._scene.overrideMaterial = null;
 

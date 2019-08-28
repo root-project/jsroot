@@ -322,6 +322,8 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotyANGLE - set Y rotation angle in degrees (like roty10)
    - rotzANGLE - set Z rotation angle in degrees (like rotz20)
    - rotate - enable automatic rotation of the geometry
+   - trzVALUE - set transformation along Z axis (like trz50)
+   - trrVALUE - set radial transformation (like trr100)
    - tracks - show tracks from TGeoManager
    - showtop - show top-level volume of TGeoManager (default off)
    - no_screen - let ignore kVisOnScreen bits for nodes visibility
