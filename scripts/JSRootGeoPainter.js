@@ -634,8 +634,8 @@
       menu.addchk(this.ctrl.show_controls, "Show Controls", function() {
          this.showControlOptions('toggle');
       });
-      menu.addchk(this.TestAxisVisibility, "Show axes", function() {
-         this.toggleAxesDraw();
+      menu.addchk(this.ctrl._axis, "Show axes", function() {
+         this.setAxesDraw('toggle');
       });
       if (this.geo_manager)
          menu.addchk(this.ctrl.showtop, "Show top volume", function() {
@@ -740,10 +740,14 @@
 
       this._toplevel.updateMatrixWorld();
 
-      if (this.ctrl._axis)
-         this.drawSimpleAxis();
+      this.drawSimpleAxis(this.ctrl._axis);
 
       this.Render3D();
+   }
+
+   /** Method should be called when changing axes drawing @private */
+   TGeoPainter.prototype.changedAxesDraw = function() {
+      this.drawSimpleAxis(this.ctrl._axis);
    }
 
    /** Method should be called to change background color @private */
@@ -875,6 +879,9 @@
       appearance.add(this.ctrl, 'wireframe').name('Wireframe')
                      .listen().onChange(this.changedWireFrame.bind(this));
 
+      appearance.add(this.ctrl, '_axis').name('Axes')
+                    .listen().onChange(this.changedAxesDraw.bind(this));
+
       appearance.addColor(this.ctrl, 'background')
                 .name('Background').onChange(this.changedBackground.bind(this));
 
@@ -891,7 +898,7 @@
 
          advanced.add( this.ctrl, 'depthMethod', depthcfg)
              .name("Rendering order")
-            .onChange(this.changedDepthMethod.bind(this));
+             .onChange(this.changedDepthMethod.bind(this));
 
         advanced.add(this, 'resetAdvanced').name('Reset');
       }
@@ -3225,9 +3232,6 @@
 
          var tm1 = new Date();
 
-         if (typeof this.TestAxisVisibility === 'function')
-            this.TestAxisVisibility(this._camera, this._toplevel);
-
          this.TestCameraPosition(tmout === -1);
 
          // its needed for outlinePass - do rendering, most consuming time
@@ -3374,11 +3378,17 @@
          this._slave_painters[k].startDrawGeometry();
    }
 
-   TGeoPainter.prototype.drawSimpleAxis = function() {
+   /** Fully redraw axes, if on = true */
+   TGeoPainter.prototype.drawSimpleAxis = function(on, norender) {
+      this.getExtrasContainer('delete', 'axis');
+
+      if (!on) {
+         if (!norender) this.Render3D();
+         return;
+      }
 
       var box = this.getGeomBoundingBox(this._toplevel);
 
-      this.getExtrasContainer('delete', 'axis');
       var container = this.getExtrasContainer('create', 'axis');
 
       var text_size = 0.02 * Math.max( (box.max.x - box.min.x), (box.max.y - box.min.y), (box.max.z - box.min.z)),
@@ -3539,35 +3549,22 @@
          container.add(mesh);
       }
 
-      this.TestAxisVisibility = function(camera, toplevel) {
-         if (!camera) {
-            this.getExtrasContainer('delete', 'axis');
-            delete this.TestAxisVisibility;
-            this.Render3D();
-            return;
-         }
-      }
+      // after creating axes trigger rendering and recalculation of depth
+      this.changedDepthMethod(norender);
    }
 
-   /** Toggle axes visibility */
-   TGeoPainter.prototype.toggleAxesDraw = function(force_draw) {
-      if (this.TestAxisVisibility) {
-         if (!force_draw) {
-           this.TestAxisVisibility(null, this._toplevel);
-           this.ctrl._axis = false;
-         }
-      } else {
-         this.ctrl._axis = true;
-         this.drawSimpleAxis();
-         if (force_draw !== true)
-            this.changedDepthMethod();
-      }
+   /** @brief  Toggle axes visibility */
+   TGeoPainter.prototype.toggleAxesDraw = function() {
+      this.setAxesDraw("toggle");
    }
 
    /** @brief Set axes visibility */
    TGeoPainter.prototype.setAxesDraw = function(on) {
-      if (on != this.ctrl._axis)
-         this.toggleAxesDraw();
+      if (on === "toggle")
+         this.ctrl._axis = !this.ctrl._axis;
+      else
+         this.ctrl._axis = !!on;
+      this.drawSimpleAxis(this.ctrl._axis);
    }
 
    /** @brief Set auto rotate mode */
@@ -3740,7 +3737,7 @@
          this.completeScene();
 
       if (full_redraw && this.ctrl._axis)
-         this.toggleAxesDraw(true);
+         this.drawSimpleAxis(true, "norender");
 
       this._scene.overrideMaterial = null;
 
@@ -3918,7 +3915,6 @@
       delete this._new_draw_nodes;
       delete this._new_append_nodes;
       delete this._last_camera_position;
-      delete this.TestAxisVisibility;
 
       this.first_render_tm = 0; // time needed for first rendering
       this.last_render_tm = 0;
@@ -4040,7 +4036,6 @@
       delete this._build_shapes;
 
       delete this._extraObjects;
-      delete this.TestAxisVisibility; // allow draw of axes again
       delete this._clipCfg;
 
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
