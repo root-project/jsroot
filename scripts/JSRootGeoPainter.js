@@ -695,16 +695,21 @@
       if (!this._toplevel) return;
 
       var tr = this.ctrl.transform,
-          translation = new THREE.Matrix4(),
-          position = new THREE.Vector3(),
-          quaternion = new THREE.Quaternion(),
-          scale = new THREE.Vector3();
+          translation = new THREE.Matrix4();
+          // position = new THREE.Vector3(),
+          // quaternion = new THREE.Quaternion(),
+          // scale = new THREE.Vector3();
 
       if (arg == "reset")
          tr.z = tr.radial = 0;
 
       this._toplevel.traverse(function(node) {
          if (node.stack === undefined) return;
+
+         var mesh = node;
+
+         // if (mesh._flippedMesh) console.log('FLIPPED');
+
 
          node = node.parent;
 
@@ -724,11 +729,19 @@
 
          if (node.z0 === undefined) {
             node.matrix0 = node.matrix.clone();
-            node.matrixWorld.decompose(position, quaternion, scale);
-            node.x0 = position.x;
-            node.y0 = position.y;
-            node.z0 = position.z;
             node.minvert = new THREE.Matrix4().getInverse( node.matrixWorld );
+
+            var box3 = JSROOT.GEO.getBoundingBox(mesh, null, true), signz = 1;
+
+            if (mesh._flippedMesh) signz = -1;
+
+            // center of mesh in local coordinates
+            var vect2 = new THREE.Vector3((box3.max.x  + box3.min.x) / 2, (box3.max.y  + box3.min.y) / 2, signz * (box3.max.z  + box3.min.z) / 2);
+            vect2.applyMatrix4(node.matrixWorld);
+
+            node.x0 = vect2.x;
+            node.y0 = vect2.y;
+            node.z0 = vect2.z;
          }
 
          var vect1 = new THREE.Vector3(0,0, 0),

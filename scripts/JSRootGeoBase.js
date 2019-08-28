@@ -3656,16 +3656,15 @@
       return toplevel;
    }
 
-   JSROOT.GEO.getBoundingBox = function(node, box3) {
+   /**  extract code of Box3.expandByObject
+     * Major difference - do not traverse hierarchy */
 
-      // extract code of Box3.expandByObject
-      // Major difference - do not traverse hierarchy
-
+   JSROOT.GEO.getBoundingBox = function(node, box3, local_coordinates) {
       if (!node || !node.geometry) return box3;
 
       if (!box3) { box3 = new THREE.Box3(); box3.makeEmpty(); }
 
-      node.updateMatrixWorld();
+      if (!local_coordinates) node.updateMatrixWorld();
 
       var v1 = new THREE.Vector3(),
           geometry = node.geometry;
@@ -3674,7 +3673,7 @@
          var vertices = geometry.vertices;
          for (var i = 0, l = vertices.length; i < l; i ++ ) {
             v1.copy( vertices[ i ] );
-            v1.applyMatrix4( node.matrixWorld );
+            if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
             box3.expandByPoint( v1 );
          }
       } else if ( geometry.isBufferGeometry ) {
@@ -3682,7 +3681,8 @@
          if ( attribute !== undefined ) {
             for (var i = 0, l = attribute.count; i < l; i ++ ) {
                // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
-               v1.fromBufferAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
+               v1.fromBufferAttribute( attribute, i );
+               if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
                box3.expandByPoint( v1 );
             }
          }
