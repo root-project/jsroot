@@ -917,6 +917,8 @@
                   .listen().onChange(this.changedTransformation.bind(this));
 
          transform.add(this, 'resetTransformation').name('Reset');
+
+         if (this.ctrl.trans_z || this.ctrl.trans_radial) transform.open();
       }
 
       // no SSAO folder if outline is enabled

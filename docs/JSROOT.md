@@ -307,6 +307,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - clip or clipxyz - enable all three clipping panels
    - ssao - enable Smooth Lighting Shader (or Screen Space Ambient Occlusion)
    - wire - instead of filled surfaces only wireframe will be drawn
+   - vislvlN - maximal hierarchy depth of visible nodes (like vislvl6)
    - more  - show 2 times more volumes as usual (normally ~2000 volumes or ~100000 elementary faces are shown)
    - more3 - show 3 times more volumes as usual
    - all - try to display all geometry volumes (may lead to browser hanging)
@@ -324,6 +325,7 @@ Following draw options could be specified (separated by semicolon or ';'):
    - rotate - enable automatic rotation of the geometry
    - trzVALUE - set transformation along Z axis (like trz50)
    - trrVALUE - set radial transformation (like trr100)
+   - ctrl - show control UI from the beginning
    - tracks - show tracks from TGeoManager
    - showtop - show top-level volume of TGeoManager (default off)
    - no_screen - let ignore kVisOnScreen bits for nodes visibility

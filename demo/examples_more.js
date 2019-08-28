@@ -103,6 +103,7 @@ examples_more = {
      { name: "atlas_simple", asurl: true, json: "geom/simple_atlas.json.gz", opt: "ac" },
      { name: "star", asurl: true, json: "geom/star_svtt.json.gz" },
      { name: "hades", asurl: true, json: "geom/hades.json.gz", opt: "vislvl10" },
+     { name: "transform", asurl: true, json: "geom/hades.json.gz", opt: "vislvl10;trr100;trz200;ctrl" },
      { name: "babar", asurl: true, json: "geom/babar_emca.json.gz", opt: "vislvl10" },
      { name: "alice_simple", asurl: true, json: "geom/simple_alice.json.gz", title: "simple alice geomtery" },
      { name: "Dipole", url: "?nobrowser&file=https://root.cern/files/alice2.root&item=Geometry;1/ALIC/Dipole_1", title: "Part of volumes from geo manager" },
