@@ -422,7 +422,7 @@
                    highlight: false, highlight_scene: false, no_screen: false,
                    project: '', is_main: false, tracks: false, showtop: false, can_rotate: true, ortho_camera: false,
                    clipx: false, clipy: false, clipz: false, usessao: false, outline: false,
-                   script_name: "", transparency: 0, autoRotate: false, background: '#FFFFFF',
+                   script_name: "", transparency: 0, rotate: false, background: '#FFFFFF',
                    depthMethod: "dflt", mouse_tmout: 50, trans_radial: 0, trans_z: 0 };
 
       var _opt = JSROOT.GetUrlOption('_grid');
@@ -520,7 +520,7 @@
       if (d.check("HSCENE")) res.highlight_scene = true;
 
       if (d.check("WIREFRAME") || d.check("WIRE")) res.wireframe = true;
-      if (d.check("ROTATE")) res.autoRotate = true;
+      if (d.check("ROTATE")) res.rotate = true;
 
       if (d.check("INVX") || d.check("INVERTX")) res.scale.x = -1;
       if (d.check("INVY") || d.check("INVERTY")) res.scale.y = -1;
@@ -661,8 +661,8 @@
          alert("Position (as url): &opt=" + this.produceCameraUrl());
       });
       if (!this.ctrl.project)
-         menu.addchk(this.ctrl.autoRotate, "Autorotate", function() {
-            this.setAutoRotate(!this.ctrl.autoRotate);
+         menu.addchk(this.ctrl.rotate, "Autorotate", function() {
+            this.setAutoRotate(!this.ctrl.rotate);
          });
       menu.addchk(this.ctrl.select_in_view, "Select in view", function() {
          this.ctrl.select_in_view = !this.ctrl.select_in_view;
@@ -746,6 +746,11 @@
       // axes drawing always triggers rendering
       if (arg != "norender")
          this.drawSimpleAxis();
+   }
+
+   /** @brief Should be called when autorotate property changed @private */
+   TGeoPainter.prototype.changedAutoRotate = function() {
+      this.autorotate(2.5);
    }
 
    /** Method should be called when changing axes drawing @private */
@@ -892,8 +897,8 @@
                     .onChange(this.changedAxes.bind(this));
 
       if (!this.ctrl.project)
-         appearance.add(this.ctrl, 'autoRotate').name("Autorotate")
-                      .listen().onChange(this.setAutoRotate.bind(this));
+         appearance.add(this.ctrl, 'rotate').name("Autorotate")
+                      .listen().onChange(this.changedAutoRotate.bind(this));
 
       appearance.add(this, 'focusCamera').name('Reset camera position');
 
@@ -2460,10 +2465,10 @@
 
          var current = new Date();
 
-         if ( painter.ctrl.autoRotate ) requestAnimationFrame( animate );
+         if ( painter.ctrl.rotate ) requestAnimationFrame( animate );
 
          if (painter._controls) {
-            painter._controls.autoRotate = painter.ctrl.autoRotate;
+            painter._controls.autoRotate = painter.ctrl.rotate;
             painter._controls.autoRotateSpeed = rotSpeed * ( current.getTime() - last.getTime() ) / 16.6666;
             painter._controls.update();
          }
@@ -3580,7 +3585,7 @@
    /** @brief Set auto rotate mode */
    TGeoPainter.prototype.setAutoRotate = function(on) {
       if (this.ctrl.project) return;
-      if (on !== undefined) this.ctrl.autoRotate = on;
+      if (on !== undefined) this.ctrl.rotate = on;
       this.autorotate(2.5);
    }
 
@@ -3787,7 +3792,7 @@
             this.ctrl.highlight_scene = this.ctrl.highlight;
 
          // if rotation was enabled, do it
-         if (this._webgl && this.ctrl.autoRotate && !this.ctrl.project) this.autorotate(2.5);
+         if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
          if (!this._usesvg && this.ctrl.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
       }
 
