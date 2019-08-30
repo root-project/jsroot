@@ -413,7 +413,7 @@
       if (typeof opt != "string") opt = "";
 
       var res = { _grid: false, _bound: false, _debug: false,
-                  _full: false, _axis: false, _axis_center: false,
+                  _full: false, _axis: 0,
                   _count: false, wireframe: false,
                    scale: new THREE.Vector3(1,1,1), zoom: 1.0, rotatey: 0, rotatez: 0,
                    more: 1, maxlimit: 100000,
@@ -534,7 +534,7 @@
       if (d.check('OPACITY',true))
          res.transparency = 1 - d.partAsInt(0,100)/100;
 
-      if (d.check("AXISCENTER") || d.check("AC")) { res._axis = true; res._axis_center = true; }
+      if (d.check("AXISCENTER") || d.check("AC")) res._axis = 2;
 
       if (d.check('TRR',true)) res.trans_radial = d.partAsInt()/100;
       if (d.check('TRZ',true)) res.trans_z = d.partAsInt()/100;
@@ -745,12 +745,15 @@
 
       // axes drawing always triggers rendering
       if (arg != "norender")
-         this.drawSimpleAxis(this.ctrl._axis);
+         this.drawSimpleAxis();
    }
 
    /** Method should be called when changing axes drawing @private */
-   TGeoPainter.prototype.changedAxesDraw = function() {
-      this.drawSimpleAxis(this.ctrl._axis);
+   TGeoPainter.prototype.changedAxes = function() {
+      if (typeof this.ctrl._axis == 'string')
+         this.ctrl._axis = parseInt(this.ctrl._axis);
+
+      this.drawSimpleAxis();
    }
 
    /** Method should be called to change background color @private */
@@ -885,16 +888,8 @@
                      .listen().onChange(this.changedWireFrame.bind(this));
 
       this.ctrl._axis_cfg = 0;
-      if (this.ctrl._axis) this.ctrl._axis_cfg = this.ctrl._axis_center ? 2 : 1;
-      appearance.add(this.ctrl, '_axis_cfg', { "none" : 0, "show": 1, "center": 2}).name('Axes')
-                    .onChange(function() {
-                       switch (parseInt(this.ctrl._axis_cfg)) {
-                          case 0: this.ctrl._axis = this.ctrl._axis_center = false; break;
-                          case 2: this.ctrl._axis = this.ctrl._axis_center = true; break;
-                          default: this.ctrl._axis = true; this.ctrl._axis_center = false; break;
-                       }
-                       this.changedAxesDraw();
-                    }.bind(this));
+      appearance.add(this.ctrl, '_axis', { "none" : 0, "show": 1, "center": 2}).name('Axes')
+                    .onChange(this.changedAxes.bind(this));
 
       if (!this.ctrl.project)
          appearance.add(this.ctrl, 'autoRotate').name("Autorotate")
@@ -3395,11 +3390,11 @@
          this._slave_painters[k].startDrawGeometry();
    }
 
-   /** Fully redraw axes, if on = true */
-   TGeoPainter.prototype.drawSimpleAxis = function(on, norender) {
+   /** Draw axes if configured, otherwise just remove completely */
+   TGeoPainter.prototype.drawSimpleAxis = function(norender) {
       this.getExtrasContainer('delete', 'axis');
 
-      if (!on)
+      if (!this.ctrl._axis)
          return norender ? null : this.Render3D();
 
       var box = this.getGeomBoundingBox(this._toplevel);
@@ -3415,7 +3410,7 @@
           yup = [this.ctrl._yup, this.ctrl._yup, this.ctrl._yup],
           numaxis = 3;
 
-      if (this.ctrl._axis_center)
+      if (this.ctrl._axis == 2)
          for (var naxis=0;naxis<3;++naxis) {
             var name = names[naxis];
             if ((box.min[name]<=0) && (box.max[name]>=0)) continue;
@@ -3458,7 +3453,7 @@
            case 2: buf[5] = box.max.z; lbl += " " + labels[2]; break;
          }
 
-         if (this.ctrl._axis_center)
+         if (this.ctrl._axis == 2)
             for (var k=0;k<6;++k)
                if ((k % 3) !== naxis) buf[k] = center[k%3];
 
@@ -3470,7 +3465,7 @@
          var textMaterial = new THREE.MeshBasicMaterial({ color: axiscol });
 
          if ((center[naxis]===0) && (center[naxis]>=box.min[name]) && (center[naxis]<=box.max[name]))
-           if (!this.ctrl._axis_center || (naxis===0)) {
+           if ((this.ctrl._axis != 2) || (naxis===0)) {
                var geom = ortho ? new THREE.CircleBufferGeometry(text_size*0.25) :
                                   new THREE.SphereBufferGeometry(text_size*0.25);
                mesh = new THREE.Mesh(geom, textMaterial);
@@ -3573,13 +3568,13 @@
       this.setAxesDraw("toggle");
    }
 
-   /** @brief Set axes visibility */
+   /** @brief Set axes visibility 0 - off, 1 - on, 2 - centered */
    TGeoPainter.prototype.setAxesDraw = function(on) {
       if (on === "toggle")
-         this.ctrl._axis = !this.ctrl._axis;
+         this.ctrl._axis = this.ctrl._axis ? 0 : 1;
       else
-         this.ctrl._axis = !!on;
-      this.drawSimpleAxis(this.ctrl._axis);
+         this.ctrl._axis = (typeof on == 'number') ? on : (on ? 1 : 0);
+      this.drawSimpleAxis();
    }
 
    /** @brief Set auto rotate mode */
@@ -3755,7 +3750,7 @@
          this.changedTransformation("norender");
 
       if (full_redraw && this.ctrl._axis)
-         this.drawSimpleAxis(true, true);
+         this.drawSimpleAxis(true);
 
       this._scene.overrideMaterial = null;
 
