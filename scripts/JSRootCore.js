@@ -841,7 +841,7 @@
     *    - "head" - returns request itself, uses "HEAD" method
     *
     * Result will be returned to the callback function.
-    * Request will be set as this pointer in the callback.
+    * Request will be set as *this* pointer in the callback.
     * If failed, request returns null
     *
     * @param {string} url - URL for the request
@@ -859,18 +859,9 @@
 
    JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
 
-      var xhr = null;
-      if (JSROOT.nodejs) {
-         var nodejs_class = require("xhr2");
-         xhr = new nodejs_class();
-      } else {
-         xhr = new XMLHttpRequest();
-      }
+      var xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
 
-      function callback(res) {
-         // we set pointer on request when calling callback
-         if (typeof user_call_back == 'function') user_call_back.call(xhr, res);
-      }
+      xhr.http_callback = (typeof user_call_back == 'function') ? user_call_back.bind(xhr) : function() {};
 
       if (!kind) kind = "buf";
 
@@ -885,7 +876,7 @@
                xhr.did_abort = true;
                xhr.abort();
                console.warn('Server sends more bytes ' + oEvent.loaded + ' than expected ' + xhr.expected_size + ' Abort I/O operation');
-               callback(null);
+               xhr.http_callback(null);
             }
          });
 
@@ -899,7 +890,7 @@
                xhr.did_abort = true;
                xhr.abort();
                console.warn('Server response size ' + len + ' larger than expected ' + xhr.expected_size + ' Abort I/O operation');
-               return callback(null);
+               return xhr.http_callback(null);
             }
          }
 
@@ -908,7 +899,7 @@
          if ((xhr.status != 200) && (xhr.status != 206) && !JSROOT.browser.qt5 &&
              // in these special cases browsers not always set status
              !((xhr.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
-            return callback(null);
+            return xhr.http_callback(null);
          }
 
          if (JSROOT.nodejs && (method == "GET") && (kind === "object") &&
@@ -916,21 +907,21 @@
             // special handling of gzipped JSON objects in Node.js
             var zlib = require('zlib'),
                 str = zlib.unzipSync(Buffer.from(xhr.response));
-            return callback(JSROOT.parse(str));
+            return xhr.http_callback(JSROOT.parse(str));
          }
 
          switch(kind) {
-            case "xml": return callback(xhr.responseXML);
+            case "xml": return xhr.http_callback(xhr.responseXML);
             case "posttext":
-            case "text": return callback(xhr.responseText);
-            case "object": return callback(JSROOT.parse(xhr.responseText));
-            case "multi": return callback(JSROOT.parse_multi(xhr.responseText));
-            case "head": return callback(xhr);
+            case "text": return xhr.http_callback(xhr.responseText);
+            case "object": return xhr.http_callback(JSROOT.parse(xhr.responseText));
+            case "multi": return xhr.http_callback(JSROOT.parse_multi(xhr.responseText));
+            case "head": return xhr.http_callback(xhr);
          }
 
          // if no response type is supported, return as text (most probably, will fail)
          if (! ('responseType' in xhr))
-            return callback(xhr.responseText);
+            return xhr.http_callback(xhr.responseText);
 
          if ((kind=="bin") && ('byteLength' in xhr.response)) {
             // if string representation in requested - provide it
@@ -939,10 +930,10 @@
             for (var i = 0; i < u8Arr.length; ++i)
                filecontent += String.fromCharCode(u8Arr[i]);
 
-            return callback(filecontent);
+            return xhr.http_callback(filecontent);
          }
 
-         callback(xhr.response);
+         xhr.http_callback(xhr.response);
       }
 
       xhr.open(method, url, async);
