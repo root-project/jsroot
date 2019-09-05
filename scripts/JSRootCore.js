@@ -870,78 +870,81 @@
       if (kind === "head") method = "HEAD"; else
       if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
 
+      xhr.kind = kind;
+
       if (JSROOT.wrong_http_response_handling && (method == "GET") && (typeof xhr.addEventListener === 'function'))
          xhr.addEventListener("progress", function(oEvent) {
-            if (oEvent.lengthComputable && xhr.expected_size && (oEvent.loaded > xhr.expected_size)) {
-               xhr.did_abort = true;
-               xhr.abort();
-               console.warn('Server sends more bytes ' + oEvent.loaded + ' than expected ' + xhr.expected_size + ' Abort I/O operation');
-               xhr.http_callback(null);
+            if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
+               this.did_abort = true;
+               this.abort();
+               console.warn('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation');
+               this.http_callback(null);
             }
-         });
+         }.bind(xhr));
 
       xhr.onreadystatechange = function() {
 
-         if (xhr.did_abort) return;
+         if (this.did_abort) return;
 
-         if ((xhr.readyState === 2) && xhr.expected_size) {
-            var len = parseInt(xhr.getResponseHeader("Content-Length"));
-            if (!isNaN(len) && (len>xhr.expected_size) && !JSROOT.wrong_http_response_handling) {
-               xhr.did_abort = true;
-               xhr.abort();
-               console.warn('Server response size ' + len + ' larger than expected ' + xhr.expected_size + ' Abort I/O operation');
-               return xhr.http_callback(null);
+         if ((this.readyState === 2) && this.expected_size) {
+            var len = parseInt(this.getResponseHeader("Content-Length"));
+            if (!isNaN(len) && (len>this.expected_size) && !JSROOT.wrong_http_response_handling) {
+               this.did_abort = true;
+               this.abort();
+               console.warn('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation');
+               return this.http_callback(null);
             }
          }
 
-         if (xhr.readyState != 4) return;
+         if (this.readyState != 4) return;
 
-         if ((xhr.status != 200) && (xhr.status != 206) && !JSROOT.browser.qt5 &&
+         if ((this.status != 200) && (this.status != 206) && !JSROOT.browser.qt5 &&
              // in these special cases browsers not always set status
-             !((xhr.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
-            return xhr.http_callback(null);
+             !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
+            return this.http_callback(null);
          }
 
-         if (JSROOT.nodejs && (method == "GET") && (kind === "object") &&
-             (xhr.responseType == "arraybuffer") && (xhr.getResponseHeader("content-encoding") == "gzip")) {
+         if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip")) {
             // special handling of gzipped JSON objects in Node.js
             var zlib = require('zlib'),
-                str = zlib.unzipSync(Buffer.from(xhr.response));
-            return xhr.http_callback(JSROOT.parse(str));
+                str = zlib.unzipSync(Buffer.from(this.response));
+            return this.http_callback(JSROOT.parse(str));
          }
 
-         switch(kind) {
-            case "xml": return xhr.http_callback(xhr.responseXML);
+         switch(this.kind) {
+            case "xml": return this.http_callback(this.responseXML);
             case "posttext":
-            case "text": return xhr.http_callback(xhr.responseText);
-            case "object": return xhr.http_callback(JSROOT.parse(xhr.responseText));
-            case "multi": return xhr.http_callback(JSROOT.parse_multi(xhr.responseText));
-            case "head": return xhr.http_callback(xhr);
+            case "text": return this.http_callback(this.responseText);
+            case "object": return this.http_callback(JSROOT.parse(this.responseText));
+            case "multi": return this.http_callback(JSROOT.parse_multi(this.responseText));
+            case "head": return this.http_callback(this);
          }
 
          // if no response type is supported, return as text (most probably, will fail)
-         if (! ('responseType' in xhr))
-            return xhr.http_callback(xhr.responseText);
+         if (this.responseType === undefined)
+            return this.http_callback(this.responseText);
 
-         if ((kind=="bin") && ('byteLength' in xhr.response)) {
+         if ((this.kind == "bin") && ('byteLength' in this.response)) {
             // if string representation in requested - provide it
 
-            var filecontent = "", u8Arr = new Uint8Array(xhr.response);
+            var filecontent = "", u8Arr = new Uint8Array(this.response);
             for (var i = 0; i < u8Arr.length; ++i)
                filecontent += String.fromCharCode(u8Arr[i]);
 
-            return xhr.http_callback(filecontent);
+            return this.http_callback(filecontent);
          }
 
-         xhr.http_callback(xhr.response);
+         this.http_callback(this.response);
       }
 
       xhr.open(method, url, async);
 
       if ((kind == "bin") || (kind == "buf")) xhr.responseType = 'arraybuffer';
 
-      if (JSROOT.nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0))
+      if (JSROOT.nodejs && (method == "GET") && (kind === "object") && (url.indexOf('.json.gz')>0)) {
+         xhr.nodejs_checkzip = true;
          xhr.responseType = 'arraybuffer';
+      }
 
       return xhr;
    }
