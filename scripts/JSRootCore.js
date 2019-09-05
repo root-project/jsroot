@@ -95,14 +95,15 @@
 
    "use strict";
 
-   JSROOT.version = "dev 30/08/2019";
+   JSROOT.version = "dev 5/09/2019";
 
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script
-   JSROOT.bower_dir = null; // when specified, use standard libs from bower location
-   JSROOT.nocache = false;
-   JSROOT.sources = ['core']; // indicates which major sources were loaded
+   JSROOT.bower_dir = null;     // when specified, use standard libs from bower location
+   JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
+   JSROOT.wrong_http_response_handling = false; // wehn configured, try to handle wrong content-length response from server
+   JSROOT.sources = ['core'];   // indicates which major sources were loaded
 
    JSROOT.id_counter = 0;
    if (JSROOT.BatchMode === undefined)
@@ -878,13 +879,23 @@
       if (kind === "head") method = "HEAD"; else
       if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
 
+      if (JSROOT.wrong_http_response_handling && (method == "GET") && (typeof xhr.addEventListener === 'function'))
+         xhr.addEventListener("progress", function(oEvent) {
+            if (oEvent.lengthComputable && xhr.expected_size && (oEvent.loaded > xhr.expected_size)) {
+               xhr.did_abort = true;
+               xhr.abort();
+               console.warn('Server sends more bytes ' + oEvent.loaded + ' than expected ' + xhr.expected_size + ' Abort I/O operation');
+               callback(null);
+            }
+         });
+
       xhr.onreadystatechange = function() {
 
          if (xhr.did_abort) return;
 
          if ((xhr.readyState === 2) && xhr.expected_size) {
             var len = parseInt(xhr.getResponseHeader("Content-Length"));
-            if (!isNaN(len) && (len>xhr.expected_size)) {
+            if (!isNaN(len) && (len>xhr.expected_size) && !JSROOT.wrong_http_response_handling) {
                xhr.did_abort = true;
                xhr.abort();
                console.warn('Server response size ' + len + ' larger than expected ' + xhr.expected_size + ' Abort I/O operation');
@@ -2303,7 +2314,9 @@
 
       var src = JSROOT.source_fullpath;
 
-      if (JSROOT.GetUrlOption('nocache', src)!=null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      if (JSROOT.GetUrlOption('nocache', src) != null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
+      if ((JSROOT.GetUrlOption('wrong_http_response', src) != null) || (JSROOT.GetUrlOption('wrong_http_response') != null))
+         JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
       if (JSROOT.GetUrlOption('gui', src) !== null)
          return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
