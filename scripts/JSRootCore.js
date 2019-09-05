@@ -874,7 +874,7 @@
 
       if (!kind) kind = "buf";
 
-      var pthis = this, method = "GET", async = true, p = kind.indexOf(";sync");
+      var method = "GET", async = true, p = kind.indexOf(";sync");
       if (p>0) { kind = kind.substr(0,p); async = false; }
       if (kind === "head") method = "HEAD"; else
       if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
@@ -916,15 +916,15 @@
             // special handling of gzipped JSON objects in Node.js
             var zlib = require('zlib'),
                 str = zlib.unzipSync(Buffer.from(xhr.response));
-            return callback(pthis.parse(str));
+            return callback(JSROOT.parse(str));
          }
 
          switch(kind) {
             case "xml": return callback(xhr.responseXML);
             case "posttext":
             case "text": return callback(xhr.responseText);
-            case "object": return callback(pthis.parse(xhr.responseText));
-            case "multi": return callback(pthis.parse_multi(xhr.responseText));
+            case "object": return callback(JSROOT.parse(xhr.responseText));
+            case "multi": return callback(JSROOT.parse_multi(xhr.responseText));
             case "head": return callback(xhr);
          }
 
