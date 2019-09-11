@@ -4135,7 +4135,7 @@
       if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          var maxlvl = 1;
          opt = opt.substr(4);
-         if (opt[0] == "x") { maxlvl = 999; opt = opt.substr(1); }
+         if (opt[0] == "x") {  maxlvl = 999; opt = opt.substr(1) + "_vislvl999"; }
          obj = JSROOT.GEO.buildCompositeVolume(shape, maxlvl);
       }
 
@@ -4187,27 +4187,28 @@
 
       var vol = JSROOT.Create("TGeoVolume");
       JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
+      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
 
       if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
          vol.fName = side;
-         vol.fLineColor = this.$comp_col_cnt++ % 8 + 2;
+         vol.fLineColor = (this.$comp_col_cnt++ % 8) + 2;
          vol.fShape = comp;
          return vol;
       }
 
       if (side) side += "/";
-
-      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
       vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
 
       var node1 = JSROOT.Create("TGeoNodeMatrix");
+      JSROOT.GEO.SetBit(node1, JSROOT.GEO.BITS.kVisThis, true);
       JSROOT.GEO.SetBit(node1, JSROOT.GEO.BITS.kVisDaughters, true);
       node1.fName = "Left";
       node1.fMatrix = comp.fNode.fLeftMat;
       node1.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, side + "Left");
 
       var node2 = JSROOT.Create("TGeoNodeMatrix");
+      JSROOT.GEO.SetBit(node2, JSROOT.GEO.BITS.kVisThis, true);
       JSROOT.GEO.SetBit(node2, JSROOT.GEO.BITS.kVisDaughters, true);
       node2.fName = "Right";
       node2.fMatrix = comp.fNode.fRightMat;
