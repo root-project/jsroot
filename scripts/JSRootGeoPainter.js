@@ -4131,9 +4131,9 @@
          obj = null;
       }
 
-      if (opt && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
+      if ((typeof opt == "string") && opt.indexOf("comp")==0 && shape && (shape._typename == 'TGeoCompositeShape') && shape.fNode) {
          opt = opt.substr(4);
-         obj = JSROOT.GEO.buildCompositeVolume(shape);
+         obj = JSROOT.GEO.buildCompositeVolume(shape, 1);
       }
 
       if (!obj && shape)
@@ -4174,10 +4174,12 @@
 
    /** Function used to build hierarchy of elements of composite shapes
     * @private */
-   JSROOT.GEO.buildCompositeVolume = function(comp, side) {
+   JSROOT.GEO.buildCompositeVolume = function(comp, maxlvl, side) {
+
+      if (maxlvl === undefined) maxlvl = 1;
 
       var vol = JSROOT.Create("TGeoVolume");
-      if (side && (comp._typename!=='TGeoCompositeShape')) {
+      if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
          vol.fName = side;
          JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
          vol.fLineColor = (side=="Left"? 2 : 3);
@@ -4192,12 +4194,12 @@
       var node1 = JSROOT.Create("TGeoNodeMatrix");
       node1.fName = "Left";
       node1.fMatrix = comp.fNode.fLeftMat;
-      node1.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fLeft, "Left");
+      node1.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fLeft, maxlvl-1, "Left");
 
       var node2 = JSROOT.Create("TGeoNodeMatrix");
       node2.fName = "Right";
       node2.fMatrix = comp.fNode.fRightMat;
-      node2.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fRight, "Right");
+      node2.fVolume = JSROOT.GEO.buildCompositeVolume(comp.fNode.fRight, maxlvl-1, "Right");
 
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);
