@@ -4180,19 +4180,23 @@
    JSROOT.GEO.buildCompositeVolume = function(comp, maxlvl, side) {
 
       if (maxlvl === undefined) maxlvl = 1;
+      if (!side) {
+         this.$comp_col_cnt = 0;
+         side = "";
+      }
 
       var vol = JSROOT.Create("TGeoVolume");
+      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
+
       if ((side && (comp._typename!=='TGeoCompositeShape')) || (maxlvl<=0)) {
          vol.fName = side;
-         JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
-         vol.fLineColor = (side=="Left"? 2 : 3);
+         vol.fLineColor = this.$comp_col_cnt++ % 8 + 2;
          vol.fShape = comp;
          return vol;
       }
 
-      if (!side) side = ""; else side += "/";
+      if (side) side += "/";
 
-      JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisThis, true);
       JSROOT.GEO.SetBit(vol, JSROOT.GEO.BITS.kVisDaughters, true);
       vol.$geoh = true; // workaround, let know browser that we are in volumes hierarchy
       vol.fName = "";
@@ -4212,6 +4216,8 @@
       vol.fNodes = JSROOT.Create("TList");
       vol.fNodes.Add(node1);
       vol.fNodes.Add(node2);
+
+      if (!side) delete this.$comp_col_cnt;
 
       return vol;
    }
