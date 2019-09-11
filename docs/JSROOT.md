@@ -334,12 +334,13 @@ Following draw options could be specified (separated by semicolon or ';'):
    - dpnt - use distance to shape center as rendering order
    - dsize - use volume size as rendering order
    - ddflt - let three.js to calculate rendering order
+   - comp - show left and right components of TGeoCompositeShape
+   - compx - show all sub-components of TGeoCompositeShape
 
 In the URL string several global settings can be changed:
 
    - geosegm - grads per segment is cylindrical shapes, default is 6
    - geocomp - compress results of composite shape production, default is true
-
 
 It is possible to display only part of geometry model. For instance, one could select sub-item like:
 
