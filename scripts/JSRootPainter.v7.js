@@ -23,34 +23,6 @@
 
    JSROOT.v7 = {}; // placeholder for v7-relevant code
 
-   JSROOT.TObjectPainter.prototype.GetCoordinate = function(pnt) {
-      var res = { x: 0, y: 0 };
-
-      if (!pnt) return res;
-
-      var w = this.pad_width(),
-          h = this.pad_height(),
-          pp = this.pad_painter();
-
-      function CalcCoord(val, coord, grsize) {
-         var res = val.fNormal.fVal * grsize + val.fPixel.fVal;
-
-         if (val.fUser.fVal)
-            res += (val.fUser.fVal - coord.fBegin) / (coord.fEnd - coord.fBegin) * grsize;
-
-         return res;
-      }
-
-      if (!pp.pad_frame) {
-         res.x = pnt.fHoriz.fNormal.fVal*w;
-         res.y = h - pnt.fVert.fNormal.fVal*h;
-      } else {
-         res.x = CalcCoord(pnt.fHoriz, pp.pad_frame.fUserCoord[0], w);
-         res.y = h - CalcCoord(pnt.fVert, pp.pad_frame.fUserCoord[1], h);
-      }
-      return res;
-   }
-
    function TAxisPainter(axis, embedded) {
       JSROOT.TObjectPainter.call(this, axis);
 
@@ -3823,6 +3795,53 @@
       btns.attr("transform","translate("+btns_x+","+btns_y+")");
    }
 
+   TPadPainter.prototype.GetNewOpt = function(attr, name, dflt) {
+      if (!attr || !attr.map || !attr.map.m) return dflt;
+
+      var value = attr.map.m[name];
+      return value ? value.v : dflt;
+   }
+
+   TPadPainter.prototype.GetNewColor = function(attr, name, dflt) {
+      var rgb = this.GetNewOpt(attr, name + "_rgb", ""),
+          alfa = this.GetNewOpt(attr, name + "_alfa", "");
+
+      if (rgb && alfa)
+         return "rgba(" + rgb + "," + alfa + ")";
+
+      return rgb ? "rgb(" + rgb + ")" : dflt;
+   }
+
+   TPadPainter.prototype.GetCoordinate = function(attr, prefix) {
+      var res = { x: 0, y: 0 };
+
+      if (!attr || !prefix) return res;
+
+      var w = this.pad_width(),
+          h = this.pad_height(),
+          h_norm = this.GetNewOpt(attr, prefix + "_horiz_normal", 0),
+          h_user = this.GetNewOpt(attr, prefix + "_horiz_user"),
+          h_pixel = this.GetNewOpt(attr, prefix + "_horiz_pixel", 0),
+          v_norm = this.GetNewOpt(attr, prefix + "_vert_normal", 0),
+          v_user = this.GetNewOpt(attr, prefix + "_vert_user"),
+          v_pixel = this.GetNewOpt(attr, prefix + "_vert_pixel", 0);
+
+      if (!this.pad_frame || (h_user === undefined)) {
+         res.x = h_norm * w + h_pixel;
+      } else {
+         // TO DO - user coordiantes
+      }
+
+      if (!this.pad_frame || (v_user === undefined)) {
+         res.y = h - v_norm * h - v_pixel;
+      } else {
+         //  TO DO - user coordiantes
+      }
+
+      return res;
+   }
+
+
 //   TPadPainter.prototype.DrawingReady = function(res_painter) {
 //      var main = this.main_painter();
 //      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
@@ -4228,23 +4247,6 @@
 
    TCanvasPainter.prototype.HasEventStatus = function() {
       return this.has_event_status;
-   }
-
-   TCanvasPainter.prototype.GetNewOpt = function(attr, name, dflt) {
-      if (!attr || !attr.map || !attr.map.m) return dflt;
-
-      var value = attr.map.m[name];
-      return value ? value.v : dflt;
-   }
-
-   TCanvasPainter.prototype.GetNewColor = function(attr, name, dflt) {
-      var rgb = this.GetNewOpt(attr, name + "_rgb", ""),
-          alfa = this.GetNewOpt(attr, name + "_alfa", "");
-
-      if (rgb && alfa)
-         return "rgba(" + rgb + "," + alfa + ")";
-
-      return rgb ? "rgb(" + rgb + ")" : dflt;
    }
 
    function drawCanvas(divid, can, opt) {
