@@ -21,7 +21,7 @@
 
    JSROOT.sources.push("v7");
 
-   JSROOT.v7 = {}; // placeholder for all v7-relevant code
+   JSROOT.v7 = {}; // placeholder for v7-relevant code
 
    JSROOT.TObjectPainter.prototype.GetCoordinate = function(pnt) {
       var res = { x: 0, y: 0 };
@@ -3251,8 +3251,12 @@
                   handle.func("workaround"); // call function with "workaround" as argument
                });
 
-         // here the case of normal drawing, can be improved
-         objpainter = JSROOT.draw(this.divid, snap.fObject, snap.fOption || "", handle);
+         if (snap._typename === "ROOT::Experimental::RDrawableDisplayItem") {
+            objpainter = JSROOT.draw(this.divid, snap.fDrawable, snap.fOption || "", handle);
+         } else {
+            // here the case of normal drawing, can be improved
+            objpainter = JSROOT.draw(this.divid, snap.fObject, snap.fOption || "", handle);
+         }
 
          if (!handle.completed) return; // if callback will be invoked, break while loop
       }
@@ -4226,22 +4230,21 @@
       return this.has_event_status;
    }
 
-   TCanvasPainter.prototype.GetNewOpt = function(opts, name, dflt) {
-      if (!opts || !opts.fHolderIO || !name) return dflt;
+   TCanvasPainter.prototype.GetNewOpt = function(attr, name, dflt) {
+      if (!attr || !attr.map || !attr.map.m) return dflt;
 
-      var map = opts.fHolderIO.fAttrNameVals;
-      if (!map || !map.length) return dflt;
-
-      for (var i=0; i<map.length; ++i)
-         if (map[i].first === name)
-            return map[i].second;
-      return dflt;
+      var value = attr.map.m[name];
+      return value ? value.v : dflt;
    }
 
-   TCanvasPainter.prototype.GetNewColor = function(opts, name, dflt) {
-      var val = this.GetNewOpt(opts,name,dflt);
-      // can convert color, but also can be used as is
-      return val;
+   TCanvasPainter.prototype.GetNewColor = function(attr, name, dflt) {
+      var rgb = this.GetNewOpt(attr, name + "_rgb", ""),
+          alfa = this.GetNewOpt(attr, name + "_alfa", "");
+
+      if (rgb && alfa)
+         return "rgba(" + rgb + "," + alfa + ")";
+
+      return rgb ? "rgb(" + rgb + ")" : dflt;
    }
 
    function drawCanvas(divid, can, opt) {
