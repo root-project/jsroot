@@ -84,14 +84,13 @@
        var box          = this.GetObject(),
            attr         = box.fAttr,
            pp           = this.pad_painter(),
-           line_width   = pp.GetNewOpt(attr, "box.border.width", 1),
-           line_opacity = pp.GetNewOpt(attr, "box.border.opacity", 1),
-           line_style   = pp.GetNewOpt(attr, "box.border.style", 1),
-           line_color   = pp.GetNewColor(attr, "box.border.color", "black"),
-           fill_color   = pp.GetNewColor(attr, "box.fill.color", "white"),
-           fill_style   = pp.GetNewOpt(attr, "box.fill.style", 1),
-           round_width  = pp.GetNewOpt(attr, "box.round.width", 0),
-           round_height = pp.GetNewOpt(attr, "box.round.height", 0),
+           line_width   = pp.GetNewOpt(attr, "box_border_width", 1),
+           line_style   = pp.GetNewOpt(attr, "box_border_style", 1),
+           line_color   = pp.GetNewColor(attr, "box_border_color", "black"),
+           fill_color   = pp.GetNewColor(attr, "box_fill_color", "white"),
+           fill_style   = pp.GetNewOpt(attr, "box_fill_style", 1),
+           round_width  = pp.GetNewOpt(attr, "box_round_width", 0), // not yet exists
+           round_height = pp.GetNewOpt(attr, "box_round_height", 0), // not yet exists
            p1           = pp.GetCoordinate(attr, "p1"),
            p2           = pp.GetCoordinate(attr, "p2");
 
@@ -109,7 +108,6 @@
         .attr("ry", round_height)
         .style("stroke", line_color)
         .attr("stroke-width", line_width)
-        .attr("stroke-opacity", line_opacity)
         .attr("fill", fill_color)
         .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style]);
    }

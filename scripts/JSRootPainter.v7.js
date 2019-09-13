@@ -3182,7 +3182,8 @@
             if (snap._typename == "ROOT::Experimental::RPadDisplayItem")  // subpad
                return objpainter.RedrawPadSnap(snap, draw_callback);
 
-            if (objpainter.UpdateObject(snap.fObject, snap.fOption || "")) objpainter.Redraw();
+            if (objpainter.UpdateObject(snap.fDrawable || snap.fObject, snap.fOption || ""))
+               objpainter.Redraw();
 
             continue; // call next
          }
@@ -3223,12 +3224,8 @@
                   handle.func("workaround"); // call function with "workaround" as argument
                });
 
-         if (snap._typename === "ROOT::Experimental::RDrawableDisplayItem") {
-            objpainter = JSROOT.draw(this.divid, snap.fDrawable, snap.fOption || "", handle);
-         } else {
-            // here the case of normal drawing, can be improved
-            objpainter = JSROOT.draw(this.divid, snap.fObject, snap.fOption || "", handle);
-         }
+         // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
+         objpainter = JSROOT.draw(this.divid, snap.fDrawable || snap.fObject, snap.fOption || "", handle);
 
          if (!handle.completed) return; // if callback will be invoked, break while loop
       }
@@ -3804,7 +3801,7 @@
 
    TPadPainter.prototype.GetNewColor = function(attr, name, dflt) {
       var rgb = this.GetNewOpt(attr, name + "_rgb", ""),
-          alfa = this.GetNewOpt(attr, name + "_alfa", "");
+          alfa = this.GetNewOpt(attr, name + "_a", "");
 
       if (rgb && alfa)
          return "rgba(" + rgb + "," + alfa + ")";
