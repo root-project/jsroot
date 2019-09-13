@@ -2780,11 +2780,11 @@
           w = width, h = height, x = 0, y = 0,
           svg_pad = null, svg_rect = null, btns = null;
 
-      if (this.pad && this.pad.fDrawOpts && this.pad.fSize) {
-         x = Math.round(width * this.pad.fPos.fHoriz.fNormal.fVal);
-         y = Math.round(height * this.pad.fPos.fVert.fNormal.fVal);
-         w = Math.round(width * this.pad.fSize.fHoriz.fNormal.fVal);
-         h = Math.round(height * this.pad.fSize.fVert.fNormal.fVal);
+      if (this.pad && this.pad.fAttr) {
+         x = Math.round(width * this.GetNewOpt(this.pad.fAttr, "pos_horiz_normal", 0));
+         y = Math.round(height * this.GetNewOpt(this.pad.fAttr, "pos_vert_normal", 0));
+         w = Math.round(width * this.GetNewOpt(this.pad.fAttr, "size_horiz_normal", 1));
+         h = Math.round(width * this.GetNewOpt(this.pad.fAttr, "size_vert_normal", 1));
       }
 
       if (pad_enlarged === this.pad) { w = width; h = height; x = y = 0; }

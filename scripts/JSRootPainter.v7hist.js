@@ -182,14 +182,9 @@
 
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
-      console.log("trying to update RHist");
-
-
       var origin = this.GetObject();
 
       if (obj !== origin) {
-
-         console.log("check types", obj._typename);
 
          if (!this.MatchObjectType(obj)) return false;
 
@@ -200,9 +195,6 @@
 
          // make it easy - copy statistics without axes
          horigin.fStatistics = hobj.fStatistics;
-
-         console.log("reassign static");
-
 
          // special tratement for webcanvas - also name can be changed
          // if (this.snapid !== undefined)
