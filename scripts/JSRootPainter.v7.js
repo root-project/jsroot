@@ -3210,9 +3210,6 @@
             // we select current pad, where all drawing is performed
             var prev_name = padpainter.CurrentPadName(padpainter.this_pad_name);
 
-            console.log('drawing pad', padpainter.this_pad_name, 'prev', prev_name);
-
-
             padpainter.DrawNextSnap(snap.fPrimitives, -1, function() {
                padpainter.CurrentPadName(prev_name);
                draw_callback(padpainter);
@@ -3908,8 +3905,6 @@
 
       // we select current pad, where all drawing is performed
       var prev_name = painter.has_canvas ? painter.CurrentPadName(painter.this_pad_name) : undefined;
-
-      console.log('drawing pad', painter.this_pad_name);
 
       JSROOT.Painter.SelectActivePad({ pp: painter, active: false });
 
