@@ -3264,7 +3264,7 @@
       if (!snap || !snap.fPrimitives) return;
 
       // for the moment only window size attributes are provided
-      var padattr = { fCw: snap.fWinSize[0].fVal, fCh: snap.fWinSize[1].fVal, fTitle: snap.fTitle };
+      var padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
 
       // if canvas size not specified in batch mode, temporary use 900x700 size
       if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
