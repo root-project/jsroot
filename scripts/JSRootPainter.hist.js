@@ -2813,22 +2813,25 @@
       return false;
    }
 
+   /** @summary Show axis status message
+    *
+    * @desc method called normally when mouse enter main object element
+    * @private
+    */
    THistPainter.prototype.ShowAxisStatus = function(axis_name) {
-      // method called normally when mouse enter main object element
 
       var status_func = this.GetShowStatusFunc();
 
       if (!status_func) return;
 
-      var taxis = this.histo ? this.histo['f'+axis_name.toUpperCase()+"axis"] : null;
-
-      var hint_name = axis_name, hint_title = "TAxis";
+      var histo = this.GetHisto(),
+          taxis = histo ? histo['f'+axis_name.toUpperCase()+"axis"] : null,
+          hint_name = axis_name, hint_title = "TAxis",
+          m = d3.mouse(this.svg_frame().node()),
+          id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
 
-      var m = d3.mouse(this.svg_frame().node());
-
-      var id = (axis_name=="x") ? 0 : 1;
       if (this.swap_xy) id = 1-id;
 
       var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
@@ -2837,8 +2840,13 @@
                   m[0].toFixed(0)+","+ m[1].toFixed(0));
    }
 
+   /** @summary Add different interactive handlers
+    *
+    * @desc only first (main) painter in list allowed to add interactive functionality
+    * Most of interactivity now handled by frame
+    * @private
+    */
    THistPainter.prototype.AddInteractive = function() {
-      // only first painter in list allowed to add interactive functionality to the frame
 
       if (this.is_main_painter()) {
          var fp = this.frame_painter();
