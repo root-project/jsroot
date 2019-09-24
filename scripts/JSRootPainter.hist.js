@@ -2356,7 +2356,7 @@
             if (pp && (painters.length > 0))
                pp.CleanPrimitives(function(p) { return painters.indexOf(p) >= 0; });
 
-            // plot new objects on the same pad - will works only for simple drawings already solved
+            // plot new objects on the same pad - will works only for simple drawings already loaded
             if (pp && (newfuncs.length > 0)) {
                var prev_name = pp.has_canvas ? pp.CurrentPadName(pp.this_pad_name) : undefined;
                for (var k=0;k<newfuncs.length;++k)
