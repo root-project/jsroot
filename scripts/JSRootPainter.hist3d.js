@@ -1141,7 +1141,7 @@
       }
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
-      var use16indx = (this.histo.getBin(i2, j2) < 0xFFFF),
+      var use16indx = (histo.getBin(i2, j2) < 0xFFFF),
           levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
 
       // DRAW ALL CUBES
@@ -1223,7 +1223,7 @@
                   k += 24;
                }
 
-               var size = indicies.length, bin_index = this.histo.getBin(i+1, j+1);
+               var size = indicies.length, bin_index = histo.getBin(i+1, j+1);
                if (nobottom) size -= 6;
 
                // array over all vertices of the single bin
@@ -2031,6 +2031,7 @@
    JSROOT.TH2Painter.prototype.DrawError = function() {
       var pthis = this,
           main = this.frame_painter(),
+          histo = this.GetHisto(),
           handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
           zmin = main.grz.domain()[0],
           zmax = main.grz.domain()[1],
@@ -2050,15 +2051,15 @@
              x1 = handle.grx[i];
              x2 = handle.grx[i+1];
              for (j=handle.j1;j<handle.j2;++j) {
-                binz = this.histo.getBinContent(i+1, j+1);
+                binz = histo.getBinContent(i+1, j+1);
                 if ((binz < zmin) || (binz > zmax)) continue;
                 if ((binz===zmin) && check_skip_min()) continue;
 
                 // just count number of segments
                 if (loop===0) { nsegments+=3; continue; }
 
-                bin = this.histo.getBin(i+1,j+1);
-                binerr = this.histo.getBinError(bin);
+                bin = histo.getBin(i+1,j+1);
+                binerr = histo.getBinError(bin);
                 binindx[lindx/18] = bin;
 
                 y1 = handle.gry[j];
