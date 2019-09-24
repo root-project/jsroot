@@ -3559,8 +3559,10 @@
 
       if (this.IsTH1K()) this.ConvertTH1K();
 
+      var histo = this.GetHisto();
+
       if (!when_axis_changed) {
-         this.nbinsx = this.histo.fXaxis.fNbins;
+         this.nbinsx = histo.fXaxis.fNbins;
          this.nbinsy = 0;
          this.CreateAxisFuncs(false);
       }
@@ -3582,8 +3584,8 @@
           profile = this.IsTProfile(), value, err;
 
       for (var i = 0; i < this.nbinsx; ++i) {
-         value = this.histo.getBinContent(i + 1);
-         hsum += profile ? this.histo.fBinEntries[i + 1] : value;
+         value = histo.getBinContent(i + 1);
+         hsum += profile ? histo.fBinEntries[i + 1] : value;
 
          if ((i<left) || (i>=right)) continue;
 
@@ -3594,7 +3596,7 @@
             first = false;
          }
 
-         err = this.options.Error ? this.histo.getBinError(i + 1) : 0;
+         err = this.options.Error ? histo.getBinError(i + 1) : 0;
 
          hmin = Math.min(hmin, value - err);
          hmax = Math.max(hmax, value + err);
@@ -3602,12 +3604,12 @@
 
       // account overflow/underflow bins
       if (profile)
-         hsum += this.histo.fBinEntries[0] + this.histo.fBinEntries[this.nbinsx + 1];
+         hsum += histo.fBinEntries[0] + histo.fBinEntries[this.nbinsx + 1];
       else
-         hsum += this.histo.getBinContent(0) + this.histo.getBinContent(this.nbinsx + 1);
+         hsum += histo.getBinContent(0) + histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
-      if (this.histo.fEntries>1) this.stat_entries = this.histo.fEntries;
+      if (histo.fEntries > 1) this.stat_entries = histo.fEntries;
 
       this.hmin = hmin;
       this.hmax = hmax;
@@ -3674,6 +3676,7 @@
       if (this.draw_content) this.wheel_zoomy = false;
    }
 
+   /** @summary Count histogram statistic @private */
    TH1Painter.prototype.CountStat = function(cond) {
       var profile = this.IsTProfile(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
@@ -3728,12 +3731,14 @@
       return res;
    }
 
+   /** @summary Fill stat box @private */
    TH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
 
       // no need to refill statistic if histogram is dummy
       if (this.IgnoreStatsFill()) return false;
 
-      var data = this.CountStat(),
+      var histo = this.GetHisto(),
+          data = this.CountStat(),
           print_name = dostat % 10,
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
@@ -3768,7 +3773,7 @@
       } else {
 
          if (print_entries > 0)
-            stat.AddText("Entries = " + stat.Format(data.entries,"entries"));
+            stat.AddText("Entries = " + stat.Format(data.entries, "entries"));
 
          if (print_mean > 0)
             stat.AddText("Mean = " + stat.Format(data.meanx));
@@ -3777,13 +3782,13 @@
             stat.AddText("Std Dev = " + stat.Format(data.rmsx));
 
          if (print_under > 0)
-            stat.AddText("Underflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[0] : 0,"entries"));
+            stat.AddText("Underflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[0] : 0, "entries"));
 
          if (print_over > 0)
-            stat.AddText("Overflow = " + stat.Format((this.histo.fArray.length > 0) ? this.histo.fArray[this.histo.fArray.length - 1] : 0,"entries"));
+            stat.AddText("Overflow = " + stat.Format((histo.fArray.length > 0) ? histo.fArray[histo.fArray.length - 1] : 0, "entries"));
 
          if (print_integral > 0)
-            stat.AddText("Integral = " + stat.Format(data.integral,"entries"));
+            stat.AddText("Integral = " + stat.Format(data.integral, "entries"));
 
          if (print_skew > 0)
             stat.AddText("Skew = <not avail>");
@@ -3797,6 +3802,7 @@
       return true;
    }
 
+   /** @summary Draw histogram as bars @private */
    TH1Painter.prototype.DrawBars = function(width, height) {
 
       this.CreateG(true);
@@ -4277,6 +4283,7 @@
       return tips;
    }
 
+   /** @summary Process tooltip event @private */
    TH1Painter.prototype.ProcessTooltip = function(pnt) {
       if ((pnt === null) || !this.draw_content || !this.draw_g || this.options.Mode3D) {
          if (this.draw_g !== null)
@@ -4433,7 +4440,7 @@
          // if bars option used check that bar is not match
          if ((pnt_x < grx1 - gapx) || (pnt_x > grx2 + gapx)) findbin = null; else
          // exclude empty bin if empty bins suppressed
-         if (!this.options.Zero && (this.histo.getBinContent(findbin+1)===0)) findbin = null;
+         if (!this.options.Zero && (histo.getBinContent(findbin+1)===0)) findbin = null;
       }
 
       var ttrect = this.draw_g.select(".tooltip_bin");
@@ -4503,8 +4510,8 @@
       }
 
       if (res.changed)
-         res.user_info = { obj: this.histo,  name: this.histo.fName,
-                           bin: findbin, cont: this.histo.getBinContent(findbin+1),
+         res.user_info = { obj: histo,  name: histo.fName,
+                           bin: findbin, cont: histo.getBinContent(findbin+1),
                            grx: midx, gry: midy };
 
       return res;
@@ -4706,7 +4713,7 @@
          jj1 = Math.round((this.tt_handle.j1 + this.tt_handle.j2)/2); jj2 = jj1+1;
       }
 
-      var canp = this.canv_painter();
+      var canp = this.canv_painter(), histo = this.GetHisto();
 
       if (canp && !canp._readonly && (this.snapid !== undefined)) {
          // this is when projection should be created on the server side
@@ -4722,12 +4729,12 @@
       if (!this.proj_hist) {
          if (this.is_projection == "X") {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsx);
-            JSROOT.extend(this.proj_hist.fXaxis, this.histo.fXaxis);
+            JSROOT.extend(this.proj_hist.fXaxis, histo.fXaxis);
             this.proj_hist.fName = "xproj";
             this.proj_hist.fTitle = "X projection";
          } else {
             this.proj_hist = JSROOT.CreateHistogram("TH1D", this.nbinsy);
-            JSROOT.extend(this.proj_hist.fXaxis, this.histo.fYaxis);
+            JSROOT.extend(this.proj_hist.fXaxis, histo.fYaxis);
             this.proj_hist.fName = "yproj";
             this.proj_hist.fTitle = "Y projection";
          }
@@ -4736,13 +4743,13 @@
       if (this.is_projection == "X") {
          for (var i=0;i<this.nbinsx;++i) {
             var sum=0;
-            for (var j=jj1;j<jj2;++j) sum+=this.histo.getBinContent(i+1,j+1);
+            for (var j=jj1;j<jj2;++j) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(i+1, sum);
          }
       } else {
          for (var j=0;j<this.nbinsy;++j) {
             var sum = 0;
-            for (var i=ii1;i<ii2;++i) sum += this.histo.getBinContent(i+1,j+1);
+            for (var i=ii1;i<ii2;++i) sum += histo.getBinContent(i+1,j+1);
             this.proj_hist.setBinContent(j+1, sum);
          }
       }
