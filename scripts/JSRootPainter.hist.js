@@ -2068,6 +2068,7 @@
       this.nbinsy = 0;
       this.accept_drops = true; // indicate that one can drop other objects like doing Draw("same")
       this.mode3d = false;
+      this.hist_painter_id = JSROOT.id_counter++; // assign unique identifier for hist painter
    }
 
    THistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
@@ -2206,6 +2207,10 @@
       this.createAttLine({ attr: histo, color0: this.options.histoLineColor });
    }
 
+   /** @brief Update histogram object
+    * @param obj - new histogram instance
+    * @param opt - new drawing option (optional)
+    * @returns {Boolean} - true if histogram was successfully updated */
    THistPainter.prototype.UpdateObject = function(obj, opt) {
 
       var histo = this.GetHisto(),
@@ -2232,7 +2237,7 @@
 
          // if (histo.TestBit(JSROOT.TH1StatusBits.kNoStats)) this.ToggleStat();
 
-         // special tratement for webcanvas - also name can be changed
+         // special treatment for webcanvas - also name can be changed
          if (this.snapid !== undefined)
             histo.fName = obj.fName;
 
@@ -2311,17 +2316,52 @@
             histo.fBins = obj.fBins;
          }
 
-         if (obj.fFunctions && this.options.Func) {
-            for (var n=0;n<obj.fFunctions.arr.length;++n) {
-               var func = obj.fFunctions.arr[n];
-               if (!func || !func._typename) continue;
-               var funcpainter = func.fName ? this.FindPainterFor(null, func.fName, func._typename) : null;
-               if (funcpainter) {
-                  funcpainter.UpdateObject(func);
-               } else if ((func._typename != 'TPaletteAxis') && (func._typename != 'TPaveStats')) {
-                  console.log('Get ' + func._typename + ' in histogram functions list, need to use?');
-                  // histo.fFunctions.Add(func,"");
+         if (this.options.Func) {
+
+            var painters = [], newfuncs = [], pp = this.pad_painter(), pid = this.hist_painter_id;
+
+            // find painters associated with histogram
+            if (pp)
+               pp.ForEachPainterInPad(function(objp) {
+                  if (objp.child_painter_id === pid)
+                     painters.push(objp);
+               }, "objects");
+
+            if (obj.fFunctions)
+               for (var n=0;n<obj.fFunctions.arr.length;++n) {
+                  var func = obj.fFunctions.arr[n];
+                  if (!func || !func._typename) continue;
+                  var funcpainter = null, func_indx = -1;
+
+                  // try to find matching object in associated list of painters
+                  for (var i=0;i<painters.length;++i)
+                     if (painters[i].MatchObjectType(func._typename) && (painters[i].GetObject().fName === func.fName)) {
+                        funcpainter = painters[i];
+                        func_indx = i;
+                        break;
+                     }
+                  // or just in generic list of painted objects
+                  if (!funcpainter && func.fName)
+                     funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+
+                  if (funcpainter) {
+                     funcpainter.UpdateObject(func);
+                     if (func_indx >= 0) painters.splice(func_indx, 1);
+                  } else {
+                     newfuncs.push(func);
+                  }
                }
+
+            // remove all function which are not found in new list of primitives
+            if (pp && (painters.length > 0))
+               pp.CleanPrimitives(function(p) { return painters.indexOf(p) >= 0; });
+
+            // plot new objects on the same pad - will works only for simple drawings already solved
+            if (pp && (newfuncs.length > 0)) {
+               var prev_name = pp.has_canvas ? pp.CurrentPadName(pp.this_pad_name) : undefined;
+               for (var k=0;k<newfuncs.length;++k)
+                  JSROOT.draw(this.divid, newfuncs[k],"", function (painter) { painter.child_painter_id = pid; } )
+               pp.CurrentPadName(prev_name);
             }
          }
 
@@ -2686,14 +2726,18 @@
          histo.fFunctions.Add(obj);
    }
 
-   THistPainter.prototype.DrawNextFunction = function(indx, callback) {
-      // method draws next function from the functions list
+   /** Method draws next function from the functions list @private */
+   THistPainter.prototype.DrawNextFunction = function(indx, callback, painter) {
 
-      if (!this.options.Func || !this.histo.fFunctions ||
-          (indx >= this.histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
+      if (painter && (typeof painter == "object"))
+         painter.child_painter_id = this.hist_painter_id;
 
-      var func = this.histo.fFunctions.arr[indx],
-          opt = this.histo.fFunctions.opt[indx],
+      var histo = this.GetHisto();
+      if (!this.options.Func || !histo.fFunctions ||
+          (indx >= histo.fFunctions.arr.length)) return JSROOT.CallBack(callback);
+
+      var func = histo.fFunctions.arr[indx],
+          opt = histo.fFunctions.opt[indx],
           do_draw = false,
           func_painter = this.FindPainterFor(func);
 
@@ -2701,11 +2745,12 @@
       // object will be redraw automatically
       if (func_painter === null) {
          if (func._typename === 'TPaveText' || func._typename === 'TPaveStats') {
-            do_draw = !this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
+            do_draw = !histo.TestBit(JSROOT.TH1StatusBits.kNoStats) && !this.options.NoStat;
          } else if (func._typename === 'TF1') {
             do_draw = !func.TestBit(JSROOT.BIT(9));
-         } else
+         } else {
             do_draw = (func._typename !== 'TPaletteAxis');
+         }
       }
 
       if (do_draw)

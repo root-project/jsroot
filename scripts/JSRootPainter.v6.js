@@ -2798,10 +2798,10 @@
       return indx+2;
    }
 
-   /// call function for each painter
-   /// kind == "all" for all objects (default)
-   /// kind == "pads" only pads and subpads
-   /// kind == "objects" only for object in current pad
+   /** Call function for each painter in pad
+     * kind == "all" for all objects (default)
+     * kind == "pads" only pads and subpads
+     * kind == "objects" only for object in current pad */
    TPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
       if (!kind) kind = "all";
       if (kind!="objects") userfunc(this);
