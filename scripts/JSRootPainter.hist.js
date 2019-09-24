@@ -2648,12 +2648,17 @@
       return !this.GetObject() || (!this.draw_content && !this.create_stats) || (this.options.Axis>0);
    }
 
+   /** @summary Create stat box for histogram if required
+    * @private
+    */
    THistPainter.prototype.CreateStat = function(force) {
 
-      if (this.options.PadStats) return null;
+      var histo = this.GetHisto();
+
+      if (this.options.PadStats || !histo) return null;
 
       if (!force && !this.options.ForceStat) {
-         if (this.options.NoStat || this.histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
+         if (this.options.NoStat || histo.TestBit(JSROOT.TH1StatusBits.kNoStats) || !JSROOT.gStyle.AutoStat) return null;
 
          if (!this.draw_content || !this.is_main_painter()) return null;
       }
@@ -2665,7 +2670,7 @@
          if (stats) stats.fOptStat = optstat;
          delete this.options.optstat;
       } else {
-         optstat = this.histo.$custom_stat || st.fOptStat;
+         optstat = histo.$custom_stat || st.fOptStat;
       }
 
       if (optfit !== undefined) {
@@ -2696,17 +2701,15 @@
       stats.fFillStyle = st.fStatStyle;
 
       stats.fTextAngle = 0;
-      stats.fTextSize = st.fStatFontSize; // 9 ??
+      stats.fTextSize = st.fStatFontSize;
       stats.fTextAlign = 12;
       stats.fTextColor = st.fStatTextColor;
       stats.fTextFont = st.fStatFont;
 
-//      st.fStatBorderSize : 1,
-
-      if (this.histo._typename.match(/^TProfile/) || this.histo._typename.match(/^TH2/))
+      if (histo._typename.match(/^TProfile/) || histo._typename.match(/^TH2/))
          stats.fY1NDC = 0.67;
 
-      stats.AddText(this.histo.fName);
+      stats.AddText(histo.fName);
 
       this.AddFunction(stats);
 
@@ -2726,7 +2729,7 @@
          histo.fFunctions.Add(obj);
    }
 
-   /** Method draws next function from the functions list @private */
+   /** @summary Method draws next function from the functions list @private */
    THistPainter.prototype.DrawNextFunction = function(indx, callback, painter) {
 
       if (painter && (typeof painter == "object"))
@@ -2759,11 +2762,12 @@
       this.DrawNextFunction(indx+1, callback);
    }
 
+   /** @summary Unzoom user range if any @private */
    THistPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
 
-      if (!this.histo) return false;
+      var res = false, painter = this, histo = this.GetHisto();
 
-      var res = false, painter = this;
+      if (!histo) return false;
 
       function UnzoomTAxis(obj) {
          if (!obj) return false;
@@ -2783,9 +2787,9 @@
          return true;
       }
 
-      if (dox && UnzoomTAxis(this.histo.fXaxis)) res = true;
-      if (doy && (UnzoomTAxis(this.histo.fYaxis) || UzoomMinMax(1, this.histo))) res = true;
-      if (doz && (UnzoomTAxis(this.histo.fZaxis) || UzoomMinMax(2, this.histo))) res = true;
+      if (dox && UnzoomTAxis(histo.fXaxis)) res = true;
+      if (doy && (UnzoomTAxis(histo.fYaxis) || UzoomMinMax(1, histo))) res = true;
+      if (doz && (UnzoomTAxis(histo.fZaxis) || UzoomMinMax(2, histo))) res = true;
 
       return res;
    }
