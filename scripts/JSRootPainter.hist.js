@@ -2920,9 +2920,10 @@
       });  // end menu creation
    }
 
-
+   /** @summary Invoke dialog to enter and modify user range @private */
    THistPainter.prototype.ChangeUserRange = function(arg) {
-      var taxis = this.histo['f'+arg+"axis"];
+      var histo = this.GetHisto(),
+          taxis = histo ? histo['f'+arg+"axis"] : null;
       if (!taxis) return;
 
       var curr = "[1," + taxis.fNbins+"]";
@@ -3068,28 +3069,30 @@
       if (!not_shown) pp.ShowButtons();
    }
 
+   /** @summary Returns tooltip information for 3D drawings @private */
    THistPainter.prototype.Get3DToolTip = function(indx) {
-      var tip = { bin: indx, name: this.GetObject().fName, title: this.GetObject().fTitle };
+      var histo = this.GetHisto(),
+          tip = { bin: indx, name: histo.fName, title: histo.fTitle };
       switch (this.Dimension()) {
          case 1:
             tip.ix = indx; tip.iy = 1;
-            tip.value = this.histo.getBinContent(tip.ix);
-            tip.error = this.histo.getBinError(indx);
+            tip.value = histo.getBinContent(tip.ix);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(indx-1);
             break;
          case 2:
             tip.ix = indx % (this.nbinsx + 2);
             tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
-            tip.value = this.histo.getBinContent(tip.ix, tip.iy);
-            tip.error = this.histo.getBinError(indx);
+            tip.value = histo.getBinContent(tip.ix, tip.iy);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          case 3:
             tip.ix = indx % (this.nbinsx+2);
             tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
             tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
-            tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
-            tip.error = this.histo.getBinError(indx);
+            tip.value = histo.getBinContent(tip.ix, tip.iy, tip.iz);
+            tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;
       }
@@ -3551,7 +3554,6 @@
     * @desc Detect min/max values for x and y axis
     * @param when_axis_changed - true when only zooming was changed, some checks may be skipped */
    TH1Painter.prototype.ScanContent = function(when_axis_changed) {
-      // if when_axis_changed === true specified, content will be scanned after axis zoom changed
 
       if (when_axis_changed && !this.nbinsx) when_axis_changed = false;
 
