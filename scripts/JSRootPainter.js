@@ -1838,7 +1838,7 @@
       return this.user_args;
    }
 
-   /** Set callbacks reciever.
+   /** @summary Set callbacks receiver.
     *
     * Following function can be defined in receiver object:
     *    - OnWebsocketMsg
@@ -6711,6 +6711,7 @@
    }
 
    /** @summary Tries to close current browser tab
+     *
      * @desc Many browsers do not allow simple window.close() call,
      * therefore try several workarounds */
 

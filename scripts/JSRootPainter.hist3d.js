@@ -1554,13 +1554,10 @@
 
       } else {
 
-         var pad = this.root_pad();
-         // if (pad && pad.fGridz === undefined) pad.fGridz = false;
+         var pad = this.root_pad(), zmult = 1.1;
 
          this.zmin = pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
-
-         var zmult = 1.1;
 
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
