@@ -2813,33 +2813,6 @@
       return false;
    }
 
-   /** @summary Show axis status message
-    *
-    * @desc method called normally when mouse enter main object element
-    * @private
-    */
-   THistPainter.prototype.ShowAxisStatus = function(axis_name) {
-
-      var status_func = this.GetShowStatusFunc();
-
-      if (!status_func) return;
-
-      var histo = this.GetHisto(),
-          taxis = histo ? histo['f'+axis_name.toUpperCase()+"axis"] : null,
-          hint_name = axis_name, hint_title = "TAxis",
-          m = d3.mouse(this.svg_frame().node()),
-          id = (axis_name=="x") ? 0 : 1;
-
-      if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
-
-      if (this.swap_xy) id = 1-id;
-
-      var axis_value = (axis_name=="x") ? this.RevertX(m[id]) : this.RevertY(m[id]);
-
-      status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value),
-                  m[0].toFixed(0)+","+ m[1].toFixed(0));
-   }
-
    /** @summary Add different interactive handlers
     *
     * @desc only first (main) painter in list allowed to add interactive functionality
