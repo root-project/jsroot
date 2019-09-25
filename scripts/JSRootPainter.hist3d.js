@@ -53,6 +53,7 @@
          this.camera.lookAt(this.lookat);
    }
 
+   /** @summary Create all necessary components for 3D drawings @private */
    JSROOT.TFramePainter.prototype.Create3DScene = function(arg) {
 
       if ((arg!==undefined) && (arg<0)) {
@@ -1075,6 +1076,7 @@
       }
    }
 
+   /** Draw histograms in 3D mode @private */
    JSROOT.THistPainter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
@@ -1492,8 +1494,8 @@
 
    // ==========================================================================================
 
+   /** @summary Draw 1-D histogram in 3D @private */
    JSROOT.TH1Painter.prototype.Draw3D = function(call_back, resize) {
-      // function called with this as painter
 
       this.mode3d = true;
 

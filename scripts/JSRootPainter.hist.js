@@ -2619,6 +2619,8 @@
       return indx;
    }
 
+   /** Find function in histogram list of functions
+    * @private */
    THistPainter.prototype.FindFunction = function(type_name, obj_name) {
       var histo = this.GetObject(),
           funcs = histo && histo.fFunctions ? histo.fFunctions.arr : null;
