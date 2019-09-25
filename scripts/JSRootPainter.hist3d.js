@@ -1520,13 +1520,12 @@
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
          }
 
-         this.Draw3DBins();
-
-         main.Render3D();
-
-         this.UpdateStatWebCanvas();
-
-         main.AddKeysHandler();
+         if (main.mode3d) {
+            this.Draw3DBins();
+            main.Render3D();
+            this.UpdateStatWebCanvas();
+            main.AddKeysHandler();
+         }
       }
 
       if (is_main) {
@@ -1577,13 +1576,12 @@
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
          }
 
-         this.Draw3DBins();
-
-         main.Render3D();
-
-         this.UpdateStatWebCanvas();
-
-         main.AddKeysHandler();
+         if (main.mode3d) {
+            this.Draw3DBins();
+            main.Render3D();
+            this.UpdateStatWebCanvas();
+            main.AddKeysHandler();
+         }
       }
 
       if (is_main) {
