@@ -5,6 +5,7 @@ jsdoc/
 .gitattributes
 *.root
 *.json
+*.html
 demo/node/node_modules
 demo/node/*.svg
 node_modules/
