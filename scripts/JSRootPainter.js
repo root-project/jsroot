@@ -6348,7 +6348,7 @@
          for (var i = 0; i < can_painter.painters.length; ++i) {
             var painter = can_painter.painters[i];
             if (painter.MatchObjectType(obj._typename))
-               if (painter.UpdateObject(obj)) {
+               if (painter.UpdateObject(obj, opt)) {
                   can_painter.RedrawPad();
                   JSROOT.CallBack(callback, painter);
                   return painter;
