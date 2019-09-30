@@ -3800,13 +3800,12 @@
    }
 
    TPadPainter.prototype.GetNewColor = function(attr, name, dflt) {
-      var rgb = this.GetNewOpt(attr, name + "_rgb", ""),
-          alfa = this.GetNewOpt(attr, name + "_a", "");
+      var rgb = this.GetNewOpt(attr, name + "_rgb", "");
 
-      if (rgb && alfa)
-         return "rgba(" + rgb + "," + alfa + ")";
+      if (rgb)
+         return "#" + rgb + this.GetNewOpt(attr, name + "_a", "");
 
-      return rgb ? "rgb(" + rgb + ")" : dflt;
+      return this.GetNewOpt(attr, name + "_name", "") || dflt;
    }
 
    TPadPainter.prototype.GetCoordinate = function(pos) {
