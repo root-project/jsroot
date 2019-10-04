@@ -2549,6 +2549,7 @@
 
    function TPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
+      this.csstype = "pad";
       this.pad = pad;
       this.iscan = iscan; // indicate if working with canvas
       this.this_pad_name = "";
