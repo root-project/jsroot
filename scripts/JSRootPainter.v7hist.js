@@ -26,6 +26,7 @@
 
    function THistPainter(histo) {
       JSROOT.TObjectPainter.call(this, histo);
+      this.csstype = "hist";
       this.draw_content = true;
       this.nbinsx = 0;
       this.nbinsy = 0;
@@ -168,15 +169,10 @@
       }
 */
 
-      var attr = this.GetObject().fAttr,
-          pp   = this.canv_painter();
-
       this.createAttFill( { pattern: 0, color: 0 });
 
-      var lcol = pp.GetNewColor(attr, "line_color", "black");
-      var lwidth = pp.GetNewOpt(attr, "line_width", 1);
-
-      console.log("new color lcol", lcol, lwidth);
+      var lcol = this.v7EvalColor( "line_color", "black"),
+          lwidth = this.v7EvalAttr( "line_width", 1);
 
       this.createAttLine({ color: lcol || 'black', width : parseInt(lwidth) || 1 });
    }
