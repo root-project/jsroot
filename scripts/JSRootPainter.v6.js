@@ -3186,7 +3186,7 @@
       for (var i=0; i < this.pad.fPrimitives.arr.length; i++) {
          var obj = this.pad.fPrimitives.arr[i];
 
-         if ((exact_obj!==null) && (obj !== exact_obj)) continue;
+         if ((exact_obj !== null) && (obj !== exact_obj)) continue;
 
          if ((classname !== undefined) && (classname !== null))
             if (obj._typename !== classname) continue;
@@ -3200,8 +3200,8 @@
       return null;
    }
 
+   /** Return true if any objects beside sub-pads exists in the pad */
    TPadPainter.prototype.HasObjectsToDraw = function() {
-      // return true if any objects beside sub-pads exists in the pad
 
       if (!this.pad || !this.pad.fPrimitives) return false;
 
@@ -4972,10 +4972,18 @@
       if (nocanvas) can = JSROOT.Create("TCanvas");
 
       var painter = new TCanvasPainter(can);
+      painter.SetDivId(divid, -1); // just assign id
+
+      if (!nocanvas && can.fCw && can.fCh) {
+         var rect0 = painter.select_main().node().getBoundingClientRect();
+         if (!rect0.height) {
+            painter.select_main().style("width", can.fCw+"px").style("height", can.fCh+"px");
+            painter._fixed_size = true;
+         }
+      }
+
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
-
-      painter.SetDivId(divid, -1); // just assign id
       painter.CheckSpecialsInPrimitives(can);
       painter.CreateCanvasSvg(0);
       painter.SetDivId(divid);  // now add to painters list
