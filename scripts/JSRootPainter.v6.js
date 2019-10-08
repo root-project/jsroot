@@ -4967,6 +4967,16 @@
       return res;
    }
 
+   /** Check if TGeo objects in the canvas - draw them directly @private */
+   TCanvasPainter.prototype.DirectGeoDraw = function() {
+      var lst = this.pad ? this.pad.fPrimitives : null;
+      if (!lst || (lst.arr.length != 1)) return;
+
+      var obj = lst.arr[0];
+      if (obj && obj._typename && (obj._typename.indexOf("TGeo")==0))
+         return JSROOT.draw(this.divid, obj, lst.opt[0]);
+   }
+
    function drawCanvas(divid, can, opt) {
       var nocanvas = !can;
       if (nocanvas) can = JSROOT.Create("TCanvas");
@@ -4981,6 +4991,9 @@
             painter._fixed_size = true;
          }
       }
+
+      var direct = painter.DirectGeoDraw();
+      if (direct) return direct;
 
       painter.DecodeOptions(opt);
       painter.normal_canvas = !nocanvas;
