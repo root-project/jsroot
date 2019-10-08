@@ -111,7 +111,8 @@ examples_more = {
      { name: "tank", asurl: true, file: "https://root.cern/files/tank.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
      { name: "lego", asurl: true, file: "https://root.cern/files/lego.root", item: "geom;1", opt: "z;rotate", title: "Just for fun" },
      { name: "cheon", asurl: true, file: "https://root.cern/files/cheongwadae.root", item: "geom;1", opt: "", title: "One more building" },
-     { name: "proj2", url: "?nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz,projx,main;black]", title: "Place main drawing not on the first place" }
+     { name: "proj2", url: "?nobrowser&layout=h21_12&files=[https://root.cern/files/alice_ESDgeometry.root,$$$geom/eve_tracks.root]&items=[[0]/Gentle,[0]/Gentle,[[0]/Gentle,[1]/tracks]]&opts=[projz,projx,main;black]", title: "Place main drawing not on the first place" },
+     { name: "canv", file: "geom/south_gate.root", item: "c1;1", opt: "", title: "geometry storead in the TCanvas" },
    ],
    TGraph : [
      { name: "twopad", file:"graph_twopad.root", item: "c1;1", title: "two overlays pads with different axes" },
