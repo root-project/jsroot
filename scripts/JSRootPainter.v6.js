@@ -4986,7 +4986,7 @@
 
       if (!nocanvas && can.fCw && can.fCh && !JSROOT.BatchMode) {
          var rect0 = painter.select_main().node().getBoundingClientRect();
-         if (!rect0.height) {
+         if (!rect0.height && (rect.width > 0.1*can.fCw)) {
             painter.select_main().style("width", can.fCw+"px").style("height", can.fCh+"px");
             painter._fixed_size = true;
          }
