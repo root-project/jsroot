@@ -4974,7 +4974,7 @@
       var painter = new TCanvasPainter(can);
       painter.SetDivId(divid, -1); // just assign id
 
-      if (!nocanvas && can.fCw && can.fCh) {
+      if (!nocanvas && can.fCw && can.fCh && !JSROOT.BatchMode) {
          var rect0 = painter.select_main().node().getBoundingClientRect();
          if (!rect0.height) {
             painter.select_main().style("width", can.fCw+"px").style("height", can.fCh+"px");
