@@ -133,7 +133,7 @@
 
    // =================================================================================
 
-   function drawLegend() {
+   function drawLegend(arg) {
 
       var legend       = this.GetObject(),
           pp           = this.pad_painter(),
@@ -144,15 +144,29 @@
           line_color   = this.v7EvalColor( "box_border_color", "black"),
           fill_color   = this.v7EvalColor( "box_fill_color", "white"),
           fill_style   = this.v7EvalAttr( "box_fill_style", 1),
-          text_size    = this.v7EvalAttr( "title_size", 12),
+          text_size    = this.v7EvalAttr( "title_size", 20),
           text_angle   = -1 * this.v7EvalAttr( "title_angle", 0),
           text_align   = this.v7EvalAttr( "title_align", 22),
           text_color   = this.v7EvalColor( "title_color", "black"),
           text_font    = this.v7EvalAttr( "title_font", 41);
 
+      //if (arg=="drag_resize") {
+      //   p1.x = parseInt(this.draw_g.attr("x"));
+      //   p2.y = parseInt(this.draw_g.attr("y"));
+      //   p2.x = p1.x + parseInt(this.draw_g.attr("width"));
+      //   p1.y = p2.y + parseInt(this.draw_g.attr("height"));
+      //}
+
       this.CreateG();
 
       if (fill_style == 0) fill_color = "none";
+
+      // position and size required only for drag functions
+      // this.draw_g.attr("transfrom", "translate(" + p1.x + "," + p2.y + ")")
+      //           .attr("x", p1.x)
+      //           .attr("y", p2.y)
+      //           .attr("width", p2.x-p1.x)
+      //           .attr("height", p1.y-p2.y);
 
       this.draw_g
          .append("svg:rect")
@@ -169,23 +183,40 @@
 
       if (legend.fTitle) nlines++;
 
-      var arg = { align: text_align, x: (p1.x+p2.x)/2, rotate: text_angle, color: text_color, latex: 1 };
+      var arg = { align: text_align,  rotate: text_angle, color: text_color, latex: 1 };
 
       this.StartTextDrawing(text_font, text_size);
 
       var cnt = 0;
       if (legend.fTitle) {
-         this.DrawText(JSROOT.extend({ y: p2.y - 0.5*(p2.y-p1.y)/(nlines+1), text: legend.fTitle }, arg));
+         this.DrawText(JSROOT.extend({ x: p1.x + (p2.x-p1.x)/2, y: p2.y - 0.5*(p2.y-p1.y)/(nlines+1), text: legend.fTitle }, arg));
          cnt++;
       }
 
       for (var i=0; i<legend.fEntries.length; ++i) {
-         var entry = legend.fEntries[i];
-         this.DrawText(JSROOT.extend({ y: p2.y - (cnt+0.5)*(p2.y-p1.y)/(nlines+1), text: entry.fLabel }, arg));
+         var entry = legend.fEntries[i],
+             ypos = p2.y - (cnt+0.5)*(p2.y-p1.y)/(nlines+1);
+         this.DrawText(JSROOT.extend({ x: p1.x + (p2.x-p1.x)/4, y: ypos, text: entry.fLabel }, arg));
+
+         var objp = this.FindPainterFor(entry.fDrawable.fIO);
+
+         if (objp && objp.lineatt)
+            this.draw_g
+              .append("svg:line")
+              .attr("x1", p1.x + (p2.x-p1.x)*0.5)
+              .attr("y1", ypos)
+              .attr("x2", p1.x + (p2.x-p1.x)*0.8)
+              .attr("y2", ypos)
+              .call(objp.lineatt.func);
+
          cnt++;
       }
 
       this.FinishTextDrawing();
+
+   //   this.AddDrag({ minwidth: 10, minheight: 20, canselect: false,
+   //      redraw: this.Redraw.bind(this, "drag_resize"),
+   //      ctxmenu: false /*JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu */ });
   }
 
    // ================================================================================
