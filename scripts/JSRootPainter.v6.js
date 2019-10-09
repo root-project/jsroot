@@ -1530,6 +1530,7 @@
       this.axes_drawn = false;
    }
 
+   /** Returns frame rectangle plus extra info for hint display */
    TFramePainter.prototype.CleanFrameDrawings = function() {
 
       // cleanup all 3D drawings if any
