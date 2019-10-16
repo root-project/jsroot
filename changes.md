@@ -19,7 +19,7 @@
 
 
 ## Changes in 5.7.2
-1. Fix - add missing factor in TGepPgon shape
+1. Fix - add missing factor in TGeoPgon shape
 2. Fix - correctly handle "sync" specifier in JSROOT.NewHttpRequest
 3. Fix - verify that TH1/TH2 superimposing in 3D works properly
 4. Fix - use provided options in JSROOT.redraw function
