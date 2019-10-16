@@ -11,7 +11,7 @@
    - monitoring of TGeoManager with THttpServer
    - "rotyNN" and "rotzNN" options to TGeo painter - let customize camera position
    - context menu command to show current camera position
-2. New and simpler TArrow drawing without use of svg markers, interavtive movement of TArrow class
+2. New and simpler TArrow drawing without use of svg markers, interactive movement of TArrow class
 3. Support different marker styles in 3D drawings
 4. Support "texte" and "texte0" draw options for TH2/TProfile2D classes
 5. Provide wrong_http_response workaround (#189)
