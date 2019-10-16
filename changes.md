@@ -5,6 +5,7 @@
 2. Fix - correctly handle "sync" specifier in JSROOT.NewHttpRequest
 3. Fix - verify that TH1/TH2 superimposing in 3D works properly
 4. Fix - use provided options in JSROOT.redraw function
+5. Fix - arb8 shape, used in composite
 
 
 ## Changes in 5.7.1
