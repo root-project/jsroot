@@ -156,7 +156,7 @@
          depthMethod: "dflt",
          select_in_view: false,
          update_browser: true,
-         light: { top: false, bottom: false, left: false, right: false, front: false, specular: true, ambient: false, power: 1 },
+         light: { kind: "points", top: false, bottom: false, left: false, right: false, front: false, specular: true, power: 1 },
          trans_radial: 0, trans_z: 0
       };
 
@@ -1945,19 +1945,34 @@
 
       var need_render = !box;
 
-     if (!box) box = this.getGeomBoundingBox(this._toplevel);
+      if (!box) box = this.getGeomBoundingBox(this._toplevel);
 
       var sizex = box.max.x - box.min.x,
           sizey = box.max.y - box.min.y,
           sizez = box.max.z - box.min.z,
-          lights = [], p = this.ctrl.light.power;
+          plights = [], p = this.ctrl.light.power;
 
       if (p === undefined) p = 1;
 
+      if (this._camera._lights != this.ctrl.light.kind) {
+         // remove all childs and recreate only necessary lights
+         JSROOT.Painter.DisposeThreejsObject(this._camera, true);
+
+         this._camera._lights = this.ctrl.light.kind;
+
+         switch (this._camera._lights) {
+            case "ambient" : this._camera.add(new THREE.AmbientLight(0xefefef, p)); break;
+            case "hemisphere" : this._camera.add(new THREE.HemisphereLight(0xffffbb, 0x080820, p)); break;
+            default: // 6 point lights
+               for (var n=0;n<6;++n)
+                  this._camera.add( new THREE.PointLight(0xefefef, p) );
+         }
+      }
+
       for (var k=0;k<this._camera.children.length;++k) {
          var light = this._camera.children[k], enabled = false;
-         if (light.isAmbientLight) {
-            light.intensity = this.ctrl.light.ambient ? p : 0;
+         if (light.isAmbientLight || light.isHemisphereLight) {
+            light.intensity = p;
             continue;
          }
 
@@ -1970,13 +1985,12 @@
             case 4: light.position.set(-2*sizex, 0, 0); enabled = this.ctrl.light.left; break;
             case 5: light.position.set(2*sizex, 0, 0); enabled = this.ctrl.light.right; break;
          }
-         if (this.ctrl.light.ambient) enabled = false;
          light.power = enabled ? p*Math.PI*4 : 0;
-         if (enabled) lights.push(light);
+         if (enabled) plights.push(light);
       }
 
       // keep light power of all soources constant
-      lights.forEach(function(light) { light.power = p*4*Math.PI/lights.length; })
+      plights.forEach(function(ll) { ll.power = p*4*Math.PI/plights.length; })
 
       if (need_render) this.Render3D();
    }
@@ -2061,15 +2075,11 @@
                            new THREE.Plane(new THREE.Vector3(0, 0, this.ctrl._yup ? 1 : -1), 0) ];
 
 
-      // Lights - add 6 point light sources, place them once dimension of geometry is known
-      for (var n=0;n<6;++n) {
-         var light = new THREE.PointLight(0xefefef, n==0 ? 1 : 0);
-         if (n==0) light.position.set(10, 10, 10);
-         this._camera.add( light );
-      }
+      // Light - add default point light, adjust later
 
-      var amblight = new THREE.AmbientLight(0xefefef, 0); // disable by default
-      this._camera.add(amblight);
+      var light = new THREE.PointLight(0xefefef, 1);
+      light.position.set(10, 10, 10);
+      this._camera.add( light );
 
       // Smooth Lighting Shader (Screen Space Ambient Occlusion)
       // http://threejs.org/examples/webgl_postprocessing_ssao.html
