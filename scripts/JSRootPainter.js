@@ -2116,8 +2116,6 @@
       if (typeof arg == 'function') arg = { callback: arg }; else
       if (!arg || (typeof arg != 'object')) arg = {};
 
-      console.log('CONNECTING WEB WINDOW arg = ', arg.openui5theme, arg);
-
       if (arg.prereq) {
          if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
          if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;

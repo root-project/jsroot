@@ -61,7 +61,6 @@
 
       element.setAttribute('data-sap-ui-libs', JSROOT.openui5libs || "sap.m, sap.ui.layout, sap.ui.unified, sap.ui.commons");
 
-      console.log('UI5 THEME', JSROOT.openui5theme || 'sap_belize');
       element.setAttribute('data-sap-ui-theme', JSROOT.openui5theme || 'sap_belize');
       element.setAttribute('data-sap-ui-compatVersion', 'edge');
       // element.setAttribute('data-sap-ui-bindingSyntax', 'complex');
