@@ -1897,6 +1897,12 @@
 
    /** Close connection. */
    WebWindowHandle.prototype.Close = function(force) {
+      if (this.master) {
+         delete this.master.channels[this.channelid];
+         this.master;
+         return;
+      }
+
       if (this.timerid) {
          clearTimeout(this.timerid);
          delete this.timerid;
@@ -1942,6 +1948,35 @@
       delete this.timerid;
       this.Send("KEEPALIVE", 0);
    }
+
+   /** Method open channel, which will share same connection, but can be used independently from main
+    * @private */
+   WebWindowHandle.prototype.CreateChannel = function() {
+      if (this.master)
+         return master.CreateChannel();
+
+      var channel = new WebWindowHandle("channel");
+
+      if (!this.channels) {
+         this.channels = {};
+         this.freechannelid = 2;
+      }
+
+      channel.master = this;
+      channel.channelid = this.freechannelid++;
+
+      // register
+      this.channels[channel.channelid] = channel;
+
+      // now server-side entity should be initialized and init message send from server side!
+      return channel;
+   }
+
+   /** Returns used channel ID, 1 by default */
+   WebWindowHandle.prototype.getChannelId = function() {
+      return this.channelid && this.master ? this.channelid : 1;
+   }
+
 
    /** Method opens relative path with the same kind of socket.
     * @private
