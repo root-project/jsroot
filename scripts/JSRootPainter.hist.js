@@ -4166,13 +4166,9 @@
          }
       }
 
-      var close_path = "";
-      if (!this.fillatt.empty()) {
-         var h0 = height + 3, gry0 = Math.round(pmain.gry(0));
-         if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
-         close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
-         if (res.length>0) res += close_path;
-      }
+      var h0 = height + 3, gry0 = Math.round(pmain.gry(0));
+      if (gry0 <= 0) h0 = -3; else if (gry0 < height) h0 = gry0;
+      var close_path = "L"+currx+","+h0 + "L"+startx+","+h0 + "Z";
 
       if (draw_markers || show_line) {
          if ((path_fill !== null) && (path_fill.length > 0))
@@ -4188,7 +4184,7 @@
          if ((path_line !== null) && (path_line.length > 0)) {
             if (!this.fillatt.empty())
                this.draw_g.append("svg:path")
-                     .attr("d", this.options.Fill ? (path_line + close_path) : res)
+                     .attr("d", (this.options.Fill ? path_line : res) + close_path)
                      .attr("stroke", "none")
                      .call(this.fillatt.func);
 
@@ -4202,10 +4198,11 @@
             this.draw_g.append("svg:path")
                 .attr("d", path_marker)
                 .call(this.markeratt.func);
-
       }
 
       if ((res.length > 0) && draw_hist) {
+         if (!this.fillatt.empty())
+            res += close_path;
          this.draw_g.append("svg:path")
                     .attr("d", res)
                     .style("stroke-linejoin","miter")
