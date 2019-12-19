@@ -1,5 +1,10 @@
 # JSROOT changelog
 
+## Changes in 5.8.x
+1. Fix - use Math.floor when search for bin label
+2. Fix - renable correct highlight of TGraphErrors
+
+
 ## Changes in 5.8.0
 1. Many TGeo-related changes:
    - use TGeoManager::fVisLevel in geometry painter
