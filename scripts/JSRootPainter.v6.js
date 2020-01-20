@@ -1701,7 +1701,7 @@
 
       if (tooltip_rect.property('handlers_set') != handlers_set) {
          var close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
-              mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+             mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
          tooltip_rect.property('handlers_set', handlers_set)
                      .on('mouseenter', mouse_handler)
