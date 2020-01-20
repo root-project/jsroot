@@ -28,6 +28,7 @@ examples_main = {
      { opt: "colpal77", title: "example how color palette 77 can be used for drawing" },
      { opt: "colz", title: "color draw with palette" },
      { opt: "acol", title: "disable axes drawing with col option" },
+     { opt: "col_rx_ry", title: "reverse x and y axis with col drawing" },
      { name: "projx1", opt: "projx1,colz", title: "Draw X projection together with 2D plot", notest:true },
      { name: "projy3", opt: "projy3,colz", title: "Draw Y projection over 3 bins together with 2D plot", notest:true },
      { opt: "arr", title: "ARR draw option" },
