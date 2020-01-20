@@ -2179,8 +2179,8 @@
       d3.event.preventDefault();
       this.clearInteractiveElements();
 
-      var itemx = { name: "x", ignore: false },
-          itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
+      var itemx = { name: "x", reverse: this.reverse_x, ignore: false },
+          itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
           cur = d3.mouse(this.svg_frame().node()),
           w = this.frame_width(), h = this.frame_height();
 
@@ -2250,6 +2250,8 @@
       }
 
       if (item.min >= item.max) return;
+
+      if (item.reverse) dmin = 1 - dmin;
 
       if ((dmin>0) && (dmin<1)) {
          if (this['log'+item.name]) {

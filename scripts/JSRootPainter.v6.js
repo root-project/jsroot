@@ -2261,6 +2261,7 @@
       return changed;
    }
 
+   /** Analyze zooming with mouse wheel */
    TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
 
       item.min = item.max = undefined;
@@ -2302,6 +2303,8 @@
 
       if (item.min >= item.max) return;
 
+      if (item.reverse) dmin = 1 - dmin;
+
       if ((dmin>0) && (dmin<1)) {
          if (this['log'+item.name]) {
             var factor = (item.min>0) ? JSROOT.log10(item.max/item.min) : 2;
@@ -2319,8 +2322,7 @@
          }
          if (item.min >= item.max)
             item.min = item.max = undefined;
-         else
-         if (delta_left !== delta_right) {
+         else if (delta_left !== delta_right) {
             // extra check case when moving left or right
             if (((item.min < gmin) && (lmin===gmin)) ||
                 ((item.max > gmax) && (lmax==gmax)))
@@ -2356,8 +2358,8 @@
       d3.event.preventDefault();
       this.clearInteractiveElements();
 
-      var itemx = { name: "x", ignore: false },
-          itemy = { name: "y", ignore: !this.AllowDefaultYZooming() },
+      var itemx = { name: "x", reverse: this.reverse_x, ignore: false },
+          itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
           cur = d3.mouse(this.svg_frame().node()),
           w = this.frame_width(), h = this.frame_height();
 
