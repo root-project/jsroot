@@ -4261,7 +4261,7 @@
    }
 
    TPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
-      if (!JSROOT.gStyle.ToolBar) return;
+      if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode) return;
 
       if (!this._buttons) this._buttons = [];
       // check if there are duplications
