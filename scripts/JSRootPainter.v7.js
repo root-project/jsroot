@@ -4310,6 +4310,28 @@
       return painter;
    }
 
+   function drawPadSnapshot(divid, snap, opt) {
+
+      var painter = new TCanvasPainter(null);
+      painter.normal_canvas = false;
+      painter.batch_mode = JSROOT.BatchMode;
+
+      painter.SetDivId(divid, -1); // just assign id
+      painter.CreateCanvasSvg(0);
+      painter.SetDivId(divid);  // now add to painters list
+
+      painter.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
+      if (JSROOT.gStyle.ContextMenu)
+         painter.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
+
+      if (painter.enlarge_main('verify'))
+         painter.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
+
+      painter.RedrawPadSnap(snap, function() { painter.ShowButtons(); painter.DrawingReady(); });
+
+      return painter;
+   }
+
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });
 
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistDrawable<1>", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHist1", opt: "" });
@@ -4327,6 +4349,7 @@
    JSROOT.v7.drawFrame = drawFrame;
    JSROOT.v7.drawPad = drawPad;
    JSROOT.v7.drawCanvas = drawCanvas;
+   JSROOT.v7.drawPadSnapshot = drawPadSnapshot;
 
    return JSROOT;
 
