@@ -5001,6 +5001,8 @@
       var features = [
           { name: "#it{" }, // italic
           { name: "#bf{" }, // bold
+          { name: "#underline{", deco: "underline" }, // underline
+          { name: "#overline{", deco: "overline" }, // overline
           { name: "kern[", arg: 'float' }, // horizontal shift
           { name: "lower[", arg: 'float' },  // vertical shift
           { name: "scale[", arg: 'float' },  // font scale
@@ -5009,7 +5011,6 @@
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
           { name: "#bar{", accent: "\u02C9" }, // "\u0305"
-          { name: "#overline{", accent: "\u02C9" }, // "\u0305"
           { name: "#hat{", accent: "\u02C6" }, // "\u0302"
           { name: "#check{", accent: "\u02C7" }, // "\u030C"
           { name: "#acute{", accent: "\u02CA" }, // "\u0301"
@@ -5138,6 +5139,8 @@
                left_brace = found.name;
                right_brace = found.right;
             }
+         } else if (found.deco) {
+            subpos.deco = found.deco;
          } else if (found.accent) {
             subpos.accent = found.accent;
          } else
@@ -5178,6 +5181,12 @@
                     break;
                  }
               subnode.attr('font-weight', curr.bold ? 'bold' : 'normal');
+              break;
+           case "#underline{":
+              subnode.attr('text-decoration', 'underline');
+              break;
+           case "#overline{":
+              subnode.attr('text-decoration', 'overline');
               break;
            case "_{":
               scale = 0.6;
@@ -5338,6 +5347,24 @@
 
                subpos.square_root.append('svg:tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3-0.2)).text('\u2009'); // unicode tiny space
 
+               break;
+            }
+
+            if (subpos.deco) {
+
+               var be = get_boundary(this, subnode1, subpos.rect);
+               var len = be.width / subpos.fsize;
+               var fact, dy, symb;
+               if (subpos.deco == "underline") {
+                  dy = 0.75; fact = 1.2; symb = '\u2014'; // underline
+               } else {
+                  dy = -0.25; fact = 3; symb = '\u203E'; // unicode overline
+               }
+               var nn = nn = Math.round(Math.max(len*fact,1)), a = "";
+               while (nn--) a += symb;
+
+               subnode1.append('svg:tspan').attr("dx",  makeem(-a.length/fact - 0.2)).attr("dy", makeem(dy)).text(a);
+               curr.dy -= dy;
                break;
             }
 
