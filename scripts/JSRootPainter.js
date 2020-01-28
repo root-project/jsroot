@@ -265,6 +265,7 @@
                 // only required for MathJax to provide correct replacement
                 '#sqrt': '\u221A',
                 '#bar': '',
+                '#overline' : '',
 
                 // from TLatex tables #2 & #3
                 '#leq': '\u2264',
@@ -5008,6 +5009,7 @@
           { name: "_{" },  // subscript
           { name: "^{" },   // superscript
           { name: "#bar{", accent: "\u02C9" }, // "\u0305"
+          { name: "#overline{", accent: "\u02C9" }, // "\u0305"
           { name: "#hat{", accent: "\u02C6" }, // "\u0302"
           { name: "#check{", accent: "\u02C7" }, // "\u030C"
           { name: "#acute{", accent: "\u02CA" }, // "\u0301"
