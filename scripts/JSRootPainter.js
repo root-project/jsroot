@@ -6688,10 +6688,6 @@
 
             var svg = main.html();
 
-            console.log('SVG length', svg.length);
-            console.log('SVG start', svg.substr(0, 500));
-            console.log('SVG end', svg.substr(svg.length - 500));
-
             if (JSROOT.nodejs)
                svg = svg.replace(/xlink_href_nodejs=/g,"xlink:href=");
 
