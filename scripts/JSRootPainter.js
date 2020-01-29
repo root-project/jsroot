@@ -5352,13 +5352,18 @@
 
             if (subpos.deco) {
 
-               var be = get_boundary(this, subnode1, subpos.rect);
-               var len = be.width / subpos.fsize;
-               var fact, dy, symb;
+               // use text-decoration attribute when there are no extra elements inside
+               if (subnode1.selectAll('tspan').size() == 0) {
+                  subnode1.attr('text-decoration', subpos.deco);
+                  break;
+               }
+
+               var be = get_boundary(this, subnode1, subpos.rect),
+                   len = be.width / subpos.fsize, fact, dy, symb;
                if (subpos.deco == "underline") {
-                  dy = 0.75; fact = 1.2; symb = '\u2014'; // underline
+                  dy = 0.35; fact = 1.2; symb = '\uFF3F'; // '\u2014'; // underline
                } else {
-                  dy = -0.25; fact = 3; symb = '\u203E'; // unicode overline
+                  dy = -0.35; fact = 3; symb = '\u203E'; // unicode overline
                }
                var nn = nn = Math.round(Math.max(len*fact,1)), a = "";
                while (nn--) a += symb;
