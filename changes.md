@@ -2,7 +2,7 @@
 
 ## Changes in dev
 1. Support RX and RY drawing option together with COL of TH2
-2. Add support of #overline into TLatex parsing  (#196)
+2. Add support of #overline, #underline, #strike into TLatex parsing (#196)
 
 
 ## Changes in 5.8.0

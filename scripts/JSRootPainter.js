@@ -266,6 +266,8 @@
                 '#sqrt': '\u221A',
                 '#bar': '',
                 '#overline' : '',
+                '#underline' : '',
+                '#strike' : '',
 
                 // from TLatex tables #2 & #3
                 '#leq': '\u2264',
@@ -5003,6 +5005,7 @@
           { name: "#bf{" }, // bold
           { name: "#underline{", deco: "underline" }, // underline
           { name: "#overline{", deco: "overline" }, // overline
+          { name: "#strike{", deco: "line-through" }, // line through
           { name: "kern[", arg: 'float' }, // horizontal shift
           { name: "lower[", arg: 'float' },  // vertical shift
           { name: "scale[", arg: 'float' },  // font scale
@@ -5360,15 +5363,15 @@
 
                var be = get_boundary(this, subnode1, subpos.rect),
                    len = be.width / subpos.fsize, fact, dy, symb;
-               if (subpos.deco == "underline") {
-                  dy = 0.35; fact = 1.2; symb = '\uFF3F'; // '\u2014'; // underline
-               } else {
-                  dy = -0.35; fact = 3; symb = '\u203E'; // unicode overline
+               switch (subpos.deco) {
+                  case "underline": dy = 0.35; fact = 1.2; symb = '\uFF3F'; break; // '\u2014'; // underline
+                  case "overline": dy = -0.35; fact = 3; symb = '\u203E'; break; // overline
+                  default: dy = 0; fact = 1.8; symb = '\u23AF'; break;
                }
-               var nn = nn = Math.round(Math.max(len*fact,1)), a = "";
+               var nn = Math.round(Math.max(len*fact,1)), a = "";
                while (nn--) a += symb;
 
-               subnode1.append('svg:tspan').attr("dx",  makeem(-a.length/fact - 0.2)).attr("dy", makeem(dy)).text(a);
+               subnode1.append('svg:tspan').attr("dx",  makeem(-len - 0.2)).attr("dy", makeem(dy)).text(a);
                curr.dy -= dy;
                break;
             }
