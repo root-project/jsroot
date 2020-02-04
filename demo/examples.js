@@ -131,6 +131,7 @@ examples_main = {
      { name:"prim", file: "geom/geodemo.root", layout: "vert333", items: ['box','para','arb8','trap','gtra','trd1','trd2','xtru'], opts: ['z','z','z','z','z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
      { name:"prim2", file: "geom/geodemo.root", layout: "vert333", items: ['cone','coneseg','tube','tubeseg','ctub','eltu','pcon','pgon'], opts: ['z','z','z','z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
      { name:"prim3", file: "geom/geodemo.root", layout: "grid3x2", items: ['sphere','torus','parab','hype','comp'], opts: ['z','z','z','z','z'], title:"Basic TGeo primitives from tutorials/geom/geodemo.C" },
+     { name:"tess", file: "geom/tess.root", item: 'tess', title: "New TGeoTessellated shape" },
      { name:"comp", url: "?nobrowser&file=$$$geom/geodemo.root+&layout=grid2x2&items=[comp;1/Left,comp;1/Right,comp;1,comp;1]&opts=[az,az,comp_az,az]", title:"Components of composite shape" },
      { name:"building", asurl: true, file: "geom/building.root", item: "geom;1", opt: "allz", title: "Geometry from tutorials/geom/building.C" },
      { name:"alice", asurl: true, file: "https://root.cern/files/alice2.root", item: "Geometry;1", opt: "macro:https://root.cern/js/files/geomAlice.C;black;vislvl2", title: "ALICE geometry" },
