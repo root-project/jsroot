@@ -1886,8 +1886,13 @@
             return channel.ProvideData(1, _msg, _len);
       }
 
-      if (!this.msgqueue || !this.msgqueue.length)
+      var force_queue = _len && (_len < 0);
+
+      if (!force_queue && (!this.msgqueue || !this.msgqueue.length))
          return this.InvokeReceiver(false, "OnWebsocketMsg", _msg, _len);
+
+      if (!this.msgqueue) this.msgqueue = [];
+      if (force_queue) _len = undefined;
 
       this.msgqueue.push({ ready: true, msg: _msg, len: _len});
    }
@@ -1907,7 +1912,12 @@
       item.ready = true;
       item.msg = _msg;
       item.len = _len;
-      if (this._loop_msgqueue) return;
+      this.ProcessQueue();
+   }
+
+   /** Process completed messages in the queue @private */
+   WebWindowHandle.prototype.ProcessQueue = function() {
+      if (this._loop_msgqueue || !this.msgqueue) return;
       this._loop_msgqueue = true;
       while ((this.msgqueue.length > 0) && this.msgqueue[0].ready) {
          var front = this.msgqueue.shift();
@@ -1980,7 +1990,8 @@
 
       if (Array.isArray(msg)) {
          for (var k=0;k<msg.length;++k)
-            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]));
+            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
+         this.ProcessQueue();
       } else if (msg) {
          this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
       }
