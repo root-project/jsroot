@@ -1864,7 +1864,7 @@
       if (this.receiver && (typeof this.receiver[method] == 'function'))
          this.receiver[method](this, arg, arg2);
 
-      if (brdcst & this.channels) {
+      if (brdcst && this.channels) {
          var ks = Object.keys(this.channels);
          for (var n=0;n<ks.length;++n)
             this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
@@ -1967,6 +1967,23 @@
       }
 
       return true;
+   }
+
+   /** Inject message(s) into input queue, for debug purposes only
+     * @private */
+   WebWindowHandle.prototype.Inject = function(msg, chid, immediate) {
+      // use timeout to avoid too deep call stack
+      if (!immediate)
+         return setTimeout(this.Inject.bind(this, msg, chid, true), 0);
+
+      if (chid === undefined) chid = 1;
+
+      if (Array.isArray(msg)) {
+         for (var k=0;k<msg.length;++k)
+            this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]));
+      } else if (msg) {
+         this.ProvideData(chid, typeof msg == "string" ? msg : JSON.stringify(msg));
+      }
    }
 
    /** Send keepalive message.
