@@ -872,6 +872,7 @@
 
    function TFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
+      this.csstype = "frame";
       this.mode3d = false;
       this.shrink_frame_left = 0.;
       this.x_kind = 'normal'; // 'normal', 'log', 'time', 'labels'
@@ -929,8 +930,10 @@
          function evalLength(name, size, dflt) {
             var value = pthis.v7EvalAttr("margin_" + name);
 
+            console.log('Extracting value ', name, value, pthis.csstype, pthis.rstyle);
+
             if (value === undefined)
-               return dlft;
+               return dflt;
 
             if (typeof value == "number")
                return value;
@@ -3263,12 +3266,14 @@
 
       while (true) {
 
-         if (objpainter && lst && lst[indx] && objpainter.snapid === undefined) {
+         if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
             // keep snap id in painter, will be used for the
             if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
-            objpainter.rstyle = lst[indx].fStyle;
+            if (!objpainter.rstyle) objpainter.rstyle = lst[indx].fStyle || this.rstyle;
          }
+
+         delete this.next_rstyle;
 
          objpainter = null;
 
@@ -3341,6 +3346,9 @@
             return;
          }
 
+         // will be used in SetDivId to assign style to painter
+         this.next_rstyle = lst[indx].fStyle || this.rstyle;
+
          var handle = { func: draw_callback };
 
          if (snap._typename === "ROOT::Experimental::RObjectDisplayItem")
@@ -3348,6 +3356,7 @@
                return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "", function() {
                   handle.func("workaround"); // call function with "workaround" as argument
                });
+
 
          // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
          objpainter = JSROOT.draw(this.divid, snap.fDrawable || snap.fObject, snap.fOption || "", handle);
