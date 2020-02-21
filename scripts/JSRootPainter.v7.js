@@ -1185,7 +1185,19 @@
             this.xmin = xmin;
             this.xmax = xmax;
          }
+
+         if (this.zoom_xmin == this.zoom_xmax) {
+            var min = this.v7EvalAttr("x_zoommin"),
+                max = this.v7EvalAttr("x_zoommax");
+
+            if ((min !== undefined) || (max !== undefined)) {
+
+               this.zoom_xmin = (min === undefined) ? this.xmin : min;
+               this.zoom_xmax = (max === undefined) ? this.xmax : max;
+            }
+         }
       }
+
 
       if (this.ymin == this.ymax) {
          var y_min = this.v7EvalAttr("y_min"),
