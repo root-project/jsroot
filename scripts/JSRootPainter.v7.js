@@ -1169,16 +1169,35 @@
       return value.toPrecision(4);
    }
 
+   /* Set axes ranges for drawing, check configured attributes if range already specified */
    TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax) {
       if (this.axes_drawn) return;
 
-      if ((this.xmin == this.xmax) && (xmin!==xmax)) {
-         this.xmin = xmin;
-         this.xmax = xmax;
+      if (this.xmin == this.xmax) {
+
+         var x_min = this.v7EvalAttr("x_min"),
+             x_max = this.v7EvalAttr("x_max");
+
+         if (x_min !== undefined) xmin = x_min;
+         if (x_max !== undefined) xmax = x_max;
+
+         if (xmin < xmax) {
+            this.xmin = xmin;
+            this.xmax = xmax;
+         }
       }
-      if ((this.ymin == this.ymax) && (ymin!==ymax)) {
-         this.ymin = ymin;
-         this.ymax = ymax;
+
+      if (this.ymin == this.ymax) {
+         var y_min = this.v7EvalAttr("y_min"),
+             y_max = this.v7EvalAttr("y_max");
+
+         if (y_min !== undefined) ymin = y_min;
+         if (y_max !== undefined) ymax = y_max;
+
+         if (ymin < ymax) {
+            this.ymin = ymin;
+            this.ymax = ymax;
+         }
       }
    }
 
