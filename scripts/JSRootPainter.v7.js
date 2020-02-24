@@ -1169,47 +1169,58 @@
       return value.toPrecision(4);
    }
 
+
    /* Set axes ranges for drawing, check configured attributes if range already specified */
    TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax) {
       if (this.axes_drawn) return;
 
+      var min, max;
+
       if (this.xmin == this.xmax) {
+         min = this.v7EvalAttr("x_min");
+         max = this.v7EvalAttr("x_max");
 
-         var x_min = this.v7EvalAttr("x_min"),
-             x_max = this.v7EvalAttr("x_max");
-
-         if (x_min !== undefined) xmin = x_min;
-         if (x_max !== undefined) xmax = x_max;
+         if (min !== undefined) xmin = min;
+         if (max !== undefined) xmax = max;
 
          if (xmin < xmax) {
             this.xmin = xmin;
             this.xmax = xmax;
          }
 
-         if (this.zoom_xmin == this.zoom_xmax) {
-            var min = this.v7EvalAttr("x_zoommin"),
-                max = this.v7EvalAttr("x_zoommax");
+         if ((this.zoom_xmin == this.zoom_xmax) && !this.zoom_changed_interactive) {
+            min = this.v7EvalAttr("x_zoommin");
+            max = this.v7EvalAttr("x_zoommax");
 
             if ((min !== undefined) || (max !== undefined)) {
-
                this.zoom_xmin = (min === undefined) ? this.xmin : min;
                this.zoom_xmax = (max === undefined) ? this.xmax : max;
             }
          }
       }
 
-
       if (this.ymin == this.ymax) {
-         var y_min = this.v7EvalAttr("y_min"),
-             y_max = this.v7EvalAttr("y_max");
+         min = this.v7EvalAttr("y_min");
+         max = this.v7EvalAttr("y_max");
 
-         if (y_min !== undefined) ymin = y_min;
-         if (y_max !== undefined) ymax = y_max;
+         if (min !== undefined) ymin = min;
+         if (max !== undefined) ymax = max;
 
          if (ymin < ymax) {
             this.ymin = ymin;
             this.ymax = ymax;
          }
+
+         if ((this.zoom_ymin == this.zoom_ymax) && !this.zoom_changed_interactive) {
+            min = this.v7EvalAttr("y_zoommin");
+            max = this.v7EvalAttr("y_zoommax");
+
+            if ((min !== undefined) || (max !== undefined)) {
+               this.zoom_ymin = (min === undefined) ? this.ymin : min;
+               this.zoom_ymax = (max === undefined) ? this.ymax : max;
+            }
+         }
+
       }
    }
 
