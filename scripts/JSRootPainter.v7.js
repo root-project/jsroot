@@ -52,6 +52,14 @@
       return dflt;
    }
 
+   JSROOT.TObjectPainter.prototype.v7SetAttr = function(name, value) {
+      var obj = this.GetObject();
+
+      if (obj && obj.fAttr && obj.fAttr.m)
+         obj.fAttr.m[name] = { v: value };
+   }
+
+
    /** Evalue RColor using attribute storage and configured RStyle */
    JSROOT.TObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       var rgb = this.v7EvalAttr(name + "_rgb", "");
@@ -2639,9 +2647,9 @@
    }
 
    TFramePainter.prototype.ToggleLog = function(axis) {
-      var painter = this.main_painter() || this,
-          pad = this.root_pad();
-      var curr = pad["fLog" + axis];
+
+      var curr  = this["log" + axis];
+
       // do not allow log scale for labels
       if (!curr) {
          var kind = this[axis+"_kind"];
@@ -2650,13 +2658,12 @@
          if (kind === "labels") return;
       }
 
-      var pp = this.pad_painter(), canp = this.canv_painter();
-      if (pp && pp.snapid && canp && canp._websocket) {
-         console.warn('Change log scale on server here!!!!');
-         // canp.SendWebsocket("OBJEXEC:" + pp.snapid + ":SetLog" + axis + (curr ? "(0)" : "(1)"));
+      var canp = this.canv_painter();
+      if (this.snapid && canp && canp._websocket) {
+         canp.SendWebsocket("OBJEXEC:" + this.snapid + ":Attr" + axis.toUpperCase() + "().SetLog" + (curr ? "(false)" : "(true)"));
       } else {
-         pad["fLog" + axis] = curr ? 0 : 1;
-         painter.RedrawPad();
+         this.v7SetAttr(axis + "_log", !curr);
+         this.RedrawPad();
       }
    }
 
@@ -2831,14 +2838,14 @@
             svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
 
          factor = 0.66;
-         if (this.pad && this.pad.fCw && this.pad.fCh && (this.pad.fCw > 0)) {
-            factor = this.pad.fCh / this.pad.fCw;
+         if (this.pad && this.pad.fWinSize[0] && this.pad.fWinSize[1]) {
+            factor = this.pad.fWinSize[1] / this.pad.fWinSize[0];
             if ((factor < 0.1) || (factor > 10)) factor = 0.66;
          }
 
          if (this._fixed_size) {
             render_to.style("overflow","auto");
-            rect = { width: this.pad.fCw, height: this.pad.fCh };
+            rect = { width: this.pad.fWinSize[0], height: this.pad.fWinSize[1] };
          } else {
             rect = this.check_main_resize(2, new_size, factor);
          }
@@ -3281,9 +3288,16 @@
    TPadPainter.prototype.UpdateObject = function(obj) {
       if (!obj) return false;
 
-      this.pad.fCw = obj.fCw;
-      this.pad.fCh = obj.fCh;
-      this.pad.fTitle = obj.fTitle;
+      this.pad.fStyle = obj.fStyle;
+      this.pad.fAttr = obj.fAttr;
+
+      if (this.iscan) {
+         this.pad.fTitle = obj.fTitle;
+         this.pad.fWinSize = obj.fWinSize;
+      } else {
+         this.pad.fPos = obj.fPos;
+         this.pad.fSize = obj.fSize;
+      }
 
       return true;
    }
@@ -3436,10 +3450,10 @@
       if (!snap || !snap.fPrimitives) return;
 
       // for the moment only window size attributes are provided
-      var padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
+      // var padattr = { fCw: snap.fWinSize[0], fCh: snap.fWinSize[1], fTitle: snap.fTitle };
 
       // if canvas size not specified in batch mode, temporary use 900x700 size
-      if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
+      // if (this.batch_mode && this.iscan && (!padattr.fCw || !padattr.fCh)) { padattr.fCw = 900; padattr.fCh = 700; }
 
       if (this.iscan && snap.fTitle && document)
          document.title = snap.fTitle;
@@ -3452,8 +3466,8 @@
 
          this.snapid = snap.fObjectID;
 
-         this.draw_object = padattr;
-         this.pad = padattr;
+         this.draw_object = snap;
+         this.pad = snap;
 
          if (this.batch_mode && this.iscan)
              this._fixed_size = true;
@@ -3468,7 +3482,7 @@
       }
 
       // update only pad/canvas attributes
-      this.UpdateObject(padattr);
+      this.UpdateObject(snap);
 
       // apply all changes in the object (pad or canvas)
       if (this.iscan) {
