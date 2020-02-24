@@ -2485,6 +2485,9 @@
       // if (this.options.BarStyle>=20) this.swap_xy = true;
       this.logx = this.logy = false;
 
+      this.logx = !!this.v7EvalAttr("x_log");
+      this.logy = !!this.v7EvalAttr("y_log");
+
       var w = this.frame_width(), h = this.frame_height();
 
       this.scale_xmin = this.xmin;
