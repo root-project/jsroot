@@ -59,6 +59,67 @@
          obj.fAttr.m[name] = { v: value };
    }
 
+   /** Decode pad length from string, return pixel value */
+   JSROOT.TObjectPainter.prototype.v7EvalLength = function(name, sizepx, dflt) {
+      if (sizepx <= 0) sizepx = 1;
+
+      var value = this.v7EvalAttr(name);
+
+      if (value === undefined)
+         return Math.round(dflt*sizepx);
+
+      if (typeof value == "number")
+         return Math.round(value*sizepx);
+
+      var norm = 0, px = 0, val = value, operand = 0, pos = 0;
+
+      while (val.length > 0) {
+         // skip empty spaces
+         while ((pos < val.length) && ((val[pos] == ' ') || (val[pos] == '\t')))
+            ++pos;
+
+         if (pos >= val.length)
+            break;
+
+         if ((val[pos] == '-') || (val[pos] == '+')) {
+            if (operand) {
+               console.log("Fail to parse RPadLength " + value);
+               return dflt;
+            }
+            operand = (val[pos] == '-') ? -1 : 1;
+            pos++;
+            continue;
+         }
+
+         if (pos > 0) { val = val.substr(pos); pos = 0; }
+
+         while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
+
+         var v = parseFloat(val.substr(0, pos));
+         if (isNaN(v)) {
+            console.log("Fail to parse RPadLength " + value);
+            return Math.round(dflt*sizepx);
+         }
+
+         val = val.substr(pos);
+         pos = 0;
+         if (!operand) operand = 1;
+         if ((val.length > 0) && (val[0] == '%')) {
+            val = val.substr(1);
+            norm += operand*v*0.01;
+         } else if ((val.length > 1) && (val[0] == 'p') && (val[1] == 'x')) {
+            val = val.substr(2);
+            px += operand*v;
+         } else {
+            norm += operand*v;
+         }
+
+         operand = 0;
+      }
+
+      return Math.round(norm*sizepx + px);
+   }
+
 
    /** Evalue RColor using attribute storage and configured RStyle */
    JSROOT.TObjectPainter.prototype.v7EvalColor = function(name, dflt) {
@@ -926,74 +987,12 @@
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
+         var padw = this.pad_width(), padh = this.pad_height();
 
-         var pthis = this, padw = this.pad_width(), padh = this.pad_height();
-
-         /** Evalue RAttrLength which can be coded like "0.1 + 10px", see RPadLength::ParseString() */
-
-         function evalLength(name, size, dflt) {
-            var value = pthis.v7EvalAttr("margin_" + name);
-
-            if (value === undefined)
-               return dflt;
-
-            if (typeof value == "number")
-               return value;
-
-            if (size <= 0) size = 1;
-            var norm = 0, px = 0, val = value, operand = 0, pos = 0;
-
-            while (val.length > 0) {
-               // skip empty spaces
-               while ((pos < val.length) && ((val[pos] == ' ') || (val[pos] == '\t')))
-                  ++pos;
-
-               if (pos >= val.length)
-                  break;
-
-               if ((val[pos] == '-') || (val[pos] == '+')) {
-                  if (operand) {
-                     console.log("Fail to parse RPadLength " + value);
-                     return dflt;
-                  }
-                  operand = (val[pos] == '-') ? -1 : 1;
-                  pos++;
-                  continue;
-               }
-
-               if (pos > 0) { val = val.substr(pos); pos = 0; }
-
-               while ((pos < val.length) && (((val[pos]>='0') && (val[pos]<='9')) || (val[pos]=='.'))) pos++;
-
-               var v = parseFloat(val.substr(0, pos));
-               if (isNaN(v)) {
-                  console.log("Fail to parse RPadLength " + value);
-                  return dflt;
-               }
-
-               val = val.substr(pos);
-               pos = 0;
-               if (!operand) operand = 1;
-               if ((val.length > 0) && (val[0] == '%')) {
-                  val = val.substr(1);
-                  norm += operand*v*0.01;
-               } else if ((val.length > 1) && (val[0] == 'p') && (val[1] == 'x')) {
-                  val = val.substr(2);
-                  px += operand*v;
-               } else {
-                  norm += operand*v;
-               }
-
-               operand = 0;
-            }
-
-            return (norm*size + px)/size;
-         }
-
-         this.fX1NDC = evalLength("left", padw, JSROOT.gStyle.FrameNDC.fX1NDC);
-         this.fY1NDC = evalLength("bottom", padh, JSROOT.gStyle.FrameNDC.fY1NDC);
-         this.fX2NDC = 1 - evalLength("right", padw, 1-JSROOT.gStyle.FrameNDC.fX2NDC);
-         this.fY2NDC = 1 - evalLength("top", padh, 1-JSROOT.gStyle.FrameNDC.fY2NDC);
+         this.fX1NDC = this.v7EvalLength("margin_left", padw, JSROOT.gStyle.FrameNDC.fX1NDC)/padw;
+         this.fY1NDC = this.v7EvalLength("margin_bottom", padh, JSROOT.gStyle.FrameNDC.fY1NDC)/padh;
+         this.fX2NDC = 1 - this.v7EvalLength("margin_right", padw, 1-JSROOT.gStyle.FrameNDC.fX2NDC)/padw;
+         this.fY2NDC = 1 - this.v7EvalLength("margin_top", padh, 1-JSROOT.gStyle.FrameNDC.fY2NDC)/padh;
       }
 
       if (!this.fillatt)

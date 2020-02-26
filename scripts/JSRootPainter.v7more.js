@@ -56,26 +56,28 @@
       if (!fp)
          return console.log('no frame painter - no title');
 
-      var title        = this.GetObject(),
+      var fx = this.frame_x(),
+          fy = this.frame_y(),
+          fw = this.frame_width(),
+          fh = this.frame_height(),
+          ph = this.pad_height(),
+          title        = this.GetObject(),
           pp           = this.pad_painter(),
           use_frame    = false,
-          title_margin = 0.02,
-          title_height = 0.1,
+          title_margin = this.v7EvalLength( "margin", ph, 0.02),
+          title_height = this.v7EvalLength( "height", ph, 0.05),
           text_size    = this.v7EvalAttr( "text_size", 16),
           text_angle   = -1 * this.v7EvalAttr( "text_angle", 0),
           text_align   = this.v7EvalAttr( "text_align", 22),
           text_color   = this.v7EvalColor( "text_color", "black"),
           text_font    = this.v7EvalAttr( "text_font", 41);
 
-      var fx = this.frame_x(),
-          fy = this.frame_y(),
-          fw = this.frame_width(),
-          fh = this.frame_height(),
-          ph = this.pad_height();
 
-      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-ph*(title_margin+title_height)) + ")");
+      console.log('margin', title_margin, typeof title_margin);
 
-      var arg = { align: 22, x: fw/2, y: title_height*ph/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
+      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")");
+
+      var arg = { align: 22, x: fw/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
 
       this.StartTextDrawing(text_font, text_size);
 
