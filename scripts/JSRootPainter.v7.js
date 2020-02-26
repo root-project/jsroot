@@ -2109,6 +2109,7 @@
       menu_painter.ctx_menu_evnt = evnt;
 
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
+
          var domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
          // fill frame menu by default - or append frame elements when activated in the frame corner
@@ -2117,12 +2118,27 @@
 
          if (domenu)
             menu.painter.FillObjectExecMenu(menu, kind, function() {
-                // suppress any running zooming
-                menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true) );
+               if ((menu.size() == 0) && (typeof menu.painter.FillObjectOfflineMenu == 'function'))
+                   menu.painter.FillObjectOfflineMenu(menu, kind);
+
+               // suppress any running zooming
+               menu.painter.SwitchTooltip(false);
+               menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true));
             });
 
       });  // end menu creation
+   }
+
+   /** Fill menu for frame when server is not there */
+   TFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
+      if ((kind!="x") && (kind!="y")) return;
+
+      menu.add("Unzoom", this.Unzoom.bind(this, kind));
+
+      if (this[kind+"_kind"] == "normal")
+         menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind));
+
+      // here should be all axes attributes in offline
    }
 
    TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
@@ -2131,59 +2147,7 @@
       this.clearInteractiveElements();
 
       if ((kind=="x") || (kind=="y")) {
-         var faxis = null;
-         //this.histo.fXaxis;
-         //if (kind=="y") faxis = this.histo.fYaxis;  else
-         //if (kind=="z") faxis = obj ? obj : this.histo.fZaxis;
          menu.add("header: " + kind.toUpperCase() + " axis");
-         menu.add("Unzoom", this.Unzoom.bind(this, kind));
-
-         if (this[kind+"_kind"] == "normal")
-           menu.addchk(this["log"+kind], "SetLog"+kind, this.ToggleLog.bind(this, kind) );
-
-         // if ((kind === "z") && this.options.Zscale)
-         //   if (this.FillPaletteMenu) this.FillPaletteMenu(menu);
-
-         if (faxis) {
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kMoreLogLabels), "More log",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kMoreLogLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kNoExponent), "No exponent",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kNoExponent); this.RedrawPad(); });
-            menu.add("sub:Labels");
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterLabels), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterLabels); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kLabelsVert), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kLabelsVert); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fLabelColor,
-                  function(arg) { faxis.fLabelColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 0.1, 0.01, faxis.fLabelOffset,
-                  function(arg) { faxis.fLabelOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fLabelSize,
-                  function(arg) { faxis.fLabelSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-            menu.add("sub:Title");
-            menu.add("SetTitle", function() {
-               var t = prompt("Enter axis title", faxis.fTitle);
-               if (t!==null) { faxis.fTitle = t; this.RedrawPad(); }
-            });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kCenterTitle), "Center",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kCenterTitle); this.RedrawPad(); });
-            menu.addchk(faxis.TestBit(JSROOT.EAxisBits.kRotateTitle), "Rotate",
-                  function() { faxis.InvertBit(JSROOT.EAxisBits.kRotateTitle); this.RedrawPad(); });
-            this.AddColorMenuEntry(menu, "Color", faxis.fTitleColor,
-                  function(arg) { faxis.fTitleColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu,"Offset", 0, 3, 0.2, faxis.fTitleOffset,
-                                  function(arg) { faxis.fTitleOffset = parseFloat(arg); this.RedrawPad(); } );
-            this.AddSizeMenuEntry(menu,"Size", 0.02, 0.11, 0.01, faxis.fTitleSize,
-                  function(arg) { faxis.fTitleSize = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-            menu.add("sub:Ticks");
-            this.AddColorMenuEntry(menu, "Color", faxis.fAxisColor,
-                        function(arg) { faxis.fAxisColor = parseInt(arg); this.RedrawPad(); });
-            this.AddSizeMenuEntry(menu, "Size", -0.05, 0.055, 0.01, faxis.fTickLength,
-                      function(arg) { faxis.fTickLength = parseFloat(arg); this.RedrawPad(); } );
-            menu.add("endsub:");
-         }
          return true;
       }
 
