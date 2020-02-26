@@ -4422,12 +4422,48 @@
       return painter;
    }
 
+   // =================================================================================
+
+   function drawTitle() {
+      var fp = this.frame_painter();
+      if (!fp)
+         return console.log('no frame painter - no title');
+
+      var fx = this.frame_x(),
+          fy = this.frame_y(),
+          fw = this.frame_width(),
+          fh = this.frame_height(),
+          ph = this.pad_height(),
+          title        = this.GetObject(),
+          pp           = this.pad_painter(),
+          use_frame    = false,
+          title_margin = this.v7EvalLength( "margin", ph, 0.02),
+          title_height = this.v7EvalLength( "height", ph, 0.05),
+          text_size    = this.v7EvalAttr( "text_size", 16),
+          text_angle   = -1 * this.v7EvalAttr( "text_angle", 0),
+          text_align   = this.v7EvalAttr( "text_align", 22),
+          text_color   = this.v7EvalColor( "text_color", "black"),
+          text_font    = this.v7EvalAttr( "text_font", 41);
+
+      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")");
+
+      var arg = { align: 22, x: fw/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
+
+      this.StartTextDrawing(text_font, text_size);
+
+      this.DrawText(arg);
+
+      this.FinishTextDrawing();
+   }
+
+
+
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });
 
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistDrawable<1>", icon: "img_histo1d", prereq: "v7hist", func: "JSROOT.v7.drawHist1", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistDrawable<2>", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true, csstype: "text" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RTitle", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawTitle", opt: "", direct: true, csstype: "title" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RTitle", icon: "img_text", func: drawTitle, opt: "", direct: true, csstype: "title" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: true, csstype: "line" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: true, csstype: "box" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: true, csstype: "marker" });
@@ -4442,6 +4478,7 @@
    JSROOT.v7.drawPad = drawPad;
    JSROOT.v7.drawCanvas = drawCanvas;
    JSROOT.v7.drawPadSnapshot = drawPadSnapshot;
+   JSROOT.v7.drawTitle = drawTitle;
 
    return JSROOT;
 
