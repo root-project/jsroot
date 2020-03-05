@@ -604,16 +604,14 @@
    }
 
    JSROOT.v7.ExtractRColor = function(rcolor) {
-      var rgb = rcolor.fOwnAttr.m.rgb;
-      if (rgb) return "#" + rgb.v;
+      var m = rcolor.fOwnAttr.m;
+      if (m.rgb) return "#" + m.rgb.v;
+      if (m.name) return m.name.v;
       return "black";
    }
 
    /* create array of colors of specified len */
    JSROOT.v7.CreateRPaletteColors = function(rpalette, len) {
-
-      console.log("CreateRPaletteColors", len)
-
       var arr = [], indx = 0;
 
       while (arr.length < len) {
@@ -642,51 +640,36 @@
 
          var color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
 
-         console.log("GOT COLOR", color.toString());
-
          arr.push(color.toString());
-
       }
-
-
-      while (arr.length < len) {
-         if (arr.length < len) arr.push("red");
-         if (arr.length < len) arr.push("blue");
-         if (arr.length < len) arr.push("green");
-      }
-
 
       return arr;
-
    }
 
 
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
-         console.log("Acessing palette");
-         var drawable = this.GetObject();
-         var palette = drawable.fPalette.fIO;
+         var main = this.frame_painter();
 
-         if (palette) {
-            console.log("Have palette", palette._typename);
+         if (main && main.fPalette) {
+            console.log("Have RPalette", main.fPalette._typename);
 
-            palette.calcColorIndex = function(i,len) {
+            main.fPalette.calcColorIndex = function(i,len) {
                if (!this.palette || (this.palette.length != len))
                   this.palette = JSROOT.v7.CreateRPaletteColors(this, len);
                return i;
             }
 
-            palette.getColor = function(indx) {
+            main.fPalette.getColor = function(indx) {
                return this.palette[indx];
             }
 
-            palette.calcColor = function(i,len) {
+            main.fPalette.calcColor = function(i,len) {
                var indx = this.calcColorIndex(i,len);
                return this.getColor(indx);
             }
 
-
-            this.fPalette = palette;
+            this.fPalette = main.fPalette;
          }
 
          if (!this.fPalette)

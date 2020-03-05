@@ -1413,6 +1413,7 @@
       this.draw_g = null;
       delete this._click_handler;
       delete this._dblclick_handler;
+      delete this.fPalette;
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -4469,11 +4470,13 @@
           fw = this.frame_width(),
           fh = this.frame_height(),
           pw = this.pad_width(),
-          title        = this.GetObject(),
+          obj          = this.GetObject(),
           pp           = this.pad_painter(),
           use_frame    = false,
           palette_margin = this.v7EvalLength( "margin", pw, 0.02),
           palette_size = this.v7EvalLength( "size", pw, 0.05);
+
+      fp.fPalette = obj.fPalette;
 
       this.CreateG(false).attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")");
 
