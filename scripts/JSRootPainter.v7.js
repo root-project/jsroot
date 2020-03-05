@@ -2454,10 +2454,11 @@
       this.reverse_y = false;
 
       // if (this.options.BarStyle>=20) this.swap_xy = true;
-      this.logx = this.logy = false;
+      this.logx = this.logy = this.logz = false;
 
       this.logx = !!this.v7EvalAttr("x_log");
       this.logy = !!this.v7EvalAttr("y_log");
+      this.logz = !!this.v7EvalAttr("z_log");
 
       var w = this.frame_width(), h = this.frame_height();
 
