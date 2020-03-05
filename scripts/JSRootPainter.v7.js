@@ -4456,6 +4456,34 @@
       this.FinishTextDrawing();
    }
 
+   // =================================================================================
+
+   function drawPalette() {
+      var fp = this.frame_painter();
+      if (!fp)
+         return console.log('no frame painter - no palette');
+
+      var fx = this.frame_x(),
+          fy = this.frame_y(),
+          fw = this.frame_width(),
+          fh = this.frame_height(),
+          pw = this.pad_width(),
+          title        = this.GetObject(),
+          pp           = this.pad_painter(),
+          use_frame    = false,
+          palette_margin = this.v7EvalLength( "margin", pw, 0.02),
+          palette_size = this.v7EvalLength( "size", pw, 0.05);
+
+      this.CreateG(false).attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")");
+
+      this.draw_g.append("svg:rect")
+           .attr("x", 0)
+           .attr("width", palette_size)
+           .attr("y", 0)
+           .attr("height", fh)
+           .style("stroke", "black")
+           .attr("fill", "none");
+   }
 
 
    // JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPadDisplayItem", icon: "img_canvas", func: drawPad, opt: "" });
@@ -4464,6 +4492,7 @@
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistDrawable<2>", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true, csstype: "text" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawFrameTitle, opt: "", direct: true, csstype: "title" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaletteDraw", icon: "img_text", func: drawPalette, opt: "", direct: true, csstype: "palette" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: true, csstype: "line" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: true, csstype: "box" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: true, csstype: "marker" });
