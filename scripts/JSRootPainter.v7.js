@@ -1413,7 +1413,6 @@
       this.draw_g = null;
       delete this._click_handler;
       delete this._dblclick_handler;
-      delete this.fPalette;
 
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
@@ -4460,12 +4459,80 @@
 
    ////////////////////////////////////////////////////////////////////////////////////////////
 
+   JSROOT.v7.ExtractRColor = function(rcolor) {
+      var m = rcolor.fOwnAttr.m;
+      if (m.rgb) return "#" + m.rgb.v;
+      if (m.name) return m.name.v;
+      return "black";
+   }
+
+   /* create array of colors of specified len */
+   JSROOT.v7.CreateRPaletteColors = function(rpalette, len) {
+      var arr = [], indx = 0;
+
+      while (arr.length < len) {
+         var value = arr.length / (len-1);
+
+         var entry = rpalette.fColors[indx];
+
+         if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == rpalette.fColors.length-1)) {
+            arr.push(JSROOT.v7.ExtractRColor(entry.fColor));
+            continue;
+         }
+
+         var next = rpalette.fColors[indx+1];
+         if (next.fOrdinal <= value) {
+            indx++;
+            continue;
+         }
+
+         var dist = next.fOrdinal - entry.fOrdinal,
+             r1 = (next.fOrdinal - value) / dist,
+             r2 = (value - entry.fOrdinal) / dist;
+
+         // interpolate
+         var col1 = d3.rgb(JSROOT.v7.ExtractRColor(entry.fColor));
+         var col2 = d3.rgb(JSROOT.v7.ExtractRColor(next.fColor));
+
+         var color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
+
+         arr.push(color.toString());
+      }
+
+      return arr;
+   }
+
    function RPalettePainter(palette) {
       JSROOT.TObjectPainter.call(this, palette);
       this.csstype = "palette";
    }
 
    RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   RPalettePainter.prototype.GetPalette = function()
+   {
+      var drawable = this.GetObject();
+      var pal = drawable ? drawable.fPalette : null;
+
+      if (!pal || pal.calcColorIndex) return pal;
+
+      pal.calcColorIndex = function(i,len) {
+         if (!this.palette || (this.palette.length != len))
+            this.palette = JSROOT.v7.CreateRPaletteColors(this, len);
+         return i;
+      }
+
+      pal.getColor = function(indx) {
+         return this.palette[indx];
+      }
+
+      pal.calcColor = function(i,len) {
+         var indx = this.calcColorIndex(i,len);
+         return this.getColor(indx);
+      }
+
+      return pal;
+   }
 
    RPalettePainter.prototype.DrawFirst = function() {
       var fp = this.frame_painter();
@@ -4484,8 +4551,6 @@
           palette_margin = this.v7EvalLength( "margin", pw, 0.02),
           palette_size = this.v7EvalLength( "size", pw, 0.05);
 
-      fp.fPalette = obj.fPalette;
-
       if (!visible)
          return this.RemoveDrawG();
 
@@ -4499,6 +4564,153 @@
           .attr("height", fh)
           .style("stroke", "black")
           .attr("fill", "none");
+   }
+
+   RPalettePainter.prototype.DrawPalette = function(contour) {
+
+      return;
+
+      if (!contour) return;
+
+      var pthis = this,
+          palette = this.GetPalette(),
+          axis = palette.fAxis,
+          can_move = false,
+          nbr1 = 8,
+          pos_x = parseInt(this.draw_g.attr("x")), // pave position
+          pos_y = parseInt(this.draw_g.attr("y")),
+          width = this.pad_width(),
+          height = this.pad_height(),
+          axisOffset = axis.fLabelOffset * width,
+          framep = this.frame_painter(),
+          zmin = contour[0],
+          zmax = contour[contour.length-1];
+
+      // zmin = Math.min(contour[0], framep.zmin);
+      // zmax = Math.max(contour[contour.length-1], framep.zmax);
+
+      var z = null, z_kind = "normal";
+
+      if (framep && framep.logz) {
+         z = d3.scaleLog();
+         z_kind = "log";
+      } else {
+         z = d3.scaleLinear();
+      }
+      z.domain([zmin, zmax]).range([s_height,0]);
+
+      this.draw_g.selectAll("rect").remove();
+
+      for (var i=0;i<contour.length-1;++i) {
+         var z0 = z(contour[i]),
+         z1 = z(contour[i+1]),
+         col = main.getContourColor((contour[i]+contour[i+1])/2);
+
+         var r = this.draw_g.append("svg:rect")
+         .attr("x", 0)
+         .attr("y",  Math.round(z1))
+         .attr("width", s_width)
+         .attr("height", Math.round(z0) - Math.round(z1))
+         .style("fill", col)
+         .style("stroke", col)
+         .property("fill0", col)
+         .property("fill1", d3.rgb(col).darker(0.5).toString())
+
+         if (this.IsTooltipAllowed())
+            r.on('mouseover', function() {
+               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill1'));
+            }).on('mouseout', function() {
+               d3.select(this).transition().duration(100).style("fill", d3.select(this).property('fill0'));
+            }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
+
+         if (JSROOT.gStyle.Zooming)
+            r.on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
+      }
+
+
+      this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
+
+      this.z_handle.max_tick_size = Math.round(s_width*0.7);
+
+      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
+
+      if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
+         var rect = this.draw_g.node().getBoundingClientRect();
+
+         var shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
+
+         if (shift > 0) {
+            this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
+            .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
+            palette.fX1NDC -= shift/width;
+            palette.fX2NDC -= shift/width;
+         }
+      }
+
+      var evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+
+      function moveRectSel() {
+
+         if (!doing_zoom) return;
+
+         d3.event.preventDefault();
+         var m = d3.mouse(evnt);
+
+         if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
+
+         zoom_rect.attr("y", sel1)
+         .attr("height", Math.abs(sel2-sel1));
+      }
+
+      function endRectSel() {
+         if (!doing_zoom) return;
+
+         d3.event.preventDefault();
+         d3.select(window).on("mousemove.colzoomRect", null)
+         .on("mouseup.colzoomRect", null);
+         zoom_rect.remove();
+         zoom_rect = null;
+         doing_zoom = false;
+
+         var zmin = Math.min(z.invert(sel1), z.invert(sel2)),
+         zmax = Math.max(z.invert(sel1), z.invert(sel2));
+
+         pthis.frame_painter().Zoom("z", zmin, zmax);
+      }
+
+      function startRectSel() {
+         // ignore when touch selection is activated
+         if (doing_zoom) return;
+         doing_zoom = true;
+
+         d3.event.preventDefault();
+
+         evnt = this;
+         var origin = d3.mouse(evnt);
+
+         sel1 = sel2 = origin[1];
+
+         zoom_rect = pthis.draw_g
+         .append("svg:rect")
+         .attr("class", "zoom")
+         .attr("id", "colzoomRect")
+         .attr("x", "0")
+         .attr("width", s_width)
+         .attr("y", sel1)
+         .attr("height", 5);
+
+         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
+         .on("mouseup.colzoomRect", endRectSel, true);
+
+         d3.event.stopPropagation();
+      }
+
+      if (JSROOT.gStyle.Zooming)
+         this.draw_g.select(".axis_zoom")
+         .on("mousedown", startRectSel)
+         .on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
+
+      if (this.FinishPave) this.FinishPave();
    }
 
    function drawPalette(divid, palette, opt) {

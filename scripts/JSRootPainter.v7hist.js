@@ -603,80 +603,24 @@
       return asindx ? indx : palette.getColor(indx);
    }
 
-   JSROOT.v7.ExtractRColor = function(rcolor) {
-      var m = rcolor.fOwnAttr.m;
-      if (m.rgb) return "#" + m.rgb.v;
-      if (m.name) return m.name.v;
-      return "black";
-   }
-
-   /* create array of colors of specified len */
-   JSROOT.v7.CreateRPaletteColors = function(rpalette, len) {
-      var arr = [], indx = 0;
-
-      while (arr.length < len) {
-         var value = arr.length / (len-1);
-
-         var entry = rpalette.fColors[indx];
-
-         if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == rpalette.fColors.length-1)) {
-            arr.push(JSROOT.v7.ExtractRColor(entry.fColor));
-            continue;
-         }
-
-         var next = rpalette.fColors[indx+1];
-         if (next.fOrdinal <= value) {
-            indx++;
-            continue;
-         }
-
-         var dist = next.fOrdinal - entry.fOrdinal,
-             r1 = (next.fOrdinal - value) / dist,
-             r2 = (value - entry.fOrdinal) / dist;
-
-         // interpolate
-         var col1 = d3.rgb(JSROOT.v7.ExtractRColor(entry.fColor));
-         var col2 = d3.rgb(JSROOT.v7.ExtractRColor(next.fColor));
-
-         var color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
-
-         arr.push(color.toString());
-      }
-
-      return arr;
-   }
-
-
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
-         var main = this.frame_painter();
+         var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
-         if (main && main.fPalette) {
-            console.log("Have RPalette", main.fPalette._typename);
+         this.fPalette = (pp && pp.GetPalette) ? pp.GetPalette() : null;
 
-            main.fPalette.calcColorIndex = function(i,len) {
-               if (!this.palette || (this.palette.length != len))
-                  this.palette = JSROOT.v7.CreateRPaletteColors(this, len);
-               return i;
-            }
-
-            main.fPalette.getColor = function(indx) {
-               return this.palette[indx];
-            }
-
-            main.fPalette.calcColor = function(i,len) {
-               var indx = this.calcColorIndex(i,len);
-               return this.getColor(indx);
-            }
-
-            this.fPalette = main.fPalette;
-         }
-
-         if (!this.fPalette)
+         if (this.fPalette)
+            console.log("Have RPalette", this.fPalette._typename);
+         else
              this.fPalette = this.get_palette(true, this.options.Palette);
 
       }
       return this.fPalette;
+   }
+
+   THistPainter.prototype.UpdatePaletteDraw = function(contour) {
+      var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+      if (pp) pp.DrawPalette(contour);
    }
 
    THistPainter.prototype.FillPaletteMenu = function(menu) {
@@ -2316,6 +2260,8 @@
                .attr("palette-index", colindx)
                .attr("fill", this.fPalette.getColor(colindx))
                .attr("d", colPaths[colindx]);
+
+      this.UpdatePaletteDraw(this.fContor);
 
       return handle;
    }
