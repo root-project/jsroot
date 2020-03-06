@@ -4521,21 +4521,26 @@
       }
 
       pal.getContourIndex = function(zc) {
-         // TODO - LOG SCALE!!!
          var cntr = this.fContour, l = 0, r = cntr.length-1, mid;
+
          if (zc < cntr[0]) return -1;
          if (zc >= cntr[r]) return r-1;
-         while (l < r-1) {
-            mid = Math.round((l+r)/2);
-            if (cntr[mid] > zc) r = mid; else l = mid;
+
+         if (this.fCustomContour) {
+            while (l < r-1) {
+               mid = Math.round((l+r)/2);
+               if (cntr[mid] > zc) r = mid; else l = mid;
+            }
+            return l;
          }
-         return l;
+
+         // last color in pallette starts from level cntr[r-1]
+         return Math.floor((zc-cntr[0]) / (cntr[r-1] - cntr[0]) * (r-1));
       }
 
-      pal.getContourColor = function(zc, asindx) {
+      pal.getContourColor = function(zc) {
          var zindx = this.getContourIndex(zc);
-         if (zindx < 0) return null;
-         return asindx ? zindx : this.getColor(zindx);
+         return (zindx < 0) ? "" : this.getColor(zindx);
       }
 
       pal.GetContour = function() {
@@ -4622,8 +4627,6 @@
 
       return;
 
-      if (!contour) return;
-
       var pthis = this,
           palette = this.GetPalette(),
           contour = palette.GetContour(),
@@ -4655,8 +4658,8 @@
 
       for (var i=0;i<contour.length-1;++i) {
          var z0 = z(contour[i]),
-         z1 = z(contour[i+1]),
-         col = palette.getContourColor((contour[i]+contour[i+1])/2);
+             z1 = z(contour[i+1]),
+             col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
          var r = this.draw_g.append("svg:rect")
          .attr("x", 0)

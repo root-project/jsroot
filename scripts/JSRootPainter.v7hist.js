@@ -2170,7 +2170,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = handle.palette.getContourColor(binz, true);
+            colindx = handle.palette.getContourIndex(binz);
             if (binz===0) {
                if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -2584,7 +2584,7 @@
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = palette.getContourColor(bin.fContent, true);
+         colindx = palette.getContourIndex(bin.fContent);
          if (colindx === null) continue;
          if (bin.fContent === 0) {
             if (!this.options.Zero || !this.options.Line) continue;
@@ -3413,7 +3413,7 @@
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = h.palette.getContourColor(binz, true);
+            colindx = h.palette.getContourIndex(binz);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
