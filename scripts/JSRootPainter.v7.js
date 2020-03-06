@@ -1178,7 +1178,7 @@
 
 
    /* Set axes ranges for drawing, check configured attributes if range already specified */
-   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax) {
+   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       if (this.axes_drawn) return;
 
       var min, max;
@@ -1227,8 +1227,31 @@
                this.zoom_ymax = (max === undefined) ? this.ymax : max;
             }
          }
-
       }
+
+      if (this.zmin == this.zmax) {
+         min = this.v7EvalAttr("z_min");
+         max = this.v7EvalAttr("z_max");
+
+         if (min !== undefined) zmin = min;
+         if (max !== undefined) zmax = max;
+
+         if (zmin < zmax) {
+            this.zmin = zmin;
+            this.zmax = zmax;
+         }
+
+         if ((this.zoom_zmin == this.zoom_zmax) && !this.zoom_changed_interactive) {
+            min = this.v7EvalAttr("z_zoommin");
+            max = this.v7EvalAttr("z_zoommax");
+
+            if ((min !== undefined) || (max !== undefined)) {
+               this.zoom_zmin = (min === undefined) ? this.zmin : min;
+               this.zoom_zmax = (max === undefined) ? this.zmax : max;
+            }
+         }
+      }
+
    }
 
    TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {

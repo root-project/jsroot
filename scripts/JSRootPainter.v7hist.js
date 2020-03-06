@@ -110,7 +110,6 @@
       // clear all 3D buffers
       this.Clear3DScene();
 
-      delete this.fPalette;
       delete this.options;
 
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
@@ -139,7 +138,7 @@
          main.xmin = main.xmax = 0;
          main.ymin = main.ymax = 0;
          main.zmin = main.zmax = 0;
-         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax);
+         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
       }
 
       return main.DrawAxes(true);
@@ -257,12 +256,11 @@
       this.xmax = axis.max;
 
       if (!with_y_axis || !this.nbinsy) return;
-
       axis = this.GetAxis("y");
       this.ymin = axis.min;
       this.ymax = axis.max;
-      if (!with_z_axis || !this.nbinsz) return;
 
+      if (!with_z_axis || !this.nbinsz) return;
       axis = this.GetAxis("z");
       this.zmin = axis.min;
       this.zmax = axis.max;
@@ -395,26 +393,30 @@
       return tip;
    }
 
-   /** Return contour levels, use from the frame when exists @private */
-   THistPainter.prototype.CreateContour = function(palette) {
-      if (!palette || palette.GetContour()) return;
+   /** Create contour levels for currently selected Z range @private */
+   THistPainter.prototype.CreateContour = function(main, palette, scatter_plot) {
+      if (!main || !palette) return;
 
-      var main = this.frame_painter();
-
-      var histo = this.GetHisto(), nlevels = JSROOT.gStyle.fNumberContours,
+      var nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
+
+      if (scatter_plot) {
+         if (nlevels > 50) nlevels = 50;
+         zmin = this.minposbin;
+      }
+
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
-      if (main.zoom_zmin != main.zoom_zmax) {
+
+      if (main.zoom_zmin !== main.zoom_zmax) {
          zmin = main.zoom_zmin;
          zmax = main.zoom_zmax;
-         console.log("ZoomZ", zmin, zmax);
       }
 
       palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
 
       if (this.Dimension() < 3) {
-         main.zmin = this.zmin = palette.colzmin;
-         main.zmax = this.zmax = palette.colzmax;
+         main.scale_zmin = palette.colzmin;
+         main.scale_zmax = palette.colzmax;
       }
    }
 
@@ -492,23 +494,14 @@
    }
 
    THistPainter.prototype.GetPalette = function(force) {
-      if (!this.fPalette || force) {
-         var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+      var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
-         this.fPalette = (pp && pp.GetPalette) ? pp.GetPalette() : null;
-
-         if (this.fPalette)
-            console.log("Have RPalette", this.fPalette._typename);
-         else
-            console.error("Fail to find RPalette object");
-
-      }
-      return this.fPalette;
+      return pp ? pp.GetPalette() : null;
    }
 
-   THistPainter.prototype.UpdatePaletteDraw = function(contour) {
+   THistPainter.prototype.UpdatePaletteDraw = function() {
       var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-      if (pp) pp.DrawPalette(contour);
+      if (pp) pp.DrawPalette();
    }
 
    THistPainter.prototype.FillPaletteMenu = function(menu) {
@@ -518,7 +511,6 @@
 
       function change(arg) {
          hpainter.options.Palette = parseInt(arg);
-         hpainter.GetPalette(true);
          hpainter.Redraw(); // redraw histogram
       };
 
@@ -672,7 +664,8 @@
 
       res.palette = this.GetPalette();
 
-      this.CreateContour(res.palette);
+      if (res.palette)
+         this.CreateContour(pmain, res.palette, args.scatter_plot);
 
       return res;
    }
@@ -1681,15 +1674,12 @@
 
    function TH2Painter(histo) {
       THistPainter.call(this, histo);
-      this.fCustomContour = false; // are this user-defined levels (can be irregular)
-      this.fPalette = null;
       this.wheel_zoomy = true;
    }
 
    TH2Painter.prototype = Object.create(THistPainter.prototype);
 
    TH2Painter.prototype.Cleanup = function() {
-      delete this.fCustomContour;
       delete this.tt_handle;
 
       THistPainter.prototype.Cleanup.call(this);
@@ -1911,6 +1901,9 @@
             }
          }
       }
+
+      this.zmin = this.gminbin;
+      this.zmax = this.gmaxbin;
 
       // this value used for logz scale drawing
       if (this.gminposbin === null) this.gminposbin = this.gmaxbin*1e-4;
@@ -2148,7 +2141,8 @@
                .attr("fill", handle.palette.getColor(colindx))
                .attr("d", colPaths[colindx]);
 
-      this.UpdatePaletteDraw(handle.cntr);
+      if (this.is_main_painter())
+         this.UpdatePaletteDraw();
 
       return handle;
    }
@@ -2526,7 +2520,7 @@
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
-      this.CreateContour(palette);
+      this.CreateContour(pmain, palette);
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
@@ -2943,7 +2937,7 @@
    TH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetHisto(),
           fp = this.frame_painter(),
-          handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
+          handle = this.PrepareColorDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.);
@@ -2986,7 +2980,6 @@
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
       var nlevels = Math.round(handle.max - handle.min);
-      this.CreateContour(fp.logz, (nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -3377,7 +3370,7 @@
                   color2: this.fillatt ? this.fillatt.fillcoloralt('blue') : 'blue',
                   lines: this.GetBinTips(i, j), exact: true, menu: true };
 
-      if (this.options.Color) res.color2 = this.GetPalette().getColor(colindx);
+      if (this.options.Color) res.color2 = h.palette.getColor(colindx);
 
       if (pnt.disabled && !this.is_projection) {
          ttrect.remove();
