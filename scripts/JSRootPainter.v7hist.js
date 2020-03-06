@@ -111,7 +111,6 @@
       this.Clear3DScene();
 
       delete this.fPalette;
-      delete this.fContour;
       delete this.options;
 
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
@@ -396,68 +395,19 @@
       return tip;
    }
 
-   THistPainter.prototype.CreateContourOld = function(logz, nlevels, zmin, zmax, zminpositive) {
-
-      this.fContour = [];
-      this.colzmin = zmin;
-      this.colzmax = zmax;
-
-      if (logz) {
-         if (this.colzmax <= 0) this.colzmax = 1.;
-         if (this.colzmin <= 0)
-            if ((zminpositive===undefined) || (zminpositive <= 0))
-               this.colzmin = 0.0001*this.colzmax;
-            else
-               this.colzmin = ((zminpositive < 3) || (zminpositive>100)) ? 0.3*zminpositive : 1;
-         if (this.colzmin >= this.colzmax) this.colzmin = 0.0001*this.colzmax;
-
-         var logmin = Math.log(this.colzmin)/Math.log(10),
-             logmax = Math.log(this.colzmax)/Math.log(10),
-             dz = (logmax-logmin)/nlevels;
-         this.fContour.push(this.colzmin);
-         for (var level=1; level<nlevels; level++)
-            this.fContour.push(Math.exp((logmin + dz*level)*Math.log(10)));
-         this.fContour.push(this.colzmax);
-         this.fCustomContour = true;
-      } else {
-         if ((this.colzmin === this.colzmax) && (this.colzmin !== 0)) {
-            this.colzmax += 0.01*Math.abs(this.colzmax);
-            this.colzmin -= 0.01*Math.abs(this.colzmin);
-         }
-         var dz = (this.colzmax-this.colzmin)/nlevels;
-         for (var level=0; level<=nlevels; level++)
-            this.fContour.push(this.colzmin + dz*level);
-      }
-
-      var main = this.frame_painter();
-
-      if (this.Dimension() < 3) {
-         main.zmin = this.zmin = this.colzmin;
-         main.zmax = this.zmax = this.colzmax;
-      }
-
-      main.fContour = this.fContour;
-      main.fCustomContour = this.fCustomContour;
-      main.colzmin = this.colzmin;
-      main.colzmax = this.colzmax;
-
-      return this.fContour;
-   }
-
    /** Return contour levels, use from the frame when exists @private */
    THistPainter.prototype.CreateContour = function(palette) {
       if (!palette || palette.GetContour()) return;
 
       var main = this.frame_painter();
 
-      // if not initialized, first create contour array
-      // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       var histo = this.GetHisto(), nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
       if (main.zoom_zmin != main.zoom_zmax) {
          zmin = main.zoom_zmin;
          zmax = main.zoom_zmax;
+         console.log("ZoomZ", zmin, zmax);
       }
 
       palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
@@ -1731,7 +1681,6 @@
 
    function TH2Painter(histo) {
       THistPainter.call(this, histo);
-      this.fContour = null; // contour levels
       this.fCustomContour = false; // are this user-defined levels (can be irregular)
       this.fPalette = null;
       this.wheel_zoomy = true;
@@ -3078,8 +3027,10 @@
 
       this.createAttMarker({ attr: histo });
 
+      var cntr = handle.palette.GetCountour();
+
       for (colindx=0;colindx<colPaths.length;++colindx)
-        if ((colPaths[colindx] !== undefined) && (colindx<this.fContour.length)) {
+        if ((colPaths[colindx] !== undefined) && (colindx<cntr.length)) {
            var pattern_class = "scatter_" + colindx,
                pattern = defs.select('.' + pattern_class);
            if (pattern.empty())
@@ -3090,7 +3041,7 @@
            else
               pattern.selectAll("*").remove();
 
-           var npix = Math.round(factor*this.fContour[colindx]*cell_w[colindx]*cell_h[colindx]);
+           var npix = Math.round(factor*cntr[colindx]*cell_w[colindx]*cell_h[colindx]);
            if (npix<1) npix = 1;
 
            var arrx = new Float32Array(npix), arry = new Float32Array(npix);

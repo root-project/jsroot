@@ -4602,10 +4602,13 @@
           zmin = contour[0],
           zmax = contour[contour.length-1];
 
-
       // frame painter must  be there
       if (!framep)
          return console.log('no frame painter - no palette');
+
+      // zmin = Math.min(contour[0], framep.zmin);
+      // zmax = Math.max(contour[contour.length-1], framep.zmax);
+
 
 
       var fx = this.frame_x(),
@@ -4641,9 +4644,6 @@
           .attr("height", palette_height)
           .style("stroke", "black")
           .attr("fill", "none");
-
-      // zmin = Math.min(contour[0], framep.zmin);
-      // zmax = Math.max(contour[contour.length-1], framep.zmax);
 
       var z = null, z_kind = "normal";
 
@@ -4687,20 +4687,7 @@
 
       this.z_handle.DrawAxis(true, this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
 
-      return;
-
-      if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
-         var rect = this.draw_g.node().getBoundingClientRect();
-
-         var shift = (pos_x + parseInt(rect.width)) - Math.round(0.995*width) + 3;
-
-         if (shift > 0) {
-            this.draw_g.attr("x", pos_x - shift).attr("y", pos_y)
-            .attr("transform", "translate(" + (pos_x-shift) + ", " + pos_y + ")");
-            palette.fX1NDC -= shift/width;
-            palette.fX2NDC -= shift/width;
-         }
-      }
+      if (!JSROOT.gStyle.Zooming) return;
 
       var evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
@@ -4714,7 +4701,7 @@
          if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
 
          zoom_rect.attr("y", sel1)
-         .attr("height", Math.abs(sel2-sel1));
+                 .attr("height", Math.abs(sel2-sel1));
       }
 
       function endRectSel() {
@@ -4722,15 +4709,15 @@
 
          d3.event.preventDefault();
          d3.select(window).on("mousemove.colzoomRect", null)
-         .on("mouseup.colzoomRect", null);
+                          .on("mouseup.colzoomRect", null);
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
 
          var zmin = Math.min(z.invert(sel1), z.invert(sel2)),
-         zmax = Math.max(z.invert(sel1), z.invert(sel2));
+             zmax = Math.max(z.invert(sel1), z.invert(sel2));
 
-         pthis.frame_painter().Zoom("z", zmin, zmax);
+         framep.Zoom("z", zmin, zmax);
       }
 
       function startRectSel() {
@@ -4745,27 +4732,24 @@
 
          sel1 = sel2 = origin[1];
 
-         zoom_rect = pthis.draw_g
-         .append("svg:rect")
-         .attr("class", "zoom")
-         .attr("id", "colzoomRect")
-         .attr("x", "0")
-         .attr("width", s_width)
-         .attr("y", sel1)
-         .attr("height", 5);
+         zoom_rect = g_btns
+              .append("svg:rect")
+              .attr("class", "zoom")
+              .attr("id", "colzoomRect")
+              .attr("x", "0")
+              .attr("width", palette_width)
+              .attr("y", sel1)
+              .attr("height", 5);
 
          d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-         .on("mouseup.colzoomRect", endRectSel, true);
+                          .on("mouseup.colzoomRect", endRectSel, true);
 
          d3.event.stopPropagation();
       }
 
-      if (JSROOT.gStyle.Zooming)
-         this.draw_g.select(".axis_zoom")
-         .on("mousedown", startRectSel)
-         .on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
-
-      if (this.FinishPave) this.FinishPave();
+      this.draw_g.select(".axis_zoom")
+                 .on("mousedown", startRectSel)
+                 .on("dblclick", function() { framep.Unzoom("z"); });
    }
 
    function drawPalette(divid, palette, opt) {
