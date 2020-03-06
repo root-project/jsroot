@@ -4458,9 +4458,16 @@
       this.FinishTextDrawing();
    }
 
-   // =================================================================================
+   ////////////////////////////////////////////////////////////////////////////////////////////
 
-   function drawPalette() {
+   function RPalettePainter(palette) {
+      JSROOT.TObjectPainter.call(this, palette);
+      this.csstype = "palette";
+   }
+
+   RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   RPalettePainter.prototype.DrawFirst = function() {
       var fp = this.frame_painter();
       if (!fp)
          return console.log('no frame painter - no palette');
@@ -4482,15 +4489,31 @@
       if (!visible)
          return this.RemoveDrawG();
 
+      // draw dummy rect before actual drawing can be completed
       this.CreateG(false)
-           .attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")")
-           .append("svg:rect")
-           .attr("x", 0)
-           .attr("width", palette_size)
-           .attr("y", 0)
-           .attr("height", fh)
-           .style("stroke", "black")
-           .attr("fill", "none");
+          .attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")")
+          .append("svg:rect")
+          .attr("x", 0)
+          .attr("width", palette_size)
+          .attr("y", 0)
+          .attr("height", fh)
+          .style("stroke", "black")
+          .attr("fill", "none");
+   }
+
+   function drawPalette(divid, palette, opt) {
+      var painter = new RPalettePainter(palette, opt);
+
+      painter.SetDivId(divid);
+
+      // painter.z_handle = new JSROOT.v7.TAxisPainter(true, "z_");
+      // painter.z_handle.SetDivId(divid, -1);
+      // painter.z_handle.pad_name = painter.pad_name;
+      // painter.z_handle.rstyle = painter.rstyle;
+
+      painter.DrawFirst();
+
+      return painter.DrawingReady();
    }
 
 
@@ -4500,7 +4523,7 @@
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHist2Drawable", icon: "img_histo2d", prereq: "v7hist", func: "JSROOT.v7.drawHist2", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true, csstype: "text" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawFrameTitle, opt: "", direct: true, csstype: "title" });
-   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: drawPalette, opt: "", direct: true, csstype: "palette" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: drawPalette, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: true, csstype: "line" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: true, csstype: "box" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: true, csstype: "marker" });
@@ -4509,6 +4532,7 @@
 
    JSROOT.v7.TAxisPainter = TAxisPainter;
    JSROOT.v7.TFramePainter = TFramePainter;
+   JSROOT.v7.RPalettePainter = RPalettePainter;
    JSROOT.v7.TPadPainter = TPadPainter;
    JSROOT.v7.TCanvasPainter = TCanvasPainter;
    JSROOT.v7.drawFrame = drawFrame;
