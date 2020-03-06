@@ -396,16 +396,13 @@
       return tip;
    }
 
-   THistPainter.prototype.CreateContour = function(nlevels, zmin, zmax, zminpositive) {
+   THistPainter.prototype.CreateContourOld = function(logz, nlevels, zmin, zmax, zminpositive) {
 
-      var main = this.frame_painter();
-
-      if (nlevels<1) nlevels = JSROOT.gStyle.fNumberContours;
       this.fContour = [];
       this.colzmin = zmin;
       this.colzmax = zmax;
 
-      if (main.logz) {
+      if (logz) {
          if (this.colzmax <= 0) this.colzmax = 1.;
          if (this.colzmin <= 0)
             if ((zminpositive===undefined) || (zminpositive <= 0))
@@ -432,6 +429,8 @@
             this.fContour.push(this.colzmin + dz*level);
       }
 
+      var main = this.frame_painter();
+
       if (this.Dimension() < 3) {
          main.zmin = this.zmin = this.colzmin;
          main.zmax = this.zmax = this.colzmax;
@@ -446,49 +445,30 @@
    }
 
    /** Return contour levels, use from the frame when exists @private */
-   THistPainter.prototype.GetContour = function() {
-      if (this.fContour) return this.fContour;
+   THistPainter.prototype.CreateContour = function(palette) {
+      if (!palette || palette.GetContour()) return;
 
       var main = this.frame_painter();
-      if (main && main.fContour) {
-         this.fContour = main.fContour;
-         this.fCustomContour = main.fCustomContour;
-         this.colzmin = main.colzmin;
-         this.colzmax = main.colzmax;
-         return this.fContour;
-      }
 
       // if not initialized, first create contour array
       // difference from ROOT - fContour includes also last element with maxbin, which makes easier to build logz
       var histo = this.GetHisto(), nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
-      //if (histo.fContour) nlevels = histo.fContour.length;
-      //if ((this.options.minimum !== -1111) && (this.options.maximum != -1111)) {
-      //   zmin = this.options.minimum;
-      //   zmax = this.options.maximum;
-      //}
       if (main.zoom_zmin != main.zoom_zmax) {
          zmin = main.zoom_zmin;
          zmax = main.zoom_zmax;
       }
 
-      //if (histo.fContour && (histo.fContour.length>1) && histo.TestBit(JSROOT.TH1StatusBits.kUserContour)) {
-      //   this.fContour = JSROOT.clone(histo.fContour);
-      //   this.fCustomContour = true;
-      //   this.colzmin = zmin;
-      //   this.colzmax = zmax;
-      //   if (zmax > this.fContour[this.fContour.length-1]) this.fContour.push(zmax);
-      //   if (this.Dimension()<3) {
-      //      this.zmin = this.colzmin;
-      //      this.zmax = this.colzmax;
-      //   }
-      //   return this.fContour;
-      //}
+      palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
 
-      this.fCustomContour = false;
+      console.log("palette", palette.palette)
+      console.log("contours", palette.fContour)
 
-      return this.CreateContour(nlevels, zmin, zmax, zminpos);
+      if (this.Dimension() < 3) {
+         main.zmin = this.zmin = palette.colzmin;
+         main.zmax = this.zmax = palette.colzmax;
+      }
    }
 
    THistPainter.prototype.FillContextMenu = function(menu) {
@@ -743,12 +723,9 @@
          }
       }
 
-      // force recalculation of z levels
-      this.fContour = null;
-      this.fCustomContour = false;
-
       res.palette = this.GetPalette();
-      res.cntr = this.GetContour();
+
+      this.CreateContour(res.palette);
 
       return res;
    }
@@ -2193,7 +2170,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = handle.palette.getContourColor(handle.cntr, binz, true);
+            colindx = handle.palette.getContourColor(binz, true);
             if (binz===0) {
                if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -2262,7 +2239,6 @@
              xlen, pdif, diff, elev;
 
          while (n <= icont2 && ii <= maxii) {
-//          elev = fH->GetContourLevel(n);
             elev = levels[n];
             diff = elev - elev1;
             pdif = diff/tdif;
@@ -2397,7 +2373,7 @@
          poly = polys[ipoly];
          if (!poly) continue;
 
-         var colindx = palette.calcColorIndex(ipoly, levels.length),
+         var colindx = ipoly,
              xx = poly.fX, yy = poly.fY, np = poly.fLastPoint+1,
              istart = 0, iminus, iplus, xmin = 0, ymin = 0, nadd;
 
@@ -2448,8 +2424,8 @@
 
    TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
       var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
-          levels = this.GetContour(),
           palette = this.GetPalette(),
+          levels = palette.GetContour(),
           painter = this, main = this.frame_painter();
 
       function BuildPath(xp,yp,iminus,iplus) {
@@ -2496,7 +2472,7 @@
              .append("svg:path")
              .attr("d", dd + "z")
              .style('stroke','none')
-             .style("fill", palette.calcColor(0, levels.length));
+             .style("fill", palette.getColor(0));
       }
 
       this.BuildContour(handle, levels, palette,
@@ -2596,21 +2572,19 @@
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length,
-          cntr = this.GetContour(),
           palette = this.GetPalette();
 
       // force recalculations of contours
-      this.fContour = null;
-      this.fCustomContour = false;
-
       // use global coordinates
       this.maxbin = this.gmaxbin;
       this.minbin = this.gminbin;
       this.minposbin = this.gminposbin;
 
+      this.CreateContour(palette);
+
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = palette.getContourColor(cntr, bin.fContent, true);
+         colindx = palette.getContourColor(bin.fContent, true);
          if (colindx === null) continue;
          if (bin.fContent === 0) {
             if (!this.options.Zero || !this.options.Line) continue;
@@ -3022,6 +2996,7 @@
 
    TH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetHisto(),
+          fp = this.frame_painter(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
@@ -3065,7 +3040,7 @@
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
       var nlevels = Math.round(handle.max - handle.min);
-      this.CreateContour((nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
+      this.CreateContour(fp.logz, (nlevels > 50) ? 50 : nlevels, this.minposbin, this.maxbin, this.minposbin);
 
       // now start build
       for (i = handle.i1; i < handle.i2; ++i) {
@@ -3077,7 +3052,7 @@
             ch = handle.gry[j] - handle.gry[j+1];
             if (cw*ch <= 0) continue;
 
-            colindx = handle.palette.getContourIndex(handle.cntr, binz/cw/ch);
+            colindx = handle.palette.getContourIndex(binz/cw/ch);
             if (colindx < 0) continue;
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
@@ -3438,7 +3413,7 @@
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = h.palette.getContourColor(h.cntr, binz, true);
+            colindx = h.palette.getContourColor(binz, true);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }
