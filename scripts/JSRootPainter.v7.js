@@ -4591,10 +4591,22 @@
       return pal;
    }
 
-   RPalettePainter.prototype.DrawFirst = function() {
-      var fp = this.frame_painter();
-      if (!fp)
+   RPalettePainter.prototype.DrawPalette = function() {
+
+      var pthis = this,
+          palette = this.GetPalette(),
+          contour = palette.GetContour(),
+          can_move = false,
+          nbr1 = 8,
+          framep = this.frame_painter(),
+          zmin = contour[0],
+          zmax = contour[contour.length-1];
+
+
+      // frame painter must  be there
+      if (!framep)
          return console.log('no frame painter - no palette');
+
 
       var fx = this.frame_x(),
           fy = this.frame_y(),
@@ -4606,40 +4618,29 @@
           use_frame    = false,
           visible        = this.v7EvalAttr("visible", true),
           palette_margin = this.v7EvalLength("margin", pw, 0.02),
-          palette_size = this.v7EvalLength("size", pw, 0.05);
+          palette_width = this.v7EvalLength("size", pw, 0.05),
+          palette_height = fh;
 
-      if (!visible)
-         return this.RemoveDrawG();
+      this.draw_g.selectAll("rect").remove();
 
-      // draw dummy rect before actual drawing can be completed
-      this.CreateG(false)
-          .attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")")
-          .append("svg:rect")
+      if (!visible) return;
+
+      this.draw_g.attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")");
+
+
+      var g_btns = this.draw_g.select(".colbtns");
+      if (g_btns.empty())
+         g_btns = this.draw_g.append("svg:g").attr("class", "colbtns");
+      else
+         g_btns.selectAll().remove();
+
+      g_btns.append("svg:rect")
           .attr("x", 0)
-          .attr("width", palette_size)
+          .attr("width", palette_width)
           .attr("y", 0)
-          .attr("height", fh)
+          .attr("height", palette_height)
           .style("stroke", "black")
           .attr("fill", "none");
-   }
-
-   RPalettePainter.prototype.DrawPalette = function() {
-
-      return;
-
-      var pthis = this,
-          palette = this.GetPalette(),
-          contour = palette.GetContour(),
-          can_move = false,
-          nbr1 = 8,
-          pos_x = parseInt(this.draw_g.attr("x")), // pave position
-          pos_y = parseInt(this.draw_g.attr("y")),
-          width = this.pad_width(),
-          height = this.pad_height(),
-          axisOffset = axis.fLabelOffset * width,
-          framep = this.frame_painter(),
-          zmin = contour[0],
-          zmax = contour[contour.length-1];
 
       // zmin = Math.min(contour[0], framep.zmin);
       // zmax = Math.max(contour[contour.length-1], framep.zmax);
@@ -4652,24 +4653,22 @@
       } else {
          z = d3.scaleLinear();
       }
-      z.domain([zmin, zmax]).range([s_height,0]);
-
-      this.draw_g.selectAll("rect").remove();
+      z.domain([zmin, zmax]).range([palette_height,0]);
 
       for (var i=0;i<contour.length-1;++i) {
          var z0 = z(contour[i]),
              z1 = z(contour[i+1]),
              col = palette.getContourColor((contour[i]+contour[i+1])/2);
 
-         var r = this.draw_g.append("svg:rect")
-         .attr("x", 0)
-         .attr("y",  Math.round(z1))
-         .attr("width", s_width)
-         .attr("height", Math.round(z0) - Math.round(z1))
-         .style("fill", col)
-         .style("stroke", col)
-         .property("fill0", col)
-         .property("fill1", d3.rgb(col).darker(0.5).toString())
+         var r = g_btns.append("svg:rect")
+                     .attr("x", 0)
+                     .attr("y",  Math.round(z1))
+                     .attr("width", palette_width)
+                     .attr("height", Math.round(z0) - Math.round(z1))
+                     .style("fill", col)
+                     .style("stroke", col)
+                     .property("fill0", col)
+                     .property("fill1", d3.rgb(col).darker(0.5).toString())
 
          if (this.IsTooltipAllowed())
             r.on('mouseover', function() {
@@ -4679,15 +4678,16 @@
             }).append("svg:title").text(contour[i].toFixed(2) + " - " + contour[i+1].toFixed(2));
 
          if (JSROOT.gStyle.Zooming)
-            r.on("dblclick", function() { pthis.frame_painter().Unzoom("z"); });
+            r.on("dblclick", function() { framep.Unzoom("z"); });
       }
-
 
       this.z_handle.SetAxisConfig("zaxis", z_kind, z, zmin, zmax, zmin, zmax);
 
-      this.z_handle.max_tick_size = Math.round(s_width*0.7);
+      this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
-      this.z_handle.DrawAxis(true, this.draw_g, s_width, s_height, "translate(" + s_width + ", 0)");
+      this.z_handle.DrawAxis(true, this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
+
+      return;
 
       if (can_move && ('getBoundingClientRect' in this.draw_g.node())) {
          var rect = this.draw_g.node().getBoundingClientRect();
@@ -4773,12 +4773,13 @@
 
       painter.SetDivId(divid);
 
-      // painter.z_handle = new JSROOT.v7.TAxisPainter(true, "z_");
-      // painter.z_handle.SetDivId(divid, -1);
-      // painter.z_handle.pad_name = painter.pad_name;
-      // painter.z_handle.rstyle = painter.rstyle;
+      painter.CreateG(false);
 
-      painter.DrawFirst();
+      painter.z_handle = new JSROOT.v7.TAxisPainter(true, "z_");
+      painter.z_handle.SetDivId(divid, -1);
+      painter.z_handle.pad_name = painter.pad_name;
+      painter.z_handle.invert_side = true;
+      painter.z_handle.rstyle = painter.rstyle;
 
       return painter.DrawingReady();
    }

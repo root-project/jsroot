@@ -462,9 +462,6 @@
 
       palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
 
-      console.log("palette", palette.palette)
-      console.log("contours", palette.fContour)
-
       if (this.Dimension() < 3) {
          main.zmin = this.zmin = palette.colzmin;
          main.zmax = this.zmax = palette.colzmax;
