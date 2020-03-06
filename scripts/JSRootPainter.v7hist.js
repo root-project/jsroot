@@ -564,45 +564,6 @@
       return true;
    }
 
-
-   /// return index from contours array, which corresponds to the content value **zc**
-   THistPainter.prototype.getContourIndex = function(zc) {
-
-      var cntr = this.GetContour();
-
-      if (this.fCustomContour) {
-         var l = 0, r = cntr.length-1, mid;
-         if (zc < cntr[0]) return -1;
-         if (zc >= cntr[r]) return r;
-         while (l < r-1) {
-            mid = Math.round((l+r)/2);
-            if (cntr[mid] > zc) r = mid; else l = mid;
-         }
-         return l;
-      }
-
-      // bins less than zmin not drawn
-      if (zc < this.colzmin) return this.options.Zero ? -1 : 0;
-
-      // if bin content exactly zmin, draw it when col0 specified or when content is positive
-      if (zc===this.colzmin) return ((this.colzmin != 0) || !this.options.Zero || this.IsTH2Poly()) ? 0 : -1;
-
-      return Math.floor(0.01+(zc-this.colzmin)*(cntr.length-1)/(this.colzmax-this.colzmin));
-   }
-
-   /// return color from the palette, which corresponds given contour value
-   /// optionally one can return color index of the palette
-   THistPainter.prototype.getContourColor = function(zc, asindx) {
-      var zindx = this.getContourIndex(zc);
-      if (zindx < 0) return null;
-
-      var cntr = this.GetContour(),
-          palette = this.GetPalette(),
-          indx = palette.calcColorIndex(zindx, cntr.length);
-
-      return asindx ? indx : palette.getColor(indx);
-   }
-
    THistPainter.prototype.GetPalette = function(force) {
       if (!this.fPalette || force) {
          var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
@@ -612,7 +573,7 @@
          if (this.fPalette)
             console.log("Have RPalette", this.fPalette._typename);
          else
-             this.fPalette = this.get_palette(true, this.options.Palette);
+            console.error("Fail to find RPalette object");
 
       }
       return this.fPalette;
@@ -785,6 +746,9 @@
       // force recalculation of z levels
       this.fContour = null;
       this.fCustomContour = false;
+
+      res.palette = this.GetPalette();
+      res.cntr = this.GetContour();
 
       return res;
    }
@@ -2229,7 +2193,7 @@
       for (i = handle.i1; i < handle.i2; ++i) {
          for (j = handle.j1; j < handle.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
-            colindx = this.getContourColor(binz, true);
+            colindx = handle.palette.getContourColor(handle.cntr, binz, true);
             if (binz===0) {
                if (!this.options.Zero) continue;
                if ((colindx === null) && this._show_empty_bins) colindx = 0;
@@ -2258,10 +2222,10 @@
            this.draw_g
                .append("svg:path")
                .attr("palette-index", colindx)
-               .attr("fill", this.fPalette.getColor(colindx))
+               .attr("fill", handle.palette.getColor(colindx))
                .attr("d", colPaths[colindx]);
 
-      this.UpdatePaletteDraw(this.fContor);
+      this.UpdatePaletteDraw(handle.cntr);
 
       return handle;
    }
@@ -2631,7 +2595,9 @@
           pmain = this.frame_painter(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
-          i, len = histo.fBins.arr.length;
+          i, len = histo.fBins.arr.length,
+          cntr = this.GetContour(),
+          palette = this.GetPalette();
 
       // force recalculations of contours
       this.fContour = null;
@@ -2644,7 +2610,7 @@
 
       for (i = 0; i < len; ++ i) {
          bin = histo.fBins.arr[i];
-         colindx = this.getContourColor(bin.fContent, true);
+         colindx = palette.getContourColor(cntr, bin.fContent, true);
          if (colindx === null) continue;
          if (bin.fContent === 0) {
             if (!this.options.Zero || !this.options.Line) continue;
@@ -2670,7 +2636,7 @@
             item = this.draw_g
                      .append("svg:path")
                      .attr("palette-index", colindx)
-                     .attr("fill", colindx ? this.fPalette.getColor(colindx) : "none")
+                     .attr("fill", colindx ? palette.getColor(colindx) : "none")
                      .attr("d", colPaths[colindx]);
             if (this.options.Line)
                item.call(this.lineatt.func);
@@ -3111,7 +3077,7 @@
             ch = handle.gry[j] - handle.gry[j+1];
             if (cw*ch <= 0) continue;
 
-            colindx = this.getContourIndex(binz/cw/ch);
+            colindx = handle.palette.getContourIndex(handle.cntr, binz/cw/ch);
             if (colindx < 0) continue;
 
             cmd1 = "M"+handle.grx[i]+","+handle.gry[j+1];
@@ -3472,7 +3438,7 @@
          } else if (h.hide_only_zeros) {
             colindx = (binz === 0) && !this._show_empty_bins ? null : 0;
          } else {
-            colindx = this.getContourColor(binz, true);
+            colindx = h.palette.getContourColor(h.cntr, binz, true);
             if ((colindx === null) && (binz === 0) && this._show_empty_bins) colindx = 0;
          }
       }

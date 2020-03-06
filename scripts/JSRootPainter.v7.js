@@ -4531,6 +4531,24 @@
          return this.getColor(indx);
       }
 
+      pal.getContourIndex = function(cntr, zc) {
+         var l = 0, r = cntr.length-1, mid;
+         if (zc < cntr[0]) return -1;
+         if (zc >= cntr[r]) return r;
+         while (l < r-1) {
+            mid = Math.round((l+r)/2);
+            if (cntr[mid] > zc) r = mid; else l = mid;
+         }
+         return l;
+      }
+
+      pal.getContourColor = function(cntr, zc, asindx) {
+         var zindx = this.getContourIndex(cntr, zc)
+         if (zindx < 0) return null;
+         var indx = this.calcColorIndex(zindx, cntr.length);
+         return asindx ? indx : this.getColor(indx);
+      }
+
       return pal;
    }
 
@@ -4548,8 +4566,8 @@
           pp           = this.pad_painter(),
           use_frame    = false,
           visible        = this.v7EvalAttr("visible", true),
-          palette_margin = this.v7EvalLength( "margin", pw, 0.02),
-          palette_size = this.v7EvalLength( "size", pw, 0.05);
+          palette_margin = this.v7EvalLength("margin", pw, 0.02),
+          palette_size = this.v7EvalLength("size", pw, 0.05);
 
       if (!visible)
          return this.RemoveDrawG();
