@@ -1592,6 +1592,33 @@
       }
    }
 
+   /** Returns palette associated with frame. Either from existing palette painter or just default palette */
+   TFramePainter.prototype.GetPalette = function(force) {
+      var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+
+      if (pp) return pp.GetPalette();
+
+      if (!this.fDfltPalette) {
+         this.fDfltPalette = {
+            _typename : "ROOT::Experimental::RPalette",
+            fColors : [{ fOrdinal : 0,     fColor : { fRGBA : [53, 42, 135] } },
+                       { fOrdinal : 0.125, fColor : { fRGBA : [15, 92, 221] } },
+                       { fOrdinal : 0.25,  fColor : { fRGBA : [20, 129, 214] } },
+                       { fOrdinal : 0.375, fColor : { fRGBA : [6, 164, 202] } },
+                       { fOrdinal : 0.5,   fColor : { fRGBA : [46, 183, 164] } },
+                       { fOrdinal : 0.625, fColor : { fRGBA : [135, 191, 119] } },
+                       { fOrdinal : 0.75,  fColor : { fRGBA : [209, 187, 89] } },
+                       { fOrdinal : 0.875, fColor : { fRGBA : [254, 200, 50] } },
+                       { fOrdinal : 1,     fColor : { fRGBA : [249, 251, 14] } }],
+             fInterpolate : true,
+             fNormalized : true
+         };
+         JSROOT.addMethods(this.fDfltPalette, "ROOT::Experimental::RPalette");
+      }
+
+      return this.fDfltPalette;
+   }
+
    /** Function called when frame is clicked and object selection can be performed
      * such event can be used to select objects */
    TFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
