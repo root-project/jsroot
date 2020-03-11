@@ -4531,25 +4531,13 @@
       return arr;
    }
 
-   function RPalettePainter(palette) {
-      JSROOT.TObjectPainter.call(this, palette);
-      this.csstype = "palette";
-   }
+   JSROOT.registerMethods("ROOT::Experimental::RPalette", {
 
-   RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
-
-   RPalettePainter.prototype.GetPalette = function()
-   {
-      var drawable = this.GetObject();
-      var pal = drawable ? drawable.fPalette : null;
-
-      if (!pal || pal.getColor) return pal;
-
-      pal.getColor = function(indx) {
+      getColor: function(indx) {
          return this.palette[indx];
-      }
+      },
 
-      pal.getContourIndex = function(zc) {
+      getContourIndex: function(zc) {
          var cntr = this.fContour, l = 0, r = cntr.length-1, mid;
 
          if (zc < cntr[0]) return -1;
@@ -4565,22 +4553,22 @@
 
          // last color in pallette starts from level cntr[r-1]
          return Math.floor((zc-cntr[0]) / (cntr[r-1] - cntr[0]) * (r-1));
-      }
+      },
 
-      pal.getContourColor = function(zc) {
+      getContourColor: function(zc) {
          var zindx = this.getContourIndex(zc);
          return (zindx < 0) ? "" : this.getColor(zindx);
-      }
+      },
 
-      pal.GetContour = function() {
+      GetContour: function() {
          return this.fContour && (this.fContour.length > 1) ? this.fContour : null;
-      }
+      },
 
-      pal.DeleteContour = function() {
+      DeleteContour: function() {
          delete this.fContour;
-      }
+      },
 
-      pal.CreateContour = function(logz, nlevels, zmin, zmax, zminpositive) {
+      CreateContour: function(logz, nlevels, zmin, zmax, zminpositive) {
          this.fContour = [];
          delete this.fCustomContour;
          this.colzmin = zmin;
@@ -4616,6 +4604,24 @@
          if (!this.palette || (this.palette.length != nlevels))
             this.palette = JSROOT.v7.CreateRPaletteColors(this, nlevels);
       }
+
+   });
+
+
+   function RPalettePainter(palette) {
+      JSROOT.TObjectPainter.call(this, palette);
+      this.csstype = "palette";
+   }
+
+   RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+
+   RPalettePainter.prototype.GetPalette = function()
+   {
+      var drawable = this.GetObject();
+      var pal = drawable ? drawable.fPalette : null;
+
+      if (pal && !pal.getColor)
+         JSROOT.addMethods(pal, "ROOT::Experimental::RPalette");
 
       return pal;
    }
