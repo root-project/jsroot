@@ -4495,42 +4495,6 @@
       return "black";
    }
 
-   /* create array of colors of specified len */
-   JSROOT.v7.CreateRPaletteColors = function(rpalette, len) {
-      var arr = [], indx = 0;
-
-      while (arr.length < len) {
-         var value = arr.length / (len-1);
-
-         var entry = rpalette.fColors[indx];
-
-         if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == rpalette.fColors.length-1)) {
-            arr.push(JSROOT.v7.ExtractRColor(entry.fColor));
-            continue;
-         }
-
-         var next = rpalette.fColors[indx+1];
-         if (next.fOrdinal <= value) {
-            indx++;
-            continue;
-         }
-
-         var dist = next.fOrdinal - entry.fOrdinal,
-             r1 = (next.fOrdinal - value) / dist,
-             r2 = (value - entry.fOrdinal) / dist;
-
-         // interpolate
-         var col1 = d3.rgb(JSROOT.v7.ExtractRColor(entry.fColor));
-         var col2 = d3.rgb(JSROOT.v7.ExtractRColor(next.fColor));
-
-         var color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
-
-         arr.push(color.toString());
-      }
-
-      return arr;
-   }
-
    JSROOT.registerMethods("ROOT::Experimental::RPalette", {
 
       getColor: function(indx) {
@@ -4568,6 +4532,41 @@
          delete this.fContour;
       },
 
+      CreatePaletteColors: function(len) {
+         var arr = [], indx = 0;
+
+         while (arr.length < len) {
+            var value = arr.length / (len-1);
+
+            var entry = this.fColors[indx];
+
+            if ((Math.abs(entry.fOrdinal - value)<0.0001) || (indx == this.fColors.length-1)) {
+               arr.push(JSROOT.v7.ExtractRColor(entry.fColor));
+               continue;
+            }
+
+            var next = this.fColors[indx+1];
+            if (next.fOrdinal <= value) {
+               indx++;
+               continue;
+            }
+
+            var dist = next.fOrdinal - entry.fOrdinal,
+                r1 = (next.fOrdinal - value) / dist,
+                r2 = (value - entry.fOrdinal) / dist;
+
+            // interpolate
+            var col1 = d3.rgb(JSROOT.v7.ExtractRColor(entry.fColor));
+            var col2 = d3.rgb(JSROOT.v7.ExtractRColor(next.fColor));
+
+            var color = d3.rgb(Math.round(col1.r*r1 + col2.r*r2), Math.round(col1.g*r1 + col2.g*r2), Math.round(col1.b*r1 + col2.b*r2));
+
+            arr.push(color.toString());
+         }
+
+         return arr;
+      },
+
       CreateContour: function(logz, nlevels, zmin, zmax, zminpositive) {
          this.fContour = [];
          delete this.fCustomContour;
@@ -4602,7 +4601,7 @@
          }
 
          if (!this.palette || (this.palette.length != nlevels))
-            this.palette = JSROOT.v7.CreateRPaletteColors(this, nlevels);
+            this.palette = this.CreatePaletteColors(nlevels);
       }
 
    });
