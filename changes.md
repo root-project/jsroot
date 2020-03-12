@@ -5,6 +5,7 @@
 2. Add support of #overline, #underline, #strike into TLatex parsing (#196)
 3. Add support of TGeoTessellated shape
 4. Major changes in v7 drawing: RFrame, RPalette, RColor, ...
+5. Fix in reading std::map member-wise
 
 
 ## Changes in 5.8.0
