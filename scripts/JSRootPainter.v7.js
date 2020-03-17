@@ -1117,14 +1117,16 @@
 
       var h = this.frame_height(),
           w = this.frame_width(),
-          grid, grid_style = JSROOT.gStyle.fGridStyle,
+          gridx = this.v7EvalAttr("gridx", false),
+          gridy = this.v7EvalAttr("gridy", false),
+          grid_style = JSROOT.gStyle.fGridStyle,
           grid_color = (JSROOT.gStyle.fGridColor > 0) ? this.get_color(JSROOT.gStyle.fGridColor) : "black";
 
       if ((grid_style < 0) || (grid_style >= JSROOT.Painter.root_line_styles.length)) grid_style = 11;
 
       // add a grid on x axis, if the option is set
-      if (this.x_handle) {
-         grid = "";
+      if (this.x_handle && gridx) {
+         var grid = "";
          for (var n=0;n<this.x_handle.ticks.length;++n)
             if (this.swap_xy)
                grid += "M0,"+this.x_handle.ticks[n]+"h"+w;
@@ -1140,8 +1142,8 @@
       }
 
       // add a grid on y axis, if the option is set
-      if (this.y_handle) {
-         grid = "";
+      if (this.y_handle && gridy) {
+         var grid = "";
          for (var n=0;n<this.y_handle.ticks.length;++n)
             if (this.swap_xy)
                grid += "M"+this.y_handle.ticks[n]+",0v"+h;
