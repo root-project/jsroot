@@ -776,17 +776,21 @@
          // Draw fill pattern (in a box)
          if (lopt.indexOf('f') != -1) {
             var fillatt = (painter && painter.fillatt) ? painter.fillatt : this.createAttFill(o_fill);
-            var lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
+
             // box total height is yspace*0.7
             // define x,y as the center of the symbol for this entry
-            this.draw_g.append("svg:rect")
-                   .attr("x", x0 + padding_x)
-                   .attr("y", Math.round(pos_y+step_y*0.1))
-                   .attr("width", tpos_x - 2*padding_x - x0)
-                   .attr("height", Math.round(step_y*0.8))
-                   .call(fillatt.func)
-                   .call(lineatt.func);
+            var rect = this.draw_g.append("svg:rect")
+                           .attr("x", x0 + padding_x)
+                           .attr("y", Math.round(pos_y+step_y*0.1))
+                           .attr("width", tpos_x - 2*padding_x - x0)
+                           .attr("height", Math.round(step_y*0.8))
+                           .call(fillatt.func);
             if (!fillatt.empty()) isany = true;
+            if ((lopt.indexOf('l') < 0 && lopt.indexOf('e') < 0) && (lopt.indexOf('p') < 0)) {
+               var lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
+               rect.call(lineatt.func);
+               if (lineatt.color !== 'none') isany = true;
+            }
          }
 
          // Draw line (also when error specified)
