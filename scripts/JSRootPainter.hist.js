@@ -758,8 +758,9 @@
              icol = i % ncols, irow = (i - icol) / ncols,
              x0 = icol * column_width,
              tpos_x = x0 + Math.round(legend.fMargin*column_width),
-             pos_y = Math.round(padding_y + irow*step_y), // top corner
-             mid_y = Math.round(padding_y + (irow+0.5)*step_y), // center line
+             mid_x = Math.round((x0 + tpos_x)/2),
+             pos_y = Math.round(irow*step_y + padding_y), // top corner
+             mid_y = Math.round((irow+0.5)*step_y + padding_y), // center line
              o_fill = leg, o_marker = leg, o_line = leg,
              mo = leg.fObject,
              painter = null, isany = false;
@@ -786,8 +787,8 @@
             if (!fillatt.empty()) isany = true;
          }
 
-         // Draw line
-         if (lopt.indexOf('l') != -1) {
+         // Draw line (also when error specified)
+         if (lopt.indexOf('l') != -1 || lopt.indexOf('e') != -1) {
             var lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
             this.draw_g.append("svg:line")
                .attr("x1", x0 + padding_x)
@@ -799,7 +800,15 @@
          }
 
          // Draw error
-         if (lopt.indexOf('e') != -1  && (lopt.indexOf('l') == -1 || lopt.indexOf('f') != -1)) {
+         if (lopt.indexOf('e') != -1) {
+            var lineatt = (painter && painter.lineatt) ? painter.lineatt : new JSROOT.TAttLineHandler(o_line);
+            this.draw_g.append("svg:line")
+                .attr("x1", mid_x)
+                .attr("y1", Math.round(pos_y+step_y*0.1))
+                .attr("x2", mid_x)
+                .attr("y2", Math.round(pos_y+step_y*0.9))
+                .call(lineatt.func);
+            if (lineatt.color !== 'none') isany = true;
          }
 
          // Draw Polymarker
