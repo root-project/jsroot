@@ -4635,6 +4635,7 @@
 
    });
 
+   // =============================================================
 
    function RPalettePainter(palette) {
       JSROOT.TObjectPainter.call(this, palette);
@@ -4671,8 +4672,6 @@
 
       // zmin = Math.min(contour[0], framep.zmin);
       // zmax = Math.max(contour[contour.length-1], framep.zmax);
-
-
 
       var fx = this.frame_x(),
           fy = this.frame_y(),
@@ -4839,6 +4838,7 @@
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RText", icon: "img_text", prereq: "v7more", func: "JSROOT.v7.drawText", opt: "", direct: true, csstype: "text" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrameTitle", icon: "img_text", func: drawFrameTitle, opt: "", direct: true, csstype: "title" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaletteDrawable", icon: "img_text", func: drawPalette, opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RHistStatBox", icon: "img_pavetext", prereq: "v7hist", func: "JSROOT.v7.drawHistStats", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLine", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLine", opt: "", direct: true, csstype: "line" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RBox", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawBox", opt: "", direct: true, csstype: "box" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: true, csstype: "marker" });
