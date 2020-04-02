@@ -3487,6 +3487,8 @@
       var stats = this.GetObject(),
           main = this.main_painter();
 
+      // if (stats && stats.fLines) return true;
+
       if (!main || (typeof main.FillStatistic !== 'function')) return false;
 
       // we take statistic from main painter
@@ -3556,7 +3558,6 @@
                  .style("stroke-dasharray", JSROOT.Painter.root_line_styles[line_style])
                  .attr("fill", fill_color);
 
-
       if (this.FillStatistic())
          this.DrawStatistic(stats_width, stats_height);
    }
@@ -3569,11 +3570,15 @@
           text_font  = this.v7EvalAttr("stats_text_font", 41),
           first_stat = 0, num_cols = 0, maxlen = 0;
 
-      var nlines = this.stats_lines.length;
+      var stats = this.GetObject(),
+          lines = this.stats_lines || stats.fLines;
 
+      if (!lines) return;
+
+      var nlines = lines.length;
       // adjust font size
       for (var j = 0; j < nlines; ++j) {
-         var line = this.stats_lines[j];
+         var line = lines[j];
          if (j>0) maxlen = Math.max(maxlen, line.length);
          if ((j == 0) || (line.indexOf('|') < 0)) continue;
          if (first_stat === 0) first_stat = j;
@@ -3588,26 +3593,26 @@
       this.StartTextDrawing(text_font, height/(nlines * 1.2));
 
       if (nlines == 1) {
-         this.DrawText({ align: text_align, width: width, height: height, text: this.stats_lines[0], color: text_color, latex: 1 });
+         this.DrawText({ align: text_align, width: width, height: height, text: lines[0], color: text_color, latex: 1 });
       } else
       for (var j = 0; j < nlines; ++j) {
          var posy = j*stepy;
 
          if (first_stat && (j >= first_stat)) {
-            var parts = this.stats_lines[j].split("|");
+            var parts = lines[j].split("|");
             for (var n = 0; n < parts.length; ++n)
                this.DrawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
                                width: width/num_cols, height: stepy, text: parts[n], color: text_color });
-         } else if (this.stats_lines[j].indexOf('=') < 0) {
+         } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
                has_head = true;
-               if (this.stats_lines[j].length > maxlen + 5)
-                  this.stats_lines[j] = this.stats_lines[j].substr(0,maxlen+2) + "...";
+               if (lines[j].length > maxlen + 5)
+                  lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
             this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
-                            width: width-2*margin_x, height: stepy, text: this.stats_lines[j], color: text_color });
+                            width: width-2*margin_x, height: stepy, text: lines[j], color: text_color });
          } else {
-            var parts = this.stats_lines[j].split("="), sumw = 0;
+            var parts = lines[j].split("="), sumw = 0;
             for (var n = 0; n < 2; ++n)
                sumw += this.DrawText({ align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
                                        width: width-2*margin_x, height: stepy, text: parts[n], color: text_color });
