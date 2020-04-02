@@ -491,14 +491,14 @@
          this.DrawText({ align: pt.fTextAlign, width: width, height: height, text: lines[0], color: tcolor, latex: 1 });
       } else
       for (var j = 0; j < nlines; ++j) {
-         var posy = j*stepy, jcolor = tcolor;
+         var posy = j*stepy;
          this.UseTextColor = true;
 
          if (first_stat && (j >= first_stat)) {
             var parts = lines[j].split("|");
             for (var n = 0; n < parts.length; ++n)
                this.DrawText({ align: "middle", x: width * n / num_cols, y: posy, latex: 0,
-                               width: width/num_cols, height: stepy, text: parts[n], color: jcolor });
+                               width: width/num_cols, height: stepy, text: parts[n], color: tcolor });
          } else if (lines[j].indexOf('=') < 0) {
             if (j==0) {
                has_head = true;
@@ -506,12 +506,12 @@
                   lines[j] = lines[j].substr(0,maxlen+2) + "...";
             }
             this.DrawText({ align: (j == 0) ? "middle" : "start", x: margin_x, y: posy,
-                            width: width-2*margin_x, height: stepy, text: lines[j], color: jcolor });
+                            width: width-2*margin_x, height: stepy, text: lines[j], color: tcolor });
          } else {
             var parts = lines[j].split("="), sumw = 0;
             for (var n = 0; n < 2; ++n)
                sumw += this.DrawText({ align: (n == 0) ? "start" : "end", x: margin_x, y: posy,
-                                       width: width-2*margin_x, height: stepy, text: parts[n], color: jcolor });
+                                       width: width-2*margin_x, height: stepy, text: parts[n], color: tcolor });
             this.TextScaleFactor(1.05*sumw/(width-2*margin_x), this.draw_g);
          }
       }
@@ -689,9 +689,10 @@
       }
    }
 
+   /** Method used to convert value to string according specified format
+     * format can be like 5.4g or 4.2e or 6.4f
+     * @private */
    TPavePainter.prototype.Format = function(value, fmt) {
-      // method used to convert value to string according specified format
-      // format can be like 5.4g or 4.2e or 6.4f
       if (!fmt) fmt = "stat";
 
       var pave = this.GetObject();
