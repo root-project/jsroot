@@ -194,7 +194,7 @@
          canp.SendWebsocket("ATTRCHANGE:" + JSON.stringify(arr));
    }
 
-   function TAxisPainter(embedded, cssprefix) {
+   function RAxisPainter(embedded, cssprefix) {
       var dummy = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
 
       JSROOT.TObjectPainter.call(this, dummy);
@@ -217,9 +217,9 @@
       this.lbls_both_sides = false; // draw labels on both sides
    }
 
-   TAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RAxisPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   TAxisPainter.prototype.Cleanup = function() {
+   RAxisPainter.prototype.Cleanup = function() {
 
       this.ticks = [];
       this.func = null;
@@ -228,7 +228,7 @@
       JSROOT.TObjectPainter.prototype.Cleanup.call(this);
    }
 
-   TAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
+   RAxisPainter.prototype.SetAxisConfig = function(name, kind, func, min, max, smin, smax) {
       this.name = name;
       this.kind = kind;
       this.func = func;
@@ -239,7 +239,7 @@
       this.scale_max = smax;
    }
 
-   TAxisPainter.prototype.format10Exp = function(order, value) {
+   RAxisPainter.prototype.format10Exp = function(order, value) {
       var res = "";
       if (value) {
          value = Math.round(value/Math.pow(10,order));
@@ -256,7 +256,7 @@
       return res;
    }
 
-   TAxisPainter.prototype.CreateFormatFuncs = function() {
+   RAxisPainter.prototype.CreateFormatFuncs = function() {
 
       var axis = this.GetObject(),
           is_gaxis = (axis && axis._typename === 'TGaxis');
@@ -367,7 +367,7 @@
       }
    }
 
-   TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
+   RAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
       if (!this.noticksopt) return this.func.ticks(ndiv * (ndiv2 || 1));
 
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;
@@ -377,7 +377,7 @@
       return ticks;
    }
 
-   TAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
+   RAxisPainter.prototype.CreateTicks = function(only_major_as_array, optionNoexp, optionNoopt, optionInt) {
       // function used to create array with minor/middle/major ticks
 
       if (optionNoopt && this.nticks && (this.kind == "normal")) this.noticksopt = true;
@@ -517,14 +517,14 @@
       return handle;
    }
 
-   TAxisPainter.prototype.IsCenterLabels = function() {
+   RAxisPainter.prototype.IsCenterLabels = function() {
       if (this.kind === 'labels') return true;
       if (this.kind === 'log') return false;
       var axis = this.GetObject();
       return axis && axis.TestBit(JSROOT.EAxisBits.kCenterLabels);
    }
 
-   TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
+   RAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
       var pthis = this,  drag_rect = null, prefix = "", drag_move,
@@ -609,7 +609,7 @@
       title_g.style("cursor", "move").call(drag_move);
    }
 
-   TAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
+   RAxisPainter.prototype.DrawAxis = function(vertical, layer, w, h, transform, reverse, second_shift, disable_axis_drawing, max_text_width) {
       // function draws  TAxis or TGaxis object
 
       var axis = this.GetObject(), chOpt = "",
@@ -918,7 +918,7 @@
       }
    }
 
-   TAxisPainter.prototype.Redraw = function() {
+   RAxisPainter.prototype.Redraw = function() {
 
       var gaxis = this.GetObject(),
           x1 = this.AxisToSvg("x", gaxis.fX1),
@@ -975,7 +975,7 @@
    // ==========================================================================================
 
 
-   function TFramePainter(tframe) {
+   function RFramePainter(tframe) {
       JSROOT.TooltipHandler.call(this, tframe);
       this.csstype = "frame";
       this.mode3d = false;
@@ -989,40 +989,40 @@
       this.mode3d = false;
    }
 
-   TFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
+   RFramePainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
-   TFramePainter.prototype.frame_painter = function() {
+   RFramePainter.prototype.frame_painter = function() {
       return this;
    }
 
    /** @summary Set active flag for frame - can block some events
     * @private */
-   TFramePainter.prototype.SetActive = function(on) {
+   RFramePainter.prototype.SetActive = function(on) {
       // do nothing here - key handler is handled differently
    }
 
-   TFramePainter.prototype.GetTipName = function(append) {
-      var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "TFrame";
+   RFramePainter.prototype.GetTipName = function(append) {
+      var res = JSROOT.TooltipHandler.prototype.GetTipName.call(this) || "RFrame";
       if (append) res+=append;
       return res;
    }
 
-   TFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
+   RFramePainter.prototype.Shrink = function(shrink_left, shrink_right) {
       this.fX1NDC += shrink_left;
       this.fX2NDC -= shrink_right;
    }
 
-   TFramePainter.prototype.SetLastEventPos = function(pnt) {
+   RFramePainter.prototype.SetLastEventPos = function(pnt) {
       // set position of last context menu event, can be
       this.fLastEventPnt = pnt;
    }
 
-   TFramePainter.prototype.GetLastEventPos = function() {
+   RFramePainter.prototype.GetLastEventPos = function() {
       // return position of last event
       return this.fLastEventPnt;
    }
 
-   TFramePainter.prototype.UpdateAttributes = function(force) {
+   RFramePainter.prototype.UpdateAttributes = function(force) {
       var tframe = this.GetObject();
 
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
@@ -1041,7 +1041,7 @@
       this.createv7AttLine("border_");
    }
 
-   TFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
+   RFramePainter.prototype.ProjectAitoff2xy = function(l, b) {
       var DegToRad = Math.PI/180,
           alpha2 = (l/2)*DegToRad,
           delta  = b*DegToRad,
@@ -1057,23 +1057,23 @@
       return res;
    }
 
-   TFramePainter.prototype.ProjectMercator2xy = function(l, b) {
+   RFramePainter.prototype.ProjectMercator2xy = function(l, b) {
       var aid = Math.tan((Math.PI/2 + b/180*Math.PI)/2);
       return { x: l, y: Math.log(aid) };
    }
 
-   TFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
+   RFramePainter.prototype.ProjectSinusoidal2xy = function(l, b) {
       return { x: l*Math.cos(b/180*Math.PI), y: b };
    }
 
-   TFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
+   RFramePainter.prototype.ProjectParabolic2xy = function(l, b) {
       return {
          x: l*(2.*Math.cos(2*b/180*Math.PI/3) - 1),
          y: 180*Math.sin(b/180*Math.PI/3)
       };
    }
 
-   TFramePainter.prototype.RecalculateRange = function(Proj) {
+   RFramePainter.prototype.RecalculateRange = function(Proj) {
       // not yet used, could be useful in the future
 
       if (!Proj) return;
@@ -1147,7 +1147,7 @@
       }
    }
 
-   TFramePainter.prototype.DrawGrids = function() {
+   RFramePainter.prototype.DrawGrids = function() {
       // grid can only be drawn by first painter
 
       var layer = this.svg_frame().select(".grid_layer");
@@ -1199,7 +1199,7 @@
       }
    }
 
-   TFramePainter.prototype.AxisAsText = function(axis, value) {
+   RFramePainter.prototype.AxisAsText = function(axis, value) {
       if (axis == "x") {
          if (this.x_kind == 'time')
             value = this.ConvertX(value);
@@ -1220,7 +1220,7 @@
 
 
    /* Set axes ranges for drawing, check configured attributes if range already specified */
-   TFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+   RFramePainter.prototype.SetAxesRanges = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       if (this.axes_drawn) return;
 
       var min, max;
@@ -1296,7 +1296,7 @@
 
    }
 
-   TFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
+   RFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
       // axes can be drawn only for main histogram
 
       if (this.axes_drawn) return true;
@@ -1311,7 +1311,7 @@
       var layer = this.svg_frame().select(".axis_layer"),
           w = this.frame_width(), h = this.frame_height();
 
-      this.x_handle = new TAxisPainter(true, "x_");
+      this.x_handle = new RAxisPainter(true, "x_");
       this.x_handle.SetDivId(this.divid, -1);
       this.x_handle.pad_name = this.pad_name;
       this.x_handle.rstyle = this.rstyle;
@@ -1323,7 +1323,7 @@
       this.x_handle.lbls_both_sides = false;
       this.x_handle.has_obstacle = false;
 
-      this.y_handle = new TAxisPainter(true, "y_");
+      this.y_handle = new RAxisPainter(true, "y_");
       this.y_handle.SetDivId(this.divid, -1);
       this.y_handle.pad_name = this.pad_name;
       this.y_handle.rstyle = this.rstyle;
@@ -1380,7 +1380,7 @@
       return true;
    }
 
-   TFramePainter.prototype.SizeChanged = function() {
+   RFramePainter.prototype.SizeChanged = function() {
       // function called at the end of resize of frame
       // One should apply changes to the pad
 
@@ -1398,7 +1398,7 @@
       this.RedrawPad();
    }
 
-   TFramePainter.prototype.CleanXY = function() {
+   RFramePainter.prototype.CleanXY = function() {
       // remove all kinds of X/Y function for axes transformation
       delete this.x; delete this.grx;
       delete this.ConvertX; delete this.RevertX;
@@ -1407,7 +1407,7 @@
       delete this.z; delete this.grz;
    }
 
-   TFramePainter.prototype.CleanupAxes = function() {
+   RFramePainter.prototype.CleanupAxes = function() {
       // remove all axes drawings
       if (this.x_handle) {
          this.x_handle.Cleanup();
@@ -1431,7 +1431,7 @@
    }
 
    /** Removes all drawn elements of the frame @private */
-   TFramePainter.prototype.CleanFrameDrawings = function() {
+   RFramePainter.prototype.CleanFrameDrawings = function() {
       // cleanup all 3D drawings if any
       if (typeof this.Create3DScene === 'function')
          this.Create3DScene(-1);
@@ -1457,7 +1457,7 @@
       }
    }
 
-   TFramePainter.prototype.Cleanup = function() {
+   RFramePainter.prototype.Cleanup = function() {
 
       this.CleanFrameDrawings();
 
@@ -1482,7 +1482,7 @@
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
-   TFramePainter.prototype.Redraw = function() {
+   RFramePainter.prototype.Redraw = function() {
 
       var pp = this.pad_painter();
       if (pp) pp.frame_painter_ref = this;
@@ -1619,7 +1619,7 @@
    }
 
    /** Returns frame rectangle plus extra info for hint display */
-   TFramePainter.prototype.GetFrameRect = function() {
+   RFramePainter.prototype.GetFrameRect = function() {
       return {
          x: this.frame_x(),
          y: this.frame_y(),
@@ -1632,7 +1632,7 @@
    }
 
    /** Returns palette associated with frame. Either from existing palette painter or just default palette */
-   TFramePainter.prototype.GetPalette = function(force) {
+   RFramePainter.prototype.GetPalette = function(force) {
       var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
       if (pp) return pp.GetPalette();
@@ -1660,7 +1660,7 @@
 
    /** Function called when frame is clicked and object selection can be performed
      * such event can be used to select objects */
-   TFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
+   RFramePainter.prototype.ProcessFrameClick = function(pnt, dblckick) {
 
       var pp = this.pad_painter();
       if (!pp) return;
@@ -1689,15 +1689,15 @@
       return res;
    }
 
-   TFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
+   RFramePainter.prototype.ConfigureUserClickHandler = function(handler) {
       this._click_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
-   TFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+   RFramePainter.prototype.ConfigureUserDblclickHandler = function(handler) {
       this._dblclick_handler = handler && (typeof handler == 'function') ? handler : null;
    }
 
-   TFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
+   RFramePainter.prototype.Zoom = function(xmin, xmax, ymin, ymax, zmin, zmax) {
       // function can be used for zooming into specified range
       // if both limits for each axis 0 (like xmin==xmax==0), axis will be unzoomed
 
@@ -1799,11 +1799,11 @@
       return changed;
    }
 
-   TFramePainter.prototype.IsAxisZoomed = function(axis) {
+   RFramePainter.prototype.IsAxisZoomed = function(axis) {
       return this['zoom_'+axis+'min'] !== this['zoom_'+axis+'max'];
    }
 
-   TFramePainter.prototype.Unzoom = function(dox, doy, doz) {
+   RFramePainter.prototype.Unzoom = function(dox, doy, doz) {
       if (typeof dox === 'undefined') { dox = true; doy = true; doz = true; } else
       if (typeof dox === 'string') { doz = dox.indexOf("z")>=0; doy = dox.indexOf("y")>=0; dox = dox.indexOf("x")>=0; }
 
@@ -1823,7 +1823,7 @@
 
    }
 
-   TFramePainter.prototype.clearInteractiveElements = function() {
+   RFramePainter.prototype.clearInteractiveElements = function() {
       JSROOT.Painter.closeMenu();
       if (this.zoom_rect) { this.zoom_rect.remove(); this.zoom_rect = null; }
       this.zoom_kind = 0;
@@ -1832,7 +1832,7 @@
       this.SwitchTooltip(true);
    }
 
-   TFramePainter.prototype.mouseDoubleClick = function() {
+   RFramePainter.prototype.mouseDoubleClick = function() {
       d3.event.preventDefault();
       var m = d3.mouse(this.svg_frame().node());
       this.clearInteractiveElements();
@@ -1849,7 +1849,7 @@
       if (this.Unzoom(kind)) return;
    }
 
-   TFramePainter.prototype.startRectSel = function() {
+   RFramePainter.prototype.startRectSel = function() {
       // ignore when touch selection is activated
 
       if (this.zoom_kind > 100) return;
@@ -1898,7 +1898,7 @@
       d3.event.stopPropagation();
    }
 
-   TFramePainter.prototype.moveRectSel = function() {
+   RFramePainter.prototype.moveRectSel = function() {
 
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
@@ -1926,7 +1926,7 @@
                     .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
    }
 
-   TFramePainter.prototype.endRectSel = function() {
+   RFramePainter.prototype.endRectSel = function() {
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
       d3.event.preventDefault();
@@ -1986,7 +1986,7 @@
       this.zoom_kind = 0;
    }
 
-   TFramePainter.prototype.startTouchZoom = function() {
+   RFramePainter.prototype.startTouchZoom = function() {
       // in case when zooming was started, block any other kind of events
       if (this.zoom_kind != 0) {
          d3.event.preventDefault();
@@ -2071,7 +2071,7 @@
                        .on("touchend.zoomRect", this.endTouchSel.bind(this));
    }
 
-   TFramePainter.prototype.moveTouchSel = function() {
+   RFramePainter.prototype.moveTouchSel = function() {
       if (this.zoom_kind < 100) return;
 
       d3.event.preventDefault();
@@ -2104,7 +2104,7 @@
       d3.event.stopPropagation();
    }
 
-   TFramePainter.prototype.endTouchSel = function() {
+   RFramePainter.prototype.endTouchSel = function() {
 
       this.svg_frame().on("touchcancel", null)
                       .on("touchend", null);
@@ -2162,7 +2162,7 @@
       d3.event.stopPropagation();
    }
 
-   TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
+   RFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
       // ignore context menu when touches zooming is ongoing
       if (('zoom_kind' in this) && (this.zoom_kind > 100)) return;
 
@@ -2232,7 +2232,7 @@
    }
 
    /** Fill menu for frame when server is not there */
-   TFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
+   RFramePainter.prototype.FillObjectOfflineMenu = function(menu, kind) {
       if ((kind!="x") && (kind!="y")) return;
 
       menu.add("Unzoom", this.Unzoom.bind(this, kind));
@@ -2243,7 +2243,7 @@
       // here should be all axes attributes in offline
    }
 
-   TFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
+   RFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
@@ -2291,7 +2291,7 @@
    * @desc method called normally when mouse enter main object element
    * @private
    */
-   TFramePainter.prototype.ShowAxisStatus = function(axis_name) {
+   RFramePainter.prototype.ShowAxisStatus = function(axis_name) {
       // method called normally when mouse enter main object element
 
       var status_func = this.GetShowStatusFunc();
@@ -2310,7 +2310,7 @@
       status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
-   TFramePainter.prototype.AddInteractive = function() {
+   RFramePainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
       if (JSROOT.BatchMode || (!JSROOT.gStyle.Zooming && !JSROOT.gStyle.ContextMenu)) return;
@@ -2365,7 +2365,7 @@
       svg.property('interactive_set', true);
    }
 
-   TFramePainter.prototype.mouseWheel = function() {
+   RFramePainter.prototype.mouseWheel = function() {
       d3.event.stopPropagation();
 
       d3.event.preventDefault();
@@ -2385,7 +2385,7 @@
       if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
-   TFramePainter.prototype.AllowDefaultYZooming = function() {
+   RFramePainter.prototype.AllowDefaultYZooming = function() {
       // return true if default Y zooming should be enabled
       // it is typically for 2-Dim histograms or
       // when histogram not draw, defined by other painters
@@ -2402,7 +2402,7 @@
    }
 
 
-   TFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
+   RFramePainter.prototype.AnalyzeMouseWheelEvent = function(event, item, dmin, ignore) {
 
       item.min = item.max = undefined;
       item.changed = false;
@@ -2477,7 +2477,7 @@
       item.changed = ((item.min !== undefined) && (item.max !== undefined));
    }
 
-   TFramePainter.prototype.AddKeysHandler = function() {
+   RFramePainter.prototype.AddKeysHandler = function() {
       if (this.keys_handler || JSROOT.BatchMode || (typeof window == 'undefined')) return;
 
       this.keys_handler = this.ProcessKeyPress.bind(this);
@@ -2485,7 +2485,7 @@
       window.addEventListener('keydown', this.keys_handler, false);
    }
 
-   TFramePainter.prototype.ProcessKeyPress = function(evnt) {
+   RFramePainter.prototype.ProcessKeyPress = function(evnt) {
 
       var main = this.select_main();
       if (main.empty()) return;
@@ -2542,7 +2542,7 @@
       return true; // just process any key press
    }
 
-   TFramePainter.prototype.CreateXY = function() {
+   RFramePainter.prototype.CreateXY = function() {
       // here we create x,y objects which maps our physical coordinates into pixels
       // while only first painter really need such object, all others just reuse it
       // following functions are introduced
@@ -2670,7 +2670,7 @@
    }
 
    /** Set selected range back to TPad object */
-   TFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+   RFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
       // TODO: change of pad range and send back to root application
 /*
       if (!pad || this.options.Same) return;
@@ -2713,7 +2713,7 @@
      */
    }
 
-   TFramePainter.prototype.ToggleLog = function(axis) {
+   RFramePainter.prototype.ToggleLog = function(axis) {
 
       var curr  = this["log" + axis];
 
@@ -2735,7 +2735,7 @@
    }
 
    function drawFrame(divid, obj, opt) {
-      var p = new TFramePainter(obj);
+      var p = new RFramePainter(obj);
       if (opt == "3d") p.mode3d = true;
       p.SetDivId(divid, 2);
       p.Redraw();
@@ -2744,7 +2744,7 @@
 
    // ===========================================================================
 
-   function TPadPainter(pad, iscan) {
+   function RPadPainter(pad, iscan) {
       JSROOT.TObjectPainter.call(this, pad);
       this.csstype = "pad";
       this.pad = pad;
@@ -2760,9 +2760,9 @@
       this.has_canvas = true;
    }
 
-   TPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
+   RPadPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   TPadPainter.prototype.Cleanup = function() {
+   RPadPainter.prototype.Cleanup = function() {
       // cleanup only pad itself, all child elements will be collected and cleanup separately
 
       for (var k=0;k<this.painters.length;++k)
@@ -2793,7 +2793,7 @@
     * @private
     */
 
-   TPadPainter.prototype.CleanPrimitives = function(selector) {
+   RPadPainter.prototype.CleanPrimitives = function(selector) {
       if (!selector || (typeof selector !== 'function')) return;
 
       for (var k = this.painters.length-1; k >= 0; --k)
@@ -2807,7 +2807,7 @@
    /// kind == "all" for all objects (default)
    /// kind == "pads" only pads and subpads
    /// kind == "objects" only for object in current pad
-   TPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
+   RPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
       if (!kind) kind = "all";
       if (kind!="objects") userfunc(this);
       for (var k = 0; k < this.painters.length; ++k) {
@@ -2818,20 +2818,20 @@
       }
    }
 
-   TPadPainter.prototype.ButtonSize = function(fact) {
+   RPadPainter.prototype.ButtonSize = function(fact) {
       return Math.round((!fact ? 1 : fact) * (this.iscan || !this.has_canvas ? 16 : 12));
    }
 
-   TPadPainter.prototype.RegisterForPadEvents = function(receiver) {
+   RPadPainter.prototype.RegisterForPadEvents = function(receiver) {
       this.pad_events_receiver = receiver;
    }
 
-   TPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
-      // dummy function, redefined in the TCanvasPainter
+   RPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
+      // dummy function, redefined in the RCanvasPainter
 
       var istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.canv_painter(),
-          pp = _painter instanceof TPadPainter ? _painter : _painter.pad_painter();
+          pp = _painter instanceof RPadPainter ? _painter : _painter.pad_painter();
 
       if (pos && !istoppad)
           this.CalcAbsolutePosition(this.svg_pad(this.this_pad_name), pos);
@@ -2847,12 +2847,12 @@
 
    /** @brief Called by framework when pad is supposed to be active and get focus
     * @private */
-   TPadPainter.prototype.SetActive = function(on) {
+   RPadPainter.prototype.SetActive = function(on) {
       var fp = this.frame_painter();
       if (fp && (typeof fp.SetActive == 'function')) fp.SetActive(on);
    }
 
-   TPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
+   RPadPainter.prototype.CreateCanvasSvg = function(check_resize, new_size) {
 
       var factor = null, svg = null, lmt = 5, rect = null, btns;
 
@@ -2968,7 +2968,7 @@
       return true;
    }
 
-   TPadPainter.prototype.EnlargePad = function() {
+   RPadPainter.prototype.EnlargePad = function() {
 
       if (d3.event) {
          d3.event.preventDefault();
@@ -3000,7 +3000,7 @@
          this.ShowButtons();
    }
 
-   TPadPainter.prototype.CreatePadSvg = function(only_resize) {
+   RPadPainter.prototype.CreatePadSvg = function(only_resize) {
       // returns true when pad is displayed and all its items should be redrawn
 
       if (!this.has_canvas) {
@@ -3092,13 +3092,13 @@
       return pad_visible;
    }
 
-   TPadPainter.prototype.RemovePrimitive = function(obj) {
+   RPadPainter.prototype.RemovePrimitive = function(obj) {
       if (!this.pad || !this.pad.fPrimitives) return;
       var indx = this.pad.fPrimitives.arr.indexOf(obj);
       if (indx>=0) this.pad.fPrimitives.RemoveAt(indx);
    }
 
-   TPadPainter.prototype.FindPrimitive = function(exact_obj, classname, name) {
+   RPadPainter.prototype.FindPrimitive = function(exact_obj, classname, name) {
       if (!this.pad || !this.pad.fPrimitives) return null;
 
       for (var i=0; i < this.pad.fPrimitives.arr.length; i++) {
@@ -3118,7 +3118,7 @@
       return null;
    }
 
-   TPadPainter.prototype.HasObjectsToDraw = function() {
+   RPadPainter.prototype.HasObjectsToDraw = function() {
       // return true if any objects beside sub-pads exists in the pad
 
       var arr = this.pad ? this.pad.fPrimitives : null;
@@ -3130,7 +3130,7 @@
       return false;
    }
 
-   TPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
+   RPadPainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
 
       if (indx===0) {
          // flag used to prevent immediate pad redraw during normal drawing sequence
@@ -3183,7 +3183,7 @@
       }
    }
 
-   TPadPainter.prototype.GetTooltips = function(pnt) {
+   RPadPainter.prototype.GetTooltips = function(pnt) {
       var painters = [], hints = [];
 
       // first count - how many processors are there
@@ -3204,7 +3204,7 @@
       return hints;
    }
 
-   TPadPainter.prototype.FillContextMenu = function(menu) {
+   RPadPainter.prototype.FillContextMenu = function(menu) {
 
       if (this.pad)
          menu.add("header: " + this.pad._typename + "::" + this.pad.fName);
@@ -3263,7 +3263,7 @@
       return true;
    }
 
-   TPadPainter.prototype.ShowContextMenu = function(evnt) {
+   RPadPainter.prototype.ShowContextMenu = function(evnt) {
       if (!evnt) {
          // for debug purposes keep original context menu for small region in top-left corner
          var pos = d3.mouse(this.svg_pad(this.this_pad_name).node());
@@ -3288,7 +3288,7 @@
       }); // end menu creation
    }
 
-   TPadPainter.prototype.Redraw = function(resize) {
+   RPadPainter.prototype.Redraw = function(resize) {
 
       // prevent redrawing
       if (this._doing_pad_draw) return console.log('Prevent redrawing', this.pad.fName);
@@ -3308,7 +3308,7 @@
       }
    }
 
-   TPadPainter.prototype.NumDrawnSubpads = function() {
+   RPadPainter.prototype.NumDrawnSubpads = function() {
       if (this.painters === undefined) return 0;
 
       var num = 0;
@@ -3321,7 +3321,7 @@
       return num;
    }
 
-   TPadPainter.prototype.RedrawByResize = function() {
+   RPadPainter.prototype.RedrawByResize = function() {
       if (this.access_3d_kind() === 1) return true;
 
       for (var i = 0; i < this.painters.length; ++i)
@@ -3331,7 +3331,7 @@
       return false;
    }
 
-   TPadPainter.prototype.CheckCanvasResize = function(size, force) {
+   RPadPainter.prototype.CheckCanvasResize = function(size, force) {
 
       if (!this.iscan && this.has_canvas) return false;
 
@@ -3352,7 +3352,7 @@
       return changed;
    }
 
-   TPadPainter.prototype.UpdateObject = function(obj) {
+   RPadPainter.prototype.UpdateObject = function(obj) {
       if (!obj) return false;
 
       this.pad.fStyle = obj.fStyle;
@@ -3369,7 +3369,7 @@
       return true;
    }
 
-   TPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
+   RPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
       // function called when drawing next snapshot from the list
       // it is also used as callback for drawing of previous snap
 
@@ -3442,7 +3442,7 @@
 
             var subpad = snap; // not subpad, but just attributes
 
-            var padpainter = new TPadPainter(subpad, false);
+            var padpainter = new RPadPainter(subpad, false);
             padpainter.DecodeOptions("");
             padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
             padpainter.snapid = snap.fObjectID;
@@ -3487,7 +3487,7 @@
       }
    }
 
-   TPadPainter.prototype.FindSnap = function(snapid) {
+   RPadPainter.prototype.FindSnap = function(snapid) {
 
       if (this.snapid === snapid) return this;
 
@@ -3505,7 +3505,7 @@
       return null;
    }
 
-   TPadPainter.prototype.AddOnlineButtons = function() {
+   RPadPainter.prototype.AddOnlineButtons = function() {
       this.AddButton(JSROOT.ToolbarIcons.camera, "Create PNG", "CanvasSnapShot", "Ctrl PrintScreen");
       if (JSROOT.gStyle.ContextMenu)
          this.AddButton(JSROOT.ToolbarIcons.question, "Access context menus", "PadContextMenus");
@@ -3514,7 +3514,7 @@
          this.AddButton(JSROOT.ToolbarIcons.circle, "Enlarge canvas", "EnlargePad");
    }
 
-   TPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
+   RPadPainter.prototype.RedrawPadSnap = function(snap, call_back) {
       // for the pad/canvas display item contains list of primitives plus pad attributes
 
       if (!snap || !snap.fPrimitives) return;
@@ -3609,7 +3609,7 @@
       });
    }
 
-   TPadPainter.prototype.CreateImage = function(format, call_back) {
+   RPadPainter.prototype.CreateImage = function(format, call_back) {
       if (format=="pdf") {
          // use https://github.com/MrRio/jsPDF in the future here
          JSROOT.CallBack(call_back, btoa("dummy PDF file"));
@@ -3625,7 +3625,7 @@
       }
    }
 
-   TPadPainter.prototype.ItemContextMenu = function(name) {
+   RPadPainter.prototype.ItemContextMenu = function(name) {
        var rrr = this.svg_pad(this.this_pad_name).node().getBoundingClientRect();
        var evnt = { clientX: rrr.left+10, clientY: rrr.top + 10 };
 
@@ -3659,7 +3659,7 @@
        });
    }
 
-   TPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
+   RPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
       if (!filename) {
          filename = this.this_pad_name;
          if (filename.length === 0) filename = this.iscan ? "canvas" : "pad";
@@ -3677,7 +3677,7 @@
       });
    }
 
-   TPadPainter.prototype.ProduceImage = function(full_canvas, file_format, call_back) {
+   RPadPainter.prototype.ProduceImage = function(full_canvas, file_format, call_back) {
 
       var use_frame = (full_canvas === "frame");
 
@@ -3823,7 +3823,7 @@
    }
 
 
-   TPadPainter.prototype.PadButtonClick = function(funcname) {
+   RPadPainter.prototype.PadButtonClick = function(funcname) {
 
       if (funcname == "CanvasSnapShot") return this.SaveAs("png", true);
 
@@ -3896,7 +3896,7 @@
       }
    }
 
-   TPadPainter.prototype.FindButton = function(keyname) {
+   RPadPainter.prototype.FindButton = function(keyname) {
       var group = this.svg_layer("btns_layer", this.this_pad_name), found_func = "";
       if (!group.empty())
          group.selectAll("svg").each(function() {
@@ -3906,7 +3906,7 @@
       return found_func;
    }
 
-   TPadPainter.prototype.toggleButtonsVisibility = function(action) {
+   RPadPainter.prototype.toggleButtonsVisibility = function(action) {
       var group = this.svg_layer("btns_layer", this.this_pad_name),
           btn = group.select("[name='Toggle']");
 
@@ -3941,7 +3941,7 @@
       });
    }
 
-   TPadPainter.prototype.RemoveButtons = function() {
+   RPadPainter.prototype.RemoveButtons = function() {
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (!group.empty()) {
          group.selectAll("*").remove();
@@ -3949,7 +3949,7 @@
       }
    }
 
-   TPadPainter.prototype.RemoveButtons = function() {
+   RPadPainter.prototype.RemoveButtons = function() {
       var group = this.svg_layer("btns_layer", this.this_pad_name);
       if (!group.empty()) {
          group.selectAll("*").remove();
@@ -3957,7 +3957,7 @@
       }
    }
 
-   TPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
+   RPadPainter.prototype.AddButton = function(_btn, _tooltip, _funcname, _keyname) {
       if (!JSROOT.gStyle.ToolBar || JSROOT.BatchMode) return;
 
       if (!this._buttons) this._buttons = [];
@@ -3975,7 +3975,7 @@
       }
    }
 
-   TPadPainter.prototype.ShowButtons = function() {
+   RPadPainter.prototype.ShowButtons = function() {
 
       if (!this._buttons) return;
 
@@ -4034,7 +4034,7 @@
       else if (!group.property('leftside')) ctrl.attr("x", x);
    }
 
-   TPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
+   RPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
       var sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
       if (btns.property('vertical')) {
           btns_x = btns.property('leftside') ? 2 : (width - sz0);
@@ -4047,7 +4047,7 @@
       btns.attr("transform","translate("+btns_x+","+btns_y+")");
    }
 
-   TPadPainter.prototype.GetCoordinate = function(pos) {
+   RPadPainter.prototype.GetCoordinate = function(pos) {
       var res = { x: 0, y: 0 };
 
       if (!pos) return res;
@@ -4081,13 +4081,13 @@
    }
 
 
-//   TPadPainter.prototype.DrawingReady = function(res_painter) {
+//   RPadPainter.prototype.DrawingReady = function(res_painter) {
 //      var main = this.main_painter();
 //      if (main && main.mode3d && typeof main.Render3D == 'function') main.Render3D(-2222);
 //      TBasePainter.prototype.DrawingReady.call(this, res_painter);
 //   }
 
-   TPadPainter.prototype.DecodeOptions = function(opt) {
+   RPadPainter.prototype.DecodeOptions = function(opt) {
       var pad = this.GetObject();
       if (!pad) return;
 
@@ -4118,7 +4118,7 @@
    }
 
    function drawPad(divid, pad, opt) {
-      var painter = new TPadPainter(pad, false);
+      var painter = new RPadPainter(pad, false);
       painter.DecodeOptions(opt);
 
       painter.SetDivId(divid); // pad painter will be registered in the canvas painters list
@@ -4158,16 +4158,16 @@
 
    // ==========================================================================================
 
-   function TCanvasPainter(canvas) {
+   function RCanvasPainter(canvas) {
       // used for online canvas painter
-      TPadPainter.call(this, canvas, true);
+      RPadPainter.call(this, canvas, true);
       this._websocket = null;
       this.tooltip_allowed = (JSROOT.gStyle.Tooltip > 0);
    }
 
-   TCanvasPainter.prototype = Object.create(TPadPainter.prototype);
+   RCanvasPainter.prototype = Object.create(RPadPainter.prototype);
 
-   TCanvasPainter.prototype.ChangeLayout = function(layout_kind, call_back) {
+   RCanvasPainter.prototype.ChangeLayout = function(layout_kind, call_back) {
       var current = this.get_layout_kind();
       if (current == layout_kind) return JSROOT.CallBack(call_back, true);
 
@@ -4225,7 +4225,7 @@
       });
    }
 
-   TCanvasPainter.prototype.ToggleProjection = function(kind, call_back) {
+   RCanvasPainter.prototype.ToggleProjection = function(kind, call_back) {
       delete this.proj_painter;
 
       if (kind) this.proj_painter = 1; // just indicator that drawing can be preformed
@@ -4241,7 +4241,7 @@
       this.ChangeLayout(layout, call_back);
    }
 
-   TCanvasPainter.prototype.DrawProjection = function(kind,hist) {
+   RCanvasPainter.prototype.DrawProjection = function(kind,hist) {
       if (!this.proj_painter) return; // ignore drawing if projection not configured
 
       if (this.proj_painter === 1) {
@@ -4279,34 +4279,34 @@
       }
    }
 
-   TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
+   RCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
       JSROOT.draw(side.node(), canv, opt, call_back);
    }
 
-   TCanvasPainter.prototype.ShowMessage = function(msg) {
+   RCanvasPainter.prototype.ShowMessage = function(msg) {
       JSROOT.progress(msg, 7000);
    }
 
    /// function called when canvas menu item Save is called
-   TCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
+   RCanvasPainter.prototype.SaveCanvasAsFile = function(fname) {
       var pthis = this, pnt = fname.indexOf(".");
       this.CreateImage(fname.substr(pnt+1), function(res) {
          pthis.SendWebsocket("SAVE:" + fname + ":" + res);
       })
    }
 
-   TCanvasPainter.prototype.SendSaveCommand = function(fname) {
+   RCanvasPainter.prototype.SendSaveCommand = function(fname) {
       this.SendWebsocket("PRODUCE:" + fname);
    }
 
-   TCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
+   RCanvasPainter.prototype.SendWebsocket = function(msg, chid) {
       if (this._websocket)
          this._websocket.Send(msg, chid);
    }
 
-   TCanvasPainter.prototype.CloseWebsocket = function(force) {
+   RCanvasPainter.prototype.CloseWebsocket = function(force) {
       if (this._websocket) {
          this._websocket.Close(force);
          this._websocket.Cleanup();
@@ -4314,7 +4314,7 @@
       }
    }
 
-   TCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
+   RCanvasPainter.prototype.OpenWebsocket = function(socket_kind) {
       // create websocket for current object (canvas)
       // via websocket one recieved many extra information
 
@@ -4325,7 +4325,7 @@
       this._websocket.Connect();
    }
 
-   TCanvasPainter.prototype.UseWebsocket = function(handle, href) {
+   RCanvasPainter.prototype.UseWebsocket = function(handle, href) {
       this.CloseWebsocket();
 
       this._websocket = handle;
@@ -4334,20 +4334,20 @@
       this._websocket.Connect(href);
    }
 
-   TCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
+   RCanvasPainter.prototype.WindowBeforeUnloadHanlder = function() {
       // when window closed, close socket
       this.CloseWebsocket(true);
    }
 
-   TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
+   RCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
       // indicate that we are ready to recieve any following commands
    }
 
-   TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
+   RCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
       JSROOT.CloseCurrentWindow();
    }
 
-   TCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
+   RCanvasPainter.prototype.OnWebsocketMsg = function(handle, msg) {
       console.log("GET MSG " + msg.substr(0,30));
 
       if (msg == "CLOSE") {
@@ -4448,7 +4448,7 @@
       }
    }
 
-   TCanvasPainter.prototype.ShowSection = function(that, on) {
+   RCanvasPainter.prototype.ShowSection = function(that, on) {
       switch(that) {
          case "Menu": break;
          case "StatusBar": break;
@@ -4470,7 +4470,7 @@
       kShowToolTips     : JSROOT.BIT(23)
    };
 
-   TCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
+   RCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
       if (!this.pad) return;
 
       if (document) document.title = this.pad.fTitle;
@@ -4484,7 +4484,7 @@
       this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
    }
 
-   TCanvasPainter.prototype.HasEventStatus = function() {
+   RCanvasPainter.prototype.HasEventStatus = function() {
       return this.has_event_status;
    }
 
@@ -4496,7 +4496,7 @@
          // can = JSROOT.Create("ROOT::Experimental::TCanvas");
       }
 
-      var painter = new TCanvasPainter(can);
+      var painter = new RCanvasPainter(can);
       painter.normal_canvas = !nocanvas;
 
       painter.SetDivId(divid, -1); // just assign id
@@ -4521,7 +4521,7 @@
    }
 
    function drawPadSnapshot(divid, snap, opt) {
-      var painter = new TCanvasPainter(null);
+      var painter = new RCanvasPainter(null);
       painter.normal_canvas = false;
       painter.batch_mode = true;
       painter.SetDivId(divid, -1); // just assign id
@@ -4875,7 +4875,7 @@
 
       painter.CreateG(false);
 
-      painter.z_handle = new JSROOT.v7.TAxisPainter(true, "z_");
+      painter.z_handle = new JSROOT.v7.RAxisPainter(true, "z_");
       painter.z_handle.SetDivId(divid, -1);
       painter.z_handle.pad_name = painter.pad_name;
       painter.z_handle.invert_side = true;
@@ -4899,11 +4899,12 @@
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "", direct: true, csstype: "legend" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: "JSROOT.v7.drawFrame", opt: "" });
 
-   JSROOT.v7.TAxisPainter = TAxisPainter;
-   JSROOT.v7.TFramePainter = TFramePainter;
+   JSROOT.v7.RAxisPainter = RAxisPainter;
+   JSROOT.v7.RFramePainter = RFramePainter;
    JSROOT.v7.RPalettePainter = RPalettePainter;
-   JSROOT.v7.TPadPainter = TPadPainter;
-   JSROOT.v7.TCanvasPainter = TCanvasPainter;
+   JSROOT.v7.RPadPainter = RPadPainter;
+   JSROOT.v7.RCanvasPainter = RCanvasPainter;
+   JSROOT.v7.TCanvasPainter = RCanvasPainter; // temporary, fix in ROOT soon
    JSROOT.v7.drawFrame = drawFrame;
    JSROOT.v7.drawPad = drawPad;
    JSROOT.v7.drawCanvas = drawCanvas;
