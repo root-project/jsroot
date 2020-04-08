@@ -146,23 +146,6 @@
 
    THistPainter.prototype.CheckHistDrawAttributes = function() {
 
-/*      if (this.options._pfc || this.options._plc || this.options._pmc) {
-         if (!this.pallette && JSROOT.Painter.GetColorPalette)
-            this.palette = JSROOT.Painter.GetColorPalette();
-
-         var pp = this.pad_painter();
-         if (this.palette && pp) {
-            var icolor = pp.GetAutoColor(this);
-
-            if (this.options._pfc) { this.histo.fFillColor = icolor; delete this.fillatt; }
-            if (this.options._plc) { this.histo.fLineColor = icolor; delete this.lineatt; }
-            if (this.options._pmc) { this.histo.fMarkerColor = icolor; delete this.markeratt; }
-         }
-
-         this.options._pfc = this.options._plc = this.options._pmc = false;
-      }
-*/
-
       this.createAttFill( { pattern: 0, color: 0 });
 
       var lcol = this.v7EvalColor( "line_color", "black"),

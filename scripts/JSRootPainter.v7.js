@@ -120,7 +120,6 @@
       return Math.round(norm*sizepx + px);
    }
 
-
    /** Evalue RColor using attribute storage and configured RStyle */
    JSROOT.TObjectPainter.prototype.v7EvalColor = function(name, dflt) {
       var rgb = this.v7EvalAttr(name + "_rgb", "");
@@ -153,6 +152,47 @@
       this.createAttLine({ color: line_color, width: line_width, style: line_style });
    }
 
+   /** Create RChangeAttr, which can be applied on the server side */
+   JSROOT.TObjectPainter.prototype.v7AttrChange = function(arr,name,value,kind) {
+      if (!this.snapid)
+         return false;
+
+      var obj = {
+        _typename: "ROOT::Experimental::RChangeAttr",
+        id: this.snapid,
+        name: name,
+        value: null
+      }
+
+      if ((value !== null) && (value !== undefined)) {
+         if (!kind) {
+            if (typeof value == "string") kind = "string"; else
+            if (typeof value == "number") kind = "double";
+         }
+         obj.value = { _typename: "ROOT::Experimental::RAttrMap::" };
+         switch(kind) {
+            case "none": obj.value._typename += "NoValue_t"; break;
+            case "bool": obj.value._typename += "BoolValue_t"; obj.value.v = value ? true : false; break;
+            case "int": obj.value._typename += "IntValue_t"; obj.value.v = parseInt(value); break;
+            case "double": obj.value._typename += "DoubleValue_t"; obj.value.v = parseFloat(value); break;
+            default: obj.value._typename += "StringValue_t"; obj.value.v = (typeof value == "string") ? value : JSON.stringify(value); break;
+         }
+      }
+
+      arr.push(obj);
+      return true;
+   }
+
+   /** Sends accumulated attribute changes to server */
+   JSROOT.TObjectPainter.prototype.v7SendAttrChanges = function(arr) {
+      if (!arr || !arr.length) return;
+
+      console.log('Changing attributes',  JSON.stringify(arr));
+
+      var canp = this.canv_painter();
+      if (canp && canp._websocket)
+         canp.SendWebsocket("ATTRCHANGE:" + JSON.stringify(arr));
+   }
 
    function TAxisPainter(embedded, cssprefix) {
       var dummy = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
@@ -1494,6 +1534,16 @@
       } else {
          top_rect = this.draw_g.select("rect");
          main_svg = this.draw_g.select(".main_layer");
+
+         if (this.axes_drawn) {
+            var xmin = this.v7EvalAttr("x_zoommin"),
+                xmax = this.v7EvalAttr("x_zoommax"),
+                ymin = this.v7EvalAttr("y_zoommin"),
+                ymax = this.v7EvalAttr("y_zoommax");
+
+            console.log('RFrame zooming update', xmin, xmax, ymin, ymax);
+         }
+
       }
 
       this.axes_drawn = false;
@@ -1522,8 +1572,6 @@
               .attr("height", h)
               .attr("viewBox", "0 0 " + w + " " + h);
 
-      // var tooltip_rect = this.draw_g.select(".interactive_rect");
-      // if (JSROOT.BatchMode) return tooltip_rect.remove();
       if (JSROOT.BatchMode) return;
 
       this.draw_g.attr("x", lm)
@@ -1535,45 +1583,34 @@
          this.AddDrag({ obj: this, only_resize: true, minwidth: 20, minheight: 20,
                         redraw: this.SizeChanged.bind(this) });
 
-      var tooltip_rect = main_svg;
-      tooltip_rect.style("pointer-events","visibleFill")
-                  .property('handlers_set', 0);
-
-      //if (tooltip_rect.empty())
-      //   tooltip_rect =
-      //      this.draw_g
-      //          .append("rect")
-      //          .attr("class","interactive_rect")
-      //          .style('opacity',0)
-      //          .style('fill',"none")
-      //          .style("pointer-events","visibleFill")
-      //          .property('handlers_set', 0);
+      main_svg.style("pointer-events","visibleFill")
+              .property('handlers_set', 0);
 
       var handlers_set = (pp && pp._fast_drawing) ? 0 : 1;
 
-      if (tooltip_rect.property('handlers_set') != handlers_set) {
+      if (main_svg.property('handlers_set') != handlers_set) {
          var close_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, null) : null,
-              mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
+             mouse_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: false }) : null;
 
-         tooltip_rect.property('handlers_set', handlers_set)
-                     .on('mouseenter', mouse_handler)
-                     .on('mousemove', mouse_handler)
-                     .on('mouseleave', close_handler);
+         main_svg.property('handlers_set', handlers_set)
+                 .on('mouseenter', mouse_handler)
+                 .on('mousemove', mouse_handler)
+                 .on('mouseleave', close_handler);
 
          if (JSROOT.touches) {
             var touch_handler = handlers_set ? this.ProcessTooltipEvent.bind(this, { handler: true, touch: true }) : null;
 
-            tooltip_rect.on("touchstart", touch_handler)
-                        .on("touchmove", touch_handler)
-                        .on("touchend", close_handler)
-                        .on("touchcancel", close_handler);
+            main_svg.on("touchstart", touch_handler)
+                    .on("touchmove", touch_handler)
+                    .on("touchend", close_handler)
+                    .on("touchcancel", close_handler);
          }
       }
 
-      tooltip_rect.attr("x", 0)
-                  .attr("y", 0)
-                  .attr("width", w)
-                  .attr("height", h);
+      main_svg.attr("x", 0)
+              .attr("y", 0)
+              .attr("width", w)
+              .attr("height", h);
 
       var hintsg = this.hints_layer().select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
@@ -1702,7 +1739,7 @@
          unzoom_z = (zmin === zmax) && (zmin === 0);
       }
 
-      var changed = false, fp = this;
+      var changed = false, fp = this, changes = [];
 
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
@@ -1712,18 +1749,24 @@
                fp.zoom_xmax = xmax;
                changed = true;
                zoom_x = false;
+               fp.v7AttrChange(changes, "x_zoommin", xmin);
+               fp.v7AttrChange(changes, "x_zoommax", xmax);
             }
             if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
                fp.zoom_ymin = ymin;
                fp.zoom_ymax = ymax;
                changed = true;
                zoom_y = false;
+               fp.v7AttrChange(changes, "y_zoommin", ymin);
+               fp.v7AttrChange(changes, "y_zoommax", ymax);
             }
             if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
                fp.zoom_zmin = zmin;
                fp.zoom_zmax = zmax;
                changed = true;
                zoom_z = false;
+               fp.v7AttrChange(changes, "z_zoommin", zmin);
+               fp.v7AttrChange(changes, "z_zoommax", zmax);
             }
          });
 
@@ -1732,16 +1775,24 @@
          if (unzoom_x) {
             if (this.zoom_xmin !== this.zoom_xmax) changed = true;
             this.zoom_xmin = this.zoom_xmax = 0;
+            fp.v7AttrChange(changes, "x_zoommin", null);
+            fp.v7AttrChange(changes, "x_zoommax", null);
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) changed = true;
             this.zoom_ymin = this.zoom_ymax = 0;
+            fp.v7AttrChange(changes, "y_zoommin", null);
+            fp.v7AttrChange(changes, "y_zoommax", null);
          }
          if (unzoom_z) {
             if (this.zoom_zmin !== this.zoom_zmax) changed = true;
             this.zoom_zmin = this.zoom_zmax = 0;
+            fp.v7AttrChange(changes, "z_zoommin", null);
+            fp.v7AttrChange(changes, "z_zoommax", null);
          }
       }
+
+      this.v7SendAttrChanges(changes);
 
       if (changed) this.RedrawPad();
 
@@ -3362,6 +3413,9 @@
          this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
 
          this._current_primitive_indx = indx;
+
+         // empty object, no need to do something, take next
+         if (snap.fDummy) continue;
 
          // first appropriate painter for the object
          // if same object drawn twice, two painters will exists
