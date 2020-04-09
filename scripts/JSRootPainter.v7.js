@@ -187,12 +187,34 @@
    JSROOT.TObjectPainter.prototype.v7SendAttrChanges = function(arr) {
       if (!arr || !arr.length) return;
 
-      console.log('Changing attributes',  JSON.stringify(arr));
-
       var canp = this.canv_painter();
       if (canp && canp._websocket)
          canp.SendWebsocket("ATTRCHANGE:" + JSON.stringify(arr));
    }
+
+   /** @brief Submit request to server-side drawable
+    * @param kind defines request kind, only single request a time can be submitted
+    * @param req is object derived from DrawableRequest, including correct _typename
+    * @param method is method of painter object
+    * @private */
+   JSROOT.TObjectPainter.prototype.v7SubmitRequest = function(kind, req, method) {
+      var canp = this.canv_painter();
+      if (!canp || !canp.SubmitDrawableRequest) return false;
+
+      return canp.SubmitDrawableRequest(kind, req, this, method);
+   }
+
+   /** Check if we could submit request to server */
+   JSROOT.TObjectPainter.prototype.v7CanSubmitRequest = function() {
+      if (!this.snapid) return false;
+
+      var canp = this.canv_painter();
+      if (!canp || !canp.SubmitDrawableRequest || canp._readonly || !canp._websocket) return false;
+
+      return true;
+   }
+
+   // ================================================================================
 
    function RAxisPainter(embedded, cssprefix) {
       var dummy = JSROOT.Create("TAxis"); // just dummy before all attributes are implemented
@@ -4365,7 +4387,8 @@
          var obj = JSROOT.parse(msg.substr(4));
          // console.log("get JSON ", msg.length-4, obj._typename);
          this.RedrawObject(obj);
-
+      } else if (msg.substr(0,9)=="REPL_REQ:") {
+         this.ProcessDrawableReply(msg.substr(9));
       } else if (msg.substr(0,5)=='MENU:') {
          // this is container with object id and list of menu items
          var lst = JSROOT.parse(msg.substr(5));
@@ -4446,6 +4469,75 @@
       } else {
          console.log("unrecognized msg len:" + msg.length + " msg:" + msg.substr(0,20));
       }
+   }
+
+   /** Submit request to RDrawable object on server side */
+   RCanvasPainter.prototype.SubmitDrawableRequest = function(kind, req, painter, method) {
+
+      if (this._readonly || !this._websocket) return false;
+
+      if (!req || !req._typename || !kind ||
+          !painter.snapid || (typeof painter.snapid != "string")) return false;
+
+      if (kind) {
+         // if kind specified - check if such request already was submitted
+         if (!painter._requests) painter._requests = {};
+
+         var prevreq = painter._requests[kind];
+
+         if (prevreq) {
+            var tm = new Date().getTime();
+            if (!prevreq._tm || (tm - prevreq._tm < 5000)) {
+               prevreq._nextreq = req; // submit when got reply
+               return false;
+            }
+            delete painter._requests[kind]; // let submit new request after timeout
+         }
+
+         painter._requests[kind] = req; // keep reference on the request
+      }
+
+      if (!this._nextreqid) this._nextreqid = 1;
+
+      req.id = painter.snapid;
+      req.reqid = this._nextreqid++;
+
+      var msg = JSON.stringify(req);
+
+      req._kind = kind;
+      req._painter = painter;
+      req._method = method;
+      req._tm = new Date().getTime();
+
+      if (!this._submreq) this._submreq = {};
+      this._submreq[req.reqid] = req; // fast access to submitted requests
+
+      this.SendWebsocket("REQ:" + msg);
+      return true;
+   }
+
+   /** Process reply from request to RDrawable */
+   RCanvasPainter.prototype.ProcessDrawableReply = function(msg) {
+      var reply = JSROOT.parse(msg);
+      if (!reply || !reply.reqid || !this._submreq) return false;
+
+      var req = this._submreq[reply.reqid];
+      if (!req) return false;
+
+      // remove reference first
+      delete this._submreq[reply.reqid];
+
+      // remove blocking reference for that kind
+      if (req._painter && req._kind && req._painter._requests)
+         if (req._painter._requests[req._kind] === req)
+            delete req._painter._requests[req._kind];
+
+      if (req._painter && req._method)
+         req._method.call(req._painter, reply);
+
+      // resubmit last request of that kind
+      if (req._nextreq && !req._painter._requests[req._kind])
+         this.SubmitDrawableRequest(req._kind, req._nextreq, req._painter, req._method);
    }
 
    RCanvasPainter.prototype.ShowSection = function(that, on) {
