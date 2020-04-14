@@ -2727,8 +2727,20 @@
 
    TObjectPainter.prototype = Object.create(TBasePainter.prototype);
 
+   /** @summary Assign object to the painter */
+
    TObjectPainter.prototype.AssignObject = function(obj) {
-      this.draw_object = ((obj!==undefined) && (typeof obj == 'object')) ? obj : null;
+      this.draw_object = ((obj !== undefined) && (typeof obj == 'object')) ? obj : null;
+   }
+
+   /** @summary Assign snapid to the painter
+   *
+   * @desc Identifier used to communicate with server side and identifies object on the server
+   * @private
+   */
+
+   TObjectPainter.prototype.AssignSnapId = function(id) {
+      this.snapid = id;
    }
 
    /** @summary Generic method to cleanup painter.

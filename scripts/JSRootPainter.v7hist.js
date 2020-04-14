@@ -3472,8 +3472,9 @@
       if (pp && pp._fast_drawing) return false;
 
       var fp = this.frame_painter();
+      if (!fp) return false;
 
-      if (fp && this.v7CanSubmitRequest()) {
+      if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal) {
          // submit request to server
          // last request will be always submittef
          var req = {

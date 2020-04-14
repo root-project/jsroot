@@ -201,17 +201,41 @@
       var canp = this.canv_painter();
       if (!canp || !canp.SubmitDrawableRequest) return false;
 
+      // special situation when snapid not yet assigned - just keep ref until snapid is there
+      // maybe keep full list - for now not clear if really needed
+      if (!this.snapid) {
+         this._pending_request = { _kind: kind, _req: req, _method: method};
+         return false;
+      }
+
       return canp.SubmitDrawableRequest(kind, req, this, method);
    }
 
-   /** Check if we could submit request to server */
-   JSROOT.TObjectPainter.prototype.v7CanSubmitRequest = function() {
-      if (!this.snapid) return false;
+   /** @summary Assign snapid to the painter
+   * @desc Overwrite default method
+   * @private */
 
+   JSROOT.TObjectPainter.prototype.AssignSnapId = function(id) {
+      this.snapid = id;
+      if (this.snapid && this._pending_request) {
+         var req = this._pending_request;
+         this.v7SubmitRequest(req._kind, req._req, req._method);
+         delete this._pending_request;
+      }
+   }
+
+   JSROOT.v7.CommMode = { kNormal: 1, kLessTraffic: 2, kOffline: 3 }
+
+   /** Return communication mode with the server
+    * kOffline means no server there,
+    * kLessTraffic advise not to send commands if offline functionality available
+    * kNormal is standard functionality with RCanvas on server side*/
+   JSROOT.TObjectPainter.prototype.v7CommMode = function() {
       var canp = this.canv_painter();
-      if (!canp || !canp.SubmitDrawableRequest || canp._readonly || !canp._websocket) return false;
+      if (!canp || !canp.SubmitDrawableRequest || canp._readonly || !canp._websocket)
+         return JSROOT.v7.CommMode.kOffline;
 
-      return true;
+      return JSROOT.v7.CommMode.kNormal;
    }
 
    // ================================================================================
@@ -1563,9 +1587,8 @@
                 ymin = this.v7EvalAttr("y_zoommin"),
                 ymax = this.v7EvalAttr("y_zoommax");
 
-            console.log('RFrame zooming update', xmin, xmax, ymin, ymax);
+            console.log('TODO: RFrame zooming update', xmin, xmax, ymin, ymax);
          }
-
       }
 
       this.axes_drawn = false;
@@ -3410,7 +3433,7 @@
          if (objpainter && lst && lst[indx] && (objpainter.snapid === undefined)) {
             // keep snap id in painter, will be used for the
             if (this.painters.indexOf(objpainter)<0) this.painters.push(objpainter);
-            objpainter.snapid = lst[indx].fObjectID;
+            objpainter.AssignSnapId(lst[indx].fObjectID);
             if (!objpainter.rstyle) objpainter.rstyle = lst[indx].fStyle || this.rstyle;
          }
 
@@ -3467,7 +3490,7 @@
             var padpainter = new RPadPainter(subpad, false);
             padpainter.DecodeOptions("");
             padpainter.SetDivId(this.divid); // pad painter will be registered in the canvas painters list
-            padpainter.snapid = snap.fObjectID;
+            padpainter.AssignSnapId(snap.fObjectID);
             padpainter.rstyle = snap.fStyle;
 
             padpainter.CreatePadSvg();
@@ -3556,7 +3579,7 @@
       if (this.snapid === undefined) {
          // first time getting snap, create all gui elements first
 
-         this.snapid = snap.fObjectID;
+         this.AssignSnapId(snap.fObjectID);
 
          this.draw_object = snap;
          this.pad = snap;
