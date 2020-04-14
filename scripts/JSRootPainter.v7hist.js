@@ -3482,7 +3482,7 @@
             xmin: [fp.scale_xmin, fp.scale_ymin],
             xmax: [fp.scale_xmax, fp.scale_ymax]
          };
-         this.v7SubmitRequest("stat", req, this.UpdateStatistic);
+         this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
          return !!this.stats_lines; // if old statistic there - show it
       }
 
