@@ -1131,20 +1131,16 @@
       if (!evnt) {
          d3.event.stopPropagation(); // disable main context menu
          d3.event.preventDefault();  // disable browser context menu
-
-         // one need to copy event, while after call back event may be changed
          evnt = d3.event;
       }
-
-      this.ctx_menu_evnt = evnt;
 
       JSROOT.Painter.createMenu(this, function(menu) {
          menu.painter.FillContextMenu(menu);
 
          menu.painter.FillObjectExecMenu(menu, "title", function() {
-            menu.show(menu.painter.ctx_menu_evnt);
+            menu.show();
         });
-      }); // end menu creation
+      }, evnt); // end menu creation
    }
 
    TPavePainter.prototype.IsStats = function() {
@@ -2572,9 +2568,6 @@
          }
       }
 
-      // one need to copy event, while after call back event may be changed
-      menu_painter.ctx_menu_evnt = evnt;
-
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
          var domenu = menu.painter.FillContextMenu(menu, kind, obj);
 
@@ -2586,10 +2579,10 @@
             menu.painter.FillObjectExecMenu(menu, kind, function() {
                 // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true));
+                menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
             });
 
-      });  // end menu creation
+      }, evnt);  // end menu creation
    }
 
    /** @summary Invoke dialog to enter and modify user range @private */

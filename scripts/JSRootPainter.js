@@ -447,12 +447,17 @@
      return Painter.symbols_map[charactere];
    }
 
-   Painter.createMenu = function(painter, maincallback) {
+   Painter.createMenu = function(painter, maincallback, evt) {
       // dummy functions, forward call to the jquery function
       document.body.style.cursor = 'wait';
+      var show_evnt;
+      // copy event values, otherwise they will gone after scripts loading
+      if (evt && (typeof evt == "object"))
+         if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
+            show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
       JSROOT.AssertPrerequisites('hierarchy;jq2d;', function() {
          document.body.style.cursor = 'auto';
-         Painter.createMenu(painter, maincallback);
+         Painter.createMenu(painter, maincallback, show_evnt);
       });
    }
 

@@ -3585,7 +3585,6 @@
    RHistStatsPainter.prototype.ShowContextMenu = function() {
       d3.event.preventDefault();
       d3.event.stopPropagation(); // disable main context menu
-      var evnt = d3.event;
 
       JSROOT.Painter.createMenu(this, function(menu) {
          var obj = menu.painter.GetObject(),
@@ -3596,8 +3595,8 @@
          for (var n=0;n<obj.fEntries.length; ++n)
             menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
 
-         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(evnt); });
-      });
+         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
+      }, d3.event);
    }
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {

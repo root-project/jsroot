@@ -2598,9 +2598,6 @@
          }
       }
 
-      // one need to copy event, while after call back event may be changed
-      menu_painter.ctx_menu_evnt = evnt;
-
       if (!exec_painter) exec_painter = menu_painter;
 
       JSROOT.Painter.createMenu(menu_painter, function(menu) {
@@ -2614,10 +2611,9 @@
             exec_painter.FillObjectExecMenu(menu, kind, function() {
                 // suppress any running zooming
                 menu.painter.SwitchTooltip(false);
-                menu.show(menu.painter.ctx_menu_evnt, menu.painter.SwitchTooltip.bind(menu.painter, true));
+                menu.show(null, menu.painter.SwitchTooltip.bind(menu.painter, true));
             });
-
-      });  // end menu creation
+      }, evnt);  // end menu creation
    }
 
    /** @summary Show axis status message
@@ -3359,11 +3355,9 @@
       }
 
       JSROOT.Painter.createMenu(this, function(menu) {
-
          menu.painter.FillContextMenu(menu);
-
-         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(evnt); });
-      }); // end menu creation
+         menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
+      }, evnt); // end menu creation
    }
 
    TPadPainter.prototype.Redraw = function(resize) {
@@ -3982,8 +3976,8 @@
 
        JSROOT.Painter.createMenu(selp, function(menu) {
           if (selp.FillContextMenu(menu, selkind))
-             setTimeout(menu.show.bind(menu, evnt), 50);
-       });
+             setTimeout(menu.show.bind(menu), 50);
+       }, evnt);
    }
 
    TPadPainter.prototype.SaveAs = function(kind, full_canvas, filename) {
@@ -4153,9 +4147,9 @@
 
          if (JSROOT.Painter.closeMenu()) return;
 
-         var pthis = this, evnt = d3.event;
+         var pthis = this;
 
-         JSROOT.Painter.createMenu(pthis, function(menu) {
+         JSROOT.Painter.createMenu(this, function(menu) {
             menu.add("header:Menus");
 
             if (pthis.iscan)
@@ -4190,8 +4184,8 @@
                }
             }
 
-            menu.show(evnt);
-         });
+            menu.show();
+         }, d3.event);
 
          return;
       }
