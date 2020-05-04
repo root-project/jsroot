@@ -1442,10 +1442,10 @@
 
       switch (typename) {
          case 'TObject':
-             JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008 });
+             JSROOT.extend(obj, { fUniqueID: 0, fBits: 0 });
              break;
          case 'TNamed':
-            JSROOT.extend(obj, { fUniqueID: 0, fBits: 0x3000008, fName: "", fTitle: "" });
+            JSROOT.extend(obj, { fUniqueID: 0, fBits: 0, fName: "", fTitle: "" });
             break;
          case 'TList':
          case 'THashList':
@@ -1534,7 +1534,8 @@
             JSROOT.Create("TAttMarker", obj);
 
             JSROOT.extend(obj, {
-               fNcells : 0,
+               fBits: 8,
+               fNcells: 0,
                fXaxis: JSROOT.Create("TAxis"),
                fYaxis: JSROOT.Create("TAxis"),
                fZaxis: JSROOT.Create("TAxis"),
@@ -1792,7 +1793,7 @@
     * @param {array} [xpts] - array with X coordinates
     * @param {array} [ypts] - array with Y coordinates */
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
-      var graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x3000408, fName: "graph", fTitle: "title" });
+      var graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
 
       if (npoints>0) {
          graph.fMaxSize = graph.fNpoints = npoints;
