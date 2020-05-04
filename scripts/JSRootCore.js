@@ -1459,7 +1459,7 @@
          case 'TAxis':
             JSROOT.Create("TNamed", obj);
             JSROOT.Create("TAttAxis", obj);
-            JSROOT.extend(obj, { fNbins: 0, fXmin: 0, fXmax: 0, fXbins : [], fFirst: 0, fLast: 0,
+            JSROOT.extend(obj, { fNbins: 1, fXmin: 0, fXmax: 1, fXbins : [], fFirst: 0, fLast: 0,
                                  fBits2: 0, fTimeDisplay: false, fTimeFormat: "", fLabels: null, fModLabs: null });
             break;
          case 'TAttLine':
