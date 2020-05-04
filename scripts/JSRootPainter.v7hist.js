@@ -3471,6 +3471,14 @@
       var pp = this.pad_painter();
       if (pp && pp._fast_drawing) return false;
 
+      var obj = this.GetObject();
+      if (obj.fLines !== undefined) {
+         this.stats_lines = obj.fLines;
+         delete obj.fLines;
+         console.log('GET STATS LINES', this.stats_lines);
+         return true;
+      }
+
       var fp = this.frame_painter();
       if (!fp) return false;
 
@@ -3480,9 +3488,15 @@
          var req = {
             _typename: "ROOT::Experimental::RHistStatRequest",
             mask: this.GetObject().fShowMask,
-            xmin: [fp.scale_xmin, fp.scale_ymin],
-            xmax: [fp.scale_xmax, fp.scale_ymax]
+            ranges: {
+               _typename: "ROOT::Experimental::RDrawable::RUserRanges",
+               values: [fp.scale_xmin, fp.scale_xmax, fp.scale_ymin, fp.scale_ymax],
+               flags: [true, true, true, true]
+            }
          };
+
+         console.log('Sending request ', JSON.stringify(req));
+
          this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
          return !!this.stats_lines; // if old statistic there - show it
       }
