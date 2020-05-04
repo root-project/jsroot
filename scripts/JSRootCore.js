@@ -114,6 +114,8 @@
    // JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
+   JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
+
    JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {

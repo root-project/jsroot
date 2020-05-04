@@ -1908,6 +1908,7 @@
    }
 
    TFramePainter.prototype.ProcessKeyPress = function(evnt) {
+      if (!JSROOT.key_handling) return;
 
       var main = this.select_main();
       if (main.empty()) return;

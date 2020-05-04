@@ -229,7 +229,7 @@
 
    JSROOT.TFramePainter.prototype.SetActive = function(on) {
       if (this.control)
-         this.control.enableKeys = on;
+         this.control.enableKeys = on && JSROOT.key_handling;
    }
 
    /** @brief call 3D rendering of the histogram drawing
