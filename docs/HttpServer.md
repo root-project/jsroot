@@ -284,7 +284,7 @@ Then, its representation will look like:
     {
        "_typename" : "TNamed",
        "fUniqueID" : 0,
-       "fBits" : 50331656,
+       "fBits" : 0,
        "fName" : "obj",
        "fTitle" : "title"
     }
