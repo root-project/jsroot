@@ -2043,6 +2043,7 @@
             if (bin < 0) bin = 0; else
             if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
             this.fArray[bin] += ((weight===undefined) ? 1 : weight);
+            this.fEntries++;
          }
       }
 
@@ -2058,6 +2059,7 @@
             if (bin2 < 0) bin2 = 0; else
             if (bin2 > axis2.fNbins + 1) bin2 = axis2.fNbins + 1;
             this.fArray[bin1 + (axis1.fNbins+2)*bin2] += ((weight===undefined) ? 1 : weight);
+            this.fEntries++;
          }
       }
 
@@ -2076,6 +2078,7 @@
             if (bin3 < 0) bin3 = 0; else
             if (bin3 > axis3.fNbins + 1) bin3 = axis3.fNbins + 1;
             this.fArray[bin1 + (axis1.fNbins+2)* (bin2+(axis2.fNbins+2)*bin3)] += ((weight===undefined) ? 1 : weight);
+            this.fEntries++;
          }
       }
 
