@@ -16,7 +16,7 @@
   <div id="user_tooltip">Place for info</div>
 
   <form action="">
-     <input type="radio" name="kind" id="btn1" value="Tooltip"> Tooltip
+     <input type="radio" name="kind" id="btn1" value="Tooltip" checked="true"> Tooltip
      <input type="radio" name="kind" id="btn2" value="Click"> Click
      <input type="radio" name="kind" id="btn3" value="Dblclick"> Doubleclk
   </form>
@@ -27,13 +27,16 @@
 
 <script type='text/javascript'>
 
-      var cnt = 0, kind = "";
+      var cnt = 0, kind = "", toggle_flag = true, last_hbin = -1;
 
       function UserHandler(info) {
          if (!info)  {
             d3.select("#user_tooltip").html("No tooltip");
+            last_hbin = -1;
             return false;
          }
+         
+         last_hbin = info.bin;
 
          // set tooltip info
          d3.select("#user_tooltip").html("name: " + info.name + "  bin: " + info.bin + "  cont: " + info.cont);
@@ -46,6 +49,39 @@
          h1.fTitle = "Projection of biny=" + info.biny;
          JSROOT.redraw("tooltip_draw", h1);
          return true; // means event is handled and can be ignored
+      }
+      
+      function DoExecMenu(arg) {
+         switch (arg) { 
+            case "something": 
+               console.log('Execute something'); 
+               break; 
+            case "toggle": 
+               console.log('Toggle something');
+               toggle_flag = !toggle_flag; 
+               break;
+            default:
+               console.log('Process histogram bin ', parseInt(arg))
+         }
+      }
+
+      /** Fill context menu, call_back must be invoked to show menu
+        * kind argument may indicate special element like "x" or "y" axis */
+      function CustomContextMenu(menu, kind, call_back) {
+         // optional separator
+         menu.add("separator");
+
+         // menu item which execute function when selected
+         if (last_hbin > 0)
+            menu.add("Process bin " + last_hbin, last_hbin, DoExecMenu);
+         else
+            menu.add("Do something", "something", DoExecMenu);
+         
+         // checked menu item 
+         menu.addchk(toggle_flag, "Toggle something", "toggle", DoExecMenu);
+         
+         // invoke call_back to show menu  
+         JSROOT.CallBack(call_back, true);
       }
 
       function updateGUI() {
@@ -84,6 +120,8 @@
             chkd = document.getElementById("btn3").checked;
 
             painter.ConfigureUserDblclickHandler(chkd ? UserHandler : null);
+
+            painter.ConfigureUserContextMenu(CustomContextMenu);
          });
       }
 

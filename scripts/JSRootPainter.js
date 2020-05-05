@@ -4200,6 +4200,9 @@
     * @private */
    TObjectPainter.prototype.FillObjectExecMenu = function(menu, kind, call_back) {
 
+      if (this.UserContextMenuFunc)
+         return this.UserContextMenuFunc(menu, kind, call_back);
+
       var canvp = this.canv_painter();
 
       if (!this.snapid || !canvp || canvp._readonly || !canvp._websocket)
@@ -4600,6 +4603,22 @@
       this.UserTooltipCallback = call_back;
       this.UserTooltipTimeout = user_timeout;
    }
+
+   /** @summary Configure user-defined context menu for the object
+   *
+   * @desc fillmenu_func will be called when context menu is actiavted
+   * Arguments fillmenu_func are (menu,kind,call_back)
+   * First is JSROOT menu object, second is object subelement like axis "x" or "y"
+   * Third is call_back which must be called when menu items are filled
+   */
+
+  TObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
+
+     if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
+        delete this.UserContextMenuFunc;
+     else
+        this.UserContextMenuFunc = fillmenu_func;
+  }
 
    /** @summary Configure user-defined click handler
    *
