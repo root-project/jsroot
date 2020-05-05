@@ -1770,6 +1770,7 @@
       return this.GetObject();
    }
 
+   /** Returns histogram axis @prviate */
    THistPainter.prototype.GetAxis = function(name) {
       var histo = this.GetObject();
       if (histo)
