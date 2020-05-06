@@ -3208,12 +3208,13 @@
 
       if (histo.fReady) return;
 
-      var arr = histo.fArray; // array of values
+      var arr = histo.fArray, entries = histo.fEntries; // array of values
       histo.fNcells = histo.fXaxis.fNbins + 2;
       histo.fArray = new Float64Array(histo.fNcells);
       for (var n=0;n<histo.fNcells;++n) histo.fArray[n] = 0;
       for (var n=0;n<histo.fNIn;++n) histo.Fill(arr[n]);
       histo.fReady = true;
+      histo.fEntries = entries;
    }
 
    /** @summary Scan content of 1-D histogram
