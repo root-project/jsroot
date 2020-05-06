@@ -1788,6 +1788,12 @@
 
       var changed = false, fp = this, changes = {};
 
+      var req = {
+         _typename: "ROOT::Experimental::RDrawable::RUserRanges",
+         values: [0, 0, 0, 0, 0, 0],
+         flags: [false, false, false, false, false, false]
+      };
+
       // first process zooming (if any)
       if (zoom_x || zoom_y || zoom_z)
          this.ForEachPainter(function(obj) {
@@ -1798,6 +1804,8 @@
                zoom_x = false;
                fp.v7AttrChange(changes, "x_zoommin", xmin);
                fp.v7AttrChange(changes, "x_zoommax", xmax);
+               req.values[0] = xmin; req.values[1] = xmax;
+               req.flags[0] = req.flags[1] = true;
             }
             if (zoom_y && obj.CanZoomIn("y", ymin, ymax)) {
                fp.zoom_ymin = ymin;
@@ -1806,6 +1814,8 @@
                zoom_y = false;
                fp.v7AttrChange(changes, "y_zoommin", ymin);
                fp.v7AttrChange(changes, "y_zoommax", ymax);
+               req.values[2] = ymin; req.values[3] = ymax;
+               req.flags[2] = req.flags[3] = true;
             }
             if (zoom_z && obj.CanZoomIn("z", zmin, zmax)) {
                fp.zoom_zmin = zmin;
@@ -1814,6 +1824,8 @@
                zoom_z = false;
                fp.v7AttrChange(changes, "z_zoommin", zmin);
                fp.v7AttrChange(changes, "z_zoommax", zmax);
+               req.values[4] = zmin; req.values[5] = zmax;
+               req.flags[4] = req.flags[5] = true;
             }
          });
 
@@ -1824,22 +1836,29 @@
             this.zoom_xmin = this.zoom_xmax = 0;
             fp.v7AttrChange(changes, "x_zoommin", null);
             fp.v7AttrChange(changes, "x_zoommax", null);
+            req.values[0] = req.values[1] = -1;
          }
          if (unzoom_y) {
             if (this.zoom_ymin !== this.zoom_ymax) changed = true;
             this.zoom_ymin = this.zoom_ymax = 0;
             fp.v7AttrChange(changes, "y_zoommin", null);
             fp.v7AttrChange(changes, "y_zoommax", null);
+            req.values[2] = req.values[3] = -1;
          }
          if (unzoom_z) {
             if (this.zoom_zmin !== this.zoom_zmax) changed = true;
             this.zoom_zmin = this.zoom_zmax = 0;
             fp.v7AttrChange(changes, "z_zoommin", null);
             fp.v7AttrChange(changes, "z_zoommax", null);
+            req.values[4] = req.values[5] = -1;
          }
       }
 
-      this.v7SendAttrChanges(changes);
+      if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal) {
+         this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrameZoomRequest", ranges: req });
+      }
+
+      // this.v7SendAttrChanges(changes);
 
       if (changed)
          this.InteractiveRedraw("pad", "zoom");
@@ -4505,7 +4524,7 @@
 
       if (!this._websocket || !req || !req._typename || !painter.snapid || (typeof painter.snapid != "string")) return false;
 
-      if (kind) {
+      if (kind && method) {
          // if kind specified - check if such request already was submitted
          if (!painter._requests) painter._requests = {};
 
@@ -4543,6 +4562,8 @@
          if (!this._submreq) this._submreq = {};
          this._submreq[req.reqid] = req; // fast access to submitted requests
       }
+
+      // console.log('Sending request ', msg.substr(0,60));
 
       this.SendWebsocket("REQ:" + msg);
       return true;

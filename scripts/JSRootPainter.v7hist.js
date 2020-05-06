@@ -3478,36 +3478,15 @@
          return true;
       }
 
-      var fp = this.frame_painter();
-      if (!fp) return false;
-
-      if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal) {
-         // submit request to server
-         // last request will be always submittef
-         var req = {
-            _typename: "ROOT::Experimental::RHistStatRequest",
-            mask: this.GetObject().fShowMask,
-            ranges: {
-               _typename: "ROOT::Experimental::RDrawable::RUserRanges",
-               values: [fp.scale_xmin, fp.scale_xmax, fp.scale_ymin, fp.scale_ymax],
-               flags: [true, true, true, true]
-            }
-         };
-
-         console.log('Sending request ', JSON.stringify(req));
-
-         this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
-         return !!this.stats_lines; // if old statistic there - show it
+      if (this.v7CommMode() == JSROOT.v7.CommMode.kOffline) {
+         var main = this.main_painter();
+         if (!main || (typeof main.FillStatistic !== 'function')) return false;
+         // we take statistic from main painter
+         return main.FillStatistic(this, JSROOT.gStyle.fOptStat, JSROOT.gStyle.fOptFit);
       }
 
-      var main = this.main_painter();
-
-      // if (stats && stats.fLines) return true;
-
-      if (!main || (typeof main.FillStatistic !== 'function')) return false;
-
-      // we take statistic from main painter
-      return main.FillStatistic(this, JSROOT.gStyle.fOptStat, JSROOT.gStyle.fOptFit);
+      // show lines which are exists, maybe server request will be recieved later
+      return (this.stats_lines !== undefined);
    }
 
    RHistStatsPainter.prototype.Format = function(value, fmt) {
@@ -3529,7 +3508,7 @@
       return res;
    }
 
-   RHistStatsPainter.prototype.DrawStats = function(reason) {
+   RHistStatsPainter.prototype.DrawStats = function() {
 
       var framep = this.frame_painter();
 
@@ -3689,7 +3668,16 @@
    }
 
    RHistStatsPainter.prototype.Redraw = function(reason) {
-      this.DrawStats(reason);
+      if ((reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+         var req = {
+            _typename: "ROOT::Experimental::RHistStatRequest",
+            mask: this.GetObject().fShowMask // lines to show in stat box
+         };
+
+         this.v7SubmitRequest("stat", req, this.UpdateStatistic.bind(this));
+      }
+
+      this.DrawStats();
    }
 
    function drawHistStats(divid, stats, opt) {
