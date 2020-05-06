@@ -1589,7 +1589,7 @@
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
-   TFramePainter.prototype.Redraw = function() {
+   TFramePainter.prototype.Redraw = function(reason) {
 
       var pp = this.pad_painter();
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
@@ -3361,7 +3361,7 @@
       }, evnt); // end menu creation
    }
 
-   TPadPainter.prototype.Redraw = function(resize) {
+   TPadPainter.prototype.Redraw = function(reason) {
 
       // prevent redrawing
       if (this._doing_pad_draw)
@@ -3378,7 +3378,7 @@
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
          var sub = this.painters[i];
-         if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
+         if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
       }
    }
 
@@ -3421,7 +3421,7 @@
       // If redrawing was forced for canvas, same applied for sub-elements
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw(force ? false : true);
+            this.painters[i].Redraw(force ? "redraw" : "resize");
 
       return changed;
    }

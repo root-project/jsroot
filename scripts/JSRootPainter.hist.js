@@ -4236,20 +4236,20 @@
       return false;
    }
 
-   TH1Painter.prototype.CallDrawFunc = function(callback, resize) {
+   TH1Painter.prototype.CallDrawFunc = function(callback, reason) {
 
       var main = this.main_painter(),
           fp = this.frame_painter();
 
-     if ((main!==this) && fp && (fp.mode3d !== this.options.Mode3D))
+     if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.CopyOptionsFrom(main);
 
       var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
-      this[funcname](callback, resize);
+      this[funcname](callback, reason);
    }
 
-   TH1Painter.prototype.Draw2D = function(call_back) {
+   TH1Painter.prototype.Draw2D = function(call_back, reason) {
       this.Clear3DScene();
       this.mode3d = false;
 
@@ -4268,15 +4268,15 @@
       JSROOT.CallBack(call_back);
    }
 
-   TH1Painter.prototype.Draw3D = function(call_back, resize) {
+   TH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
       JSROOT.AssertPrerequisites('hist3d', function() {
-         this.Draw3D(call_back, resize);
+         this.Draw3D(call_back, reason);
       }.bind(this));
    }
 
-   TH1Painter.prototype.Redraw = function(resize) {
-      this.CallDrawFunc(null, resize);
+   TH1Painter.prototype.Redraw = function(reason) {
+      this.CallDrawFunc(null, reason);
    }
 
    function drawHistogram1D(divid, histo, opt) {
@@ -6217,20 +6217,20 @@
       }.bind(this));
    }
 
-   TH2Painter.prototype.CallDrawFunc = function(callback, resize) {
+   TH2Painter.prototype.CallDrawFunc = function(callback, reason) {
 
       var main = this.main_painter(),
           fp = this.frame_painter();
 
-     if ((main!==this) && fp && (fp.mode3d !== this.options.Mode3D))
+     if ((main !== this) && fp && (fp.mode3d !== this.options.Mode3D))
         this.CopyOptionsFrom(main);
 
       var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
-      this[funcname](callback, resize);
+      this[funcname](callback, reason);
    }
 
-   TH2Painter.prototype.Redraw = function(resize) {
-      this.CallDrawFunc(null, resize);
+   TH2Painter.prototype.Redraw = function(reason) {
+      this.CallDrawFunc(null, reason);
    }
 
    function drawHistogram2D(divid, histo, opt) {

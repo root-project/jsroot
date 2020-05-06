@@ -2405,7 +2405,7 @@
    /** @summary Redraw all objects in current pad
     * @abstract
     * @private */
-   TBasePainter.prototype.RedrawPad = function(resize) {
+   TBasePainter.prototype.RedrawPad = function(reason) {
    }
 
    /** @summary Updates object and readraw it
@@ -2971,11 +2971,11 @@
     * @desc Redirects to {@link TPadPainter.CheckCanvasResize}
     * @private */
    TObjectPainter.prototype.CheckResize = function(arg) {
-      var pad_painter = this.canv_painter();
-      if (!pad_painter) return false;
+      var p = this.canv_painter();
+      if (!p) return false;
 
       // only canvas should be checked
-      pad_painter.CheckCanvasResize(arg);
+      p.CheckCanvasResize(arg);
       return true;
    }
 
@@ -3746,20 +3746,23 @@
    }
 
    /** @summary indicate that redraw was invoked via interactive action (like context menu or zooming)
-    * @desc Use to catch such action by GED
+    * @desc Use to catch such action by GED and by server-side
     * @private */
    TObjectPainter.prototype.InteractiveRedraw = function(arg, info, subelem) {
 
+      var reason;
+      if ((typeof info == "string") && (info.indexOf("exec:") != 0)) reason = info;
+
       if (arg == "pad") {
-         this.RedrawPad();
+         this.RedrawPad(reason);
       } else if (arg == "axes") {
          var main = this.main_painter(true, this.this_pad_name); // works for pad and any object drawn in the pad
          if (main && (typeof main.DrawAxes == 'function'))
             main.DrawAxes();
          else
-            this.RedrawPad();
+            this.RedrawPad(reason);
       } else if (arg !== false) {
-         this.Redraw();
+         this.Redraw(reason);
       }
 
       // inform GED that something changes
@@ -3774,9 +3777,9 @@
    }
 
    /** @summary Redraw all objects in correspondent pad */
-   TObjectPainter.prototype.RedrawPad = function() {
+   TObjectPainter.prototype.RedrawPad = function(reason) {
       var pad_painter = this.pad_painter();
-      if (pad_painter) pad_painter.Redraw();
+      if (pad_painter) pad_painter.Redraw(reason);
    }
 
    /** @summary Switch tooltip mode in frame painter
@@ -4685,7 +4688,7 @@
     * @abstract
     */
 
-   TObjectPainter.prototype.Redraw = function() {
+   TObjectPainter.prototype.Redraw = function(reason) {
    }
 
    /** @summary Start text drawing
@@ -6807,10 +6810,10 @@
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
       if (typeof arg !== 'object') arg = null;
-      var dummy = new TObjectPainter(), done = false;
+      var done = false, dummy = new TObjectPainter();
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
-         if (!done && typeof painter.CheckResize == 'function')
+         if (!done && (typeof painter.CheckResize == 'function'))
             done = painter.CheckResize(arg);
       });
       return done;

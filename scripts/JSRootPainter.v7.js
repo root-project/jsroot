@@ -1841,7 +1841,8 @@
 
       this.v7SendAttrChanges(changes);
 
-      if (changed) this.RedrawPad();
+      if (changed)
+         this.InteractiveRedraw("pad", "zoom");
 
       return changed;
    }
@@ -3329,10 +3330,11 @@
       }, evnt); // end menu creation
    }
 
-   RPadPainter.prototype.Redraw = function(resize) {
+   RPadPainter.prototype.Redraw = function(reason) {
 
       // prevent redrawing
-      if (this._doing_pad_draw) return console.log('Prevent redrawing', this.pad.fName);
+      if (this._doing_pad_draw)
+         return console.log('Prevent pad redrawing');
 
       var showsubitems = true;
 
@@ -3345,7 +3347,7 @@
       // even sub-pad is not visible, we should redraw sub-sub-pads to hide them as well
       for (var i = 0; i < this.painters.length; ++i) {
          var sub = this.painters[i];
-         if (showsubitems || sub.this_pad_name) sub.Redraw(resize);
+         if (showsubitems || sub.this_pad_name) sub.Redraw(reason);
       }
    }
 
@@ -3388,7 +3390,7 @@
       // If redrawing was forced for canvas, same applied for sub-elements
       if (changed)
          for (var i = 0; i < this.painters.length; ++i)
-            this.painters[i].Redraw(force ? false : true);
+            this.painters[i].Redraw(force ? "redraw" : "resize");
 
       return changed;
    }
