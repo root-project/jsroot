@@ -4882,9 +4882,10 @@
           contour = palette.GetContour(),
           can_move = false,
           nbr1 = 8,
-          framep = this.frame_painter(),
-          zmin = contour[0],
-          zmax = contour[contour.length-1];
+          framep = this.frame_painter();
+
+      if (!contour)
+         return console.log('no contour - no palette');
 
       // frame painter must  be there
       if (!framep)
@@ -4893,7 +4894,9 @@
       // zmin = Math.min(contour[0], framep.zmin);
       // zmax = Math.max(contour[contour.length-1], framep.zmax);
 
-      var fx = this.frame_x(),
+      var  zmin = contour[0],
+           zmax = contour[contour.length-1],
+          fx = this.frame_x(),
           fy = this.frame_y(),
           fw = this.frame_width(),
           fh = this.frame_height(),
@@ -4911,7 +4914,6 @@
       if (!visible) return;
 
       this.draw_g.attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")");
-
 
       var g_btns = this.draw_g.select(".colbtns");
       if (g_btns.empty())

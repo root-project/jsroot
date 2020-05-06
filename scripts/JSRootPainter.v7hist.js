@@ -56,9 +56,9 @@
       var obj = this.GetObject(), histo = this.GetHImpl(obj);
 
       if (histo && !histo.getBinContent) {
-         console.log('histo type', histo._typename);
          if (histo.fAxes._1) {
-            histo.getBin = function(x, y) { return (x + (this.fAxes._0.GetNumBins() + 2) * y); }
+            histo.getBin = function(x, y) { return (x-1)  + this.fAxes._0.GetNumBins() * (y-1); }
+            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
             histo.getBinError = function(x,y) {
                var bin = this.getBin(x,y);
@@ -66,11 +66,11 @@
                   return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
+
          } else {
 
-            histo.getBinContent = function(bin) {
-               return this.fStatistics.fBinContent[bin];
-            }
+            histo.getBin = function(bin) { return bin; }
+            histo.getBinContent = function(bin) { return this.fStatistics.fBinContent[bin]; }
             histo.getBinError = function(bin) {
                if (this.fStatistics.fSumWeightsSquared)
                   return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
@@ -200,7 +200,6 @@
       if (axis._typename == "ROOT::Experimental::RAxisEquidistant") {
          axis.min = axis.fLow;
          axis.max = axis.fLow + axis.fNBinsNoOver/axis.fInvBinWidth;
-
          axis.GetNumBins = function() { return this.fNBinsNoOver; }
          axis.GetBinCoord = function(bin) { return this.fLow + bin/this.fInvBinWidth; };
          axis.FindBin = function(x,add) { return Math.floor((x - this.fLow)*this.fInvBinWidth + add); };
@@ -208,7 +207,7 @@
       } else {
          axis.min = axis.fBinBorders[0];
          axis.max = axis.fBinBorders[axis.fBinBorders.length - 1];
-         axis.GetNumBins = function() { return this.fBinBorders.length-1; }
+         axis.GetNumBins = function() { return this.fBinBorders.length; }
          axis.GetBinCoord = function(bin) {
             var indx = Math.round(bin);
             if (indx <= 0) return this.fBinBorders[0];
@@ -620,6 +619,7 @@
       for (i = res.i1; i < res.i2; ++i) {
          for (j = res.j1; j < res.j2; ++j) {
             binz = histo.getBinContent(i + 1, j + 1);
+            if (isNaN(binz)) continue;
             res.sumz += binz;
             if (args.pixel_density) {
                binarea = (res.grx[i+1]-res.grx[i])*(res.gry[j]-res.gry[j+1]);
