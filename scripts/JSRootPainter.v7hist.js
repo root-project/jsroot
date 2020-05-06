@@ -3670,7 +3670,7 @@
    RHistStatsPainter.prototype.Redraw = function(reason) {
       if ((reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
          var req = {
-            _typename: "ROOT::Experimental::RHistStatRequest",
+            _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.GetObject().fShowMask // lines to show in stat box
          };
 

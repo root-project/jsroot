@@ -1789,7 +1789,7 @@
       var changed = false, fp = this, changes = {};
 
       var req = {
-         _typename: "ROOT::Experimental::RDrawable::RUserRanges",
+         _typename: "ROOT::Experimental::RFrame::RUserRanges",
          values: [0, 0, 0, 0, 0, 0],
          flags: [false, false, false, false, false, false]
       };
@@ -1855,7 +1855,7 @@
       }
 
       if (this.v7CommMode() == JSROOT.v7.CommMode.kNormal) {
-         this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrameZoomRequest", ranges: req });
+         this.v7SubmitRequest("zoom", { _typename: "ROOT::Experimental::RFrame::RZoomRequest", ranges: req });
       }
 
       // this.v7SendAttrChanges(changes);
