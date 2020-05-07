@@ -58,7 +58,7 @@
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._1) {
             histo.getBin = function(x, y) { return (x-1)  + this.fAxes._0.GetNumBins() * (y-1); }
-            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins
+            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
             histo.getBinError = function(x,y) {
                var bin = this.getBin(x,y);
@@ -68,12 +68,12 @@
             }
 
          } else {
-
             histo.getBin = function(bin) { return bin; }
-            histo.getBinContent = function(bin) { return this.fStatistics.fBinContent[bin]; }
+            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
+            histo.getBinContent = function(bin) { return this.fStatistics.fBinContent[bin-1]; }
             histo.getBinError = function(bin) {
                if (this.fStatistics.fSumWeightsSquared)
-                  return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
+                  return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin-1]);
                return Math.sqrt(Math.abs(this.getBinContent(bin)));
             }
          }
