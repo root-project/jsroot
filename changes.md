@@ -1,8 +1,10 @@
 # JSROOT changelog
 
-## Changes in 5.8.x
+## Changes in 5.8.1
 1. Fix - use Math.floor when search for bin label
 2. Fix - renable correct highlight of TGraphErrors
+3. Fix - adjust TH1/TH2/TAxis values to let stream them in ROOT
+4. Fix - adjust TH[1,2,3].Fill() method to update entries count
 
 
 ## Changes in 5.8.0
