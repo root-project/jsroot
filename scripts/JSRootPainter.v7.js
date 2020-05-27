@@ -4696,7 +4696,7 @@
 
    // =================================================================================
 
-   function drawFrameTitle() {
+   function drawFrameTitle(reason) {
       var fp = this.frame_painter();
       if (!fp)
          return console.log('no frame painter - no title');
@@ -4710,6 +4710,7 @@
           pp           = this.pad_painter(),
           use_frame    = false,
           title_margin = this.v7EvalLength( "margin", ph, 0.02),
+          title_width  = fw,
           title_height = this.v7EvalLength( "height", ph, 0.05),
           text_size    = this.v7EvalAttr( "text_size", 16),
           text_angle   = -1 * this.v7EvalAttr( "text_angle", 0),
@@ -4717,11 +4718,18 @@
           text_color   = this.v7EvalColor( "text_color", "black"),
           text_font    = this.v7EvalAttr( "text_font", 41);
 
-      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")")
-                         .attr("x", fx).attr("y", Math.round(fy-title_margin-title_height))
-                         .attr("width",fw).attr("height",title_height);
+      this.CreateG(false);
 
-      var arg = { align: 22, x: fw/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
+      if (reason == 'drag') {
+         title_width = parseInt(this.draw_g.attr("width"));
+         title_height = parseInt(this.draw_g.attr("height"))
+      } else {
+         this.draw_g.attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")")
+                    .attr("x", fx).attr("y", Math.round(fy-title_margin-title_height))
+                    .attr("width",title_width).attr("height",title_height);
+      }
+
+      var arg = { align: 22, x: title_width/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
 
       this.StartTextDrawing(text_font, text_size);
 
@@ -4729,10 +4737,8 @@
 
       this.FinishTextDrawing();
 
-      if (!JSROOT.BatchMode) {
-         this.SizeChanged = function() { }
-         this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
-      }
+      if (!JSROOT.BatchMode)
+         this.AddDrag({ minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') });
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
@@ -4986,7 +4992,7 @@
       if (JSROOT.BatchMode) return;
 
       if (!after_resize)
-         this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.DrawPalette.bind(this, true) });
+         this.AddDrag({ minwidth: 20, minheight: 20, no_change_y: true, redraw: this.DrawPalette.bind(this, true) });
 
       if (!JSROOT.gStyle.Zooming) return;
 
