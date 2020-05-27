@@ -4863,8 +4863,7 @@
 
    RPalettePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-   RPalettePainter.prototype.GetPalette = function()
-   {
+   RPalettePainter.prototype.GetPalette = function() {
       var drawable = this.GetObject();
       var pal = drawable ? drawable.fPalette : null;
 
@@ -4874,7 +4873,7 @@
       return pal;
    }
 
-   RPalettePainter.prototype.DrawPalette = function() {
+   RPalettePainter.prototype.DrawPalette = function(after_resize) {
 
       var pthis = this,
           palette = this.GetPalette(),
@@ -4893,26 +4892,39 @@
       // zmin = Math.min(contour[0], framep.zmin);
       // zmax = Math.max(contour[contour.length-1], framep.zmax);
 
-      var  zmin = contour[0],
-           zmax = contour[contour.length-1],
-          fx = this.frame_x(),
-          fy = this.frame_y(),
-          fw = this.frame_width(),
-          fh = this.frame_height(),
-          pw = this.pad_width(),
+      var zmin         = contour[0],
+          zmax         = contour[contour.length-1],
           obj          = this.GetObject(),
           pp           = this.pad_painter(),
           use_frame    = false,
-          visible        = this.v7EvalAttr("visible", true),
-          palette_margin = this.v7EvalLength("margin", pw, 0.02),
-          palette_width = this.v7EvalLength("size", pw, 0.05),
+          visible      = this.v7EvalAttr("visible", true),
+          palette_width, palette_height;
+
+      if (after_resize) {
+         palette_width = parseInt(this.draw_g.attr("width"));
+         palette_height = parseInt(this.draw_g.attr("height"));
+      } else {
+          var fx = this.frame_x(),
+              fy = this.frame_y(),
+              fw = this.frame_width(),
+              fh = this.frame_height(),
+              pw = this.pad_width(),
+              palette_margin = this.v7EvalLength("margin", pw, 0.02),
+              palette_x = Math.round(fx + fw + palette_margin),
+              palette_y = fy;
+
+          palette_width = this.v7EvalLength("size", pw, 0.05);
           palette_height = fh;
+
+          // x,y,width,height attributes used for drag functionality
+          this.draw_g.attr("transform","translate(" + palette_x +  "," + palette_y + ")")
+                     .attr("x", palette_x).attr("y", palette_y)
+                     .attr("width", palette_width).attr("height", palette_height);
+      }
 
       this.draw_g.selectAll("rect").remove();
 
       if (!visible) return;
-
-      this.draw_g.attr("transform","translate(" + Math.round(fx + fw + palette_margin) +  "," + fy + ")");
 
       var g_btns = this.draw_g.select(".colbtns");
       if (g_btns.empty())
@@ -4969,6 +4981,11 @@
       this.z_handle.max_tick_size = Math.round(palette_width*0.3);
 
       this.z_handle.DrawAxis(true, this.draw_g, palette_width, palette_height, "translate(" + palette_width + ", 0)");
+
+      if (JSROOT.BatchMode) return;
+
+      if (!after_resize)
+         this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.DrawPalette.bind(this, true) });
 
       if (!JSROOT.gStyle.Zooming) return;
 

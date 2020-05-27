@@ -3542,11 +3542,10 @@
       var stats_x = Math.round(fx + fw + stats_cornerx - stats_width),
           stats_y = Math.round(fy - stats_cornery);
 
-      this.draw_g.attr("x", stats_x)
-                 .attr("y", stats_y)
-                 .attr("transform", "translate(" + stats_x + "," + stats_y + ")")
-                 .attr("width", stats_width)
-                 .attr("height", stats_height);
+      // x,y,width,height attributes used for drag functionality
+      this.draw_g.attr("transform", "translate(" + stats_x + "," + stats_y + ")")
+                 .attr("x", stats_x).attr("y", stats_y)
+                 .attr("width", stats_width).attr("height", stats_height);
 
       this.draw_g.append("svg:rect")
                  .attr("x", 0)
