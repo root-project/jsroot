@@ -4701,11 +4701,11 @@
       if (!fp)
          return console.log('no frame painter - no title');
 
-      var fx = this.frame_x(),
-          fy = this.frame_y(),
-          fw = this.frame_width(),
-          fh = this.frame_height(),
-          ph = this.pad_height(),
+      var fx           = this.frame_x(),
+          fy           = this.frame_y(),
+          fw           = this.frame_width(),
+          fh           = this.frame_height(),
+          ph           = this.pad_height(),
           title        = this.GetObject(),
           pp           = this.pad_painter(),
           use_frame    = false,
@@ -4717,7 +4717,9 @@
           text_color   = this.v7EvalColor( "text_color", "black"),
           text_font    = this.v7EvalAttr( "text_font", 41);
 
-      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")");
+      this.CreateG(false).attr("transform","translate(" + fx + "," + Math.round(fy-title_margin-title_height) + ")")
+                         .attr("x", fx).attr("y", Math.round(fy-title_margin-title_height))
+                         .attr("width",fw).attr("height",title_height);
 
       var arg = { align: 22, x: fw/2, y: title_height/2, text: title.fText, rotate: text_angle, color: text_color, latex: 1 };
 
@@ -4726,6 +4728,11 @@
       this.DrawText(arg);
 
       this.FinishTextDrawing();
+
+      if (!JSROOT.BatchMode) {
+         this.SizeChanged = function() { }
+         this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+      }
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////
