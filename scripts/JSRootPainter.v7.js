@@ -4875,11 +4875,8 @@
 
    RPalettePainter.prototype.DrawPalette = function(after_resize) {
 
-      var pthis = this,
-          palette = this.GetPalette(),
+      var palette = this.GetPalette(),
           contour = palette.GetContour(),
-          can_move = false,
-          nbr1 = 8,
           framep = this.frame_painter();
 
       if (!contour)
@@ -4888,9 +4885,6 @@
       // frame painter must  be there
       if (!framep)
          return console.log('no frame painter - no palette');
-
-      // zmin = Math.min(contour[0], framep.zmin);
-      // zmax = Math.max(contour[contour.length-1], framep.zmax);
 
       var zmin         = contour[0],
           zmax         = contour[contour.length-1],
