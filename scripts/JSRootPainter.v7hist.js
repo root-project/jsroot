@@ -3539,7 +3539,14 @@
 
       if (fill_style == 0) fill_color = "none";
 
-      this.draw_g.attr("transform","translate(" + Math.round(fx + fw + stats_cornerx - stats_width) +  "," + (fy - stats_cornery)  + ")");
+      var stats_x = Math.round(fx + fw + stats_cornerx - stats_width),
+          stats_y = Math.round(fy - stats_cornery);
+
+      this.draw_g.attr("x", stats_x)
+                 .attr("y", stats_y)
+                 .attr("transform", "translate(" + stats_x + "," + stats_y + ")")
+                 .attr("width", stats_width)
+                 .attr("height", stats_height);
 
       this.draw_g.append("svg:rect")
                  .attr("x", 0)
@@ -3559,8 +3566,26 @@
       if (this.FillStatistic())
          this.DrawStatistic(this.stats_lines);
 
+      if (JSROOT.BatchMode) return;
+
       if (JSROOT.gStyle.ContextMenu)
          this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
+
+      this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
+   }
+
+   RHistStatsPainter.prototype.SizeChanged = function() {
+      console.log('RStats painter size changed');
+
+      this.stats_width = parseInt(this.draw_g.attr("width"));
+      this.stats_height = parseInt(this.draw_g.attr("height"));
+
+      this.draw_g.select("rect")
+                 .attr("width", this.stats_width)
+                 .attr("height", this.stats_height);
+
+      if (this.stats_lines)
+         this.DrawStatistic(this.stats_lines);
    }
 
    RHistStatsPainter.prototype.ChangeMask = function(nbit) {
