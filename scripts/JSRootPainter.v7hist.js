@@ -705,7 +705,7 @@
             if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
          if (first) {
             hmin = hmax = value;
-            first = false;;
+            first = false;
          }
 
          err =  0;

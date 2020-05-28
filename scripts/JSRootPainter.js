@@ -5142,7 +5142,7 @@
                    w = Math.min(rect.width/curr.fsize, 0.5); // at maximum, 0.5 should be used
 
                node.append('svg:tspan').attr('dx', makeem(curr.dx-w)).attr('dy', makeem(curr.dy-0.2)).text(curr.accent);
-               curr.dy = 0.2;; // compensate hat
+               curr.dy = 0.2; // compensate hat
                curr.dx = Math.max(0.2, w-0.2); // extra horizontal gap
                curr.accent = false;
             } else {
