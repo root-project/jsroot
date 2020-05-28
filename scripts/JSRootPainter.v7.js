@@ -4699,7 +4699,6 @@
           ph           = this.pad_height(),
           title        = this.GetObject(),
           pp           = this.pad_painter(),
-          use_frame    = false,
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
@@ -4898,20 +4897,24 @@
           zmax         = contour[contour.length-1],
           obj          = this.GetObject(),
           pp           = this.pad_painter(),
-          use_frame    = false,
+          fx           = this.frame_x(),
+          fy           = this.frame_y(),
+          fw           = this.frame_width(),
+          fh           = this.frame_height(),
+          pw           = this.pad_width(),
           visible      = this.v7EvalAttr("visible", true),
           palette_width, palette_height;
 
       if (after_resize) {
          palette_width = parseInt(this.draw_g.attr("width"));
          palette_height = parseInt(this.draw_g.attr("height"));
+
+         var changes = {};
+         this.v7AttrChange(changes, "margin", (parseInt(this.draw_g.attr("x")) - fx - fw) / pw);
+         this.v7AttrChange(changes, "size", palette_width / pw);
+         this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
       } else {
-          var fx = this.frame_x(),
-              fy = this.frame_y(),
-              fw = this.frame_width(),
-              fh = this.frame_height(),
-              pw = this.pad_width(),
-              palette_margin = this.v7EvalLength("margin", pw, 0.02),
+          var palette_margin = this.v7EvalLength("margin", pw, 0.02),
               palette_x = Math.round(fx + fw + palette_margin),
               palette_y = fy;
 
