@@ -3516,22 +3516,22 @@
       if (!framep)
          return console.log('no frame painter - no palette');
 
-      var fx = this.frame_x(),
-          fy = this.frame_y(),
-          fw = this.frame_width(),
-          fh = this.frame_height(),
-          pw = this.pad_width(),
-          ph = this.pad_height(),
+      var fx            = this.frame_x(),
+          fy            = this.frame_y(),
+          fw            = this.frame_width(),
+          fh            = this.frame_height(),
+          pw            = this.pad_width(),
+          ph            = this.pad_height(),
           visible       = this.v7EvalAttr("visible", true),
           stats_cornerx = this.v7EvalLength("cornerx", pw, 0.02),
           stats_cornery = this.v7EvalLength("cornery", ph, 0.02),
           stats_width   = this.v7EvalLength("width", pw, 0.3),
           stats_height  = this.v7EvalLength("height", ph, 0.3),
-          line_width   = this.v7EvalAttr("border_width", 1),
-          line_style   = this.v7EvalAttr("border_style", 1),
-          line_color   = this.v7EvalColor("border_color", "black"),
-          fill_color   = this.v7EvalColor("fill_color", "white"),
-          fill_style   = this.v7EvalAttr("fill_style", 1);
+          line_width    = this.v7EvalAttr("border_width", 1),
+          line_style    = this.v7EvalAttr("border_style", 1),
+          line_color    = this.v7EvalColor("border_color", "black"),
+          fill_color    = this.v7EvalColor("fill_color", "white"),
+          fill_style    = this.v7EvalAttr("fill_style", 1);
 
       this.CreateG(false);
 
@@ -3573,11 +3573,26 @@
       this.AddDrag({ minwidth: 20, minheight: 20, redraw: this.SizeChanged.bind(this) });
    }
 
+   /** Process interactive moving of the stats box */
    RHistStatsPainter.prototype.SizeChanged = function() {
-      console.log('RStats painter size changed');
-
       this.stats_width = parseInt(this.draw_g.attr("width"));
       this.stats_height = parseInt(this.draw_g.attr("height"));
+
+      var stats_x = parseInt(this.draw_g.attr("x")),
+          stats_y = parseInt(this.draw_g.attr("y")),
+          fx      = this.frame_x(),
+          fy      = this.frame_y(),
+          fw      = this.frame_width(),
+          fh      = this.frame_height(),
+          pw      = this.pad_width(),
+          ph      = this.pad_height();
+
+      var changes = {};
+      this.v7AttrChange(changes, "cornerx", (stats_x + this.stats_width - fx - fw) / pw);
+      this.v7AttrChange(changes, "cornery", (fy - stats_y) / ph);
+      this.v7AttrChange(changes, "width", this.stats_width / pw);
+      this.v7AttrChange(changes, "height", this.stats_height / ph);
+      this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
       this.draw_g.select("rect")
                  .attr("width", this.stats_width)
