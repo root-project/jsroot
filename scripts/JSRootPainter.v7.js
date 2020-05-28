@@ -162,6 +162,7 @@
          req.ids = [];
          req.names = [];
          req.values = [];
+         req.update = true;
       }
 
       req.ids.push(this.snapid);
@@ -188,10 +189,12 @@
    }
 
    /** Sends accumulated attribute changes to server */
-   JSROOT.TObjectPainter.prototype.v7SendAttrChanges = function(req) {
+   JSROOT.TObjectPainter.prototype.v7SendAttrChanges = function(req, do_update) {
       var canp = this.canv_painter();
-      if (canp && req && req._typename)
+      if (canp && req && req._typename) {
+         if (do_update !== undefined) req.update = do_update ? true : false;
          canp.v7SubmitRequest("", req);
+      }
    }
 
    /** @brief Submit request to server-side drawable
@@ -1344,7 +1347,7 @@
 
    }
 
-   RFramePainter.prototype.DrawAxes = function(shrink_forbidden) {
+   RFramePainter.prototype.DrawAxes = function() {
       // axes can be drawn only for main histogram
 
       if (this.axes_drawn) return true;
@@ -1399,28 +1402,9 @@
          draw_vertical.DrawAxis(true, layer, w, h,
                                 draw_vertical.invert_side ? "translate(" + w + ",0)" : undefined,
                                 false, show_second_ticks ? w : 0, disable_axis_draw,
-                             draw_vertical.invert_side ? 0 : this.frame_x());
+                                draw_vertical.invert_side ? 0 : this.frame_x());
 
          this.DrawGrids();
-      }
-
-      if (!shrink_forbidden && JSROOT.gStyle.CanAdjustFrame && !disable_axis_draw) {
-
-         var shrink = 0., ypos = draw_vertical.position;
-
-         if ((-0.2*w < ypos) && (ypos < 0)) {
-            shrink = -ypos/w + 0.001;
-            this.shrink_frame_left += shrink;
-         } else if ((ypos>0) && (ypos<0.3*w) && (this.shrink_frame_left > 0) && (ypos/w > this.shrink_frame_left)) {
-            shrink = -this.shrink_frame_left;
-            this.shrink_frame_left = 0.;
-         }
-
-         if (shrink != 0) {
-            this.Shrink(shrink, 0);
-            this.Redraw();
-            this.DrawAxes(true);
-         }
       }
 
       this.axes_drawn = true;
@@ -1442,6 +1426,13 @@
          this.SetRootPadRange(pad);
       }
       */
+
+      var changes = {};
+      this.v7AttrChange(changes, "margin_left", this.fX1NDC);
+      this.v7AttrChange(changes, "margin_bottom", this.fY1NDC);
+      this.v7AttrChange(changes, "margin_right", 1 - this.fX2NDC);
+      this.v7AttrChange(changes, "margin_top", 1 - this.fY2NDC);
+      this.v7SendAttrChanges(changes, false); // do not invoke canvas update on the server
 
       this.RedrawPad();
    }
@@ -4737,8 +4728,7 @@
 
       this.FinishTextDrawing();
 
-      if (!JSROOT.BatchMode)
-         this.AddDrag({ minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') });
+      this.AddDrag({ minwidth: 20, minheight: 20, no_change_x: true, redraw: this.Redraw.bind(this,'drag') });
    }
 
    ////////////////////////////////////////////////////////////////////////////////////////////

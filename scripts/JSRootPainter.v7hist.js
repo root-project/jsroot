@@ -141,7 +141,7 @@
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
       }
 
-      return main.DrawAxes(true);
+      return main.DrawAxes();
    }
 
    RHistPainter.prototype.CheckHistDrawAttributes = function() {
