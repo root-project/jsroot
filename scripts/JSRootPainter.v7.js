@@ -5229,6 +5229,7 @@
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RMarker", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawMarker", opt: "", direct: true, csstype: "marker" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPave", icon: "img_pavetext", func: drawPave, opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RLegend", icon: "img_graph", prereq: "v7more", func: "JSROOT.v7.drawLegend", opt: "" });
+   JSROOT.addDrawFunc({ name: "ROOT::Experimental::RPaveText", icon: "img_pavetext", prereq: "v7more", func: "JSROOT.v7.drawPaveText", opt: "" });
    JSROOT.addDrawFunc({ name: "ROOT::Experimental::RFrame", icon: "img_frame", func: "JSROOT.v7.drawFrame", opt: "" });
 
    JSROOT.v7.RAxisPainter = RAxisPainter;
