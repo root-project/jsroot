@@ -4726,14 +4726,16 @@
       //if (!framep)
       //   return console.log('no frame painter - no RPave drawing');
 
-      var fx            = this.frame_x(),
-          fy            = this.frame_y(),
-          fw            = this.frame_width(),
-          fh            = this.frame_height(),
-          pw            = this.pad_width(),
-          ph            = this.pad_height();
+      var pw = this.pad_width(),
+          ph = this.pad_height(),
+          fx, fy, fw, fh;
 
-      if (!this.frame_painter()) {
+      if (this.frame_painter()) {
+         fx = this.frame_x();
+         fy = this.frame_y();
+         fw = this.frame_width();
+         fh = this.frame_height();
+      } else {
          var st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin*pw);
          fy = Math.round(st.fPadTopMargin*ph);
@@ -4800,14 +4802,16 @@
 
       var pave_x = parseInt(this.draw_g.attr("x")),
           pave_y = parseInt(this.draw_g.attr("y")),
-          fx     = this.frame_x(),
-          fy     = this.frame_y(),
-          fw     = this.frame_width(),
-          fh     = this.frame_height(),
           pw     = this.pad_width(),
-          ph     = this.pad_height();
+          ph     = this.pad_height(),
+          fx, fy, fw, fh;
 
-      if (!this.frame_painter()) {
+      if (this.frame_painter()) {
+         fx = this.frame_x();
+         fy = this.frame_y();
+         fw = this.frame_width();
+         fh = this.frame_height();
+      } else {
          var st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin*pw);
          fy = Math.round(st.fPadTopMargin*ph);
