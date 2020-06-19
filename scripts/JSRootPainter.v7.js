@@ -4720,19 +4720,28 @@
 
    RPavePainter.prototype.DrawPave = function() {
 
-      var framep = this.frame_painter();
+      //var framep = this.frame_painter();
 
       // frame painter must  be there
-      if (!framep)
-         return console.log('no frame painter - no palette');
+      //if (!framep)
+      //   return console.log('no frame painter - no RPave drawing');
 
       var fx            = this.frame_x(),
           fy            = this.frame_y(),
           fw            = this.frame_width(),
           fh            = this.frame_height(),
           pw            = this.pad_width(),
-          ph            = this.pad_height(),
-          visible       = this.v7EvalAttr("visible", true),
+          ph            = this.pad_height();
+
+      if (!this.frame_painter()) {
+         var st = JSROOT.gStyle;
+         fx = Math.round(st.fPadLeftMargin*pw);
+         fy = Math.round(st.fPadTopMargin*ph);
+         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
+         fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+      }
+
+      var visible       = this.v7EvalAttr("visible", true),
           pave_cornerx = this.v7EvalLength("cornerx", pw, 0.02),
           pave_cornery = this.v7EvalLength("cornery", ph, -0.02),
           pave_width   = this.v7EvalLength("width", pw, 0.3),
@@ -4797,6 +4806,14 @@
           fh     = this.frame_height(),
           pw     = this.pad_width(),
           ph     = this.pad_height();
+
+      if (!this.frame_painter()) {
+         var st = JSROOT.gStyle;
+         fx = Math.round(st.fPadLeftMargin*pw);
+         fy = Math.round(st.fPadTopMargin*ph);
+         fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
+         fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+      }
 
       var changes = {};
       this.v7AttrChange(changes, "cornerx", (pave_x + this.pave_width - fx - fw) / pw);
