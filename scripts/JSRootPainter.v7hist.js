@@ -3378,7 +3378,7 @@
 
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.AssertPrerequisites('hist3d', function() {
+      JSROOT.AssertPrerequisites('v7hist3d', function() {
          this.Draw3D(call_back, reason);
       }.bind(this));
    }
