@@ -1184,10 +1184,10 @@
             face_to_bins_indx2 = use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3);
          }
 
-         for (i=i1; i<i2; ++i) {
+         for (i = i1; i < i2; ++i) {
             x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
             x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-            for (j=j1; j<j2; ++j) {
+            for (j = j1; j < j2; ++j) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
 
