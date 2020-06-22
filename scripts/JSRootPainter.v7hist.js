@@ -3428,22 +3428,23 @@
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                           minimum: -1111, maximum: -1111 };
 
-      var EDrawKind = { kColor: 1, kLego: 2 };
+      var EDrawKind = { kColor: 1, kLego: 2, kSurf: 3, kError: 4, kContour: 5 }, o = painter.options;
 
-      if (obj.fDrawKind == EDrawKind.kLego) {
-         painter.options.Lego = 12; // force for the moment
-         painter.options.Mode3D = true; // enable 3D
-      } else {
-         painter.options.Color = true;
+      switch(obj.fDrawKind) {
+         case EDrawKind.kLego: o.Lego = 12; o.Mode3D = true; break;
+         case EDrawKind.kSurf: o.Surf = 1; o.Mode3D = true; break;
+         case EDrawKind.kError: o.Error = true; o.Mode3D = true; break;
+         case EDrawKind.kContour: o.Contour = 1; o.Mode3D = true; break;
+         default: o.Color = true;
       }
 
       // here we deciding how histogram will look like and how will be shown
       // painter.DecodeOptions(opt);
 
-      //if (painter.IsTH2Poly()) {
-      //   if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
-      //   else if (!painter.options.Color) painter.options.Color = true; // default is color
-      //}
+      if (painter.IsTH2Poly()) {
+         if (o.Mode3D) o.Lego = 12;
+                  else o.Color = true;
+      }
 
       painter._show_empty_bins = false;
 

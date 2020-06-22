@@ -1056,23 +1056,10 @@
       }
    }
 
-   /** Draw 1D/2D histograms in 3D mode @private */
-   JSROOT.v7.RHistPainter.prototype.Draw3DBins = function() {
+   /** Draw 1D/2D histograms in Lego mode @private */
+   JSROOT.v7.RHistPainter.prototype.DrawLego = function() {
 
       if (!this.draw_content) return;
-
-/*      if (this.IsTH2Poly() && this.DrawPolyLego)
-         return this.DrawPolyLego();
-
-      if ((this.Dimension()==2) && this.options.Contour && this.DrawContour3D)
-         return this.DrawContour3D(true);
-
-      if ((this.Dimension()==2) && this.options.Surf && this.DrawSurf)
-         return this.DrawSurf();
-
-      if ((this.Dimension()==2) && this.options.Error && this.DrawError)
-         return this.DrawError();
-*/
 
       // Perform RH1/RH2 lego plot with BufferGeometry
 
@@ -1502,7 +1489,7 @@
          }
 
          if (main.mode3d) {
-            this.Draw3DBins();
+            this.DrawLego();
             main.Render3D();
             this.UpdateStatWebCanvas();
             main.AddKeysHandler();
@@ -1571,14 +1558,37 @@
       JSROOT.CallBack(call_back);
    }
 
+   /** Draw histogram bins in 3D, using provided draw options @private */
+   JSROOT.v7.RH2Painter.prototype.Draw3DBins = function() {
+
+      if (!this.draw_content) return;
+
+      if (this.IsTH2Poly())
+         return this.DrawPolyLego();
+
+      if (this.options.Contour)
+         return this.DrawContour3D(true);
+
+      if (this.options.Surf)
+         return this.DrawSurf();
+
+      if (this.options.Error)
+         return this.DrawError();
+
+      this.DrawLego();
+   }
+
    JSROOT.v7.RH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       var main = this.frame_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 100, middle: 0.0 }),
           histo = this.GetHisto(), // get levels
-          levels = this.GetContour(), // init contour if not exists
-          palette = this.GetPalette(),
+          palette = main.GetPalette(),
           layerz = 2*main.size_z3d, pnts = [];
+
+      this.CreateContour(main, palette, { full_z_range: true });
+
+      var levels = palette.GetContour();
 
       this.BuildContour(handle, levels, palette,
          function(colindx,xp,yp,iminus,iplus,ilevel) {
@@ -1595,9 +1605,9 @@
                 pnts.push(xp[i+1], yp[i+1], layerz);
              }
          }
-      );
+      )
 
-      var lines = JSROOT.Painter.createLineSegments(pnts, JSROOT.Painter.Create3DLineMaterial(this, histo));
+      var lines = JSROOT.Painter.createLineSegments(pnts, JSROOT.Painter.Create3DLineMaterial(this, { fLineColor: 7, fLineStyle: 0, fLineWidth: 1}));
       main.toplevel.add(lines);
    }
 
