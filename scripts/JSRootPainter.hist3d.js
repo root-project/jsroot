@@ -28,7 +28,7 @@
    if (typeof JSROOT.THistPainter === 'undefined')
       throw new Error('JSROOT.THistPainter is not defined', 'JSRootPainter.hist3d.js');
 
-   JSROOT.TFramePainter.prototype.SetCameraPosition = function(pad, first_time) {
+   JSROOT.TFramePainter.prototype.SetCameraPosition = function(first_time, pad) {
       var max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
 
       if (first_time)
@@ -108,7 +108,7 @@
 
          this.Resize3D(); // set actual sizes
 
-         this.SetCameraPosition(this.root_pad(), false);
+         this.SetCameraPosition(false, this.root_pad());
 
          return;
       }
@@ -142,7 +142,7 @@
       this.camera.up = new THREE.Vector3(0,0,1);
       this.scene.add( this.camera );
 
-      this.SetCameraPosition(this.root_pad(), true);
+      this.SetCameraPosition(true, this.root_pad());
 
       var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg, (sz.can3d == 4));
 

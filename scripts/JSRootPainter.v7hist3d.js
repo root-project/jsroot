@@ -28,29 +28,13 @@
    if (typeof JSROOT.v7.RHistPainter === 'undefined')
       throw new Error('JSROOT.v7.RHistPainter is not defined', 'JSRootPainter.v7hist3d.js');
 
-   JSROOT.v7.RFramePainter.prototype.SetCameraPosition = function(pad, first_time) {
+   JSROOT.v7.RFramePainter.prototype.SetCameraPosition = function(first_time) {
       var max3d = Math.max(0.75*this.size_xy3d, this.size_z3d);
 
-      if (first_time)
+      if (first_time) {
          this.camera.position.set(-1.6*max3d, -3.5*max3d, 1.4*this.size_z3d);
-
-      if (pad && (first_time || !this.zoom_changed_interactive))
-         if (!isNaN(pad.fTheta) && !isNaN(pad.fPhi) && ((pad.fTheta !== this.camera_Theta) || (pad.fPhi !== this.camera_Phi))) {
-            max3d = 3*Math.max(this.size_xy3d, this.size_z3d);
-            var phi = (-pad.fPhi-90)/180*Math.PI, theta = pad.fTheta/180*Math.PI;
-
-            this.camera_Phi = pad.fPhi;
-            this.camera_Theta = pad.fTheta;
-
-            this.camera.position.set(max3d*Math.cos(phi)*Math.cos(theta),
-                                     max3d*Math.sin(phi)*Math.cos(theta),
-                                     this.size_z3d + max3d*Math.sin(theta));
-
-            first_time = true;
-         }
-
-      if (first_time)
          this.camera.lookAt(this.lookat);
+      }
    }
 
    /** @summary Create all necessary components for 3D drawings @private */
@@ -108,7 +92,7 @@
 
          this.Resize3D(); // set actual sizes
 
-         this.SetCameraPosition(this.root_pad(), false);
+         this.SetCameraPosition(false);
 
          return;
       }
@@ -142,7 +126,7 @@
       this.camera.up = new THREE.Vector3(0,0,1);
       this.scene.add( this.camera );
 
-      this.SetCameraPosition(this.root_pad(), true);
+      this.SetCameraPosition(true);
 
       var res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg, (sz.can3d == 4));
 
@@ -216,7 +200,8 @@
                }
             }
 
-         p.ShowContextMenu(kind, pos);
+         if (typeof p.ShowContextMenu == 'function')
+            p.ShowContextMenu(kind, pos);
       }
    }
 
@@ -480,7 +465,7 @@
           grminy = -this.size_xy3d, grmaxy = this.size_xy3d,
           grminz = 0, grmaxz = 2*this.size_z3d,
           textsize = Math.round(this.size_z3d * 0.05),
-          pad = this.root_pad(),
+          main = this.frame_painter(),
           xmin = this.xmin, xmax = this.xmax,
           ymin = this.ymin, ymax = this.ymax,
           zmin = this.zmin, zmax = this.zmax,
@@ -499,7 +484,6 @@
       if (('zoom_ymin' in this) && ('zoom_ymax' in this) && (this.zoom_ymin !== this.zoom_ymax)) {
          ymin = this.zoom_ymin; ymax = this.zoom_ymax; y_zoomed = true;
       }
-
       if (('zoom_zmin' in this) && ('zoom_zmax' in this) && (this.zoom_zmin !== this.zoom_zmax)) {
          zmin = this.zoom_zmin; zmax = this.zoom_zmax; z_zoomed = true;
       }
@@ -519,7 +503,7 @@
 
       // this.TestAxisVisibility = HPainter_TestAxisVisibility;
 
-      if (pad && pad.fLogx) {
+      if (main.logx) {
          if (xmax <= 0) xmax = 1.;
          if ((xmin <= 0) && this.xaxis)
             for (var i=0;i<this.xaxis.fNbins;++i) {
@@ -543,7 +527,7 @@
       this.x_handle.CreateFormatFuncs();
       this.scale_xmin = xmin; this.scale_xmax = xmax;
 
-      if (pad && pad.fLogy && !opts.use_y_for_z) {
+      if (main.logy && !opts.use_y_for_z) {
          if (ymax <= 0) ymax = 1.;
          if ((ymin <= 0) && this.yaxis)
             for (var i=0;i<this.yaxis.fNbins;++i) {
@@ -568,7 +552,7 @@
       this.y_handle.CreateFormatFuncs();
       this.scale_ymin = ymin; this.scale_ymax = ymax;
 
-      if (pad && pad.fLogz) {
+      if (main.logz) {
          if (zmax <= 0) zmax = 1;
          if (zmin <= 0) zmin = 1e-4*zmax;
          this.grz = d3.scaleLog();
@@ -1551,13 +1535,13 @@
 
       } else {
 
-         var pad = this.root_pad(), zmult = 1.1;
+         var zmult = 1.1;
 
-         this.zmin = (pad && pad.fLogz) ? this.gminposbin * 0.3 : this.gminbin;
+         this.zmin = main.logz ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
          this.DeleteAtt();
 
