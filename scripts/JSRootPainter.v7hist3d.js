@@ -190,14 +190,10 @@
 
             if ((axis_name==="z") && zoom_mesh.use_y_for_z) axis_name = "y";
 
-            var taxis = axis_painter.GetAxis(axis_name);
-
             var hint = { name: axis_name,
-                         title: "TAxis",
+                         title: "RAxis",
                          line: "any info",
                          only_status: true };
-
-            if (taxis) { hint.name = taxis.fName; hint.title = taxis.fTitle || "histogram TAxis object"; }
 
             hint.line = axis_name + " : " + axis_painter.AxisAsText(axis_name, axis_value);
 
@@ -378,7 +374,7 @@
             var geom = new THREE.BufferGeometry();
             geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
             geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
-            var mater = new THREE.MeshBasicMaterial( { color: color, opacity: opacity, flatShading: true } );
+            var mater = new THREE.MeshBasicMaterial({ color: color, opacity: opacity, flatShading: true });
             tooltip_mesh = new THREE.Mesh(geom, mater);
          } else {
             pos = tooltip_mesh.geometry.attributes.position.array;
@@ -1282,11 +1278,10 @@
 
          if (palette) {
             fcolor = palette.getColor(nlevel); // calcColor in v6
-         } else {
-            if ((this.options.Lego === 1) || (rootcolor < 2)) {
-               rootcolor = 1;
-               fcolor = 'white';
-            }
+            console.log('color', fcolor, 'level', nlevel);
+         } else if ((this.options.Lego === 1) || (rootcolor < 2)) {
+            rootcolor = 1;
+            fcolor = 'white';
          }
 
          //var material = new THREE.MeshLambertMaterial( { color: fcolor } );
@@ -1304,7 +1299,7 @@
 
          mesh.tooltip = function(intersect) {
             if (isNaN(intersect.faceIndex)) {
-               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
 
@@ -1441,9 +1436,9 @@
       }
 
       // create boxes
-      var lcolor = this.get_color(histo.fLineColor);
+      var lcolor = this.get_color(7/*histo.fLineColor*/);
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+      if (!JSROOT.browser.isIE) material.linewidth = 1; // histo.fLineWidth;
 
       var line = JSROOT.Painter.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
@@ -1913,8 +1908,8 @@
             if (palette) {
                fcolor = palette.calcColor(lvl, levels.length);
             } else {
-               fcolor = histo.fFillColor > 1 ? this.get_color(histo.fFillColor) : 'white';
-               if ((this.options.Surf === 14) && (histo.fFillColor<2)) fcolor = this.get_color(48);
+               fcolor = 5 /*histo.fFillColor*/ > 1 ? this.get_color(5/*histo.fFillColor*/) : 'white';
+               if ((this.options.Surf === 14) && (5/*histo.fFillColor*/<2)) fcolor = this.get_color(48);
             }
             if (this.options.Surf === 14)
                material = new THREE.MeshLambertMaterial( { color: fcolor, side: THREE.DoubleSide  } );
@@ -1933,9 +1928,9 @@
          if (nsegments*6 !== lindx)
             console.error('SURF lines mismmatch nsegm', nsegments, ' lindx', lindx, 'difference', nsegments*6 - lindx);
 
-         var lcolor = this.get_color(histo.fLineColor),
+         var lcolor = this.get_color(7),
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-         if (!JSROOT.browser.isIE) material.linewidth = histo.fLineWidth;
+         if (!JSROOT.browser.isIE) material.linewidth = 1; // histo.fLineWidth;
          var line = JSROOT.Painter.createLineSegments(lpos, material);
          line.painter = this;
          main.toplevel.add(line);
@@ -1950,7 +1945,7 @@
          if (this.options.Surf === 1)
             material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
          else
-            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(histo.fLineColor)) });
+            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(7/*histo.fLineColor*/)) });
 
          var line = JSROOT.Painter.createLineSegments(grid, material);
          line.painter = this;
@@ -2092,7 +2087,7 @@
        }
 
        // create lines
-       var lcolor = this.get_color(this.GetObject().fLineColor),
+       var lcolor = this.get_color(7 /*this.GetObject().fLineColor*/),
            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) }),
            line = JSROOT.Painter.createLineSegments(lpos, material);
 
@@ -2102,11 +2097,11 @@
        line.intersect_index = binindx;
        line.zmin = zmin;
        line.zmax = zmax;
-       line.tip_color = (this.GetObject().fLineColor===3) ? 0xFF0000 : 0x00FF00;
+       line.tip_color = (/*this.GetObject().fLineColor*/ 7 === 3) ? 0xFF0000 : 0x00FF00;
 
        line.tooltip = function(intersect) {
           if (isNaN(intersect.index)) {
-             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r97');
+             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r102');
              return null;
           }
 
@@ -2591,7 +2586,7 @@
 
       mesh.tooltip = function(intersect) {
          if (isNaN(intersect.index)) {
-            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
             return null;
          }
 
@@ -2624,7 +2619,7 @@
       if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
          if (this.Draw3DScatter()) return;
 
-      var rootcolor = this.GetObject().fFillColor,
+      var rootcolor = 5/*this.GetObject().fFillColor*/,
           fillcolor = this.get_color(rootcolor),
           main = this.frame_painter(),
           buffer_size = 0, use_lambert = false,
@@ -2886,7 +2881,7 @@
 
          combined_bins.tooltip = function(intersect) {
             if (isNaN(intersect.faceIndex)) {
-               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
             var indx = Math.floor(intersect.faceIndex / this.bins_faces);
@@ -2913,7 +2908,7 @@
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            var lcolor = this.get_color(this.GetObject().fLineColor),
+            var lcolor = this.get_color(7 /*this.GetObject().fLineColor*/),
                 helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
                 lines = null;
 

@@ -68,7 +68,7 @@
             }
 
          } else {
-            histo.getBin = function(bin) { return bin; }
+            histo.getBin = function(bin) { return bin-1; }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(bin) { return this.fStatistics.fBinContent[bin-1]; }
             histo.getBinError = function(bin) {
@@ -350,22 +350,22 @@
           tip = { bin: indx, name: histo.fName || "histo", title: histo.fTitle };
       switch (this.Dimension()) {
          case 1:
-            tip.ix = indx; tip.iy = 1;
+            tip.ix = indx + 1; tip.iy = 1;
             tip.value = histo.getBinContent(tip.ix);
             tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(indx-1);
             break;
          case 2:
-            tip.ix = indx % (this.nbinsx + 2);
-            tip.iy = (indx - tip.ix) / (this.nbinsx + 2);
+            tip.ix = (indx % this.nbinsx) + 1;
+            tip.iy = (indx - (tip.ix - 1)) / this.nbinsx + 1;
             tip.value = histo.getBinContent(tip.ix, tip.iy);
             tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1);
             break;
          case 3:
-            tip.ix = indx % (this.nbinsx+2);
-            tip.iy = ((indx - tip.ix) / (this.nbinsx+2)) % (this.nbinsy+2);
-            tip.iz = (indx - tip.ix - tip.iy * (this.nbinsx+2)) / (this.nbinsx+2) / (this.nbinsy+2);
+            tip.ix = indx % this.nbinsx + 1;
+            tip.iy = ((indx - (tip.ix - 1)) / this.nbinsx) % this.nbinsy + 1;
+            tip.iz = (indx - (tip.ix - 1) - (tip.iy - 1) * this.nbinsx) / this.nbinsx / this.nbinsy + 1;
             tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
             tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
@@ -3413,17 +3413,22 @@
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                           minimum: -1111, maximum: -1111 };
 
-      // painter.options.Color = true;
-      painter.options.Lego = 12; // force for the moment
-      painter.options.Mode3D = true; // enable 3D
+      var EDrawKind = { kColor: 1, kLego: 2 };
+
+      if (obj.fDrawKind == EDrawKind.kLego) {
+         painter.options.Lego = 12; // force for the moment
+         painter.options.Mode3D = true; // enable 3D
+      } else {
+         painter.options.Color = true;
+      }
 
       // here we deciding how histogram will look like and how will be shown
-      painter.DecodeOptions(opt);
+      // painter.DecodeOptions(opt);
 
-      if (painter.IsTH2Poly()) {
-         if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
-         else if (!painter.options.Color) painter.options.Color = true; // default is color
-      }
+      //if (painter.IsTH2Poly()) {
+      //   if (painter.options.Mode3D) painter.options.Lego = 12; // lego always 12
+      //   else if (!painter.options.Color) painter.options.Color = true; // default is color
+      //}
 
       painter._show_empty_bins = false;
 

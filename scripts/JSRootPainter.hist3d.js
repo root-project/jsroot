@@ -1299,7 +1299,7 @@
 
          mesh.tooltip = function(intersect) {
             if (isNaN(intersect.faceIndex)) {
-               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               console.error('faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
 
@@ -2104,7 +2104,7 @@
 
        line.tooltip = function(intersect) {
           if (isNaN(intersect.index)) {
-             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r97');
+             console.error('segment index not provided, check three.js version', THREE.REVISION, 'expected r102');
              return null;
           }
 
@@ -2589,7 +2589,7 @@
 
       mesh.tooltip = function(intersect) {
          if (isNaN(intersect.index)) {
-            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+            console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
             return null;
          }
 
@@ -2884,7 +2884,7 @@
 
          combined_bins.tooltip = function(intersect) {
             if (isNaN(intersect.faceIndex)) {
-               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r97');
+               console.error('intersect.faceIndex not provided, check three.js version', THREE.REVISION, 'expected r102');
                return null;
             }
             var indx = Math.floor(intersect.faceIndex / this.bins_faces);
@@ -3153,7 +3153,7 @@
 
    TGraph2DPainter.prototype.Graph2DTooltip = function(intersect) {
       if (isNaN(intersect.index)) {
-         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+         console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
          return null;
       }
 
@@ -3509,7 +3509,7 @@
 
             mesh.tooltip = function(intersect) {
                if (isNaN(intersect.index)) {
-                  console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r97');
+                  console.error('intersect.index not provided, check three.js version', THREE.REVISION, 'expected r102');
                   return null;
                }
                var indx = Math.floor(intersect.index / this.nvertex);
