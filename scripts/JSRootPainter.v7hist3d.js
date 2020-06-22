@@ -1401,9 +1401,8 @@
 
       // create boxes
       var lcolor = this.v7EvalColor("line_color", "lightblue");
-      console.log('DRAWING LEGO LINES', lcolor);
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-      if (!JSROOT.browser.isIE) material.linewidth = 1; // histo.fLineWidth;
+      if (!JSROOT.browser.isIE) material.linewidth = this.v7EvalAttr("line_width", 1);
 
       var line = JSROOT.Painter.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
 
@@ -1575,6 +1574,29 @@
       this.DrawLego();
    }
 
+   // ==============================================================================
+
+   function v7Create3DLineMaterial(painter, prefix) {
+      if (!painter) return null;
+      if (!prefix) prefix = "line_"
+
+      var lcolor = painter.v7EvalColor(prefix+"color", "black"),
+          lstyle = painter.v7EvalAttr(prefix+"style", 0),
+          lwidth = painter.v7EvalAttr(prefix+"width", 1),
+          material = null,
+          style = lstyle ? JSROOT.Painter.root_line_styles[parseInt(lstyle)] : "",
+          dash = style ? style.split(",") : [];
+
+      if (dash && dash.length>=2)
+         material = new THREE.LineDashedMaterial({ color: lcolor, dashSize: parseInt(dash[0]), gapSize: parseInt(dash[1]) });
+      else
+         material = new THREE.LineBasicMaterial({ color: lcolor });
+
+      if (lwidth && (lwidth>1) && !JSROOT.browser.isIE) material.linewidth = parseInt(lwidth);
+
+      return material;
+   }
+
    JSROOT.v7.RH2Painter.prototype.DrawContour3D = function(realz) {
       // for contour plots one requires handle with full range
       var main = this.frame_painter(),
@@ -1604,7 +1626,7 @@
          }
       )
 
-      var lines = JSROOT.Painter.createLineSegments(pnts, JSROOT.Painter.Create3DLineMaterial(this, { fLineColor: 7, fLineStyle: 0, fLineWidth: 1}));
+      var lines = JSROOT.Painter.createLineSegments(pnts, v7Create3DLineMaterial(this));
       main.toplevel.add(lines);
    }
 
@@ -1918,7 +1940,7 @@
 
          var lcolor = this.get_color(7),
              material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
-         if (!JSROOT.browser.isIE) material.linewidth = 1; // histo.fLineWidth;
+         if (!JSROOT.browser.isIE) material.linewidth = this.v7EvalAttr("line_width", 1);
          var line = JSROOT.Painter.createLineSegments(lpos, material);
          line.painter = this;
          main.toplevel.add(line);
@@ -2079,7 +2101,7 @@
            material = new THREE.LineBasicMaterial({ color: lcolor }),
            line = JSROOT.Painter.createLineSegments(lpos, material);
 
-       if (!JSROOT.browser.isIE) material.linewidth = 1; // this.GetObject().fLineWidth;
+       if (!JSROOT.browser.isIE) material.linewidth = this.v7EvalAttr("line_width", 1);
 
        line.painter = this;
        line.intersect_index = binindx;
