@@ -121,6 +121,8 @@
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
 
+      console.log('size_xy3d', this.size_xy3d);
+
       // three.js 3D drawing
       this.scene = new THREE.Scene();
       //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
@@ -587,7 +589,7 @@
 
       this.grz.domain([ zmin, zmax ]).range([ grminz, grmaxz ]);
 
-      this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
+      // this.SetRootPadRange(pad, true); // set some coordinates typical for 3D projections in ROOT
 
       this.z_handle = new JSROOT.TAxisPainter(this.zaxis);
       this.z_handle.SetAxisConfig("zaxis", this.z_kind, this.grz, this.zmin, this.zmax, zmin, zmax);
@@ -1076,12 +1078,12 @@
       }
    }
 
-   /** Draw histograms in 3D mode @private */
-   JSROOT.THistPainter.prototype.Draw3DBins = function() {
+   /** Draw 1D/2D histograms in 3D mode @private */
+   JSROOT.v7.RHistPainter.prototype.Draw3DBins = function() {
 
       if (!this.draw_content) return;
 
-      if (this.IsTH2Poly() && this.DrawPolyLego)
+/*      if (this.IsTH2Poly() && this.DrawPolyLego)
          return this.DrawPolyLego();
 
       if ((this.Dimension()==2) && this.options.Contour && this.DrawContour3D)
@@ -1092,8 +1094,9 @@
 
       if ((this.Dimension()==2) && this.options.Error && this.DrawError)
          return this.DrawError();
+*/
 
-      // Perform TH1/TH2 lego plot with BufferGeometry
+      // Perform RH1/RH2 lego plot with BufferGeometry
 
       var vertices = JSROOT.Painter.Box3D.Vertices,
           indicies = JSROOT.Painter.Box3D.Indexes,
@@ -1150,8 +1153,11 @@
 
       if ((this.options.Lego === 12) || (this.options.Lego === 14)) {
          // drawing colors levels, axis can not exceed palette
-         levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
-         palette = this.GetPalette();
+
+         palette = main.GetPalette();
+         this.CreateContour(main, palette);
+         levels = palette.GetContour();
+         // levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          //axis_zmin = levels[0];
          //axis_zmax = levels[levels.length-1];
       }
@@ -1161,15 +1167,15 @@
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
              z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
 
-         // artifically extend last level of color pallette to maximial visible value
-         if (palette && (nlevel==levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
+         // artificially extend last level of color palette to maximal visible value
+         if (palette && (nlevel==levels.length-2) && (zmax < axis_zmax)) zmax = axis_zmax;
 
          var grzmin = main.grz(zmin), grzmax = main.grz(zmax);
 
          // now calculate size of buffer geometry for boxes
 
-         for (i=i1;i<i2;++i)
-            for (j=j1;j<j2;++j) {
+         for (i = i1; i < i2; ++i)
+            for (j = j1; j < j2; ++j) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
 
@@ -1200,10 +1206,10 @@
             face_to_bins_indx2 = use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3);
          }
 
-         for (i=i1;i<i2;++i) {
+         for (i=i1; i<i2; ++i) {
             x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
             x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-            for (j=j1;j<j2;++j) {
+            for (j=j1; j<j2; ++j) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
 
@@ -1272,11 +1278,10 @@
          geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
          // geometry.computeVertexNormals();
 
-         var rootcolor = histo.fFillColor,
-             fcolor = this.get_color(rootcolor);
+         var rootcolor = 3, fcolor = this.get_color(rootcolor);
 
          if (palette) {
-            fcolor = palette.calcColor(nlevel, levels.length);
+            fcolor = palette.getColor(nlevel); // calcColor in v6
          } else {
             if ((this.options.Lego === 1) || (rootcolor < 2)) {
                rootcolor = 1;
@@ -1495,7 +1500,7 @@
    // ==========================================================================================
 
    /** @summary Draw 1-D histogram in 3D @private */
-   JSROOT.TH1Painter.prototype.Draw3D = function(call_back, reason) {
+   JSROOT.v7.RH1Painter.prototype.Draw3D = function(call_back, reason) {
 
       this.mode3d = true;
 
@@ -1515,7 +1520,7 @@
 
          if (is_main) {
             main.Create3DScene();
-            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, 0, 0);
+            main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
          }
@@ -1530,9 +1535,9 @@
 
       if (is_main) {
          // (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
+         // this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
 
-         this.DrawTitle();
+         // this.DrawTitle();
       }
 
       JSROOT.CallBack(call_back);
@@ -1556,19 +1561,17 @@
 
          var pad = this.root_pad(), zmult = 1.1;
 
-         this.zmin = pad.fLogz ? this.gminposbin * 0.3 : this.gminbin;
+         this.zmin = (pad && pad.fLogz) ? this.gminposbin * 0.3 : this.gminbin;
          this.zmax = this.gmaxbin;
-
          if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
          if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-
-         if (pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+         if (pad && pad.fLogz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
 
          this.DeleteAtt();
 
          if (is_main) {
             main.Create3DScene();
-            main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+            main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
             main.Set3DOptions(this.options);
             main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
          }
@@ -1584,10 +1587,9 @@
       if (is_main) {
 
          //  (re)draw palette by resize while canvas may change dimension
-         this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-                               (this.options.Surf===11) || (this.options.Surf===12)));
-
-         this.DrawTitle();
+         //this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
+         //                      (this.options.Surf===11) || (this.options.Surf===12)));
+         // this.DrawTitle();
       }
 
       JSROOT.CallBack(call_back);
@@ -2939,7 +2941,7 @@
       } else {
 
          main.Create3DScene();
-         main.SetAxesRanges(histo.fXaxis, this.xmin, this.xmax, histo.fYaxis, this.ymin, this.ymax, histo.fZaxis, this.zmin, this.zmax);
+         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });
          this.Draw3DBins();
@@ -2948,7 +2950,7 @@
          main.AddKeysHandler();
       }
 
-      this.DrawTitle();
+      // this.DrawTitle();
    }
 
    RH3Painter.prototype.FillToolbar = function() {

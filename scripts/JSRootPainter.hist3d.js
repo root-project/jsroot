@@ -1161,7 +1161,7 @@
          var zmin = levels[nlevel], zmax = levels[nlevel+1],
              z1 = 0, z2 = 0, numvertices = 0, num2vertices = 0;
 
-         // artifically extend last level of color pallette to maximial visible value
+         // artificially extend last level of color palette to maximal visible value
          if (palette && (nlevel==levels.length-2) && zmax < axis_zmax) zmax = axis_zmax;
 
          var grzmin = main.grz(zmin), grzmax = main.grz(zmax);
