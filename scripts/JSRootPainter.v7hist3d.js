@@ -121,8 +121,6 @@
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
 
-      console.log('size_xy3d', this.size_xy3d);
-
       // three.js 3D drawing
       this.scene = new THREE.Scene();
       //scene.fog = new THREE.Fog(0xffffff, 500, 3000);
@@ -1151,7 +1149,7 @@
          // drawing colors levels, axis can not exceed palette
 
          palette = main.GetPalette();
-         this.CreateContour(main, palette);
+         this.CreateContour(main, palette, { full_z_range: true });
          levels = palette.GetContour();
          // levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
          //axis_zmin = levels[0];
@@ -1278,7 +1276,6 @@
 
          if (palette) {
             fcolor = palette.getColor(nlevel); // calcColor in v6
-            console.log('color', fcolor, 'level', nlevel);
          } else if ((this.options.Lego === 1) || (rootcolor < 2)) {
             rootcolor = 1;
             fcolor = 'white';
@@ -1369,8 +1366,8 @@
 
       zmax = axis_zmax; zmin = axis_zmin;
 
-      for (i=i1;i<i2;++i)
-         for (j=j1;j<j2;++j) {
+      for (i = i1; i < i2; ++i)
+         for (j = j1; j < j2; ++j) {
             if (!GetBinContent(i,j,0)) { nskip++; continue; }
 
             // calculate required buffer size for line segments

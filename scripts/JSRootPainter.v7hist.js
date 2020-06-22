@@ -376,13 +376,13 @@
    }
 
    /** Create contour levels for currently selected Z range @private */
-   RHistPainter.prototype.CreateContour = function(main, palette, scatter_plot) {
+   RHistPainter.prototype.CreateContour = function(main, palette, args) {
       if (!main || !palette) return;
 
       var nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
 
-      if (scatter_plot) {
+      if (args && args.scatter_plot) {
          if (nlevels > 50) nlevels = 50;
          zmin = this.minposbin;
       }
@@ -392,6 +392,11 @@
       if (main.zoom_zmin !== main.zoom_zmax) {
          zmin = main.zoom_zmin;
          zmax = main.zoom_zmax;
+      }
+
+      if (args && args.full_z_range) {
+         zmin = main.zmin;
+         zmax = main.zmax;
       }
 
       palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
@@ -642,7 +647,7 @@
       res.palette = pmain.GetPalette();
 
       if (res.palette)
-         this.CreateContour(pmain, res.palette, args.scatter_plot);
+         this.CreateContour(pmain, res.palette, args);
 
       return res;
    }
