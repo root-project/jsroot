@@ -1400,7 +1400,8 @@
       }
 
       // create boxes
-      var lcolor = this.get_color(7/*histo.fLineColor*/);
+      var lcolor = this.v7EvalColor("line_color", "lightblue");
+      console.log('DRAWING LEGO LINES', lcolor);
       material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
       if (!JSROOT.browser.isIE) material.linewidth = 1; // histo.fLineWidth;
 
@@ -1562,14 +1563,14 @@
       if (this.IsTH2Poly())
          return this.DrawPolyLego();
 
-      if (this.options.Contour)
-         return this.DrawContour3D(true);
-
       if (this.options.Surf)
          return this.DrawSurf();
 
       if (this.options.Error)
          return this.DrawError();
+
+      if (this.options.Contour)
+         return this.DrawContour3D(true);
 
       this.DrawLego();
    }
@@ -1932,7 +1933,7 @@
          if (this.options.Surf === 1)
             material = new THREE.LineDashedMaterial( { color: 0x0, dashSize: 2, gapSize: 2 } );
          else
-            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.get_color(7/*histo.fLineColor*/)) });
+            material = new THREE.LineBasicMaterial({ color: new THREE.Color(this.v7EvalColor("line_color", "lightblue")) });
 
          var line = JSROOT.Painter.createLineSegments(grid, material);
          line.painter = this;
@@ -2074,8 +2075,8 @@
        }
 
        // create lines
-       var lcolor = this.get_color(7 /*this.GetObject().fLineColor*/),
-           material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) }),
+       var lcolor = new THREE.Color(this.v7EvalColor("line_color", "lightblue")),
+           material = new THREE.LineBasicMaterial({ color: lcolor }),
            line = JSROOT.Painter.createLineSegments(lpos, material);
 
        if (!JSROOT.browser.isIE) material.linewidth = 1; // this.GetObject().fLineWidth;
@@ -2084,7 +2085,7 @@
        line.intersect_index = binindx;
        line.zmin = zmin;
        line.zmax = zmax;
-       line.tip_color = (/*this.GetObject().fLineColor*/ 7 === 3) ? 0xFF0000 : 0x00FF00;
+       line.tip_color = (lcolor.g < 0.5) ? 0x00FF00 : 0xFF0000;
 
        line.tooltip = function(intersect) {
           if (isNaN(intersect.index)) {
@@ -2895,7 +2896,7 @@
          main.toplevel.add(combined_bins);
 
          if (helper_kind[nseq] > 0) {
-            var lcolor = this.get_color(7 /*this.GetObject().fLineColor*/),
+            var lcolor = this.v7EvalColor("line_color", "lightblue"),
                 helper_material = new THREE.LineBasicMaterial( { color: lcolor } ),
                 lines = null;
 

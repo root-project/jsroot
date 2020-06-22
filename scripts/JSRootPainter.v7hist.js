@@ -1592,10 +1592,8 @@
 
       var main = this.frame_painter();
 
-      if (main && (main.mode3d !== this.options.Mode3D)) {
-         // that to do with that case
+      if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
          this.options.Mode3D = main.mode3d;
-      }
 
       var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
@@ -3401,9 +3399,8 @@
 
       var main = this.frame_painter();
 
-      //if (this.options.Mode3D !== main.mode3d) {
-      //   this.options.Mode3D = main.mode3d;
-      //}
+      if (main && (main.mode3d !== this.options.Mode3D) && !this.is_main_painter())
+         this.options.Mode3D = main.mode3d;
 
       var funcname = this.options.Mode3D ? "Draw3D" : "Draw2D";
 
@@ -3427,13 +3424,17 @@
                           Color: false, Scat: false, ScatCoef: 1, Candle: "", Box: false, BoxStyle: 0, Arrow: false, Contour: 0, Proj: 0,
                           minimum: -1111, maximum: -1111 };
 
-      var EDrawKind = { kColor: 1, kLego: 2, kSurf: 3, kError: 4, kContour: 5 }, o = painter.options;
+      var kind = painter.v7EvalAttr("kind", "col"),
+          sub = painter.v7EvalAttr("sub", 0),
+          o = painter.options;
 
-      switch(obj.fDrawKind) {
-         case EDrawKind.kLego: o.Lego = 12; o.Mode3D = true; break;
-         case EDrawKind.kSurf: o.Surf = 1; o.Mode3D = true; break;
-         case EDrawKind.kError: o.Error = true; o.Mode3D = true; break;
-         case EDrawKind.kContour: o.Contour = 1; o.Mode3D = true; break;
+      o.Text = painter.v7EvalAttr("text", false);
+
+      switch(kind) {
+         case "lego": o.Lego = sub > 0 ? 10+sub : 12; o.Mode3D = true; break;
+         case "surf": o.Surf = sub > 0 ? 10+sub : 1; o.Mode3D = true; break;
+         case "err": o.Error = true; o.Mode3D = true; break;
+         case "cont": o.Contour = sub > 0 ? 10+sub : 1; break;
          default: o.Color = true;
       }
 
