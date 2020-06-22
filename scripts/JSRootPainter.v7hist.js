@@ -60,8 +60,7 @@
             histo.getBin = function(x, y) { return (x-1)  + this.fAxes._0.GetNumBins() * (y-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
-            histo.getBinError = function(x,y) {
-               var bin = this.getBin(x,y);
+            histo.getBinError = function(bin) {
                if (this.fStatistics.fSumWeightsSquared)
                   return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));

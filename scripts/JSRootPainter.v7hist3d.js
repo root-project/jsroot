@@ -1122,9 +1122,8 @@
          palette = main.GetPalette();
          this.CreateContour(main, palette, { full_z_range: true });
          levels = palette.GetContour();
-         // levels = this.CreateContour(histo.fContour ? histo.fContour.length : 20, main.lego_zmin, main.lego_zmax);
-         //axis_zmin = levels[0];
-         //axis_zmax = levels[levels.length-1];
+         axis_zmin = levels[0];
+         axis_zmax = levels[levels.length-1];
       }
 
       for (var nlevel=0; nlevel<levels.length-1;++nlevel) {
@@ -1377,12 +1376,10 @@
 
             if (uselineindx) {
                // array of indicies for the lines, to avoid duplication of points
-               for (k=0; k < seg.length; ++k) {
-//                  intersect_index[ii] = bin_index;
+               for (k = 0; k < seg.length; ++k)
                   lindicies[ii++] = ll/3 + seg[k];
-               }
 
-               for (k=0; k < vvv.length; ++k) {
+               for (k = 0; k < vvv.length; ++k) {
                   vert = vvv[k];
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
@@ -1391,12 +1388,11 @@
                }
             } else {
                // copy only vertex positions
-               for (k=0; k < seg.length; ++k) {
+               for (k = 0; k < seg.length; ++k) {
                   vert = vvv[seg[k]];
                   lpositions[ll]   = x1 + vert.x * (x2 - x1);
                   lpositions[ll+1] = y1 + vert.y * (y2 - y1);
                   lpositions[ll+2] = z1 + vert.z * (z2 - z1);
-//                  intersect_index[ll/3] = bin_index;
                   ll+=3;
                }
             }
@@ -2082,7 +2078,7 @@
            material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) }),
            line = JSROOT.Painter.createLineSegments(lpos, material);
 
-       if (!JSROOT.browser.isIE) material.linewidth = this.GetObject().fLineWidth;
+       if (!JSROOT.browser.isIE) material.linewidth = 1; // this.GetObject().fLineWidth;
 
        line.painter = this;
        line.intersect_index = binindx;
