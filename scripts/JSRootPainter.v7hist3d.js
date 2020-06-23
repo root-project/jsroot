@@ -2511,8 +2511,6 @@
       var lines = [], pmain = this.frame_painter(), histo = this.GetHisto(),
           xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
 
-      console.log('GetTips for bin', ix, iy, iz);
-
       lines.push(this.GetTipName());
 
       if (pmain.x_kind == 'labels')
@@ -2954,6 +2952,9 @@
             main.toplevel.add(lines);
          }
       }
+
+      if (use_colors)
+         this.UpdatePaletteDraw();
    }
 
    RH3Painter.prototype.Redraw = function(reason) {
