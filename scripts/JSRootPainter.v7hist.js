@@ -391,9 +391,7 @@
       if (main.zoom_zmin !== main.zoom_zmax) {
          zmin = main.zoom_zmin;
          zmax = main.zoom_zmax;
-      }
-
-      if (args && args.full_z_range) {
+      } else if (args && args.full_z_range) {
          zmin = main.zmin;
          zmax = main.zmax;
       }
@@ -480,12 +478,15 @@
    }
 
    RHistPainter.prototype.UpdatePaletteDraw = function() {
-      var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
-      if (pp) pp.DrawPalette();
+      if (this.is_main_painter()) {
+         var pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
+         if (pp) pp.DrawPalette();
+      }
    }
 
    RHistPainter.prototype.FillPaletteMenu = function(menu) {
 
+      // TODO: rewrite for RPalette functionality
       var curr = this.options.Palette, hpainter = this;
       if ((curr===null) || (curr===0)) curr = JSROOT.gStyle.Palette;
 
@@ -2066,8 +2067,7 @@
                .attr("fill", handle.palette.getColor(colindx))
                .attr("d", colPaths[colindx]);
 
-      if (this.is_main_painter())
-         this.UpdatePaletteDraw();
+      this.UpdatePaletteDraw();
 
       return handle;
    }

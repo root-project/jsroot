@@ -1486,6 +1486,7 @@
 
          if (main.mode3d) {
             this.DrawLego();
+            this.UpdatePaletteDraw();
             main.Render3D();
             this.UpdateStatWebCanvas();
             main.AddKeysHandler();
@@ -1572,6 +1573,7 @@
          return this.DrawContour3D(true);
 
       this.DrawLego();
+      this.UpdatePaletteDraw();
    }
 
    // ==============================================================================
@@ -1645,16 +1647,23 @@
       if ((handle.i2 - handle.i1 < 2) || (handle.j2 - handle.j1 < 2)) return;
 
       var ilevels = null, levels = null, dolines = true, dogrid = false,
-          donormals = false, palette = null;
+          donormals = false, palette = null, need_palette = 0;
 
       switch(this.options.Surf) {
-         case 11: ilevels = this.GetContour(); palette = this.GetPalette(); break;
+         case 11: need_palette = 2; break;
          case 12:
          case 15: // make surf5 same as surf2
-         case 17: ilevels = this.GetContour(); palette = this.GetPalette(); dolines = false; break;
+         case 17: need_palette = 2; dolines = false; break;
          case 14: dolines = false; donormals = true; break;
-         case 16: ilevels = this.GetContour(); dogrid = true; dolines = false; break;
+         case 16: need_palette = 1; dogrid = true; dolines = false; break;
          default: ilevels = main.z_handle.CreateTicks(true); dogrid = true; break;
+      }
+
+      if (need_palette > 0) {
+         palette = main.GetPalette();
+         if (need_palette == 2)
+            this.CreateContour(main, palette, { full_z_range: true });
+         ilevels = palette.GetContour();
       }
 
       if (ilevels) {
@@ -1916,7 +1925,7 @@
 
             var fcolor, material;
             if (palette) {
-               fcolor = palette.calcColor(lvl, levels.length);
+               fcolor = palette.getColor(lvl);
             } else {
                fcolor = 5 /*histo.fFillColor*/ > 1 ? this.get_color(5/*histo.fFillColor*/) : 'white';
                if ((this.options.Surf === 14) && (5/*histo.fFillColor*/<2)) fcolor = this.get_color(48);
@@ -2030,6 +2039,8 @@
             }
          );
       }
+
+      this.UpdatePaletteDraw();
    }
 
    JSROOT.v7.RH2Painter.prototype.DrawError = function() {
