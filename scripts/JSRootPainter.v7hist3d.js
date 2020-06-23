@@ -2133,10 +2133,10 @@
               main = p.frame_painter(),
               tip = p.Get3DToolTip(this.intersect_index[pos]);
 
-          tip.x1 = Math.max(-main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix)));
-          tip.x2 = Math.min(main.size_xy3d, main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1)));
-          tip.y1 = Math.max(-main.size_xy3d, main.gry(histo.fYaxis.GetBinLowEdge(tip.iy)));
-          tip.y2 = Math.min(main.size_xy3d, main.gry(histo.fXaxis.GetBinLowEdge(tip.iy+1)));
+          tip.x1 = Math.max(-main.size_xy3d, main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix)));
+          tip.x2 = Math.min(main.size_xy3d, main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix+1)));
+          tip.y1 = Math.max(-main.size_xy3d, main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy)));
+          tip.y2 = Math.min(main.size_xy3d, main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy+1)));
 
           tip.z1 = main.grz(tip.value-tip.error < this.zmin ? this.zmin : tip.value-tip.error);
           tip.z2 = main.grz(tip.value+tip.error > this.zmax ? this.zmax : tip.value+tip.error);
@@ -2385,7 +2385,10 @@
    }
 
    RH3Painter.prototype.CountStat = function() {
-      var histo = this.GetHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis, zaxis = histo.fZaxis,
+      var histo = this.GetHisto(),
+          xaxis = this.GetAxis("x"),
+          yaxis = this.GetAxis("y"),
+          zaxis = this.GetAxis("z"),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
           stat_sumz1 = 0, stat_sumx2 = 0, stat_sumy2 = 0, stat_sumz2 = 0,
           i1 = this.GetSelectIndex("x", "left"),
@@ -2501,24 +2504,25 @@
    }
 
    RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
-      var lines = [], pmain = this.frame_painter(), histo = this.GetHisto();
+      var lines = [], pmain = this.frame_painter(), histo = this.GetHisto(),
+          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
 
       lines.push(this.GetTipName());
 
       if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + "  xbin=" + (ix+1));
+         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+1)) + "  xbin=" + (ix+1));
       else
-         lines.push("x = [" + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+1)) + ", " + pmain.AxisAsText("x", histo.fXaxis.GetBinLowEdge(ix+2)) + ")   xbin=" + (ix+1));
+         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+1)) + ", " + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+2)) + ")   xbin=" + (ix+1));
 
       if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1))  + "  ybin=" + (iy+1));
+         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+1))  + "  ybin=" + (iy+1));
       else
-         lines.push("y = [" + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+1)) + ", " + pmain.AxisAsText("y", histo.fYaxis.GetBinLowEdge(iy+2)) + ")  ybin=" + (iy+1));
+         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+1)) + ", " + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+2)) + ")  ybin=" + (iy+1));
 
       if (pmain.z_kind == 'labels')
-         lines.push("z = " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1))  + "  zbin=" + (iz+1));
+         lines.push("z = " + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+1))  + "  zbin=" + (iz+1));
       else
-         lines.push("z = [" + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", histo.fZaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
+         lines.push("z = [" + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
 
       var binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
@@ -2608,16 +2612,16 @@
          var indx = Math.floor(intersect.index / this.nvertex);
          if ((indx<0) || (indx >= this.bins.length)) return null;
 
-         var p = this.painter, histo = p.GetHisto(),
+         var p = this.painter,
              main = p.frame_painter(),
              tip = p.Get3DToolTip(this.bins[indx]);
 
-         tip.x1 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix));
-         tip.x2 = main.grx(histo.fXaxis.GetBinLowEdge(tip.ix+1));
-         tip.y1 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy));
-         tip.y2 = main.gry(histo.fYaxis.GetBinLowEdge(tip.iy+1));
-         tip.z1 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz));
-         tip.z2 = main.grz(histo.fZaxis.GetBinLowEdge(tip.iz+1));
+         tip.x1 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix));
+         tip.x2 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix+1));
+         tip.y1 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy));
+         tip.y2 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy+1));
+         tip.z1 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz));
+         tip.z2 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz+1));
          tip.color = this.tip_color;
          tip.opacity = 0.3;
 
@@ -2723,9 +2727,10 @@
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
-      var scalex = (main.grx(histo.fXaxis.GetBinLowEdge(i2+1)) - main.grx(histo.fXaxis.GetBinLowEdge(i1+1))) / (i2-i1),
-          scaley = (main.gry(histo.fYaxis.GetBinLowEdge(j2+1)) - main.gry(histo.fYaxis.GetBinLowEdge(j1+1))) / (j2-j1),
-          scalez = (main.grz(histo.fZaxis.GetBinLowEdge(k2+1)) - main.grz(histo.fZaxis.GetBinLowEdge(k1+1))) / (k2-k1);
+      var xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z"),
+          scalex = (main.grx(xaxis.GetBinLowEdge(i2+1)) - main.grx(xaxis.GetBinLowEdge(i1+1))) / (i2-i1),
+          scaley = (main.gry(yaxis.GetBinLowEdge(j2+1)) - main.gry(yaxis.GetBinLowEdge(j1+1))) / (j2-j1),
+          scalez = (main.grz(zaxis.GetBinLowEdge(k2+1)) - main.grz(zaxis.GetBinLowEdge(k1+1))) / (k2-k1);
 
       var nbins = 0, i, j, k, wei, bin_content, cols_size = [], num_colors = 0, cols_sequence = [];
 
@@ -2795,12 +2800,15 @@
             helper_positions[nseq] = new Float32Array(nbins * JSROOT.Painter.Box3D.Segments.length * 3);
       }
 
-      var binx, grx, biny, gry, binz, grz;
+      var binx, grx, biny, gry, binz, grz,
+          xaxis = this.GetAxis("x"),
+          yaxis = this.GetAxis("y"),
+          zaxis = this.GetAxis("z");
 
       for (i = i1; i < i2; ++i) {
-         binx = histo.fXaxis.GetBinCenter(i+1); grx = main.grx(binx);
+         binx = xaxis.GetBinCenter(i+1); grx = main.grx(binx);
          for (j = j1; j < j2; ++j) {
-            biny = histo.fYaxis.GetBinCenter(j+1); gry = main.gry(biny);
+            biny = yaxis.GetBinCenter(j+1); gry = main.gry(biny);
             for (k = k1; k < k2; ++k) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if ((bin_content===0) || (bin_content < this.gminbin)) continue;
@@ -2817,7 +2825,7 @@
 
                nbins = cols_nbins[nseq];
 
-               binz = histo.fZaxis.GetBinCenter(k+1); grz = main.grz(binz);
+               binz = zaxis.GetBinCenter(k+1); grz = main.grz(binz);
 
                // remember bin index for tooltip
                bin_tooltips[nseq][nbins] = histo.getBin(i+1, j+1, k+1);
@@ -2904,9 +2912,9 @@
                 histo = p.GetHisto(),
                 main = p.frame_painter(),
                 tip = p.Get3DToolTip(this.bins[indx]),
-                grx = main.grx(histo.fXaxis.GetBinCoord(tip.ix-0.5)),
-                gry = main.gry(histo.fYaxis.GetBinCoord(tip.iy-0.5)),
-                grz = main.grz(histo.fZaxis.GetBinCoord(tip.iz-0.5)),
+                grx = main.grx(p.GetAxis("x").GetBinCoord(tip.ix-0.5)),
+                gry = main.gry(p.GetAxis("y").GetBinCoord(tip.iy-0.5)),
+                grz = main.grz(p.GetAxis("z").GetBinCoord(tip.iz-0.5)),
                 wei = this.use_scale ? Math.pow(Math.abs(tip.value*this.use_scale), 0.3333) : 1;
 
             tip.x1 = grx - this.scalex*wei; tip.x2 = grx + this.scalex*wei;
@@ -2985,7 +2993,7 @@
           j2 = this.GetSelectIndex("y", "right"),
           k1 = this.GetSelectIndex("z", "left"),
           k2 = this.GetSelectIndex("z", "right"),
-          i,j,k, histo = this.GetObject();
+          i,j,k, histo = this.GetHisto();
 
       if ((i1 === i2) || (j1 === j2) || (k1 === k2)) return;
 
@@ -3019,20 +3027,20 @@
       if ((kleft === kright-1) && (kleft > k1+1) && (kright < k2-1)) { kleft--; kright++; }
 
       if ((ileft > i1 || iright < i2) && (ileft < iright - 1)) {
-         xmin = histo.fXaxis.GetBinLowEdge(ileft+1);
-         xmax = histo.fXaxis.GetBinLowEdge(iright+1);
+         xmin = this.GetAxis("x").GetBinLowEdge(ileft+1);
+         xmax = this.GetAxis("x").GetBinLowEdge(iright+1);
          isany = true;
       }
 
       if ((jleft > j1 || jright < j2) && (jleft < jright - 1)) {
-         ymin = histo.fYaxis.GetBinLowEdge(jleft+1);
-         ymax = histo.fYaxis.GetBinLowEdge(jright+1);
+         ymin = this.GetAxis("y").GetBinLowEdge(jleft+1);
+         ymax = this.GetAxis("y").GetBinLowEdge(jright+1);
          isany = true;
       }
 
       if ((kleft > k1 || kright < k2) && (kleft < kright - 1)) {
-         zmin = histo.fZaxis.GetBinLowEdge(kleft+1);
-         zmax = histo.fZaxis.GetBinLowEdge(kright+1);
+         zmin = this.GetAxis("z").GetBinLowEdge(kleft+1);
+         zmax = this.GetAxis("z").GetBinLowEdge(kright+1);
          isany = true;
       }
 
