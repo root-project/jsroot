@@ -2360,20 +2360,12 @@
       // no need to rescan histogram while result does not depend from axis selection
       if (when_axis_changed && this.nbinsx && this.nbinsy && this.nbinsz) return;
 
-      var histo = this.GetObject();
+      var histo = this.GetHisto();
+      if (!histo) return;
 
-      this.nbinsx = histo.fXaxis.fNbins;
-      this.nbinsy = histo.fYaxis.fNbins;
-      this.nbinsz = histo.fZaxis.fNbins;
-
-      this.xmin = histo.fXaxis.fXmin;
-      this.xmax = histo.fXaxis.fXmax;
-
-      this.ymin = histo.fYaxis.fXmin;
-      this.ymax = histo.fYaxis.fXmax;
-
-      this.zmin = histo.fZaxis.fXmin;
-      this.zmax = histo.fZaxis.fXmax;
+      this.nbinsx = this.GetAxis("x").GetNumBins();
+      this.nbinsy = this.GetAxis("y").GetNumBins();
+      this.nbinsz = this.GetAxis("z").GetNumBins();
 
       // global min/max, used at the moment in 3D drawing
 
@@ -2541,7 +2533,7 @@
       // try to draw 3D histogram as scatter plot
       // if too many points, box will be displayed
 
-      var histo = this.GetObject(),
+      var histo = this.GetHisto(),
           main = this.frame_painter(),
           i1 = this.GetSelectIndex("x", "left", 0.5),
           i2 = this.GetSelectIndex("x", "right", 0),
@@ -2575,7 +2567,8 @@
       JSROOT.seed(sumz);
 
       var pnts = new JSROOT.Painter.PointsCreator(numpixels, main.webgl, main.size_xy3d/200),
-          bins = new Int32Array(numpixels), nbin = 0;
+          bins = new Int32Array(numpixels), nbin = 0,
+          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
 
       for (i = i1; i < i2; ++i) {
          for (j = j1; j < j2; ++j) {
@@ -2585,9 +2578,9 @@
                var num = Math.round(bin_content*coef);
 
                for (var n=0;n<num;++n) {
-                  var binx = histo.fXaxis.GetBinCoord(i+JSROOT.random()),
-                      biny = histo.fYaxis.GetBinCoord(j+JSROOT.random()),
-                      binz = histo.fZaxis.GetBinCoord(k+JSROOT.random());
+                  var binx = xaxis.GetBinCoord(i+JSROOT.random()),
+                      biny = yaxis.GetBinCoord(j+JSROOT.random()),
+                      binz = zaxis.GetBinCoord(k+JSROOT.random());
 
                   // remember bin index for tooltip
                   bins[nbin++] = histo.getBin(i+1, j+1, k+1);
@@ -2598,12 +2591,13 @@
          }
       }
 
-      var mesh = pnts.CreatePoints(this.get_color(histo.fMarkerColor));
+      var color = this.v7EvalColor("color", "red");
+      var mesh = pnts.CreatePoints(color);
       main.toplevel.add(mesh);
 
       mesh.bins = bins;
       mesh.painter = this;
-      mesh.tip_color = (histo.fMarkerColor===3) ? 0xFF0000 : 0x00FF00;
+      mesh.tip_color = 0x00FF00;
 
       mesh.tooltip = function(intersect) {
          if (isNaN(intersect.index)) {
@@ -2637,7 +2631,7 @@
 
       if (!this.draw_content) return;
 
-      if (!this.options.Box && !this.options.GLBox && !this.options.GLColor && !this.options.Lego)
+      if (this.options.Scatter)
          if (this.Draw3DScatter()) return;
 
       var rootcolor = 5/*this.GetObject().fFillColor*/,
@@ -2646,16 +2640,14 @@
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
           single_bin_verts, single_bin_norms,
-          box_option = this.options.Box ? this.options.BoxStyle : 0,
           tipscale = 0.5;
 
-      if (!box_option && this.options.Lego) box_option = (this.options.Lego===1) ? 10 : this.options.Lego;
+      if (this.options.Sphere) {
 
-      if ((this.options.GLBox === 11) || (this.options.GLBox === 12)) {
-
+         // drawing spheres
          tipscale = 0.4;
          use_lambert = true;
-         if (this.options.GLBox === 12) use_colors = true;
+         if (this.options.Sphere === 11) use_colors = true;
 
          var geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
@@ -2712,9 +2704,9 @@
          }
          use_helper = true;
 
-         if (box_option===12) { use_colors = true; } else
-         if (box_option===13) { use_colors = true; use_helper = false; }  else
-         if (this.options.GLColor) { use_colors = true; use_opacity = 0.5; use_scale = false; use_helper = false; use_lambert = true; }
+         if (this.options.Box == 11) { use_colors = true; } else
+         if (this.options.Box == 12) { use_colors = true; use_helper = false; }  else
+         if (this.options.Color) { use_colors = true; use_opacity = 0.5; use_scale = false; use_helper = false; use_lambert = true; }
       }
 
       if (use_scale)
@@ -3061,24 +3053,31 @@
       });
    }
 
-   JSROOT.Painter.drawHistogram3D = function(divid, histo, opt) {
+   JSROOT.v7.drawHist3 = function(divid, histo, opt) {
       // create painter and add it to canvas
       var painter = new RH3Painter(histo);
 
-      painter.SetDivId(divid, 4);
+      painter.PrepareFrame(divid, true); // create if necessary frame in 3d mode
 
-      painter.DecodeOptions(opt);
+      painter.options = { Box: 0, Scatter: false, Sphere: 0, Color: false, minimum: -1111, maximum: -1111 };
 
-      painter.CheckPadRange();
+      var kind = painter.v7EvalAttr("kind", "col"),
+          sub = painter.v7EvalAttr("sub", 0),
+          o = painter.options;
+
+      switch(kind) {
+         case "box": o.Box = 10 + sub; break;
+         case "sphere": o.Sphere = 10 + sub; break;
+         case "col": o.Color = true; break;
+         case "scat": o.Scatter = true;  break;
+         default: o.Box = 10;
+      }
 
       painter.ScanContent();
 
       painter.Redraw();
 
-      var stats = painter.CreateStat(); // only when required
-      if (stats) JSROOT.draw(painter.divid, stats, "");
-
-      painter.FillToolbar();
+      // painter.FillToolbar();
 
       return painter.DrawingReady();
    }

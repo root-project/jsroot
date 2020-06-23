@@ -37,13 +37,13 @@
    RHistPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    // function ensure that frame is drawn on the canvas
-   RHistPainter.prototype.PrepareFrame = function(divid) {
+   RHistPainter.prototype.PrepareFrame = function(divid, mode3d) {
       this.SetDivId(divid, -1);
 
       if (!this.frame_painter())
-         JSROOT.v7.drawFrame(divid, null);
+         JSROOT.v7.drawFrame(divid, null, mode3d ? "3d" : "");
 
-      return this.SetDivId(divid, 1);
+      return this.SetDivId(divid, mode3d ? 4 : 1);
    }
 
    RHistPainter.prototype.GetHImpl = function(obj) {
@@ -56,7 +56,16 @@
       var obj = this.GetObject(), histo = this.GetHImpl(obj);
 
       if (histo && !histo.getBinContent) {
-         if (histo.fAxes._1) {
+         if (histo.fAxes._2) {
+            histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins() * (y-1) + this.fAxes._0.GetNumBins() * this.fAxes._1.GetNumBins() * (z-1); }
+            // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
+            histo.getBinContent = function(x, y, z) { return this.fStatistics.fBinContent[this.getBin(x, y, z)]; }
+            histo.getBinError = function(bin) {
+               if (this.fStatistics.fSumWeightsSquared)
+                  return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
+               return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
+            }
+         } else if (histo.fAxes._1) {
             histo.getBin = function(x, y) { return (x-1)  + this.fAxes._0.GetNumBins() * (y-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
@@ -65,7 +74,6 @@
                   return Math.sqrt(this.fStatistics.fSumWeightsSquared[bin]);
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
-
          } else {
             histo.getBin = function(bin) { return bin-1; }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
