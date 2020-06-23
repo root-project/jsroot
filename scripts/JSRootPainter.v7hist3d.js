@@ -2644,8 +2644,7 @@
       if (this.options.Scatter)
          if (this.Draw3DScatter()) return;
 
-      var rootcolor = 5/*this.GetObject().fFillColor*/,
-          fillcolor = this.get_color(rootcolor),
+      var fillcolor = this.v7EvalColor("color", "red"),
           main = this.frame_painter(),
           buffer_size = 0, use_lambert = false,
           use_helper = false, use_colors = false, use_opacity = 1, use_scale = true,
@@ -2729,7 +2728,13 @@
           j2 = this.GetSelectIndex("y", "right", 0),
           k1 = this.GetSelectIndex("z", "left", 0.5),
           k2 = this.GetSelectIndex("z", "right", 0),
-          name = this.GetTipName("<br/>");
+          name = this.GetTipName("<br/>"),
+          palette = null;
+
+      if (use_colors) {
+         palette = main.GetPalette();
+         this.CreateContour(main, palette);
+      }
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
@@ -2752,8 +2757,8 @@
 
                if (!use_colors) continue;
 
-               var colindx = this.getContourColor(bin_content, true);
-               if (colindx !== null) {
+               var colindx = palette.getContourIndex(bin_content);
+               if (colindx >= 0) {
                   if (cols_size[colindx] === undefined) {
                      cols_size[colindx] = 0;
                      cols_sequence[colindx] = num_colors++;
@@ -2824,8 +2829,8 @@
 
                var nseq = 0;
                if (use_colors) {
-                  var colindx = this.getContourColor(bin_content, true);
-                  if (colindx === null) continue;
+                  var colindx = palette.getContourIndex(bin_content);
+                  if (colindx < 0) continue;
                   nseq = cols_sequence[colindx];
                }
 
@@ -2889,7 +2894,7 @@
          all_bins_buffgeom.addAttribute('position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
          all_bins_buffgeom.addAttribute('normal', new THREE.BufferAttribute( bin_norms[nseq], 3 ) );
 
-         if (use_colors) fillcolor = this.fPalette.getColor(ncol);
+         if (use_colors) fillcolor = palette.getColor(ncol);
 
          var material = use_lambert ? new THREE.MeshLambertMaterial({ color: fillcolor, opacity: use_opacity, transparent: (use_opacity<1) })
                                     : new THREE.MeshBasicMaterial({ color: fillcolor, opacity: use_opacity });
@@ -2903,7 +2908,7 @@
          combined_bins.scalex = tipscale*scalex;
          combined_bins.scaley = tipscale*scaley;
          combined_bins.scalez = tipscale*scalez;
-         combined_bins.tip_color = (rootcolor===3) ? 0xFF0000 : 0x00FF00;
+         combined_bins.tip_color = 0x00FF00;
          combined_bins.use_scale = use_scale;
 
          combined_bins.tooltip = function(intersect) {

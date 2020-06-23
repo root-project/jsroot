@@ -232,8 +232,8 @@
 
       // to support some code from ROOT6 drawing
 
-      axis.GetBinCenter = function(bin) { return this.GetBinCoord(bin+0.5); }
-      axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin); }
+      axis.GetBinCenter = function(bin) { return this.GetBinCoord(bin-0.5); }
+      axis.GetBinLowEdge = function(bin) { return this.GetBinCoord(bin-1); }
 
       return axis;
    }
@@ -391,6 +391,8 @@
    RHistPainter.prototype.CreateContour = function(main, palette, args) {
       if (!main || !palette) return;
 
+      if (!args) args = {};
+
       var nlevels = JSROOT.gStyle.fNumberContours,
           zmin = this.minbin, zmax = this.maxbin, zminpos = this.minposbin;
 
@@ -401,12 +403,14 @@
 
       if (zmin === zmax) { zmin = this.gminbin; zmax = this.gmaxbin; zminpos = this.gminposbin }
 
-      if (main.zoom_zmin !== main.zoom_zmax) {
-         zmin = main.zoom_zmin;
-         zmax = main.zoom_zmax;
-      } else if (args && args.full_z_range) {
-         zmin = main.zmin;
-         zmax = main.zmax;
+      if (this.Dimension() < 3) {
+         if (main.zoom_zmin !== main.zoom_zmax) {
+            zmin = main.zoom_zmin;
+            zmax = main.zoom_zmax;
+         } else if (args.full_z_range) {
+            zmin = main.zmin;
+            zmax = main.zmax;
+         }
       }
 
       palette.CreateContour(main.logz, nlevels, zmin, zmax, zminpos);
