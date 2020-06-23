@@ -57,7 +57,7 @@
 
       if (histo && !histo.getBinContent) {
          if (histo.fAxes._2) {
-            histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins() * (y-1) + this.fAxes._0.GetNumBins() * this.fAxes._1.GetNumBins() * (z-1); }
+            histo.getBin = function(x, y, z) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1) + this.fAxes._0.GetNumBins()*this.fAxes._1.GetNumBins()*(z-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(x, y, z) { return this.fStatistics.fBinContent[this.getBin(x, y, z)]; }
             histo.getBinError = function(bin) {
@@ -66,7 +66,7 @@
                return Math.sqrt(Math.abs(this.fStatistics.fBinContent[bin]));
             }
          } else if (histo.fAxes._1) {
-            histo.getBin = function(x, y) { return (x-1)  + this.fAxes._0.GetNumBins() * (y-1); }
+            histo.getBin = function(x, y) { return (x-1) + this.fAxes._0.GetNumBins()*(y-1); }
             // FIXME: all normal ROOT methods uses indx+1 logic, but RHist has no undeflow/overflow bins now
             histo.getBinContent = function(x, y) { return this.fStatistics.fBinContent[this.getBin(x, y)]; }
             histo.getBinError = function(bin) {
@@ -378,7 +378,7 @@
             tip.ix = indx % this.nbinsx + 1;
             tip.iy = ((indx - (tip.ix - 1)) / this.nbinsx) % this.nbinsy + 1;
             tip.iz = (indx - (tip.ix - 1) - (tip.iy - 1) * this.nbinsx) / this.nbinsx / this.nbinsy + 1;
-            tip.value = this.GetObject().getBinContent(tip.ix, tip.iy, tip.iz);
+            tip.value = histo.getBinContent(tip.ix, tip.iy, tip.iz);
             tip.error = histo.getBinError(indx);
             tip.lines = this.GetBinTips(tip.ix-1, tip.iy-1, tip.iz-1);
             break;

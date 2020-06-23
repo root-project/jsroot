@@ -2355,6 +2355,10 @@
 
    RH3Painter.prototype = Object.create(JSROOT.v7.RHistPainter.prototype);
 
+   RH3Painter.prototype.Dimension = function() {
+      return 3;
+   }
+
    RH3Painter.prototype.ScanContent = function(when_axis_changed) {
 
       // no need to rescan histogram while result does not depend from axis selection
@@ -2506,6 +2510,8 @@
    RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
       var lines = [], pmain = this.frame_painter(), histo = this.GetHisto(),
           xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
+
+      console.log('GetTips for bin', ix, iy, iz);
 
       lines.push(this.GetTipName());
 
