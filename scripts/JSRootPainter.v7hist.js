@@ -58,10 +58,10 @@
       return obj && obj.fAxes ? true : false;
    }
 
-   RHistPainter.prototype.GetHisto = function() {
+   RHistPainter.prototype.GetHisto = function(force) {
       var obj = this.GetObject(), histo = this.GetHImpl(obj);
 
-      if (histo && !histo.getBinContent) {
+      if (histo && (!histo.getBinContent || force)) {
          if (histo.fAxes._2) {
             this.ProvideAxisMethods(histo.fAxes._0);
             this.ProvideAxisMethods(histo.fAxes._1);
@@ -103,7 +103,7 @@
 
          histo = obj;
 
-         if (!histo.getBinContent) {
+         if (!histo.getBinContent || force) {
             if (histo.fAxes.length == 2) {
                this.ProvideAxisMethods(histo.fAxes[0]);
                this.ProvideAxisMethods(histo.fAxes[1]);
@@ -643,13 +643,15 @@
           };
 
       if (this.IsDisplayItem() && histo.fIndicies) {
-         if (res.i1 < histo.fIndicies[0]) res.i1 = histo.fIndicies[0];
-         if (res.i2 > histo.fIndicies[1]) res.i2 = histo.fIndicies[1];
+         if (res.i1 < histo.fIndicies[0]) { res.i1 = histo.fIndicies[0]; res.incomplete = true; }
+         if (res.i2 > histo.fIndicies[1]) { res.i2 = histo.fIndicies[1]; res.incomplete = true; }
          if ((hdim > 1) && (histo.fIndicies.length > 4)) {
-            if (res.j1 < histo.fIndicies[3]) res.j1 = histo.fIndicies[3];
-            if (res.j2 > histo.fIndicies[4]) res.j2 = histo.fIndicies[4];
+            if (res.j1 < histo.fIndicies[3]) { res.j1 = histo.fIndicies[3]; res.incomplete = true; }
+            if (res.j2 > histo.fIndicies[4]) { res.j2 = histo.fIndicies[4]; res.incomplete = true; }
          }
       }
+
+      if (args.only_indexes) return res;
 
       res.grx = new Array(res.i2+1); // no need for Float32Array, plain Array is 10% faster
       res.gry = new Array(res.j2+1);
@@ -3437,8 +3439,31 @@
       return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   RH2Painter.prototype.UpdateDisplayItem = function(reply) {
-      console.log('GET REPLY!!!');
+   RH2Painter.prototype.UpdateDisplayItem = function(src) {
+      var obj = this.GetObject();
+      if (!obj || !src) return false;
+
+      obj.fAxes = src.fAxes;
+      obj.fIndicies = src.fIndicies;
+      obj.fBinContent = src.fBinContent;
+      obj.fContMin = src.fContMin;
+      obj.fContMinPos = src.fContMinPos;
+      obj.fContMax = src.fContMax;
+
+      this.GetHisto(true);
+
+      return true;
+   }
+
+   RH2Painter.prototype.ProcessItemReply = function(reply) {
+      if (!this.IsDisplayItem()) {
+         console.error('Get item when display normal histogram');
+         return;
+      }
+
+      this.UpdateDisplayItem(reply.item);
+
+      this.DrawBins();
    }
 
    RH2Painter.prototype.Draw2D = function(call_back, reason) {
@@ -3451,11 +3476,13 @@
 
 
       if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
-         var req = {
-            _typename: "ROOT::Experimental::RHist2Drawable::RRequest"
-         };
 
-         this.v7SubmitRequest("hist", req, this.UpdateDisplayItem.bind(this));
+         var handle = this.PrepareColorDraw({ only_indexes: true }),
+             req = { _typename: "ROOT::Experimental::RHist2Drawable::RRequest" };
+
+         // submit request if histogram data not enough for display
+         if (handle.incomplete)
+            this.v7SubmitRequest("hist", req, this.ProcessItemReply.bind(this));
       }
 
       if (this.DrawAxes())
