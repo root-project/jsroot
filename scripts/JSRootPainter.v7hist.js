@@ -1387,9 +1387,11 @@
       var tips = [],
           name = this.GetTipName(),
           pmain = this.frame_painter(),
-          histo = this.GetHisto(), xaxis = this.GetAxis("x"),
+          histo = this.GetHisto(),
+          xaxis = this.GetAxis("x"),
+          di = this.IsDisplayItem() ? histo.stepx : 1,
           x1 = xaxis.GetBinCoord(bin),
-          x2 = xaxis.GetBinCoord(bin+1),
+          x2 = xaxis.GetBinCoord(bin+di),
           cont = histo.getBinContent(bin+1),
           xlbl = "", xnormal = false;
 
@@ -1407,7 +1409,7 @@
             tips.push("error y = " + histo.getBinError(bin + 1).toPrecision(4));
          }
       } else {
-         tips.push("bin = " + (bin+1));
+         tips.push("bin = " + bin);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
          if (cont === Math.round(cont))
@@ -3173,19 +3175,25 @@
       var lines = [], pmain = this.frame_painter(),
            xaxis = this.GetAxis("y"), yaxis = this.GetAxis("y"),
            histo = this.GetHisto(),
-           binz = histo.getBinContent(i+1,j+1);
+           binz = histo.getBinContent(i+1,j+1),
+           di = 1, dj = 1;
+
+      if (this.IsDisplayItem()) {
+         di = histo.stepx || 1;
+         dj = histo.stepy || 1;
+      }
 
       lines.push(this.GetTipName() || "histo<2>");
 
       if (pmain.x_kind == 'labels')
          lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinCoord(i)));
       else
-         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(i)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(i+1)) + ")");
+         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(i)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(i+di)) + ")");
 
       if (pmain.y_kind == 'labels')
          lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinCoord(j)));
       else
-         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(j)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(j+1)) + ")");
+         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(j)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(j+dj)) + ")");
 
       lines.push("bin = " + i + ", " + j);
 

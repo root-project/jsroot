@@ -1276,16 +1276,18 @@
                 handle = this.handle,
                 main = p.frame_painter(),
                 histo = p.GetHisto(),
-                tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] );
+                tip = p.Get3DToolTip( this.face_to_bins_index[intersect.faceIndex] ),
+                i1 = tip.ix - 1, i2 = i1 + handle.stepi,
+                j1 = tip.iy - 1, j2 = j1 + handle.stepj;
 
-            tip.x1 = Math.max(-main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar1*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
-            tip.x2 = Math.min(main.size_xy3d, handle.grx[tip.ix-1] + handle.xbar2*(handle.grx[tip.ix]-handle.grx[tip.ix-1]));
+            tip.x1 = Math.max(-main.size_xy3d, handle.grx[i1] + handle.xbar1*(handle.grx[i2]-handle.grx[i1]));
+            tip.x2 = Math.min(main.size_xy3d, handle.grx[i1] + handle.xbar2*(handle.grx[i2]-handle.grx[i1]));
 
-            tip.y1 = Math.max(-main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar1*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
-            tip.y2 = Math.min(main.size_xy3d, handle.gry[tip.iy-1] + handle.ybar2*(handle.gry[tip.iy] - handle.gry[tip.iy-1]));
+            tip.y1 = Math.max(-main.size_xy3d, handle.gry[j1] + handle.ybar1*(handle.gry[j2] - handle.gry[j1]));
+            tip.y2 = Math.min(main.size_xy3d, handle.gry[j1] + handle.ybar2*(handle.gry[j2] - handle.gry[j1]));
 
             var binz1 = this.baseline, binz2 = tip.value;
-            if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(tip.ix, tip.iy);
+            if (histo['$baseh']) binz1 = histo['$baseh'].getBinContent(i1+1, j1+1);
             if (binz2<binz1) { var v = binz1; binz1 = binz2; binz2 = v; }
 
             tip.z1 = main.grz(Math.max(this.zmin,binz1));
@@ -2503,24 +2505,31 @@
 
    RH3Painter.prototype.GetBinTips = function (ix, iy, iz) {
       var lines = [], pmain = this.frame_painter(), histo = this.GetHisto(),
-          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
+          xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z"),
+          dx = 1, dy = 1, dz = 1;
+
+      if (this.IsDisplayItem()) {
+         dx = histo.stepx || 1;
+         dy = histo.stepy || 1;
+         dz = histo.stepz || 1;
+      }
 
       lines.push(this.GetTipName());
 
       if (pmain.x_kind == 'labels')
-         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+1)) + "  xbin=" + (ix+1));
+         lines.push("x = " + pmain.AxisAsText("x", xaxis.GetBinCoord(ix)) + "  xbin=" + ix);
       else
-         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+1)) + ", " + pmain.AxisAsText("x", xaxis.GetBinLowEdge(ix+2)) + ")   xbin=" + (ix+1));
+         lines.push("x = [" + pmain.AxisAsText("x", xaxis.GetBinCoord(ix)) + ", " + pmain.AxisAsText("x", xaxis.GetBinCoord(ix+dx)) + ")   xbin=" + ix);
 
       if (pmain.y_kind == 'labels')
-         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+1))  + "  ybin=" + (iy+1));
+         lines.push("y = " + pmain.AxisAsText("y", yaxis.GetBinCoord(iy))  + "  ybin=" + iy);
       else
-         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+1)) + ", " + pmain.AxisAsText("y", yaxis.GetBinLowEdge(iy+2)) + ")  ybin=" + (iy+1));
+         lines.push("y = [" + pmain.AxisAsText("y", yaxis.GetBinCoord(iy)) + ", " + pmain.AxisAsText("y", yaxis.GetBinCoord(iy+dy)) + ")  ybin=" + iy);
 
       if (pmain.z_kind == 'labels')
-         lines.push("z = " + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+1))  + "  zbin=" + (iz+1));
+         lines.push("z = " + pmain.AxisAsText("z", zaxis.GetBinCoord(iz))  + "  zbin=" + iz);
       else
-         lines.push("z = [" + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+1)) + ", " + pmain.AxisAsText("z", zaxis.GetBinLowEdge(iz+2)) + ")  zbin=" + (iz+1));
+         lines.push("z = [" + pmain.AxisAsText("z", zaxis.GetBinCoord(iz)) + ", " + pmain.AxisAsText("z", zaxis.GetBinCoord(iz+dz)) + ")  zbin=" + iz);
 
       var binz = histo.getBinContent(ix+1, iy+1, iz+1);
       if (binz === Math.round(binz))
