@@ -1075,7 +1075,7 @@
           axis_zmin = main.grz.domain()[0],
           axis_zmax = main.grz.domain()[1],
           handle = this.PrepareColorDraw({ rounding: false, use3d: true, extra: 1 }),
-          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2,
+          i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2, di = handle.stepi, dj = handle.stepj,
           i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
           histo = this.GetHisto(),
@@ -1138,8 +1138,8 @@
 
          // now calculate size of buffer geometry for boxes
 
-         for (i = i1; i < i2; ++i)
-            for (j = j1; j < j2; ++j) {
+         for (i = i1; i < i2; i += di)
+            for (j = j1; j < j2; j += dj) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
 
@@ -1170,18 +1170,18 @@
             face_to_bins_indx2 = use16indx ? new Uint16Array(num2vertices/3) : new Uint32Array(num2vertices/3);
          }
 
-         for (i = i1; i < i2; ++i) {
-            x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
-            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-            for (j = j1; j < j2; ++j) {
+         for (i = i1; i < i2; i += di) {
+            x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+di]-handle.grx[i]);
+            x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+di]-handle.grx[i]);
+            for (j = j1; j < j2; j += dj) {
 
                if (!GetBinContent(i,j,nlevel)) continue;
 
                nobottom = !reduced && (nlevel>0);
                notop = !reduced && (binz2 > zmax) && (nlevel < levels.length-2);
 
-               y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
-               y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
+               y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+dj] - handle.gry[j]);
+               y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+dj] - handle.gry[j]);
 
                z1 = (binz1 <= zmin) ? grzmin : main.grz(binz1);
                z2 = (binz2 > zmax) ? grzmax : main.grz(binz2);
@@ -1336,8 +1336,8 @@
 
       zmax = axis_zmax; zmin = axis_zmin;
 
-      for (i = i1; i < i2; ++i)
-         for (j = j1; j < j2; ++j) {
+      for (i = i1; i < i2; i += di)
+         for (j = j1; j < j2; j += dj) {
             if (!GetBinContent(i,j,0)) { nskip++; continue; }
 
             // calculate required buffer size for line segments
@@ -1358,15 +1358,15 @@
           grzmax = main.grz(axis_zmax),
           z1 = 0, z2 = 0, ll = 0, ii = 0;
 
-      for (i=i1;i<i2;++i) {
-         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+1]-handle.grx[i]);
-         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+1]-handle.grx[i]);
-         for (j=j1;j<j2;++j) {
+      for (i = i1; i < i2; i += di) {
+         x1 = handle.grx[i] + handle.xbar1*(handle.grx[i+di]-handle.grx[i]);
+         x2 = handle.grx[i] + handle.xbar2*(handle.grx[i+di]-handle.grx[i]);
+         for (j = j1; j < j2; j += dj) {
 
             if (!GetBinContent(i,j,0)) continue;
 
-            y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+1] - handle.gry[j]);
-            y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+1] - handle.gry[j]);
+            y1 = handle.gry[j] + handle.ybar1*(handle.gry[j+dj] - handle.gry[j]);
+            y2 = handle.gry[j] + handle.ybar2*(handle.gry[j+dj] - handle.gry[j]);
 
             z1 = (binz1 <= axis_zmin) ? grzmin : main.grz(binz1);
             z2 = (binz2 > axis_zmax) ? grzmax : main.grz(binz2);
@@ -1514,45 +1514,40 @@
           histo = this.GetHisto();
 
       if (reason == "resize") {
-
          if (is_main && main.Resize3D()) main.Render3D();
 
-      } else {
-
-         var zmult = 1.1;
-
-         this.zmin = main.logz ? this.gminposbin * 0.3 : this.gminbin;
-         this.zmax = this.gmaxbin;
-         if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
-         if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
-         if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
-
-         this.DeleteAtt();
-
-         if (is_main) {
-            main.Create3DScene();
-            main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
-            main.Set3DOptions(this.options);
-            main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
-         }
-
-         if (main.mode3d) {
-            this.Draw3DBins();
-            main.Render3D();
-            this.UpdateStatWebCanvas();
-            main.AddKeysHandler();
-         }
+         return JSROOT.CallBack(call_back);
       }
+
+      var zmult = 1.1;
+
+      this.zmin = main.logz ? this.gminposbin * 0.3 : this.gminbin;
+      this.zmax = this.gmaxbin;
+      if (this.options.minimum !== -1111) this.zmin = this.options.minimum;
+      if (this.options.maximum !== -1111) { this.zmax = this.options.maximum; zmult = 1; }
+      if (main.logz && (this.zmin<=0)) this.zmin = this.zmax * 1e-5;
+
+      this.DeleteAtt();
 
       if (is_main) {
-
-         //  (re)draw palette by resize while canvas may change dimension
-         //this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14) ||
-         //                      (this.options.Surf===11) || (this.options.Surf===12)));
-         // this.DrawTitle();
+         main.Create3DScene();
+         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
+         main.Set3DOptions(this.options);
+         main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
       }
 
-      JSROOT.CallBack(call_back);
+      if (!main.mode3d)
+         return JSROOT.CallBack(call_back);
+
+      this.DrawingBins(call_back, reason, function(){
+         // called when bins received from server, must be reentrant
+         var main = this.frame_painter();
+
+         this.Draw3DBins();
+         main.Render3D();
+         this.UpdateStatWebCanvas();
+         main.AddKeysHandler();
+      });
    }
 
    /** Draw histogram bins in 3D, using provided draw options @private */

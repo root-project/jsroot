@@ -3503,18 +3503,43 @@
          if (reply !== null)
             this.UpdateDisplayItem(this.GetObject(), reply.item);
          else if (req._draw_call_back === undefined) {
-            console.log("Ignore timeout");
             return; // timeout can be ignored
          }
 
-         this.DrawBins();
-
-         this.AddInteractive();
+         req.method();
       }
 
       var cb = req._draw_call_back;
       delete req._draw_call_back;
       JSROOT.CallBack(cb);
+   }
+
+   RH2Painter.prototype.DrawingBins = function(call_back, reason, method) {
+
+      method = method.bind(this);
+
+      if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+
+         var handle = this.PrepareColorDraw({ only_indexes: true });
+
+         // submit request if histogram data not enough for display
+         if (handle.incomplete) {
+            // use empty kind to always submit request
+            var req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
+                                           this.ProcessItemReply.bind(this));
+            if (req) {
+               this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
+               req._draw_call_back = call_back;
+               req.method = method;
+               setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
+               return;
+            }
+         }
+      }
+
+      method();
+
+      JSROOT.CallBack(call_back);
    }
 
    RH2Painter.prototype.Draw2D = function(call_back, reason) {
@@ -3528,31 +3553,12 @@
       if (!this.DrawAxes())
          return JSROOT.CallBack(call_back);
 
-      if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
-
-         var handle = this.PrepareColorDraw({ only_indexes: true });
-
-         // submit request if histogram data not enough for display
-         if (handle.incomplete) {
-            // use empty kind to always submit request
-            var req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHist2Drawable::RRequest" },
-                                           this.ProcessItemReply.bind(this));
-            if (req) {
-               this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
-               req._draw_call_back = call_back;
-               setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
-               return;
-            }
-         }
-      }
-
-      this.DrawBins();
-
-      // this.UpdateStatWebCanvas();
-
-      this.AddInteractive();
-
-      JSROOT.CallBack(call_back);
+      this.DrawingBins(call_back, reason, function(){
+         // called when bins received from server, must be reentrant
+         this.DrawBins();
+         this.UpdateStatWebCanvas();
+         this.AddInteractive();
+      });
    }
 
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
