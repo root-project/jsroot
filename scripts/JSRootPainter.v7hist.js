@@ -1412,10 +1412,12 @@
          tips.push("bin = " + bin);
          tips.push("x = " + xlbl);
          if (histo['$baseh']) cont -= histo['$baseh'].getBinContent(bin+1);
+         var lbl = "entries = ";
+         if (d1>1) lbl += "~";
          if (cont === Math.round(cont))
-            tips.push("entries = " + cont);
+            tips.push(lbl + cont);
          else
-            tips.push("entries = " + JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat));
+            tips.push(lbl + JSROOT.FFormat(cont, JSROOT.gStyle.fStatFormat));
       }
 
       return tips;

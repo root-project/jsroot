@@ -2532,10 +2532,12 @@
          lines.push("z = [" + pmain.AxisAsText("z", zaxis.GetBinCoord(iz)) + ", " + pmain.AxisAsText("z", zaxis.GetBinCoord(iz+dz)) + ")  zbin=" + iz);
 
       var binz = histo.getBinContent(ix+1, iy+1, iz+1);
+      var lbl = "entries = ";
+      if ((dx>1) || (dy>1) || (dz>1)) lbl += "~";
       if (binz === Math.round(binz))
-         lines.push("entries = " + binz);
+         lines.push(lbl + binz);
       else
-         lines.push("entries = " + JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat));
+         lines.push(lbl + JSROOT.FFormat(binz, JSROOT.gStyle.fStatFormat));
 
       return lines;
    }
