@@ -1470,39 +1470,35 @@
           histo = this.GetHisto();
 
       if (reason == "resize")  {
-
          if (is_main && main.Resize3D()) main.Render3D();
-
-      } else {
-
-         this.DeleteAtt();
-
-         this.ScanContent(true); // may be required for axis drawings
-
-         if (is_main) {
-            main.Create3DScene();
-            main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
-            main.Set3DOptions(this.options);
-            main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
-         }
-
-         if (main.mode3d) {
-            this.DrawLego();
-            this.UpdatePaletteDraw();
-            main.Render3D();
-            this.UpdateStatWebCanvas();
-            main.AddKeysHandler();
-         }
+         return JSROOT.CallBack(call_back);
       }
+
+      this.DeleteAtt();
+
+      this.ScanContent(true); // may be required for axis drawings
 
       if (is_main) {
-         // (re)draw palette by resize while canvas may change dimension
-         // this.DrawColorPalette(this.options.Zscale && ((this.options.Lego===12) || (this.options.Lego===14)));
-
-         // this.DrawTitle();
+         main.Create3DScene();
+         main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
+         main.Set3DOptions(this.options);
+         main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
       }
 
-      JSROOT.CallBack(call_back);
+      if (!main.mode3d)
+         return JSROOT.CallBack(call_back);
+
+      this.DrawingBins(call_back, reason, function() {
+         // called when bins received from server, must be reentrant
+         var main = this.frame_painter();
+
+         this.DrawLego();
+         this.UpdatePaletteDraw();
+         main.Render3D();
+         this.UpdateStatWebCanvas();
+         main.AddKeysHandler();
+      });
+
    }
 
    // ==========================================================================================

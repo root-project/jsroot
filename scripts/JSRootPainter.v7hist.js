@@ -364,6 +364,55 @@
       alert("HistPainter.DrawBins not implemented");
    }
 
+   RHistPainter.prototype.ProcessItemReply = function(reply, req) {
+      if (!this.IsDisplayItem())
+         return console.error('Get item when display normal histogram');
+
+      if (req.reqid === this.current_item_reqid) {
+
+         if (reply !== null)
+            this.UpdateDisplayItem(this.GetObject(), reply.item);
+         else if (req._draw_call_back === undefined) {
+            return; // timeout can be ignored
+         }
+
+         req.method();
+      }
+
+      var cb = req._draw_call_back;
+      delete req._draw_call_back;
+      JSROOT.CallBack(cb);
+   }
+
+   /** Special method to request bins from server if existing data insufficient @private */
+   RHistPainter.prototype.DrawingBins = function(call_back, reason, method) {
+
+      method = method.bind(this);
+
+      if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+
+         var handle = this.PrepareColorDraw({ only_indexes: true });
+
+         // submit request if histogram data not enough for display
+         if (handle.incomplete) {
+            // use empty kind to always submit request
+            var req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
+                                           this.ProcessItemReply.bind(this));
+            if (req) {
+               this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
+               req._draw_call_back = call_back;
+               req.method = method;
+               setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
+               return;
+            }
+         }
+      }
+
+      method();
+
+      JSROOT.CallBack(call_back);
+   }
+
    RHistPainter.prototype.ToggleTitle = function(arg) {
       return false;
    }
@@ -1117,22 +1166,27 @@
       // new method, create svg:path expression ourself directly from histogram
       // all points will be used, compress expression when too large
 
-      var width = this.frame_width(), height = this.frame_height(), options = this.options;
+      var width = this.frame_width(), height = this.frame_height();
 
       if (!this.draw_content || (width<=0) || (height<=0))
          return this.RemoveDrawG();
 
       this.CheckHistDrawAttributes();
 
-      if (options.Bar)
+      if (this.options.Bar)
          return this.DrawBars(width, height);
 
-      if ((options.ErrorKind === 3) || (options.ErrorKind === 4))
+      if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
          return this.DrawFilledErrors(width, height);
 
+      return this.DrawHistBins(width, height);
+   }
+
+   RH1Painter.prototype.DrawHistBins = function(width, height) {
       this.CreateG(true);
 
-      var left = this.GetSelectIndex("x", "left", -1),
+      var options = this.options,
+          left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.frame_painter(),
           pthis = this, histo = this.GetHisto(), xaxis = this.GetAxis("x"),
@@ -1380,7 +1434,6 @@
 
       if (show_text)
          this.FinishTextDrawing(this.draw_g);
-
    }
 
    RH1Painter.prototype.GetBinTips = function(bin) {
@@ -1725,20 +1778,15 @@
       this.Clear3DScene();
       this.mode3d = false;
 
-      // this.ScanContent(true);
+      if (!this.DrawAxes())
+         return JSROOT.CallBack(call_back);
 
-      if (typeof this.DrawColorPalette === 'function')
-         this.DrawColorPalette(false);
-
-      if (this.DrawAxes())
+      this.DrawingBins(call_back, reason, function() {
+         // called when bins received from server, must be reentrant
          this.DrawBins();
-      else
-         console.log('FAIL DARWING AXES');
-
-      // this.DrawTitle();
-      // this.UpdateStatWebCanvas();
-      this.AddInteractive();
-      JSROOT.CallBack(call_back);
+         this.UpdateStatWebCanvas();
+         this.AddInteractive();
+      });
    }
 
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
@@ -3513,54 +3561,6 @@
       return (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   RH2Painter.prototype.ProcessItemReply = function(reply, req) {
-      if (!this.IsDisplayItem())
-         return console.error('Get item when display normal histogram');
-
-      if (req.reqid === this.current_item_reqid) {
-
-         if (reply !== null)
-            this.UpdateDisplayItem(this.GetObject(), reply.item);
-         else if (req._draw_call_back === undefined) {
-            return; // timeout can be ignored
-         }
-
-         req.method();
-      }
-
-      var cb = req._draw_call_back;
-      delete req._draw_call_back;
-      JSROOT.CallBack(cb);
-   }
-
-   RH2Painter.prototype.DrawingBins = function(call_back, reason, method) {
-
-      method = method.bind(this);
-
-      if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
-
-         var handle = this.PrepareColorDraw({ only_indexes: true });
-
-         // submit request if histogram data not enough for display
-         if (handle.incomplete) {
-            // use empty kind to always submit request
-            var req = this.v7SubmitRequest("", { _typename: "ROOT::Experimental::RHistDrawableBase::RRequest" },
-                                           this.ProcessItemReply.bind(this));
-            if (req) {
-               this.current_item_reqid = req.reqid; // ignore all previous requests, only this one will be processed
-               req._draw_call_back = call_back;
-               req.method = method;
-               setTimeout(this.ProcessItemReply.bind(this, null, req), 1000); // after 1 s draw something that we can
-               return;
-            }
-         }
-      }
-
-      method();
-
-      JSROOT.CallBack(call_back);
-   }
-
    RH2Painter.prototype.Draw2D = function(call_back, reason) {
 
       this.mode3d = false;
@@ -3572,7 +3572,7 @@
       if (!this.DrawAxes())
          return JSROOT.CallBack(call_back);
 
-      this.DrawingBins(call_back, reason, function(){
+      this.DrawingBins(call_back, reason, function() {
          // called when bins received from server, must be reentrant
          this.DrawBins();
          this.UpdateStatWebCanvas();
