@@ -726,9 +726,11 @@
           res = {
              i1: this.GetSelectIndex("x", "left", 0 - args.extra),
              i2: this.GetSelectIndex("x", "right", 1 + args.extra),
-             j1: (hdim===1) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
-             j2: (hdim===1) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
-             stepi: 1, stepj: 1,
+             j1: (hdim < 2) ? 0 : this.GetSelectIndex("y", "left", 0 - args.extra),
+             j2: (hdim < 2) ? 1 : this.GetSelectIndex("y", "right", 1 + args.extra),
+             k1: (hdim < 3) ? 0 : this.GetSelectIndex("z", "left", 0 - args.extra),
+             k2: (hdim < 3) ? 1 : this.GetSelectIndex("z", "right", 1 + args.extra),
+             stepi: 1, stepj: 1, stepk: 1,
              min: 0, max: 0, sumz: 0, xbar1: 0, xbar2: 1, ybar1: 0, ybar2: 1
           };
 
@@ -737,11 +739,17 @@
          if (res.i2 > histo.fIndicies[1]) { res.i2 = histo.fIndicies[1]; res.incomplete = true; }
          res.stepi = histo.fIndicies[2];
          if (res.stepi > 1) res.incomplete = true;
-         if ((hdim > 1) && (histo.fIndicies.length > 4)) {
+         if ((hdim > 1) && (histo.fIndicies.length > 5)) {
             if (res.j1 < histo.fIndicies[3]) { res.j1 = histo.fIndicies[3]; res.incomplete = true; }
             if (res.j2 > histo.fIndicies[4]) { res.j2 = histo.fIndicies[4]; res.incomplete = true; }
             res.stepj = histo.fIndicies[5];
             if (res.stepj > 1) res.incomplete = true;
+         }
+         if ((hdim > 2) && (histo.fIndicies.length > 8)) {
+            if (res.k1 < histo.fIndicies[6]) { res.k1 = histo.fIndicies[6]; res.incomplete = true; }
+            if (res.k2 > histo.fIndicies[7]) { res.k2 = histo.fIndicies[7]; res.incomplete = true; }
+            res.stepk = histo.fIndicies[8];
+            if (res.stepk > 1) res.incomplete = true;
          }
       }
 
@@ -868,39 +876,47 @@
          this.CreateAxisFuncs(false);
       }
 
-      var left = this.GetSelectIndex("x", "left"),
-          right = this.GetSelectIndex("x", "right");
+      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0;
 
-      if (when_axis_changed) {
-         if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
-      }
+      if (this.IsDisplayItem()) {
+         // take min/max values from the display item
+         hmin = histo.fContMin;
+         hmin_nz = histo.fContMinPos;
+         hmax = histo.fContMax;
+         hsum = hmax;
+      } else {
 
-      this.scan_xleft = left;
-      this.scan_xright = right;
+         var left = this.GetSelectIndex("x", "left"),
+             right = this.GetSelectIndex("x", "right");
 
-      var hmin = 0, hmin_nz = 0, hmax = 0, hsum = 0, first = true, value, err;
-
-      for (var i = 0; i < this.nbinsx; ++i) {
-         value = histo.getBinContent(i+1);
-         hsum += value;
-
-         if ((i<left) || (i>=right)) continue;
-
-         if (value > 0)
-            if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
-         if (first) {
-            hmin = hmax = value;
-            first = false;
+         if (when_axis_changed) {
+            if ((left === this.scan_xleft) && (right === this.scan_xright)) return;
          }
 
-         err =  0;
+         this.scan_xleft = left;
+         this.scan_xright = right;
 
-         hmin = Math.min(hmin, value - err);
-         hmax = Math.max(hmax, value + err);
+         var first = true, value, err;
+
+         for (var i = 0; i < this.nbinsx; ++i) {
+            value = histo.getBinContent(i+1);
+            hsum += value;
+
+            if ((i<left) || (i>=right)) continue;
+
+            if (value > 0)
+               if ((hmin_nz == 0) || (value<hmin_nz)) hmin_nz = value;
+            if (first) {
+               hmin = hmax = value;
+               first = false;
+            }
+
+            err =  0;
+
+            hmin = Math.min(hmin, value - err);
+            hmax = Math.max(hmax, value + err);
+         }
       }
-
-      // account overflow/underflow bins
-      hsum += histo.getBinContent(0) + histo.getBinContent(this.nbinsx + 1);
 
       this.stat_entries = hsum;
 
@@ -1186,8 +1202,10 @@
       this.CreateG(true);
 
       var options = this.options,
-          left = this.GetSelectIndex("x", "left", -1),
-          right = this.GetSelectIndex("x", "right", 2),
+          handle = this.PrepareColorDraw({ extra: 1, only_indexes: true }),
+          left = handle.i1,
+          right = handle.i2,
+          di = handle.stepi,
           pmain = this.frame_painter(),
           pthis = this, histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           res = "", lastbin = false,
@@ -1260,8 +1278,8 @@
       function draw_bin(besti) {
          bincont = histo.getBinContent(besti+1);
          if (!exclude_zero || (bincont!==0)) {
-            mx1 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+1)));
-            mx2 = Math.round(pmain.grx(xaxis.GetBinLowEdge(besti+2)));
+            mx1 = Math.round(pmain.grx(xaxis.GetBinCoord(besti)));
+            mx2 = Math.round(pmain.grx(xaxis.GetBinCoord(besti+di)));
             midx = Math.round((mx1+mx2)/2);
             my = Math.round(pmain.gry(bincont));
             yerr1 = yerr2 = 20;
@@ -1307,7 +1325,7 @@
          }
       }
 
-      for (i = left; i <= right; ++i) {
+      for (i = left; i <= right; i += di) {
 
          x = xaxis.GetBinCoord(i);
 
@@ -1315,9 +1333,9 @@
 
          grx = Math.round(pmain.grx(x));
 
-         lastbin = (i === right);
+         lastbin = (i > right - di);
 
-         if (lastbin && (left<right)) {
+         if (lastbin && (left < right)) {
             gry = curry;
          } else {
             y = histo.getBinContent(i+1);
@@ -1778,11 +1796,15 @@
       this.Clear3DScene();
       this.mode3d = false;
 
+      console.log('Calling histogram Draw2D');
+
       if (!this.DrawAxes())
          return JSROOT.CallBack(call_back);
 
       this.DrawingBins(call_back, reason, function() {
          // called when bins received from server, must be reentrant
+         console.log('Calling DrawBins');
+
          this.DrawBins();
          this.UpdateStatWebCanvas();
          this.AddInteractive();
