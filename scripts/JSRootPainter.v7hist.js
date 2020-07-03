@@ -199,7 +199,6 @@
    }
 
    RHistPainter.prototype.Cleanup = function() {
-
       // clear all 3D buffers
       this.Clear3DScene();
 
@@ -412,7 +411,14 @@
 
       method = method.bind(this);
 
-      if (this.IsDisplayItem() && (reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+      var is_axes_zoomed = false;
+      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0)) {
+         if (reason.indexOf("0") > 0) is_axes_zoomed = true;
+         if ((this.Dimension() > 1) && (reason.indexOf("1") > 0)) is_axes_zoomed = true;
+         if ((this.Dimension() > 2) && (reason.indexOf("2") > 0)) is_axes_zoomed = true;
+      }
+
+      if (this.IsDisplayItem() && is_axes_zoomed && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
 
          var handle = this.PrepareColorDraw({ only_indexes: true });
 
@@ -1815,7 +1821,6 @@
    }
 
    RH1Painter.prototype.Draw2D = function(call_back, reason) {
-
       this.Clear3DScene();
       this.mode3d = false;
 
@@ -3941,7 +3946,8 @@
    }
 
    RHistStatsPainter.prototype.Redraw = function(reason) {
-      if ((reason == "zoom") && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
+      if (reason && (typeof reason == "string") && (reason.indexOf("zoom") == 0) &&
+          (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
          var req = {
             _typename: "ROOT::Experimental::RHistStatBoxBase::RRequest",
             mask: this.GetObject().fShowMask // lines to show in stat box
