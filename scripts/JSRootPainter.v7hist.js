@@ -420,7 +420,7 @@
 
       if (this.IsDisplayItem() && is_axes_zoomed && (this.v7CommMode() == JSROOT.v7.CommMode.kNormal)) {
 
-         var handle = this.PrepareColorDraw({ only_indexes: true });
+         var handle = this.PrepareDraw({ only_indexes: true });
 
          // submit request if histogram data not enough for display
          if (handle.incomplete) {
@@ -741,7 +741,8 @@
       this.InteractiveRedraw("pad", "drawopt");
    }
 
-   RHistPainter.prototype.PrepareColorDraw = function(args) {
+   /** Calculate histogram inidicies and axes values for each visible bin */
+   RHistPainter.prototype.PrepareDraw = function(args) {
 
       if (!args) args = { rounding: true, extra: 0, middle: 0 };
 
@@ -1217,7 +1218,7 @@
 
       this.CheckHistDrawAttributes();
 
-      var handle = this.PrepareColorDraw({ extra: 1, only_indexes: true });
+      var handle = this.PrepareDraw({ extra: 1, only_indexes: true });
 
       if (this.options.Bar)
          return this.DrawBars(handle, width, height);
@@ -2259,7 +2260,7 @@
 
    RH2Painter.prototype.DrawBinsColor = function(w,h) {
       var histo = this.GetHisto(),
-          handle = this.PrepareColorDraw(),
+          handle = this.PrepareDraw(),
           colPaths = [], currx = [], curry = [],
           colindx, cmd1, cmd2, i, j, binz, di = handle.stepi, dj = handle.stepj;
 
@@ -2521,7 +2522,7 @@
    }
 
    RH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
-      var handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+      var handle = this.PrepareDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
           main = this.frame_painter(),
           palette = main.GetPalette(),
           levels = palette.GetContour(),
@@ -2751,7 +2752,7 @@
       var histo = this.GetHisto(),
           i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
 
-      if (handle===null) handle = this.PrepareColorDraw({ rounding: false });
+      if (handle===null) handle = this.PrepareDraw({ rounding: false });
 
       var text_col = this.v7EvalColor("text_color", "black"),
           text_angle = -1*this.v7EvalAttr("text_angle", 0),
@@ -2806,7 +2807,7 @@
       var histo = this.GetHisto(), cmd = "",
           i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
-          handle = this.PrepareColorDraw({ rounding: false }),
+          handle = this.PrepareDraw({ rounding: false }),
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
           scale_y = (handle.gry[handle.j2] - handle.gry[handle.j1])/(handle.j2 - handle.j1 + 1-0.03)/2,
           di = handle.stepi, dj = handle.stepj;
@@ -2872,7 +2873,7 @@
    RH2Painter.prototype.DrawBinsBox = function(w,h) {
 
       var histo = this.GetHisto(),
-          handle = this.PrepareColorDraw({ rounding: false }),
+          handle = this.PrepareDraw({ rounding: false }),
           main = this.frame_painter();
 
       if (main.maxbin === main.minbin) {
@@ -2986,7 +2987,7 @@
 
    RH2Painter.prototype.DrawCandle = function(w,h) {
       var histo = this.GetHisto(), yaxis = this.GetAxis("y"),
-          handle = this.PrepareColorDraw(),
+          handle = this.PrepareDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
           i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
           bars = "", markers = "", posy;
@@ -3096,7 +3097,7 @@
    RH2Painter.prototype.DrawBinsScatter = function(w,h) {
       var histo = this.GetHisto(),
           fp = this.frame_painter(),
-          handle = this.PrepareColorDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
+          handle = this.PrepareDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,
           scale = this.options.ScatCoef * ((this.gmaxbin) > 2000 ? 2000. / this.gmaxbin : 1.),
