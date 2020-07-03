@@ -2550,18 +2550,15 @@
       return lines;
    }
 
-   JSROOT.v7.RH3Painter.prototype.Draw3DScatter = function() {
+   JSROOT.v7.RH3Painter.prototype.Draw3DScatter = function(handle) {
       // try to draw 3D histogram as scatter plot
       // if too many points, box will be displayed
 
       var histo = this.GetHisto(),
           main = this.frame_painter(),
-          i1 = this.GetSelectIndex("x", "left", 0.5),
-          i2 = this.GetSelectIndex("x", "right", 0),
-          j1 = this.GetSelectIndex("y", "left", 0.5),
-          j2 = this.GetSelectIndex("y", "right", 0),
-          k1 = this.GetSelectIndex("z", "left", 0.5),
-          k2 = this.GetSelectIndex("z", "right", 0),
+          i1 = handle.i1, i2 = handle.i2, di = handle.stepi,
+          j1 = handle.j1, j2 = handle.j2, dj = handle.stepj,
+          k1 = handle.k1, k2 = handle.k2, dk = handle.stepk,
           name = this.GetTipName("<br/>"),
           i, j, k, bin_content;
 
@@ -2571,9 +2568,9 @@
       var coef = (this.gmaxbin > 1000) ? 1000/this.gmaxbin : 1,
           numpixels = 0, sumz = 0, content_lmt = Math.max(0, this.gminbin);
 
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
-            for (k = k1; k < k2; ++k) {
+      for (i = i1; i < i2; i += di) {
+         for (j = j1; j < j2; j += dj) {
+            for (k = k1; k < k2; k += dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                sumz += bin_content;
                if (bin_content <= content_lmt) continue;
@@ -2591,9 +2588,9 @@
           bins = new Int32Array(numpixels), nbin = 0,
           xaxis = this.GetAxis("x"), yaxis = this.GetAxis("y"), zaxis = this.GetAxis("z");
 
-      for (i = i1; i < i2; ++i) {
-         for (j = j1; j < j2; ++j) {
-            for (k = k1; k < k2; ++k) {
+      for (i = i1; i < i2; i += di) {
+         for (j = j1; j < j2; j += dj) {
+            for (k = k1; k < k2; k += dk) {
                bin_content = histo.getBinContent(i+1, j+1, k+1);
                if (bin_content <= content_lmt) continue;
                var num = Math.round(bin_content*coef);
@@ -2634,11 +2631,11 @@
              tip = p.Get3DToolTip(this.bins[indx]);
 
          tip.x1 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix));
-         tip.x2 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix+1));
+         tip.x2 = main.grx(p.GetAxis("x").GetBinLowEdge(tip.ix+di));
          tip.y1 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy));
-         tip.y2 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy+1));
+         tip.y2 = main.gry(p.GetAxis("y").GetBinLowEdge(tip.iy+dj));
          tip.z1 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz));
-         tip.z2 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz+1));
+         tip.z2 = main.grz(p.GetAxis("z").GetBinLowEdge(tip.iz+dk));
          tip.color = this.tip_color;
          tip.opacity = 0.3;
 
@@ -2652,8 +2649,10 @@
 
       if (!this.draw_content) return;
 
+      var handle = this.PrepareColorDraw({ only_indexes: true, extra: -0.5, right_extra: -1 });
+
       if (this.options.Scatter)
-         if (this.Draw3DScatter()) return;
+         if (this.Draw3DScatter(handle)) return;
 
       var fillcolor = this.v7EvalColor("fill_color", "red"),
           main = this.frame_painter(),
@@ -2733,7 +2732,6 @@
          use_scale = (this.gminbin || this.gmaxbin) ? 1 / Math.max(Math.abs(this.gminbin), Math.abs(this.gmaxbin)) : 1;
 
       var histo = this.GetHisto(),
-          handle = this.PrepareColorDraw({ only_indexes: true, extra: -0.5, right_extra: -1 }),
           i1 = handle.i1, i2 = handle.i2, di = handle.stepi,
           j1 = handle.j1, j2 = handle.j2, dj = handle.stepj,
           k1 = handle.k1, k2 = handle.k2, dk = handle.stepk,
@@ -2744,8 +2742,6 @@
          palette = main.GetPalette();
          this.CreateContour(main, palette);
       }
-
-      console.log("drawing bins", i1, i2, j1, j2, k1, k2);
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 

@@ -107,7 +107,37 @@
          histo = obj;
 
          if (!histo.getBinContent || force) {
-            if (histo.fAxes.length == 2) {
+            if (histo.fAxes.length == 3) {
+               this.ProvideAxisMethods(histo.fAxes[0]);
+               this.ProvideAxisMethods(histo.fAxes[1]);
+               this.ProvideAxisMethods(histo.fAxes[2]);
+
+               histo.nx = histo.fIndicies[1] - histo.fIndicies[0];
+               histo.dx = histo.fIndicies[0] + 1;
+               histo.stepx = histo.fIndicies[2];
+
+               histo.ny = histo.fIndicies[4] - histo.fIndicies[3];
+               histo.dy = histo.fIndicies[3] + 1;
+               histo.stepy = histo.fIndicies[5];
+
+               histo.nz = histo.fIndicies[7] - histo.fIndicies[6];
+               histo.dz = histo.fIndicies[6] + 1;
+               histo.stepz = histo.fIndicies[8];
+
+               // this is index in original histogram
+               histo.getBin = function(x, y, z) { return (x-1) + this.fAxes[0].GetNumBins()*(y-1) + this.fAxes[0].GetNumBins()*this.fAxes[1].GetNumBins()*(z-1); }
+
+               // this is index in current available data
+               if ((histo.stepx > 1) || (histo.stepy > 1) || (histo.stepz > 1))
+                  histo.getBin0 = function(x, y, z) { return Math.floor((x-this.dx)/this.stepx) + this.nx/this.stepx*Math.floor((y-this.dy)/this.stepy) + this.nx/this.stepx*this.ny/this.stepy*Math.floor((z-this.dz)/this.stepz); }
+               else
+                  histo.getBin0 = function(x, y, z) { return (x-this.dx) + this.nx*(y-this.dy) + this.nx*this.ny*(z-dz); }
+
+               histo.getBinContent = function(x, y, z) { return this.fBinContent[this.getBin0(x, y, z)]; }
+               histo.getBinError = function(x, y, z) { return Math.sqrt(Math.abs(this.getBinContent(x, y, z))); }
+
+
+            } else if (histo.fAxes.length == 2) {
                this.ProvideAxisMethods(histo.fAxes[0]);
                this.ProvideAxisMethods(histo.fAxes[1]);
 
@@ -118,10 +148,6 @@
                histo.ny = histo.fIndicies[4] - histo.fIndicies[3];
                histo.dy = histo.fIndicies[3] + 1;
                histo.stepy = histo.fIndicies[5];
-
-               // does display item covers full range?
-               // histo._full_range = (histo.dx == 1) && (histo.nx >= histo.fAxes[0].GetNumBins()) &&
-               //                     (histo.dy == 1) && (histo.ny >= histo.fAxes[1].GetNumBins());
 
                // this is index in original histogram
                histo.getBin = function(x, y) { return (x-1) + this.fAxes[0].GetNumBins()*(y-1); }
@@ -139,9 +165,6 @@
                histo.nx = histo.fIndicies[1] - histo.fIndicies[0];
                histo.dx = histo.fIndicies[0] + 1;
                histo.stepx = histo.fIndicies[2];
-
-               // does display item covers full range?
-               // histo._full_range = (histo.dx == 1) && (histo.nx >= histo.fAxes[0].GetNumBins());
 
                histo.getBin = function(x) { return x-1; }
                if (histo.stepx > 1)
