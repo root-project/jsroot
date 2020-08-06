@@ -3541,6 +3541,43 @@
    TASImagePainter.prototype.CreateImage = function() {
       var obj = this.GetObject();
 
+      if (obj._blob) {
+         // try to process blob data due to custom streamer
+         if (obj._blob.length == 15) {
+            obj.fImageQuality = obj._blob[1];
+            obj.fImageCompression = obj._blob[2];
+            obj.fConstRatio = obj._blob[3];
+            obj.fPalette = {
+                _typename: "TImagePalette",
+                fUniqueID: obj._blob[4],
+                fBits: obj._blob[5],
+                fNumPoints: obj._blob[6],
+                fPoints: obj._blob[7],
+                fColorRed: obj._blob[8],
+                fColorGreen: obj._blob[9],
+                fColorBlue: obj._blob[10],
+                fColorAlpha: obj._blob[11]
+            }
+
+            obj.fWidth = obj._blob[12];
+            obj.fHeight = obj._blob[13];
+            obj.fImgBuf = obj._blob[14];
+
+            if ((obj.fWidth * obj.fHeight != obj.fImgBuf.length) ||
+                  (obj.fPalette.fNumPoints != obj.fPalette.fPoints.length)) {
+               console.error('TASImage _blob decoding error', obj.fWidth * obj.fHeight, '!=', obj.fImgBuf.length, obj.fPalette.fNumPoints, "!=", obj.fPalette.fPoints.length);
+               delete obj.fImgBuf;
+               delete obj.fPalette;
+            }
+
+            delete obj._blob;
+
+         } else {
+            console.error('TASImage _blob len', obj._blob.length, 'not recognized');
+         }
+      }
+
+
       if (obj.fImgBuf && obj.fPalette) {
 
          var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
