@@ -501,7 +501,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.TObjectPainter
+    * @arguments JSROOT.TObjectPainter
     * @param {object} tf1 - TF1 object to draw
     */
 
@@ -794,7 +794,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.TObjectPainter
+    * @arguments JSROOT.TObjectPainter
     * @param {object} graph - TGraph object to draw
     */
 
@@ -3519,22 +3519,27 @@
       return painter.DrawingReady();
    }
 
-   JSROOT.Painter.drawASImage = function(divid, obj, opt) {
-      var painter = new JSROOT.TObjectPainter();
-      painter.SetDivId(divid, -1);
 
-      var main = painter.select_main(); // this is d3 selection of main element for image drawing
+   // ===================================================================================
 
-      // from here one should insert PNG image
+   /**
+    * @summary Painter for TASImage object.
+    *
+    * @constructor
+    * @memberof JSROOT
+    * @arguments JSROOT.TObjectPainter
+    * @param {object} obj - TASImage object to draw
+    * @param {string} opt - string draw options
+    */
 
-      // this is example how external image can be inserted
-      // main.append("img").attr("src","https://root.cern/js/files/img/tf1.png");
+   function TASImagePainter(obj, opt) {
+      JSROOT.TObjectPainter.call(this, obj, opt);
+   }
 
-      // this is potential example how image can be generated
-      // one could use TASImage member like obj.fPngBuf
-      // main.append("img").attr("src","data:image/png;base64,xxxxxxxxx..");
+   TASImagePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
-      painter.SetDivId(divid);
+   TASImagePainter.prototype.CreateImage = function() {
+      var obj = this.GetObject();
 
       if (obj.fImgBuf && obj.fPalette) {
 
@@ -3581,18 +3586,48 @@
 
          var url = canvas.toDataURL(); // create data url to insert into image
 
-         console.log('url', url.length, url.substr(0,100));
+         // console.log('url', url.length, url.substr(0,100));
 
-         var g = painter.CreateG(true);
+         var g = this.CreateG(true);
 
-         var img = g.append("image").attr("href", url).attr("width", obj.fWidth).attr("height", obj.fHeight).attr("viewBox", "0 0 100 100");
+         var fw = this.frame_width(), fh = this.frame_height();
+
+         var img = g.append("image").attr("href", url).attr("width", fw).attr("height", fh);
+
+         if (!obj.fConstRatio) img.attr("preserveAspectRatio", "none");
 
       } else {
          console.log('TODO - implement png drawing for the future');
       }
+   }
+
+   TASImagePainter.prototype.Redraw = function(reason) {
+      var img = null;
+      if (this.draw_g)
+         img = this.draw_g.select("image");
+
+      if (img && !img.empty()) {
+         var fw = this.frame_width(), fh = this.frame_height();
+         img.attr("width", fw).attr("height", fh);
+      } else {
+         this.CreateImage();
+      }
+   }
+
+
+   function drawASImage(divid, obj, opt) {
+      var painter = new TASImagePainter(obj, opt);
+
+      painter.SetDivId(divid, 1);
+
+      painter.CreateImage();
 
       return painter.DrawingReady();
    }
+
+   // ===================================================================================
+
+
 
    JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
       var painter = new JSROOT.TBasePainter();
@@ -3831,12 +3866,15 @@
    JSROOT.Painter.drawFunction = drawFunction;
    JSROOT.Painter.drawGraphPolar = drawGraphPolar;
    JSROOT.Painter.drawGraphPolargram = drawGraphPolargram;
+   JSROOT.Painter.drawASImage = drawASImage;
+
 
    JSROOT.TF1Painter = TF1Painter;
    JSROOT.TGraphPainter = TGraphPainter;
    JSROOT.TGraphPolarPainter = TGraphPolarPainter;
    JSROOT.TMultiGraphPainter = TMultiGraphPainter;
    JSROOT.TSplinePainter = TSplinePainter;
+   JSROOT.TASImagePainter = TASImagePainter;
 
    return JSROOT;
 
