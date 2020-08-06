@@ -1750,7 +1750,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.TObjectPainter
+    * @arguments JSROOT.TObjectPainter
     * @param {object} histo - histogram object
     */
 
@@ -3193,7 +3193,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.THistPainter
+    * @arguments JSROOT.THistPainter
     * @param {object} histo - histogram object
     */
 
@@ -4313,7 +4313,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.THistPainter
+    * @arguments JSROOT.THistPainter
     * @param {object} histo - histogram object
     */
 

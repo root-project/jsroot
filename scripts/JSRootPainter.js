@@ -2718,7 +2718,7 @@
     *
     * @constructor
     * @memberof JSROOT
-    * @augments JSROOT.TBasePainter
+    * @arguments JSROOT.TBasePainter
     * @param {object} obj - object to draw
     */
    function TObjectPainter(obj, opt) {
