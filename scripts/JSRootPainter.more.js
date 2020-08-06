@@ -3520,7 +3520,7 @@
    }
 
    JSROOT.Painter.drawASImage = function(divid, obj, opt) {
-      var painter = new JSROOT.TBasePainter();
+      var painter = new JSROOT.TObjectPainter();
       painter.SetDivId(divid, -1);
 
       var main = painter.select_main(); // this is d3 selection of main element for image drawing
@@ -3535,6 +3535,61 @@
       // main.append("img").attr("src","data:image/png;base64,xxxxxxxxx..");
 
       painter.SetDivId(divid);
+
+      if (obj.fImgBuf && obj.fPalette) {
+
+         var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
+
+         for(var lvl=0;lvl<=1000;++lvl) {
+            var l = lvl/1000.;
+            while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
+
+            var r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+            var r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+
+            rgba[lvl*4] = Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256);
+            rgba[lvl*4+1] = Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256);
+            rgba[lvl*4+2] = Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256);
+            rgba[lvl*4+3] = Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256);
+         }
+
+         var pnt, len = obj.fImgBuf.length, i = 0, iii,
+             min = Math.min.apply(null, obj.fImgBuf),
+             max = Math.max.apply(null, obj.fImgBuf);
+
+         if (min >= max) max = min + 1;
+
+         var canvas = document.createElement('canvas');
+         canvas.width = obj.fWidth;
+         canvas.height = obj.fHeight;
+         var context = canvas.getContext('2d');
+
+         var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+         var arr = imageData.data;
+
+         for(pnt=0;pnt<len;++pnt) {
+            iii = Math.round((obj.fImgBuf[pnt] - min) / (max - min) * 1000)*4;
+            // copy rgba value for specified point
+            arr[i++] = rgba[iii++];
+            arr[i++] = rgba[iii++];
+            arr[i++] = rgba[iii++];
+            arr[i++] = rgba[iii++];
+         }
+
+         context.putImageData(imageData, 0, 0);
+
+         var url = canvas.toDataURL(); // create data url to insert into image
+
+         console.log('url', url.length, url.substr(0,100));
+
+         var g = painter.CreateG(true);
+
+         var img = g.append("image").attr("href", url).attr("width", obj.fWidth).attr("height", obj.fHeight).attr("viewBox", "0 0 100 100");
+
+      } else {
+         console.log('TODO - implement png drawing for the future');
+      }
 
       return painter.DrawingReady();
    }
