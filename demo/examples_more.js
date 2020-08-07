@@ -124,6 +124,10 @@ examples_more = {
       { name: "symbols", file: "latex.root", layout: "grid2x2", latex: "symbols", items: ['lva','ex1','ex2','ex3'], title: "Replace only known TLatex Disable TLatex symbols" },
       { name: "plain", file: "latex.root", layout: "grid2x2", latex: "off", items: ['lva','ex1','ex2','ex3'], title: "Disable TLatex processor completely" }
    ],
+   TASImage : [
+      { name: "n4254_json", json: "image.json.gz", title: "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
+      { name: "rose_json", json: "rose.json.gz", title: "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" }
+   ],
    Misc : [
      { name: "io", url: "?file=$$$iotest.root&layout=grid4x3&items=[ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8,ex9,ex10,clones,map]&opts=[inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect,inspect]", title: "Different I/O test classes" },
      { name: "io56", file: "fitLinear56.root", item: "fitLinear6", title: "file with two version from ROOT 5/6 of same object" },

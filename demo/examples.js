@@ -212,6 +212,10 @@ examples_main = {
      { name: "mathjax", file: "latex.root", layout: "grid2x2", latex: "mathjax", items: ['lva','ex1','ex2','ex3'], title: "Render TLatex with MathJax.js" },
      { name: "math", file: "latex.root", item: "math", title: "TMathText drawn always with MathJax.js rendering" }
    ],
+   TASImage : [
+      { name: "n4254", file: "image.root", item: "image", title: "TASImage with binary data, see tutorials/image/galaxy_image.C macro" },
+      { name: "rose", file: "rose.root", item: "rose512", title: "TASImage with PNG and binary data, see tutorials/image/rose_image.C macro" }
+   ],
    Misc : [
      { name: "ellipse", file: "ellipse.root", item: "c1;1", title: "TEllipse class" },
      { name: "axis", file: "gaxis.root", item: "c1;1", title: "TGaxis class" },
