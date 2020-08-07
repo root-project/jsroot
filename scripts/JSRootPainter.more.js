@@ -6,7 +6,7 @@
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootCore.js"), require("d3"), require("./JSRootMath.js"));
+      factory(require("./JSRootCore.js"), require("d3"), require("./JSRootMath.js"));
    } else {
       if (typeof d3 != 'object')
          throw new Error('This extension requires d3.js', 'JSRootPainter.more.js');
@@ -3602,14 +3602,30 @@
             rgba[lvl*4+3] = Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256);
          }
 
-         var min = Math.min.apply(null, obj.fImgBuf),
-             max = Math.max.apply(null, obj.fImgBuf);
+         var min = obj.fImgBuf[0], max = obj.fImgBuf[0];
+         for (var k=1;k<obj.fImgBuf.length;++k) {
+            var v = obj.fImgBuf[1];
+            min = Math.min(v, min);
+            max = Math.max(v, max);
+         }
+
+         // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
+         // min = Math.min.apply(null, obj.fImgBuf),
+         // max = Math.max.apply(null, obj.fImgBuf);
 
          if (min >= max) max = min + 1;
 
-         var canvas = document.createElement('canvas');
-         canvas.width = obj.fWidth;
-         canvas.height = obj.fHeight;
+         var canvas;
+
+         if (JSROOT.nodejs) {
+            const { createCanvas, loadImage } = require('canvas')
+            // require('canvas');
+            canvas = createCanvas(obj.fWidth, obj.fHeight);
+         } else {
+            canvas = document.createElement('canvas');
+            canvas.width = obj.fWidth;
+            canvas.height = obj.fHeight;
+         }
 
          var context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
@@ -3636,7 +3652,7 @@
          // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
 
       } else if (obj.fPngBuf) {
-         var pngbuf = "";
+         var pngbuf = "", btoa_func;
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;
          } else {
@@ -3644,7 +3660,12 @@
                pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
          }
 
-         url = "data:image/png;base64," + btoa(pngbuf);
+         if (JSROOT.nodejs)
+            btoa_func = require("btoa");
+         else
+            btoa_func = window.btoa;
+
+         url = "data:image/png;base64," + btoa_func(pngbuf);
 
          // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
       }
