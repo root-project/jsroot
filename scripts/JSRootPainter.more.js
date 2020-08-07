@@ -3577,7 +3577,6 @@
          }
       }
 
-
       if (obj.fImgBuf && obj.fPalette) {
 
          var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
@@ -3595,8 +3594,7 @@
             rgba[lvl*4+3] = Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256);
          }
 
-         var pnt, len = obj.fImgBuf.length, i = 0, iii,
-             min = Math.min.apply(null, obj.fImgBuf),
+         var min = Math.min.apply(null, obj.fImgBuf),
              max = Math.max.apply(null, obj.fImgBuf);
 
          if (min >= max) max = min + 1;
@@ -3604,26 +3602,28 @@
          var canvas = document.createElement('canvas');
          canvas.width = obj.fWidth;
          canvas.height = obj.fHeight;
-         var context = canvas.getContext('2d');
 
-         var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+         var context = canvas.getContext('2d'),
+             imageData = context.getImageData(0, 0, canvas.width, canvas.height),
+             arr = imageData.data, pnt = 0;
 
-         var arr = imageData.data;
-
-         for(pnt=0;pnt<len;++pnt) {
-            iii = Math.round((obj.fImgBuf[pnt] - min) / (max - min) * 1000)*4;
-            // copy rgba value for specified point
-            arr[i++] = rgba[iii++];
-            arr[i++] = rgba[iii++];
-            arr[i++] = rgba[iii++];
-            arr[i++] = rgba[iii++];
+         for(var i=0;i<obj.fHeight;++i) {
+            var dst = (obj.fHeight - i - 1) * obj.fWidth * 4;
+            for(var j=0;j<obj.fWidth;++j) {
+               var iii = Math.round((obj.fImgBuf[pnt++] - min) / (max - min) * 1000)*4;
+               // copy rgba value for specified point
+               arr[dst++] = rgba[iii++];
+               arr[dst++] = rgba[iii++];
+               arr[dst++] = rgba[iii++];
+               arr[dst++] = rgba[iii++];
+            }
          }
 
          context.putImageData(imageData, 0, 0);
 
          var url = canvas.toDataURL(); // create data url to insert into image
 
-         // console.log('url', url.length, url.substr(0,100));
+         // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
 
          var g = this.CreateG(true);
 
