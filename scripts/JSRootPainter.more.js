@@ -3604,7 +3604,7 @@
 
          var min = obj.fImgBuf[0], max = obj.fImgBuf[0];
          for (var k=1;k<obj.fImgBuf.length;++k) {
-            var v = obj.fImgBuf[1];
+            var v = obj.fImgBuf[k];
             min = Math.min(v, min);
             max = Math.max(v, max);
          }
