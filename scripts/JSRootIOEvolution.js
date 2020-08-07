@@ -2713,7 +2713,7 @@
       cs['TAttImage'] = [
          { name: 'fImageQuality', func: function(buf, obj) { obj.fImageQuality = buf.ntoi4(); } },
          { name: 'fImageCompression', func: function(buf, obj) { obj.fImageCompression = buf.ntou4(); } },
-         { name: 'fConstRatio', func: function(buf, obj) { obj.fImageCompression = (buf.ntou1() != 0); } },
+         { name: 'fConstRatio', func: function(buf, obj) { obj.fConstRatio = (buf.ntou1() != 0); } },
          { name: 'fPalette', func: function(buf, obj) { obj.fPalette = buf.ClassStreamer({}, "TImagePalette"); } }
       ]
 
