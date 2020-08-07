@@ -19,6 +19,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "atob": "^2.1.2",
     "btoa": "^1.2.1",
     "canvas": "^2.6.1",
     "d3": "^5.7.0",

@@ -378,7 +378,10 @@
 
             if (value.b !== undefined) {
                // base64 coding
-               var buf = atob(value.b);
+
+               var atob_func = JSROOT.nodejs ? require('atob') : window.atob;
+
+               var buf = atob_func(value.b);
 
                if (arr.buffer) {
                   var dv = new DataView(arr.buffer, value.o || 0),
