@@ -3543,7 +3543,7 @@
 
       if (obj._blob) {
          // try to process blob data due to custom streamer
-         if (obj._blob.length == 15) {
+         if ((obj._blob.length == 15) && !obj._blob[0]) {
             obj.fImageQuality = obj._blob[1];
             obj.fImageCompression = obj._blob[2];
             obj.fConstRatio = obj._blob[3];
@@ -3572,6 +3572,12 @@
 
             delete obj._blob;
 
+         } else if ((obj._blob.length == 3) && obj._blob[0]) {
+            obj.fPngBuf = obj._blob[2];
+            if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
+               console.error('TASImage with png buffer _blob error', obj._blob[1], '!=', (obj.fPngBuf ? obj.fPngBuf.length : -1));
+               delete obj.fPngBuf;
+            }
          } else {
             console.error('TASImage _blob len', obj._blob.length, 'not recognized');
          }
@@ -3631,8 +3637,12 @@
 
       } else if (obj.fPngBuf) {
          var pngbuf = "";
-         for (var k=0;k<obj.fPngBuf.length;++k)
-            pngbuf += String.fromCharCode(obj.fPngBuf[k]);
+         if (typeof obj.fPngBuf == "string") {
+            pngbuf = obj.fPngBuf;
+         } else {
+            for (var k=0;k<obj.fPngBuf.length;++k)
+               pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
+         }
 
          url = "data:image/png;base64," + btoa(pngbuf);
 
