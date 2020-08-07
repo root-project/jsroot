@@ -3618,14 +3618,20 @@
          var canvas;
 
          if (JSROOT.nodejs) {
-            const { createCanvas, loadImage } = require('canvas')
-            // require('canvas');
-            canvas = createCanvas(obj.fWidth, obj.fHeight);
+            try {
+               require('canvas');
+               canvas = createCanvas(obj.fWidth, obj.fHeight);
+            } catch (er) {
+               console.log('canvas is not installed, most probably due to SoftwareRenderer, see https://github.com/root-project/jsroot/issues/201');
+            }
+
          } else {
             canvas = document.createElement('canvas');
             canvas.width = obj.fWidth;
             canvas.height = obj.fHeight;
          }
+
+         if (!canvas) return;
 
          var context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
