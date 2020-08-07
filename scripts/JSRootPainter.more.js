@@ -3577,6 +3577,8 @@
          }
       }
 
+      var url, constRatio = true;
+
       if (obj.fImgBuf && obj.fPalette) {
 
          var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
@@ -3621,21 +3623,30 @@
 
          context.putImageData(imageData, 0, 0);
 
-         var url = canvas.toDataURL(); // create data url to insert into image
+         url = canvas.toDataURL(); // create data url to insert into image
+
+         constRatio = obj.fConstRatio;
 
          // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
 
-         var g = this.CreateG(true);
+      } else if (obj.fPngBuf) {
+         var pngbuf = "";
+         for (var k=0;k<obj.fPngBuf.length;++k)
+            pngbuf += String.fromCharCode(obj.fPngBuf[k]);
 
-         var fw = this.frame_width(), fh = this.frame_height();
+         url = "data:image/png;base64," + btoa(pngbuf);
 
-         var img = g.append("image").attr("href", url).attr("width", fw).attr("height", fh);
-
-         if (!obj.fConstRatio) img.attr("preserveAspectRatio", "none");
-
-      } else {
-         console.log('TODO - implement png drawing for the future');
+         // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
       }
+
+      if (url)
+         this.CreateG(true)
+             .append("image")
+             .attr("href", url)
+             .attr("width", this.frame_width())
+             .attr("height", this.frame_height())
+             .attr("preserveAspectRatio", constRatio ? null : "none");
+
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
