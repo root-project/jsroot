@@ -3539,9 +3539,43 @@
 
    TASImagePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
+   TASImagePainter.prototype.DecodeOptions = function(opt) {
+      this.options = { Zscale: false };
+
+      if (opt && (opt.indexOf("z") >=0)) this.options.Zscale = true;
+   }
+
+   TASImagePainter.prototype.CreateRGBA = function(nlevels) {
+      var obj = this.GetObject();
+
+      if (!obj || !obj.fPalette) return null;
+
+      var rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
+
+      for(var lvl=0;lvl<=nlevels;++lvl) {
+         var l = 1.*lvl/nlevels;
+         while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
+
+         var r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+         var r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+
+         rgba[lvl*4]   = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
+         rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
+         rgba[lvl*4+2] = Math.min(255, Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256));
+         rgba[lvl*4+3] = Math.min(255, Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256));
+      }
+
+      return rgba;
+   }
+
+   TASImagePainter.prototype.getContourColor = function(zval) {
+      if (!this.fContour || !this.rgba) return "white";
+      var indx = Math.round((zval - this.fContour[0]) / (this.fContour[this.fContour.length-1] - this.fContour[0]) * (this.rgba.length-4)/4) * 4;
+      return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
+   }
+
    TASImagePainter.prototype.CreateImage = function() {
       var obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
-      ;
 
       if (obj._blob) {
          // try to process blob data due to custom streamer
@@ -3591,20 +3625,8 @@
 
          is_buf = true;
 
-         var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
-
-         for(var lvl=0;lvl<=1000;++lvl) {
-            var l = lvl/1000.;
-            while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
-
-            var r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
-            var r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
-
-            rgba[lvl*4] = Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256);
-            rgba[lvl*4+1] = Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256);
-            rgba[lvl*4+2] = Math.round((pal.fColorBlue[indx-1] * r1 + pal.fColorBlue[indx] * r2) / 256);
-            rgba[lvl*4+3] = Math.round((pal.fColorAlpha[indx-1] * r1 + pal.fColorAlpha[indx] * r2) / 256);
-         }
+         var nlevels = 1000;
+         this.rgba = this.CreateRGBA(nlevels); // precaclucated colors
 
          var min = obj.fImgBuf[0], max = obj.fImgBuf[0];
          for (var k=1;k<obj.fImgBuf.length;++k) {
@@ -3616,6 +3638,11 @@
          // does not work properly in Node.js, causes "Maximum call stack size exceeded" error
          // min = Math.min.apply(null, obj.fImgBuf),
          // max = Math.max.apply(null, obj.fImgBuf);
+
+         // create countor like in hist painter to allow palette drawing
+         this.fContour = new Array(200);
+         for (var k=0;k<200;k++)
+            this.fContour[k] = min + (max-min)/(200-1)*k;
 
          if (min >= max) max = min + 1;
 
@@ -3654,14 +3681,15 @@
              arr = imageData.data;
 
          for(var i = ymin; i < ymax; ++i) {
-            var dst = (ymax - i - 1) * (xmax - xmin) * 4, row = i * obj.fHeight;
+            var dst = (ymax - i - 1) * (xmax - xmin) * 4,
+                row = i * obj.fWidth;
             for(var j = xmin; j < xmax; ++j) {
-               var iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * 1000) * 4;
+               var iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
                // copy rgba value for specified point
-               arr[dst++] = rgba[iii++];
-               arr[dst++] = rgba[iii++];
-               arr[dst++] = rgba[iii++];
-               arr[dst++] = rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
+               arr[dst++] = this.rgba[iii++];
             }
          }
 
@@ -3699,6 +3727,9 @@
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
       if (url && this.is_main_painter() && is_buf && fp) {
+
+         this.DrawColorPalette(this.options.Zscale, false, true);
+
          fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
          fp.CreateXY({ ndim: 2,
                        check_pad_range: false,
@@ -3708,7 +3739,77 @@
    }
 
    TASImagePainter.prototype.CanZoomIn = function(axis,min,max) {
-      return true;
+      var obj = this.GetObject();
+
+      if (!obj || !obj.fImgBuf)
+         return false;
+
+      if ((axis == "x") && ((max - min) * obj.fWidth > 3)) return true;
+
+      if ((axis == "y") && ((max - min) * obj.fHeight > 3)) return true;
+
+      return false;
+   }
+
+   TASImagePainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
+      // only when create new palette, one could change frame size
+
+      if (!this.is_main_painter()) return null;
+
+      if (!this.draw_palette) {
+         var pal = JSROOT.Create('TPave');
+
+         JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
+                               fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
+
+         pal.fAxis.fChopt = "+";
+
+         this.draw_palette = pal;
+      }
+
+      var pal_painter = this.FindPainterFor(this.draw_palette);
+
+      if (!enabled) {
+         if (pal_painter) {
+            pal_painter.Enabled = false;
+            pal_painter.RemoveDrawG(); // completely remove drawing without need to redraw complete pad
+         }
+         return;
+      }
+
+      var frame_painter = this.frame_painter();
+
+      // keep palette width
+      if (can_move && frame_painter) {
+         var pal = this.draw_palette;
+         pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
+         pal.fX1NDC = frame_painter.fX2NDC + 0.01;
+         pal.fY1NDC = frame_painter.fY1NDC;
+         pal.fY2NDC = frame_painter.fY2NDC;
+      }
+
+      if (!pal_painter) {
+         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name, function(p) {
+            // mark painter as secondary - not in list of TCanvas primitives
+            p.$secondary = true;
+
+            // make dummy redraw, palette will be updated only from histogram painter
+            p.Redraw = function() {};
+         });
+      } else {
+         pal_painter.Enabled = true;
+         pal_painter.DrawPave("");
+      }
+   }
+
+   TASImagePainter.prototype.ToggleColz = function() {
+      var obj = this.GetObject(),
+          can_toggle = obj && obj.fPalette;
+
+      if (can_toggle) {
+         this.options.Zscale = !this.options.Zscale;
+         this.DrawColorPalette(this.options.Zscale, false, true);
+      }
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
@@ -3724,19 +3825,40 @@
       }
    }
 
+   TASImagePainter.prototype.ButtonClick = function(funcname) {
+      if (this !== this.main_painter()) return false;
+
+      switch(funcname) {
+         case "ToggleColorZ": this.ToggleColz(); break;
+         default: return false;
+      }
+
+      return true;
+   }
+
+   TASImagePainter.prototype.FillToolbar = function() {
+      var pp = this.pad_painter(), obj = this.GetObject();
+      if (pp && obj && obj.fPalette) {
+         pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
+         pp.ShowButtons();
+      }
+   }
 
    function drawASImage(divid, obj, opt) {
       var painter = new TASImagePainter(obj, opt);
+
+      painter.DecodeOptions(opt);
 
       painter.SetDivId(divid, 1);
 
       painter.CreateImage();
 
+      painter.FillToolbar();
+
       return painter.DrawingReady();
    }
 
    // ===================================================================================
-
 
 
    JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
