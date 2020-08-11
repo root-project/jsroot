@@ -3534,6 +3534,7 @@
 
    function TASImagePainter(obj, opt) {
       JSROOT.TObjectPainter.call(this, obj, opt);
+      this.wheel_zoomy = true;
    }
 
    TASImagePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
