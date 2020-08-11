@@ -3539,7 +3539,8 @@
    TASImagePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    TASImagePainter.prototype.CreateImage = function() {
-      var obj = this.GetObject();
+      var obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
+      ;
 
       if (obj._blob) {
          // try to process blob data due to custom streamer
@@ -3570,8 +3571,6 @@
                delete obj.fPalette;
             }
 
-            delete obj._blob;
-
          } else if ((obj._blob.length == 3) && obj._blob[0]) {
             obj.fPngBuf = obj._blob[2];
             if (!obj.fPngBuf || (obj.fPngBuf.length != obj._blob[1])) {
@@ -3581,11 +3580,15 @@
          } else {
             console.error('TASImage _blob len', obj._blob.length, 'not recognized');
          }
+
+         delete obj._blob;
       }
 
       var url, constRatio = true;
 
       if (obj.fImgBuf && obj.fPalette) {
+
+         is_buf = true;
 
          var rgba = new Array(4004), indx = 1, pal = obj.fPalette; // precaclucated colors
 
@@ -3615,32 +3618,44 @@
 
          if (min >= max) max = min + 1;
 
+         var xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
+
+         if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
+            xmin = Math.round(fp.zoom_xmin * obj.fWidth);
+            xmax = Math.round(fp.zoom_xmax * obj.fWidth);
+         }
+
+         if (fp && (fp.zoom_ymin != fp.zoom_ymax)) {
+            ymin = Math.round(fp.zoom_ymin * obj.fHeight);
+            ymax = Math.round(fp.zoom_ymax * obj.fHeight);
+         }
+
          var canvas;
 
          if (JSROOT.nodejs) {
             try {
                require('canvas');
-               canvas = createCanvas(obj.fWidth, obj.fHeight);
+               canvas = createCanvas(xmax - xmin, ymax - ymin);
             } catch (er) {
                console.log('canvas is not installed, most probably due to SoftwareRenderer, see https://github.com/root-project/jsroot/issues/201');
             }
 
          } else {
             canvas = document.createElement('canvas');
-            canvas.width = obj.fWidth;
-            canvas.height = obj.fHeight;
+            canvas.width = xmax - xmin;
+            canvas.height = ymax - ymin;
          }
 
          if (!canvas) return;
 
          var context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
-             arr = imageData.data, pnt = 0;
+             arr = imageData.data;
 
-         for(var i=0;i<obj.fHeight;++i) {
-            var dst = (obj.fHeight - i - 1) * obj.fWidth * 4;
-            for(var j=0;j<obj.fWidth;++j) {
-               var iii = Math.round((obj.fImgBuf[pnt++] - min) / (max - min) * 1000)*4;
+         for(var i = ymin; i < ymax; ++i) {
+            var dst = (ymax - i - 1) * (xmax - xmin) * 4, row = i * obj.fHeight;
+            for(var j = xmin; j < xmax; ++j) {
+               var iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * 1000) * 4;
                // copy rgba value for specified point
                arr[dst++] = rgba[iii++];
                arr[dst++] = rgba[iii++];
@@ -3672,8 +3687,6 @@
             btoa_func = window.btoa;
 
          url = "data:image/png;base64," + btoa_func(pngbuf);
-
-         // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
       }
 
       if (url)
@@ -3684,6 +3697,17 @@
              .attr("height", this.frame_height())
              .attr("preserveAspectRatio", constRatio ? null : "none");
 
+      if (url && this.is_main_painter() && is_buf && fp) {
+         fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
+         fp.CreateXY({ ndim: 2,
+                       check_pad_range: false,
+                       create_canvas: false });
+         fp.AddInteractive();
+      }
+   }
+
+   TASImagePainter.prototype.CanZoomIn = function(axis,min,max) {
+      return true;
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
@@ -3691,7 +3715,7 @@
       if (this.draw_g)
          img = this.draw_g.select("image");
 
-      if (img && !img.empty()) {
+      if (img && !img.empty() && (reason !== "zoom")) {
          var fw = this.frame_width(), fh = this.frame_height();
          img.attr("width", fw).attr("height", fh);
       } else {
