@@ -1987,7 +1987,11 @@
          }
          m.GetParName = function(n) {
             if (this.fParams && this.fParams.fParNames) return this.fParams.fParNames[n];
-            if (this.fFormula && this.fFormula.fParams) return this.fFormula.fParams[n].first;
+            if (this.fFormula && this.fFormula.fParams) {
+               for (var k=0;k<this.fFormula.fParams.length;++k)
+                  if(this.fFormula.fParams[k].second == n)
+                     return this.fFormula.fParams[k].first;
+            }
             if (this.fNames && this.fNames[n]) return this.fNames[n];
             return "p"+n;
          }
