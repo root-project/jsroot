@@ -1,5 +1,11 @@
 # JSROOT changelog
 
+## Changes in 5.8.2
+1. Fix - tooltip handling for TH2 Error draw
+2. Fix - use proper "fixed" position for enlarged drawing
+3. Fix - correctly extract TF1 parameter names
+
+
 ## Changes in 5.8.1
 1. Fix - use Math.floor when search for bin label
 2. Fix - renable correct highlight of TGraphErrors
