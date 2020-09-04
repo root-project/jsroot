@@ -3597,7 +3597,7 @@
    /** @summary Calculate absolute position of provided selection.
     * @private */
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
-      while (!sel.empty() && !sel.classed('root_canvas')) {
+      while (!sel.empty() && !sel.classed('root_canvas') && pos) {
          var cl = sel.attr("class");
          if (cl && ((cl.indexOf("root_frame")>=0) || (cl.indexOf("__root_pad_")>=0))) {
             pos.x += sel.property("draw_x") || 0;

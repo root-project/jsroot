@@ -372,10 +372,10 @@
           drag_move = d3.drag().subject(Object);
 
       drag_move
-         .on("start",  function() {
+         .on("start",  function(evnt) {
 
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
             var box = title_g.node().getBBox(), // check that elements visible, request precise value
                 axis = pthis.GetObject();
@@ -398,14 +398,14 @@
                  .attr("height", box.height)
                  .style("cursor", "move");
 //                 .style("pointer-events","none"); // let forward double click to underlying elements
-          }).on("drag", function() {
+          }).on("drag", function(evnt) {
                if (!drag_rect) return;
 
-               d3.event.sourceEvent.preventDefault();
-               d3.event.sourceEvent.stopPropagation();
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
 
-               acc_x += d3.event.dx;
-               acc_y += d3.event.dy;
+               acc_x += evnt.dx;
+               acc_y += evnt.dy;
 
                var set_x = title_g.property('shift_x'),
                    set_y = title_g.property('shift_y');
@@ -423,11 +423,11 @@
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
 
-          }).on("end", function() {
+          }).on("end", function(evnt) {
                if (!drag_rect) return;
 
-               d3.event.sourceEvent.preventDefault();
-               d3.event.sourceEvent.stopPropagation();
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
 
                title_g.property('shift_x', new_x)
                       .property('shift_y', new_y);
@@ -2346,35 +2346,35 @@
       return false;
    }
 
-   TFramePainter.prototype.mouseWheel = function() {
-      d3.event.stopPropagation();
+   TFramePainter.prototype.mouseWheel = function(evnt) {
+      evnt.stopPropagation();
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
       this.clearInteractiveElements();
 
       var itemx = { name: "x", reverse: this.reverse_x, ignore: false },
           itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
-          cur = d3.mouse(this.svg_frame().node()),
+          cur = d3.pointer(evnt, this.svg_frame().node()),
           w = this.frame_width(), h = this.frame_height();
 
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
+      this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
 
-      this.AnalyzeMouseWheelEvent(d3.event, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
+      this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemx : itemy, 1 - cur[1] / h, (cur[0] >= 0) && (cur[0] <= w));
 
       this.Zoom(itemx.min, itemx.max, itemy.min, itemy.max);
 
       if (itemx.changed || itemy.changed) this.zoom_changed_interactive = 2;
    }
 
-   TFramePainter.prototype.startTouchZoom = function() {
+   TFramePainter.prototype.startTouchZoom = function(evnt) {
       // in case when zooming was started, block any other kind of events
       if (this.zoom_kind != 0) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation();
+         evnt.preventDefault();
+         evnt.stopPropagation();
          return;
       }
 
-      var arr = d3.touches(this.svg_frame().node());
+      var arr = d3.pointers(evnt, this.svg_frame().node());
       this.touch_cnt+=1;
 
       // normally double-touch will be handled
@@ -2389,8 +2389,8 @@
              && (Math.abs(this.zoom_curr[0] - arr[0][0]) < 30)
              && (Math.abs(this.zoom_curr[1] - arr[0][1]) < 30)) {
 
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
+            evnt.preventDefault();
+            evnt.stopPropagation();
 
             this.clearInteractiveElements();
             this.Unzoom("xyz");
@@ -2399,20 +2399,19 @@
 
             this.svg_frame().on("touchcancel", null)
                             .on("touchend", null, true);
-         } else
-         if (JSROOT.gStyle.ContextMenu) {
+         } else if (JSROOT.gStyle.ContextMenu) {
             this.zoom_curr = arr[0];
             this.svg_frame().on("touchcancel", this.endTouchSel.bind(this))
                             .on("touchend", this.endTouchSel.bind(this));
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
+            evnt.preventDefault();
+            evnt.stopPropagation();
          }
       }
 
       if ((arr.length != 2) || !JSROOT.gStyle.Zooming || !JSROOT.gStyle.ZoomTouch) return;
 
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
+      evnt.preventDefault();
+      evnt.stopPropagation();
 
       this.clearInteractiveElements();
 
@@ -2451,12 +2450,12 @@
                        .on("touchend.zoomRect", this.endTouchSel.bind(this));
    }
 
-   TFramePainter.prototype.moveTouchSel = function() {
+   TFramePainter.prototype.moveTouchSel = function(evnt) {
       if (this.zoom_kind < 100) return;
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
 
-      var arr = d3.touches(this.svg_frame().node());
+      var arr = d3.pointers(evnt, this.svg_frame().node());
 
       if (arr.length != 2)
          return this.clearInteractiveElements();
@@ -2481,10 +2480,10 @@
            || (this.zoom_origin[1] - this.zoom_curr[1] > 10))
          this.SwitchTooltip(false);
 
-      d3.event.stopPropagation();
+      evnt.stopPropagation();
    }
 
-   TFramePainter.prototype.endTouchSel = function() {
+   TFramePainter.prototype.endTouchSel = function(evnt) {
 
       this.svg_frame().on("touchcancel", null)
                       .on("touchend", null);
@@ -2492,7 +2491,7 @@
       if (this.zoom_kind === 0) {
          // special case - single touch can ends up with context menu
 
-         d3.event.preventDefault();
+         evnt.preventDefault();
 
          var now = new Date();
 
@@ -2508,7 +2507,7 @@
 
       if (this.zoom_kind < 100) return;
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
       d3.select(window).on("touchmove.zoomRect", null)
                        .on("touchend.zoomRect", null)
                        .on("touchcancel.zoomRect", null);
@@ -2539,7 +2538,7 @@
          this.Zoom(xmin, xmax, ymin, ymax);
       }
 
-      d3.event.stopPropagation();
+      evnt.stopPropagation();
    }
 
    TFramePainter.prototype.ShowContextMenu = function(kind, evnt, obj) {
@@ -2710,9 +2709,8 @@
             svg.on("mousedown", this.startRectSel.bind(this));
             svg.on("dblclick", this.mouseDoubleClick.bind(this));
          }
-         if (JSROOT.gStyle.ZoomWheel) {
+         if (JSROOT.gStyle.ZoomWheel)
             svg.on("wheel", this.mouseWheel.bind(this));
-         }
       }
 
       if (JSROOT.touches && ((JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomTouch && !this.projection) || JSROOT.gStyle.ContextMenu))
@@ -2861,7 +2859,7 @@
       this.pad_events_receiver = receiver;
    }
 
-   /// method redirect call to pad events receiver
+   /// method redirect call to pad events receiver, in some cases
    TPadPainter.prototype.SelectObjectPainter = function(_painter, pos) {
       var istoppad = (this.iscan || !this.has_canvas),
           canp = istoppad ? this : this.canv_painter(),
@@ -2961,7 +2959,7 @@
          if (!JSROOT.BatchMode)
             frect.style("pointer-events", "visibleFill")
                  .on("dblclick", this.EnlargePad.bind(this))
-                 .on("click", this.SelectObjectPainter.bind(this, this))
+                 .on("click", this.SelectObjectPainter.bind(this, this, null))
                  .on("mouseenter", this.ShowObjectStatus.bind(this));
 
          svg.append("svg:g").attr("class","primitives_layer");
@@ -3039,11 +3037,11 @@
       return true;
    }
 
-   TPadPainter.prototype.EnlargePad = function() {
+   TPadPainter.prototype.EnlargePad = function(evnt) {
 
-      if (d3.event) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation();
+      if (evnt) {
+         evnt.preventDefault();
+         evnt.stopPropagation();
       }
 
       var svg_can = this.svg_canvas(),
@@ -3116,7 +3114,7 @@
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
                     .on("dblclick", this.EnlargePad.bind(this))
-                    .on("click", this.SelectObjectPainter.bind(this, this))
+                    .on("click", this.SelectObjectPainter.bind(this, this, null))
                     .on("mouseenter", this.ShowObjectStatus.bind(this));
       }
 
@@ -3367,7 +3365,7 @@
          menu.addchk(this.HasEventStatus(), "Event status", this.ActivateStatusBar.bind(this, 'toggle'));
 
       if (this.enlarge_main() || (this.has_canvas && this.HasObjectsToDraw()))
-         menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this));
+         menu.addchk((this.enlarge_main('state')=='on'), "Enlarge " + (this.iscan ? "canvas" : "pad"), this.EnlargePad.bind(this, null));
 
       var fname = this.this_pad_name;
       if (fname.length===0) fname = this.iscan ? "canvas" : "pad";
@@ -4172,18 +4170,20 @@
       image.src = 'data:image/svg+xml;base64,' + window.btoa(reEncode(doctype + svg));
    }
 
-   TPadPainter.prototype.PadButtonClick = function(funcname) {
+   TPadPainter.prototype.PadButtonClick = function(funcname, evnt) {
 
       if (funcname == "CanvasSnapShot") return this.SaveAs("png", true);
 
-      if (funcname == "EnlargePad") return this.EnlargePad();
+      if (funcname == "EnlargePad") return this.EnlargePad(null);
 
       if (funcname == "PadSnapShot") return this.SaveAs("png", false);
 
       if (funcname == "PadContextMenus") {
 
-         d3.event.preventDefault();
-         d3.event.stopPropagation();
+         if (evnt) {
+            evnt.preventDefault();
+            evnt.stopPropagation();
+         }
 
          if (JSROOT.Painter.closeMenu()) return;
 
@@ -4225,7 +4225,7 @@
             }
 
             menu.show();
-         }, d3.event);
+         }, evnt);
 
          return;
       }
@@ -4754,10 +4754,10 @@
       }
    }
 
-   TCanvasPainter.prototype.PadButtonClick = function(funcname) {
+   TCanvasPainter.prototype.PadButtonClick = function(funcname, evnt) {
       if (funcname == "ToggleGed") return this.ActivateGed(this, null, "toggle");
       if (funcname == "ToggleStatus") return this.ActivateStatusBar("toggle");
-      TPadPainter.prototype.PadButtonClick.call(this, funcname);
+      TPadPainter.prototype.PadButtonClick.call(this, funcname, evnt);
    }
 
    TCanvasPainter.prototype.testUI5 = function() {

@@ -2078,7 +2078,7 @@
       return (value === Math.round(value)) ? value.toString() : value.toFixed(1);
    }
 
-   TGraphPolargramPainter.prototype.MouseEvent = function(kind) {
+   TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
       var layer = this.svg_layer("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
       if (interactive.empty()) return;
@@ -2086,7 +2086,7 @@
       var pnt = null;
 
       if (kind !== 'leave') {
-         var pos = d3.mouse(interactive.node());
+         var pos = d3.pointer(evnt, interactive.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
 
@@ -2117,17 +2117,17 @@
       return rect;
    }
 
-   TGraphPolargramPainter.prototype.MouseWheel = function() {
-      d3.event.stopPropagation();
-      d3.event.preventDefault();
+   TGraphPolargramPainter.prototype.MouseWheel = function(evnt) {
+      evnt.stopPropagation();
+      evnt.preventDefault();
 
       this.ProcessTooltipEvent(null); // remove all tooltips
 
       var polar = this.GetObject();
 
-      if (!d3.event || !polar) return;
+      if (!polar) return;
 
-      var delta = d3.event.wheelDelta ? -d3.event.wheelDelta : (d3.event.deltaY || d3.event.detail);
+      var delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
       if (!delta) return;
 
       delta = (delta<0) ? -0.2 : 0.2;
