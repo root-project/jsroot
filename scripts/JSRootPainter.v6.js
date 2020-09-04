@@ -2613,7 +2613,7 @@
    * @desc method called normally when mouse enter main object element
    * @private
    */
-   TFramePainter.prototype.ShowAxisStatus = function(axis_name) {
+   TFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
       // method called normally when mouse enter main object element
 
       var status_func = this.GetShowStatusFunc();
@@ -2621,7 +2621,7 @@
       if (typeof status_func != "function") return;
 
       var taxis = this.GetAxis(axis_name), hint_name = axis_name, hint_title = "TAxis",
-          m = d3.mouse(this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || ("TAxis object for " + axis_name); }
       if (this.swap_xy) id = 1-id;

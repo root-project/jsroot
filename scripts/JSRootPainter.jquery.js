@@ -654,7 +654,7 @@
          if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
          var d3icon = d3line.append("div").attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
-                              .on("click", function() { h.tree_click(this, "plusminus"); });
+                              .on("click", function(evnt) { h.tree_click(evnt, this, "plusminus"); });
       }
 
       // make node icons
@@ -676,13 +676,13 @@
                           .style('vertical-align','top').style('width','18px').style('height','18px');
 
          if (('_icon_click' in hitem) || (handle && ('icon_click' in handle)))
-            d3img.on("click", function() { h.tree_click(this, "icon"); });
+            d3img.on("click", function(evnt) { h.tree_click(evnt, this, "icon"); });
       }
 
       var d3a = d3line.append("a");
       if (can_click || has_childs || break_list)
          d3a.attr("class","h_item")
-            .on("click", function() { h.tree_click(this); });
+            .on("click", function(evnt) { h.tree_click(evnt, this); });
 
       if (break_list) {
          hitem._break_point = true; // indicate that list was broken here
@@ -695,13 +695,13 @@
          if (JSROOT.gStyle.DragAndDrop && can_click)
            this.enable_dragging(d3a.node(), itemname);
          if (JSROOT.gStyle.ContextMenu && can_menu)
-            d3a.on('contextmenu', function() { h.tree_contextmenu(this); });
+            d3a.on('contextmenu', function(evnt) { h.tree_contextmenu(evnt, this); });
 
          d3a.on("mouseover", function() { h.tree_mouseover(true, this); })
             .on("mouseleave", function() { h.tree_mouseover(false, this); });
       } else
       if (hitem._direct_context && JSROOT.gStyle.ContextMenu)
-         d3a.on('contextmenu', function() { h.direct_contextmenu(this); });
+         d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
 
       var element_name = hitem._name, element_title = "";
 
@@ -886,7 +886,7 @@
    }
 
    /** Handler for click event of item in the hierarchy */
-   HierarchyPainter.prototype.tree_click = function(node, place) {
+   HierarchyPainter.prototype.tree_click = function(evnt, node, place) {
       if (!node) return;
 
       var d3cont = d3.select(node.parentNode.parentNode),
@@ -938,7 +938,7 @@
       }
 
       // special feature - all items with '_expand' function are not drawn by click
-      if ((place=="item") && ('_expand' in hitem) && !d3.event.ctrlKey && !d3.event.shiftKey) place = "plusminus";
+      if ((place=="item") && ('_expand' in hitem) && !evnt.ctrlKey && !evnt.shiftKey) place = "plusminus";
 
       // special case - one should expand item
       if (((place == "plusminus") && !('_childs' in hitem) && hitem._more) ||
@@ -964,11 +964,11 @@
              dflt_expand = (this.default_by_click === "expand"),
              drawopt = "";
 
-         if (d3.event.shiftKey) {
+         if (evnt.shiftKey) {
             drawopt = (handle && handle.shift) ? handle.shift : "inspect";
             if ((drawopt==="inspect") && handle && handle.noinspect) drawopt = "";
          }
-         if (handle && handle.ctrl && d3.event.ctrlKey) drawopt = handle.ctrl;
+         if (handle && handle.ctrl && evnt.ctrlKey) drawopt = handle.ctrl;
 
          if (!drawopt) {
             for (var pitem = hitem._parent; !!pitem; pitem = pitem._parent) {
@@ -1024,10 +1024,10 @@
          painter.MouseOverHierarchy(on, itemname, hitem);
    }
 
-   HierarchyPainter.prototype.direct_contextmenu = function(elem) {
+   HierarchyPainter.prototype.direct_contextmenu = function(evnt, elem) {
       // this is alternative context menu, used in the object inspector
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');
       var hitem = this.Find(itemname);
       if (!hitem) return;
@@ -1040,13 +1040,13 @@
             menu.tree_node = elem.parentNode;
             menu.show();
          }
-      }, d3.event);
+      }, evnt);
    }
 
-   HierarchyPainter.prototype.tree_contextmenu = function(elem) {
+   HierarchyPainter.prototype.tree_contextmenu = function(evnt, elem) {
       // this is handling of context menu request for the normal objects browser
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
 
       var itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
@@ -1153,7 +1153,7 @@
             menu.show();
          }
 
-      }, d3.event); // end menu creation
+      }, evnt); // end menu creation
 
       return false;
    }

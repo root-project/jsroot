@@ -218,16 +218,16 @@
          name: 'menu',
          title: 'Show context menu',
          icon: JSROOT.ToolbarIcons.question,
-         click: function() {
+         click: function(evnt) {
 
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
+            evnt.preventDefault();
+            evnt.stopPropagation();
 
             if (!JSROOT.Painter.closeMenu())
                JSROOT.Painter.createMenu(painter, function(menu) {
                   menu.painter.FillContextMenu(menu);
                   menu.show();
-               }, d3.event);
+               }, evnt);
          }
       });
 
@@ -4007,12 +4007,6 @@
    }
 
    TGeoPainter.prototype.toggleEnlarge = function() {
-
-      if (d3.event) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation();
-      }
-
       if (this.enlarge_main('toggle'))
         this.CheckResize();
    }

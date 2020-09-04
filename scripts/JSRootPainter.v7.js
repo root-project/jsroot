@@ -2352,7 +2352,7 @@
    * @desc method called normally when mouse enter main object element
    * @private
    */
-   RFramePainter.prototype.ShowAxisStatus = function(axis_name) {
+   RFramePainter.prototype.ShowAxisStatus = function(axis_name, evnt) {
       // method called normally when mouse enter main object element
 
       var status_func = this.GetShowStatusFunc();
@@ -2360,7 +2360,7 @@
       if (typeof status_func != "function") return;
 
       var taxis = null, hint_name = axis_name, hint_title = "TAxis",
-          m = d3.mouse(this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
+          m = d3.pointer(evnt, this.svg_frame().node()), id = (axis_name=="x") ? 0 : 1;
 
       if (taxis) { hint_name = taxis.fName; hint_title = taxis.fTitle || "histogram TAxis object"; }
 
@@ -2482,7 +2482,7 @@
 
       var itemx = { name: "x", reverse: this.reverse_x, ignore: false },
           itemy = { name: "y", reverse: this.reverse_y, ignore: !this.AllowDefaultYZooming() },
-          cur = d3.mouse(this.svg_frame().node()),
+          cur = d3.pointer(evnt, this.svg_frame().node()),
           w = this.frame_width(), h = this.frame_height();
 
       this.AnalyzeMouseWheelEvent(evnt, this.swap_xy ? itemy : itemx, cur[0] / w, (cur[1] >=0) && (cur[1] <= h));
