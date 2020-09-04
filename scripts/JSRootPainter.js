@@ -25,12 +25,12 @@
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
-      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="5"))  {
-         if (d3.version !== '5.7.0')
-            console.log('Reuse existing d3.js ' + d3.version + ", expected 5.7.0");
+      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="6"))  {
+         if (d3.version !== '6.1.1')
+            console.log('Reuse existing d3.js ' + d3.version + ", expected 6.1.1");
          JSROOT._test_d3_ = 5;
       } else {
-         console.error('Unsupported ' + (d3 ? d3.version : "???") + ", expected 5.7.0");
+         console.error('Unsupported ' + (d3 ? d3.version : "???") + ", expected 6.1.1");
          JSROOT._test_d3_ = "old";
       }
    }
