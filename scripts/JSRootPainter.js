@@ -29,19 +29,9 @@
          if (d3.version !== '5.7.0')
             console.log('Reuse existing d3.js ' + d3.version + ", expected 5.7.0");
          JSROOT._test_d3_ = 5;
-      } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="4"))  {
-         if (d3.version !== '4.4.4')
-            console.warn('Try to use older d3.js ' + d3.version + ", expected 5.7.0");
-         JSROOT._test_d3_ = 4;
-      } else if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="3")) {
-         console.error("Very old d3.js " + d3.version + " found, please UPGRADE");
-         d3.timeFormat = d3.time.format;
-         d3.scaleTime = d3.time.scale;
-         d3.scaleLog = d3.scale.log;
-         d3.scaleLinear = d3.scale.linear;
-         JSROOT._test_d3_ = 3;
       } else {
-         console.error('Fail to identify d3.js version ' + (d3 ? d3.version : "???"));
+         console.error('Unsupported ' + (d3 ? d3.version : "???") + ", expected 5.7.0");
+         JSROOT._test_d3_ = "old";
       }
    }
 
@@ -3781,16 +3771,11 @@
          return false;
       }
 
-      var prefix = "", drag_move, not_changed = true;
-      if (JSROOT._test_d3_ === 3) {
-         prefix = "drag";
-         drag_move = d3.behavior.drag().origin(Object);
-      } else {
-         drag_move = d3.drag().subject(Object);
-      }
+      var drag_move = d3.drag().subject(Object),
+          not_changed = true;
 
       drag_move
-        .on(prefix+"start",  function() {
+        .on("start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -3804,7 +3789,7 @@
             not_changed = false;
             if (this.moveDrag)
                this.moveDrag(d3.event.dx, d3.event.dy);
-       }.bind(this)).on(prefix+"end", function() {
+       }.bind(this)).on("end", function() {
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
             if (this.moveEnd)
@@ -3913,18 +3898,11 @@
          return change_size || change_pos;
       }
 
-      var prefix = "", drag_move, drag_resize;
-      if (JSROOT._test_d3_ === 3) {
-         prefix = "drag";
-         drag_move = d3.behavior.drag().origin(Object);
-         drag_resize = d3.behavior.drag().origin(Object);
-      } else {
-         drag_move = d3.drag().subject(Object);
-         drag_resize = d3.drag().subject(Object);
-      }
+      var drag_move = d3.drag().subject(Object),
+          drag_resize = d3.drag().subject(Object);
 
       drag_move
-         .on(prefix+"start",  function() {
+         .on("start",  function() {
             if (detectRightButton(d3.event.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
@@ -3969,7 +3947,7 @@
                drag_rect.attr("x", Math.min( Math.max(handle.acc_x1, 0), handle.pad_w))
                         .attr("y", Math.min( Math.max(handle.acc_y1, 0), handle.pad_h));
 
-          }).on(prefix+"end", function() {
+          }).on("end", function() {
                if (!drag_rect) return;
 
                d3.event.sourceEvent.preventDefault();
@@ -3988,7 +3966,7 @@
             });
 
       drag_resize
-        .on(prefix+"start", function() {
+        .on("start", function() {
            if (detectRightButton(d3.event.sourceEvent)) return;
 
            d3.event.sourceEvent.stopPropagation();
@@ -4042,7 +4020,7 @@
 
             drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2-x1)).attr("height", Math.max(0, y2-y1));
 
-         }).on(prefix+"end", function() {
+         }).on("end", function() {
             if (!drag_rect) return;
 
             d3.event.sourceEvent.preventDefault();

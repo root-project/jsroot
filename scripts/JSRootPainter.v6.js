@@ -367,17 +367,12 @@
    TAxisPainter.prototype.AddTitleDrag = function(title_g, vertical, offset_k, reverse, axis_length) {
       if (!JSROOT.gStyle.MoveResize) return;
 
-      var pthis = this,  drag_rect = null, prefix = "", drag_move,
-          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos;
-      if (JSROOT._test_d3_ === 3) {
-         prefix = "drag";
-         drag_move = d3.behavior.drag().origin(Object);
-      } else {
-         drag_move = d3.drag().subject(Object);
-      }
+      var pthis = this,  drag_rect = null,
+          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos,
+          drag_move = d3.drag().subject(Object);
 
       drag_move
-         .on(prefix+"start",  function() {
+         .on("start",  function() {
 
             d3.event.sourceEvent.preventDefault();
             d3.event.sourceEvent.stopPropagation();
@@ -428,7 +423,7 @@
                   title_g.attr('transform', 'translate(' + new_x + ',' + new_y +  ')');
                }
 
-          }).on(prefix+"end", function() {
+          }).on("end", function() {
                if (!drag_rect) return;
 
                d3.event.sourceEvent.preventDefault();
