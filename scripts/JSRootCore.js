@@ -116,7 +116,7 @@
    JSROOT.touches = false;
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
 
-   JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isIE: false, isWin: false };
+   JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
       var scripts = document.getElementsByTagName('script');
@@ -140,7 +140,6 @@
       JSROOT.browser.isFirefox = typeof InstallTrigger !== 'undefined';
       JSROOT.browser.isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
       JSROOT.browser.isChrome = !!window.chrome && !JSROOT.browser.isOpera;
-      JSROOT.browser.isIE = !!document.documentMode;
       JSROOT.browser.isWin = navigator.platform.indexOf('Win') >= 0;
       JSROOT.browser.isChromeHeadless = navigator.userAgent.indexOf('HeadlessChrome') >= 0;
    }

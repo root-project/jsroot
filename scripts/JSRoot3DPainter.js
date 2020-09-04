@@ -217,8 +217,8 @@
          if (typeof e == 'object' && (e.u !== undefined) && (e.l !== undefined)) return e;
          var res = { u: 0, l: 0 };
          if (this.abspos) {
-            res.l = JSROOT.browser.isIE ? (e.clientX + document.documentElement.scrollLeft) : e.pageX;
-            res.u = JSROOT.browser.isIE ? (e.clientY + document.documentElement.scrollTop) : e.pageY;
+            res.l = e.pageX;
+            res.u = e.pageY;
          } else {
             res.l = e.offsetX;
             res.u = e.offsetY;
@@ -300,8 +300,6 @@
             this.cont.innerHTML = v;
             this.lastlbl = v;
             this.tt.style.width = 'auto'; // let it be automatically resizing...
-            if (JSROOT.browser.isIE)
-               this.tt.style.width = this.tt.offsetWidth;
          }
       };
 
@@ -1053,7 +1051,7 @@
       else
          material = new THREE.LineBasicMaterial({ color: lcolor });
 
-      if (obj.fLineWidth && (obj.fLineWidth>1) && !JSROOT.browser.isIE) material.linewidth = obj.fLineWidth;
+      if ((obj.fLineWidth !== undefined) && (obj.fLineWidth > 1)) material.linewidth = obj.fLineWidth;
 
       return material;
    }

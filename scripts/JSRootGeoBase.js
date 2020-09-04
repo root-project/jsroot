@@ -1684,8 +1684,7 @@
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
-      // seems to be, IE has smaller stack for functions calls and ThreeCSG fails with larger shapes
-      if (faces_limit === 0) faces_limit = (JSROOT.browser && JSROOT.browser.isIE) ? 2000 : 4000;
+      if (faces_limit === 0) faces_limit = 4000;
                         else return_bsp = true;
 
       if (matrix1 && (matrix1.determinant() < -0.9))

@@ -514,8 +514,7 @@
       if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = parseInt(embed3d);
 
       var webgl = JSROOT.GetUrlOption("webgl", url);
-      if ((webgl === "0") || (webgl === "false")) JSROOT.gStyle.NoWebGL = true; else
-      if (webgl === "ie") JSROOT.gStyle.NoWebGL = !JSROOT.browser.isIE;
+      if ((webgl === "0") || (webgl === "false") || (webgl === "ie")) JSROOT.gStyle.NoWebGL = true;
 
       var geosegm = JSROOT.GetUrlOption("geosegm", url);
       if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
@@ -4923,7 +4922,7 @@
          if (arg.plain) {
             if (arg.align[1] == 'top') txt.attr("dy", ".8em"); else
             if (arg.align[1] == 'middle') {
-               if (JSROOT.browser.isIE || JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+               if (JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
             }
          } else {
             arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
