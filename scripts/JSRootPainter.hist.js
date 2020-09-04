@@ -943,14 +943,13 @@
          }
       }
 
-      var evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+      var doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
-      function moveRectSel() {
+      function moveRectSel(evnt) {
 
          if (!doing_zoom) return;
 
-         d3.event.preventDefault();
-         var m = d3.mouse(evnt);
+         var m = d3.pointer(evnt);
 
          if (m[1] < sel1) sel1 = m[1]; else sel2 = m[1];
 
@@ -958,12 +957,12 @@
                   .attr("height", Math.abs(sel2-sel1));
       }
 
-      function endRectSel() {
+      function endRectSel(evnt) {
          if (!doing_zoom) return;
 
-         d3.event.preventDefault();
-         d3.select(window).on("mousemove.colzoomRect", null)
-                          .on("mouseup.colzoomRect", null);
+         evnt.preventDefault();
+         pthis.draw_g.on("mousemove.colzoomRect", null)
+                     .on("mouseup.colzoomRect", null);
          zoom_rect.remove();
          zoom_rect = null;
          doing_zoom = false;
@@ -974,15 +973,14 @@
          pthis.frame_painter().Zoom("z", zmin, zmax);
       }
 
-      function startRectSel() {
+      function startRectSel(evnt) {
          // ignore when touch selection is activated
          if (doing_zoom) return;
          doing_zoom = true;
 
-         d3.event.preventDefault();
+         evnt.preventDefault();
 
-         evnt = this;
-         var origin = d3.mouse(evnt);
+         var origin = d3.pointer(evnt);
 
          sel1 = sel2 = origin[1];
 
@@ -995,10 +993,10 @@
                 .attr("y", sel1)
                 .attr("height", 5);
 
-         d3.select(window).on("mousemove.colzoomRect", moveRectSel)
-                          .on("mouseup.colzoomRect", endRectSel, true);
+         pthis.draw_g.on("mousemove.colzoomRect", moveRectSel)
+                     .on("mouseup.colzoomRect", endRectSel, true);
 
-         d3.event.stopPropagation();
+         evnt.stopPropagation();
       }
 
       if (JSROOT.gStyle.Zooming)

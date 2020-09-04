@@ -3752,7 +3752,10 @@
     * @private */
    TObjectPainter.prototype.SwitchTooltip = function(on) {
       var fp = this.frame_painter();
-      if (fp) fp.ProcessTooltipEvent(null, on);
+      if (fp) {
+         fp.SetTooltipEnabled(on);
+         fp.ProcessTooltipEvent(null);
+      }
       // this is 3D control object
       if (this.control && (typeof this.control.SwitchTooltip == 'function'))
          this.control.SwitchTooltip(on);
@@ -5813,21 +5816,23 @@
       return hintsg.empty() ? false : hintsg.property("hints_pad") == this.pad_name;
    }
 
-   TooltipHandler.prototype.ProcessTooltipEvent = function(pnt, enabled) {
-      // make central function which let show selected hints for the object
-
+   TooltipHandler.prototype.SetTooltipEnabled = function(enabled) {
       if (enabled !== undefined) this.tooltip_enabled = enabled;
+   }
+
+   TooltipHandler.prototype.ProcessTooltipEvent = function(pnt, evnt) {
+      // make central function which let show selected hints for the object
 
       if (pnt && pnt.handler) {
          // special use of interactive handler in the frame painter
          var rect = this.draw_g ? this.draw_g.select(".main_layer") : null;
          if (!rect || rect.empty()) {
             pnt = null; // disable
-         } else if (pnt.touch) {
-            var pos = d3.touches(rect.node());
+         } else if (pnt.touch && evnt) {
+            var pos = d3.pointers(evnt, rect.node());
             pnt = (pos && pos.length == 1) ? { touch: true, x: pos[0][0], y: pos[0][1] } : null;
-         } else {
-            var pos = d3.mouse(rect.node());
+         } else if (evnt) {
+            var pos = d3.pointer(evnt, rect.node());
             pnt = { touch: false, x: pos[0], y: pos[1] };
          }
       }

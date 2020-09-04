@@ -1660,7 +1660,7 @@
       var hintsg = this.hints_layer().select(".objects_hints");
       // if tooltips were visible before, try to reconstruct them after short timeout
       if (!hintsg.empty() && this.IsTooltipAllowed() && (hintsg.property("hints_pad") == this.pad_name))
-         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point')), 10);
+         setTimeout(this.ProcessTooltipEvent.bind(this, hintsg.property('last_point'), null), 10);
    }
 
    /** Returns frame rectangle plus extra info for hint display */
@@ -1913,17 +1913,19 @@
       if (this.Unzoom(kind)) return;
    }
 
-   RFramePainter.prototype.startRectSel = function() {
+   RFramePainter.prototype.startRectSel = function(evnt) {
       // ignore when touch selection is activated
 
       if (this.zoom_kind > 100) return;
 
       // ignore all events from non-left button
-      if ((d3.event.which || d3.event.button) !== 1) return;
+      if ((evnt.which || evnt.button) !== 1) return;
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
 
-      var pos = d3.mouse(this.svg_frame().node());
+      var frame = this.svg_frame();
+
+      var pos = d3.pointer(evnt, frame.node());
 
       this.clearInteractiveElements();
       this.zoom_origin = pos;
@@ -1951,23 +1953,23 @@
          this.zoom_origin[1] = this.zoom_curr[1];
       }
 
-      d3.select(window).on("mousemove.zoomRect", this.moveRectSel.bind(this))
-                       .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
+      frame.on("mousemove.zoomRect", this.moveRectSel.bind(this))
+           .on("mouseup.zoomRect", this.endRectSel.bind(this), true);
 
       this.zoom_rect = null;
 
       // disable tooltips in frame painter
       this.SwitchTooltip(false);
 
-      d3.event.stopPropagation();
+      evnt.stopPropagation();
    }
 
-   RFramePainter.prototype.moveRectSel = function() {
+   RFramePainter.prototype.moveRectSel = function(evnt) {
 
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
-      d3.event.preventDefault();
-      var m = d3.mouse(this.svg_frame().node());
+      evnt.preventDefault();
+      var m = d3.pointer(evnt);
 
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
@@ -1990,15 +1992,15 @@
                     .attr("height", Math.abs(this.zoom_curr[1] - this.zoom_origin[1]));
    }
 
-   RFramePainter.prototype.endRectSel = function() {
+   RFramePainter.prototype.endRectSel = function(evnt) {
       if ((this.zoom_kind == 0) || (this.zoom_kind > 100)) return;
 
-      d3.event.preventDefault();
+      evnt.preventDefault();
 
-      d3.select(window).on("mousemove.zoomRect", null)
-                       .on("mouseup.zoomRect", null);
+      this.svg_frame().on("mousemove.zoomRect", null)
+                      .on("mouseup.zoomRect", null);
 
-      var m = d3.mouse(this.svg_frame().node()), changed = [true, true];
+      var m = d3.pointer(evnt), changed = [true, true];
       m[0] = Math.max(0, Math.min(this.frame_width(), m[0]));
       m[1] = Math.max(0, Math.min(this.frame_height(), m[1]));
 
