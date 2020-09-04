@@ -3850,9 +3850,9 @@
          this.DrawStatistic(this.stats_lines);
    }
 
-   RHistStatsPainter.prototype.ShowContextMenu = function() {
-      d3.event.preventDefault();
-      d3.event.stopPropagation(); // disable main context menu
+   RHistStatsPainter.prototype.StatsContextMenu = function(evnt) {
+      evnt.preventDefault();
+      evnt.stopPropagation(); // disable main context menu
 
       JSROOT.Painter.createMenu(this, function(menu) {
          var obj = menu.painter.GetObject(),
@@ -3864,7 +3864,7 @@
             menu.addchk((obj.fShowMask & (1<<n)), obj.fEntries[n], n, action);
 
          menu.painter.FillObjectExecMenu(menu, "", function() { menu.show(); });
-      }, d3.event);
+      }, evnt);
    }
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {

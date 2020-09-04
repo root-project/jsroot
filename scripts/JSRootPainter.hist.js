@@ -411,7 +411,7 @@
                      ctxmenu: JSROOT.touches && JSROOT.gStyle.ContextMenu && this.UseContextMenu });
 
       if (this.UseContextMenu && JSROOT.gStyle.ContextMenu)
-         this.draw_g.on("contextmenu", this.ShowContextMenu.bind(this));
+         this.draw_g.on("contextmenu", this.PaveContextMenu.bind(this));
    }
 
    TPavePainter.prototype.DragRedraw = function() {
@@ -1112,17 +1112,14 @@
       return menu.size() > 0;
    }
 
-   TPavePainter.prototype.ShowContextMenu = function(evnt) {
+   TPavePainter.prototype.PaveContextMenu = function(evnt) {
 
       // for color palette
       if (this.z_handle)
          return this.frame_painter().ShowContextMenu("z", evnt, this.GetObject().fAxis);
 
-      if (!evnt) {
-         d3.event.stopPropagation(); // disable main context menu
-         d3.event.preventDefault();  // disable browser context menu
-         evnt = d3.event;
-      }
+      evnt.stopPropagation(); // disable main context menu
+      evnt.preventDefault();  // disable browser context menu
 
       JSROOT.Painter.createMenu(this, function(menu) {
          menu.painter.FillContextMenu(menu);
@@ -2527,14 +2524,13 @@
 
       var menu_painter = this, frame_corner = false, fp = null; // object used to show context menu
 
-      if (!evnt) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation(); // disable main context menu
-         evnt = d3.event;
+      if (evnt.stopPropagation) {
+         evnt.preventDefault();
+         evnt.stopPropagation(); // disable main context menu
 
-         if (kind === undefined) {
-            var ms = d3.mouse(this.svg_frame().node()),
-                tch = d3.touches(this.svg_frame().node()),
+         if (!kind) {
+            var ms = d3.pointer(evnt, this.svg_frame().node()),
+                tch = d3.pointers(evnt, this.svg_frame().node()),
                 pp = this.pad_painter(),
                 pnt = null, sel = null;
 

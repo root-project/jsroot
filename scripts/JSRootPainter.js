@@ -3778,23 +3778,23 @@
           not_changed = true;
 
       drag_move
-        .on("start",  function() {
-            if (detectRightButton(d3.event.sourceEvent)) return;
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
-            var pos = d3.mouse(this.draw_g.node());
+        .on("start", function(evnt) {
+            if (detectRightButton(evnt.sourceEvent)) return;
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
+            var pos = d3.pointer(evnt, this.draw_g.node());
             not_changed = true;
             if (this.moveStart)
                this.moveStart(pos[0], pos[1]);
-       }.bind(this)).on("drag", function() {
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
+       }.bind(this)).on("drag", function(evnt) {
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
             not_changed = false;
             if (this.moveDrag)
-               this.moveDrag(d3.event.dx, d3.event.dy);
-       }.bind(this)).on("end", function() {
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
+               this.moveDrag(evnt.dx, evnt.dy);
+       }.bind(this)).on("end", function(evnt) {
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
             if (this.moveEnd)
                this.moveEnd(not_changed);
             var cp = this.canv_painter();
@@ -3905,15 +3905,15 @@
           drag_resize = d3.drag().subject(Object);
 
       drag_move
-         .on("start",  function() {
-            if (detectRightButton(d3.event.sourceEvent)) return;
+         .on("start",  function(evnt) {
+            if (detectRightButton(evnt.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
 
             pthis.SwitchTooltip(false); // disable tooltip
 
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
             var handle = {
                acc_x1: Number(pthis.draw_g.attr("x")),
@@ -3934,32 +3934,32 @@
                  .property('drag_handle', handle);
 
 
-          }).on("drag", function() {
+          }).on("drag", function(evnt) {
                if (!drag_rect) return;
 
-               d3.event.sourceEvent.preventDefault();
-               d3.event.sourceEvent.stopPropagation();
+               evnt.sourceEvent.preventDefault();
+               evnt.sourceEvent.stopPropagation();
 
                var handle = drag_rect.property('drag_handle');
 
                if (!callback.no_change_x)
-                  handle.acc_x1 += d3.event.dx;
+                  handle.acc_x1 += evnt.dx;
                if (!callback.no_change_y)
-                  handle.acc_y1 += d3.event.dy;
+                  handle.acc_y1 += evnt.dy;
 
                drag_rect.attr("x", Math.min( Math.max(handle.acc_x1, 0), handle.pad_w))
                         .attr("y", Math.min( Math.max(handle.acc_y1, 0), handle.pad_h));
 
-          }).on("end", function() {
+          }).on("end", function(evnt) {
                if (!drag_rect) return;
 
-               d3.event.sourceEvent.preventDefault();
+               evnt.sourceEvent.preventDefault();
 
                var handle = drag_rect.property('drag_handle');
 
                if (complete_drag() === false) {
                   var spent = (new Date()).getTime() - handle.drag_tm.getTime();
-                  if (callback.ctxmenu && (spent > 600)) {
+                  if (callback.ctxmenu && (spent > 600) && pthis.ShowContextMenu) {
                      var rrr = resize_se.node().getBoundingClientRect();
                      pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
                   } else if (callback.canselect && (spent <= 600)) {
@@ -3969,11 +3969,11 @@
             });
 
       drag_resize
-        .on("start", function() {
-           if (detectRightButton(d3.event.sourceEvent)) return;
+        .on("start", function(evnt) {
+           if (detectRightButton(evnt.sourceEvent)) return;
 
-           d3.event.sourceEvent.stopPropagation();
-           d3.event.sourceEvent.preventDefault();
+           evnt.sourceEvent.stopPropagation();
+           evnt.sourceEvent.preventDefault();
 
            pthis.SwitchTooltip(false); // disable tooltip
 
@@ -3997,14 +3997,14 @@
                          .attr("height", handle.acc_y2 - handle.acc_y1)
                          .property('drag_handle', handle);
 
-         }).on("drag", function() {
+         }).on("drag", function(evnt) {
             if (!drag_rect) return;
 
-            d3.event.sourceEvent.preventDefault();
-            d3.event.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
             var handle = drag_rect.property('drag_handle'),
-                dx = d3.event.dx, dy = d3.event.dy, elem = d3.select(this);
+                dx = evnt.dx, dy = evnt.dy, elem = d3.select(this);
 
             if (callback.no_change_x) dx = 0;
             if (callback.no_change_y) dy = 0;
@@ -4023,10 +4023,10 @@
 
             drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2-x1)).attr("height", Math.max(0, y2-y1));
 
-         }).on("end", function() {
+         }).on("end", function(evnt) {
             if (!drag_rect) return;
 
-            d3.event.sourceEvent.preventDefault();
+            evnt.sourceEvent.preventDefault();
 
             complete_drag();
          });
@@ -4035,50 +4035,6 @@
          this.draw_g.style("cursor", "move").call(drag_move);
 
       MakeResizeElements(this.draw_g, rect_width(), rect_height(), drag_resize);
-   }
-
-   /** @summary Activate context menu via touch events
-    * @private */
-   TObjectPainter.prototype.startTouchMenu = function(kind) {
-      // method to let activate context menu via touch handler
-
-      var arr = d3.touches(this.svg_frame().node());
-      if (arr.length != 1) return;
-
-      if (!kind || (kind=="")) kind = "main";
-      var fld = "touch_" + kind;
-
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      this[fld] = { dt: new Date(), pos: arr[0] };
-
-      this.svg_frame().on("touchcancel", this.endTouchMenu.bind(this, kind))
-                      .on("touchend", this.endTouchMenu.bind(this, kind));
-   }
-
-   /** @summary Close context menu, started via touch events
-    * @private */
-   TObjectPainter.prototype.endTouchMenu = function(kind) {
-      var fld = "touch_" + kind;
-
-      if (! (fld in this)) return;
-
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-
-      var diff = new Date().getTime() - this[fld].dt.getTime();
-
-      this.svg_frame().on("touchcancel", null)
-                      .on("touchend", null);
-
-      if (diff>500) {
-         var rect = this.svg_frame().node().getBoundingClientRect();
-         this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
-                                      clientY: rect.top + this[fld].pos[1] } );
-      }
-
-      delete this[fld];
    }
 
    /** @summary Add color selection menu entries

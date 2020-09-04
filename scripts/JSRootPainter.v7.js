@@ -2240,14 +2240,13 @@
 
       var menu_painter = this, frame_corner = false, fp = this; // object used to show context menu
 
-      if (!evnt) {
-         d3.event.preventDefault();
-         d3.event.stopPropagation(); // disable main context menu
-         evnt = d3.event;
+      if (evnt.stopPropagation) {
+         evnt.preventDefault();
+         evnt.stopPropagation(); // disable main context menu
 
-         if (kind === undefined) {
-            var ms = d3.mouse(this.svg_frame().node()),
-                tch = d3.touches(this.svg_frame().node()),
+         if (!kind) {
+            var ms = d3.pointer(evnt, this.svg_frame().node()),
+                tch = d3.pointers(evnt, this.svg_frame().node()),
                 pp = this.pad_painter(),
                 pnt = null, sel = null;
 
@@ -2372,6 +2371,54 @@
       status_func(hint_name, hint_title, axis_name + " : " + this.AxisAsText(axis_name, axis_value), m[0]+","+m[1]);
    }
 
+   /** @summary Activate context menu handler via touch events
+    * @private */
+   RFramePainter.prototype.startTouchMenu = function(kind, evnt) {
+      // method to let activate context menu via touch handler
+
+      var arr = d3.pointers(evnt, this.svg_frame().node());
+      if (arr.length != 1) return;
+
+      if (!kind || (kind=="")) kind = "main";
+      var fld = "touch_" + kind;
+
+      evnt.sourceEvent.preventDefault();
+      evnt.sourceEvent.stopPropagation();
+
+      this[fld] = { dt: new Date(), pos: arr[0] };
+
+      var habdler = this.endTouchMenu.bind(this, kind);
+
+      this.svg_frame().on("touchcancel", handler)
+                      .on("touchend", handler);
+   }
+
+   /** @summary Process end-touch event, which can cause content menu to appear
+    * @private */
+   RFramePainter.prototype.endTouchMenu = function(kind, evnt) {
+      var fld = "touch_" + kind;
+
+      if (! (fld in this)) return;
+
+      evnt.sourceEvent.preventDefault();
+      evnt.sourceEvent.stopPropagation();
+
+      var diff = new Date().getTime() - this[fld].dt.getTime();
+
+      this.svg_frame().on("touchcancel", null)
+                      .on("touchend", null);
+
+      if (diff > 500) {
+         var rect = this.svg_frame().node().getBoundingClientRect();
+         this.ShowContextMenu(kind, { clientX: rect.left + this[fld].pos[0],
+                                      clientY: rect.top + this[fld].pos[1] } );
+      }
+
+      delete this[fld];
+   }
+
+   /** @summary Add interactive functionality to the frame
+    * @private */
    RFramePainter.prototype.AddInteractive = function() {
       // only first painter in list allowed to add interactive functionality to the frame
 
@@ -2416,7 +2463,7 @@
             svg_x.on("touchstart", this.startTouchMenu.bind(this,"x"));
             svg_y.on("touchstart", this.startTouchMenu.bind(this,"y"));
          }
-         svg.on("contextmenu", this.ShowContextMenu.bind(this));
+         svg.on("contextmenu", this.ShowContextMenu.bind(this,""));
          svg_x.on("contextmenu", this.ShowContextMenu.bind(this,"x"));
          svg_y.on("contextmenu", this.ShowContextMenu.bind(this,"y"));
       }
@@ -2962,7 +3009,7 @@
                                    .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu && !JSROOT.BatchMode)
-            svg.select(".canvas_fillrect").on("contextmenu", this.ShowContextMenu.bind(this));
+            svg.select(".canvas_fillrect").on("contextmenu", this.PadContextMenu.bind(this));
 
          factor = 0.66;
          if (this.pad && this.pad.fWinSize[0] && this.pad.fWinSize[1]) {
@@ -3105,7 +3152,7 @@
                                        .property('vertical', JSROOT.gStyle.ToolBarVert);
 
          if (JSROOT.gStyle.ContextMenu)
-            svg_rect.on("contextmenu", this.ShowContextMenu.bind(this));
+            svg_rect.on("contextmenu", this.PadContextMenu.bind(this));
 
          if (!JSROOT.BatchMode)
             svg_rect.attr("pointer-events", "visibleFill") // get events also for not visible rect
@@ -3323,16 +3370,15 @@
       return true;
    }
 
-   RPadPainter.prototype.ShowContextMenu = function(evnt) {
-      if (!evnt) {
+   RPadPainter.prototype.PadContextMenu = function(evnt) {
+      if (evnt.stopPropagation) { // this is normal event processing and not emulated jsroot event
          // for debug purposes keep original context menu for small region in top-left corner
-         var pos = d3.mouse(this.svg_pad(this.this_pad_name).node());
+         var pos = d3.pointer(evnt, this.svg_pad(this.this_pad_name).node());
 
          if (pos && (pos.length==2) && (pos[0]>0) && (pos[0]<10) && (pos[1]>0) && pos[1]<10) return;
 
-         d3.event.stopPropagation(); // disable main context menu
-         d3.event.preventDefault();  // disable browser context menu
-         evnt = d3.event;
+         evnt.stopPropagation(); // disable main context menu
+         evnt.preventDefault();  // disable browser context menu
 
          var fp = this.frame_painter();
          if (fp) fp.SetLastEventPos();
@@ -3700,7 +3746,7 @@
 
        // use timeout to avoid conflict with mouse click and automatic menu close
        if (name=="pad")
-          return setTimeout(this.ShowContextMenu.bind(this, evnt), 50);
+          return setTimeout(this.PadContextMenu.bind(this, evnt), 50);
 
        var selp = null, selkind;
 
