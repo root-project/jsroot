@@ -106,7 +106,8 @@
              demo_path = "demo/",
              filepath = "../files/",
              use_requirejs = false,
-             extra_opts = ""; // extra options like webgl=no
+             extra_opts = "", // extra options like webgl=no
+             select_key = null;  // select the only key like ?select=TH2
 
          var icon = document.createElement("link");
          icon.setAttribute('src', "img/RootIcon.ico");
@@ -225,7 +226,7 @@
          function RunBigTest(interval, doinit) {
             if (doinit) {
                var running = (keyid != null); // indication that test running - no need to relaunch events
-               keyid = 'TH1'; optid = -1;
+               keyid = select_key || 'TH1'; optid = -1;
                testfile = testobj = null;
                var ii = JSROOT.GetUrlOption("interval");
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
@@ -242,10 +243,11 @@
 
             if (++optid >= examples_main[keyid].length) {
                var found = false, next = null;
-               for (var key in examples_main) {
-                   if (found) { next = key; break; }
-                   if (key == keyid) found = true;
-               }
+               if (!select_key)
+                  for (var key in examples_main) {
+                     if (found) { next = key; break; }
+                     if (key == keyid) found = true;
+                  }
                keyid = next;
                if (!next) return; // stop condition
                optid = -1; testfile = testobj = null;
@@ -369,8 +371,8 @@
                JSROOT.RegisterForResize('viewer');
             });
 
-            var select = JSROOT.GetUrlOption("select", window.location.href);
-            if (!select && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select = "TGeo";
+            select_key = JSROOT.GetUrlOption("select", window.location.href);
+            if (!select_key && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select_key = "TGeo";
 
             document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
@@ -380,7 +382,7 @@
 
                var opts = examples_main[key];
 
-               if (select && (key != select)) continue;
+               if (select_key && (key != select_key)) continue;
 
                var div = document.createElement( 'h2' );
                div.textContent = key;
