@@ -14,8 +14,8 @@
      var geom_file = "../../files/geom/evegeoshape.json.gz",
          tracks_file = "../../files/geom/eve_tracks.root";
 
-     JSROOT.NewHttpRequest(geom_file, 'object', function(obj) {
-        JSROOT.draw("drawing", obj, "", function(geo_painter) {
+     JSROOT.HttpRequest(geom_file, "object").then(function(obj) {
+        JSROOT.new_draw("drawing", obj).then(function(geo_painter) {
            JSROOT.OpenFile(tracks_file, function(file) {
               file.ReadObject("tracks;1", function(tracks) {
                  // one could simply draw list of tracks
@@ -29,7 +29,7 @@
               });
            });
         });
-     }).send();
+     });
 
    </script>
 

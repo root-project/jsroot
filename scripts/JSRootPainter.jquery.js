@@ -2114,17 +2114,16 @@
          var player = this;
 
          function SubmitDrawRequest() {
-            JSROOT.NewHttpRequest(url, 'object', function(res) {
-               if (!res) return;
+            JSROOT.HttpRequest(url, 'object').then(function(res) {
                JSROOT.cleanup(player.drawid);
                JSROOT.draw(player.drawid, res, option);
-            }).send();
+            });
          }
 
          if (this.askey) {
             // first let read tree from the file
             this.askey = false;
-            JSROOT.NewHttpRequest(this.url + "/root.json", 'text', SubmitDrawRequest).send();
+            JSROOT.HttpRequest(this.url + "/root.json", 'text').then(SubmitDrawRequest);
          } else {
             SubmitDrawRequest();
          }

@@ -21,12 +21,7 @@
          // Or one can create root.json file in the application and place it on the webserver
          // To run demo, one should generate rootXX.json files using demo.C macro
 
-         var request_addr = "root" + (cnt%20) + ".json";
-
-         // "dummy=xxxx" URL parameter can be used to prevent browser cashing
-         // request_addr+= "?dummy=" + cnt;
-
-         if (addr!=null) request_addr = addr;
+         var request_addr = addr || ("root" + (cnt % 20) + ".json");
 
          var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
             if (!histo) {

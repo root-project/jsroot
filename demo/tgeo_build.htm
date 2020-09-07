@@ -85,7 +85,7 @@
                });
             } else {
                // load geometry from JSON as object
-               JSROOT.NewHttpRequest(filename, 'object', add_geometry).send();
+               JSROOT.HttpRequest(filename, 'object').then(add_geometry);
             }
 
             // ------------------- end of reading geometry object --------------------------

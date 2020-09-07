@@ -905,17 +905,16 @@
          this.ReadKeys(newfile_callback);
       } else {
          var file = this;
-         JSROOT.NewHttpRequest(this.fURL, "head", function(res) {
-            if (!res)
-               return JSROOT.CallBack(newfile_callback, null);
-
+         JSROOT.HttpRequest(this.fURL, "head").then(function(res) {
             var accept_ranges = res.getResponseHeader("Accept-Ranges");
             if (!accept_ranges) file.fAcceptRanges = false;
             var len = res.getResponseHeader("Content-Length");
             if (len) file.fEND = parseInt(len);
                 else file.fAcceptRanges = false;
             file.ReadKeys(newfile_callback);
-         }).send(null);
+         }).catch(function() {
+            JSROOT.CallBack(newfile_callback, null);
+         });
       }
 
       return this;

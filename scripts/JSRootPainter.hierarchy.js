@@ -850,16 +850,18 @@
          if (hitem && hitem._title) d3node.attr('title', "Executing " + hitem._title);
       }
 
-      JSROOT.NewHttpRequest(url, 'text', function(res) {
-         if (typeof callback == 'function') return callback(res);
-         if (d3node.empty()) return;
-         var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
-         if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
-         d3node.style('background', col);
-         setTimeout(function() { d3node.style('background', ''); }, 2000);
-         if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
-         if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
-      }).send();
+      if (typeof callback != 'function')
+         callback = function(res) {
+            if (d3node.empty()) return;
+            var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
+            if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
+            d3node.style('background', col);
+            setTimeout(function() { d3node.style('background', ''); }, 2000);
+            if ((col == 'green') && ('_hreload' in hitem)) pthis.reload();
+            if ((col == 'green') && ('_update_item' in hitem)) pthis.updateItems(hitem._update_item.split(";"));
+         }
+
+      JSROOT.HttpRequest(url, 'text').then(callback, callback);
    }
 
    HierarchyPainter.prototype.RefreshHtml = function(callback) {
@@ -1568,17 +1570,16 @@
       if (isfileopened) return JSROOT.CallBack(call_back);
 
       var pthis = this;
-      JSROOT.NewHttpRequest(filepath, 'object', function(res) {
-         if (!res) return JSROOT.CallBack(call_back);
+      JSROOT.HttpRequest(filepath, 'object').then(function(res) {
          var h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
             if (item._jsontmp)
                return JSROOT.CallBack(callback, item, item._jsontmp);
-            JSROOT.NewHttpRequest(item._jsonfile, 'object', function(res) {
+            JSROOT.HttpRequest(item._jsonfile, 'object').then(function(res) {
                item._jsontmp = res;
                JSROOT.CallBack(callback, item, item._jsontmp);
-            }).send();
+            });
          }
          if (pthis.h == null) pthis.h = h1; else
          if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
@@ -1587,7 +1588,7 @@
          }
 
          pthis.RefreshHtml(call_back);
-      }).send(null);
+      }).catch(function() { JSROOT.CallBack(call_back); });
    }
 
    HierarchyPainter.prototype.ForEachRootFile = function(call_back) {
@@ -1658,9 +1659,9 @@
             return this.get(item, function(item2, obj) { hpainter.ApplyStyle(obj, call_back); });
 
          if (style.indexOf('.json') > 0)
-            return JSROOT.NewHttpRequest(style, 'object', function(res) {
+            return JSROOT.HttpRequest(style, 'object').then(function(res) {
                hpainter.ApplyStyle(res, call_back);
-            }).send(null);
+            });
       }
 
       return JSROOT.CallBack(call_back);
@@ -1719,11 +1720,9 @@
          if (h_get) {
             req = 'h.json?compact=3';
             item._expand = JSROOT.Painter.OnlineHierarchy; // use proper expand function
-         } else
-         if ('_make_request' in item) {
+         } else if ('_make_request' in item) {
             func = JSROOT.findFunction(item._make_request);
-         } else
-         if ((draw_handle!=null) && ('make_request' in draw_handle)) {
+         } else if ((draw_handle!=null) && ('make_request' in draw_handle)) {
             func = draw_handle.make_request;
          }
 
@@ -1854,7 +1853,7 @@
          return AdoptHierarchy(h);
       }
 
-      JSROOT.NewHttpRequest(server_address + "h.json?compact=3", 'object', AdoptHierarchy).send(null);
+      JSROOT.HttpRequest(server_address + "h.json?compact=3", 'object').then(AdoptHierarchy);
    }
 
    HierarchyPainter.prototype.GetOnlineProp = function(itemname) {

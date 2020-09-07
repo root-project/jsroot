@@ -257,9 +257,7 @@
                           ((JSROOT.source_dir.indexOf("/dev/")>0) ? "dev/" : "master/") +
                           entry.src;
 
-            JSROOT.NewHttpRequest(srcload, "text", function(res) {
-               if (!res) return console.error("Cannot find " + srcload);
-
+            JSROOT.HttpRequest(srcload, "text").then(function(res) {
                var viewer = document.getElementById( 'viewer' );
                var srcviewer = document.getElementById( 'srcviewer' );
                viewer.style.display = 'none';
@@ -274,7 +272,9 @@
                }
                srcviewer.focus();
 
-            }).send();
+            }).catch(function() {
+               console.error("Cannot find " + srcload);
+            });
          }
 
          function SetSourceListener(elem, shortname, entry) {

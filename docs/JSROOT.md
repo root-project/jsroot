@@ -615,10 +615,9 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
 To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class. JSROOT provides a special method to create such object and properly handle it in different browsers.
 For receiving JSON from a server one could use following code:
 
-    var req = JSROOT.NewHttpRequest("http://your_root_server:8080/Canvases/c1/root.json", 'object', userCallback);
-    req.send(null);
+    JSROOT.HttpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object");
 
-In the callback function one gets JavaScript object (or null in case of failure)
+Function returns Promise, which provides parsed object (or Error in case of failure).
 
 If JSON string was obtained by different method, it should be parsed with:
 
@@ -643,14 +642,14 @@ The first argument is the id of the HTML div element, where drawing will be perf
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
     var filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.NewHttpRequest(filename, 'object', function(obj) {
+    JSROOT.HttpRequest(filename, 'object').then(function(obj) {
        JSROOT.draw("drawing", obj, "lego");
-    }).send();
+    });
 
 In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
-call back (forth argument) like:
+handline Promise results like:
 
-    JSROOT.draw("drawing", obj, "colz", function(painter) {
+    JSROOT.draw("drawing", obj, "colz").then(function(painter) {
        console.log('Object type in painter', painter.GetObject()._typename);
     });
 

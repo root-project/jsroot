@@ -8,9 +8,9 @@ console.log('JSROOT version', jsroot.version);
 //
 // jsroot.ImageSVG = true;
 
-jsroot.NewHttpRequest("https://root.cern/js/files/geom/simple_alice.json.gz", 'object', function(obj) {
+jsroot.HttpRequest("https://root.cern/js/files/geom/simple_alice.json.gz", 'object').then(function(obj) {
    jsroot.MakeSVG( { object: obj, width: 1200, height: 800 }, function(svg) {
       console.log('SVG size', svg.length);
       fs.writeFileSync("alice_geom.svg", svg);
    });
-}).send();
+});

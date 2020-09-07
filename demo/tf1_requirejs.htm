@@ -16,10 +16,10 @@
          // now request JSRootCore
          require(['JSRootCore'], function(jsroot) {
             // request data from JSON file
-            jsroot.NewHttpRequest("canvas_tf1.json", 'object', function(obj) {
+            jsroot.HttpRequest("canvas_tf1.json", 'object').then(function(obj) {
                // display object
                jsroot.draw("drawing", obj, "hist");
-            }).send();
+            });
           });
      });
 

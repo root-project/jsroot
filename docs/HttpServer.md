@@ -449,14 +449,15 @@ such kind of requests, which themselvs require data from POST block.
 
 To use `multi.json` request from the JavaScript, one should create special 'POST' HTTP request and properly parse it. JSROOT provides special method to do this:
 
-     var xhr = JSROOT.NewHttpRequest("your_server/multi.json?number=3", "multi", function(res) {
-        if (!res) return;
-        for (var n=0;n<res.length;++n) {
-           console.log('Requested element ', res[n]._typename);
-           // JSROOT.draw('drawid', res[n], 'hist');
-        }
-     });
-     xhr.send("Files/job1.root/hpx/root.json\nFiles/job1.root/hpxpy/root.json\nFiles/job1.root/hprof/root.json\n");
+     JSROOT.HttpRequest("your_server/multi.json?number=3", "multi",
+                        "Files/job1.root/hpx/root.json\nFiles/job1.root/hpxpy/root.json\nFiles/job1.root/hprof/root.json\n").then(function(res) {
+              for (var n=0;n<res.length;++n) {
+                 console.log('Requested element ', res[n]._typename);
+                 // JSROOT.draw('drawid', res[n], 'hist');
+              }
+            }).catch(function(err) {
+               console.error("Fail to handle multi.json request");
+            });
 
 Here argument "multi" identifies, that server response should be parsed with `JSROOT.parse_multi()` function, which correctly interprets JSON code, produced by `multi.json` request. When sending such request to the server, one should provide list of objects names and not forget "?number=N" parameter in the request URL string.
 

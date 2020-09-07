@@ -1744,7 +1744,7 @@
       this.receiver = receiver;
       this.protocol = [];
       this.cnt = 0;
-      JSROOT.NewHttpRequest("protocol.json", "text", this.get_protocol.bind(this)).send();
+      JSROOT.HttpRequest("protocol.json", "text").then(this.get_protocol.bind(this));
    }
 
    FileDumpSocket.prototype.get_protocol = function(res) {
@@ -1772,8 +1772,8 @@
       if (fname == "send") return; // waiting for send
       // console.log("getting file", fname, "wait", this.wait_for_file);
       this.wait_for_file = true;
-      JSROOT.NewHttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text"), this.get_file.bind(this, fname)).send();
       this.cnt++;
+      JSROOT.HttpRequest(fname, (fname.indexOf(".bin") > 0 ? "buf" : "text")).then(this.get_file.bind(this, fname));
    }
 
    FileDumpSocket.prototype.get_file = function(fname, res) {

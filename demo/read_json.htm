@@ -11,9 +11,9 @@
 
    <script type='text/javascript'>
       // json file stored in same folder, absolute address can be used as well
-      JSROOT.NewHttpRequest("hpx.json", 'object', function(obj) {
-         JSROOT.draw("drawing", obj, "hist");
-      }).send();
+      JSROOT.HttpRequest("hpx.json", 'object').then(function(obj) {
+         JSROOT.new_draw("drawing", obj, "hist");
+      });
    </script>
 </head>
 

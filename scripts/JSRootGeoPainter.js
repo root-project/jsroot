@@ -2991,10 +2991,7 @@
 
       JSROOT.progress('Loading macro ' + script_name);
 
-      JSROOT.NewHttpRequest(script_name, "text", function(res) {
-         if (!res || (res.length==0))
-            return JSROOT.CallBack(call_back, draw_obj, name_prefix);
-
+      JSROOT.HttpRequest(script_name, "text").then(function(res) {
          var lines = res.split('\n');
 
          ProcessNextLine(0);
@@ -3037,7 +3034,9 @@
             JSROOT.CallBack(call_back, draw_obj, name_prefix);
          }
 
-      }).send();
+      }).catch(function() {
+         JSROOT.CallBack(call_back, draw_obj, name_prefix);
+      });
    }
 
    /** Assign clones, created outside.

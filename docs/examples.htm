@@ -211,9 +211,9 @@
                 document.getElementById('viewer').style['background-color'] = "";
 
                 if (jsonname) {
-                   JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
+                   JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
                       JSROOT.draw("viewer", obj, opt);
-                   }).send();
+                   });
                 } else {
                    JSROOT.OpenFile(filename, function(file) {
                       file.ReadObject(itemname, function(obj) {
@@ -334,12 +334,11 @@
             } else
             if (jsonname.length > 0) {
                testfile = testobj = null;
-               JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
+               JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
                   testobj = obj;
                   JSROOT.draw("viewer", obj, opt, RunBigTest);
-               }).send();
-            } else
-            if (filename.length > 0) {
+               });
+            } else if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
                    testfile.ReadObject(itemname, function(obj) {
@@ -347,8 +346,7 @@
                       JSROOT.draw("viewer", obj, opt, RunBigTest);
                    });
                 });
-            } else
-            if (itemname.length > 0) {
+            } else if (itemname.length > 0) {
                 testfile.ReadObject(itemname, function(obj) {
                     testobj = obj;
                     JSROOT.draw("viewer", obj, opt, RunBigTest);
