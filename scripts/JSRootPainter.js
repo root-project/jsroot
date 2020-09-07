@@ -2316,13 +2316,15 @@
     * @private */
 
    TBasePainter.prototype.DrawingReady = function(res_painter) {
-      this._ready_called_ = true;
-      if (this._ready_callback_ !== undefined) {
-         var callbacks = this._ready_callback_;
+      var res = true; // TODO: inidicate failures when happens
+      this._ready_called_ = res;
+      if (this._ready_callbacks_ !== undefined) {
+         var callbacks = (res ? this._ready_callbacks_ : this._reject_callbacks_) || [];
          if (!this._return_res_painter) res_painter = this;
 
          delete this._return_res_painter;
-         delete this._ready_callback_;
+         delete this._ready_callbacks_;
+         delete this._reject_callbacks_;
 
          while (callbacks.length)
             JSROOT.CallBack(callbacks.shift(), res_painter);
@@ -2333,11 +2335,20 @@
    /** @summary Call back will be called when painter ready with the drawing
     * @private
     */
-   TBasePainter.prototype.WhenReady = function(callback) {
-      if (typeof callback !== 'function') return;
-      if ('_ready_called_' in this) return JSROOT.CallBack(callback, this);
-      if (this._ready_callback_ === undefined) this._ready_callback_ = [];
-      this._ready_callback_.push(callback);
+   TBasePainter.prototype.WhenReady = function(resolveFunc, rejectFunc) {
+      if (typeof resolveFunc !== 'function') return;
+      if ('_ready_called_' in this)
+         return JSROOT.CallBack(resolveFunc, this);
+      if (!this._ready_callbacks_)
+         this._ready_callbacks_ = [ resolveFunc ];
+      else
+         this._ready_callbacks_.push(resolveFunc);
+      if (rejectFunc) {
+         if (!this._reject_callbacks_)
+            this._reject_callbacks_ = [ rejectFunc ];
+         else
+            this._reject_callbacks_.push(rejectFunc);
+      }
    }
 
    /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
@@ -2345,7 +2356,7 @@
    */
    TBasePainter.prototype.ResetReady = function() {
       delete this._ready_called_;
-      delete this._ready_callback_;
+      delete this._ready_callbacks_;
    }
 
    /** @summary Returns drawn object
@@ -6603,6 +6614,138 @@
 
       return painter;
    }
+
+
+   JSROOT.draw_impl = function(divid, obj, opt, resolveFunc, rejectFunc, doing_redraw) {
+
+      function completeDraw(painter) {
+         if (painter && (typeof painter == 'object') && (typeof painter.WhenReady == 'function'))
+            painter.WhenReady(resolveFunc, rejectFunc);
+         else if (painter)
+            resolveFunc(painter);
+         else
+            rejectFunc(Error("fail to draw"));
+      }
+
+      if (!obj || (typeof obj !== 'object'))
+         return completeDraw(null);
+
+      if (doing_redraw) {
+         var dummy = new TObjectPainter();
+         dummy.SetDivId(divid, -1);
+         var can_painter = dummy.canv_painter();
+
+         var handle = null;
+         if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
+         if (handle && handle.draw_field && obj[handle.draw_field])
+            obj = obj[handle.draw_field];
+
+         if (can_painter) {
+            if (obj._typename === "TCanvas") {
+               can_painter.RedrawObject(obj);
+               JSROOT.CallBack(callback, can_painter);
+               return can_painter;
+            }
+
+            for (var i = 0; i < can_painter.painters.length; ++i) {
+               var painter = can_painter.painters[i];
+               if (painter.MatchObjectType(obj._typename))
+                  if (painter.UpdateObject(obj, opt)) {
+                     can_painter.RedrawPad();
+                     JSROOT.CallBack(callback, painter);
+                     return painter;
+                  }
+            }
+         }
+
+         if (can_painter)
+            JSROOT.console("Cannot find painter to update object of type " + obj._typename);
+
+         JSROOT.cleanup(divid);
+      }
+
+      if (opt == 'inspect') {
+         var func = JSROOT.findFunction("JSROOT.Painter.drawInspector");
+         if (func) return completeDraw(func(divid, obj));
+         JSROOT.AssertPrerequisites("hierarchy", function() {
+            completeDraw(JSROOT.Painter.drawInspector(divid, obj));
+         });
+         return null;
+      }
+
+      var handle = null, painter = null;
+      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
+      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
+
+      if (!handle) return completeDraw(null);
+
+      if (handle.draw_field && obj[handle.draw_field])
+         return JSROOT.draw_impl(divid, obj[handle.draw_field], opt, resolveFunc, rejectFunc);
+
+      if (!handle.func) {
+         if (opt && (opt.indexOf("same")>=0)) {
+            var main_painter = JSROOT.GetMainPainter(divid);
+            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
+               return main_painter.PerformDrop(obj, "", null, opt, completeDraw);
+         }
+
+         return completeDraw(null);
+      }
+
+      function performDraw() {
+         if (handle.direct) {
+            painter = new TObjectPainter(obj, opt);
+            painter.csstype = handle.csstype;
+            painter.SetDivId(divid, 2);
+            painter.Redraw = handle.func;
+            painter.Redraw();
+            painter.DrawingReady();
+         } else {
+            painter = handle.func(divid, obj, opt);
+
+            if (painter && !painter.options) painter.options = { original: opt || "" };
+         }
+
+         return completeDraw(painter);
+      }
+
+      if (typeof handle.func == 'function') return performDraw();
+
+      var funcname = "", prereq = "";
+      if (typeof handle.func == 'object') {
+         if ('func' in handle.func) funcname = handle.func.func;
+         if ('script' in handle.func) prereq = "user:" + handle.func.script;
+      } else if (typeof handle.func == 'string') {
+         funcname = handle.func;
+         if (('prereq' in handle) && (typeof handle.prereq == 'string')) prereq = handle.prereq;
+         if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
+      }
+
+      if (!funcname.length) return completeDraw(null);
+
+      // try to find function without prerequisites
+      var func = JSROOT.findFunction(funcname);
+      if (func) {
+          handle.func = func; // remember function once it is found
+          return performDraw();
+      }
+
+      if (!prereq.length)
+         return completeDraw(null);
+
+      JSROOT.AssertPrerequisites(prereq, function() {
+         var func = JSROOT.findFunction(funcname);
+         if (!func) {
+            alert('Fail to find function ' + funcname + ' after loading ' + prereq);
+            return completeDraw(null);
+         }
+
+         handle.func = func; // remember function once it found
+
+         performDraw();
+      });
+   }
+
 
    /**
     * @summary Redraw object in specified HTML element with given draw options.

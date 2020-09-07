@@ -1380,11 +1380,33 @@
       });
    }
 
+   JSROOT.new_draw = function(divid, obj, opt) {
+      return new Promise(function(resolve, reject) {
+         if (JSROOT.draw_impl)
+            JSROOT.draw_impl(divid, obj, opt, resolve, reject);
+         else
+            JSROOT.AssertPrerequisites("2d", function() {
+               JSROOT.draw_impl(divid, obj, opt, resolve, reject);
+            });
+      });
+   }
+
    // redraw object on given element
    // defined in JSRootPainter.js
-   JSROOT.redraw = function(divid, obj, opt, callback) {
+   JSROOT.redraw = function(divid, obj, opt) {
       JSROOT.AssertPrerequisites("2d", function() {
          JSROOT.redraw(divid, obj, opt, callback);
+      });
+   }
+
+   JSROOT.new_redraw = function(divid, obj, opt) {
+      return new Promise(function(resolve, reject) {
+         if (JSROOT.draw_impl)
+            JSROOT.draw_impl(divid, obj, opt, resolve, reject, true);
+         else
+            JSROOT.AssertPrerequisites("2d", function() {
+               JSROOT.draw_impl(divid, obj, opt, resolve, reject, true);
+            });
       });
    }
 

@@ -195,7 +195,7 @@
 
             if (durl.length > 0) {
                var viewer = document.getElementById( 'viewer_frame' );
-               if (viewer == null) {
+               if (!viewer) {
                   document.getElementById('viewer').innerHTML = "";
                   viewer = document.createElement('iframe');
                   viewer.id = "viewer_frame";
@@ -212,12 +212,12 @@
 
                 if (jsonname) {
                    JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
-                      JSROOT.draw("viewer", obj, opt);
+                      JSROOT.new_draw("viewer", obj, opt);
                    }).send();
                 } else {
                    JSROOT.OpenFile(filename, function(file) {
                       file.ReadObject(itemname, function(obj) {
-                         JSROOT.draw("viewer", obj, opt);
+                         JSROOT.new_draw("viewer", obj, opt);
                       });
                    });
                 }
@@ -331,30 +331,27 @@
                }
 
                hpainter.StartGUI(null, RunBigTest, url);
-            } else
-            if (jsonname.length > 0) {
+            } else if (jsonname.length > 0) {
                testfile = testobj = null;
                JSROOT.NewHttpRequest(jsonname, 'object', function(obj) {
                   testobj = obj;
-                  JSROOT.draw("viewer", obj, opt, RunBigTest);
+                  JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                }).send();
-            } else
-            if (filename.length > 0) {
+            } else if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
                    testfile.ReadObject(itemname, function(obj) {
                       testobj = obj;
-                      JSROOT.draw("viewer", obj, opt, RunBigTest);
+                      JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                    });
                 });
-            } else
-            if (itemname.length > 0) {
+            } else if (itemname.length > 0) {
                 testfile.ReadObject(itemname, function(obj) {
                     testobj = obj;
-                    JSROOT.draw("viewer", obj, opt, RunBigTest);
+                    JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                  });
             } else {
-                JSROOT.draw("viewer", testobj, opt, RunBigTest);
+                JSROOT.new_draw("viewer", testobj, opt).then(RunBigTest, RunBigTest);
             }
          }
 
