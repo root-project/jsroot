@@ -1090,18 +1090,9 @@
 
       JSROOT.complete_script_load = completeLoad;
 
-      if (element.readyState) { // Internet Explorer specific
-         element.onreadystatechange = function() {
-            if (element.readyState == "loaded" || element.readyState == "complete") {
-               element.onreadystatechange = null;
-               if (JSROOT.complete_script_load) JSROOT.complete_script_load();
-            }
-         }
-      } else { // Other browsers
-         element.onload = function() {
-            element.onload = null;
-            if (JSROOT.complete_script_load) JSROOT.complete_script_load();
-         }
+      element.onload = function() {
+         element.onload = null;
+         if (JSROOT.complete_script_load) JSROOT.complete_script_load();
       }
 
       document.getElementsByTagName("head")[0].appendChild(element);

@@ -144,23 +144,13 @@
             element.setAttribute('type', "text/javascript");
             element.setAttribute('src', name);
 
-            if (element.readyState) { // Internet Explorer specific
-               element.onreadystatechange = function() {
-                  if (element.readyState == "loaded" || element.readyState == "complete") {
-                     element.onreadystatechange = null;
-                     load_callback();
-                  }
-              }
-            } else { // Other browsers
-               element.onload = function() {
-                  element.onload = null;
-                  load_callback();
-               }
+            element.onload = function() {
+               element.onload = null;
+               load_callback();
             }
 
             document.getElementsByTagName("head")[0].appendChild(element);
          }
-
 
          loadScript(use_requirejs ? "//cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" : scripts + 'JSRootCore.js',
             function() {
