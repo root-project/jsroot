@@ -845,6 +845,7 @@
     *    - "multi" - returns correctly parsed multi.json request
     *    - "xml" - returns req.responseXML
     *    - "head" - returns request itself, uses "HEAD" method
+    *    - "post" - creates post request, req.send(post_data) should be called
     *
     * Result will be returned to the callback function.
     * Request will be set as *this* pointer in the callback.
@@ -852,7 +853,8 @@
     *
     * @param {string} url - URL for the request
     * @param {string} kind - kind of requested data
-    * @param {function} user_call_back - called when request is completed
+    * @param {function} user_accept_callback - called when request is completed
+    * @param {function} user_reject_callback - get Error() with description, when not specified accepct_callback(null) is called
     * @returns {object} XMLHttpRequest object
     *
     * @example
@@ -863,11 +865,12 @@
     * }).send();
     */
 
-   JSROOT.NewHttpRequest = function(url, kind, user_call_back) {
+   JSROOT.NewHttpRequest = function(url, kind, user_accept_callback, user_reject_callback) {
 
       var xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
 
-      xhr.http_callback = (typeof user_call_back == 'function') ? user_call_back.bind(xhr) : function() {};
+      xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
+      xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
       if (!kind) kind = "buf";
 
@@ -883,8 +886,7 @@
             if (oEvent.lengthComputable && this.expected_size && (oEvent.loaded > this.expected_size)) {
                this.did_abort = true;
                this.abort();
-               console.warn('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation');
-               this.http_callback(null);
+               this.error_callback(Error('Server sends more bytes ' + oEvent.loaded + ' than expected ' + this.expected_size + '. Abort I/O operation'));
             }
          }.bind(xhr));
 
@@ -897,8 +899,7 @@
             if (!isNaN(len) && (len>this.expected_size) && !JSROOT.wrong_http_response_handling) {
                this.did_abort = true;
                this.abort();
-               console.warn('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation');
-               return this.http_callback(null);
+               return this.error_callback(Error('Server response size ' + len + ' larger than expected ' + this.expected_size + '. Abort I/O operation'));
             }
          }
 
@@ -907,7 +908,7 @@
          if ((this.status != 200) && (this.status != 206) && !JSROOT.browser.qt5 &&
              // in these special cases browsers not always set status
              !((this.status == 0) && ((url.indexOf("file://")==0) || (url.indexOf("blob:")==0)))) {
-            return this.http_callback(null);
+               return this.error_callback(Error('Fail to load url ' + url));
          }
 
          if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip")) {
@@ -953,6 +954,28 @@
       }
 
       return xhr;
+   }
+
+   /**
+    * @summary Submit http request with specified URL and return Promise.
+    *
+    * @desc See @JSROOT.NewHttpRequest for supported kinds.
+    *
+    * @param {string} url - URL for the request
+    * @param {string} kind - kind of requested data
+    * @param {string} [send_arg] - send argument when post request is created
+    * @returns {object} Promise
+    *
+    * @example
+    * JSROOT.HttpRequest("https://root.cern/js/files/thstack.json.gz", "object")
+    *       .then(function(obj) { console.log("Get object of type ", obj._typename); })
+    *       .catch(function(err) { console.error(err.message) });
+    */
+
+   JSROOT.HttpRequest = function(url, kind, send_arg) {
+      return new Promise(function(accept, reject) {
+         JSROOT.NewHttpRequest(url, kind, accept, reject).send(send_arg || null);
+      });
    }
 
    /**
