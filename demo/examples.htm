@@ -350,7 +350,6 @@
             if (typeof examples_main == 'undefined')
                return loadScript(demo_path + 'examples.js', FillContent);
 
-
             if (window.location.search.indexOf("?more")==0) {
                if (typeof examples_more == 'undefined')
                   return loadScript(demo_path + 'examples_more.js', FillContent);
@@ -370,6 +369,9 @@
                JSROOT.RegisterForResize('viewer');
             });
 
+            var select = JSROOT.GetUrlOption("select", window.location.href);
+            if (!select && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select = "TGeo";
+
             document.getElementById( 'version' ).title = JSROOT.version + ", " + JSROOT.source_dir;
 
             var content = document.getElementById( 'content' );
@@ -377,6 +379,8 @@
             for (var key in examples_main) {
 
                var opts = examples_main[key];
+
+               if (select && (key != select)) continue;
 
                var div = document.createElement( 'h2' );
                div.textContent = key;
