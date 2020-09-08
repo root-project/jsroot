@@ -2116,7 +2116,7 @@
          function SubmitDrawRequest() {
             JSROOT.HttpRequest(url, 'object').then(function(res) {
                JSROOT.cleanup(player.drawid);
-               JSROOT.draw(player.drawid, res, option);
+               JSROOT.new_draw(player.drawid, res, option);
             });
          }
 

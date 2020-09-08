@@ -5010,10 +5010,9 @@
       var lst = this.pad ? this.pad.fPrimitives : null;
       if (!lst || (lst.arr.length != 1)) return;
 
-      // FIXME: all draw functions have to return promise !!!!
       var obj = lst.arr[0];
       if (obj && obj._typename && (obj._typename.indexOf("TGeo")==0))
-         return JSROOT.draw(this.divid, obj, lst.opt[0]);
+         return JSROOT.new_draw(this.divid, obj, lst.opt[0]); // return promise
    }
 
    function drawCanvas(divid, can, opt) {

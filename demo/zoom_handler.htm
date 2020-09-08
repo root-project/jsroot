@@ -19,12 +19,12 @@
 
       JSROOT.OpenFile(filename, function(file) {
          file.ReadObject("hpx;1", function(obj) {
-            JSROOT.draw("drawth1", obj, "hist", function(painter) {
+            JSROOT.new_draw("drawth1", obj, "hist").then(function(painter) {
                h1painter = painter;
             });
          });
          file.ReadObject("hpxpy;1", function(obj) {
-            JSROOT.draw("drawth2", obj, "col", function(painter) {
+            JSROOT.new_draw("drawth2", obj, "col").then(function(painter) {
                // zooming handled in frame painter now
                var fp = painter.frame_painter();
                // keep old function to be able invoke it again

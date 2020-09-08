@@ -2838,7 +2838,6 @@
    }
 
    JSROOT.Painter.drawSpline = function(divid, spline, opt) {
-
       var painter = new TSplinePainter(spline);
 
       painter.SetDivId(divid, -1);
@@ -2850,8 +2849,7 @@
             return null;
          }
          var histo = painter.CreateDummyHisto();
-         JSROOT.draw(divid, histo, "AXIS", painter.FirstDraw.bind(painter));
-         return painter;
+         return JSROOT.new_draw(divid, histo, "AXIS").then(painter.FirstDraw.bind(painter));
       }
 
       return painter.FirstDraw();
@@ -2886,28 +2884,22 @@
 
    TGraphTimePainter.prototype.DrawPrimitives = function(indx, callback, ppainter) {
 
-      if (indx===0) {
+      if (indx===0)
          this._doing_primitives = true;
-      }
 
       var lst = this.GetObject().fSteps.arr[this.step];
 
-      while (true) {
-         if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
+      if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
 
-         if (!lst || (indx >= lst.arr.length)) {
-            delete this._doing_primitives;
-            return JSROOT.CallBack(callback);
-         }
-
-         // handle use to invoke callback only when necessary
-         var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
-
-         ppainter = JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx], handle);
-
-         if (!handle.completed) return;
-         indx++;
+      if (!lst || (indx >= lst.arr.length)) {
+         delete this._doing_primitives;
+         return JSROOT.CallBack(callback);
       }
+
+      // handle use to invoke callback only when necessary
+      var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+
+      JSROOT.new_draw(this.divid, lst.arr[indx], lst.opt[indx]).then(handle_func);
    }
 
    TGraphTimePainter.prototype.Selector = function(p) {
@@ -2978,6 +2970,8 @@
       this.step = 0;
 
       this.DrawPrimitives(0, this.ContineDrawing.bind(this));
+
+      return this; // used in promise
    }
 
    JSROOT.Painter.drawGraphTime = function(divid,gr,opt) {
@@ -3001,10 +2995,9 @@
 
       painter.selfid = "grtime" + JSROOT.id_counter++; // use to identify primitives which should be clean
 
-      JSROOT.draw(divid, gr.fFrame, "AXIS", painter.StartDrawing.bind(painter));
+      JSROOT.new_draw(divid, gr.fFrame, "AXIS").then(painter.StartDrawing.bind(painter));
 
-      return painter;
-
+      return painter; // first drawing down via tmout, therefore return painter
    }
 
    // =============================================================
@@ -3102,12 +3095,12 @@
       var gr = painter.CreateGraph();
       painter.FillGraph(gr, opt);
 
-      JSROOT.draw(divid, gr, opt, function() {
-         painter.SetDivId(divid);
-         painter.DrawingReady();
-      });
-
-      return painter;
+      return JSROOT.new_draw(divid, gr, opt)
+                   .then(function(grp) {
+                       painter.SetDivId(divid);
+                       painter.DrawingReady();
+                       return painter;
+                    });
    }
 
 
@@ -3278,7 +3271,7 @@
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      JSROOT.draw(this.divid, histo, "AXIS", callback);
+      JSROOT.new_draw(this.divid, histo, "AXIS").then(callback);
    }
 
    TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
@@ -3289,8 +3282,8 @@
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx],
-                  this.DrawNextFunction.bind(this, indx+1, callback));
+      JSROOT.new_draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+            .then(this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    TMultiGraphPainter.prototype.DrawNextGraph = function(indx, opt, subp, used_timeout) {
@@ -3322,8 +3315,7 @@
          }
       }
 
-      JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt,
-                  this.DrawNextGraph.bind(this, indx+1, opt));
+      JSROOT.new_draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(this.DrawNextGraph.bind(this, indx+1, opt));
    }
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
@@ -3790,7 +3782,7 @@
       }
 
       if (!pal_painter) {
-         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name, function(p) {
+         JSROOT.new_draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(function(p) {
             // mark painter as secondary - not in list of TCanvas primitives
             p.$secondary = true;
 

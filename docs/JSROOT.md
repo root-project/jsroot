@@ -650,7 +650,7 @@ In very seldom cases one need to access painter object, created in JSROOT.draw()
 handline Promise results like:
 
     JSROOT.draw("drawing", obj, "colz").then(function(painter) {
-       console.log('Object type in painter', painter.GetObject()._typename);
+       console.log('Object type in painter', painter.GetClassName());
     });
 
 One is also able to update the drawing with a new version of the object:

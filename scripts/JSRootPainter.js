@@ -4420,7 +4420,7 @@
       if (!obj || (typeof obj !== 'object') || !obj._typename)
          obj = this.GetObject();
 
-      JSROOT.draw(id, obj, 'inspect');
+      JSROOT.new_draw(id, obj, 'inspect');
    }
 
    /** @summary Fill context menu for the object
@@ -6504,115 +6504,8 @@
     *
     */
    JSROOT.draw = function(divid, obj, opt, drawcallback) {
-
-      var isdirectdraw = true; // indicates if extra callbacks (via AssertPrerequisites) was invoked to process
-
-      function completeDraw(painter) {
-         var callbackfunc = null, ishandle = false;
-         if (typeof drawcallback == 'function') callbackfunc = drawcallback; else
-            if (drawcallback && (typeof drawcallback == 'object') && (typeof drawcallback.func=='function')) {
-               callbackfunc = drawcallback.func;
-               ishandle = true;
-            }
-
-         if (ishandle && isdirectdraw) {
-            // if there is no painter or drawing is already completed, return directly
-            if (!painter || painter._ready_called_) { drawcallback.completed = true; return painter; }
-         }
-
-         if (painter && drawcallback && (typeof painter.WhenReady == 'function'))
-            painter.WhenReady(callbackfunc);
-         else
-            JSROOT.CallBack(callbackfunc, painter);
-         return painter;
-      }
-
-      if ((obj === null) || (typeof obj !== 'object')) return completeDraw(null);
-
-      if (opt == 'inspect') {
-         var func = JSROOT.findFunction("JSROOT.Painter.drawInspector");
-         if (func) return completeDraw(func(divid, obj));
-         JSROOT.AssertPrerequisites("hierarchy", function() {
-            completeDraw(JSROOT.Painter.drawInspector(divid, obj));
-         });
-         return null;
-      }
-
-      var handle = null, painter = null;
-      if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
-      else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
-
-      if (!handle) return completeDraw(null);
-
-      if (handle.draw_field && obj[handle.draw_field])
-         return JSROOT.draw(divid, obj[handle.draw_field], opt, drawcallback);
-
-      if (!handle.func) {
-         if (opt && (opt.indexOf("same")>=0)) {
-            var main_painter = JSROOT.GetMainPainter(divid);
-            if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-               return main_painter.PerformDrop(obj, "", null, opt, completeDraw);
-         }
-
-         return completeDraw(null);
-      }
-
-      function performDraw() {
-         if (handle.direct) {
-            painter = new TObjectPainter(obj, opt);
-            painter.csstype = handle.csstype;
-            painter.SetDivId(divid, 2);
-            painter.Redraw = handle.func;
-            painter.Redraw();
-            painter.DrawingReady();
-         } else {
-            painter = handle.func(divid, obj, opt);
-
-            if (painter && !painter.options) painter.options = { original: opt || "" };
-         }
-
-         return completeDraw(painter);
-      }
-
-      if (typeof handle.func == 'function') return performDraw();
-
-      var funcname = "", prereq = "";
-      if (typeof handle.func == 'object') {
-         if ('func' in handle.func) funcname = handle.func.func;
-         if ('script' in handle.func) prereq = "user:" + handle.func.script;
-      } else
-      if (typeof handle.func == 'string') {
-         funcname = handle.func;
-         if (('prereq' in handle) && (typeof handle.prereq == 'string')) prereq = handle.prereq;
-         if (('script' in handle) && (typeof handle.script == 'string')) prereq += ";user:" + handle.script;
-      }
-
-      if (funcname.length === 0) return completeDraw(null);
-
-      // try to find function without prerequisites
-      var func = JSROOT.findFunction(funcname);
-      if (func) {
-          handle.func = func; // remember function once it is found
-          return performDraw();
-      }
-
-      if (prereq.length === 0) return completeDraw(null);
-
-      isdirectdraw = false;
-
-      JSROOT.AssertPrerequisites(prereq, function() {
-         var func = JSROOT.findFunction(funcname);
-         if (!func) {
-            alert('Fail to find function ' + funcname + ' after loading ' + prereq);
-            return completeDraw(null);
-         }
-
-         handle.func = func; // remember function once it found
-
-         performDraw();
-      });
-
-      return painter;
+      // return Promise, all API should be changed already
+      return JSROOT.new_draw(divid, obj, opt).then(drawcallback);
    }
 
 
@@ -6768,41 +6661,8 @@
     * @param {function} callback - function called when drawing is completed, first argument will be object painter instance
     */
    JSROOT.redraw = function(divid, obj, opt, callback) {
-      if (!obj) return JSROOT.CallBack(callback, null);
 
-      var dummy = new TObjectPainter();
-      dummy.SetDivId(divid, -1);
-      var can_painter = dummy.canv_painter();
-
-      var handle = null;
-      if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
-      if (handle && handle.draw_field && obj[handle.draw_field])
-         obj = obj[handle.draw_field];
-
-      if (can_painter) {
-         if (obj._typename === "TCanvas") {
-            can_painter.RedrawObject(obj);
-            JSROOT.CallBack(callback, can_painter);
-            return can_painter;
-         }
-
-         for (var i = 0; i < can_painter.painters.length; ++i) {
-            var painter = can_painter.painters[i];
-            if (painter.MatchObjectType(obj._typename))
-               if (painter.UpdateObject(obj, opt)) {
-                  can_painter.RedrawPad();
-                  JSROOT.CallBack(callback, painter);
-                  return painter;
-               }
-         }
-      }
-
-      if (can_painter)
-         JSROOT.console("Cannot find painter to update object of type " + obj._typename);
-
-      JSROOT.cleanup(divid);
-
-      return JSROOT.draw(divid, obj, opt, callback);
+      return JSROOT.new_redraw(divid, obj, opt).then(callback);
    }
 
    /** @summary Save object, drawn in specified element, as JSON.
@@ -6850,7 +6710,7 @@
 
          JSROOT.svg_workaround = undefined;
 
-         JSROOT.draw(main.node(), args.object, args.option || "", function(painter) {
+         JSROOT.new_draw(main.node(), args.object, args.option || "").then(function(painter) {
 
             var has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 

@@ -45,7 +45,7 @@ sap.ui.define([
       drawObject: function(obj, options, call_back) {
          this.object = obj;
          this.options = options;
-         JSROOT.draw(this.getDomRef(), obj, options, function(painter) {
+         JSROOT.new_draw(this.getDomRef(), obj, options).then(function(painter) {
             this.object_painter = painter;
             this.resizeid = ResizeHandler.register(this, painter.CheckResize.bind(painter));
          }.bind(this));

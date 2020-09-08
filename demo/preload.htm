@@ -366,7 +366,7 @@
       var obj = JSROOT.parse(root_json);
 
       // draw created object
-      JSROOT.draw("plain", obj, "colz", function() {
+      JSROOT.new_draw("plain", obj, "colz").then(function() {
          console.log('drawing completed');
       });
       </script>
