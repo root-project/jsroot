@@ -6684,7 +6684,8 @@
       if ('_typename' in obj) handle = JSROOT.getDrawHandle("ROOT." + obj._typename, opt);
       else if ('_kind' in obj) handle = JSROOT.getDrawHandle(obj._kind, opt);
 
-      if (!handle) return completeDraw(null);
+      // this is case of unsupported class, close it normally
+      if (!handle) return resolveFunc(null);
 
       if (handle.draw_field && obj[handle.draw_field])
          return JSROOT.draw_impl(divid, obj[handle.draw_field], opt).then(resolveFunc, rejectFunc);
