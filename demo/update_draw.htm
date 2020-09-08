@@ -8,7 +8,7 @@
    <title>Demonstrator of online usage of JSROOT</title>
 
    <!--  load JSROOT with 2D graphic -->
-   <script src="../scripts/JSRootCore.min.js?2d&hierarchy&onload=startGUI" type="text/javascript"></script>
+   <script src="../scripts/JSRootCore.js?2d&hierarchy&onload=startGUI" type="text/javascript"></script>
 
    <script type='text/javascript'>
 
@@ -23,7 +23,7 @@
 
          var request_addr = addr || ("root" + (cnt % 20) + ".json");
 
-         var req = JSROOT.NewHttpRequest(request_addr, 'object', function(histo) {
+         JSROOT.HttpRequest(request_addr, 'object').then(function(histo) {
             if (!histo) {
                d3.select('#drawing').html("<h3>Can not get " + request_addr + " from the server</h3>");
                return;
@@ -32,15 +32,11 @@
             var frame = 'drawing';
 
             // when use grid layout, use counter value stored in request itself
-            if (mdi!=null) frame = mdi.FindFrame("item" + (this.cnt % mdi.NumGridFrames()), true);
+            if (mdi!=null) frame = mdi.FindFrame("item" + (this.req_cnt % mdi.NumGridFrames()), true);
 
             // redraw histogram at specified frame
             JSROOT.redraw(frame, histo, drawopt);
-         });
-
-         req.send(null);
-
-         req.cnt = cnt++; // remember counter to find correct frame later
+         }.bind({ req_cnt: cnt++ })); // bind to fake object to keep request id
       }
 
       function startGUI() {

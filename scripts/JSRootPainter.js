@@ -2351,6 +2351,22 @@
       }
    }
 
+   /** @summary Create Promise object which will be completed when drawing is ready
+    * @private
+    */
+   TBasePainter.prototype.Promise = function(is_ready) {
+      if (is_ready)
+         this.DrawingReady(this);
+
+      if (this._ready_called_)
+         return Promise.resolve(this); // painting is done, we could return promise
+
+      var pthis = this;
+      return new Promise((resolve, reject) => {
+         pthis.WhenReady(resolve, reject);
+      });
+   }
+
    /** @summary Reset ready state - painter should again call DrawingReady to signal readyness
    * @private
    */
@@ -6543,8 +6559,7 @@
          if (can_painter) {
             if (obj._typename === "TCanvas") {
                can_painter.RedrawObject(obj);
-               JSROOT.CallBack(callback, can_painter);
-               return can_painter;
+               return resolveFunc(can_painter);
             }
 
             for (var i = 0; i < can_painter.painters.length; ++i) {
@@ -6552,8 +6567,7 @@
                if (painter.MatchObjectType(obj._typename))
                   if (painter.UpdateObject(obj, opt)) {
                      can_painter.RedrawPad();
-                     JSROOT.CallBack(callback, painter);
-                     return painter;
+                     return resolveFunc(painter);
                   }
             }
          }
