@@ -486,10 +486,10 @@
       function DrawNextItem() {
          if (++cnt >= plot._items.arr.length) return painter.DrawingReady();
 
-         JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt], DrawNextItem);
+         JSROOT.new_draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
       }
 
-      JSROOT.draw(divid, plot._hist, "hist", DrawNextItem);
+      JSROOT.new_draw(divid, plot._hist, "hist").then(DrawNextItem);
 
       return painter;
    }
@@ -759,7 +759,7 @@
    TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
          var histo = this.CreateDummyHisto(), pthis = this;
-         JSROOT.draw(this.divid, histo, "AXIS", function(hpainter) {
+         JSROOT.new_draw(this.divid, histo, "AXIS").then(function(hpainter) {
             pthis.SetDivId(pthis.divid);
             pthis.Redraw();
             return pthis.DrawingReady();
@@ -1992,7 +1992,7 @@
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      JSROOT.draw(this.divid, func, opt, this.DrawNextFunction.bind(this, indx+1, callback));
+      JSROOT.new_draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
@@ -2021,7 +2021,7 @@
       painter.CreateStat();
 
       if (!painter.main_painter() && painter.options.HOptions) {
-         JSROOT.draw(divid, painter.CreateHistogram(), painter.options.HOptions, painter.PerformDrawing.bind(painter, divid));
+         JSROOT.new_draw(divid, painter.CreateHistogram(), painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
       } else {
          painter.PerformDrawing(divid);
       }
@@ -2311,8 +2311,8 @@
       var main = painter.main_painter();
 
       if (main) {
-         if (main.GetObject() !== polargram)
-             console.error('Cannot superimpose TGraphPolargram with any other drawings');
+         if (main.GetObject() === polargram) return main;
+          console.error('Cannot superimpose TGraphPolargram with any other drawings');
           return null;
       }
 
@@ -2524,6 +2524,7 @@
       this.SetDivId(divid);
       this.DrawBins();
       this.DrawingReady();
+      return this; // will be value resolved by Promise and getting painter
    }
 
    function drawGraphPolar(divid, graph, opt) {
@@ -2547,7 +2548,7 @@
 
       if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
 
-      return JSROOT.draw(divid, graph.fPolargram, "", painter.PerformDrawing.bind(painter, divid));
+      return JSROOT.new_draw(divid, graph.fPolargram, "").then(painter.PerformDrawing.bind(painter, divid));
    }
 
    // ==============================================================

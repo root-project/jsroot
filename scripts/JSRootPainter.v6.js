@@ -3267,19 +3267,8 @@
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
       }
 
-      if (ppainter && (typeof ppainter=='object')) {
+      if (ppainter && (typeof ppainter == 'object'))
          ppainter._primitive = true; // mark painter as belonging to primitives
-
-         if (!JSROOT.BatchMode && this.iscan && (indx > 0)) {
-            var curtm = new Date().getTime();
-            if (curtm > this._lasttm_tm + 50) {
-               this._lasttm_tm = curtm;
-               console.log('request animation frame');
-               // invoke same method again without ppainter
-               return requestAnimationFrame(this.DrawPrimitives.bind(this, indx, callback));
-            }
-         }
-      }
 
       if (indx >= this._num_primitives) {
          delete this._doing_pad_draw;
@@ -3293,7 +3282,7 @@
          return JSROOT.CallBack(callback);
       }
 
-      // handle use to invoke callback only when necessary
+      // use of Promise should avoid large call-stack depth when many primitives are drawn
       var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
 
       JSROOT.new_draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(handle_func);
@@ -3514,7 +3503,7 @@
       return isany;
    }
 
-   /** Fnction called when drawing next snapshot from the list
+   /** Function called when drawing next snapshot from the list
      * it is also used as callback for drawing of previous snap */
    TPadPainter.prototype.DrawNextSnap = function(lst, indx, call_back, objpainter) {
 
@@ -3532,7 +3521,7 @@
             var pi = this.painters.indexOf(objpainter);
             if (pi<0) this.painters.push(objpainter);
             objpainter.snapid = lst[indx].fObjectID;
-            if (objpainter.$primary && (pi>0) && this.painters[pi-1].$secondary) {
+            if (objpainter.$primary && (pi > 0) && this.painters[pi-1].$secondary) {
                this.painters[pi-1].snapid = objpainter.snapid + "#hist";
                console.log('ASSIGN SECONDARY HIST ID', this.painters[pi-1].snapid);
             }
@@ -3552,14 +3541,14 @@
              snapid = snap.fObjectID,
              cnt = this._snaps_map[snapid];
 
-         if (cnt) cnt++; else cnt=1;
+         if (cnt) cnt++; else cnt = 1;
          this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
 
          // first appropriate painter for the object
          // if same object drawn twice, two painters will exists
          for (var k=0; k<this.painters.length; ++k) {
             if (this.painters[k].snapid === snapid)
-               if (--cnt === 0) { objpainter = this.painters[k]; break;  }
+               if (--cnt === 0) { objpainter = this.painters[k]; break; }
          }
 
          // function which should be called when drawing of next item finished
@@ -3654,16 +3643,9 @@
             return;
          }
 
-         var handle = { func: draw_callback };
-
-         // here the case of normal drawing, can be improved
-         if (snap.fKind === JSROOT.WebSnapIds.kObject)
-            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
-
-         if (snap.fKind === JSROOT.WebSnapIds.kSVG)
-            objpainter = JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption, handle);
-
-         if (!handle.completed) return; // if callback will be invoked, break while loop
+         // here the case of normal drawing, will be handled in promisecan be improved
+         if ((snap.fKind === JSROOT.WebSnapIds.kObject) || (snap.fKind === JSROOT.WebSnapIds.kSVG))
+            return JSROOT.new_draw(this.divid, snap.fSnapshot, snap.fOption).then(draw_callback);
       }
    }
 
@@ -4600,7 +4582,7 @@
    TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.draw(side.node(), canv, opt, call_back);
+      JSROOT.new_draw(side.node(), canv, opt).then(call_back, call_back);
    }
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
@@ -5022,6 +5004,8 @@
       var lst = this.pad ? this.pad.fPrimitives : null;
       if (!lst || (lst.arr.length != 1)) return;
 
+
+      // FIXME: all draw functions have to return promise !!!!
       var obj = lst.arr[0];
       if (obj && obj._typename && (obj._typename.indexOf("TGeo")==0))
          return JSROOT.draw(this.divid, obj, lst.opt[0]);

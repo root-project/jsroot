@@ -3244,46 +3244,31 @@
          this._doing_pad_draw = true;
 
          if (this.iscan)
-            this._start_tm = this._lasttm_tm =  new Date().getTime();
+            this._start_tm = new Date().getTime();
 
          // set number of primitves
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.length : 0;
       }
 
-      while (true) {
-         if (ppainter && (typeof ppainter=='object')) ppainter._primitive = true; // mark painter as belonging to primitives
+      if (ppainter && (typeof ppainter == 'object')) ppainter._primitive = true; // mark painter as belonging to primitives
 
-         if (!this.pad || (indx >= this.pad.fPrimitives.length)) {
-            delete this._doing_pad_draw;
+      if (!this.pad || (indx >= this._num_primitives)) {
+         delete this._doing_pad_draw;
 
-            if (this._start_tm) {
-               var spenttm = new Date().getTime() - this._start_tm;
-               if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
-               delete this._start_tm;
-               delete this._lasttm_tm;
-            }
-
-            return JSROOT.CallBack(callback);
+         if (this._start_tm) {
+            var spenttm = new Date().getTime() - this._start_tm;
+            if (spenttm > 3000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+            delete this._start_tm;
+            delete this._lasttm_tm;
          }
 
-         // handle use to invoke callback only when necessary
-         var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
-
-         ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives[indx], "", handle);
-
-         indx++;
-
-         if (!handle.completed) return;
-
-         if (!JSROOT.BatchMode && this.iscan) {
-            var curtm = new Date().getTime();
-            if (curtm > this._lasttm_tm + 500) {
-               this._lasttm_tm = curtm;
-               ppainter._primitive = true; // mark primitive ourself
-               return requestAnimationFrame(handle.func);
-            }
-         }
+         return JSROOT.CallBack(callback);
       }
+
+      // handle used to invoke callback only when necessary
+      var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+
+      JSROOT.new_draw(this.divid, this.pad.fPrimitives[indx], "").then(handle_func);
    }
 
    RPadPainter.prototype.GetTooltips = function(pnt) {
@@ -3569,19 +3554,17 @@
          // will be used in SetDivId to assign style to painter
          this.next_rstyle = lst[indx].fStyle || this.rstyle;
 
-         var handle = { func: draw_callback };
-
          if (snap._typename === "ROOT::Experimental::RObjectDisplayItem")
             if (!this.frame_painter())
-               return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "", function() {
-                  handle.func("workaround"); // call function with "workaround" as argument
+               return JSROOT.new_draw(this.divid, { _typename: "TFrame", $dummy: true }, "").then(function() {
+                  draw_callback("workaround"); // call function with "workaround" as argument
                });
 
 
          // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-         objpainter = JSROOT.draw(this.divid, snap.fDrawable || snap.fObject || snap, snap.fOption || "", handle);
+         JSROOT.new_draw(this.divid, snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(draw_callback);
 
-         if (!handle.completed) return; // if callback will be invoked, break while loop
+         return; // should be handled by Promise
       }
    }
 

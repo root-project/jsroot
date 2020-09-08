@@ -1395,13 +1395,12 @@
    }
 
    JSROOT.new_draw = function(divid, obj, opt) {
+      if (JSROOT.draw_impl)
+         return JSROOT.draw_impl(divid, obj, opt);
       return new Promise(function(resolve, reject) {
-         if (JSROOT.draw_impl)
-            JSROOT.draw_impl(divid, obj, opt, resolve, reject);
-         else
-            JSROOT.AssertPrerequisites("2d", function() {
-               JSROOT.draw_impl(divid, obj, opt, resolve, reject);
-            });
+         JSROOT.AssertPrerequisites("2d", function() {
+            JSROOT.draw_impl(divid, obj, opt).then(resolve, reject);
+         });
       });
    }
 
@@ -1414,13 +1413,12 @@
    }
 
    JSROOT.new_redraw = function(divid, obj, opt) {
+      if (JSROOT.draw_impl)
+         return JSROOT.draw_impl(divid, obj, opt, true);
       return new Promise(function(resolve, reject) {
-         if (JSROOT.draw_impl)
-            JSROOT.draw_impl(divid, obj, opt, resolve, reject, true);
-         else
-            JSROOT.AssertPrerequisites("2d", function() {
-               JSROOT.draw_impl(divid, obj, opt, resolve, reject, true);
-            });
+         JSROOT.AssertPrerequisites("2d", function() {
+            JSROOT.draw_impl(divid, obj, opt, true).then(resolve, reject);
+         });
       });
    }
 
