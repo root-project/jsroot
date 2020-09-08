@@ -2584,7 +2584,7 @@
    }
 
 
-   TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt, call_back) {
+   TGeoPainter.prototype.PerformDrop = function(obj, itemname, hitem, opt) {
 
       if (obj && (obj.$kind==='TTree')) {
          // drop tree means function call which must extract tracks from provided tree
@@ -2598,17 +2598,19 @@
 
          var func = JSROOT.findFunction(funcname);
 
-         if (!func) return JSROOT.CallBack(call_back);
+         if (!func) return Promise.reject();
 
          var geo_painter = this;
 
-         return func(obj, opt, function(tracks) {
-            if (tracks) {
-               geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
-               geo_painter.updateClipping(true);
-               geo_painter.Render3D(100);
-            }
-            JSROOT.CallBack(call_back); // finally callback
+         return new Promise(function(resolve, reject) {
+            func(obj, opt, function(tracks) {
+               if (tracks) {
+                  geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
+                  geo_painter.updateClipping(true);
+                  geo_painter.Render3D(100);
+               }
+               resolve(geo_painter);
+            });
          });
       }
 
@@ -2616,7 +2618,7 @@
          if (hitem) hitem._painter = this; // set for the browser item back pointer
       }
 
-      JSROOT.CallBack(call_back);
+      return Promise.resolve(this);
    }
 
    TGeoPainter.prototype.MouseOverHierarchy = function(on, itemname, hitem) {

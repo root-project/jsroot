@@ -3274,7 +3274,7 @@
       // handle used to invoke callback only when necessary
       var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
 
-      JSROOT.new_draw(this.divid, this.pad.fPrimitives[indx], "").then(handle_func);
+      JSROOT.draw(this.divid, this.pad.fPrimitives[indx], "").then(handle_func);
    }
 
    RPadPainter.prototype.GetTooltips = function(pnt) {
@@ -3562,13 +3562,13 @@
 
          if (snap._typename === "ROOT::Experimental::RObjectDisplayItem")
             if (!this.frame_painter())
-               return JSROOT.new_draw(this.divid, { _typename: "TFrame", $dummy: true }, "").then(function() {
+               return JSROOT.draw(this.divid, { _typename: "TFrame", $dummy: true }, "").then(function() {
                   draw_callback("workaround"); // call function with "workaround" as argument
                });
 
 
          // TODO - fDrawable is v7, fObject from v6, maybe use same data member?
-         JSROOT.new_draw(this.divid, snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(draw_callback);
+         JSROOT.draw(this.divid, snap.fDrawable || snap.fObject || snap, snap.fOption || "").then(draw_callback);
 
          return; // should be handled by Promise
       }
@@ -4381,7 +4381,7 @@
    RCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.new_draw(side.node(), canv, opt).then(call_back);
+      JSROOT.draw(side.node(), canv, opt).then(call_back);
    }
 
    RCanvasPainter.prototype.ShowMessage = function(msg) {

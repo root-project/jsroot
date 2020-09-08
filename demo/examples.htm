@@ -203,12 +203,12 @@
 
                 if (jsonname) {
                    JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
-                      JSROOT.new_draw("viewer", obj, opt);
+                      JSROOT.draw("viewer", obj, opt);
                    });
                 } else {
                    JSROOT.OpenFile(filename, function(file) {
                       file.ReadObject(itemname, function(obj) {
-                         JSROOT.new_draw("viewer", obj, opt);
+                         JSROOT.draw("viewer", obj, opt);
                       });
                    });
                 }
@@ -327,23 +327,23 @@
                testfile = testobj = null;
                JSROOT.HttpRequest(jsonname, 'object').then(function(obj) {
                   testobj = obj;
-                  return JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
+                  return JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                });
             } else if (filename.length > 0) {
                 JSROOT.OpenFile(filename, function(file) {
                    testfile = file;
                    testfile.ReadObject(itemname, function(obj) {
                       testobj = obj;
-                      JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
+                      JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                    });
                 });
             } else if (itemname.length > 0) {
                 testfile.ReadObject(itemname, function(obj) {
                     testobj = obj;
-                    JSROOT.new_draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
+                    JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                  });
             } else {
-                JSROOT.new_draw("viewer", testobj, opt).then(RunBigTest, RunBigTest);
+                JSROOT.draw("viewer", testobj, opt).then(RunBigTest, RunBigTest);
             }
          }
 

@@ -2266,7 +2266,7 @@
          return statpainter.Enabled;
       }
 
-      JSROOT.new_draw(this.divid, stat, "onpad:" + this.pad_name);
+      JSROOT.draw(this.divid, stat, "onpad:" + this.pad_name);
 
       return true;
    }
@@ -2447,7 +2447,7 @@
       }
 
       if (do_draw)
-         JSROOT.new_draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
+         JSROOT.draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
       else
          this.DrawNextFunction(indx+1, callback);
    }
@@ -6586,7 +6586,7 @@
       // also used to provide tooltips
       if ((rindx > 0) && !this.options.nostack) hist.$baseh = hlst.arr[rindx - 1];
 
-      JSROOT.new_draw(this.divid, hist, hopt).then(this.DrawNextHisto.bind(this, indx, "callback"));
+      JSROOT.draw(this.divid, hist, hopt).then(this.DrawNextHisto.bind(this, indx, "callback"));
    }
 
    THStackPainter.prototype.DecodeOptions = function(opt) {

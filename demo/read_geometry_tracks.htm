@@ -15,7 +15,7 @@
          tracks_file = "../../files/geom/eve_tracks.root";
 
      JSROOT.HttpRequest(geom_file, "object").then(function(obj) {
-        JSROOT.new_draw("drawing", obj).then(function(geo_painter) {
+        JSROOT.draw("drawing", obj).then(function(geo_painter) {
            JSROOT.OpenFile(tracks_file, function(file) {
               file.ReadObject("tracks;1", function(tracks) {
                  // one could simply draw list of tracks

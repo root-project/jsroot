@@ -3061,7 +3061,7 @@
       painter.Redraw();
 
       var stats = painter.CreateStat(); // only when required
-      if (stats) JSROOT.new_draw(painter.divid, stats, "");
+      if (stats) JSROOT.draw(painter.divid, stats, "");
 
       painter.FillToolbar();
 
@@ -3436,7 +3436,7 @@
       if (!gr.fHistogram)
          gr.fHistogram = painter.CreateHistogram();
 
-      return JSROOT.new_draw(divid, gr.fHistogram, "lego;axis")
+      return JSROOT.draw(divid, gr.fHistogram, "lego;axis")
                   .then(function(hpainter) {
          painter.ownhisto = true;
          painter.SetDivId(divid);

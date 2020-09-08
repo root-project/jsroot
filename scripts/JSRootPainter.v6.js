@@ -3291,7 +3291,7 @@
       // use of Promise should avoid large call-stack depth when many primitives are drawn
       var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
 
-      JSROOT.new_draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(handle_func);
+      JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(handle_func);
    }
 
    TPadPainter.prototype.GetTooltips = function(pnt) {
@@ -3651,7 +3651,7 @@
 
          // here the case of normal drawing, will be handled in promisecan be improved
          if ((snap.fKind === JSROOT.WebSnapIds.kObject) || (snap.fKind === JSROOT.WebSnapIds.kSVG))
-            return JSROOT.new_draw(this.divid, snap.fSnapshot, snap.fOption).then(draw_callback);
+            return JSROOT.draw(this.divid, snap.fSnapshot, snap.fOption).then(draw_callback);
       }
    }
 
@@ -4588,7 +4588,7 @@
    TCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.new_draw(side.node(), canv, opt).then(call_back, call_back);
+      JSROOT.draw(side.node(), canv, opt).then(call_back, call_back);
    }
 
    TCanvasPainter.prototype.ShowMessage = function(msg) {
@@ -5012,7 +5012,7 @@
 
       var obj = lst.arr[0];
       if (obj && obj._typename && (obj._typename.indexOf("TGeo")==0))
-         return JSROOT.new_draw(this.divid, obj, lst.opt[0]); // return promise
+         return JSROOT.draw(this.divid, obj, lst.opt[0]); // return promise
    }
 
    function drawCanvas(divid, can, opt) {

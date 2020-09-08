@@ -38,7 +38,7 @@
               var item = this.lst.arr[this.indx],
                   opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
               if (!item) continue;
-              return JSROOT.new_draw(this.divid, item, opt).then(this.draw_bind); // reenter loop via callback
+              return JSROOT.draw(this.divid, item, opt).then(this.draw_bind); // reenter loop via callback
            }
 
            return JSROOT.CallBack(this.callback);
@@ -934,7 +934,7 @@
 
    HierarchyPainter.prototype.draw = function(divid, obj, drawopt) {
       // just envelope, one should be able to redefine it for sub-classes
-      return JSROOT.new_draw(divid, obj, drawopt);
+      return JSROOT.draw(divid, obj, drawopt);
    }
 
    HierarchyPainter.prototype.redraw = function(divid, obj, drawopt) {
@@ -1069,7 +1069,7 @@
             d3.select(frame).html("");
             mdi.ActivateFrame(frame);
 
-            JSROOT.new_draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback);
+            JSROOT.draw(d3.select(frame).attr("id"), obj, drawopt).then(display_callback);
 
             if (JSROOT.gStyle.DragAndDrop)
                h.enable_dropping(frame, display_itemname);
@@ -1113,10 +1113,10 @@
             return main_painter.PerformDrop(obj, itemname, item, opt, drop_callback);
 
          if (main_painter && main_painter.accept_drops)
-            return JSROOT.new_draw(divid, obj, "same " + opt).then(drop_callback);
+            return JSROOT.draw(divid, obj, "same " + opt).then(drop_callback);
 
          h.CleanupFrame(divid);
-         return JSROOT.new_draw(divid, obj, opt).then(drop_callback);
+         return JSROOT.draw(divid, obj, opt).then(drop_callback);
       });
 
       return true;
@@ -2491,7 +2491,7 @@
                      return this.ShowInspector(obj);
                }
                JSROOT.cleanup(divid);
-               JSROOT.new_draw(divid, obj, arg);
+               JSROOT.draw(divid, obj, arg);
             });
       }
 
@@ -2506,7 +2506,7 @@
          painter.DrawingReady();
       });
 
-      return painter;
+      return painter.Promise();
    }
 
    // ================================================================

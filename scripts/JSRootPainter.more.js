@@ -486,10 +486,10 @@
       function DrawNextItem() {
          if (++cnt >= plot._items.arr.length) return painter.DrawingReady();
 
-         JSROOT.new_draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
+         JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
       }
 
-      JSROOT.new_draw(divid, plot._hist, "hist").then(DrawNextItem);
+      JSROOT.draw(divid, plot._hist, "hist").then(DrawNextItem);
 
       return painter;
    }
@@ -759,7 +759,7 @@
    TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
          var histo = this.CreateDummyHisto(), pthis = this;
-         JSROOT.new_draw(this.divid, histo, "AXIS").then(function(hpainter) {
+         JSROOT.draw(this.divid, histo, "AXIS").then(function(hpainter) {
             pthis.SetDivId(pthis.divid);
             pthis.Redraw();
             return pthis.DrawingReady();
@@ -1992,7 +1992,7 @@
       // TODO: use weak reference (via pad list of painters and any kind of string)
       func.$main_painter = this;
 
-      JSROOT.new_draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
+      JSROOT.draw(this.divid, func, opt).then(this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
    TGraphPainter.prototype.PerformDrawing = function(divid, hpainter) {
@@ -2021,7 +2021,7 @@
       painter.CreateStat();
 
       if (!painter.main_painter() && painter.options.HOptions) {
-         JSROOT.new_draw(divid, painter.CreateHistogram(), painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
+         JSROOT.draw(divid, painter.CreateHistogram(), painter.options.HOptions).then(painter.PerformDrawing.bind(painter, divid));
       } else {
          painter.PerformDrawing(divid);
       }
@@ -2548,7 +2548,7 @@
 
       if (!graph.fPolargram) graph.fPolargram = painter.CreatePolargram();
 
-      return JSROOT.new_draw(divid, graph.fPolargram, "").then(painter.PerformDrawing.bind(painter, divid));
+      return JSROOT.draw(divid, graph.fPolargram, "").then(painter.PerformDrawing.bind(painter, divid));
    }
 
    // ==============================================================
@@ -2849,7 +2849,7 @@
             return null;
          }
          var histo = painter.CreateDummyHisto();
-         return JSROOT.new_draw(divid, histo, "AXIS").then(painter.FirstDraw.bind(painter));
+         return JSROOT.draw(divid, histo, "AXIS").then(painter.FirstDraw.bind(painter));
       }
 
       return painter.FirstDraw();
@@ -2899,7 +2899,7 @@
       // handle use to invoke callback only when necessary
       var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
 
-      JSROOT.new_draw(this.divid, lst.arr[indx], lst.opt[indx]).then(handle_func);
+      JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx]).then(handle_func);
    }
 
    TGraphTimePainter.prototype.Selector = function(p) {
@@ -2995,7 +2995,7 @@
 
       painter.selfid = "grtime" + JSROOT.id_counter++; // use to identify primitives which should be clean
 
-      JSROOT.new_draw(divid, gr.fFrame, "AXIS").then(painter.StartDrawing.bind(painter));
+      JSROOT.draw(divid, gr.fFrame, "AXIS").then(painter.StartDrawing.bind(painter));
 
       return painter; // first drawing down via tmout, therefore return painter
    }
@@ -3095,7 +3095,7 @@
       var gr = painter.CreateGraph();
       painter.FillGraph(gr, opt);
 
-      return JSROOT.new_draw(divid, gr, opt)
+      return JSROOT.draw(divid, gr, opt)
                    .then(function(grp) {
                        painter.SetDivId(divid);
                        painter.DrawingReady();
@@ -3271,7 +3271,7 @@
 
       // histogram painter will be first in the pad, will define axis and
       // interactive actions
-      JSROOT.new_draw(this.divid, histo, "AXIS").then(callback);
+      JSROOT.draw(this.divid, histo, "AXIS").then(callback);
    }
 
    TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
@@ -3282,7 +3282,7 @@
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      JSROOT.new_draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
+      JSROOT.draw(this.divid, mgraph.fFunctions.arr[indx], mgraph.fFunctions.opt[indx])
             .then(this.DrawNextFunction.bind(this, indx+1, callback));
    }
 
@@ -3315,7 +3315,7 @@
          }
       }
 
-      JSROOT.new_draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(this.DrawNextGraph.bind(this, indx+1, opt));
+      JSROOT.draw(this.divid, graphs.arr[indx], graphs.opt[indx] || opt).then(this.DrawNextGraph.bind(this, indx+1, opt));
    }
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
@@ -3782,7 +3782,7 @@
       }
 
       if (!pal_painter) {
-         JSROOT.new_draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(function(p) {
+         JSROOT.draw(this.divid, this.draw_palette, "onpad:" + this.pad_name).then(function(p) {
             // mark painter as secondary - not in list of TCanvas primitives
             p.$secondary = true;
 

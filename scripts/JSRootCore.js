@@ -1388,36 +1388,18 @@
    // if painter pointer required, one should load '2d' functionality itself
    // or use callback function which provides painter pointer as first argument
    // defined in JSRootPainter.js
-   JSROOT.draw = function(divid, obj, opt, callback) {
-      JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.draw(divid, obj, opt, callback);
-      });
-   }
-
-   JSROOT.new_draw = function(divid, obj, opt) {
-      if (JSROOT.draw_impl)
-         return JSROOT.draw_impl(divid, obj, opt);
+   JSROOT.draw = function(divid, obj, opt) {
       return new Promise(function(resolve, reject) {
          JSROOT.AssertPrerequisites("2d", function() {
-            JSROOT.draw_impl(divid, obj, opt).then(resolve, reject);
+            JSROOT.draw(divid, obj, opt).then(resolve, reject);
          });
       });
    }
 
-   // redraw object on given element
-   // defined in JSRootPainter.js
    JSROOT.redraw = function(divid, obj, opt) {
-      JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.redraw(divid, obj, opt, callback);
-      });
-   }
-
-   JSROOT.new_redraw = function(divid, obj, opt) {
-      if (JSROOT.draw_impl)
-         return JSROOT.draw_impl(divid, obj, opt, true);
       return new Promise(function(resolve, reject) {
          JSROOT.AssertPrerequisites("2d", function() {
-            JSROOT.draw_impl(divid, obj, opt, true).then(resolve, reject);
+            JSROOT.redraw(divid, obj, opt, true).then(resolve, reject);
          });
       });
    }
