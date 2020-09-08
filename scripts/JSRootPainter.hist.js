@@ -6534,12 +6534,17 @@
       return res;
    }
 
-   THStackPainter.prototype.DrawNextHisto = function(indx, mm, subp, reenter) {
+   THStackPainter.prototype.DrawNextHisto = function(indx, mm, subp) {
       if (mm === "callback") {
          mm = null; // just misuse min/max argument to indicate callback
-         if (indx<0) this.firstpainter = subp;
-                else this.painters.push(subp);
+         if (indx < 0) this.firstpainter = subp;
+                  else this.painters.push(subp);
          indx++;
+
+         if (this._assign_divid) {
+            this.SetDivId(this.divid); // only when first histogram drawn, we could assign divid
+            delete this._assign_divid;
+         }
       }
 
       var stack = this.GetObject(),
@@ -6548,9 +6553,6 @@
           nhists = (hlst && hlst.arr) ? hlst.arr.length : 0, rindx = 0;
 
       if (indx>=nhists) return this.DrawingReady();
-
-      if ((indx % 500 === 499) && !reenter)
-         return setTimeout(this.DrawNextHisto.bind(this, indx, mm, subp, true), 0);
 
       if (indx>=0) {
          rindx = this.options.horder ? indx : nhists-indx-1;
@@ -6662,10 +6664,7 @@
       return histo;
    }
 
-   THStackPainter.prototype.drawStack = function() {
-
-      var stack = this.GetObject();
-
+   THStackPainter.prototype.startDrawStack = function(stack) {
       // when building stack, one could fail to sum up histograms
       if (!this.options.nostack)
          this.options.nostack = ! this.BuildStack(stack);
@@ -6676,7 +6675,6 @@
       var mm = this.GetMinMax(this.options.errors || this.options.draw_errors, this.root_pad());
 
       this.DrawNextHisto(this.options.same ? 0 : -1, mm);
-      return this;
    }
 
    THStackPainter.prototype.UpdateObject = function(obj) {
@@ -6752,11 +6750,11 @@
       painter.SetDivId(divid, -1); // it maybe no element to set divid
       painter.DecodeOptions(opt);
 
-      if (!stack.fHists || (stack.fHists.arr.length == 0)) return painter.DrawingReady();
+      if (!stack.fHists || (stack.fHists.arr.length == 0))
+         return painter.DrawingReady();
 
-      painter.drawStack();
-
-      painter.SetDivId(divid); // only when first histogram drawn, we could assign divid
+      painter._assign_divid = true; // indicate that we have to assign divid once first histogram is drawn
+      painter.startDrawStack(stack);
 
       return painter;
    }
