@@ -2605,7 +2605,7 @@
          return func(obj, opt, function(tracks) {
             if (tracks) {
                geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
-               this.updateClipping(true);
+               geo_painter.updateClipping(true);
                geo_painter.Render3D(100);
             }
             JSROOT.CallBack(call_back); // finally callback
