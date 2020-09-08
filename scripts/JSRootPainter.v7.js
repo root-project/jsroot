@@ -3255,7 +3255,6 @@
 
          if (!this.pad || (indx >= this.pad.fPrimitives.length)) {
             delete this._doing_pad_draw;
-            delete this._current_primitive_indx;
 
             if (this._start_tm) {
                var spenttm = new Date().getTime() - this._start_tm;
@@ -3269,9 +3268,6 @@
 
          // handle use to invoke callback only when necessary
          var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
-
-         // set current index
-         this._current_primitive_indx = indx;
 
          ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives[indx], "", handle);
 
@@ -3506,7 +3502,6 @@
          if (!lst || indx >= lst.length) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
-            delete this._current_primitive_indx;
             return JSROOT.CallBack(call_back, this);
          }
 
@@ -3516,8 +3511,6 @@
 
          if (cnt) cnt++; else cnt=1;
          this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
-
-         this._current_primitive_indx = indx;
 
          // empty object, no need to do something, take next
          if (snap.fDummy) continue;
@@ -4399,7 +4392,7 @@
    RCanvasPainter.prototype.DrawInSidePanel = function(canv, opt, call_back) {
       var side = this.select_main('origin').select(".side_panel");
       if (side.empty()) return JSROOT.CallBack(call_back, null);
-      JSROOT.draw(side.node(), canv, opt, call_back);
+      JSROOT.new_draw(side.node(), canv, opt).then(call_back);
    }
 
    RCanvasPainter.prototype.ShowMessage = function(msg) {

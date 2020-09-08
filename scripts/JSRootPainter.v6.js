@@ -3261,49 +3261,42 @@
          this._doing_pad_draw = true;
 
          if (this.iscan)
-            this._start_tm = this._lasttm_tm =  new Date().getTime();
+            this._start_tm = this._lasttm_tm = new Date().getTime();
 
          // set number of primitves
          this._num_primitives = this.pad && this.pad.fPrimitives ? this.pad.fPrimitives.arr.length : 0;
       }
 
-      while (true) {
-         if (ppainter && (typeof ppainter=='object')) ppainter._primitive = true; // mark painter as belonging to primitives
+      if (ppainter && (typeof ppainter=='object')) {
+         ppainter._primitive = true; // mark painter as belonging to primitives
 
-         if (!this.pad || (indx >= this.pad.fPrimitives.arr.length)) {
-            delete this._doing_pad_draw;
-            delete this._current_primitive_indx;
-            if (this._start_tm) {
-               var spenttm = new Date().getTime() - this._start_tm;
-               if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
-               delete this._start_tm;
-               delete this._lasttm_tm;
-            }
-
-            return JSROOT.CallBack(callback);
-         }
-
-         // handle use to invoke callback only when necessary
-         var handle = { func: this.DrawPrimitives.bind(this, indx+1, callback) };
-
-         // set current index
-         this._current_primitive_indx = indx;
-
-         ppainter = JSROOT.draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx], handle);
-
-         indx++;
-
-         if (!handle.completed) return;
-
-         if (!JSROOT.BatchMode && this.iscan) {
+         if (!JSROOT.BatchMode && this.iscan && (indx > 0)) {
             var curtm = new Date().getTime();
-            if (curtm > this._lasttm_tm + 15000) {
+            if (curtm > this._lasttm_tm + 50) {
                this._lasttm_tm = curtm;
-               ppainter._primitive = true; // mark primitive ourself
-               return requestAnimationFrame(handle.func);
+               console.log('request animation frame');
+               // invoke same method again without ppainter
+               return requestAnimationFrame(this.DrawPrimitives.bind(this, indx, callback));
             }
          }
       }
+
+      if (indx >= this._num_primitives) {
+         delete this._doing_pad_draw;
+         if (this._start_tm) {
+            var spenttm = new Date().getTime() - this._start_tm;
+            if (spenttm > 1000) console.log("Canvas drawing took " + (spenttm*1e-3).toFixed(2) + "s");
+            delete this._start_tm;
+            delete this._lasttm_tm;
+         }
+
+         return JSROOT.CallBack(callback);
+      }
+
+      // handle use to invoke callback only when necessary
+      var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+
+      JSROOT.new_draw(this.divid, this.pad.fPrimitives.arr[indx], this.pad.fPrimitives.opt[indx]).then(handle_func);
    }
 
    TPadPainter.prototype.GetTooltips = function(pnt) {
@@ -3552,7 +3545,6 @@
          if (!lst || (indx >= lst.length)) {
             delete this._doing_pad_draw;
             delete this._snaps_map;
-            delete this._current_primitive_indx;
             return JSROOT.CallBack(call_back, this);
          }
 
@@ -3562,8 +3554,6 @@
 
          if (cnt) cnt++; else cnt=1;
          this._snaps_map[snapid] = cnt; // check how many objects with same snapid drawn, use them again
-
-         this._current_primitive_indx = indx;
 
          // first appropriate painter for the object
          // if same object drawn twice, two painters will exists
