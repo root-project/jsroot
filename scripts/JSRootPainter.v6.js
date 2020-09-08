@@ -208,7 +208,13 @@
    }
 
    TAxisPainter.prototype.ProduceTicks = function(ndiv, ndiv2) {
-      if (!this.noticksopt) return this.func.ticks(ndiv * (ndiv2 || 1));
+      if (!this.noticksopt) {
+         var arr = this.func.ticks(ndiv * (ndiv2 || 1));
+         // FIXME: workaround - prvent creation too much log ticks when min >= 1, but this should be checked differently
+         if ((this.kind == "log") && (arr.length > 30) && this.scale_min > 0.8)
+             arr = this.func.ticks(10);
+         return arr;
+      }
 
       if (ndiv2) ndiv = (ndiv-1) * ndiv2;
       var dom = this.func.domain(), ticks = [];
@@ -5003,7 +5009,6 @@
    TCanvasPainter.prototype.DirectGeoDraw = function() {
       var lst = this.pad ? this.pad.fPrimitives : null;
       if (!lst || (lst.arr.length != 1)) return;
-
 
       // FIXME: all draw functions have to return promise !!!!
       var obj = lst.arr[0];
