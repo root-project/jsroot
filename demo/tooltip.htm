@@ -35,7 +35,7 @@
             last_hbin = -1;
             return false;
          }
-         
+
          last_hbin = info.bin;
 
          // set tooltip info
@@ -50,15 +50,15 @@
          JSROOT.redraw("tooltip_draw", h1);
          return true; // means event is handled and can be ignored
       }
-      
+
       function DoExecMenu(arg) {
-         switch (arg) { 
-            case "something": 
+         switch (arg) {
+            case "something":
                console.log('Execute something');
-               break; 
-            case "toggle": 
+               break;
+            case "toggle":
                console.log('Toggle something');
-               toggle_flag = !toggle_flag; 
+               toggle_flag = !toggle_flag;
                break;
             default:
                console.log('Process histogram bin ', parseInt(arg));
@@ -76,11 +76,11 @@
             menu.add("Process bin " + last_hbin, last_hbin, DoExecMenu);
          else
             menu.add("Do something", "something", DoExecMenu);
-         
-         // checked menu item 
+
+         // checked menu item
          menu.addchk(toggle_flag, "Toggle something", "toggle", DoExecMenu);
-         
-         // invoke call_back to show menu  
+
+         // invoke call_back to show menu
          JSROOT.CallBack(call_back, true);
       }
 
@@ -105,9 +105,7 @@
          histo.fName = "generated";
          histo.fTitle = "Drawing " + cnt++;
 
-         JSROOT.redraw('object_draw', histo, "colz", function(painter) {
-            // in callback call painter object is returned
-            if (!painter) return;
+         JSROOT.redraw('object_draw', histo, "colz").then(function(painter) {
 
             var chkd = document.getElementById("btn1").checked;
 

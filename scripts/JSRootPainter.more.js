@@ -4053,7 +4053,7 @@
          if (args.create_player === 2) drawid = painter.drawid;
 
          if (drawid)
-            return JSROOT.redraw(drawid, histo, hopt, intermediate ? null : callback);
+            return JSROOT.redraw(drawid, histo, hopt).then(intermediate ? null : callback);
 
          if (args.create_player === 1) { args.player_intermediate = intermediate; return; }
 
@@ -4065,7 +4065,7 @@
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
             args.create_player = 2;
-            JSROOT.redraw(painter.drawid, histo, hopt, args.player_intermediate ? null : callback);
+            JSROOT.redraw(painter.drawid, histo, hopt).then(args.player_intermediate ? null : callback);
             painter.SetItemName("TreePlayer"); // item name used by MDI when process resize
          });
       });

@@ -88,7 +88,7 @@
 
          drawing_ready = false;
 
-         JSROOT.redraw('object_draw', mgraph, "", function() { drawing_ready = true; });
+         JSROOT.redraw('object_draw', mgraph, "").then(function() { drawing_ready = true; });
       }
 
       updateGUI();
