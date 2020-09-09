@@ -368,12 +368,12 @@
    TBuffer.prototype.ReadTString = function() {
       // stream a TString object from buffer
       // std::string uses similar binary format
-      var len = this.ntou1();
+      let len = this.ntou1();
       // large strings
       if (len == 255) len = this.ntou4();
       if (len == 0) return "";
 
-      var pos = this.o;
+      const pos = this.o;
       this.o += len;
 
       return (this.codeAt(pos) == 0) ? '' : this.substring(pos, pos + len);
@@ -398,18 +398,18 @@
    }
 
    TBuffer.prototype.ntou2 = function() {
-      var o = this.o; this.o += 2;
+      const o = this.o; this.o += 2;
       return this.arr.getUint16(o);
    }
 
    TBuffer.prototype.ntou4 = function() {
-      var o = this.o; this.o += 4;
+      const o = this.o; this.o += 4;
       return this.arr.getUint32(o);
    }
 
    TBuffer.prototype.ntou8 = function() {
-      var high = this.arr.getUint32(this.o); this.o += 4;
-      var low = this.arr.getUint32(this.o); this.o += 4;
+      const high = this.arr.getUint32(this.o); this.o += 4;
+      const low = this.arr.getUint32(this.o); this.o += 4;
       return high * 0x100000000 + low;
    }
 
@@ -418,29 +418,29 @@
    }
 
    TBuffer.prototype.ntoi2 = function() {
-      var o = this.o; this.o += 2;
+      const o = this.o; this.o += 2;
       return this.arr.getInt16(o);
    }
 
    TBuffer.prototype.ntoi4 = function() {
-      var o = this.o; this.o += 4;
+      const o = this.o; this.o += 4;
       return this.arr.getInt32(o);
    }
 
    TBuffer.prototype.ntoi8 = function() {
-      var high = this.arr.getUint32(this.o); this.o += 4;
-      var low = this.arr.getUint32(this.o); this.o += 4;
+      const high = this.arr.getUint32(this.o); this.o += 4;
+      const low = this.arr.getUint32(this.o); this.o += 4;
       if (high < 0x80000000) return high * 0x100000000 + low;
       return -1 - ((~high) * 0x100000000 + ~low);
    }
 
    TBuffer.prototype.ntof = function() {
-      var o = this.o; this.o += 4;
+      const o = this.o; this.o += 4;
       return this.arr.getFloat32(o);
    }
 
    TBuffer.prototype.ntod = function() {
-      var o = this.o; this.o += 8;
+      const o = this.o; this.o += 8;
       return this.arr.getFloat64(o);
    }
 
@@ -617,7 +617,7 @@
          return;
       }
 
-      var nentries = this.ntoi4();
+      const nentries = this.ntoi4();
       // there is error in file=reco_103.root&item=Events;2/PCaloHits_g4SimHits_EcalHitsEE_Sim.&opt=dump;num:10;first:101
       // it is workaround, but normally I/O should fail here
       if ((nentries < 0) || (nentries > this.remain() * 4)) {
@@ -660,7 +660,7 @@
             this.MapClass(this.fTagOffset + startpos + JSROOT.IO.kMapOffset, classInfo.name);
       } else {
          // got a tag to an already seen class
-         var clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
+         const clTag = (tag & ~JSROOT.IO.kClassMask) + this.fDisplacement;
          classInfo.name = this.GetMappedClass(clTag);
 
          if (classInfo.name === -1)
@@ -671,7 +671,7 @@
    }
 
    TBuffer.prototype.ReadObjectAny = function() {
-      var objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
+      let objtag = this.fTagOffset + this.o + JSROOT.IO.kMapOffset,
          clRef = this.ReadClass();
 
       // class identified as object and should be handled so
@@ -680,21 +680,21 @@
 
       if (clRef.name === -1) return null;
 
-      var arrkind = JSROOT.IO.GetArrayKind(clRef.name), obj;
+      const arrkind = JSROOT.IO.GetArrayKind(clRef.name);
+      let obj;
 
       if (arrkind === 0) {
          obj = this.ReadTString();
-      } else
-         if (arrkind > 0) {
-            // reading array, can map array only afterwards
-            obj = this.ReadFastArray(this.ntou4(), arrkind);
-            this.MapObject(objtag, obj);
-         } else {
-            // reading normal object, should map before to
-            obj = {};
-            this.MapObject(objtag, obj);
-            this.ClassStreamer(obj, clRef.name);
-         }
+      } else if (arrkind > 0) {
+         // reading array, can map array only afterwards
+         obj = this.ReadFastArray(this.ntou4(), arrkind);
+         this.MapObject(objtag, obj);
+      } else {
+         // reading normal object, should map before to
+         obj = {};
+         this.MapObject(objtag, obj);
+         this.ClassStreamer(obj, clRef.name);
+      }
 
       return obj;
    }
@@ -703,15 +703,15 @@
 
       if (obj._typename === undefined) obj._typename = classname;
 
-      var direct = JSROOT.IO.DirectStreamers[classname];
+      let direct = JSROOT.IO.DirectStreamers[classname];
       if (direct) {
          direct(this, obj);
          return obj;
       }
 
-      var ver = this.ReadVersion();
+      const ver = this.ReadVersion();
 
-      var streamer = this.fFile.GetStreamer(classname, ver);
+      let streamer = this.fFile.GetStreamer(classname, ver);
 
       if (streamer !== null) {
 
@@ -836,7 +836,7 @@
          var buf = JSROOT.CreateTBuffer(blob, 0, file);
 
          buf.ReadTKey();
-         var nkeys = buf.ntoi4();
+         const nkeys = buf.ntoi4();
 
          for (var i = 0; i < nkeys; ++i)
             dir.fKeys.push(buf.ReadTKey());
@@ -919,7 +919,7 @@
          this.fAcceptRanges = false;
       }
 
-      var pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
+      const pos = Math.max(this.fURL.lastIndexOf("/"), this.fURL.lastIndexOf("\\"));
       this.fFileName = pos >= 0 ? this.fURL.substr(pos + 1) : this.fURL;
 
       if (!this.fAcceptRanges) {
@@ -927,9 +927,9 @@
       } else {
          var file = this;
          JSROOT.HttpRequest(this.fURL, "head").then(function(res) {
-            var accept_ranges = res.getResponseHeader("Accept-Ranges");
+            const accept_ranges = res.getResponseHeader("Accept-Ranges");
             if (!accept_ranges) file.fAcceptRanges = false;
-            var len = res.getResponseHeader("Content-Length");
+            const len = res.getResponseHeader("Content-Length");
             if (len) file.fEND = parseInt(len);
             else file.fAcceptRanges = false;
             file.ReadKeys(newfile_callback);
@@ -952,7 +952,7 @@
          first = 0, last = 0, blobs = [], read_callback; // array of requested segments
 
       if (filename && (typeof filename === 'string') && (filename.length > 0)) {
-         var pos = fileurl.lastIndexOf("/");
+         const pos = fileurl.lastIndexOf("/");
          fileurl = (pos < 0) ? filename : fileurl.substr(0, pos + 1) + filename;
       }
 
@@ -982,15 +982,15 @@
          }
 
          if (progress_callback && (typeof xhr.addEventListener === 'function')) {
-            var sum1 = 0, sum2 = 0, sum_total = 0;
-            for (var n = 1; n < place.length; n += 2) {
+            let sum1 = 0, sum2 = 0, sum_total = 0;
+            for (let n = 1; n < place.length; n += 2) {
                sum_total += place[n];
                if (n < first) sum1 += place[n];
                if (n < last) sum2 += place[n];
             }
             if (!sum_total) sum_total = 1;
 
-            var progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
+            let progress_offest = sum1 / sum_total, progress_this = (sum2 - sum1) / sum_total;
             xhr.addEventListener("progress", function(oEvent) {
                if (oEvent.lengthComputable)
                   progress_callback(progress_offest + progress_this * oEvent.loaded / oEvent.total);
@@ -1167,7 +1167,7 @@
    TFile.prototype.GetDir = function(dirname, cycle) {
 
       if ((cycle === undefined) && (typeof dirname == 'string')) {
-         var pos = dirname.lastIndexOf(';');
+         const pos = dirname.lastIndexOf(';');
          if (pos > 0) { cycle = parseInt(dirname.substr(pos + 1)); dirname = dirname.substr(0, pos); }
       }
 
@@ -1396,7 +1396,7 @@
                typ = typ % 20;
             }
 
-            var kind = JSROOT.IO.GetTypeId(typname);
+            const kind = JSROOT.IO.GetTypeId(typname);
             if (kind === typ) continue;
 
             if ((typ === JSROOT.IO.kBits) && (kind === JSROOT.IO.kUInt)) continue;
@@ -1434,7 +1434,7 @@
             file.fEND = buf.ntou4();
             file.fSeekFree = buf.ntou4();
             file.fNbytesFree = buf.ntou4();
-            buf.shift(4); // var nfree = buf.ntoi4();
+            buf.shift(4); // const nfree = buf.ntoi4();
             file.fNbytesName = buf.ntou4();
             file.fUnits = buf.ntou1();
             file.fCompress = buf.ntou4();
@@ -1444,7 +1444,7 @@
             file.fEND = buf.ntou8();
             file.fSeekFree = buf.ntou8();
             file.fNbytesFree = buf.ntou4();
-            buf.shift(4); // var nfree = buf.ntou4();
+            buf.shift(4); // const nfree = buf.ntou4();
             file.fNbytesName = buf.ntou4();
             file.fUnits = buf.ntou1();
             file.fCompress = buf.ntou4();
@@ -1975,7 +1975,7 @@
             member.func = function(buf, obj) { obj[this.name] = buf.ntoi1(); }; break;
          case JSROOT.IO.kCharStar:
             member.func = function(buf, obj) {
-               var len = buf.ntoi4();
+               const len = buf.ntoi4();
                obj[this.name] = buf.substring(buf.o, buf.o + len);
                buf.o += len;
             };
@@ -1993,7 +1993,7 @@
          case JSROOT.IO.kOffsetL + JSROOT.IO.kTNamed:
             member.typename = element.fTypeName;
             member.func = function(buf, obj) {
-               var ver = buf.ReadVersion();
+               const ver = buf.ReadVersion();
                obj[this.name] = buf.ReadNdimArray(this, function(buf, handle) {
                   if (handle.typename === 'TString') return buf.ReadTString();
                   return buf.ClassStreamer({}, handle.typename);
@@ -2037,7 +2037,7 @@
                }
 
                member.func = function(buf, obj) {
-                  var ver = buf.ReadVersion();
+                  const ver = buf.ReadVersion();
                   var res = this.read_loop(buf, obj[this.cntname]);
                   if (!buf.CheckBytecount(ver, this.typename)) res = null;
                   obj[this.name] = res;
@@ -2045,7 +2045,8 @@
                member.branch_func = function(buf, obj) {
                   // this is special functions, used by branch in the STL container
 
-                  var ver = buf.ReadVersion(), sz0 = obj[this.stl_size], res = new Array(sz0);
+                  const ver = buf.ReadVersion();
+                 let sz0 = obj[this.stl_size], res = new Array(sz0);
 
                   for (var loop0 = 0; loop0 < sz0; ++loop0) {
                      var cnt = obj[this.cntname][loop0];
@@ -2060,7 +2061,8 @@
                   // objects already preallocated and only appropriate member must be set
                   // see code in JSRootTree.js for reference
 
-                  var ver = buf.ReadVersion(), arr = obj[this.name0]; // objects array where reading is done
+                  const ver = buf.ReadVersion();
+                  let arr = obj[this.name0]; // objects array where reading is done
 
                   for (var loop0 = 0; loop0 < arr.length; ++loop0) {
                      var obj1 = this.get(arr, loop0), cnt = obj1[this.cntname];
@@ -2073,7 +2075,7 @@
             } else {
                JSROOT.console('fail to provide function for ' + element.fName + ' (' + element.fTypeName + ')  typ = ' + element.fType);
                member.func = function(buf, obj) {
-                  var ver = buf.ReadVersion();
+                  const ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
                   obj[this.name] = ull;
                };
@@ -2141,8 +2143,8 @@
                } else
                   if ((stl === JSROOT.IO.kSTLmap) || (stl === JSROOT.IO.kSTLmultimap)) {
 
-                     var p1 = member.typename.indexOf("<"),
-                        p2 = member.typename.lastIndexOf(">");
+                     const p1 = member.typename.indexOf("<"),
+                           p2 = member.typename.lastIndexOf(">");
 
                      member.pairtype = "pair<" + member.typename.substr(p1 + 1, p2 - p1 - 1) + ">";
 
@@ -2168,7 +2170,7 @@
             if (!member.readelem) {
                JSROOT.console('failed to create streamer for element ' + member.typename + ' ' + member.name + ' element ' + element._typename + ' STL type ' + element.fSTLtype);
                member.func = function(buf, obj) {
-                  var ver = buf.ReadVersion();
+                  const ver = buf.ReadVersion();
                   buf.CheckBytecount(ver);
                   obj[this.name] = null;
                }
@@ -2177,7 +2179,7 @@
 
                   member.read_version = function(buf, cnt) {
                      if (cnt === 0) return null;
-                     var ver = buf.ReadVersion();
+                     const ver = buf.ReadVersion();
                      this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
 
                      this.stl_version = undefined;
@@ -2190,7 +2192,7 @@
                   }
 
                   member.func = function(buf, obj) {
-                     var ver = this.read_version(buf);
+                     const ver = this.read_version(buf);
 
                      var res = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
 
@@ -2200,9 +2202,9 @@
 
                   member.branch_func = function(buf, obj) {
                      // special function to read data from STL branch
-                     var cnt = obj[this.stl_size], arr = new Array(cnt);
-
-                     var ver = this.read_version(buf, cnt);
+                     const cnt = obj[this.stl_size];
+                     let arr = new Array(cnt);
+                     const ver = this.read_version(buf, cnt);
 
                      for (var n = 0; n < cnt; ++n)
                         arr[n] = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
@@ -2213,8 +2215,8 @@
                   }
                   member.split_func = function(buf, arr, n) {
                      // function to read array from member-wise streaming
-                     var ver = this.read_version(buf);
-                     for (var i = 0; i < n; ++i)
+                     const ver = this.read_version(buf);
+                     for (let i = 0; i < n; ++i)
                         arr[i][this.name] = buf.ReadNdimArray(this, function(buf2, member2) { return member2.readelem(buf2); });
                      buf.CheckBytecount(ver, this.typename);
                   }
@@ -2223,9 +2225,9 @@
                      // objects already preallocated and only appropriate member must be set
                      // see code in JSRootTree.js for reference
 
-                     var arr = obj[this.name0]; // objects array where reading is done
+                     let arr = obj[this.name0]; // objects array where reading is done
 
-                     var ver = this.read_version(buf, arr.length);
+                     const ver = this.read_version(buf, arr.length);
 
                      for (var n = 0; n < arr.length; ++n) {
                         var obj1 = this.get(arr, n);
@@ -2267,7 +2269,7 @@
       if (filename)
          throw new Error("Cannot access other local file " + filename)
 
-      var reader = new FileReader(), cnt = 0, blobs = [], file = this.fLocalFile;
+      let reader = new FileReader(), cnt = 0, blobs = [], file = this.fLocalFile;
 
       reader.onload = function(evnt) {
          var res = new DataView(evnt.target.result);
@@ -2388,10 +2390,10 @@
          if (buf.last_read_version > 3) {
             buf.ClassStreamer(obj, "TObject");
             obj.name = buf.ReadTString();
-            var nobjects = buf.ntou4(), i = 0;
+            const nobjects = buf.ntou4();
             obj.arr = new Array(nobjects);
             obj.opt = new Array(nobjects);
-            for (; i < nobjects; ++i) {
+            for (let i = 0; i < nobjects; ++i) {
                obj.arr[i] = buf.ReadObjectAny();
                obj.opt[i] = buf.ReadTString();
             }
@@ -2406,7 +2408,7 @@
          if (!list._typename) list._typename = "TClonesArray";
          list.$kind = "TClonesArray";
          list.name = "";
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          if (ver > 2) buf.ClassStreamer(list, "TObject");
          if (ver > 1) list.name = buf.ReadTString();
          var classv = buf.ReadTString(), clv = 0,
@@ -2417,7 +2419,7 @@
             classv = classv.substr(0, pos);
          }
 
-         var nobjects = buf.ntou4();
+         let nobjects = buf.ntou4();
          if (nobjects < 0) nobjects = -nobjects;  // for backward compatibility
 
          list.arr = new Array(nobjects);
@@ -2445,11 +2447,11 @@
          if (!map._typename) map._typename = "TMap";
          map.name = "";
          map.arr = new Array();
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          if (ver > 2) buf.ClassStreamer(map, "TObject");
          if (ver > 1) map.name = buf.ReadTString();
 
-         var nobjects = buf.ntou4();
+         const nobjects = buf.ntou4();
          // create objects
          for (var n = 0; n < nobjects; ++n) {
             var obj = { _typename: "TPair" };
@@ -2460,7 +2462,7 @@
       };
 
       cs['TTreeIndex'] = function(buf, obj) {
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          obj._typename = "TTreeIndex";
          buf.ClassStreamer(obj, "TVirtualIndex");
          obj.fMajorName = buf.ReadTString();
@@ -2475,10 +2477,10 @@
          obj._typename = "TRefArray";
          buf.ClassStreamer(obj, "TObject");
          obj.name = buf.ReadTString();
-         var nobj = buf.ntoi4();
+         const nobj = buf.ntoi4();
          obj.fLast = nobj - 1;
          obj.fLowerBound = buf.ntoi4();
-         var pidf = buf.ntou2();
+         const pidf = buf.ntou2();
          obj.fUIDs = buf.ReadFastArray(nobj, JSROOT.IO.kUInt);
       };
 
@@ -2512,12 +2514,13 @@
          if (!list._typename) list._typename = "TObjArray";
          list.$kind = "TObjArray";
          list.name = "";
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          if (ver > 2)
             buf.ClassStreamer(list, "TObject");
          if (ver > 1)
             list.name = buf.ReadTString();
-         var nobjects = buf.ntou4(), i = 0;
+         const nobjects = buf.ntou4();
+         let i = 0;
          list.arr = new Array(nobjects);
          list.fLast = nobjects - 1;
          list.fLowerBound = buf.ntou4();
@@ -2526,7 +2529,7 @@
       };
 
       cs['TPolyMarker3D'] = function(buf, marker) {
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          buf.ClassStreamer(marker, "TObject");
          buf.ClassStreamer(marker, "TAttMarker");
          marker.fN = buf.ntoi4();
@@ -2554,7 +2557,7 @@
       cs['TStreamerElement'] = function(buf, element) {
          // stream an object of class TStreamerElement
 
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          buf.ClassStreamer(element, "TNamed");
          element.fType = buf.ntou4();
          element.fSize = buf.ntou4();
@@ -2603,7 +2606,7 @@
                   element.fXmin = parse_range(arr[0]);
                   element.fXmax = parse_range(arr[1]);
 
-                  var bigint = (nbits < 32) ? (1 << nbits) : 0xffffffff;
+                  const bigint = (nbits < 32) ? (1 << nbits) : 0xffffffff;
                   if (element.fXmin < element.fXmax) element.fFactor = bigint / (element.fXmax - element.fXmin);
                   else if (nbits < 15) element.fXmin = nbits;
                }
@@ -2611,7 +2614,7 @@
       };
 
       cs['TStreamerBase'] = function(buf, elem) {
-         var ver = buf.last_read_version;
+         const ver = buf.last_read_version;
          buf.ClassStreamer(elem, "TStreamerElement");
          if (ver > 2) elem.fBaseVersion = buf.ntou4();
       };
@@ -2663,7 +2666,7 @@
       cs['TVirtualPerfStats'] = "TObject"; // use directly TObject streamer
 
       cs['RooRealVar'] = function(buf, obj) {
-         var v = buf.last_read_version;
+         const v = buf.last_read_version;
          buf.ClassStreamer(obj, "RooAbsRealLValue");
          if (v == 1) { buf.ntod(); buf.ntod(); buf.ntoi4(); } // skip fitMin, fitMax, fitBins
          obj._error = buf.ntod();
@@ -2680,23 +2683,23 @@
       }
 
       cs['RooCategory'] = function(buf, obj) {
-         var v = buf.last_read_version;
+         const v = buf.last_read_version;
          buf.ClassStreamer(obj, "RooAbsCategoryLValue");
          obj._sharedProp = (v === 1) ? buf.ReadObjectAny() : buf.ClassStreamer({}, "RooCategorySharedProperties");
       }
 
       cs['RooWorkspace::CodeRepo'] = function(buf, obj) {
-         var sz = (buf.last_read_version == 2) ? 3 : 2;
-         for (var i = 0; i < sz; ++i) {
-            var cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
+         const sz = (buf.last_read_version == 2) ? 3 : 2;
+         for (let i = 0; i < sz; ++i) {
+            let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
             while (cnt--) buf.ReadTString();
          }
       }
 
       cs['RooLinkedList'] = function(buf, obj) {
-         var v = buf.last_read_version;
+         const v = buf.last_read_version;
          buf.ClassStreamer(obj, "TObject");
-         var size = buf.ntoi4();
+         let size = buf.ntoi4();
          obj.arr = JSROOT.Create("TList");
          while (size--)
             obj.arr.Add(buf.ReadObjectAny());
@@ -2733,7 +2736,7 @@
          buf.ClassStreamer(obj, "TNamed");
 
          if (buf.ntou1() != 0) {
-            var size = buf.ntoi4();
+            const size = buf.ntoi4();
             obj.fPngBuf = buf.ReadFastArray(size, JSROOT.IO.kUChar);
          } else {
             buf.ClassStreamer(obj, "TAttImage");
@@ -2744,7 +2747,7 @@
       }
 
       cs['TMaterial'] = function(buf, obj) {
-         var v = buf.last_read_version;
+         const v = buf.last_read_version;
          buf.ClassStreamer(obj, "TNamed");
          obj.fNumber = buf.ntoi4();
          obj.fA = buf.ntof();
@@ -2777,17 +2780,17 @@
 
       ds['TDatime'] = function(buf, obj) {
          obj.fDatime = buf.ntou4();
-         //         obj.GetDate = function() {
-         //            var res = new Date();
-         //            res.setFullYear((this.fDatime >>> 26) + 1995);
-         //            res.setMonth((this.fDatime << 6) >>> 28);
-         //            res.setDate((this.fDatime << 10) >>> 27);
-         //            res.setHours((this.fDatime << 15) >>> 27);
-         //            res.setMinutes((this.fDatime << 20) >>> 26);
-         //            res.setSeconds((this.fDatime << 26) >>> 26);
-         //            res.setMilliseconds(0);
-         //            return res;
-         //         }
+         //  obj.GetDate = function() {
+         //  let res = new Date();
+         //  res.setFullYear((this.fDatime >>> 26) + 1995);
+         //  res.setMonth((this.fDatime << 6) >>> 28);
+         //  res.setDate((this.fDatime << 10) >>> 27);
+         //  res.setHours((this.fDatime << 15) >>> 27);
+         //  res.setMinutes((this.fDatime << 20) >>> 26);
+         //  res.setSeconds((this.fDatime << 26) >>> 26);
+         //  res.setMilliseconds(0);
+         //  return res;
+         //  }
       }
 
       ds['TKey'] = function(buf, key) {
@@ -2810,7 +2813,7 @@
       }
 
       ds['TDirectory'] = function(buf, dir) {
-         var version = buf.ntou2();
+         const version = buf.ntou2();
          dir.fDatimeC = buf.ClassStreamer({}, 'TDatime');
          dir.fDatimeM = buf.ClassStreamer({}, 'TDatime');
          dir.fNbytesKeys = buf.ntou4();
@@ -2823,13 +2826,13 @@
 
       ds['TBasket'] = function(buf, obj) {
          buf.ClassStreamer(obj, 'TKey');
-         var ver = buf.ReadVersion();
+         const ver = buf.ReadVersion();
          obj.fBufferSize = buf.ntoi4();
          obj.fNevBufSize = buf.ntoi4();
          obj.fNevBuf = buf.ntoi4();
          obj.fLast = buf.ntoi4();
          if (obj.fLast > obj.fBufferSize) obj.fBufferSize = obj.fLast;
-         var flag = buf.ntoi1();
+         const flag = buf.ntoi1();
 
          if (flag === 0) return;
 
@@ -2847,11 +2850,11 @@
 
          if ((flag === 1) || (flag > 10)) {
             // here is reading of raw data
-            var sz = (ver.val <= 1) ? buf.ntoi4() : obj.fLast;
+            const sz = (ver.val <= 1) ? buf.ntoi4() : obj.fLast;
 
             if (sz > obj.fKeylen) {
                // buffer includes again complete TKey data - exclude it
-               var blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
+               let blob = buf.extract([buf.o + obj.fKeylen, sz - obj.fKeylen]);
 
                obj.fBufferRef = JSROOT.CreateTBuffer(blob, 0, buf.fFile, sz - obj.fKeylen);
                obj.fBufferRef.fTagOffset = obj.fKeylen;
@@ -2932,7 +2935,7 @@
          elem.fTypeName = typename = typename.substr(0, typename.length - 1);
       }
 
-      var arrkind = JSROOT.IO.GetArrayKind(typename);
+      const arrkind = JSROOT.IO.GetArrayKind(typename);
 
       if (arrkind == 0) {
          elem.fType = JSROOT.IO.kTString;
@@ -2948,7 +2951,8 @@
 
       if (this.member_wise) {
 
-         var n = buf.ntou4(), streamer = null, ver = this.stl_version;
+         const n = buf.ntou4();
+         let streamer = null, ver = this.stl_version;
 
          if (n === 0) return []; // for empty vector no need to search split streamers
 
@@ -2967,7 +2971,7 @@
             this.member_checksum = ver.checksum;
          }
 
-         var res = new Array(n), i, k, member;
+         let res = new Array(n), i, k, member;
 
          for (i = 0; i < n; ++i)
             res[i] = { _typename: this.conttype }; // create objects
@@ -2987,7 +2991,8 @@
          return res;
       }
 
-      var n = buf.ntou4(), res = new Array(n), i = 0;
+      const n = buf.ntou4();
+      let res = new Array(n), i = 0;
 
       if (n > 200000) { console.error('vector streaming for of', this.conttype, n); return res; }
 
@@ -3005,7 +3010,7 @@
 
       if (this.member_wise) {
          // when member-wise streaming is used, version is written
-         var ver = this.stl_version;
+         const ver = this.stl_version;
 
          if (this.si) {
             var si = buf.fFile.FindStreamerInfo(this.pairtype, ver.val, ver.checksum);
@@ -3021,7 +3026,8 @@
          }
       }
 
-      var i, n = buf.ntoi4(), res = new Array(n);
+      const n = buf.ntoi4();
+      let i, res = new Array(n);
       if (this.member_wise) {
          if (buf.ntoi2() == JSROOT.IO.kStreamedMemberWise)
             buf.shift(4);
@@ -3056,7 +3062,7 @@
     */
 
    JSROOT.OpenFile = function(filename, callback) {
-      var promise = new Promise(function(resolve) {
+      let promise = new Promise(function(resolve) {
          if (JSROOT.nodejs) {
             if (filename.indexOf("file://") == 0)
                return new TNodejsFile(filename.substr(7), resolve);
