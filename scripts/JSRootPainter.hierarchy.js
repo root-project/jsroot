@@ -27,7 +27,7 @@
    function drawList(divid, lst, opt, callback) {
       if (!lst || !lst.arr) return JSROOT.CallBack(callback);
 
-      var obj = {
+      let obj = {
         divid: divid,
         lst: lst,
         opt: opt,
@@ -35,7 +35,7 @@
         callback: callback,
         draw_next: function() {
            while (++this.indx < this.lst.arr.length) {
-              var item = this.lst.arr[this.indx],
+              let item = this.lst.arr[this.indx],
                   opt = (this.lst.opt && this.lst.opt[this.indx]) ? this.lst.opt[this.indx] : this.opt;
               if (!item) continue;
               return JSROOT.draw(this.divid, item, opt).then(this.draw_bind); // reenter loop via callback
@@ -60,8 +60,8 @@
 
       item._childs = [];
 
-      for ( var i = 0; i < obj.fFolders.arr.length; ++i) {
-         var chld = obj.fFolders.arr[i];
+      for ( let i = 0; i < obj.fFolders.arr.length; ++i) {
+         let chld = obj.fFolders.arr[i];
          item._childs.push( {
             _name : chld.fName,
             _kind : "ROOT." + chld._typename,
@@ -83,8 +83,8 @@
 
       // item._childs = [];
 
-      for ( var i = 0; i < obj.fTasks.arr.length; ++i) {
-         var chld = obj.fTasks.arr[i];
+      for ( let i = 0; i < obj.fTasks.arr.length; ++i) {
+         let chld = obj.fTasks.arr[i];
          item._childs.push( {
             _name : chld.fName,
             _kind : "ROOT." + chld._typename,
@@ -102,21 +102,21 @@
          return true;
       }
 
-      var do_context = false, prnt = folder;
+      let do_context = false, prnt = folder;
       while (prnt) {
          if (prnt._do_context) do_context = true;
          prnt = prnt._parent;
       }
 
       // if list has objects with similar names, create cycle number for them
-      var ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
+      let ismap = (lst._typename == 'TMap'), names = [], cnt = [], cycle = [];
 
-      for (var i = 0; i < lst.arr.length; ++i) {
-         var obj = ismap ? lst.arr[i].first : lst.arr[i];
+      for (let i = 0; i < lst.arr.length; ++i) {
+         let obj = ismap ? lst.arr[i].first : lst.arr[i];
          if (!obj) continue; // for such objects index will be used as name
-         var objname = obj.fName || obj.name;
+         let objname = obj.fName || obj.name;
          if (!objname) continue;
-         var indx = names.indexOf(objname);
+         let indx = names.indexOf(objname);
          if (indx>=0) {
             cnt[indx]++;
          } else {
@@ -126,10 +126,10 @@
       }
 
       folder._childs = [];
-      for ( var i = 0; i < lst.arr.length; ++i) {
-         var obj = ismap ? lst.arr[i].first : lst.arr[i];
+      for ( let i = 0; i < lst.arr.length; ++i) {
+         let obj = ismap ? lst.arr[i].first : lst.arr[i];
 
-         var item;
+         let item;
 
          if (!obj || !obj._typename) {
             item = {
@@ -163,7 +163,7 @@
               item._name = i.toString();
            } else {
               // if there are several such names, add cycle number to the item name
-              var indx = names.indexOf(obj.fName);
+              let indx = names.indexOf(obj.fName);
               if ((indx>=0) && (cnt[indx]>1)) {
                  item._cycle = cycle[indx]++;
                  item._keyname = item._name;
@@ -183,10 +183,10 @@
 
       folder._childs = [];
 
-      for (var i = 0; i < keys.length; ++i) {
-         var key = keys[i];
+      for (let i = 0; i < keys.length; ++i) {
+         let key = keys[i];
 
-         var item = {
+         let item = {
             _name : key.fName + ";" + key.fCycle,
             _cycle : key.fCycle,
             _kind : "ROOT." + key.fClassName,
@@ -202,7 +202,7 @@
             item._realname = key.fRealName + ";" + key.fCycle;
 
          if (key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile') {
-            var dir = null;
+            let dir = null;
             if ((dirname!=null) && (file!=null)) dir = file.GetDir(dirname + key.fName);
             if (dir == null) {
                item._more = true;
@@ -234,11 +234,11 @@
 
       top._childs = [];
 
-      var proto = Object.prototype.toString.apply(obj);
+      let proto = Object.prototype.toString.apply(obj);
 
       if (proto === '[object DataView]') {
 
-         var item = {
+         let item = {
              _parent: top,
              _name: 'size',
              _value: obj.byteLength.toString(),
@@ -246,9 +246,9 @@
          };
 
          top._childs.push(item);
-         var namelen = (obj.byteLength < 10) ? 1 : JSROOT.log10(obj.byteLength);
+         let namelen = (obj.byteLength < 10) ? 1 : JSROOT.log10(obj.byteLength);
 
-         for (var k=0;k<obj.byteLength;++k) {
+         for (let k=0;k<obj.byteLength;++k) {
             if (k % 16 === 0) {
                item = {
                  _parent: top,
@@ -260,7 +260,7 @@
                top._childs.push(item);
             }
 
-            var val = obj.getUint8(k).toString(16);
+            let val = obj.getUint8(k).toString(16);
             while (val.length<2) val = "0"+val;
             if (item._value.length>0)
                item._value += (k%4===0) ? " | " : " ";
@@ -271,22 +271,22 @@
       }
 
       // check nosimple property in all parents
-      var nosimple = true, do_context = false, prnt = top;
+      let nosimple = true, do_context = false, prnt = top;
       while (prnt) {
          if (prnt._do_context) do_context = true;
          if ('_nosimple' in prnt) { nosimple = prnt._nosimple; break; }
          prnt = prnt._parent;
       }
 
-      var isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
+      let isarray = (proto.lastIndexOf('Array]') == proto.length-6) && (proto.indexOf('[object')==0) && !isNaN(obj.length),
           compress = isarray && (obj.length > JSROOT.gStyle.HierarchyLimit),  arrcompress = false;
 
       if (isarray && (top._name==="Object") && !top._parent) top._name = "Array";
 
       if (compress) {
          arrcompress = true;
-         for (var k=0;k<obj.length;++k) {
-            var typ = typeof obj[k];
+         for (let k=0;k<obj.length;++k) {
+            let typ = typeof obj[k];
             if ((typ === 'number') || (typ === 'boolean') || (typ=='string' && (obj[k].length<16))) continue;
             arrcompress = false; break;
          }
@@ -305,13 +305,13 @@
       }
 
       if (arrcompress) {
-         for (var k=0;k<obj.length;) {
+         for (let k=0;k<obj.length;) {
 
-            var nextk = Math.min(k+10,obj.length), allsame = true, prevk = k;
+            let nextk = Math.min(k+10,obj.length), allsame = true, prevk = k;
 
             while (allsame) {
                allsame = true;
-               for (var d=prevk;d<nextk;++d)
+               for (let d=prevk;d<nextk;++d)
                   if (obj[k]!==obj[d]) allsame = false;
 
                if (allsame) {
@@ -327,13 +327,13 @@
                }
             }
 
-            var item = { _parent: top, _name: k+".."+(nextk-1), _vclass: 'h_value_num' };
+            let item = { _parent: top, _name: k+".."+(nextk-1), _vclass: 'h_value_num' };
 
             if (allsame) {
                item._value = obj[k].toString();
             } else {
                item._value = "";
-               for (var d=k;d<nextk;++d)
+               for (let d=k;d<nextk;++d)
                   item._value += ((d===k) ? "[ " : ", ") + obj[d].toString();
                item._value += " ]";
             }
@@ -345,11 +345,11 @@
          return true;
       }
 
-      var lastitem, lastkey, lastfield, cnt;
+      let lastitem, lastkey, lastfield, cnt;
 
-      for (var key in obj) {
+      for (let key in obj) {
          if ((key == '_typename') || (key[0]=='$')) continue;
-         var fld = obj[key];
+         let fld = obj[key];
          if (typeof fld == 'function') continue;
          if (args && args.exclude && (args.exclude.indexOf(key)>=0)) continue;
 
@@ -358,7 +358,7 @@
             if (cnt>0) lastitem._name += ".." + lastkey;
          }
 
-         var item = { _parent: top, _name: key };
+         let item = { _parent: top, _name: key };
 
          if (compress) { lastitem = item;  lastkey = key; lastfield = fld; cnt = 0; }
 
@@ -368,7 +368,7 @@
             continue;
          }
 
-         var simple = false;
+         let simple = false;
 
          if (typeof fld == 'object') {
 
@@ -410,7 +410,7 @@
                }
 
                // check if object already shown in hierarchy (circular dependency)
-               var curr = top, inparent = false;
+               let curr = top, inparent = false;
                while (curr && !inparent) {
                   inparent = (curr._obj === fld);
                   curr = curr._parent;
@@ -504,7 +504,7 @@
    /// method used to create basic elements
    /// should be called only once
    BrowserLayout.prototype.Create = function(with_browser) {
-      var main = this.main();
+      let main = this.main();
 
       main.append("div").attr("id", this.drawing_divid())
                         .classed("jsroot_draw_area", true)
@@ -514,9 +514,9 @@
    }
 
    BrowserLayout.prototype.CreateBrowserBtns = function() {
-      var br = this.main().select(".jsroot_browser");
+      let br = this.main().select(".jsroot_browser");
       if (br.empty()) return;
-      var btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
+      let btns = br.append("div").classed("jsroot_browser_btns", true).classed("jsroot", true);
       btns.style('position',"absolute").style("left","7px").style("top","7px");
       if (JSROOT.touches) btns.style('opacity','0.2'); // on touch devices should be always visible
       return btns;
@@ -527,7 +527,7 @@
    }
 
    BrowserLayout.prototype.SetBrowserContent = function(guiCode) {
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       main.insert('div', ".jsroot_browser_btns").classed('jsroot_browser_area', true)
@@ -538,13 +538,13 @@
    }
 
    BrowserLayout.prototype.HasContent = function() {
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return false;
       return !main.select(".jsroot_browser_area").empty();
    }
 
    BrowserLayout.prototype.DeleteContent = function() {
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       main.selectAll("*").remove();
@@ -552,10 +552,10 @@
    }
 
    BrowserLayout.prototype.HasStatus = function() {
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      let main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return false;
 
-      var id = this.gui_div + "_status",
+      let id = this.gui_div + "_status",
           line = d3.select("#"+id);
 
       return !line.empty();
@@ -563,7 +563,7 @@
 
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
       if (!this.gui_div) return '';
-      var pthis = this;
+      let pthis = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
          pthis.CreateStatusLine(height, mode);
       });
@@ -604,9 +604,9 @@
    }
 
    HierarchyPainter.prototype.FileHierarchy = function(file) {
-      var painter = this;
+      let painter = this;
 
-      var folder = {
+      let folder = {
          _name : file.fFileName,
          _title : (file.fTitle ? (file.fTitle + ", path ") : "")  + file.fFullURL,
          _kind : "ROOT.TFile",
@@ -617,7 +617,7 @@
          // this is central get method, item or itemname can be used
          _get : function(item, itemname, callback) {
 
-            var fff = this; // file item
+            let fff = this; // file item
 
             if (item && item._readobj)
                return JSROOT.CallBack(callback, item, item._readobj);
@@ -634,13 +634,13 @@
                   // if object was read even when item did not exist try to reconstruct new hierarchy
                   if (!item && obj) {
                      // first try to found last read directory
-                     var d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
+                     let d = painter.Find({name:itemname, top:fff, last_exists:true, check_keys:true });
                      if ((d!=null) && ('last' in d) && (d.last!=fff)) {
                         // reconstruct only subdir hierarchy
-                        var dir = file.GetDir(painter.itemFullName(d.last, fff));
+                        let dir = file.GetDir(painter.itemFullName(d.last, fff));
                         if (dir) {
                            d.last._name = d.last._keyname;
-                           var dirname = painter.itemFullName(d.last, fff);
+                           let dirname = painter.itemFullName(d.last, fff);
                            KeysHierarchy(d.last, dir.fKeys, file, dirname + "/");
                         }
                      } else {
@@ -684,7 +684,7 @@
       function each_item(item) {
          callback(item);
          if ('_childs' in item)
-            for (var n = 0; n < item._childs.length; ++n) {
+            for (let n = 0; n < item._childs.length; ++n) {
                item._childs[n]._parent = item;
                each_item(item._childs[n]);
             }
@@ -709,14 +709,14 @@
 
          if (!fullname || (fullname.length == 0) || !top) return top;
 
-         var pos = fullname.length;
+         let pos = fullname.length;
 
          if (!top._parent && (top._kind !== 'TopFolder') && (fullname.indexOf(top._name)===0)) {
             // it is allowed to provide item name, which includes top-parent like file.root/folder/item
             // but one could skip top-item name, if there are no other items
             if (fullname === top._name) return top;
 
-            var len = top._name.length;
+            let len = top._name.length;
             if (fullname[len] == "/") {
                fullname = fullname.substr(len+1);
                pos = fullname.length;
@@ -734,24 +734,24 @@
 
          while (pos > 0) {
             // we try to find element with slashes inside - start from full name
-            var localname = (pos >= fullname.length) ? fullname : fullname.substr(0, pos);
+            let localname = (pos >= fullname.length) ? fullname : fullname.substr(0, pos);
 
             if (top._childs) {
                // first try to find direct matched item
-               for (var i = 0; i < top._childs.length; ++i)
+               for (let i = 0; i < top._childs.length; ++i)
                   if (top._childs[i]._name == localname)
                      return process_child(top._childs[i]);
 
                // if first child online, check its elements
                if ((top._kind === 'TopFolder') && (top._childs[0]._online!==undefined))
-                  for (var i = 0; i < top._childs[0]._childs.length; ++i)
+                  for (let i = 0; i < top._childs[0]._childs.length; ++i)
                      if (top._childs[0]._childs[i]._name == localname)
                         return process_child(top._childs[0]._childs[i], true);
 
                // if allowed, try to found item with key
                if (arg.check_keys) {
-                  var newest = null;
-                  for (var i = 0; i < top._childs.length; ++i) {
+                  let newest = null;
+                  for (let i = 0; i < top._childs.length; ++i) {
                     if (top._childs[i]._keyname === localname) {
                        if (!newest || (newest._cycle < top._childs[i]._cycle)) newest = top._childs[i];
                     }
@@ -759,7 +759,7 @@
                   if (newest) return process_child(newest);
                }
 
-               var allow_index = arg.allow_index;
+               let allow_index = arg.allow_index;
                if ((localname[0] === '[') && (localname[localname.length-1] === ']') &&
                    !isNaN(parseInt(localname.substr(1,localname.length-2)))) {
                   allow_index = true;
@@ -768,7 +768,7 @@
 
                // when search for the elements it could be allowed to check index
                if (allow_index) {
-                  var indx = parseInt(localname);
+                  let indx = parseInt(localname);
                   if (!isNaN(indx) && (indx>=0) && (indx<top._childs.length))
                      return process_child(top._childs[indx]);
                }
@@ -781,7 +781,7 @@
              // if did not found element with given name we just generate it
              if (top._childs === undefined) top._childs = [];
              pos = fullname.indexOf("/");
-             var child = { _name: ((pos < 0) ? fullname : fullname.substr(0, pos)) };
+             let child = { _name: ((pos < 0) ? fullname : fullname.substr(0, pos)) };
              top._childs.push(child);
              return process_child(child);
          }
@@ -789,7 +789,7 @@
          return (arg.last_exists && top) ? { last: top, rest: fullname } : null;
       }
 
-      var top = this.h, itemname = "";
+      let top = this.h, itemname = "";
 
       if (arg === null) return null; else
       if (typeof arg == 'string') { itemname = arg; arg = {}; } else
@@ -807,7 +807,7 @@
 
       if (node && node._kind ==='TopFolder') return "__top_folder__";
 
-      var res = "";
+      let res = "";
 
       while (node) {
          // online items never includes top-level folder
@@ -828,14 +828,14 @@
       // If command requires additional arguments, they could be specified as extra arguments
       // Or they will be requested interactive
 
-      var hitem = this.Find(itemname),
+      let hitem = this.Find(itemname),
           url = this.GetOnlineItemUrl(hitem) + "/cmd.json",
           pthis = this,
           d3node = d3.select((typeof callback == 'function') ? undefined : callback);
 
       if ('_numargs' in hitem)
-         for (var n = 0; n < hitem._numargs; ++n) {
-            var argname = "arg" + (n+1), argvalue = null;
+         for (let n = 0; n < hitem._numargs; ++n) {
+            let argname = "arg" + (n+1), argvalue = null;
             if (n+2<arguments.length) argvalue = arguments[n+2];
             if (!argvalue && (typeof callback == 'object'))
                argvalue = prompt("Input argument " + argname + " for command " + hitem._name, "");
@@ -851,7 +851,7 @@
       if (typeof callback != 'function')
          callback = function(res) {
             if (d3node.empty()) return;
-            var col = ((res!=null) && (res!='false')) ? 'green' : 'red';
+            let col = ((res!=null) && (res!='false')) ? 'green' : 'red';
             if (hitem && hitem._title) d3node.attr('title', hitem._title + " lastres=" + res);
             d3node.style('background', col);
             setTimeout(function() { d3node.style('background', ''); }, 2000);
@@ -864,7 +864,7 @@
 
    HierarchyPainter.prototype.RefreshHtml = function(callback) {
       if (!this.divid) return JSROOT.CallBack(callback);
-      var hpainter = this;
+      let hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
           hpainter.RefreshHtml(callback);
       });
@@ -876,7 +876,7 @@
 
       if (arg===null) return JSROOT.CallBack(call_back, null, null);
 
-      var itemname, item, hpainter = this;
+      let itemname, item, hpainter = this;
 
       if (typeof arg === 'string') {
          itemname = arg;
@@ -897,13 +897,13 @@
            else item = this.Find( { name: itemname, allow_index: true, check_keys: true } );
 
       // if item not found, try to find nearest parent which could allow us to get inside
-      var d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+      let d = (item!=null) ? null : this.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
 
       // if item not found, try to expand hierarchy central function
       // implements not process get in central method of hierarchy item (if exists)
       // if last_parent found, try to expand it
       if ((d !== null) && ('last' in d) && (d.last !== null)) {
-         var parentname = this.itemFullName(d.last);
+         let parentname = this.itemFullName(d.last);
 
          // this is indication that expand does not give us better path to searched item
          if ((typeof arg == 'object') && ('rest' in arg))
@@ -912,7 +912,7 @@
 
          return this.expand(parentname, function(res) {
             if (!res) JSROOT.CallBack(call_back);
-            var newparentname = hpainter.itemFullName(d.last);
+            let newparentname = hpainter.itemFullName(d.last);
             if (newparentname.length>0) newparentname+="/";
             hpainter.get( { name: newparentname + d.rest, rest: d.rest }, call_back, options);
          }, null, true);
@@ -922,7 +922,7 @@
          return JSROOT.CallBack(call_back, item, item._obj);
 
       // normally search _get method in the parent items
-      var curr = item;
+      let curr = item;
       while (curr) {
          if (('_get' in curr) && (typeof curr._get == 'function'))
             return curr._get(item, null, call_back, options);
@@ -943,19 +943,19 @@
    }
 
    HierarchyPainter.prototype.player = function(itemname, option, call_back) {
-      var item = this.Find(itemname);
+      let item = this.Find(itemname);
 
       if (!item || !item._player) return JSROOT.CallBack(call_back, null);
 
-      var hpainter = this;
+      let hpainter = this;
 
       JSROOT.AssertPrerequisites(item._prereq || '', function() {
 
-         var player_func = JSROOT.findFunction(item._player);
+         let player_func = JSROOT.findFunction(item._player);
          if (!player_func) return JSROOT.CallBack(call_back, null);
 
          hpainter.CreateDisplay(function(mdi) {
-            var res = mdi ? player_func(hpainter, itemname, option) : null;
+            let res = mdi ? player_func(hpainter, itemname, option) : null;
             JSROOT.CallBack(call_back, res);
          });
       });
@@ -966,19 +966,19 @@
       if (item._player) return true;
       if (item._can_draw !== undefined) return item._can_draw;
       if (drawopt == 'inspect') return true;
-      var handle = JSROOT.getDrawHandle(item._kind, drawopt);
+      let handle = JSROOT.getDrawHandle(item._kind, drawopt);
       return handle && (('func' in handle) || ('draw_field' in handle));
    }
 
    HierarchyPainter.prototype.isItemDisplayed = function(itemname) {
-      var mdi = this.GetDisplay();
+      let mdi = this.GetDisplay();
       if (!mdi) return false;
 
       return mdi.FindFrame(itemname) !== null;
    }
 
    HierarchyPainter.prototype.display = function(itemname, drawopt, call_back) {
-      var h = this,
+      let h = this,
           painter = null,
           updating = false,
           item = null,
@@ -1021,9 +1021,9 @@
 
          if (item && !h.canDisplay(item, drawopt)) return display_callback();
 
-         var divid = "";
+         let divid = "";
          if ((typeof(drawopt)=='string') && (drawopt.indexOf("divid:")>=0)) {
-            var pos = drawopt.indexOf("divid:");
+            let pos = drawopt.indexOf("divid:");
             divid = drawopt.slice(pos+6);
             drawopt = drawopt.slice(0, pos);
          }
@@ -1050,7 +1050,7 @@
                if (!updating && (drawopt!=null) && (p.GetItemDrawOpt()!=drawopt)) return;
                mdi.ActivateFrame(frame);
 
-               var handle = null;
+               let handle = null;
                if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
                if (handle && handle.draw_field && obj[handle.draw_field])
                   obj = obj[handle.draw_field];
@@ -1065,7 +1065,7 @@
                return display_callback();
             }
 
-            var frame = mdi.FindFrame(frame_name, true);
+            let frame = mdi.FindFrame(frame_name, true);
             d3.select(frame).html("");
             mdi.ActivateFrame(frame);
 
@@ -1087,7 +1087,7 @@
    }
 
    HierarchyPainter.prototype.dropitem = function(itemname, divid, opt, call_back) {
-      var h = this;
+      let h = this;
 
       if (opt && typeof opt === 'function') { call_back = opt; opt = ""; }
       if (opt===undefined) opt = "";
@@ -1099,7 +1099,7 @@
 
       if (itemname == "$legend")
          return JSROOT.AssertPrerequisites("v6;hist", function() {
-            var res = JSROOT.Painter.produceLegend(divid, opt);
+            let res = JSROOT.Painter.produceLegend(divid, opt);
             JSROOT.CallBack(drop_callback, res);
          });
 
@@ -1107,7 +1107,7 @@
 
          if (!obj) return JSROOT.CallBack(call_back);
 
-         var main_painter = JSROOT.GetMainPainter(divid);
+         let main_painter = JSROOT.GetMainPainter(divid);
 
          if (main_painter && (typeof main_painter.PerformDrop === 'function'))
             return main_painter.PerformDrop(obj, itemname, item, opt).then(drop_callback);
@@ -1128,10 +1128,10 @@
 
       if (!this.disp || !items) return;
 
-      var draw_items = [], draw_options = [];
+      let draw_items = [], draw_options = [];
 
       this.disp.ForEachPainter(function(p) {
-         var itemname = p.GetItemName();
+         let itemname = p.GetItemName();
          if (!itemname || (draw_items.indexOf(itemname)>=0)) return;
          if (typeof items == 'array') {
             if (items.indexOf(itemname) < 0) return;
@@ -1155,21 +1155,21 @@
 
       if (only_auto_items === "monitoring") only_auto_items = !this._monitoring_on;
 
-      var allitems = [], options = [], hpainter = this;
+      let allitems = [], options = [], hpainter = this;
 
       // first collect items
       this.disp.ForEachPainter(function(p) {
-         var itemname = p.GetItemName(),
+         let itemname = p.GetItemName(),
              drawopt = p.GetItemDrawOpt();
          if ((typeof itemname != 'string') || (allitems.indexOf(itemname)>=0)) return;
 
-         var item = hpainter.Find(itemname), forced = false;
+         let item = hpainter.Find(itemname), forced = false;
          if (!item || ('_not_monitor' in item) || ('_player' in item)) return;
 
          if ('_always_monitor' in item) {
             forced = true;
          } else {
-            var handle = JSROOT.getDrawHandle(item._kind);
+            let handle = JSROOT.getDrawHandle(item._kind);
             if (handle && ('monitor' in handle)) {
                if ((handle.monitor===false) || (handle.monitor=='never')) return;
                if (handle.monitor==='always') forced = true;
@@ -1182,7 +1182,7 @@
          }
       }, true); // only visible panels are considered
 
-      var painter = this;
+      let painter = this;
 
       // force all files to read again (normally in non-browser mode)
       if (this.files_monitoring && !only_auto_items)
@@ -1199,7 +1199,7 @@
 
       if (!items || (items.length == 0)) return JSROOT.CallBack(call_back);
 
-      var h = this;
+      let h = this;
 
       if (!options) options = [];
       while (options.length < items.length)
@@ -1209,21 +1209,21 @@
          h.clear();
          d3.select("#" + h.disp_frameid).html("<h2>Start I/O test</h2>")
 
-         var tm0 = new Date();
+         let tm0 = new Date();
          return h.get(items[0], function(item, obj) {
-            var tm1 = new Date();
+            let tm1 = new Date();
             d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return JSROOT.CallBack(call_back);
          });
       }
 
-      var dropitems = new Array(items.length), dropopts = new Array(items.length), images = new Array(items.length);
+      let dropitems = new Array(items.length), dropopts = new Array(items.length), images = new Array(items.length);
 
       // First of all check that items are exists, look for cycle extension and plus sign
-      for (var i = 0; i < items.length; ++i) {
+      for (let i = 0; i < items.length; ++i) {
          dropitems[i] = dropopts[i] = null;
 
-         var item = items[i], can_split = true;
+         let item = items[i], can_split = true;
 
          if (item && item.indexOf("img:")==0) { images[i] = true; continue; }
 
@@ -1232,7 +1232,7 @@
             can_split = false;
          }
 
-         var elem = h.Find({ name: items[i], check_keys: true });
+         let elem = h.Find({ name: items[i], check_keys: true });
          if (elem) { items[i] = h.itemFullName(elem); continue; }
 
          if (can_split && (items[i][0]=='[') && (items[i][items[i].length-1]==']')) {
@@ -1246,8 +1246,8 @@
 
          if (dropitems[i] && dropitems[i].length > 0) {
             // allow to specify _same_ item in different file
-            for (var j = 0; j < dropitems[i].length; ++j) {
-               var pos = dropitems[i][j].indexOf("_same_");
+            for (let j = 0; j < dropitems[i].length; ++j) {
+               let pos = dropitems[i][j].indexOf("_same_");
                if ((pos>0) && (h.Find(dropitems[i][j])===null))
                   dropitems[i][j] = dropitems[i][j].substr(0,pos) + items[i].substr(pos);
 
@@ -1270,7 +1270,7 @@
          }
 
          // also check if subsequent items has _same_, than use name from first item
-         var pos = items[i].indexOf("_same_");
+         let pos = items[i].indexOf("_same_");
          if ((pos>0) && !h.Find(items[i]) && (i>0))
             items[i] = items[i].substr(0,pos) + items[0].substr(pos);
 
@@ -1279,9 +1279,9 @@
       }
 
       // now check that items can be displayed
-      for (var n = items.length-1; n>=0; --n) {
+      for (let n = items.length-1; n>=0; --n) {
          if (images[n]) continue;
-         var hitem = h.Find(items[n]);
+         let hitem = h.Find(items[n]);
          if (!hitem || h.canDisplay(hitem, options[n])) continue;
          // try to expand specified item
          h.expand(items[n], null, null, true);
@@ -1292,12 +1292,12 @@
 
       if (items.length == 0) return JSROOT.CallBack(call_back);
 
-      var frame_names = new Array(items.length), items_wait = new Array(items.length);
-      for (var n=0; n < items.length;++n) {
+      let frame_names = new Array(items.length), items_wait = new Array(items.length);
+      for (let n=0; n < items.length;++n) {
          items_wait[n] = 0;
-         var fname = items[n], k = 0;
+         let fname = items[n], k = 0;
          if (items.indexOf(fname) < n) items_wait[n] = true; // if same item specified, one should wait first drawing before start next
-         var p = options[n].indexOf("frameid:");
+         let p = options[n].indexOf("frameid:");
          if (p>=0) {
             fname = options[n].substr(p+8);
             options[n] = options[n].substr(0,p);
@@ -1310,12 +1310,12 @@
 
       // now check if several same items present - select only one for the drawing
       // if draw option includes 'main', such item will be drawn first
-      for (var n=0; n<items.length;++n) {
+      for (let n=0; n<items.length;++n) {
          if (items_wait[n] !== 0) continue;
-         var found_main = n;
-         for (var k=0; k<items.length;++k)
+         let found_main = n;
+         for (let k=0; k<items.length;++k)
             if ((items[n]===items[k]) && (options[k].indexOf('main')>=0)) found_main = k;
-         for (var k=0; k<items.length;++k)
+         for (let k=0; k<items.length;++k)
             if (items[n]===items[k]) items_wait[k] = (found_main != k);
       }
 
@@ -1323,7 +1323,7 @@
          if (!mdi) return JSROOT.CallBack(call_back);
 
          // Than create empty frames for each item
-         for (var i = 0; i < items.length; ++i)
+         for (let i = 0; i < items.length; ++i)
             if (options[i].indexOf('update:')!==0) {
                mdi.CreateFrame(frame_names[i]);
                options[i] += "::_display_on_frame_::"+frame_names[i];
@@ -1336,9 +1336,9 @@
             dropitems[indx] = null; // mark that all drop items are processed
             items[indx] = null; // mark item as ready
 
-            var isany = false;
+            let isany = false;
 
-            for (var cnt = 0; cnt < items.length; ++cnt) {
+            for (let cnt = 0; cnt < items.length; ++cnt) {
                if (dropitems[cnt]) isany = true;
                if (items[cnt]===null) continue; // ignore completed item
                isany = true;
@@ -1356,14 +1356,14 @@
          }
 
          // We start display of all items parallel, but only if they are not the same
-         for (var i = 0; i < items.length; ++i)
+         for (let i = 0; i < items.length; ++i)
             if (!items_wait[i])
                h.display(items[i], options[i], DropNextItem.bind(h,i));
       });
    }
 
    HierarchyPainter.prototype.reload = function() {
-      var hpainter = this;
+      let hpainter = this;
       if ('_online' in this.h)
          this.OpenOnline(this.h._online, function() {
             hpainter.RefreshHtml();
@@ -1380,7 +1380,7 @@
 
       if (typeof items == 'string') items = [ items ];
 
-      var active = [],  // array of elements to activate
+      let active = [],  // array of elements to activate
           painter = this, // painter itself
           update = []; // array of elements to update
       this.ForEach(function(item) { if (item._background) { active.push(item); delete item._background; } });
@@ -1388,10 +1388,10 @@
       function mark_active() {
          if (typeof painter.UpdateBackground !== 'function') return;
 
-         for (var n=update.length-1;n>=0;--n)
+         for (let n=update.length-1;n>=0;--n)
             painter.UpdateTreeNode(update[n]);
 
-         for (var n=0;n<active.length;++n)
+         for (let n=0;n<active.length;++n)
             painter.UpdateBackground(active[n], force);
       }
 
@@ -1402,10 +1402,10 @@
             itemname = items.shift();
          }
 
-         var hitem = painter.Find(itemname);
+         let hitem = painter.Find(itemname);
 
          if (!hitem) {
-            var d = painter.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
+            let d = painter.Find({ name: itemname, last_exists: true, check_keys: true, allow_index: true });
             if (!d || !d.last) return find_next();
             d.now_found = painter.itemFullName(d.last);
 
@@ -1416,7 +1416,7 @@
 
                return painter.expand(d.now_found, function(res) {
                   if (!res) return find_next();
-                  var newname = painter.itemFullName(d.last);
+                  let newname = painter.itemFullName(d.last);
                   if (newname.length>0) newname+="/";
                   find_next(newname + d.rest, d.now_found);
                });
@@ -1427,7 +1427,7 @@
          if (hitem) {
             // check that item is visible (opened), otherwise should enable parent
 
-            var prnt = hitem._parent;
+            let prnt = hitem._parent;
             while (prnt) {
                if (!prnt._isopen) {
                   if (force) {
@@ -1457,14 +1457,14 @@
    }
 
    HierarchyPainter.prototype.expand = function(itemname, call_back, d3cont, silent) {
-      var hpainter = this, hitem = this.Find(itemname);
+      let hpainter = this, hitem = this.Find(itemname);
 
       if (!hitem && d3cont) return JSROOT.CallBack(call_back);
 
       function DoExpandItem(_item, _obj, _name) {
          if (!_name) _name = hpainter.itemFullName(_item);
 
-         var handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
+         let handle = _item._expand ? null : JSROOT.getDrawHandle(_item._kind, "::expand");
 
          if (_obj && handle && handle.expand_item) {
             _obj = _obj[handle.expand_item]; // just take specified field from the object
@@ -1556,20 +1556,20 @@
          return JSROOT.CallBack(call_back, this.h);
 
       if (this.h._childs)
-         for (var n = 0; n < this.h._childs.length; ++n) {
-            var item = this.h._childs[n];
+         for (let n = 0; n < this.h._childs.length; ++n) {
+            let item = this.h._childs[n];
             if ('_jsonfile' in item) JSROOT.CallBack(call_back, item);
          }
    }
 
    HierarchyPainter.prototype.OpenJsonFile = function(filepath, call_back) {
-      var isfileopened = false;
+      let isfileopened = false;
       this.ForEachJsonFile(function(item) { if (item._jsonfile==filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
-      var pthis = this;
+      let pthis = this;
       JSROOT.HttpRequest(filepath, 'object').then(function(res) {
-         var h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
+         let h1 = { _jsonfile: filepath, _kind: "ROOT." + res._typename, _jsontmp: res, _name: filepath.split("/").pop() };
          if (res.fTitle) h1._title = res.fTitle;
          h1._get = function(item,itemname,callback) {
             if (item._jsontmp)
@@ -1581,7 +1581,7 @@
          }
          if (pthis.h == null) pthis.h = h1; else
          if (pthis.h._kind == 'TopFolder') pthis.h._childs.push(h1); else {
-            var h0 = pthis.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
+            let h0 = pthis.h, topname = ('_jsonfile' in h0) ? "Files" : "Items";
             pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1] };
          }
 
@@ -1595,8 +1595,8 @@
          return JSROOT.CallBack(call_back, this.h);
 
       if (this.h._childs)
-         for (var n = 0; n < this.h._childs.length; ++n) {
-            var item = this.h._childs[n];
+         for (let n = 0; n < this.h._childs.length; ++n) {
+            let item = this.h._childs[n];
             if ((item._kind == 'ROOT.TFile') && ('_fullurl' in item))
                JSROOT.CallBack(call_back, item);
          }
@@ -1605,11 +1605,11 @@
    HierarchyPainter.prototype.OpenRootFile = function(filepath, call_back) {
       // first check that file with such URL already opened
 
-      var isfileopened = false;
+      let isfileopened = false;
       this.ForEachRootFile(function(item) { if (item._fullurl===filepath) isfileopened = true; });
       if (isfileopened) return JSROOT.CallBack(call_back);
 
-      var pthis = this;
+      let pthis = this;
 
       JSROOT.progress("Opening " + filepath + " ...");
       JSROOT.OpenFile(filepath).then(file => {
@@ -1621,7 +1621,7 @@
             return JSROOT.CallBack(call_back, false);
          }
 
-         var h1 = pthis.FileHierarchy(file);
+         let h1 = pthis.FileHierarchy(file);
          h1._isopen = true;
          if (pthis.h == null) {
             pthis.h = h1;
@@ -1630,7 +1630,7 @@
          if (pthis.h._kind == 'TopFolder') {
             pthis.h._childs.push(h1);
          }  else {
-            var h0 = pthis.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
+            let h0 = pthis.h, topname = (h0._kind == "ROOT.TFile") ? "Files" : "Items";
             pthis.h = { _name: topname, _kind: 'TopFolder', _childs : [h0, h1], _isopen: true };
          }
 
@@ -1650,7 +1650,7 @@
 
       if (typeof style === 'string') {
 
-         var hpainter = this,
+         let hpainter = this,
              item = this.Find( { name: style, allow_index: true, check_keys: true } );
 
          if (item!==null)
@@ -1666,10 +1666,10 @@
    }
 
    HierarchyPainter.prototype.GetFileProp = function(itemname) {
-      var item = this.Find(itemname);
+      let item = this.Find(itemname);
       if (item == null) return null;
 
-      var subname = item._name;
+      let subname = item._name;
       while (item._parent) {
          item = item._parent;
          if ('_file' in item)
@@ -1694,7 +1694,7 @@
    HierarchyPainter.prototype.GetOnlineItemUrl = function(item) {
       // returns URL, which could be used to request item from the online server
       if (typeof item == "string") item = this.Find(item);
-      var prnt = item;
+      let prnt = item;
       while (prnt && (prnt._online===undefined)) prnt = prnt._parent;
       return prnt ? (prnt._online + this.itemFullName(item, prnt)) : null;
    }
@@ -1706,13 +1706,13 @@
    HierarchyPainter.prototype.GetOnlineItem = function(item, itemname, callback, option) {
       // method used to request object from the http server
 
-      var url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
+      let url = itemname, h_get = false, req = "", req_kind = "object", pthis = this, draw_handle = null;
 
       if (option === 'hierarchy_expand') { h_get = true; option = undefined; }
 
       if (item) {
          url = this.GetOnlineItemUrl(item);
-         var func = null;
+         let func = null;
          if ('_kind' in item) draw_handle = JSROOT.getDrawHandle(item._kind);
 
          if (h_get) {
@@ -1726,7 +1726,7 @@
 
          if (typeof func == 'function') {
             // ask to make request
-            var dreq = func(pthis, item, url, option);
+            let dreq = func(pthis, item, url, option);
             // result can be simple string or object with req and kind fields
             if (dreq!=null)
                if (typeof dreq == 'string') req = dreq; else {
@@ -1741,7 +1741,7 @@
 
       if (!itemname && item && ('_cached_draw_object' in this) && (req.length == 0)) {
          // special handling for drawGUI when cashed
-         var obj = this._cached_draw_object;
+         let obj = this._cached_draw_object;
          delete this._cached_draw_object;
          return JSROOT.CallBack(callback, item, obj);
       }
@@ -1751,9 +1751,9 @@
       if (url.length > 0) url += "/";
       url += req;
 
-      var itemreq = JSROOT.NewHttpRequest(url, req_kind, function(obj) {
+      let itemreq = JSROOT.NewHttpRequest(url, req_kind, function(obj) {
 
-         var func = null;
+         let func = null;
 
          if (!h_get && item && ('_after_request' in item)) {
             func = JSROOT.findFunction(item._after_request);
@@ -1761,7 +1761,7 @@
             func = draw_handle.after_request;
 
          if (typeof func == 'function') {
-            var res = func(pthis, item, obj, option, itemreq);
+            let res = func(pthis, item, obj, option, itemreq);
             if ((res!=null) && (typeof res == "object")) obj = res;
          }
 
@@ -1776,7 +1776,7 @@
 
       if (obj && node && ('_childs' in obj)) {
 
-         for (var n=0;n<obj._childs.length;++n)
+         for (let n=0;n<obj._childs.length;++n)
             if (obj._childs[n]._more || obj._childs[n]._childs)
                obj._childs[n]._expand = JSROOT.Painter.OnlineHierarchy;
 
@@ -1789,7 +1789,7 @@
    }
 
    HierarchyPainter.prototype.OpenOnline = function(server_address, user_callback) {
-      var painter = this;
+      let painter = this;
 
       function AdoptHierarchy(result) {
          painter.h = result;
@@ -1808,13 +1808,13 @@
 
          painter.h._expand = JSROOT.Painter.OnlineHierarchy;
 
-         var scripts = "", modules = "";
+         let scripts = "", modules = "";
          painter.ForEach(function(item) {
             if ('_childs' in item) item._expand = JSROOT.Painter.OnlineHierarchy;
 
             if ('_autoload' in item) {
-               var arr = item._autoload.split(";");
-               for (var n = 0; n < arr.length; ++n)
+               let arr = item._autoload.split(";");
+               for (let n = 0; n < arr.length; ++n)
                   if ((arr[n].length>3) &&
                       ((arr[n].lastIndexOf(".js")==arr[n].length-3) ||
                       (arr[n].lastIndexOf(".css")==arr[n].length-4))) {
@@ -1832,9 +1832,9 @@
 
             painter.ForEach(function(item) {
                if (!('_drawfunc' in item) || !('_kind' in item)) return;
-               var typename = "kind:" + item._kind;
+               let typename = "kind:" + item._kind;
                if (item._kind.indexOf('ROOT.')==0) typename = item._kind.slice(5);
-               var drawopt = item._drawopt;
+               let drawopt = item._drawopt;
                if (!JSROOT.canDraw(typename) || (drawopt!=null))
                   JSROOT.addDrawFunc({ name: typename, func: item._drawfunc, script: item._drawscript, opt: drawopt });
             });
@@ -1846,7 +1846,7 @@
       if (!server_address) server_address = "";
 
       if (typeof server_address == 'object') {
-         var h = server_address;
+         let h = server_address;
          server_address = "";
          return AdoptHierarchy(h);
       }
@@ -1855,10 +1855,10 @@
    }
 
    HierarchyPainter.prototype.GetOnlineProp = function(itemname) {
-      var item = this.Find(itemname);
+      let item = this.Find(itemname);
       if (!item) return null;
 
-      var subname = item._name;
+      let subname = item._name;
       while (item._parent) {
          item = item._parent;
 
@@ -1876,7 +1876,7 @@
 
    HierarchyPainter.prototype.FillOnlineMenu = function(menu, onlineprop, itemname) {
 
-      var painter = this,
+      let painter = this,
           node = this.Find(itemname),
           sett = JSROOT.getDrawSettings(node._kind, 'nosame;noinspect'),
           handle = JSROOT.getDrawHandle(node._kind),
@@ -1893,7 +1893,7 @@
       if (handle && ('execute' in handle))
          menu.add("Execute", function() { painter.ExecuteCommand(itemname, menu.tree_node); });
 
-      var drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm", separ = "?";
+      let drawurl = onlineprop.server + onlineprop.itemname + "/draw.htm", separ = "?";
       if (this.IsMonitoring()) {
          drawurl += separ + "monitoring=" + this.MonitoringInterval();
          separ = "&";
@@ -2017,7 +2017,7 @@
          delete this.disp;
       }
 
-      var plainarr = [];
+      let plainarr = [];
 
       this.ForEach(function(item) {
          delete item._painter; // remove reference on the painter
@@ -2043,7 +2043,7 @@
    HierarchyPainter.prototype.CleanupFrame = function(divid) {
       // hook to perform extra actions when frame is cleaned
 
-      var lst = JSROOT.cleanup(divid);
+      let lst = JSROOT.cleanup(divid);
 
       // we remove all painters references from items
       if (lst && (lst.length>0))
@@ -2095,7 +2095,7 @@
 
       // check if display can be erased
       if (this.disp) {
-         var num = this.disp.NumDraw();
+         let num = this.disp.NumDraw();
          if ((num>1) || ((num==1) && !this.disp.FindFrame(itemname)))
             return this.CreateDisplay(callback);
          this.disp.Reset();
@@ -2107,7 +2107,7 @@
 
    HierarchyPainter.prototype.updateOnOtherFrames = function(painter, obj) {
       // function should update object drawings for other painters
-      var mdi = this.disp, handle = null, isany = false;
+      let mdi = this.disp, handle = null, isany = false;
       if (!mdi) return false;
 
       if (obj._typename) handle = JSROOT.getDrawHandle("ROOT." + obj._typename);
@@ -2129,26 +2129,26 @@
    HierarchyPainter.prototype.StartGUI = function(gui_div, gui_call_back, url) {
 
       function GetOption(opt) {
-         var res = JSROOT.GetUrlOption(opt, url);
+         let res = JSROOT.GetUrlOption(opt, url);
          if (!res && gui_div && !gui_div.empty() && gui_div.node().hasAttribute(opt)) res = gui_div.attr(opt);
          return res;
       }
 
       function GetOptionAsArray(opt) {
-         var res = JSROOT.GetUrlOptionAsArray(opt, url);
+         let res = JSROOT.GetUrlOptionAsArray(opt, url);
          if (res.length>0 || !gui_div || gui_div.empty()) return res;
          while (opt.length>0) {
-            var separ = opt.indexOf(";");
-            var part = separ>0 ? opt.substr(0, separ) : opt;
+            let separ = opt.indexOf(";");
+            let part = separ>0 ? opt.substr(0, separ) : opt;
             if (separ>0) opt = opt.substr(separ+1); else opt = "";
 
-            var canarray = true;
+            let canarray = true;
             if (part[0]=='#') { part = part.substr(1); canarray = false; }
             if (part==='files') continue; // special case for normal UI
 
             if (!gui_div.node().hasAttribute(part)) continue;
 
-            var val = gui_div.attr(part);
+            let val = gui_div.attr(part);
 
             if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
             else if (val!==null) res.push(val);
@@ -2156,7 +2156,7 @@
          return res;
       }
 
-      var hpainter = this,
+      let hpainter = this,
           prereq = GetOption('prereq') || "",
           filesdir = JSROOT.GetUrlOption("path", url) || "", // path used in normal gui
           filesarr = GetOptionAsArray("#file;files"),
@@ -2182,14 +2182,14 @@
 
       if (title) document.title = title;
 
-      var load = GetOption("load");
+      let load = GetOption("load");
       if (load) prereq += ";io;2d;load:" + load;
 
       if (expanditems.length==0 && (GetOption("expand")==="")) expanditems.push("");
 
       if (filesdir) {
-         for (var i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
-         for (var i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
+         for (let i=0;i<filesarr.length;++i) filesarr[i] = filesdir + filesarr[i];
+         for (let i=0;i<jsonarr.length;++i) jsonarr[i] = filesdir + jsonarr[i];
       }
 
       if ((itemsarr.length==0) && GetOption("item")==="") itemsarr.push("");
@@ -2286,7 +2286,7 @@
          OpenAllFiles();
       }
 
-      var h0 = null;
+      let h0 = null;
       if (this.is_online) {
          if (typeof GetCachedHierarchy == 'function') h0 = GetCachedHierarchy();
          if (typeof h0 !== 'object') h0 = "";
@@ -2311,7 +2311,7 @@
       this.brlayout.Create(!this.exclude_browser);
 
       if (!this.exclude_browser) {
-         var btns = this.brlayout.CreateBrowserBtns();
+         let btns = this.brlayout.CreateBrowserBtns();
 
          JSROOT.ToolbarIcons.CreateSVG(btns, JSROOT.ToolbarIcons.diamand, 15, "toggle fix-pos browser")
                             .style("margin","3px").on("click", this.CreateBrowser.bind(this, "fix", true));
@@ -2336,7 +2336,7 @@
    HierarchyPainter.prototype.CreateBrowser = function(browser_kind, update_html, call_back) {
       if (!this.gui_div) return;
 
-      var hpainter = this;
+      let hpainter = this;
       JSROOT.AssertPrerequisites('jq2d', function() {
           hpainter.CreateBrowser(browser_kind, update_html, call_back);
       });
@@ -2345,7 +2345,7 @@
    // ======================================================================================
 
    JSROOT.BuildNobrowserGUI = function() {
-      var myDiv = d3.select('#simpleGUI'),
+      let myDiv = d3.select('#simpleGUI'),
           online = false, drawing = false;
 
       if (myDiv.empty()) {
@@ -2360,7 +2360,7 @@
 
       JSROOT.Painter.readStyleFromURL();
 
-      var guisize = JSROOT.GetUrlOption("divsize");
+      let guisize = JSROOT.GetUrlOption("divsize");
       if (guisize) {
          guisize = guisize.split("x");
          if (guisize.length != 2) guisize = null;
@@ -2374,7 +2374,7 @@
          myDiv.style('position',"absolute").style('left',0).style('top',0).style('bottom',0).style('right',0).style('padding',1);
       }
 
-      var hpainter = new JSROOT.HierarchyPainter('root', null);
+      let hpainter = new JSROOT.HierarchyPainter('root', null);
 
       if (online) hpainter.is_online = drawing ? "draw" : "online";
       if (drawing) hpainter.exclude_browser = true;
@@ -2384,10 +2384,10 @@
       hpainter.StartGUI(myDiv, function() {
          if (!drawing) return;
 
-         var func = JSROOT.findFunction('GetCachedObject');
-         var obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
+         let func = JSROOT.findFunction('GetCachedObject');
+         let obj = (typeof func == 'function') ? JSROOT.JSONR_unref(func()) : null;
          if (obj) hpainter._cached_draw_object = obj;
-         var opt = JSROOT.GetUrlOption("opt") || "";
+         let opt = JSROOT.GetUrlOption("opt") || "";
 
          if (JSROOT.GetUrlOption("websocket")!==null) opt+=";websocket";
 
@@ -2396,12 +2396,12 @@
    }
 
    JSROOT.Painter.drawStreamerInfo = function(divid, lst) {
-      var painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
+      let painter = new JSROOT.HierarchyPainter('sinfo', divid, 'white');
 
       painter.h = { _name : "StreamerInfo", _childs : [] };
 
-      for ( var i = 0; i < lst.arr.length; ++i) {
-         var entry = lst.arr[i]
+      for ( let i = 0; i < lst.arr.length; ++i) {
+         let entry = lst.arr[i]
 
          if (entry._typename == "TList") continue;
 
@@ -2410,7 +2410,7 @@
             continue;
          }
 
-         var item = {
+         let item = {
             _name : entry.fName + ";" + entry.fClassVersion,
             _kind : "class " + entry.fName,
             _title : "class:" + entry.fName + ' version:' + entry.fClassVersion + ' checksum:' + entry.fCheckSum,
@@ -2423,15 +2423,15 @@
          painter.h._childs.push(item);
 
          if (typeof entry.fElements == 'undefined') continue;
-         for ( var l = 0; l < entry.fElements.arr.length; ++l) {
-            var elem = entry.fElements.arr[l];
+         for ( let l = 0; l < entry.fElements.arr.length; ++l) {
+            let elem = entry.fElements.arr[l];
             if (!elem || !elem.fName) continue;
-            var info = elem.fTypeName + " " + elem.fName,
+            let info = elem.fTypeName + " " + elem.fName,
                 title = elem.fTypeName + " type:" + elem.fType;
             if (elem.fArrayDim===1)
                info += "[" + elem.fArrayLength + "]";
             else
-               for (var dim=0;dim<elem.fArrayDim;++dim)
+               for (let dim=0;dim<elem.fArrayDim;++dim)
                   info+="[" + elem.fMaxIndex[dim] + "]";
             if (elem.fBaseVersion===4294967295) info += ":-1"; else
             if (elem.fBaseVersion!==undefined) info += ":" + elem.fBaseVersion;
@@ -2459,7 +2459,7 @@
 
       JSROOT.cleanup(divid);
 
-      var painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
+      let painter = new JSROOT.HierarchyPainter('inspector', divid, 'white');
       painter.default_by_click = "expand"; // default action
       painter.with_icons = false;
       painter.h = { _name: "Object", _title: "", _click_action: "expand", _nosimple: false, _do_context: true };
@@ -2480,11 +2480,11 @@
       // painter.select_main().style('overflow','auto');
 
       painter.fill_context = function(menu, hitem) {
-         var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
+         let sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
          if (sett.opts)
             menu.addDrawMenu("nosub:Draw", sett.opts, function(arg) {
                if (!hitem || !hitem._obj) return;
-               var obj = hitem._obj, divid = this.divid;
+               let obj = hitem._obj, divid = this.divid;
                if (this.removeInspector) {
                   divid = this.select_main().node().parentNode;
                   this.removeInspector();
@@ -2541,20 +2541,20 @@
       // provided userfunc is called with arguments (painter, frame)
 
       this.ForEachFrame(function(frame) {
-         var dummy = new JSROOT.TObjectPainter();
+         let dummy = new JSROOT.TObjectPainter();
          dummy.SetDivId(frame, -1);
          dummy.ForEachPainter(function(painter) { userfunc(painter, frame); });
       }, only_visible);
    }
 
    MDIDisplay.prototype.NumDraw = function() {
-      var cnt = 0;
+      let cnt = 0;
       this.ForEachFrame(function() { ++cnt; });
       return cnt;
    }
 
    MDIDisplay.prototype.FindFrame = function(searchtitle, force) {
-      var found_frame = null;
+      let found_frame = null;
 
       this.ForEachFrame(function(frame) {
          if (d3.select(frame).attr('frame_title') == searchtitle)
@@ -2577,7 +2577,7 @@
 
    MDIDisplay.prototype.CheckMDIResize = function(only_frame_id, size) {
       // perform resize for each frame
-      var resized_frame = null;
+      let resized_frame = null;
 
       this.ForEachPainter(function(painter, frame) {
 
@@ -2607,7 +2607,7 @@
 
       if (!JSROOT.canDraw(obj._typename, drawopt)) return;
 
-      var frame = this.FindFrame(title, true);
+      let frame = this.FindFrame(title, true);
 
       this.ActivateFrame(frame);
 
@@ -2631,9 +2631,9 @@
    }
 
    CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var ks = Object.keys(this.frames);
-      for (var k = 0; k < ks.length; ++k) {
-         var node = d3.select("#"+ks[k]);
+      let ks = Object.keys(this.frames);
+      for (let k = 0; k < ks.length; ++k) {
+         let node = d3.select("#"+ks[k]);
          if (!node.empty())
             JSROOT.CallBack(userfunc, node.node());
       }
@@ -2643,9 +2643,9 @@
 
       this.BeforeCreateFrame(title);
 
-      var ks = Object.keys(this.frames);
-      for (var k = 0; k < ks.length; ++k) {
-         var items = this.frames[ks[k]];
+      let ks = Object.keys(this.frames);
+      for (let k = 0; k < ks.length; ++k) {
+         let items = this.frames[ks[k]];
          if (items.indexOf(title+";")>=0)
             return d3.select("#"+ks[k]).node();
       }
@@ -2690,7 +2690,7 @@
          return;
       }
 
-      var num = 2, arr = undefined, sizes = undefined;
+      let num = 2, arr = undefined, sizes = undefined;
 
       if ((kind.indexOf("grid") == 0) || kind2) {
          if (kind2) kind = kind + "x" + kind2;
@@ -2701,7 +2701,7 @@
             kind = kind.substr(1);
          }
 
-         var separ = kind.indexOf("x"), sizex = 3, sizey = 3;
+         let separ = kind.indexOf("x"), sizex = 3, sizey = 3;
 
          if (separ > 0) {
             sizey = parseInt(kind.substr(separ + 1));
@@ -2718,7 +2718,7 @@
             num = sizey;
             if (sizex>1) {
                arr = new Array(num);
-               for (var k=0;k<num;++k) arr[k] = sizex;
+               for (let k=0;k<num;++k) arr[k] = sizex;
             }
          } else
          if (sizex > 1) {
@@ -2734,7 +2734,7 @@
       }
 
       if (kind && kind.indexOf("_")>0) {
-         var arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
+         let arg = parseInt(kind.substr(kind.indexOf("_")+1), 10);
          if (!isNaN(arg) && (arg>10)) {
             kind = kind.substr(0, kind.indexOf("_"));
             sizes = [];
@@ -2772,16 +2772,16 @@
    GridDisplay.prototype.CreateGroup = function(handle, main, num, childs, sizes) {
 
       if (!sizes) sizes = new Array(num);
-      var sum1 = 0, sum2 = 0;
-      for (var n=0;n<num;++n) sum1 += (sizes[n] || 1);
-      for (var n=0;n<num;++n) {
+      let sum1 = 0, sum2 = 0;
+      for (let n=0;n<num;++n) sum1 += (sizes[n] || 1);
+      for (let n=0;n<num;++n) {
          sizes[n] = Math.round(100 * (sizes[n] || 1) / sum1);
          sum2 += sizes[n];
          if (n==num-1) sizes[n] += (100-sum2); // make 100%
       }
 
-      for (var cnt = 0; cnt<num; ++cnt) {
-         var group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
+      for (let cnt = 0; cnt<num; ++cnt) {
+         let group = { id: cnt, drawid: -1, position: 0, size: sizes[cnt] };
          if (cnt>0) group.position = handle.groups[cnt-1].position + handle.groups[cnt-1].size;
          group.position0 = group.position;
 
@@ -2789,7 +2789,7 @@
 
          handle.groups.push(group);
 
-         var elem = main.append("div").attr('groupid', group.id);
+         let elem = main.append("div").attr('groupid', group.id);
 
          if (handle.vertical)
             elem.style('float', 'bottom').style('height',group.size+'%').style('width','100%');
@@ -2813,7 +2813,7 @@
       }
 
       if (this.use_separarators && this.CreateSeparator)
-         for (var cnt=1;cnt<num;++cnt)
+         for (let cnt=1;cnt<num;++cnt)
             this.CreateSeparator(handle, main, handle.groups[cnt]);
    }
 
@@ -2829,7 +2829,7 @@
    GridDisplay.prototype.GetActiveFrame = function() {
       if (this.simple_layout) return this.GetFrame();
 
-      var found = MDIDisplay.prototype.GetActiveFrame.call(this);
+      let found = MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found) return found;
 
       this.ForEachFrame(function(frame) {
@@ -2846,7 +2846,7 @@
    GridDisplay.prototype.GetFrame = function(id) {
       if (this.simple_layout)
          return this.select_main('origin').node();
-      var res = null;
+      let res = null;
       this.select_main().selectAll('.jsroot_newgrid').each(function() {
          if (id-- === 0) res = this;
       });
@@ -2860,7 +2860,7 @@
    GridDisplay.prototype.CreateFrame = function(title) {
       this.BeforeCreateFrame(title);
 
-      var frame = null, maxloop = this.framecnt || 2;
+      let frame = null, maxloop = this.framecnt || 2;
 
       while (!frame && maxloop--) {
          frame = this.GetFrame(this.getcnt);

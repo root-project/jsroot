@@ -33,11 +33,11 @@
       JSROOT.loadScript('$$$style/jquery-ui.css');
 
    JSROOT.Painter.createMenu = function(painter, maincallback, show_event) {
-      var menuname = 'root_ctx_menu';
+      let menuname = 'root_ctx_menu';
 
       if (!maincallback && (typeof painter==='function')) { maincallback = painter; painter = null; }
 
-      var menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
+      let menu = { painter: painter,  element: null, code: "", cnt: 1, funcs: {}, separ: false };
 
       // copy event values, otherwise they may gone when menu will be shown
       if (show_event && (typeof show_event == "object"))
@@ -54,7 +54,7 @@
 
          if (name=="endsub:") { this.code += "</ul></li>"; return; }
 
-         var item = "", close_tag = "</li>";
+         let item = "", close_tag = "</li>";
          title = title ? " title='" + title + "'" : "";
          if (name.indexOf("sub:")==0) { name = name.substr(4); close_tag = "<ul>"; }
 
@@ -87,7 +87,7 @@
          if (!opts) opts = [];
          if (opts.length==0) opts.push("");
 
-         var without_sub = false;
+         let without_sub = false;
          if (menu_name.indexOf("nosub:")==0) {
             without_sub = true;
             menu_name = menu_name.substr(6);
@@ -100,11 +100,11 @@
 
          if (!without_sub) this.add("sub:" + menu_name, opts[0], call_back);
 
-         for (var i=0;i<opts.length;++i) {
-            var name = opts[i];
+         for (let i=0;i<opts.length;++i) {
+            let name = opts[i];
             if (name=="") name = '&lt;dflt&gt;';
 
-            var group = i+1;
+            let group = i+1;
             if ((opts.length>5) && (name.length>0)) {
                // check if there are similar options, which can be grouped once again
                while ((group<opts.length) && (opts[group].indexOf(name)==0)) group++;
@@ -116,7 +116,7 @@
                this.add(name, opts[i], call_back);
             } else {
                this.add("sub:" + name, opts[i], call_back);
-               for (var k=i+1;k<group;++k)
+               for (let k=i+1;k<group;++k)
                   this.add(opts[k], opts[k], call_back);
                this.add("endsub:");
                i = group-1;
@@ -145,14 +145,14 @@
 
          document.body.addEventListener('click', this.remove_bind);
 
-         var oldmenu = document.getElementById(menuname);
+         let oldmenu = document.getElementById(menuname);
          if (oldmenu) oldmenu.parentNode.removeChild(oldmenu);
 
          $(document.body).append('<ul class="jsroot_ctxmenu">' + this.code + '</ul>');
 
          this.element = $('.jsroot_ctxmenu');
 
-         var pthis = this;
+         let pthis = this;
 
          this.element
             .attr('id', menuname)
@@ -163,7 +163,7 @@
             .menu({
                items: "> :not(.ui-widget-header)",
                select: function( event, ui ) {
-                  var arg = ui.item.attr('arg'),
+                  let arg = ui.item.attr('arg'),
                       cnt = ui.item.attr('cnt'),
                       func = cnt ? pthis.funcs[cnt] : null;
                   pthis.remove();
@@ -176,7 +176,7 @@
               }
             });
 
-         var newx = null, newy = null;
+         let newx = null, newy = null;
 
          if (event.clientX + this.element.width() > $(window).width()) newx = $(window).width() - this.element.width() - 20;
          if (event.clientY + this.element.height() > $(window).height()) newy = $(window).height() - this.element.height() - 20;
@@ -192,12 +192,12 @@
 
    // =================================================================================================
 
-   var BrowserLayout = JSROOT.BrowserLayout;
+   let BrowserLayout = JSROOT.BrowserLayout;
 
    /// set browser title text
    /// Title also used for dragging of the float browser
    BrowserLayout.prototype.SetBrowserTitle = function(title) {
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (!main.empty())
          main.select(".jsroot_browser_title").text(title);
    }
@@ -211,7 +211,7 @@
          kind = (this.browser_kind === "float") ? "fix" : "float";
       }
 
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser"),
+      let main = d3.select("#"+this.gui_div+" .jsroot_browser"),
           jmain = $(main.node()),
           area = jmain.find(".jsroot_browser_area"),
           pthis = this;
@@ -245,7 +245,7 @@
                  pthis.SetButtonsPosition();
               },
               stop: function( event, ui ) {
-                 var bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
+                 let bottom = $(this).parent().innerHeight() - ui.position.top - ui.size.height;
                  if (bottom<7) $(this).css('height', "").css('bottom', 0);
               }
          })
@@ -259,7 +259,7 @@
                 pthis.SetButtonsPosition();
              },
              stop: function( event, ui ) {
-                var bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
+                let bottom = $(this).parent().innerHeight() - $(this).offset().top - $(this).outerHeight();
                 if (bottom<7) $(this).css('height', "").css('bottom', 0);
              }
           });
@@ -269,7 +269,7 @@
 
         area.css('left',0).css('top',0).css('bottom',0).css('height','');
 
-        var vsepar =
+        let vsepar =
            main.append('div')
                .classed("jsroot_separator", true).classed('jsroot_v_separator', true)
                .style('position', 'absolute').style('top',0).style('bottom',0);
@@ -296,14 +296,14 @@
    BrowserLayout.prototype.SetButtonsPosition = function() {
       if (!this.gui_div) return;
 
-      var jmain = $("#"+this.gui_div+" .jsroot_browser"),
+      let jmain = $("#"+this.gui_div+" .jsroot_browser"),
           btns = jmain.find(".jsroot_browser_btns"),
           top = 7, left = 7;
 
       if (!btns.length) return;
 
       if (this.browser_visible) {
-         var area = jmain.find(".jsroot_browser_area"),
+         let area = jmain.find(".jsroot_browser_area"),
              off0 = jmain.offset(), off1 = area.offset();
          top = off1.top - off0.top + 7;
          left = off1.left - off0.left + area.innerWidth() - 27;
@@ -315,10 +315,10 @@
    BrowserLayout.prototype.AdjustBrowserSize = function(onlycheckmax) {
       if (!this.gui_div || (this.browser_kind !== "float")) return;
 
-      var jmain = $("#" + this.gui_div + " .jsroot_browser");
+      let jmain = $("#" + this.gui_div + " .jsroot_browser");
       if (!jmain.length) return;
 
-      var area = jmain.find(".jsroot_browser_area"),
+      let area = jmain.find(".jsroot_browser_area"),
           cont = jmain.find(".jsroot_browser_hierarchy"),
           chld = cont.children(":first");
 
@@ -330,7 +330,7 @@
 
       if (!chld.length) return;
 
-      var h1 = cont.innerHeight(),
+      let h1 = cont.innerHeight(),
           h2 = chld.innerHeight();
 
       if ((h2!==undefined) && (h2<h1*0.7)) area.css('bottom', '');
@@ -339,12 +339,12 @@
    BrowserLayout.prototype.ToggleBrowserVisisbility = function(fast_close) {
       if (!this.gui_div || (typeof this.browser_visible==='string')) return;
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
           area = main.select('.jsroot_browser_area');
 
       if (area.empty()) return;
 
-      var vsepar = main.select(".jsroot_v_separator"),
+      let vsepar = main.select(".jsroot_v_separator"),
           drawing = d3.select("#" + this.gui_div + "_drawing"),
           tgt = area.property('last_left'),
           tgt_separ = area.property('last_vsepar'),
@@ -360,7 +360,7 @@
             area.property('last_drawing', drawing.style('left'));
          }
          tgt = (-$(area.node()).outerWidth(true)-10).toString() + "px";
-         var mainw = $(main.node()).outerWidth(true);
+         let mainw = $(main.node()).outerWidth(true);
 
          if (vsepar.empty() && ($(area.node()).offset().left > mainw/2)) tgt = (mainw+10) + "px";
 
@@ -368,7 +368,7 @@
          tgt_drawing = "0px";
       }
 
-      var pthis = this, visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
+      let pthis = this, visible_at_the_end  = !this.browser_visible, _duration = fast_close ? 0 : 700;
 
       this.browser_visible = 'changing';
 
@@ -401,11 +401,11 @@
    }
 
    BrowserLayout.prototype.DeleteContent = function() {
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty()) return;
 
       this.CreateStatusLine("delete");
-      var vsepar = main.select(".jsroot_v_separator");
+      let vsepar = main.select(".jsroot_v_separator");
       if (!vsepar.empty())
          $(vsepar.node()).draggable('destroy');
 
@@ -420,10 +420,10 @@
 
    /// method creates status line
    BrowserLayout.prototype.CreateStatusLine = function(height, mode) {
-      var main = d3.select("#"+this.gui_div+" .jsroot_browser");
+      let main = d3.select("#"+this.gui_div+" .jsroot_browser");
       if (main.empty()) return '';
 
-      var id = this.gui_div + "_status",
+      let id = this.gui_div + "_status",
           line = d3.select("#"+id), skip_height_check = false,
           is_visible = !line.empty();
 
@@ -434,7 +434,7 @@
       if (is_visible) {
          if ((mode === true) || (this.status_layout==="app")) return id;
 
-         var hsepar = main.select(".jsroot_h_separator");
+         let hsepar = main.select(".jsroot_h_separator");
 
          $(hsepar.node()).draggable("destroy");
 
@@ -454,18 +454,18 @@
 
       if (mode === false) return "";
 
-      var left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
+      let left_pos = d3.select("#" + this.gui_div + "_drawing").style('left');
 
       line = main.insert("div",".jsroot_browser_area").attr("id",id)
                  .classed("jsroot_status_area", true)
                  .style('position',"absolute").style('left',left_pos).style('height',"20px").style('bottom',0).style('right',0)
                  .style('margin',0).style('border',0);
 
-      var hsepar = main.insert("div",".jsroot_browser_area")
+      let hsepar = main.insert("div",".jsroot_browser_area")
                        .classed("jsroot_separator", true).classed("jsroot_h_separator", true)
                       .style('position','absolute').style('left',left_pos).style('right',0).style('bottom','20px').style('height','5px');
 
-      var pthis = this;
+      let pthis = this;
 
       $(hsepar.node()).draggable({
          axis: "y" , cursor: "ns-resize", containment: "parent",
@@ -486,8 +486,8 @@
 
       this.status_layout = new JSROOT.GridDisplay(id, 'horizx4_1213');
 
-      var frame_titles = ['object name','object title','mouse coordinates','object info'];
-      for (var k=0;k<4;++k)
+      let frame_titles = ['object name','object title','mouse coordinates','object info'];
+      for (let k=0;k<4;++k)
          d3.select(this.status_layout.GetFrame(k)).attr('title', frame_titles[k]).style('overflow','hidden')
            .append("label").attr("class","jsroot_status_label");
 
@@ -502,7 +502,7 @@
 
       if (!this.gui_div) return;
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser"), w = 5;
 
       if ((hsepar===null) && first_time && !main.select(".jsroot_h_separator").empty()) {
          // if separator set for the first time, check if status line present
@@ -515,7 +515,7 @@
 
       if (hsepar!==null) {
          hsepar = parseInt(hsepar);
-         var elem = main.select(".jsroot_h_separator"), hlimit = 0;
+         let elem = main.select(".jsroot_h_separator"), hlimit = 0;
 
          if (!elem.empty()) {
             if (hsepar<0) hsepar += ($(main.node()).outerHeight(true) - w);
@@ -552,8 +552,8 @@
 
       if (!this.status_layout.first_check) {
          this.status_layout.first_check = true;
-         var maxh = 0;
-         for (var n=0;n<4;++n)
+         let maxh = 0;
+         for (let n=0;n<4;++n)
             maxh = Math.max(maxh, $(this.status_layout.GetFrame(n)).children('label').outerHeight());
          if ((maxh>5) && ((maxh>this.last_hsepar_height) || (maxh<this.last_hsepar_height+5)))
             this.AdjustSeparator(null, maxh, true);
@@ -562,11 +562,11 @@
 
    // =================================================================================================
 
-   var HierarchyPainter = JSROOT.HierarchyPainter;
+   let HierarchyPainter = JSROOT.HierarchyPainter;
 
    HierarchyPainter.prototype.isLastSibling = function(hitem) {
       if (!hitem || !hitem._parent || !hitem._parent._childs) return false;
-      var chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
+      let chlds = hitem._parent._childs, indx = chlds.indexOf(hitem);
       if (indx<0) return false;
       while (++indx < chlds.length)
          if (!('_hidden' in chlds[indx])) return false;
@@ -577,7 +577,7 @@
 
       if (!hitem || ('_hidden' in hitem)) return true;
 
-      var isroot = (hitem === this.h),
+      let isroot = (hitem === this.h),
           has_childs = ('_childs' in hitem),
           handle = JSROOT.getDrawHandle(hitem._kind),
           img1 = "", img2 = "", can_click = false, break_list = false,
@@ -602,7 +602,7 @@
       if (hitem._more || ('_expand' in hitem) || ('_player' in hitem))
          can_click = true;
 
-      var can_menu = can_click;
+      let can_menu = can_click;
       if (!can_menu && (typeof hitem._kind == 'string') && (hitem._kind.indexOf("ROOT.")==0))
          can_menu = can_click = true;
 
@@ -622,17 +622,17 @@
       d3cont.attr("item", itemname);
 
       // line with all html elements for this item (excluding childs)
-      var d3line = d3cont.append("div").attr('class','h_line');
+      let d3line = d3cont.append("div").attr('class','h_line');
 
       // build indent
-      var prnt = isroot ? null : hitem._parent;
+      let prnt = isroot ? null : hitem._parent;
       while (prnt && (prnt !== this.h)) {
          d3line.insert("div",":first-child")
                .attr("class", this.isLastSibling(prnt) ? "img_empty" : "img_line");
          prnt = prnt._parent;
       }
 
-      var icon_class = "", plusminus = false;
+      let icon_class = "", plusminus = false;
 
       if (isroot) {
          // for root node no extra code
@@ -648,11 +648,11 @@
          icon_class = "img_join";
       }
 
-      var h = this;
+      let h = this;
 
       if (icon_class.length > 0) {
          if (break_list || this.isLastSibling(hitem)) icon_class += "bottom";
-         var d3icon = d3line.append("div").attr('class', icon_class);
+         let d3icon = d3line.append("div").attr('class', icon_class);
          if (plusminus) d3icon.style('cursor','pointer')
                               .on("click", function(evnt) { h.tree_click(evnt, this, "plusminus"); });
       }
@@ -660,9 +660,9 @@
       // make node icons
 
       if (this.with_icons && !break_list) {
-         var icon_name = hitem._isopen ? img2 : img1;
+         let icon_name = hitem._isopen ? img2 : img1;
 
-         var d3img;
+         let d3img;
 
          if (icon_name.indexOf("img_")==0)
             d3img = d3line.append("div")
@@ -679,7 +679,7 @@
             d3img.on("click", function(evnt) { h.tree_click(evnt, this, "icon"); });
       }
 
-      var d3a = d3line.append("a");
+      let d3a = d3line.append("a");
       if (can_click || has_childs || break_list)
          d3a.attr("class","h_item")
             .on("click", function(evnt) { h.tree_click(evnt, this); });
@@ -703,7 +703,7 @@
       if (hitem._direct_context && JSROOT.gStyle.ContextMenu)
          d3a.on('contextmenu', function(evnt) { h.direct_contextmenu(evnt, this); });
 
-      var element_name = hitem._name, element_title = "";
+      let element_name = hitem._name, element_title = "";
 
       if ('_realname' in hitem)
          element_name = hitem._realname;
@@ -722,15 +722,15 @@
          .style('background', hitem._background ? hitem._background : null);
 
       if ('_value' in hitem) {
-         var d3p = d3line.append("p");
+         let d3p = d3line.append("p");
          if ('_vclass' in hitem) d3p.attr('class', hitem._vclass);
          if (!hitem._isopen) d3p.html(hitem._value);
       }
 
       if (has_childs && (isroot || hitem._isopen)) {
-         var d3chlds = d3cont.append("div").attr("class", "h_childs");
-         for (var i=0; i< hitem._childs.length; ++i) {
-            var chld = hitem._childs[i];
+         let d3chlds = d3cont.append("div").attr("class", "h_childs");
+         for (let i=0; i< hitem._childs.length; ++i) {
+            let chld = hitem._childs[i];
             chld._parent = hitem;
             if (!this.addItemHtml(chld, d3chlds, i)) break; // if too many items, skip rest
          }
@@ -740,7 +740,7 @@
    }
 
    HierarchyPainter.prototype.toggleOpenState = function(isopen, h) {
-      var hitem = h ? h : this.h;
+      let hitem = h ? h : this.h;
 
       if (!('_childs' in hitem)) {
          if (!isopen || this.with_icons || (!hitem._expand && (hitem._more !== true))) return false;
@@ -755,8 +755,8 @@
          return true;
       }
 
-      var change_child = false;
-      for (var i=0; i < hitem._childs.length; ++i)
+      let change_child = false;
+      for (let i=0; i < hitem._childs.length; ++i)
          if (this.toggleOpenState(isopen, hitem._childs[i])) change_child = true;
 
       if ((hitem != this.h) && !isopen && hitem._isopen && !change_child) {
@@ -774,14 +774,14 @@
 
       if (!this.divid) return JSROOT.CallBack(callback);
 
-      var d3elem = this.select_main();
+      let d3elem = this.select_main();
 
       d3elem.html("")
             .style('overflow','hidden') // clear html - most simple way
             .style('display','flex')
             .style('flex-direction','column');
 
-      var h = this, factcmds = [], status_item = null;
+      let h = this, factcmds = [], status_item = null;
       this.ForEach(function(item) {
          delete item._d3cont; // remove html container
          if (('_fastcmd' in item) && (item._kind == 'Command')) factcmds.push(item);
@@ -792,9 +792,9 @@
          return JSROOT.CallBack(callback);
 
       if (factcmds.length) {
-         var fastbtns = d3elem.append("div").attr("class","jsroot");
-         for (var n=0;n<factcmds.length;++n) {
-            var btn = fastbtns.append("button")
+         let fastbtns = d3elem.append("div").attr("class","jsroot");
+         for (let n=0;n<factcmds.length;++n) {
+            let btn = fastbtns.append("button")
                        .text("")
                        .attr("class",'fast_command')
                        .attr("item", this.itemFullName(factcmds[n]))
@@ -806,7 +806,7 @@
          }
       }
 
-      var d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
+      let d3btns = d3elem.append("p").attr("class", "jsroot").style("margin-bottom","3px").style("margin-top",0);
       d3btns.append("a").attr("class", "h_button").text("open all")
             .attr("title","open all items in the browser").on("click", h.toggleOpenState.bind(h,true));
       d3btns.append("text").text(" | ");
@@ -831,7 +831,7 @@
                .attr("title","clear all drawn objects").on("click", h.clear.bind(h,false));
       }
 
-      var maindiv =
+      let maindiv =
          d3elem.append("div")
                .attr("class", "jsroot")
                .style('font-size', this.with_icons ? "12px" : "15px")
@@ -845,8 +845,8 @@
       this.addItemHtml(this.h, maindiv.append("div").attr("class","h_tree"));
 
       if (status_item && !this.status_disabled && (JSROOT.GetUrlOption('nostatus')===null)) {
-         var func = JSROOT.findFunction(status_item._status);
-         var hdiv = (typeof func == 'function') ? this.CreateStatusLine() : null;
+         let func = JSROOT.findFunction(status_item._status);
+         let hdiv = (typeof func == 'function') ? this.CreateStatusLine() : null;
          if (hdiv) func(hdiv, this.itemFullName(status_item));
       }
 
@@ -856,7 +856,7 @@
    HierarchyPainter.prototype.UpdateTreeNode = function(hitem, d3cont) {
       if ((d3cont===undefined) || d3cont.empty())  {
          d3cont = d3.select(hitem._d3cont ? hitem._d3cont : null);
-         var name = this.itemFullName(hitem);
+         let name = this.itemFullName(hitem);
          if (d3cont.empty())
             d3cont = this.select_main().select("[item='" + name + "']");
          if (d3cont.empty() && ('_cycle' in hitem))
@@ -873,11 +873,11 @@
 
       if (!hitem || !hitem._d3cont) return;
 
-      var d3cont = d3.select(hitem._d3cont);
+      let d3cont = d3.select(hitem._d3cont);
 
       if (d3cont.empty()) return;
 
-      var d3a = d3cont.select(".h_item");
+      let d3a = d3cont.select(".h_item");
 
       d3a.style('background', hitem._background ? hitem._background : null);
 
@@ -889,7 +889,7 @@
    HierarchyPainter.prototype.tree_click = function(evnt, node, place) {
       if (!node) return;
 
-      var d3cont = d3.select(node.parentNode.parentNode),
+      let d3cont = d3.select(node.parentNode.parentNode),
           itemname = d3cont.attr('item'),
           hitem = itemname ? this.Find(itemname) : null;
       if (!hitem) return;
@@ -902,15 +902,15 @@
          // update item itself
          this.addItemHtml(hitem, d3cont, "update");
 
-         var prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
+         let prnt = hitem._parent, indx = prnt._childs.indexOf(hitem),
              d3chlds = d3.select(d3cont.node().parentNode);
 
          if (indx<0) return console.error('internal error');
 
          prnt._show_limit = (prnt._show_limit || JSROOT.gStyle.HierarchyLimit) * 2;
 
-         for (var n=indx+1;n<prnt._childs.length;++n) {
-            var chld = prnt._childs[n];
+         for (let n=indx+1;n<prnt._childs.length;++n) {
+            let chld = prnt._childs[n];
             chld._parent = prnt;
             if (!this.addItemHtml(chld, d3chlds, n)) break; // if too many items, skip rest
          }
@@ -918,7 +918,7 @@
          return;
       }
 
-      var prnt = hitem, dflt = undefined;
+      let prnt = hitem, dflt = undefined;
       while (prnt) {
          if ((dflt = prnt._click_action) !== undefined) break;
          prnt = prnt._parent;
@@ -926,10 +926,10 @@
 
       if (!place || (place=="")) place = "item";
 
-      var sett = JSROOT.getDrawSettings(hitem._kind), handle = sett.handle;
+      let sett = JSROOT.getDrawSettings(hitem._kind), handle = sett.handle;
 
       if (place == "icon") {
-         var func = null;
+         let func = null;
          if (typeof hitem._icon_click == 'function') func = hitem._icon_click; else
          if (handle && typeof handle.icon_click == 'function') func = handle.icon_click;
          if (func && func(hitem,this))
@@ -959,7 +959,7 @@
 
          if (handle && handle.ignore_online && this.isOnlineItem(hitem)) return;
 
-         var can_draw = hitem._can_draw,
+         let can_draw = hitem._can_draw,
              can_expand = hitem._more,
              dflt_expand = (this.default_by_click === "expand"),
              drawopt = "";
@@ -971,7 +971,7 @@
          if (handle && handle.ctrl && evnt.ctrlKey) drawopt = handle.ctrl;
 
          if (!drawopt) {
-            for (var pitem = hitem._parent; !!pitem; pitem = pitem._parent) {
+            for (let pitem = hitem._parent; !!pitem; pitem = pitem._parent) {
                if (pitem._painter) { can_draw = false; if (can_expand===undefined) can_expand = false; break; }
             }
          }
@@ -1009,12 +1009,12 @@
    }
 
    HierarchyPainter.prototype.tree_mouseover = function(on, elem) {
-      var itemname = d3.select(elem.parentNode.parentNode).attr('item');
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
-      var hitem = this.Find(itemname);
+      let hitem = this.Find(itemname);
       if (!hitem) return;
 
-      var painter, prnt = hitem;
+      let painter, prnt = hitem;
       while (prnt && !painter) {
          painter = prnt._painter;
          prnt = prnt._parent;
@@ -1028,8 +1028,8 @@
       // this is alternative context menu, used in the object inspector
 
       evnt.preventDefault();
-      var itemname = d3.select(elem.parentNode.parentNode).attr('item');
-      var hitem = this.Find(itemname);
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item');
+      let hitem = this.Find(itemname);
       if (!hitem) return;
 
       if (typeof this.fill_context !== 'function') return;
@@ -1048,12 +1048,12 @@
 
       evnt.preventDefault();
 
-      var itemname = d3.select(elem.parentNode.parentNode).attr('item');
+      let itemname = d3.select(elem.parentNode.parentNode).attr('item');
 
-      var hitem = this.Find(itemname);
+      let hitem = this.Find(itemname);
       if (!hitem) return;
 
-      var painter = this,
+      let painter = this,
           onlineprop = painter.GetOnlineProp(itemname),
           fileprop = painter.GetFileProp(itemname);
 
@@ -1061,7 +1061,7 @@
          function escapeHTML(s) {
             return s.split('&').join('&amp;').split('<').join('&lt;').split('"').join('&quot;');
          }
-         var el = document.createElement('div');
+         let el = document.createElement('div');
          el.innerHTML = '<a href="' + escapeHTML(url) + '">x</a>';
          return el.firstChild.href;
       }
@@ -1069,10 +1069,10 @@
       JSROOT.Painter.createMenu(painter, function(menu) {
 
          if ((itemname == "") && !('_jsonfile' in hitem)) {
-            var addr = "", cnt = 0;
+            let addr = "", cnt = 0;
             function separ() { return cnt++ > 0 ? "&" : "?"; }
 
-            var files = [];
+            let files = [];
             painter.ForEachRootFile(function(item) { files.push(item._file.fFullURL); });
 
             if (!painter.GetTopOnlineItem())
@@ -1090,7 +1090,7 @@
             if (painter['disp_kind'])
                addr += separ() + "layout=" + painter.disp_kind.replace(/ /g, "");
 
-            var items = [];
+            let items = [];
 
             if (painter.disp)
                painter.disp.ForEachPainter(function(p) {
@@ -1109,7 +1109,7 @@
          } else if (onlineprop) {
             painter.FillOnlineMenu(menu, onlineprop, itemname);
          } else {
-            var sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
+            let sett = JSROOT.getDrawSettings(hitem._kind, 'nosame');
 
             // allow to draw item even if draw function is not defined
             if (hitem._can_draw) {
@@ -1121,12 +1121,12 @@
                menu.addDrawMenu("Draw", sett.opts, function(arg) { this.display(itemname, arg); });
 
             if (fileprop && sett.opts && !fileprop.localfile) {
-               var filepath = qualifyURL(fileprop.fileurl);
+               let filepath = qualifyURL(fileprop.fileurl);
                if (filepath.indexOf(JSROOT.source_dir) == 0)
                   filepath = filepath.slice(JSROOT.source_dir.length);
                filepath = fileprop.kind + "=" + filepath;
                if (fileprop.itemname.length > 0) {
-                  var name = fileprop.itemname;
+                  let name = fileprop.itemname;
                   if (name.search(/\+| |\,/)>=0) name = "\'" + name + "\'";
                   filepath += "&item=" + name;
                }
@@ -1197,20 +1197,20 @@
    }
 
    HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
-      var h = this;
+      let h = this;
       $(frame).droppable({
          hoverClass : "ui-state-active",
          accept: function(ui) {
-            var dropname = ui.parent().parent().attr('item');
+            let dropname = ui.parent().parent().attr('item');
             if ((dropname == itemname) || !dropname) return false;
 
-            var ditem = h.Find(dropname);
+            let ditem = h.Find(dropname);
             if (!ditem || (!('_kind' in ditem))) return false;
 
             return ditem._kind.indexOf("ROOT.")==0;
          },
          drop: function(event, ui) {
-            var dropname = ui.draggable.parent().parent().attr('item');
+            let dropname = ui.draggable.parent().parent().attr('item');
             if (!dropname) return false;
             return h.dropitem(dropname, $(this).attr("id"));
          }
@@ -1221,7 +1221,7 @@
 
       if (!this.gui_div || this.exclude_browser || !this.brlayout) return false;
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser"),
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser"),
           jmain = $(main.node());
 
       // one requires top-level container
@@ -1240,7 +1240,7 @@
          return true;
       }
 
-      var guiCode = "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
+      let guiCode = "<p class='jsroot_browser_version'><a href='https://root.cern/js/'>JSROOT</a> version <span style='color:green'><b>" + JSROOT.version + "</b></span></p>";
 
       if (this.is_online) {
          guiCode +='<p> Hierarchy in <a href="h.json">json</a> and <a href="h.xml">xml</a> format</p>'
@@ -1249,7 +1249,7 @@
                  + '<input style="vertical-align:middle;" type="checkbox" name="monitoring" class="gui_monitoring"/>'
                  + 'Monitoring</label>';
       } else if (!this.no_select) {
-         var myDiv = d3.select("#"+this.gui_div),
+         let myDiv = d3.select("#"+this.gui_div),
              files = myDiv.attr("files") || "../files/hsimple.root",
              path = JSROOT.GetUrlOption("path") || myDiv.attr("path") || "",
              arrFiles = files.split(';');
@@ -1259,7 +1259,7 @@
             +'<div style="display:flex;flex-direction:row;padding-top:5px">'
             +'<select class="gui_selectFileName" style="flex:1;padding:2px;" title="select file name"'
             +'<option value="" selected="selected"></option>';
-         for (var i in arrFiles)
+         for (let i in arrFiles)
             guiCode += '<option value = "' + path + arrFiles[i] + '">' + arrFiles[i] + '</option>';
          guiCode += '</select>'
             +'<input type="file" class="gui_localFile" accept=".root" style="display:none"/><output id="list" style="display:none"></output>'
@@ -1286,12 +1286,12 @@
 
       this.brlayout.SetBrowserTitle(this.is_online ? 'ROOT online server' : 'Read a ROOT file');
 
-      var hpainter = this, localfile_read_callback = null;
+      let hpainter = this, localfile_read_callback = null;
 
       if (!this.is_online && !this.no_select) {
 
          this.ReadSelectedFile = function() {
-            var filename = main.select(".gui_urlToLoad").property('value').trim();
+            let filename = main.select(".gui_urlToLoad").property('value').trim();
             if (!filename) return;
 
             if ((filename.toLowerCase().lastIndexOf(".json") == filename.length-5))
@@ -1320,10 +1320,10 @@
          });
 
          jmain.find(".gui_localFile").change(function(evnt) {
-            var files = evnt.target.files;
+            let files = evnt.target.files;
 
-            for (var n=0;n<files.length;++n) {
-               var f = files[n];
+            for (let n=0;n<files.length;++n) {
+               let f = files[n];
                main.select(".gui_urlToLoad").property('value', f.name);
                if (hpainter) hpainter.OpenRootFile(f, localfile_read_callback);
             }
@@ -1337,13 +1337,13 @@
          }
       }
 
-      var jlayout = jmain.find(".gui_layout");
+      let jlayout = jmain.find(".gui_layout");
       if (jlayout.length) {
-         var lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
+         let lst = ['simple', 'vert2', 'vert3', 'vert231', 'horiz2', 'horiz32', 'flex',
                      'grid 2x2', 'grid 1x3', 'grid 2x3', 'grid 3x3', 'grid 4x4', 'collapsible',  'tabs'];
 
-         for (var k=0;k<lst.length;++k){
-            var opt = document.createElement('option');
+         for (let k=0;k<lst.length;++k){
+            let opt = document.createElement('option');
             opt.value = lst[k];
             opt.innerHTML = lst[k];
             jlayout.get(0).appendChild(opt);
@@ -1370,18 +1370,18 @@
 
    HierarchyPainter.prototype.InitializeBrowser = function() {
 
-      var main = d3.select("#" + this.gui_div + " .jsroot_browser");
+      let main = d3.select("#" + this.gui_div + " .jsroot_browser");
       if (main.empty() || !this.brlayout) return;
-      var jmain = $(main.node()), hpainter = this;
+      let jmain = $(main.node()), hpainter = this;
 
       if (this.brlayout) this.brlayout.AdjustBrowserSize();
 
-      var selects = main.select(".gui_layout").node();
+      let selects = main.select(".gui_layout").node();
 
       if (selects) {
-         var found = false;
-         for (var i in selects.options) {
-            var s = selects.options[i].text;
+         let found = false;
+         for (let i in selects.options) {
+            let s = selects.options[i].text;
             if (typeof s !== 'string') continue;
             if ((s == this.GetLayout()) || (s.replace(/ /g,"") == this.GetLayout())) {
                selects.selectedIndex = i; found = true;
@@ -1389,7 +1389,7 @@
             }
          }
          if (!found) {
-            var opt = document.createElement('option');
+            let opt = document.createElement('option');
             opt.innerHTML = opt.value = this.GetLayout();
             selects.appendChild(opt);
             selects.selectedIndex = selects.options.length-1;
@@ -1406,7 +1406,7 @@
                hpainter.updateAll(!this.checked);
             });
       } else if (!this.no_select) {
-         var fname = "";
+         let fname = "";
          this.ForEachRootFile(function(item) { if (!fname) fname = item._fullurl; });
          jmain.find(".gui_urlToLoad").val(fname);
       }
@@ -1415,7 +1415,7 @@
    HierarchyPainter.prototype.EnableMonitoring = function(on) {
       this.SetMonitoring(undefined, on);
 
-      var chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
+      let chkbox = d3.select("#" + this.gui_div + " .jsroot_browser .gui_monitoring");
       if (!chkbox.empty() && (chkbox.property('checked') !== on))
          chkbox.property('checked', on);
    }
@@ -1426,7 +1426,7 @@
    }
 
    JSROOT.BuildGUI = function() {
-      var myDiv = d3.select('#simpleGUI'), online = false;
+      let myDiv = d3.select('#simpleGUI'), online = false;
 
       if (myDiv.empty()) {
          myDiv = d3.select('#onlineGUI');
@@ -1442,7 +1442,7 @@
 
       JSROOT.Painter.readStyleFromURL();
 
-      var hpainter = new JSROOT.HierarchyPainter('root', null);
+      let hpainter = new JSROOT.HierarchyPainter('root', null);
 
       hpainter.is_online = online;
 
@@ -1459,7 +1459,7 @@
    CollapsibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    CollapsibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var topid = this.frameid + '_collapsible';
+      let topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null) return;
 
@@ -1475,7 +1475,7 @@
    }
 
    CollapsibleDisplay.prototype.GetActiveFrame = function() {
-      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      let found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found && !$(found).is(":hidden")) return found;
 
       found = null;
@@ -1501,12 +1501,12 @@
 
       this.BeforeCreateFrame(title);
 
-      var topid = this.frameid + '_collapsible';
+      let topid = this.frameid + '_collapsible';
 
       if (document.getElementById(topid) == null)
          $("#"+this.frameid).append('<div id="'+ topid  + '" class="jsroot ui-accordion ui-accordion-icons ui-widget ui-helper-reset" style="overflow:auto; overflow-y:scroll; height:100%; padding-left: 2px; padding-right: 2px"></div>');
 
-      var mdi = this,
+      let mdi = this,
           hid = topid + "_sub" + this.cnt++,
           uid = hid + "h",
           entryInfo = "<h5 id=\"" + uid + "\">" +
@@ -1525,7 +1525,7 @@
                      $(this).toggleClass("ui-accordion-header-active ui-state-active ui-state-default ui-corner-bottom")
                            .find("> .ui-icon").toggleClass("ui-icon-triangle-1-e ui-icon-triangle-1-s")
                            .end().next().toggleClass("ui-accordion-content-active").slideToggle(0);
-                     var sub = $(this).next(), hide_drawing = sub.is(":hidden");
+                     let sub = $(this).next(), hide_drawing = sub.is(":hidden");
                      sub.css('display', hide_drawing ? 'none' : '');
                      if (!hide_drawing) JSROOT.resize(sub.get(0));
                   })
@@ -1562,14 +1562,14 @@
    TabsDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    TabsDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
-      var topid = this.frameid + '_tabs';
+      let topid = this.frameid + '_tabs';
 
       if (document.getElementById(topid) == null) return;
 
       if (typeof userfunc != 'function') return;
 
-      var cnt = -1;
-      var active = $('#' + topid).tabs("option", "active");
+      let cnt = -1;
+      let active = $('#' + topid).tabs("option", "active");
 
       $('#' + topid + '> .tabs_draw').each(function() {
          cnt++;
@@ -1579,7 +1579,7 @@
    }
 
    TabsDisplay.prototype.GetActiveFrame = function() {
-      var found = null;
+      let found = null;
       this.ForEachFrame(function(frame) {
          if (!found) found = frame;
       }, true);
@@ -1588,7 +1588,7 @@
    }
 
    TabsDisplay.prototype.ActivateFrame = function(frame) {
-      var cnt = 0, id = -1;
+      let cnt = 0, id = -1;
       this.ForEachFrame(function(fr) {
          if ($(fr).attr('id') == $(frame).attr('id')) id = cnt;
          cnt++;
@@ -1602,7 +1602,7 @@
 
       this.BeforeCreateFrame(title);
 
-      var mdi = this,
+      let mdi = this,
           topid = this.frameid + '_tabs',
           hid = topid + "_sub" + this.cnt++,
           li = '<li><a href="#' + hid + '">' + title
@@ -1612,7 +1612,7 @@
       if (document.getElementById(topid) == null) {
          $("#" + this.frameid).append('<div id="' + topid + '" class="jsroot">' + ' <ul>' + li + ' </ul>' + cont + '</div>');
 
-         var tabs = $("#" + topid)
+         let tabs = $("#" + topid)
                        .css('overflow','hidden')
                        .tabs({
                           heightStyle : "fill",
@@ -1623,7 +1623,7 @@
                         });
 
          tabs.delegate("span.ui-icon-close", "click", function() {
-            var panelId = $(this).closest("li").remove().attr("aria-controls");
+            let panelId = $(this).closest("li").remove().attr("aria-controls");
             mdi.CleanupFrame(panelId);
             $("#" + panelId).remove();
             tabs.tabs("refresh");
@@ -1660,7 +1660,7 @@
    FlexibleDisplay.prototype = Object.create(JSROOT.MDIDisplay.prototype);
 
    FlexibleDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
-      var topid = this.frameid + '_flex';
+      let topid = this.frameid + '_flex';
 
       if (document.getElementById(topid) == null) return;
       if (typeof userfunc != 'function') return;
@@ -1674,7 +1674,7 @@
    }
 
    FlexibleDisplay.prototype.GetActiveFrame = function() {
-      var found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
+      let found = JSROOT.MDIDisplay.prototype.GetActiveFrame.call(this);
       if (found && !$(found).is(":hidden")) return found;
 
       found = null;
@@ -1693,18 +1693,18 @@
 
       this.BeforeCreateFrame(title);
 
-      var topid = this.frameid + '_flex';
+      let topid = this.frameid + '_flex';
 
       if (document.getElementById(topid) == null)
          $("#" + this.frameid).append('<div id="'+ topid  + '" class="jsroot" style="overflow:none; height:100%; width:100%"></div>');
 
-      var mdi = this,
+      let mdi = this,
           top = $("#" + topid),
           w = top.width(),
           h = top.height(),
           subid = topid + "_frame" + this.cnt;
 
-      var entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
+      let entry ='<div id="' + subid + '" class="flex_frame" style="position:absolute">' +
                   '<div class="ui-widget-header flex_header">'+
                     '<p>'+title+'</p>' +
                     '<button type="button" style="float:right; width:1.4em"/>' +
@@ -1730,7 +1730,7 @@
          if (div.prop('state') == "minimal") return;
 
          div = div.find(".flex_draw").get(0);
-         var dummy = new JSROOT.TObjectPainter();
+         let dummy = new JSROOT.TObjectPainter();
          dummy.SetDivId(div, -1);
          JSROOT.Painter.SelectActivePad({ pp: dummy.canv_painter(), active: true });
 
@@ -1738,7 +1738,7 @@
       }
 
       function ChangeWindowState(main, state) {
-         var curr = main.prop('state');
+         let curr = main.prop('state');
          if (!curr) curr = "normal";
          main.prop('state', state);
          if (state==curr) return;
@@ -1797,7 +1797,7 @@
                PopupWindow($(this));
             },
             stop: function(event, ui) {
-               var rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
+               let rect = { width : ui.size.width-1, height : ui.size.height - $(this).find(".flex_header").height()-1 };
                JSROOT.resize($(this).find(".flex_draw").get(0), rect);
             }
           })
@@ -1807,11 +1807,11 @@
                // bring element to front when start dragging
                PopupWindow($(this));
 
-               var ddd = $(this).find(".flex_draw");
+               let ddd = $(this).find(".flex_draw");
 
                // block dragging when mouse below header
-               var elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
-               var isparent = false;
+               let elementMouseIsOver = document.elementFromPoint(event.clientX, event.clientY);
+               let isparent = false;
                $(elementMouseIsOver).parents().map(function() { if ($(this).get(0) === ddd.get(0)) isparent = true; });
                if (isparent) return false;
             }
@@ -1823,7 +1823,7 @@
             PopupWindow($(this).parent());
          })
          .dblclick(function() {
-            var main = $(this).parent();
+            let main = $(this).parent();
             if (main.prop('state') == "normal")
                ChangeWindowState(main, "maximal");
             else
@@ -1834,7 +1834,7 @@
            .attr('title','close canvas')
            .button({ icons: { primary: "ui-icon-close" }, text: false })
            .click(function() {
-              var main = $(this).parent().parent();
+              let main = $(this).parent().parent();
               mdi.CleanupFrame(main.find(".flex_draw").get(0));
               main.remove();
               PopupWindow('first'); // set active as first window
@@ -1844,8 +1844,8 @@
            .addClass('jsroot_maxbutton')
            .button({ icons: { primary: "ui-icon-triangle-1-n" }, text: false })
            .click(function() {
-              var main = $(this).parent().parent();
-              var maximize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-n");
+              let main = $(this).parent().parent();
+              let maximize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-n");
               ChangeWindowState(main, maximize ? "maximal" : "normal");
            })
            .next()
@@ -1853,8 +1853,8 @@
            .addClass('jsroot_minbutton')
            .button({ icons: { primary: "ui-icon-triangle-1-s" }, text: false })
            .click(function() {
-              var main = $(this).parent().parent();
-              var minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
+              let main = $(this).parent().parent();
+              let minimize = $(this).find('.ui-icon').hasClass("ui-icon-triangle-1-s");
               ChangeWindowState(main, minimize ? "minimal" : "normal");
            });
 
@@ -1869,7 +1869,7 @@
    // ================== new grid with flexible boundaries ========
 
    JSROOT.GridDisplay.prototype.CreateSeparator = function(handle, main, group) {
-      var separ = $(main.append("div").node());
+      let separ = $(main.append("div").node());
 
       separ.toggleClass('jsroot_separator', true)
            .toggleClass(handle.vertical ? 'jsroot_hline' : 'jsroot_vline', true)
@@ -1882,7 +1882,7 @@
            .css('cursor', handle.vertical ? "ns-resize" : "ew-resize");
 
       separ.bind('changePosition', function(e, drag_ui) {
-         var handle = $(this).prop('handle'),
+         let handle = $(this).prop('handle'),
              id = parseInt($(this).attr('separator-id')),
              pos = handle.groups[id].position;
 
@@ -1896,7 +1896,7 @@
                pos = Math.round((drag_ui.offset.left+2-$(this).parent().offset().left)/$(this).parent().innerWidth()*100);
          }
 
-         var diff = handle.groups[id].position - pos;
+         let diff = handle.groups[id].position - pos;
 
          if (Math.abs(diff)<0.3) return; // if no significant change, do nothing
 
@@ -1908,7 +1908,7 @@
          handle.groups[id].position = pos;
 
          function SetGroupSize(prnt, grid) {
-            var name = handle.vertical ? 'height' : 'width',
+            let name = handle.vertical ? 'height' : 'width',
                 size = handle.groups[grid].size+'%';
             prnt.children("[groupid='"+grid+"']").css(name, size)
                 .children(".jsroot_separator").css(name, size);
@@ -1926,7 +1926,7 @@
       });
 
       separ.bind('resizeGroup', function(e, grid) {
-         var sel = $(this).parent().children("[groupid='"+grid+"']");
+         let sel = $(this).parent().children("[groupid='"+grid+"']");
          if (!sel.hasClass('jsroot_newgrid')) sel = sel.find(".jsroot_newgrid");
          sel.each(function() { JSROOT.resize($(this).get(0)); });
       });
@@ -1942,7 +1942,7 @@
          helper : function() { return $(this).clone().css('background-color','grey'); },
          start: function(event,ui) {
             // remember start position
-            var handle = $(this).prop('handle'),
+            let handle = $(this).prop('handle'),
                 id = parseInt($(this).attr('separator-id'));
             handle.groups[id].startpos = handle.groups[id].position;
          },
@@ -1951,7 +1951,7 @@
          },
          stop: function(event,ui) {
             // verify if start position was changed
-            var handle = $(this).prop('handle'),
+            let handle = $(this).prop('handle'),
                id = parseInt($(this).attr('separator-id'));
             if (Math.abs(handle.groups[id].startpos - handle.groups[id].position)<0.5) return;
 
@@ -1984,7 +1984,7 @@
       }
 
       player.ShowExtraButtons = function(args) {
-         var main = $(this.select_main().node());
+         let main = $(this.select_main().node());
 
           main.find(".treedraw_buttons")
              .append(" Cut: <input class='treedraw_cut ui-corner-all ui-widget' style='width:8em;margin-left:5px' title='cut expression'></input>"+
@@ -1993,7 +1993,7 @@
                      " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>" +
                      " <button class='treedraw_clear' title='Clear drawing'>Clear</button>");
 
-          var page = 1000, numentries = undefined, p = this;
+          let page = 1000, numentries = undefined, p = this;
           if (this.local_tree) numentries = this.local_tree.fEntries || 0;
 
           main.find(".treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
@@ -2008,9 +2008,9 @@
 
          this.keyup = this.KeyUp.bind(this);
 
-         var show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
+         let show_extra = args && (args.parse_cut || args.numentries || args.firstentry);
 
-         var main = $("#" + divid);
+         let main = $("#" + divid);
 
          main.html("<div class='treedraw_buttons' style='padding-left:0.5em'>" +
                "<button class='treedraw_exe' title='Execute draw expression'>Draw</button>" +
@@ -2023,7 +2023,7 @@
          // only when main html element created, one can set divid
          this.SetDivId(divid);
 
-         var p = this;
+         let p = this;
 
          if (this.local_tree)
             main.find('.treedraw_buttons').attr('title', "Tree draw player for: " + this.local_tree.fName);
@@ -2047,7 +2047,7 @@
       player.PerformLocalDraw = function() {
          if (!this.local_tree) return;
 
-         var frame = $(this.select_main().node()),
+         let frame = $(this.select_main().node()),
              args = { expr: frame.find('.treedraw_varexp').val() };
 
          if (frame.find('.treedraw_more').length==0) {
@@ -2065,7 +2065,7 @@
             if (isNaN(args.firstentry)) delete args.firstentry;
          }
 
-         var p = this;
+         let p = this;
 
          if (args.drawopt) JSROOT.cleanup(p.drawid);
 
@@ -2078,7 +2078,7 @@
 
          if (this.local_tree) return this.PerformLocalDraw();
 
-         var frame = $(this.select_main().node()),
+         let frame = $(this.select_main().node()),
              url = this.url + '/exe.json.gz?compact=3&method=Draw',
              expr = frame.find('.treedraw_varexp').val(),
              hname = "h_tree_draw", option = "",
@@ -2089,12 +2089,12 @@
          } else {
             hname = expr.substr(pos+2);
             if (hname[0]=='+') hname = hname.substr(1);
-            var pos2 = hname.indexOf("(");
+            let pos2 = hname.indexOf("(");
             if (pos2>0) hname = hname.substr(0, pos2);
          }
 
          if (frame.find('.treedraw_more').length==0) {
-            var cut = frame.find('.treedraw_cut').val(),
+            let cut = frame.find('.treedraw_cut').val(),
                 nentries = frame.find('.treedraw_number').val(),
                 firstentry = frame.find('.treedraw_first').val();
 
@@ -2111,7 +2111,7 @@
          }
          url += '&_ret_object_=' + hname;
 
-         var player = this;
+         let player = this;
 
          function SubmitDrawRequest() {
             JSROOT.HttpRequest(url, 'object').then(function(res) {
@@ -2130,10 +2130,10 @@
       }
 
       player.CheckResize = function(arg) {
-         var main = $(this.select_main().node());
+         let main = $(this.select_main().node());
 
          $("#" + this.drawid).width(main.width());
-         var h = main.height(),
+         let h = main.height(),
              h0 = main.find(".treedraw_buttons").outerHeight(true),
              h1 = main.find("hr").outerHeight(true);
 
@@ -2150,7 +2150,7 @@
 
    JSROOT.drawTreePlayer = function(hpainter, itemname, askey, asleaf) {
 
-      var item = hpainter.Find(itemname),
+      let item = hpainter.Find(itemname),
           top = hpainter.GetTopOnlineItem(item),
           draw_expr = "", leaf_cnt = 0;
       if (!item || !top) return null;
@@ -2162,23 +2162,23 @@
          itemname = hpainter.itemFullName(item);
       }
 
-      var url = hpainter.GetOnlineItemUrl(itemname);
+      let url = hpainter.GetOnlineItemUrl(itemname);
       if (!url) return null;
 
-      var root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01
+      let root_version = top._root_version ? parseInt(top._root_version) : 396545; // by default use version number 6-13-01
 
-      var mdi = hpainter.GetDisplay();
+      let mdi = hpainter.GetDisplay();
       if (!mdi) return null;
 
-      var frame = mdi.FindFrame(itemname, true);
+      let frame = mdi.FindFrame(itemname, true);
       if (!frame) return null;
 
-      var divid = d3.select(frame).attr('id'),
+      let divid = d3.select(frame).attr('id'),
           player = new JSROOT.TBasePainter();
 
       if (item._childs && !asleaf)
-         for (var n=0;n<item._childs.length;++n) {
-            var leaf = item._childs[n];
+         for (let n=0;n<item._childs.length;++n) {
+            let leaf = item._childs[n];
             if (leaf && leaf._kind && (leaf._kind.indexOf("ROOT.TLeaf")==0) && (leaf_cnt<2)) {
                if (leaf_cnt++ > 0) draw_expr+=":";
                draw_expr+=leaf._name;
