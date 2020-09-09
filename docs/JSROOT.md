@@ -615,7 +615,9 @@ Such JSON representation generated using the [TBufferJSON](https://root.cern/doc
 To access data from a remote web server, it is recommended to use the [XMLHttpRequest](http://en.wikipedia.org/wiki/XMLHttpRequest) class. JSROOT provides a special method to create such object and properly handle it in different browsers.
 For receiving JSON from a server one could use following code:
 
-    JSROOT.HttpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object");
+    JSROOT.HttpRequest("http://your_root_server:8080/Canvases/c1/root.json", "object").then(obj => {
+       console.log('Read object of type ', obj._typename);
+    });
 
 Function returns Promise, which provides parsed object (or Error in case of failure).
 
@@ -642,14 +644,14 @@ The first argument is the id of the HTML div element, where drawing will be perf
 Here is complete [running example](https://root.cern/js/latest/api.htm#custom_html_read_json) ans [source code](https://github.com/root-project/jsroot/blob/master/demo/read_json.htm):
 
     var filename = "https://root.cern/js/files/th2ul.json.gz";
-    JSROOT.HttpRequest(filename, 'object').then(function(obj) {
+    JSROOT.HttpRequest(filename, 'object').then(obj => {
        JSROOT.draw("drawing", obj, "lego");
     });
 
 In very seldom cases one need to access painter object, created in JSROOT.draw() function. This can be done via
-handline Promise results like:
+handling Promise results like:
 
-    JSROOT.draw("drawing", obj, "colz").then(function(painter) {
+    JSROOT.draw("drawing", obj, "colz").then(painter => {
        console.log('Object type in painter', painter.GetClassName());
     });
 
@@ -688,8 +690,18 @@ For example, reading an object from a file and displaying it will look like:
        });
     });
 
-Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
+Using async function, one can write following:
 
+      async function read_and_draw_async() {
+         let file = await JSROOT.OpenFile(filename);
+         let obj = await file.ReadObject("hpxpy;1");
+         await JSROOT.draw("drawing", obj, "colz");
+      }
+
+      read_and_draw_async();
+
+
+Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_root_file) and [source code](https://github.com/root-project/jsroot/blob/master/demo/read_file.htm)
 
 
 ### TTree API
