@@ -5,7 +5,7 @@
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootPainter', 'd3', 'threejs', 'threejs_all'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      var jsroot = require("./JSRootCore.js");
+      let jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"), require("three"), require("./three.extra.min.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
@@ -43,7 +43,7 @@
       if ('_Detect_WebGL' in this) return this._Detect_WebGL;
 
       try {
-         var canvas = document.createElement( 'canvas' );
+         let canvas = document.createElement( 'canvas' );
          this._Detect_WebGL = !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) ) );
          //res = !!window.WebGLRenderingContext &&  !!document.createElement('canvas').getContext('experimental-webgl');
        } catch (e) {
@@ -66,7 +66,7 @@
       if (this._Detect_UseSVGFor3D !== undefined)
          return this._Detect_UseSVGFor3D;
 
-      var nodejs_canvas = null;
+      let nodejs_canvas = null;
 
       try {
           nodejs_canvas = require('canvas');
@@ -89,7 +89,7 @@
     */
 
    JSROOT.Painter.Create3DRenderer = function(width, height, usesvg, makeimage, usewebgl, args) {
-      var res = {
+      let res = {
          renderer: null,
          dom: null,
          usesvg: usesvg,
@@ -113,7 +113,7 @@
 
       if (usesvg) {
 
-         var nodejs_canvas = null;
+         let nodejs_canvas = null;
 
          if (JSROOT.nodejs && res.usesvgimg) {
             try {
@@ -170,8 +170,8 @@
 
    JSROOT.Painter.AfterRender3D = function(renderer) {
       if (renderer.svgImage) {
-         var dataUrl = renderer.domElement.toDataURL("image/png");
-         var attrname = JSROOT.nodejs ? "xlink_href_nodejs" : "xlink:href";
+         let dataUrl = renderer.domElement.toDataURL("image/png");
+         let attrname = JSROOT.nodejs ? "xlink_href_nodejs" : "xlink:href";
          d3.select(renderer.svgImage).attr(attrname, dataUrl);
       }
 
@@ -180,9 +180,9 @@
          if (typeof renderer.makeOuterHTML == 'function') {
             JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
          } else {
-            var canvas = renderer.domElement;
-            var dataUrl = canvas.toDataURL("image/png");
-            var svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+            let canvas = renderer.domElement;
+            let dataUrl = canvas.toDataURL("image/png");
+            let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
             JSROOT.svg_workaround[renderer.workaround_id] = svg;
          }
       }
@@ -190,7 +190,7 @@
 
    JSROOT.Painter.ProcessSVGWorkarounds = function(svg) {
       if (!JSROOT.svg_workaround) return svg;
-      for (var k=0;k<JSROOT.svg_workaround.length;++k)
+      for (let k=0;k<JSROOT.svg_workaround.length;++k)
          svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
       JSROOT.svg_workaround = undefined;
       return svg;
@@ -215,7 +215,7 @@
       // extract position from event - can be used to process it later when event is gone
       this.extract_pos = function(e) {
          if (typeof e == 'object' && (e.u !== undefined) && (e.l !== undefined)) return e;
-         var res = { u: 0, l: 0 };
+         let res = { u: 0, l: 0 };
          if (this.abspos) {
             res.l = e.pageX;
             res.u = e.pageY;
@@ -235,9 +235,9 @@
 
          if (!this.tt) return;
 
-         var pos = this.extract_pos(e);
+         let pos = this.extract_pos(e);
          if (!this.abspos) {
-            var rect1 = this.parent.getBoundingClientRect(),
+            let rect1 = this.parent.getBoundingClientRect(),
                 rect2 = this.canvas.getBoundingClientRect();
 
             if ((rect1.left !== undefined) && (rect2.left!== undefined)) pos.l += (rect2.left-rect1.left);
@@ -252,16 +252,16 @@
 
             // one should find parent with non-static position,
             // all absolute coordinates calculated relative to such node
-            var abs_parent = this.parent;
+            let abs_parent = this.parent;
             while (abs_parent) {
-               var style = getComputedStyle(abs_parent);
+               let style = getComputedStyle(abs_parent);
                if (!style || (style.position !== 'static')) break;
                if (!abs_parent.parentNode || (abs_parent.parentNode.nodeType != 1)) break;
                abs_parent = abs_parent.parentNode;
             }
 
             if (abs_parent && (abs_parent !== this.parent)) {
-               var rect0 = abs_parent.getBoundingClientRect();
+               let rect0 = abs_parent.getBoundingClientRect();
                pos.l += (rect1.left - rect0.left);
                pos.u += (rect1.top - rect0.top);
             }
@@ -281,8 +281,8 @@
             if (v.line) {
                v = v.line;
             } else {
-               var res = v.lines[0];
-               for (var n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
+               let res = v.lines[0];
+               for (let n=1;n<v.lines.length;++n) res+= "<br/>" + v.lines[n];
                v = res;
             }
          }
@@ -321,7 +321,7 @@
       if (JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomWheel)
          renderer.domElement.addEventListener( 'wheel', control_mousewheel);
 
-      var enable_zoom = JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse,
+      let enable_zoom = JSROOT.gStyle.Zooming && JSROOT.gStyle.ZoomMouse,
           enable_select = typeof painter.ProcessMouseClick == "function";
 
       if (enable_zoom || enable_select) {
@@ -329,7 +329,7 @@
          renderer.domElement.addEventListener( 'mouseup', control_mouseup);
       }
 
-      var control = new THREE.OrbitControls(camera, renderer.domElement);
+      let control = new THREE.OrbitControls(camera, renderer.domElement);
 
       control.enableDamping = false;
       control.dampingFactor = 1.0;
@@ -401,7 +401,7 @@
 
       control.GetOriginDirectionIntersects = function(origin, direction) {
          this.raycaster.set(origin, direction);
-         var intersects = this.raycaster.intersectObjects(this.scene.children, true);
+         let intersects = this.raycaster.intersectObjects(this.scene.children, true);
          // painter may want to filter intersects
          if (typeof this.painter.FilterIntersects == 'function')
             intersects = this.painter.FilterIntersects(intersects);
@@ -410,16 +410,16 @@
 
       control.GetMouseIntersects = function(mouse) {
          // domElement gives correct coordinate with canvas render, but isn't always right for webgl renderer
-         var sz = (this.renderer instanceof THREE.WebGLRenderer) ?
+         let sz = (this.renderer instanceof THREE.WebGLRenderer) ?
                      this.renderer.getSize(new THREE.Vector2()) :
                      this.renderer.domElement;
 
-         var pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
+         let pnt = { x: mouse.x / sz.width * 2 - 1, y: -mouse.y / sz.height * 2 + 1 };
 
          this.camera.updateMatrix();
          this.camera.updateMatrixWorld();
          this.raycaster.setFromCamera( pnt, this.camera );
-         var intersects = this.raycaster.intersectObjects(this.scene.children, true);
+         let intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
          // painter may want to filter intersects
          if (typeof this.painter.FilterIntersects == 'function')
@@ -429,10 +429,10 @@
       }
 
       control.DetectZoomMesh = function(evnt) {
-         var mouse = this.GetMousePos(evnt, {});
-         var intersects = this.GetMouseIntersects(mouse);
+         let mouse = this.GetMousePos(evnt, {});
+         let intersects = this.GetMouseIntersects(mouse);
          if (intersects)
-            for (var n=0;n<intersects.length;++n)
+            for (let n=0;n<intersects.length;++n)
                if (intersects[n].object.zoom)
                   return intersects[n];
 
@@ -440,7 +440,7 @@
       }
 
       control.ProcessDblClick = function(evnt) {
-         var intersect = this.DetectZoomMesh(evnt);
+         let intersect = this.DetectZoomMesh(evnt);
          if (intersect && this.painter) {
             this.painter.Unzoom(intersect.object.use_y_for_z ? "y" : intersect.object.zoom);
          } else {
@@ -518,7 +518,7 @@
          if (this.mouse_zoom_mesh) {
             // when working with zoom mesh, need special handling
 
-            var zoom2 = this.DetectZoomMesh(evnt), pnt2 = null;
+            let zoom2 = this.DetectZoomMesh(evnt), pnt2 = null;
 
             if (zoom2 && (zoom2.object === this.mouse_zoom_mesh.object)) {
                pnt2 = zoom2.point;
@@ -558,13 +558,13 @@
          // remove handle - allow to trigger new timeout
          delete this.tmout_handle;
 
-         var mouse = this.tmout_mouse,
+         let mouse = this.tmout_mouse,
              intersects = this.GetMouseIntersects(mouse),
              tip = this.ProcessMouseMove(intersects),
              status_func = this.painter.GetShowStatusFunc();
 
          if (tip && status_func) {
-            var name = "", title = "", coord = "", info = "";
+            let name = "", title = "", coord = "", info = "";
             if (mouse) coord = mouse.x.toFixed(0)+ "," + mouse.y.toFixed(0);
             if (typeof tip == "string") {
                info = tip;
@@ -585,7 +585,7 @@
          } else {
             this.tooltip.hide();
             if (intersects)
-               for (var n=0;n<intersects.length;++n)
+               for (let n=0;n<intersects.length;++n)
                   if (intersects[n].object.zoom) this.cursor_changed = true;
          }
 
@@ -617,7 +617,7 @@
             return; // already fired redraw, do not react on the mouse wheel
          }
 
-         var intersect = control.DetectZoomMesh(evnt);
+         let intersect = control.DetectZoomMesh(evnt);
          if (!intersect) return;
 
          evnt.preventDefault();
@@ -625,7 +625,7 @@
          evnt.stopImmediatePropagation();
 
          if (control.painter && (typeof control.painter.AnalyzeMouseWheelEvent == 'function')) {
-            var kind = intersect.object.zoom,
+            let kind = intersect.object.zoom,
                 position = intersect.point[kind],
                 item = { name: kind, ignore: false };
 
@@ -674,11 +674,11 @@
 
          if (control.mouse_zoom_mesh && control.mouse_zoom_mesh.point2 && control.painter.Get3DZoomCoord) {
 
-            var kind = control.mouse_zoom_mesh.object.zoom,
+            let kind = control.mouse_zoom_mesh.object.zoom,
                 pos1 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point, kind),
                 pos2 = control.painter.Get3DZoomCoord(control.mouse_zoom_mesh.point2, kind);
 
-            if (pos1>pos2) { var v = pos1; pos1 = pos2; pos2 = v; }
+            if (pos1>pos2) { let v = pos1; pos1 = pos2; pos2 = v; }
 
             if ((kind==="z") && control.mouse_zoom_mesh.object.use_y_for_z) kind="y";
 
@@ -700,13 +700,13 @@
 
          if (control.enable_select && control.mouse_select_pnt) {
 
-            var pnt = control.GetMousePos(evnt, {});
+            let pnt = control.GetMousePos(evnt, {});
 
-            var same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
+            let same_pnt = (pnt.x == control.mouse_select_pnt.x) && (pnt.y == control.mouse_select_pnt.y);
             delete control.mouse_select_pnt;
 
             if (same_pnt) {
-               var intersects = control.GetMouseIntersects(pnt);
+               let intersects = control.GetMouseIntersects(pnt);
                control.painter.ProcessMouseClick(pnt, intersects, evnt);
             }
          }
@@ -719,7 +719,7 @@
       if (painter && painter.options && painter.options.mouse_click) {
          control.ProcessClick = function(mouse) {
             if (typeof this.ProcessSingleClick == 'function') {
-               var intersects = this.GetMouseIntersects(mouse);
+               let intersects = this.GetMouseIntersects(mouse);
                this.ProcessSingleClick(intersects);
             }
          }
@@ -763,7 +763,7 @@
       if (!obj) return;
 
       if (obj.children) {
-         for (var i = 0; i < obj.children.length; i++)
+         for (let i = 0; i < obj.children.length; i++)
             JSROOT.Painter.DisposeThreejsObject(obj.children[i]);
       }
 
@@ -801,21 +801,21 @@
       // prepare geometry for THREE.LineSegments
       // If required, calculate lineDistance attribute for dashed geometries
 
-      var geom = new THREE.BufferGeometry();
+      let geom = new THREE.BufferGeometry();
 
       geom.addAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
       if (index) geom.setIndex(  new THREE.BufferAttribute(index, 1) );
 
       if (material.isLineDashedMaterial) {
 
-         var v1 = new THREE.Vector3(),
+         let v1 = new THREE.Vector3(),
              v2 = new THREE.Vector3(),
              d = 0, distances = null;
 
          if (index) {
             distances = new Float32Array(index.length);
-            for (var n=0; n<index.length; n+=2) {
-               var i1 = index[n], i2 = index[n+1];
+            for (let n=0; n<index.length; n+=2) {
+               let i1 = index[n], i2 = index[n+1];
                v1.set(arr[i1],arr[i1+1],arr[i1+2]);
                v2.set(arr[i2],arr[i2+1],arr[i2+2]);
                distances[n] = d;
@@ -824,7 +824,7 @@
             }
          } else {
             distances = new Float32Array(arr.length/3);
-            for (var n=0; n<arr.length; n+=6) {
+            for (let n=0; n<arr.length; n+=6) {
                v1.set(arr[n],arr[n+1],arr[n+2]);
                v2.set(arr[n+3],arr[n+4],arr[n+5]);
                distances[n/3] = d;
@@ -850,11 +850,11 @@
 
    // these segments address vertices from the mesh, we can use positions from box mesh
    JSROOT.Painter.Box3D.MeshSegments = (function() {
-      var box3d = JSROOT.Painter.Box3D,
+      let box3d = JSROOT.Painter.Box3D,
           arr = new Int32Array(box3d.Segments.length);
 
-      for (var n=0;n<arr.length;++n) {
-         for (var k=0;k<box3d.Indexes.length;++k)
+      for (let n=0;n<arr.length;++n) {
+         for (let k=0;k<box3d.Indexes.length;++k)
             if (box3d.Segments[n] === box3d.Indexes[k]) {
                arr[n] = k; break;
             }
@@ -905,7 +905,7 @@
    }
 
    PointsControl.prototype.setSelected = function(col, indx) {
-      var m = this.mesh;
+      let m = this.mesh;
       if ((m.select_col == col) && (m.select_indx == indx)) {
          console.log("Reset selection");
          col = null; indx = undefined;
@@ -917,7 +917,7 @@
    }
 
    PointsControl.prototype.setHighlight = function(col, indx) {
-      var m = this.mesh;
+      let m = this.mesh;
       m.h_index = indx;
       if (col)
          this.createSpecial(col, indx);
@@ -927,7 +927,7 @@
    }
 
    PointsControl.prototype.createSpecial = function(color, index) {
-      var m = this.mesh;
+      let m = this.mesh;
       if (!color) {
          if (m.js_special) {
             m.remove(m.js_special);
@@ -938,9 +938,9 @@
       }
 
       if (!m.js_special) {
-         var geom = new THREE.BufferGeometry();
+         let geom = new THREE.BufferGeometry();
          geom.addAttribute( 'position', m.geometry.getAttribute("position"));
-         var material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
+         let material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
          material.sizeAttenuation = m.material.sizeAttenuation;
 
          m.js_special = new THREE.Points(geom, material);
@@ -977,7 +977,7 @@
 
    PointsCreator.prototype.Complete = function(arg) {
 
-      var material;
+      let material;
 
       if (this.texture) {
          if ((arg == 'loaded') && this.texture.onUpdate) this.texture.onUpdate( this.texture );
@@ -990,7 +990,7 @@
 
       this._did_create = true;
 
-      var pnts = new THREE.Points(this.geom, material);
+      let pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
 
       if (!this.callback)
@@ -1018,9 +1018,9 @@
       if (!args.style || (this.k !== 1) || JSROOT.BatchMode)
          return this.Complete();
 
-      var handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
+      let handler = new JSROOT.TAttMarkerHandler({ style: args.style, color: args.color, size: 8 });
 
-      var plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
+      let plainSVG = '<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">' +
                      '<path d="' + handler.create(32,32) + '" stroke="' + handler.getStrokeColor() + '" fill="' + handler.getFillColor() + '"/></svg>';
 
       this.texture = new THREE.Texture();
@@ -1041,7 +1041,7 @@
    function Create3DLineMaterial(painter, obj) {
       if (!painter || !obj) return null;
 
-      var lcolor = painter.get_color(obj.fLineColor),
+      let lcolor = painter.get_color(obj.fLineColor),
           material = null,
           style = obj.fLineStyle ? JSROOT.Painter.root_line_styles[obj.fLineStyle] : "",
           dash = style ? style.split(",") : [];
@@ -1059,12 +1059,12 @@
    // ============================================================================================================
 
    function drawPolyLine3D() {
-      var line = this.GetObject(),
+      let line = this.GetObject(),
           main = this.frame_painter();
 
       if (!main || !main.mode3d || !main.toplevel || !line) return;
 
-      var fN, fP, fOption, pnts = [];
+      let fN, fP, fOption, pnts = [];
 
       if (line._blob && (line._blob.length==4)) {
          // workaround for custom streamer for JSON, should be resolved
@@ -1077,11 +1077,11 @@
          fOption = line.fOption;
       }
 
-      for (var n=3;n<3*fN;n+=3)
+      for (let n=3;n<3*fN;n+=3)
          pnts.push(main.grx(fP[n-3]), main.gry(fP[n-2]), main.grz(fP[n-1]),
                    main.grx(fP[n]), main.gry(fP[n+1]), main.grz(fP[n+2]));
 
-      var lines = JSROOT.Painter.createLineSegments(pnts, Create3DLineMaterial(this, line));
+      let lines = JSROOT.Painter.createLineSegments(pnts, Create3DLineMaterial(this, line));
 
       main.toplevel.add(lines);
    }
