@@ -163,7 +163,7 @@
                });
            });
 
-         var keyid = null, optid, testfile, testobj, testinterval = 200, hpainter = null;
+         var keyid = null, optid, testfile, testobj, testinterval = 10, hpainter = null;
 
          function ProcessClick(durl, filename, itemname, opt, jsonname) {
 
@@ -231,7 +231,7 @@
                if (ii && !isNaN(parseInt(ii))) testinterval = parseInt(ii);
                                           else testinterval = interval;
                if (running) return;
-               return JSROOT.AssertPrerequisites("2d;hierarchy", function() { RunBigTest(0); });
+               return JSROOT.load("2d;hierarchy").then(() => RunBigTest(0));
             }
 
             if (!keyid) return; // this is indication of test break
@@ -272,8 +272,9 @@
                if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
             }
 
-            if (entry.url) url = entry.url.replace(/\$\$\$/g, filepath); else
-            if (entry.items) {
+            if (entry.url) {
+               url = entry.url.replace(/\$\$\$/g, filepath);
+            } else if (entry.items) {
                url = "?nobrowser&file=" + filename;
                if (entry.layout) url += "&layout=" + entry.layout;
                url += "&items=[" + entry.items.join(",") + "]";
@@ -281,8 +282,7 @@
                if (entry.mathjax) url += "&mathjax";
                if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
-            } else
-            if (entry.asurl) {
+            } else if (entry.asurl) {
                url = ((entry.asurl === "browser") ? "?" : "?nobrowser&");
                url += jsonname ? "json=" + jsonname : "file=" + filename + "&item=" + itemname;
                url += itemname + "&opt=" + opt;
@@ -366,9 +366,7 @@
             }
 
             // all painter assigned to viewer element will be automatically informed about resize
-            JSROOT.AssertPrerequisites("2d;hierarchy", function() {
-               JSROOT.RegisterForResize('viewer');
-            });
+            JSROOT.load("2d;hierarchy").then(() => JSROOT.RegisterForResize('viewer'));
 
             select_key = JSROOT.GetUrlOption("select", window.location.href);
             if (!select_key && (JSROOT.GetUrlOption("geom", window.location.href) !== null)) select_key = "TGeo";
@@ -398,8 +396,7 @@
 
                   if ('url' in entry) {
                      url = entry.url.replace(/\$\$\$/g,filepath);
-                  } else
-                  if ('json' in entry) {
+                  } else if ('json' in entry) {
                      jsonname = entry.json;
                      if ((jsonname.indexOf("http:")<0) && (jsonname.indexOf("https:")<0)) jsonname = filepath + jsonname;
                   } else {
@@ -490,7 +487,7 @@
                 aaa.addEventListener( 'click', function (event) {
                     event.preventDefault();
                     window.location.hash = "run";
-                    RunBigTest(100,true);
+                    RunBigTest(10,true);
                 });
 
                 content.appendChild(document.createTextNode(", "));
@@ -506,6 +503,18 @@
                 });
 
                 content.appendChild(document.createTextNode(", "));
+
+                aaa = document.createElement( 'a' );
+                aaa.textContent = "fast";
+                aaa.title = "Run all examples very fast";
+                content.appendChild( aaa );
+                aaa.addEventListener( 'click', function (event) {
+                    event.preventDefault();
+                    window.location.hash = "fast";
+                    RunBigTest(1,true);
+                });
+
+                content.appendChild(document.createTextNode(", "));
                 aaa = document.createElement( 'a' );
                 aaa.textContent = "stop";
                 aaa.title = "Stop running example";
@@ -516,6 +525,7 @@
                 });
             }
             if (window.location.hash == "#run") RunBigTest(100,true);
+            if (window.location.hash == "#fast") RunBigTest(1,true);
             if (window.location.hash == "#slow") RunBigTest(5000,true);
 
          }; // FillContent
