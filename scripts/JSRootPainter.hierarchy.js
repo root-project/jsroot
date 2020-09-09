@@ -1110,7 +1110,7 @@
          var main_painter = JSROOT.GetMainPainter(divid);
 
          if (main_painter && (typeof main_painter.PerformDrop === 'function'))
-            return main_painter.PerformDrop(obj, itemname, item, opt, drop_callback);
+            return main_painter.PerformDrop(obj, itemname, item, opt).then(drop_callback);
 
          if (main_painter && main_painter.accept_drops)
             return JSROOT.draw(divid, obj, "same " + opt).then(drop_callback);
@@ -2235,22 +2235,23 @@
       function OpenAllFiles(res) {
          if (browser_kind) { hpainter.CreateBrowser(browser_kind); browser_kind = ""; }
          if (status!==null) { hpainter.CreateStatusLine(statush, status); status = null; }
-         if (jsonarr.length>0)
+         if (jsonarr.length > 0)
             hpainter.OpenJsonFile(jsonarr.shift(), OpenAllFiles);
-         else if (filesarr.length>0)
+         else if (filesarr.length > 0)
             hpainter.OpenRootFile(filesarr.shift(), OpenAllFiles);
          else if ((localfile!==null) && (typeof hpainter.SelectLocalFile == 'function')) {
             localfile = null; hpainter.SelectLocalFile(OpenAllFiles);
-         } else if (expanditems.length>0)
+         } else if (expanditems.length > 0)
             hpainter.expand(expanditems.shift(), OpenAllFiles);
-         else if (style.length>0)
+         else if (style.length > 0)
             hpainter.ApplyStyle(style.shift(), OpenAllFiles);
-         else
+         else {
             hpainter.displayAll(itemsarr, optionsarr, function() {
                hpainter.RefreshHtml();
                hpainter.SetMonitoring(monitor);
                JSROOT.CallBack(gui_call_back);
            });
+         }
       }
 
       function AfterOnlineOpened() {
