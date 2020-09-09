@@ -1077,7 +1077,7 @@
           zmin, zmax,
           handle = this.PrepareDraw({ rounding: false, use3d: true, extra: 1 }),
           i1 = handle.i1, i2 = handle.i2, j1 = handle.j1, j2 = handle.j2, di = handle.stepi, dj = handle.stepj,
-          i, j, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
+          i, j, k, vert, x1, x2, y1, y2, binz1, binz2, reduced, nobottom, notop,
           pthis = this,
           histo = this.GetHisto(),
           basehisto = histo ? histo.$baseh : null,
@@ -1405,7 +1405,7 @@
 
       // create boxes
       var lcolor = this.v7EvalColor("line_color", "lightblue");
-      material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
+      var material = new THREE.LineBasicMaterial({ color: new THREE.Color(lcolor) });
       if (!JSROOT.browser.isIE) material.linewidth = this.v7EvalAttr("line_width", 1);
 
       var line = JSROOT.Painter.createLineSegments(lpositions, material, uselineindx ? lindicies : null );
