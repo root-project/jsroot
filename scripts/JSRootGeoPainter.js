@@ -63,7 +63,7 @@
             pthis.createButton(group, buttonConfig);
          });
       });
-   };
+   }
 
    Toolbar.prototype.createButton = function(group, config) {
 
@@ -115,14 +115,60 @@
           if (scale !== 1)
              elem.attr('transform', 'scale(' + scale + ' ' + scale +')');
        }
-   };
+   }
 
    Toolbar.prototype.Cleanup = function() {
       if (this.element) {
          this.element.remove();
          delete this.element;
       }
-   };
+   }
+
+   //////////////////////
+
+   function GeoDrawingControl(mesh) {
+      JSROOT.Painter.InteractiveControl.call(this);
+      this.mesh = (mesh && mesh.material) ? mesh : null;
+   }
+
+   GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
+
+   GeoDrawingControl.prototype.setHighlight = function(col, indx) {
+      return this.drawSpecial(col, indx);
+   }
+
+   GeoDrawingControl.prototype.drawSpecial = function(col, indx) {
+      var c = this.mesh;
+      if (!c || !c.material) return;
+
+      if (col) {
+         if (!c.origin)
+            c.origin = {
+              color: c.material.color,
+              opacity: c.material.opacity,
+              width: c.material.linewidth,
+              size: c.material.size
+           };
+         c.material.color = new THREE.Color( col );
+         c.material.opacity = 1.;
+         if (c.hightlightWidthScale && !JSROOT.browser.isWin)
+            c.material.linewidth = c.origin.width * c.hightlightWidthScale;
+         if (c.highlightScale)
+            c.material.size = c.origin.size * c.highlightScale;
+         return true;
+      } else if (c.origin) {
+         c.material.color = c.origin.color;
+         c.material.opacity = c.origin.opacity;
+         if (c.hightlightWidthScale)
+            c.material.linewidth = c.origin.width;
+         if (c.highlightScale)
+            c.material.size = c.origin.size;
+         return true;
+      }
+   }
+
+   ////////////////////////
+
 
    /**
     * @class TGeoPainter
@@ -1188,51 +1234,6 @@
       if (!this._highlight_handlers) this._highlight_handlers = [];
       this._highlight_handlers.push(handler);
    }
-
-   //////////////////////
-
-   function GeoDrawingControl(mesh) {
-      JSROOT.Painter.InteractiveControl.call(this);
-      this.mesh = (mesh && mesh.material) ? mesh : null;
-   }
-
-   GeoDrawingControl.prototype = Object.create(JSROOT.Painter.InteractiveControl.prototype);
-
-   GeoDrawingControl.prototype.setHighlight = function(col, indx) {
-      return this.drawSpecial(col, indx);
-   }
-
-   GeoDrawingControl.prototype.drawSpecial = function(col, indx) {
-      var c = this.mesh;
-      if (!c || !c.material) return;
-
-      if (col) {
-         if (!c.origin)
-            c.origin = {
-              color: c.material.color,
-              opacity: c.material.opacity,
-              width: c.material.linewidth,
-              size: c.material.size
-           };
-         c.material.color = new THREE.Color( col );
-         c.material.opacity = 1.;
-         if (c.hightlightWidthScale && !JSROOT.browser.isWin)
-            c.material.linewidth = c.origin.width * c.hightlightWidthScale;
-         if (c.highlightScale)
-            c.material.size = c.origin.size * c.highlightScale;
-         return true;
-      } else if (c.origin) {
-         c.material.color = c.origin.color;
-         c.material.opacity = c.origin.opacity;
-         if (c.hightlightWidthScale)
-            c.material.linewidth = c.origin.width;
-         if (c.highlightScale)
-            c.material.size = c.origin.size;
-         return true;
-      }
-   }
-
-   ////////////////////////
 
    TGeoPainter.prototype.HighlightMesh = function(active_mesh, color, geo_object, geo_index, geo_stack, no_recursive) {
 
@@ -2602,7 +2603,7 @@
 
          var geo_painter = this;
 
-         return new Promise(function(resolve, reject) {
+         return new Promise(function(resolve) {
             func(obj, opt, function(tracks) {
                if (tracks) {
                   geo_painter.drawExtras(tracks, "", false); // FIXME: probably tracks should be remembered??
@@ -2614,8 +2615,12 @@
          });
       }
 
+      console.log('Drop element', itemname);
+
       if (this.drawExtras(obj, itemname)) {
          if (hitem) hitem._painter = this; // set for the browser item back pointer
+         console.log('Did drop element', itemname);
+         this.Render3D(100);
       }
 
       return Promise.resolve(this);
