@@ -17,7 +17,7 @@
       var h1painter = null,
           filename = "https://root.cern/js/files/hsimple.root";
 
-      JSROOT.OpenFile(filename, function(file) {
+      JSROOT.OpenFile(filename).then(file => {
          file.ReadObject("hpx;1", function(obj) {
             JSROOT.draw("drawth1", obj, "hist").then(function(painter) {
                h1painter = painter;

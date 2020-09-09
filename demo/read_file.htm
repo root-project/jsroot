@@ -12,7 +12,7 @@
    <script type='text/javascript'>
      // absolute file path can be used as well
      var filename = "../../files/hsimple.root";
-     JSROOT.OpenFile(filename).then((file) => {
+     JSROOT.OpenFile(filename).then(file => {
         file.ReadObject("hpxpy;1", function(obj) {
            JSROOT.draw("drawing", obj, "colz");
         });

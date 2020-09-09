@@ -14,7 +14,7 @@
      var filename = "../../files/transparency_test.root";
 
      function DrawMg() {
-        JSROOT.OpenFile(filename, function(file) {
+        JSROOT.OpenFile(filename).then(file => {
           file.ReadObject("mycolors", function(obj) {
            JSROOT.Painter.adoptRootColors(obj);
            file.ReadObject("mg", function(obj_g) {

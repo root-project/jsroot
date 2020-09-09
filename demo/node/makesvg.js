@@ -8,7 +8,7 @@ console.log('JSROOT version', jsroot.version);
 //
 //jsroot.ImageSVG = true;
 
-jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
    file.ReadObject("hpx;1", function(obj) {
       jsroot.MakeSVG( { object: obj, option: "lego2,pal50", width: 1200, height: 800 }, function(svg) {
          console.log('SVG size', svg.length);

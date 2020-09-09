@@ -3039,13 +3039,13 @@
     * @param {string|File} filename - name of file to open or instance of JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
     * @returns {object} - Promise with TFile instance when file is opened
     * @example
-    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root").then((f) => {
+    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root").then(f => {
     *    console.log("Open file", f.fFileName);
     * });
     */
 
    JSROOT.OpenFile = function(filename, callback) {
-      var promise = new Promise(function(resolve, reject) {
+      var promise = new Promise(function(resolve) {
          if (JSROOT.nodejs) {
             if (filename.indexOf("file://")==0)
                return new TNodejsFile(filename.substr(7), resolve);

@@ -206,7 +206,7 @@
                       JSROOT.draw("viewer", obj, opt);
                    });
                 } else {
-                   JSROOT.OpenFile(filename, function(file) {
+                   JSROOT.OpenFile(filename).then(file => {
                       file.ReadObject(itemname, function(obj) {
                          JSROOT.draw("viewer", obj, opt);
                       });
@@ -330,7 +330,7 @@
                   return JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                });
             } else if (filename.length > 0) {
-                JSROOT.OpenFile(filename, function(file) {
+                JSROOT.OpenFile(filename).then(file => {
                    testfile = file;
                    testfile.ReadObject(itemname, function(obj) {
                       testobj = obj;

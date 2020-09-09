@@ -682,7 +682,7 @@ Therefore, callback functions are used to react when the I/O operation completed
 For example, reading an object from a file and displaying it will look like:
 
     var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename, function(file) {
+    JSROOT.OpenFile(filename).then(file => {
        file.ReadObject("hpxpy;1", function(obj) {
           JSROOT.draw("drawing", obj, "colz");
        });
@@ -697,7 +697,7 @@ Here is [running example](https://root.cern/js/latest/api.htm#custom_html_read_r
 Simple TTree::Draw operation can be performed with following code:
 
     var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename, function(file) {
+    JSROOT.OpenFile(filename).then(file => {
        file.ReadObject("ntuple;1", function(obj) {
           JSROOT.draw("drawing", obj, "px:py::pz>5");
        });
@@ -706,7 +706,7 @@ Simple TTree::Draw operation can be performed with following code:
 To get access to selected branches, one should use TSelector class:
 
     var filename = "https://root.cern/js/files/hsimple.root";
-    JSROOT.OpenFile(filename, function(file) {
+    JSROOT.OpenFile(filename).then(file => {
        file.ReadObject("ntuple;1", function(tree) {
 
           var selector = new JSROOT.TSelector();
@@ -795,7 +795,7 @@ create SVG output. For example, to create SVG image with lego plot, one should d
     var jsroot = require("jsroot");
     var fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
        file.ReadObject("hpx;1", function(obj) {
           jsroot.MakeSVG( { object: obj, option: "lego2", width: 1200, height: 800 }, function(svg) {
              fs.writeFileSync("lego2.svg", svg);
@@ -808,7 +808,7 @@ It is also possible to convert any JavaScript object into ROOT JSON string, usin
     var jsroot = require("jsroot");
     var fs = require("fs");
 
-    jsroot.OpenFile("https://root.cern/js/files/hsimple.root", function(file) {
+    jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
        file.ReadObject("hpxpy;1", function(obj) {
           var json = jsroot.toJSON(obj);
           fs.writrFileSync("hpxpy.json", json);

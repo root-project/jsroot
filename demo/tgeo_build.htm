@@ -80,7 +80,7 @@
             if (filename.indexOf(".root")>0) {
                // load geometry from ROOT file
                var itemname = JSROOT.GetUrlOption("item") || "geom";
-               JSROOT.OpenFile(filename, function(file) {
+               JSROOT.OpenFile(filename).then(file => {
                   file.ReadObject(itemname, add_geometry);
                });
             } else {

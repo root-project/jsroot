@@ -1612,7 +1612,7 @@
       var pthis = this;
 
       JSROOT.progress("Opening " + filepath + " ...");
-      JSROOT.OpenFile(filepath, function(file) {
+      JSROOT.OpenFile(filepath).then(file => {
          JSROOT.progress();
          if (!file) {
             // make CORS warning

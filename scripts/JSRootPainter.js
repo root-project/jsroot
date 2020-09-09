@@ -6525,7 +6525,7 @@
     *
     * @example
     * var filename = "https://root.cern/js/files/hsimple.root";
-    * JSROOT.OpenFile(filename, function(file) {
+    * JSROOT.OpenFile(filename).then(file => {
     *    file.ReadObject("hpxpy;1", function(obj) {
     *       JSROOT.draw("drawing", obj, "colz;logx;gridx;gridy");
     *    });
