@@ -24,7 +24,7 @@
    // =================================================================================
 
    function drawText() {
-      var text         = this.GetObject(),
+      let text         = this.GetObject(),
           pp           = this.pad_painter(),
           use_frame    = false,
           p            = pp.GetCoordinate(text.fPos),
@@ -36,7 +36,7 @@
 
       this.CreateG(use_frame);
 
-      var arg = { align: text_align, x: p.x, y: p.y, text: text.fText, rotate: text_angle, color: text_color, latex: 1 };
+      let arg = { align: text_align, x: p.x, y: p.y, text: text.fText, rotate: text_angle, color: text_color, latex: 1 };
 
       // if (text.fTextAngle) arg.rotate = -text.fTextAngle;
       // if (text._typename == 'TLatex') { arg.latex = 1; fact = 0.9; } else
@@ -54,7 +54,7 @@
 
    function drawLine() {
 
-       var line         = this.GetObject(),
+       let line         = this.GetObject(),
            pp           = this.pad_painter(),
            p1           = pp.GetCoordinate(line.fP1),
            p2           = pp.GetCoordinate(line.fP2),
@@ -80,7 +80,7 @@
 
    function drawBox() {
 
-       var box          = this.GetObject(),
+       let box          = this.GetObject(),
            pp           = this.pad_painter(),
            p1           = pp.GetCoordinate(box.fP1),
            p2           = pp.GetCoordinate(box.fP2),
@@ -113,7 +113,7 @@
    // =================================================================================
 
    function drawMarker() {
-       var marker       = this.GetObject(),
+       let marker       = this.GetObject(),
            pp           = this.pad_painter(),
            p            = pp.GetCoordinate(marker.fP),
            marker_size  = this.v7EvalAttr( "marker_size", 1),
@@ -133,7 +133,7 @@
    // =================================================================================
 
    function drawLegendContent() {
-      var legend     = this.GetObject(),
+      let legend     = this.GetObject(),
           text_size  = this.v7EvalAttr( "legend_text_size", 20),
           text_angle = -1 * this.v7EvalAttr( "legend_text_angle", 0),
           text_align = this.v7EvalAttr( "legend_text_align", 12),
@@ -148,7 +148,7 @@
 
       if (!nlines || !pp) return;
 
-      var arg = { align: text_align, rotate: text_angle, color: text_color, latex: 1 },
+      let arg = { align: text_align, rotate: text_angle, color: text_color, latex: 1 },
           stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
       this.StartTextDrawing(text_font, height/(nlines * 1.2));
@@ -159,8 +159,8 @@
          posy += stepy;
       }
 
-      for (var i=0; i<legend.fEntries.length; ++i) {
-         var objp = null, entry = legend.fEntries[i];
+      for (let i=0; i<legend.fEntries.length; ++i) {
+         let objp = null, entry = legend.fEntries[i];
 
          this.DrawText({ align: text_align, rotate: text_angle, color: text_color, latex: 1,
                          width: 0.75*width - 3*margin_x, height: stepy, x: 2*margin_x + width*0.25, y: posy, text: entry.fLabel });
@@ -204,7 +204,7 @@
    }
 
    function drawLegend(divid, legend, opt) {
-      var painter = new JSROOT.v7.RPavePainter(legend, opt, "legend");
+      let painter = new JSROOT.v7.RPavePainter(legend, opt, "legend");
 
       painter.SetDivId(divid);
 
@@ -218,7 +218,7 @@
    // =================================================================================
 
    function drawPaveTextContent() {
-      var pavetext   = this.GetObject(),
+      let pavetext   = this.GetObject(),
           text_size  = this.v7EvalAttr( "pavetext_text_size", 20),
           text_angle = -1 * this.v7EvalAttr( "pavetext_text_angle", 0),
           text_align = this.v7EvalAttr( "pavetext_text_align", 12),
@@ -230,12 +230,12 @@
 
       if (!nlines) return;
 
-      var stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
+      let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
       this.StartTextDrawing(text_font, height/(nlines * 1.2));
 
-      for (var i=0; i < pavetext.fText.length; ++i) {
-         var line = pavetext.fText[i];
+      for (let i=0; i < pavetext.fText.length; ++i) {
+         let line = pavetext.fText[i];
 
          this.DrawText({ align: text_align, rotate: text_angle, color: text_color, latex: 1,
                          width: width - 2*margin_x, height: stepy, x: margin_x, y: posy, text: line });
@@ -246,7 +246,7 @@
    }
 
    function drawPaveText(divid, pave, opt) {
-      var painter = new JSROOT.v7.RPavePainter(pave, opt, "pavetext");
+      let painter = new JSROOT.v7.RPavePainter(pave, opt, "pavetext");
 
       painter.SetDivId(divid);
 
