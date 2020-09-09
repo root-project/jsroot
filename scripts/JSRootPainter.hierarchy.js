@@ -629,7 +629,7 @@
 
                if (file == null) return JSROOT.CallBack(callback, item, null);
 
-               file.ReadObject(itemname, function(obj) {
+               file.ReadObject(itemname).then(obj => {
 
                   // if object was read even when item did not exist try to reconstruct new hierarchy
                   if (!item && obj) {

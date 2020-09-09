@@ -17,7 +17,7 @@
      JSROOT.HttpRequest(geom_file, "object").then(obj => {
         JSROOT.draw("drawing", obj).then(geo_painter => {
            JSROOT.OpenFile(tracks_file).then(file => {
-              file.ReadObject("tracks;1", function(tracks) {
+              file.ReadObject("tracks;1").then(tracks => {
                  // one could simply draw list of tracks
                  // JSROOT.draw("drawing", tracks, "same");
 

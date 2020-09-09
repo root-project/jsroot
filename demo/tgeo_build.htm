@@ -81,7 +81,7 @@
                // load geometry from ROOT file
                var itemname = JSROOT.GetUrlOption("item") || "geom";
                JSROOT.OpenFile(filename).then(file => {
-                  file.ReadObject(itemname, add_geometry);
+                  file.ReadObject(itemname).then(add_geometry);
                });
             } else {
                // load geometry from JSON as object

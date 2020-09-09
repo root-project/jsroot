@@ -13,7 +13,7 @@
      // absolute file path can be used as well
      var filename = "../../files/hsimple.root";
      JSROOT.OpenFile(filename).then(file => {
-        file.ReadObject("ntuple;1", function(tree) {
+        file.ReadObject("ntuple;1").then(tree => {
 
               var selector = new JSROOT.TSelector();
 

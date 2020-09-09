@@ -15,9 +15,9 @@
 
      function DrawMg() {
         JSROOT.OpenFile(filename).then(file => {
-          file.ReadObject("mycolors", function(obj) {
+          file.ReadObject("mycolors").then(obj => {
            JSROOT.Painter.adoptRootColors(obj);
-           file.ReadObject("mg", function(obj_g) {
+           file.ReadObject("mg").then(obj_g => {
               JSROOT.draw("drawing", obj_g, "AL");
            });
           });

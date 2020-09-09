@@ -207,7 +207,7 @@
                    });
                 } else {
                    JSROOT.OpenFile(filename).then(file => {
-                      file.ReadObject(itemname, function(obj) {
+                      file.ReadObject(itemname).then(obj => {
                          JSROOT.draw("viewer", obj, opt);
                       });
                    });
@@ -332,13 +332,13 @@
             } else if (filename.length > 0) {
                 JSROOT.OpenFile(filename).then(file => {
                    testfile = file;
-                   testfile.ReadObject(itemname, function(obj) {
+                   testfile.ReadObject(itemname).then(obj => {
                       testobj = obj;
                       JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                    });
                 });
             } else if (itemname.length > 0) {
-                testfile.ReadObject(itemname, function(obj) {
+                testfile.ReadObject(itemname).then(obj => {
                     testobj = obj;
                     JSROOT.draw("viewer", obj, opt).then(RunBigTest, RunBigTest);
                  });

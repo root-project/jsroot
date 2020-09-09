@@ -16,7 +16,7 @@
 
      var filename = "https://root.cern/js/files/legends.root";
      JSROOT.OpenFile(filename).then(file => {
-        file.ReadObject("legends;1", function(obj) {
+        file.ReadObject("legends;1").then(obj => {
            JSROOT.draw("drawing", obj, "");
         });
      });

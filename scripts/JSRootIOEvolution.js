@@ -398,7 +398,7 @@
    }
 
    TBuffer.prototype.ntou2 = function() {
-      var o = this.o; this.o  += ;
+      var o = this.o; this.o += 2;
       return this.arr.getUint16(o);
    }
 
@@ -802,7 +802,7 @@
          if ((dirkey !== null) && (typeof call_back == 'function') &&
             (dirkey.fClassName.indexOf("TDirectory") == 0)) {
 
-            this.fFile.ReadObject(this.dir_name + "/" + dirname, 1, function(newdir) {
+            this.fFile.ReadObject(this.dir_name + "/" + dirname, 1).then(newdir => {
                if (newdir) newdir.GetKey(subname, cycle, call_back);
             });
             return null;
@@ -815,8 +815,8 @@
       return null;
    }
 
-   TDirectory.prototype.ReadObject = function(obj_name, cycle, user_call_back) {
-      this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle, user_call_back);
+   TDirectory.prototype.ReadObject = function(obj_name, cycle) {
+      return this.fFile.ReadObject(this.dir_name + "/" + obj_name, cycle);
    }
 
    TDirectory.prototype.ReadKeys = function(objbuf, readkeys_callback) {
@@ -1209,7 +1209,7 @@
 
          var dirkey = this.GetKey(dirname);
          if (dirkey && getkey_callback && (dirkey.fClassName.indexOf("TDirectory") == 0)) {
-            this.ReadObject(dirname, function(newdir) {
+            this.ReadObject(dirname).then(newdir => {
                if (newdir) newdir.GetKey(subname, cycle, getkey_callback);
             });
             return null;
@@ -1267,9 +1267,9 @@
     * @param {number} [cycle=undefined] - cycle number
     * @param {function} user_call_back - function called when object read from the file
     * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
+    * @returns {Promise} - promise with object read
     */
-   TFile.prototype.ReadObject = function(obj_name, cycle, user_call_back, only_dir) {
-      if (typeof cycle == 'function') { user_call_back = cycle; cycle = -1; }
+   TFile.prototype.ReadObject = function(obj_name, cycle, only_dir) {
 
       var pos = obj_name.lastIndexOf(";");
       if (pos > 0) {
@@ -1283,55 +1283,58 @@
 
       var file = this;
 
-      // we use callback version while in some cases we need to
-      // read sub-directory to get list of keys
-      // in such situation calls are asynchrone
-      this.GetKey(obj_name, cycle, function(key) {
+      return new Promise((resolve, reject) => {
 
-         if (!key)
-            return JSROOT.CallBack(user_call_back, null);
+         // we use callback version while in some cases we need to
+         // read sub-directory to get list of keys
+         // in such situation calls are asynchrone
+         this.GetKey(obj_name, cycle, function(key) {
 
-         if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
-            return file.fStreamerInfos;
+            // FIXME: one should reject, but in hierarchy painter null handled in resolve, try jstests -k TTree 
+            if (!key)
+               return resolve(null); 
 
-         var isdir = false;
-         if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
-            isdir = true;
-            var dir = file.GetDir(obj_name, cycle);
-            if (dir) return JSROOT.CallBack(user_call_back, dir);
-         }
+            if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
+               return resolve(file.fStreamerInfos);
 
-         if (!isdir && only_dir)
-            return JSROOT.CallBack(user_call_back, null);
-
-         file.ReadObjBuffer(key, function(buf) {
-            if (!buf) return JSROOT.CallBack(user_call_back, null);
-
-            if (isdir) {
-               var dir = new TDirectory(file, obj_name, cycle);
-               dir.fTitle = key.fTitle;
-               return dir.ReadKeys(buf, user_call_back);
+            var isdir = false;
+            if ((key.fClassName == 'TDirectory' || key.fClassName == 'TDirectoryFile')) {
+               isdir = true;
+               var dir = file.GetDir(obj_name, cycle);
+               if (dir) return resolve(dir);
             }
 
-            var obj = {};
-            buf.MapObject(1, obj); // tag object itself with id==1
-            buf.ClassStreamer(obj, key.fClassName);
+            if (!isdir && only_dir)
+               return reject(Error("Key ${obj_name} is not directory}"));
 
-            if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
-               return file.ReadFormulas(obj, user_call_back, -1);
+            file.ReadObjBuffer(key, function(buf) {
+               if (!buf) return reject(Error("Fail to read buffer for ${obj_name}"));
 
-            if (file.readTrees)
-               return JSROOT.AssertPrerequisites('tree', function() {
-                  if (file.readTrees) {
-                     file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
-                     delete file.readTrees;
-                  }
-                  JSROOT.CallBack(user_call_back, obj);
-               });
+               if (isdir) {
+                  var dir = new TDirectory(file, obj_name, cycle);
+                  dir.fTitle = key.fTitle;
+                  return dir.ReadKeys(buf, resolve);
+               }
 
-            JSROOT.CallBack(user_call_back, obj);
-         }); // end of ReadObjBuffer callback
-      }); // end of GetKey callback
+               var obj = {};
+               buf.MapObject(1, obj); // tag object itself with id==1
+               buf.ClassStreamer(obj, key.fClassName);
+
+               if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
+                  return file.ReadFormulas(obj, resolve, -1);
+
+               if (file.readTrees)
+                  return JSROOT.load('tree').then(() => {
+                     if (file.readTrees) {
+                        file.readTrees.forEach(function(t) { JSROOT.extend(t, JSROOT.TreeMethods); })
+                        delete file.readTrees;
+                     }
+                     resolve(obj);
+                  }); 
+               resolve(obj);
+            }); // end of ReadObjBuffer callback
+         }); // end of GetKey callback
+      }); // Promise constructor
    }
 
    /** @summary read formulas from the file
@@ -1348,7 +1351,7 @@
 
       var file = this;
 
-      this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle, function(formula) {
+      this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle).then(formula => {
          tf1.addFormula(formula);
          file.ReadFormulas(tf1, user_call_back, indx);
       });
@@ -1523,9 +1526,9 @@
     * Same functionality as {@link TFile.ReadObject}
     * @param {string} dir_name - directory name
     * @param {number} cycle - directory cycle
-    * @param {function} readdir_callback - callback with read directory */
-   TFile.prototype.ReadDirectory = function(dir_name, cycle, readdir_callback) {
-      this.ReadObject(dir_name, cycle, readdir_callback, true);
+    * @retunrs {Promise} - read directory */
+   TFile.prototype.ReadDirectory = function(dir_name, cycle) {
+      return this.ReadObject(dir_name, cycle, true);
    }
 
    /** @summary Search for class streamer info
@@ -2179,7 +2182,7 @@
 
                   member.read_version = function(buf, cnt) {
                      if (cnt === 0) return null;
-                     var o = buf.o, ver = buf.ReadVersion();
+                     var ver = buf.ReadVersion();
                      this.member_wise = ((ver.val & JSROOT.IO.kStreamedMemberWise) !== 0);
 
                      this.stl_version = undefined;
@@ -2634,7 +2637,7 @@
 
          if ((elem.fSTLtype === JSROOT.IO.kSTLmultimap) &&
             ((elem.fTypeName.indexOf("std::set") === 0) ||
-               (elem.fTypeName.indexOf("set")  == 0))) elem.fSTLtype = JSROOT.IO.kSTLset;
+               (elem.fTypeName.indexOf("set")  === 0))) elem.fSTLtype = JSROOT.IO.kSTLset;
 
          if ((elem.fSTLtype === JSROOT.IO.kSTLset) &&
             ((elem.fTypeName.indexOf("std::multimap") === 0) ||
@@ -2773,7 +2776,7 @@
 
       var ds = JSROOT.IO.DirectStreamers;
 
-      ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function(buf, obj) {
+      ds['TQObject'] = ds['TGraphStruct'] = ds['TGraphNode'] = ds['TGraphEdge'] = function() {
          // do nothing
       }
 

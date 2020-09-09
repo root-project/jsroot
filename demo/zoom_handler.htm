@@ -18,13 +18,13 @@
           filename = "https://root.cern/js/files/hsimple.root";
 
       JSROOT.OpenFile(filename).then(file => {
-         file.ReadObject("hpx;1", function(obj) {
-            JSROOT.draw("drawth1", obj, "hist").then(function(painter) {
+         file.ReadObject("hpx;1").then(obj => {
+            JSROOT.draw("drawth1", obj, "hist").then(painter => {
                h1painter = painter;
             });
          });
-         file.ReadObject("hpxpy;1", function(obj) {
-            JSROOT.draw("drawth2", obj, "col").then(function(painter) {
+         file.ReadObject("hpxpy;1").then(obj => {
+            JSROOT.draw("drawth2", obj, "col").then(painter => {
                // zooming handled in frame painter now
                var fp = painter.frame_painter();
                // keep old function to be able invoke it again
