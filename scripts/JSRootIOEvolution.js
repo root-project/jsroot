@@ -218,28 +218,28 @@
 						if (fmt == "LZMA") {
 							console.log('find LZMA');
 							console.log('chars', getChar(curr), getChar(curr+1), getChar(curr+2));
-			
+
 							for(var n=0;n<20;++n)
 								console.log('codes',n,getCode(curr+n));
-			
+
 							var srcsize = HDRSIZE + ((getCode(curr+3) & 0xff) | ((getCode(curr+4) & 0xff) << 8) | ((getCode(curr+5) & 0xff) << 16));
-			
+
 							var tgtsize0 = ((getCode(curr+6) & 0xff) | ((getCode(curr+7) & 0xff) << 8) | ((getCode(curr+8) & 0xff) << 16));
-			
-			
+
+
 							console.log('srcsize',srcsize, tgtsize0, tgtsize);
-			
+
 							off = 0;
-			
+
 							var uint8arr = new Uint8Array(arr.buffer, arr.byteOffset + curr + HDRSIZE + off, arr.byteLength - curr - HDRSIZE - off);
-			
+
 							JSROOT.LZMA.decompress(uint8arr, function on_decompress_complete(result) {
 								 console.log("Decompressed done", typeof result, result);
 							 }, function on_decompress_progress_update(percent) {
 								 /// Decompressing progress code goes here.
 								 console.log("Decompressing: " + (percent * 100) + "%");
 							 });
-			
+
 							return null;
 						}
 			*/
@@ -1265,7 +1265,6 @@
     * Last argument should be callback function, while data reading from file is asynchron
     * @param {string} obj_name - name of object, may include cycle number like "hpxpy;1"
     * @param {number} [cycle=undefined] - cycle number
-    * @param {function} user_call_back - function called when object read from the file
     * @param {boolean} [only_dir=false] - if true, only TDirectory derived class will be read
     * @returns {Promise} - promise with object read
     */
@@ -1290,9 +1289,9 @@
          // in such situation calls are asynchrone
          this.GetKey(obj_name, cycle, function(key) {
 
-            // FIXME: one should reject, but in hierarchy painter null handled in resolve, try jstests -k TTree 
+            // FIXME: one should reject, but in hierarchy painter null handled in resolve, try jstests -k TTree
             if (!key)
-               return resolve(null); 
+               return resolve(null);
 
             if ((obj_name == "StreamerInfo") && (key.fClassName == "TList"))
                return resolve(file.fStreamerInfos);
@@ -1321,7 +1320,7 @@
                buf.ClassStreamer(obj, key.fClassName);
 
                if ((key.fClassName === 'TF1') || (key.fClassName === 'TF2'))
-                  return file.ReadFormulas(obj, resolve, -1);
+                  return file.ReadFormulas(obj).then(resolve);
 
                if (file.readTrees)
                   return JSROOT.load('tree').then(() => {
@@ -1330,30 +1329,26 @@
                         delete file.readTrees;
                      }
                      resolve(obj);
-                  }); 
+                  });
                resolve(obj);
             }); // end of ReadObjBuffer callback
          }); // end of GetKey callback
       }); // Promise constructor
    }
 
-   /** @summary read formulas from the file
+   /** @summary read formulas from the file and add them to TF1/TF2 objects
     * @private */
-   TFile.prototype.ReadFormulas = function(tf1, user_call_back, cnt) {
+   TFile.prototype.ReadFormulas = function(tf1) {
 
-      var indx = cnt;
-      while (++indx < this.fKeys.length) {
-         if (this.fKeys[indx].fClassName == 'TFormula') break;
-      }
+      let arr = [];
 
-      if (indx >= this.fKeys.length)
-         return JSROOT.CallBack(user_call_back, tf1);
+      for(let indx = 0; indx < this.fKeys.length; ++indx)
+         if (this.fKeys[indx].fClassName == 'TFormula')
+            arr.push(this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle));
 
-      var file = this;
-
-      this.ReadObject(this.fKeys[indx].fName, this.fKeys[indx].fCycle).then(formula => {
-         tf1.addFormula(formula);
-         file.ReadFormulas(tf1, user_call_back, indx);
+      return Promise.all(arr).then(formulas => {
+         formulas.forEach(obj => tf1.addFormula(obj));
+         return tf1;
       });
    }
 
