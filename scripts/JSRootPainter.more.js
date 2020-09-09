@@ -479,19 +479,20 @@
 
    // =================================================================================
 
-   function drawRooPlot(divid, plot, opt) {
+   function drawRooPlot(divid, plot) {
 
-      var painter = new JSROOT.TObjectPainter(plot), cnt = -1;
+      return new Promise((resolve) => {
 
-      function DrawNextItem() {
-         if (++cnt >= plot._items.arr.length) return painter.DrawingReady();
+         let cnt = -1, hpainter = null;
 
-         JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
-      }
+         function DrawNextItem(p) {
+            if (!hpainter) hpainter = p;
+            if (++cnt >= plot._items.arr.length) return resolve(hpainter);
+            JSROOT.draw(divid, plot._items.arr[cnt], plot._items.opt[cnt]).then(DrawNextItem);
+         }
 
-      JSROOT.draw(divid, plot._hist, "hist").then(DrawNextItem);
-
-      return painter;
+         JSROOT.draw(divid, plot._hist, "hist").then(DrawNextItem);
+      });
    }
 
    // ===================================================================================
