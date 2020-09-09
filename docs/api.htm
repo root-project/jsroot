@@ -249,13 +249,16 @@
              });
          }
 
-         function ProcessSourceClick(entry) {
+         function GetGithubBrunch() {
+            if (JSROOT.source_dir.indexOf("/dev/") > 0) return "dev/";
+            if (JSROOT.source_dir.indexOf("/v6/") > 0) return "v6/";
+            return "master/";
+         }
 
+         function ProcessSourceClick(entry) {
             var srcload = entry.srcload || entry.src;
             if (srcload === "github")
-               srcload = "https://raw.githubusercontent.com/root-project/jsroot/" +
-                          ((JSROOT.source_dir.indexOf("/dev/")>0) ? "dev/" : "master/") +
-                          entry.src;
+               srcload = "https://raw.githubusercontent.com/root-project/jsroot/" + GetGithubBrunch() + entry.src;
 
             JSROOT.HttpRequest(srcload, "text").then(function(res) {
                var viewer = document.getElementById( 'viewer' );
@@ -325,16 +328,16 @@
                   SetListener(aaa, shortname, url);
                }
 
-               if ('src' in entry) {
+               if (entry.src) {
 
-                  var srcurl = "", github = "https://github.com/root-project/jsroot/blob/";
-                  if (JSROOT.source_dir.indexOf("/dev/")>0) github+="dev/"; else github+="master/";
+                  var srcurl = "", github = "https://github.com/root-project/jsroot/blob/" + GetGithubBrunch();
                   if (entry.src===true) {
                      srcurl = github + url;
                      entry.src = JSROOT.source_dir + url;
-                  } else
-                  if (entry.src.indexOf("http")===0) srcurl = entry.src; else
-                               srcurl = github + entry.src;
+                  } else if (entry.src.indexOf("http")===0)
+                     srcurl = entry.src;
+                  else
+                     srcurl = github + entry.src;
 
                   var saaa = document.createElement( 'a' );
 
