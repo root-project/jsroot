@@ -1376,11 +1376,15 @@
       }
    }
 
+   JSROOT.load = function(kind, debugout) {
+      return new Promise(function(resolve, reject) {
+         JSROOT.AssertPrerequisites(kind, resolve, debugout);
+      });
+   }
+
    // function can be used to open ROOT file, I/O functionality will be loaded when missing
    JSROOT.OpenFile = function(filename, callback) {
-      JSROOT.AssertPrerequisites("io", function() {
-         JSROOT.OpenFile(filename, callback);
-      });
+      return JSROOT.load("io").then(() => JSROOT.OpenFile(filename, callback));
    }
 
    // function can be used to draw supported ROOT classes,

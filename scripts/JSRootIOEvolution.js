@@ -3035,31 +3035,32 @@
    /**
     * @summary Open ROOT file for reading
     *
-    * @desc depending from file location, different class will be created to provide
-    * access to objects from the file
-    * @param {string} filename - name of file to open
-    * @param {File} filename - JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
-    * @param {function} callback - function called with file handle
+    * @desc depending from file location, different TFile sub-class will be provided
+    * @param {string|File} filename - name of file to open or instance of JS object to access local files, see https://developer.mozilla.org/en-US/docs/Web/API/File
+    * @returns {object} - Promise with TFile instance when file is opened
     * @example
-    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root", function(f) {
+    * JSROOT.OpenFile("https://root.cern/js/files/hsimple.root").then((f) => {
     *    console.log("Open file", f.fFileName);
     * });
     */
 
-
    JSROOT.OpenFile = function(filename, callback) {
-      if (JSROOT.nodejs) {
-         if (filename.indexOf("file://")==0)
-            return new TNodejsFile(filename.substr(7), callback);
+      var promise = new Promise(function(resolve, reject) {
+         if (JSROOT.nodejs) {
+            if (filename.indexOf("file://")==0)
+               return new TNodejsFile(filename.substr(7), resolve);
 
-         if (filename.indexOf("http")!==0)
-            return new TNodejsFile(filename, callback);
-      }
+            if (filename.indexOf("http")!==0)
+               return new TNodejsFile(filename, resolve);
+         }
 
-      if (typeof filename === 'object'  && filename.size && filename.name)
-         return new TLocalFile(filename, callback);
+         if (typeof filename === 'object' && filename.size && filename.name)
+            return new TLocalFile(filename, resolve);
 
-      return new TFile(filename, callback);
+         return new TFile(filename, resolve);
+      });
+
+      return callback ? promise.then(callback) : promise;
    }
 
    JSROOT.IO.NativeArray = JSROOT.nodejs || (window && ('Float64Array' in window));
