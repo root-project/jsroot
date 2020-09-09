@@ -27,11 +27,11 @@
 
    /** @memberOf JSROOT.Math */
    JSROOT.Math.lgam = function( x ) {
-      var p, q, u, w, z, i, sgngam = 1;
-      var kMAXLGM  = 2.556348e305;
-      var LS2PI  =  0.91893853320467274178;
+      let p, q, u, w, z, i, sgngam = 1;
+      const kMAXLGM  = 2.556348e305;
+      const LS2PI  =  0.91893853320467274178;
 
-      var A = [
+      const A = [
          8.11614167470508450300E-4,
          -5.95061904284301438324E-4,
          7.93650340457716943945E-4,
@@ -39,7 +39,7 @@
          8.33333333333331927722E-2
       ];
 
-      var B = [
+      const B = [
          -1.37825152569120859100E3,
          -3.88016315134637840924E4,
          -3.31612992738871184744E5,
@@ -48,7 +48,7 @@
          -8.53555664245765465627E5
       ];
 
-      var C = [
+      const C = [
       /* 1.00000000000000000000E0, */
          -3.51815701436523470549E2,
          -1.70642106651881159223E4,
@@ -138,8 +138,8 @@
    JSROOT.Math.Polynomialeval = function(x, a, N) {
       if (N==0) return a[0];
       else {
-         var pom = a[0];
-         for (var i=1; i <= N; ++i)
+         let pom = a[0];
+         for (let i=1; i <= N; ++i)
             pom = pom *x + a[i];
          return pom;
       }
@@ -154,8 +154,8 @@
    JSROOT.Math.Polynomial1eval = function(x, a, N) {
       if (N==0) return a[0];
       else {
-         var pom = x + a[0];
-         for (var i=1; i < N; ++i)
+         let pom = x + a[0];
+         for (let i=1; i < N; ++i)
             pom = pom *x + a[i];
          return pom;
       }
@@ -168,7 +168,7 @@
       if ( y0 >= 1.0 )
          return( Number.POSITIVE_INFINITY );
 
-      var P0 = new Array(
+      const P0 = new Array(
            -5.99633501014107895267E1,
             9.80010754185999661536E1,
            -5.66762857469070293439E1,
@@ -176,7 +176,7 @@
            -1.23916583867381258016E0
       );
 
-      var Q0 = new Array(
+      const Q0 = new Array(
             1.95448858338141759834E0,
             4.67627912898881538453E0,
             8.63602421390890590575E1,
@@ -187,7 +187,7 @@
            -1.18331621121330003142E0
       );
 
-      var P1 = new Array(
+      const P1 = new Array(
             4.05544892305962419923E0,
             3.15251094599893866154E1,
             5.71628192246421288162E1,
@@ -199,7 +199,7 @@
            -8.57456785154685413611E-4
       );
 
-      var Q1 = new Array(
+      const Q1 = new Array(
             1.57799883256466749731E1,
             4.53907635128879210584E1,
             4.13172038254672030440E1,
@@ -210,7 +210,7 @@
            -9.33259480895457427372E-4
       );
 
-      var P2 = new Array(
+      const P2 = new Array(
             3.23774891776946035970E0,
             6.91522889068984211695E0,
             3.93881025292474443415E0,
@@ -222,7 +222,7 @@
             6.23974539184983293730E-9
       );
 
-      var Q2 = new Array(
+      const Q2 = new Array(
             6.02427039364742014255E0,
             3.67983563856160859403E0,
             1.37702099489081330271E0,
@@ -233,10 +233,10 @@
             6.79019408009981274425E-9
       );
 
-      var s2pi = 2.50662827463100050242e0;
-      var code = 1;
-      var y = y0;
-      var x, z, y2, x0, x1;
+      const s2pi = 2.50662827463100050242e0;
+      let code = 1;
+      let y = y0;
+      let x, z, y2, x0, x1;
 
       if ( y > (1.0 - 0.13533528323661269189) ) {
          y = 1.0 - y;
@@ -268,9 +268,9 @@
 
    /** @memberOf JSROOT.Math */
    JSROOT.Math.igam = function(a,x) {
-      var kMACHEP = 1.11022302462515654042363166809e-16;
-      var kMAXLOG = 709.782712893383973096206318587;
-      var ans, ax, c, r;
+      const kMACHEP = 1.11022302462515654042363166809e-16;
+      const kMAXLOG = 709.782712893383973096206318587;
+      let ans, ax, c, r;
 
       // LM: for negative values returns 1.0 instead of zero
       // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -306,14 +306,14 @@
 
    /** @memberOf JSROOT.Math */
    JSROOT.Math.igamc = function(a,x) {
-      var kMACHEP = 1.11022302462515654042363166809e-16;
-      var kMAXLOG = 709.782712893383973096206318587;
+      const kMACHEP = 1.11022302462515654042363166809e-16;
+      const kMAXLOG = 709.782712893383973096206318587;
 
-      var kBig = 4.503599627370496e15;
-      var kBiginv =  2.22044604925031308085e-16;
+      const kBig = 4.503599627370496e15;
+      const kBiginv =  2.22044604925031308085e-16;
 
-      var ans, ax, c, yc, r, t, y, z;
-      var pk, pkm1, pkm2, qk, qkm1, qkm2;
+      let ans, ax, c, yc, r, t, y, z;
+      let pk, pkm1, pkm2, qk, qkm1, qkm2;
 
       // LM: for negative values returns 0.0
       // This is correct if a is a negative integer since Gamma(-n) = +/- inf
@@ -375,8 +375,8 @@
 
    /** @memberOf JSROOT.Math */
    JSROOT.Math.igami = function(a, y0) {
-      var x0, x1, x, yl, yh, y, d, lgm, dithresh, i, dir,
-          kMACHEP = 1.11022302462515654042363166809e-16;
+      let x0, x1, x, yl, yh, y, d, lgm, dithresh, i, dir;
+      const kMACHEP = 1.11022302462515654042363166809e-16;
 
       // check the domain
       if (a <= 0) {
@@ -390,7 +390,7 @@
          return 0;
       }
       /* bound the solution */
-      var kMAXNUM = Number.MAX_VALUE;
+      const kMAXNUM = Number.MAX_VALUE;
       x0 = kMAXNUM;
       yl = 0;
       x1 = 0;
@@ -510,22 +510,22 @@
       // same algorithm is used in GSL
       if (x0===undefined) x0 = 0;
       if (xi <= 0) return 0;
-      var v = (x - x0)/xi;
-      var u, ue, us, denlan;
-      var p1 = new Array(0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253);
-      var q1 = new Array(1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063);
-      var p2 = new Array(0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211);
-      var q2 = new Array(1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714);
-      var p3 = new Array(0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101);
-      var q3 = new Array(1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675);
-      var p4 = new Array(0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186);
-      var q4 = new Array(1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511);
-      var p5 = new Array(1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910);
-      var q5 = new Array(1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357);
-      var p6 = new Array(1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109);
-      var q6 = new Array(1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939);
-      var a1 = new Array(0.04166666667,-0.01996527778, 0.02709538966);
-      var a2 = new Array(-1.845568670,-4.284640743);
+      let v = (x - x0)/xi;
+      let u, ue, us, denlan;
+      const p1 = new Array(0.4259894875,-0.1249762550, 0.03984243700, -0.006298287635,   0.001511162253);
+      const q1 = new Array(1.0         ,-0.3388260629, 0.09594393323, -0.01608042283,    0.003778942063);
+      const p2 = new Array(0.1788541609, 0.1173957403, 0.01488850518, -0.001394989411,   0.0001283617211);
+      const q2 = new Array(1.0         , 0.7428795082, 0.3153932961,   0.06694219548,    0.008790609714);
+      const p3 = new Array(0.1788544503, 0.09359161662,0.006325387654, 0.00006611667319,-0.000002031049101);
+      const q3 = new Array(1.0         , 0.6097809921, 0.2560616665,   0.04746722384,    0.006957301675);
+      const p4 = new Array(0.9874054407, 118.6723273,  849.2794360,   -743.7792444,      427.0262186);
+      const q4 = new Array(1.0         , 106.8615961,  337.6496214,    2016.712389,      1597.063511);
+      const p5 = new Array(1.003675074,  167.5702434,  4789.711289,    21217.86767,     -22324.94910);
+      const q5 = new Array(1.0         , 156.9424537,  3745.310488,    9834.698876,      66924.28357);
+      const p6 = new Array(1.000827619,  664.9143136,  62972.92665,    475554.6998,     -5743609.109);
+      const q6 = new Array(1.0         , 651.4101098,  56974.73333,    165917.4725,     -2815759.939);
+      const a1 = new Array(0.04166666667,-0.01996527778, 0.02709538966);
+      const a2 = new Array(-1.845568670,-4.284640743);
 
       if (v < -5.5) {
          u   = Math.exp(v+1.0);
@@ -566,7 +566,7 @@
    /** @memberOf JSROOT.Math */
    JSROOT.Math.Landau = function(x, mpv, sigma, norm) {
       if (sigma <= 0) return 0;
-      var den = JSROOT.Math.landau_pdf((x - mpv) / sigma, 1, 0);
+      const den = JSROOT.Math.landau_pdf((x - mpv) / sigma, 1, 0);
       if (!norm) return den;
       return den/sigma;
    };
@@ -610,7 +610,7 @@
    JSROOT.Math.chisquared_pdf = function(x,r,x0) {
       if (x0===undefined) x0 = 0;
       if ((x-x0) < 0) return 0.0;
-      var a = r/2 -1.;
+      const a = r/2 -1.;
       // let return inf for case x  = x0 and treat special case of r = 2 otherwise will return nan
       if (x == x0 && a == 0) return 0.5;
 
@@ -702,7 +702,7 @@
          m.R = m.P = function() { return Math.sqrt(this.P2()); }
          m.Mag2 = m.M2 = function() { return this.fT*this.fT - this.fX*this.fX - this.fY*this.fY - this.fZ*this.fZ; }
          m.Mag = m.M = function() {
-            var mm = this.M2();
+            let mm = this.M2();
             if (mm >= 0) return Math.sqrt(mm);
             return -Math.sqrt(-mm);
          }
