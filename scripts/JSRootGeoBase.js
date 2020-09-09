@@ -45,7 +45,7 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.TestBit = function(volume, f) {
-      var att = volume.fGeoAtt;
+      let att = volume.fGeoAtt;
       return att === undefined ? false : ((att & f) !== 0);
    }
 
@@ -70,8 +70,8 @@
       // JSROOT.GEO.SetBit(this, JSROOT.GEO.BITS.kVisDaughters, !flag);
 
       if (this.fNodes)
-         for (var n=0;n<this.fNodes.arr.length;++n) {
-            var sub = this.fNodes.arr[n].fVolume;
+         for (let n=0;n<this.fNodes.arr.length;++n) {
+            let sub = this.fNodes.arr[n].fVolume;
             JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisThis, !flag);
             // JSROOT.GEO.SetBit(sub, JSROOT.GEO.BITS.kVisDaughters, !flag);
          }
@@ -120,7 +120,7 @@
    JSROOT.GEO.GeometryCreator.prototype.AddFace3 = function(x1,y1,z1,
                                                             x2,y2,z2,
                                                             x3,y3,z3) {
-      var indx = this.indx, pos = this.pos;
+      let indx = this.indx, pos = this.pos;
       pos[indx] = x1;
       pos[indx+1] = y1;
       pos[indx+2] = z1;
@@ -146,7 +146,7 @@
       // if (reduce==1), first face is reduced
       // if (reduce==2), second face is reduced
 
-      var indx = this.indx, pos = this.pos;
+      let indx = this.indx, pos = this.pos;
 
       if (reduce!==1) {
          pos[indx] = x1;
@@ -189,7 +189,7 @@
       if (this.last4 && reduce)
          return console.error('missmatch between AddFace4 and SetNormal4 calls');
 
-      var indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
+      let indx = this.indx - (this.last4 ? 18 : 9), norm = this.norm;
 
       if (reduce!==1) {
          norm[indx] = nx1;
@@ -218,7 +218,7 @@
    }
 
    JSROOT.GEO.GeometryCreator.prototype.RecalcZ = function(func) {
-      var pos = this.pos,
+      let pos = this.pos,
           last = this.indx,
           indx = last - (this.last4 ? 18 : 9);
 
@@ -230,7 +230,7 @@
 
    JSROOT.GEO.GetNormal = function(x1,y1,z1,x2,y2,z2,x3,y3,z3) {
 
-      var pA = new THREE.Vector3(x1,y1,z1),
+      let pA = new THREE.Vector3(x1,y1,z1),
           pB = new THREE.Vector3(x2,y2,z2),
           pC = new THREE.Vector3(x3,y3,z3),
           cb = new THREE.Vector3(),
@@ -244,7 +244,7 @@
    }
 
    JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
-      var indx = this.indx, norm = this.norm;
+      let indx = this.indx, norm = this.norm;
 
       if (!this.cb) {
          this.pA = new THREE.Vector3();
@@ -266,7 +266,7 @@
    }
 
    JSROOT.GEO.GeometryCreator.prototype.SetNormal = function(nx,ny,nz) {
-      var indx = this.indx - 9, norm = this.norm;
+      let indx = this.indx - 9, norm = this.norm;
 
       norm[indx]   = norm[indx+3] = norm[indx+6] = nx;
       norm[indx+1] = norm[indx+4] = norm[indx+7] = ny;
@@ -284,7 +284,7 @@
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       if (reduce===undefined) reduce = 0;
 
-      var indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
+      let indx = this.indx - ((reduce>0) ? 9 : 18), norm = this.norm;
 
       if (reduce!==1) {
          norm[indx]   = nx12;
@@ -317,7 +317,7 @@
       if (this.nfaces !== this.indx/9)
          console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
-      var geometry = new THREE.BufferGeometry();
+      let geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
       return geometry;
@@ -371,7 +371,7 @@
 
          if (reduce!==2) console.error('polygon not supported for not-reduced faces');
 
-         var polygon;
+         let polygon;
 
          if (this.multi++ === 1) {
             polygon = new ThreeBSP.Polygon;
@@ -381,14 +381,14 @@
          } else {
             polygon = this.polygons[this.polygons.length-1];
             // check that last vertice equals to v2
-            var last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
+            let last = this.mnormal ? polygon.vertices[polygon.vertices.length-1] : polygon.vertices[0],
                 comp = this.mnormal ? this.v2 : this.v3;
 
             if (comp.diff(last) > 1e-12)
                console.error('vertex missmatch when building polygon');
          }
 
-         var first = this.mnormal ? polygon.vertices[0] : polygon.vertices[polygon.vertices.length-1],
+         let first = this.mnormal ? polygon.vertices[0] : polygon.vertices[polygon.vertices.length-1],
              next = this.mnormal ? this.v3 : this.v2;
 
          if (next.diff(first) < 1e-12) {
@@ -405,7 +405,7 @@
 
       }
 
-      var polygon = new ThreeBSP.Polygon;
+      let polygon = new ThreeBSP.Polygon;
 
       switch (reduce) {
          case 0: polygon.vertices.push(this.v1, this.v2, this.v3, this.v4); break;
@@ -488,9 +488,9 @@
 
       if (faces_limit < 0) return 12;
 
-      var dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
+      let dx = shape.fDX, dy = shape.fDY, dz = shape.fDZ;
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
       creator.AddFace4(dx,dy,dz, dx,-dy,dz, dx,-dy,-dz, dx,dy,-dz); creator.SetNormal(1,0,0);
 
@@ -510,12 +510,12 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.create8edgesBuffer = function( v, faces_limit ) {
 
-      var indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
+      let indicies = [ 4,7,6,5,  0,3,7,4,  4,5,1,0,  6,2,1,5,  7,3,2,6,  1,2,3,0 ];
 
-      var creator = (faces_limit > 0) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
+      let creator = (faces_limit > 0) ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(12);
 
-      for (var n=0;n<indicies.length;n+=4) {
-         var i1 = indicies[n]*3,
+      for (let n=0;n<indicies.length;n+=4) {
+         let i1 = indicies[n]*3,
              i2 = indicies[n+1]*3,
              i3 = indicies[n+2]*3,
              i4 = indicies[n+3]*3;
@@ -533,9 +533,9 @@
 
       if (faces_limit < 0) return 12;
 
-      var txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
+      let txy = shape.fTxy, txz = shape.fTxz, tyz = shape.fTyz;
 
-      var v = [
+      let v = [
           -shape.fZ*txz-txy*shape.fY-shape.fX, -shape.fY-shape.fZ*tyz,  -shape.fZ,
           -shape.fZ*txz+txy*shape.fY-shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
           -shape.fZ*txz+txy*shape.fY+shape.fX,  shape.fY-shape.fZ*tyz,  -shape.fZ,
@@ -553,14 +553,14 @@
 
       if (faces_limit < 0) return 12;
 
-      var y1, y2;
+      let y1, y2;
       if (shape._typename == "TGeoTrd1") {
          y1 = y2 = shape.fDY;
       } else {
          y1 = shape.fDy1; y2 = shape.fDy2;
       }
 
-      var v = [
+      let v = [
             -shape.fDx1,  y1, -shape.fDZ,
              shape.fDx1,  y1, -shape.fDZ,
              shape.fDx1, -y1, -shape.fDZ,
@@ -580,7 +580,7 @@
 
       if (faces_limit < 0) return 12;
 
-      var vertices = [
+      let vertices = [
             shape.fXY[0][0], shape.fXY[0][1], -shape.fDZ,
             shape.fXY[1][0], shape.fXY[1][1], -shape.fDZ,
             shape.fXY[2][0], shape.fXY[2][1], -shape.fDZ,
@@ -596,22 +596,22 @@
             7,3,2,   2,6,7,   1,2,3,   3,0,1 ];
 
       // detect same vertices on both Z-layers
-      for (var side=0;side<vertices.length;side += vertices.length/2)
-         for (var n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
-            for (var n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
+      for (let side=0;side<vertices.length;side += vertices.length/2)
+         for (let n1 = side; n1 < side + vertices.length/2 - 3 ; n1+=3)
+            for (let n2 = n1+3; n2 < side + vertices.length/2 ; n2+=3)
                if ((vertices[n1] === vertices[n2]) &&
                    (vertices[n1+1] === vertices[n2+1]) &&
                    (vertices[n1+2] === vertices[n2+2])) {
-                      for (var k=0;k<indicies.length;++k)
+                      for (let k=0;k<indicies.length;++k)
                         if (indicies[k] === n2/3) indicies[k] = n1/3;
                   }
 
 
-      var map = [], // list of existing faces (with all rotations)
+      let map = [], // list of existing faces (with all rotations)
           numfaces = 0;
 
-      for (var k=0;k<indicies.length;k+=3) {
-         var id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
+      for (let k=0;k<indicies.length;k+=3) {
+         let id1 = indicies[k]*100   + indicies[k+1]*10 + indicies[k+2],
              id2 = indicies[k+1]*100 + indicies[k+2]*10 + indicies[k],
              id3 = indicies[k+2]*100 + indicies[k]*10   + indicies[k+1];
 
@@ -624,12 +624,12 @@
          }
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+      // let creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
-      for (var n=0; n < indicies.length; n+=6) {
-         var i1 = indicies[n]   * 3,
+      for (let n=0; n < indicies.length; n+=6) {
+         let i1 = indicies[n]   * 3,
              i2 = indicies[n+1] * 3,
              i3 = indicies[n+2] * 3,
              i4 = indicies[n+3] * 3,
@@ -641,13 +641,13 @@
             // try to identify two faces with same normal - very useful if one can create face4
             if (n===0) norm = new THREE.Vector3(0,0,1); else
             if (n===30) norm = new THREE.Vector3(0,0,-1); else {
-               var norm1 = JSROOT.GEO.GetNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
+               let norm1 = JSROOT.GEO.GetNormal(vertices[i1], vertices[i1+1], vertices[i1+2],
                                                 vertices[i2], vertices[i2+1], vertices[i2+2],
                                                 vertices[i3], vertices[i3+1], vertices[i3+2]);
 
                norm1.normalize();
 
-               var norm2 = JSROOT.GEO.GetNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
+               let norm2 = JSROOT.GEO.GetNormal(vertices[i4], vertices[i4+1], vertices[i4+2],
                                                 vertices[i5], vertices[i5+1], vertices[i5+2],
                                                 vertices[i6], vertices[i6+1], vertices[i6+2]);
 
@@ -684,7 +684,7 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createSphereBuffer = function( shape, faces_limit ) {
-      var radius = [shape.fRmax, shape.fRmin],
+      let radius = [shape.fRmax, shape.fRmin],
           phiStart = shape.fPhi1,
           phiLength = shape.fPhi2 - shape.fPhi1,
           thetaStart = shape.fTheta1,
@@ -697,7 +697,7 @@
       // phiStart = 0; phiLength = 360; thetaStart = 0;  thetaLength = 180;
 
       if (faces_limit > 0) {
-         var fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
+         let fact = (noInside ? 2 : 4) * widthSegments * heightSegments / faces_limit;
 
          if (fact > 1.) {
             widthSegments = Math.max(4, Math.floor(widthSegments/Math.sqrt(fact)));
@@ -705,7 +705,7 @@
          }
       }
 
-      var numoutside = widthSegments * heightSegments * 2,
+      let numoutside = widthSegments * heightSegments * 2,
           numtop = widthSegments * 2,
           numbottom = widthSegments * 2,
           numcut = phiLength === 360 ? 0 : heightSegments * (noInside ? 2 : 4),
@@ -715,19 +715,19 @@
 
       if (faces_limit < 0) return numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-      var _sinp = new Float32Array(widthSegments+1),
+      let _sinp = new Float32Array(widthSegments+1),
           _cosp = new Float32Array(widthSegments+1),
           _sint = new Float32Array(heightSegments+1),
           _cost = new Float32Array(heightSegments+1);
 
-      for (var n=0;n<=heightSegments;++n) {
-         var theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
+      for (let n=0;n<=heightSegments;++n) {
+         let theta = (thetaStart + thetaLength/heightSegments*n)*Math.PI/180;
          _sint[n] = Math.sin(theta);
          _cost[n] = Math.cos(theta);
       }
 
-      for (var n=0;n<=widthSegments;++n) {
-         var phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
+      for (let n=0;n<=widthSegments;++n) {
+         let phi = (phiStart + phiLength/widthSegments*n)*Math.PI/180;
          _sinp[n] = Math.sin(phi);
          _cosp[n] = Math.cos(phi);
       }
@@ -735,29 +735,29 @@
       if (Math.abs(_sint[0]) <= epsilon) { numoutside -= widthSegments; numtop = 0; }
       if (Math.abs(_sint[heightSegments]) <= epsilon) { numoutside -= widthSegments; numbottom = 0; }
 
-      var numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
+      let numfaces = numoutside * (noInside ? 1 : 2) + numtop + numbottom + numcut;
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      // var creator = new JSROOT.GEO.GeometryCreator(numfaces);
+      // let creator = new JSROOT.GEO.GeometryCreator(numfaces);
 
-      for (var side=0;side<2;++side) {
+      for (let side=0;side<2;++side) {
          if ((side===1) && noInside) break;
 
-         var r = radius[side],
+         let r = radius[side],
              s = (side===0) ? 1 : -1,
              d1 = 1 - side, d2 = 1 - d1;
 
          // use direct algorithm for the sphere - here normals and position can be calculated directly
-         for (var k=0;k<heightSegments;++k) {
+         for (let k=0;k<heightSegments;++k) {
 
-            var k1 = k + d1, k2 = k + d2;
+            let k1 = k + d1, k2 = k + d2;
 
-            var skip = 0;
+            let skip = 0;
             if (Math.abs(_sint[k1]) <= epsilon) skip = 1; else
             if (Math.abs(_sint[k2]) <= epsilon) skip = 2;
 
-            for (var n=0;n<widthSegments;++n) {
+            for (let n=0;n<widthSegments;++n) {
                creator.AddFace4(
                      r*_sint[k1]*_cosp[n],   r*_sint[k1] *_sinp[n],   r*_cost[k1],
                      r*_sint[k1]*_cosp[n+1], r*_sint[k1] *_sinp[n+1], r*_cost[k1],
@@ -775,11 +775,11 @@
       }
 
       // top/bottom
-      for (var side=0; side<=heightSegments; side+=heightSegments)
+      for (let side=0; side<=heightSegments; side+=heightSegments)
          if (Math.abs(_sint[side]) >= epsilon) {
-            var ss = _sint[side], cc = _cost[side],
+            let ss = _sint[side], cc = _cost[side],
                 d1 = (side===0) ? 0 : 1, d2 = 1 - d1;
-            for (var n=0;n<widthSegments;++n) {
+            for (let n=0;n<widthSegments;++n) {
                creator.AddFace4(
                      radius[1] * ss * _cosp[n+d1], radius[1] * ss * _sinp[n+d1], radius[1] * cc,
                      radius[0] * ss * _cosp[n+d1], radius[0] * ss * _sinp[n+d1], radius[0] * cc,
@@ -792,11 +792,11 @@
 
       // cut left/right sides
       if (phiLength < 360) {
-         for (var side=0;side<=widthSegments;side+=widthSegments) {
-            var ss = _sinp[side], cc = _cosp[side],
+         for (let side=0;side<=widthSegments;side+=widthSegments) {
+            let ss = _sinp[side], cc = _cosp[side],
                 d1 = (side === 0) ? 1 : 0, d2 = 1 - d1;
 
-            for (var k=0;k<heightSegments;++k) {
+            for (let k=0;k<heightSegments;++k) {
                creator.AddFace4(
                      radius[1] * _sint[k+d1] * cc, radius[1] * _sint[k+d1] * ss, radius[1] * _cost[k+d1],
                      radius[0] * _sint[k+d1] * cc, radius[0] * _sint[k+d1] * ss, radius[0] * _cost[k+d1],
@@ -813,7 +813,7 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTubeBuffer = function( shape, faces_limit) {
-      var outerR, innerR; // inner/outer tube radius
+      let outerR, innerR; // inner/outer tube radius
       if ((shape._typename == "TGeoCone") || (shape._typename == "TGeoConeSeg")) {
          outerR = [ shape.fRmax2, shape.fRmax1 ];
          innerR = [ shape.fRmin2, shape.fRmin1 ];
@@ -822,7 +822,7 @@
          innerR = [ shape.fRmin, shape.fRmin ];
       }
 
-      var hasrmin = (innerR[0] > 0) || (innerR[1] > 0),
+      let hasrmin = (innerR[0] > 0) || (innerR[1] > 0),
           thetaStart = 0, thetaLength = 360;
 
       if ((shape._typename == "TGeoConeSeg") || (shape._typename == "TGeoTubeSeg") || (shape._typename == "TGeoCtub")) {
@@ -830,10 +830,10 @@
          thetaLength = shape.fPhi2 - shape.fPhi1;
       }
 
-      var radiusSegments = Math.max(4, Math.round(thetaLength/JSROOT.GEO.GradPerSegm));
+      let radiusSegments = Math.max(4, Math.round(thetaLength/JSROOT.GEO.GradPerSegm));
 
       // external surface
-      var numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
+      let numfaces = radiusSegments * (((outerR[0] <= 0) || (outerR[1] <= 0)) ? 1 : 2);
 
       // internal surface
       if (hasrmin)
@@ -849,45 +849,45 @@
 
       if (faces_limit < 0) return numfaces;
 
-      var phi0 = thetaStart*Math.PI/180,
+      let phi0 = thetaStart*Math.PI/180,
           dphi = thetaLength/radiusSegments*Math.PI/180,
           _sin = new Float32Array(radiusSegments+1),
           _cos = new Float32Array(radiusSegments+1);
 
-      for (var seg=0; seg<=radiusSegments; ++seg) {
+      for (let seg=0; seg<=radiusSegments; ++seg) {
          _cos[seg] = Math.cos(phi0+seg*dphi);
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      var calcZ;
+      let calcZ;
       if (shape._typename == "TGeoCtub")
          calcZ = function(x,y,z) {
-            var arr = (z<0) ? shape.fNlow : shape.fNhigh;
+            let arr = (z<0) ? shape.fNlow : shape.fNhigh;
             return ((z<0) ? -shape.fDz : shape.fDz) - (x*arr[0] + y*arr[1]) / arr[2];
          }
 
       // create outer/inner tube
-      for (var side = 0; side<2; ++side) {
+      for (let side = 0; side<2; ++side) {
          if ((side === 1) && !hasrmin) break;
 
-         var R = (side === 0) ? outerR : innerR,
+         let R = (side === 0) ? outerR : innerR,
              d1 = side, d2 = 1 - side, nxy = 1., nz = 0;
 
          if (R[0] !== R[1]) {
-            var angle = Math.atan2((R[1]-R[0]), 2*shape.fDZ);
+            let angle = Math.atan2((R[1]-R[0]), 2*shape.fDZ);
             nxy = Math.cos(angle);
             nz = Math.sin(angle);
          }
 
          if (side === 1) { nxy *= -1; nz *= -1; };
 
-         var reduce = 0;
+         let reduce = 0;
          if (R[0] <= 0) reduce = 2; else
          if (R[1] <= 0) reduce = 1;
 
-         for (var seg=0;seg<radiusSegments;++seg) {
+         for (let seg=0;seg<radiusSegments;++seg) {
             creator.AddFace4(
                   R[0] * _cos[seg+d1], R[0] * _sin[seg+d1],  shape.fDZ,
                   R[1] * _cos[seg+d1], R[1] * _sin[seg+d1], -shape.fDZ,
@@ -904,14 +904,14 @@
       }
 
       // create upper/bottom part
-      for (var side = 0; side<2; ++side) {
+      for (let side = 0; side<2; ++side) {
          if (outerR[side] <= 0) continue;
 
-         var d1 = side, d2 = 1- side,
+         let d1 = side, d2 = 1- side,
              sign = (side == 0) ? 1 : -1,
              reduce = (innerR[side] <= 0) ? 2 : 0;
          if ((reduce==2) && (thetaLength === 360) && !calcZ) creator.StartPolygon(side===0);
-         for (var seg=0;seg<radiusSegments;++seg) {
+         for (let seg=0;seg<radiusSegments;++seg) {
             creator.AddFace4(
                   innerR[side] * _cos[seg+d1], innerR[side] * _sin[seg+d1], sign*shape.fDZ,
                   outerR[side] * _cos[seg+d1], outerR[side] * _sin[seg+d1], sign*shape.fDZ,
@@ -954,24 +954,24 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createEltuBuffer = function( shape , faces_limit ) {
-      var radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm));
+      let radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm));
 
       if (faces_limit < 0) return radiusSegments*4;
 
       // calculate all sin/cos tables in advance
-      var x = new Float32Array(radiusSegments+1),
+      let x = new Float32Array(radiusSegments+1),
           y = new Float32Array(radiusSegments+1);
-      for (var seg=0; seg<=radiusSegments; ++seg) {
-          var phi = seg/radiusSegments*2*Math.PI;
+      for (let seg=0; seg<=radiusSegments; ++seg) {
+          let phi = seg/radiusSegments*2*Math.PI;
           x[seg] = shape.fRmin*Math.cos(phi);
           y[seg] = shape.fRmax*Math.sin(phi);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(radiusSegments*4),
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(radiusSegments*4),
           nx1 = 1, ny1 = 0, nx2 = 1, ny2 = 0;
 
       // create tube faces
-      for (var seg=0; seg<radiusSegments; ++seg) {
+      for (let seg=0; seg<radiusSegments; ++seg) {
          creator.AddFace4(x[seg],   y[seg],   +shape.fDZ,
                           x[seg],   y[seg],   -shape.fDZ,
                           x[seg+1], y[seg+1], -shape.fDZ,
@@ -981,16 +981,16 @@
          nx1 = nx2; ny1 = ny2;
          nx2 = x[seg+1] * shape.fRmax / shape.fRmin;
          ny2 = y[seg+1] * shape.fRmin / shape.fRmax;
-         var dist = Math.sqrt(nx2*nx2 + ny2*ny2);
+         let dist = Math.sqrt(nx2*nx2 + ny2*ny2);
          nx2 = nx2 / dist; ny2 = ny2/dist;
 
          creator.SetNormal_12_34(nx1,ny1,0,nx2,ny2,0);
       }
 
       // create top/bottom sides
-      for (var side=0;side<2;++side) {
-         var sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
-         for (var seg=0; seg<radiusSegments; ++seg) {
+      for (let side=0;side<2;++side) {
+         let sign = (side===0) ? 1 : -1, d1 = side, d2 = 1 - side;
+         for (let seg=0; seg<radiusSegments; ++seg) {
             creator.AddFace3(0,          0,          sign*shape.fDZ,
                              x[seg+d1],  y[seg+d1],  sign*shape.fDZ,
                              x[seg+d2],  y[seg+d2],  sign*shape.fDZ);
@@ -1003,11 +1003,11 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTorusBuffer = function( shape, faces_limit ) {
-      var radius = shape.fR,
+      let radius = shape.fR,
           radialSegments = Math.max(6, Math.round(360/JSROOT.GEO.GradPerSegm)),
           tubularSegments = Math.max(8, Math.round(shape.fDphi/JSROOT.GEO.GradPerSegm));
 
-      var numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
+      let numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
 
       if (faces_limit < 0) return numfaces;
 
@@ -1017,40 +1017,40 @@
          numfaces = (shape.fRmin > 0 ? 4 : 2) * radialSegments * (tubularSegments + (shape.fDphi !== 360 ? 1 : 0));
       }
 
-      var _sinr = new Float32Array(radialSegments+1),
+      let _sinr = new Float32Array(radialSegments+1),
           _cosr = new Float32Array(radialSegments+1),
           _sint = new Float32Array(tubularSegments+1),
           _cost = new Float32Array(tubularSegments+1);
 
-      for (var n=0;n<=radialSegments;++n) {
+      for (let n=0;n<=radialSegments;++n) {
          _sinr[n] = Math.sin(n/radialSegments*2*Math.PI);
          _cosr[n] = Math.cos(n/radialSegments*2*Math.PI);
       }
 
-      for (var t=0;t<=tubularSegments;++t) {
-         var angle = (shape.fPhi1 + shape.fDphi*t/tubularSegments)/180*Math.PI;
+      for (let t=0;t<=tubularSegments;++t) {
+         let angle = (shape.fPhi1 + shape.fDphi*t/tubularSegments)/180*Math.PI;
          _sint[t] = Math.sin(angle);
          _cost[t] = Math.cos(angle);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // use vectors for normals calculation
-      var p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
+      let p1 = new THREE.Vector3(), p2 = new THREE.Vector3(), p3 = new THREE.Vector3(), p4 = new THREE.Vector3(),
           n1 = new THREE.Vector3(), n2 = new THREE.Vector3(), n3 = new THREE.Vector3(), n4 = new THREE.Vector3(),
           center1 = new THREE.Vector3(), center2 = new THREE.Vector3();
 
-      for (var side=0;side<2;++side) {
+      for (let side=0;side<2;++side) {
          if ((side > 0) && (shape.fRmin <= 0)) break;
-         var tube = (side > 0) ? shape.fRmin : shape.fRmax,
+         let tube = (side > 0) ? shape.fRmin : shape.fRmax,
              d1 = 1 - side, d2 = 1 - d1, ns = side>0 ? -1 : 1;
 
-         for (var t=0;t<tubularSegments;++t) {
-            var t1 = t + d1, t2 = t + d2;
+         for (let t=0;t<tubularSegments;++t) {
+            let t1 = t + d1, t2 = t + d2;
             center1.x = radius * _cost[t1]; center1.y = radius * _sint[t1];
             center2.x = radius * _cost[t2]; center2.y = radius * _sint[t2];
 
-            for (var n=0;n<radialSegments;++n) {
+            for (let n=0;n<radialSegments;++n) {
                p1.x = (radius + tube * _cosr[n])   * _cost[t1]; p1.y = (radius + tube * _cosr[n])   * _sint[t1]; p1.z = tube*_sinr[n];
                p2.x = (radius + tube * _cosr[n+1]) * _cost[t1]; p2.y = (radius + tube * _cosr[n+1]) * _sint[t1]; p2.z = tube*_sinr[n+1];
                p3.x = (radius + tube * _cosr[n+1]) * _cost[t2]; p3.y = (radius + tube * _cosr[n+1]) * _sint[t2]; p3.z = tube*_sinr[n+1];
@@ -1075,12 +1075,12 @@
       }
 
       if (shape.fDphi !== 360)
-         for (var t=0;t<=tubularSegments;t+=tubularSegments) {
-            var tube1 = shape.fRmax, tube2 = shape.fRmin,
+         for (let t=0;t<=tubularSegments;t+=tubularSegments) {
+            let tube1 = shape.fRmax, tube2 = shape.fRmin,
                 d1 = (t>0) ? 0 : 1, d2 = 1 - d1,
                 skip = (shape.fRmin) > 0 ?  0 : 1,
                 nsign = t>0 ? 1 : -1;
-            for (var n=0;n<radialSegments;++n) {
+            for (let n=0;n<radialSegments;++n) {
                creator.AddFace4((radius + tube1 * _cosr[n+d1]) * _cost[t], (radius + tube1 * _cosr[n+d1]) * _sint[t], tube1*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d1]) * _cost[t], (radius + tube2 * _cosr[n+d1]) * _sint[t], tube2*_sinr[n+d1],
                                 (radius + tube2 * _cosr[n+d2]) * _cost[t], (radius + tube2 * _cosr[n+d2]) * _sint[t], tube2*_sinr[n+d2],
@@ -1095,7 +1095,7 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createPolygonBuffer = function( shape, faces_limit ) {
-      var thetaStart = shape.fPhi1,
+      let thetaStart = shape.fPhi1,
           thetaLength = shape.fDphi,
           radiusSegments = 60, factor = 1;
 
@@ -1106,25 +1106,25 @@
          radiusSegments = Math.max(5, Math.round(thetaLength/JSROOT.GEO.GradPerSegm));
       }
 
-      var usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
+      let usage = new Int16Array(2*shape.fNz), numusedlayers = 0, hasrmin = false;
 
-      for (var layer=0; layer < shape.fNz; ++layer)
+      for (let layer=0; layer < shape.fNz; ++layer)
          if (shape.fRmin[layer] > 0) hasrmin = true;
 
       // return very rough estimation, number of faces may be much less
       if (faces_limit < 0) return (hasrmin ? 4 : 2) * radiusSegments * (shape.fNz-1);
 
       // coordinate of point on cut edge (x,z)
-      var pnts = (thetaLength === 360) ? null : [];
+      let pnts = (thetaLength === 360) ? null : [];
 
       // first analyse levels - if we need to create all of them
-      for (var side = 0; side < 2; ++side) {
-         var rside = (side === 0) ? 'fRmax' : 'fRmin';
+      for (let side = 0; side < 2; ++side) {
+         let rside = (side === 0) ? 'fRmax' : 'fRmin';
 
-         for (var layer=0; layer < shape.fNz; ++layer) {
+         for (let layer=0; layer < shape.fNz; ++layer) {
 
             // first create points for the layer
-            var layerz = shape.fZ[layer], rad = shape[rside][layer];
+            let layerz = shape.fZ[layer], rad = shape[rside][layer];
 
             usage[layer*2+side] = 0;
 
@@ -1153,19 +1153,19 @@
          }
       }
 
-      var numfaces = numusedlayers*radiusSegments*2;
+      let numfaces = numusedlayers*radiusSegments*2;
       if (shape.fRmin[0] !== shape.fRmax[0]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
       if (shape.fRmin[shape.fNz-1] !== shape.fRmax[shape.fNz-1]) numfaces += radiusSegments * (hasrmin ? 2 : 1);
 
-      var cut_faces = null;
+      let cut_faces = null;
 
       if (pnts!==null) {
          if (pnts.length === shape.fNz * 2) {
             // special case - all layers are there, create faces ourself
             cut_faces = [];
-            for (var layer = shape.fNz-1; layer>0; --layer) {
+            for (let layer = shape.fNz-1; layer>0; --layer) {
                if (shape.fZ[layer] === shape.fZ[layer-1]) continue;
-               var right = 2*shape.fNz - 1 - layer;
+               let right = 2*shape.fNz - 1 - layer;
                cut_faces.push([right, layer - 1, layer]);
                cut_faces.push([right, right + 1, layer-1]);
             }
@@ -1178,40 +1178,40 @@
          numfaces += cut_faces.length*2;
       }
 
-      var phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
+      let phi0 = thetaStart*Math.PI/180, dphi = thetaLength/radiusSegments*Math.PI/180;
 
       // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments+1),
+      let _sin = new Float32Array(radiusSegments+1),
           _cos = new Float32Array(radiusSegments+1);
-      for (var seg=0;seg<=radiusSegments;++seg) {
+      for (let seg=0;seg<=radiusSegments;++seg) {
          _cos[seg] = Math.cos(phi0+seg*dphi);
          _sin[seg] = Math.sin(phi0+seg*dphi);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // add sides
-      for (var side = 0; side < 2; ++side) {
-         var rside = (side === 0) ? 'fRmax' : 'fRmin',
+      for (let side = 0; side < 2; ++side) {
+         let rside = (side === 0) ? 'fRmax' : 'fRmin',
              z1 = shape.fZ[0], r1 = factor*shape[rside][0],
              d1 = 1 - side, d2 = side;
 
-         for (var layer=0; layer < shape.fNz; ++layer) {
+         for (let layer=0; layer < shape.fNz; ++layer) {
 
             if (usage[layer*2+side] === 0) continue;
 
-            var z2 = shape.fZ[layer], r2 = factor*shape[rside][layer],
+            let z2 = shape.fZ[layer], r2 = factor*shape[rside][layer],
                 nxy = 1, nz = 0;
 
             if ((r2 !== r1)) {
-               var angle = Math.atan2((r2-r1), (z2-z1));
+               let angle = Math.atan2((r2-r1), (z2-z1));
                nxy = Math.cos(angle);
                nz = Math.sin(angle);
             }
 
             if (side>0) { nxy*=-1; nz*=-1; }
 
-            for (var seg=0;seg < radiusSegments;++seg) {
+            for (let seg=0;seg < radiusSegments;++seg) {
                creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                                 r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                                 r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
@@ -1224,19 +1224,19 @@
       }
 
       // add top/bottom
-      for (var layer=0; layer < shape.fNz; layer += (shape.fNz-1)) {
+      for (let layer=0; layer < shape.fNz; layer += (shape.fNz-1)) {
 
-         var rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
+         let rmin = factor*shape.fRmin[layer], rmax = factor*shape.fRmax[layer];
 
          if (rmin === rmax) continue;
 
-         var layerz = shape.fZ[layer],
+         let layerz = shape.fZ[layer],
              d1 = (layer===0) ? 1 : 0, d2 = 1 - d1,
              normalz = (layer===0) ? -1: 1;
 
          if (!hasrmin && !cut_faces) creator.StartPolygon(layer>0);
 
-         for (var seg=0;seg < radiusSegments;++seg) {
+         for (let seg=0;seg < radiusSegments;++seg) {
             creator.AddFace4(rmin * _cos[seg+d1], rmin * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d1], rmax * _sin[seg+d1], layerz,
                              rmax * _cos[seg+d2], rmax * _sin[seg+d2], layerz,
@@ -1249,10 +1249,10 @@
       }
 
       if (cut_faces)
-         for (var seg = 0; seg <= radiusSegments; seg += radiusSegments) {
-            var d1 = (seg === 0) ? 1 : 2, d2 = 3 - d1;
-            for (var n=0;n<cut_faces.length;++n) {
-               var a = pnts[cut_faces[n][0]],
+         for (let seg = 0; seg <= radiusSegments; seg += radiusSegments) {
+            let d1 = (seg === 0) ? 1 : 2, d2 = 3 - d1;
+            for (let n=0;n<cut_faces.length;++n) {
+               let a = pnts[cut_faces[n][0]],
                    b = pnts[cut_faces[n][d1]],
                    c = pnts[cut_faces[n][d2]];
 
@@ -1269,17 +1269,17 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createXtruBuffer = function( shape, faces_limit ) {
-      var nfaces = (shape.fNz-1) * shape.fNvert * 2;
+      let nfaces = (shape.fNz-1) * shape.fNvert * 2;
 
       if (faces_limit < 0) return nfaces + shape.fNvert*3;
 
       // create points
-      var pnts = [];
-      for (var vert = 0; vert < shape.fNvert; ++vert)
+      let pnts = [];
+      for (let vert = 0; vert < shape.fNvert; ++vert)
          pnts.push(new THREE.Vector2(shape.fX[vert], shape.fY[vert]));
 
       // console.log('triangulate Xtru ' + shape.fShapeId);
-      var faces = THREE.ShapeUtils.triangulateShape(pnts , []);
+      let faces = THREE.ShapeUtils.triangulateShape(pnts , []);
       if (faces.length < pnts.length-2) {
          JSROOT.GEO.warn('Problem with XTRU shape ' +shape.fName + ' with ' + pnts.length + ' vertices');
          faces = [];
@@ -1287,16 +1287,16 @@
          nfaces += faces.length * 2;
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(nfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(nfaces);
 
-      for (var layer = 0; layer < shape.fNz-1; ++layer) {
-         var z1 = shape.fZ[layer], scale1 = shape.fScale[layer],
+      for (let layer = 0; layer < shape.fNz-1; ++layer) {
+         let z1 = shape.fZ[layer], scale1 = shape.fScale[layer],
              z2 = shape.fZ[layer+1], scale2 = shape.fScale[layer+1],
              x01 = shape.fX0[layer], x02 = shape.fX0[layer+1],
              y01 = shape.fY0[layer], y02 = shape.fY0[layer+1];
 
-         for (var vert1 = 0; vert1 < shape.fNvert; ++vert1) {
-            var vert2 = (vert1+1) % shape.fNvert;
+         for (let vert1 = 0; vert1 < shape.fNvert; ++vert1) {
+            let vert2 = (vert1+1) % shape.fNvert;
             creator.AddFace4(scale1 * shape.fX[vert1] + x01, scale1 * shape.fY[vert1] + y01, z1,
                              scale2 * shape.fX[vert1] + x02, scale2 * shape.fY[vert1] + y02, z2,
                              scale2 * shape.fX[vert2] + x02, scale2 * shape.fY[vert2] + y02, z2,
@@ -1309,8 +1309,8 @@
          var z = shape.fZ[layer], scale = shape.fScale[layer],
              x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
-         for (var n=0;n<faces.length;++n) {
-            var face = faces[n],
+         for (let n=0;n<faces.length;++n) {
+            let face = faces[n],
                 pnt1 = pnts[face[0]],
                 pnt2 = pnts[face[(layer===0) ? 2 : 1]],
                 pnt3 = pnts[face[(layer===0) ? 1 : 2]];
@@ -1328,18 +1328,18 @@
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createParaboloidBuffer = function( shape, faces_limit ) {
 
-      var radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm)),
+      let radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm)),
           heightSegments = 30;
 
       if (faces_limit > 0) {
-         var fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
+         let fact = 2*radiusSegments*(heightSegments+1) / faces_limit;
          if (fact > 1.) {
             radiusSegments = Math.max(5, Math.floor(radiusSegments/Math.sqrt(fact)));
             heightSegments = Math.max(5, Math.floor(heightSegments/Math.sqrt(fact)));
          }
       }
 
-      var zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
+      let zmin = -shape.fDZ, zmax = shape.fDZ, rmin = shape.fRlo, rmax = shape.fRhi;
 
       // if no radius at -z, find intersection
       if (shape.fA >= 0) {
@@ -1348,29 +1348,29 @@
          if (shape.fB < zmax) zmax = shape.fB;
       }
 
-      var ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
+      let ttmin = Math.atan2(zmin, rmin), ttmax = Math.atan2(zmax, rmax);
 
-      var numfaces = (heightSegments+1)*radiusSegments*2;
+      let numfaces = (heightSegments+1)*radiusSegments*2;
       if (rmin===0) numfaces -= radiusSegments*2; // complete layer
       if (rmax===0) numfaces -= radiusSegments*2; // complete layer
 
       if (faces_limit < 0) return numfaces;
 
       // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments+1),
+      let _sin = new Float32Array(radiusSegments+1),
           _cos = new Float32Array(radiusSegments+1);
-      for (var seg=0;seg<=radiusSegments;++seg) {
+      for (let seg=0;seg<=radiusSegments;++seg) {
          _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
          _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      var lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
+      let lastz = zmin, lastr = 0, lastnxy = 0, lastnz = -1;
 
-      for (var layer = 0; layer <= heightSegments + 1; ++layer) {
+      for (let layer = 0; layer <= heightSegments + 1; ++layer) {
 
-         var layerz = 0, radius = 0, nxy = 0, nz = -1;
+         let layerz = 0, radius = 0, nxy = 0, nz = -1;
 
          if ((layer === 0) && (rmin===0)) continue;
 
@@ -1381,8 +1381,8 @@
             case heightSegments: layerz = zmax; radius = rmax; break;
             case heightSegments + 1: layerz = zmax; radius = 0; break;
             default: {
-               var tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
-               var delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
+               let tt = Math.tan(ttmin + (ttmax-ttmin) * layer / heightSegments);
+               let delta = tt*tt - 4*shape.fA*shape.fB; // should be always positive (a*b<0)
                radius = 0.5*(tt+Math.sqrt(delta))/shape.fA;
                if (radius < 1e-6) radius = 0;
                layerz = radius*tt;
@@ -1392,11 +1392,11 @@
          nxy = shape.fA * radius;
          nz = (shape.fA > 0) ? -1 : 1;
 
-         var skip = 0;
+         let skip = 0;
          if (lastr === 0) skip = 1; else
          if (radius === 0) skip = 2;
 
-         for (var seg=0; seg<radiusSegments; ++seg) {
+         for (let seg=0; seg<radiusSegments; ++seg) {
             creator.AddFace4(radius*_cos[seg],   radius*_sin[seg], layerz,
                              lastr*_cos[seg],    lastr*_sin[seg], lastz,
                              lastr*_cos[seg+1],  lastr*_sin[seg+1], lastz,
@@ -1426,10 +1426,10 @@
       if ((shape.fTin===0) && (shape.fTout===0))
          return JSROOT.GEO.createTubeBuffer(shape, faces_limit);
 
-      var radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm)),
+      let radiusSegments = Math.max(4, Math.round(360/JSROOT.GEO.GradPerSegm)),
           heightSegments = 30;
 
-      var numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
+      let numfaces = radiusSegments * (heightSegments + 1) * ((shape.fRmin > 0) ? 4 : 2);
 
       if (faces_limit < 0) return numfaces;
 
@@ -1440,30 +1440,30 @@
       }
 
       // calculate all sin/cos tables in advance
-      var _sin = new Float32Array(radiusSegments+1), _cos = new Float32Array(radiusSegments+1);
-      for (var seg=0;seg<=radiusSegments;++seg) {
+      let _sin = new Float32Array(radiusSegments+1), _cos = new Float32Array(radiusSegments+1);
+      for (let seg=0;seg<=radiusSegments;++seg) {
          _cos[seg] = Math.cos(seg/radiusSegments*2*Math.PI);
          _sin[seg] = Math.sin(seg/radiusSegments*2*Math.PI);
       }
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
       // in-out side
-      for (var side=0;side<2;++side) {
+      for (let side=0;side<2;++side) {
          if ((side > 0) && (shape.fRmin <= 0)) break;
 
-         var r0 = (side > 0) ? shape.fRmin : shape.fRmax,
+         let r0 = (side > 0) ? shape.fRmin : shape.fRmax,
              tsq = (side > 0) ? shape.fTinsq : shape.fToutsq,
              d1 = 1- side, d2 = 1 - d1;
 
          // vertical layers
-         for (var layer=0;layer<heightSegments;++layer) {
-            var z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
+         for (let layer=0;layer<heightSegments;++layer) {
+            let z1 = -shape.fDz + layer/heightSegments*2*shape.fDz,
                 z2 = -shape.fDz + (layer+1)/heightSegments*2*shape.fDz,
                 r1 = Math.sqrt(r0*r0+tsq*z1*z1),
                 r2 = Math.sqrt(r0*r0+tsq*z2*z2);
 
-            for (var seg=0; seg<radiusSegments; ++seg) {
+            for (let seg=0; seg<radiusSegments; ++seg) {
                creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z1,
                                 r2 * _cos[seg+d1], r2 * _sin[seg+d1], z2,
                                 r2 * _cos[seg+d2], r2 * _sin[seg+d2], z2,
@@ -1474,13 +1474,13 @@
       }
 
       // add caps
-      for(var layer=0; layer<2; ++layer) {
-         var z = (layer === 0) ? shape.fDz : -shape.fDz,
+      for(let layer=0; layer<2; ++layer) {
+         let z = (layer === 0) ? shape.fDz : -shape.fDz,
              r1 = Math.sqrt(shape.fRmax*shape.fRmax + shape.fToutsq*z*z),
              r2 = (shape.fRmin > 0) ? Math.sqrt(shape.fRmin*shape.fRmin + shape.fTinsq*z*z) : 0,
              skip = (shape.fRmin > 0) ? 0 : 1,
              d1 = 1 - layer, d2 = 1 - d1;
-          for (var seg=0; seg<radiusSegments; ++seg) {
+          for (let seg=0; seg<radiusSegments; ++seg) {
              creator.AddFace4(r1 * _cos[seg+d1], r1 * _sin[seg+d1], z,
                               r2 * _cos[seg+d1], r2 * _sin[seg+d1], z,
                               r2 * _cos[seg+d2], r2 * _sin[seg+d2], z,
@@ -1495,26 +1495,26 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.createTessellatedBuffer = function( shape, faces_limit) {
-      var numfaces = 0;
+      let numfaces = 0;
 
-      for (var i = 0; i < shape.fFacets.length; ++i) {
-         var f = shape.fFacets[i];
+      for (let i = 0; i < shape.fFacets.length; ++i) {
+         let f = shape.fFacets[i];
          if (f.fNvert == 4) numfaces += 2;
                        else numfaces += 1;
       }
 
       if (faces_limit < 0) return numfaces;
 
-      var creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
+      let creator = faces_limit ? new JSROOT.GEO.PolygonsCreator : new JSROOT.GEO.GeometryCreator(numfaces);
 
-      for (var i = 0; i < shape.fFacets.length; ++i) {
-         var f = shape.fFacets[i],
+      for (let i = 0; i < shape.fFacets.length; ++i) {
+         let f = shape.fFacets[i],
              v0 = shape.fVertices[f.fIvert[0]].fVec,
              v1 = shape.fVertices[f.fIvert[1]].fVec,
              v2 = shape.fVertices[f.fIvert[2]].fVec;
 
          if (f.fNvert == 4) {
-            var v3 = shape.fVertices[f.fIvert[3]].fVec;
+            let v3 = shape.fVertices[f.fIvert[3]].fVec;
             creator.AddFace4(v0[0], v0[1], v0[2], v1[0], v1[1], v1[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
             creator.CalcNormal();
          } else {
@@ -1531,7 +1531,7 @@
 
       if (!matrix) return null;
 
-      var translation = null, rotation = null, scale = null;
+      let translation = null, rotation = null, scale = null;
 
       switch (matrix._typename) {
          case 'TGeoTranslation': translation = matrix.fTranslation; break;
@@ -1556,7 +1556,7 @@
 
       if (!translation && !rotation && !scale) return null;
 
-      var res = new THREE.Matrix4();
+      let res = new THREE.Matrix4();
 
       if (rotation)
          res.set(rotation[0], rotation[1], rotation[2],  0,
@@ -1578,7 +1578,7 @@
       // returns transformation matrix for the node
       // created after node visibility flag is checked and volume cut is performed
 
-      var matrix = null;
+      let matrix = null;
 
       if (kind === 1) {
          // special handling for EVE nodes
@@ -1596,7 +1596,7 @@
       } else if (node.fMatrix) {
          matrix = JSROOT.GEO.createMatrix(node.fMatrix);
       } else if ((node._typename == "TGeoNodeOffset") && node.fFinder) {
-         var kPatternReflected = JSROOT.BIT(14);
+         let kPatternReflected = JSROOT.BIT(14);
          if ((node.fFinder.fBits & kPatternReflected) !== 0)
             JSROOT.GEO.warn('Unsupported reflected pattern ' + node.fFinder._typename);
 
@@ -1612,7 +1612,7 @@
            case 'TGeoPatternParaX':
            case 'TGeoPatternParaY':
            case 'TGeoPatternParaZ':
-              var _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
+              let _shift = node.fFinder.fStart + (node.fIndex + 0.5) * node.fFinder.fStep;
 
               matrix = new THREE.Matrix4();
 
@@ -1624,7 +1624,7 @@
               break;
 
            case 'TGeoPatternCylPhi':
-              var phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
+              let phi = (Math.PI/180)*(node.fFinder.fStart+(node.fIndex+0.5)*node.fFinder.fStep),
                   _cos = Math.cos(phi), _sin = Math.sin(phi);
 
               matrix = new THREE.Matrix4();
@@ -1641,7 +1641,7 @@
                break;
 
            case 'TGeoPatternTrapZ':
-              var dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
+              let dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
               matrix = new THREE.Matrix4();
               matrix.setPosition(new THREE.Vector3(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz));
               break;
@@ -1659,17 +1659,17 @@
    JSROOT.GEO.createComposite = function ( shape, faces_limit ) {
       /*
       if ((faces_limit === -1) || (faces_limit === 0))  {
-         var cnt = JSROOT.GEO.CountNumShapes(shape);
+         let cnt = JSROOT.GEO.CountNumShapes(shape);
 
          if (cnt > JSROOT.GEO.CompLimit) {
             JSROOT.GEO.warn("composite shape " + shape.fShapeId + " has " + cnt + " components, replace by most left");
-            var matrix = new THREE.Matrix4();
+            let matrix = new THREE.Matrix4();
             while (shape.fNode && shape.fNode.fLeft) {
-               var m1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
+               let m1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat);
                if (m1) matrix.multiply(m1);
                shape = shape.fNode.fLeft;
             }
-            var res = JSROOT.GEO.createGeometry(shape, faces_limit);
+            let res = JSROOT.GEO.createGeometry(shape, faces_limit);
             if (res && (faces_limit===0)) res.applyMatrix(matrix);
             return res;
          }
@@ -1680,7 +1680,7 @@
          return JSROOT.GEO.createGeometry(shape.fNode.fLeft, -10) +
                 JSROOT.GEO.createGeometry(shape.fNode.fRight, -10);
 
-      var geom1, geom2, bsp1, bsp2, return_bsp = false,
+      let geom1, geom2, bsp1, bsp2, return_bsp = false,
           matrix1 = JSROOT.GEO.createMatrix(shape.fNode.fLeftMat),
           matrix2 = JSROOT.GEO.createMatrix(shape.fNode.fRightMat);
 
@@ -1701,7 +1701,7 @@
 
       if (!geom1) return null;
 
-      var n1 = JSROOT.GEO.numGeometryFaces(geom1), n2 = 0;
+      let n1 = JSROOT.GEO.numGeometryFaces(geom1), n2 = 0;
       if (geom1._exceed_limit) n1 += faces_limit;
 
       if (n1 < faces_limit) {
@@ -1757,7 +1757,7 @@
 
       if (!geom.boundingBox) geom.computeBoundingBox();
 
-      var box = geom.boundingBox.clone();
+      let box = geom.boundingBox.clone();
 
       box.applyMatrix4(matrix);
 
@@ -1768,7 +1768,7 @@
          return null; // not interesting
       }
 
-      var bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh),
+      let bsp1 = new ThreeBSP.Geometry(geom, matrix, 0, flippedMesh),
           sizex = 2*Math.max(Math.abs(box.min.x), Math.abs(box.max.x)),
           sizey = 2*Math.max(Math.abs(box.min.y), Math.abs(box.max.y)),
           sizez = 2*Math.max(Math.abs(box.min.z), Math.abs(box.max.z)),
@@ -1780,7 +1780,7 @@
          case "z": size = Math.max(sizex,sizey); break;
       }
 
-      var bsp2 = ThreeBSP.CreateNormal(projection, position, size);
+      let bsp2 = ThreeBSP.CreateNormal(projection, position, size);
 
       bsp1.cut_from_plane(bsp2);
 
@@ -1823,7 +1823,7 @@
             case "TGeoCompositeShape": return JSROOT.GEO.createComposite( shape, limit );
             case "TGeoShapeAssembly": break;
             case "TGeoScaledShape": {
-               var res = JSROOT.GEO.createGeometry(shape.fShape, limit);
+               let res = JSROOT.GEO.createGeometry(shape.fShape, limit);
                if (shape.fScale && (limit>=0) && (typeof res === 'object') && (typeof res.scale === 'function'))
                   res.scale(shape.fScale.fScale[0],shape.fScale.fScale[1],shape.fScale.fScale[2]);
                return res;
@@ -1834,7 +1834,7 @@
             default: JSROOT.GEO.warn('unsupported shape type ' + shape._typename);
          }
       } catch(e) {
-         var place = "";
+         let place = "";
          if (e.stack !== undefined) {
             place = e.stack.split("\n")[0];
             if (place.indexOf(e.message) >= 0) place = e.stack.split("\n")[1];
@@ -1855,26 +1855,26 @@
 
       // shape.fP = [0,0,15]; shape.fN = [0,1,1];
 
-      var vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
+      let vertex = new THREE.Vector3(shape.fP[0], shape.fP[1], shape.fP[2]);
 
-      var normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
+      let normal = new THREE.Vector3(shape.fN[0], shape.fN[1], shape.fN[2]);
       normal.normalize();
 
-      var sz = 1e10;
+      let sz = 1e10;
       if (geom) {
          // using real size of other geometry, we probably improve precision
-         var box = JSROOT.GEO.geomBoundingBox(geom);
+         let box = JSROOT.GEO.geomBoundingBox(geom);
          if (box) sz = box.getSize(new THREE.Vector3()).length() * 1000;
       }
 
       // console.log('normal', normal, 'vertex', vertex, 'size', sz);
 
-      var v1 = new THREE.Vector3(-sz, -sz/2, 0),
+      let v1 = new THREE.Vector3(-sz, -sz/2, 0),
           v2 = new THREE.Vector3(0, sz, 0),
           v3 = new THREE.Vector3(sz, -sz/2, 0),
           v4 = new THREE.Vector3(0, 0, -sz);
 
-      var geometry = new THREE.Geometry();
+      let geometry = new THREE.Geometry();
 
       geometry.vertices.push(v1, v2, v3, v4);
 
@@ -1893,10 +1893,10 @@
 
       /*
       // it suppose to be top corner of tetrahedron
-      var v0 = vertex.clone().addScaledVector(normal, sz);
+      let v0 = vertex.clone().addScaledVector(normal, sz);
 
       // plane to verify our calculations
-      var plane = new THREE.Plane(normal);
+      let plane = new THREE.Plane(normal);
 
       // translate all vertices and plane
       plane.translate(vertex);
@@ -1916,7 +1916,7 @@
 
    /** Provides info about geo object, used for tooltip info */
    JSROOT.GEO.provideInfo = function(obj) {
-      var info = [], shape = null;
+      let info = [], shape = null;
 
       if (obj.fVolume !== undefined) shape = obj.fVolume.fShape; else
       if (obj.fShape !== undefined) shape = obj.fShape; else
@@ -1927,8 +1927,8 @@
          return info;
       }
 
-      var sz = Math.max(shape.fDX, shape.fDY, shape.fDZ);
-      var useexp = (sz>1e7) || (sz<1e-7);
+      let sz = Math.max(shape.fDX, shape.fDY, shape.fDZ);
+      let useexp = (sz>1e7) || (sz<1e-7);
 
       function conv(v) {
          if (v===undefined) return "???";
@@ -1995,7 +1995,7 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.CreateProjectionMatrix = function(camera) {
-      var cameraProjectionMatrix = new THREE.Matrix4();
+      let cameraProjectionMatrix = new THREE.Matrix4();
 
       camera.updateMatrixWorld();
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
@@ -2011,7 +2011,7 @@
       if (source instanceof THREE.PerspectiveCamera)
          source = JSROOT.GEO.CreateProjectionMatrix(source);
 
-      var frustum = new THREE.Frustum();
+      let frustum = new THREE.Frustum();
       frustum.setFromMatrix(source);
 
       frustum.corners = new Float32Array([
@@ -2029,7 +2029,7 @@
       frustum.test = new THREE.Vector3(0,0,0);
 
       frustum.CheckShape = function(matrix, shape) {
-         var pnt = this.test, len = this.corners.length, corners = this.corners, i;
+         let pnt = this.test, len = this.corners.length, corners = this.corners, i;
 
          for (i = 0; i < len; i+=3) {
             pnt.x = corners[i] * shape.fDX;
@@ -2042,7 +2042,7 @@
       }
 
       frustum.CheckBox = function(box) {
-         var pnt = this.test, cnt = 0;
+         let pnt = this.test, cnt = 0;
          pnt.set(box.min.x, box.min.y, box.min.z);
          if (this.containsPoint(pnt)) cnt++;
          pnt.set(box.min.x, box.min.y, box.max.z);
@@ -2067,15 +2067,15 @@
 
    /** @memberOf JSROOT.GEO */
    JSROOT.GEO.VisibleByCamera = function(camera, matrix, shape) {
-      var frustum = new THREE.Frustum();
-      var cameraProjectionMatrix = new THREE.Matrix4();
+      let frustum = new THREE.Frustum();
+      let cameraProjectionMatrix = new THREE.Matrix4();
 
       camera.updateMatrixWorld();
       camera.matrixWorldInverse.getInverse( camera.matrixWorld );
       cameraProjectionMatrix.multiplyMatrices( camera.projectionMatrix, camera.matrixWorldInverse);
       frustum.setFromMatrix( cameraProjectionMatrix );
 
-      var corners = [
+      let corners = [
          new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,   shape.fDZ/2.0 ),
          new THREE.Vector3(  shape.fDX/2.0,  shape.fDY/2.0,  -shape.fDZ/2.0 ),
          new THREE.Vector3(  shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
@@ -2085,7 +2085,7 @@
          new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,   shape.fDZ/2.0 ),
          new THREE.Vector3( -shape.fDX/2.0, -shape.fDY/2.0,  -shape.fDZ/2.0 )
                ];
-      for (var i = 0; i < corners.length; i++) {
+      for (let i = 0; i < corners.length; i++) {
          if (frustum.containsPoint(corners[i].applyMatrix4(matrix))) return true;
       }
 
@@ -2102,7 +2102,7 @@
          return geom.tree.numPolygons();
 
       if (geom.type == 'BufferGeometry') {
-         var attr = geom.getAttribute('position');
+         let attr = geom.getAttribute('position');
          return attr && attr.count ? Math.round(attr.count / 3) : 0;
       }
 
@@ -2123,7 +2123,7 @@
          return geom.tree.numPolygons() * 3;
 
       if (geom.type == 'BufferGeometry') {
-         var attr = geom.getAttribute('position');
+         let attr = geom.getAttribute('position');
          return attr ? attr.count : 0;
       }
 
@@ -2138,7 +2138,7 @@
    JSROOT.GEO.geomBoundingBox = function(geom) {
       if (!geom) return null;
 
-      var polygons = null;
+      let polygons = null;
 
       if (geom instanceof ThreeBSP.Geometry)
          polygons = geom.tree.collectPolygons([]);
@@ -2146,10 +2146,10 @@
          polygons = geom.polygons;
 
       if (polygons!==null) {
-         var box = new THREE.Box3();
-         for (var n=0;n<polygons.length;++n) {
-            var polygon = polygons[n], nvert = polygon.vertices.length;
-            for (var k=0;k<nvert;++k)
+         let box = new THREE.Box3();
+         for (let n=0;n<polygons.length;++n) {
+            let polygon = polygons[n], nvert = polygon.vertices.length;
+            for (let k=0;k<nvert;++k)
                box.expandByPoint(polygon.vertices[k]);
          }
          return box;
@@ -2166,8 +2166,8 @@
    JSROOT.GEO.CompareStacks = function(stack1, stack2) {
       if (!stack1 || !stack2) return 0;
       if (stack1 === stack2) return stack1.length;
-      var len = Math.min(stack1.length, stack2.length);
-      for (var k=0;k<len;++k)
+      let len = Math.min(stack1.length, stack2.length);
+      for (let k=0;k<len;++k)
          if (stack1[k] !== stack2[k]) return k;
       return len;
    }
@@ -2179,7 +2179,7 @@
       if (!stack1 || !stack2) return false;
       if (stack1 === stack2) return true;
       if (stack1.length !== stack2.length) return false;
-      for (var k=0;k<stack1.length;++k)
+      for (let k=0;k<stack1.length;++k)
          if (stack1[k] !== stack2[k]) return false;
       return true;
    }
@@ -2232,7 +2232,7 @@
    /** Returns TGeoShape for element with given indx */
    JSROOT.GEO.ClonedNodes.prototype.GetNodeShape = function(indx) {
       if (!this.origin || !this.nodes) return null;
-      var obj = this.origin[indx], clone = this.nodes[indx];
+      let obj = this.origin[indx], clone = this.nodes[indx];
       if (!obj || !clone) return null;
       if (clone.kind === 0) {
          if (obj.fVolume) return obj.fVolume.fShape;
@@ -2247,21 +2247,21 @@
       // drawnodes and drawshapes are arrays created during building of geometry
 
       if (drawnodes) {
-         for (var n=0;n<drawnodes.length;++n) {
+         for (let n=0;n<drawnodes.length;++n) {
             delete drawnodes[n].stack;
             drawnodes[n] = undefined;
          }
       }
 
       if (drawshapes) {
-         for (var n=0;n<drawshapes.length;++n) {
+         for (let n=0;n<drawshapes.length;++n) {
             delete drawshapes[n].geom;
             drawshapes[n] = undefined;
          }
       }
 
       if (this.nodes) {
-         for (var n=0;n<this.nodes.length;++n) {
+         for (let n=0;n<this.nodes.length;++n) {
             if (this.nodes[n])
                delete this.nodes[n].chlds;
          }
@@ -2292,7 +2292,7 @@
        this.origin.push(obj);
        if (sublevel>this.maxdepth) this.maxdepth = sublevel;
 
-       var chlds = null;
+       let chlds = null;
        if (kind===0)
           chlds = (obj.fVolume && obj.fVolume.fNodes) ? obj.fVolume.fNodes.arr : null;
        else
@@ -2300,7 +2300,7 @@
 
        if (chlds !== null) {
           JSROOT.GEO.CheckDuplicates(obj, chlds);
-          for (var i = 0; i < chlds.length; ++i)
+          for (let i = 0; i < chlds.length; ++i)
              this.CreateClones(chlds[i], sublevel+1, kind);
        }
 
@@ -2308,21 +2308,21 @@
 
        this.nodes = [];
 
-       var sortarr = [];
+       let sortarr = [];
 
        // first create nodes objects
-       for (var n=0; n<this.origin.length; ++n) {
-          var obj = this.origin[n];
-          var node = { id: n, kind: kind, vol: 0, nfaces: 0 };
+       for (let n=0; n<this.origin.length; ++n) {
+          let obj = this.origin[n];
+          let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
           this.nodes.push(node);
           sortarr.push(node); // array use to produce sortmap
        }
 
        // than fill children lists
-       for (var n=0;n<this.origin.length;++n) {
-          var obj = this.origin[n], clone = this.nodes[n];
+       for (let n=0;n<this.origin.length;++n) {
+          let obj = this.origin[n], clone = this.nodes[n];
 
-          var chlds = null, shape = null;
+          let chlds = null, shape = null;
 
           if (kind===1) {
              shape = obj.fShape;
@@ -2332,12 +2332,12 @@
              if (obj.fVolume.fNodes) chlds = obj.fVolume.fNodes.arr;
           }
 
-          var matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
+          let matrix = JSROOT.GEO.getNodeMatrix(kind, obj);
           if (matrix) {
              clone.matrix = matrix.elements; // take only matrix elements, matrix will be constructed in worker
              if (clone.matrix[0] === 1) {
-                var issimple = true;
-                for (var k=1;(k<clone.matrix.length) && issimple;++k)
+                let issimple = true;
+                for (let k=1;(k<clone.matrix.length) && issimple;++k)
                    issimple = (clone.matrix[k] === ((k===5) || (k===10) || (k===15) ? 1 : 0));
                 if (issimple) delete clone.matrix;
              }
@@ -2357,12 +2357,12 @@
 
           // in cloned object children is only list of ids
           clone.chlds = new Array(chlds.length);
-          for (var k=0;k<chlds.length;++k)
+          for (let k=0;k<chlds.length;++k)
              clone.chlds[k] = chlds[k]._refid;
        }
 
        // remove _refid identifiers from original objects
-       for (var n=0;n<this.origin.length;++n)
+       for (let n=0;n<this.origin.length;++n)
           delete this.origin[n]._refid;
 
        // do sorting once
@@ -2370,7 +2370,7 @@
 
        // remember sort map and also sortid
        this.sortmap = new Array(this.nodes.length);
-       for (var n=0;n<this.nodes.length;++n) {
+       for (let n=0;n<this.nodes.length;++n) {
           this.sortmap[n] = sortarr[n].id;
           sortarr[n].sortid = n;
        }
@@ -2384,7 +2384,7 @@
       // indicate that just plain shape is used
       this.plain_shape = obj;
 
-      var node = {
+      let node = {
             id: 0, sortid: 0, kind: 2,
             name: "Shape",
             nfaces: obj.nfaces,
@@ -2397,9 +2397,9 @@
 
    /** Count all visisble nodes */
    JSROOT.GEO.ClonedNodes.prototype.CountVisibles = function() {
-      var cnt = 0;
+      let cnt = 0;
       if (this.nodes)
-         for (var k=0;k<this.nodes.length;++k)
+         for (let k=0;k<this.nodes.length;++k)
             if (this.nodes[k].vis)
                cnt++;
       return cnt;
@@ -2410,10 +2410,10 @@
       if (this.plain_shape) return 1;
       if (!this.origin || !this.nodes) return 0;
 
-      var res = 0;
+      let res = 0;
 
-      for (var n=0;n<this.nodes.length;++n) {
-         var clone = this.nodes[n],
+      for (let n=0;n<this.nodes.length;++n) {
+         let clone = this.nodes[n],
              obj = this.origin[n];
 
          clone.vis = 0; // 1 - only with last level
@@ -2469,14 +2469,14 @@
 
    /** After visibility flags is set, produce idshift for all nodes as it would be maximum level @private */
    JSROOT.GEO.ClonedNodes.prototype.ProduceIdShits = function() {
-      for (var k=0;k<this.nodes.length;++k)
+      for (let k=0;k<this.nodes.length;++k)
          this.nodes[k].idshift = -1;
 
       function scan_func(nodes, node) {
          if (node.idshift < 0) {
             node.idshift = 0;
             if (node.chlds)
-               for(var k = 0; k<node.chlds.length; ++k)
+               for(let k = 0; k<node.chlds.length; ++k)
                   node.idshift += scan_func(nodes, nodes[node.chlds[k]]);
          }
 
@@ -2488,8 +2488,8 @@
 
    /** Extract only visibility flags, used to transfer them to the worker @private */
    JSROOT.GEO.ClonedNodes.prototype.GetVisibleFlags = function() {
-      var res = new Array(this.nodes.length);
-      for (var n=0;n<this.nodes.length;++n)
+      let res = new Array(this.nodes.length);
+      for (let n=0;n<this.nodes.length;++n)
          res[n] = { vis: this.nodes[n].vis, nochlds: this.nodes[n].nochlds };
       return res;
    }
@@ -2499,9 +2499,9 @@
       if (!this.nodes || !flags || !flags.length != this.nodes.length)
          return 0;
 
-      var res = 0;
-      for (var n=0;n<this.nodes.length;++n) {
-         var clone = this.nodes[n];
+      let res = 0;
+      for (let n=0;n<this.nodes.length;++n) {
+         let clone = this.nodes[n];
 
          clone.vis = flags[n].vis;
          clone.nochlds = flags[n].nochlds;
@@ -2529,9 +2529,9 @@
          arg.counter = 0; // sequence ID of the node, used to identify it later
          arg.last = 0;
          arg.CopyStack = function(factor) {
-            var entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
+            let entry = { nodeid: this.nodeid, seqid: this.counter, stack: new Array(this.last) };
             if (factor) entry.factor = factor; // factor used to indicate importance of entry, will be build as first
-            for (var n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
+            for (let n=0;n<this.last;++n) entry.stack[n] = this.stack[n+1]; // copy stack
             return entry;
          }
 
@@ -2542,13 +2542,13 @@
          }
       }
 
-      var res = 0, node = this.nodes[arg.nodeid];
+      let res = 0, node = this.nodes[arg.nodeid];
 
       if (arg.domatrix) {
          if (!arg.mpool[arg.last+1])
             arg.mpool[arg.last+1] = new THREE.Matrix4();
 
-         var prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
+         let prnt = (arg.last > 0) ? arg.matrices[arg.last-1] : new THREE.Matrix4();
          if (node.matrix) {
             arg.matrices[arg.last] = arg.mpool[arg.last].fromArray(prnt.elements);
             arg.matrices[arg.last].multiply(arg.mpool[arg.last+1].fromArray(node.matrix));
@@ -2567,7 +2567,7 @@
 
       if ((vislvl > 0) && node.chlds) {
          arg.last++;
-         for (var i = 0; i < node.chlds.length; ++i) {
+         for (let i = 0; i < node.chlds.length; ++i) {
             arg.nodeid = node.chlds[i];
             arg.stack[arg.last] = i; // in the stack one store index of child, it is path in the hierarchy
             res += this.ScanVisible(arg, vislvl-1);
@@ -2595,10 +2595,10 @@
     * @private */
    JSROOT.GEO.ClonedNodes.prototype.GetNodeName = function(nodeid) {
       if (this.origin) {
-         var obj = this.origin[nodeid];
+         let obj = this.origin[nodeid];
          return obj ? JSROOT.GEO.ObjectName(obj) : "";
       }
-      var node = this.nodes[nodeid];
+      let node = this.nodes[nodeid];
       return node ? node.name : "";
    }
 
@@ -2606,7 +2606,7 @@
     * @private */
    JSROOT.GEO.ClonedNodes.prototype.ResolveStack = function(stack, withmatrix) {
 
-      var res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
+      let res = { id: 0, obj: null, node: this.nodes[0], name: this.name_prefix };
 
       // if (!this.toplevel || (this.nodes.length === 1) || (res.node.kind === 1)) res.name = "";
 
@@ -2622,14 +2622,14 @@
       //   res.name = this.GetNodeName(0);
 
       if (stack)
-         for(var lvl=0;lvl<stack.length;++lvl) {
+         for(let lvl=0;lvl<stack.length;++lvl) {
             res.id = res.node.chlds[stack[lvl]];
             res.node = this.nodes[res.id];
 
             if (this.origin)
                res.obj = this.origin[res.id];
 
-            var subname = this.GetNodeName(res.id);
+            let subname = this.GetNodeName(res.id);
             if (subname) {
                if (res.name) res.name+="/";
                res.name += subname;
@@ -2652,12 +2652,12 @@
          return null;
       }
 
-      var node = this.nodes[0], stack = [];
+      let node = this.nodes[0], stack = [];
 
-      for (var k=1;k<ids.length;++k) {
-         var nodeid = ids[k];
+      for (let k=1;k<ids.length;++k) {
+         let nodeid = ids[k];
          if (!node) return null;
-         var chindx = node.chlds.indexOf(nodeid);
+         let chindx = node.chlds.indexOf(nodeid);
          if (chindx < 0) {
             console.error('wrong nodes ids ' + ids[k] + ' is not child of ' + ids[k-1]);
             return null;
@@ -2673,9 +2673,9 @@
    /** Retuns ids array which correspond to the stack */
    JSROOT.GEO.ClonedNodes.prototype.MakeIdsByStack = function(stack) {
       if (!stack) return null;
-      var node = this.nodes[0], ids = [0];
-      for (var k=0;k<stack.length;++k) {
-         var id = node.chlds[stack[k]];
+      let node = this.nodes[0], ids = [0];
+      for (let k=0;k<stack.length;++k) {
+         let id = node.chlds[stack[k]];
          ids.push(id);
          node = this.nodes[id];
       }
@@ -2687,9 +2687,9 @@
 
       if (!nodeid) return true;
 
-      var node = this.nodes[0], id = 0;
+      let node = this.nodes[0], id = 0;
 
-      for(var lvl = 0; lvl < stack.length; ++lvl) {
+      for(let lvl = 0; lvl < stack.length; ++lvl) {
          id = node.chlds[stack[lvl]];
          if (id == nodeid) return true;
          node = this.nodes[id];
@@ -2701,16 +2701,16 @@
    /** find stack by name which include names of all parents */
    JSROOT.GEO.ClonedNodes.prototype.FindStackByName = function(fullname) {
 
-      var names = fullname.split('/'), currid = 0, stack = [];
+      let names = fullname.split('/'), currid = 0, stack = [];
 
       if (this.GetNodeName(currid) !== names[0]) return null;
 
-      for (var n=1;n<names.length;++n) {
-         var node = this.nodes[currid];
+      for (let n=1;n<names.length;++n) {
+         let node = this.nodes[currid];
          if (!node.chlds) return null;
 
-         for (var k=0;k<node.chlds.length;++k) {
-            var chldid = node.chlds[k];
+         for (let k=0;k<node.chlds.length;++k) {
+            let chldid = node.chlds[k];
             if (this.GetNodeName(chldid) === names[n]) { stack.push(k); currid = chldid; break; }
          }
 
@@ -2726,12 +2726,12 @@
       this.use_dflt_colors = on;
       if (this.use_dflt_colors && !this.dflt_table) {
 
-         var dflt = { kWhite:0,  kBlack:1, kGray:920,
+         let dflt = { kWhite:0,  kBlack:1, kGray:920,
                kRed:632, kGreen:416, kBlue:600, kYellow:400, kMagenta:616, kCyan:432,
                kOrange:800, kSpring:820, kTeal:840, kAzure:860, kViolet:880, kPink:900 };
 
-         var nmax = 110, col = [];
-         for (var i=0;i<nmax;i++) col.push(dflt.kGray);
+         let nmax = 110, col = [];
+         for (let i=0;i<nmax;i++) col.push(dflt.kGray);
 
          //  here we should create a new TColor with the same rgb as in the default
          //  ROOT colors used below
@@ -2757,12 +2757,12 @@
     * @desc Only if node visible, material will be created*/
    JSROOT.GEO.ClonedNodes.prototype.getDrawEntryProperties = function(entry) {
 
-      var clone = this.nodes[entry.nodeid];
-      var visible = true;
+      let clone = this.nodes[entry.nodeid];
+      let visible = true;
 
       if (clone.kind === 2) {
-         var prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
-         var _opacity = entry.opacity || 1;
+         let prop = { name: clone.name, nname: clone.name, shape: null, material: null, chlds: null };
+         let _opacity = entry.opacity || 1;
          prop.fillcolor = new THREE.Color( entry.color ? "rgb(" + entry.color + ")" : "blue" );
          prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                           opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -2778,17 +2778,17 @@
          return null;
       }
 
-      var node = this.origin[entry.nodeid];
+      let node = this.origin[entry.nodeid];
 
       if (clone.kind === 1) {
          // special handling for EVE nodes
 
-         var prop = { name: JSROOT.GEO.ObjectName(node), nname: JSROOT.GEO.ObjectName(node), shape: node.fShape, material: null, chlds: null };
+         let prop = { name: JSROOT.GEO.ObjectName(node), nname: JSROOT.GEO.ObjectName(node), shape: node.fShape, material: null, chlds: null };
 
          if (node.fElements !== null) prop.chlds = node.fElements.arr;
 
          if (visible) {
-            var _opacity = Math.min(1, node.fRGBA[3]);
+            let _opacity = Math.min(1, node.fRGBA[3]);
             prop.fillcolor = new THREE.Color( node.fRGBA[0], node.fRGBA[1], node.fRGBA[2] );
             prop.material = new THREE.MeshLambertMaterial( { transparent: _opacity < 1,
                              opacity: _opacity, wireframe: false, color: prop.fillcolor,
@@ -2800,9 +2800,9 @@
          return prop;
       }
 
-      var volume = node.fVolume;
+      let volume = node.fVolume;
 
-      var prop = { name: JSROOT.GEO.ObjectName(volume), nname: JSROOT.GEO.ObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
+      let prop = { name: JSROOT.GEO.ObjectName(volume), nname: JSROOT.GEO.ObjectName(node), volume: node.fVolume, shape: volume.fShape, material: null, chlds: null };
 
       if (node.fVolume.fNodes !== null) prop.chlds = node.fVolume.fNodes.arr;
 
@@ -2810,7 +2810,7 @@
 
       if (visible) {
 
-         var _opacity = 1.0;
+         let _opacity = 1.0;
          if (entry.custom_color)
             prop.fillcolor = entry.custom_color;
          else if ((volume.fFillColor > 1) && (volume.fLineColor == 1))
@@ -2819,12 +2819,12 @@
             prop.fillcolor = JSROOT.Painter.root_colors[volume.fLineColor];
 
          if (volume.fMedium && volume.fMedium.fMaterial) {
-            var mat = volume.fMedium.fMaterial,
+            let mat = volume.fMedium.fMaterial,
                 fillstyle = mat.fFillStyle,
                 transparency = (fillstyle < 3000 || fillstyle > 3100) ? 0 : fillstyle - 3000;
 
             if (this.use_dflt_colors) {
-               var matZ = Math.round(mat.fZ),
+               let matZ = Math.round(mat.fZ),
                    icol = this.dflt_table[matZ];
                prop.fillcolor = JSROOT.Painter.root_colors[icol];
                if (mat.fDensity < 0.1) transparency = 60;
@@ -2855,18 +2855,18 @@
      * @private */
    JSROOT.GEO.ClonedNodes.prototype.CreateObject3D = function(stack, toplevel, options) {
 
-      var node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
+      let node = this.nodes[0], three_prnt = toplevel, draw_depth = 0,
           force = (typeof options == 'object') || (options==='force');
 
-      for(var lvl=0; lvl<=stack.length; ++lvl) {
-         var nchld = (lvl > 0) ? stack[lvl-1] : 0;
+      for(let lvl=0; lvl<=stack.length; ++lvl) {
+         let nchld = (lvl > 0) ? stack[lvl-1] : 0;
          // extract current node
          if (lvl>0)  node = this.nodes[node.chlds[nchld]];
 
-         var obj3d = undefined;
+         let obj3d = undefined;
 
          if (three_prnt.children)
-            for (var i=0;i<three_prnt.children.length;++i) {
+            for (let i=0;i<three_prnt.children.length;++i) {
                if (three_prnt.children[i].nchld === nchld) {
                   obj3d = three_prnt.children[i];
                   break;
@@ -2909,16 +2909,16 @@
       }
 
       if ((options === 'mesh') || (options === 'delete_mesh')) {
-         var mesh = null;
+         let mesh = null;
          if (three_prnt)
-            for (var n=0; (n<three_prnt.children.length) && !mesh;++n) {
-               var chld = three_prnt.children[n];
+            for (let n=0; (n<three_prnt.children.length) && !mesh;++n) {
+               let chld = three_prnt.children[n];
                if ((chld.type === 'Mesh') && (chld.nchld === undefined)) mesh = chld;
             }
 
          if ((options === 'mesh') || !mesh) return mesh;
 
-         var res = three_prnt;
+         let res = three_prnt;
          while (mesh && (mesh !== toplevel)) {
             three_prnt = mesh.parent;
             three_prnt.remove(mesh);
@@ -2938,17 +2938,17 @@
 
    JSROOT.GEO.ClonedNodes.prototype.GetVolumeBoundary = function(viscnt, facelimit, nodeslimit) {
 
-      var result = { min: 0, max: 1, sortidcut: 0 };
+      let result = { min: 0, max: 1, sortidcut: 0 };
 
       if (!this.sortmap) {
          console.error('sorting map do not exist');
          return result;
       }
 
-      var maxNode, currNode, cnt=0, facecnt=0;
+      let maxNode, currNode, cnt=0, facecnt=0;
 
-      for (var n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
-         var id = this.sortmap[n];
+      for (let n = 0; (n < this.sortmap.length) && (cnt < nodeslimit) && (facecnt < facelimit); ++n) {
+         let id = this.sortmap[n];
          if (viscnt[id] === 0) continue;
          currNode = this.nodes[id];
          if (!maxNode) maxNode = currNode;
@@ -2976,14 +2976,14 @@
       if (this.plain_shape)
          return { lst: [ { nodeid: 0, seqid: 0, stack: [], factor: 1, shapeid: 0, server_shape: this.plain_shape } ], complete: true };
 
-      var arg = {
+      let arg = {
          facecnt: 0,
          viscnt: new Array(this.nodes.length), // counter for each node
          vislvl: this.GetVisLevel(),
          reset: function() {
             this.total = 0;
             this.facecnt = 0;
-            for (var n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
+            for (let n=0;n<this.viscnt.length;++n) this.viscnt[n] = 0;
          },
          // nodes: this.nodes,
          func: function(node) {
@@ -2996,7 +2996,7 @@
 
       arg.reset();
 
-      var total = this.ScanVisible(arg),
+      let total = this.ScanVisible(arg),
           maxnumnodes = this.GetMaxVisNodes();
 
       if (maxnumnodes > 0) {
@@ -3009,17 +3009,17 @@
 
       this.actual_level = arg.vislvl; // not used, can be shown somewhere in the gui
 
-      var minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
+      let minVol = 0, maxVol = 0, camVol = -1, camFact = 10, sortidcut = this.nodes.length + 1;
 
       console.log('Total visible nodes ' + total + ' numfaces ' + arg.facecnt);
 
       if (arg.facecnt > maxnumfaces) {
 
-         var bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
+         let bignumfaces = maxnumfaces * (frustum ? 0.8 : 1.0),
              bignumnodes = maxnumnodes * (frustum ? 0.8 : 1.0);
 
          // define minimal volume, which always to shown
-         var boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
+         let boundary = this.GetVolumeBoundary(arg.viscnt, bignumfaces, bignumnodes);
 
          minVol = boundary.min;
          maxVol = boundary.max;
@@ -3039,7 +3039,7 @@
                 return true;
              }
 
-             for (var n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
+             for (let n=0;n<arg.viscnt.length;++n) arg.viscnt[n] = 0;
 
              this.ScanVisible(arg);
 
@@ -3076,8 +3076,8 @@
      * from previous list we should collect objects which are not there */
    JSROOT.GEO.ClonedNodes.prototype.MergeVisibles = function(current, prev) {
 
-      var indx2 = 0, del = [];
-      for (var indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
+      let indx2 = 0, del = [];
+      for (let indx1=0; (indx1<current.length) && (indx2<prev.length); ++indx1) {
 
          while ((indx2 < prev.length) && (prev[indx2].seqid < current[indx1].seqid)) {
             del.push(prev[indx2++]); // this entry should be removed
@@ -3104,11 +3104,11 @@
       if (this.plain_shape)
          return [ this.plain_shape ];
 
-      var shapes = [];
+      let shapes = [];
 
-      for (var i=0;i<lst.length;++i) {
-         var entry = lst[i];
-         var shape = this.GetNodeShape(entry.nodeid);
+      for (let i=0;i<lst.length;++i) {
+         let entry = lst[i];
+         let shape = this.GetNodeShape(entry.nodeid);
 
          if (!shape) continue; // strange, but avoid misleading
 
@@ -3133,15 +3133,15 @@
       shapes.sort(function(a,b) { return b.vol*b.factor - a.vol*a.factor; })
 
       // now set new shape ids according to the sorted order and delete temporary field
-      for (var n=0;n<shapes.length;++n) {
-         var item = shapes[n];
+      for (let n=0;n<shapes.length;++n) {
+         let item = shapes[n];
          item.id = n; // set new ID
          delete item.shape._id; // remove temporary field
       }
 
       // as last action set current shape id to each entry
-      for (var i=0;i<lst.length;++i) {
-         var entry = lst[i];
+      for (let i=0;i<lst.length;++i) {
+         let entry = lst[i];
          if (entry.shape) {
             entry.shapeid = entry.shape.id; // keep only id for the entry
             delete entry.shape; // remove direct references
@@ -3156,8 +3156,8 @@
       if (!oldlst) return newlst;
 
       // set geometry to shape object itself
-      for (var n=0;n<oldlst.length;++n) {
-         var item = oldlst[n];
+      for (let n=0;n<oldlst.length;++n) {
+         let item = oldlst[n];
 
          item.shape._geom = item.geom;
          delete item.geom;
@@ -3169,8 +3169,8 @@
       }
 
       // take from shape (if match)
-      for (var n=0;n<newlst.length;++n) {
-         var item = newlst[n];
+      for (let n=0;n<newlst.length;++n) {
+         let item = newlst[n];
 
          if (item.shape._geom !== undefined) {
             item.geom = item.shape._geom;
@@ -3184,8 +3184,8 @@
       }
 
       // now delete all unused geometries
-      for (var n=0;n<oldlst.length;++n) {
-         var item = oldlst[n];
+      for (let n=0;n<oldlst.length;++n) {
+         let item = oldlst[n];
          delete item.shape._geom;
          delete item.shape._geomZ;
       }
@@ -3195,12 +3195,12 @@
 
    JSROOT.GEO.ClonedNodes.prototype.BuildShapes = function(lst, limit, timelimit) {
 
-      var created = 0,
+      let created = 0,
           tm1 = new Date().getTime(),
           res = { done: false, shapes: 0, faces: 0, notusedshapes: 0 };
 
-      for (var n=0;n<lst.length;++n) {
-         var item = lst[n];
+      for (let n=0;n<lst.length;++n) {
+         let item = lst[n];
 
          // if enough faces are produced, nothing else is required
          if (res.done) { item.ready = true; continue; }
@@ -3222,7 +3222,7 @@
          if (res.faces >= limit) {
             res.done = true;
          } else if ((created > 0.01*lst.length) && (timelimit!==undefined)) {
-            var tm2 = new Date().getTime();
+            let tm2 = new Date().getTime();
             if (tm2-tm1 > timelimit) return res;
          }
       }
@@ -3245,14 +3245,14 @@
          parent.$geo_checked = true;
       }
 
-      var names = [], cnts = [], obj = null;
-      for (var k=0;k<chlds.length;++k) {
-         var chld = chlds[k];
+      let names = [], cnts = [], obj = null;
+      for (let k=0;k<chlds.length;++k) {
+         let chld = chlds[k];
          if (!chld || !chld.fName) continue;
          if (!chld.$geo_suffix) {
-            var indx = names.indexOf(chld.fName);
+            let indx = names.indexOf(chld.fName);
             if (indx>=0) {
-               var cnt = cnts[indx] || 1;
+               let cnt = cnts[indx] || 1;
                while(names.indexOf(chld.fName+"#"+cnt)>=0) ++cnt;
                chld.$geo_suffix = "#" + cnt;
                cnts[indx] = cnt+1;
@@ -3266,26 +3266,26 @@
      * one should inverse geometry object, otherwise THREE.js cannot correctly draw it, @private */
    JSROOT.GEO.createFlippedMesh = function(parent, shape, material) {
 
-      var flip =  new THREE.Vector3(1,1,-1);
+      let flip =  new THREE.Vector3(1,1,-1);
 
       if (shape.geomZ === undefined) {
 
          if (shape.geom.type == 'BufferGeometry') {
 
-            var pos = shape.geom.getAttribute('position').array,
+            let pos = shape.geom.getAttribute('position').array,
                 norm = shape.geom.getAttribute('normal').array,
                 index = shape.geom.getIndex();
 
             if (index) {
                // we need to unfold all points to
-               var arr = index.array,
+               let arr = index.array,
                    i0 = shape.geom.drawRange.start,
                    ilen = shape.geom.drawRange.count;
                if (i0 + ilen > arr.length) ilen = arr.length - i0;
 
-               var dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
-               for (var ii = 0; ii < ilen; ++ii) {
-                  var k = arr[i0 + ii];
+               let dpos = new Float32Array(ilen*3), dnorm = new Float32Array(ilen*3);
+               for (let ii = 0; ii < ilen; ++ii) {
+                  let k = arr[i0 + ii];
                   if ((k<0) || (k*3>=pos.length)) console.log('strange index', k*3, pos.length);
                   dpos[ii*3] = pos[k*3];
                   dpos[ii*3+1] = pos[k*3+1];
@@ -3298,7 +3298,7 @@
                pos = dpos; norm = dnorm;
             }
 
-            var len = pos.length, n, shift = 0,
+            let len = pos.length, n, shift = 0,
                 newpos = new Float32Array(len),
                 newnorm = new Float32Array(len);
 
@@ -3327,7 +3327,7 @@
 
             shape.geomZ.scale(flip.x, flip.y, flip.z);
 
-            var face, d, n = 0;
+            let face, d, n = 0;
             while(n < shape.geomZ.faces.length) {
                face = geom.faces[n++];
                d = face.b; face.b = face.c; face.c = d;
@@ -3338,7 +3338,7 @@
          }
       }
 
-      var mesh = new THREE.Mesh( shape.geomZ, material );
+      let mesh = new THREE.Mesh( shape.geomZ, material );
       mesh.scale.copy(flip);
       mesh.updateMatrix();
 
@@ -3369,7 +3369,7 @@
     * @param method - name of sorting method like "pnt", "ray", "size", "dflt"  */
    JSROOT.GEO.produceRenderOrder = function(toplevel, origin, method, clones) {
 
-      var raycast = new THREE.Raycaster();
+      let raycast = new THREE.Raycaster();
 
       function setdefaults(top) {
          if (!top) return;
@@ -3385,8 +3385,8 @@
 
          if (!obj.children) return;
 
-         for (var k=0;k<obj.children.length;++k) {
-            var chld = obj.children[k];
+         for (let k=0;k<obj.children.length;++k) {
+            let chld = obj.children[k];
             if (chld.$jsroot_order === lvl) {
                if (chld.material) {
                   if (chld.material.transparent) {
@@ -3408,17 +3408,17 @@
 
          if (arr.length > 300) {
             // too many of them, just set basic level and exit
-            for (var i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
+            for (let i=0;i<arr.length;++i) arr[i].renderOrder = (minorder + maxorder)/2;
             return false;
          }
 
-         var tmp_vect = new THREE.Vector3();
+         let tmp_vect = new THREE.Vector3();
 
          // first calculate distance to the camera
          // it gives preliminary order of volumes
 
-         for (var i=0;i<arr.length;++i) {
-            var mesh = arr[i],
+         for (let i=0;i<arr.length;++i) {
+            let mesh = arr[i],
                 box3 = mesh.$jsroot_box3;
 
             if (!box3)
@@ -3436,7 +3436,7 @@
 
             var dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
 
-            var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
+            let pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
             dist = Math.min(dist, origin.distanceTo(pnt));
             pnt.set(box3.min.x, box3.max.y, box3.min.z)
             dist = Math.min(dist, origin.distanceTo(pnt));
@@ -3457,30 +3457,30 @@
 
          arr.sort(function(a,b) { return a.$jsroot_distance - b.$jsroot_distance; });
 
-         var resort = new Array(arr.length);
+         let resort = new Array(arr.length);
 
-         for (var i=0;i<arr.length;++i) {
+         for (let i=0;i<arr.length;++i) {
             arr[i].$jsroot_index = i;
             resort[i] = arr[i];
          }
 
          if (method==="ray")
-         for (var i=arr.length-1;i>=0;--i) {
-            var mesh = arr[i],
+         for (let i=arr.length-1;i>=0;--i) {
+            let mesh = arr[i],
                 box3 = mesh.$jsroot_box3,
                 direction = box3.getCenter(tmp_vect);
 
-            for(var ntry=0; ntry<2;++ntry) {
+            for(let ntry=0; ntry<2;++ntry) {
 
                direction.sub(origin).normalize();
 
                raycast.set( origin, direction );
 
-               var intersects = raycast.intersectObjects(arr, false); // only plain array
+               let intersects = raycast.intersectObjects(arr, false); // only plain array
 
-               var unique = [];
+               let unique = [];
 
-               for (var k1=0;k1<intersects.length;++k1) {
+               for (let k1=0;k1<intersects.length;++k1) {
                   if (unique.indexOf(intersects[k1].object)<0) unique.push(intersects[k1].object);
                   // if (intersects[k1].object === mesh) break; // trace until object itself
                }
@@ -3492,7 +3492,7 @@
 
                if ((intersects.indexOf(mesh)>=0) || (ntry>0)) break;
 
-               var pos = mesh.geometry.attributes.position.array;
+               let pos = mesh.geometry.attributes.position.array;
 
                direction = new THREE.Vector3((pos[0]+pos[3]+pos[6])/3, (pos[1]+pos[4]+pos[7])/3, (pos[2]+pos[5]+pos[8])/3);
 
@@ -3500,11 +3500,11 @@
             }
 
             // now push first object in intersects to the front
-            for (var k1=0;k1<intersects.length-1;++k1) {
-               var mesh1 = intersects[k1], mesh2 = intersects[k1+1],
+            for (let k1=0;k1<intersects.length-1;++k1) {
+               let mesh1 = intersects[k1], mesh2 = intersects[k1+1],
                    i1 = mesh1.$jsroot_index, i2 = mesh2.$jsroot_index;
                if (i1<i2) continue;
-               for (var ii=i2;ii<i1;++ii) {
+               for (let ii=i2;ii<i1;++ii) {
                   resort[ii] = resort[ii+1];
                   resort[ii].$jsroot_index = ii;
                }
@@ -3514,7 +3514,7 @@
 
          }
 
-         for (var i=0;i<resort.length;++i) {
+         for (let i=0;i<resort.length;++i) {
             resort[i].renderOrder = maxorder - (i+1) / (resort.length+1) * (maxorder-minorder);
             delete resort[i].$jsroot_index;
             delete resort[i].$jsroot_distance;
@@ -3524,22 +3524,22 @@
       }
 
       function process(obj, lvl, minorder, maxorder) {
-         var arr = [], did_sort = false;
+         let arr = [], did_sort = false;
 
          traverse(obj, lvl, arr);
 
          if (!arr.length) return;
 
          if (minorder === maxorder) {
-            for (var k=0;k<arr.length;++k)
+            for (let k=0;k<arr.length;++k)
                arr[k].renderOrder = minorder;
          } else {
            did_sort = sort(arr, minorder, maxorder);
            if (!did_sort) minorder = maxorder = (minorder + maxorder) / 2;
          }
 
-         for (var k=0;k<arr.length;++k) {
-            var next = arr[k].parent, min = minorder, max = maxorder;
+         for (let k=0;k<arr.length;++k) {
+            let next = arr[k].parent, min = minorder, max = maxorder;
 
             if (did_sort) {
                max = arr[k].renderOrder;
@@ -3575,7 +3575,7 @@
 
       opt.res_mesh = opt.res_faces = 0;
 
-      var shape = null, hide_top = false;
+      let shape = null, hide_top = false;
 
       if (('fShapeBits' in obj) && ('fShapeId' in obj)) {
          shape = obj; obj = null;
@@ -3605,14 +3605,14 @@
       if (obj._typename.indexOf('TGeoVolume') === 0)
          obj = { _typename:"TGeoNode", fVolume: obj, fName: obj.fName, $geoh: obj.$geoh, _proxy: true };
 
-      var clones = new JSROOT.GEO.ClonedNodes(obj);
+      let clones = new JSROOT.GEO.ClonedNodes(obj);
       clones.SetVisLevel(opt.vislevel);
       clones.SetMaxVisNodes(opt.numnodes);
 
       if (opt.dflt_colors)
          clones.SetDefaultColors(true);
 
-      var uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
+      let uniquevis = opt.no_screen ? 0 : clones.MarkVisibles(true);
       if (uniquevis <= 0)
          uniquevis = clones.MarkVisibles(false, false, hide_top);
       else
@@ -3621,22 +3621,22 @@
       clones.ProduceIdShits();
 
       // collect visible nodes
-      var res = clones.CollectVisibles(opt.numfaces, opt.frustum);
+      let res = clones.CollectVisibles(opt.numfaces, opt.frustum);
 
-      var draw_nodes = res.lst;
+      let draw_nodes = res.lst;
 
       // collect shapes
-      var shapes = clones.CollectShapes(draw_nodes);
+      let shapes = clones.CollectShapes(draw_nodes);
 
       clones.BuildShapes(shapes, opt.numfaces);
 
-      var toplevel = new THREE.Object3D();
+      let toplevel = new THREE.Object3D();
 
-      for (var n=0; n < draw_nodes.length;++n) {
-         var entry = draw_nodes[n];
+      for (let n=0; n < draw_nodes.length;++n) {
+         let entry = draw_nodes[n];
          if (entry.done) continue;
 
-         var shape = shapes[entry.shapeid];
+         let shape = shapes[entry.shapeid];
          if (!shape.ready) {
             console.warn('shape marked as not ready when should');
             break;
@@ -3650,18 +3650,18 @@
             continue;
          }
 
-         var prop = clones.getDrawEntryProperties(entry);
+         let prop = clones.getDrawEntryProperties(entry);
 
          opt.res_mesh++;
          opt.res_faces += shape.nfaces;
 
-         var obj3d = clones.CreateObject3D(entry.stack, toplevel, opt);
+         let obj3d = clones.CreateObject3D(entry.stack, toplevel, opt);
 
          prop.material.wireframe = opt.wireframe;
 
          prop.material.side = opt.doubleside ? THREE.DoubleSide : THREE.FrontSide;
 
-         var mesh = null;
+         let mesh = null;
 
          if (obj3d.matrixWorld.determinant() > -0.9) {
             mesh = new THREE.Mesh( shape.geom, prop.material );
@@ -3692,20 +3692,20 @@
 
       if (!local_coordinates) node.updateMatrixWorld();
 
-      var v1 = new THREE.Vector3(),
+      let v1 = new THREE.Vector3(),
           geometry = node.geometry;
 
       if ( geometry.isGeometry ) {
-         var vertices = geometry.vertices;
-         for (var i = 0, l = vertices.length; i < l; i ++ ) {
+         let vertices = geometry.vertices;
+         for (let i = 0, l = vertices.length; i < l; i ++ ) {
             v1.copy( vertices[ i ] );
             if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );
             box3.expandByPoint( v1 );
          }
       } else if ( geometry.isBufferGeometry ) {
-         var attribute = geometry.attributes.position;
+         let attribute = geometry.attributes.position;
          if ( attribute !== undefined ) {
-            for (var i = 0, l = attribute.count; i < l; i ++ ) {
+            for (let i = 0, l = attribute.count; i < l; i ++ ) {
                // v1.fromAttribute( attribute, i ).applyMatrix4( node.matrixWorld );
                v1.fromBufferAttribute( attribute, i );
                if (!local_coordinates) v1.applyMatrix4( node.matrixWorld );

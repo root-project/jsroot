@@ -14,7 +14,7 @@
 
    if (!ThreeBSP) ThreeBSP = {};
 
-   var EPSILON = 1e-5,
+   let EPSILON = 1e-5,
        COPLANAR = 0,
        FRONT = 1,
        BACK = 2,
@@ -35,11 +35,11 @@
          this.matrix = null; // new THREE.Matrix4;
          return this;
       } else if ( geometry instanceof THREE.BufferGeometry ) {
-         var pos_buf = geometry.getAttribute('position').array,
+         let pos_buf = geometry.getAttribute('position').array,
              norm_buf = geometry.getAttribute('normal').array,
              polygons = [], polygon, vert1, vert2, vert3;
 
-         for (var i=0; i < pos_buf.length; i+=9) {
+         for (let i=0; i < pos_buf.length; i+=9) {
             polygon = new ThreeBSP.Polygon;
 
             vert1 = new ThreeBSP.Vertex( pos_buf[i], pos_buf[i+1], pos_buf[i+2], norm_buf[i], norm_buf[i+1], norm_buf[i+2]);
@@ -63,12 +63,12 @@
          return this;
 
       } else if (geometry.polygons && (geometry.polygons[0] instanceof ThreeBSP.Polygon)) {
-         var polygons = geometry.polygons;
+         let polygons = geometry.polygons;
 
-         for (var i=0;i<polygons.length;++i) {
-            var polygon = polygons[i];
+         for (let i=0;i<polygons.length;++i) {
+            let polygon = polygons[i];
             if (transfer_matrix) {
-               for (var n=0;n<polygon.vertices.length;++n)
+               for (let n=0;n<polygon.vertices.length;++n)
                   polygon.vertices[n].applyMatrix4(transfer_matrix);
             }
 
@@ -83,11 +83,11 @@
          throw 'ThreeBSP: Given geometry is unsupported';
       }
 
-      var polygons = [],
+      let polygons = [],
           nfaces = geometry.faces.length,
           face, polygon, vertex, normal, useVertexNormals;
 
-      for (var i = 0; i < nfaces; ++i ) {
+      for (let i = 0; i < nfaces; ++i ) {
          face = geometry.faces[i];
          normal = face.normal;
          // faceVertexUvs = geometry.faceVertexUvs[0][i];
@@ -159,7 +159,7 @@
    }
 
    ThreeBSP.Geometry.prototype.subtract = function( other_tree ) {
-      var a = this.tree.clone(),
+      let a = this.tree.clone(),
           b = other_tree.tree.clone();
 
       a.invert();
@@ -176,7 +176,7 @@
    }
 
    ThreeBSP.Geometry.prototype.union = function( other_tree ) {
-      var a = this.tree.clone(),
+      let a = this.tree.clone(),
          b = other_tree.tree.clone();
 
       a.clipTo( b );
@@ -191,7 +191,7 @@
    }
 
    ThreeBSP.Geometry.prototype.intersect = function( other_tree ) {
-      var a = this.tree.clone(),
+      let a = this.tree.clone(),
          b = other_tree.tree.clone();
 
       a.invert();
@@ -210,7 +210,7 @@
 
       if (this.maxid === undefined) return;
 
-      var arr = [], parts, foundpair,
+      let arr = [], parts, foundpair,
           nreduce = 0, n, len = polygons.length,
           p, p1, p2, i1, i2;
 
@@ -269,7 +269,7 @@
    }
 
    ThreeBSP.Geometry.prototype.direct_subtract = function( other_tree ) {
-      var a = this.tree,
+      let a = this.tree,
           b = other_tree.tree;
       a.invert();
       a.clipTo( b );
@@ -283,7 +283,7 @@
    }
 
    ThreeBSP.Geometry.prototype.direct_union = function( other_tree ) {
-      var a = this.tree,
+      let a = this.tree,
           b = other_tree.tree;
 
       a.clipTo( b );
@@ -296,7 +296,7 @@
    }
 
    ThreeBSP.Geometry.prototype.direct_intersect = function( other_tree ) {
-      var a = this.tree,
+      let a = this.tree,
           b = other_tree.tree;
 
       a.invert();
@@ -312,7 +312,7 @@
    ThreeBSP.CreateNormal = function(axis_name, pos, size) {
       // create geometry to make cut on specified axis
 
-      var vert1, vert2, vert3;
+      let vert1, vert2, vert3;
 
       if (!size || (size<10000)) size = 10000;
 
@@ -334,10 +334,10 @@
             break;
       }
 
-      var polygon = new ThreeBSP.Polygon([vert1, vert2, vert3]);
+      let polygon = new ThreeBSP.Polygon([vert1, vert2, vert3]);
       polygon.calculateProperties();
 
-      var node = new ThreeBSP.Node([polygon]);
+      let node = new ThreeBSP.Node([polygon]);
 
       return new ThreeBSP.Geometry(node);
    }
@@ -346,7 +346,7 @@
    ThreeBSP.Geometry.prototype.cut_from_plane = function( other_tree) {
       // just cut peaces from second geometry, which just simple plane
 
-      var a = this.tree,
+      let a = this.tree,
           b = other_tree.tree;
 
       a.invert();
@@ -357,7 +357,7 @@
 
 
    ThreeBSP.Geometry.prototype.toGeometry = function() {
-      var i, j,
+      let i, j,
          matrix = this.matrix ? new THREE.Matrix4().getInverse( this.matrix ) : null,
          geometry = new THREE.Geometry(),
          polygons = this.tree.collectPolygons([]),
@@ -425,12 +425,12 @@
 
    ThreeBSP.Geometry.prototype.scale = function(x,y,z) {
       // try to scale as THREE.BufferGeometry
-      var polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons([]);
 
-      for (var i = 0; i < polygons.length; ++i) {
-         var polygon = polygons[i];
-         for (var k=0; k < polygon.vertices.length; ++k) {
-            var v = polygon.vertices[k];
+      for (let i = 0; i < polygons.length; ++i) {
+         let polygon = polygons[i];
+         for (let k=0; k < polygon.vertices.length; ++k) {
+            let v = polygon.vertices[k];
             v.x *= x;
             v.y *= y;
             v.z *= z;
@@ -441,11 +441,11 @@
    }
 
    ThreeBSP.Geometry.prototype.toPolygons = function() {
-      var polygons = this.tree.collectPolygons([]);
+      let polygons = this.tree.collectPolygons([]);
 
       this.tryToCompress(polygons);
 
-      for (var i = 0; i < polygons.length; ++i ) {
+      for (let i = 0; i < polygons.length; ++i ) {
          delete polygons[i].id;
          delete polygons[i].parent;
       }
@@ -458,12 +458,12 @@
    }
 
    ThreeBSP.CreateBufferGeometry = function(polygons) {
-      var i, j, polygon_count = polygons.length, buf_size = 0;
+      let i, j, polygon_count = polygons.length, buf_size = 0;
 
       for ( i = 0; i < polygon_count; ++i )
          buf_size += (polygons[i].vertices.length - 2) * 9;
 
-      var positions_buf = new Float32Array(buf_size),
+      let positions_buf = new Float32Array(buf_size),
           normals_buf = new Float32Array(buf_size),
           iii = 0, polygon;
 
@@ -488,7 +488,7 @@
          }
       }
 
-      var geometry = new THREE.BufferGeometry();
+      let geometry = new THREE.BufferGeometry();
       geometry.addAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
       geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
 
@@ -497,7 +497,7 @@
    }
 
    ThreeBSP.Geometry.prototype.toMesh = function( material ) {
-      var geometry = this.toGeometry(),
+      let geometry = this.toGeometry(),
          mesh = new THREE.Mesh( geometry, material );
 
       if (this.matrix) {
@@ -536,7 +536,7 @@
    ThreeBSP.Polygon.prototype.calculateProperties = function() {
       if (this.normal) return;
 
-      var a = this.vertices[0],
+      let a = this.vertices[0],
           b = this.vertices[1],
           c = this.vertices[2];
 
@@ -551,10 +551,10 @@
    }
 
    ThreeBSP.Polygon.prototype.clone = function() {
-      var vertice_count = this.vertices.length,
+      let vertice_count = this.vertices.length,
           polygon = new ThreeBSP.Polygon;
 
-      for (var i = 0; i < vertice_count; ++i )
+      for (let i = 0; i < vertice_count; ++i )
          polygon.vertices.push( this.vertices[i].clone() );
 
       return polygon.copyProperties(this);
@@ -574,7 +574,7 @@
    }
 
    ThreeBSP.Polygon.prototype.classifyVertex = function( vertex ) {
-      var side_value = this.nsign * (this.normal.dot( vertex ) - this.w);
+      let side_value = this.nsign * (this.normal.dot( vertex ) - this.w);
 
       if ( side_value < -EPSILON ) return BACK;
       if ( side_value > EPSILON ) return FRONT;
@@ -582,7 +582,7 @@
    }
 
    ThreeBSP.Polygon.prototype.classifySide = function( polygon ) {
-      var i, classification,
+      let i, classification,
           num_positive = 0, num_negative = 0,
           vertice_count = polygon.vertices.length;
 
@@ -602,7 +602,7 @@
    }
 
    ThreeBSP.Polygon.prototype.splitPolygon = function( polygon, coplanar_front, coplanar_back, front, back ) {
-      var classification = this.classifySide( polygon );
+      let classification = this.classifySide( polygon );
 
       if ( classification === COPLANAR ) {
 
@@ -618,7 +618,7 @@
 
       } else {
 
-         var vertice_count = polygon.vertices.length,
+         let vertice_count = polygon.vertices.length,
              nnx = this.normal.x,
              nny = this.normal.y,
              nnz = this.normal.z,
@@ -696,7 +696,7 @@
    }
 
    ThreeBSP.Vertex.prototype.cross = function( vertex ) {
-      var x = this.x,
+      let x = this.x,
           y = this.y,
           z = this.z;
 
@@ -708,7 +708,7 @@
    }
 
    ThreeBSP.Vertex.prototype.normalize = function() {
-      var length = Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z );
+      let length = Math.sqrt( this.x * this.x + this.y * this.y + this.z * this.z );
 
       this.x /= length;
       this.y /= length;
@@ -722,7 +722,7 @@
    }
 
    ThreeBSP.Vertex.prototype.diff = function( vertex ) {
-      var dx = (this.x - vertex.x),
+      let dx = (this.x - vertex.x),
           dy = (this.y - vertex.y),
           dz = (this.z - vertex.z),
           len2 = this.x*this.x + this.y*this.y + this.z*this.z;
@@ -752,7 +752,7 @@
 */
 
    ThreeBSP.Vertex.prototype.interpolate = function( a, t ) {
-      var t1 = 1-t;
+      let t1 = 1-t;
       return new ThreeBSP.Vertex(this.x*t1 + a.x*t, this.y*t1 + a.y*t, this.z*t1 + a.z*t,
                                  this.nx*t1 + a.nx*t, this.ny*t1 + a.ny*t, this.nz*t1 + a.nz*t);
    }
@@ -761,7 +761,7 @@
 
       // input: THREE.Matrix4 affine matrix
 
-      var x = this.x, y = this.y, z = this.z, e = m.elements;
+      let x = this.x, y = this.y, z = this.z, e = m.elements;
 
       this.x = e[0] * x + e[4] * y + e[8]  * z + e[12];
       this.y = e[1] * x + e[5] * y + e[9]  * z + e[13];
@@ -786,10 +786,10 @@
 
       this.divider = polygons[0].clone();
 
-      var polygon_count = polygons.length,
+      let polygon_count = polygons.length,
           front = [], back = [];
 
-      for (var i = 0; i < polygon_count; ++i ) {
+      for (let i = 0; i < polygon_count; ++i ) {
          if (nodeid!==undefined) {
             polygons[i].id = nodeid++;
             delete polygons[i].parent;
@@ -808,7 +808,7 @@
    }
 
    ThreeBSP.Node.isConvex = function( polygons ) {
-      var i, j, len = polygons.length;
+      let i, j, len = polygons.length;
       for ( i = 0; i < len; ++i )
          for ( j = 0; j < len; ++j )
             if ( i !== j && polygons[i].classifySide( polygons[j] ) !== BACK ) return false;
@@ -816,13 +816,13 @@
    }
 
    ThreeBSP.Node.prototype.build = function( polygons ) {
-      var polygon_count = polygons.length,
+      let polygon_count = polygons.length,
           front = [], back = [];
 
       if ( !this.divider )
          this.divider = polygons[0].clone();
 
-      for (var i = 0; i < polygon_count; ++i )
+      for (let i = 0; i < polygon_count; ++i )
          this.divider.splitPolygon( polygons[i], this.polygons, this.polygons, front, back );
 
       if ( front.length > 0 ) {
@@ -837,29 +837,29 @@
    }
 
    ThreeBSP.Node.prototype.collectPolygons = function(arr) {
-      var len = this.polygons.length;
-      for (var i=0;i<len;++i) arr.push(this.polygons[i]);
+      let len = this.polygons.length;
+      for (let i=0;i<len;++i) arr.push(this.polygons[i]);
       if ( this.front ) this.front.collectPolygons(arr);
       if ( this.back ) this.back.collectPolygons(arr);
       return arr;
    }
 
    ThreeBSP.Node.prototype.allPolygons = function() {
-      var polygons = this.polygons.slice();
+      let polygons = this.polygons.slice();
       if ( this.front ) polygons = polygons.concat( this.front.allPolygons() );
       if ( this.back ) polygons = polygons.concat( this.back.allPolygons() );
       return polygons;
    }
 
    ThreeBSP.Node.prototype.numPolygons = function() {
-      var res = this.polygons.length;
+      let res = this.polygons.length;
       if ( this.front ) res += this.front.numPolygons();
       if ( this.back ) res += this.back.numPolygons();
       return res;
    }
 
    ThreeBSP.Node.prototype.clone = function() {
-      var node = new ThreeBSP.Node();
+      let node = new ThreeBSP.Node();
 
       node.divider = this.divider.clone();
       node.polygons = this.polygons.map( function( polygon ) { return polygon.clone(); } );
@@ -870,16 +870,16 @@
    }
 
    ThreeBSP.Node.prototype.invert = function() {
-      var polygon_count = this.polygons.length;
+      let polygon_count = this.polygons.length;
 
-      for (var i = 0; i < polygon_count; ++i )
+      for (let i = 0; i < polygon_count; ++i )
          this.polygons[i].flip();
 
       this.divider.flip();
       if ( this.front ) this.front.invert();
       if ( this.back ) this.back.invert();
 
-      var temp = this.front;
+      let temp = this.front;
       this.front = this.back;
       this.back = temp;
 
@@ -890,9 +890,9 @@
 
       if ( !this.divider ) return polygons.slice();
 
-      var polygon_count = polygons.length, front = [], back = [];
+      let polygon_count = polygons.length, front = [], back = [];
 
-      for (var i = 0; i < polygon_count; ++i )
+      for (let i = 0; i < polygon_count; ++i )
          this.divider.splitPolygon( polygons[i], front, back, front, back );
 
       if ( this.front ) front = this.front.clipPolygons( front );
