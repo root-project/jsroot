@@ -3435,7 +3435,7 @@
                continue;
             }
 
-            var dist = Math.min(dist, origin.distanceTo(box3.min), origin.distanceTo(box3.max));
+            var dist = Math.min(origin.distanceTo(box3.min), origin.distanceTo(box3.max));
 
             var pnt = new THREE.Vector3(box3.min.x, box3.min.y, box3.max.z);
             dist = Math.min(dist, origin.distanceTo(pnt));
