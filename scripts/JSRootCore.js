@@ -4,7 +4,7 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
-      var jsroot = factory({}),
+      let jsroot = factory({}),
           dir = jsroot.source_dir + "scripts/",
           ext = jsroot.source_min ? ".min" : "",
           norjs = (typeof requirejs=='undefined'),
@@ -46,13 +46,13 @@
 
          require({ paths: paths });
       } else {
-         var cfg_paths;
+         let cfg_paths;
          if ((requirejs.s!==undefined) && (requirejs.s.contexts !== undefined) && ((requirejs.s.contexts._!==undefined) &&
                requirejs.s.contexts._.config!==undefined)) cfg_paths = requirejs.s.contexts._.config.paths;
          else console.warn("Require.js paths changed - please contact JSROOT developers");
 
          // check if modules are already loaded
-         for (var module in paths)
+         for (let module in paths)
             if (requirejs.defined(module) || (cfg_paths && (module in cfg_paths)))
                delete paths[module];
 
@@ -119,11 +119,11 @@
    JSROOT.browser = { isOpera: false, isFirefox: true, isSafari: false, isChrome: false, isWin: false };
 
    if ((typeof document !== "undefined") && (typeof window !== "undefined")) {
-      var scripts = document.getElementsByTagName('script');
-      for (var n = 0; n < scripts.length; ++n) {
+      let scripts = document.getElementsByTagName('script');
+      for (let n = 0; n < scripts.length; ++n) {
          if (!scripts[n].src || (typeof scripts[n].src !== 'string')) continue;
 
-         var pos = scripts[n].src.indexOf("scripts/JSRootCore.");
+         const pos = scripts[n].src.indexOf("scripts/JSRootCore.");
          if (pos<0) continue;
 
          JSROOT.source_dir = scripts[n].src.substr(0, pos);
@@ -306,7 +306,7 @@
       if (this.m_z===undefined) return Math.random();
       this.m_z = (36969 * (this.m_z & 65535) + (this.m_z >> 16)) & 0xffffffff;
       this.m_w = (18000 * (this.m_w & 65535) + (this.m_w >> 16)) & 0xffffffff;
-      var result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
+      let result = ((this.m_z << 16) + this.m_w) & 0xffffffff;
       result /= 4294967296;
       return result + 0.5;
    }
@@ -322,14 +322,14 @@
     * @private */
    JSROOT.JSONR_unref = function(obj) {
 
-      var map = [], newfmt = undefined;
+      let map = [], newfmt = undefined;
 
       function unref_value(value) {
          if ((value===null) || (value===undefined)) return;
 
          if (typeof value === 'string') {
             if (newfmt || (value.length < 6) || (value.indexOf("$ref:") !== 0)) return;
-            var ref = parseInt(value.substr(5));
+            let ref = parseInt(value.substr(5));
             if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = false;
             return map[ref];
@@ -337,7 +337,7 @@
 
          if (typeof value !== 'object') return;
 
-         var i, k, res, proto = Object.prototype.toString.apply(value);
+         let i, k, res, proto = Object.prototype.toString.apply(value);
 
          // scan array - it can contain other objects
          if ((proto.indexOf('[object')==0) && (proto.indexOf('Array]')>0)) {
@@ -348,10 +348,10 @@
              return;
          }
 
-         var ks = Object.keys(value), len = ks.length;
+         let ks = Object.keys(value), len = ks.length;
 
          if ((newfmt!==false) && (len===1) && (ks[0]==='$ref')) {
-            var ref = parseInt(value['$ref']);
+            const ref = parseInt(value['$ref']);
             if (isNaN(ref) || (ref < 0) || (ref >= map.length)) return;
             newfmt = true;
             return map[ref];
@@ -359,7 +359,7 @@
 
          if ((newfmt!==false) && (len>1) && (ks[0]==='$arr') && (ks[1]==='len')) {
             // this is ROOT-coded array
-            var arr = null, dflt = (value.$arr==="Bool") ? false : 0;
+            let arr = null, dflt = (value.$arr==="Bool") ? false : 0;
             switch (value.$arr) {
                case "Int8" : arr = new Int8Array(value.len); break;
                case "Uint8" : arr = new Uint8Array(value.len); break;
@@ -373,36 +373,36 @@
                case "Float64" : arr = new Float64Array(value.len); break;
                default : arr = new Array(value.len); break;
             }
-            for (var k=0;k<value.len;++k) arr[k] = dflt;
+            for (let k=0;k<value.len;++k) arr[k] = dflt;
 
             if (value.b !== undefined) {
                // base64 coding
 
-               var atob_func = JSROOT.nodejs ? require('atob') : window.atob;
+               let atob_func = JSROOT.nodejs ? require('atob') : window.atob;
 
-               var buf = atob_func(value.b);
+               let buf = atob_func(value.b);
 
                if (arr.buffer) {
-                  var dv = new DataView(arr.buffer, value.o || 0),
+                  let dv = new DataView(arr.buffer, value.o || 0),
                       len = Math.min(buf.length, dv.byteLength);
-                  for (var k=0; k<len; ++k)
+                  for (let k=0; k<len; ++k)
                      dv.setUint8(k, buf.charCodeAt(k));
                } else {
                   throw new Error('base64 coding supported only for native arrays with binary data');
                }
             } else {
                // compressed coding
-               var nkey = 2, p = 0;
+               let nkey = 2, p = 0;
                while (nkey<len) {
                   if (ks[nkey][0]=="p") p = value[ks[nkey++]]; // position
                   if (ks[nkey][0]!=='v') throw new Error('Unexpected member ' + ks[nkey] + ' in array decoding');
-                  var v = value[ks[nkey++]]; // value
+                  let v = value[ks[nkey++]]; // value
                   if (typeof v === 'object') {
-                     for (var k=0;k<v.length;++k) arr[p++] = v[k];
+                     for (let k=0;k<v.length;++k) arr[p++] = v[k];
                   } else {
                      arr[p++] = v;
                      if ((nkey<len) && (ks[nkey][0]=='n')) {
-                        var cnt = value[ks[nkey++]]; // counter
+                        let cnt = value[ks[nkey++]]; // counter
                         while (--cnt) arr[p++] = v;
                      }
                   }
@@ -414,7 +414,7 @@
 
          if ((newfmt!==false) && (len===3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
             newfmt = true;
-            var f1 = unref_value(value.first),
+            let f1 = unref_value(value.first),
                 s1 = unref_value(value.second);
             if (f1!==undefined) value.first = f1;
             if (s1!==undefined) value.second = s1;
@@ -456,7 +456,7 @@
       if ((src === null) || (typeof src !== 'object')) return tgt;
       if ((tgt === null) || (typeof tgt !== 'object')) tgt = {};
 
-      for (var k in src)
+      for (let k in src)
          tgt[k] = src[k];
 
       return tgt;
@@ -470,18 +470,18 @@
       if (!map) {
          map = { obj:[], clones:[], nofunc: nofunc };
       } else {
-         var i = map.obj.indexOf(src);
+         let i = map.obj.indexOf(src);
          if (i>=0) return map.clones[i];
       }
 
-      var proto = Object.prototype.toString.apply(src);
+      let proto = Object.prototype.toString.apply(src);
 
       // process normal array
       if (proto === '[object Array]') {
-         var tgt = [];
+         let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
-         for (var i = 0; i < src.length; ++i)
+         for (let i = 0; i < src.length; ++i)
             if (typeof src[i] === 'object')
                tgt.push(JSROOT.clone(src[i], map));
             else
@@ -492,20 +492,20 @@
 
       // process typed array
       if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
-         var tgt = [];
+         let tgt = [];
          map.obj.push(src);
          map.clones.push(tgt);
-         for (var i = 0; i < src.length; ++i)
+         for (let i = 0; i < src.length; ++i)
             tgt.push(src[i]);
 
          return tgt;
       }
 
-      var tgt = {};
+      let tgt = {};
       map.obj.push(src);
       map.clones.push(tgt);
 
-      for (var k in src) {
+      for (let k in src) {
          if (typeof src[k] === 'object')
             tgt[k] = JSROOT.clone(src[k], map);
          else
@@ -527,10 +527,10 @@
    JSROOT.clear_func = function(src, map) {
       if (src === null) return src;
 
-      var proto = Object.prototype.toString.apply(src);
+      let proto = Object.prototype.toString.apply(src);
 
       if (proto === '[object Array]') {
-         for (var n=0;n<src.length;n++)
+         for (let n=0;n<src.length;n++)
             if (typeof src[n] === 'object')
                JSROOT.clear_func(src[n], map);
          return src;
@@ -539,13 +539,13 @@
       if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) return src;
 
       if (!map) map = [];
-      var nomap = (map.length == 0);
+      let nomap = (map.length == 0);
       if ('__clean_func__' in src) return src;
 
       map.push(src);
       src['__clean_func__'] = true;
 
-      for (var k in src) {
+      for (let k in src) {
          if (typeof src[k] === 'object')
             JSROOT.clear_func(src[k], map);
          else
@@ -553,7 +553,7 @@
       }
 
       if (nomap)
-         for (var n=0;n<map.length;++n)
+         for (let n=0;n<map.length;++n)
             delete map[n]['__clean_func__'];
 
       return src;
@@ -567,7 +567,7 @@
     */
    JSROOT.parse = function(json) {
       if (!json) return null;
-      var obj = JSON.parse(json);
+      let obj = JSON.parse(json);
       return obj ? this.JSONR_unref(obj) : obj;
    }
 
@@ -580,9 +580,9 @@
     */
    JSROOT.parse_multi = function(json) {
       if (!json) return null;
-      var arr = JSON.parse(json);
+      let arr = JSON.parse(json);
       if (arr && arr.length)
-         for (var i=0;i<arr.length;++i)
+         for (let i=0;i<arr.length;++i)
             arr[i] = this.JSONR_unref(arr[i]);
       return arr;
    }
@@ -596,28 +596,28 @@
    JSROOT.toJSON = function(obj) {
       if (!obj || typeof obj !== 'object') return "";
 
-      var map = []; // map of stored objects
+      let map = []; // map of stored objects
 
       function copy_value(value) {
          if (typeof value === "function") return undefined;
 
          if ((value===undefined) || (value===null) || (typeof value !== 'object')) return value;
 
-         var proto = Object.prototype.toString.apply(value);
+         let proto = Object.prototype.toString.apply(value);
 
          // typed array need to be converted into normal array, otherwise looks strange
          if ((proto.indexOf('[object ') == 0) && (proto.indexOf('Array]') == proto.length-6)) {
-            var arr = new Array(value.length)
-            for (var i = 0; i < value.length; ++i)
+            let arr = new Array(value.length)
+            for (let i = 0; i < value.length; ++i)
                arr[i] = copy_value(value[i]);
             return arr;
          }
 
          // this is how reference is code
-         var refid = map.indexOf(value);
+         let refid = map.indexOf(value);
          if (refid >= 0) return { $ref: refid };
 
-         var ks = Object.keys(value), len = ks.length, tgt = {};
+         let ks = Object.keys(value), len = ks.length, tgt = {};
 
          if ((len == 3) && (ks[0]==='$pair') && (ks[1]==='first') && (ks[2]==='second')) {
             // special handling of pair objects which does not included into objects map
@@ -629,15 +629,15 @@
 
          map.push(value);
 
-         for (var k = 0; k < len; ++k) {
-            var name = ks[k];
+         for (let k = 0; k < len; ++k) {
+            let name = ks[k];
             tgt[name] = copy_value(value[name]);
          }
 
          return tgt;
       }
 
-      var tgt = copy_value(obj);
+      let tgt = copy_value(obj);
 
       return JSON.stringify(tgt);
    }
@@ -664,7 +664,7 @@
          url = document.URL;
       }
 
-      var pos = url.indexOf("?"), nquotes;
+      let pos = url.indexOf("?"), nquotes;
       if (pos<0) return dflt;
       url = decodeURI(url.slice(pos+1));
       pos = url.lastIndexOf("#");
@@ -709,7 +709,7 @@
     */
    JSROOT.ParseAsArray = function(val) {
 
-      var res = [];
+      let res = [];
 
       if (typeof val != 'string') return res;
 
@@ -722,9 +722,9 @@
       }
 
       // try to split ourself, checking quotes and brackets
-      var nbr = 0, nquotes = 0, ndouble = 0, last = 1;
+      let nbr = 0, nquotes = 0, ndouble = 0, last = 1;
 
-      for (var indx = 1; indx < val.length; ++indx) {
+      for (let indx = 1; indx < val.length; ++indx) {
          if (nquotes > 0) {
             if (val[indx]==="'") nquotes--;
             continue;
@@ -740,7 +740,7 @@
             case "]": if (indx < val.length - 1) { nbr--; break; }
             case ",":
                if (nbr === 0) {
-                  var sub =  val.substring(last, indx).trim();
+                  let sub =  val.substring(last, indx).trim();
                   if ((sub.length>1) && (sub[0]==sub[sub.length-1]) && ((sub[0]=='"') || (sub[0]=="'")))
                      sub = sub.substr(1, sub.length-2);
                   res.push(sub);
@@ -766,18 +766,18 @@
     */
    JSROOT.GetUrlOptionAsArray = function(opt, url) {
 
-      var res = [];
+      let res = [];
 
       while (opt.length>0) {
-         var separ = opt.indexOf(";");
-         var part = (separ>0) ? opt.substr(0, separ) : opt;
+         let separ = opt.indexOf(";");
+         let part = (separ>0) ? opt.substr(0, separ) : opt;
 
          if (separ>0) opt = opt.substr(separ+1); else opt = "";
 
-         var canarray = true;
+         let canarray = true;
          if (part[0]=='#') { part = part.substr(1); canarray = false; }
 
-         var val = this.GetUrlOption(part, url, null);
+         let val = this.GetUrlOption(part, url, null);
 
          if (canarray) res = res.concat(JSROOT.ParseAsArray(val));
                   else if (val!==null) res.push(val);
@@ -795,11 +795,11 @@
    JSROOT.findFunction = function(name) {
       if (typeof name === 'function') return name;
       if (typeof name !== 'string') return null;
-      var names = name.split('.'), elem = null;
+      let names = name.split('.'), elem = null;
       if (typeof window === 'object') elem = window;
       if (names[0]==='JSROOT') { elem = this; names.shift(); }
 
-      for (var n=0;elem && (n<names.length);++n)
+      for (let n=0;elem && (n<names.length);++n)
          elem = elem[names[n]];
 
       return (typeof elem == 'function') ? elem : null;
@@ -867,14 +867,14 @@
 
    JSROOT.NewHttpRequest = function(url, kind, user_accept_callback, user_reject_callback) {
 
-      var xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
+      let xhr = JSROOT.nodejs ? new (require("xhr2"))() : new XMLHttpRequest();
 
       xhr.http_callback = (typeof user_accept_callback == 'function') ? user_accept_callback.bind(xhr) : function() {};
       xhr.error_callback = (typeof user_reject_callback == 'function') ? user_reject_callback : function(err) { console.warn(err.message); this.http_callback(null); }.bind(xhr);
 
       if (!kind) kind = "buf";
 
-      var method = "GET", async = true, p = kind.indexOf(";sync");
+      let method = "GET", async = true, p = kind.indexOf(";sync");
       if (p>0) { kind = kind.substr(0,p); async = false; }
       if (kind === "head") method = "HEAD"; else
       if ((kind === "post") || (kind === "multi") || (kind === "posttext")) method = "POST";
@@ -895,7 +895,7 @@
          if (this.did_abort) return;
 
          if ((this.readyState === 2) && this.expected_size) {
-            var len = parseInt(this.getResponseHeader("Content-Length"));
+            let len = parseInt(this.getResponseHeader("Content-Length"));
             if (!isNaN(len) && (len>this.expected_size) && !JSROOT.wrong_http_response_handling) {
                this.did_abort = true;
                this.abort();
@@ -913,7 +913,7 @@
 
          if (this.nodejs_checkzip && (this.getResponseHeader("content-encoding") == "gzip")) {
             // special handling of gzipped JSON objects in Node.js
-            var zlib = require('zlib'),
+            let zlib = require('zlib'),
                 str = zlib.unzipSync(Buffer.from(this.response));
             return this.http_callback(JSROOT.parse(str));
          }
@@ -934,8 +934,8 @@
          if ((this.kind == "bin") && ('byteLength' in this.response)) {
             // if string representation in requested - provide it
 
-            var filecontent = "", u8Arr = new Uint8Array(this.response);
-            for (var i = 0; i < u8Arr.length; ++i)
+            let filecontent = "", u8Arr = new Uint8Array(this.response);
+            for (let i = 0; i < u8Arr.length; ++i)
                filecontent += String.fromCharCode(u8Arr[i]);
 
             return this.http_callback(filecontent);
@@ -1005,7 +1005,7 @@
 
       if (!urllist) return JSROOT.CallBack(callback);
 
-      var filename = urllist, separ = filename.indexOf(";"),
+      let filename = urllist, separ = filename.indexOf(";"),
           isrootjs = false, isbower = false;
 
       if (separ>0) {
@@ -1015,7 +1015,7 @@
          urllist = "";
       }
 
-      var completeLoad = JSROOT.loadScript.bind(JSROOT, urllist, callback, debugout, true);
+      let completeLoad = JSROOT.loadScript.bind(JSROOT, urllist, callback, debugout, true);
 
       if (filename.indexOf('&&&scripts/')===0) {
          isrootjs = true;
@@ -1041,21 +1041,21 @@
          return completeLoad();
       }
 
-      var isstyle = filename.indexOf('.css') > 0;
+      let isstyle = filename.indexOf('.css') > 0;
 
       if (isstyle) {
-         var styles = document.getElementsByTagName('link');
-         for (var n = 0; n < styles.length; ++n) {
+         let styles = document.getElementsByTagName('link');
+         for (let n = 0; n < styles.length; ++n) {
             if (!styles[n].href || (styles[n].type !== 'text/css') || (styles[n].rel !== 'stylesheet')) continue;
 
             if (styles[n].href.indexOf(filename)>=0) return completeLoad();
          }
 
       } else {
-         var scripts = document.getElementsByTagName('script');
+         let scripts = document.getElementsByTagName('script');
 
-         for (var n = 0; n < scripts.length; ++n) {
-            var src = scripts[n].src;
+         for (let n = 0; n < scripts.length; ++n) {
+            let src = scripts[n].src;
             if (!src) continue;
 
             if ((src.indexOf(filename)>=0) && (src.indexOf("load=")<0))
@@ -1067,7 +1067,7 @@
       if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename; else
       if (isbower && (JSROOT.bower_dir!==null)) filename = JSROOT.bower_dir + filename;
 
-      var element = null;
+      let element = null;
 
       if (debugout)
          document.getElementById(debugout).innerHTML = "loading " + filename + " ...";
@@ -1130,14 +1130,14 @@
     *
     * @example
     * JSROOT.AssertPrerequisites("io;tree", function() {
-    *    var selector = new JSROOT.TSelector;
+    *    let selector = new JSROOT.TSelector;
     * });
     */
 
    JSROOT.AssertPrerequisites = function(kind, callback, debugout) {
       // one could specify kind of requirements
 
-      var jsroot = JSROOT;
+      let jsroot = JSROOT;
 
       if (jsroot.doing_assert === undefined) jsroot.doing_assert = [];
       if (jsroot.ready_modules === undefined) jsroot.ready_modules = [];
@@ -1147,7 +1147,7 @@
 
       if (kind === '__next__') {
          if (jsroot.doing_assert.length==0) return;
-         var req = jsroot.doing_assert[0];
+         let req = jsroot.doing_assert[0];
          if (req.running) return;
          kind = req._kind;
          callback = req._callback;
@@ -1158,8 +1158,8 @@
       }
 
       function normal_callback() {
-         var req = jsroot.doing_assert.shift();
-         for (var n=0;n<req.modules.length;++n)
+         let req = jsroot.doing_assert.shift();
+         for (let n=0;n<req.modules.length;++n)
             jsroot.ready_modules.push(req.modules[n]);
          jsroot.CallBack(req._callback);
          jsroot.AssertPrerequisites('__next__');
@@ -1169,7 +1169,7 @@
 
       if (kind[kind.length-1]!=";") kind+=";";
 
-      var ext = jsroot.source_min ? ".min" : "",
+      let ext = jsroot.source_min ? ".min" : "",
           need_jquery = false,
           use_require = (typeof define === "function") && define.amd,
           use_bower = jsroot.bower_dir!==null,
@@ -1309,7 +1309,7 @@
                   SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false } });
 
                MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
-                  var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+                  let VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
                   VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
                   VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
                   VARIANT["italic"].fonts.unshift("MathJax_SansSerif");
@@ -1328,7 +1328,8 @@
       }
 
       if (need_jquery && !jsroot.load_jquery) {
-         var has_jq = (typeof jQuery != 'undefined'), lst_jq = "";
+         const has_jq = (typeof jQuery != 'undefined');
+         let lst_jq = "";
 
          if (has_jq)
             jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 3.1.1", debugout);
@@ -1352,12 +1353,12 @@
          jsroot.load_jquery = true;
       }
 
-      var pos = kind.indexOf("user:");
-      if (pos<0) pos = kind.indexOf("load:");
-      if (pos>=0) extrafiles += kind.slice(pos+5);
+      let pos = kind.indexOf("user:");
+      if (pos < 0) pos = kind.indexOf("load:");
+      if (pos >= 0) extrafiles += kind.slice(pos+5);
 
       // check if modules already loaded
-      for (var n=modules.length-1;n>=0;--n)
+      for (let n=modules.length-1;n>=0;--n)
          if (jsroot.ready_modules.indexOf(modules[n])>=0)
             modules.splice(n,1);
 
@@ -1424,7 +1425,7 @@
          user_scripts = null;
       }
 
-      var debugout = null,
+      let debugout = null,
           nobrowser = JSROOT.GetUrlOption('nobrowser')!=null,
           requirements = "2d;hierarchy;",
           simplegui = document.getElementById('simpleGUI');
@@ -1465,12 +1466,12 @@
     *
     * @param {string} typename - ROOT class name
     * @example
-    * var obj = JSROOT.Create("TNamed");
+    * let obj = JSROOT.Create("TNamed");
     * obj.fName = "name";
     * obj.fTitle = "title";
     */
    JSROOT.Create = function(typename, target) {
-      var obj = target || {};
+      let obj = target || {};
 
       switch (typename) {
          case 'TObject':
@@ -1754,7 +1755,7 @@
    JSROOT.CreateHistogram = function(typename, nbinsx, nbinsy, nbinsz) {
       // create histogram object of specified type
       // if bins numbers are specified, appropriate typed array will be created
-      var histo = JSROOT.Create(typename);
+      let histo = JSROOT.Create(typename);
       if (!histo.fXaxis || !histo.fYaxis || !histo.fZaxis) return null;
       histo.fName = "hist"; histo.fTitle = "title";
       if (nbinsx) JSROOT.extend(histo.fXaxis, { fNbins: nbinsx, fXmin: 0, fXmax: nbinsx });
@@ -1775,7 +1776,7 @@
             case "D" : histo.fArray = new Float64Array(histo.fNcells); break;
             default: histo.fArray = new Array(histo.fNcells); break;
          }
-         for (var i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
+         for (let i=0;i<histo.fNcells;++i) histo.fArray[i] = 0;
       }
       return histo;
    }
@@ -1805,7 +1806,7 @@
     * @param {number} npoints - number of points
     * @param {boolean} [use_int32] - use Int32Array type for points, default is Float32Array */
    JSROOT.CreateTPolyLine = function(npoints, use_int32) {
-      var poly = JSROOT.Create("TPolyLine");
+      let poly = JSROOT.Create("TPolyLine");
       if (npoints) {
          poly.fN = npoints;
          if (use_int32) {
@@ -1825,15 +1826,15 @@
     * @param {array} [xpts] - array with X coordinates
     * @param {array} [ypts] - array with Y coordinates */
    JSROOT.CreateTGraph = function(npoints, xpts, ypts) {
-      var graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
+      let graph = JSROOT.extend(JSROOT.Create("TGraph"), { fBits: 0x408, fName: "graph", fTitle: "title" });
 
       if (npoints>0) {
          graph.fMaxSize = graph.fNpoints = npoints;
 
-         var usex = (typeof xpts == 'object') && (xpts.length === npoints);
-         var usey = (typeof ypts == 'object') && (ypts.length === npoints);
+         const usex = (typeof xpts == 'object') && (xpts.length === npoints);
+         const usey = (typeof ypts == 'object') && (ypts.length === npoints);
 
-         for (var i=0;i<npoints;++i) {
+         for (let i=0;i<npoints;++i) {
             graph.fX.push(usex ? xpts[i] : i/npoints);
             graph.fY.push(usey ? ypts[i] : i/npoints);
          }
@@ -1846,15 +1847,15 @@
     * @desc
     * As arguments one could specify any number of histograms objects
     * @example
-    * var nbinsx = 20;
-    * var h1 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * var h2 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * var h3 = JSROOT.CreateHistogram("TH1F", nbinsx);
-    * var stack = JSROOT.CreateTHStack(h1, h2, h3);
+    * let nbinsx = 20;
+    * let h1 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * let h2 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * let h3 = JSROOT.CreateHistogram("TH1F", nbinsx);
+    * let stack = JSROOT.CreateTHStack(h1, h2, h3);
     * */
    JSROOT.CreateTHStack = function() {
-      var stack = JSROOT.Create("THStack");
-      for(var i=0; i<arguments.length; ++i)
+      let stack = JSROOT.Create("THStack");
+      for(let i=0; i<arguments.length; ++i)
          stack.fHists.Add(arguments[i], "");
       return stack;
    }
@@ -1863,8 +1864,8 @@
     * @desc
     * As arguments one could specify any number of TGraph objects */
    JSROOT.CreateTMultiGraph = function() {
-      var mgraph = JSROOT.Create("TMultiGraph");
-      for(var i=0; i<arguments.length; ++i)
+      let mgraph = JSROOT.Create("TMultiGraph");
+      for(let i=0; i<arguments.length; ++i)
           mgraph.fGraphs.Add(arguments[i], "");
       return mgraph;
    }
@@ -1876,7 +1877,7 @@
     */
    JSROOT.getMethods = function(typename, obj) {
 
-      var m = JSROOT.methodsCache[typename],
+      let m = JSROOT.methodsCache[typename],
           has_methods = (m!==undefined);
 
       if (!has_methods) m = {};
@@ -1913,7 +1914,7 @@
       if ((typename === "TPaveText") || (typename === "TPaveStats")) {
          m.AddText = function(txt) {
             // this.fLines.Add({ _typename: 'TLatex', fTitle: txt, fTextColor: 1 });
-            var line = JSROOT.Create("TLatex");
+            let line = JSROOT.Create("TLatex");
             line.fTitle = txt;
             this.fLines.Add(line);
          }
@@ -1932,7 +1933,7 @@
          m.evalPar = function(x, y) {
             if (! ('_func' in this) || (this._title !== this.fTitle)) {
 
-              var _func = this.fTitle, isformula = false, pprefix = "[";
+              let _func = this.fTitle, isformula = false, pprefix = "[";
               if (_func === "gaus") _func = "gaus(0)";
               if (this.fFormula && typeof this.fFormula.fFormula == "string") {
                  if (this.fFormula.fFormula.indexOf("[](double*x,double*p)")==0) {
@@ -1943,8 +1944,8 @@
                     pprefix = "[p";
                  }
                  if (this.fFormula.fClingParameters && this.fFormula.fParams) {
-                    for (var i=0;i<this.fFormula.fParams.length;++i) {
-                       var regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g'),
+                    for (let i=0;i<this.fFormula.fParams.length;++i) {
+                       let regex = new RegExp('(\\[' + this.fFormula.fParams[i].first + '\\])', 'g'),
                            parvalue = this.fFormula.fClingParameters[this.fFormula.fParams[i].second];
                        _func = _func.replace(regex, (parvalue < 0) ? "(" + parvalue + ")" : parvalue);
                     }
@@ -1952,7 +1953,7 @@
               }
 
               if ('formulas' in this)
-                 for (var i=0;i<this.formulas.length;++i)
+                 for (let i=0;i<this.formulas.length;++i)
                     while (_func.indexOf(this.formulas[i].fName) >= 0)
                        _func = _func.replace(this.formulas[i].fName, this.formulas[i].fTitle);
               _func = _func.replace(/\b(abs)\b/g, 'TMath::Abs')
@@ -1971,8 +1972,8 @@
                               .replace(/landaun\(/g, 'this._math.landaun(this, x, ')
                               .replace(/ROOT::Math::/g, 'this._math.');
               }
-              for (var i=0;i<this.fNpar;++i) {
-                 var parname = pprefix + i + "]";
+              for (let i=0;i<this.fNpar;++i) {
+                 let parname = pprefix + i + "]";
                  while(_func.indexOf(parname) != -1)
                     _func = _func.replace(parname, '('+this.GetParValue(i)+')');
               }
@@ -1982,7 +1983,7 @@
                            .replace(/\b(exp)\b/gi, 'Math.exp')
                            .replace(/\b(pow)\b/gi, 'Math.pow')
                            .replace(/pi/g, 'Math.PI');
-              for (var n=2;n<10;++n)
+              for (let n=2;n<10;++n)
                  _func = _func.replace('x^'+n, 'Math.pow(x,'+n+')');
 
               if (isformula) {
@@ -2007,7 +2008,7 @@
          m.GetParName = function(n) {
             if (this.fParams && this.fParams.fParNames) return this.fParams.fParNames[n];
             if (this.fFormula && this.fFormula.fParams) {
-               for (var k=0;k<this.fFormula.fParams.length;++k)
+               for (let k=0;k<this.fFormula.fParams.length;++k)
                   if(this.fFormula.fParams[k].second == n)
                      return this.fFormula.fParams[k].first;
             }
@@ -2031,7 +2032,7 @@
       if (((typename.indexOf("TGraph") == 0) || (typename == "TCutG")) && (typename != "TGraphPolargram") && (typename != "TGraphTime")) {
          // check if point inside figure specified by the TGraph
          m.IsInside = function(xp,yp) {
-            var i, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
+            let i, j = this.fNpoints - 1, x = this.fX, y = this.fY, oddNodes = false;
 
             for (i=0; i<this.fNpoints; ++i) {
                if ((y[i]<yp && y[j]>=yp) || (y[j]<yp && y[i]>=yp)) {
@@ -2073,7 +2074,7 @@
          m.getBin = function(x) { return x; }
          m.getBinContent = function(bin) { return this.fArray[bin]; }
          m.Fill = function(x, weight) {
-            var axis = this.fXaxis,
+            let axis = this.fXaxis,
                 bin = 1 + Math.floor((x - axis.fXmin) / (axis.fXmax - axis.fXmin) * axis.fNbins);
             if (bin < 0) bin = 0; else
             if (bin > axis.fNbins + 1) bin = axis.fNbins + 1;
@@ -2086,7 +2087,7 @@
          m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
          m.getBinContent = function(x, y) { return this.fArray[this.getBin(x, y)]; }
          m.Fill = function(x, y, weight) {
-            var axis1 = this.fXaxis, axis2 = this.fYaxis,
+            let axis1 = this.fXaxis, axis2 = this.fYaxis,
                 bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
                 bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins);
             if (bin1 < 0) bin1 = 0; else
@@ -2102,7 +2103,7 @@
          m.getBin = function(x, y, z) { return (x + (this.fXaxis.fNbins+2) * (y + (this.fYaxis.fNbins+2) * z)); }
          m.getBinContent = function(x, y, z) { return this.fArray[this.getBin(x, y, z)]; };
          m.Fill = function(x, y, z, weight) {
-            var axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
+            let axis1 = this.fXaxis, axis2 = this.fYaxis, axis3 = this.fZaxis,
                 bin1 = 1 + Math.floor((x - axis1.fXmin) / (axis1.fXmax - axis1.fXmin) * axis1.fNbins),
                 bin2 = 1 + Math.floor((y - axis2.fXmin) / (axis2.fXmax - axis2.fXmin) * axis2.fNbins),
                 bin3 = 1 + Math.floor((z - axis3.fXmin) / (axis3.fXmax - axis3.fXmin) * axis3.fNbins);
@@ -2121,14 +2122,14 @@
          if (typename.indexOf("TProfile2D") == 0) {
             m.getBin = function(x, y) { return (x + (this.fXaxis.fNbins+2) * y); }
             m.getBinContent = function(x, y) {
-               var bin = this.getBin(x, y);
+               let bin = this.getBin(x, y);
                if (bin < 0 || bin >= this.fNcells) return 0;
                if (this.fBinEntries[bin] < 1e-300) return 0;
                if (!this.fArray) return 0;
                return this.fArray[bin]/this.fBinEntries[bin];
             }
             m.getBinEntries = function(x, y) {
-               var bin = this.getBin(x, y);
+               let bin = this.getBin(x, y);
                if (bin < 0 || bin >= this.fNcells) return 0;
                return this.fBinEntries[bin];
             }
@@ -2144,27 +2145,27 @@
          }
          m.getBinEffectiveEntries = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
-            var sumOfWeights = this.fBinEntries[bin];
+            let sumOfWeights = this.fBinEntries[bin];
             if ( !this.fBinSumw2 || this.fBinSumw2.length != this.fNcells) {
                // this can happen  when reading an old file
                return sumOfWeights;
             }
-            var sumOfWeightsSquare = this.fBinSumw2[bin];
+            let sumOfWeightsSquare = this.fBinSumw2[bin];
             return (sumOfWeightsSquare > 0) ? sumOfWeights * sumOfWeights / sumOfWeightsSquare : 0;
          };
          m.getBinError = function(bin) {
             if (bin < 0 || bin >= this.fNcells) return 0;
-            var cont = this.fArray[bin],               // sum of bin w *y
+            let cont = this.fArray[bin],               // sum of bin w *y
                 sum  = this.fBinEntries[bin],          // sum of bin weights
                 err2 = this.fSumw2[bin],               // sum of bin w * y^2
                 neff = this.getBinEffectiveEntries(bin);  // (sum of w)^2 / (sum of w^2)
             if (sum < 1e-300) return 0;                  // for empty bins
-            var EErrorType = { kERRORMEAN : 0, kERRORSPREAD : 1, kERRORSPREADI : 2, kERRORSPREADG : 3 };
+            const EErrorType = { kERRORMEAN: 0, kERRORSPREAD: 1, kERRORSPREADI: 2, kERRORSPREADG : 3 };
             // case the values y are gaussian distributed y +/- sigma and w = 1/sigma^2
             if (this.fErrorMode === EErrorType.kERRORSPREADG)
                return 1.0/Math.sqrt(sum);
             // compute variance in y (eprim2) and standard deviation in y (eprim)
-            var contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
+            let contsum = cont/sum, eprim = Math.sqrt(Math.abs(err2/sum - contsum*contsum));
             if (this.fErrorMode === EErrorType.kERRORSPREADI) {
                if (eprim != 0) return eprim/Math.sqrt(neff);
                // in case content y is an integer (so each my has an error +/- 1/sqrt(12)
@@ -2246,22 +2247,22 @@
       JSROOT.lastFFormat = "";
 
       fmt = fmt.trim();
-      var len = fmt.length;
+      let len = fmt.length;
       if (len<2) return value.toFixed(4);
-      var last = fmt[len-1];
+      let last = fmt[len-1];
       fmt = fmt.slice(0,len-1);
-      var isexp = null;
-      var prec = fmt.indexOf(".");
+      let isexp = null;
+      let prec = fmt.indexOf(".");
       if (prec<0) prec = 4; else prec = Number(fmt.slice(prec+1));
       if (isNaN(prec) || (prec<0) || (prec==null)) prec = 4;
 
-      var significance = false;
+      let significance = false;
       if ((last=='e') || (last=='E')) { isexp = true; } else
       if (last=='Q') { isexp = true; significance = true; } else
       if ((last=='f') || (last=='F')) { isexp = false; } else
       if (last=='W') { isexp = false; significance = true; } else
       if ((last=='g') || (last=='G')) {
-         var se = JSROOT.FFormat(value, fmt+'Q'),
+         let se = JSROOT.FFormat(value, fmt+'Q'),
              _fmt = JSROOT.lastFFormat,
              sg = JSROOT.FFormat(value, fmt+'W');
 
@@ -2285,7 +2286,7 @@
          return value.toExponential(prec);
       }
 
-      var sg = value.toFixed(prec);
+      let sg = value.toFixed(prec);
 
       if (significance) {
 
@@ -2294,10 +2295,10 @@
             prec = 20; sg = value.toFixed(prec);
          }
 
-         var l = 0;
+         let l = 0;
          while ((l<sg.length) && (sg[l] == '0' || sg[l] == '-' || sg[l] == '.')) l++;
 
-         var diff = sg.length - l - prec;
+         let diff = sg.length - l - prec;
          if (sg.indexOf(".")>l) diff--;
 
          if (diff != 0) {
@@ -2354,7 +2355,7 @@
          return JSROOT;
       }
 
-      var src = JSROOT.source_fullpath;
+      let src = JSROOT.source_fullpath;
 
       if (JSROOT.GetUrlOption('nocache', src) != null) JSROOT.nocache = (new Date).getTime(); // use timestamp to overcome cache limitation
       if ((JSROOT.GetUrlOption('wrong_http_response', src) != null) || (JSROOT.GetUrlOption('wrong_http_response') != null))
@@ -2366,7 +2367,7 @@
       if ( typeof define === "function" && define.amd )
          return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
 
-      var prereq = "";
+      let prereq = "";
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
       if (JSROOT.GetUrlOption('tree', src)!=null) prereq += "tree;";
       if (JSROOT.GetUrlOption('2d', src)!=null) prereq += "2d;";
@@ -2380,7 +2381,7 @@
       if (JSROOT.GetUrlOption('math', src)!=null) prereq += "math;";
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
       if (JSROOT.GetUrlOption('openui5', src)!=null) prereq += "openui5;";
-      var user = JSROOT.GetUrlOption('load', src),
+      let user = JSROOT.GetUrlOption('load', src),
           onload = JSROOT.GetUrlOption('onload', src),
           bower = JSROOT.GetUrlOption('bower', src);
 
