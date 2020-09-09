@@ -23,7 +23,7 @@
    JSROOT.sources.push("more2d");
 
    function drawText() {
-      var text = this.GetObject(),
+      let text = this.GetObject(),
           w = this.pad_width(), h = this.pad_height(),
           pos_x = text.fX, pos_y = text.fY,
           tcolor = this.get_color(text.fTextColor),
@@ -56,7 +56,7 @@
       this.pos_x = this.AxisToSvg("x", pos_x, this.isndc);
       this.pos_y = this.AxisToSvg("y", pos_y, this.isndc);
 
-      var arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
+      let arg = { align: text.fTextAlign, x: this.pos_x, y: this.pos_y, text: text.fTitle, color: tcolor, latex: 0 };
 
       if (text.fTextAngle) arg.rotate = -text.fTextAngle;
 
@@ -81,7 +81,7 @@
       if (!this.moveEnd)
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
-            var text = this.GetObject();
+            let text = this.GetObject();
             text.fX = this.SvgToAxis("x", this.pos_x + this.pos_dx, this.isndc),
             text.fY = this.SvgToAxis("y", this.pos_y + this.pos_dy, this.isndc);
             this.WebCanvasExec("SetX(" + text.fX + ");;SetY(" + text.fY + ");;");
@@ -94,7 +94,7 @@
 
    function drawLine() {
 
-      var line = this.GetObject(),
+      let line = this.GetObject(),
           lineatt = new JSROOT.TAttLineHandler(line),
           kLineNDC = JSROOT.BIT(14),
           isndc = line.TestBit(kLineNDC);
@@ -118,14 +118,14 @@
       // create svg:g container for polyline drawing
       this.CreateG();
 
-      var polyline = this.GetObject(),
+      let polyline = this.GetObject(),
           lineatt = new JSROOT.TAttLineHandler(polyline),
           fillatt = this.createAttFill(polyline),
           kPolyLineNDC = JSROOT.BIT(14),
           isndc = polyline.TestBit(kPolyLineNDC),
           cmd = "", func = this.AxisToSvgFunc(isndc);
 
-      for (var n=0;n<=polyline.fLastPoint;++n)
+      for (let n=0;n<=polyline.fLastPoint;++n)
          cmd += ((n>0) ? "L" : "M") + func.x(polyline.fX[n]) + "," + func.y(polyline.fY[n]);
 
       if (polyline._typename != "TPolyLine") fillatt.SetSolidColor("none");
@@ -143,7 +143,7 @@
 
    function drawEllipse() {
 
-      var ellipse = this.GetObject();
+      let ellipse = this.GetObject();
 
       this.createAttLine({ attr: ellipse });
       this.createAttFill({ attr: ellipse });
@@ -151,7 +151,7 @@
       // create svg:g container for ellipse drawing
       this.CreateG();
 
-      var x = this.AxisToSvg("x", ellipse.fX1),
+      let x = this.AxisToSvg("x", ellipse.fX1),
           y = this.AxisToSvg("y", ellipse.fY1),
           rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR1) - x,
           ry = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR2);
@@ -161,11 +161,11 @@
             // handle same as ellipse with equal radius
             rx = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
          } else {
-            var rx1 = rx, ry2 = ry,
+            let rx1 = rx, ry2 = ry,
                 ry1 = y - this.AxisToSvg("y", ellipse.fY1 + ellipse.fR1),
                 rx2 = this.AxisToSvg("x", ellipse.fX1 + ellipse.fR2) - x;
 
-            var elem = this.draw_g
+            let elem = this.draw_g
                           .attr("transform","translate("+x+","+y+")")
                           .append("svg:path")
                           .call(this.lineatt.func)
@@ -180,9 +180,9 @@
                               "A"+rx2+","+ry2+",0,1,0,-"+rx2+",0");
 
             } else {
-               var large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0;
+               let large_arc = (ellipse.fPhimax-ellipse.fPhimin>=180) ? 1 : 0;
 
-               var a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
+               let a1 = ellipse.fPhimin*Math.PI/180, a2 = ellipse.fPhimax*Math.PI/180,
                    dx1 = Math.round(rx1*Math.cos(a1)), dy1 = Math.round(ry1*Math.sin(a1)),
                    dx2 = Math.round(rx1*Math.cos(a2)), dy2 = Math.round(ry1*Math.sin(a2)),
                    dx3 = Math.round(rx2*Math.cos(a1)), dy3 = Math.round(ry2*Math.sin(a1)),
@@ -209,7 +209,7 @@
 
       // here svg:path is used to draw more complex figure
 
-      var ct = Math.cos(ellipse.fTheta*Math.PI/180),
+      let ct = Math.cos(ellipse.fTheta*Math.PI/180),
           st = Math.sin(ellipse.fTheta*Math.PI/180),
           dx1 = rx * Math.cos(ellipse.fPhimin*Math.PI/180),
           dy1 = ry * Math.sin(ellipse.fPhimin*Math.PI/180),
@@ -233,12 +233,12 @@
    // ==============================================================================
 
    function drawPie() {
-      var pie = this.GetObject();
+      let pie = this.GetObject();
 
       // create svg:g container for ellipse drawing
       this.CreateG();
 
-      var xc = this.AxisToSvg("x", pie.fX),
+      let xc = this.AxisToSvg("x", pie.fX),
           yc = this.AxisToSvg("y", pie.fY),
           rx = this.AxisToSvg("x", pie.fX + pie.fRadius) - xc,
           ry = this.AxisToSvg("y", pie.fY + pie.fRadius) - yc;
@@ -246,20 +246,20 @@
       this.draw_g.attr("transform","translate("+xc+","+yc+")");
 
       // Draw the slices
-      var nb = pie.fPieSlices.length, total = 0,
+      let nb = pie.fPieSlices.length, total = 0,
           af = (pie.fAngularOffset*Math.PI)/180,
           x1 = Math.round(rx*Math.cos(af)), y1 = Math.round(ry*Math.sin(af));
 
-      for (var n=0;n<nb; n++)
+      for (let n=0;n<nb; n++)
          total += pie.fPieSlices[n].fValue;
 
-      for (var n=0; n<nb; n++) {
-         var slice = pie.fPieSlices[n],
+      for (let n=0; n<nb; n++) {
+         let slice = pie.fPieSlices[n],
              lineatt = new JSROOT.TAttLineHandler({attr: slice}),
              fillatt = this.createAttFill(slice);
 
          af += slice.fValue/total*2*Math.PI;
-         var x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
+         let x2 = Math.round(rx*Math.cos(af)), y2 = Math.round(ry*Math.sin(af));
 
          this.draw_g
              .append("svg:path")
@@ -274,7 +274,7 @@
 
    function drawBox() {
 
-      var box = this.GetObject(),
+      let box = this.GetObject(),
           opt = this.OptionsAsString(),
           draw_line = (opt.toUpperCase().indexOf("L")>=0),
           lineatt = this.createAttLine(box),
@@ -283,7 +283,7 @@
       // create svg:g container for box drawing
       this.CreateG();
 
-      var x1 = this.AxisToSvg("x", box.fX1),
+      let x1 = this.AxisToSvg("x", box.fX1),
           x2 = this.AxisToSvg("x", box.fX2),
           y1 = this.AxisToSvg("y", box.fY1),
           y2 = this.AxisToSvg("y", box.fY2),
@@ -302,13 +302,13 @@
           .call(fillatt.func);
 
       if (box.fBorderMode && box.fBorderSize && (fillatt.color!=='none')) {
-         var pww = box.fBorderSize, phh = box.fBorderSize,
+         let pww = box.fBorderSize, phh = box.fBorderSize,
              side1 = "M"+xx+","+yy + "h"+ww + "l"+(-pww)+","+phh + "h"+(2*pww-ww) +
                      "v"+(hh-2*phh)+ "l"+(-pww)+","+phh + "z",
              side2 = "M"+(xx+ww)+","+(yy+hh) + "v"+(-hh) + "l"+(-pww)+","+phh + "v"+(hh-2*phh)+
                      "h"+(2*pww-ww) + "l"+(-pww)+","+phh + "z";
 
-         if (box.fBorderMode<0) { var s = side1; side1 = side2; side2 = s; }
+         if (box.fBorderMode<0) { let s = side1; side1 = side2; side2 = s; }
 
          this.draw_g.append("svg:path")
                     .attr("d", side1)
@@ -327,7 +327,7 @@
    // =============================================================================
 
    function drawMarker() {
-      var marker = this.GetObject(),
+      let marker = this.GetObject(),
           att = new JSROOT.TAttMarkerHandler(marker),
           kMarkerNDC = JSROOT.BIT(14),
           isndc = marker.TestBit(kMarkerNDC);
@@ -335,7 +335,7 @@
       // create svg:g container for box drawing
       this.CreateG();
 
-      var x = this.AxisToSvg("x", marker.fX, isndc),
+      let x = this.AxisToSvg("x", marker.fX, isndc),
           y = this.AxisToSvg("y", marker.fY, isndc),
           path = att.create(x,y);
 
@@ -352,12 +352,12 @@
       // create svg:g container for box drawing
       this.CreateG();
 
-      var poly = this.GetObject(),
+      let poly = this.GetObject(),
           att = new JSROOT.TAttMarkerHandler(poly),
           path = "",
           func = this.AxisToSvgFunc();
 
-      for (var n=0;n<poly.fN;++n)
+      for (let n=0;n<poly.fN;++n)
          path += att.create(func.x(poly.fX[n]), func.y(poly.fY[n]));
 
       if (path)
@@ -369,7 +369,7 @@
    // ======================================================================================
 
    function drawArrow() {
-      var arrow = this.GetObject(), kLineNDC = JSROOT.BIT(14), oo = arrow.fOption;
+      let arrow = this.GetObject(), kLineNDC = JSROOT.BIT(14), oo = arrow.fOption;
 
       this.wsize = Math.max(3, Math.round(Math.max(this.pad_width(), this.pad_height()) * arrow.fArrowSize*0.8));
       this.isndc = arrow.TestBit(kLineNDC);
@@ -395,7 +395,7 @@
       this.y2 = this.AxisToSvg("y", arrow.fY2, this.isndc, true);
 
       this.rotate = function(angle, x0, y0) {
-         var dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
+         let dx = this.wsize * Math.cos(angle), dy = this.wsize * Math.sin(angle), res = "";
          if ((x0 !== undefined) && (y0 !== undefined)) {
             res =  "M" + Math.round(x0-dx) + "," + Math.round(y0-dy);
          } else {
@@ -407,7 +407,7 @@
       }
 
       this.createPath = function() {
-         var angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1),
+         let angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1),
              dlen = this.wsize * Math.cos(this.angle2),
              dx = dlen*Math.cos(angle), dy = dlen*Math.sin(angle),
              path = "";
@@ -435,7 +435,7 @@
                 path;
       }
 
-      var elem = this.draw_g.append("svg:path")
+      let elem = this.draw_g.append("svg:path")
                      .attr("d", this.createPath())
                      .call(this.lineatt.func);
 
@@ -448,7 +448,7 @@
 
       if (!this.moveStart)
          this.moveStart = function(x,y) {
-            var fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
+            let fullsize = Math.sqrt(Math.pow(this.x1-this.x2,2) + Math.pow(this.y1-this.y2,2)),
                 sz1 = Math.sqrt(Math.pow(x-this.x1,2) + Math.pow(y-this.y1,2))/fullsize,
                 sz2 = Math.sqrt(Math.pow(x-this.x2,2) + Math.pow(y-this.y2,2))/fullsize;
             if (sz1>0.9) this.side = 1; else if (sz2>0.9) this.side = -1; else this.side = 0;
@@ -464,7 +464,7 @@
       if (!this.moveEnd)
          this.moveEnd = function(not_changed) {
             if (not_changed) return;
-            var arrow = this.GetObject(), exec = "";
+            let arrow = this.GetObject(), exec = "";
             arrow.fX1 = this.SvgToAxis("x", this.x1, this.isndc);
             arrow.fX2 = this.SvgToAxis("x", this.x2, this.isndc);
             arrow.fY1 = this.SvgToAxis("y", this.y1, this.isndc);
@@ -519,13 +519,13 @@
 
    //TF1Painter.prototype.UpdateObject = function(obj, opt) {
    //   if (!this.MatchObjectType(obj)) return false;
-   //   var tf1 = this.GetObject();
+   //   let tf1 = this.GetObject();
    //   tf1.fSave = obj.fSave;
    //   return true;
    //}
 
    TF1Painter.prototype.CreateBins = function(ignore_zoom) {
-      var main = this.frame_painter(),
+      let main = this.frame_painter(),
           gxmin = 0, gxmax = 0, tf1 = this.GetObject();
 
       if (main && !ignore_zoom)  {
@@ -541,24 +541,24 @@
       if ((tf1.fSave.length > 0) && !this.nosave) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         var np = tf1.fSave.length - 2,
+         let np = tf1.fSave.length - 2,
              xmin = tf1.fSave[np],
              xmax = tf1.fSave[np+1],
              dx = (xmax - xmin) / (np-1),
              res = [];
 
-         for (var n=0; n < np; ++n) {
-            var xx = xmin + dx*n;
+         for (let n=0; n < np; ++n) {
+            let xx = xmin + dx*n;
             // check if points need to be displayed at all, keep at least 4-5 points for Bezier curves
             if ((gxmin !== gxmax) && ((xx + 2*dx < gxmin) || (xx - 2*dx > gxmax))) continue;
-            var yy = tf1.fSave[n];
+            let yy = tf1.fSave[n];
 
             if (!isNaN(yy)) res.push({ x : xx, y : yy });
          }
          return res;
       }
 
-      var xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
+      let xmin = tf1.fXmin, xmax = tf1.fXmax, logx = false;
 
       if (gxmin !== gxmax) {
          if (gxmin > xmin) xmin = gxmin;
@@ -571,14 +571,14 @@
          xmax = Math.log(xmax);
       }
 
-      var np = Math.max(tf1.fNpx, 101),
+      let np = Math.max(tf1.fNpx, 101),
          dx = (xmax - xmin) / (np - 1),
          res = [];
 
-      for (var n=0; n < np; n++) {
-         var xx = xmin + n*dx;
+      for (let n=0; n < np; n++) {
+         let xx = xmin + n*dx;
          if (logx) xx = Math.exp(xx);
-         var yy = this.Eval(xx);
+         let yy = this.Eval(xx);
          if (!isNaN(yy)) res.push({ x: xx, y: yy });
       }
       return res;
@@ -586,7 +586,7 @@
 
    TF1Painter.prototype.CreateDummyHisto = function() {
 
-      var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
+      let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
           bins = this.CreateBins(true);
 
       if (bins && (bins.length > 0)) {
@@ -605,7 +605,7 @@
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      var histo = JSROOT.Create("TH1I"),
+      let histo = JSROOT.Create("TH1I"),
           tf1 = this.GetObject();
 
       histo.fName = tf1.fName + "_hist";
@@ -620,7 +620,7 @@
    }
 
    TF1Painter.prototype.ProcessTooltip = function(pnt) {
-      var cleanup = false;
+      let cleanup = false;
 
       if ((pnt === null) || (this.bins === null)) {
          cleanup = true;
@@ -635,17 +635,17 @@
          return null;
       }
 
-      var min = 100000, best = -1, bin;
+      let min = 100000, best = -1, bin;
 
-      for(var n=0; n<this.bins.length; ++n) {
+      for(let n=0; n<this.bins.length; ++n) {
          bin = this.bins[n];
-         var dist = Math.abs(bin.grx - pnt.x);
+         let dist = Math.abs(bin.grx - pnt.x);
          if (dist < min) { min = dist; best = n; }
       }
 
       bin = this.bins[best];
 
-      var gbin = this.draw_g.select(".tooltip_bin"),
+      let gbin = this.draw_g.select(".tooltip_bin"),
           radius = this.lineatt.width + 3;
 
       if (gbin.empty())
@@ -656,7 +656,7 @@
                            .call(this.lineatt.func)
                            .call(this.fillatt.func);
 
-      var res = { name: this.GetObject().fName,
+      let res = { name: this.GetObject().fName,
                   title: this.GetObject().fTitle,
                   x: bin.grx,
                   y: bin.gry,
@@ -674,10 +674,10 @@
              .attr("cy", bin.gry)
              .property("current_bin", best);
 
-      var name = this.GetTipName();
+      let name = this.GetTipName();
       if (name.length > 0) res.lines.push(name);
 
-      var pmain = this.frame_painter();
+      let pmain = this.frame_painter();
       if (pmain)
          res.lines.push("x = " + pmain.AxisAsText("x",bin.x) + " y = " + pmain.AxisAsText("y",bin.y));
 
@@ -686,7 +686,7 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      var w = this.frame_width(),
+      let w = this.frame_width(),
           h = this.frame_height(),
           tf1 = this.GetObject(),
           fp = this.frame_painter(),
@@ -705,21 +705,21 @@
       this.fillatt.used = false;
 
       // first calculate graphical coordinates
-      for(var n=0; n<this.bins.length; ++n) {
-         var bin = this.bins[n];
+      for(let n=0; n<this.bins.length; ++n) {
+         let bin = this.bins[n];
          bin.grx = fp.grx(bin.x);
          bin.gry = fp.gry(bin.y);
       }
 
       if (this.bins.length > 2) {
 
-         var h0 = h;  // use maximal frame height for filling
+         let h0 = h;  // use maximal frame height for filling
          if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
             h0 = Math.round(fp.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         var path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
+         let path = JSROOT.Painter.BuildSvgPath("bezier", this.bins, h0, 2);
 
          if (this.lineatt.color != "none")
             this.draw_g.append("svg:path")
@@ -740,15 +740,15 @@
    TF1Painter.prototype.CanZoomIn = function(axis,min,max) {
       if (axis!=="x") return false;
 
-      var tf1 = this.GetObject();
+      let tf1 = this.GetObject();
 
       if (tf1.fSave.length > 0) {
          // in the case where the points have been saved, useful for example
          // if we don't have the user's function
-         var nb_points = tf1.fNpx;
+         let nb_points = tf1.fNpx;
 
-         var xmin = tf1.fSave[nb_points + 1];
-         var xmax = tf1.fSave[nb_points + 2];
+         let xmin = tf1.fSave[nb_points + 1];
+         let xmax = tf1.fSave[nb_points + 2];
 
          return Math.abs(xmin - xmax) / nb_points < Math.abs(min - max);
       }
@@ -759,7 +759,7 @@
 
    TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
-         var histo = this.CreateDummyHisto(), pthis = this;
+         let histo = this.CreateDummyHisto(), pthis = this;
          JSROOT.draw(this.divid, histo, "AXIS").then(function(hpainter) {
             pthis.SetDivId(pthis.divid);
             pthis.Redraw();
@@ -775,10 +775,10 @@
 
    function drawFunction(divid, tf1, opt) {
 
-      var painter = new TF1Painter(tf1);
+      let painter = new TF1Painter(tf1);
 
       painter.SetDivId(divid, -1);
-      var d = new JSROOT.DrawOptions(opt);
+      let d = new JSROOT.DrawOptions(opt);
       painter.nosave = d.check('NOSAVE');
 
       if (JSROOT.Math !== undefined)
@@ -830,7 +830,7 @@
       if ((typeof opt == "string") && (opt.indexOf("same ")==0))
          opt = opt.substr(5);
 
-      var graph = this.GetObject(),
+      let graph = this.GetObject(),
           d = new JSROOT.DrawOptions(opt);
 
       if (!this.options) this.options = {};
@@ -840,7 +840,7 @@
          MainError: 1, Ends: 1, Axis: "", PadStats: false, PadTitle: false, original: opt
        });
 
-      var res = this.options;
+      let res = this.options;
 
       res.PadStats = d.check("USE_PAD_STATS");
       res.PadTitle = d.check("USE_PAD_TITLE");
@@ -896,7 +896,7 @@
          // check if axis should be drawn
          // either graph drawn directly or
          // graph is first object in list of primitives
-         var pad = this.root_pad();
+         let pad = this.root_pad();
          if (!pad || (pad.fPrimitives && (pad.fPrimitives.arr[0] === graph))) res.Axis = "AXIS";
       } else if (res.Axis.indexOf("A")<0) {
          res.Axis = "AXIS," + res.Axis;
@@ -908,10 +908,10 @@
    }
 
    TGraphPainter.prototype.CreateBins = function() {
-      var gr = this.GetObject();
+      let gr = this.GetObject();
       if (!gr) return;
 
-      var kind = 0, npoints = gr.fNpoints;
+      let kind = 0, npoints = gr.fNpoints;
       if ((gr._typename==="TCutG") && (npoints>3)) npoints--;
 
       if (gr._typename == 'TGraphErrors') kind = 1; else
@@ -920,8 +920,8 @@
 
       this.bins = [];
 
-      for (var p=0; p<npoints; ++p) {
-         var bin = { x: gr.fX[p], y: gr.fY[p], indx: p };
+      for (let p=0; p<npoints; ++p) {
+         let bin = { x: gr.fX[p], y: gr.fY[p], indx: p };
          switch(kind) {
             case 1:
                bin.exlow = bin.exhigh = gr.fEX[p];
@@ -958,11 +958,11 @@
    TGraphPainter.prototype.CreateHistogram = function(only_set_ranges) {
       // bins should be created when calling this function
 
-      var xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
+      let xmin = this.xmin, xmax = this.xmax, ymin = this.ymin, ymax = this.ymax, set_x = true, set_y = true;
 
       if (xmin >= xmax) xmax = xmin+1;
       if (ymin >= ymax) ymax = ymin+1;
-      var dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
+      let dx = (xmax-xmin)*0.1, dy = (ymax-ymin)*0.1,
           uxmin = xmin - dx, uxmax = xmax + dx,
           minimum = ymin - dy, maximum = ymax + dy;
 
@@ -972,15 +972,15 @@
       if ((uxmin<0) && (xmin>=0)) uxmin = xmin*0.9;
       if ((uxmax>0) && (xmax<=0)) uxmax = 0;
 
-      var graph = this.GetObject();
+      let graph = this.GetObject();
 
       if (graph.fMinimum != -1111) minimum = ymin = graph.fMinimum;
       if (graph.fMaximum != -1111) maximum = ymax = graph.fMaximum;
       if ((minimum < 0) && (ymin >=0)) minimum = 0.9*ymin;
 
-      var kResetHisto = JSROOT.BIT(17);   ///< fHistogram must be reset in GetHistogram
+      let kResetHisto = JSROOT.BIT(17);   ///< fHistogram must be reset in GetHistogram
 
-      var histo = graph.fHistogram;
+      let histo = graph.fHistogram;
 
       if (only_set_ranges) {
          set_x = only_set_ranges.indexOf("x") >= 0;
@@ -1015,19 +1015,19 @@
     * @desc Used when graph points covers larger range than provided histogram
     * @private*/
    TGraphPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
-      var graph = this.GetObject();
+      let graph = this.GetObject();
       if (this._own_histogram || !graph) return false;
 
-      var histo = graph.fHistogram;
+      let histo = graph.fHistogram;
       if (!histo) return false;
 
-      var arg = "";
+      let arg = "";
       if (dox && (histo.fXaxis.fXmin > this.xmin) || (histo.fXaxis.fXmax < this.xmax)) arg += "x";
       if (doy && (histo.fYaxis.fXmin > this.ymin) || (histo.fYaxis.fXmax < this.ymax)) arg += "y";
       if (!arg) return false;
 
       this.CreateHistogram(arg);
-      var hpainter = this.main_painter();
+      let hpainter = this.main_painter();
       if (hpainter) hpainter.CreateAxisFuncs(false);
 
       return true;
@@ -1042,9 +1042,9 @@
    TGraphPainter.prototype.OptimizeBins = function(maxpnt, filter_func) {
       if ((this.bins.length < 30) && !filter_func) return this.bins;
 
-      var selbins = null;
+      let selbins = null;
       if (typeof filter_func == 'function') {
-         for (var n = 0; n < this.bins.length; ++n) {
+         for (let n = 0; n < this.bins.length; ++n) {
             if (filter_func(this.bins[n],n)) {
                if (!selbins) selbins = (n==0) ? [] : this.bins.slice(0, n);
             } else {
@@ -1057,17 +1057,17 @@
       if (!maxpnt) maxpnt = 500000;
 
       if ((selbins.length < maxpnt) || !this.CanOptimize()) return selbins;
-      var step = Math.floor(selbins.length / maxpnt);
+      let step = Math.floor(selbins.length / maxpnt);
       if (step < 2) step = 2;
-      var optbins = [];
-      for (var n = 0; n < selbins.length; n+=step)
+      let optbins = [];
+      for (let n = 0; n < selbins.length; n+=step)
          optbins.push(selbins[n]);
 
       return optbins;
    }
 
    TGraphPainter.prototype.TooltipText = function(d) {
-      var pmain = this.frame_painter(), lines = [];
+      let pmain = this.frame_painter(), lines = [];
 
       lines.push(this.GetTipName());
 
@@ -1085,7 +1085,7 @@
    }
 
    TGraphPainter.prototype.get_main = function() {
-      var pmain = this.frame_painter();
+      let pmain = this.frame_painter();
 
       if (pmain && pmain.grx && pmain.gry) return pmain;
 
@@ -1115,7 +1115,7 @@
 
    TGraphPainter.prototype.DrawBins = function() {
 
-      var pthis = this,
+      let pthis = this,
           pmain = this.get_main(),
           w = this.frame_width(),
           h = this.frame_height(),
@@ -1128,7 +1128,7 @@
       this.CreateG(!pmain.pad_layer);
 
       if (pp && (this.options._pfc || this.options._plc || this.options._pmc)) {
-         var icolor = pp.CreateAutoColor(this);
+         let icolor = pp.CreateAutoColor(this);
 
          if (this.options._pfc) { graph.fFillColor = icolor; delete this.fillatt; }
          if (this.options._plc) { graph.fLineColor = icolor; delete this.lineatt; }
@@ -1150,30 +1150,30 @@
          if (this.lineatt.width > 0) this.options.Line = 1;
       }
 
-      var drawbins = null;
+      let drawbins = null;
 
       if (this.options.EF) {
 
          drawbins = this.OptimizeBins((this.options.EF > 1) ? 5000 : 0);
 
          // build lower part
-         for (var n=0;n<drawbins.length;++n) {
-            var bin = drawbins[n];
+         for (let n=0;n<drawbins.length;++n) {
+            let bin = drawbins[n];
             bin.grx = pmain.grx(bin.x);
             bin.gry = pmain.gry(bin.y - bin.eylow);
          }
 
-         var path1 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
+         let path1 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "bezier" : "line", drawbins),
              bins2 = [];
 
-         for (var n=drawbins.length-1;n>=0;--n) {
-            var bin = drawbins[n];
+         for (let n=drawbins.length-1;n>=0;--n) {
+            let bin = drawbins[n];
             bin.gry = pmain.gry(bin.y + bin.eyhigh);
             bins2.push(bin);
          }
 
          // build upper part (in reverse direction)
-         var path2 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
+         let path2 = JSROOT.Painter.BuildSvgPath((this.options.EF > 1) ? "Lbezier" : "Lline", bins2);
 
          this.draw_g.append("svg:path")
                     .attr("d", path1.path + path2.path + "Z")
@@ -1184,7 +1184,7 @@
 
       if (this.options.Line == 1 || this.options.Fill == 1 || (excl_width!==0)) {
 
-         var close_symbol = "";
+         let close_symbol = "";
          if (graph._typename=="TCutG") this.options.Fill = 1;
 
          if (this.options.Fill == 1) {
@@ -1194,30 +1194,30 @@
 
          if (!drawbins) drawbins = this.OptimizeBins(this.options.Curve ? 5000 : 0);
 
-         for (var n=0;n<drawbins.length;++n) {
-            var bin = drawbins[n];
+         for (let n=0;n<drawbins.length;++n) {
+            let bin = drawbins[n];
             bin.grx = pmain.grx(bin.x);
             bin.gry = pmain.gry(bin.y);
          }
 
-         var kind = "line"; // simple line
+         let kind = "line"; // simple line
          if (this.options.Curve === 1) kind = "bezier"; else
          if (excl_width!==0) kind+="calc"; // we need to calculated deltas to build exclusion points
 
-         var path = JSROOT.Painter.BuildSvgPath(kind, drawbins);
+         let path = JSROOT.Painter.BuildSvgPath(kind, drawbins);
 
          if (excl_width!==0) {
-            var extrabins = [];
-            for (var n=drawbins.length-1;n>=0;--n) {
-               var bin = drawbins[n];
-               var dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
+            let extrabins = [];
+            for (let n=drawbins.length-1;n>=0;--n) {
+               let bin = drawbins[n];
+               let dlen = Math.sqrt(bin.dgrx*bin.dgrx + bin.dgry*bin.dgry);
                // shift point, using
                bin.grx += excl_width*bin.dgry/dlen;
                bin.gry -= excl_width*bin.dgrx/dlen;
                extrabins.push(bin);
             }
 
-            var path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
+            let path2 = JSROOT.Painter.BuildSvgPath("L" + ((this.options.Curve === 1) ? "bezier" : "line"), extrabins);
 
             this.draw_g.append("svg:path")
                        .attr("d", path.path + path2.path + "Z")
@@ -1227,7 +1227,7 @@
          }
 
          if (this.options.Line || this.options.Fill) {
-            var elem = this.draw_g.append("svg:path")
+            let elem = this.draw_g.append("svg:path")
                            .attr("d", path.path + close_symbol);
             if (this.options.Line)
                elem.call(this.lineatt.func);
@@ -1243,18 +1243,18 @@
          this.draw_kind = "lines";
       }
 
-      var nodes = null;
+      let nodes = null;
 
       if (this.options.Errors || this.options.Rect || this.options.Bar) {
 
          drawbins = this.OptimizeBins(5000, function(pnt,i) {
 
-            var grx = pmain.grx(pnt.x);
+            let grx = pmain.grx(pnt.x);
 
             // when drawing bars, take all points
             if (!pthis.options.Bar && ((grx<0) || (grx>w))) return true;
 
-            var gry = pmain.gry(pnt.y);
+            let gry = pmain.gry(pnt.y);
 
             if (!pthis.options.Bar && !pthis.options.OutRange && ((gry<0) || (gry>h))) return true;
 
@@ -1293,7 +1293,7 @@
 
       if (this.options.Bar) {
          // calculate bar width
-         for (var i=1;i<drawbins.length-1;++i)
+         for (let i=1;i<drawbins.length-1;++i)
             drawbins[i].width = Math.max(2, (drawbins[i+1].grx1 - drawbins[i-1].grx1) / 2 - 2);
 
          // first and last bins
@@ -1306,7 +1306,7 @@
                drawbins[drawbins.length-1].width = drawbins[drawbins.length-2].width;
          }
 
-         var yy0 = Math.round(pmain.gry(0));
+         let yy0 = Math.round(pmain.gry(0));
 
          nodes.append("svg:rect")
             .attr("x", function(d) { return Math.round(-d.width/2); })
@@ -1338,7 +1338,7 @@
 
       if (this.options.Errors) {
          // to show end of error markers, use line width attribute
-         var lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
+         let lw = this.lineatt.width + JSROOT.gStyle.fEndErrorSize, bb = 0,
              vv = this.options.Ends ? "m0," + lw + "v-" + 2*lw : "",
              hh = this.options.Ends ? "m" + lw + ",0h-" + 2*lw : "",
              vleft = vv, vright = vv, htop = hh, hbottom = hh,
@@ -1374,7 +1374,7 @@
 
          lw = Math.floor((this.lineatt.width-1)/2); // one should take into account half of end-cup line width
 
-         var visible = nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); });
+         let visible = nodes.filter(function(d) { return (d.exlow > 0) || (d.exhigh > 0) || (d.eylow > 0) || (d.eyhigh > 0); });
          if (!JSROOT.BatchMode && (JSROOT.gStyle.Tooltip > 0))
             visible.append("svg:path")
                    .style("stroke", "none")
@@ -1396,7 +1396,7 @@
 
       if (this.options.Mark) {
          // for tooltips use markers only if nodes where not created
-         var path = "", pnt, grx, gry;
+         let path = "", pnt, grx, gry;
 
          this.createAttMarker({ attr: graph, style: this.options.Mark - 100 });
 
@@ -1405,13 +1405,13 @@
          this.markeratt.reset_pos();
 
          // let produce SVG at maximum 1MB
-         var maxnummarker = 1000000 / (this.markeratt.MarkerLength() + 7), step = 1;
+         let maxnummarker = 1000000 / (this.markeratt.MarkerLength() + 7), step = 1;
 
          if (!drawbins) drawbins = this.OptimizeBins(maxnummarker); else
             if (this.CanOptimize() && (drawbins.length > 1.5*maxnummarker))
                step = Math.min(2, Math.round(drawbins.length/maxnummarker));
 
-         for (var n=0;n<drawbins.length;n+=step) {
+         for (let n=0;n<drawbins.length;n+=step) {
             pnt = drawbins[n];
             grx = pmain.grx(pnt.x);
             if ((grx > -this.marker_size) && (grx < w + this.marker_size)) {
@@ -1440,7 +1440,7 @@
 
       if (this.draw_kind!="nodes") return null;
 
-      var width = this.frame_width(),
+      let width = this.frame_width(),
           height = this.frame_height(),
           pmain = this.frame_painter(),
           painter = this,
@@ -1448,13 +1448,13 @@
           msize = this.marker_size ? Math.round(this.marker_size/2 + 1.5) : 0;
 
       this.draw_g.selectAll('.grpoint').each(function() {
-         var d = d3.select(this).datum();
+         let d = d3.select(this).datum();
          if (d===undefined) return;
-         var dist2 = Math.pow(pnt.x - d.grx1, 2);
+         let dist2 = Math.pow(pnt.x - d.grx1, 2);
          if (pnt.nproc===1) dist2 += Math.pow(pnt.y - d.gry1, 2);
          if (dist2 >= best_dist2) return;
 
-         var rect = null;
+         let rect = null;
 
          if (d.error || d.rect || d.marker) {
             rect = { x1: Math.min(-painter.error_size, d.grx0, -msize),
@@ -1465,14 +1465,14 @@
              rect = { x1: -d.width/2, x2: d.width/2, y1: 0, y2: height - d.gry1 };
 
              if (painter.options.Bar===1) {
-                var yy0 = pmain.gry(0);
+                let yy0 = pmain.gry(0);
                 rect.y1 = (d.gry1 > yy0) ? yy0-d.gry1 : 0;
                 rect.y2 = (d.gry1 > yy0) ? 0 : yy0-d.gry1;
              }
           } else {
              rect = { x1: -5, x2: 5, y1: -5, y2: 5 };
           }
-          var matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
+          let matchx = (pnt.x >= d.grx1 + rect.x1) && (pnt.x <= d.grx1 + rect.x2),
               matchy = (pnt.y >= d.gry1 + rect.y1) && (pnt.y <= d.gry1 + rect.y2);
 
           if (matchx && (matchy || (pnt.nproc > 1))) {
@@ -1485,9 +1485,9 @@
 
       if (findbin === null) return null;
 
-      var d = d3.select(findbin).datum();
+      let d = d3.select(findbin).datum();
 
-      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+      let res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
                   x: d.grx1, y: d.gry1,
                   color1: this.lineatt.color,
                   lines: this.TooltipText(d),
@@ -1513,9 +1513,9 @@
 
       if (hint.usepath) return this.ShowTooltipForPath(hint);
 
-      var d = d3.select(hint.d3bin).datum();
+      let d = d3.select(hint.d3bin).datum();
 
-      var ttrect = this.draw_g.select(".tooltip_bin");
+      let ttrect = this.draw_g.select(".tooltip_bin");
 
       if (ttrect.empty())
          ttrect = this.draw_g.append("svg:rect")
@@ -1534,7 +1534,7 @@
    }
 
    TGraphPainter.prototype.ProcessTooltip = function(pnt) {
-      var hint = this.ExtractTooltip(pnt);
+      let hint = this.ExtractTooltip(pnt);
       if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
       return hint;
    }
@@ -1542,7 +1542,7 @@
    TGraphPainter.prototype.FindBestBin = function(pnt) {
       if (!this.bins) return null;
 
-      var islines = (this.draw_kind=="lines"),
+      let islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
           bestindx = -1,
           bestbin = null,
@@ -1568,7 +1568,7 @@
       // check last point
       if ((bestdist > 100) && islines) bestbin = null;
 
-      var radius = Math.max(this.lineatt.width + 3, 4);
+      let radius = Math.max(this.lineatt.width + 3, 4);
 
       if (this.marker_size > 0) radius = Math.max(this.marker_size, radius);
 
@@ -1579,7 +1579,7 @@
 
       if (!bestbin) bestindx = -1;
 
-      var res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
+      let res = { bin: bestbin, indx: bestindx, dist: bestdist, radius: Math.round(radius) };
 
       if (!bestbin && islines) {
 
@@ -1589,7 +1589,7 @@
             return ((x1>=x) && (x>=x2)) || ((x1<=x) && (x<=x2));
          }
 
-         var bin0 = this.bins[0], grx0 = pmain.grx(bin0.x), gry0, posy = 0;
+         let bin0 = this.bins[0], grx0 = pmain.grx(bin0.x), gry0, posy = 0;
          for (n=1;n<this.bins.length;++n) {
             bin = this.bins[n];
             grx = pmain.grx(bin.x);
@@ -1629,7 +1629,7 @@
    }
 
    TGraphPainter.prototype.TestEditable = function(toggle) {
-      var obj = this.GetObject(),
+      let obj = this.GetObject(),
           kNotEditable = JSROOT.BIT(18);   // bit set if graph is non editable
 
       if (!obj) return false;
@@ -1641,11 +1641,11 @@
 
       if (this.bins === null) return null;
 
-      var best = this.FindBestBin(pnt);
+      let best = this.FindBestBin(pnt);
 
       if (!best || (!best.bin && !best.closeline)) return null;
 
-      var islines = (this.draw_kind=="lines"),
+      let islines = (this.draw_kind=="lines"),
           ismark = (this.draw_kind=="mark"),
           pmain = this.frame_painter(),
           gr = this.GetObject(),
@@ -1693,7 +1693,7 @@
 
    TGraphPainter.prototype.ShowTooltipForPath = function(hint) {
 
-      var ttbin = this.draw_g.select(".tooltip_bin");
+      let ttbin = this.draw_g.select(".tooltip_bin");
 
       if (!hint || !hint.bin) {
          ttbin.remove();
@@ -1724,7 +1724,7 @@
             if (Math.abs(hint.gry1-hint.gry2) > 1)
                ttbin.append("svg:circle").attr("cy", Math.round(hint.gry2));
 
-            var elem = ttbin.selectAll("circle")
+            let elem = ttbin.selectAll("circle")
                             .attr("r", hint.radius)
                             .attr("cx", Math.round(hint.x));
 
@@ -1747,11 +1747,11 @@
    /** Start moving of TGraph */
    TGraphPainter.prototype.moveStart = function(x,y) {
       this.pos_dx = this.pos_dy = 0;
-      var hint = this.ExtractTooltip({x:x, y:y});
+      let hint = this.ExtractTooltip({x:x, y:y});
       if (hint && hint.exact && (hint.binindx !== undefined)) {
          this.move_binindx = hint.binindx;
          this.move_bin = hint.bin;
-         var main = this.frame_painter();
+         let main = this.frame_painter();
          this.move_x0 = main ? main.grx(this.move_bin.x) : x;
          this.move_y0 = main ? main.gry(this.move_bin.y) : y;
       } else {
@@ -1767,7 +1767,7 @@
       if (this.move_binindx === undefined) {
          this.draw_g.attr("transform", "translate(" + this.pos_dx + "," + this.pos_dy + ")");
       } else {
-         var main = this.frame_painter();
+         let main = this.frame_painter();
          if (main && this.move_bin) {
             this.move_bin.x = main.RevertX(this.move_x0 + this.pos_dx);
             this.move_bin.y = main.RevertY(this.move_y0 + this.pos_dy);
@@ -1778,16 +1778,16 @@
 
    /** Complete moving */
    TGraphPainter.prototype.moveEnd = function(not_changed) {
-      var exec = "";
+      let exec = "";
 
       if (this.move_binindx === undefined) {
 
          this.draw_g.attr("transform", null);
 
-         var main = this.frame_painter();
+         let main = this.frame_painter();
          if (main && this.bins && !not_changed) {
-            for (var k=0;k<this.bins.length;++k) {
-               var bin = this.bins[k];
+            for (let k=0;k<this.bins.length;++k) {
+               let bin = this.bins[k];
                bin.x = main.RevertX(main.grx(bin.x) + this.pos_dx);
                bin.y = main.RevertY(main.gry(bin.y) + this.pos_dy);
                exec += "SetPoint(" + bin.indx + "," + bin.x + "," + bin.y + ");;";
@@ -1797,7 +1797,7 @@
             this.DrawBins();
          }
       } else {
-         var exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+         let exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          if ((this.move_bin.indx == 0) && this.MatchObjectType('TCutG'))
             exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          delete this.move_binindx;
@@ -1819,17 +1819,17 @@
    TGraphPainter.prototype.ExecuteMenuCommand = function(method, args) {
       if (JSROOT.TObjectPainter.prototype.ExecuteMenuCommand.call(this,method,args)) return true;
 
-      var canp = this.canv_painter(), fp = this.frame_painter();
+      let canp = this.canv_painter(), fp = this.frame_painter();
 
       if ((method.fName == 'RemovePoint') || (method.fName == 'InsertPoint')) {
-         var pnt = fp ? fp.GetLastEventPos() : null;
+         let pnt = fp ? fp.GetLastEventPos() : null;
 
          if (!canp || canp._readonly || !fp || !pnt) return true; // ignore function
 
-         var hint = this.ExtractTooltip(pnt);
+         let hint = this.ExtractTooltip(pnt);
 
          if (method.fName == 'InsertPoint') {
-            var main = this.frame_painter(),
+            let main = this.frame_painter(),
                 userx = main && main.RevertX ? main.RevertX(pnt.x) : 0,
                 usery = main && main.RevertY ? main.RevertY(pnt.y) : 0;
             canp.ShowMessage('InsertPoint(' + userx.toFixed(3) + ',' + usery.toFixed(3) + ') not yet implemented');
@@ -1849,7 +1849,7 @@
       if ((opt !== undefined) && (opt != this.options.original))
          this.DecodeOptions(opt);
 
-      var graph = this.GetObject();
+      let graph = this.GetObject();
       // TODO: make real update of TGraph object content
       graph.fBits = obj.fBits;
       graph.fTitle = obj.fTitle;
@@ -1860,7 +1860,7 @@
 
       // if our own histogram was used as axis drawing, we need update histogram as well
       if (this.axes_draw) {
-         var main = this.main_painter(),
+         let main = this.main_painter(),
              fp = this.frame_painter();
 
          // if zoom was changed - do not update histogram
@@ -1876,10 +1876,10 @@
    TGraphPainter.prototype.CanZoomIn = function(axis,min,max) {
       // allow to zoom TGraph only when at least one point in the range
 
-      var gr = this.GetObject();
+      let gr = this.GetObject();
       if ((gr===null) || (axis!=="x")) return false;
 
-      for (var n=0; n < gr.fNpoints; ++n)
+      for (let n=0; n < gr.fNpoints; ++n)
          if ((min < gr.fX[n]) && (gr.fX[n] < max)) return true;
 
       return false;
@@ -1889,7 +1889,7 @@
 
       if (funcname !== "ToggleZoom") return false;
 
-      var main = this.frame_painter();
+      let main = this.frame_painter();
       if (!main) return false;
 
       if ((this.xmin===this.xmax) && (this.ymin===this.ymax)) return false;
@@ -1900,20 +1900,20 @@
    }
 
    TGraphPainter.prototype.FindFunc = function() {
-      var gr = this.GetObject();
+      let gr = this.GetObject();
       if (gr && gr.fFunctions)
-         for (var i = 0; i < gr.fFunctions.arr.length; ++i) {
-            var func = gr.fFunctions.arr[i];
+         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
+            let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TF1') || (func._typename == 'TF2')) return func;
          }
       return null;
    }
 
    TGraphPainter.prototype.FindStat = function() {
-      var gr = this.GetObject();
+      let gr = this.GetObject();
       if (gr && gr.fFunctions)
-         for (var i = 0; i < gr.fFunctions.arr.length; ++i) {
-            var func = gr.fFunctions.arr[i];
+         for (let i = 0; i < gr.fFunctions.arr.length; ++i) {
+            let func = gr.fFunctions.arr[i];
             if ((func._typename == 'TPaveStats') && (func.fName == 'stats')) return func;
          }
 
@@ -1921,21 +1921,21 @@
    }
 
    TGraphPainter.prototype.CreateStat = function() {
-      var func = this.FindFunc();
+      let func = this.FindFunc();
       if (!func) return null;
 
-      var stats = this.FindStat();
+      let stats = this.FindStat();
       if (stats) return stats;
 
       // do not create stats box when drawing canvas
-      var pp = this.canv_painter();
+      let pp = this.canv_painter();
       if (pp && pp.normal_canvas) return null;
 
       if (this.options.PadStats) return null;
 
       this.create_stats = true;
 
-      var st = JSROOT.gStyle;
+      let st = JSROOT.gStyle;
 
       stats = JSROOT.Create('TPaveStats');
       JSROOT.extend(stats, { fName : 'stats',
@@ -1968,7 +1968,7 @@
    TGraphPainter.prototype.FillStatistic = function(stat, dostat, dofit) {
 
       // cannot fill stats without func
-      var func = this.FindFunc();
+      let func = this.FindFunc();
 
       if (!func || !dofit || !this.create_stats) return false;
 
@@ -1982,12 +1982,12 @@
    TGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      var graph = this.GetObject();
+      let graph = this.GetObject();
 
       if (!graph.fFunctions || (indx >= graph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
 
-      var func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
+      let func = graph.fFunctions.arr[indx], opt = graph.fFunctions.opt[indx];
 
       //  required for stats filling
       // TODO: use weak reference (via pad list of painters and any kind of string)
@@ -2011,7 +2011,7 @@
 
    function drawGraph(divid, graph, opt) {
 
-      var painter = new TGraphPainter(graph);
+      let painter = new TGraphPainter(graph);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
@@ -2041,7 +2041,7 @@
    TGraphPolargramPainter.prototype = Object.create(JSROOT.TooltipHandler.prototype);
 
    TGraphPolargramPainter.prototype.translate = function(angle, radius, keep_float) {
-      var _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
+      let _rx = this.r(radius), _ry = _rx/this.szx*this.szy,
           pos = {
             x: _rx * Math.cos(-angle - this.angle),
             y: _ry * Math.sin(-angle - this.angle),
@@ -2080,14 +2080,14 @@
    }
 
    TGraphPolargramPainter.prototype.MouseEvent = function(kind, evnt) {
-      var layer = this.svg_layer("primitives_layer"),
+      let layer = this.svg_layer("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
       if (interactive.empty()) return;
 
-      var pnt = null;
+      let pnt = null;
 
       if (kind !== 'leave') {
-         var pos = d3.pointer(evnt, interactive.node());
+         let pos = d3.pointer(evnt, interactive.node());
          pnt = { x: pos[0], y: pos[1], touch: false };
       }
 
@@ -2095,7 +2095,7 @@
    }
 
    TGraphPolargramPainter.prototype.GetFrameRect = function() {
-      var pad = this.root_pad(),
+      let pad = this.root_pad(),
           w = this.pad_width(),
           h = this.pad_height(),
           rect = {};
@@ -2124,16 +2124,16 @@
 
       this.ProcessTooltipEvent(null); // remove all tooltips
 
-      var polar = this.GetObject();
+      let polar = this.GetObject();
 
       if (!polar) return;
 
-      var delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
+      let delta = evnt.wheelDelta ? -evnt.wheelDelta : (evnt.deltaY || evnt.detail);
       if (!delta) return;
 
       delta = (delta<0) ? -0.2 : 0.2;
 
-      var rmin = this.scale_rmin, rmax = this.scale_rmax, range = rmax - rmin;
+      let rmin = this.scale_rmin, rmax = this.scale_rmax, range = rmax - rmin;
 
       // rmin -= delta*range;
       rmax += delta*range;
@@ -2150,8 +2150,7 @@
    TGraphPolargramPainter.prototype.Redraw = function() {
       if (!this.is_main_painter()) return;
 
-      var pad = this.root_pad(),
-          polar = this.GetObject(),
+      let polar = this.GetObject(),
           rect = this.GetFrameRect();
 
       this.CreateG();
@@ -2170,19 +2169,19 @@
       this.r = d3.scaleLinear().domain([this.scale_rmin, this.scale_rmax]).range([ 0, this.szx ]);
       this.angle = polar.fAxisAngle || 0;
 
-      var ticks = this.r.ticks(5),
+      let ticks = this.r.ticks(5),
           nminor = Math.floor((polar.fNdivRad % 10000) / 100);
 
       this.createAttLine({ attr: polar });
       if (!this.gridatt) this.gridatt = new JSROOT.TAttLineHandler({ color: polar.fLineColor, style: 2, width: 1 });
 
-      var range = Math.abs(polar.fRwrmax - polar.fRwrmin);
+      let range = Math.abs(polar.fRwrmax - polar.fRwrmin);
       this.ndig = (range <= 0) ? -3 : Math.round(JSROOT.log10(ticks.length / range));
 
       // verify that all radius labels are unique
-      var lbls = [], indx = 0;
+      let lbls = [], indx = 0;
       while (indx<ticks.length) {
-         var lbl = this.format(ticks[indx]);
+         let lbl = this.format(ticks[indx]);
          if (lbls.indexOf(lbl)>=0) {
             if (++this.ndig>10) break;
             lbls = []; indx = 0; continue;
@@ -2191,7 +2190,7 @@
          indx++;
       }
 
-      var exclude_last = false;
+      let exclude_last = false;
 
       if ((ticks[ticks.length-1] < polar.fRwrmax) && (this.zoom_rmin == this.zoom_rmax)) {
          ticks.push(polar.fRwrmax);
@@ -2200,8 +2199,8 @@
 
       this.StartTextDrawing(polar.fRadialLabelFont, Math.round(polar.fRadialTextSize * this.szy * 2));
 
-      for (var n=0;n<ticks.length;++n) {
-         var rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
+      for (let n=0;n<ticks.length;++n) {
+         let rx = this.r(ticks[n]), ry = rx/this.szx*this.szy;
          this.draw_g.append("ellipse")
              .attr("cx",0)
              .attr("cy",0)
@@ -2215,9 +2214,9 @@
                             text: this.format(ticks[n]), color: this.get_color[polar.fRadialLabelColor], latex: 0 });
 
          if ((nminor>1) && ((n < ticks.length-1) || !exclude_last)) {
-            var dr = (ticks[1] - ticks[0]) / nminor;
-            for (var nn=1;nn<nminor;++nn) {
-               var gridr = ticks[n] + dr*nn;
+            let dr = (ticks[1] - ticks[0]) / nminor;
+            for (let nn=1;nn<nminor;++nn) {
+               let gridr = ticks[n] + dr*nn;
                if (gridr > this.scale_rmax) break;
                rx = this.r(gridr); ry = rx/this.szx*this.szy;
                this.draw_g.append("ellipse")
@@ -2233,17 +2232,17 @@
 
       this.FinishTextDrawing();
 
-      var fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
+      let fontsize = Math.round(polar.fPolarTextSize * this.szy * 2);
       this.StartTextDrawing(polar.fPolarLabelFont, fontsize);
 
-      var nmajor = polar.fNdivPol % 100;
+      let nmajor = polar.fNdivPol % 100;
       if ((nmajor !== 8) && (nmajor !== 3)) nmajor = 8;
 
-      var lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"],
-          aligns = [12, 11, 21, 31, 32, 33, 23, 13 ];
+      lbls = (nmajor==8) ? ["0", "#frac{#pi}{4}", "#frac{#pi}{2}", "#frac{3#pi}{4}", "#pi", "#frac{5#pi}{4}", "#frac{3#pi}{2}", "#frac{7#pi}{4}"] : ["0", "#frac{2#pi}{3}", "#frac{4#pi}{3}"];
+      let aligns = [12, 11, 21, 31, 32, 33, 23, 13];
 
-      for (var n=0;n<nmajor;++n) {
-         var angle = -n*2*Math.PI/nmajor - this.angle;
+      for (let n=0;n<nmajor;++n) {
+         let angle = -n*2*Math.PI/nmajor - this.angle;
          this.draw_g.append("line")
              .attr("x1",0)
              .attr("y1",0)
@@ -2251,23 +2250,23 @@
              .attr("y2", Math.round(this.szy*Math.sin(angle)))
              .call(this.lineatt.func);
 
-         var aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
+         let aindx = Math.round(16 -angle/Math.PI*4) % 8; // index in align table, here absolute angle is important
 
          this.DrawText({ align: aligns[aindx],
                          x: Math.round((this.szx+fontsize)*Math.cos(angle)),
                          y: Math.round((this.szy + fontsize/this.szx*this.szy)*(Math.sin(angle))),
                          text: lbls[n],
-                          color: this.get_color[polar.fPolarLabelColor], latex: 1 });
+                         color: this.get_color[polar.fPolarLabelColor], latex: 1 });
       }
 
       this.FinishTextDrawing();
 
-      var nminor = Math.floor((polar.fNdivPol % 10000) / 100);
+      nminor = Math.floor((polar.fNdivPol % 10000) / 100);
 
       if (nminor > 1)
-         for (var n=0;n<nmajor*nminor;++n) {
+         for (let n=0;n<nmajor*nminor;++n) {
             if (n % nminor === 0) continue;
-            var angle = -n*2*Math.PI/nmajor/nminor - this.angle;
+            let angle = -n*2*Math.PI/nmajor/nminor - this.angle;
             this.draw_g.append("line")
                 .attr("x1",0)
                 .attr("y1",0)
@@ -2279,7 +2278,7 @@
 
       if (JSROOT.BatchMode) return;
 
-      var layer = this.svg_layer("primitives_layer"),
+      let layer = this.svg_layer("primitives_layer"),
           interactive = layer.select(".interactive_ellipse");
 
       if (interactive.empty())
@@ -2305,11 +2304,11 @@
 
    function drawGraphPolargram(divid, polargram, opt) {
 
-      var painter = new TGraphPolargramPainter(polargram);
+      let painter = new TGraphPolargramPainter(polargram);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
-      var main = painter.main_painter();
+      let main = painter.main_painter();
 
       if (main) {
          if (main.GetObject() === polargram) return main;
@@ -2336,7 +2335,7 @@
 
    TGraphPolarPainter.prototype.DecodeOptions = function(opt) {
 
-      var d = new JSROOT.DrawOptions(opt || "L");
+      let d = new JSROOT.DrawOptions(opt || "L");
 
       if (!this.options) this.options = {};
 
@@ -2352,7 +2351,7 @@
    }
 
    TGraphPolarPainter.prototype.DrawBins = function() {
-      var graph = this.GetObject(),
+      let graph = this.GetObject(),
           main = this.main_painter();
 
       if (!graph || !main || !main.$polargram) return;
@@ -2365,14 +2364,14 @@
 
       this.draw_g.attr("transform", main.draw_g.attr("transform"));
 
-      var mpath = "", epath = "", lpath = "", bins = [];
+      let mpath = "", epath = "", lpath = "", bins = [];
 
-      for (var n=0;n<graph.fNpoints;++n) {
+      for (let n=0;n<graph.fNpoints;++n) {
 
          if (graph.fY[n] > main.scale_rmax) continue;
 
          if (this.options.err) {
-            var pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
+            let pos1 = main.translate(graph.fX[n], graph.fY[n] - graph.fEY[n]),
                 pos2 = main.translate(graph.fX[n], graph.fY[n] + graph.fEY[n]);
             epath += "M" + pos1.x + "," + pos1.y + "L" + pos2.x + "," + pos2.y;
 
@@ -2382,7 +2381,7 @@
             epath += "M" + pos1.x + "," + pos1.y + "A" + pos2.rx + "," + pos2.ry+ ",0,0,1," + pos2.x + "," + pos2.y;
          }
 
-         var pos = main.translate(graph.fX[n], graph.fY[n]);
+         let pos = main.translate(graph.fX[n], graph.fY[n]);
 
          if (this.options.mark) {
             mpath += this.markeratt.create(pos.x, pos.y);
@@ -2431,11 +2430,11 @@
    }
 
    TGraphPolarPainter.prototype.CreatePolargram = function() {
-      var polargram = JSROOT.Create("TGraphPolargram"),
+      let polargram = JSROOT.Create("TGraphPolargram"),
           gr = this.GetObject();
 
-      var rmin = gr.fY[0] || 0, rmax = rmin;
-      for (var n=0;n<gr.fNpoints;++n) {
+      let rmin = gr.fY[0] || 0, rmax = rmin;
+      for (let n=0;n<gr.fNpoints;++n) {
          rmin = Math.min(rmin, gr.fY[n] - gr.fEY[n]);
          rmax = Math.max(rmax, gr.fY[n] + gr.fEY[n]);
       }
@@ -2449,23 +2448,23 @@
    TGraphPolarPainter.prototype.ExtractTooltip = function(pnt) {
       if (!pnt) return null;
 
-      var graph = this.GetObject(),
+      let graph = this.GetObject(),
           main = this.main_painter(),
           best_dist2 = 1e10, bestindx = -1, bestpos = null;
 
-      for (var n=0;n<graph.fNpoints;++n) {
-         var pos = main.translate(graph.fX[n], graph.fY[n]);
+      for (let n=0;n<graph.fNpoints;++n) {
+         let pos = main.translate(graph.fX[n], graph.fY[n]);
 
-         var dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
+         let dist2 = (pos.x-pnt.x)*(pos.x-pnt.x) + (pos.y-pnt.y)*(pos.y-pnt.y);
          if (dist2<best_dist2) { best_dist2 = dist2; bestindx = n; bestpos = pos; }
       }
 
-      var match_distance = 5;
+      let match_distance = 5;
       if (this.markeratt && this.markeratt.used) match_distance = this.markeratt.GetFullSize();
 
       if (Math.sqrt(best_dist2) > match_distance) return null;
 
-      var res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
+      let res = { name: this.GetObject().fName, title: this.GetObject().fTitle,
                   x: bestpos.x, y: bestpos.y,
                   color1: this.markeratt && this.markeratt.used ? this.markeratt.color : this.lineatt.color,
                   exact: Math.sqrt(best_dist2) < 4,
@@ -2491,7 +2490,7 @@
 
       if (!this.draw_g) return;
 
-      var ttcircle = this.draw_g.select(".tooltip_bin");
+      let ttcircle = this.draw_g.select(".tooltip_bin");
 
       if (!hint) {
          ttcircle.remove();
@@ -2516,7 +2515,7 @@
    }
 
    TGraphPolarPainter.prototype.ProcessTooltip = function(pnt) {
-      var hint = this.ExtractTooltip(pnt);
+      let hint = this.ExtractTooltip(pnt);
       if (!pnt || !pnt.disabled) this.ShowTooltip(hint);
       return hint;
    }
@@ -2530,13 +2529,13 @@
 
    function drawGraphPolar(divid, graph, opt) {
 
-      var painter = new TGraphPolarPainter(graph);
+      let painter = new TGraphPolarPainter(graph);
 
       painter.DecodeOptions(opt);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
 
-      var main = painter.main_painter();
+      let main = painter.main_painter();
       if (main) {
          if (!main.$polargram) {
             console.error('Cannot superimpose TGraphPolar with plain histograms');
@@ -2562,7 +2561,7 @@
    TSplinePainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    TSplinePainter.prototype.UpdateObject = function(obj, opt) {
-      var spline = this.GetObject();
+      let spline = this.GetObject();
 
       if (spline._typename != obj._typename) return false;
 
@@ -2574,7 +2573,7 @@
    }
 
    TSplinePainter.prototype.Eval = function(knot, x) {
-      var dx = x - knot.fX;
+      let dx = x - knot.fX;
 
       if (knot._typename == "TSplinePoly3")
          return knot.fY + dx*(knot.fB + dx*(knot.fC + dx*knot.fD));
@@ -2586,7 +2585,7 @@
    }
 
    TSplinePainter.prototype.FindX = function(x) {
-      var spline = this.GetObject(),
+      let spline = this.GetObject(),
           klow = 0, khig = spline.fNp - 1;
 
       if (x <= spline.fXmin) return 0;
@@ -2604,7 +2603,7 @@
       } else {
          // Non equidistant knots, binary search
          while(khig-klow>1) {
-            var khalf = Math.round((klow+khig)/2);
+            let khalf = Math.round((klow+khig)/2);
             if(x > spline.fPoly[khalf].fX) klow = khalf;
                                       else khig = khalf;
          }
@@ -2614,7 +2613,7 @@
 
    TSplinePainter.prototype.CreateDummyHisto = function() {
 
-      var xmin = 0, xmax = 1, ymin = 0, ymax = 1,
+      let xmin = 0, xmax = 1, ymin = 0, ymax = 1,
           spline = this.GetObject();
 
       if (spline && spline.fPoly) {
@@ -2633,7 +2632,7 @@
          if (ymin < 0.0) ymin *= 1.05;
       }
 
-      var histo = JSROOT.Create("TH1I");
+      let histo = JSROOT.Create("TH1I");
 
       histo.fName = spline.fName + "_hist";
       histo.fTitle = spline.fTitle;
@@ -2648,7 +2647,7 @@
 
    TSplinePainter.prototype.ProcessTooltip = function(pnt) {
 
-      var cleanup = false,
+      let cleanup = false,
           spline = this.GetObject(),
           main = this.frame_painter(),
           xx, yy, knot = null, indx = 0;
@@ -2677,7 +2676,7 @@
          return null;
       }
 
-      var gbin = this.draw_g.select(".tooltip_bin"),
+      let gbin = this.draw_g.select(".tooltip_bin"),
           radius = this.lineatt.width + 3;
 
       if (gbin.empty())
@@ -2688,7 +2687,7 @@
                            .style("fill", "none")
                            .call(this.lineatt.func);
 
-      var res = { name: this.GetObject().fName,
+      let res = { name: this.GetObject().fName,
                   title: this.GetObject().fTitle,
                   x: main.grx(xx),
                   y: main.gry(yy),
@@ -2705,7 +2704,7 @@
              .attr("cy", Math.round(res.y))
              .property("current_xx", xx);
 
-      var name = this.GetTipName();
+      let name = this.GetTipName();
       if (name.length > 0) res.lines.push(name);
       res.lines.push("x = " + main.AxisAsText("x", xx))
       res.lines.push("y = " + main.AxisAsText("y", yy));
@@ -2725,7 +2724,7 @@
 
    TSplinePainter.prototype.Redraw = function() {
 
-      var w = this.frame_width(),
+      let w = this.frame_width(),
           h = this.frame_height(),
           spline = this.GetObject(),
           pmain = this.frame_painter(),
@@ -2739,9 +2738,9 @@
 
       if (this.options.Line || this.options.Curve) {
 
-         var npx = Math.max(10, spline.fNpx);
+         let npx = Math.max(10, spline.fNpx);
 
-         var xmin = Math.max(pmain.scale_xmin, spline.fXmin),
+         let xmin = Math.max(pmain.scale_xmin, spline.fXmin),
              xmax = Math.min(pmain.scale_xmax, spline.fXmax),
              indx = this.FindX(xmin),
              bins = []; // index of current knot
@@ -2751,24 +2750,24 @@
             xmax = Math.log(xmax);
          }
 
-         for (var n=0;n<npx;++n) {
-            var xx = xmin + (xmax-xmin)/npx*(n-1);
+         for (let n=0;n<npx;++n) {
+            let xx = xmin + (xmax-xmin)/npx*(n-1);
             if (pmain.logx) xx = Math.exp(xx);
 
             while ((indx < spline.fNp-1) && (xx > spline.fPoly[indx+1].fX)) ++indx;
 
-            var yy = this.Eval(spline.fPoly[indx], xx);
+            let yy = this.Eval(spline.fPoly[indx], xx);
 
             bins.push({ x: xx, y: yy, grx: pmain.grx(xx), gry: pmain.gry(yy) });
          }
 
-         var h0 = h;  // use maximal frame height for filling
+         let h0 = h;  // use maximal frame height for filling
          if ((pmain.hmin!==undefined) && (pmain.hmin>=0)) {
             h0 = Math.round(pmain.gry(0));
             if ((h0 > h) || (h0 < 0)) h0 = h;
          }
 
-         var path = JSROOT.Painter.BuildSvgPath("bezier", bins, h0, 2);
+         let path = JSROOT.Painter.BuildSvgPath("bezier", bins, h0, 2);
 
          this.draw_g.append("svg:path")
              .attr("class", "line")
@@ -2780,7 +2779,7 @@
       if (this.options.Mark) {
 
          // for tooltips use markers only if nodes where not created
-         var path = "";
+         let path = "";
 
          this.createAttMarker({ attr: spline })
 
@@ -2788,11 +2787,11 @@
 
          this.knot_size = this.markeratt.GetFullSize();
 
-         for (var n=0; n<spline.fPoly.length; n++) {
-            var knot = spline.fPoly[n],
+         for (let n=0; n<spline.fPoly.length; n++) {
+            let knot = spline.fPoly[n],
                 grx = pmain.grx(knot.fX);
             if ((grx > -this.knot_size) && (grx < w + this.knot_size)) {
-               var gry = pmain.gry(knot.fY);
+               let gry = pmain.gry(knot.fY);
                if ((gry > -this.knot_size) && (gry < h + this.knot_size)) {
                   path += this.markeratt.create(grx, gry);
                }
@@ -2810,7 +2809,7 @@
    TSplinePainter.prototype.CanZoomIn = function(axis,min,max) {
       if (axis!=="x") return false;
 
-      var spline = this.GetObject();
+      let spline = this.GetObject();
       if (!spline) return false;
 
       // if function calculated, one always could zoom inside
@@ -2818,7 +2817,7 @@
    }
 
    TSplinePainter.prototype.DecodeOptions = function(opt) {
-      var d = new JSROOT.DrawOptions(opt);
+      let d = new JSROOT.DrawOptions(opt);
 
       if (!this.options) this.options = {};
 
@@ -2839,7 +2838,7 @@
    }
 
    JSROOT.Painter.drawSpline = function(divid, spline, opt) {
-      var painter = new TSplinePainter(spline);
+      let painter = new TSplinePainter(spline);
 
       painter.SetDivId(divid, -1);
       painter.DecodeOptions(opt);
@@ -2849,7 +2848,7 @@
             console.warn('TSpline painter requires histogram to be drawn');
             return null;
          }
-         var histo = painter.CreateDummyHisto();
+         let histo = painter.CreateDummyHisto();
          return JSROOT.draw(divid, histo, "AXIS").then(painter.FirstDraw.bind(painter));
       }
 
@@ -2870,7 +2869,7 @@
 
    TGraphTimePainter.prototype.DecodeOptions = function(opt) {
 
-      var d = new JSROOT.DrawOptions(opt || "REPEAT");
+      let d = new JSROOT.DrawOptions(opt || "REPEAT");
 
       if (!this.options) this.options = {};
 
@@ -2888,7 +2887,7 @@
       if (indx===0)
          this._doing_primitives = true;
 
-      var lst = this.GetObject().fSteps.arr[this.step];
+      let lst = this.GetObject().fSteps.arr[this.step];
 
       if (ppainter) ppainter.$grtimeid = this.selfid; // indicator that painter created by ourself
 
@@ -2898,7 +2897,7 @@
       }
 
       // handle use to invoke callback only when necessary
-      var handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
+      let handle_func = this.DrawPrimitives.bind(this, indx+1, callback);
 
       JSROOT.draw(this.divid, lst.arr[indx], lst.opt[indx]).then(handle_func);
    }
@@ -2910,7 +2909,7 @@
    TGraphTimePainter.prototype.ContineDrawing = function() {
       if (!this.options) return;
 
-      var gr = this.GetObject();
+      let gr = this.GetObject();
 
       if (!this.ready_called) {
          this.ready_called = true;
@@ -2927,7 +2926,7 @@
          delete this.wait_animation_frame;
 
          // clear pad
-         var pp = this.pad_painter();
+         let pp = this.pad_painter();
          if (!pp) {
             // most probably, pad is cleared
             delete this.step;
@@ -2948,7 +2947,7 @@
          requestAnimationFrame(this.ContineDrawing.bind(this));
       } else {
 
-         var sleeptime = gr.fSleepTime;
+         let sleeptime = gr.fSleepTime;
          if (!sleeptime || (sleeptime<100)) sleeptime = 10;
 
          if (++this.step > gr.fSteps.arr.length) {
@@ -2977,7 +2976,7 @@
 
    JSROOT.Painter.drawGraphTime = function(divid,gr,opt) {
 
-      var painter = new TGraphTimePainter(gr);
+      let painter = new TGraphTimePainter(gr);
       painter.SetDivId(divid,-1);
 
       if (painter.main_painter()) {
@@ -3011,7 +3010,7 @@
    TEfficiencyPainter.prototype = Object.create(JSROOT.TObjectPainter.prototype);
 
    TEfficiencyPainter.prototype.GetEfficiency = function(bin) {
-      var obj = this.GetObject(),
+      let obj = this.GetObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin);
 
@@ -3021,7 +3020,7 @@
 /**  implementing of  beta_quantile requires huge number of functions in JSRootMath.js
 
    TEfficiencyPainter.prototype.ClopperPearson = function(total,passed,level,bUpper) {
-      var alpha = (1.0 - level) / 2;
+      let alpha = (1.0 - level) / 2;
       if(bUpper)
          return ((passed == total) ? 1.0 : JSROOT.Math.beta_quantile(1 - alpha,passed + 1,total-passed));
       else
@@ -3032,7 +3031,7 @@
    TEfficiencyPainter.prototype.Normal = function(total,passed,level,bUpper) {
       if (total == 0) return bUpper ? 1 : 0;
 
-      var alpha = (1.0 - level)/2,
+      let alpha = (1.0 - level)/2,
           average = passed / total,
           sigma = Math.sqrt(average * (1 - average) / total),
          delta = JSROOT.Math.normal_quantile(1 - alpha,sigma);
@@ -3044,7 +3043,7 @@
    }
 
    TEfficiencyPainter.prototype.GetEfficiencyErrorLow = function(bin) {
-      var obj = this.GetObject(),
+      let obj = this.GetObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin),
           eff = this.GetEfficiency(bin);
@@ -3053,7 +3052,7 @@
    }
 
    TEfficiencyPainter.prototype.GetEfficiencyErrorUp = function(bin) {
-      var obj = this.GetObject(),
+      let obj = this.GetObject(),
           total = obj.fTotalHistogram.getBinContent(bin),
           passed = obj.fPassedHistogram.getBinContent(bin),
           eff = this.GetEfficiency(bin);
@@ -3062,18 +3061,18 @@
    }
 
    TEfficiencyPainter.prototype.CreateGraph = function() {
-      var gr = JSROOT.Create('TGraphAsymmErrors');
+      let gr = JSROOT.Create('TGraphAsymmErrors');
       gr.fName = "eff_graph";
       return gr;
    }
 
    TEfficiencyPainter.prototype.FillGraph = function(gr, opt) {
-      var eff = this.GetObject(),
+      let eff = this.GetObject(),
           npoints = eff.fTotalHistogram.fXaxis.fNbins,
           option = opt.toLowerCase(),
           plot0Bins = false, j = 0;
       if (option.indexOf("e0")>=0) plot0Bins = true;
-      for (var n=0;n<npoints;++n) {
+      for (let n=0;n<npoints;++n) {
          if (!plot0Bins && eff.fTotalHistogram.getBinContent(n+1) === 0) continue;
          gr.fX[j] = eff.fTotalHistogram.fXaxis.GetBinCenter(n+1);
          gr.fY[j] = this.GetEfficiency(n+1);
@@ -3090,10 +3089,10 @@
 
       if (!eff || !eff.fTotalHistogram || (eff.fTotalHistogram._typename.indexOf("TH1")!=0)) return null;
 
-      var painter = new TEfficiencyPainter(eff);
+      let painter = new TEfficiencyPainter(eff);
       painter.options = opt;
 
-      var gr = painter.CreateGraph();
+      let gr = painter.CreateGraph();
       painter.FillGraph(gr, opt);
 
       return JSROOT.draw(divid, gr, opt)
@@ -3124,30 +3123,30 @@
    TMultiGraphPainter.prototype.UpdateObject = function(obj) {
       if (!this.MatchObjectType(obj)) return false;
 
-      var mgraph = this.GetObject(),
+      let mgraph = this.GetObject(),
           graphs = obj.fGraphs;
 
       mgraph.fTitle = obj.fTitle;
 
-      var isany = false;
+      let isany = false;
       if (this.firstpainter) {
-         var histo = obj.fHistogram;
+         let histo = obj.fHistogram;
          if (this.autorange && !histo)
             histo = this.ScanGraphsRange(graphs);
 
          if (this.firstpainter.UpdateObject(histo)) isany = true;
       }
 
-      for (var i = 0; i < graphs.arr.length; ++i) {
+      for (let i = 0; i < graphs.arr.length; ++i) {
          if (i<this.painters.length)
             if (this.painters[i].UpdateObject(graphs.arr[i])) isany = true;
       }
 
       if (obj.fFunctions)
-         for (var i = 0; i < obj.fFunctions.arr.length; ++i) {
-            var func = obj.fFunctions.arr[i];
+         for (let i = 0; i < obj.fFunctions.arr.length; ++i) {
+            let func = obj.fFunctions.arr[i];
             if (!func || !func._typename || !func.fName) continue;
-            var funcpainter = this.FindPainterFor(null, func.fName, func._typename);
+            let funcpainter = this.FindPainterFor(null, func.fName, func._typename);
             if (funcpainter) funcpainter.UpdateObject(func);
          }
 
@@ -3162,7 +3161,7 @@
          res.ymin = res.ymax = gr.fY[0];
          res.first = false;
       }
-      for (var i=0; i < gr.fNpoints; ++i) {
+      for (let i=0; i < gr.fNpoints; ++i) {
          res.xmin = Math.min(res.xmin, gr.fX[i]);
          res.xmax = Math.max(res.xmax, gr.fX[i]);
          res.ymin = Math.min(res.ymin, gr.fY[i]);
@@ -3179,7 +3178,7 @@
    }
 
    TMultiGraphPainter.prototype.ScanGraphsRange = function(graphs, histo, pad) {
-      var mgraph = this.GetObject(),
+      let mgraph = this.GetObject(),
           maximum, minimum, dx, dy, uxmin = 0, uxmax = 0, logx = false, logy = false,
           time_display = false, time_format = "",
           rw = {  xmin: 0, xmax: 0, ymin: 0, ymax: 0, first: true };
@@ -3203,7 +3202,7 @@
       } else {
          this.autorange = true;
 
-         for (var i = 0; i < graphs.arr.length; ++i)
+         for (let i = 0; i < graphs.arr.length; ++i)
             this.ComputeGraphRange(rw, graphs.arr[i]);
 
          if (graphs.arr[0] && graphs.arr[0].fHistogram && graphs.arr[0].fHistogram.fXaxis.fTimeDisplay) {
@@ -3267,7 +3266,7 @@
    TMultiGraphPainter.prototype.DrawAxis = function(callback) {
       // draw special histogram
 
-      var mgraph = this.GetObject(),
+      let mgraph = this.GetObject(),
           histo = this.ScanGraphsRange(mgraph.fGraphs, mgraph.fHistogram, this.root_pad());
 
       // histogram painter will be first in the pad, will define axis and
@@ -3278,7 +3277,7 @@
    TMultiGraphPainter.prototype.DrawNextFunction = function(indx, callback) {
       // method draws next function from the functions list
 
-      var mgraph = this.GetObject();
+      let mgraph = this.GetObject();
 
       if (!mgraph.fFunctions || (indx >= mgraph.fFunctions.arr.length))
          return JSROOT.CallBack(callback);
@@ -3290,7 +3289,7 @@
    TMultiGraphPainter.prototype.DrawNextGraph = function(indx, opt, subp, used_timeout) {
       if (subp) this.painters.push(subp);
 
-      var graphs = this.GetObject().fGraphs;
+      let graphs = this.GetObject().fGraphs;
 
       // at the end of graphs drawing draw functions (if any)
       if (indx >= graphs.arr.length) {
@@ -3307,8 +3306,8 @@
          if (!this.palette && JSROOT.Painter.GetColorPalette)
             this.palette = JSROOT.Painter.GetColorPalette();
          if (this.palette) {
-            var color = this.palette.calcColor(indx, graphs.arr.length+1);
-            var icolor = this.add_color(color);
+            let color = this.palette.calcColor(indx, graphs.arr.length+1);
+            let icolor = this.add_color(color);
 
             if (this._pfc) graphs.arr[indx].fFillColor = icolor;
             if (this._plc) graphs.arr[indx].fLineColor = icolor;
@@ -3321,11 +3320,11 @@
 
    JSROOT.Painter.drawMultiGraph = function(divid, mgraph, opt) {
 
-      var painter = new TMultiGraphPainter(mgraph);
+      let painter = new TMultiGraphPainter(mgraph);
 
       painter.SetDivId(divid, -1); // it may be no element to set divid
 
-      var d = new JSROOT.DrawOptions(opt);
+      let d = new JSROOT.DrawOptions(opt);
       d.check("3D"); d.check("FB"); // no 3D supported, FB not clear
 
       painter._pfc = d.check("PFC");
@@ -3350,7 +3349,7 @@
 
    function drawWebPainting(divid, obj, opt) {
 
-      var painter = new JSROOT.TObjectPainter(obj, opt);
+      let painter = new JSROOT.TObjectPainter(obj, opt);
 
       painter.UpdateObject = function(obj) {
          if (!this.MatchObjectType(obj)) return false;
@@ -3359,9 +3358,9 @@
       }
 
       painter.ReadAttr = function(str, names) {
-         var lastp = 0, obj = { _typename: "any" };
-         for (var k=0;k<names.length;++k) {
-            var p = str.indexOf(":", lastp+1);
+         let lastp = 0, obj = { _typename: "any" };
+         for (let k=0;k<names.length;++k) {
+            let p = str.indexOf(":", lastp+1);
             obj[names[k]] = parseInt(str.substr(lastp+1, (p>lastp) ? p-lastp-1 : undefined));
             lastp = p;
          }
@@ -3370,11 +3369,11 @@
 
       painter.Redraw = function() {
 
-         var obj = this.GetObject(), func = this.AxisToSvgFunc();
+         let obj = this.GetObject(), func = this.AxisToSvgFunc();
 
          if (!obj || !obj.fOper || !func) return;
 
-         var indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
+         let indx = 0, attr = {}, lastpath = null, lastkind = "none", d = "",
              oper, k, npoints, n, arr = obj.fOper.split(";");
 
          function check_attributes(painter, kind) {
@@ -3423,7 +3422,7 @@
 
                   check_attributes(this, (oper == "b") ? "f" : "l");
 
-                  var x1 = func.x(obj.fBuf[indx++]),
+                  let x1 = func.x(obj.fBuf[indx++]),
                       y1 = func.y(obj.fBuf[indx++]),
                       x2 = func.x(obj.fBuf[indx++]),
                       y2 = func.y(obj.fBuf[indx++]);
@@ -3467,19 +3466,19 @@
 
                      check_attributes();
 
-                     var height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
+                     let height = (attr.fTextSize > 1) ? attr.fTextSize : this.pad_height() * attr.fTextSize;
 
-                     var group = this.draw_g.append("svg:g");
+                     let group = this.draw_g.append("svg:g");
 
                      this.StartTextDrawing(attr.fTextFont, height, group);
 
-                     var angle = attr.fTextAngle;
+                     let angle = attr.fTextAngle;
                      if (angle >= 360) angle -= Math.floor(angle/360) * 360;
 
-                     var txt = arr[k].substr(1);
+                     let txt = arr[k].substr(1);
 
                      if (oper == "h") {
-                        var res = "";
+                        let res = "";
                         for (n=0;n<txt.length;n+=2)
                            res += String.fromCharCode(parseInt(txt.substr(n,2), 16));
                         txt = res;
@@ -3540,18 +3539,18 @@
    }
 
    TASImagePainter.prototype.CreateRGBA = function(nlevels) {
-      var obj = this.GetObject();
+      let obj = this.GetObject();
 
       if (!obj || !obj.fPalette) return null;
 
-      var rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
+      let rgba = new Array((nlevels+1) * 4), indx = 1, pal = obj.fPalette; // precaclucated colors
 
-      for(var lvl=0;lvl<=nlevels;++lvl) {
-         var l = 1.*lvl/nlevels;
+      for(let lvl=0;lvl<=nlevels;++lvl) {
+         let l = 1.*lvl/nlevels;
          while ((pal.fPoints[indx] < l) && (indx < pal.fPoints.length-1)) indx++;
 
-         var r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
-         var r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+         let r1 = (pal.fPoints[indx] - l) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
+         let r2 = (l - pal.fPoints[indx-1]) / (pal.fPoints[indx] - pal.fPoints[indx-1]);
 
          rgba[lvl*4]   = Math.min(255, Math.round((pal.fColorRed[indx-1] * r1 + pal.fColorRed[indx] * r2) / 256));
          rgba[lvl*4+1] = Math.min(255, Math.round((pal.fColorGreen[indx-1] * r1 + pal.fColorGreen[indx] * r2) / 256));
@@ -3564,12 +3563,12 @@
 
    TASImagePainter.prototype.getContourColor = function(zval) {
       if (!this.fContour || !this.rgba) return "white";
-      var indx = Math.round((zval - this.fContour[0]) / (this.fContour[this.fContour.length-1] - this.fContour[0]) * (this.rgba.length-4)/4) * 4;
+      let indx = Math.round((zval - this.fContour[0]) / (this.fContour[this.fContour.length-1] - this.fContour[0]) * (this.rgba.length-4)/4) * 4;
       return "rgba(" + this.rgba[indx] + "," + this.rgba[indx+1] + "," + this.rgba[indx+2] + "," + this.rgba[indx+3] + ")";
    }
 
    TASImagePainter.prototype.CreateImage = function() {
-      var obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
+      let obj = this.GetObject(), is_buf = false, fp = this.frame_painter();
 
       if (obj._blob) {
          // try to process blob data due to custom streamer
@@ -3613,18 +3612,18 @@
          delete obj._blob;
       }
 
-      var url, constRatio = true;
+      let url, constRatio = true;
 
       if (obj.fImgBuf && obj.fPalette) {
 
          is_buf = true;
 
-         var nlevels = 1000;
+         let nlevels = 1000;
          this.rgba = this.CreateRGBA(nlevels); // precaclucated colors
 
-         var min = obj.fImgBuf[0], max = obj.fImgBuf[0];
-         for (var k=1;k<obj.fImgBuf.length;++k) {
-            var v = obj.fImgBuf[k];
+         let min = obj.fImgBuf[0], max = obj.fImgBuf[0];
+         for (let k=1;k<obj.fImgBuf.length;++k) {
+            let v = obj.fImgBuf[k];
             min = Math.min(v, min);
             max = Math.max(v, max);
          }
@@ -3635,12 +3634,12 @@
 
          // create countor like in hist painter to allow palette drawing
          this.fContour = new Array(200);
-         for (var k=0;k<200;k++)
+         for (let k=0;k<200;k++)
             this.fContour[k] = min + (max-min)/(200-1)*k;
 
          if (min >= max) max = min + 1;
 
-         var xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
+         let xmin = 0, xmax = obj.fWidth, ymin = 0, ymax = obj.fHeight; // dimension in pixels
 
          if (fp && (fp.zoom_xmin != fp.zoom_xmax)) {
             xmin = Math.round(fp.zoom_xmin * obj.fWidth);
@@ -3652,7 +3651,7 @@
             ymax = Math.round(fp.zoom_ymax * obj.fHeight);
          }
 
-         var canvas;
+         let canvas;
 
          if (JSROOT.nodejs) {
             try {
@@ -3670,15 +3669,15 @@
 
          if (!canvas) return;
 
-         var context = canvas.getContext('2d'),
+         let context = canvas.getContext('2d'),
              imageData = context.getImageData(0, 0, canvas.width, canvas.height),
              arr = imageData.data;
 
-         for(var i = ymin; i < ymax; ++i) {
-            var dst = (ymax - i - 1) * (xmax - xmin) * 4,
+         for(let i = ymin; i < ymax; ++i) {
+            let dst = (ymax - i - 1) * (xmax - xmin) * 4,
                 row = i * obj.fWidth;
-            for(var j = xmin; j < xmax; ++j) {
-               var iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
+            for(let j = xmin; j < xmax; ++j) {
+               let iii = Math.round((obj.fImgBuf[row + j] - min) / (max - min) * nlevels) * 4;
                // copy rgba value for specified point
                arr[dst++] = this.rgba[iii++];
                arr[dst++] = this.rgba[iii++];
@@ -3696,11 +3695,11 @@
          // console.log('url', url.length, url.substr(0,100), url.substr(url.length-20, 20));
 
       } else if (obj.fPngBuf) {
-         var pngbuf = "", btoa_func;
+         let pngbuf = "", btoa_func;
          if (typeof obj.fPngBuf == "string") {
             pngbuf = obj.fPngBuf;
          } else {
-            for (var k=0;k<obj.fPngBuf.length;++k)
+            for (let k=0;k<obj.fPngBuf.length;++k)
                pngbuf += String.fromCharCode(obj.fPngBuf[k] < 0 ? 256 + obj.fPngBuf[k] : obj.fPngBuf[k]);
          }
 
@@ -3722,7 +3721,7 @@
 
       if (url && this.is_main_painter() && is_buf && fp) {
 
-         this.DrawColorPalette(this.options.Zscale, false, true);
+         this.DrawColorPalette(this.options.Zscale, true);
 
          fp.SetAxesRanges(JSROOT.Create("TAxis"), 0, 1, JSROOT.Create("TAxis"), 0, 1, null, 0, 0);
          fp.CreateXY({ ndim: 2,
@@ -3733,7 +3732,7 @@
    }
 
    TASImagePainter.prototype.CanZoomIn = function(axis,min,max) {
-      var obj = this.GetObject();
+      let obj = this.GetObject();
 
       if (!obj || !obj.fImgBuf)
          return false;
@@ -3745,13 +3744,13 @@
       return false;
    }
 
-   TASImagePainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
+   TASImagePainter.prototype.DrawColorPalette = function(enabled, can_move) {
       // only when create new palette, one could change frame size
 
       if (!this.is_main_painter()) return null;
 
       if (!this.draw_palette) {
-         var pal = JSROOT.Create('TPave');
+         let pal = JSROOT.Create('TPave');
 
          JSROOT.extend(pal, { _typename: "TPaletteAxis", fName: "TPave", fH: null, fAxis: JSROOT.Create('TGaxis'),
                                fX1NDC: 0.91, fX2NDC: 0.95, fY1NDC: 0.1, fY2NDC: 0.9, fInit: 1 } );
@@ -3761,7 +3760,7 @@
          this.draw_palette = pal;
       }
 
-      var pal_painter = this.FindPainterFor(this.draw_palette);
+      let pal_painter = this.FindPainterFor(this.draw_palette);
 
       if (!enabled) {
          if (pal_painter) {
@@ -3771,11 +3770,11 @@
          return;
       }
 
-      var frame_painter = this.frame_painter();
+      let frame_painter = this.frame_painter();
 
       // keep palette width
       if (can_move && frame_painter) {
-         var pal = this.draw_palette;
+         let pal = this.draw_palette;
          pal.fX2NDC = frame_painter.fX2NDC + 0.01 + (pal.fX2NDC - pal.fX1NDC);
          pal.fX1NDC = frame_painter.fX2NDC + 0.01;
          pal.fY1NDC = frame_painter.fY1NDC;
@@ -3797,22 +3796,22 @@
    }
 
    TASImagePainter.prototype.ToggleColz = function() {
-      var obj = this.GetObject(),
+      let obj = this.GetObject(),
           can_toggle = obj && obj.fPalette;
 
       if (can_toggle) {
          this.options.Zscale = !this.options.Zscale;
-         this.DrawColorPalette(this.options.Zscale, false, true);
+         this.DrawColorPalette(this.options.Zscale, true);
       }
    }
 
    TASImagePainter.prototype.Redraw = function(reason) {
-      var img = null;
+      let img = null;
       if (this.draw_g)
          img = this.draw_g.select("image");
 
       if (img && !img.empty() && (reason !== "zoom")) {
-         var fw = this.frame_width(), fh = this.frame_height();
+         let fw = this.frame_width(), fh = this.frame_height();
          img.attr("width", fw).attr("height", fh);
       } else {
          this.CreateImage();
@@ -3831,7 +3830,7 @@
    }
 
    TASImagePainter.prototype.FillToolbar = function() {
-      var pp = this.pad_painter(), obj = this.GetObject();
+      let pp = this.pad_painter(), obj = this.GetObject();
       if (pp && obj && obj.fPalette) {
          pp.AddButton(JSROOT.ToolbarIcons.th2colorz, "Toggle color palette", "ToggleColorZ");
          pp.ShowButtons();
@@ -3839,7 +3838,7 @@
    }
 
    function drawASImage(divid, obj, opt) {
-      var painter = new TASImagePainter(obj, opt);
+      let painter = new TASImagePainter(obj, opt);
 
       painter.DecodeOptions(opt);
 
@@ -3856,13 +3855,13 @@
 
 
    JSROOT.Painter.drawJSImage = function(divid, obj, opt) {
-      var painter = new JSROOT.TBasePainter();
+      let painter = new JSROOT.TBasePainter();
       painter.SetDivId(divid, -1);
 
-      var main = painter.select_main();
+      let main = painter.select_main();
 
       // this is example how external image can be inserted
-      var img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
+      let img = main.append("img").attr("src", obj.fName).attr("title", obj.fTitle || obj.fName);
 
       if (opt && opt.indexOf("scale")>=0) {
          img.style("width","100%").style("height","100%");
@@ -3882,11 +3881,11 @@
    JSROOT.Painter.CreateBranchItem = function(node, branch, tree, parent_branch) {
       if (!node || !branch) return false;
 
-      var nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
+      let nb_branches = branch.fBranches ? branch.fBranches.arr.length : 0,
           nb_leaves = branch.fLeaves ? branch.fLeaves.arr.length : 0;
 
       function ClearName(arg) {
-         var pos = arg.indexOf("[");
+         let pos = arg.indexOf("[");
          if (pos>0) arg = arg.substr(0, pos);
          if (parent_branch && arg.indexOf(parent_branch.fName)==0) {
             arg = arg.substr(parent_branch.fName.length);
@@ -3897,7 +3896,7 @@
 
       branch.$tree = tree; // keep tree pointer, later do it more smart
 
-      var subitem = {
+      let subitem = {
             _name : ClearName(branch.fName),
             _kind : "ROOT." + branch._typename,
             _title : branch.fTitle,
@@ -3932,16 +3931,16 @@
                  });
               }
 
-            for (var i=0; i<bobj.fBranches.arr.length; ++i)
+            for (let i=0; i<bobj.fBranches.arr.length; ++i)
                JSROOT.Painter.CreateBranchItem(bnode, bobj.fBranches.arr[i], bobj.$tree, bobj);
 
-            var object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
+            let object_class = JSROOT.IO.GetBranchObjectClass(bobj, bobj.$tree, true),
                 methods = object_class ? JSROOT.getMethods(object_class) : null;
 
             if (methods && (bobj.fBranches.arr.length>0))
-               for (var key in methods) {
+               for (let key in methods) {
                   if (typeof methods[key] !== 'function') continue;
-                  var s = methods[key].toString();
+                  let s = methods[key].toString();
                   if ((s.indexOf("return")>0) && (s.indexOf("function ()")==0))
                      bnode._childs.push({
                         _name: key+"()",
@@ -3961,9 +3960,9 @@
          subitem._more = false;
       } else if (nb_leaves > 1) {
          subitem._childs = [];
-         for (var j = 0; j < nb_leaves; ++j) {
+         for (let j = 0; j < nb_leaves; ++j) {
             branch.fLeaves.arr[j].$branch = branch; // keep branch pointer for drawing
-            var leafitem = {
+            let leafitem = {
                _name : ClearName(branch.fLeaves.arr[j].fName),
                _kind : "ROOT." + branch.fLeaves.arr[j]._typename,
                _obj: branch.fLeaves.arr[j]
@@ -3981,7 +3980,7 @@
       node._childs = [];
       node._tree = obj;  // set reference, will be used later by TTree::Draw
 
-      for (var i=0; i<obj.fBranches.arr.length; ++i)
+      for (let i=0; i<obj.fBranches.arr.length; ++i)
          JSROOT.Painter.CreateBranchItem(node, obj.fBranches.arr[i], obj);
 
       return true;
@@ -3993,7 +3992,7 @@
     * @private */
    JSROOT.Painter.drawTree = function(divid, obj, opt) {
 
-      var painter = new JSROOT.TObjectPainter(obj),
+      let painter = new JSROOT.TObjectPainter(obj),
           tree = obj, args = opt;
 
       if (obj._typename == "TBranchFunc") {
@@ -4041,14 +4040,14 @@
          return painter.DrawingReady();
       }
 
-      var callback = painter.DrawingReady.bind(painter);
+      let callback = painter.DrawingReady.bind(painter);
       painter._return_res_painter = true; // indicate that TTree::Draw painter returns not itself but drawing of result object
 
       JSROOT.cleanup(divid);
 
       tree.Draw(args, function(histo, hopt, intermediate) {
 
-         var drawid = "";
+         let drawid = "";
 
          if (!args.player) drawid = divid; else
          if (args.create_player === 2) drawid = painter.drawid;

@@ -1421,7 +1421,7 @@
 
    // ==============================================================================
 
-   function THistDrawOptions(opt) {
+   function THistDrawOptions() {
       this.Reset();
    }
 
@@ -1678,10 +1678,8 @@
    }
 
    // function should approx reconstruct draw options
-   THistDrawOptions.prototype.asString = function(painter) {
-      var fp = painter ? painter.frame_painter() : null;
-
-      var res = "";
+   THistDrawOptions.prototype.asString = function() {
+      let res = "";
       if (this.Mode3D) {
 
          if (this.Lego) {
@@ -1817,7 +1815,7 @@
    /** Decode options string opt and fill the option structure
     * @private */
    THistPainter.prototype.DecodeOptions = function(opt) {
-      var histo = this.GetHisto(),
+      let histo = this.GetHisto(),
           hdim = this.Dimension(),
           pad = this.root_pad();
 
