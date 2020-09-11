@@ -865,7 +865,7 @@
       if (!on) return;
 
       if (typeof usedat == 'undefined')
-         return JSROOT.AssertPrerequisites("datgui", this.showControlOptions.bind(this,"load"));
+         return JSROOT.load("datgui").then(this.showControlOptions.bind(this,"load"));
 
       let painter = this;
 

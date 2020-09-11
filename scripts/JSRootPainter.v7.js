@@ -4291,7 +4291,7 @@
 
       let pthis = this;
 
-      JSROOT.AssertPrerequisites("jq2d", function() {
+      JSROOT.load("jq2d").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 

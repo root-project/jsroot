@@ -1838,9 +1838,8 @@
 
    RH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.AssertPrerequisites('v7hist3d', function() {
-         this.Draw3D(call_back, reason);
-      }.bind(this));
+      let painter = this;
+      JSROOT.load('v7hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH1Painter.prototype.Redraw = function(reason) {
@@ -3630,9 +3629,8 @@
 
    RH2Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.AssertPrerequisites('v7hist3d', function() {
-         this.Draw3D(call_back, reason);
-      }.bind(this));
+      let painter = this;
+      JSROOT.load('v7hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    RH2Painter.prototype.CallDrawFunc = function(callback, reason) {
@@ -3744,11 +3742,11 @@
          default: o.Box = 10;
       }
 
-      JSROOT.AssertPrerequisites('v7hist3d', function() {
+      JSROOT.load('v7hist3d').then(() => {
          painter.ScanContent();
          painter.Redraw();
          painter.DrawingReady();
-      }.bind(this));
+      });
 
       return painter;
    }

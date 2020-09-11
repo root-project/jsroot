@@ -4291,9 +4291,8 @@
 
    TH1Painter.prototype.Draw3D = function(call_back, reason) {
       this.mode3d = true;
-      JSROOT.AssertPrerequisites('hist3d', function() {
-         this.Draw3D(call_back, reason);
-      }.bind(this));
+      let painter = this;
+      JSROOT.load('hist3d').then(() => painter.Draw3D(call_back, reason));
    }
 
    TH1Painter.prototype.Redraw = function(reason) {
@@ -6233,9 +6232,8 @@
 
    TH2Painter.prototype.Draw3D = function(call_back, resize) {
       this.mode3d = true;
-      JSROOT.AssertPrerequisites('hist3d', function() {
-         this.Draw3D(call_back, resize);
-      }.bind(this));
+      let painter = this;
+      JSROOT.load('hist3d').then(() => painter.Draw3D(call_back, resize));
    }
 
    TH2Painter.prototype.CallDrawFunc = function(callback, reason) {

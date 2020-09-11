@@ -3741,10 +3741,7 @@
             if (snap.fScripts.indexOf("load:") == 0) arg = snap.fScripts; else
             if (snap.fScripts.indexOf("assert:") == 0) arg = snap.fScripts.substr(7);
             if (arg) {
-               let painter = this;
-               JSROOT.AssertPrerequisites(arg, function() {
-                  painter.DrawNextSnap(snap.fPrimitives, -1, call_back);
-               });
+               JSROOT.load(arg).then(this.DrawNextSnap.bind(this, snap.fPrimitives, -1, call_back));
             } else {
                console.log('Calling eval ' + snap.fScripts.length);
                eval(snap.fScripts);
@@ -4499,7 +4496,7 @@
 
       let pthis = this;
 
-      JSROOT.AssertPrerequisites("jq2d", function() {
+      JSROOT.load("jq2d").then(() => {
 
          let grid = new JSROOT.GridDisplay(origin.node(), layout_kind);
 
@@ -4824,7 +4821,7 @@
 
       let pthis = this;
 
-      JSROOT.AssertPrerequisites('openui5', function() {
+      JSROOT.load('openui5').then(() => {
 
          d3.select("#ged_placeholder").text("");
 

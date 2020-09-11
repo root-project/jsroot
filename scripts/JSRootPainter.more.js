@@ -4021,7 +4021,7 @@
       } else {
 
          if ((args==='player') || !args) {
-            JSROOT.AssertPrerequisites("jq2d", function() {
+            JSROOT.load("jq2d").then(() => {
                JSROOT.CreateTreePlayer(painter);
                painter.ConfigureTree(tree);
                painter.Show(divid);
@@ -4058,7 +4058,7 @@
          // redirect drawing to the player
          args.player_create = 1;
          args.player_intermediate = intermediate;
-         JSROOT.AssertPrerequisites("jq2d", function() {
+         JSROOT.load("jq2d").then(() => {
             JSROOT.CreateTreePlayer(painter);
             painter.ConfigureTree(tree);
             painter.Show(divid, args);
