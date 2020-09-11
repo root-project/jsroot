@@ -4652,30 +4652,30 @@
       }
    }
 
-   JSROOT.TCanvasStatusBits = {
-      kShowEventStatus  : JSROOT.BIT(15),
-      kAutoExec         : JSROOT.BIT(16),
-      kMenuBar          : JSROOT.BIT(17),
-      kShowToolBar      : JSROOT.BIT(18),
-      kShowEditor       : JSROOT.BIT(19),
-      kMoveOpaque       : JSROOT.BIT(20),
-      kResizeOpaque     : JSROOT.BIT(21),
-      kIsGrayscale      : JSROOT.BIT(22),
-      kShowToolTips     : JSROOT.BIT(23)
-   };
-
    RCanvasPainter.prototype.CompeteCanvasSnapDrawing = function() {
       if (!this.pad) return;
+
+      let TCanvasStatusBits = {
+         kShowEventStatus  : JSROOT.BIT(15),
+         kAutoExec         : JSROOT.BIT(16),
+         kMenuBar          : JSROOT.BIT(17),
+         kShowToolBar      : JSROOT.BIT(18),
+         kShowEditor       : JSROOT.BIT(19),
+         kMoveOpaque       : JSROOT.BIT(20),
+         kResizeOpaque     : JSROOT.BIT(21),
+         kIsGrayscale      : JSROOT.BIT(22),
+         kShowToolTips     : JSROOT.BIT(23)
+      };
 
       if (document) document.title = this.pad.fTitle;
 
       if (this._all_sections_showed) return;
       this._all_sections_showed = true;
-      this.ShowSection("Menu", this.pad.TestBit(JSROOT.TCanvasStatusBits.kMenuBar));
-      this.ShowSection("StatusBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEventStatus));
-      this.ShowSection("ToolBar", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolBar));
-      this.ShowSection("Editor", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowEditor));
-      this.ShowSection("ToolTips", this.pad.TestBit(JSROOT.TCanvasStatusBits.kShowToolTips));
+      this.ShowSection("Menu", this.pad.TestBit(TCanvasStatusBits.kMenuBar));
+      this.ShowSection("StatusBar", this.pad.TestBit(TCanvasStatusBits.kShowEventStatus));
+      this.ShowSection("ToolBar", this.pad.TestBit(TCanvasStatusBits.kShowToolBar));
+      this.ShowSection("Editor", this.pad.TestBit(TCanvasStatusBits.kShowEditor));
+      this.ShowSection("ToolTips", this.pad.TestBit(TCanvasStatusBits.kShowToolTips));
    }
 
    RCanvasPainter.prototype.HasEventStatus = function() {
