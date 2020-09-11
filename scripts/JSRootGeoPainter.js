@@ -373,7 +373,7 @@
          if (orientation) { controllerMesh.quaternion.fromArray(orientation); }
          if (position) { controllerMesh.position.fromArray(position); }
          controllerMesh.updateMatrix();
-         controllerMesh.applyMatrix(this._standingMatrix);
+         controllerMesh.applyMatrix4(this._standingMatrix);
          controllerMesh.matrixWorldNeedsUpdate = true;
       }
       this.ProcessVRControllerIntersections();
@@ -3394,8 +3394,8 @@
                } else {
                   origin.geom = new THREE.BufferGeometry();
 
-                  origin.geom.addAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
-                  origin.geom.addAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
+                  origin.geom.setAttribute( 'position', new THREE.BufferAttribute( item.buf_pos, 3 ) );
+                  origin.geom.setAttribute( 'normal', new THREE.BufferAttribute( item.buf_norm, 3 ) );
                }
 
                origin.ready = true;
@@ -3938,7 +3938,7 @@
 
       if (this._renderer) {
          if (this._renderer.dispose) this._renderer.dispose();
-         if (this._renderer.context) delete this._renderer.context;
+         if (this._renderer.forceContextLoss) this._renderer.forceContextLoss();
       }
 
       delete this._scene;

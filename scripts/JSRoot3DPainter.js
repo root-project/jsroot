@@ -349,7 +349,7 @@
       control.scene = scene;
       control.renderer = renderer;
       control.raycaster = new THREE.Raycaster();
-      control.raycaster.linePrecision = 10;
+      control.raycaster.params.Line.threshold = 10;
       control.mouse_zoom_mesh = null; // zoom mesh, currently used in the zooming
       control.block_ctxt = false; // require to block context menu command appearing after control ends, required in chrome which inject contextmenu when key released
       control.block_mousemove = false; // when true, tooltip or cursor will not react on mouse move
@@ -803,7 +803,7 @@
 
       let geom = new THREE.BufferGeometry();
 
-      geom.addAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
+      geom.setAttribute( 'position', arr instanceof Float32Array ? new THREE.BufferAttribute( arr, 3 ) : new THREE.Float32BufferAttribute( arr, 3 ) );
       if (index) geom.setIndex(  new THREE.BufferAttribute(index, 1) );
 
       if (material.isLineDashedMaterial) {
@@ -832,7 +832,7 @@
                distances[n/3+1] = d;
             }
          }
-         geom.addAttribute( 'lineDistance', new THREE.BufferAttribute(distances, 1) );
+         geom.setAttribute( 'lineDistance', new THREE.BufferAttribute(distances, 1) );
       }
 
       return only_geometry ? geom : new THREE.LineSegments(geom, material);
@@ -939,7 +939,7 @@
 
       if (!m.js_special) {
          let geom = new THREE.BufferGeometry();
-         geom.addAttribute( 'position', m.geometry.getAttribute("position"));
+         geom.setAttribute( 'position', m.geometry.getAttribute("position"));
          let material = new THREE.PointsMaterial( { size: m.material.size*2, color: color } );
          material.sizeAttenuation = m.material.sizeAttenuation;
 
@@ -959,7 +959,7 @@
 
       this.pos = new Float32Array(size*3);
       this.geom = new THREE.BufferGeometry();
-      this.geom.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      this.geom.setAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
       this.indx = 0;
    }
 

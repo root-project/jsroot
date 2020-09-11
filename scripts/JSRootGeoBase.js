@@ -318,8 +318,8 @@
          console.error('Mismatch with created ' + this.nfaces + ' and filled ' + this.indx/9 + ' number of faces');
 
       let geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
+      geometry.setAttribute( 'position', new THREE.BufferAttribute( this.pos, 3 ) );
+      geometry.setAttribute( 'normal', new THREE.BufferAttribute( this.norm, 3 ) );
       return geometry;
    }
 
@@ -1670,7 +1670,7 @@
                shape = shape.fNode.fLeft;
             }
             let res = JSROOT.GEO.createGeometry(shape, faces_limit);
-            if (res && (faces_limit===0)) res.applyMatrix(matrix);
+            if (res && (faces_limit===0)) res.applyMatrix4(matrix);
             return res;
          }
       }
@@ -1720,7 +1720,7 @@
             geom1 = ThreeBSP.CreateBufferGeometry(geom1.polygons);
             n1 = JSROOT.GEO.numGeometryFaces(geom1);
          }
-         if (matrix1) geom1.applyMatrix(matrix1);
+         if (matrix1) geom1.applyMatrix4(matrix1);
          // if (!geom1._exceed_limit) console.log('reach faces limit', faces_limit, 'got', n1, n2);
          geom1._exceed_limit = true;
          return geom1;
@@ -3316,8 +3316,8 @@
             }
 
             shape.geomZ = new THREE.BufferGeometry();
-            shape.geomZ.addAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
-            shape.geomZ.addAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
+            shape.geomZ.setAttribute( 'position', new THREE.BufferAttribute( newpos, 3 ) );
+            shape.geomZ.setAttribute( 'normal', new THREE.BufferAttribute( newnorm, 3 ) );
             // normals are calculated with normal geometry and correctly scaled
             // geom.computeVertexNormals();
 

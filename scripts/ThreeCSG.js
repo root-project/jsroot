@@ -489,8 +489,8 @@
       }
 
       let geometry = new THREE.BufferGeometry();
-      geometry.addAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
-      geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
+      geometry.setAttribute( 'position', new THREE.BufferAttribute( positions_buf, 3 ) );
+      geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals_buf, 3 ) );
 
       // geometry.computeVertexNormals();
       return geometry;

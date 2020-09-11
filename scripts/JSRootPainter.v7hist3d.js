@@ -54,7 +54,7 @@
 
          if (this.renderer) {
             if (this.renderer.dispose) this.renderer.dispose();
-            if (this.renderer.context) delete this.renderer.context;
+            if (this.renderer.forceContextLoss) this.renderer.forceContextLoss();
          }
 
          delete this.size_xy3d;
@@ -358,8 +358,8 @@
             pos = new Float32Array(indicies.length*3);
             norm = new Float32Array(indicies.length*3);
             let geom = new THREE.BufferGeometry();
-            geom.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-            geom.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+            geom.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+            geom.setAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
             let mater = new THREE.MeshBasicMaterial({ color: color, opacity: opacity, flatShading: true });
             tooltip_mesh = new THREE.Mesh(geom, mater);
          } else {
@@ -764,7 +764,7 @@
                0,          0,           0,  1);
 
          let mesh = new THREE.Mesh(lbl, textMaterial);
-         mesh.applyMatrix(m);
+         mesh.applyMatrix4(m);
          xcont.add(mesh);
       });
 
@@ -786,7 +786,7 @@
                0,           0,           -1, 0,
                0,            0,           0, 1);
          let mesh = new THREE.Mesh(lbl, textMaterial);
-         mesh.applyMatrix(m);
+         mesh.applyMatrix4(m);
          xcont.add(mesh);
       });
 
@@ -858,7 +858,7 @@
                   0, 0,  0, 1);
 
             let mesh = new THREE.Mesh(lbl, textMaterial);
-            mesh.applyMatrix(m);
+            mesh.applyMatrix4(m);
             ycont.add(mesh);
          });
 
@@ -881,7 +881,7 @@
                   0, 0, 0, 1);
 
             let mesh = new THREE.Mesh(lbl, textMaterial);
-            mesh.applyMatrix(m);
+            mesh.applyMatrix4(m);
             ycont.add(mesh);
          });
          ycont.xyid = 1;
@@ -979,7 +979,7 @@
                             0,          0,  1, 0,
                             0, text_scale,  0, lbl.grz);
             let mesh = new THREE.Mesh(lbl, textMaterial);
-            mesh.applyMatrix(m);
+            mesh.applyMatrix4(m);
             zcont[n].add(mesh);
          });
 
@@ -997,7 +997,7 @@
                             0,          0,  1, 0,
                             0, text_scale,  0, posz);
             let mesh = new THREE.Mesh(text3d, textMaterial);
-            mesh.applyMatrix(m);
+            mesh.applyMatrix4(m);
             zcont[n].add(mesh);
          }
 
@@ -1243,8 +1243,8 @@
          }
 
          let geometry = new THREE.BufferGeometry();
-         geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-         geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+         geometry.setAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+         geometry.setAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
          // geometry.computeVertexNormals();
 
          let rootcolor = 3, fcolor = this.get_color(rootcolor);
@@ -1309,8 +1309,8 @@
 
          if (num2vertices > 0) {
             let geom2 = new THREE.BufferGeometry();
-            geom2.addAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
-            geom2.addAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
+            geom2.setAttribute( 'position', new THREE.BufferAttribute( pos2, 3 ) );
+            geom2.setAttribute( 'normal', new THREE.BufferAttribute( norm2, 3 ) );
             //geom2.computeVertexNormals();
 
             //var material2 = new THREE.MeshLambertMaterial( { color: 0xFF0000 } );
@@ -1929,7 +1929,7 @@
             if (indx[lvl] !== nfaces[lvl]*9)
                  console.error('SURF faces missmatch lvl', lvl, 'faces', nfaces[lvl], 'index', indx[lvl], 'check', nfaces[lvl]*9 - indx[lvl]);
             let geometry = new THREE.BufferGeometry();
-            geometry.addAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
+            geometry.setAttribute( 'position', new THREE.BufferAttribute( pos[lvl], 3 ) );
             geometry.computeVertexNormals();
             if (donormals && (lvl===1)) RecalculateNormals(geometry.getAttribute('normal').array);
 
@@ -2038,8 +2038,8 @@
                 }
 
                 let geometry = new THREE.BufferGeometry();
-                geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
-                geometry.addAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
+                geometry.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+                geometry.setAttribute( 'normal', new THREE.BufferAttribute( norm, 3 ) );
 
                 let fcolor = palette.getColor(colindx);
                 let material = new THREE.MeshBasicMaterial( { color: fcolor, flatShading: true, side: THREE.DoubleSide, opacity: 0.5  } );
@@ -2316,7 +2316,7 @@
          }
 
          let geometry = new THREE.BufferGeometry();
-         geometry.addAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
+         geometry.setAttribute( 'position', new THREE.BufferAttribute( pos, 3 ) );
          geometry.computeVertexNormals();
 
          let fcolor = this.fPalette.getColor(colindx);
@@ -2672,7 +2672,7 @@
          if (this.options.Sphere === 11) use_colors = true;
 
          let geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
-         geom.applyMatrix( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
+         geom.applyMatrix4( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
          buffer_size = geom.faces.length*9;
          single_bin_verts = new Float32Array(buffer_size);
@@ -2901,8 +2901,8 @@
          let all_bins_buffgeom = new THREE.BufferGeometry();
 
          // Create mesh from bin buffergeometry
-         all_bins_buffgeom.addAttribute('position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
-         all_bins_buffgeom.addAttribute('normal', new THREE.BufferAttribute( bin_norms[nseq], 3 ) );
+         all_bins_buffgeom.setAttribute('position', new THREE.BufferAttribute( bin_verts[nseq], 3 ) );
+         all_bins_buffgeom.setAttribute('normal', new THREE.BufferAttribute( bin_norms[nseq], 3 ) );
 
          if (use_colors) fillcolor = palette.getColor(ncol);
 
