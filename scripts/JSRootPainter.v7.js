@@ -3824,10 +3824,6 @@
          main.Render3D(0); // WebGL clears buffers, therefore we should render scene and convert immediately
          let dataUrl = canvas.toDataURL("image/png");
 
-         // console.log('canvas width height', canvas.width, canvas.height);
-
-         // console.log('produced png image len = ', dataUrl.length, 'begin', dataUrl.substr(0,100));
-
          // remove 3D drawings
 
          if (can3d == 2) {
