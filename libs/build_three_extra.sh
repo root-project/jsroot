@@ -78,6 +78,6 @@ echo "}));" >> $tgt
 
 echo Producing three.extra.min.js
 
-java -jar /home/linev/d/closure-compiler-v20190301.jar --js $tgt --js_output_file ../scripts/three.extra.min.js
+java -jar /home/linev/d/closure-compiler-v20200830.jar --js $tgt --js_output_file ../scripts/three.extra.min.js
 
 # java -jar /d/yuicompressor-2.4.8.jar $tgt -o ../scripts/three.extra.min.js
