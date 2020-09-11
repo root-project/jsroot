@@ -1564,7 +1564,7 @@
                            0,           0,           0,  1);
 
       if (translation)
-         res.setPosition(new THREE.Vector3(translation[0], translation[1], translation[2]));
+         res.setPosition(translation[0], translation[1], translation[2]);
 
       if (scale)
          res.scale(new THREE.Vector3(scale[0], scale[1], scale[2]));
@@ -1590,7 +1590,7 @@
                        node.fTrans[2],  node.fTrans[6],  node.fTrans[10], 0,
                                     0,               0,               0,  1);
             // second - set position with proper sign
-            matrix.setPosition({ x: node.fTrans[12], y: node.fTrans[13], z: node.fTrans[14] });
+            matrix.setPosition(node.fTrans[12], node.fTrans[13], node.fTrans[14]);
          }
       } else if (node.fMatrix) {
          matrix = JSROOT.GEO.createMatrix(node.fMatrix);
@@ -1616,9 +1616,9 @@
               matrix = new THREE.Matrix4();
 
               switch (node.fFinder._typename[node.fFinder._typename.length-1]) {
-                 case 'X': matrix.setPosition(new THREE.Vector3(_shift, 0, 0)); break;
-                 case 'Y': matrix.setPosition(new THREE.Vector3(0, _shift, 0)); break;
-                 case 'Z': matrix.setPosition(new THREE.Vector3(0, 0, _shift)); break;
+                 case 'X': matrix.setPosition(_shift, 0, 0); break;
+                 case 'Y': matrix.setPosition(0, _shift, 0); break;
+                 case 'Z': matrix.setPosition(0, 0, _shift); break;
               }
               break;
 
@@ -1642,7 +1642,7 @@
            case 'TGeoPatternTrapZ':
               let dz = node.fFinder.fStart + (node.fIndex+0.5)*node.fFinder.fStep;
               matrix = new THREE.Matrix4();
-              matrix.setPosition(new THREE.Vector3(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz));
+              matrix.setPosition(node.fFinder.fTxz*dz, node.fFinder.fTyz*dz, dz);
               break;
 
            default:

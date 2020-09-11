@@ -1754,15 +1754,13 @@
          if (entry.stack[0]===1) entry.custom_color = "blue";
       }
 
-      let prop = this._clones.getDrawEntryProperties(entry);
-
-      let obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.ctrl);
+      let mesh,
+          prop = this._clones.getDrawEntryProperties(entry),
+          obj3d = this._clones.CreateObject3D(entry.stack, toplevel, this.ctrl);
 
       prop.material.wireframe = this.ctrl.wireframe;
 
       prop.material.side = this.ctrl.bothSides ? THREE.DoubleSide : THREE.FrontSide;
-
-      let mesh;
 
       if (obj3d.matrixWorld.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
@@ -4315,16 +4313,13 @@
          sub._title = "node:"  + obj._typename;
          if (obj.fTitle.length > 0) sub._title += " " + obj.fTitle;
          volume = obj.fVolume;
-      } else
-      if (obj._typename.indexOf("TGeoVolume")===0) {
+      } else if (obj._typename.indexOf("TGeoVolume")===0) {
          volume = obj;
-      } else
-      if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract") ) {
+      } else if ((obj._typename == "TEveGeoShapeExtract") || (obj._typename == "ROOT::Experimental::REveGeoShapeExtract")) {
          iseve = true;
          shape = obj.fShape;
          subnodes = obj.fElements ? obj.fElements.arr : null;
-      } else
-      if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
+      } else if ((obj.fShapeBits !== undefined) && (obj.fShapeId !== undefined)) {
          shape = obj;
       }
 
