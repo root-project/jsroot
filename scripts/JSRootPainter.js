@@ -1,6 +1,6 @@
-(function( factory ) {
-   if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore', 'd3'], factory );
+(function(factory) {
+   if (typeof define === "function" && define.amd) {
+      define(['JSRootCore', 'd3'], factory);
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       let jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"));
@@ -14,18 +14,18 @@
          throw new Error('JSROOT.Painter already defined', 'JSRootPainter.js');
       factory(JSROOT, d3);
    }
-} (function(JSROOT, d3) {
+}(function(JSROOT, d3) {
 
    "use strict";
 
    JSROOT.sources.push("2d");
 
    // do it here while require.js does not provide method to load css files
-   if ( typeof define === "function" && define.amd )
+   if (typeof define === "function" && define.amd)
       JSROOT.loadScript('$$$style/JSRootPainter.css');
 
    if (!JSROOT._test_d3_) {
-      if ((typeof d3 == 'object') && d3.version && (d3.version[0]==="6"))  {
+      if ((typeof d3 == 'object') && d3.version && (d3.version[0] === "6")) {
          if (d3.version !== '6.1.1')
             console.log('Reuse existing d3.js ' + d3.version + ", expected 6.1.1");
          JSROOT._test_d3_ = 5;
@@ -42,49 +42,49 @@
       disk: { path: 'M384,0H128H32C14.336,0,0,14.336,0,32v448c0,17.656,14.336,32,32,32h448c17.656,0,32-14.344,32-32V96L416,0H384z M352,160   V32h32v128c0,17.664-14.344,32-32,32H160c-17.664,0-32-14.336-32-32V32h128v128H352z M96,288c0-17.656,14.336-32,32-32h256   c17.656,0,32,14.344,32,32v192H96V288z' },
       question: { path: 'M256,512c141.375,0,256-114.625,256-256S397.375,0,256,0S0,114.625,0,256S114.625,512,256,512z M256,64   c63.719,0,128,36.484,128,118.016c0,47.453-23.531,84.516-69.891,110.016C300.672,299.422,288,314.047,288,320   c0,17.656-14.344,32-32,32c-17.664,0-32-14.344-32-32c0-40.609,37.25-71.938,59.266-84.031   C315.625,218.109,320,198.656,320,182.016C320,135.008,279.906,128,256,128c-30.812,0-64,20.227-64,64.672   c0,17.664-14.336,32-32,32s-32-14.336-32-32C128,109.086,193.953,64,256,64z M256,449.406c-18.211,0-32.961-14.75-32.961-32.969   c0-18.188,14.75-32.953,32.961-32.953c18.219,0,32.969,14.766,32.969,32.953C288.969,434.656,274.219,449.406,256,449.406z' },
       undo: { path: 'M450.159,48.042c8.791,9.032,16.983,18.898,24.59,29.604c7.594,10.706,14.146,22.207,19.668,34.489  c5.509,12.296,9.82,25.269,12.92,38.938c3.113,13.669,4.663,27.834,4.663,42.499c0,14.256-1.511,28.863-4.532,43.822  c-3.009,14.952-7.997,30.217-14.953,45.795c-6.955,15.577-16.202,31.52-27.755,47.826s-25.88,32.9-42.942,49.807  c-5.51,5.444-11.787,11.67-18.834,18.651c-7.033,6.98-14.496,14.366-22.39,22.168c-7.88,7.802-15.955,15.825-24.187,24.069  c-8.258,8.231-16.333,16.203-24.252,23.888c-18.3,18.13-37.354,37.016-57.191,56.65l-56.84-57.445  c19.596-19.472,38.54-38.279,56.84-56.41c7.75-7.685,15.772-15.604,24.108-23.757s16.438-16.163,24.33-24.057  c7.894-7.893,15.356-15.33,22.402-22.312c7.034-6.98,13.312-13.193,18.821-18.651c22.351-22.402,39.165-44.648,50.471-66.738  c11.279-22.09,16.932-43.567,16.932-64.446c0-15.785-3.217-31.005-9.638-45.671c-6.422-14.665-16.229-28.504-29.437-41.529  c-3.282-3.282-7.358-6.395-12.217-9.325c-4.871-2.938-10.381-5.503-16.516-7.697c-6.121-2.201-12.815-3.992-20.058-5.373  c-7.242-1.374-14.9-2.064-23.002-2.064c-8.218,0-16.802,0.834-25.788,2.507c-8.961,1.674-18.053,4.429-27.222,8.271  c-9.189,3.842-18.456,8.869-27.808,15.089c-9.358,6.219-18.521,13.819-27.502,22.793l-59.92,60.271l93.797,94.058H0V40.91  l93.27,91.597l60.181-60.532c13.376-15.018,27.222-27.248,41.536-36.697c14.308-9.443,28.608-16.776,42.89-21.992  c14.288-5.223,28.505-8.74,42.623-10.557C294.645,0.905,308.189,0,321.162,0c13.429,0,26.389,1.185,38.84,3.562  c12.478,2.377,24.2,5.718,35.192,10.029c11.006,4.311,21.126,9.404,30.374,15.265C434.79,34.724,442.995,41.119,450.159,48.042z' },
-      arrow_right : { path: 'M30.796,226.318h377.533L294.938,339.682c-11.899,11.906-11.899,31.184,0,43.084c11.887,11.899,31.19,11.893,43.077,0  l165.393-165.386c5.725-5.712,8.924-13.453,8.924-21.539c0-8.092-3.213-15.84-8.924-21.551L338.016,8.925  C332.065,2.975,324.278,0,316.478,0c-7.802,0-15.603,2.968-21.539,8.918c-11.899,11.906-11.899,31.184,0,43.084l113.391,113.384  H30.796c-16.822,0-30.463,13.645-30.463,30.463C0.333,212.674,13.974,226.318,30.796,226.318z' },
-      arrow_up : { path: 'M295.505,629.446V135.957l148.193,148.206c15.555,15.559,40.753,15.559,56.308,0c15.555-15.538,15.546-40.767,0-56.304  L283.83,11.662C276.372,4.204,266.236,0,255.68,0c-10.568,0-20.705,4.204-28.172,11.662L11.333,227.859  c-7.777,7.777-11.666,17.965-11.666,28.158c0,10.192,3.88,20.385,11.657,28.158c15.563,15.555,40.762,15.555,56.317,0  l148.201-148.219v493.489c0,21.993,17.837,39.82,39.82,39.82C277.669,669.267,295.505,651.439,295.505,629.446z' },
-      arrow_diag : { path: 'M279.875,511.994c-1.292,0-2.607-0.102-3.924-0.312c-10.944-1.771-19.333-10.676-20.457-21.71L233.97,278.348  L22.345,256.823c-11.029-1.119-19.928-9.51-21.698-20.461c-1.776-10.944,4.031-21.716,14.145-26.262L477.792,2.149  c9.282-4.163,20.167-2.165,27.355,5.024c7.201,7.189,9.199,18.086,5.024,27.356L302.22,497.527  C298.224,506.426,289.397,511.994,279.875,511.994z M118.277,217.332l140.534,14.294c11.567,1.178,20.718,10.335,21.878,21.896  l14.294,140.519l144.09-320.792L118.277,217.332z' },
+      arrow_right: { path: 'M30.796,226.318h377.533L294.938,339.682c-11.899,11.906-11.899,31.184,0,43.084c11.887,11.899,31.19,11.893,43.077,0  l165.393-165.386c5.725-5.712,8.924-13.453,8.924-21.539c0-8.092-3.213-15.84-8.924-21.551L338.016,8.925  C332.065,2.975,324.278,0,316.478,0c-7.802,0-15.603,2.968-21.539,8.918c-11.899,11.906-11.899,31.184,0,43.084l113.391,113.384  H30.796c-16.822,0-30.463,13.645-30.463,30.463C0.333,212.674,13.974,226.318,30.796,226.318z' },
+      arrow_up: { path: 'M295.505,629.446V135.957l148.193,148.206c15.555,15.559,40.753,15.559,56.308,0c15.555-15.538,15.546-40.767,0-56.304  L283.83,11.662C276.372,4.204,266.236,0,255.68,0c-10.568,0-20.705,4.204-28.172,11.662L11.333,227.859  c-7.777,7.777-11.666,17.965-11.666,28.158c0,10.192,3.88,20.385,11.657,28.158c15.563,15.555,40.762,15.555,56.317,0  l148.201-148.219v493.489c0,21.993,17.837,39.82,39.82,39.82C277.669,669.267,295.505,651.439,295.505,629.446z' },
+      arrow_diag: { path: 'M279.875,511.994c-1.292,0-2.607-0.102-3.924-0.312c-10.944-1.771-19.333-10.676-20.457-21.71L233.97,278.348  L22.345,256.823c-11.029-1.119-19.928-9.51-21.698-20.461c-1.776-10.944,4.031-21.716,14.145-26.262L477.792,2.149  c9.282-4.163,20.167-2.165,27.355,5.024c7.201,7.189,9.199,18.086,5.024,27.356L302.22,497.527  C298.224,506.426,289.397,511.994,279.875,511.994z M118.277,217.332l140.534,14.294c11.567,1.178,20.718,10.335,21.878,21.896  l14.294,140.519l144.09-320.792L118.277,217.332z' },
       auto_zoom: { path: 'M505.441,242.47l-78.303-78.291c-9.18-9.177-24.048-9.171-33.216,0c-9.169,9.172-9.169,24.045,0.006,33.217l38.193,38.188  H280.088V80.194l38.188,38.199c4.587,4.584,10.596,6.881,16.605,6.881c6.003,0,12.018-2.297,16.605-6.875  c9.174-9.172,9.174-24.039,0.011-33.217L273.219,6.881C268.803,2.471,262.834,0,256.596,0c-6.229,0-12.202,2.471-16.605,6.881  l-78.296,78.302c-9.178,9.172-9.178,24.045,0,33.217c9.177,9.171,24.051,9.171,33.21,0l38.205-38.205v155.4H80.521l38.2-38.188  c9.177-9.171,9.177-24.039,0.005-33.216c-9.171-9.172-24.039-9.178-33.216,0L7.208,242.464c-4.404,4.403-6.881,10.381-6.881,16.611  c0,6.227,2.477,12.207,6.881,16.61l78.302,78.291c4.587,4.581,10.599,6.875,16.605,6.875c6.006,0,12.023-2.294,16.61-6.881  c9.172-9.174,9.172-24.036-0.005-33.211l-38.205-38.199h152.593v152.063l-38.199-38.211c-9.171-9.18-24.039-9.18-33.216-0.022  c-9.178,9.18-9.178,24.059-0.006,33.222l78.284,78.302c4.41,4.404,10.382,6.881,16.611,6.881c6.233,0,12.208-2.477,16.611-6.881  l78.302-78.296c9.181-9.18,9.181-24.048,0-33.205c-9.174-9.174-24.054-9.174-33.21,0l-38.199,38.188v-152.04h152.051l-38.205,38.199  c-9.18,9.175-9.18,24.037-0.005,33.211c4.587,4.587,10.596,6.881,16.604,6.881c6.01,0,12.024-2.294,16.605-6.875l78.303-78.285  c4.403-4.403,6.887-10.378,6.887-16.611C512.328,252.851,509.845,246.873,505.441,242.47z' },
-      statbox : {
-         path : 'M28.782,56.902H483.88c15.707,0,28.451-12.74,28.451-28.451C512.331,12.741,499.599,0,483.885,0H28.782   C13.074,0,0.331,12.741,0.331,28.451C0.331,44.162,13.074,56.902,28.782,56.902z' +
-                'M483.885,136.845H28.782c-15.708,0-28.451,12.741-28.451,28.451c0,15.711,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.74,28.451-28.451C512.331,149.586,499.599,136.845,483.885,136.845z' +
-                'M483.885,273.275H28.782c-15.708,0-28.451,12.731-28.451,28.452c0,15.707,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.744,28.451-28.451C512.337,286.007,499.599,273.275,483.885,273.275z' +
-                'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
+      statbox: {
+         path: 'M28.782,56.902H483.88c15.707,0,28.451-12.74,28.451-28.451C512.331,12.741,499.599,0,483.885,0H28.782   C13.074,0,0.331,12.741,0.331,28.451C0.331,44.162,13.074,56.902,28.782,56.902z' +
+            'M483.885,136.845H28.782c-15.708,0-28.451,12.741-28.451,28.451c0,15.711,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.74,28.451-28.451C512.331,149.586,499.599,136.845,483.885,136.845z' +
+            'M483.885,273.275H28.782c-15.708,0-28.451,12.731-28.451,28.452c0,15.707,12.744,28.451,28.451,28.451H483.88   c15.707,0,28.451-12.744,28.451-28.451C512.337,286.007,499.599,273.275,483.885,273.275z' +
+            'M256.065,409.704H30.492c-15.708,0-28.451,12.731-28.451,28.451c0,15.707,12.744,28.451,28.451,28.451h225.585   c15.707,0,28.451-12.744,28.451-28.451C284.516,422.436,271.785,409.704,256.065,409.704z'
       },
       circle: { path: "M256,256 m-150,0 a150,150 0 1,0 300,0 a150,150 0 1,0 -300,0" },
       three_circles: { path: "M256,85 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,255 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0  M256,425 m-70,0 a70,70 0 1,0 140,0 a70,70 0 1,0 -140,0 " },
       diamand: { path: "M256,0L384,256L256,511L128,256z" },
       rect: { path: "M80,80h352v352h-352z" },
       cross: { path: "M80,40l176,176l176,-176l40,40l-176,176l176,176l-40,40l-176,-176l-176,176l-40,-40l176,-176l-176,-176z" },
-      vrgoggles: { size: "245.82 141.73", path: 'M175.56,111.37c-22.52,0-40.77-18.84-40.77-42.07S153,27.24,175.56,27.24s40.77,18.84,40.77,42.07S198.08,111.37,175.56,111.37ZM26.84,69.31c0-23.23,18.25-42.07,40.77-42.07s40.77,18.84,40.77,42.07-18.26,42.07-40.77,42.07S26.84,92.54,26.84,69.31ZM27.27,0C11.54,0,0,12.34,0,28.58V110.9c0,16.24,11.54,30.83,27.27,30.83H99.57c2.17,0,4.19-1.83,5.4-3.7L116.47,118a8,8,0,0,1,12.52-.18l11.51,20.34c1.2,1.86,3.22,3.61,5.39,3.61h72.29c15.74,0,27.63-14.6,27.63-30.83V28.58C245.82,12.34,233.93,0,218.19,0H27.27Z'},
-      th2colorz: { recs: [{x:128,y:486,w:256,h:26,f:'rgb(38,62,168)'},{y:461,f:'rgb(22,82,205)'},{y:435,f:'rgb(16,100,220)'},{y:410,f:'rgb(18,114,217)'},{y:384,f:'rgb(20,129,214)'},{y:358,f:'rgb(14,143,209)'},{y:333,f:'rgb(9,157,204)'},{y:307,f:'rgb(13,167,195)'},{y:282,f:'rgb(30,175,179)'},{y:256,f:'rgb(46,183,164)'},{y:230,f:'rgb(82,186,146)'},{y:205,f:'rgb(116,189,129)'},{y:179,f:'rgb(149,190,113)'},{y:154,f:'rgb(179,189,101)'},{y:128,f:'rgb(209,187,89)'},{y:102,f:'rgb(226,192,75)'},{y:77,f:'rgb(244,198,59)'},{y:51,f:'rgb(253,210,43)'},{y:26,f:'rgb(251,230,29)'},{y:0,f:'rgb(249,249,15)'}] },
-      CreateSVG : function(group,btn,size,title) {
+      vrgoggles: { size: "245.82 141.73", path: 'M175.56,111.37c-22.52,0-40.77-18.84-40.77-42.07S153,27.24,175.56,27.24s40.77,18.84,40.77,42.07S198.08,111.37,175.56,111.37ZM26.84,69.31c0-23.23,18.25-42.07,40.77-42.07s40.77,18.84,40.77,42.07-18.26,42.07-40.77,42.07S26.84,92.54,26.84,69.31ZM27.27,0C11.54,0,0,12.34,0,28.58V110.9c0,16.24,11.54,30.83,27.27,30.83H99.57c2.17,0,4.19-1.83,5.4-3.7L116.47,118a8,8,0,0,1,12.52-.18l11.51,20.34c1.2,1.86,3.22,3.61,5.39,3.61h72.29c15.74,0,27.63-14.6,27.63-30.83V28.58C245.82,12.34,233.93,0,218.19,0H27.27Z' },
+      th2colorz: { recs: [{ x: 128, y: 486, w: 256, h: 26, f: 'rgb(38,62,168)' }, { y: 461, f: 'rgb(22,82,205)' }, { y: 435, f: 'rgb(16,100,220)' }, { y: 410, f: 'rgb(18,114,217)' }, { y: 384, f: 'rgb(20,129,214)' }, { y: 358, f: 'rgb(14,143,209)' }, { y: 333, f: 'rgb(9,157,204)' }, { y: 307, f: 'rgb(13,167,195)' }, { y: 282, f: 'rgb(30,175,179)' }, { y: 256, f: 'rgb(46,183,164)' }, { y: 230, f: 'rgb(82,186,146)' }, { y: 205, f: 'rgb(116,189,129)' }, { y: 179, f: 'rgb(149,190,113)' }, { y: 154, f: 'rgb(179,189,101)' }, { y: 128, f: 'rgb(209,187,89)' }, { y: 102, f: 'rgb(226,192,75)' }, { y: 77, f: 'rgb(244,198,59)' }, { y: 51, f: 'rgb(253,210,43)' }, { y: 26, f: 'rgb(251,230,29)' }, { y: 0, f: 'rgb(249,249,15)' }] },
+      CreateSVG: function(group, btn, size, title) {
          let svg = group.append("svg:svg")
-                     .attr("class", "svg_toolbar_btn")
-                     .attr("width",size+"px")
-                     .attr("height",size+"px")
-                     .attr("viewBox", "0 0 512 512")
-                     .style("overflow","hidden");
+            .attr("class", "svg_toolbar_btn")
+            .attr("width", size + "px")
+            .attr("height", size + "px")
+            .attr("viewBox", "0 0 512 512")
+            .style("overflow", "hidden");
 
-           if ('recs' in btn) {
-              let rec = {};
-              for (let n=0;n<btn.recs.length;++n) {
-                 JSROOT.extend(rec, btn.recs[n]);
-                 svg.append('rect').attr("x", rec.x).attr("y", rec.y)
-                     .attr("width", rec.w).attr("height", rec.h)
-                     .attr("fill", rec.f);
-              }
-           } else {
-              svg.append('svg:path').attr('d',btn.path);
-           }
+         if ('recs' in btn) {
+            let rec = {};
+            for (let n = 0; n < btn.recs.length; ++n) {
+               JSROOT.extend(rec, btn.recs[n]);
+               svg.append('rect').attr("x", rec.x).attr("y", rec.y)
+                  .attr("width", rec.w).attr("height", rec.h)
+                  .attr("fill", rec.f);
+            }
+         } else {
+            svg.append('svg:path').attr('d', btn.path);
+         }
 
-           //  special rect to correctly get mouse events for whole button area
-           svg.append("svg:rect").attr("x",0).attr("y",0).attr("width",512).attr("height",512)
-              .style('opacity',0).style('fill',"none").style("pointer-events","visibleFill")
-              .append("svg:title").text(title);
+         //  special rect to correctly get mouse events for whole button area
+         svg.append("svg:rect").attr("x", 0).attr("y", 0).attr("width", 512).attr("height", 512)
+            .style('opacity', 0).style('fill', "none").style("pointer-events", "visibleFill")
+            .append("svg:title").text(title);
 
-           return svg;
+         return svg;
       }
    };
 
@@ -95,7 +95,7 @@
     * @memberof JSROOT
     */
    function DrawOptions(opt) {
-      this.opt = opt && (typeof opt=="string") ? opt.toUpperCase().trim() : "";
+      this.opt = opt && (typeof opt == "string") ? opt.toUpperCase().trim() : "";
       this.part = "";
    }
 
@@ -110,7 +110,7 @@
    }
 
    /** @summary Checks if given option exists */
-   DrawOptions.prototype.check = function(name,postpart) {
+   DrawOptions.prototype.check = function(name, postpart) {
       let pos = this.opt.indexOf(name);
       if (pos < 0) return false;
       this.opt = this.opt.substr(0, pos) + this.opt.substr(pos + name.length);
@@ -120,7 +120,7 @@
       let pos2 = pos;
       while ((pos2 < this.opt.length) && (this.opt[pos2] !== ' ') && (this.opt[pos2] !== ',') && (this.opt[pos2] !== ';')) pos2++;
       if (pos2 > pos) {
-         this.part = this.opt.substr(pos, pos2-pos);
+         this.part = this.opt.substr(pos, pos2 - pos);
          this.opt = this.opt.substr(0, pos) + this.opt.substr(pos2);
       }
       return true;
@@ -129,7 +129,7 @@
    /** @summary Returns remaining part of found option as integer. */
    DrawOptions.prototype.partAsInt = function(offset, dflt) {
       let val = this.part.replace(/^\D+/g, '');
-      val = val ? parseInt(val,10) : Number.NaN;
+      val = val ? parseInt(val, 10) : Number.NaN;
       return isNaN(val) ? (dflt || 0) : val + (offset || 0);
    }
 
@@ -143,275 +143,275 @@
    // ============================================================================================
 
    let Painter = {
-         Coord: {
-            kCARTESIAN : 1,
-            kPOLAR : 2,
-            kCYLINDRICAL : 3,
-            kSPHERICAL : 4,
-            kRAPIDITY : 5
-         },
-         root_colors: [],
-         root_line_styles: ["", "", "3,3", "1,2",
-                            "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
-                            "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"],
-         root_markers: [  0, 100,   8,   7,   0,  //  0..4
-                          9, 100, 100, 100, 100,  //  5..9
-                        100, 100, 100, 100, 100,  // 10..14
-                        100, 100, 100, 100, 100,  // 15..19
-                        100, 103, 105, 104,   0,  // 20..24
-                          3,   4,   2,   1, 106,  // 25..29
-                          6,   7,   5, 102, 101], // 30..34
-          root_fonts: ['Arial', 'iTimes New Roman',
-                       'bTimes New Roman', 'biTimes New Roman', 'Arial',
-                       'oArial', 'bArial', 'boArial', 'Courier New',
-                       'oCourier New', 'bCourier New', 'boCourier New',
-                       'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol', 'Verdana'],
-          // taken from https://www.math.utah.edu/~beebe/fonts/afm-widths.html
-          root_fonts_aver_width: [ 0.537, 0.510,
-                                   0.535, 0.520, 0.537,
-                                   0.54, 0.556, 0.56, 0.6,
-                                   0.6, 0.6, 0.6,
-                                   0.587, 0.514, 0.896, 0.587, 0.55 ],
-          symbols_map: {
-                // greek letters
-                '#alpha': '\u03B1',
-                '#beta': '\u03B2',
-                '#chi': '\u03C7',
-                '#delta': '\u03B4',
-                '#varepsilon': '\u03B5',
-                '#phi': '\u03C6',
-                '#gamma': '\u03B3',
-                '#eta': '\u03B7',
-                '#iota': '\u03B9',
-                '#varphi': '\u03C6',
-                '#kappa': '\u03BA',
-                '#lambda': '\u03BB',
-                '#mu': '\u03BC',
-                '#nu': '\u03BD',
-                '#omicron': '\u03BF',
-                '#pi': '\u03C0',
-                '#theta': '\u03B8',
-                '#rho': '\u03C1',
-                '#sigma': '\u03C3',
-                '#tau': '\u03C4',
-                '#upsilon': '\u03C5',
-                '#varomega': '\u03D6',
-                '#omega': '\u03C9',
-                '#xi': '\u03BE',
-                '#psi': '\u03C8',
-                '#zeta': '\u03B6',
-                '#Alpha': '\u0391',
-                '#Beta': '\u0392',
-                '#Chi': '\u03A7',
-                '#Delta': '\u0394',
-                '#Epsilon': '\u0395',
-                '#Phi': '\u03A6',
-                '#Gamma': '\u0393',
-                '#Eta': '\u0397',
-                '#Iota': '\u0399',
-                '#vartheta': '\u03D1',
-                '#Kappa': '\u039A',
-                '#Lambda': '\u039B',
-                '#Mu': '\u039C',
-                '#Nu': '\u039D',
-                '#Omicron': '\u039F',
-                '#Pi': '\u03A0',
-                '#Theta': '\u0398',
-                '#Rho': '\u03A1',
-                '#Sigma': '\u03A3',
-                '#Tau': '\u03A4',
-                '#Upsilon': '\u03A5',
-                '#varsigma': '\u03C2',
-                '#Omega': '\u03A9',
-                '#Xi': '\u039E',
-                '#Psi': '\u03A8',
-                '#Zeta': '\u0396',
-                '#varUpsilon': '\u03D2',
-                '#epsilon': '\u03B5',
+      Coord: {
+         kCARTESIAN: 1,
+         kPOLAR: 2,
+         kCYLINDRICAL: 3,
+         kSPHERICAL: 4,
+         kRAPIDITY: 5
+      },
+      root_colors: [],
+      root_line_styles: ["", "", "3,3", "1,2",
+         "3,4,1,4", "5,3,1,3", "5,3,1,3,1,3,1,3", "5,5",
+         "5,3,1,3,1,3", "20,5", "20,10,1,10", "1,3"],
+      root_markers: [0, 100, 8, 7, 0,  //  0..4
+         9, 100, 100, 100, 100,  //  5..9
+         100, 100, 100, 100, 100,  // 10..14
+         100, 100, 100, 100, 100,  // 15..19
+         100, 103, 105, 104, 0,  // 20..24
+         3, 4, 2, 1, 106,  // 25..29
+         6, 7, 5, 102, 101], // 30..34
+      root_fonts: ['Arial', 'iTimes New Roman',
+         'bTimes New Roman', 'biTimes New Roman', 'Arial',
+         'oArial', 'bArial', 'boArial', 'Courier New',
+         'oCourier New', 'bCourier New', 'boCourier New',
+         'Symbol', 'Times New Roman', 'Wingdings', 'iSymbol', 'Verdana'],
+      // taken from https://www.math.utah.edu/~beebe/fonts/afm-widths.html
+      root_fonts_aver_width: [0.537, 0.510,
+         0.535, 0.520, 0.537,
+         0.54, 0.556, 0.56, 0.6,
+         0.6, 0.6, 0.6,
+         0.587, 0.514, 0.896, 0.587, 0.55],
+      symbols_map: {
+         // greek letters
+         '#alpha': '\u03B1',
+         '#beta': '\u03B2',
+         '#chi': '\u03C7',
+         '#delta': '\u03B4',
+         '#varepsilon': '\u03B5',
+         '#phi': '\u03C6',
+         '#gamma': '\u03B3',
+         '#eta': '\u03B7',
+         '#iota': '\u03B9',
+         '#varphi': '\u03C6',
+         '#kappa': '\u03BA',
+         '#lambda': '\u03BB',
+         '#mu': '\u03BC',
+         '#nu': '\u03BD',
+         '#omicron': '\u03BF',
+         '#pi': '\u03C0',
+         '#theta': '\u03B8',
+         '#rho': '\u03C1',
+         '#sigma': '\u03C3',
+         '#tau': '\u03C4',
+         '#upsilon': '\u03C5',
+         '#varomega': '\u03D6',
+         '#omega': '\u03C9',
+         '#xi': '\u03BE',
+         '#psi': '\u03C8',
+         '#zeta': '\u03B6',
+         '#Alpha': '\u0391',
+         '#Beta': '\u0392',
+         '#Chi': '\u03A7',
+         '#Delta': '\u0394',
+         '#Epsilon': '\u0395',
+         '#Phi': '\u03A6',
+         '#Gamma': '\u0393',
+         '#Eta': '\u0397',
+         '#Iota': '\u0399',
+         '#vartheta': '\u03D1',
+         '#Kappa': '\u039A',
+         '#Lambda': '\u039B',
+         '#Mu': '\u039C',
+         '#Nu': '\u039D',
+         '#Omicron': '\u039F',
+         '#Pi': '\u03A0',
+         '#Theta': '\u0398',
+         '#Rho': '\u03A1',
+         '#Sigma': '\u03A3',
+         '#Tau': '\u03A4',
+         '#Upsilon': '\u03A5',
+         '#varsigma': '\u03C2',
+         '#Omega': '\u03A9',
+         '#Xi': '\u039E',
+         '#Psi': '\u03A8',
+         '#Zeta': '\u0396',
+         '#varUpsilon': '\u03D2',
+         '#epsilon': '\u03B5',
 
-                // only required for MathJax to provide correct replacement
-                '#sqrt': '\u221A',
-                '#bar': '',
-                '#overline' : '',
-                '#underline' : '',
-                '#strike' : '',
+         // only required for MathJax to provide correct replacement
+         '#sqrt': '\u221A',
+         '#bar': '',
+         '#overline': '',
+         '#underline': '',
+         '#strike': '',
 
-                // from TLatex tables #2 & #3
-                '#leq': '\u2264',
-                '#/': '\u2044',
-                '#infty': '\u221E',
-                '#voidb': '\u0192',
-                '#club': '\u2663',
-                '#diamond': '\u2666',
-                '#heart': '\u2665',
-                '#spade': '\u2660',
-                '#leftrightarrow': '\u2194',
-                '#leftarrow': '\u2190',
-                '#uparrow': '\u2191',
-                '#rightarrow': '\u2192',
-                '#downarrow': '\u2193',
-                '#circ': '\u02C6', // ^
-                '#pm': '\xB1',
-                '#doublequote': '\u2033',
-                '#geq': '\u2265',
-                '#times': '\xD7',
-                '#propto': '\u221D',
-                '#partial': '\u2202',
-                '#bullet': '\u2022',
-                '#divide': '\xF7',
-                '#neq': '\u2260',
-                '#equiv': '\u2261',
-                '#approx': '\u2248', // should be \u2245 ?
-                '#3dots': '\u2026',
-                '#cbar': '\x7C',
-                '#topbar': '\xAF',
-                '#downleftarrow': '\u21B5',
-                '#aleph': '\u2135',
-                '#Jgothic': '\u2111',
-                '#Rgothic': '\u211C',
-                '#voidn': '\u2118',
-                '#otimes': '\u2297',
-                '#oplus': '\u2295',
-                '#oslash': '\u2205',
-                '#cap': '\u2229',
-                '#cup': '\u222A',
-                '#supseteq': '\u2287',
-                '#supset': '\u2283',
-                '#notsubset': '\u2284',
-                '#subseteq': '\u2286',
-                '#subset': '\u2282',
-                '#int': '\u222B',
-                '#in': '\u2208',
-                '#notin': '\u2209',
-                '#angle': '\u2220',
-                '#nabla': '\u2207',
-                '#oright': '\xAE',
-                '#ocopyright': '\xA9',
-                '#trademark': '\u2122',
-                '#prod': '\u220F',
-                '#surd': '\u221A',
-                '#upoint': '\u02D9',
-                '#corner': '\xAC',
-                '#wedge': '\u2227',
-                '#vee': '\u2228',
-                '#Leftrightarrow': '\u21D4',
-                '#Leftarrow': '\u21D0',
-                '#Uparrow': '\u21D1',
-                '#Rightarrow': '\u21D2',
-                '#Downarrow': '\u21D3',
-                '#LT': '\x3C',
-                '#void1': '\xAE',
-                '#copyright': '\xA9',
-                '#void3': '\u2122',
-                '#sum': '\u2211',
-                '#arctop': '\u239B',
-                '#lbar': '\u23B8',
-                '#arcbottom': '\u239D',
-                '#void8': '',
-                '#bottombar': '\u230A',
-                '#arcbar': '\u23A7',
-                '#ltbar': '\u23A8',
-                '#AA': '\u212B',
-                '#aa': '\u00E5',
-                '#void06': '',
-                '#GT': '\x3E',
-                '#forall': '\u2200',
-                '#exists': '\u2203',
-                '#vec': '',
-                '#dot': '\u22C5',
-                '#hat': '\xB7',
-                '#ddot': '',
-                '#acute': '\acute',
-                '#grave': '',
-                '#check': '\u2713',
-                '#tilde': '\u02DC',
-                '#slash': '\u2044',
-                '#hbar': '\u0127',
-                '#box': '\u25FD',
-                '#Box': '\u2610',
-                '#parallel': '\u2225',
-                '#perp': '\u22A5',
-                '#odot': '\u2299',
-                '#left': '',
-                '#right': '',
-                '{}': ''
-          },
-          math_symbols_map: {
-                '#LT':"\\langle",
-                '#GT':"\\rangle",
-                '#club':"\\clubsuit",
-                '#spade':"\\spadesuit",
-                '#heart':"\\heartsuit",
-                '#diamond':"\\diamondsuit",
-                '#voidn':"\\wp",
-                '#voidb':"f",
-                '#copyright':"(c)",
-                '#ocopyright':"(c)",
-                '#trademark':"TM",
-                '#void3':"TM",
-                '#oright':"R",
-                '#void1':"R",
-                '#3dots':"\\ldots",
-                '#lbar':"\\mid",
-                '#void8':"\\mid",
-                '#divide':"\\div",
-                '#Jgothic':"\\Im",
-                '#Rgothic':"\\Re",
-                '#doublequote':"\"",
-                '#plus':"+",
-                '#minus':"-",
-                '#\/':"/",
-                '#upoint':".",
-                '#aa':"\\mathring{a}",
-                '#AA':"\\mathring{A}",
-                '#omicron':"o",
-                '#Alpha':"A",
-                '#Beta':"B",
-                '#Epsilon':"E",
-                '#Zeta':"Z",
-                '#Eta':"H",
-                '#Iota':"I",
-                '#Kappa':"K",
-                '#Mu':"M",
-                '#Nu':"N",
-                '#Omicron':"O",
-                '#Rho':"P",
-                '#Tau':"T",
-                '#Chi':"X",
-                '#varomega':"\\varpi",
-                '#corner':"?",
-                '#ltbar':"?",
-                '#bottombar':"?",
-                '#notsubset':"?",
-                '#arcbottom':"?",
-                '#cbar':"?",
-                '#arctop':"?",
-                '#topbar':"?",
-                '#arcbar':"?",
-                '#downleftarrow':"?",
-                '#splitline':"\\genfrac{}{}{0pt}{}",
-                '#it':"\\textit",
-                '#bf':"\\textbf",
-                '#frac':"\\frac",
-                '#left{':"\\lbrace",
-                '#right}':"\\rbrace",
-                '#left\\[':"\\lbrack",
-                '#right\\]':"\\rbrack",
-                '#\\[\\]{':"\\lbrack",
-                ' } ':"\\rbrack",
-                '#\\[':"\\lbrack",
-                '#\\]':"\\rbrack",
-                '#{':"\\lbrace",
-                '#}':"\\rbrace",
-                ' ':"\\;"
-          }
+         // from TLatex tables #2 & #3
+         '#leq': '\u2264',
+         '#/': '\u2044',
+         '#infty': '\u221E',
+         '#voidb': '\u0192',
+         '#club': '\u2663',
+         '#diamond': '\u2666',
+         '#heart': '\u2665',
+         '#spade': '\u2660',
+         '#leftrightarrow': '\u2194',
+         '#leftarrow': '\u2190',
+         '#uparrow': '\u2191',
+         '#rightarrow': '\u2192',
+         '#downarrow': '\u2193',
+         '#circ': '\u02C6', // ^
+         '#pm': '\xB1',
+         '#doublequote': '\u2033',
+         '#geq': '\u2265',
+         '#times': '\xD7',
+         '#propto': '\u221D',
+         '#partial': '\u2202',
+         '#bullet': '\u2022',
+         '#divide': '\xF7',
+         '#neq': '\u2260',
+         '#equiv': '\u2261',
+         '#approx': '\u2248', // should be \u2245 ?
+         '#3dots': '\u2026',
+         '#cbar': '\x7C',
+         '#topbar': '\xAF',
+         '#downleftarrow': '\u21B5',
+         '#aleph': '\u2135',
+         '#Jgothic': '\u2111',
+         '#Rgothic': '\u211C',
+         '#voidn': '\u2118',
+         '#otimes': '\u2297',
+         '#oplus': '\u2295',
+         '#oslash': '\u2205',
+         '#cap': '\u2229',
+         '#cup': '\u222A',
+         '#supseteq': '\u2287',
+         '#supset': '\u2283',
+         '#notsubset': '\u2284',
+         '#subseteq': '\u2286',
+         '#subset': '\u2282',
+         '#int': '\u222B',
+         '#in': '\u2208',
+         '#notin': '\u2209',
+         '#angle': '\u2220',
+         '#nabla': '\u2207',
+         '#oright': '\xAE',
+         '#ocopyright': '\xA9',
+         '#trademark': '\u2122',
+         '#prod': '\u220F',
+         '#surd': '\u221A',
+         '#upoint': '\u02D9',
+         '#corner': '\xAC',
+         '#wedge': '\u2227',
+         '#vee': '\u2228',
+         '#Leftrightarrow': '\u21D4',
+         '#Leftarrow': '\u21D0',
+         '#Uparrow': '\u21D1',
+         '#Rightarrow': '\u21D2',
+         '#Downarrow': '\u21D3',
+         '#LT': '\x3C',
+         '#void1': '\xAE',
+         '#copyright': '\xA9',
+         '#void3': '\u2122',
+         '#sum': '\u2211',
+         '#arctop': '\u239B',
+         '#lbar': '\u23B8',
+         '#arcbottom': '\u239D',
+         '#void8': '',
+         '#bottombar': '\u230A',
+         '#arcbar': '\u23A7',
+         '#ltbar': '\u23A8',
+         '#AA': '\u212B',
+         '#aa': '\u00E5',
+         '#void06': '',
+         '#GT': '\x3E',
+         '#forall': '\u2200',
+         '#exists': '\u2203',
+         '#vec': '',
+         '#dot': '\u22C5',
+         '#hat': '\xB7',
+         '#ddot': '',
+         '#acute': '\acute',
+         '#grave': '',
+         '#check': '\u2713',
+         '#tilde': '\u02DC',
+         '#slash': '\u2044',
+         '#hbar': '\u0127',
+         '#box': '\u25FD',
+         '#Box': '\u2610',
+         '#parallel': '\u2225',
+         '#perp': '\u22A5',
+         '#odot': '\u2299',
+         '#left': '',
+         '#right': '',
+         '{}': ''
+      },
+      math_symbols_map: {
+         '#LT': "\\langle",
+         '#GT': "\\rangle",
+         '#club': "\\clubsuit",
+         '#spade': "\\spadesuit",
+         '#heart': "\\heartsuit",
+         '#diamond': "\\diamondsuit",
+         '#voidn': "\\wp",
+         '#voidb': "f",
+         '#copyright': "(c)",
+         '#ocopyright': "(c)",
+         '#trademark': "TM",
+         '#void3': "TM",
+         '#oright': "R",
+         '#void1': "R",
+         '#3dots': "\\ldots",
+         '#lbar': "\\mid",
+         '#void8': "\\mid",
+         '#divide': "\\div",
+         '#Jgothic': "\\Im",
+         '#Rgothic': "\\Re",
+         '#doublequote': "\"",
+         '#plus': "+",
+         '#minus': "-",
+         '#\/': "/",
+         '#upoint': ".",
+         '#aa': "\\mathring{a}",
+         '#AA': "\\mathring{A}",
+         '#omicron': "o",
+         '#Alpha': "A",
+         '#Beta': "B",
+         '#Epsilon': "E",
+         '#Zeta': "Z",
+         '#Eta': "H",
+         '#Iota': "I",
+         '#Kappa': "K",
+         '#Mu': "M",
+         '#Nu': "N",
+         '#Omicron': "O",
+         '#Rho': "P",
+         '#Tau': "T",
+         '#Chi': "X",
+         '#varomega': "\\varpi",
+         '#corner': "?",
+         '#ltbar': "?",
+         '#bottombar': "?",
+         '#notsubset': "?",
+         '#arcbottom': "?",
+         '#cbar': "?",
+         '#arctop': "?",
+         '#topbar': "?",
+         '#arcbar': "?",
+         '#downleftarrow': "?",
+         '#splitline': "\\genfrac{}{}{0pt}{}",
+         '#it': "\\textit",
+         '#bf': "\\textbf",
+         '#frac': "\\frac",
+         '#left{': "\\lbrace",
+         '#right}': "\\rbrace",
+         '#left\\[': "\\lbrack",
+         '#right\\]': "\\rbrack",
+         '#\\[\\]{': "\\lbrack",
+         ' } ': "\\rbrack",
+         '#\\[': "\\lbrack",
+         '#\\]': "\\rbrack",
+         '#{': "\\lbrace",
+         '#}': "\\rbrace",
+         ' ': "\\;"
+      }
    };
 
    JSROOT.Painter = Painter; // export here to avoid ambiguity
 
    Painter.convertSymbol = function(charactere) {
-     // example: '#pi' will give '\u03A0'
-     return Painter.symbols_map[charactere];
+      // example: '#pi' will give '\u03A0'
+      return Painter.symbols_map[charactere];
    }
 
    Painter.createMenu = function(painter, maincallback, evt) {
@@ -436,28 +436,28 @@
 
    Painter.readStyleFromURL = function(url) {
       let optimize = JSROOT.GetUrlOption("optimize", url);
-      if (optimize=="") JSROOT.gStyle.OptimizeDraw = 2; else
-      if (optimize!==null) {
-         JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
-         if (isNaN(JSROOT.gStyle.OptimizeDraw)) JSROOT.gStyle.OptimizeDraw = 2;
-      }
+      if (optimize == "") JSROOT.gStyle.OptimizeDraw = 2; else
+         if (optimize !== null) {
+            JSROOT.gStyle.OptimizeDraw = parseInt(optimize);
+            if (isNaN(JSROOT.gStyle.OptimizeDraw)) JSROOT.gStyle.OptimizeDraw = 2;
+         }
 
       let inter = JSROOT.GetUrlOption("interactive", url);
       if (inter === "nomenu") JSROOT.gStyle.ContextMenu = false;
       else if (inter !== null) {
-         if (!inter || (inter=="1")) inter = "111111"; else
-         if (inter=="0") inter = "000000";
+         if (!inter || (inter == "1")) inter = "111111"; else
+            if (inter == "0") inter = "000000";
          if (inter.length === 6) {
             if (inter[0] == "0") JSROOT.gStyle.ToolBar = false; else
-            if (inter[0] == "1") JSROOT.gStyle.ToolBar = 'popup'; else
-            if (inter[0] == "2") JSROOT.gStyle.ToolBar = true;
+               if (inter[0] == "1") JSROOT.gStyle.ToolBar = 'popup'; else
+                  if (inter[0] == "2") JSROOT.gStyle.ToolBar = true;
             inter = inter.substr(1);
          }
-         if (inter.length==5) {
-            JSROOT.gStyle.Tooltip =     parseInt(inter[0]);
+         if (inter.length == 5) {
+            JSROOT.gStyle.Tooltip = parseInt(inter[0]);
             JSROOT.gStyle.ContextMenu = (inter[1] != '0');
-            JSROOT.gStyle.Zooming  =    (inter[2] != '0');
-            JSROOT.gStyle.MoveResize =  (inter[3] != '0');
+            JSROOT.gStyle.Zooming = (inter[2] != '0');
+            JSROOT.gStyle.MoveResize = (inter[3] != '0');
             JSROOT.gStyle.DragAndDrop = (inter[4] != '0');
          }
       }
@@ -466,38 +466,38 @@
       if (tt !== null) JSROOT.gStyle.Tooltip = parseInt(tt);
 
       let mathjax = JSROOT.GetUrlOption("mathjax", url),
-          latex = JSROOT.GetUrlOption("latex", url);
+         latex = JSROOT.GetUrlOption("latex", url);
 
-      if ((mathjax!==null) && (mathjax!="0") && (latex===null)) latex = "math";
-      if (latex!==null) JSROOT.gStyle.Latex = latex; // decoding will be performed with the first text drawing
+      if ((mathjax !== null) && (mathjax != "0") && (latex === null)) latex = "math";
+      if (latex !== null) JSROOT.gStyle.Latex = latex; // decoding will be performed with the first text drawing
 
-      if (JSROOT.GetUrlOption("nomenu", url)!==null) JSROOT.gStyle.ContextMenu = false;
-      if (JSROOT.GetUrlOption("noprogress", url)!==null) JSROOT.gStyle.ProgressBox = false;
-      if (JSROOT.GetUrlOption("notouch", url)!==null) JSROOT.touches = false;
-      if (JSROOT.GetUrlOption("adjframe", url)!==null) JSROOT.gStyle.CanAdjustFrame = true;
+      if (JSROOT.GetUrlOption("nomenu", url) !== null) JSROOT.gStyle.ContextMenu = false;
+      if (JSROOT.GetUrlOption("noprogress", url) !== null) JSROOT.gStyle.ProgressBox = false;
+      if (JSROOT.GetUrlOption("notouch", url) !== null) JSROOT.touches = false;
+      if (JSROOT.GetUrlOption("adjframe", url) !== null) JSROOT.gStyle.CanAdjustFrame = true;
 
       let optstat = JSROOT.GetUrlOption("optstat", url);
-      if (optstat!==null) JSROOT.gStyle.fOptStat = parseInt(optstat);
+      if (optstat !== null) JSROOT.gStyle.fOptStat = parseInt(optstat);
       let optfit = JSROOT.GetUrlOption("optfit", url);
-      if (optfit!==null) JSROOT.gStyle.fOptFit = parseInt(optfit);
+      if (optfit !== null) JSROOT.gStyle.fOptFit = parseInt(optfit);
       JSROOT.gStyle.fStatFormat = JSROOT.GetUrlOption("statfmt", url, JSROOT.gStyle.fStatFormat);
       JSROOT.gStyle.fFitFormat = JSROOT.GetUrlOption("fitfmt", url, JSROOT.gStyle.fFitFormat);
 
       let toolbar = JSROOT.GetUrlOption("toolbar", url);
       if (toolbar !== null) {
          let val = null;
-         if (toolbar.indexOf('popup')>=0) val = 'popup';
-         if (toolbar.indexOf('left')>=0) { JSROOT.gStyle.ToolBarSide = 'left'; val = 'popup'; }
-         if (toolbar.indexOf('right')>=0) { JSROOT.gStyle.ToolBarSide = 'right'; val = 'popup'; }
-         if (toolbar.indexOf('vert')>=0) { JSROOT.gStyle.ToolBarVert = true; val = 'popup'; }
-         if (toolbar.indexOf('show')>=0) val = true;
-         JSROOT.gStyle.ToolBar = val || ((toolbar.indexOf("0")<0) && (toolbar.indexOf("false")<0) && (toolbar.indexOf("off")<0));
+         if (toolbar.indexOf('popup') >= 0) val = 'popup';
+         if (toolbar.indexOf('left') >= 0) { JSROOT.gStyle.ToolBarSide = 'left'; val = 'popup'; }
+         if (toolbar.indexOf('right') >= 0) { JSROOT.gStyle.ToolBarSide = 'right'; val = 'popup'; }
+         if (toolbar.indexOf('vert') >= 0) { JSROOT.gStyle.ToolBarVert = true; val = 'popup'; }
+         if (toolbar.indexOf('show') >= 0) val = true;
+         JSROOT.gStyle.ToolBar = val || ((toolbar.indexOf("0") < 0) && (toolbar.indexOf("false") < 0) && (toolbar.indexOf("off") < 0));
       }
 
       let palette = JSROOT.GetUrlOption("palette", url);
-      if (palette!==null) {
+      if (palette !== null) {
          palette = parseInt(palette);
-         if (!isNaN(palette) && (palette>0) && (palette<113)) JSROOT.gStyle.Palette = palette;
+         if (!isNaN(palette) && (palette > 0) && (palette < 113)) JSROOT.gStyle.Palette = palette;
       }
 
       let embed3d = JSROOT.GetUrlOption("embed3d", url);
@@ -507,33 +507,33 @@
       if ((webgl === "0") || (webgl === "false") || (webgl === "ie")) JSROOT.gStyle.NoWebGL = true;
 
       let geosegm = JSROOT.GetUrlOption("geosegm", url);
-      if (geosegm!==null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
+      if (geosegm !== null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
       let geocomp = JSROOT.GetUrlOption("geocomp", url);
-      if (geocomp!==null) JSROOT.gStyle.GeoCompressComp = (geocomp!=='0') && (geocomp!=='false');
+      if (geocomp !== null) JSROOT.gStyle.GeoCompressComp = (geocomp !== '0') && (geocomp !== 'false');
    }
 
    /** Function that generates all root colors */
    Painter.createRootColors = function() {
-      let colorMap = ['white','black','red','green','blue','yellow','magenta','cyan','rgb(89,212,84)','rgb(89,84,217)', 'white'];
+      let colorMap = ['white', 'black', 'red', 'green', 'blue', 'yellow', 'magenta', 'cyan', 'rgb(89,212,84)', 'rgb(89,84,217)', 'white'];
       colorMap[110] = 'white';
 
       let moreCol = [
-        {col:11,str:'c1b7ad4d4d4d6666668080809a9a9ab3b3b3cdcdcde6e6e6f3f3f3cdc8accdc8acc3c0a9bbb6a4b3a697b8a49cae9a8d9c8f83886657b1cfc885c3a48aa9a1839f8daebdc87b8f9a768a926983976e7b857d9ad280809caca6c0d4cf88dfbb88bd9f83c89a7dc08378cf5f61ac8f94a6787b946971d45a549300ff7b00ff6300ff4b00ff3300ff1b00ff0300ff0014ff002cff0044ff005cff0074ff008cff00a4ff00bcff00d4ff00ecff00fffd00ffe500ffcd00ffb500ff9d00ff8500ff6d00ff5500ff3d00ff2600ff0e0aff0022ff003aff0052ff006aff0082ff009aff00b1ff00c9ff00e1ff00f9ff00ffef00ffd700ffbf00ffa700ff8f00ff7700ff6000ff4800ff3000ff1800ff0000'},
-        {col:201,str:'5c5c5c7b7b7bb8b8b8d7d7d78a0f0fb81414ec4848f176760f8a0f14b81448ec4876f1760f0f8a1414b84848ec7676f18a8a0fb8b814ecec48f1f1768a0f8ab814b8ec48ecf176f10f8a8a14b8b848ecec76f1f1'},
-        {col:390,str:'ffffcdffff9acdcd9affff66cdcd669a9a66ffff33cdcd339a9a33666633ffff00cdcd009a9a00666600333300'},
-        {col:406,str:'cdffcd9aff9a9acd9a66ff6666cd66669a6633ff3333cd33339a3333663300ff0000cd00009a00006600003300'},
-        {col:422,str:'cdffff9affff9acdcd66ffff66cdcd669a9a33ffff33cdcd339a9a33666600ffff00cdcd009a9a006666003333'},
-        {col:590,str:'cdcdff9a9aff9a9acd6666ff6666cd66669a3333ff3333cd33339a3333660000ff0000cd00009a000066000033'},
-        {col:606,str:'ffcdffff9affcd9acdff66ffcd66cd9a669aff33ffcd33cd9a339a663366ff00ffcd00cd9a009a660066330033'},
-        {col:622,str:'ffcdcdff9a9acd9a9aff6666cd66669a6666ff3333cd33339a3333663333ff0000cd00009a0000660000330000'},
-        {col:791,str:'ffcd9acd9a669a66339a6600cd9a33ffcd66ff9a00ffcd33cd9a00ffcd00ff9a33cd66006633009a3300cd6633ff9a66ff6600ff6633cd3300ff33009aff3366cd00336600339a0066cd339aff6666ff0066ff3333cd0033ff00cdff9a9acd66669a33669a009acd33cdff669aff00cdff339acd00cdff009affcd66cd9a339a66009a6633cd9a66ffcd00ff6633ffcd00cd9a00ffcd33ff9a00cd66006633009a3333cd6666ff9a00ff9a33ff6600cd3300ff339acdff669acd33669a00339a3366cd669aff0066ff3366ff0033cd0033ff339aff0066cd00336600669a339acd66cdff009aff33cdff009acd00cdffcd9aff9a66cd66339a66009a9a33cdcd66ff9a00ffcd33ff9a00cdcd00ff9a33ff6600cd33006633009a6633cd9a66ff6600ff6633ff3300cd3300ffff339acd00666600339a0033cd3366ff669aff0066ff3366cd0033ff0033ff9acdcd669a9a33669a0066cd339aff66cdff009acd009aff33cdff009a'},
-        {col:920,str:'cdcdcd9a9a9a666666333333'}];
+         { col: 11, str: 'c1b7ad4d4d4d6666668080809a9a9ab3b3b3cdcdcde6e6e6f3f3f3cdc8accdc8acc3c0a9bbb6a4b3a697b8a49cae9a8d9c8f83886657b1cfc885c3a48aa9a1839f8daebdc87b8f9a768a926983976e7b857d9ad280809caca6c0d4cf88dfbb88bd9f83c89a7dc08378cf5f61ac8f94a6787b946971d45a549300ff7b00ff6300ff4b00ff3300ff1b00ff0300ff0014ff002cff0044ff005cff0074ff008cff00a4ff00bcff00d4ff00ecff00fffd00ffe500ffcd00ffb500ff9d00ff8500ff6d00ff5500ff3d00ff2600ff0e0aff0022ff003aff0052ff006aff0082ff009aff00b1ff00c9ff00e1ff00f9ff00ffef00ffd700ffbf00ffa700ff8f00ff7700ff6000ff4800ff3000ff1800ff0000' },
+         { col: 201, str: '5c5c5c7b7b7bb8b8b8d7d7d78a0f0fb81414ec4848f176760f8a0f14b81448ec4876f1760f0f8a1414b84848ec7676f18a8a0fb8b814ecec48f1f1768a0f8ab814b8ec48ecf176f10f8a8a14b8b848ecec76f1f1' },
+         { col: 390, str: 'ffffcdffff9acdcd9affff66cdcd669a9a66ffff33cdcd339a9a33666633ffff00cdcd009a9a00666600333300' },
+         { col: 406, str: 'cdffcd9aff9a9acd9a66ff6666cd66669a6633ff3333cd33339a3333663300ff0000cd00009a00006600003300' },
+         { col: 422, str: 'cdffff9affff9acdcd66ffff66cdcd669a9a33ffff33cdcd339a9a33666600ffff00cdcd009a9a006666003333' },
+         { col: 590, str: 'cdcdff9a9aff9a9acd6666ff6666cd66669a3333ff3333cd33339a3333660000ff0000cd00009a000066000033' },
+         { col: 606, str: 'ffcdffff9affcd9acdff66ffcd66cd9a669aff33ffcd33cd9a339a663366ff00ffcd00cd9a009a660066330033' },
+         { col: 622, str: 'ffcdcdff9a9acd9a9aff6666cd66669a6666ff3333cd33339a3333663333ff0000cd00009a0000660000330000' },
+         { col: 791, str: 'ffcd9acd9a669a66339a6600cd9a33ffcd66ff9a00ffcd33cd9a00ffcd00ff9a33cd66006633009a3300cd6633ff9a66ff6600ff6633cd3300ff33009aff3366cd00336600339a0066cd339aff6666ff0066ff3333cd0033ff00cdff9a9acd66669a33669a009acd33cdff669aff00cdff339acd00cdff009affcd66cd9a339a66009a6633cd9a66ffcd00ff6633ffcd00cd9a00ffcd33ff9a00cd66006633009a3333cd6666ff9a00ff9a33ff6600cd3300ff339acdff669acd33669a00339a3366cd669aff0066ff3366ff0033cd0033ff339aff0066cd00336600669a339acd66cdff009aff33cdff009acd00cdffcd9aff9a66cd66339a66009a9a33cdcd66ff9a00ffcd33ff9a00cdcd00ff9a33ff6600cd33006633009a6633cd9a66ff6600ff6633ff3300cd3300ffff339acd00666600339a0033cd3366ff669aff0066ff3366cd0033ff0033ff9acdcd669a9a33669a0066cd339aff66cdff009acd009aff33cdff009a' },
+         { col: 920, str: 'cdcdcd9a9a9a666666333333' }];
 
       for (let indx = 0; indx < moreCol.length; ++indx) {
          let entry = moreCol[indx];
-         for (let n=0; n<entry.str.length; n+=6) {
-            let num = parseInt(entry.col) + parseInt(n/6);
-            colorMap[num] = 'rgb(' + parseInt("0x" +entry.str.slice(n,n+2)) + "," + parseInt("0x" + entry.str.slice(n+2,n+4)) + "," + parseInt("0x" + entry.str.slice(n+4,n+6)) + ")";
+         for (let n = 0; n < entry.str.length; n += 6) {
+            let num = parseInt(entry.col) + parseInt(n / 6);
+            colorMap[num] = 'rgb(' + parseInt("0x" + entry.str.slice(n, n + 2)) + "," + parseInt("0x" + entry.str.slice(n + 2, n + 4)) + "," + parseInt("0x" + entry.str.slice(n + 4, n + 6)) + ")";
          }
       }
 
@@ -541,8 +541,8 @@
    }
 
    Painter.MakeColorRGB = function(col) {
-      if ((col==null) || (col._typename != 'TColor')) return null;
-      let rgb = Math.round(col.fRed*255) + "," + Math.round(col.fGreen*255) + "," + Math.round(col.fBlue*255);
+      if ((col == null) || (col._typename != 'TColor')) return null;
+      let rgb = Math.round(col.fRed * 255) + "," + Math.round(col.fGreen * 255) + "," + Math.round(col.fBlue * 255);
       if ((col.fAlpha === undefined) || (col.fAlpha == 1.))
          rgb = "rgb(" + rgb + ")";
       else
@@ -565,7 +565,7 @@
    Painter.extendRootColors = function(jsarr, objarr) {
       if (!jsarr) {
          jsarr = [];
-         for (let n=0;n<this.root_colors.length;++n)
+         for (let n = 0; n < this.root_colors.length; ++n)
             jsarr[n] = this.root_colors[n];
       }
 
@@ -578,7 +578,7 @@
             let col = objarr.arr[n];
             if (!col || (col._typename != 'TColor')) continue;
 
-            if ((col.fNumber>=0) && (col.fNumber<=10000))
+            if ((col.fNumber >= 0) && (col.fNumber <= 10000))
                rgb_array[col.fNumber] = Painter.MakeColorRGB(col);
          }
       }
@@ -613,9 +613,9 @@
    }
 
    /** @summary Returns color index which correspond to contour index of provided length */
-   ColorPalette.prototype.calcColorIndex = function(i,len) {
-      let theColor = Math.floor((i+0.99)*this.palette.length/(len-1));
-      if (theColor > this.palette.length-1) theColor = this.palette.length-1;
+   ColorPalette.prototype.calcColorIndex = function(i, len) {
+      let theColor = Math.floor((i + 0.99) * this.palette.length / (len - 1));
+      if (theColor > this.palette.length - 1) theColor = this.palette.length - 1;
       return theColor;
    }
 
@@ -630,8 +630,8 @@
    }
 
    /** @summary Calculate color for given i and len */
-   ColorPalette.prototype.calcColor = function(i,len) {
-      let indx = this.calcColorIndex(i,len);
+   ColorPalette.prototype.calcColor = function(i, len) {
+      let indx = this.calcColorIndex(i, len);
       return this.getColor(indx);
    }
 
@@ -676,7 +676,7 @@
 
       if (args.attr) {
          if (args.color === undefined) args.color = Painter.root_colors[args.attr.fMarkerColor];
-         if (!args.style || (args.style<0)) args.style = args.attr.fMarkerStyle;
+         if (!args.style || (args.style < 0)) args.style = args.attr.fMarkerStyle;
          if (!args.size) args.size = args.attr.fMarkerSize;
       }
 
@@ -697,20 +697,20 @@
     * @param {number} y - second coordinate
     * @returns {string} path string
     */
-   TAttMarkerHandler.prototype.create = function(x,y) {
+   TAttMarkerHandler.prototype.create = function(x, y) {
       if (!this.optimized)
-         return "M" + (x+this.x0).toFixed(this.ndig)+ "," + (y+this.y0).toFixed(this.ndig) + this.marker;
+         return "M" + (x + this.x0).toFixed(this.ndig) + "," + (y + this.y0).toFixed(this.ndig) + this.marker;
 
       // use optimized handling with relative position
-      let xx = Math.round(x), yy = Math.round(y), m1 = "M"+xx+","+yy+"h1",
-          m2 = (this.lastx===null) ? m1 : ("m"+(xx-this.lastx)+","+(yy-this.lasty)+"h1");
-      this.lastx = xx+1; this.lasty = yy;
+      let xx = Math.round(x), yy = Math.round(y), m1 = "M" + xx + "," + yy + "h1",
+         m2 = (this.lastx === null) ? m1 : ("m" + (xx - this.lastx) + "," + (yy - this.lasty) + "h1");
+      this.lastx = xx + 1; this.lasty = yy;
       return (m2.length < m1.length) ? m2 : m1;
    }
 
    /** @summary Returns full size of marker */
    TAttMarkerHandler.prototype.GetFullSize = function() {
-      return this.scale*this.size;
+      return this.scale * this.size;
    }
 
    /** @summary Returns approximate length of produced marker string */
@@ -727,9 +727,9 @@
    TAttMarkerHandler.prototype.Change = function(color, style, size) {
       this.changed = true;
 
-      if (color!==undefined) this.color = color;
-      if ((style!==undefined) && (style>=0)) this.style = style;
-      if (size!==undefined) this.size = size; else size = this.size;
+      if (color !== undefined) this.color = color;
+      if ((style !== undefined) && (style >= 0)) this.style = style;
+      if (size !== undefined) this.size = size; else size = this.size;
 
       this.x0 = this.y0 = 0;
 
@@ -748,9 +748,9 @@
       if (marker_kind === undefined) marker_kind = 100;
       let shape = marker_kind % 100;
 
-      this.fill = (marker_kind>=100);
+      this.fill = (marker_kind >= 100);
 
-      switch(this.style) {
+      switch (this.style) {
          case 1: this.size = 1; this.scale = 1; break;
          case 6: this.size = 2; this.scale = 1; break;
          case 7: this.size = 3; this.scale = 1; break;
@@ -759,61 +759,61 @@
 
       size = this.GetFullSize();
 
-      this.ndig = (size>7) ? 0 : ((size>2) ? 1 : 2);
+      this.ndig = (size > 7) ? 0 : ((size > 2) ? 1 : 2);
       if (shape == 6) this.ndig++;
-      let half = (size/2).toFixed(this.ndig), full = size.toFixed(this.ndig);
+      let half = (size / 2).toFixed(this.ndig), full = size.toFixed(this.ndig);
 
-      switch(shape) {
+      switch (shape) {
          case 0: // circle
             this.x0 = -parseFloat(half);
-            full = (parseFloat(half)*2).toFixed(this.ndig);
-            this.marker = "a"+half+","+half+",0,1,0,"+full+",0a"+half+","+half+",0,1,0,-"+full+",0z";
+            full = (parseFloat(half) * 2).toFixed(this.ndig);
+            this.marker = "a" + half + "," + half + ",0,1,0," + full + ",0a" + half + "," + half + ",0,1,0,-" + full + ",0z";
             break;
          case 1: // cross
-            let d = (size/3).toFixed(this.ndig);
-            this.x0 = this.y0 = size/6;
-            this.marker = "h"+d+"v-"+d+"h-"+d+"v-"+d+"h-"+d+"v"+d+"h-"+d+"v"+d+"h"+d+"v"+d+"h"+d+"z";
+            let d = (size / 3).toFixed(this.ndig);
+            this.x0 = this.y0 = size / 6;
+            this.marker = "h" + d + "v-" + d + "h-" + d + "v-" + d + "h-" + d + "v" + d + "h-" + d + "v" + d + "h" + d + "v" + d + "h" + d + "z";
             break;
          case 2: // diamond
-            this.x0 = -size/2;
-            this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half + "z";
+            this.x0 = -size / 2;
+            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
             break;
          case 3: // square
-            this.x0 = this.y0 = -size/2;
-            this.marker = "v"+full+"h"+full+"v-"+full+"z";
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "v" + full + "h" + full + "v-" + full + "z";
             break;
          case 4: // triangle-up
-            this.y0 = size/2;
-            this.marker = "l-"+half+",-"+full+"h"+full+"z";
+            this.y0 = size / 2;
+            this.marker = "l-" + half + ",-" + full + "h" + full + "z";
             break;
          case 5: // triangle-down
-            this.y0 = -size/2;
-            this.marker = "l-"+half+","+full+"h"+full+"z";
+            this.y0 = -size / 2;
+            this.marker = "l-" + half + "," + full + "h" + full + "z";
             break;
          case 6: // star
-            this.y0 = -size/2;
-            this.marker = "l"  + (size/3).toFixed(this.ndig) + "," + full +
-                          "l-" + (5/6*size).toFixed(this.ndig) + ",-" + (5/8*size).toFixed(this.ndig) +
-                          "h"  + full +
-                          "l-" + (5/6*size).toFixed(this.ndig) + "," + (5/8*size).toFixed(this.ndig) + "z";
+            this.y0 = -size / 2;
+            this.marker = "l" + (size / 3).toFixed(this.ndig) + "," + full +
+               "l-" + (5 / 6 * size).toFixed(this.ndig) + ",-" + (5 / 8 * size).toFixed(this.ndig) +
+               "h" + full +
+               "l-" + (5 / 6 * size).toFixed(this.ndig) + "," + (5 / 8 * size).toFixed(this.ndig) + "z";
             break;
          case 7: // asterisk
-            this.x0 = this.y0 = -size/2;
-            this.marker = "l"+full+","+full +
-                         "m0,-"+full+"l-"+full+","+full+
-                         "m0,-"+half+"h"+full+"m-"+half+",-"+half+"v"+full;
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "l" + full + "," + full +
+               "m0,-" + full + "l-" + full + "," + full +
+               "m0,-" + half + "h" + full + "m-" + half + ",-" + half + "v" + full;
             break;
          case 8: // plus
-            this.y0 = -size/2;
-            this.marker = "v"+full+"m-"+half+",-"+half+"h"+full;
+            this.y0 = -size / 2;
+            this.marker = "v" + full + "m-" + half + ",-" + half + "h" + full;
             break;
          case 9: // mult
-            this.x0 = this.y0 = -size/2;
-            this.marker = "l"+full+","+full + "m0,-"+full+"l-"+full+","+full;
+            this.x0 = this.y0 = -size / 2;
+            this.marker = "l" + full + "," + full + "m0,-" + full + "l-" + full + "," + full;
             break;
          default: // diamand
-            this.x0 = -size/2;
-            this.marker = "l"+half+",-"+half+"l"+half+","+half+"l-"+half+","+half+"z";
+            this.x0 = -size / 2;
+            this.marker = "l" + half + ",-" + half + "l" + half + "," + half + "l-" + half + "," + half + "z";
             break;
       }
 
@@ -851,7 +851,7 @@
       this.reset_pos();
 
       svg.append("path")
-         .attr("d", this.create(width/2, height/2))
+         .attr("d", this.create(width / 2, height / 2))
          .call(this.func);
    }
 
@@ -866,7 +866,7 @@
    function TAttLineHandler(args) {
       this.func = this.Apply.bind(this);
       this.used = true;
-      if (args._typename && (args.fLineStyle!==undefined)) args = { attr: args };
+      if (args._typename && (args.fLineStyle !== undefined)) args = { attr: args };
 
       this.SetArgs(args);
    }
@@ -883,7 +883,7 @@
    TAttLineHandler.prototype.SetArgs = function(args) {
       if (args.attr) {
          args.color = args.color0 || Painter.root_colors[args.attr.fLineColor];
-         if (args.width===undefined) args.width = args.attr.fLineWidth;
+         if (args.width === undefined) args.width = args.attr.fLineWidth;
          args.style = args.attr.fLineStyle;
       } else if (typeof args.color == 'string') {
          if ((args.color !== 'none') && !args.width) args.width = 1;
@@ -891,10 +891,10 @@
          args.color = Painter.root_colors[args.color];
       }
 
-      if (args.width===undefined)
-         args.width = (args.color && args.color!='none') ? 1 : 0;
+      if (args.width === undefined)
+         args.width = (args.color && args.color != 'none') ? 1 : 0;
 
-      this.color = (args.width===0) ? 'none' : args.color;
+      this.color = (args.width === 0) ? 'none' : args.color;
       this.width = args.width;
       this.style = args.style;
 
@@ -918,11 +918,11 @@
     * @private
     */
 
-   TAttLineHandler.prototype.ChangeExcl = function(side,width) {
+   TAttLineHandler.prototype.ChangeExcl = function(side, width) {
       if (width !== undefined) this.excl_width = width;
       if (side !== undefined) {
          this.excl_side = side;
-         if ((this.excl_width===0) && (this.excl_side!==0)) this.excl_width = 20;
+         if ((this.excl_width === 0) && (this.excl_side !== 0)) this.excl_width = 20;
       }
       this.changed = true;
    }
@@ -945,12 +945,12 @@
       this.used = true;
       if (this.empty())
          selection.style('stroke', null)
-                  .style('stroke-width', null)
-                  .style('stroke-dasharray', null);
+            .style('stroke-width', null)
+            .style('stroke-dasharray', null);
       else
          selection.style('stroke', this.color)
-                  .style('stroke-width', this.width)
-                  .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
+            .style('stroke-width', this.width)
+            .style('stroke-dasharray', Painter.root_line_styles[this.style] || null);
    }
 
    /**
@@ -972,7 +972,7 @@
 
    TAttLineHandler.prototype.CreateSample = function(svg, width, height) {
       svg.append("path")
-         .attr("d","M0," + height/2+"h"+width)
+         .attr("d", "M0," + height / 2 + "h" + width)
          .call(this.func);
    }
 
@@ -1002,8 +1002,8 @@
    /** @summary Set fill style as arguments */
    TAttFillHandler.prototype.SetArgs = function(args) {
       if (args.attr && (typeof args.attr == 'object')) {
-         if ((args.pattern===undefined) && (args.attr.fFillStyle!==undefined)) args.pattern = args.attr.fFillStyle;
-         if ((args.color===undefined) && (args.attr.fFillColor!==undefined)) args.color = args.attr.fFillColor;
+         if ((args.pattern === undefined) && (args.attr.fFillStyle !== undefined)) args.pattern = args.attr.fFillStyle;
+         if ((args.color === undefined) && (args.attr.fFillColor !== undefined)) args.color = args.attr.fFillColor;
       }
       this.Change(args.color, args.pattern, args.svg, args.color_as_svg);
    }
@@ -1032,7 +1032,7 @@
     * @param {string} [altern=undefined] - alternative color which returned when fill color not exists
     * @private */
    TAttFillHandler.prototype.fillcoloralt = function(altern) {
-      return this.color && (this.color!="none") ? this.color : altern;
+      return this.color && (this.color != "none") ? this.color : altern;
    }
 
    /** @summary Returns true if color not specified or fill style not specified */
@@ -1053,7 +1053,7 @@
     * @param {string} [solid_color = undefined] - when specified, checks if fill color matches */
    TAttFillHandler.prototype.isSolid = function(solid_color) {
       if (this.pattern !== 1001) return false;
-      return !solid_color || solid_color==this.color;
+      return !solid_color || solid_color == this.color;
    }
 
    /** @summary Method used when color or pattern were changed with OpenUi5 widgets
@@ -1097,7 +1097,7 @@
          return true;
       }
 
-      if (this.isSolid() && (this.colorindx===0) && (this.kind===1) && !color_as_svg) {
+      if (this.isSolid() && (this.colorindx === 0) && (this.kind === 1) && !color_as_svg) {
          this.pattern_url = 'none';
          return true;
       }
@@ -1117,22 +1117,22 @@
 
       if ((this.pattern >= 4000) && (this.pattern <= 4100)) {
          // special transparent colors (use for subpads)
-         this.opacity = (this.pattern - 4000)/100;
+         this.opacity = (this.pattern - 4000) / 100;
          return true;
       }
 
       if (!svg || svg.empty() || (this.pattern < 3000)) return false;
 
       let id = "pat_" + this.pattern + "_" + indx,
-          defs = svg.select('.canvas_defs');
+         defs = svg.select('.canvas_defs');
 
       if (defs.empty())
-         defs = svg.insert("svg:defs",":first-child").attr("class","canvas_defs");
+         defs = svg.insert("svg:defs", ":first-child").attr("class", "canvas_defs");
 
       this.pattern_url = "url(#" + id + ")";
       this.antialias = false;
 
-      if (!defs.select("."+id).empty()) {
+      if (!defs.select("." + id).empty()) {
          if (color_as_svg) console.log('find id in def', id);
          return true;
       }
@@ -1165,7 +1165,7 @@
          case 3019:
             w = h = 12;
             lines = "M1,6A5,5,0,0,0,11,6A5,5,0,0,0,1,6h-1h1A5,5,0,0,1,6,11v1v-1" +
-                    "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
+               "A5,5,0,0,1,11,6h1h-1A5,5,0,0,1,6,1v-1v1A5,5,0,0,1,1,6";
             lfill = "none";
             break;
          case 3020: w = 7; h = 12; lines = "M1,0A2,3,0,0,0,3,3A2,3,0,0,1,3,9A2,3,0,0,0,1,12"; lfill = "none"; break;
@@ -1175,45 +1175,45 @@
          case 3024: w = h = 16; fills = "M0,8v8h2v-8zM8,0v8h2v-8M4,14v2h12v-2z"; fills2 = "M0,2h8v6h4v-6h4v12h-12v-6h-4z"; break;
          case 3025: w = h = 18; fills = "M5,13v-8h8ZM18,0v18h-18l5,-5h8v-8Z"; break;
          default:
-            if ((this.pattern>3025) && (this.pattern<3100)) {
+            if ((this.pattern > 3025) && (this.pattern < 3100)) {
                // same as 3002, see TGX11.cxx, line 2234
                w = 4; h = 2; fills = "M1,0h1v1h-1zM3,1h1v1h-1z"; break;
             }
 
             let code = this.pattern % 1000,
-                k = code % 10, j = ((code - k) % 100) / 10, i = (code - j*10 - k)/100;
+               k = code % 10, j = ((code - k) % 100) / 10, i = (code - j * 10 - k) / 100;
             if (!i) break;
 
-            let sz = i*12;  // axis distance between lines
+            let sz = i * 12;  // axis distance between lines
 
-            w = h = 6*sz; // we use at least 6 steps
+            w = h = 6 * sz; // we use at least 6 steps
 
-            function produce(dy,swap) {
+            function produce(dy, swap) {
                let pos = [], step = sz, y1 = 0, y2, max = h;
 
                // reduce step for smaller angles to keep normal distance approx same
-               if (Math.abs(dy)<3) step = Math.round(sz/12*9);
-               if (dy==0) { step = Math.round(sz/12*8); y1 = step/2; }
-               else if (dy>0) max -= step; else y1 = step;
+               if (Math.abs(dy) < 3) step = Math.round(sz / 12 * 9);
+               if (dy == 0) { step = Math.round(sz / 12 * 8); y1 = step / 2; }
+               else if (dy > 0) max -= step; else y1 = step;
 
-               while(y1<=max) {
-                  y2 = y1 + dy*step;
+               while (y1 <= max) {
+                  y2 = y1 + dy * step;
                   if (y2 < 0) {
-                     let x2 = Math.round(y1/(y1-y2)*w);
-                     pos.push(0,y1,x2,0);
-                     pos.push(w,h-y1,w-x2,h);
+                     let x2 = Math.round(y1 / (y1 - y2) * w);
+                     pos.push(0, y1, x2, 0);
+                     pos.push(w, h - y1, w - x2, h);
                   } else if (y2 > h) {
-                     let x2 = Math.round((h-y1)/(y2-y1)*w);
-                     pos.push(0,y1,x2,h);
-                     pos.push(w,h-y1,w-x2,0);
+                     let x2 = Math.round((h - y1) / (y2 - y1) * w);
+                     pos.push(0, y1, x2, h);
+                     pos.push(w, h - y1, w - x2, 0);
                   } else {
-                     pos.push(0,y1,w,y2);
+                     pos.push(0, y1, w, y2);
                   }
-                  y1+=step;
+                  y1 += step;
                }
-               for (let k=0;k<pos.length;k+=4)
-                  if (swap) lines += "M"+pos[k+1]+","+pos[k]+"L"+pos[k+3]+","+pos[k+2];
-                       else lines += "M"+pos[k]+","+pos[k+1]+"L"+pos[k+2]+","+pos[k+3];
+               for (let k = 0; k < pos.length; k += 4)
+                  if (swap) lines += "M" + pos[k + 1] + "," + pos[k] + "L" + pos[k + 3] + "," + pos[k + 2];
+                  else lines += "M" + pos[k] + "," + pos[k + 1] + "L" + pos[k + 2] + "," + pos[k + 3];
             }
 
             switch (j) {
@@ -1222,10 +1222,10 @@
                case 2: produce(2); break;
                case 3: produce(3); break;
                case 4: produce(6); break;
-               case 6: produce(3,true); break;
-               case 7: produce(2,true); break;
-               case 8: produce(1,true); break;
-               case 9: produce(0,true); break;
+               case 6: produce(3, true); break;
+               case 7: produce(2, true); break;
+               case 8: produce(1, true); break;
+               case 9: produce(0, true); break;
             }
 
             switch (k) {
@@ -1234,10 +1234,10 @@
                case 2: produce(-2); break;
                case 3: produce(-3); break;
                case 4: produce(-6); break;
-               case 6: produce(-3,true); break;
-               case 7: produce(-2,true); break;
-               case 8: produce(-1,true); break;
-               case 9: if (j!=9) produce(0,true); break;
+               case 6: produce(-3, true); break;
+               case 7: produce(-2, true); break;
+               case 8: produce(-1, true); break;
+               case 9: if (j != 9) produce(0, true); break;
             }
 
             break;
@@ -1245,12 +1245,12 @@
 
       if (!fills && !lines) return false;
 
-      let patt = defs.append('svg:pattern').attr("id",id).attr("class",id).attr("patternUnits","userSpaceOnUse")
-                     .attr("width", w).attr("height", h);
+      let patt = defs.append('svg:pattern').attr("id", id).attr("class", id).attr("patternUnits", "userSpaceOnUse")
+         .attr("width", w).attr("height", h);
 
       if (fills2) {
          let col = d3.rgb(this.color);
-         col.r = Math.round((col.r+255)/2); col.g = Math.round((col.g+255)/2); col.b = Math.round((col.b+255)/2);
+         col.r = Math.round((col.r + 255) / 2); col.g = Math.round((col.g + 255) / 2); col.b = Math.round((col.b + 255) / 2);
          patt.append("svg:path").attr("d", fills2).style("fill", col);
       }
       if (fills) patt.append("svg:path").attr("d", fills).style("fill", this.color);
@@ -1267,8 +1267,8 @@
       let sample = new TAttFillHandler({ svg: sample_svg, pattern: this.pattern, color: this.color, color_as_svg: true });
 
       sample_svg.append("path")
-                .attr("d","M0,0h" + width+"v"+height+"h-" + width + "z")
-                .call(sample.func);
+         .attr("d", "M0,0h" + width + "v" + height + "h-" + width + "z")
+         .call(sample.func);
    }
 
    // ===========================================================================
@@ -1276,13 +1276,13 @@
    Painter.getFontDetails = function(fontIndex, size) {
 
       let res = { name: "Arial", size: Math.round(size || 11), weight: null, style: null },
-          indx = Math.floor(fontIndex / 10),
-          fontName = Painter.root_fonts[indx] || "";
+         indx = Math.floor(fontIndex / 10),
+         fontName = Painter.root_fonts[indx] || "";
 
       while (fontName.length > 0) {
-         if (fontName[0]==='b') res.weight = "bold"; else
-         if (fontName[0]==='i') res.style = "italic"; else
-         if (fontName[0]==='o') res.style = "oblique"; else break;
+         if (fontName[0] === 'b') res.weight = "bold"; else
+            if (fontName[0] === 'i') res.style = "italic"; else
+               if (fontName[0] === 'o') res.style = "oblique"; else break;
          fontName = fontName.substr(1);
       }
 
@@ -1296,7 +1296,7 @@
          selection.attr("font-family", this.name);
          if (arg != 'without-size')
             selection.attr("font-size", this.size)
-                     .attr("xml:space", "preserve");
+               .attr("xml:space", "preserve");
          if (this.weight)
             selection.attr("font-weight", this.weight);
          if (this.style)
@@ -1330,10 +1330,10 @@
       let dflt_time_offset = 788918400000;
       if (!axis) return dflt_time_offset;
       let idF = axis.fTimeFormat.indexOf('%F');
-      if (idF < 0) return JSROOT.gStyle.fTimeOffset*1000;
+      if (idF < 0) return JSROOT.gStyle.fTimeOffset * 1000;
       let sof = axis.fTimeFormat.substr(idF + 2);
       // default string in axis offset
-      if (sof.indexOf('1995-01-01 00:00:00s0')==0) return dflt_time_offset;
+      if (sof.indexOf('1995-01-01 00:00:00s0') == 0) return dflt_time_offset;
       // special case, used from DABC painters
       if ((sof == "0") || (sof == "")) return 0;
 
@@ -1341,19 +1341,19 @@
       function next(separ, min, max) {
          let pos = sof.indexOf(separ);
          if (pos < 0) { pos = ""; return min; }
-         let val = parseInt(sof.substr(0,pos));
-         sof = sof.substr(pos+1);
-         if (isNaN(val) || (val<min) || (val>max)) { pos = ""; return min; }
+         let val = parseInt(sof.substr(0, pos));
+         sof = sof.substr(pos + 1);
+         if (isNaN(val) || (val < min) || (val > max)) { pos = ""; return min; }
          return val;
       }
 
       let year = next("-", 1970, 2300),
-          month = next("-", 1, 12) - 1,
-          day = next(" ", 1, 31),
-          hour = next(":", 0, 23),
-          min = next(":", 0, 59),
-          sec = next("s", 0, 59),
-          msec = next(" ", 0, 999);
+         month = next("-", 1, 12) - 1,
+         day = next(" ", 1, 31),
+         hour = next(":", 0, 23),
+         min = next(":", 0, 59),
+         sec = next("s", 0, 59),
+         msec = next(" ", 0, 999);
 
       let dt = new Date(Date.UTC(year, month, day, hour, min, sec, msec));
 
@@ -1362,13 +1362,13 @@
       // now also handle suffix like GMT or GMT -0600
       sof = sof.toUpperCase();
 
-      if (sof.indexOf('GMT')==0) {
-         offset += dt.getTimezoneOffset()*60000;
+      if (sof.indexOf('GMT') == 0) {
+         offset += dt.getTimezoneOffset() * 60000;
          sof = sof.substr(4).trim();
          if (sof.length > 3) {
             let p = 0, sign = 1000;
-            if (sof[0]=='-') { p = 1; sign = -1000; }
-            offset -= sign * (parseInt(sof.substr(p,2))*3600 + parseInt(sof.substr(p+2,2))*60);
+            if (sof[0] == '-') { p = 1; sign = -1000; }
+            offset -= sign * (parseInt(sof.substr(p, 2)) * 3600 + parseInt(sof.substr(p + 2, 2)) * 60);
          }
       }
 
@@ -1376,12 +1376,12 @@
    }
 
    Painter.translateLaTeX = function(str) {
-      while ((str.length>2) && (str[0]=='{') && (str[str.length-1]=='}'))
-         str = str.substr(1,str.length-2);
+      while ((str.length > 2) && (str[0] == '{') && (str[str.length - 1] == '}'))
+         str = str.substr(1, str.length - 2);
 
       if (!Painter.symbolsRegexCache) {
-        // Create a single regex to detect any symbol to replace
-        Painter.symbolsRegexCache = new RegExp('(' + Object.keys(Painter.symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
+         // Create a single regex to detect any symbol to replace
+         Painter.symbolsRegexCache = new RegExp('(' + Object.keys(Painter.symbols_map).join('|').replace(/\{/g, '\{').replace(/\\}/g, '\\}') + ')', 'g');
       }
 
       str = str.replace(Painter.symbolsRegexCache, Painter.convertSymbol);
@@ -1398,7 +1398,7 @@
    }
 
    Painter.isAnyLatex = function(str) {
-      return (str.indexOf("#")>=0) || (str.indexOf("\\")>=0) || (str.indexOf("{")>=0);
+      return (str.indexOf("#") >= 0) || (str.indexOf("\\") >= 0) || (str.indexOf("{") >= 0);
    }
 
    /** @summary Function translates ROOT TLatex into MathJax format */
@@ -1406,39 +1406,39 @@
 
       if (kind != 2) {
          for (let x in Painter.math_symbols_map)
-            str = str.replace(new RegExp(x,'g'), Painter.math_symbols_map[x]);
+            str = str.replace(new RegExp(x, 'g'), Painter.math_symbols_map[x]);
 
          for (let x in Painter.symbols_map)
             if (x.length > 2)
-               str = str.replace(new RegExp(x,'g'), "\\" + x.substr(1));
+               str = str.replace(new RegExp(x, 'g'), "\\" + x.substr(1));
 
          // replace all #color[]{} occurances
          let clean = "", first = true;
          while (str) {
             let p = str.indexOf("#color[");
-            if ((p<0) && first) { clean = str; break; }
+            if ((p < 0) && first) { clean = str; break; }
             first = false;
-            if (p!=0) {
-               let norm = (p<0) ? str : str.substr(0, p);
+            if (p != 0) {
+               let norm = (p < 0) ? str : str.substr(0, p);
                clean += norm;
-               if (p<0) break;
+               if (p < 0) break;
             }
 
-            str = str.substr(p+7);
+            str = str.substr(p + 7);
             p = str.indexOf("]{");
-            if (p<=0) break;
-            let colindx = parseInt(str.substr(0,p));
+            if (p <= 0) break;
+            let colindx = parseInt(str.substr(0, p));
             if (isNaN(colindx)) break;
             let col = painter.get_color(colindx), cnt = 1;
-            str = str.substr(p+2);
+            str = str.substr(p + 2);
             p = -1;
-            while (cnt && (++p<str.length)) {
-               if (str[p]=='{') cnt++; else if (str[p]=='}') cnt--;
+            while (cnt && (++p < str.length)) {
+               if (str[p] == '{') cnt++; else if (str[p] == '}') cnt--;
             }
-            if (cnt!=0) break;
+            if (cnt != 0) break;
 
-            let part = str.substr(0,p);
-            str = str.substr(p+1);
+            let part = str.substr(0, p);
+            str = str.substr(p + 1);
             if (part)
                clean += "\\color{" + col + '}{' + part + "}";
          }
@@ -1469,8 +1469,8 @@
 
       let smooth = kind.indexOf("bezier") >= 0;
 
-      if (ndig===undefined) ndig = smooth ? 2 : 0;
-      if (height===undefined) height = 0;
+      if (ndig === undefined) ndig = smooth ? 2 : 0;
+      if (height === undefined) height = 0;
 
       function jsroot_d3_svg_lineSlope(p0, p1) {
          return (p1.gry - p0.gry) / (p1.grx - p0.grx);
@@ -1504,21 +1504,21 @@
          while (++i <= j) {
             s = (points[Math.min(j, i + 1)].grx - points[Math.max(0, i - 1)].grx) / (6 * (1 + m[i] * m[i]));
             points[i].dgrx = s || 0;
-            points[i].dgry = m[i]*s || 0;
+            points[i].dgry = m[i] * s || 0;
          }
       }
 
-      let res = { path: "", close: "" }, bin = bins[0], prev, maxy = Math.max(bin.gry, height+5),
-          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
+      let res = { path: "", close: "" }, bin = bins[0], prev, maxy = Math.max(bin.gry, height + 5),
+         currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
       function conv(val) {
          let vvv = Math.round(val);
-         if ((ndig==0) || (vvv===val)) return vvv.toString();
+         if ((ndig == 0) || (vvv === val)) return vvv.toString();
          let str = val.toFixed(ndig);
-         while ((str[str.length-1] == '0') && (str.lastIndexOf(".") < str.length-1))
-            str = str.substr(0,str.length-1);
-         if (str[str.length-1] == '.')
-            str = str.substr(0,str.length-1);
+         while ((str[str.length - 1] == '0') && (str.lastIndexOf(".") < str.length - 1))
+            str = str.substr(0, str.length - 1);
+         if (str[str.length - 1] == '.')
+            str = str.substr(0, str.length - 1);
          if (str == "-0") str = "0";
          return str;
       }
@@ -1526,41 +1526,41 @@
       res.path = ((kind[0] == "L") ? "L" : "M") + conv(bin.grx) + "," + conv(bin.gry);
 
       // just calculate all deltas, can be used to build exclusion
-      if (smooth || kind.indexOf('calc')>=0)
+      if (smooth || kind.indexOf('calc') >= 0)
          jsroot_d3_svg_lineMonotoneTangents(bins);
 
       if (smooth) {
          // build smoothed curve
          res.path += "c" + conv(bin.dgrx) + "," + conv(bin.dgry) + ",";
-         for(let n=1; n<npnts; ++n) {
+         for (let n = 1; n < npnts; ++n) {
             let prev = bin;
             bin = bins[n];
             if (n > 1) res.path += "s";
-            res.path += conv(bin.grx-bin.dgrx-prev.grx) + "," + conv(bin.gry-bin.dgry-prev.gry) + "," + conv(bin.grx-prev.grx) + "," + conv(bin.gry-prev.gry);
+            res.path += conv(bin.grx - bin.dgrx - prev.grx) + "," + conv(bin.gry - bin.dgry - prev.gry) + "," + conv(bin.grx - prev.grx) + "," + conv(bin.gry - prev.gry);
             maxy = Math.max(maxy, prev.gry);
          }
       } else if (npnts < 10000) {
          // build simple curve
-         for(let n=1; n<npnts; ++n) {
+         for (let n = 1; n < npnts; ++n) {
             bin = bins[n];
             dx = Math.round(bin.grx) - currx;
             dy = Math.round(bin.gry) - curry;
-            if (dx && dy) res.path += "l"+dx+","+dy;
-            else if (!dx && dy) res.path += "v"+dy;
-            else if (dx && !dy) res.path += "h"+dx;
+            if (dx && dy) res.path += "l" + dx + "," + dy;
+            else if (!dx && dy) res.path += "v" + dy;
+            else if (dx && !dy) res.path += "h" + dx;
             currx += dx; curry += dy;
             maxy = Math.max(maxy, curry);
          }
       } else {
          // build line with trying optimize many vertical moves
          let lastx, lasty, cminy = curry, cmaxy = curry, prevy = curry;
-         for(let n=1; n<npnts; ++n) {
+         for (let n = 1; n < npnts; ++n) {
             bin = bins[n];
             lastx = Math.round(bin.grx);
             lasty = Math.round(bin.gry);
             maxy = Math.max(maxy, lasty);
             dx = lastx - currx;
-            if (dx===0) {
+            if (dx === 0) {
                // if X not change, just remember amplitude and
                cminy = Math.min(cminy, lasty);
                cmaxy = Math.max(cmaxy, lasty);
@@ -1569,30 +1569,30 @@
             }
 
             if (cminy !== cmaxy) {
-               if (cminy != curry) res.path += "v" + (cminy-curry);
-               res.path += "v" + (cmaxy-cminy);
-               if (cmaxy != prevy) res.path += "v" + (prevy-cmaxy);
+               if (cminy != curry) res.path += "v" + (cminy - curry);
+               res.path += "v" + (cmaxy - cminy);
+               if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
                curry = prevy;
             }
             dy = lasty - curry;
-            if (dy) res.path += "l"+dx+","+dy;
-               else res.path += "h"+dx;
+            if (dy) res.path += "l" + dx + "," + dy;
+            else res.path += "h" + dx;
             currx = lastx; curry = lasty;
             prevy = cminy = cmaxy = lasty;
          }
 
          if (cminy != cmaxy) {
-            if (cminy != curry) res.path += "v"+(cminy-curry);
-            res.path += "v"+(cmaxy-cminy);
-            if (cmaxy != prevy) res.path += "v"+(prevy-cmaxy);
+            if (cminy != curry) res.path += "v" + (cminy - curry);
+            res.path += "v" + (cmaxy - cminy);
+            if (cmaxy != prevy) res.path += "v" + (prevy - cmaxy);
             curry = prevy;
          }
 
       }
 
-      if (height>0)
-         res.close = "L"+conv(bin.grx)+","+conv(maxy) +
-                     "h"+conv(bins[0].grx-bin.grx) + "Z";
+      if (height > 0)
+         res.close = "L" + conv(bin.grx) + "," + conv(maxy) +
+            "h" + conv(bins[0].grx - bin.grx) + "Z";
 
       return res;
    }
@@ -1617,16 +1617,16 @@
          console.log('longpoll connect ' + url + ' raw = ' + this.raw);
          this.connid = "connect";
       } else if (kind === "close") {
-         if ((this.connid===null) || (this.connid==="close")) return;
-         url+="?connection=" + this.connid + "&close";
+         if ((this.connid === null) || (this.connid === "close")) return;
+         url += "?connection=" + this.connid + "&close";
          this.connid = "close";
          reqmode = "text;sync"; // use sync mode to close connection before browser window closed
-      } else if ((this.connid===null) || (typeof this.connid!=='number')) {
+      } else if ((this.connid === null) || (typeof this.connid !== 'number')) {
          if (!JSROOT.browser.qt5) console.error("No connection");
          return;
       } else {
-         url+="?connection="+this.connid;
-         if (kind==="dummy") url+="&dummy";
+         url += "?connection=" + this.connid;
+         if (kind === "dummy") url += "&dummy";
       }
 
       if (data) {
@@ -1661,16 +1661,16 @@
                return this.handle.processreq(null);
             }
 
-            while(i<4) str += String.fromCharCode(u8Arr[i++]);
+            while (i < 4) str += String.fromCharCode(u8Arr[i++]);
             if (str != "txt:") {
                str = "";
-               while ((i<offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
+               while ((i < offset) && (String.fromCharCode(u8Arr[i]) != ':')) str += String.fromCharCode(u8Arr[i++]);
                ++i;
                offset = i + parseInt(str.trim());
             }
 
             str = "";
-            while (i<offset) str += String.fromCharCode(u8Arr[i++]);
+            while (i < offset) str += String.fromCharCode(u8Arr[i++]);
 
             if (str) {
                if (str == "<<nope>>") str = "";
@@ -1697,19 +1697,19 @@
       });
 
       req.handle = this;
-      if (kind==="dummy") this.req = req; // remember last dummy request, wait for reply
+      if (kind === "dummy") this.req = req; // remember last dummy request, wait for reply
       req.send(post);
    }
 
    LongPollSocket.prototype.processreq = function(res, _offset) {
-      if (res===null) {
+      if (res === null) {
          if (typeof this.onerror === 'function') this.onerror("receive data with connid " + (this.connid || "---"));
          // if (typeof this.onclose === 'function') this.onclose();
          this.connid = null;
          return;
       }
 
-      if (this.connid==="connect") {
+      if (this.connid === "connect") {
          if (!res) {
             this.connid = null;
             if (typeof this.onerror === 'function') this.onerror("connection rejected");
@@ -1719,15 +1719,15 @@
          this.connid = parseInt(res);
          console.log('Get new longpoll connection with id ' + this.connid);
          if (typeof this.onopen == 'function') this.onopen();
-      } else if (this.connid==="close") {
+      } else if (this.connid === "close") {
          if (typeof this.onclose == 'function') this.onclose();
          return;
       } else {
-         if ((typeof this.onmessage==='function') && res)
+         if ((typeof this.onmessage === 'function') && res)
             this.onmessage({ data: res, offset: _offset });
       }
 
-      if (!this.req) this.nextrequest("","dummy"); // send new poll request when necessary
+      if (!this.req) this.nextrequest("", "dummy"); // send new poll request when necessary
    }
 
    LongPollSocket.prototype.send = function(str) {
@@ -1757,7 +1757,7 @@
    FileDumpSocket.prototype.send = function(str) {
       if (this.protocol[this.cnt] == "send") {
          this.cnt++;
-         setTimeout(this.next_operation.bind(this),10);
+         setTimeout(this.next_operation.bind(this), 10);
       }
    }
 
@@ -1782,7 +1782,7 @@
       if (!res) return;
       if (this.receiver.ProvideData)
          this.receiver.ProvideData(1, res, 0);
-      setTimeout(this.next_operation.bind(this),10);
+      setTimeout(this.next_operation.bind(this), 10);
    }
 
    // ========================================================================================
@@ -1837,7 +1837,7 @@
 
       if (brdcst && this.channels) {
          let ks = Object.keys(this.channels);
-         for (let n=0;n<ks.length;++n)
+         for (let n = 0; n < ks.length; ++n)
             this.channels[ks[n]].InvokeReceiver(false, method, arg, arg2);
       }
    }
@@ -1851,7 +1851,7 @@
          return this.InvokeReceiver(false, "OnWebsocketOpened");
       }
 
-      if ((chid > 1) && this.channels)  {
+      if ((chid > 1) && this.channels) {
          let channel = this.channels[chid];
          if (channel)
             return channel.ProvideData(1, _msg, _len);
@@ -1865,7 +1865,7 @@
       if (!this.msgqueue) this.msgqueue = [];
       if (force_queue) _len = undefined;
 
-      this.msgqueue.push({ ready: true, msg: _msg, len: _len});
+      this.msgqueue.push({ ready: true, msg: _msg, len: _len });
    }
 
    /** Reserve entry in queue for data, which is not yet decoded.
@@ -1931,9 +1931,9 @@
       if (this.master)
          return this.master.Send(msg, this.channelid);
 
-      if (!this._websocket || (this.state<=0)) return false;
+      if (!this._websocket || (this.state <= 0)) return false;
 
-      if (isNaN(chid) || (chid===undefined)) chid = 1; // when not configured, channel 1 is used - main widget
+      if (isNaN(chid) || (chid === undefined)) chid = 1; // when not configured, channel 1 is used - main widget
 
       if (this.cansend <= 0) console.error('should be queued before sending cansend: ' + this.cansend);
 
@@ -1960,7 +1960,7 @@
       if (chid === undefined) chid = 1;
 
       if (Array.isArray(msg)) {
-         for (let k=0;k<msg.length;++k)
+         for (let k = 0; k < msg.length; ++k)
             this.ProvideData(chid, (typeof msg[k] == "string") ? msg[k] : JSON.stringify(msg[k]), -1);
          this.ProcessQueue();
       } else if (msg) {
@@ -2036,15 +2036,15 @@
          let conn = null;
          if (!href) {
             href = window.location.href;
-            if (href && href.indexOf("#")>0) href = href.substr(0, href.indexOf("#"));
-            if (href && href.lastIndexOf("/")>0) href = href.substr(0, href.lastIndexOf("/")+1);
+            if (href && href.indexOf("#") > 0) href = href.substr(0, href.indexOf("#"));
+            if (href && href.lastIndexOf("/") > 0) href = href.substr(0, href.lastIndexOf("/") + 1);
          }
          pthis.href = href;
          ntry++;
 
          if (first_time) console.log('Opening web socket at ' + href);
 
-         if (ntry>2) JSROOT.progress("Trying to connect " + href);
+         if (ntry > 2) JSROOT.progress("Trying to connect " + href);
 
          let path = href;
 
@@ -2106,18 +2106,18 @@
             if (typeof msg != 'string') return console.log("unsupported message kind: " + (typeof msg));
 
             let i1 = msg.indexOf(":"),
-                credit = parseInt(msg.substr(0,i1)),
-                i2 = msg.indexOf(":", i1+1),
-                cansend = parseInt(msg.substr(i1+1,i2-i1)),
-                i3 = msg.indexOf(":", i2+1),
-                chid = parseInt(msg.substr(i2+1,i3-i2));
+               credit = parseInt(msg.substr(0, i1)),
+               i2 = msg.indexOf(":", i1 + 1),
+               cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),
+               i3 = msg.indexOf(":", i2 + 1),
+               chid = parseInt(msg.substr(i2 + 1, i3 - i2));
 
             // console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
 
             pthis.ackn++;            // count number of received packets,
             pthis.cansend += credit; // how many packets client can send
 
-            msg = msg.substr(i3+1);
+            msg = msg.substr(i3 + 1);
 
             if (chid == 0) {
                console.log('GET chid=0 message', msg);
@@ -2146,7 +2146,7 @@
             }
          }
 
-         conn.onerror = function (err) {
+         conn.onerror = function(err) {
             console.log("websocket error " + err);
             if (pthis.state > 0) {
                pthis.InvokeReceiver(true, "OnWebsocketError", err);
@@ -2174,33 +2174,32 @@
     * @param {string} arg.first_recv - required prefix in the first message from TWebWindow, remain part of message will be returned as arg.first_msg
     * @param {string} [arg.prereq2] - second part of prerequcities, which is loaded parallel to connecting with WebWindow
     * @param {function} arg.callback - function which is called with WebWindowHandle or when establish connection and get first portion of data
+    * @returns {Promise} - ready-to-use WebWindowHandle instance
     */
 
    JSROOT.ConnectWebWindow = function(arg) {
       if (typeof arg == 'function') arg = { callback: arg }; else
-      if (!arg || (typeof arg != 'object')) arg = {};
+         if (!arg || (typeof arg != 'object')) arg = {};
 
       if (arg.prereq) {
          if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
          if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
          if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-         return JSROOT.AssertPrerequisites(arg.prereq, function() {
-            delete arg.prereq; JSROOT.ConnectWebWindow(arg);
-         }, arg.prereq_logdiv);
+         return JSROOT.load(arg.prereq, arg.prereq_logdiv).then(() => { delete arg.prereq; return JSROOT.ConnectWebWindow(arg); });
       }
 
       // special hold script, prevents headless browser from too early exit
-      if ((JSROOT.GetUrlOption("batch_mode")!==null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
+      if ((JSROOT.GetUrlOption("batch_mode") !== null) && JSROOT.GetUrlOption("key") && (JSROOT.browser.isChromeHeadless || JSROOT.browser.isChrome))
          JSROOT.loadScript("root_batch_holder.js?key=" + JSROOT.GetUrlOption("key"));
 
       if (!arg.platform)
          arg.platform = JSROOT.GetUrlOption("platform");
 
       if (arg.platform == "qt5") JSROOT.browser.qt5 = true; else
-      if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
+         if (arg.platform == "cef3") JSROOT.browser.cef3 = true;
 
       if (arg.batch === undefined)
-         arg.batch = (JSROOT.GetUrlOption("batch_mode")!==null); //  && (JSROOT.browser.qt5 || JSROOT.browser.cef3 || JSROOT.browser.isChrome);
+         arg.batch = (JSROOT.GetUrlOption("batch_mode") !== null); //  && (JSROOT.browser.qt5 || JSROOT.browser.cef3 || JSROOT.browser.isChrome);
 
       if (arg.batch) JSROOT.BatchMode = true;
 
@@ -2209,58 +2208,63 @@
 
       if (!arg.socket_kind) {
          if (JSROOT.browser.qt5) arg.socket_kind = "rawlongpoll"; else
-         if (JSROOT.browser.cef3) arg.socket_kind = "longpoll"; else arg.socket_kind = "websocket";
+            if (JSROOT.browser.cef3) arg.socket_kind = "longpoll"; else arg.socket_kind = "websocket";
       }
 
       // only for debug purposes
       // arg.socket_kind = "longpoll";
 
-      let handle = new WebWindowHandle(arg.socket_kind);
-      handle.user_args = arg.user_args;
+      var promise = new Promise((resolveFunc) => {
+         let handle = new WebWindowHandle(arg.socket_kind);
+         handle.user_args = arg.user_args;
 
-      if (window) {
-         window.onbeforeunload = handle.Close.bind(handle, true);
-         if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
-      }
+         if (window) {
+            window.onbeforeunload = handle.Close.bind(handle, true);
+            if (JSROOT.browser.qt5) window.onqt5unload = window.onbeforeunload;
+         }
 
-      if (arg.first_recv) {
-         arg.receiver = {
-            OnWebsocketOpened: function(handle) {
-            },
+         handle.key = JSROOT.GetUrlOption("key");
 
-            OnWebsocketMsg: function(handle, msg) {
-                // console.log('Get message ' + msg + ' handle ' + !!handle);
-                if (msg.indexOf(arg.first_recv)!=0)
-                   return handle.Close();
-                arg.first_msg = msg.substr(arg.first_recv.length);
+         if (arg.first_recv) {
+            arg.receiver = {
+               OnWebsocketOpened: () => { }, // dummy function when websocket connected
 
-                if (!arg.prereq2) JSROOT.CallBack(arg.callback, handle, arg);
-            },
+               OnWebsocketMsg: (handle, msg) => {
+                  // console.log('Get message ' + msg + ' handle ' + !!handle);
+                  if (msg.indexOf(arg.first_recv) != 0)
+                     return handle.Close();
+                  arg.first_msg = msg.substr(arg.first_recv.length);
 
-            OnWebsocketClosed: function(handle) {
-               // when connection closed, close panel as well
-               JSROOT.CloseCurrentWindow();
-            }
-         };
-      }
+                  if (!arg.prereq2) resolveFunc(handle);
+               },
 
-      handle.key = JSROOT.GetUrlOption("key");
+               OnWebsocketClosed: () => { JSROOT.CloseCurrentWindow(); } // // when connection closed, close panel as well
+            };
+         }
 
-      if (!arg.receiver)
-         return JSROOT.CallBack(arg.callback, handle, arg);
+         if (!arg.receiver)
+            return resolveFunc(handle);
 
-      // when receiver is exists, it handles itself callbacks
-      handle.SetReceiver(arg.receiver);
-      handle.Connect();
+         // when receiver is exists, it handles itself callbacks
+         handle.SetReceiver(arg.receiver);
+         handle.Connect();
 
-      if (arg.prereq2) {
-         JSROOT.AssertPrerequisites(arg.prereq2, function() {
-            delete arg.prereq2; // indicate that func is loaded
-            if (!arg.first_recv || arg.first_msg) JSROOT.CallBack(arg.callback, handle, arg);
-         });
-      } else if (!arg.first_recv) {
-         JSROOT.CallBack(arg.callback, handle, arg);
-      }
+         if (arg.prereq2) {
+            JSROOT.load(arg.prereq2).then(() => {
+               delete arg.prereq2; // indicate that func is loaded
+               if (!arg.first_recv || arg.first_msg) resolveFunc(handle);
+            });
+         } else if (!arg.first_recv) {
+            resolveFunc(handle);
+         }
+      });
+
+      // if callback specified, old API is used, callback getting handler and arg again
+      // TODO: remove it once all RWebWindow implementations in ROOT adjusted
+      if (arg.callback)
+         return promise.then(h => arg.callback(h, arg));
+
+      return promise;
    }
 
    // ========================================================================================
@@ -2288,8 +2292,8 @@
       let main = this.select_main().node(),
          chld = main ? main.firstChild : null;
       if (!chld) return null;
-      if (on===true) chld.painter = this; else
-      if (on===false) delete chld.painter;
+      if (on === true) chld.painter = this; else
+         if (on === false) delete chld.painter;
       return chld.painter;
    }
 
@@ -2347,12 +2351,12 @@
       if ('_ready_called_' in this)
          return JSROOT.CallBack(resolveFunc, this);
       if (!this._ready_callbacks_)
-         this._ready_callbacks_ = [ resolveFunc ];
+         this._ready_callbacks_ = [resolveFunc];
       else
          this._ready_callbacks_.push(resolveFunc);
       if (rejectFunc) {
          if (!this._reject_callbacks_)
-            this._reject_callbacks_ = [ rejectFunc ];
+            this._reject_callbacks_ = [rejectFunc];
          else
             this._reject_callbacks_.push(rejectFunc);
       }
@@ -2369,7 +2373,7 @@
          return Promise.resolve(this); // painting is done, we could return promise
 
       let pthis = this;
-      return new Promise(function (resolve, reject) {
+      return new Promise(function(resolve, reject) {
          pthis.WhenReady(resolve, reject);
       });
    }
@@ -2439,7 +2443,7 @@
       if (!res) {
          if (typeof this.divid == "string") {
             let id = this.divid;
-            if (id[0]!='#') id = "#" + id;
+            if (id[0] != '#') id = "#" + id;
             res = d3.select(id);
             if (!res.empty()) this.divid = res.node();
          } else {
@@ -2448,11 +2452,11 @@
          this._selected_main = res;
       }
 
-      if (!res || res.empty() || (is_direct==='origin')) return res;
+      if (!res || res.empty() || (is_direct === 'origin')) return res;
 
       let use_enlarge = res.property('use_enlarge'),
-          layout = res.property('layout') || 'simple',
-          layout_selector = (layout=='simple') ? "" : res.property('layout_selector');
+         layout = res.property('layout') || 'simple',
+         layout_selector = (layout == 'simple') ? "" : res.property('layout_selector');
 
       if (layout_selector) res = res.select(layout_selector);
 
@@ -2481,7 +2485,7 @@
     */
    TBasePainter.prototype.get_layout_kind = function() {
       let origin = this.select_main('origin'),
-          layout = origin.empty() ? "" : origin.property('layout');
+         layout = origin.empty() ? "" : origin.property('layout');
 
       return layout || 'simple';
    }
@@ -2495,7 +2499,7 @@
       if (!origin.empty()) {
          if (!kind) kind = 'simple';
          origin.property('layout', kind);
-         origin.property('layout_selector', (kind!='simple') && main_selector ? main_selector : null);
+         origin.property('layout_selector', (kind != 'simple') && main_selector ? main_selector : null);
          this._changed_layout = (kind !== 'simple'); // use in cleanup
       }
    }
@@ -2510,46 +2514,46 @@
    TBasePainter.prototype.check_main_resize = function(check_level, new_size, height_factor) {
 
       let enlarge = this.enlarge_main('state'),
-          main_origin = this.select_main('origin'),
-          main = this.select_main(),
-          lmt = 5; // minimal size
+         main_origin = this.select_main('origin'),
+         main = this.select_main(),
+         lmt = 5; // minimal size
 
       if (enlarge !== 'on') {
          if (new_size && new_size.width && new_size.height)
-            main_origin.style('width',new_size.width+"px")
-                       .style('height',new_size.height+"px");
+            main_origin.style('width', new_size.width + "px")
+               .style('height', new_size.height + "px");
       }
 
       let rect_origin = this.get_visible_rect(main_origin, true),
-          can_resize = main_origin.attr('can_resize'),
-          do_resize = false;
+         can_resize = main_origin.attr('can_resize'),
+         do_resize = false;
 
       if (can_resize == "height")
-         if (height_factor && Math.abs(rect_origin.width*height_factor - rect_origin.height) > 0.1*rect_origin.width) do_resize = true;
+         if (height_factor && Math.abs(rect_origin.width * height_factor - rect_origin.height) > 0.1 * rect_origin.width) do_resize = true;
 
       if (((rect_origin.height <= lmt) || (rect_origin.width <= lmt)) &&
-           can_resize && can_resize !== 'false') do_resize = true;
+         can_resize && can_resize !== 'false') do_resize = true;
 
       if (do_resize && (enlarge !== 'on')) {
-          // if zero size and can_resize attribute set, change container size
+         // if zero size and can_resize attribute set, change container size
 
          if (rect_origin.width > lmt) {
             height_factor = height_factor || 0.66;
-            main_origin.style('height', Math.round(rect_origin.width * height_factor)+'px');
+            main_origin.style('height', Math.round(rect_origin.width * height_factor) + 'px');
          } else if (can_resize !== 'height') {
             main_origin.style('width', '200px').style('height', '100px');
          }
       }
 
       let rect = this.get_visible_rect(main),
-          old_h = main.property('draw_height'), old_w = main.property('draw_width');
+         old_h = main.property('draw_height'), old_w = main.property('draw_width');
 
       rect.changed = false;
 
-      if (old_h && old_w && (old_h>0) && (old_w>0)) {
+      if (old_h && old_w && (old_h > 0) && (old_w > 0)) {
          if ((old_h !== rect.height) || (old_w !== rect.width))
-            if ((check_level>1) || (rect.width/old_w<0.66) || (rect.width/old_w>1.5) ||
-                  (rect.height/old_h<0.66) && (rect.height/old_h>1.5)) rect.changed = true;
+            if ((check_level > 1) || (rect.width / old_w < 0.66) || (rect.width / old_w > 1.5) ||
+               (rect.height / old_h < 0.66) && (rect.height / old_h > 1.5)) rect.changed = true;
       } else {
          rect.changed = true;
       }
@@ -2574,37 +2578,37 @@
    TBasePainter.prototype.enlarge_main = function(action, skip_warning) {
 
       let main = this.select_main(true),
-          origin = this.select_main('origin');
+         origin = this.select_main('origin');
 
-      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge')===false)) return false;
+      if (main.empty() || !JSROOT.gStyle.CanEnlarge || (origin.property('can_enlarge') === false)) return false;
 
-      if (action===undefined) return true;
+      if (action === undefined) return true;
 
-      if (action==='verify') return true;
+      if (action === 'verify') return true;
 
       let state = origin.property('use_enlarge') ? "on" : "off";
 
       if (action === 'state') return state;
 
-      if (action === 'toggle') action = (state==="off");
+      if (action === 'toggle') action = (state === "off");
 
       let enlarge = d3.select("#jsroot_enlarge_div");
 
-      if ((action === true) && (state!=="on")) {
+      if ((action === true) && (state !== "on")) {
          if (!enlarge.empty()) return false;
 
          enlarge = d3.select(document.body)
-                       .append("div")
-                       .attr("id","jsroot_enlarge_div");
+            .append("div")
+            .attr("id", "jsroot_enlarge_div");
 
          let rect1 = this.get_visible_rect(main),
-             rect2 = this.get_visible_rect(enlarge);
+            rect2 = this.get_visible_rect(enlarge);
 
          // if new enlarge area not big enough, do not do it
          if ((rect2.width <= rect1.width) || (rect2.height <= rect1.height))
-            if (rect2.width*rect2.height < rect1.width*rect1.height) {
+            if (rect2.width * rect2.height < rect1.width * rect1.height) {
                if (!skip_warning)
-                  console.log('Enlarged area ' + rect2.width+"x"+rect2.height + ' smaller then original drawing ' + rect1.width+"x"+rect1.height);
+                  console.log('Enlarged area ' + rect2.width + "x" + rect2.height + ' smaller then original drawing ' + rect1.width + "x" + rect1.height);
                enlarge.remove();
                return false;
             }
@@ -2616,7 +2620,7 @@
 
          return true;
       }
-      if ((action === false) && (state!=="off")) {
+      if ((action === false) && (state !== "off")) {
 
          while (enlarge.node() && enlarge.node().childNodes.length > 0)
             main.node().appendChild(enlarge.node().firstChild);
@@ -2635,7 +2639,7 @@
       if (!elem || elem.empty()) return 0;
       let value = elem.style(name);
       if (!value || (typeof value !== 'string')) return 0;
-      value = parseFloat(value.replace("px",""));
+      value = parseFloat(value.replace("px", ""));
       return isNaN(value) ? 0 : Math.round(value);
    }
 
@@ -2644,15 +2648,15 @@
    TBasePainter.prototype.get_visible_rect = function(elem, fullsize) {
 
       if (JSROOT.nodejs)
-         return { width : parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
+         return { width: parseInt(elem.attr("width")), height: parseInt(elem.attr("height")) };
 
       let rect = elem.node().getBoundingClientRect(),
-          res = { width: Math.round(rect.width), height: Math.round(rect.height) };
+         res = { width: Math.round(rect.width), height: Math.round(rect.height) };
 
       if (!fullsize) {
          // this is size exclude padding area
-         res.width -= this.GetStyleValue(elem,'padding-left') + this.GetStyleValue(elem,'padding-right');
-         res.height -= this.GetStyleValue(elem,'padding-top') - this.GetStyleValue(elem,'padding-bottom');
+         res.width -= this.GetStyleValue(elem, 'padding-left') + this.GetStyleValue(elem, 'padding-right');
+         res.height -= this.GetStyleValue(elem, 'padding-top') - this.GetStyleValue(elem, 'padding-bottom');
       }
 
       return res;
@@ -2681,7 +2685,7 @@
     */
    TBasePainter.prototype.SetItemName = function(name, opt, hpainter) {
       if (typeof name === 'string') this._hitemname = name;
-                               else delete this._hitemname;
+      else delete this._hitemname;
       // only upate draw option, never delete. null specified when update drawing
       if (typeof opt === 'string') this._hdrawopt = opt;
 
@@ -2708,7 +2712,7 @@
     * @abstract
     * @private
     */
-   TBasePainter.prototype.CanZoomIn = function(axis,left,right) {
+   TBasePainter.prototype.CanZoomIn = function(axis, left, right) {
    }
 
    // ==============================================================================
@@ -2814,10 +2818,10 @@
     * @private */
    TObjectPainter.prototype.SetItemName = function(name, opt, hpainter) {
       TBasePainter.prototype.SetItemName.call(this, name, opt, hpainter);
-      if (this.no_default_title || (name=="")) return;
+      if (this.no_default_title || (name == "")) return;
       let can = this.svg_canvas();
       if (!can.empty()) can.select("title").text(name);
-                   else this.select_main().attr("title", name);
+      else this.select_main().attr("title", name);
    }
 
    /** @summary Store actual options together with original string
@@ -2826,7 +2830,7 @@
       if (!this.options) return;
       if (!original) original = "";
       let pp = original.indexOf(";;");
-      if (pp>=0) original = original.substr(0,pp);
+      if (pp >= 0) original = original.substr(0, pp);
       this.options.original = original;
       this.options_store = JSROOT.extend({}, this.options);
    }
@@ -2879,7 +2883,7 @@
    TObjectPainter.prototype.GetTipName = function(append) {
       let res = this.GetItemName(), obj = this.GetObject();
       if (!res) res = obj && obj.fName ? obj.fName : "";
-      if (res.lenght > 20) res = res.substr(0,17) + "...";
+      if (res.lenght > 20) res = res.substr(0, 17) + "...";
       if (res && append) res += append;
       return res;
    }
@@ -2922,7 +2926,7 @@
       let indx = jsarr.indexOf(color);
       if (indx >= 0) return indx;
       jsarr.push(color);
-      return jsarr.length-1;
+      return jsarr.length - 1;
    }
 
    /** @summary returns tooltip allowed flag. Check canvas painter
@@ -3021,7 +3025,7 @@
 
          // layer.selectAll(".most_upper_primitives").raise();
          let up = [], chlds = layer.node().childNodes;
-         for (let n=0;n<chlds.length;++n)
+         for (let n = 0; n < chlds.length; ++n)
             if (d3.select(chlds[n]).classed("most_upper_primitives")) up.push(chlds[n]);
 
          up.forEach(function(top) { d3.select(top).raise(); });
@@ -3070,13 +3074,13 @@
       let svg = this.svg_pad(pad_name);
       if (svg.empty()) return svg;
 
-      if (name.indexOf("prim#")==0) {
+      if (name.indexOf("prim#") == 0) {
          svg = svg.select(".primitives_layer");
          name = name.substr(5);
       }
 
       let node = svg.node().firstChild;
-      while (node!==null) {
+      while (node !== null) {
          let elem = d3.select(node);
          if (elem.classed(name)) return elem;
          node = node.nextSibling;
@@ -3114,27 +3118,27 @@
     */
    TObjectPainter.prototype.AxisToSvg = function(axis, value, ndc, noround) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame'),
-          main = use_frame ? this.frame_painter() : null;
+         main = use_frame ? this.frame_painter() : null;
 
-      if (use_frame && main && main["gr"+axis]) {
-         value = (axis=="y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
-                             : main.grx(value) + (use_frame ? 0 : main.frame_x());
+      if (use_frame && main && main["gr" + axis]) {
+         value = (axis == "y") ? main.gry(value) + (use_frame ? 0 : main.frame_y())
+            : main.grx(value) + (use_frame ? 0 : main.frame_x());
       } else if (use_frame) {
          value = 0; // in principal error, while frame calculation requested
       } else {
          let pad = ndc ? null : this.root_pad();
          if (pad) {
-            if (axis=="y") {
+            if (axis == "y") {
                if (pad.fLogy)
-                  value = (value>0) ? JSROOT.log10(value) : pad.fUymin;
+                  value = (value > 0) ? JSROOT.log10(value) : pad.fUymin;
                value = (value - pad.fY1) / (pad.fY2 - pad.fY1);
             } else {
                if (pad.fLogx)
-                  value = (value>0) ? JSROOT.log10(value) : pad.fUxmin;
+                  value = (value > 0) ? JSROOT.log10(value) : pad.fUxmin;
                value = (value - pad.fX1) / (pad.fX2 - pad.fX1);
             }
          }
-         value = (axis=="y") ? (1-value)*this.pad_height() : value*this.pad_width();
+         value = (axis == "y") ? (1 - value) * this.pad_height() : value * this.pad_width();
       }
 
       return noround ? value : Math.round(value);
@@ -3151,23 +3155,23 @@
 
    TObjectPainter.prototype.SvgToAxis = function(axis, coord, ndc) {
       let use_frame = this.draw_g && this.draw_g.property('in_frame'),
-          main = use_frame ? this.frame_painter() : null;
+         main = use_frame ? this.frame_painter() : null;
 
       if (use_frame) main = this.frame_painter();
 
       if (use_frame && main) {
-         return  (axis=="y") ? main.RevertY(coord - (use_frame ? 0 : main.frame_y()))
-                             : main.RevertX(coord - (use_frame ? 0 : main.frame_x()));
+         return (axis == "y") ? main.RevertY(coord - (use_frame ? 0 : main.frame_y()))
+            : main.RevertX(coord - (use_frame ? 0 : main.frame_x()));
       } else if (use_frame) {
          return 0; // in principal error, while frame calculation requested
       }
 
-      let value = (axis=="y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
+      let value = (axis == "y") ? (1 - coord / this.pad_height()) : coord / this.pad_width();
       let pad = ndc ? null : this.root_pad();
 
       if (pad) {
-         if (axis=="y") {
-            value = pad.fY1  + value * (pad.fY2 - pad.fY1);
+         if (axis == "y") {
+            value = pad.fY1 + value * (pad.fY2 - pad.fY1);
             if (pad.fLogy) value = Math.pow(10, value);
          } else {
             value = pad.fX1 + value * (pad.fX2 - pad.fX1);
@@ -3178,43 +3182,43 @@
       return value;
    }
 
-  /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
-   *
-   * Produce functor can convert x and y value by calling func.x(x) and func.y(y)
-   *  @param {boolean} isndc - if NDC coordinates will be used
-   *  @private
-   */
-  TObjectPainter.prototype.AxisToSvgFunc = function(isndc) {
-     let func = {isndc: isndc}, use_frame = this.draw_g && this.draw_g.property('in_frame');
-     if (use_frame) func.main = this.frame_painter();
-     if (func.main && !isndc && func.main.grx && func.main.gry) {
-        func.offx = func.main.frame_x();
-        func.offy = func.main.frame_y();
-        func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
-        func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
-     } else {
-        if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
-        func.padh = this.pad_height();
-        func.padw = this.pad_width();
-        func.x = function(value) {
-           if (this.pad) {
-              if (this.pad.fLogx)
-                 value = (value>0) ? JSROOT.log10(value) : this.pad.fUxmin;
-              value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
-           }
-           return Math.round(value*this.padw);
-        }
-        func.y = function(value) {
-           if (this.pad) {
-              if (this.pad.fLogy)
-                 value = (value>0) ? JSROOT.log10(value) : this.pad.fUymin;
+   /** @summary Return functor, which can convert x and y coordinates into pixels, used for drawing
+    *
+    * Produce functor can convert x and y value by calling func.x(x) and func.y(y)
+    *  @param {boolean} isndc - if NDC coordinates will be used
+    *  @private
+    */
+   TObjectPainter.prototype.AxisToSvgFunc = function(isndc) {
+      let func = { isndc: isndc }, use_frame = this.draw_g && this.draw_g.property('in_frame');
+      if (use_frame) func.main = this.frame_painter();
+      if (func.main && !isndc && func.main.grx && func.main.gry) {
+         func.offx = func.main.frame_x();
+         func.offy = func.main.frame_y();
+         func.x = function(x) { return Math.round(this.main.grx(x) + this.offx); }
+         func.y = function(y) { return Math.round(this.main.gry(y) + this.offy); }
+      } else {
+         if (!isndc) func.pad = this.root_pad(); // need for NDC conversion
+         func.padh = this.pad_height();
+         func.padw = this.pad_width();
+         func.x = function(value) {
+            if (this.pad) {
+               if (this.pad.fLogx)
+                  value = (value > 0) ? JSROOT.log10(value) : this.pad.fUxmin;
+               value = (value - this.pad.fX1) / (this.pad.fX2 - this.pad.fX1);
+            }
+            return Math.round(value * this.padw);
+         }
+         func.y = function(value) {
+            if (this.pad) {
+               if (this.pad.fLogy)
+                  value = (value > 0) ? JSROOT.log10(value) : this.pad.fUymin;
                value = (value - this.pad.fY1) / (this.pad.fY2 - this.pad.fY1);
-           }
-           return Math.round((1-value)*this.padh);
-        }
-     }
-     return func;
-  }
+            }
+            return Math.round((1 - value) * this.padh);
+         }
+      }
+      return func;
+   }
 
    /** @summary Returns svg element for the frame.
     *
@@ -3310,7 +3314,7 @@
       // returns kind of currently created 3d canvas
       let kind = svg.property('can3d');
       if (new_value !== undefined) svg.property('can3d', new_value);
-      return ((kind===null) || (kind===undefined)) ? -1 : kind;
+      return ((kind === null) || (kind === undefined)) ? -1 : kind;
    }
 
    /** @summary Returns size which availble for 3D drawing.
@@ -3323,15 +3327,15 @@
       if (can3d === undefined) can3d = this.embed_3d();
 
       let pad = this.svg_pad(this.this_pad_name),
-          clname = "draw3d_" + (this.this_pad_name || this.pad_name || 'canvas');
+         clname = "draw3d_" + (this.this_pad_name || this.pad_name || 'canvas');
 
       if (pad.empty()) {
          // this is a case when object drawn without canvas
 
          let rect = this.get_visible_rect(this.select_main());
 
-         if ((rect.height<10) && (rect.width>10)) {
-            rect.height = Math.round(0.66*rect.width);
+         if ((rect.height < 10) && (rect.width > 10)) {
+            rect.height = Math.round(0.66 * rect.width);
             this.select_main().style('height', rect.height + "px");
          }
          rect.x = 0; rect.y = 0; rect.clname = clname; rect.can3d = -1;
@@ -3353,21 +3357,21 @@
       size.height = elem.property("draw_height");
 
       if ((!fp || fp.mode3d) && (can3d > 0)) {
-         size.x = Math.round(size.x + size.width*JSROOT.gStyle.fPadLeftMargin);
-         size.y = Math.round(size.y + size.height*JSROOT.gStyle.fPadTopMargin);
-         size.width = Math.round(size.width*(1 - JSROOT.gStyle.fPadLeftMargin - JSROOT.gStyle.fPadRightMargin));
-         size.height = Math.round(size.height*(1- JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
+         size.x = Math.round(size.x + size.width * JSROOT.gStyle.fPadLeftMargin);
+         size.y = Math.round(size.y + size.height * JSROOT.gStyle.fPadTopMargin);
+         size.width = Math.round(size.width * (1 - JSROOT.gStyle.fPadLeftMargin - JSROOT.gStyle.fPadRightMargin));
+         size.height = Math.round(size.height * (1 - JSROOT.gStyle.fPadTopMargin - JSROOT.gStyle.fPadBottomMargin));
       }
 
       let pw = this.pad_width(this.this_pad_name), x2 = pw - size.x - size.width,
-          ph = this.pad_height(this.this_pad_name), y2 = ph - size.y - size.height;
+         ph = this.pad_height(this.this_pad_name), y2 = ph - size.y - size.height;
 
       if ((x2 >= 0) && (y2 >= 0)) {
          // while 3D canvas uses area also for the axis labels, extend area relative to normal frame
          size.x = Math.round(size.x * 0.3);
          size.y = Math.round(size.y * 0.9);
-         size.width = pw - size.x - Math.round(x2*0.3);
-         size.height = ph - size.y - Math.round(y2*0.5);
+         size.width = pw - size.x - Math.round(x2 * 0.3);
+         size.height = ph - size.y - Math.round(y2 * 0.5);
       }
 
       if (can3d === 1)
@@ -3439,7 +3443,7 @@
 
          let elem = this.apply_3d_size(size);
 
-         elem.attr('title','').node().appendChild(canv);
+         elem.attr('title', '').node().appendChild(canv);
       }
    }
 
@@ -3464,21 +3468,21 @@
             // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
-               elem = svg.insert("g",".primitives_layer").attr("class", size.clname);
+               elem = svg.insert("g", ".primitives_layer").attr("class", size.clname);
 
             elem.attr("transform", "translate(" + size.x + "," + size.y + ")");
 
          } else {
 
             if (elem.empty())
-               elem = svg.insert("foreignObject",".primitives_layer").attr("class", size.clname);
+               elem = svg.insert("foreignObject", ".primitives_layer").attr("class", size.clname);
 
             elem.attr('x', size.x)
-                .attr('y', size.y)
-                .attr('width', size.width)
-                .attr('height', size.height)
-                .attr('viewBox', "0 0 " + size.width + " " + size.height)
-                .attr('preserveAspectRatio','xMidYMid');
+               .attr('y', size.y)
+               .attr('width', size.width)
+               .attr('height', size.height)
+               .attr('viewBox', "0 0 " + size.width + " " + size.height)
+               .attr('preserveAspectRatio', 'xMidYMid');
          }
 
       } else {
@@ -3503,7 +3507,7 @@
             if (prnt === document) { prnt = null; break; }
             try {
                if (getComputedStyle(prnt).position !== 'static') break;
-            } catch(err) {
+            } catch (err) {
                break;
             }
             prnt = prnt.parentNode;
@@ -3512,9 +3516,9 @@
          let pos1 = prnt ? prnt.getBoundingClientRect() : { top: 0, left: 0 };
 
          let offx = Math.round(pos0.left - pos1.left),
-             offy = Math.round(pos0.top - pos1.top);
+            offy = Math.round(pos0.top - pos1.top);
 
-         elem.style('position','absolute').style('left',(size.x+offx)+'px').style('top',(size.y+offy)+'px').style('width',size.width+'px').style('height',size.height+'px');
+         elem.style('position', 'absolute').style('left', (size.x + offx) + 'px').style('top', (size.y + offy) + 'px').style('width', size.width + 'px').style('height', size.height + 'px');
       }
 
       return elem;
@@ -3575,7 +3579,7 @@
       // check if element really exists
       if ((is_main >= 0) && this.select_main(true).empty()) {
          if (typeof divid == 'string') console.error('not found HTML element with id: ' + divid);
-                                  else console.error('specified HTML element can not be selected with d3.select()');
+         else console.error('specified HTML element can not be selected with d3.select()');
          return false;
       }
 
@@ -3584,14 +3588,14 @@
       // SVG element where canvas is drawn
       let svg_c = this.svg_canvas();
 
-      if (svg_c.empty() && (is_main > 0) && (is_main!==5)) {
+      if (svg_c.empty() && (is_main > 0) && (is_main !== 5)) {
          JSROOT.Painter.drawCanvas(divid, null, ((is_main == 2) || (is_main == 4)) ? "noframe" : "");
          svg_c = this.svg_canvas();
          this.create_canvas = true;
       }
 
       if (svg_c.empty()) {
-         if ((is_main < 0) || (is_main===5) || this.iscan) return true;
+         if ((is_main < 0) || (is_main === 5) || this.iscan) return true;
          this.AccessTopPainter(true);
          return true;
       }
@@ -3633,7 +3637,7 @@
    TObjectPainter.prototype.CalcAbsolutePosition = function(sel, pos) {
       while (!sel.empty() && !sel.classed('root_canvas') && pos) {
          let cl = sel.attr("class");
-         if (cl && ((cl.indexOf("root_frame")>=0) || (cl.indexOf("__root_pad_")>=0))) {
+         if (cl && ((cl.indexOf("root_frame") >= 0) || (cl.indexOf("__root_pad_") >= 0))) {
             pos.x += sel.property("draw_x") || 0;
             pos.y += sel.property("draw_y") || 0;
          }
@@ -3652,7 +3656,7 @@
     */
    TObjectPainter.prototype.createAttMarker = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
-      if (args.fMarkerColor!==undefined && args.fMarkerStyle!==undefined && args.fMarkerSize!==undefined) args = { attr: args, std: false };
+         if (args.fMarkerColor !== undefined && args.fMarkerStyle !== undefined && args.fMarkerSize !== undefined) args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
 
@@ -3677,7 +3681,7 @@
    */
    TObjectPainter.prototype.createAttLine = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
-      if (args.fLineColor!==undefined && args.fLineStyle!==undefined && args.fLineWidth!==undefined) args = { attr: args, std: false };
+         if (args.fLineColor !== undefined && args.fLineStyle !== undefined && args.fLineWidth !== undefined) args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
 
@@ -3710,7 +3714,7 @@
    */
    TObjectPainter.prototype.createAttFill = function(args) {
       if (!args || (typeof args !== 'object')) args = { std: true }; else
-      if (args._typename && args.fFillColor!==undefined && args.fFillStyle!==undefined) args = { attr: args, std: false };
+         if (args._typename && args.fFillColor !== undefined && args.fFillStyle !== undefined) args = { attr: args, std: false };
 
       if (args.std === undefined) args.std = true;
 
@@ -3799,7 +3803,7 @@
    TObjectPainter.prototype.AddMove = function() {
 
       if (!JSROOT.gStyle.MoveResize || JSROOT.BatchMode ||
-          !this.draw_g || this.draw_g.property("assigned_move")) return;
+         !this.draw_g || this.draw_g.property("assigned_move")) return;
 
       function detectRightButton(event) {
          if ('buttons' in event) return event.buttons === 2;
@@ -3809,10 +3813,10 @@
       }
 
       let drag_move = d3.drag().subject(Object),
-          not_changed = true;
+         not_changed = true;
 
       drag_move
-        .on("start", function(evnt) {
+         .on("start", function(evnt) {
             if (detectRightButton(evnt.sourceEvent)) return;
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
@@ -3820,25 +3824,25 @@
             not_changed = true;
             if (this.moveStart)
                this.moveStart(pos[0], pos[1]);
-       }.bind(this)).on("drag", function(evnt) {
+         }.bind(this)).on("drag", function(evnt) {
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
             not_changed = false;
             if (this.moveDrag)
                this.moveDrag(evnt.dx, evnt.dy);
-       }.bind(this)).on("end", function(evnt) {
+         }.bind(this)).on("end", function(evnt) {
             evnt.sourceEvent.preventDefault();
             evnt.sourceEvent.stopPropagation();
             if (this.moveEnd)
                this.moveEnd(not_changed);
             let cp = this.canv_painter();
             if (cp) cp.SelectObjectPainter(this);
-      }.bind(this));
+         }.bind(this));
 
       this.draw_g
-          .style("cursor", "move")
-          .property("assigned_move", true)
-          .call(drag_move);
+         .style("cursor", "move")
+         .property("assigned_move", true)
+         .call(drag_move);
    }
 
    /** @summary Add drag for interactive rectangular elements
@@ -3860,26 +3864,26 @@
       function rect_height() { return Number(pthis.draw_g.attr("height")); }
 
       function MakeResizeElements(group, width, height, handler) {
-         function make(cursor,d) {
-            let clname = "js_" + cursor.replace('-','_'),
-                elem = group.select('.'+clname);
-            if (elem.empty()) elem = group.append('path').classed(clname,true);
-            elem.style('opacity', 0).style('cursor', cursor).attr('d',d);
+         function make(cursor, d) {
+            let clname = "js_" + cursor.replace('-', '_'),
+               elem = group.select('.' + clname);
+            if (elem.empty()) elem = group.append('path').classed(clname, true);
+            elem.style('opacity', 0).style('cursor', cursor).attr('d', d);
             if (handler) elem.call(handler);
          }
 
          make("nw-resize", "M2,2h15v-5h-20v20h5Z");
-         make("ne-resize", "M" + (width-2) + ",2h-15v-5h20v20h-5 Z");
-         make("sw-resize", "M2," + (height-2) + "h15v5h-20v-20h5Z");
-         make("se-resize", "M" + (width-2) + "," + (height-2) + "h-15v5h20v-20h-5Z");
+         make("ne-resize", "M" + (width - 2) + ",2h-15v-5h20v20h-5 Z");
+         make("sw-resize", "M2," + (height - 2) + "h15v5h-20v-20h5Z");
+         make("se-resize", "M" + (width - 2) + "," + (height - 2) + "h-15v5h20v-20h-5Z");
 
          if (!callback.no_change_x) {
-            make("w-resize", "M-3,18h5v" + Math.max(0, height - 2*18) + "h-5Z");
-            make("e-resize", "M" + (width+3) + ",18h-5v" + Math.max(0, height - 2*18) + "h5Z");
+            make("w-resize", "M-3,18h5v" + Math.max(0, height - 2 * 18) + "h-5Z");
+            make("e-resize", "M" + (width + 3) + ",18h-5v" + Math.max(0, height - 2 * 18) + "h5Z");
          }
          if (!callback.no_change_y) {
-            make("n-resize", "M18,-3v5h" + Math.max(0, width - 2*18) + "v-5Z");
-            make("s-resize", "M18," + (height+3) + "v-5h" + Math.max(0, width - 2*18) + "v5Z");
+            make("n-resize", "M18,-3v5h" + Math.max(0, width - 2 * 18) + "v-5Z");
+            make("s-resize", "M18," + (height + 3) + "v-5h" + Math.max(0, width - 2 * 18) + "v5Z");
          }
       }
 
@@ -3893,21 +3897,21 @@
          }
 
          let oldx = Number(pthis.draw_g.attr("x")),
-             oldy = Number(pthis.draw_g.attr("y")),
-             newx = Number(drag_rect.attr("x")),
-             newy = Number(drag_rect.attr("y")),
-             newwidth = Number(drag_rect.attr("width")),
-             newheight = Number(drag_rect.attr("height"));
+            oldy = Number(pthis.draw_g.attr("y")),
+            newx = Number(drag_rect.attr("x")),
+            newy = Number(drag_rect.attr("y")),
+            newwidth = Number(drag_rect.attr("width")),
+            newheight = Number(drag_rect.attr("height"));
 
          if (callback.minwidth && newwidth < callback.minwidth) newwidth = callback.minwidth;
          if (callback.minheight && newheight < callback.minheight) newheight = callback.minheight;
 
          let change_size = (newwidth !== rect_width()) || (newheight !== rect_height()),
-             change_pos = (newx !== oldx) || (newy !== oldy);
+            change_pos = (newx !== oldx) || (newy !== oldy);
 
          pthis.draw_g.attr('x', newx).attr('y', newy)
-                     .attr("transform", "translate(" + newx + "," + newy + ")")
-                     .attr('width', newwidth).attr('height', newheight);
+            .attr("transform", "translate(" + newx + "," + newy + ")")
+            .attr('width', newwidth).attr('height', newheight);
 
          drag_rect.remove();
          drag_rect = null;
@@ -3918,12 +3922,12 @@
 
          if (change_size || change_pos) {
             if (change_size && ('resize' in callback)) callback.resize(newwidth, newheight);
-            if (change_pos && ('move' in callback)) callback.move(newx, newy, newx - oldxx, newy-oldy);
+            if (change_pos && ('move' in callback)) callback.move(newx, newy, newx - oldxx, newy - oldy);
 
             if (change_size || change_pos) {
                if ('obj' in callback) {
                   callback.obj.fX1NDC = newx / pthis.pad_width();
-                  callback.obj.fX2NDC = (newx + newwidth)  / pthis.pad_width();
+                  callback.obj.fX2NDC = (newx + newwidth) / pthis.pad_width();
                   callback.obj.fY1NDC = 1 - (newy + newheight) / pthis.pad_height();
                   callback.obj.fY2NDC = 1 - newy / pthis.pad_height();
                   callback.obj.modified_NDC = true; // indicate that NDC was interactively changed, block in updated
@@ -3936,10 +3940,10 @@
       }
 
       let drag_move = d3.drag().subject(Object),
-          drag_resize = d3.drag().subject(Object);
+         drag_resize = d3.drag().subject(Object);
 
       drag_move
-         .on("start",  function(evnt) {
+         .on("start", function(evnt) {
             if (detectRightButton(evnt.sourceEvent)) return;
 
             JSROOT.Painter.closeMenu(); // close menu
@@ -3958,78 +3962,78 @@
             };
 
             drag_rect = d3.select(pthis.draw_g.node().parentNode).append("rect")
-                 .classed("zoom", true)
-                 .attr("x", handle.acc_x1)
-                 .attr("y", handle.acc_y1)
-                 .attr("width", rect_width())
-                 .attr("height", rect_height())
-                 .style("cursor", "move")
-                 .style("pointer-events","none") // let forward double click to underlying elements
-                 .property('drag_handle', handle);
+               .classed("zoom", true)
+               .attr("x", handle.acc_x1)
+               .attr("y", handle.acc_y1)
+               .attr("width", rect_width())
+               .attr("height", rect_height())
+               .style("cursor", "move")
+               .style("pointer-events", "none") // let forward double click to underlying elements
+               .property('drag_handle', handle);
 
 
-          }).on("drag", function(evnt) {
-               if (!drag_rect) return;
+         }).on("drag", function(evnt) {
+            if (!drag_rect) return;
 
-               evnt.sourceEvent.preventDefault();
-               evnt.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
 
-               let handle = drag_rect.property('drag_handle');
+            let handle = drag_rect.property('drag_handle');
 
-               if (!callback.no_change_x)
-                  handle.acc_x1 += evnt.dx;
-               if (!callback.no_change_y)
-                  handle.acc_y1 += evnt.dy;
+            if (!callback.no_change_x)
+               handle.acc_x1 += evnt.dx;
+            if (!callback.no_change_y)
+               handle.acc_y1 += evnt.dy;
 
-               drag_rect.attr("x", Math.min( Math.max(handle.acc_x1, 0), handle.pad_w))
-                        .attr("y", Math.min( Math.max(handle.acc_y1, 0), handle.pad_h));
+            drag_rect.attr("x", Math.min(Math.max(handle.acc_x1, 0), handle.pad_w))
+               .attr("y", Math.min(Math.max(handle.acc_y1, 0), handle.pad_h));
 
-          }).on("end", function(evnt) {
-               if (!drag_rect) return;
+         }).on("end", function(evnt) {
+            if (!drag_rect) return;
 
-               evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.preventDefault();
 
-               let handle = drag_rect.property('drag_handle');
+            let handle = drag_rect.property('drag_handle');
 
-               if (complete_drag() === false) {
-                  let spent = (new Date()).getTime() - handle.drag_tm.getTime();
-                  if (callback.ctxmenu && (spent > 600) && pthis.ShowContextMenu) {
-                     let rrr = resize_se.node().getBoundingClientRect();
-                     pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top } );
-                  } else if (callback.canselect && (spent <= 600)) {
-                     pthis.canv_painter().SelectObjectPainter(pthis);
-                  }
+            if (complete_drag() === false) {
+               let spent = (new Date()).getTime() - handle.drag_tm.getTime();
+               if (callback.ctxmenu && (spent > 600) && pthis.ShowContextMenu) {
+                  let rrr = resize_se.node().getBoundingClientRect();
+                  pthis.ShowContextMenu('main', { clientX: rrr.left, clientY: rrr.top });
+               } else if (callback.canselect && (spent <= 600)) {
+                  pthis.canv_painter().SelectObjectPainter(pthis);
                }
-            });
+            }
+         });
 
       drag_resize
-        .on("start", function(evnt) {
-           if (detectRightButton(evnt.sourceEvent)) return;
+         .on("start", function(evnt) {
+            if (detectRightButton(evnt.sourceEvent)) return;
 
-           evnt.sourceEvent.stopPropagation();
-           evnt.sourceEvent.preventDefault();
+            evnt.sourceEvent.stopPropagation();
+            evnt.sourceEvent.preventDefault();
 
-           pthis.SwitchTooltip(false); // disable tooltip
+            pthis.SwitchTooltip(false); // disable tooltip
 
-           let handle = {
-              acc_x1: Number(pthis.draw_g.attr("x")),
-              acc_y1: Number(pthis.draw_g.attr("y")),
-              pad_w:  pthis.pad_width(),
-              pad_h:  pthis.pad_height()
-           };
+            let handle = {
+               acc_x1: Number(pthis.draw_g.attr("x")),
+               acc_y1: Number(pthis.draw_g.attr("y")),
+               pad_w: pthis.pad_width(),
+               pad_h: pthis.pad_height()
+            };
 
-           handle.acc_x2 = handle.acc_x1 + rect_width();
-           handle.acc_y2 = handle.acc_y1 + rect_height();
+            handle.acc_x2 = handle.acc_x1 + rect_width();
+            handle.acc_y2 = handle.acc_y1 + rect_height();
 
-           drag_rect = d3.select(pthis.draw_g.node().parentNode)
-                         .append("rect")
-                         .classed("zoom", true)
-                         .style("cursor", d3.select(this).style("cursor"))
-                         .attr("x", handle.acc_x1)
-                         .attr("y", handle.acc_y1)
-                         .attr("width", handle.acc_x2 - handle.acc_x1)
-                         .attr("height", handle.acc_y2 - handle.acc_y1)
-                         .property('drag_handle', handle);
+            drag_rect = d3.select(pthis.draw_g.node().parentNode)
+               .append("rect")
+               .classed("zoom", true)
+               .style("cursor", d3.select(this).style("cursor"))
+               .attr("x", handle.acc_x1)
+               .attr("y", handle.acc_y1)
+               .attr("width", handle.acc_x2 - handle.acc_x1)
+               .attr("height", handle.acc_y2 - handle.acc_y1)
+               .property('drag_handle', handle);
 
          }).on("drag", function(evnt) {
             if (!drag_rect) return;
@@ -4038,7 +4042,7 @@
             evnt.sourceEvent.stopPropagation();
 
             let handle = drag_rect.property('drag_handle'),
-                dx = evnt.dx, dy = evnt.dy, elem = d3.select(this);
+               dx = evnt.dx, dy = evnt.dy, elem = d3.select(this);
 
             if (callback.no_change_x) dx = 0;
             if (callback.no_change_y) dy = 0;
@@ -4053,9 +4057,9 @@
             else if (elem.classed('js_s_resize')) { handle.acc_y2 += dy; }
 
             let x1 = Math.max(0, handle.acc_x1), x2 = Math.min(handle.acc_x2, handle.pad_w),
-                y1 = Math.max(0, handle.acc_y1), y2 = Math.min(handle.acc_y2, handle.pad_h);
+               y1 = Math.max(0, handle.acc_y1), y2 = Math.min(handle.acc_y2, handle.pad_h);
 
-            drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2-x1)).attr("height", Math.max(0, y2-y1));
+            drag_rect.attr("x", x1).attr("y", y1).attr("width", Math.max(0, x2 - x1)).attr("height", Math.max(0, y2 - y1));
 
          }).on("end", function(evnt) {
             if (!drag_rect) return;
@@ -4075,7 +4079,7 @@
     * @private */
    TObjectPainter.prototype.AddColorMenuEntry = function(menu, name, value, set_func, fill_kind) {
       if (value === undefined) return;
-      menu.add("sub:"+name, function() {
+      menu.add("sub:" + name, function() {
          // todo - use jqury dialog here
          let useid = (typeof value !== 'string');
          let col = prompt("Enter color " + (useid ? "(only id number)" : "(name or id)"), value);
@@ -4089,12 +4093,12 @@
          set_func.bind(this)(useid ? id : col);
       });
       let useid = (typeof value !== 'string');
-      for (let n=-1;n<11;++n) {
-         if ((n<0) && useid) continue;
-         if ((n==10) && (fill_kind!==1)) continue;
-         let col = (n<0) ? 'none' : JSROOT.Painter.root_colors[n];
-         if ((n==0) && (fill_kind==1)) col = 'none';
-         let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n==1 ? "white" : "black") + "'>"+col+"</text></svg>";
+      for (let n = -1; n < 11; ++n) {
+         if ((n < 0) && useid) continue;
+         if ((n == 10) && (fill_kind !== 1)) continue;
+         let col = (n < 0) ? 'none' : JSROOT.Painter.root_colors[n];
+         if ((n == 0) && (fill_kind == 1)) col = 'none';
+         let svg = "<svg width='100' height='18' style='margin:0px;background-color:" + col + "'><text x='4' y='12' style='font-size:12px' fill='" + (n == 1 ? "white" : "black") + "'>" + col + "</text></svg>";
          menu.addchk((value == (useid ? n : col)), svg, (useid ? n : col), set_func);
       }
       menu.add("endsub:");
@@ -4105,21 +4109,21 @@
    TObjectPainter.prototype.AddSizeMenuEntry = function(menu, name, min, max, step, value, set_func) {
       if (value === undefined) return;
 
-      menu.add("sub:"+name, function() {
+      menu.add("sub:" + name, function() {
          // todo - use jqury dialog here
          let entry = value.toFixed(4);
-         if (step>=0.1) entry = value.toFixed(2);
-         if (step>=1) entry = value.toFixed(0);
+         if (step >= 0.1) entry = value.toFixed(2);
+         if (step >= 1) entry = value.toFixed(0);
          let val = prompt("Enter value of " + name, entry);
-         if (val==null) return;
+         if (val == null) return;
          val = parseFloat(val);
-         if (!isNaN(val)) set_func.bind(this)((step>=1) ? Math.round(val) : val);
+         if (!isNaN(val)) set_func.bind(this)((step >= 1) ? Math.round(val) : val);
       });
-      for (let val=min;val<=max;val+=step) {
+      for (let val = min; val <= max; val += step) {
          let entry = val.toFixed(2);
-         if (step>=0.1) entry = val.toFixed(1);
-         if (step>=1) entry = val.toFixed(0);
-         menu.addchk((Math.abs(value - val) < step/2), entry, val, set_func);
+         if (step >= 0.1) entry = val.toFixed(1);
+         if (step >= 1) entry = val.toFixed(0);
+         menu.addchk((Math.abs(value - val) < step / 2), entry, val, set_func);
       }
       menu.add("endsub:");
    }
@@ -4169,8 +4173,8 @@
 
       function DoExecMenu(arg) {
          let execp = this.exec_painter || this,
-             cp = execp.canv_painter(),
-             item = execp.args_menu_items[parseInt(arg)];
+            cp = execp.canv_painter(),
+            item = execp.args_menu_items[parseInt(arg)];
 
          if (!item || !item.fName) return;
 
@@ -4203,17 +4207,17 @@
 
          if (items && items.length) {
             if (_menu.size() > 0)
-              _menu.add("separator");
+               _menu.add("separator");
 
             this.args_menu_items = items;
             this.args_menu_id = reply.fId;
 
             let lastclname;
 
-            for (let n=0;n<items.length;++n) {
+            for (let n = 0; n < items.length; ++n) {
                let item = items[n];
 
-               if (item.fClassName && lastclname && (lastclname!=item.fClassName)) {
+               if (item.fClassName && lastclname && (lastclname != item.fClassName)) {
                   _menu.add("endsub:");
                   lastclname = "";
                }
@@ -4267,9 +4271,9 @@
       let id = -1, arr = JSROOT.Painter.root_colors;
       if (typeof col == "string") {
          if (!col || (col == "none")) id = 0; else
-         for (let k=1;k<arr.length;++k)
-            if (arr[k] == col) { id = k; break; }
-         if ((id < 0) && (col.indexOf("rgb")==0)) id = 9999;
+            for (let k = 1; k < arr.length; ++k)
+               if (arr[k] == col) { id = k; break; }
+         if ((id < 0) && (col.indexOf("rgb") == 0)) id = 9999;
       } else if (!isNaN(col) && arr[col]) {
          id = col;
          col = arr[id];
@@ -4296,11 +4300,11 @@
       if (!preffix) preffix = "";
 
       if (this.lineatt && this.lineatt.used) {
-         menu.add("sub:"+preffix+"Line att");
+         menu.add("sub:" + preffix + "Line att");
          this.AddSizeMenuEntry(menu, "width", 1, 10, 1, this.lineatt.width,
-                               function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
+            function(arg) { this.lineatt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineWidth(" + arg + ")"); }.bind(this));
          this.AddColorMenuEntry(menu, "color", this.lineatt.color,
-                          function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
+            function(arg) { this.lineatt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetLineColor")); }.bind(this));
          menu.add("sub:style", function() {
             let id = prompt("Enter line style id (1-solid)", 1);
             if (id == null) return;
@@ -4309,38 +4313,38 @@
             this.lineatt.Change(undefined, undefined, id);
             this.InteractiveRedraw(true, "exec:SetLineStyle(" + id + ")");
          }.bind(this));
-         for (let n=1;n<11;++n) {
+         for (let n = 1; n < 11; ++n) {
 
             let dash = JSROOT.Painter.root_line_styles[n];
 
             let svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + n + "</text><line x1='30' y1='8' x2='100' y2='8' stroke='black' stroke-width='3' stroke-dasharray='" + dash + "'></line></svg>";
 
-            menu.addchk((this.lineatt.style==n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(this));
+            menu.addchk((this.lineatt.style == n), svg, n, function(arg) { this.lineatt.Change(undefined, undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetLineStyle(" + arg + ")"); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
 
-         if (('excl_side' in this.lineatt) && (this.lineatt.excl_side!==0))  {
+         if (('excl_side' in this.lineatt) && (this.lineatt.excl_side !== 0)) {
             menu.add("sub:Exclusion");
             menu.add("sub:side");
-            for (let side=-1;side<=1;++side)
-               menu.addchk((this.lineatt.excl_side==side), side, side, function(arg) {
+            for (let side = -1; side <= 1; ++side)
+               menu.addchk((this.lineatt.excl_side == side), side, side, function(arg) {
                   this.lineatt.ChangeExcl(parseInt(arg));
                   this.InteractiveRedraw();
                }.bind(this));
             menu.add("endsub:");
 
             this.AddSizeMenuEntry(menu, "width", 10, 100, 10, this.lineatt.excl_width,
-                  function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(this));
+               function(arg) { this.lineatt.ChangeExcl(undefined, parseInt(arg)); this.InteractiveRedraw(); }.bind(this));
 
             menu.add("endsub:");
          }
       }
 
       if (this.fillatt && this.fillatt.used) {
-         menu.add("sub:"+preffix+"Fill att");
+         menu.add("sub:" + preffix + "Fill att");
          this.AddColorMenuEntry(menu, "color", this.fillatt.colorindx,
-               function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
+            function(arg) { this.fillatt.Change(parseInt(arg), undefined, this.svg_canvas()); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetFillColor")); }.bind(this), this.fillatt.kind);
          menu.add("sub:style", function() {
             let id = prompt("Enter fill style id (1001-solid, 3000..3010)", this.fillatt.pattern);
             if (id == null) return;
@@ -4352,10 +4356,10 @@
 
          let supported = [1, 1001, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3010, 3021, 3022];
 
-         for (let n=0; n<supported.length; ++n) {
+         for (let n = 0; n < supported.length; ++n) {
 
             let sample = this.createAttFill({ std: false, pattern: supported[n], color: this.fillatt.colorindx || 1 }),
-                svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
+               svg = "<svg width='100' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><rect x='40' y='0' width='60' height='18' stroke='none' fill='" + sample.fillcolor() + "'></rect></svg>";
 
             menu.addchk(this.fillatt.pattern == supported[n], svg, supported[n], function(arg) {
                this.fillatt.Change(undefined, parseInt(arg), this.svg_canvas());
@@ -4367,22 +4371,22 @@
       }
 
       if (this.markeratt && this.markeratt.used) {
-         menu.add("sub:"+preffix+"Marker att");
+         menu.add("sub:" + preffix + "Marker att");
          this.AddColorMenuEntry(menu, "color", this.markeratt.color,
-                   function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(this));
+            function(arg) { this.markeratt.Change(arg); this.InteractiveRedraw(true, this.GetColorExec(arg, "SetMarkerColor")); }.bind(this));
          this.AddSizeMenuEntry(menu, "size", 0.5, 6, 0.5, this.markeratt.size,
-               function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(this));
+            function(arg) { this.markeratt.Change(undefined, undefined, parseFloat(arg)); this.InteractiveRedraw(true, "exec:SetMarkerSize(" + parseInt(arg) + ")"); }.bind(this));
 
          menu.add("sub:style");
-         let supported = [1,2,3,4,5,6,7,8,21,22,23,24,25,26,27,28,29,30,31,32,33,34];
+         let supported = [1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34];
 
-         for (let n=0; n<supported.length; ++n) {
+         for (let n = 0; n < supported.length; ++n) {
 
             let clone = new TAttMarkerHandler({ style: supported[n], color: this.markeratt.color, size: 1.7 }),
-                svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40,8) + "'></path></svg>";
+               svg = "<svg width='60' height='18'><text x='1' y='12' style='font-size:12px'>" + supported[n].toString() + "</text><path stroke='black' fill='" + (clone.fill ? "black" : "none") + "' d='" + clone.create(40, 8) + "'></path></svg>";
 
             menu.addchk(this.markeratt.style == supported[n], svg, supported[n],
-                     function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(this));
+               function(arg) { this.markeratt.Change(undefined, parseInt(arg)); this.InteractiveRedraw(true, "exec:SetMarkerStyle(" + arg + ")"); }.bind(this));
          }
          menu.add("endsub:");
          menu.add("endsub:");
@@ -4399,25 +4403,25 @@
 
       menu.add("sub:" + (prefix ? prefix : "Text"));
       this.AddColorMenuEntry(menu, "color", obj.fTextColor,
-            function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
+         function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
 
       let align = [11, 12, 13, 21, 22, 23, 31, 32, 33],
-          hnames = ['left', 'centered' , 'right'],
-          vnames = ['bottom', 'centered', 'top'];
+         hnames = ['left', 'centered', 'right'],
+         vnames = ['bottom', 'centered', 'top'];
 
       menu.add("sub:align");
-      for (let n=0; n<align.length; ++n) {
+      for (let n = 0; n < align.length; ++n) {
          menu.addchk(align[n] == obj.fTextAlign,
-                  align[n], align[n],
-                  // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
-                  function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign("+arg+")"); }.bind(this));
+            align[n], align[n],
+            // align[n].toString() + "_h:" + hnames[Math.floor(align[n]/10) - 1] + "_v:" + vnames[align[n]%10-1], align[n],
+            function(arg) { this.GetObject().fTextAlign = parseInt(arg); this.InteractiveRedraw(true, "exec:SetTextAlign(" + arg + ")"); }.bind(this));
       }
       menu.add("endsub:");
 
       menu.add("sub:font");
-      for (let n=1; n<16; ++n) {
-         menu.addchk(n == Math.floor(obj.fTextFont/10), n, n,
-                  function(arg) { this.GetObject().fTextFont = parseInt(arg)*10+2; this.InteractiveRedraw(true, "exec:SetTextFont("+this.GetObject().fTextFont+")"); }.bind(this));
+      for (let n = 1; n < 16; ++n) {
+         menu.addchk(n == Math.floor(obj.fTextFont / 10), n, n,
+            function(arg) { this.GetObject().fTextFont = parseInt(arg) * 10 + 2; this.InteractiveRedraw(true, "exec:SetTextFont(" + this.GetObject().fTextFont + ")"); }.bind(this));
       }
       menu.add("endsub:");
 
@@ -4427,18 +4431,18 @@
    /** @summary Show object in inspector */
    TObjectPainter.prototype.ShowInspector = function(obj) {
       let main = this.select_main(),
-          rect = this.get_visible_rect(main),
-          w = Math.round(rect.width*0.05) + "px",
-          h = Math.round(rect.height*0.05) + "px",
-          id = "root_inspector_" + JSROOT.id_counter++,
-          cont = main.append("div")
-                     .attr("id", id)
-                     .attr("class", "jsroot_inspector")
-                     .style('position', 'absolute')
-                     .style('top', h)
-                     .style('bottom', h)
-                     .style('left', w)
-                     .style('right', w);
+         rect = this.get_visible_rect(main),
+         w = Math.round(rect.width * 0.05) + "px",
+         h = Math.round(rect.height * 0.05) + "px",
+         id = "root_inspector_" + JSROOT.id_counter++,
+         cont = main.append("div")
+            .attr("id", id)
+            .attr("class", "jsroot_inspector")
+            .style('position', 'absolute')
+            .style('top', h)
+            .style('bottom', h)
+            .style('left', w)
+            .style('right', w);
 
       if (!obj || (typeof obj !== 'object') || !obj._typename)
          obj = this.GetObject();
@@ -4453,7 +4457,7 @@
       if (this.GetObject() && ('_typename' in this.GetObject()))
          title = this.GetObject()._typename + "::" + title;
 
-      menu.add("header:"+ title);
+      menu.add("header:" + title);
 
       this.FillAttContextMenu(menu);
 
@@ -4473,7 +4477,7 @@
 
       if (pp && (typeof pp.ShowCanvasStatus === 'function')) res = pp.ShowCanvasStatus.bind(pp);
 
-      if (res && (this.enlarge_main('state')==='on')) res = null;
+      if (res && (this.enlarge_main('state') === 'on')) res = null;
 
       return res;
    }
@@ -4484,7 +4488,7 @@
       // method called normally when mouse enter main object element
 
       let obj = this.GetObject(),
-          status_func = this.GetShowStatusFunc();
+         status_func = this.GetShowStatusFunc();
 
       if (obj && status_func) status_func(this.GetItemName() || obj.fName, obj.fTitle || obj._typename, obj._typename);
    }
@@ -4499,7 +4503,7 @@
       let arr = painter && painter.pad && painter.pad.fPrimitives ? painter.pad.fPrimitives.arr : null;
 
       if (arr && arr.length)
-         for (let n=0;n<arr.length;++n) {
+         for (let n = 0; n < arr.length; ++n) {
             let prim = arr[n];
             if (('fName' in prim) && (prim.fName === objname)) return prim;
          }
@@ -4511,7 +4515,7 @@
     * @desc can be used to find painter for some special objects, registered as
     * histogram functions
     * @private */
-   TObjectPainter.prototype.FindPainterFor = function(selobj,selname,seltype) {
+   TObjectPainter.prototype.FindPainterFor = function(selobj, selname, seltype) {
 
       let painter = this.pad_painter();
       let painters = painter ? painter.painters : null;
@@ -4536,7 +4540,7 @@
       let pp = this.pad_painter();
       if (pp) {
          let k = pp.painters.indexOf(this);
-         if (k>=0) pp.painters.splice(k,1);
+         if (k >= 0) pp.painters.splice(k, 1);
       }
 
       this.Cleanup();
@@ -4557,7 +4561,7 @@
          return;
       }
 
-      if (user_timeout===undefined) user_timeout = 500;
+      if (user_timeout === undefined) user_timeout = 500;
 
       this.UserTooltipCallback = call_back;
       this.UserTooltipTimeout = user_timeout;
@@ -4571,13 +4575,13 @@
    * Third is call_back which must be called when menu items are filled
    */
 
-  TObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
+   TObjectPainter.prototype.ConfigureUserContextMenu = function(fillmenu_func) {
 
-     if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
-        delete this.UserContextMenuFunc;
-     else
-        this.UserContextMenuFunc = fillmenu_func;
-  }
+      if (!fillmenu_func || (typeof fillmenu_func !== 'function'))
+         delete this.UserContextMenuFunc;
+      else
+         this.UserContextMenuFunc = fillmenu_func;
+   }
 
    /** @summary Configure user-defined click handler
    *
@@ -4586,11 +4590,11 @@
    * If handler function returns true, default handling of click will be disabled
    */
 
-  TObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
-     let fp = this.frame_painter();
-     if (fp && typeof fp.ConfigureUserClickHandler == 'function')
-        fp.ConfigureUserClickHandler(handler);
-  }
+   TObjectPainter.prototype.ConfigureUserClickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && typeof fp.ConfigureUserClickHandler == 'function')
+         fp.ConfigureUserClickHandler(handler);
+   }
 
    /** @summary Configure user-defined dblclick handler
    *
@@ -4599,11 +4603,11 @@
    * If handler function returns true, default handling of dblclick (unzoom) will be disabled
    */
 
-  TObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
-     let fp = this.frame_painter();
-     if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
-        fp.ConfigureUserDblclickHandler(handler);
-  }
+   TObjectPainter.prototype.ConfigureUserDblclickHandler = function(handler) {
+      let fp = this.frame_painter();
+      if (fp && typeof fp.ConfigureUserDblclickHandler == 'function')
+         fp.ConfigureUserDblclickHandler(handler);
+   }
 
    /** @summary Check if user-defined tooltip callback is configured
     * @returns {boolean}
@@ -4627,7 +4631,7 @@
          delete this.UserTooltipTHandle;
       }
 
-      if (data==null)
+      if (data == null)
          return this.UserTooltipCallback(data);
 
       this.UserTooltipTHandle = setTimeout(function(d) {
@@ -4656,22 +4660,22 @@
 
       if (!draw_g) draw_g = this.draw_g;
 
-      let font = (font_size==='font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
+      let font = (font_size === 'font') ? font_face : JSROOT.Painter.getFontDetails(font_face, font_size);
 
       let pp = this.pad_painter();
 
       draw_g.call(font.func);
 
       draw_g.property('draw_text_completed', false)
-            .property('text_font', font)
-            .property('mathjax_use', false)
-            .property('text_factor', 0.)
-            .property('max_text_width', 0) // keep maximal text width, use it later
-            .property('max_font_size', max_font_size)
-            .property("_fast_drawing", pp && pp._fast_drawing);
+         .property('text_font', font)
+         .property('mathjax_use', false)
+         .property('text_factor', 0.)
+         .property('max_text_width', 0) // keep maximal text width, use it later
+         .property('max_font_size', max_font_size)
+         .property("_fast_drawing", pp && pp._fast_drawing);
 
       if (draw_g.property("_fast_drawing"))
-         draw_g.property("_font_too_small", (max_font_size && (max_font_size<5)) || (font.size < 4));
+         draw_g.property("_font_too_small", (max_font_size && (max_font_size < 5)) || (font.size < 4));
    }
 
    /** @summary function used to remember maximal text scaling factor
@@ -4686,12 +4690,12 @@
     * are there good solution?
     * @private */
    TObjectPainter.prototype.GetBoundarySizes = function(elem) {
-      if (elem===null) { console.warn('empty node in GetBoundarySizes'); return { width:0, height:0 }; }
+      if (elem === null) { console.warn('empty node in GetBoundarySizes'); return { width: 0, height: 0 }; }
       let box = elem.getBoundingClientRect(); // works always, but returns sometimes results in ex values, which is difficult to use
       if (parseFloat(box.width) > 0) box = elem.getBBox(); // check that elements visible, request precise value
-      let res = { width : parseInt(box.width), height : parseInt(box.height) };
+      let res = { width: parseInt(box.width), height: parseInt(box.height) };
       if ('left' in box) { res.x = parseInt(box.left); res.y = parseInt(box.right); } else
-      if ('x' in box) { res.x = parseInt(box.x); res.y = parseInt(box.y); }
+         if ('x' in box) { res.x = parseInt(box.x); res.y = parseInt(box.y); }
       return res;
    }
 
@@ -4739,17 +4743,17 @@
 
       // adjust font size (if there are normal text)
       let painter = this,
-          svg_factor = 0,
-          f = draw_g.property('text_factor'),
-          font = draw_g.property('text_font'),
-          max_sz = draw_g.property('max_font_size'),
-          font_size = font.size;
+         svg_factor = 0,
+         f = draw_g.property('text_factor'),
+         font = draw_g.property('text_font'),
+         max_sz = draw_g.property('max_font_size'),
+         font_size = font.size;
 
       if ((f > 0) && ((f < 0.9) || (f > 1)))
-         font.size = Math.floor(font.size/f);
+         font.size = Math.floor(font.size / f);
 
       if (max_sz && (font.size > max_sz))
-          font.size = max_sz;
+         font.size = max_sz;
 
       if (font.size != font_size) {
          draw_g.call(font.func);
@@ -4758,111 +4762,111 @@
 
       // first analyze all MathJax SVG and repair width/height attributes
       if (svgs)
-      svgs.each(function() {
-         let fo_g = d3.select(this);
-         if (fo_g.node().parentNode !== draw_g.node()) return;
+         svgs.each(function() {
+            let fo_g = d3.select(this);
+            if (fo_g.node().parentNode !== draw_g.node()) return;
 
-         let vvv = fo_g.select("svg");
-         if (vvv.empty()) {
-            console.log('MathJax SVG ouptut error');
-            return;
-         }
+            let vvv = fo_g.select("svg");
+            if (vvv.empty()) {
+               console.log('MathJax SVG ouptut error');
+               return;
+            }
 
-         function transform(value) {
-            if (!value || (typeof value !== "string")) return null;
-            if (value.indexOf("ex")!==value.length-2) return null;
-            value = parseFloat(value.substr(0, value.length-2));
-            return isNaN(value) ? null : value*font_size*0.5;
-         }
+            function transform(value) {
+               if (!value || (typeof value !== "string")) return null;
+               if (value.indexOf("ex") !== value.length - 2) return null;
+               value = parseFloat(value.substr(0, value.length - 2));
+               return isNaN(value) ? null : value * font_size * 0.5;
+            }
 
-         let width = transform(vvv.attr("width")),
-             height = transform(vvv.attr("height")),
-             valign = vvv.attr("style");
+            let width = transform(vvv.attr("width")),
+               height = transform(vvv.attr("height")),
+               valign = vvv.attr("style");
 
-         if (valign && valign.indexOf("vertical-align:")==0 && valign.indexOf("ex;")==valign.length-3) {
-            valign = transform(valign.substr(16, valign.length-17));
-         } else {
-            valign = null;
-         }
+            if (valign && valign.indexOf("vertical-align:") == 0 && valign.indexOf("ex;") == valign.length - 3) {
+               valign = transform(valign.substr(16, valign.length - 17));
+            } else {
+               valign = null;
+            }
 
-         width = (!width || (width<=0.5)) ? 1 : Math.round(width);
-         height = (!height || (height<=0.5)) ? 1 : Math.round(height);
+            width = (!width || (width <= 0.5)) ? 1 : Math.round(width);
+            height = (!height || (height <= 0.5)) ? 1 : Math.round(height);
 
-         vvv.attr("width", width).attr('height', height).attr("style",null);
+            vvv.attr("width", width).attr('height', height).attr("style", null);
 
-         if (!JSROOT.nodejs) {
-            let box = painter.GetBoundarySizes(fo_g.node());
-            width = 1.05*box.width; height = 1.05*box.height;
-         }
+            if (!JSROOT.nodejs) {
+               let box = painter.GetBoundarySizes(fo_g.node());
+               width = 1.05 * box.width; height = 1.05 * box.height;
+            }
 
-         let arg = fo_g.property("_arg");
+            let arg = fo_g.property("_arg");
 
-         arg.valign = valign;
+            arg.valign = valign;
 
-         if (arg.scale)
-            svg_factor = Math.max(svg_factor, width / arg.width, height / arg.height);
-      });
+            if (arg.scale)
+               svg_factor = Math.max(svg_factor, width / arg.width, height / arg.height);
+         });
 
       if (svgs)
-      svgs.each(function() {
-         let fo_g = d3.select(this);
-         // only direct parent
-         if (fo_g.node().parentNode !== draw_g.node()) return;
+         svgs.each(function() {
+            let fo_g = d3.select(this);
+            // only direct parent
+            if (fo_g.node().parentNode !== draw_g.node()) return;
 
-         let arg = fo_g.property("_arg"),
-             m = fo_g.select("svg"), // MathJax svg
-             mw = parseInt(m.attr("width")),
-             mh = parseInt(m.attr("height"));
+            let arg = fo_g.property("_arg"),
+               m = fo_g.select("svg"), // MathJax svg
+               mw = parseInt(m.attr("width")),
+               mh = parseInt(m.attr("height"));
 
-         if (!isNaN(mh) && !isNaN(mw)) {
-            if (svg_factor > 0.) {
-               mw = mw/svg_factor;
-               mh = mh/svg_factor;
-               m.attr("width", Math.round(mw)).attr("height", Math.round(mh));
+            if (!isNaN(mh) && !isNaN(mw)) {
+               if (svg_factor > 0.) {
+                  mw = mw / svg_factor;
+                  mh = mh / svg_factor;
+                  m.attr("width", Math.round(mw)).attr("height", Math.round(mh));
+               }
+            } else {
+               let box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
+               mw = box.width || mw || 100;
+               mh = box.height || mh || 10;
             }
-         } else {
-            let box = painter.GetBoundarySizes(fo_g.node()); // sizes before rotation
-            mw = box.width || mw || 100;
-            mh = box.height || mh || 10;
-         }
 
-         if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign/svg_factor;
+            if ((svg_factor > 0.) && arg.valign) arg.valign = arg.valign / svg_factor;
 
-         if (arg.valign===null) arg.valign = (font_size - mh)/2;
+            if (arg.valign === null) arg.valign = (font_size - mh) / 2;
 
-         let sign = { x:1, y:1 }, nx = "x", ny = "y";
-         if (arg.rotate == 180) { sign.x = sign.y = -1; } else
-         if ((arg.rotate == 270) || (arg.rotate == 90)) {
-            sign.x = (arg.rotate == 270) ? -1 : 1;
-            sign.y = -sign.x;
-            nx = "y"; ny = "x"; // replace names to which align applied
-         }
+            let sign = { x: 1, y: 1 }, nx = "x", ny = "y";
+            if (arg.rotate == 180) { sign.x = sign.y = -1; } else
+               if ((arg.rotate == 270) || (arg.rotate == 90)) {
+                  sign.x = (arg.rotate == 270) ? -1 : 1;
+                  sign.y = -sign.x;
+                  nx = "y"; ny = "x"; // replace names to which align applied
+               }
 
-         if (arg.align[0] == 'middle') arg[nx] += sign.x*(arg.width - mw)/2; else
-         if (arg.align[0] == 'end')    arg[nx] += sign.x*(arg.width - mw);
+            if (arg.align[0] == 'middle') arg[nx] += sign.x * (arg.width - mw) / 2; else
+               if (arg.align[0] == 'end') arg[nx] += sign.x * (arg.width - mw);
 
-         if (arg.align[1] == 'middle') arg[ny] += sign.y*(arg.height - mh)/2; else
-         if (arg.align[1] == 'bottom') arg[ny] += sign.y*(arg.height - mh); else
-         if (arg.align[1] == 'bottom-base') arg[ny] += sign.y*(arg.height - mh - arg.valign);
+            if (arg.align[1] == 'middle') arg[ny] += sign.y * (arg.height - mh) / 2; else
+               if (arg.align[1] == 'bottom') arg[ny] += sign.y * (arg.height - mh); else
+                  if (arg.align[1] == 'bottom-base') arg[ny] += sign.y * (arg.height - mh - arg.valign);
 
-         let trans = "translate("+arg.x+","+arg.y+")";
-         if (arg.rotate) trans += " rotate("+arg.rotate+")";
+            let trans = "translate(" + arg.x + "," + arg.y + ")";
+            if (arg.rotate) trans += " rotate(" + arg.rotate + ")";
 
-         fo_g.attr('transform', trans).attr('visibility', null).property('_arg',null);
-      });
+            fo_g.attr('transform', trans).attr('visibility', null).property('_arg', null);
+         });
 
       // now hidden text after rescaling can be shown
       draw_g.selectAll('.hidden_text').attr('visibility', null).attr('class', null).each(function() {
          // case when scaling is changed and we can shift text position only after final text size is defined
          let txt = d3.select(this),
-             arg = txt.property("_arg");
+            arg = txt.property("_arg");
 
          txt.property("_arg", null);
 
          if (!arg) return;
 
          if (JSROOT.nodejs) {
-            if (arg.scale && (f>0)) { arg.box.width = arg.box.width/f; arg.box.height = arg.box.height/f; }
+            if (arg.scale && (f > 0)) { arg.box.width = arg.box.width / f; arg.box.height = arg.box.height / f; }
          } else if (!arg.plain && !arg.fast) {
             // exact box dimension only required when complex text was build
             arg.box = painter.GetBoundarySizes(txt.node());
@@ -4872,8 +4876,8 @@
 
          if (arg.width) {
             // adjust x position when scale into specified rectangle
-            if (arg.align[0]=="middle") arg.x += arg.width/2; else
-            if (arg.align[0]=="end") arg.x += arg.width;
+            if (arg.align[0] == "middle") arg.x += arg.width / 2; else
+               if (arg.align[0] == "end") arg.x += arg.width;
          }
 
          arg.dx = arg.dy = 0;
@@ -4882,19 +4886,19 @@
             txt.attr("text-anchor", arg.align[0]);
          } else {
             txt.attr("text-anchor", "start");
-            arg.dx = ((arg.align[0]=="middle") ? -0.5 : ((arg.align[0]=="end") ? -1 : 0)) * arg.box.width;
+            arg.dx = ((arg.align[0] == "middle") ? -0.5 : ((arg.align[0] == "end") ? -1 : 0)) * arg.box.width;
          }
 
          if (arg.height) {
-            if (arg.align[1].indexOf('bottom')===0) arg.y += arg.height; else
-            if (arg.align[1] == 'middle') arg.y += arg.height/2;
+            if (arg.align[1].indexOf('bottom') === 0) arg.y += arg.height; else
+               if (arg.align[1] == 'middle') arg.y += arg.height / 2;
          }
 
          if (arg.plain) {
             if (arg.align[1] == 'top') txt.attr("dy", ".8em"); else
-            if (arg.align[1] == 'middle') {
-               if (JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
-            }
+               if (arg.align[1] == 'middle') {
+                  if (JSROOT.nodejs) txt.attr("dy", ".4em"); else txt.attr("dominant-baseline", "middle");
+               }
          } else {
             arg.dy = ((arg.align[1] == 'top') ? (arg.top_shift || 1) : (arg.align[1] == 'middle') ? (arg.mid_shift || 0.5) : 0) * arg.box.height;
          }
@@ -4904,9 +4908,9 @@
          if (!arg.rotate) { arg.x += arg.dx; arg.y += arg.dy; arg.dx = arg.dy = 0; }
 
          // use translate and then rotate to avoid complex sign calculations
-         let trans = (arg.x || arg.y) ? "translate("+Math.round(arg.x)+","+Math.round(arg.y)+")" : "";
-         if (arg.rotate) trans += " rotate("+Math.round(arg.rotate)+")";
-         if (arg.dx || arg.dy) trans += " translate("+Math.round(arg.dx)+","+Math.round(arg.dy)+")";
+         let trans = (arg.x || arg.y) ? "translate(" + Math.round(arg.x) + "," + Math.round(arg.y) + ")" : "";
+         if (arg.rotate) trans += " rotate(" + Math.round(arg.rotate) + ")";
+         if (arg.dx || arg.dy) trans += " translate(" + Math.round(arg.dx) + "," + Math.round(arg.dy) + ")";
          if (trans) txt.attr("transform", trans);
 
          if (JSROOT.browser.isWebKit && draw_g.node().insertAdjacentHTML && arg.large_latex) {
@@ -4915,7 +4919,7 @@
             // Full refresh of created elements (including text itself) solves problem
             let html = txt.node().outerHTML;
             txt.remove();
-            draw_g.node().insertAdjacentHTML( 'beforeend', html );
+            draw_g.node().insertAdjacentHTML('beforeend', html);
          }
       });
 
@@ -4952,49 +4956,49 @@
             dx1 = -pos.x;
             pos.x += value.length * arg.font.aver_width * pos.fsize;
             dx2 = pos.x;
-            dy1 = -(pos.y-pos.fsize*1.1);
-            dy2 = pos.y + pos.fsize*0.1;
+            dy1 = -(pos.y - pos.fsize * 1.1);
+            dy2 = pos.y + pos.fsize * 0.1;
          } else {
             if (!pos.rect) pos.rect = JSROOT.extend({}, value);
             dx1 = -value.x;
-            dx2 = value.x+value.width;
+            dx2 = value.x + value.width;
             dy1 = -value.y;
-            dy2 = value.y+value.height;
+            dy2 = value.y + value.height;
          }
 
          let rect = pos.rect;
 
          dx1 += rect.x;
-         dx2 -= (rect.x+rect.width);
+         dx2 -= (rect.x + rect.width);
          dy1 += rect.y;
-         dy2 -= (rect.y+rect.height);
+         dy2 -= (rect.y + rect.height);
 
-         if (dx1>0) { rect.x -= dx1; rect.width += dx1; }
-         if (dx2>0) rect.width += dx2;
-         if (dy1>0) { rect.y -= dy1; rect.height += dy1; }
-         if (dy2>0) rect.height+=dy2;
+         if (dx1 > 0) { rect.x -= dx1; rect.width += dx1; }
+         if (dx2 > 0) rect.width += dx2;
+         if (dy1 > 0) { rect.y -= dy1; rect.height += dy1; }
+         if (dy2 > 0) rect.height += dy2;
 
          if (pos.parent) return extend_pos(pos.parent, rect)
 
          // calculate dimensions for the
          arg.text_rect = rect;
 
-         let h = rect.height, mid = rect.y + rect.height/2;
+         let h = rect.height, mid = rect.y + rect.height / 2;
 
-         if (h>0) {
-            arg.mid_shift = -mid/h || 0.001;        // relative shift to get latex middle at given point
-            arg.top_shift = -rect.y/h || 0.001; // relative shift to get latex top at given point
+         if (h > 0) {
+            arg.mid_shift = -mid / h || 0.001;        // relative shift to get latex middle at given point
+            arg.top_shift = -rect.y / h || 0.001; // relative shift to get latex top at given point
          }
       }
 
       function makeem(value) {
-         if (Math.abs(value)<1e-2) return null; // very small values not needed, attribute will be removed
-         if (value==Math.round(value)) return Math.round(value) + "em";
+         if (Math.abs(value) < 1e-2) return null; // very small values not needed, attribute will be removed
+         if (value == Math.round(value)) return Math.round(value) + "em";
          let res = value.toFixed(2);
-         if (res.indexOf("0.")==0) res = res.substr(1); else
-         if (res.indexOf("-0.")==0) res = "-." + res.substr(3);
-         if (res[res.length-1]=='0') res = res.substr(0, res.length-1);
-         return res+"em";
+         if (res.indexOf("0.") == 0) res = res.substr(1); else
+            if (res.indexOf("-0.") == 0) res = "-." + res.substr(3);
+         if (res[res.length - 1] == '0') res = res.substr(0, res.length - 1);
+         return res + "em";
       }
 
       function get_boundary(painter, element, approx_rect) {
@@ -5008,7 +5012,7 @@
 
          // if (element.node().getBBox && !JSROOT.browser.isFirefox) return element.node().getBBox();
 
-         while (prnt && (prnt!=arg.mainnode)) {
+         while (prnt && (prnt != arg.mainnode)) {
             important.push(prnt);
             prnt = prnt.parentNode;
          }
@@ -5018,54 +5022,54 @@
          let tspans = d3.select(arg.mainnode).selectAll('tspan');
 
          // this is just workaround to know that many elements are created and in Chrome we need to redo them once again
-         if (tspans.size()>3)  arg.large_latex = true;
+         if (tspans.size() > 3) arg.large_latex = true;
 
-         tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', 'none'); });
+         tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', 'none'); });
          let box = painter.GetBoundarySizes(arg.mainnode);
 
-         tspans.each(function() { if (important.indexOf(this)<0) d3.select(this).attr('display', null); });
+         tspans.each(function() { if (important.indexOf(this) < 0) d3.select(this).attr('display', null); });
 
          return box;
       }
 
       let features = [
-          { name: "#it{" }, // italic
-          { name: "#bf{" }, // bold
-          { name: "#underline{", deco: "underline" }, // underline
-          { name: "#overline{", deco: "overline" }, // overline
-          { name: "#strike{", deco: "line-through" }, // line through
-          { name: "kern[", arg: 'float' }, // horizontal shift
-          { name: "lower[", arg: 'float' },  // vertical shift
-          { name: "scale[", arg: 'float' },  // font scale
-          { name: "#color[", arg: 'int' },
-          { name: "#font[", arg: 'int' },
-          { name: "_{" },  // subscript
-          { name: "^{" },   // superscript
-          { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
-          { name: "#hat{", accent: "\u02C6" }, // "\u0302"
-          { name: "#check{", accent: "\u02C7" }, // "\u030C"
-          { name: "#acute{", accent: "\u02CA" }, // "\u0301"
-          { name: "#grave{", accent: "\u02CB" }, // "\u0300"
-          { name: "#dot{", accent: "\u02D9" }, // "\u0307"
-          { name: "#ddot{", accent: "\u02BA" }, // "\u0308"
-          { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
-          { name: "#slash{", accent: "\u2215" }, // "\u0337"
-          { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
-          { name: "#frac{" },
-          { name: "#splitline{" },
-          { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
-          { name: "#sqrt{" },
-          { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
-          { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
-          { name: "#left[", right: "#right]", braces: "[]" },
-          { name: "#left(", right: "#right)", braces: "()" },
-          { name: "#left{", right: "#right}", braces: "{}" },
-          { name: "#left|", right: "#right|", braces: "||" },
-          { name: "#[]{", braces: "[]" },
-          { name: "#(){", braces: "()" },
-          { name: "#{}{", braces: "{}" },
-          { name: "#||{", braces: "||" }
-       ];
+         { name: "#it{" }, // italic
+         { name: "#bf{" }, // bold
+         { name: "#underline{", deco: "underline" }, // underline
+         { name: "#overline{", deco: "overline" }, // overline
+         { name: "#strike{", deco: "line-through" }, // line through
+         { name: "kern[", arg: 'float' }, // horizontal shift
+         { name: "lower[", arg: 'float' },  // vertical shift
+         { name: "scale[", arg: 'float' },  // font scale
+         { name: "#color[", arg: 'int' },
+         { name: "#font[", arg: 'int' },
+         { name: "_{" },  // subscript
+         { name: "^{" },   // superscript
+         { name: "#bar{", deco: "overline" /* accent: "\u02C9" */ }, // "\u0305"
+         { name: "#hat{", accent: "\u02C6" }, // "\u0302"
+         { name: "#check{", accent: "\u02C7" }, // "\u030C"
+         { name: "#acute{", accent: "\u02CA" }, // "\u0301"
+         { name: "#grave{", accent: "\u02CB" }, // "\u0300"
+         { name: "#dot{", accent: "\u02D9" }, // "\u0307"
+         { name: "#ddot{", accent: "\u02BA" }, // "\u0308"
+         { name: "#tilde{", accent: "\u02DC" }, // "\u0303"
+         { name: "#slash{", accent: "\u2215" }, // "\u0337"
+         { name: "#vec{", accent: "\u02ED" }, // "\u0350" arrowhead
+         { name: "#frac{" },
+         { name: "#splitline{" },
+         { name: "#sqrt[", arg: 'int' }, // root with arbitrary power (now only 3 or 4)
+         { name: "#sqrt{" },
+         { name: "#sum", special: '\u2211', w: 0.8, h: 0.9 },
+         { name: "#int", special: '\u222B', w: 0.3, h: 1.0 },
+         { name: "#left[", right: "#right]", braces: "[]" },
+         { name: "#left(", right: "#right)", braces: "()" },
+         { name: "#left{", right: "#right}", braces: "{}" },
+         { name: "#left|", right: "#right|", braces: "||" },
+         { name: "#[]{", braces: "[]" },
+         { name: "#(){", braces: "()" },
+         { name: "#{}{", braces: "{}" },
+         { name: "#||{", braces: "||" }
+      ];
 
       let isany = false, best, found, foundarg, pos, n, subnode, subnode1, subpos = null, prevsubpos = null;
 
@@ -5073,24 +5077,24 @@
 
          best = label.length; found = null; foundarg = null;
 
-         for(n=0;n<features.length;++n) {
+         for (n = 0; n < features.length; ++n) {
             pos = label.indexOf(features[n].name);
-            if ((pos>=0) && (pos<best)) { best = pos; found = features[n]; }
+            if ((pos >= 0) && (pos < best)) { best = pos; found = features[n]; }
          }
 
          if (!found && !isany) {
             let s = JSROOT.Painter.translateLaTeX(label);
-            if (!curr.lvl && (s==label)) return 0; // indicate that nothing found - plain string
+            if (!curr.lvl && (s == label)) return 0; // indicate that nothing found - plain string
             extend_pos(curr, s);
 
-            if (curr.accent && (s.length==1)) {
+            if (curr.accent && (s.length == 1)) {
                let elem = node.append('svg:tspan').text(s),
-                   rect = get_boundary(this, elem, { width : 10000 }),
-                   w = Math.min(rect.width/curr.fsize, 0.5); // at maximum, 0.5 should be used
+                  rect = get_boundary(this, elem, { width: 10000 }),
+                  w = Math.min(rect.width / curr.fsize, 0.5); // at maximum, 0.5 should be used
 
-               node.append('svg:tspan').attr('dx', makeem(curr.dx-w)).attr('dy', makeem(curr.dy-0.2)).text(curr.accent);
+               node.append('svg:tspan').attr('dx', makeem(curr.dx - w)).attr('dy', makeem(curr.dy - 0.2)).text(curr.accent);
                curr.dy = 0.2; // compensate hat
-               curr.dx = Math.max(0.2, w-0.2); // extra horizontal gap
+               curr.dx = Math.max(0.2, w - 0.2); // extra horizontal gap
                curr.accent = false;
             } else {
                node.text(s);
@@ -5098,14 +5102,14 @@
             return true;
          }
 
-         if (best>0) {
-            let s = JSROOT.Painter.translateLaTeX(label.substr(0,best));
-            if (s.length>0) {
+         if (best > 0) {
+            let s = JSROOT.Painter.translateLaTeX(label.substr(0, best));
+            if (s.length > 0) {
                extend_pos(curr, s);
                node.append('svg:tspan')
-                   .attr('dx', makeem(curr.dx))
-                   .attr('dy', makeem(curr.dy))
-                   .text(s);
+                  .attr('dx', makeem(curr.dx))
+                  .attr('dy', makeem(curr.dy))
+                  .text(s);
                curr.dx = curr.dy = 0;
             }
             subpos = null; // indicate that last element is plain
@@ -5122,26 +5126,26 @@
 
          prevsubpos = subpos;
 
-         subpos = { lvl: curr.lvl+1, x: curr.x, y: curr.y, fsize: curr.fsize, dx:0, dy: 0, parent: curr };
+         subpos = { lvl: curr.lvl + 1, x: curr.x, y: curr.y, fsize: curr.fsize, dx: 0, dy: 0, parent: curr };
 
          isany = true;
 
          if (found.arg) {
             pos = label.indexOf("]{");
             if (pos < 0) { console.log('missing argument for ', found.name); return false; }
-            foundarg = label.substr(0,pos);
+            foundarg = label.substr(0, pos);
             if (found.arg == 'int') {
                foundarg = parseInt(foundarg);
-               if (isNaN(foundarg)) { console.log('wrong int argument', label.substr(0,pos)); return false; }
+               if (isNaN(foundarg)) { console.log('wrong int argument', label.substr(0, pos)); return false; }
             } else if (found.arg == 'float') {
                foundarg = parseFloat(foundarg);
-               if (isNaN(foundarg)) { console.log('wrong float argument', label.substr(0,pos)); return false; }
+               if (isNaN(foundarg)) { console.log('wrong float argument', label.substr(0, pos)); return false; }
             }
             label = label.substr(pos + 2);
          }
 
          let nextdy = curr.dy, nextdx = curr.dx, trav = null,
-             scale = 1, left_brace = "{", right_brace = "}"; // this will be applied to the next element
+            scale = 1, left_brace = "{", right_brace = "}"; // this will be applied to the next element
 
          curr.dy = curr.dx = 0; // relative shift for elements
 
@@ -5152,8 +5156,8 @@
 
             let rect = get_boundary(this, subnode);
             if (rect.width && rect.height) {
-               found.w = rect.width/curr.fsize;
-               found.h = rect.height/curr.fsize-0.1;
+               found.w = rect.width / curr.fsize;
+               found.h = rect.height / curr.fsize - 0.1;
             }
             continue; // just create special node
          }
@@ -5163,7 +5167,7 @@
             subpos.left_cont = subnode.append('svg:tspan'); // container for left brace
             subpos.left = subpos.left_cont.append('svg:tspan').text(found.braces[0]);
             subnode1 = subnode.append('svg:tspan');
-            subpos.left_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: curr.x, width: curr.fsize*0.6 };
+            subpos.left_rect = { y: curr.y - curr.fsize * 1.1, height: curr.fsize * 1.2, x: curr.x, width: curr.fsize * 0.6 };
             extend_pos(curr, subpos.left_rect);
             subpos.braces = found; // indicate braces handling
             if (found.right) {
@@ -5175,124 +5179,124 @@
          } else if (found.accent) {
             subpos.accent = found.accent;
          } else
-         switch(found.name) {
-            case "#color[":
-               if (this.get_color(foundarg))
-                   subnode.attr('fill', this.get_color(foundarg));
-               break;
-           case "#kern[": // horizontal shift
-              nextdx += foundarg;
-              break;
-           case "#lower[": // after vertical shift one need to compensate it back
-              curr.dy -= foundarg;
-              nextdy += foundarg;
-              break;
-           case "scale[":
-              scale = foundarg;
-              break;
-           case "#font[":
-              JSROOT.Painter.getFontDetails(foundarg).setFont(subnode,'without-size');
-              break;
-           case "#it{":
-              curr.italic = true;
-              trav = curr;
-              while (trav = trav.parent)
-                 if (trav.italic!==undefined) {
-                    curr.italic = !trav.italic;
-                    break;
-                 }
-              subnode.attr('font-style', curr.italic ? 'italic' : 'normal');
-              break;
-           case "#bf{":
-              curr.bold = true;
-              trav = curr;
-              while (trav = trav.parent)
-                 if (trav.bold!==undefined) {
-                    curr.bold = !trav.bold;
-                    break;
-                 }
-              subnode.attr('font-weight', curr.bold ? 'bold' : 'normal');
-              break;
-           case "#underline{":
-              subnode.attr('text-decoration', 'underline');
-              break;
-           case "#overline{":
-              subnode.attr('text-decoration', 'overline');
-              break;
-           case "_{":
-              scale = 0.6;
-              subpos.script = 'sub';
+            switch (found.name) {
+               case "#color[":
+                  if (this.get_color(foundarg))
+                     subnode.attr('fill', this.get_color(foundarg));
+                  break;
+               case "#kern[": // horizontal shift
+                  nextdx += foundarg;
+                  break;
+               case "#lower[": // after vertical shift one need to compensate it back
+                  curr.dy -= foundarg;
+                  nextdy += foundarg;
+                  break;
+               case "scale[":
+                  scale = foundarg;
+                  break;
+               case "#font[":
+                  JSROOT.Painter.getFontDetails(foundarg).setFont(subnode, 'without-size');
+                  break;
+               case "#it{":
+                  curr.italic = true;
+                  trav = curr;
+                  while (trav = trav.parent)
+                     if (trav.italic !== undefined) {
+                        curr.italic = !trav.italic;
+                        break;
+                     }
+                  subnode.attr('font-style', curr.italic ? 'italic' : 'normal');
+                  break;
+               case "#bf{":
+                  curr.bold = true;
+                  trav = curr;
+                  while (trav = trav.parent)
+                     if (trav.bold !== undefined) {
+                        curr.bold = !trav.bold;
+                        break;
+                     }
+                  subnode.attr('font-weight', curr.bold ? 'bold' : 'normal');
+                  break;
+               case "#underline{":
+                  subnode.attr('text-decoration', 'underline');
+                  break;
+               case "#overline{":
+                  subnode.attr('text-decoration', 'overline');
+                  break;
+               case "_{":
+                  scale = 0.6;
+                  subpos.script = 'sub';
 
-              if (curr.special) {
-                 curr.dx = curr.special.w;
-                 curr.dy = -0.7;
-                 nextdx -= curr.dx;
-                 nextdy -= curr.dy;
-              } else {
-                 nextdx += 0.1*scale;
-                 nextdy += 0.4*scale;
-                 subpos.y += 0.4*subpos.fsize;
-                 curr.dy = -0.4*scale; // compensate vertical shift back
+                  if (curr.special) {
+                     curr.dx = curr.special.w;
+                     curr.dy = -0.7;
+                     nextdx -= curr.dx;
+                     nextdy -= curr.dy;
+                  } else {
+                     nextdx += 0.1 * scale;
+                     nextdy += 0.4 * scale;
+                     subpos.y += 0.4 * subpos.fsize;
+                     curr.dy = -0.4 * scale; // compensate vertical shift back
 
-                 if (prevsubpos && (prevsubpos.script === 'super')) {
-                    let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
-                    subpos.width_limit = rect.width;
-                    nextdx -= (rect.width/subpos.fsize+0.1)*scale;
-                 }
-              }
-              break;
-           case "^{":
-              scale = 0.6;
-              subpos.script = 'super';
+                     if (prevsubpos && (prevsubpos.script === 'super')) {
+                        let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                        subpos.width_limit = rect.width;
+                        nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
+                     }
+                  }
+                  break;
+               case "^{":
+                  scale = 0.6;
+                  subpos.script = 'super';
 
-              if (curr.special) {
-                 curr.dx = curr.special.w;
-                 curr.dy = curr.special.h;
-                 nextdx -= curr.dx;
-                 nextdy -= curr.dy;
-              } else {
+                  if (curr.special) {
+                     curr.dx = curr.special.w;
+                     curr.dy = curr.special.h;
+                     nextdx -= curr.dx;
+                     nextdy -= curr.dy;
+                  } else {
 
-                 curr.dy = 0.6*scale; // compensate vertical shift afterwards
-                 if (curr.next_super_dy) curr.dy -= curr.next_super_dy;
+                     curr.dy = 0.6 * scale; // compensate vertical shift afterwards
+                     if (curr.next_super_dy) curr.dy -= curr.next_super_dy;
 
-                 nextdx += 0.1*scale;
-                 nextdy -= curr.dy;
+                     nextdx += 0.1 * scale;
+                     nextdy -= curr.dy;
 
-                 subpos.y -= 0.4*subpos.fsize;
+                     subpos.y -= 0.4 * subpos.fsize;
 
-                 if (prevsubpos && (prevsubpos.script === 'sub')) {
-                    let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
-                    subpos.width_limit = rect.width;
-                    nextdx -= (rect.width/subpos.fsize+0.1)*scale;
-                 }
-              }
-              break;
-           case "#frac{":
-           case "#splitline{":
-              subpos.first = subnode;
-              subpos.two_lines = true;
-              subpos.need_middle = (found.name == "#frac{");
-              subpos.x0 = subpos.x;
-              nextdy -= 0.6;
-              curr.dy = -0.6;
-              break;
-           case "#sqrt{":
-              foundarg = 2;
-           case "#sqrt[":
-              subpos.square_root = subnode.append('svg:tspan');
-              subpos.square_root.append('svg:tspan').text((foundarg==3) ? '\u221B' : ((foundarg==4) ? '\u221C' : '\u221A')); // unicode square, cubic and fourth root
-              subnode1 = subnode.append('svg:tspan');
-              subpos.sqrt_rect = { y: curr.y - curr.fsize*1.1, height: curr.fsize*1.2, x: 0, width: curr.fsize*0.7 };
-              extend_pos(curr, subpos.sqrt_rect); // just dummy symbol instead of square root
-              break;
-         }
+                     if (prevsubpos && (prevsubpos.script === 'sub')) {
+                        let rect = get_boundary(this, prevsubpos.node, prevsubpos.rect);
+                        subpos.width_limit = rect.width;
+                        nextdx -= (rect.width / subpos.fsize + 0.1) * scale;
+                     }
+                  }
+                  break;
+               case "#frac{":
+               case "#splitline{":
+                  subpos.first = subnode;
+                  subpos.two_lines = true;
+                  subpos.need_middle = (found.name == "#frac{");
+                  subpos.x0 = subpos.x;
+                  nextdy -= 0.6;
+                  curr.dy = -0.6;
+                  break;
+               case "#sqrt{":
+                  foundarg = 2;
+               case "#sqrt[":
+                  subpos.square_root = subnode.append('svg:tspan');
+                  subpos.square_root.append('svg:tspan').text((foundarg == 3) ? '\u221B' : ((foundarg == 4) ? '\u221C' : '\u221A')); // unicode square, cubic and fourth root
+                  subnode1 = subnode.append('svg:tspan');
+                  subpos.sqrt_rect = { y: curr.y - curr.fsize * 1.1, height: curr.fsize * 1.2, x: 0, width: curr.fsize * 0.7 };
+                  extend_pos(curr, subpos.sqrt_rect); // just dummy symbol instead of square root
+                  break;
+            }
 
-         if (scale!==1) {
+         if (scale !== 1) {
             // handle centrally change of scale factor
-            subnode.attr('font-size', Math.round(scale*100)+'%');
+            subnode.attr('font-size', Math.round(scale * 100) + '%');
             subpos.fsize *= scale;
-            nextdx = nextdx/scale;
-            nextdy = nextdy/scale;
+            nextdx = nextdx / scale;
+            nextdy = nextdy / scale;
          }
 
          if (curr.special && !subpos.script) delete curr.special;
@@ -5305,25 +5309,25 @@
             // normally only one sub-element is created
 
             // moving cursor with the tspan
-            subpos.x += nextdx*subpos.fsize;
-            subpos.y += nextdy*subpos.fsize;
+            subpos.x += nextdx * subpos.fsize;
+            subpos.y += nextdy * subpos.fsize;
 
             subnode.attr('dx', makeem(nextdx)).attr('dy', makeem(nextdy));
             nextdx = nextdy = 0;
 
             pos = -1; n = 1;
 
-            while ((n!=0) && (++pos < label.length)) {
+            while ((n != 0) && (++pos < label.length)) {
                if (label.indexOf(left_brace, pos) === pos) n++; else
-               if (label.indexOf(right_brace, pos) === pos) n--;
+                  if (label.indexOf(right_brace, pos) === pos) n--;
             }
 
-            if (n!=0) {
+            if (n != 0) {
                console.log('mismatch with open ' + left_brace + ' and close ' + right_brace + ' braces in Latex', label);
                return false;
             }
 
-            let sublabel = label.substr(0,pos);
+            let sublabel = label.substr(0, pos);
 
             // if (subpos.square_root) sublabel = "#frac{a}{bc}";
 
@@ -5333,50 +5337,50 @@
             curr.x = subpos.x;
             curr.y = subpos.y;
 
-            curr.dx += subpos.dx*subpos.fsize/curr.fsize;
-            curr.dy += subpos.dy*subpos.fsize/curr.fsize;
+            curr.dx += subpos.dx * subpos.fsize / curr.fsize;
+            curr.dy += subpos.dy * subpos.fsize / curr.fsize;
 
-            label = label.substr(pos+right_brace.length);
+            label = label.substr(pos + right_brace.length);
 
             if (subpos.width_limit) {
                // special handling for the case when created element does not reach its minimal width
                // use when super-script and subscript should be combined together
 
-               let rect = get_boundary(this,  subnode1, subpos.rect);
+               let rect = get_boundary(this, subnode1, subpos.rect);
                if (rect.width < subpos.width_limit)
-                  curr.dx += (subpos.width_limit-rect.width)/curr.fsize;
+                  curr.dx += (subpos.width_limit - rect.width) / curr.fsize;
                delete subpos.width_limit;
             }
 
             if (curr.special) {
                // case over #sum or #integral one need to compensate width
-               let rect = get_boundary(this,  subnode1, subpos.rect);
-               curr.dx -= rect.width/curr.fsize; // compensate width as much as we can
+               let rect = get_boundary(this, subnode1, subpos.rect);
+               curr.dx -= rect.width / curr.fsize; // compensate width as much as we can
             }
 
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
                let len = 2, scale = 1, sqrt_dy = 0, yscale = 1,
-                   bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
-                   be = get_boundary(this, subnode1, subpos.rect);
+                  bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
+                  be = get_boundary(this, subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
-                  yscale = be.height/bs.height*1.2;
-                  sqrt_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale;
-                  subpos.square_root.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(sqrt_dy));
+                  yscale = be.height / bs.height * 1.2;
+                  sqrt_dy = ((be.y + be.height) - (bs.y + bs.height)) / curr.fsize / yscale;
+                  subpos.square_root.style('font-size', Math.round(100 * yscale) + '%').attr('dy', makeem(sqrt_dy));
                }
 
                // we taking into account only element width
                len = be.width / subpos.fsize / yscale;
 
-               let a = "", nn = Math.round(Math.max(len*3,2));
+               let a = "", nn = Math.round(Math.max(len * 3, 2));
                while (nn--) a += '\u203E'; // unicode overline
 
                subpos.square_root.append('svg:tspan').attr("dy", makeem(-0.25)).text(a);
 
-               subpos.square_root.append('svg:tspan').attr("dy", makeem(0.25-sqrt_dy)).attr("dx", makeem(-a.length/3-0.2)).text('\u2009'); // unicode tiny space
+               subpos.square_root.append('svg:tspan').attr("dy", makeem(0.25 - sqrt_dy)).attr("dx", makeem(-a.length / 3 - 0.2)).text('\u2009'); // unicode tiny space
 
                break;
             }
@@ -5390,16 +5394,16 @@
                }
 
                let be = get_boundary(this, subnode1, subpos.rect),
-                   len = be.width / subpos.fsize, fact, dy, symb;
+                  len = be.width / subpos.fsize, fact, dy, symb;
                switch (subpos.deco) {
                   case "underline": dy = 0.35; fact = 1.2; symb = '\uFF3F'; break; // '\u2014'; // underline
                   case "overline": dy = -0.35; fact = 3; symb = '\u203E'; break; // overline
                   default: dy = 0; fact = 1.8; symb = '\u23AF'; break;
                }
-               let nn = Math.round(Math.max(len*fact,1)), a = "";
+               let nn = Math.round(Math.max(len * fact, 1)), a = "";
                while (nn--) a += symb;
 
-               subnode1.append('svg:tspan').attr("dx",  makeem(-len - 0.2)).attr("dy", makeem(dy)).text(a);
+               subnode1.append('svg:tspan').attr("dx", makeem(-len - 0.2)).attr("dy", makeem(dy)).text(a);
                curr.dy -= dy;
                break;
             }
@@ -5408,21 +5412,21 @@
                // handling braces
 
                let bs = get_boundary(this, subpos.left_cont, subpos.left_rect),
-                   be = get_boundary(this, subnode1, subpos.rect),
-                   yscale = 1, brace_dy = 0;
+                  be = get_boundary(this, subnode1, subpos.rect),
+                  yscale = 1, brace_dy = 0;
 
                // console.log('braces height', bs.height, ' entry height', be.height);
 
-               if (1.2*bs.height < be.height) {
+               if (1.2 * bs.height < be.height) {
                   // make scaling
-                  yscale = be.height/bs.height;
+                  yscale = be.height / bs.height;
                   // brace_dy = ((be.y+be.height) - (bs.y+bs.height))/curr.fsize/yscale - 0.15;
                   brace_dy = 0;
-                  subpos.left.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
+                  subpos.left.style('font-size', Math.round(100 * yscale) + '%').attr('dy', makeem(brace_dy));
                   // unicode tiny space, used to return cursor on vertical position
-                  subpos.left_cont.append('svg:tspan').attr("dx",makeem(-0.2))
-                                                  .attr("dy", makeem(-brace_dy*yscale)).text('\u2009');
-                  curr.next_super_dy = -0.3*yscale; // special shift for next comming superscript
+                  subpos.left_cont.append('svg:tspan').attr("dx", makeem(-0.2))
+                     .attr("dy", makeem(-brace_dy * yscale)).text('\u2009');
+                  curr.next_super_dy = -0.3 * yscale; // special shift for next comming superscript
                }
 
                subpos.left_rect.y = curr.y;
@@ -5431,18 +5435,18 @@
                extend_pos(curr, subpos.left_rect); // just dummy symbol instead of right brace for accounting
 
                let right_cont = subnode.append('svg:tspan')
-                                       .attr("dx", makeem(curr.dx))
-                                       .attr("dy", makeem(curr.dy));
+                  .attr("dx", makeem(curr.dx))
+                  .attr("dy", makeem(curr.dy));
 
                curr.dx = curr.dy = 0;
 
-               if (yscale!=1) right_cont.append('svg:tspan').attr("dx",makeem(-0.2)).text('\u2009'); // unicode tiny space if larger brace is used
+               if (yscale != 1) right_cont.append('svg:tspan').attr("dx", makeem(-0.2)).text('\u2009'); // unicode tiny space if larger brace is used
 
                let right = right_cont.append('svg:tspan').text(subpos.braces.braces[1]);
 
-               if (yscale!=1) {
-                  right.style('font-size', Math.round(100*yscale)+'%').attr('dy', makeem(brace_dy));
-                  curr.dy = -brace_dy*yscale; // compensation of right brace
+               if (yscale != 1) {
+                  right.style('font-size', Math.round(100 * yscale) + '%').attr('dy', makeem(brace_dy));
+                  curr.dy = -brace_dy * yscale; // compensation of right brace
                }
 
                break;
@@ -5452,32 +5456,32 @@
                // when two lines created, adjust horizontal position and place divider if required
 
                let rect1 = get_boundary(this, subpos.first, subpos.rect1),
-                   rect2 = get_boundary(this, subpos.second, subpos.rect),
-                   l1 = rect1.width / subpos.fsize,
-                   l2 = rect2.width / subpos.fsize,
-                   l3 = Math.max(l2, l1);
+                  rect2 = get_boundary(this, subpos.second, subpos.rect),
+                  l1 = rect1.width / subpos.fsize,
+                  l2 = rect2.width / subpos.fsize,
+                  l3 = Math.max(l2, l1);
 
                if (subpos.need_middle) {
                   // starting from content len 1.2 two -- will be inserted
-                  l3 = Math.round(Math.max(l3,1)+0.3);
+                  l3 = Math.round(Math.max(l3, 1) + 0.3);
                   let a = "";
                   while (a.length < l3) a += '\u2014';
                   node.append('svg:tspan')
-                       .attr("dx", makeem(-0.5*(l3+l2)))
-                       .attr("dy", makeem(curr.dy-0.2))
-                       .text(a);
+                     .attr("dx", makeem(-0.5 * (l3 + l2)))
+                     .attr("dy", makeem(curr.dy - 0.2))
+                     .text(a);
                   curr.dy = 0.2; // return to the normal level
                   curr.dx = 0.2; // extra spacing
                } else {
                   curr.dx = 0.2;
-                  if (l2<l1) curr.dx += 0.5*(l1-l2);
+                  if (l2 < l1) curr.dx += 0.5 * (l1 - l2);
                }
 
-               if (subpos.need_middle || arg.align[0]=='middle') {
-                  subpos.first.attr("dx", makeem(0.5*(l3-l1)));
-                  subpos.second.attr("dx", makeem(-0.5*(l2+l1)));
-               } else if (arg.align[0]=='end') {
-                  if (l1<l2) subpos.first.attr("dx", makeem(l2-l1));
+               if (subpos.need_middle || arg.align[0] == 'middle') {
+                  subpos.first.attr("dx", makeem(0.5 * (l3 - l1)));
+                  subpos.second.attr("dx", makeem(-0.5 * (l2 + l1)));
+               } else if (arg.align[0] == 'end') {
+                  if (l1 < l2) subpos.first.attr("dx", makeem(l2 - l1));
                   subpos.second.attr("dx", makeem(-l2));
                } else {
                   subpos.second.attr("dx", makeem(-l1));
@@ -5533,21 +5537,21 @@
    TObjectPainter.prototype.DrawText = function(arg) {
 
       let label = arg.text || "",
-          align = ['start', 'middle'];
+         align = ['start', 'middle'];
 
       if (typeof arg.align == 'string') {
          align = arg.align.split(";");
-         if (align.length==1) align.push('middle');
+         if (align.length == 1) align.push('middle');
       } else if (typeof arg.align == 'number') {
          if ((arg.align / 10) >= 3) align[0] = 'end'; else
-         if ((arg.align / 10) >= 2) align[0] = 'middle';
+            if ((arg.align / 10) >= 2) align[0] = 'middle';
          if ((arg.align % 10) == 0) align[1] = 'bottom'; else
-         if ((arg.align % 10) == 1) align[1] = 'bottom-base'; else
-         if ((arg.align % 10) == 3) align[1] = 'top';
+            if ((arg.align % 10) == 1) align[1] = 'bottom-base'; else
+               if ((arg.align % 10) == 3) align[1] = 'top';
       }
 
       arg.draw_g = arg.draw_g || this.draw_g;
-      if (arg.latex===undefined) arg.latex = 1; //  latex 0-text, 1-latex, 2-math
+      if (arg.latex === undefined) arg.latex = 1; //  latex 0-text, 1-latex, 2-math
       arg.align = align;
       arg.x = arg.x || 0;
       arg.y = arg.y || 0;
@@ -5583,18 +5587,18 @@
             case "symbols": JSROOT.gStyle.Latex = 1; break;
             case "MathJax":
             case "mathjax":
-            case "math":   JSROOT.gStyle.Latex = 3; break;
+            case "math": JSROOT.gStyle.Latex = 3; break;
             case "AlwaysMathJax":
             case "alwaysmath":
             case "alwaysmathjax": JSROOT.gStyle.Latex = 4; break;
             default:
                let code = parseInt(JSROOT.gStyle.Latex);
-               JSROOT.gStyle.Latex = (!isNaN(code) && (code>=0) && (code<=4)) ? code : 2;
+               JSROOT.gStyle.Latex = (!isNaN(code) && (code >= 0) && (code <= 4)) ? code : 2;
          }
       }
 
       let font = arg.draw_g.property('text_font'),
-          use_mathjax = (arg.latex == 2);
+         use_mathjax = (arg.latex == 2);
 
       if (arg.latex === 1)
          use_mathjax = (JSROOT.gStyle.Latex > 3) || ((JSROOT.gStyle.Latex == 3) && JSROOT.Painter.isAnyLatex(label));
@@ -5609,7 +5613,7 @@
          if (arg.color) txt.attr("fill", arg.color);
 
          if (arg.font_size) txt.attr("font-size", arg.font_size);
-                       else arg.font_size = font.size;
+         else arg.font_size = font.size;
 
          arg.font = font; // use in latex conversion
 
@@ -5622,24 +5626,24 @@
 
          // complete rectangle with very rougth size estimations
          arg.box = !JSROOT.nodejs && !JSROOT.gStyle.ApproxTextSize && !arg.fast ? this.GetBoundarySizes(txt.node()) :
-                     (arg.text_rect || { height: arg.font_size*1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
+            (arg.text_rect || { height: arg.font_size * 1.2, width: JSROOT.Painter.approxTextWidth(font, label) });
 
-         txt.attr('class','hidden_text')
-             .attr('visibility','hidden') // hide elements until text drawing is finished
-             .property("_arg", arg);
+         txt.attr('class', 'hidden_text')
+            .attr('visibility', 'hidden') // hide elements until text drawing is finished
+            .property("_arg", arg);
 
          if (arg.box.width > arg.draw_g.property('max_text_width')) arg.draw_g.property('max_text_width', arg.box.width);
-         if (arg.scale) this.TextScaleFactor(1.05*arg.box.width/arg.width, arg.draw_g);
-         if (arg.scale) this.TextScaleFactor(1.*arg.box.height/arg.height, arg.draw_g);
+         if (arg.scale) this.TextScaleFactor(1.05 * arg.box.width / arg.width, arg.draw_g);
+         if (arg.scale) this.TextScaleFactor(1. * arg.box.height / arg.height, arg.draw_g);
 
          return arg.box.width;
       }
 
       let mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
-          fo_g = arg.draw_g.append("svg:g")
-                       .attr('class', 'math_svg')
-                       .attr('visibility','hidden')
-                       .property('_arg', arg);
+         fo_g = arg.draw_g.append("svg:g")
+            .attr('class', 'math_svg')
+            .attr('visibility', 'hidden')
+            .property('_arg', arg);
 
       arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
 
@@ -5655,8 +5659,8 @@
             JSROOT.nodejs_mathjax.start();
          }
 
-         if ((mtext.indexOf("\\(")==0) && (mtext.lastIndexOf("\\)")==mtext.length-2))
-            mtext = mtext.substr(2,mtext.length-4);
+         if ((mtext.indexOf("\\(") == 0) && (mtext.lastIndexOf("\\)") == mtext.length - 2))
+            mtext = mtext.substr(2, mtext.length - 4);
 
          JSROOT.nodejs_mathjax.typeset({
             jsroot_painter: this,
@@ -5668,24 +5672,24 @@
             useGlobalCache: false,
             format: "TeX", // "TeX", "inline-TeX", "MathML"
             svg: true //  svg:true,
-          }, function (data, opt) {
-             if (!data.errors) {
-                opt.jsroot_fog.html(data.svg);
-             } else {
-                console.log('MathJax error', opt.math);
-                opt.jsroot_fog.html("<svg></svg>");
-             }
-             opt.jsroot_painter.FinishTextDrawing(opt.jsroot_drawg);
-          });
+         }, function(data, opt) {
+            if (!data.errors) {
+               opt.jsroot_fog.html(data.svg);
+            } else {
+               console.log('MathJax error', opt.math);
+               opt.jsroot_fog.html("<svg></svg>");
+            }
+            opt.jsroot_painter.FinishTextDrawing(opt.jsroot_drawg);
+         });
 
          return 0;
       }
 
       let element = document.createElement("p");
 
-      d3.select(element).style('visibility',"hidden").style('overflow',"hidden").style('position',"absolute")
-                        .style("font-size",font.size+'px').style("font-family",font.name)
-                        .html('<mtext>' + mtext + '</mtext>');
+      d3.select(element).style('visibility', "hidden").style('overflow', "hidden").style('position', "absolute")
+         .style("font-size", font.size + 'px').style("font-family", font.name)
+         .html('<mtext>' + mtext + '</mtext>');
       document.body.appendChild(element);
 
       fo_g.property('_element', element);
@@ -5726,20 +5730,20 @@
 
          let arg = fo_g.property('_arg');
 
-         if (arg && arg.latex!=2) {
+         if (arg && arg.latex != 2) {
             arg.nomathjax = true;
             fo_g.remove(); // delete special entry
             this.DrawText(arg);
          } else
             fo_g.append("svg").attr('width', Math.min(20, merr.text().length + 5) + 'ex')
-                              .attr('height', '3ex')
-                              .style('vertical-align','0ex')
-                              .append("text")
-                              .style('font-size','12px')
-                              .style('fill','red')
-                              .attr('x','0')
-                              .attr('y','2ex')
-                              .text("Err: " + merr.text());
+               .attr('height', '3ex')
+               .style('vertical-align', '0ex')
+               .append("text")
+               .style('font-size', '12px')
+               .style('fill', 'red')
+               .attr('x', '0')
+               .attr('y', '2ex')
+               .text("Err: " + merr.text());
       } else {
          vvv.remove();
          fo_g.append(function() { return vvv.node(); });
@@ -5828,13 +5832,13 @@
       }
 
       let hints = [], nhints = 0, maxlen = 0, lastcolor1 = 0, usecolor1 = false,
-          textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
-          frame_rect = this.GetFrameRect(),
-          pad_width = this.pad_width(),
-          pp = this.pad_painter(),
-          font = JSROOT.Painter.getFontDetails(160, textheight),
-          status_func = this.GetShowStatusFunc(),
-          disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
+         textheight = 11, hmargin = 3, wmargin = 3, hstep = 1.2,
+         frame_rect = this.GetFrameRect(),
+         pad_width = this.pad_width(),
+         pp = this.pad_painter(),
+         font = JSROOT.Painter.getFontDetails(160, textheight),
+         status_func = this.GetShowStatusFunc(),
+         disable_tootlips = !this.IsTooltipAllowed() || !this.tooltip_enabled;
 
       if ((pnt === undefined) || (disable_tootlips && !status_func)) pnt = null;
       if (pnt && disable_tootlips) pnt.disabled = true; // indicate that highlighting is not required
@@ -5849,18 +5853,18 @@
          let hint = hints[n];
          if (!hint) continue;
 
-         if (hint.painter && (hint.user_info!==undefined))
-            if (hint.painter.ProvideUserTooltip(hint.user_info)) {};
+         if (hint.painter && (hint.user_info !== undefined))
+            if (hint.painter.ProvideUserTooltip(hint.user_info)) { };
 
-         if (!hint.lines || (hint.lines.length===0)) {
+         if (!hint.lines || (hint.lines.length === 0)) {
             hints[n] = null; continue;
          }
 
          // check if fully duplicated hint already exists
-         for (let k=0;k<n;++k) {
+         for (let k = 0; k < n; ++k) {
             let hprev = hints[k], diff = false;
             if (!hprev || (hprev.lines.length !== hint.lines.length)) continue;
-            for (let l=0;l<hint.lines.length && !diff;++l)
+            for (let l = 0; l < hint.lines.length && !diff; ++l)
                if (hprev.lines[l] !== hint.lines[l]) diff = true;
             if (!diff) { hints[n] = null; break; }
          }
@@ -5868,40 +5872,40 @@
 
          nhints++;
 
-         for (let l=0;l<hint.lines.length;++l)
+         for (let l = 0; l < hint.lines.length; ++l)
             maxlen = Math.max(maxlen, hint.lines[l].length);
 
-         hint.height = Math.round(hint.lines.length*textheight*hstep + 2*hmargin - textheight*(hstep-1));
+         hint.height = Math.round(hint.lines.length * textheight * hstep + 2 * hmargin - textheight * (hstep - 1));
 
-         if ((hint.color1!==undefined) && (hint.color1!=='none')) {
-            if ((lastcolor1!==0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
+         if ((hint.color1 !== undefined) && (hint.color1 !== 'none')) {
+            if ((lastcolor1 !== 0) && (lastcolor1 !== hint.color1)) usecolor1 = true;
             lastcolor1 = hint.color1;
          }
       }
 
       let layer = this.hints_layer(),
-          hintsg = layer.select(".objects_hints"); // group with all tooltips
+         hintsg = layer.select(".objects_hints"); // group with all tooltips
 
       if (status_func) {
          let title = "", name = "", info = "",
-             hint = null, best_dist2 = 1e10, best_hint = null,
-             coordinates = pnt ? Math.round(pnt.x)+","+Math.round(pnt.y) : "";
+            hint = null, best_dist2 = 1e10, best_hint = null,
+            coordinates = pnt ? Math.round(pnt.x) + "," + Math.round(pnt.y) : "";
          // try to select hint with exact match of the position when several hints available
-         for (let k=0; k < (hints ? hints.length : 0); ++k) {
+         for (let k = 0; k < (hints ? hints.length : 0); ++k) {
             if (!hints[k]) continue;
             if (!hint) hint = hints[k];
             if (hints[k].exact && (!hint || !hint.exact)) { hint = hints[k]; break; }
 
-            if (!pnt || (hints[k].x===undefined) || (hints[k].y===undefined)) continue;
+            if (!pnt || (hints[k].x === undefined) || (hints[k].y === undefined)) continue;
 
-            let dist2 = (pnt.x-hints[k].x)*(pnt.x-hints[k].x) + (pnt.y-hints[k].y)*(pnt.y-hints[k].y);
-            if (dist2<best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
+            let dist2 = (pnt.x - hints[k].x) * (pnt.x - hints[k].x) + (pnt.y - hints[k].y) * (pnt.y - hints[k].y);
+            if (dist2 < best_dist2) { best_dist2 = dist2; best_hint = hints[k]; }
          }
 
          if ((!hint || !hint.exact) && (best_dist2 < 400)) hint = best_hint;
 
          if (hint) {
-            name = (hint.lines && hint.lines.length>1) ? hint.lines[0] : hint.name;
+            name = (hint.lines && hint.lines.length > 1) ? hint.lines[0] : hint.name;
             title = hint.title || "";
             info = hint.line;
             if (!info && hint.lines) info = hint.lines.slice(1).join(' ');
@@ -5911,7 +5915,7 @@
       }
 
       // end of closing tooltips
-      if (!pnt || disable_tootlips || (hints.length===0) || (maxlen===0) || (nhints > 15)) {
+      if (!pnt || disable_tootlips || (hints.length === 0) || (maxlen === 0) || (nhints > 15)) {
          hintsg.remove();
          return;
       }
@@ -5921,8 +5925,8 @@
 
       if (hintsg.empty())
          hintsg = layer.append("svg:g")
-                       .attr("class", "objects_hints")
-                       .style("pointer-events","none");
+            .attr("class", "objects_hints")
+            .style("pointer-events", "none");
 
       let frame_shift = { x: 0, y: 0 }, trans = frame_rect.transform || "";
       if (!pp.iscan) {
@@ -5932,24 +5936,24 @@
 
       // copy transform attributes from frame itself
       hintsg.attr("transform", trans)
-            .property("last_point", pnt)
-            .property("hints_pad", this.pad_name);
+         .property("last_point", pnt)
+         .property("hints_pad", this.pad_name);
 
       let viewmode = hintsg.property('viewmode') || "",
-          actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
+         actualw = 0, posx = pnt.x + frame_rect.hint_delta_x;
 
       if (nhints > 1) {
          // if there are many hints, place them left or right
 
          let bleft = 0.5, bright = 0.5;
 
-         if (viewmode=="left") bright = 0.7; else
-         if (viewmode=="right") bleft = 0.3;
+         if (viewmode == "left") bright = 0.7; else
+            if (viewmode == "right") bleft = 0.3;
 
-         if (posx <= bleft*frame_rect.width) {
+         if (posx <= bleft * frame_rect.width) {
             viewmode = "left";
             posx = 20;
-         } else if (posx >= bright*frame_rect.width) {
+         } else if (posx >= bright * frame_rect.width) {
             viewmode = "right";
             posx = frame_rect.width - 60;
          } else {
@@ -5966,27 +5970,27 @@
       }
 
       let curry = 10, // normal y coordinate
-          gapy = 10,  // y coordinate, taking into account all gaps
-          gapminx = -1111, gapmaxx = -1111,
-          minhinty = -frame_shift.y,
-          maxhinty = this.pad_height("") - frame_rect.y - frame_shift.y;
+         gapy = 10,  // y coordinate, taking into account all gaps
+         gapminx = -1111, gapmaxx = -1111,
+         minhinty = -frame_shift.y,
+         maxhinty = this.pad_height("") - frame_rect.y - frame_shift.y;
 
       function FindPosInGap(y) {
-         for (let n=0;(n<hints.length) && (y < maxhinty); ++n) {
+         for (let n = 0; (n < hints.length) && (y < maxhinty); ++n) {
             let hint = hints[n];
             if (!hint) continue;
-            if ((hint.y>=y-5) && (hint.y <= y+hint.height+5)) {
-               y = hint.y+10;
+            if ((hint.y >= y - 5) && (hint.y <= y + hint.height + 5)) {
+               y = hint.y + 10;
                n = -1;
             }
          }
          return y;
       }
 
-      for (let n=0; n < hints.length; ++n) {
+      for (let n = 0; n < hints.length; ++n) {
          let hint = hints[n],
-             group = hintsg.select(".painter_hint_"+n);
-         if (hint===null) {
+            group = hintsg.select(".painter_hint_" + n);
+         if (hint === null) {
             group.remove();
             continue;
          }
@@ -5995,10 +5999,10 @@
 
          if (was_empty)
             group = hintsg.append("svg:svg")
-                          .attr("class", "painter_hint_"+n)
-                          .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
-                          .style('overflow','hidden')
-                          .style("pointer-events","none");
+               .attr("class", "painter_hint_" + n)
+               .attr('opacity', 0) // use attribute, not style to make animation with d3.transition()
+               .style('overflow', 'hidden')
+               .style("pointer-events", "none");
 
          if (viewmode == "single") {
             curry = pnt.touch ? (pnt.y - hint.height - 5) : Math.min(pnt.y + 15, maxhinty - hint.height - 3) + frame_rect.hint_delta_y;
@@ -6010,9 +6014,9 @@
          }
 
          group.attr("x", posx)
-              .attr("y", curry)
-              .property("curry", curry)
-              .property("gapy", gapy);
+            .attr("y", curry)
+            .property("curry", curry)
+            .property("gapy", gapy);
 
          curry += hint.height + 5;
          gapy += hint.height + 5;
@@ -6021,33 +6025,33 @@
             group.selectAll("*").remove();
 
          group.attr("width", 60)
-              .attr("height", hint.height);
+            .attr("height", hint.height);
 
          let r = group.append("rect")
-                      .attr("x",0)
-                      .attr("y",0)
-                      .attr("width", 60)
-                      .attr("height", hint.height)
-                      .attr("fill","lightgrey")
-                      .style("pointer-events","none");
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", 60)
+            .attr("height", hint.height)
+            .attr("fill", "lightgrey")
+            .style("pointer-events", "none");
 
          if (nhints > 1) {
             let col = usecolor1 ? hint.color1 : hint.color2;
-            if ((col !== undefined) && (col!=='none'))
+            if ((col !== undefined) && (col !== 'none'))
                r.attr("stroke", col).attr("stroke-width", hint.exact ? 3 : 1);
          }
 
-         for (let l=0; l < (hint.lines ? hint.lines.length : 0); l++)
-            if (hint.lines[l]!==null) {
+         for (let l = 0; l < (hint.lines ? hint.lines.length : 0); l++)
+            if (hint.lines[l] !== null) {
                let txt = group.append("svg:text")
-                              .attr("text-anchor", "start")
-                              .attr("x", wmargin)
-                              .attr("y", hmargin + l*textheight*hstep)
-                              .attr("dy", ".8em")
-                              .attr("fill","black")
-                              .style("pointer-events","none")
-                              .call(font.func)
-                              .text(hint.lines[l]);
+                  .attr("text-anchor", "start")
+                  .attr("x", wmargin)
+                  .attr("y", hmargin + l * textheight * hstep)
+                  .attr("dy", ".8em")
+                  .attr("fill", "black")
+                  .style("pointer-events", "none")
+                  .call(font.func)
+                  .text(hint.lines[l]);
 
                let box = this.GetBoundarySizes(txt.node());
 
@@ -6059,7 +6063,7 @@
             // Code only really uses d and t.
             return function(d, i, a) {
                return function(t) {
-                  return t < 0.8 ? "0" : (t-0.8)*5;
+                  return t < 0.8 ? "0" : (t - 0.8) * 5;
                };
             };
          }
@@ -6068,10 +6072,10 @@
             if (JSROOT.gStyle.TooltipAnimation > 0)
                group.transition().duration(JSROOT.gStyle.TooltipAnimation).attrTween("opacity", translateFn());
             else
-               group.attr('opacity',1);
+               group.attr('opacity', 1);
       }
 
-      actualw += 2*wmargin;
+      actualw += 2 * wmargin;
 
       let svgs = hintsg.selectAll("svg");
 
@@ -6080,56 +6084,56 @@
          svgs.attr("x", posx);
       }
 
-      if ((viewmode == "single") && (posx + actualw > pad_width - frame_rect.x) && (posx > actualw+20)) {
+      if ((viewmode == "single") && (posx + actualw > pad_width - frame_rect.x) && (posx > actualw + 20)) {
          posx -= (actualw + 20);
          svgs.attr("x", posx);
       }
 
       // if gap not very big, apply gapy coordinate to open view on the histogram
       if ((viewmode !== "single") && (gapy < maxhinty) && (gapy !== curry)) {
-         if ((gapminx <= posx+actualw+5) && (gapmaxx >= posx-5))
+         if ((gapminx <= posx + actualw + 5) && (gapmaxx >= posx - 5))
             svgs.attr("y", function() { return d3.select(this).property('gapy'); });
       } else if ((viewmode !== 'single') && (curry > maxhinty)) {
          let shift = Math.max((maxhinty - curry - 10), minhinty);
-         if (shift<0)
+         if (shift < 0)
             svgs.attr("y", function() { return d3.select(this).property('curry') + shift; });
       }
 
       if (actualw > 10)
-         svgs.attr("width",actualw)
-             .select('rect').attr("width", actualw);
+         svgs.attr("width", actualw)
+            .select('rect').attr("width", actualw);
 
       hintsg.property('startx', posx);
    }
 
    JSROOT.TCanvasStatusBits = {
-         kShowEventStatus  : JSROOT.BIT(15),
-         kAutoExec         : JSROOT.BIT(16),
-         kMenuBar          : JSROOT.BIT(17),
-         kShowToolBar      : JSROOT.BIT(18),
-         kShowEditor       : JSROOT.BIT(19),
-         kMoveOpaque       : JSROOT.BIT(20),
-         kResizeOpaque     : JSROOT.BIT(21),
-         kIsGrayscale      : JSROOT.BIT(22),
-         kShowToolTips     : JSROOT.BIT(23)
-      };
+      kShowEventStatus: JSROOT.BIT(15),
+      kAutoExec: JSROOT.BIT(16),
+      kMenuBar: JSROOT.BIT(17),
+      kShowToolBar: JSROOT.BIT(18),
+      kShowEditor: JSROOT.BIT(19),
+      kMoveOpaque: JSROOT.BIT(20),
+      kResizeOpaque: JSROOT.BIT(21),
+      kIsGrayscale: JSROOT.BIT(22),
+      kShowToolTips: JSROOT.BIT(23)
+   };
 
    JSROOT.EAxisBits = {
-         kTickPlus      : JSROOT.BIT(9),
-         kTickMinus     : JSROOT.BIT(10),
-         kAxisRange     : JSROOT.BIT(11),
-         kCenterTitle   : JSROOT.BIT(12),
-         kCenterLabels  : JSROOT.BIT(14),
-         kRotateTitle   : JSROOT.BIT(15),
-         kPalette       : JSROOT.BIT(16),
-         kNoExponent    : JSROOT.BIT(17),
-         kLabelsHori    : JSROOT.BIT(18),
-         kLabelsVert    : JSROOT.BIT(19),
-         kLabelsDown    : JSROOT.BIT(20),
-         kLabelsUp      : JSROOT.BIT(21),
-         kIsInteger     : JSROOT.BIT(22),
-         kMoreLogLabels : JSROOT.BIT(23),
-         kDecimals      : JSROOT.BIT(11)
+      kTickPlus: JSROOT.BIT(9),
+      kTickMinus: JSROOT.BIT(10),
+      kAxisRange: JSROOT.BIT(11),
+      kCenterTitle: JSROOT.BIT(12),
+      kCenterLabels: JSROOT.BIT(14),
+      kRotateTitle: JSROOT.BIT(15),
+      kPalette: JSROOT.BIT(16),
+      kNoExponent: JSROOT.BIT(17),
+      kLabelsHori: JSROOT.BIT(18),
+      kLabelsVert: JSROOT.BIT(19),
+      kLabelsDown: JSROOT.BIT(20),
+      kLabelsUp: JSROOT.BIT(21),
+      kIsInteger: JSROOT.BIT(22),
+      kMoreLogLabels: JSROOT.BIT(23),
+      kDecimals: JSROOT.BIT(11)
    };
 
    // ================= painter of raw text ========================================
@@ -6160,9 +6164,9 @@
          }
 
          let frame = this.select_main(),
-              main = frame.select("div");
+            main = frame.select("div");
          if (main.empty())
-            main = frame.append("div").style('max-width','100%').style('max-height','100%').style('overflow','auto');
+            main = frame.append("div").style('max-width', '100%').style('max-height', '100%').style('overflow', 'auto');
          main.html(txt);
 
          // (re) set painter to first child element
@@ -6200,18 +6204,18 @@
 
          document.body.style.cursor = 'wait';
          if (typeof handle == 'function') handle(); else
-         if ((typeof handle == 'object') && (typeof handle.CheckResize == 'function')) handle.CheckResize(); else
-         if (typeof handle == 'string') {
-            let node = d3.select('#'+handle);
-            if (!node.empty()) {
-               let mdi = node.property('mdi');
-               if (mdi) {
-                  mdi.CheckMDIResize();
-               } else {
-                  JSROOT.resize(node.node());
+            if ((typeof handle == 'object') && (typeof handle.CheckResize == 'function')) handle.CheckResize(); else
+               if (typeof handle == 'string') {
+                  let node = d3.select('#' + handle);
+                  if (!node.empty()) {
+                     let mdi = node.property('mdi');
+                     if (mdi) {
+                        mdi.CheckMDIResize();
+                     } else {
+                        JSROOT.resize(node.node());
+                     }
+                  }
                }
-            }
-         }
          document.body.style.cursor = 'auto';
       }
 
@@ -6365,8 +6369,8 @@
       if ((selector === null) && (kind in JSROOT.DrawFuncs.cache))
          return JSROOT.DrawFuncs.cache[kind];
 
-      let search = (kind.indexOf("ROOT.")==0) ? kind.substr(5) : "kind:"+kind, counter = 0;
-      for (let i=0; i < JSROOT.DrawFuncs.lst.length; ++i) {
+      let search = (kind.indexOf("ROOT.") == 0) ? kind.substr(5) : "kind:" + kind, counter = 0;
+      for (let i = 0; i < JSROOT.DrawFuncs.lst.length; ++i) {
          let h = JSROOT.DrawFuncs.lst[i];
          if (typeof h.name == "string") {
             if (h.name != search) continue;
@@ -6375,7 +6379,7 @@
          }
 
          if (h.sameas !== undefined)
-            return JSROOT.getDrawHandle("ROOT."+h.sameas, selector);
+            return JSROOT.getDrawHandle("ROOT." + h.sameas, selector);
 
          if ((selector === null) || (selector === undefined)) {
             // store found handle in cache, can reuse later
@@ -6388,11 +6392,11 @@
             if (selector == "::expand") {
                if (('expand' in h) || ('expand_item' in h)) return h;
             } else
-            if ('opt' in h) {
-               let opts = h.opt.split(';');
-               for (let j=0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
-               if (opts.indexOf(selector.toLowerCase())>=0) return h;
-            }
+               if ('opt' in h) {
+                  let opts = h.opt.split(';');
+                  for (let j = 0; j < opts.length; ++j) opts[j] = opts[j].toLowerCase();
+                  if (opts.indexOf(selector.toLowerCase()) >= 0) return h;
+               }
          } else if (selector === counter) {
             return h;
          }
@@ -6410,9 +6414,9 @@
 
       function CheckBaseClasses(si, lvl) {
          if (si.fElements == null) return null;
-         if (lvl>10) return null; // protect against recursion
+         if (lvl > 10) return null; // protect against recursion
 
-         for (let j=0; j<si.fElements.arr.length; ++j) {
+         for (let j = 0; j < si.fElements.arr.length; ++j) {
             // extract streamer info for each class member
             let element = si.fElements.arr[j];
             if (element.fTypeName !== 'BASE') continue;
@@ -6422,9 +6426,9 @@
 
             // now try find that base class of base in the list
             if (handle === null)
-               for (let k=0;k<lst.arr.length; ++k)
+               for (let k = 0; k < lst.arr.length; ++k)
                   if (lst.arr[k].fName === element.fName) {
-                     handle = CheckBaseClasses(lst.arr[k], lvl+1);
+                     handle = CheckBaseClasses(lst.arr[k], lvl + 1);
                      break;
                   }
 
@@ -6433,7 +6437,7 @@
          return null;
       }
 
-      for (let n=0;n<lst.arr.length;++n) {
+      for (let n = 0; n < lst.arr.length; ++n) {
          let si = lst.arr[n];
          if (JSROOT.getDrawHandle("ROOT." + si.fName) !== null) continue;
 
@@ -6457,7 +6461,7 @@
       let allopts = null, isany = false, noinspect = false, canexpand = false;
       if (typeof selector !== 'string') selector = "";
 
-      for (let cnt=0;cnt<1000;++cnt) {
+      for (let cnt = 0; cnt < 1000; ++cnt) {
          let h = JSROOT.getDrawHandle(kind, cnt);
          if (!h) break;
          if (!res.handle) res.handle = h;
@@ -6465,31 +6469,31 @@
          if (h.expand || h.expand_item || h.can_expand) canexpand = true;
          if (!('func' in h)) break;
          isany = true;
-         if (! ('opt' in h)) continue;
+         if (!('opt' in h)) continue;
          let opts = h.opt.split(';');
          for (let i = 0; i < opts.length; ++i) {
             opts[i] = opts[i].toLowerCase();
-            if ((selector.indexOf('nosame')>=0) && (opts[i].indexOf('same')==0)) continue;
+            if ((selector.indexOf('nosame') >= 0) && (opts[i].indexOf('same') == 0)) continue;
 
-            if (res.opts===null) res.opts = [];
-            if (res.opts.indexOf(opts[i])<0) res.opts.push(opts[i]);
+            if (res.opts === null) res.opts = [];
+            if (res.opts.indexOf(opts[i]) < 0) res.opts.push(opts[i]);
          }
          if (h.theonly) break;
       }
 
-      if (selector.indexOf('noinspect')>=0) noinspect = true;
+      if (selector.indexOf('noinspect') >= 0) noinspect = true;
 
-      if (isany && (res.opts===null)) res.opts = [""];
+      if (isany && (res.opts === null)) res.opts = [""];
 
       // if no any handle found, let inspect ROOT-based objects
-      if (!isany && (kind.indexOf("ROOT.")==0) && !noinspect) res.opts = [];
+      if (!isany && (kind.indexOf("ROOT.") == 0) && !noinspect) res.opts = [];
 
       if (!noinspect && res.opts)
          res.opts.push("inspect");
 
       res.inspect = !noinspect;
       res.expand = canexpand;
-      res.draw = res.opts && (res.opts.length>0);
+      res.draw = res.opts && (res.opts.length > 0);
 
       return res;
    }
@@ -6559,7 +6563,7 @@
          return JSROOT.draw(divid, obj[handle.draw_field], opt);
 
       if (!handle.func) {
-         if (opt && (opt.indexOf("same")>=0)) {
+         if (opt && (opt.indexOf("same") >= 0)) {
             let main_painter = JSROOT.GetMainPainter(divid);
             if (main_painter && (typeof main_painter.PerformDrop === 'function'))
                return main_painter.PerformDrop(obj, "", null, opt);
@@ -6699,7 +6703,7 @@
 
    JSROOT.StoreJSON = function(divid) {
       let p = new TObjectPainter;
-      p.SetDivId(divid,-1);
+      p.SetDivId(divid, -1);
 
       let canp = p.canv_painter();
       return canp ? canp.ProduceJSON() : "";
@@ -6731,7 +6735,7 @@
 
          main.attr("width", args.width).attr("height", args.height);
 
-         main.style("width", args.width+"px").style("height", args.height+"px");
+         main.style("width", args.width + "px").style("height", args.height + "px");
 
          JSROOT.svg_workaround = undefined;
 
@@ -6740,26 +6744,26 @@
             let has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
             main.select('svg').attr("xmlns", "http://www.w3.org/2000/svg")
-                              .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-                              .attr("width", args.width)
-                              .attr("height", args.height)
-                              .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
+               .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+               .attr("width", args.width)
+               .attr("height", args.height)
+               .attr("style", null).attr("class", null).attr("x", null).attr("y", null);
 
             let svg = main.html();
 
             if (JSROOT.nodejs)
-               svg = svg.replace(/xlink_href_nodejs=/g,"xlink:href=");
+               svg = svg.replace(/xlink_href_nodejs=/g, "xlink:href=");
 
             if (has_workarounds)
                svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
 
-            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g,"url(#$1)")        // decode all URL
-                     .replace(/ class=\"\w*\"/g,"")                                // remove all classes
-                     .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g,"")  // remove all empty groups with transform
-                     .replace(/<g><\/g>/g,"");                                     // remove all empty groups
+            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
+               .replace(/ class=\"\w*\"/g, "")                                // remove all classes
+               .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
+               .replace(/<g><\/g>/g, "");                                     // remove all empty groups
 
-            if (svg.indexOf("xlink:href")<0)
-               svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g,"");
+            if (svg.indexOf("xlink:href") < 0)
+               svg = svg.replace(/ xmlns:xlink=\"http:\/\/www.w3.org\/1999\/xlink\"/g, "");
 
             main.remove();
 
@@ -6796,7 +6800,7 @@
     */
    JSROOT.resize = function(divid, arg) {
       if (arg === true) arg = { force: true }; else
-      if (typeof arg !== 'object') arg = null;
+         if (typeof arg !== 'object') arg = null;
       let done = false, dummy = new TObjectPainter();
       dummy.SetDivId(divid, -1);
       dummy.ForEachPainter(function(painter) {
@@ -6831,7 +6835,7 @@
       dummy.ForEachPainter(function(painter) {
          if (lst.indexOf(painter) < 0) lst.push(painter);
       });
-      for (let n=0;n<lst.length;++n) lst[n].Cleanup();
+      for (let n = 0; n < lst.length; ++n) lst[n].Cleanup();
       dummy.select_main().html("");
       return lst;
    }
@@ -6846,7 +6850,7 @@
    JSROOT.progress = function(msg, tmout) {
       if (JSROOT.BatchMode || (typeof document === 'undefined')) return;
       let id = "jsroot_progressbox",
-          box = d3.select("#"+id);
+         box = d3.select("#" + id);
 
       if (!JSROOT.gStyle.ProgressBox) return box.remove();
 
@@ -6857,8 +6861,8 @@
 
       if (box.empty()) {
          box = d3.select(document.body)
-                .append("div")
-                .attr("id", id);
+            .append("div")
+            .attr("id", id);
          box.append("p");
       }
 
@@ -6871,9 +6875,9 @@
          box.node().appendChild(msg);
       }
 
-      if (!isNaN(tmout) && (tmout>0)) {
+      if (!isNaN(tmout) && (tmout > 0)) {
          box.property("with_timeout", true);
-         setTimeout(JSROOT.progress.bind(JSROOT,'',-1), tmout);
+         setTimeout(JSROOT.progress.bind(JSROOT, '', -1), tmout);
       }
    }
 
@@ -6885,7 +6889,7 @@
    JSROOT.CloseCurrentWindow = function() {
       if (!window) return;
       window.close();
-      window.open('','_self').close();
+      window.open('', '_self').close();
    }
 
    Painter.createRootColors();
