@@ -760,17 +760,16 @@
    TF1Painter.prototype.PerformDraw = function() {
       if (this.main_painter() === null) {
          let histo = this.CreateDummyHisto(), pthis = this;
-         JSROOT.draw(this.divid, histo, "AXIS").then(function(hpainter) {
+         return JSROOT.draw(this.divid, histo, "AXIS").then(() => {
             pthis.SetDivId(pthis.divid);
             pthis.Redraw();
             return pthis.DrawingReady();
          });
-         return pthis;
       }
 
       this.SetDivId(this.divid);
       this.Redraw();
-      return this.DrawingReady();
+      return Promise.resolve(this.DrawingReady());
    }
 
    function drawFunction(divid, tf1, opt) {
@@ -784,8 +783,7 @@
       if (JSROOT.Math !== undefined)
          return painter.PerformDraw();
 
-      JSROOT.AssertPrerequisites("math", painter.PerformDraw.bind(painter));
-      return painter;
+      return JSROOT.load("math").then(() => painter.PerformDraw());
    }
 
    // =======================================================================
