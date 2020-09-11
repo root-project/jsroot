@@ -4059,8 +4059,8 @@
 
          // add svg image
          item.img = item.prnt.insert("image",".primitives_layer")     // create image object
-                        .attr("x", sz.x)
-                        .attr("y", sz.y)
+                        .attr("x", sz2.x)
+                        .attr("y", sz2.y)
                         .attr("width", canvas.width)
                         .attr("height", canvas.height)
                         .attr("href", dataUrl);
