@@ -419,15 +419,14 @@
    JSROOT.GEO.PolygonsCreator.prototype.SetNormal4 = function(nx1,ny1,nz1,
                                                               nx2,ny2,nz2,
                                                               nx3,ny3,nz3,
-                                                              nx4,ny4,nz4,
-                                                              reduce) {
+                                                              nx4,ny4,nz4) {
       this.v1.setnormal(nx1,ny1,nz1);
       if (this.v2) this.v2.setnormal(nx2,ny2,nz2);
       this.v3.setnormal(nx3,ny3,nz3);
       if (this.v4) this.v4.setnormal(nx4,ny4,nz4);
    }
 
-   JSROOT.GEO.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34,reduce) {
+   JSROOT.GEO.PolygonsCreator.prototype.SetNormal_12_34 = function(nx12,ny12,nz12,nx34,ny34,nz34) {
       // special shortcut, when same normals can be applied for 1-2 point and 3-4 point
       this.v1.setnormal(nx12,ny12,nz12);
       if (this.v2) this.v2.setnormal(nx12,ny12,nz12);
@@ -2312,7 +2311,7 @@
 
        // first create nodes objects
        for (let n=0; n<this.origin.length; ++n) {
-          let obj = this.origin[n];
+          // let obj = this.origin[n];
           let node = { id: n, kind: kind, vol: 0, nfaces: 0 };
           this.nodes.push(node);
           sortarr.push(node); // array use to produce sortmap
@@ -3245,7 +3244,7 @@
          parent.$geo_checked = true;
       }
 
-      let names = [], cnts = [], obj = null;
+      let names = [], cnts = [];
       for (let k=0;k<chlds.length;++k) {
          let chld = chlds[k];
          if (!chld || !chld.fName) continue;
@@ -3264,7 +3263,7 @@
 
    /** When transformation matrix includes one or several inversion of axis,
      * one should inverse geometry object, otherwise THREE.js cannot correctly draw it, @private */
-   JSROOT.GEO.createFlippedMesh = function(parent, shape, material) {
+   JSROOT.GEO.createFlippedMesh = function(shape, material) {
 
       let flip =  new THREE.Vector3(1,1,-1);
 
@@ -3666,7 +3665,7 @@
          if (obj3d.matrixWorld.determinant() > -0.9) {
             mesh = new THREE.Mesh( shape.geom, prop.material );
          } else {
-            mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
+            mesh = JSROOT.GEO.createFlippedMesh(shape, prop.material);
          }
 
          obj3d.add(mesh);

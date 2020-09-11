@@ -137,7 +137,7 @@
       return this.drawSpecial(col, indx);
    }
 
-   GeoDrawingControl.prototype.drawSpecial = function(col, indx) {
+   GeoDrawingControl.prototype.drawSpecial = function(col /*, indx*/) {
       let c = this.mesh;
       if (!c || !c.material) return;
 
@@ -635,12 +635,11 @@
 
                totalcnt++;
 
-               let m1 = mesh.matrixWorld, flip, origm2;
+               let m1 = mesh.matrixWorld, flip;
 
                if (m1.equals(m2)) return true
                if ((m1.determinant()>0) && (m2.determinant()<-0.9)) {
                   flip = THREE.Vector3(1,1,-1);
-                  origm2 = m2;
                   m2 = m2.clone().scale(flip);
                   if (m1.equals(m2)) return true;
                }
@@ -664,11 +663,11 @@
 
       tm1 = new Date().getTime();
 
-      let cnt = this._clones.ScanVisible(arg);
+      /* let cnt = */ this._clones.ScanVisible(arg);
 
       tm2 = new Date().getTime();
 
-      console.log('Compare matrixes total',totalcnt,'errors',errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
+      console.log('Compare matrixes total', totalcnt, 'errors', errcnt, 'takes', tm2-tm1, 'maxdiff', totalmax);
    }
 
 
@@ -893,9 +892,7 @@
 
          this._datgui.add(this.ctrl, 'projectPos', bound.min[axis], bound.max[axis])
              .name(axis.toUpperCase() + ' projection')
-             .onChange(function (value) {
-               painter.startDrawGeometry();
-           });
+             .onChange(() => painter.startDrawGeometry());
 
       } else {
          // Clipping Options
@@ -1770,7 +1767,7 @@
       if (obj3d.matrixWorld.determinant() > -0.9) {
          mesh = new THREE.Mesh( shape.geom, prop.material );
       } else {
-         mesh = JSROOT.GEO.createFlippedMesh(obj3d, shape, prop.material);
+         mesh = JSROOT.GEO.createFlippedMesh(shape, prop.material);
       }
 
       obj3d.add(mesh);
@@ -1893,7 +1890,7 @@
 
       JSROOT.Painter.DisposeThreejsObject(this._toplevel, true);
 
-      let axis = this.ctrl.project;
+      // let axis = this.ctrl.project;
 
       if (this.ctrl.projectPos === undefined) {
 
@@ -2415,7 +2412,7 @@
       let target = new THREE.Vector3(midx, midy, midz);
 
       // Find to points to animate "lookAt" between
-      let dist = this._camera.position.distanceTo(target);
+      // let dist = this._camera.position.distanceTo(target);
       let oldTarget = this._controls.target;
 
       // probably, reduce number of frames
@@ -4346,7 +4343,7 @@
          if (shape && (shape._typename === "TGeoCompositeShape") && shape.fNode) {
             sub._more = true;
             sub._shape = shape;
-            sub._expand = function(node, obj) {
+            sub._expand = function(node /*, obj */) {
                JSROOT.GEO.createItem(node, node._shape.fNode.fLeft, 'Left');
                JSROOT.GEO.createItem(node, node._shape.fNode.fRight, 'Right');
                return true;
@@ -4583,27 +4580,27 @@
 
    JSROOT.GEO.getShapeIcon = function(shape) {
       switch (shape._typename) {
-         case "TGeoArb8" : return "img_geoarb8"; break;
-         case "TGeoCone" : return "img_geocone"; break;
-         case "TGeoConeSeg" : return "img_geoconeseg"; break;
-         case "TGeoCompositeShape" : return "img_geocomposite"; break;
-         case "TGeoTube" : return "img_geotube"; break;
-         case "TGeoTubeSeg" : return "img_geotubeseg"; break;
-         case "TGeoPara" : return "img_geopara"; break;
-         case "TGeoParaboloid" : return "img_geoparab"; break;
-         case "TGeoPcon" : return "img_geopcon"; break;
-         case "TGeoPgon" : return "img_geopgon"; break;
-         case "TGeoShapeAssembly" : return "img_geoassembly"; break;
-         case "TGeoSphere" : return "img_geosphere"; break;
-         case "TGeoTorus" : return "img_geotorus"; break;
-         case "TGeoTrd1" : return "img_geotrd1"; break;
-         case "TGeoTrd2" : return "img_geotrd2"; break;
-         case "TGeoXtru" : return "img_geoxtru"; break;
-         case "TGeoTrap" : return "img_geotrap"; break;
-         case "TGeoGtra" : return "img_geogtra"; break;
-         case "TGeoEltu" : return "img_geoeltu"; break;
-         case "TGeoHype" : return "img_geohype"; break;
-         case "TGeoCtub" : return "img_geoctub"; break;
+         case "TGeoArb8" : return "img_geoarb8";
+         case "TGeoCone" : return "img_geocone";
+         case "TGeoConeSeg" : return "img_geoconeseg";
+         case "TGeoCompositeShape" : return "img_geocomposite";
+         case "TGeoTube" : return "img_geotube";
+         case "TGeoTubeSeg" : return "img_geotubeseg";
+         case "TGeoPara" : return "img_geopara";
+         case "TGeoParaboloid" : return "img_geoparab";
+         case "TGeoPcon" : return "img_geopcon";
+         case "TGeoPgon" : return "img_geopgon";
+         case "TGeoShapeAssembly" : return "img_geoassembly";
+         case "TGeoSphere" : return "img_geosphere";
+         case "TGeoTorus" : return "img_geotorus";
+         case "TGeoTrd1" : return "img_geotrd1";
+         case "TGeoTrd2" : return "img_geotrd2";
+         case "TGeoXtru" : return "img_geoxtru";
+         case "TGeoTrap" : return "img_geotrap";
+         case "TGeoGtra" : return "img_geogtra";
+         case "TGeoEltu" : return "img_geoeltu";
+         case "TGeoHype" : return "img_geohype";
+         case "TGeoCtub" : return "img_geoctub";
       }
       return "img_geotube";
    }
