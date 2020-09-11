@@ -10,7 +10,7 @@ console.log('JSROOT version', jsroot.version);
 
 jsroot.OpenFile("https://root.cern/js/files/hsimple.root").then(file => {
    file.ReadObject("hpx;1").then(obj => {
-      jsroot.MakeSVG( { object: obj, option: "lego2,pal50", width: 1200, height: 800 }, function(svg) {
+      jsroot.MakeSVG( { object: obj, option: "lego2,pal50", width: 1200, height: 800 }).then(svg => {
          console.log('SVG size', svg.length);
          fs.writeFileSync("lego2.svg", svg);
       });

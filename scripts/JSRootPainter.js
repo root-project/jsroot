@@ -6716,13 +6716,13 @@
     * @param {string} [args.option] - draw options
     * @param {number} [args.width = 1200] - image width
     * @param {number} [args.height = 800] - image height
-    * @param {function} callback called with svg code as string argument
+    * @returns {Promise} with svg code
     */
-   JSROOT.MakeSVG = function(args, callback) {
+   JSROOT.MakeSVG = function(args) {
 
       if (!args) args = {};
 
-      if (!args.object) return JSROOT.CallBack(callback, null);
+      if (!args.object) return Promise.reject(Error("No object specified to generate SVG"));
 
       if (!args.width) args.width = 1200;
       if (!args.height) args.height = 800;
@@ -6735,7 +6735,7 @@
 
          JSROOT.svg_workaround = undefined;
 
-         JSROOT.draw(main.node(), args.object, args.option || "").then(function(painter) {
+         return JSROOT.draw(main.node(), args.object, args.option || "").then(() => {
 
             let has_workarounds = JSROOT.Painter.ProcessSVGWorkarounds && JSROOT.svg_workaround;
 
@@ -6763,21 +6763,21 @@
 
             main.remove();
 
-            JSROOT.CallBack(callback, svg);
+            return svg;
          });
       }
 
-      if (!JSROOT.nodejs) {
-         build(d3.select('body').append("div").style("visible", "hidden"));
-      } else if (JSROOT.nodejs_document) {
-         build(JSROOT.nodejs_window.d3.select('body').append('div'));
-      } else {
-         // use eval while old minifier is not able to parse newest Node.js syntax
-         eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
-         JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
-         JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
-         build(JSROOT.nodejs_window.d3.select('body').append('div'));
-      }
+      if (!JSROOT.nodejs)
+         return build(d3.select('body').append("div").style("visible", "hidden"));
+
+      if (JSROOT.nodejs_document)
+         return build(JSROOT.nodejs_window.d3.select('body').append('div'));
+
+      // use eval while old minifier is not able to parse newest Node.js syntax
+      eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
+      JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
+      JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+      return build(JSROOT.nodejs_window.d3.select('body').append('div'));
    }
 
    /**
