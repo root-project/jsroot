@@ -1305,7 +1305,7 @@
          }
       }
 
-      for (layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
+      for (var layer = 0; layer <= shape.fNz-1; layer+=(shape.fNz-1)) {
          var z = shape.fZ[layer], scale = shape.fScale[layer],
              x0 = shape.fX0[layer], y0 = shape.fY0[layer];
 
