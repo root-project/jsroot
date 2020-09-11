@@ -1378,42 +1378,29 @@
    }
 
    JSROOT.load = function(kind, debugout) {
-      return new Promise(function(resolve, reject) {
+      return new Promise(function(resolve) {
          JSROOT.AssertPrerequisites(kind, resolve, debugout);
       });
    }
 
-   // function can be used to open ROOT file, I/O functionality will be loaded when missing
+   // Open ROOT file, defined in JSRootIOEvolution.js
    JSROOT.OpenFile = function(filename, callback) {
       return JSROOT.load("io").then(() => JSROOT.OpenFile(filename, callback));
    }
 
-   // function can be used to draw supported ROOT classes,
-   // required functionality will be loaded automatically
-   // if painter pointer required, one should load '2d' functionality itself
-   // or use callback function which provides painter pointer as first argument
-   // defined in JSRootPainter.js
+   // Draw object, defined in JSRootPainter.js
    JSROOT.draw = function(divid, obj, opt) {
-      return new Promise(function(resolve, reject) {
-         JSROOT.AssertPrerequisites("2d", function() {
-            JSROOT.draw(divid, obj, opt).then(resolve, reject);
-         });
-      });
+      return JSROOT.load("2d").then(() => JSROOT.draw(divid, obj, opt));
    }
 
+   // Redaraw object, defined in JSRootPainter.js
    JSROOT.redraw = function(divid, obj, opt) {
-      return new Promise(function(resolve, reject) {
-         JSROOT.AssertPrerequisites("2d", function() {
-            JSROOT.redraw(divid, obj, opt, true).then(resolve, reject);
-         });
-      });
+      return JSROOT.load("2d").then(() => JSROOT.redraw(divid, obj, opt));
    }
 
    // Create SVG, defined in JSRootPainter.js
-   JSROOT.MakeSVG = function(args, callback) {
-      JSROOT.AssertPrerequisites("2d", function() {
-         JSROOT.MakeSVG(args, callback);
-      });
+   JSROOT.MakeSVG = function(args) {
+      return JSROOT.load("2d").then(() => JSROOT.MakeSVG(args));
    }
 
    /** @summary Method to build JSROOT GUI with browser
@@ -1456,10 +1443,10 @@
 
       if (user_scripts) requirements += "load:" + user_scripts + ";";
 
-      JSROOT.AssertPrerequisites(requirements, function() {
+      JSROOT.load(requirements, debugout).then(() => {
          JSROOT.CallBack(JSROOT.findFunction(nobrowser ? 'JSROOT.BuildNobrowserGUI' : 'JSROOT.BuildGUI'));
          JSROOT.CallBack(andThen);
-      }, debugout);
+      });
    }
 
    /** @summary Create some ROOT classes
@@ -2331,10 +2318,10 @@
       if (arg.openui5src) JSROOT.openui5src = arg.openui5src;
       if (arg.openui5libs) JSROOT.openui5libs = arg.openui5libs;
       if (arg.openui5theme) JSROOT.openui5theme = arg.openui5theme;
-      JSROOT.AssertPrerequisites("2d;" + (arg && arg.prereq ? arg.prereq : ""), function() {
+      return JSROOT.load("2d;" + (arg && arg.prereq ? arg.prereq : ""), (arg ? arg.prereq_logdiv : undefined)).then(() => {
          if (arg && arg.prereq) delete arg.prereq;
-         JSROOT.ConnectWebWindow(arg);
-      }, (arg ? arg.prereq_logdiv : undefined));
+         return JSROOT.ConnectWebWindow(arg);
+      });
    }
 
    /** Initialize JSROOT.
@@ -2362,10 +2349,10 @@
          JSROOT.wrong_http_response_handling = true; // server may send wrong content length by partial requests, use other method to control this
 
       if (JSROOT.GetUrlOption('gui', src) !== null)
-         return window_on_load( function() { JSROOT.BuildSimpleGUI(); } );
+         return window_on_load(() => JSROOT.BuildSimpleGUI());
 
       if ( typeof define === "function" && define.amd )
-         return window_on_load( function() { JSROOT.BuildSimpleGUI('check_existing_elements'); } );
+         return window_on_load(() => JSROOT.BuildSimpleGUI('check_existing_elements'));
 
       let prereq = "";
       if (JSROOT.GetUrlOption('io', src)!=null) prereq += "io;";
@@ -2395,9 +2382,10 @@
       }
 
       if ((prereq.length>0) || (onload!=null))
-         window_on_load(function() {
-            if (prereq.length>0) JSROOT.AssertPrerequisites(prereq, onload); else
-               if (onload!=null) {
+         window_on_load(() => {
+            if (prereq.length>0) {
+               JSROOT.load(prereq).then(onload);
+            } else if (onload) {
                   onload = JSROOT.findFunction(onload);
                   if (typeof onload == 'function') onload();
                }
