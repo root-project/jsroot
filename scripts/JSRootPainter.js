@@ -422,7 +422,7 @@
       if (evt && (typeof evt == "object"))
          if ((evt.clientX !== undefined) && (evt.clientY !== undefined))
             show_evnt = { clientX: evt.clientX, clientY: evt.clientY };
-      JSROOT.AssertPrerequisites('hierarchy;jq2d;', function() {
+      JSROOT.load('hierarchy;jq2d;').then(() => {
          document.body.style.cursor = 'auto';
          Painter.createMenu(painter, maincallback, show_evnt);
       });
@@ -5696,7 +5696,7 @@
 
       let painter = this;
 
-      JSROOT.AssertPrerequisites('mathjax', function() {
+      JSROOT.load('mathjax').then(() => {
 
          MathJax.Hub.Typeset(element, ["FinishMathjax", painter, arg.draw_g, fo_g]);
 
@@ -6173,9 +6173,7 @@
          this.SetDivId(this.divid);
 
          if (mathjax)
-            JSROOT.AssertPrerequisites('mathjax', function() {
-               MathJax.Hub.Typeset(frame.node());
-            });
+            JSROOT.load('mathjax').then(() => MathJax.Hub.Typeset(frame.node()));
       }
 
       painter.Draw();
@@ -6543,13 +6541,8 @@
          return Promise.reject(new Error('not an object in JSROOT.draw'));
 
       if (opt == 'inspect') {
-         let func = JSROOT.findFunction("JSROOT.Painter.drawInspector");
-         if (func) return func(divid, obj);
-         return new Promise(function(resolveFunc, rejectFunc) {
-            JSROOT.AssertPrerequisites("hierarchy", function() {
-               JSROOT.Painter.drawInspector(divid, obj).then(resolveFunc, rejectFunc);
-            });
-         });
+         if (Painter.drawInspector) return Painter.drawInspector(divid, obj);
+         return JSROOT.load("hierarchy").then(() => JSROOT.Painter.drawInspector(divid, obj));
       }
 
       let handle = null;
@@ -6630,9 +6623,7 @@
          if (!prereq.length)
             return completeDraw(null);
 
-         console.log('LOADING', prereq);
-
-         JSROOT.AssertPrerequisites(prereq, function() {
+         JSROOT.load(prereq).then(() => {
             let func = JSROOT.findFunction(funcname);
             if (!func) {
                alert('Fail to find function ' + funcname + ' after loading ' + prereq);
