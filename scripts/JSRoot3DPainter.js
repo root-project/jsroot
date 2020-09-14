@@ -46,22 +46,25 @@
 
    JSROOT.Painter.UseSVGFor3D = function() {
 
-      return JSROOT.nodejs;
-
       if (!JSROOT.nodejs) return false;
 
       if (this._Detect_UseSVGFor3D !== undefined)
          return this._Detect_UseSVGFor3D;
 
-      let nodejs_canvas = null;
+      let nodejs_gl = null, nodejs_canvas = null;
 
       try {
-          nodejs_canvas = require('canvas');
+         console.log('TESTING GL');
+         nodejs_gl = require('gl');
+         console.log('TESTING CANVAS');
+         nodejs_canvas = require('canvas');
+         console.log('TESTING OK');
       } catch (er) {
-          nodejs_canvas = null;
+         nodejs_gl = null;
+         nodejs_canvas = null;
       }
 
-      this._Detect_UseSVGFor3D = !nodejs_canvas;
+      this._Detect_UseSVGFor3D = !nodejs_gl || !nodejs_canvas;
       return this._Detect_UseSVGFor3D;
    }
 
@@ -129,7 +132,43 @@
             res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
          }
       } else {
+         if (JSROOT.nodejs) {
+            // try to use WebGL inside node.js - need to create headless context
+            var gl = require('gl')(1, 1, { preserveDrawingBuffer: true });
+
+            const { createCanvas } = require('canvas');
+
+            args.canvas = createCanvas(width, height);
+            args.canvas.addEventListener = function() {}; // dummy
+            args.canvas.style = {};
+
+            args.context = gl;
+         }
+
          res.renderer = new THREE.WebGLRenderer(args);
+
+         if (JSROOT.nodejs) {
+            res.renderer._output = new THREE.WebGLRenderTarget( width, height /*, {
+               minFilter: THREE.LinearFilter,
+               magFilter: THREE.LinearFilter,
+               wrapS: THREE.ClampToEdgeWrapping,
+               wrapT: THREE.ClampToEdgeWrapping,
+               format: THREE.RGBAFormat,
+               type: THREE.UnsignedByteType
+            } */);
+
+            res.renderer.setRenderTarget(res.renderer._output);
+
+            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+            res.renderer.workaround_id = JSROOT.svg_workaround.length;
+            JSROOT.svg_workaround[res.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+
+            // replace DOM element in renderer
+            res.dom = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
+            res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
+
+            res.renderer.webglImage = true;
+         }
       }
 
       // res.renderer.setClearColor("#000000", 1);
@@ -157,7 +196,25 @@
 
       // when using SVGrenderer producing text output, provide result
       if (renderer.workaround_id !== undefined) {
-         if (typeof renderer.makeOuterHTML == 'function') {
+         if (renderer.webglImage) {
+            let canvas = renderer.domElement,
+                context = canvas.getContext('2d');
+
+            var pixels = new Uint8Array( 4 * canvas.width * canvas.height );
+            renderer.readRenderTargetPixels( renderer._output, 0, 0, canvas.width, canvas.height, pixels );
+
+            let imageData = context.createImageData( canvas.width, canvas.height );
+            imageData.data.set( pixels );
+
+            // context.scale(1,-1);
+
+            context.putImageData( imageData, 0, 0 );
+
+            let dataUrl = canvas.toDataURL("image/png");
+
+            let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+            JSROOT.svg_workaround[renderer.workaround_id] = svg;
+         } else if (typeof renderer.makeOuterHTML == 'function') {
             JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
          } else {
             let canvas = renderer.domElement;
