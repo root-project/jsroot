@@ -200,18 +200,24 @@
             let canvas = renderer.domElement,
                 context = canvas.getContext('2d');
 
-            var pixels = new Uint8Array( 4 * canvas.width * canvas.height );
+            let pixels = new Uint8Array( 4 * canvas.width * canvas.height );
             renderer.readRenderTargetPixels( renderer._output, 0, 0, canvas.width, canvas.height, pixels );
+
+            // small code to flip Y scale
+            let indx1 = 0, indx2 = (canvas.height-1) * 4 * canvas.width, k, d;
+            while(indx1 < indx2) {
+               for(k=0; k< 4 * canvas.width; ++k) {
+                  d = pixels[indx1+k]; pixels[indx1+k] = pixels[indx2+k]; pixels[indx2+k] = d;
+               }
+               indx1 += 4 * canvas.width;
+               indx2 -= 4 * canvas.width;
+            }
 
             let imageData = context.createImageData( canvas.width, canvas.height );
             imageData.data.set( pixels );
 
-            // context.scale(1,-1);
-
             context.putImageData( imageData, 0, 0 );
-
             let dataUrl = canvas.toDataURL("image/png");
-
             let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
             JSROOT.svg_workaround[renderer.workaround_id] = svg;
          } else if (typeof renderer.makeOuterHTML == 'function') {
