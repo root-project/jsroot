@@ -108,7 +108,7 @@
                args.canvas.style = {};
             }
 
-            res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.SoftwareRenderer(args);
+            res.renderer = new THREE.WebGLRenderer(args);
          } else {
             // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
             res.renderer = THREE.CreateSVGRenderer(false, 0, document);
@@ -125,7 +125,7 @@
             res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
          }
       } else {
-         res.renderer = res.usewebgl ? new THREE.WebGLRenderer(args) : new THREE.SoftwareRenderer(args);
+         res.renderer = new THREE.WebGLRenderer(args);
       }
 
       // res.renderer.setClearColor("#000000", 1);

@@ -3653,10 +3653,10 @@
 
          if (JSROOT.nodejs) {
             try {
-               require('canvas');
+               const { createCanvas } = require('canvas');
                canvas = createCanvas(xmax - xmin, ymax - ymin);
-            } catch (er) {
-               console.log('canvas is not installed, most probably due to SoftwareRenderer, see https://github.com/root-project/jsroot/issues/201');
+            } catch (err) {
+               console.log('canvas is not installed');
             }
 
          } else {

@@ -2030,30 +2030,6 @@
 
       this._renderer.setClearColor(this.ctrl.background, 1);
 
-/*      if (usesvg) {
-         // this._renderer = new THREE.SVGRenderer( { precision: 0, astext: true } );
-         this._renderer = THREE.CreateSVGRenderer(false, 0, document);
-         if (this._renderer.makeOuterHTML !== undefined) {
-            // this is indication of new three.js functionality
-            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            this._renderer.workaround_id = JSROOT.svg_workaround.length;
-            JSROOT.svg_workaround[this._renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
-
-            this._renderer.domElement = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
-            this._renderer.domElement.setAttribute('jsroot_svg_workaround', this._renderer.workaround_id);
-         }
-      } else {
-         this._renderer = webgl ?
-                           new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: false,
-                                                     preserveDrawingBuffer: true }) :
-                           new THREE.SoftwareRenderer({ antialias: true });
-         this._renderer.setPixelRatio(window.devicePixelRatio);
-      }
-      this._renderer.setSize(w, h, !this._fit_main_area);
-      this._renderer.localClippingEnabled = true;
-
-      */
-
       if (this._fit_main_area && !this._usesvg) {
          this._renderer.domElement.style.width = "100%";
          this._renderer.domElement.style.height = "100%";

@@ -262,10 +262,6 @@
          // do rendering, most consuming time
          this.renderer.render(this.scene, this.camera);
 
-         // no idea why - SoftwareRenderer requires second call
-         if ((this.first_render_tm === 0) && THREE.SoftwareRenderer && (this.renderer instanceof THREE.SoftwareRenderer))
-             this.renderer.render(this.scene, this.camera);
-
          JSROOT.Painter.AfterRender3D(this.renderer);
 
          let tm2 = new Date();
