@@ -2017,7 +2017,7 @@
 
       this._scene.add(this._toplevel);
 
-      let rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._usesvgimg, this._webgl,
+      let rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._usesvgimg,
             { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
       this._webgl = rrr.usewebgl;
@@ -4109,7 +4109,7 @@
 
       painter._usesvgimg = !painter._usesvg && JSROOT.BatchMode;
 
-      painter._webgl = !painter._usesvg && JSROOT.Painter.TestWebGL();
+      painter._webgl = !painter._usesvg;
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
 

@@ -36,23 +36,6 @@
    * @private
    */
 
-   JSROOT.Painter.TestWebGL = function() {
-
-      if (JSROOT.gStyle.NoWebGL || JSROOT.nodejs) return false;
-
-      if ('_Detect_WebGL' in this) return this._Detect_WebGL;
-
-      try {
-         let canvas = document.createElement( 'canvas' );
-         this._Detect_WebGL = !! ( window.WebGLRenderingContext && ( canvas.getContext( 'webgl' ) || canvas.getContext( 'experimental-webgl' ) ) );
-         //res = !!window.WebGLRenderingContext &&  !!document.createElement('canvas').getContext('experimental-webgl');
-       } catch (e) {
-          this._Detect_WebGL = false;
-       }
-
-       return this._Detect_WebGL;
-   }
-
    /** Returns true if SVGRenderer must be used.
    *
    * This can be situation of Node.js without "canvas" module
@@ -78,7 +61,7 @@
       return this._Detect_UseSVGFor3D;
    }
 
-   /** Creates renderer for the 3D frawngs
+   /** Creates renderer for the 3D drawings
     *
     * width and height - dimension of canvas for rendering
     * usesvg - if SVGRenderer should be used
@@ -88,23 +71,16 @@
     * @private
     */
 
-   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg, makeimage, usewebgl, args) {
+   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg, makeimage, args) {
       let res = {
          renderer: null,
          dom: null,
          usesvg: usesvg,
-         usesvgimg: usesvg && JSROOT.gStyle.ImageSVG
+         usesvgimg: usesvg && JSROOT.gStyle.ImageSVG,
+         usewebgl: !usesvg
       }
 
       if (!args) args = { antialias: true, alpha: true };
-
-      if (JSROOT.nodejs) {
-         res.usewebgl = false;
-      } else if (usewebgl !== undefined) {
-         res.usewebgl = usewebgl;
-      } else {
-         res.usewebgl = JSROOT.Painter.TestWebGL();
-      }
 
       // solves problem with toDataUrl in headless mode of chrome
       // found https://stackoverflow.com/questions/48011613

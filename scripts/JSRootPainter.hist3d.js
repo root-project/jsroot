@@ -2642,7 +2642,7 @@
          use_lambert = true;
          if (this.options.GLBox === 12) use_colors = true;
 
-         let geom = JSROOT.Painter.TestWebGL() ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
+         let geom = main.webgl ? new THREE.SphereGeometry(0.5, 16, 12) : new THREE.SphereGeometry(0.5, 8, 6);
          geom.applyMatrix4( new THREE.Matrix4().makeRotationX( Math.PI / 2 ) );
 
          buffer_size = geom.faces.length*9;
