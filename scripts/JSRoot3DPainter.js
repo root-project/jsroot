@@ -23,7 +23,8 @@
 
    JSROOT.sources.push("3d");
 
-   if ((typeof document=='undefined') && (typeof window=='object')) document = window.document;
+   if ((typeof document == 'undefined') && (typeof window == 'object'))
+      document = window.document;
 
    if (typeof JSROOT.Painter != 'object')
       throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
@@ -44,6 +45,9 @@
    */
 
    JSROOT.Painter.UseSVGFor3D = function() {
+
+      return JSROOT.nodejs;
+
       if (!JSROOT.nodejs) return false;
 
       if (this._Detect_UseSVGFor3D !== undefined)

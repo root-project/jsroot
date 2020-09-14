@@ -195,8 +195,6 @@
                viewer.focus();
              } else {
 
-                JSROOT.gStyle.NoWebGL = (extra_opts.indexOf("webgl=0")>=0);
-
                 document.getElementById('viewer').innerHTML = "";
                 document.getElementById('viewer').style['background-color'] = "";
 
@@ -290,8 +288,6 @@
                if (entry.latex) url += "&latex=" + entry.latex;
                if (entry.style) url += "&style=" + entry.style;
             }
-
-            JSROOT.gStyle.NoWebGL = (extra_opts.indexOf("webgl=0")>=0); // disbale wbgl
 
             // console.log('KEY ', keyid, 'opt', opt);
             // if ((url.length==0) || (keyid != 'Misc')) return RunBigTest(0);

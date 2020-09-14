@@ -503,9 +503,6 @@
       let embed3d = JSROOT.GetUrlOption("embed3d", url);
       if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = parseInt(embed3d);
 
-      let webgl = JSROOT.GetUrlOption("webgl", url);
-      if ((webgl === "0") || (webgl === "false") || (webgl === "ie")) JSROOT.gStyle.NoWebGL = true;
-
       let geosegm = JSROOT.GetUrlOption("geosegm", url);
       if (geosegm !== null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
       let geocomp = JSROOT.GetUrlOption("geocomp", url);
@@ -2214,7 +2211,7 @@
       // only for debug purposes
       // arg.socket_kind = "longpoll";
 
-      var promise = new Promise((resolveFunc) => {
+      let promise = new Promise((resolveFunc) => {
          let handle = new WebWindowHandle(arg.socket_kind);
          handle.user_args = arg.user_args;
 
@@ -6745,10 +6742,11 @@
             if (JSROOT.nodejs)
                svg = svg.replace(/xlink_href_nodejs=/g, "xlink:href=");
 
-            if (has_workarounds)
+            if (has_workarounds) {
                svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
+            }
 
-            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")        // decode all URL
+            svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")  // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes
                .replace(/<g transform=\"translate\(\d+\,\d+\)\"><\/g>/g, "")  // remove all empty groups with transform
                .replace(/<g><\/g>/g, "");                                     // remove all empty groups
@@ -6772,6 +6770,7 @@
       eval('const { JSDOM } = require("jsdom"); JSROOT.nodejs_window = (new JSDOM("<!DOCTYPE html>hello")).window;');
       JSROOT.nodejs_document = JSROOT.nodejs_window.document; // used with three.js
       JSROOT.nodejs_window.d3 = d3.select(JSROOT.nodejs_document); //get d3 into the dom
+
       return build(JSROOT.nodejs_window.d3.select('body').append('div'));
    }
 

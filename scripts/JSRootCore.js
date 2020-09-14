@@ -174,7 +174,6 @@
          Embed3DinSVG: 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
          ImageSVG: !JSROOT.nodejs, // when producing SVG images, use <image> elements to insert 3D drawings from three.js,
                                    // To enable on nodejs, one should call "npm install canvas"
-         NoWebGL: false, // if true, WebGL will be disabled
          GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
          GeoCompressComp: true, // if one should compress faces after creation of composite shape,
          IgnoreUrlOptions: false, // if true, ignore all kind of URL options in the browser URL
