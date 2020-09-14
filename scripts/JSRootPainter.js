@@ -3294,7 +3294,7 @@
    TObjectPainter.prototype.embed_3d = function() {
       if (JSROOT.BatchMode) return 4; // in batch - directly create svg::image after rendering
       if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
-      if (JSROOT.browser.isFirefox /*|| JSROOT.browser.isWebKit*/)
+      if (JSROOT.browser.isFirefox)
          return JSROOT.gStyle.Embed3DinSVG; // use specified mode
       return 1; // default is overlay
    }
@@ -5569,15 +5569,6 @@
          }
       }
 
-      if (JSROOT.gStyle.MathJax !== undefined) {
-         switch (JSROOT.gStyle.MathJax) {
-            case 0: JSROOT.gStyle.Latex = 2; break;
-            case 2: JSROOT.gStyle.Latex = 4; break;
-            default: JSROOT.gStyle.Latex = 3;
-         }
-         delete JSROOT.gStyle.MathJax;
-      }
-
       if (typeof JSROOT.gStyle.Latex == 'string') {
          switch (JSROOT.gStyle.Latex) {
             case "off": JSROOT.gStyle.Latex = 0; break;
@@ -6739,12 +6730,8 @@
 
             let svg = main.html();
 
-            if (JSROOT.nodejs)
-               svg = svg.replace(/xlink_href_nodejs=/g, "xlink:href=");
-
-            if (has_workarounds) {
+            if (has_workarounds)
                svg = JSROOT.Painter.ProcessSVGWorkarounds(svg);
-            }
 
             svg = svg.replace(/url\(\&quot\;\#(\w+)\&quot\;\)/g, "url(#$1)")  // decode all URL
                .replace(/ class=\"\w*\"/g, "")                                // remove all classes

@@ -169,9 +169,8 @@
          FrameNDC: { fX1NDC: 0.07, fY1NDC: 0.12, fX2NDC: 0.95, fY2NDC: 0.88 },
          Palette: 57,
          Latex: 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
-         // MathJax : 0,  // deprecated, will be supported till JSROOT 6.0, use Latex variable  0 - never, 1 - only for complex cases, 2 - always
          ProgressBox: true,  // show progress box
-         Embed3DinSVG: 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (IE/WebKit), 2 - embed into SVG (only Firefox)
+         Embed3DinSVG: 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (Chrome), 2 - embed into SVG (only Firefox)
          ImageSVG: !JSROOT.nodejs, // when producing SVG images, use <image> elements to insert 3D drawings from three.js,
                                    // To enable on nodejs, one should call "npm install canvas"
          GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
