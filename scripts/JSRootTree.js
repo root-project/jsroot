@@ -74,8 +74,11 @@
       return this.names[indx];
    }
 
-   TSelector.prototype.ShowProgress = function(value) {
-      // this function can be used to check current TTree progress
+   /** @summary function called during TTree processing
+    * @abstract
+    * @param {number} progress - current value between 0 and 1
+    */
+   TSelector.prototype.ShowProgress = function(progress) {
    }
 
    /** @summary call this function to abort processing */
@@ -1937,7 +1940,7 @@
                                  loop_size: loop_size_name,
                                  member0: member,
                                  func: function(buf, obj) {
-                                    let cnt = obj[this.stl_size], arr = new Array(cnt), n = 0;
+                                    let cnt = obj[this.stl_size], arr = new Array(cnt);
                                     for (let n = 0; n < cnt; ++n) {
                                        if (this.loop_size) obj.$loop_size = obj[this.loop_size][n];
                                        this.member0.func(buf, obj);

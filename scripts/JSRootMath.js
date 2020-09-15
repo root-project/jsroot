@@ -676,7 +676,7 @@
 
    // =========================================================================
 
-   JSROOT.getMoreMethods = function(m,typename, obj) {
+   JSROOT.getMoreMethods = function(m, typename /*, obj*/) {
       // different methods which are typically used in TTree::Draw
 
       if (typename.indexOf("ROOT::Math::LorentzVector")===0) {

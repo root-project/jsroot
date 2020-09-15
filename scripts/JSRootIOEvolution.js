@@ -2163,7 +2163,7 @@
                      if (member.streamer) member.readelem = JSROOT.IO.ReadMapElement;
                   } else
                      if (stl === JSROOT.IO.kSTLbitset) {
-                        member.readelem = function(buf, obj) {
+                        member.readelem = function(buf/*, obj*/) {
                            return buf.ReadFastArray(buf.ntou4(), JSROOT.IO.kBool);
                         }
                      }
@@ -2482,7 +2482,7 @@
          const nobj = buf.ntoi4();
          obj.fLast = nobj - 1;
          obj.fLowerBound = buf.ntoi4();
-         const pidf = buf.ntou2();
+         /*const pidf = */ buf.ntou2();
          obj.fUIDs = buf.ReadFastArray(nobj, JSROOT.IO.kUInt);
       };
 
@@ -2690,7 +2690,7 @@
          obj._sharedProp = (v === 1) ? buf.ReadObjectAny() : buf.ClassStreamer({}, "RooCategorySharedProperties");
       }
 
-      cs['RooWorkspace::CodeRepo'] = function(buf, obj) {
+      cs['RooWorkspace::CodeRepo'] = function(buf /*, obj*/) {
          const sz = (buf.last_read_version == 2) ? 3 : 2;
          for (let i = 0; i < sz; ++i) {
             let cnt = buf.ntoi4() * ((i == 0) ? 4 : 3);
