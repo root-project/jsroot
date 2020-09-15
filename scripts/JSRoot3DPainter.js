@@ -264,8 +264,7 @@
          this.tt.style.left = (pos.l + 3) + 'px';
       };
 
-      this.show = function(v, mouse_pos, status_func) {
-         // if (JSROOT.gStyle.Tooltip <= 0) return;
+      this.show = function(v /*, mouse_pos, status_func*/) {
          if (!v || (v==="")) return this.hide();
 
          if (v && (typeof v =='object') && (v.lines || v.line)) {
@@ -484,7 +483,7 @@
             this.ContextMenu(this.mouse_ctxt, this.GetMouseIntersects(this.mouse_ctxt));
       }
 
-      control.ContextMenu = function(pos, intersects) {
+      control.ContextMenu = function(/* pos, intersects */) {
          // do nothing, function called when context menu want to be activated
       }
 
@@ -867,13 +866,13 @@
 
    InteractiveControl.prototype.cleanup = function() {}
 
-   InteractiveControl.prototype.extractIndex = function(intersect) { return undefined; }
+   InteractiveControl.prototype.extractIndex = function(/*intersect*/) { return undefined; }
 
-   InteractiveControl.prototype.setSelected = function(col, indx) {}
+   InteractiveControl.prototype.setSelected = function(/*col, indx*/) {}
 
-   InteractiveControl.prototype.setHighlight = function(col, indx) {}
+   InteractiveControl.prototype.setHighlight = function(/*col, indx*/) {}
 
-   InteractiveControl.prototype.checkHighlightIndex = function(indx) { return undefined; }
+   InteractiveControl.prototype.checkHighlightIndex = function(/*indx*/) { return undefined; }
 
    // ==============================================================================
 
@@ -1057,17 +1056,17 @@
 
       if (!main || !main.mode3d || !main.toplevel || !line) return;
 
-      let fN, fP, fOption, pnts = [];
+      let fN, fP, pnts = [];
 
       if (line._blob && (line._blob.length==4)) {
          // workaround for custom streamer for JSON, should be resolved
          fN = line._blob[1];
          fP = line._blob[2];
-         fOption = line._blob[3];
+         // fOption = line._blob[3];
       } else {
          fN = line.fN;
          fP = line.fP;
-         fOption = line.fOption;
+         // fOption = line.fOption;
       }
 
       for (let n=3;n<3*fN;n+=3)

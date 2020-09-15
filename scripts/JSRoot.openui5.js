@@ -29,7 +29,7 @@
 
    JSROOT.completeUI5Loading = function() {
       // when running with THttpServer, automatically set "rootui5" folder
-      var rootui5sys = undefined;
+      let rootui5sys = undefined;
       if (JSROOT.source_dir.indexOf("jsrootsys") >= 0)
          rootui5sys = JSROOT.source_dir.replace(/jsrootsys/g, "rootui5sys");
 
@@ -47,11 +47,11 @@
    function TryOpenOpenUI(sources) {
 
       // where to take openui5 sources
-      var src = sources.shift();
+      let src = sources.shift();
 
       if ((src.indexOf("roothandler")==0) && (src.indexOf("://")<0)) src = src.replace(/\:\//g,"://");
 
-      var element = document.createElement("script");
+      let element = document.createElement("script");
       element.setAttribute('type', "text/javascript");
       element.setAttribute('id', "sap-ui-bootstrap");
       // use nojQuery while we are already load jquery and jquery-ui, later one can use directly sap-ui-core.js

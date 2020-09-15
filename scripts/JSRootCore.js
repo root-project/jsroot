@@ -2338,7 +2338,7 @@
    }
 
    // Dummy function, will be redefined when JSRootPainter is loaded
-   JSROOT.progress = function(msg, tmout) {
+   JSROOT.progress = function(msg /*, tmout */) {
       if ((msg !== undefined) && (typeof msg=="string")) JSROOT.console(msg);
    }
 

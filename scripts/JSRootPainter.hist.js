@@ -1858,7 +1858,7 @@
       }, "objects");
    }
 
-   THistPainter.prototype.ScanContent = function(when_axis_changed) {
+   THistPainter.prototype.ScanContent = function(/*when_axis_changed*/) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values

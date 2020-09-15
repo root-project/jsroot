@@ -187,7 +187,7 @@
       return false;
    }
 
-   RHistPainter.prototype.DecodeOptions = function(opt) {
+   RHistPainter.prototype.DecodeOptions = function(/*opt*/) {
       if (!this.options) this.options = { Hist : 1 };
    }
 
@@ -211,7 +211,7 @@
       return 1;
    }
 
-   RHistPainter.prototype.ScanContent = function(when_axis_changed) {
+   RHistPainter.prototype.ScanContent = function(/*when_axis_changed*/) {
       // function will be called once new histogram or
       // new histogram content is assigned
       // one should find min,max,nbins, maxcontent values
@@ -257,7 +257,7 @@
       return true;
    }
 
-   RHistPainter.prototype.UpdateObject = function(obj, opt) {
+   RHistPainter.prototype.UpdateObject = function(obj /*, opt*/) {
 
       let origin = this.GetObject();
 
@@ -442,7 +442,7 @@
       JSROOT.CallBack(call_back);
    }
 
-   RHistPainter.prototype.ToggleTitle = function(arg) {
+   RHistPainter.prototype.ToggleTitle = function(/*arg*/) {
       return false;
    }
 
@@ -452,7 +452,7 @@
    RHistPainter.prototype.UpdateStatWebCanvas = function() {
    }
 
-   RHistPainter.prototype.ToggleStat = function(arg) {
+   RHistPainter.prototype.ToggleStat = function(/*arg*/) {
    }
 
    RHistPainter.prototype.GetSelectIndex = function(axis, size, add) {
@@ -485,7 +485,7 @@
       return true;
    }
 
-   RHistPainter.prototype.CreateStat = function(force) {
+   RHistPainter.prototype.CreateStat = function(/*force*/) {
       return null;
    }
 
@@ -506,7 +506,7 @@
          case "ToggleLogX": this.frame_painter().ToggleLog("x"); break;
          case "ToggleLogY": this.frame_painter().ToggleLog("y"); break;
          case "ToggleLogZ": this.frame_painter().ToggleLog("z"); break;
-         case "ToggleStatBox": this.ToggleStat(); return true; break;
+         case "ToggleStatBox": this.ToggleStat(); return true;
       }
       return false;
    }
@@ -590,8 +590,6 @@
    }
 
    RHistPainter.prototype.FillContextMenu = function(menu) {
-
-     let histo = this.GetHisto();
 
       menu.add("header:v7histo::anyname");
 
@@ -707,7 +705,7 @@
       menu.add("endsub:");
    }
 
-   RHistPainter.prototype.DrawColorPalette = function(enabled, postpone_draw, can_move) {
+   RHistPainter.prototype.DrawColorPalette = function(/*enabled, postpone_draw, can_move*/) {
       // only when create new palette, one could change frame size
 
       return null;
@@ -1030,7 +1028,7 @@
       return res;
    }
 
-   RH1Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   RH1Painter.prototype.FillStatistic = function(stat, dostat/*, dofit*/) {
 
       // no need to refill statistic if histogram is dummy
       if (this.IgnoreStatsFill()) return false;
@@ -1105,7 +1103,6 @@
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
           pmain = this.frame_painter(),
-          pthis = this,
           histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "";
@@ -1170,7 +1167,7 @@
                .style("fill", d3.rgb(this.fillatt.color).darker(0.5).toString());
    }
 
-   RH1Painter.prototype.DrawFilledErrors = function(handle, width, height) {
+   RH1Painter.prototype.DrawFilledErrors = function(handle /*, width, height*/) {
       this.CreateG(true);
 
       let left = handle.i1, right = handle.i2, di = handle.stepi,
@@ -1248,7 +1245,7 @@
           text_profile = show_text && (this.options.TextKind == "E") && this.IsRProfile(),
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx,
-          mpath = "", text_col, text_angle, text_size;
+          text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (this.v7EvalAttr("marker_style",1) > 1))
          show_markers = true;
@@ -1533,7 +1530,6 @@
       let width = this.frame_width(),
           height = this.frame_height(),
           pmain = this.frame_painter(),
-          painter = this,
           histo = this.GetHisto(), xaxis = this.GetAxis("x"),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
@@ -1940,7 +1936,7 @@
       if (canp) canp.ToggleProjection(this.is_projection, this.RedrawProjection.bind(this, "toggling", new_proj));
    }
 
-   RH2Painter.prototype.RedrawProjection = function(ii1, ii2, jj1, jj2) {
+   RH2Painter.prototype.RedrawProjection = function(ii1, ii2 /*, jj1, jj2*/) {
       // do nothing for the moment
 
       if (ii1 === "toggling") {
@@ -2148,9 +2144,8 @@
    RH2Painter.prototype.CountStat = function(cond) {
       let histo = this.GetHisto(),
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
-          stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
+          stat_sumx2 = 0, stat_sumy2 = 0,
           xside, yside, xx, yy, zz,
-          fp = this.frame_painter(),
           res = { name: "histo", entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
 
       let xleft = this.GetSelectIndex("x", "left"),
@@ -2184,7 +2179,6 @@
             stat_sumy1 += yy * zz;
             stat_sumx2 += xx * xx * zz;
             stat_sumy2 += yy * yy * zz;
-            stat_sumxy += xx * yy * zz;
          }
       }
 
@@ -2203,7 +2197,7 @@
       return res;
    }
 
-   RH2Painter.prototype.FillStatistic = function(stat, dostat, dofit) {
+   RH2Painter.prototype.FillStatistic = function(stat, dostat /*, dofit*/) {
 
       // no need to refill statistic if histogram is dummy
       // if (this.IgnoreStatsFill()) return false;
@@ -2261,7 +2255,7 @@
       return true;
    }
 
-   RH2Painter.prototype.DrawBinsColor = function(w,h) {
+   RH2Painter.prototype.DrawBinsColor = function() {
       let histo = this.GetHisto(),
           handle = this.PrepareDraw(),
           colPaths = [], currx = [], curry = [],
@@ -2310,8 +2304,7 @@
    }
 
    RH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
-      let histo = this.GetHisto(), ddd = 0,
-          painter = this,
+      let histo = this.GetHisto(),
           kMAXCONTOUR = 2004,
           kMAXCOUNT = 2000,
           // arguments used in the PaintContourLine
@@ -2321,7 +2314,7 @@
           lj = 0, ipoly, poly, polys = [], np, npmax = 0,
           x = [0.,0.,0.,0.], y = [0.,0.,0.,0.], zc = [0.,0.,0.,0.], ir = [0,0,0,0],
           i, j, k, n, m, ix, ljfill, count,
-          xsave, ysave, itars, ix, jx,
+          xsave, ysave, itars, jx,
           di = handle.stepi, dj = handle.stepj;
 
       function BinarySearch(zc) {
@@ -2671,7 +2664,7 @@
       return cmd;
    }
 
-   RH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
+   RH2Painter.prototype.DrawPolyBinsColor = function() {
       let histo = this.GetHisto(),
           pmain = this.frame_painter(),
           colPaths = [], textbins = [],
@@ -2752,9 +2745,9 @@
       return { poly: true };
    }
 
-   RH2Painter.prototype.DrawBinsText = function(w, h, handle) {
+   RH2Painter.prototype.DrawBinsText = function(handle) {
       let histo = this.GetHisto(),
-          i,j,binz,colindx,binw,binh,lbl,posx,posy,sizex,sizey;
+          i,j,binz,binw,binh,lbl,posx,posy,sizex,sizey;
 
       if (handle===null) handle = this.PrepareDraw({ rounding: false });
 
@@ -2807,9 +2800,9 @@
       return handle;
    }
 
-   RH2Painter.prototype.DrawBinsArrow = function(w, h) {
+   RH2Painter.prototype.DrawBinsArrow = function() {
       let histo = this.GetHisto(), cmd = "",
-          i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
+          i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.PrepareDraw({ rounding: false }),
           scale_x = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
@@ -2874,7 +2867,7 @@
    }
 
 
-   RH2Painter.prototype.DrawBinsBox = function(w,h) {
+   RH2Painter.prototype.DrawBinsBox = function() {
 
       let histo = this.GetHisto(),
           handle = this.PrepareDraw({ rounding: false }),
@@ -2891,7 +2884,7 @@
       let absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
-          colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
+          zdiff, dgrx, dgry, xx, yy, ww, hh,
           xyfactor = 1, uselogz = false, logmin = 0, logmax = 1,
           di = handle.stepi, dj = handle.stepj;
 
@@ -2950,8 +2943,6 @@
          }
       }
 
-      console.log('LINE COLOR', this.lineatt.color, "FILL COLOR", this.fillatt.color);
-
       if (res.length > 0) {
          let elem = this.draw_g.append("svg:path")
                                .attr("d", res)
@@ -2989,11 +2980,11 @@
       return handle;
    }
 
-   RH2Painter.prototype.DrawCandle = function(w,h) {
+   RH2Painter.prototype.DrawCandle = function(w) {
       let histo = this.GetHisto(), yaxis = this.GetAxis("y"),
           handle = this.PrepareDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
-          i, j, y, sum0, sum1, sum2, cont, center, counter, integral, w, pnt,
+          i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
 
       // create attribute only when necessary
@@ -3098,7 +3089,7 @@
       return handle;
    }
 
-   RH2Painter.prototype.DrawBinsScatter = function(w,h) {
+   RH2Painter.prototype.DrawBinsScatter = function() {
       let histo = this.GetHisto(),
           fp = this.frame_painter(),
           handle = this.PrepareDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
@@ -3144,7 +3135,7 @@
       // limit filling factor, do not try to produce as many points as filled area;
       if (this.maxbin > 0.7) factor = 0.7/this.maxbin;
 
-      let nlevels = Math.round(handle.max - handle.min);
+      // let nlevels = Math.round(handle.max - handle.min);
 
       // now start build
       for (i = handle.i1; i < handle.i2; i += di) {
@@ -3254,26 +3245,26 @@
       // if (this.lineatt.color == 'none') this.lineatt.color = 'cyan';
 
       if (this.IsTH2Poly()) {
-         handle = this.DrawPolyBinsColor(w, h);
+         handle = this.DrawPolyBinsColor();
       } else {
          if (this.options.Scat)
-            handle = this.DrawBinsScatter(w, h);
+            handle = this.DrawBinsScatter();
          else if (this.options.Color)
-            handle = this.DrawBinsColor(w, h);
+            handle = this.DrawBinsColor();
          else if (this.options.Box)
-            handle = this.DrawBinsBox(w, h);
+            handle = this.DrawBinsBox();
          else if (this.options.Arrow)
-            handle = this.DrawBinsArrow(w, h);
+            handle = this.DrawBinsArrow();
          else if (this.options.Contour > 0)
             handle = this.DrawBinsContour(w, h);
          else if (this.options.Candle)
-            handle = this.DrawCandle(w, h);
+            handle = this.DrawCandle(w);
 
          if (this.options.Text)
-            handle = this.DrawBinsText(w, h, handle);
+            handle = this.DrawBinsText(handle);
 
          if (!handle)
-            handle = this.DrawBinsColor(w, h);
+            handle = this.DrawBinsColor();
       }
 
       this.tt_handle = handle;
@@ -3511,7 +3502,7 @@
          return res;
       }
 
-      let i, j, binz = 0, colindx = null;
+      let j, binz = 0, colindx = null;
 
       // search bins position
       for (i = h.i1; i < h.i2; ++i)
@@ -3726,7 +3717,7 @@
       return 3;
    }
 
-   function drawHist3(divid, histo, opt) {
+   function drawHist3(divid, histo /*, opt*/) {
       // create painter and add it to canvas
       let painter = new RH3Painter(histo);
 
@@ -3871,8 +3862,8 @@
 
    RHistStatsPainter.prototype.DrawStatistic = function(lines) {
 
-      let text_size  = this.v7EvalAttr("stats_text_size", 12),
-          text_color = this.v7EvalColor("stats_text_color", "black"),
+      // let text_size  = this.v7EvalAttr("stats_text_size", 12),
+      let text_color = this.v7EvalColor("stats_text_color", "black"),
           text_align = this.v7EvalAttr("stats_text_align", 22),
           text_font  = this.v7EvalAttr("stats_text_font", 41),
           first_stat = 0, num_cols = 0, maxlen = 0,
