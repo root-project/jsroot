@@ -141,16 +141,15 @@
 
       this.SetCameraPosition(true, this.root_pad());
 
-      let res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height);
+      this.renderer = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height);
 
-      this.renderer = res.renderer;
-      this.webgl = res.usewebgl;
-      this.add_3d_canvas(sz, res.dom);
+      this.webgl = (this.renderer.jsroot_kind === JSROOT.constants.Render3D.WebGL);
+      this.add_3d_canvas(sz, this.renderer.jsroot_dom);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
 
-      if (JSROOT.BatchMode) return;
+      if (JSROOT.BatchMode || !this.webgl) return;
 
       this.control = JSROOT.Painter.CreateOrbitControl(this, this.camera, this.scene, this.renderer, this.lookat);
 

@@ -3288,15 +3288,25 @@
 
    /** @summary Returns embed mode for 3D drawings (three.js) inside SVG.
     *
-    *    - 0  no embedding, 3D drawing take full size of canvas
-    *    - 1  no embedding, canvas placed over svg with proper size (resize problem may appear)
-    *    - 2  normall embedding via ForeginObject, works only with Firefox
-    *    - 3  embedding 3D drawing as SVG canvas, requires SVG renderer
-    *    - 4  embed 3D drawing as <image> element
+    *    0  -  no embedding, 3D drawing take full size of canvas
+    *    1  -  no embedding, canvas placed over svg with proper size (resize problem may appear)
+    *    2  -  normall embedding via ForeginObject, works only with Firefox
+    *    3  -  embedding 3D drawing as SVG canvas, requires SVG renderer
+    *    4  -  embed 3D drawing as <image> element
     *
     *  @private
     */
    TObjectPainter.prototype.embed_3d = function() {
+      // TODO: this is same code as in Create3DRenderer, make use of same
+      let kind = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+      let rc = JSROOT.constants.Render3D;
+
+      if (kind == rc.Default) kind = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
+      if (JSROOT.BatchMode && (kind == rc.WebGL)) kind = rc.WebGLImage;
+
+      // all non-webgl elements can be embedded into SVG as is
+      if (kind !== rc.WebGL) return JSROOT.constants.Embed3D.EmbedSVG;
+
       if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
          return JSROOT.settings.Embed3D;
 
@@ -3416,7 +3426,7 @@
 
    /** @summary Add 3D canvas
     * @private */
-   TObjectPainter.prototype.add_3d_canvas = function(size, canv) {
+   TObjectPainter.prototype.add_3d_canvas = function(size, canv, webgl) {
 
       if (!canv || (size.can3d < -1)) return;
 
@@ -3432,6 +3442,9 @@
 
          return;
       }
+
+      if ((size.can3d > 0) && !webgl)
+         size.can3d = JSROOT.constants.Embed3D.EmbedSVG;
 
       this.access_3d_kind(size.can3d);
 
@@ -3468,7 +3481,7 @@
 
          let svg = this.svg_pad();
 
-         if ((size.can3d === 3) || (size.can3d === 4)) {
+         if (size.can3d === JSROOT.constants.Embed3D.EmbedSVG) {
             // this is SVG mode or image mode - just create group to hold element
 
             if (elem.empty())
@@ -5365,9 +5378,9 @@
             if (subpos.square_root) {
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
-               let len = 2, scale = 1, sqrt_dy = 0, yscale = 1,
-                  bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
-                  be = get_boundary(this, subnode1, subpos.rect);
+               let len = 2, sqrt_dy = 0, yscale = 1,
+                   bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
+                   be = get_boundary(this, subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {

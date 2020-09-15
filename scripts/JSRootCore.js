@@ -163,6 +163,7 @@
          Default: 0,  // default
          Overlay: 1,  // overlay
          Embed: 2,    // embed
+         EmbedSVG: 3,  // embeding SVG image or SVG structures
          fromString: function(s) {
             if (s === "embed") return this.Embed;
             if (s === "overlay") return this.Overlay;

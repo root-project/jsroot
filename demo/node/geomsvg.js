@@ -10,7 +10,7 @@ console.log('JSROOT version', jsroot.version);
 
 jsroot.HttpRequest("https://root.cern/js/files/geom/simple_alice.json.gz", 'object').then(obj => {
    jsroot.MakeSVG({ object: obj, width: 1200, height: 800 }).then(svg => {
-      console.log('Creating alice_geom.svg size', svg.length);
       fs.writeFileSync("alice_geom.svg", svg);
+      console.log('Create alice_geom.svg size', svg.length);
    });
 });
