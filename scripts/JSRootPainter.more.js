@@ -686,12 +686,10 @@
 
    TF1Painter.prototype.Redraw = function() {
 
-      let w = this.frame_width(),
-          h = this.frame_height(),
+      let h = this.frame_height(),
           tf1 = this.GetObject(),
           fp = this.frame_painter(),
-          pmain = this.main_painter(),
-          name = this.GetTipName("\n");
+          pmain = this.main_painter();
 
       this.CreateG(true);
 
@@ -1012,7 +1010,7 @@
    /** @summary Check if user range can be unzommed
     * @desc Used when graph points covers larger range than provided histogram
     * @private*/
-   TGraphPainter.prototype.UnzoomUserRange = function(dox, doy, doz) {
+   TGraphPainter.prototype.UnzoomUserRange = function(dox, doy /*, doz*/) {
       let graph = this.GetObject();
       if (this._own_histogram || !graph) return false;
 
@@ -1438,8 +1436,7 @@
 
       if (this.draw_kind!="nodes") return null;
 
-      let width = this.frame_width(),
-          height = this.frame_height(),
+      let height = this.frame_height(),
           pmain = this.frame_painter(),
           painter = this,
           findbin = null, best_dist2 = 1e10, best = null,
@@ -1541,7 +1538,6 @@
       if (!this.bins) return null;
 
       let islines = (this.draw_kind=="lines"),
-          ismark = (this.draw_kind=="mark"),
           bestindx = -1,
           bestbin = null,
           bestdist = 1e10,
@@ -1795,7 +1791,7 @@
             this.DrawBins();
          }
       } else {
-         let exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
+         exec = "SetPoint(" + this.move_bin.indx + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          if ((this.move_bin.indx == 0) && this.MatchObjectType('TCutG'))
             exec += ";;SetPoint(" + (this.GetObject().fNpoints-1) + "," + this.move_bin.x + "," + this.move_bin.y + ")";
          delete this.move_binindx;
@@ -2300,7 +2296,7 @@
          interactive.on("wheel", this.MouseWheel.bind(this));
    }
 
-   function drawGraphPolargram(divid, polargram, opt) {
+   function drawGraphPolargram(divid, polargram /*, opt*/) {
 
       let painter = new TGraphPolargramPainter(polargram);
 
@@ -2725,8 +2721,7 @@
       let w = this.frame_width(),
           h = this.frame_height(),
           spline = this.GetObject(),
-          pmain = this.frame_painter(),
-          name = this.GetTipName("\n");
+          pmain = this.frame_painter();
 
       this.CreateG(true);
 
@@ -2804,7 +2799,7 @@
 
    }
 
-   TSplinePainter.prototype.CanZoomIn = function(axis,min,max) {
+   TSplinePainter.prototype.CanZoomIn = function(axis/*,min,max*/) {
       if (axis!=="x") return false;
 
       let spline = this.GetObject();
@@ -3094,7 +3089,7 @@
       painter.FillGraph(gr, opt);
 
       return JSROOT.draw(divid, gr, opt)
-                   .then(function(grp) {
+                   .then(() => {
                        painter.SetDivId(divid);
                        painter.DrawingReady();
                        return painter;

@@ -74,7 +74,7 @@
       return new JSROOT.ColorPalette(palette);
    }
 
-   JSROOT.Painter.CreateGradientColorTable = function(Stops, Red, Green, Blue, NColors, alpha) {
+   JSROOT.Painter.CreateGradientColorTable = function(Stops, Red, Green, Blue, NColors/*, alpha*/) {
       // skip all checks
        let palette = [];
 
@@ -624,7 +624,7 @@
       if (!individual_positioning) {
 
          // for characters like 'p' or 'y' several more pixels required to stay in the box when drawn in last line
-         let stepy = height / nlines, has_head = false, margin_x = pt.fMargin * width, max_font_size = 0;
+         let stepy = height / nlines, margin_x = pt.fMargin * width, max_font_size = 0;
 
          // for single line (typically title) limit font size
          if ((nlines == 1) && (pt.fTextSize > 0)) {
@@ -855,8 +855,6 @@
           pos_x = parseInt(this.draw_g.attr("x")), // pave position
           pos_y = parseInt(this.draw_g.attr("y")),
           width = this.pad_width(),
-          height = this.pad_height(),
-          axisOffset = axis.fLabelOffset * width,
           main = this.main_painter(),
           framep = this.frame_painter(),
           zmin = 0, zmax = 100,
@@ -2469,7 +2467,7 @@
          return true;
       }
 
-      function UzoomMinMax(ndim, hist) {
+      function UzoomMinMax(ndim) {
          if (painter.Dimension()!==ndim) return false;
          if ((painter.options.minimum===-1111) && (painter.options.maximum===-1111)) return false;
          if (!painter.draw_content) return false; // if not drawing content, not change min/max
@@ -2479,8 +2477,8 @@
       }
 
       if (dox && UnzoomTAxis(histo.fXaxis)) res = true;
-      if (doy && (UnzoomTAxis(histo.fYaxis) || UzoomMinMax(1, histo))) res = true;
-      if (doz && (UnzoomTAxis(histo.fZaxis) || UzoomMinMax(2, histo))) res = true;
+      if (doy && (UnzoomTAxis(histo.fYaxis) || UzoomMinMax(1))) res = true;
+      if (doz && (UnzoomTAxis(histo.fZaxis) || UzoomMinMax(2))) res = true;
 
       return res;
    }
@@ -2733,7 +2731,7 @@
          case "ToggleLogX": fp.ToggleLog("x"); break;
          case "ToggleLogY": fp.ToggleLog("y"); break;
          case "ToggleLogZ": fp.ToggleLog("z"); break;
-         case "ToggleStatBox": this.ToggleStat(); return true; break;
+         case "ToggleStatBox": this.ToggleStat(); return true;
       }
       return false;
    }
@@ -3489,16 +3487,14 @@
    }
 
    /** @summary Draw histogram as bars @private */
-   TH1Painter.prototype.DrawBars = function(width, height) {
+   TH1Painter.prototype.DrawBars = function(height) {
 
       this.CreateG(true);
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 1),
           pmain = this.frame_painter(),
-          pad = this.root_pad(),
           histo = this.GetHisto(), xaxis = histo.fXaxis,
-          pthis = this,
           show_text = this.options.Text, text_col, text_angle, text_size,
           i, x1, x2, grx1, grx2, y, gry1, gry2, w,
           bars = "", barsl = "", barsr = "",
@@ -3589,7 +3585,7 @@
          this.FinishTextDrawing(this.draw_g);
    }
 
-   TH1Painter.prototype.DrawFilledErrors = function(width, height) {
+   TH1Painter.prototype.DrawFilledErrors = function() {
       this.CreateG(true);
 
       let left = this.GetSelectIndex("x", "left", -1),
@@ -3637,15 +3633,14 @@
           return this.RemoveDrawG();
 
       if (this.options.Bar)
-         return this.DrawBars(width, height);
+         return this.DrawBars(height);
 
       if ((this.options.ErrorKind === 3) || (this.options.ErrorKind === 4))
-         return this.DrawFilledErrors(width, height);
+         return this.DrawFilledErrors();
 
       let left = this.GetSelectIndex("x", "left", -1),
           right = this.GetSelectIndex("x", "right", 2),
           pmain = this.frame_painter(),
-          pad = this.root_pad(),
           histo = this.GetHisto(),
           xaxis = histo.fXaxis,
           pthis = this,
@@ -3660,7 +3655,7 @@
           path_fill = null, path_err = null, path_marker = null, path_line = null,
           do_marker = false, do_err = false,
           endx = "", endy = "", dend = 0, my, yerr1, yerr2, bincont, binerr, mx1, mx2, midx, mmx1, mmx2,
-          mpath = "", text_col, text_angle, text_size;
+          text_col, text_angle, text_size;
 
       if (show_errors && !show_markers && (histo.fMarkerStyle > 1))
          show_markers = true;
@@ -3746,7 +3741,7 @@
          return true;
       }
 
-      function draw_errbin(bin) {
+      function draw_errbin() {
          if (pthis.options.errorX > 0) {
             mmx1 = Math.round(midx - (mx2-mx1)*pthis.options.errorX);
             mmx2 = Math.round(midx + (mx2-mx1)*pthis.options.errorX);
@@ -3781,7 +3776,7 @@
                   if ((path_marker !== null) && do_marker)
                      path_marker += pthis.markeratt.create(midx, my);
                   if ((path_err !== null) && do_err)
-                     draw_errbin(bin);
+                     draw_errbin();
                }
             }
          }
@@ -3795,7 +3790,7 @@
                   if (path_marker !== null)
                      path_marker += pthis.markeratt.create(midx, my);
                   if (path_err !== null)
-                     draw_errbin(i);
+                     draw_errbin();
                }
             }
             do_err = do_marker = false;
@@ -3981,8 +3976,6 @@
       let width = this.frame_width(),
           height = this.frame_height(),
           pmain = this.frame_painter(),
-          pad = this.root_pad(),
-          painter = this,
           histo = this.GetHisto(),
           findbin = null, show_rect = true,
           grx1, midx, grx2, gry1, midy, gry2, gapx = 2,
@@ -4273,7 +4266,7 @@
       this[funcname](callback, reason);
    }
 
-   TH1Painter.prototype.Draw2D = function(call_back, reason) {
+   TH1Painter.prototype.Draw2D = function(call_back /*, reason*/) {
       this.Clear3DScene();
       this.mode3d = false;
 
@@ -4640,7 +4633,7 @@
    TH2Painter.prototype.CountStat = function(cond) {
       let histo = this.GetHisto(), xaxis = histo.fXaxis, yaxis = histo.fYaxis,
           stat_sum0 = 0, stat_sumx1 = 0, stat_sumy1 = 0,
-          stat_sumx2 = 0, stat_sumy2 = 0, stat_sumxy = 0,
+          stat_sumx2 = 0, stat_sumy2 = 0,
           xside, yside, xx, yy, zz,
           fp = this.frame_painter(),
           res = { name: histo.fName, entries: 0, integral: 0, meanx: 0, meany: 0, rmsx: 0, rmsy: 0, matrix: [0,0,0,0,0,0,0,0,0], xmax: 0, ymax:0, wmax: null };
@@ -4696,7 +4689,6 @@
             stat_sumy1 += yy * zz;
             stat_sumx2 += xx * xx * zz;
             stat_sumy2 += yy * yy * zz;
-            stat_sumxy += xx * yy * zz;
          }
       } else {
          let xleft = this.GetSelectIndex("x", "left"),
@@ -4730,7 +4722,7 @@
                stat_sumy1 += yy * zz;
                stat_sumx2 += xx * xx * zz;
                stat_sumy2 += yy * yy * zz;
-               stat_sumxy += xx * yy * zz;
+               // stat_sumxy += xx * yy * zz;
             }
          }
       }
@@ -4741,7 +4733,7 @@
          stat_sumx2 = histo.fTsumwx2;
          stat_sumy1 = histo.fTsumwy;
          stat_sumy2 = histo.fTsumwy2;
-         stat_sumxy = histo.fTsumwxy;
+         // stat_sumxy = histo.fTsumwxy;
       }
 
       if (stat_sum0 > 0) {
@@ -4817,7 +4809,7 @@
       return true;
    }
 
-   TH2Painter.prototype.DrawBinsColor = function(w,h) {
+   TH2Painter.prototype.DrawBinsColor = function() {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           colPaths = [], currx = [], curry = [],
@@ -4870,8 +4862,7 @@
    }
 
    TH2Painter.prototype.BuildContour = function(handle, levels, palette, contour_func) {
-      let histo = this.GetObject(), ddd = 0,
-          painter = this,
+      let histo = this.GetObject(),
           kMAXCONTOUR = 2004,
           kMAXCOUNT = 2000,
           // arguments used in the PaintContourLine
@@ -5085,11 +5076,11 @@
       }
    }
 
-   TH2Painter.prototype.DrawBinsContour = function(frame_w,frame_h) {
-      let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 });
-
-      // get levels
-      let levels = this.GetContour(),
+   TH2Painter.prototype.DrawBinsContour = function() {
+      let handle = this.PrepareColorDraw({ rounding: false, extra: 100, original: this.options.Proj != 0 }),
+          frame_w = this.frame_width(),
+          frame_h = this.frame_height(),
+          levels = this.GetContour(),
           palette = this.GetPalette(),
           painter = this, main = this.frame_painter();
 
@@ -5231,9 +5222,10 @@
       return cmd;
    }
 
-   TH2Painter.prototype.DrawPolyBinsColor = function(w,h) {
+   TH2Painter.prototype.DrawPolyBinsColor = function() {
       let histo = this.GetObject(),
           pmain = this.frame_painter(),
+          h = this.frame_height(),
           colPaths = [], textbins = [],
           colindx, cmd, bin, item,
           i, len = histo.fBins.arr.length;
@@ -5315,9 +5307,10 @@
       return { poly: true };
    }
 
-   TH2Painter.prototype.DrawBinsText = function(w, h, handle) {
+   TH2Painter.prototype.DrawBinsText = function(handle) {
       let histo = this.GetObject(),
-          i,j,binz,errz,colindx,binw,binh,lbl,lble,posx,posy,sizex,sizey,
+          h = this.frame_height(),
+          i,j,binz,errz,binw,binh,lbl,lble,posx,posy,sizex,sizey,
           text_col = this.get_color(histo.fMarkerColor),
           text_angle = -1*this.options.TextAngle,
           text_g = this.draw_g.append("svg:g").attr("class","th2_text"),
@@ -5381,9 +5374,9 @@
       return handle;
    }
 
-   TH2Painter.prototype.DrawBinsArrow = function(w, h) {
+   TH2Painter.prototype.DrawBinsArrow = function() {
       let histo = this.GetObject(), cmd = "",
-          i,j,binz,colindx,binw,binh,lbl, loop, dn = 1e-30, dx, dy, xc,yc,
+          i,j, dn = 1e-30, dx, dy, xc,yc,
           dxn,dyn,x1,x2,y1,y2, anr,si,co,
           handle = this.PrepareColorDraw({ rounding: false }),
           scale_x  = (handle.grx[handle.i2] - handle.grx[handle.i1])/(handle.i2 - handle.i1 + 1-0.03)/2,
@@ -5447,7 +5440,7 @@
    }
 
 
-   TH2Painter.prototype.DrawBinsBox = function(w,h) {
+   TH2Painter.prototype.DrawBinsBox = function() {
 
       let histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: false }),
@@ -5466,7 +5459,7 @@
       let absmax = Math.max(Math.abs(main.maxbin), Math.abs(main.minbin)),
           absmin = Math.max(0, main.minbin),
           i, j, binz, absz, res = "", cross = "", btn1 = "", btn2 = "",
-          colindx, zdiff, dgrx, dgry, xx, yy, ww, hh, cmd1, cmd2,
+          zdiff, dgrx, dgry, xx, yy, ww, hh,
           xyfactor = 1, uselogz = false, logmin = 0, logmax = 1;
 
       if (this.root_pad().fLogz && (absmax>0)) {
@@ -5561,10 +5554,11 @@
       return handle;
    }
 
-   TH2Painter.prototype.DrawCandle = function(w,h) {
+   TH2Painter.prototype.DrawCandle = function() {
       let histo = this.GetHisto(),
           handle = this.PrepareColorDraw(),
           pmain = this.frame_painter(), // used for axis values conversions
+          w = this.frame_width(),
           i, j, y, sum1, cont, center, counter, integral, pnt,
           bars = "", markers = "", posy;
 
@@ -5673,7 +5667,7 @@
       return handle;
    }
 
-   TH2Painter.prototype.DrawBinsScatter = function(w,h) {
+   TH2Painter.prototype.DrawBinsScatter = function() {
       let histo = this.GetObject(),
           handle = this.PrepareColorDraw({ rounding: true, pixel_density: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
@@ -5819,31 +5813,29 @@
 
       this.CreateG(true);
 
-      let w = this.frame_width(),
-          h = this.frame_height(),
-          handle = null;
+      let handle = null;
 
       if (this.IsTH2Poly()) {
-         handle = this.DrawPolyBinsColor(w, h);
+         handle = this.DrawPolyBinsColor();
       } else {
          if (this.options.Scat)
-            handle = this.DrawBinsScatter(w, h);
+            handle = this.DrawBinsScatter();
          else if (this.options.Color)
-            handle = this.DrawBinsColor(w, h);
+            handle = this.DrawBinsColor();
          else if (this.options.Box)
-            handle = this.DrawBinsBox(w, h);
+            handle = this.DrawBinsBox();
          else if (this.options.Arrow)
-            handle = this.DrawBinsArrow(w, h);
+            handle = this.DrawBinsArrow();
          else if (this.options.Contour)
-            handle = this.DrawBinsContour(w, h);
+            handle = this.DrawBinsContour();
          else if (this.options.Candle)
-            handle = this.DrawCandle(w, h);
+            handle = this.DrawCandle();
 
          if (this.options.Text)
-            handle = this.DrawBinsText(w, h, handle);
+            handle = this.DrawBinsText(handle);
 
          if (!handle)
-            handle = this.DrawBinsScatter(w, h);
+            handle = this.DrawBinsScatter();
       }
 
       this.tt_handle = handle;
@@ -6207,7 +6199,7 @@
       return !obj || (obj.FindBin(max,0.5) - obj.FindBin(min,0) > 1);
    }
 
-   TH2Painter.prototype.Draw2D = function(call_back, resize) {
+   TH2Painter.prototype.Draw2D = function(call_back /*, resize*/) {
 
       this.Clear3DScene();
       this.mode3d = false;
@@ -6387,7 +6379,7 @@
       hpainter.tf2_typename = func._typename;
       hpainter.tf2_nosave = d.check('NOSAVE');
 
-      hpainter.UpdateObject = function(obj, opt) {
+      hpainter.UpdateObject = function(obj /*, opt*/) {
          if (!obj || (this.tf2_typename != obj._typename)) return false;
 
          createTF2Histogram(obj, this.tf2_nosave, this.GetHisto());
