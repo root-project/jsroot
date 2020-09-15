@@ -601,6 +601,22 @@
       this.extendRootColors(this.root_colors, objarr);
    }
 
+    /** Define rendering kind which will be used for rendering of 3D elements
+     *
+     * @param {value} [render3d] - preconfigured value, will be used if applicable
+     * @returns {value} - rendering kind, see JSROOT.constants.Render3D
+     * @private
+     */
+   Painter.GetRender3DKind = function(render3d) {
+      if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+      let rc = JSROOT.constants.Render3D;
+
+      if (render3d == rc.Default) render3d = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
+      if (JSROOT.BatchMode && (render3d == rc.WebGL)) render3d = rc.WebGLImage;
+
+      return render3d;
+   }
+
    // =====================================================================
 
    /**
@@ -3290,22 +3306,17 @@
     *
     *    0  -  no embedding, 3D drawing take full size of canvas
     *    1  -  no embedding, canvas placed over svg with proper size (resize problem may appear)
-    *    2  -  normall embedding via ForeginObject, works only with Firefox
-    *    3  -  embedding 3D drawing as SVG canvas, requires SVG renderer
-    *    4  -  embed 3D drawing as <image> element
+    *    2  -  embedding via ForeginObject, works only with Firefox
+    *    3  -  embedding as SVG element (image or svg)
     *
     *  @private
     */
-   TObjectPainter.prototype.embed_3d = function() {
-      // TODO: this is same code as in Create3DRenderer, make use of same
-      let kind = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
-      let rc = JSROOT.constants.Render3D;
-
-      if (kind == rc.Default) kind = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
-      if (JSROOT.BatchMode && (kind == rc.WebGL)) kind = rc.WebGLImage;
+   TObjectPainter.prototype.embed_3d = function(render3d) {
+      render3d = JSROOT.Painter.GetRender3DKind(render3d);
 
       // all non-webgl elements can be embedded into SVG as is
-      if (kind !== rc.WebGL) return JSROOT.constants.Embed3D.EmbedSVG;
+      if (render3d !== JSROOT.constants.Render3D.WebGL)
+         return JSROOT.constants.Embed3D.EmbedSVG;
 
       if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
          return JSROOT.settings.Embed3D;
@@ -3336,9 +3347,9 @@
     * @desc One uses frame sizes for the 3D drawing - like TH2/TH3 objects
     * @private
     */
-   TObjectPainter.prototype.size_for_3d = function(can3d) {
+   TObjectPainter.prototype.size_for_3d = function(can3d, render3d) {
 
-      if (can3d === undefined) can3d = this.embed_3d();
+      if (can3d === undefined) can3d = this.embed_3d(render3d);
 
       let pad = this.svg_pad(this.this_pad_name),
          clname = "draw3d_" + (this.this_pad_name || this.pad_name || 'canvas');

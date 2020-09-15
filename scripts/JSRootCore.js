@@ -153,16 +153,17 @@
          WebGLImage: 2,  // convert WebGL into svg:image
          SVG: 3,         // use SVGRenderer
          fromString: function(s) {
-            if (s === "webgl") return this.WebGL;
+            if ((s === "webgl") || (s == "gl")) return this.WebGL;
             if (s === "img") return this.WebGLImage;
             if (s === "svg") return this.SVG;
             return this.Default;
          }
       },
       Embed3D: {
-         Default: 0,  // default
-         Overlay: 1,  // overlay
-         Embed: 2,    // embed
+         NoEmbed: -1,  // 3d drawing use full available space
+         Default: 0,   // default
+         Overlay: 1,   // overlay
+         Embed: 2,     // embed
          EmbedSVG: 3,  // embeding SVG image or SVG structures
          fromString: function(s) {
             if (s === "embed") return this.Embed;

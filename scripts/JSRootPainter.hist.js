@@ -1442,7 +1442,7 @@
               Optimize: JSROOT.gStyle.OptimizeDraw, Mode3D: false,
               FrontBox: true, BackBox: true,
               _pmc: false, _plc: false, _pfc: false, need_fillcol: false,
-              minimum: -1111, maximum: -1111, ymin:0, ymax:0 });
+              minimum: -1111, maximum: -1111, ymin: 0, ymax: 0 });
    }
 
    THistDrawOptions.prototype.Decode = function(opt, hdim, histo, pad, painter) {
@@ -1535,6 +1535,9 @@
          check3dbox = d.part;
          if (d.part.indexOf('Z') >= 0) this.Zscale = true;
       }
+
+      if (d.check('R3D_', true))
+         this.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
 
       if (d.check('SURF', true)) {
          this.Surf = d.partAsInt(10, 1);

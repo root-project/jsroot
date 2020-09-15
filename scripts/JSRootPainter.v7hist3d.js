@@ -38,7 +38,7 @@
    }
 
    /** @summary Create all necessary components for 3D drawings @private */
-   JSROOT.v7.RFramePainter.prototype.Create3DScene = function(arg) {
+   JSROOT.v7.RFramePainter.prototype.Create3DScene = function(arg, render3d) {
 
       if ((arg!==undefined) && (arg<0)) {
 
@@ -97,7 +97,8 @@
          return;
       }
 
-      let sz = this.size_for_3d(this.usesvg ? 3 : undefined);
+      render3d = JSROOT.Painter.GetRender3DKind(render3d);
+      let sz = this.size_for_3d(undefined, render3d);
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
@@ -125,10 +126,10 @@
 
       this.SetCameraPosition(true);
 
-      this.renderer = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, null, this.usesvg, (sz.can3d == 4));
+      this.renderer = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, render3d);
 
-      this.webgl = (this.renderer.jsroot_kind === JSROOT.constants.Render3D.WebGL);
-      this.add_3d_canvas(sz, this.renderer.jsroot_dom);
+      this.webgl = (render3d === JSROOT.constants.Render3D.WebGL);
+      this.add_3d_canvas(sz, this.renderer.jsroot_dom, this.webgl);
 
       this.first_render_tm = 0;
       this.enable_highlight = false;
@@ -239,7 +240,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || this.usesvg || JSROOT.BatchMode) {
+      if ((tmout <= 0) || !this.webgl || JSROOT.BatchMode) {
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
          } else {
@@ -1476,7 +1477,7 @@
       this.ScanContent(true); // may be required for axis drawings
 
       if (is_main) {
-         main.Create3DScene();
+         main.Create3DScene(undefined, this.options.Render3D);
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, 0, 0);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { use_y_for_z: true, zmult: 1.1, zoom: JSROOT.gStyle.Zooming, ndim: 1 });
@@ -1525,7 +1526,7 @@
       this.DeleteAtt();
 
       if (is_main) {
-         main.Create3DScene();
+         main.Create3DScene(undefined, this.options.Render3D);
          main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
          main.Set3DOptions(this.options);
          main.DrawXYZ(main.toplevel, { zmult: zmult, zoom: JSROOT.gStyle.Zooming, ndim: 2 });
@@ -2971,7 +2972,7 @@
          return;
       }
 
-      main.Create3DScene();
+      main.Create3DScene(undefined, this.options.Render3D);
       main.SetAxesRanges(this.xmin, this.xmax, this.ymin, this.ymax, this.zmin, this.zmax);
       main.Set3DOptions(this.options);
       main.DrawXYZ(main.toplevel, { zoom: JSROOT.gStyle.Zooming, ndim: 3 });

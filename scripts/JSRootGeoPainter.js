@@ -535,6 +535,9 @@
          if (bckgr) res.background = "#" + new THREE.Color(bckgr).getHexString();
       }
 
+      if (d.check('R3D_', true))
+         res.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+
       if (d.check("MORE3")) res.more = 3;
       if (d.check("MORE")) res.more = 2;
       if (d.check("ALL")) { res.more = 10; res.vislevel = 9; }
@@ -2017,9 +2020,9 @@
 
       this._scene.add(this._toplevel);
 
-      this._renderer = JSROOT.Painter.Create3DRenderer(w, h, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      this._renderer = JSROOT.Painter.Create3DRenderer(w, h, this.options.Render3D, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
-      this._webgl = (this._renderer.jsroot_kind === JSROOT.constants.Render3D.WebGL);
+      this._webgl = (this._renderer.jsroot_render3d === JSROOT.constants.Render3D.WebGL);
 
       if (this._renderer.setPixelRatio && !JSROOT.nodejs)
          this._renderer.setPixelRatio(window.devicePixelRatio);
@@ -3111,7 +3114,7 @@
 
          let dom = this.createScene(size.width, size.height);
 
-         this.add_3d_canvas(size, dom);
+         this.add_3d_canvas(size, dom, this._webgl);
 
          // set top painter only when first child exists
          this.AccessTopPainter(true);

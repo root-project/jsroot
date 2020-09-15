@@ -1859,6 +1859,10 @@
                           Text: false, TextAngle: 0, TextKind: "", AutoColor: 0,
                           BarOffset: 0., BarWidth: 1., BaseLine: false, Mode3D: false };
 
+      let d = new JSROOT.DrawOptions(opt);
+      if (d.check('R3D_', true))
+         painter.options.Render3D = JSROOT.constants.Render3D.fromString(d.part.toLowerCase());
+
       let kind = painter.v7EvalAttr("kind", "hist"),
           sub = painter.v7EvalAttr("sub", 0),
           o = painter.options;

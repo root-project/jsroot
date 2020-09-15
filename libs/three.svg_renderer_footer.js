@@ -65,11 +65,11 @@
 
       rndr.makeOuterHTML = function() {
 
-         var wrap = this.doc_wrapper;
+         let wrap = this.doc_wrapper;
 
-         var _textSizeAttr = ' viewBox="' + wrap.svg_attr['viewBox'] + '" width="' + wrap.svg_attr['width'] + '" height="' + wrap.svg_attr['height'] + '"';
+         let _textSizeAttr = ' viewBox="' + wrap.svg_attr['viewBox'] + '" width="' + wrap.svg_attr['width'] + '" height="' + wrap.svg_attr['height'] + '"';
 
-         var _textClearAttr = '';
+         let _textClearAttr = '';
 
          if (wrap.svg_style.backgroundColor) _textClearAttr = ' style="background:' + wrap.svg_style.backgroundColor + '"';
 

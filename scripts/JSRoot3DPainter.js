@@ -29,23 +29,20 @@
    if (typeof JSROOT.Painter != 'object')
       throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
-
    /** Creates renderer for the 3D drawings
     *
     * @param {value} width - rendering width
     * @param {value} height - rendering height
+    * @param {value} render3d - render type, see JSROOT.constants.Render3D
     * @param {object} args - different arguments for creating 3D renderer
     * @private
     */
 
-   JSROOT.Painter.Create3DRenderer = function(width, height, args) {
-      let kind = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+   JSROOT.Painter.Create3DRenderer = function(width, height, render3d, args) {
+
       let rc = JSROOT.constants.Render3D;
 
-      if (kind == rc.Default) kind = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
-      if (JSROOT.BatchMode && (kind == rc.WebGL)) kind = rc.WebGLImage;
-
-      // kind = rc.WebGLImage;
+      render3d = JSROOT.Painter.GetRender3DKind(render3d);
 
       if (!args) args = { antialias: true, alpha: true };
 
@@ -56,18 +53,20 @@
 
       let need_workaround = false, renderer;
 
-      if (kind == rc.WebGL) {
+      if (render3d == rc.WebGL) {
          // interactive WebGL Rendering
          renderer = new THREE.WebGLRenderer(args);
 
-      } else if (kind == rc.SVG) {
+      } else if (render3d == rc.SVG) {
          // SVG rendering
          renderer = THREE.CreateSVGRenderer(false, 0, document);
 
-         if (JSROOT.BatchMode)
+         if (JSROOT.BatchMode) {
             need_workaround = true;
-         else
+         } else {
             renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+         }
       } else if (JSROOT.nodejs) {
          // try to use WebGL inside node.js - need to create headless context
          let gl = require('gl')(1, 1, { preserveDrawingBuffer: true });
@@ -112,7 +111,7 @@
       // res.renderer.setClearColor("#000000", 1);
       // res.renderer.setClearColor(0x0, 0);
       renderer.setSize(width, height);
-      renderer.jsroot_kind = kind;
+      renderer.jsroot_render3d = render3d;
 
       return renderer;
    }
@@ -120,14 +119,19 @@
    JSROOT.Painter.AfterRender3D = function(renderer) {
 
       let rc = JSROOT.constants.Render3D;
-      if (renderer.jsroot_kind == rc.WebGL) return;
+      if (renderer.jsroot_render3d == rc.WebGL) return;
 
-      if (renderer.jsroot_kind == rc.SVG) {
+      if (renderer.jsroot_render3d == rc.SVG) {
          // case of SVGRenderer
          if (JSROOT.BatchMode) {
             JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
          } else {
             // TODO: create innerHTML and place as jsroot dom element
+            let parent = renderer.jsroot_dom.parentNode;
+            if (parent) {
+               parent.innerHTML = renderer.makeOuterHTML();
+               renderer.jsroot_dom = parent.firstChild;
+            }
          }
       } else if (JSROOT.nodejs) {
          // this is WebGL rendering in node.js
