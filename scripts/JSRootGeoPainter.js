@@ -2068,6 +2068,7 @@
       if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
          let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+         d3.select(svg).attr("width",w).attr("height",h);
          svg.appendChild(this._renderer.jsroot_dom);
          return svg;
       }

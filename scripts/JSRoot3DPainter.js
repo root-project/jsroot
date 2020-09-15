@@ -45,6 +45,8 @@
       if (kind == rc.Default) kind = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
       if (JSROOT.BatchMode && (kind == rc.WebGL)) kind = rc.WebGLImage;
 
+      // kind = rc.WebGLImage;
+
       if (!args) args = { antialias: true, alpha: true };
 
       // solves problem with toDataUrl in headless mode of chrome
@@ -158,7 +160,8 @@
          let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
          JSROOT.svg_workaround[renderer.workaround_id] = svg;
       } else {
-
+         let dataUrl = renderer.domElement.toDataURL("image/png");
+         d3.select(renderer.jsroot_dom).attr("xlink:href", dataUrl);
       }
    }
 
