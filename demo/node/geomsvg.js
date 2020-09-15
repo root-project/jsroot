@@ -3,13 +3,12 @@ var fs = require("fs");
 
 console.log('JSROOT version', jsroot.version);
 
-// Use embed into SVG images for drawing
-// Required "npm install canvas" package
-//
-// jsroot.settings.Render3DBatch = jsroot.constants.Render3D.SVG; // use SVG for 3D rendering
+// one could specify rendering engine via options
+// r3d_img is normal webgl, create svg:image (default)
+// r3d_svg uses SVGRenderer, can produce large output
 
 jsroot.HttpRequest("https://root.cern/js/files/geom/simple_alice.json.gz", 'object').then(obj => {
-   jsroot.MakeSVG({ object: obj, width: 1200, height: 800 }).then(svg => {
+   jsroot.MakeSVG({ object: obj, width: 1200, height: 800 /*, option: "r3d_svg" */ }).then(svg => {
       fs.writeFileSync("alice_geom.svg", svg);
       console.log('Create alice_geom.svg size', svg.length);
    });
