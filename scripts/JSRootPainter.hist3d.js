@@ -113,10 +113,7 @@
          return;
       }
 
-      this.usesvg = JSROOT.Painter.UseSVGFor3D(); // SVG used in batch mode
-      //if (this.usesvg) this.usesvgimg = JSROOT.gStyle.ImageSVG;  // use svg images to insert graphics
-
-      let sz = this.size_for_3d(this.usesvg ? 3 : undefined);
+      let sz = this.size_for_3d();
 
       this.size_z3d = 100;
       this.size_xy3d = (sz.height > 10) && (sz.width > 10) ? Math.round(sz.width/sz.height*this.size_z3d) : this.size_z3d;
@@ -144,7 +141,7 @@
 
       this.SetCameraPosition(true, this.root_pad());
 
-      let res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height, this.usesvg, (sz.can3d == 4));
+      let res = JSROOT.Painter.Create3DRenderer(this.scene_width, this.scene_height);
 
       this.renderer = res.renderer;
       this.webgl = res.usewebgl;

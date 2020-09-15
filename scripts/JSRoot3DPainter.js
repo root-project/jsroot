@@ -29,211 +29,142 @@
    if (typeof JSROOT.Painter != 'object')
       throw new Error('JSROOT.Painter is not defined', 'JSRoot3DPainter.js');
 
-   /** Returns true if WebGL can be used
-   *
-   * This can be situation of Node.js without "canvas" module
-   * @author alteredq / http://alteredqualia.com/
-   * @author mr.doob / http://mrdoob.com/
-   * @private
-   */
-
-   /** Returns true if SVGRenderer must be used.
-   *
-   * This can be situation of Node.js without "canvas" module
-   *
-   * @private
-   */
-
-   JSROOT.Painter.UseSVGFor3D = function() {
-
-      if (!JSROOT.nodejs) return false;
-
-      if (this._Detect_UseSVGFor3D !== undefined)
-         return this._Detect_UseSVGFor3D;
-
-      let nodejs_gl = null, nodejs_canvas = null;
-
-      try {
-         console.log('TESTING GL');
-         nodejs_gl = require('gl');
-         console.log('TESTING CANVAS');
-         nodejs_canvas = require('canvas');
-         console.log('TESTING OK');
-      } catch (er) {
-         nodejs_gl = null;
-         nodejs_canvas = null;
-      }
-
-      this._Detect_UseSVGFor3D = !nodejs_gl || !nodejs_canvas;
-      return this._Detect_UseSVGFor3D;
-   }
 
    /** Creates renderer for the 3D drawings
     *
-    * width and height - dimension of canvas for rendering
-    * usesvg - if SVGRenderer should be used
-    * makeimage - if normal renderer used, one can convert canvas into <image>, but without interactivity
-    * usewebgl - if WebGL should be used
-    * args  - parameters for WebGLRenderer (if used)
+    * @param {value} width - rendering width
+    * @param {value} height - rendering height
+    * @param {object} args - different arguments for creating 3D renderer
     * @private
     */
 
-   JSROOT.Painter.Create3DRenderer = function(width, height, usesvg, makeimage, args) {
-      let res = {
-         renderer: null,
-         dom: null,
-         usesvg: usesvg,
-         usesvgimg: usesvg && JSROOT.gStyle.ImageSVG,
-         usewebgl: !usesvg
-      }
+   JSROOT.Painter.Create3DRenderer = function(width, height, args) {
+      let kind = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
+      let rc = JSROOT.constants.Render3D;
+
+      if (kind == rc.Default) kind = JSROOT.BatchMode ? rc.WebGLImage : rc.WebGL;
+      if (JSROOT.BatchMode && (kind == rc.WebGL)) kind = rc.WebGLImage;
 
       if (!args) args = { antialias: true, alpha: true };
 
       // solves problem with toDataUrl in headless mode of chrome
       // found https://stackoverflow.com/questions/48011613
-      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless && res.usewebgl)
+      if (JSROOT.BatchMode && JSROOT.browser.isChromeHeadless && (kind == rc.WebGLImage))
          args.premultipliedAlpha = false;
 
-      if (usesvg) {
+      let need_workaround = false, renderer;
 
-         let nodejs_canvas = null;
+      if (kind == rc.WebGL) {
+         // interactive WebGL Rendering
+         renderer = new THREE.WebGLRenderer(args);
 
-         if (JSROOT.nodejs && res.usesvgimg) {
-            try {
-               nodejs_canvas = require('canvas');
-            } catch (er) {
-               nodejs_canvas = null;
-               res.usesvgimg = false;
-               JSROOT.gStyle.ImageSVG = false; // no need to try once again
-            }
-         }
+      } else if (kind == rc.SVG) {
+         // SVG rendering
+         renderer = THREE.CreateSVGRenderer(false, 0, document);
 
-         if (res.usesvgimg) {
+         if (JSROOT.BatchMode)
+            need_workaround = true;
+         else
+            renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      } else if (JSROOT.nodejs) {
+         // try to use WebGL inside node.js - need to create headless context
+         let gl = require('gl')(1, 1, { preserveDrawingBuffer: true });
 
-            if (nodejs_canvas) {
-               args.canvas = new nodejs_canvas(width, height);
-               args.canvas.style = {};
-            }
+         const { createCanvas } = require('canvas');
 
-            res.renderer = new THREE.WebGLRenderer(args);
-         } else {
-            // this.renderer = new THREE.SVGRenderer({ precision: 0, astext: true });
-            res.renderer = THREE.CreateSVGRenderer(false, 0, document);
-         }
+         args.canvas = createCanvas(width, height);
+         args.canvas.addEventListener = function() { }; // dummy
+         args.canvas.style = {};
 
-         if (res.usesvgimg || (res.renderer.makeOuterHTML !== undefined)) {
-            // this is indication of new three.js functionality
-            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            res.renderer.workaround_id = JSROOT.svg_workaround.length;
-            JSROOT.svg_workaround[res.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
+         args.context = gl;
 
-            // replace DOM element in renderer
-            res.dom = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
-            res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
-         }
+         renderer = new THREE.WebGLRenderer(args);
+
+         renderer.jsroot_output = new THREE.WebGLRenderTarget(width, height);
+
+         renderer.setRenderTarget(renderer.jsroot_output);
+
+         need_workaround = true;
       } else {
-         if (JSROOT.nodejs) {
-            // try to use WebGL inside node.js - need to create headless context
-            var gl = require('gl')(1, 1, { preserveDrawingBuffer: true });
-
-            const { createCanvas } = require('canvas');
-
-            args.canvas = createCanvas(width, height);
-            args.canvas.addEventListener = function() {}; // dummy
-            args.canvas.style = {};
-
-            args.context = gl;
+         renderer = new THREE.WebGLRenderer(args);
+         if (JSROOT.BatchMode) {
+            need_workaround = true;
+         } else {
+            renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
          }
+      }
 
-         res.renderer = new THREE.WebGLRenderer(args);
+      if (need_workaround) {
+         if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
+         renderer.workaround_id = JSROOT.svg_workaround.length;
+         JSROOT.svg_workaround[renderer.workaround_id] = "<svg></svg>"; // dummy, provided in AfterRender3D
 
-         if (JSROOT.nodejs) {
-            res.renderer._output = new THREE.WebGLRenderTarget( width, height /*, {
-               minFilter: THREE.LinearFilter,
-               magFilter: THREE.LinearFilter,
-               wrapS: THREE.ClampToEdgeWrapping,
-               wrapT: THREE.ClampToEdgeWrapping,
-               format: THREE.RGBAFormat,
-               type: THREE.UnsignedByteType
-            } */);
-
-            res.renderer.setRenderTarget(res.renderer._output);
-
-            if (!JSROOT.svg_workaround) JSROOT.svg_workaround = [];
-            res.renderer.workaround_id = JSROOT.svg_workaround.length;
-            JSROOT.svg_workaround[res.renderer.workaround_id] = "<svg></svg>"; // dummy, need to be replaced
-
-            // replace DOM element in renderer
-            res.dom = document.createElementNS( 'http://www.w3.org/2000/svg', 'path');
-            res.dom.setAttribute('jsroot_svg_workaround', res.renderer.workaround_id);
-
-            res.renderer.webglImage = true;
-         }
+         // replace DOM element in renderer
+         renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+         renderer.jsroot_dom.setAttribute('jsroot_svg_workaround', renderer.workaround_id);
+      } else if (!renderer.jsroot_dom) {
+         renderer.jsroot_dom = renderer.domElement;
       }
 
       // res.renderer.setClearColor("#000000", 1);
       // res.renderer.setClearColor(0x0, 0);
-      res.renderer.setSize(width, height);
+      renderer.setSize(width, height);
+      renderer.jsroot_kind = kind;
 
-      if (!res.dom) {
-         res.dom = res.renderer.domElement;
-         if (!usesvg && makeimage) {
-            res.dom = res.renderer.svgImage = document.createElementNS('http://www.w3.org/2000/svg','image');
-            d3.select(res.dom).attr("width", width)
-                              .attr("height", height);
-         }
-      }
-
-      return res;
+      return renderer;
    }
 
    JSROOT.Painter.AfterRender3D = function(renderer) {
-      if (renderer.svgImage) {
-         let dataUrl = renderer.domElement.toDataURL("image/png");
-         let attrname = JSROOT.nodejs ? "xlink_href_nodejs" : "xlink:href";
-         d3.select(renderer.svgImage).attr(attrname, dataUrl);
-      }
 
-      // when using SVGrenderer producing text output, provide result
-      if (renderer.workaround_id !== undefined) {
-         if (renderer.webglImage) {
-            let canvas = renderer.domElement,
-                context = canvas.getContext('2d');
+      let rc = JSROOT.constants.Render3D;
+      if (renderer.jsroot_kind == rc.WebGL) return;
 
-            let pixels = new Uint8Array( 4 * canvas.width * canvas.height );
-            renderer.readRenderTargetPixels( renderer._output, 0, 0, canvas.width, canvas.height, pixels );
-
-            // small code to flip Y scale
-            let indx1 = 0, indx2 = (canvas.height-1) * 4 * canvas.width, k, d;
-            while(indx1 < indx2) {
-               for(k=0; k< 4 * canvas.width; ++k) {
-                  d = pixels[indx1+k]; pixels[indx1+k] = pixels[indx2+k]; pixels[indx2+k] = d;
-               }
-               indx1 += 4 * canvas.width;
-               indx2 -= 4 * canvas.width;
-            }
-
-            let imageData = context.createImageData( canvas.width, canvas.height );
-            imageData.data.set( pixels );
-
-            context.putImageData( imageData, 0, 0 );
-            let dataUrl = canvas.toDataURL("image/png");
-            let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
-            JSROOT.svg_workaround[renderer.workaround_id] = svg;
-         } else if (typeof renderer.makeOuterHTML == 'function') {
+      if (renderer.jsroot_kind == rc.SVG) {
+         // case of SVGRenderer
+         if (JSROOT.BatchMode) {
             JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
          } else {
-            let canvas = renderer.domElement;
-            let dataUrl = canvas.toDataURL("image/png");
-            let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
-            JSROOT.svg_workaround[renderer.workaround_id] = svg;
+            // TODO: create innerHTML and place as jsroot dom element
          }
+      } else if (JSROOT.nodejs) {
+         // this is WebGL rendering in node.js
+         let canvas = renderer.domElement,
+            context = canvas.getContext('2d');
+
+         let pixels = new Uint8Array(4 * canvas.width * canvas.height);
+         renderer.readRenderTargetPixels(renderer.jsroot_output, 0, 0, canvas.width, canvas.height, pixels);
+
+         // small code to flip Y scale
+         let indx1 = 0, indx2 = (canvas.height - 1) * 4 * canvas.width, k, d;
+         while (indx1 < indx2) {
+            for  (k = 0; k < 4 * canvas.width; ++k) {
+               d = pixels[indx1 + k]; pixels[indx1 + k] = pixels[indx2 + k]; pixels[indx2 + k] = d;
+            }
+            indx1 += 4 * canvas.width;
+            indx2 -= 4 * canvas.width;
+         }
+
+         let imageData = context.createImageData( canvas.width, canvas.height );
+         imageData.data.set( pixels );
+         context.putImageData( imageData, 0, 0 );
+
+         let dataUrl = canvas.toDataURL("image/png");
+         let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+         JSROOT.svg_workaround[renderer.workaround_id] = svg;
+      } else if (JSROOT.BatchMode) {
+         // this is conversion of WebGL context into svg image
+         let dataUrl = renderer.domElement.toDataURL("image/png");
+         let svg = '<image width="' + canvas.width + '" height="' + canvas.height + '" xlink:href="' + dataUrl + '"></image>';
+         JSROOT.svg_workaround[renderer.workaround_id] = svg;
+      } else {
+
       }
    }
 
    JSROOT.Painter.ProcessSVGWorkarounds = function(svg) {
       if (!JSROOT.svg_workaround) return svg;
-      for (let k=0;k<JSROOT.svg_workaround.length;++k)
+      for (let k = 0;  k < JSROOT.svg_workaround.length; ++k)
          svg = svg.replace('<path jsroot_svg_workaround="' + k + '"></path>', JSROOT.svg_workaround[k]);
       JSROOT.svg_workaround = undefined;
       return svg;

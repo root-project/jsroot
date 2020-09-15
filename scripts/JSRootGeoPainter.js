@@ -229,7 +229,7 @@
    TGeoPainter.prototype = Object.create( JSROOT.TObjectPainter.prototype );
 
    TGeoPainter.prototype.CreateToolbar = function(args) {
-      if (this._toolbar || this._usesvg || this._usesvgimg || this.ctrl.notoolbar) return;
+      if (this._toolbar || !this._webgl || this.ctrl.notoolbar) return;
       let painter = this;
       let buttonList = [{
          name: 'toImage',
@@ -1344,7 +1344,7 @@
    /** Add orbit control @private */
    TGeoPainter.prototype.addOrbitControls = function() {
 
-      if (this._controls || this._usesvg || JSROOT.BatchMode) return;
+      if (this._controls || !this._webgl || JSROOT.BatchMode) return;
 
       let painter = this;
 
@@ -2017,11 +2017,9 @@
 
       this._scene.add(this._toplevel);
 
-      let rrr = JSROOT.Painter.Create3DRenderer(w, h, this._usesvg, this._usesvgimg,
-            { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+      this._renderer = JSROOT.Painter.Create3DRenderer(w, h, { antialias: true, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 
-      this._webgl = rrr.usewebgl;
-      this._renderer = rrr.renderer;
+      this._webgl = (this._renderer.jsroot_kind === JSROOT.constants.Render3D.WebGL);
 
       if (this._renderer.setPixelRatio && !JSROOT.nodejs)
          this._renderer.setPixelRatio(window.devicePixelRatio);
@@ -2030,7 +2028,7 @@
 
       this._renderer.setClearColor(this.ctrl.background, 1);
 
-      if (this._fit_main_area && !this._usesvg) {
+      if (this._fit_main_area && this._webgl) {
          this._renderer.domElement.style.width = "100%";
          this._renderer.domElement.style.height = "100%";
          let main = this.select_main();
@@ -2067,14 +2065,14 @@
          }
       }
 
-      if (this._fit_main_area && (this._usesvg || this._usesvgimg)) {
+      if (this._fit_main_area && !this._webgl) {
          // create top-most SVG for geomtery drawings
          let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-         svg.appendChild(rrr.dom);
+         svg.appendChild(this._renderer.jsroot_dom);
          return svg;
       }
 
-      return rrr.dom;
+      return this._renderer.jsroot_dom;
    }
 
 
@@ -3106,7 +3104,7 @@
          // activate worker
          if (this.ctrl.use_worker > 0) this.startWorker();
 
-         let size = this.size_for_3d(this._usesvg ? 3 : undefined);
+         let size = this.size_for_3d(this._webgl ? undefined : 3);
 
          this._fit_main_area = (size.can3d === -1);
 
@@ -3240,7 +3238,7 @@
 
       if (tmout === undefined) tmout = 5; // by default, rendering happens with timeout
 
-      if ((tmout <= 0) || this._usesvg) {
+      if ((tmout <= 0) || !this._webgl || JSROOT.BatchMode) {
          if ('render_tmout' in this) {
             clearTimeout(this.render_tmout);
          } else {
@@ -3793,7 +3791,7 @@
 
          // if rotation was enabled, do it
          if (this._webgl && this.ctrl.rotate && !this.ctrl.project) this.autorotate(2.5);
-         if (!this._usesvg && this.ctrl.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
+         if (this._webgl && this.ctrl.show_controls && !JSROOT.BatchMode) this.showControlOptions(true);
       }
 
       // call it every time, in reality invoked only first time
@@ -4080,12 +4078,6 @@
       //   JSROOT.GEO.GradPerSegm = 360/obj.fNsegments;
 
       painter.SetDivId(divid, 5);
-
-      painter._usesvg = JSROOT.Painter.UseSVGFor3D();
-
-      painter._usesvgimg = !painter._usesvg && JSROOT.BatchMode;
-
-      painter._webgl = !painter._usesvg;
 
       painter.options = painter.decodeOptions(opt); // indicator of initialization
 

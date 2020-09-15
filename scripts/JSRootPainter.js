@@ -500,8 +500,13 @@
          if (!isNaN(palette) && (palette > 0) && (palette < 113)) JSROOT.gStyle.Palette = palette;
       }
 
+      let render3d = JSROOT.GetUrlOption("render3d", url);
+      if (render3d !== null)
+         JSROOT.settings.Render3D = JSROOT.constants.Render3D.fromString(render3d);
+
       let embed3d = JSROOT.GetUrlOption("embed3d", url);
-      if (embed3d !== null) JSROOT.gStyle.Embed3DinSVG = parseInt(embed3d);
+      if (embed3d !== null)
+         JSROOT.settings.Embed3D = JSROOT.constants.Embed3D.fromString(embed3d);
 
       let geosegm = JSROOT.GetUrlOption("geosegm", url);
       if (geosegm !== null) JSROOT.gStyle.GeoGradPerSegm = Math.max(2, parseInt(geosegm));
@@ -3292,11 +3297,13 @@
     *  @private
     */
    TObjectPainter.prototype.embed_3d = function() {
-      if (JSROOT.BatchMode) return 4; // in batch - directly create svg::image after rendering
-      if (JSROOT.gStyle.Embed3DinSVG < 2) return JSROOT.gStyle.Embed3DinSVG;
+      if (JSROOT.settings.Embed3D != JSROOT.constants.Embed3D.Default)
+         return JSROOT.settings.Embed3D;
+
       if (JSROOT.browser.isFirefox)
-         return JSROOT.gStyle.Embed3DinSVG; // use specified mode
-      return 1; // default is overlay
+         return JSROOT.constants.Embed3D.Embed;
+
+      return JSROOT.constants.Embed3D.Overlay;
    }
 
    /** @summary Access current 3d mode

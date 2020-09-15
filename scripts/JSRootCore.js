@@ -146,6 +146,38 @@
 
    JSROOT.browser.isWebKit = JSROOT.browser.isChrome || JSROOT.browser.isSafari || JSROOT.browser.isOpera;
 
+   JSROOT.constants = {
+      Render3D: {
+         Default: 0,     //
+         WebGL: 1,       // use WebGL rendering
+         WebGLImage: 2,  // convert WebGL into svg:image
+         SVG: 3,         // use SVGRenderer
+         fromString: function(s) {
+            if (s === "webgl") return this.WebGL;
+            if (s === "img") return this.WebGLImage;
+            if (s === "svg") return this.SVG;
+            return this.Default;
+         }
+      },
+      Embed3D: {
+         Default: 0,  // default
+         Overlay: 1,  // overlay
+         Embed: 2,    // embed
+         fromString: function(s) {
+            if (s === "embed") return this.Embed;
+            if (s === "overlay") return this.Overlay;
+            return this.Default;
+         }
+      }
+   };
+
+   // this is global settings independent from gStyle
+   JSROOT.settings = {
+      Render3D: JSROOT.constants.Render3D.Default,
+      Render3DBatch: JSROOT.constants.Render3D.Default,
+      Embed3D: JSROOT.constants.Embed3D.Default
+   };
+
    // default draw styles, can be changed after loading of JSRootCore.js
    // this style also can be changed providing style=itemname in the URL
    JSROOT.gStyle = {
@@ -170,7 +202,6 @@
          Palette: 57,
          Latex: 2,    // 0 - never, 1 - only latex symbols, 2 - normal TLatex processing (default), 3 - use MathJax for complex case, 4 - use MathJax always
          ProgressBox: true,  // show progress box
-         Embed3DinSVG: 2,  // 0 - no embed, only 3D plot, 1 - overlay over SVG (Chrome), 2 - embed into SVG (only Firefox)
          ImageSVG: !JSROOT.nodejs, // when producing SVG images, use <image> elements to insert 3D drawings from three.js,
                                    // To enable on nodejs, one should call "npm install canvas"
          GeoGradPerSegm: 6, // amount of grads per segment in TGeo spherical shapes like tube
