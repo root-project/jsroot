@@ -247,7 +247,9 @@
             if (tmout === -2222) return; // special case to check if rendering timeout was active
          }
 
-         if (this.renderer === undefined) return;
+         if (!this.renderer) return;
+
+         JSROOT.Painter.BeforeRender3D(this.renderer);
 
          let tm1 = new Date();
 
@@ -300,6 +302,9 @@
       this.camera.updateProjectionMatrix();
 
       this.renderer.setSize( this.scene_width, this.scene_height );
+      if (this.renderer.setJSROOTSize)
+         this.renderer.setJSROOTSize(this.scene_width, this.scene_height);
+
 
       return true;
    }

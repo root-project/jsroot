@@ -3249,6 +3249,9 @@
             if (tmout === -2222) return; // special case to check if rendering timeout was active
          }
 
+
+         JSROOT.Painter.BeforeRender3D(this._renderer);
+
          let tm1 = new Date();
 
          this.TestCameraPosition(tmout === -1);

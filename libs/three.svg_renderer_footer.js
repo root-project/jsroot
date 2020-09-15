@@ -63,6 +63,10 @@
 
       rndr.doc_wrapper = doc_wrapper; // use it to get final SVG code
 
+      rndr.clearHTML = function() {
+         this.doc_wrapper.accPath = "";
+      }
+
       rndr.makeOuterHTML = function() {
 
          let wrap = this.doc_wrapper;

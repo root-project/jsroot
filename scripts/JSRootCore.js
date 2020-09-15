@@ -111,7 +111,7 @@
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   // JSROOT.use_full_libs = true;
+   JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT

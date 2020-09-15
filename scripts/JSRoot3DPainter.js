@@ -65,7 +65,7 @@
             need_workaround = true;
          } else {
             renderer.jsroot_dom = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
+            // d3.select(renderer.jsroot_dom).attr("width", width).attr("height", height);
          }
       } else if (JSROOT.nodejs) {
          // try to use WebGL inside node.js - need to create headless context
@@ -113,7 +113,19 @@
       renderer.setSize(width, height);
       renderer.jsroot_render3d = render3d;
 
+      renderer.setJSROOTSize = JSROOT.Painter.Set3DSize;
+
       return renderer;
+   }
+
+   JSROOT.Painter.Set3DSize = function(width, height) {
+      if ((this.jsroot_render3d === JSROOT.constants.Render3D.WebGLImage) && !JSROOT.BatchMode && !JSROOT.nodejs)
+        return d3.select(this.jsroot_dom).attr("width", width).attr("height", height);
+   }
+
+   JSROOT.Painter.BeforeRender3D = function(renderer) {
+      // cleanup previous rendering, from SVG renderer
+      if (renderer.clearHTML) renderer.clearHTML();
    }
 
    JSROOT.Painter.AfterRender3D = function(renderer) {
