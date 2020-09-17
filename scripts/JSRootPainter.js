@@ -1466,17 +1466,14 @@
          str = str.replace(/\\\^/g, "\\hat");
       }
 
-      if (typeof color != 'string') return "\\(" + str + "\\)";
+      if (typeof color != 'string') return str;
 
       // MathJax SVG converter use colors in normal form
       //if (color.indexOf("rgb(")>=0)
       //   color = color.replace(/rgb/g, "[RGB]")
       //                .replace(/\(/g, '{')
       //                .replace(/\)/g, '}');
-      // TODO: repair colors
-      return "\\(\\color{" + color + '}{' + str + "}\\)";
-
-      // return "\\(" + str + "\\)";
+      return "\\color{" + color + '}{' + str + "}";
    }
 
    /** Function used to provide svg:path for the smoothed curves.
@@ -5704,39 +5701,15 @@
          return 0;
       }
 
-      let element = document.createElement("p");
-
-      // mtext = "x = {-b \pm \sqrt{b^2-4ac} \over 2a}.";
-
-      //mtext="\\(a \\ne 0\\)";
-
-      //mtext = "\\({K_{S}}\\)";
-
-      d3.select(element)
-         .style('visibility', "hidden")
-         .style('overflow', "hidden")
-         .style('position', "absolute")
-         .style("font-size", font.size + 'px').style("font-family", font.name)
-         //.html('<mtext>' + mtext + '</mtext>');
-         .html(mtext);
-
-      // fo_g.node.appendChild(element);
-      document.body.appendChild(element);
-
-      fo_g.property('_element', element);
-
       let painter = this;
 
       JSROOT.load('mathjax').then(() => {
-         // console.log("converting text", mtext);
-         MathJax.typesetPromise([element]).then(() => {
-            painter.FinishMathjax(arg.draw_g, fo_g);
-         });
 
-         // TODO: check if direct conversion works
-         //MathJax.mathml2svgPromise('<math>' + mtext + '</math>').then(res => {
-         //   conols.log("Got convert result", res);
-         //});
+           let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+
+           MathJax.tex2svgPromise(mtext, options).then(elem => {
+              painter.FinishMathjax(arg.draw_g, fo_g, elem);
+           });
       });
 
       return 0;
@@ -5747,12 +5720,7 @@
     * @private
     */
 
-   TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g) {
-
-      if (fo_g.node().parentNode !== draw_g.node()) return;
-
-      let entry = fo_g.property('_element');
-      if (!entry) return;
+   TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, entry) {
 
       let vvv = d3.select(entry).select("svg");
 
@@ -5762,9 +5730,6 @@
          vvv.remove(); // remove from parent
          fo_g.append(function() { return vvv.node(); });
       }
-
-      fo_g.property('_element', null);
-      document.body.removeChild(entry);
 
       this.FinishTextDrawing(draw_g); // check if all other elements are completed
    }

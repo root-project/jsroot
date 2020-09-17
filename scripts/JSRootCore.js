@@ -1324,6 +1324,9 @@
          if (typeof MathJax == 'undefined') {
 
             window.MathJax = {
+               options: {
+                  enableMenu: false
+               },
                loader: {
                   load: ['[tex]/color']
                },
