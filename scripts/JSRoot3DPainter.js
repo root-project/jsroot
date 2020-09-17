@@ -138,7 +138,6 @@
          if (JSROOT.BatchMode) {
             JSROOT.svg_workaround[renderer.workaround_id] = renderer.makeOuterHTML();
          } else {
-            // TODO: create innerHTML and place as jsroot dom element
             let parent = renderer.jsroot_dom.parentNode;
             if (parent) {
                parent.innerHTML = renderer.makeOuterHTML();

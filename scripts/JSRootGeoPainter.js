@@ -1427,9 +1427,6 @@
 
       if ( !this.ctrl._debug && !this.ctrl._grid ) return;
 
-      // FIXME: at the moment THREE.TransformControls is bogus in three.js, should be fixed and check again
-      //return;
-
       this._tcontrols = new THREE.TransformControls( this._camera, this._renderer.domElement );
       this._scene.add( this._tcontrols );
       this._tcontrols.attach( this._toplevel );
