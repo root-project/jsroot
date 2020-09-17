@@ -1078,11 +1078,11 @@
       });
    }
 
-   HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
+   HierarchyPainter.prototype.enable_dragging = function(/*element, itemname*/) {
       // here is not defined - implemented with jquery
    }
 
-   HierarchyPainter.prototype.enable_dropping = function(frame, itemname) {
+   HierarchyPainter.prototype.enable_dropping = function(/*frame, itemname*/) {
       // here is not defined - implemented with jquery
    }
 
@@ -1149,7 +1149,7 @@
 
    /** Method can be used to fetch new objects and update all existing drawings
      * if only_auto_items specified, only automatic items will be updated */
-   HierarchyPainter.prototype.updateAll = function(only_auto_items, only_items) {
+   HierarchyPainter.prototype.updateAll = function(only_auto_items /*, only_items*/) {
 
       if (!this.disp) return;
 
@@ -1210,7 +1210,7 @@
          d3.select("#" + h.disp_frameid).html("<h2>Start I/O test</h2>")
 
          let tm0 = new Date();
-         return h.get(items[0], function(item, obj) {
+         return h.get(items[0], function(/*item, obj*/) {
             let tm1 = new Date();
             d3.select("#" + h.disp_frameid).append("h2").html("Item " + items[0] + " reading time = " + (tm1.getTime() - tm0.getTime()) + "ms");
             return JSROOT.CallBack(call_back);
@@ -1971,7 +1971,7 @@
    }
 
    /** Returns configured monitoring interval in ms */
-   HierarchyPainter.prototype.MonitoringInterval = function(val) {
+   HierarchyPainter.prototype.MonitoringInterval = function() {
       return this._monitoring_interval || 3000;
    }
 
@@ -2529,7 +2529,7 @@
       this.active_frame_title = title;
    }
 
-   MDIDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+   MDIDisplay.prototype.ForEachFrame = function(/* userfunc, only_visible */) {
       // method dedicated to iterate over existing panels
       // provided userfunc is called with arguments (frame)
 
@@ -2630,7 +2630,7 @@
       this.frames[divid] += (itemname + ";");
    }
 
-   CustomDisplay.prototype.ForEachFrame = function(userfunc,  only_visible) {
+   CustomDisplay.prototype.ForEachFrame = function(userfunc /* ,  only_visible */) {
       let ks = Object.keys(this.frames);
       for (let k = 0; k < ks.length; ++k) {
          let node = d3.select("#"+ks[k]);
@@ -2817,13 +2817,13 @@
             this.CreateSeparator(handle, main, handle.groups[cnt]);
    }
 
-   GridDisplay.prototype.ForEachFrame = function(userfunc, only_visible) {
+   GridDisplay.prototype.ForEachFrame = function(userfunc /*, only_visible */) {
       if (this.simple_layout)
          userfunc(this.GetFrame());
       else
-      this.select_main().selectAll('.jsroot_newgrid').each(function() {
-         userfunc(d3.select(this).node());
-      });
+         this.select_main().selectAll('.jsroot_newgrid').each(function() {
+            userfunc(d3.select(this).node());
+         });
    }
 
    GridDisplay.prototype.GetActiveFrame = function() {

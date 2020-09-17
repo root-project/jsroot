@@ -244,8 +244,6 @@
    }
 
    JSROOT.GEO.GeometryCreator.prototype.CalcNormal = function() {
-      let indx = this.indx, norm = this.norm;
-
       if (!this.cb) {
          this.pA = new THREE.Vector3();
          this.pB = new THREE.Vector3();

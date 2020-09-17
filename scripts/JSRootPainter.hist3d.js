@@ -599,7 +599,7 @@
 
       let textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 }),
           lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 }),
-          ticklen = textsize*0.5, text, tick, lbls = [], text_scale = 1,
+          ticklen = textsize*0.5, lbls = [], text_scale = 1,
           xticks = this.x_handle.CreateTicks(false, true),
           yticks = this.y_handle.CreateTicks(false, true),
           zticks = this.z_handle.CreateTicks(false, true);
@@ -1005,7 +1005,7 @@
             let text3d = new THREE.TextGeometry(zaxis.fTitle, { font: JSROOT.threejs_font_helvetiker_regular, size: textsize, height: 0, curveSegments: 5 });
             text3d.computeBoundingBox();
             let draw_width = text3d.boundingBox.max.x - text3d.boundingBox.min.x,
-                draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
+                // draw_height = text3d.boundingBox.max.y - text3d.boundingBox.min.y,
                 posz = zaxis.TestBit(JSROOT.EAxisBits.kCenterTitle) ? (grmaxz + grminz - draw_width)/2 : grmaxz - draw_width;
 
             text3d.rotateZ(Math.PI/2);
@@ -1146,7 +1146,7 @@
 
       // if bin ID fit into 16 bit, use smaller arrays for intersect indexes
       let use16indx = (histo.getBin(i2, j2) < 0xFFFF),
-          levels = [ axis_zmin, axis_zmax ], palette = null, totalvertices = 0;
+          levels = [ axis_zmin, axis_zmax ], palette = null;
 
       // DRAW ALL CUBES
 
@@ -1189,13 +1189,11 @@
                }
             }
 
-         totalvertices += numvertices + num2vertices;
-
          let positions = new Float32Array(numvertices*3),
              normals = new Float32Array(numvertices*3),
              face_to_bins_index = use16indx ? new Uint16Array(numvertices/3) : new Uint32Array(numvertices/3),
              pos2 = null, norm2 = null, face_to_bins_indx2 = null,
-             v = 0, v2 = 0, vert, bin, k, nn;
+             v = 0, v2 = 0, vert, k, nn;
 
          if (num2vertices > 0) {
             pos2 = new Float32Array(num2vertices*3);
@@ -1368,13 +1366,13 @@
 
       // DRAW LINE BOXES
 
-      let numlinevertices = 0, numsegments = 0, uselineindx = true, nskip = 0;
+      let numlinevertices = 0, numsegments = 0, uselineindx = true;
 
       zmax = axis_zmax; zmin = axis_zmin;
 
       for (i=i1;i<i2;++i)
          for (j=j1;j<j2;++j) {
-            if (!GetBinContent(i,j,0)) { nskip++; continue; }
+            if (!GetBinContent(i,j,0)) continue;
 
             // calculate required buffer size for line segments
             numlinevertices += (reduced ? rvertices.length : vertices.length);
@@ -1459,7 +1457,7 @@
 
    // ===================================================================================
 
-   JSROOT.Painter.drawAxis3D = function(divid, axis, opt) {
+   JSROOT.Painter.drawAxis3D = function(divid, axis /*, opt*/) {
 
       let painter = new JSROOT.TObjectPainter(axis);
 
@@ -1631,8 +1629,8 @@
           main = this.frame_painter(),
           handle = this.PrepareColorDraw({rounding: false, use3d: true, extra: 1, middle: 0.5 }),
           i,j, x1, y1, x2, y2, z11, z12, z21, z22,
-          axis_zmin = main.grz.domain()[0],
-          axis_zmax = main.grz.domain()[1];
+          axis_zmin = main.grz.domain()[0];
+          // axis_zmax = main.grz.domain()[1];
 
       // first adjust ranges
 
@@ -2136,7 +2134,7 @@
           pmain = this.frame_painter(),
           axis_zmin = pmain.grz.domain()[0],
           axis_zmax = pmain.grz.domain()[1],
-          colindx, bin, i, len = histo.fBins.arr.length, cnt = 0, totalnfaces = 0,
+          colindx, bin, i, len = histo.fBins.arr.length,
           z0 = pmain.grz(axis_zmin), z1 = z0;
 
       // force recalculations of contours
@@ -2300,7 +2298,7 @@
          mesh.draw_z1 = z1;
          mesh.tip_color = 0x00FF00;
 
-         mesh.tooltip = function(intersects) {
+         mesh.tooltip = function(/*intersects*/) {
 
             let p = this.painter, main = p.frame_painter(),
                 bin = p.GetObject().fBins.arr[this.bins_index];
@@ -2321,9 +2319,6 @@
 
             return tip;
          };
-
-         totalnfaces += nfaces;
-         cnt++;
       }
    }
 
@@ -2455,8 +2450,8 @@
           print_entries = Math.floor(dostat / 10) % 10,
           print_mean = Math.floor(dostat / 100) % 10,
           print_rms = Math.floor(dostat / 1000) % 10,
-          print_under = Math.floor(dostat / 10000) % 10,
-          print_over = Math.floor(dostat / 100000) % 10,
+          // print_under = Math.floor(dostat / 10000) % 10,
+          // print_over = Math.floor(dostat / 100000) % 10,
           print_integral = Math.floor(dostat / 1000000) % 10;
       //var print_skew = Math.floor(dostat / 10000000) % 10;
       //var print_kurt = Math.floor(dostat / 100000000) % 10;
@@ -2531,7 +2526,6 @@
           j2 = this.GetSelectIndex("y", "right", 0),
           k1 = this.GetSelectIndex("z", "left", 0.5),
           k2 = this.GetSelectIndex("z", "right", 0),
-          name = this.GetTipName("<br/>"),
           i, j, k, bin_content;
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return true;
@@ -2708,8 +2702,7 @@
           j1 = this.GetSelectIndex("y", "left", 0.5),
           j2 = this.GetSelectIndex("y", "right", 0),
           k1 = this.GetSelectIndex("z", "left", 0.5),
-          k2 = this.GetSelectIndex("z", "right", 0),
-          name = this.GetTipName("<br/>");
+          k2 = this.GetSelectIndex("z", "right", 0);
 
       if ((i2<=i1) || (j2<=j1) || (k2<=k1)) return;
 
@@ -3434,7 +3427,7 @@
          gr.fHistogram = painter.CreateHistogram();
 
       return JSROOT.draw(divid, gr.fHistogram, "lego;axis")
-                  .then(function(hpainter) {
+                  .then(() => {
          painter.ownhisto = true;
          painter.SetDivId(divid);
          painter.Redraw();
@@ -3444,7 +3437,7 @@
 
    // ===================================================================
 
-   JSROOT.Painter.drawPolyMarker3D = function(divid, poly, opt) {
+   JSROOT.Painter.drawPolyMarker3D = function(divid, poly /*, opt*/) {
 
       let painter = new JSROOT.TObjectPainter(poly);
 
