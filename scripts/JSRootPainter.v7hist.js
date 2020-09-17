@@ -589,12 +589,30 @@
       }
    }
 
+   /** @summary Start dialog to modify range of axis where histogram values are displayed @private */
+   RHistPainter.prototype.ChangeValuesRange = function(arg) {
+      let pmain = this.frame_painter();
+      if (!pmain) return;
+      let prefix = pmain.IsAxisZoomed(arg) ? "zoom_" + arg : arg;
+      let curr = "[" + pmain[prefix+'min'] + "," + pmain[prefix+'max'] + "]";
+      let res = prompt("Enter values range for axis " + arg + " like [0,100] or empty string to unzoom", curr);
+      res = res ? JSON.parse(res) : [];
+
+      if (!res || (typeof res != "object") || (res.length!=2) || isNaN(res[0]) || isNaN(res[1]))
+         pmain.Unzoom(arg);
+      else
+         pmain.Zoom(arg, res[0], res[1]);
+   }
+
    RHistPainter.prototype.FillContextMenu = function(menu) {
 
       menu.add("header:v7histo::anyname");
 
       if (this.draw_content) {
          menu.addchk(this.ToggleStat('only-check'), "Show statbox", function() { this.ToggleStat(); });
+
+         if (this.Dimension() == 2)
+             menu.add("Values range", "z", this.ChangeValuesRange);
 
          if (typeof this.FillHistContextMenu == 'function')
             this.FillHistContextMenu(menu);
