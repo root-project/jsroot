@@ -12,7 +12,7 @@ In most practical cases it is not necessary to install JSROOT - it can be used d
 When required, there are following alternatives to install JSROOT on other web servers:
 
    - download and unpack [provided](https://github.com/root-project/jsroot/releases) packages (recommended)
-   - use [bower](https://bower.io/) package manager and invoke `bower install jsroot`
+   - use [npm](https://npmjs.com/package/jsroot) package manager and invoke `npm install jsroot`
    - clone master branch from [repository](https://github.com/root-project/jsroot/)
 
 One could use JSROOT directly from local file system. If source code was unpacked/checked-out in `/home/user/jsroot/` subfolder, one could just open it in browser with <file:///home/user/jsroot/index.htm> address.
@@ -588,15 +588,6 @@ Or specify custom format for the X/Y object values:
 
     JSROOT.gStyle.XValuesFormat = "4.2g"
     JSROOT.gStyle.YValuesFormat = "6.1f"
-
-When JSROOT installed with bower package manager, one could re-use basic libraries like `d3.js` or `three.js` from bower itself. For that one should add `bower` into URL:
-
-    <script type="text/javascript" src="vendor/jsroot/scripts/JSRootCore.js?bower&2d&io"></script>
-
-Bower support will be automatically enabled when script path conatin __"bower_components/jsroot/"__ string.
-
-One also could use bower and gulp to produce single script with all libraries included.
-This is shown in the example <https://github.com/root-project/jsroot/tree/master/demo/gulp>
 
 
 ### Use of JSON

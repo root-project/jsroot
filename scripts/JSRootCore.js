@@ -100,7 +100,6 @@
    JSROOT.source_dir = "";
    JSROOT.source_min = false;
    JSROOT.source_fullpath = ""; // full name of source script
-   JSROOT.bower_dir = null;     // when specified, use standard libs from bower location
    JSROOT.nocache = false;      // when specified, used as extra URL parameter to load JSROOT scripts
    JSROOT.wrong_http_response_handling = false; // when configured, try to handle wrong content-length response from server
    JSROOT.sources = ['core'];   // indicates which major sources were loaded
@@ -1036,8 +1035,7 @@
 
       if (!urllist) return JSROOT.CallBack(callback);
 
-      let filename = urllist, separ = filename.indexOf(";"),
-          isrootjs = false, isbower = false;
+      let filename = urllist, separ = filename.indexOf(";"), isrootjs = false;
 
       if (separ>0) {
          filename = filename.substr(0, separ);
@@ -1059,9 +1057,6 @@
              (filename.lastIndexOf('.css')==filename.length-4) &&
              (filename.indexOf('.min.css')<0))
             filename = filename.slice(0, filename.length-4) + '.min.css';
-      } else if (filename.indexOf("###")===0) {
-         isbower = true;
-         filename = filename.slice(3);
       }
 
       if (JSROOT.nodejs) {
@@ -1095,8 +1090,7 @@
          }
       }
 
-      if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename; else
-      if (isbower && (JSROOT.bower_dir!==null)) filename = JSROOT.bower_dir + filename;
+      if (isrootjs && JSROOT.source_dir) filename = JSROOT.source_dir + filename;
 
       let element = null;
 
@@ -1203,7 +1197,6 @@
       let ext = jsroot.source_min ? ".min" : "",
           need_jquery = false,
           use_require = (typeof define === "function") && define.amd,
-          use_bower = jsroot.bower_dir!==null,
           mainfiles = "",
           extrafiles = "", // scripts for direct loading
           modules = [],  // modules used for require.js
@@ -1231,7 +1224,7 @@
       if ((kind.indexOf('2d;')>=0) || (kind.indexOf('v6;')>=0) || (kind.indexOf('v7;')>=0) ||
           (kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) {
           if (!use_require && (typeof d3 != 'object') && (jsroot._test_d3_ === undefined)) {
-             mainfiles += use_bower ? '###d3/d3.min.js;' : '&&&scripts/d3.min.js;';
+             mainfiles += '&&&scripts/d3.min.js;';
              jsroot._test_d3_ = null;
          }
          if (jsroot.sources.indexOf("2d") < 0) {
@@ -1295,8 +1288,7 @@
       }
 
       if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
-         mainfiles += (use_bower ? "###threejs/build/" : "&&&scripts/") + "three.min.js;" +
-                       "&&&scripts/three.extra.min.js;";
+         mainfiles += "&&&scripts/three.min.js;&&&scripts/three.extra.min.js;";
          modules.push("threejs", "threejs_all");
          mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
@@ -1313,10 +1305,10 @@
       }
 
       if (kind.indexOf("datgui;")>=0) {
-         if (!JSROOT.nodejs && (typeof window !='undefined'))
-            mainfiles += (use_bower ? "###dat.gui" : "&&&scripts") + "/dat.gui.min.js;";
-         // console.log('extra loading module dat.gui');
-         modules.push('dat.gui');
+         if (!JSROOT.nodejs && (typeof window !='undefined')) {
+            mainfiles += "&&&scripts/dat.gui.min.js;";
+            modules.push('dat.gui');
+         }
       }
 
       if ((kind.indexOf("geom;")>=0) && (jsroot.sources.indexOf("geom")<0)) {
@@ -1330,8 +1322,7 @@
       if (kind.indexOf("mathjax;")>=0) {
 
          if (typeof MathJax == 'undefined') {
-            mainfiles += (use_bower ? "###MathJax" : "https://root.cern/js/mathjax/latest") +
-                          "/MathJax.js?config=TeX-AMS-MML_SVG&delayStartupUntil=configured;";
+            mainfiles += "https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&delayStartupUntil=configured;";
             modules.push('MathJax');
 
             load_callback = function() {
@@ -1365,16 +1356,16 @@
          if (has_jq)
             jsroot.console('Reuse existing jQuery ' + jQuery.fn.jquery + ", required 3.1.1", debugout);
          else
-            lst_jq += (use_bower ? "###jquery/dist" : "&&&scripts") + "/jquery.min.js;";
+            lst_jq += "&&&scripts/jquery.min.js;";
          if (has_jq && typeof $.ui != 'undefined') {
             jsroot.console('Reuse existing jQuery-ui ' + $.ui.version + ", required 1.12.1", debugout);
          } else {
-            lst_jq += (use_bower ? "###jquery-ui" : "&&&scripts") + '/jquery-ui.min.js;';
+            lst_jq += "&&&scripts/jquery-ui.min.js;";
             extrafiles += '$$$style/jquery-ui' + ext + '.css;';
          }
 
          if (jsroot.touches) {
-            lst_jq += use_bower ? '###jqueryui-touch-punch/jquery.ui.touch-punch.min.js;' : '$$$scripts/touch-punch.min.js;';
+            lst_jq += '$$$scripts/touch-punch.min.js;';
             modules.push('jqueryui-touch-punch');
          }
 
@@ -2400,17 +2391,9 @@
       if (JSROOT.GetUrlOption('mathjax', src)!=null) prereq += "mathjax;";
       if (JSROOT.GetUrlOption('openui5', src)!=null) prereq += "openui5;";
       let user = JSROOT.GetUrlOption('load', src),
-          onload = JSROOT.GetUrlOption('onload', src),
-          bower = JSROOT.GetUrlOption('bower', src);
+          onload = JSROOT.GetUrlOption('onload', src);
 
       if (user) prereq += "io;2d;load:" + user;
-      if ((bower===null) && (JSROOT.source_dir.indexOf("bower_components/jsroot/")>=0)) bower = "";
-      if (bower!==null) {
-         if (bower.length>0) JSROOT.bower_dir = bower; else
-            if (JSROOT.source_dir.indexOf("jsroot/") == JSROOT.source_dir.length - 7)
-               JSROOT.bower_dir = JSROOT.source_dir.substr(0, JSROOT.source_dir.length - 7);
-         if (JSROOT.bower_dir !== null) console.log("Set JSROOT.bower_dir to " + JSROOT.bower_dir);
-      }
 
       if ((prereq.length>0) || (onload!=null))
          window_on_load(() => {
