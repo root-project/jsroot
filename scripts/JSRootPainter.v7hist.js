@@ -3109,7 +3109,6 @@
 
    RH2Painter.prototype.DrawBinsScatter = function() {
       let histo = this.GetHisto(),
-          fp = this.frame_painter(),
           handle = this.PrepareDraw({ rounding: true, pixel_density: true, scatter_plot: true }),
           colPaths = [], currx = [], curry = [], cell_w = [], cell_h = [],
           colindx, cmd1, cmd2, i, j, binz, cw, ch, factor = 1.,

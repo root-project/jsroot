@@ -2395,7 +2395,7 @@
 
       this[fld] = { dt: new Date(), pos: arr[0] };
 
-      let habdler = this.endTouchMenu.bind(this, kind);
+      let handler = this.endTouchMenu.bind(this, kind);
 
       this.svg_frame().on("touchcancel", handler)
                       .on("touchend", handler);

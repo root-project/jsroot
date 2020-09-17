@@ -374,7 +374,7 @@
       if (!JSROOT.gStyle.MoveResize) return;
 
       let pthis = this,  drag_rect = null,
-          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos,
+          acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
           drag_move = d3.drag().subject(Object);
 
       drag_move
@@ -2655,7 +2655,7 @@
 
       this[fld] = { dt: new Date(), pos: arr[0] };
 
-      let habdler = this.endTouchMenu.bind(this, kind);
+      let handler = this.endTouchMenu.bind(this, kind);
 
       this.svg_frame().on("touchcancel", handler)
                       .on("touchend", handler);
@@ -4006,9 +4006,7 @@
          a.download = filename;
          a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
          document.body.appendChild(a);
-         a.addEventListener("click", function(e) {
-            a.parentNode.removeChild(a);
-         });
+         a.addEventListener("click", () => a.parentNode.removeChild(a));
          a.click();
       });
    }
