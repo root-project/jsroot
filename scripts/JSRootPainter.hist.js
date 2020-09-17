@@ -5946,13 +5946,13 @@
          // process tooltips from TH2Poly
 
          let pmain = this.frame_painter(),
-             realx, realy, foundindx = -1;
+             realx, realy, foundindx = -1, bin;
 
          if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
          if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
 
          if ((realx!==undefined) && (realy!==undefined)) {
-            let i, len = histo.fBins.arr.length, bin;
+            let i, len = histo.fBins.arr.length;
 
             for (i = 0; (i < len) && (foundindx < 0); ++ i) {
                bin = histo.fBins.arr[i];
