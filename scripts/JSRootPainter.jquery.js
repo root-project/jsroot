@@ -424,10 +424,10 @@
       if (main.empty()) return '';
 
       let id = this.gui_div + "_status",
-          line = d3.select("#"+id), skip_height_check = false,
+          line = d3.select("#"+id),
           is_visible = !line.empty();
 
-      if (mode==="toggle") { mode = !is_visible; skip_height_check = (height === this.last_hsepar_height); } else
+      if (mode==="toggle") { mode = !is_visible; } else
       if (height==="delete") { mode = false; height = 0; delete this.status_layout; } else
       if (mode===undefined) { mode = true; this.status_layout = "app"; }
 
@@ -1192,7 +1192,7 @@
       JSROOT.CallBack(callback, this.disp);
    }
 
-   HierarchyPainter.prototype.enable_dragging = function(element, itemname) {
+   HierarchyPainter.prototype.enable_dragging = function(element /*, itemname*/) {
       $(element).draggable({ revert: "invalid", appendTo: "body", helper: "clone" });
    }
 
@@ -1993,7 +1993,7 @@
                      " First: <input class='treedraw_first' style='width:7em;margin-left:5px' title='first entry to process (default first)'></input>" +
                      " <button class='treedraw_clear' title='Clear drawing'>Clear</button>");
 
-          let page = 1000, numentries = undefined, p = this;
+          let numentries, p = this;
           if (this.local_tree) numentries = this.local_tree.fEntries || 0;
 
           main.find(".treedraw_cut").val(args && args.parse_cut ? args.parse_cut : "").keyup(this.keyup);
@@ -2069,7 +2069,7 @@
 
          if (args.drawopt) JSROOT.cleanup(p.drawid);
 
-         p.local_tree.Draw(args, function(histo, hopt, intermediate) {
+         p.local_tree.Draw(args, function(histo, hopt /*, intermediate*/) {
             JSROOT.redraw(p.drawid, histo, hopt);
          });
       }
@@ -2129,7 +2129,7 @@
          }
       }
 
-      player.CheckResize = function(arg) {
+      player.CheckResize = function(/*arg*/) {
          let main = $(this.select_main().node());
 
          $("#" + this.drawid).width(main.width());
@@ -2202,25 +2202,6 @@
    /// function used with THttpServer for when tree is not yet loaded
    JSROOT.drawLeafPlayer = function(hpainter, itemname) {
       return JSROOT.drawTreePlayer(hpainter, itemname, false, true);
-   }
-
-   // =======================================================================
-
-   JSROOT.Painter.ConfigureVSeparator = function(handle) {
-      // FIXME: obsolete, will be removed
-   }
-
-   JSROOT.Painter.AdjustLayout = function(left, height, firsttime) {
-      // FIXME: obsolete, will be removed
-      if (JSROOT.hpainter && JSROOT.hpainter.brlayout)
-         JSROOT.hpainter.brlayout.AdjustSeparator(left, height, true);
-   }
-
-   JSROOT.Painter.ConfigureHSeparator = function(height) {
-      // FIXME: obsolete, will be removed
-      if (!JSROOT.hpainter) return "";
-
-      return JSROOT.hpainter.CreateStatusLine(height);
    }
 
    return JSROOT;
