@@ -5945,21 +5945,19 @@
       if (h.poly) {
          // process tooltips from TH2Poly
 
-         let pmain = this.frame_painter(),
-             realx, realy, foundindx = -1, bin;
-
-         if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
-         if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
+         let pmain = this.frame_painter(), foundindx = -1, bin;
+         const realx = (pmain.grx === pmain.x) ? pmain.x.invert(pnt.x) : undefined,
+               realy = (pmain.gry === pmain.y) ? pmain.y.invert(pnt.y) : undefined;
 
          if ((realx!==undefined) && (realy!==undefined)) {
-            let i, len = histo.fBins.arr.length;
+            const len = histo.fBins.arr.length;
 
-            for (i = 0; (i < len) && (foundindx < 0); ++ i) {
+            for (let i = 0; (i < len) && (foundindx < 0); ++i) {
                bin = histo.fBins.arr[i];
 
                // found potential bins candidate
                if ((realx < bin.fXmin) || (realx > bin.fXmax) ||
-                    (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
+                   (realy < bin.fYmin) || (realy > bin.fYmax)) continue;
 
                // ignore empty bins with col0 option
                if ((bin.fContent === 0) && !this.options.Zero) continue;

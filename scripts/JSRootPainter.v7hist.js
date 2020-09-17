@@ -3374,22 +3374,20 @@
       }
 
       let histo = this.GetHisto(),
-          h = this.tt_handle, i,
+          h = this.tt_handle,
           ttrect = this.draw_g.select(".tooltip_bin");
 
       if (h.poly) {
          // process tooltips from TH2Poly
 
-         let pmain = this.frame_painter(),
-             realx, realy, foundindx = -1;
-
-         if (pmain.grx === pmain.x) realx = pmain.x.invert(pnt.x);
-         if (pmain.gry === pmain.y) realy = pmain.y.invert(pnt.y);
+         let pmain = this.frame_painter(), foundindx = -1, bin;
+         const realx = (pmain.grx === pmain.x) ? pmain.x.invert(pnt.x) : undefined,
+               realy = (pmain.gry === pmain.y) ? pmain.y.invert(pnt.y) : undefined;
 
          if ((realx!==undefined) && (realy!==undefined)) {
-            let i, len = histo.fBins.arr.length, bin;
+            const len = histo.fBins.arr.length;
 
-            for (i = 0; (i < len) && (foundindx < 0); ++ i) {
+            for (let i = 0; (i < len) && (foundindx < 0); ++ i) {
                bin = histo.fBins.arr[i];
 
                // found potential bins candidate
@@ -3455,7 +3453,7 @@
       if (h.candle) {
          // process tooltips for candle
 
-         let p;
+         let p, i;
 
          for (i=0;i<h.candle.length;++i) {
             p = h.candle[i];
@@ -3502,7 +3500,7 @@
          return res;
       }
 
-      let j, binz = 0, colindx = null;
+      let i, j, binz = 0, colindx = null;
 
       // search bins position
       for (i = h.i1; i < h.i2; ++i)
