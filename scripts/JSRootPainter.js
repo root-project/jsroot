@@ -1473,7 +1473,10 @@
       //   color = color.replace(/rgb/g, "[RGB]")
       //                .replace(/\(/g, '{')
       //                .replace(/\)/g, '}');
-      return "\\(\\color{" + color + '}{' + str + "}\\)";
+      // TODO: repair colors
+      // return "\\(\\color{" + color + '}{' + str + "}\\)";
+
+      return "\\(" + str + "\\)";
    }
 
    /** Function used to provide svg:path for the smoothed curves.
@@ -5656,10 +5659,10 @@
       }
 
       let mtext = JSROOT.Painter.translateMath(label, arg.latex, arg.color, this),
-         fo_g = arg.draw_g.append("svg:g")
-            .attr('class', 'math_svg')
-            .attr('visibility', 'hidden')
-            .property('_arg', arg);
+          fo_g = arg.draw_g.append("svg:g")
+                           .attr('class', 'math_svg')
+                           .attr('visibility', 'hidden')
+                           .property('_arg', arg);
 
       arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
 
@@ -5703,9 +5706,23 @@
 
       let element = document.createElement("p");
 
-      d3.select(element).style('visibility', "hidden").style('overflow', "hidden").style('position', "absolute")
+      // mtext = "x = {-b \pm \sqrt{b^2-4ac} \over 2a}.";
+
+      console.log('converting', mtext);
+
+      //mtext="\\(a \\ne 0\\)";
+
+      //mtext = "\\({K_{S}}\\)";
+
+      d3.select(element)
+         //.style('visibility', "hidden")
+         //.style('overflow', "hidden")
+         //.style('position', "absolute")
          .style("font-size", font.size + 'px').style("font-family", font.name)
-         .html('<mtext>' + mtext + '</mtext>');
+         //.html('<mtext>' + mtext + '</mtext>');
+         .html(mtext);
+
+      // fo_g.node.appendChild(element);
       document.body.appendChild(element);
 
       fo_g.property('_element', element);
@@ -5714,9 +5731,17 @@
 
       JSROOT.load('mathjax').then(() => {
 
-         MathJax.Hub.Typeset(element, ["FinishMathjax", painter, arg.draw_g, fo_g]);
+         console.log("converting text", mtext);
 
-         MathJax.Hub.Queue(["FinishMathjax", painter, arg.draw_g, fo_g]); // repeat once again, while Typeset not always invoke callback
+         MathJax.typesetPromise([element]).then(() => {
+            console.log("did converting text", mtext);
+            painter.FinishMathjax(arg.draw_g, fo_g);
+         });
+
+         // TODO: check if direct conversion works
+         //MathJax.mathml2svgPromise('<math>' + mtext + '</math>').then(res => {
+         //   conols.log("Got convert result", res);
+         //});
       });
 
       return 0;
@@ -5737,31 +5762,9 @@
       let vvv = d3.select(entry).select("svg");
 
       if (vvv.empty()) {
-
-         let merr = d3.select(entry).select("merror"); // indication of error
-
-         if (merr.empty()) return; // not yet finished
-
-         console.warn('MathJax error', merr.text());
-
-         let arg = fo_g.property('_arg');
-
-         if (arg && arg.latex != 2) {
-            arg.nomathjax = true;
-            fo_g.remove(); // delete special entry
-            this.DrawText(arg);
-         } else
-            fo_g.append("svg").attr('width', Math.min(20, merr.text().length + 5) + 'ex')
-               .attr('height', '3ex')
-               .style('vertical-align', '0ex')
-               .append("text")
-               .style('font-size', '12px')
-               .style('fill', 'red')
-               .attr('x', '0')
-               .attr('y', '2ex')
-               .text("Err: " + merr.text());
+         console.log('Not found any mathjax', entry);
       } else {
-         vvv.remove();
+         vvv.remove(); // remove from parent
          fo_g.append(function() { return vvv.node(); });
       }
 
