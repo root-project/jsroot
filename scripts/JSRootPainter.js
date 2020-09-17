@@ -601,12 +601,12 @@
       this.extendRootColors(this.root_colors, objarr);
    }
 
-    /** Define rendering kind which will be used for rendering of 3D elements
-     *
-     * @param {value} [render3d] - preconfigured value, will be used if applicable
-     * @returns {value} - rendering kind, see JSROOT.constants.Render3D
-     * @private
-     */
+   /** Define rendering kind which will be used for rendering of 3D elements
+    *
+    * @param {value} [render3d] - preconfigured value, will be used if applicable
+    * @returns {value} - rendering kind, see JSROOT.constants.Render3D
+    * @private
+    */
    Painter.GetRender3DKind = function(render3d) {
       if (!render3d) render3d = JSROOT.BatchMode ? JSROOT.settings.Render3DBatch : JSROOT.settings.Render3D;
       let rc = JSROOT.constants.Render3D;
@@ -852,9 +852,9 @@
       selection.style('fill', this.fill ? this.color : "none");
    }
 
-   /** Method used when color or pattern were changed with OpenUi5 widgets.
+   /** @summary Method used when color or pattern were changed with OpenUi5 widgets.
     * @private */
-   TAttMarkerHandler.prototype.verifyDirectChange = function(painter) {
+   TAttMarkerHandler.prototype.verifyDirectChange = function(/* painter */) {
       this.Change(this.color, parseInt(this.style), parseFloat(this.size));
    }
 
@@ -1526,7 +1526,7 @@
          }
       }
 
-      let res = { path: "", close: "" }, bin = bins[0], prev, maxy = Math.max(bin.gry, height + 5),
+      let res = { path: "", close: "" }, bin = bins[0], maxy = Math.max(bin.gry, height + 5),
          currx = Math.round(bin.grx), curry = Math.round(bin.gry), dx, dy, npnts = bins.length;
 
       function conv(val) {
@@ -1772,7 +1772,7 @@
       this.next_operation();
    }
 
-   FileDumpSocket.prototype.send = function(str) {
+   FileDumpSocket.prototype.send = function(/*str*/) {
       if (this.protocol[this.cnt] == "send") {
          this.cnt++;
          setTimeout(this.next_operation.bind(this), 10);
@@ -1795,7 +1795,6 @@
    }
 
    FileDumpSocket.prototype.get_file = function(fname, res) {
-      // console.log('got file', fname, typeof res, !!res);
       this.wait_for_file = false;
       if (!res) return;
       if (this.receiver.ProvideData)
@@ -2126,11 +2125,9 @@
             let i1 = msg.indexOf(":"),
                credit = parseInt(msg.substr(0, i1)),
                i2 = msg.indexOf(":", i1 + 1),
-               cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),
+               // cansend = parseInt(msg.substr(i1 + 1, i2 - i1)),  // TODO: take into account when sending messages
                i3 = msg.indexOf(":", i2 + 1),
                chid = parseInt(msg.substr(i2 + 1, i3 - i2));
-
-            // console.log('msg(20)', msg.substr(0,20), credit, cansend, chid, i3);
 
             pthis.ackn++;            // count number of received packets,
             pthis.cansend += credit; // how many packets client can send
@@ -2414,20 +2411,21 @@
     * @returns {boolean} true if draw objects matches with provided type name
     * @abstract
     * @private */
-   TBasePainter.prototype.MatchObjectType = function(typename) {
+   TBasePainter.prototype.MatchObjectType = function(/*typename*/) {
    }
 
    /** @summary Called to update drawn object content
-    * @returns {boolean} true if update can be performed
+    * @returns {boolean} true if update was performed
     * @abstract
     * @private */
-   TBasePainter.prototype.UpdateObject = function(obj) {
+   TBasePainter.prototype.UpdateObject = function(/* obj */) {
    }
 
    /** @summary Redraw all objects in current pad
+    * @param {string} reason - why redraw performed, can be "zoom" or empty ]
     * @abstract
     * @private */
-   TBasePainter.prototype.RedrawPad = function(reason) {
+   TBasePainter.prototype.RedrawPad = function(/*reason*/) {
    }
 
    /** @summary Updates object and readraw it
@@ -2446,7 +2444,7 @@
     * @returns {boolean} true if resize was detected
     * @abstract
     * @private */
-   TBasePainter.prototype.CheckResize = function(arg) {
+   TBasePainter.prototype.CheckResize = function(/* arg */) {
    }
 
    /** @summary access to main HTML element used for drawing - typically <div> element
@@ -2730,7 +2728,7 @@
     * @abstract
     * @private
     */
-   TBasePainter.prototype.CanZoomIn = function(axis, left, right) {
+   TBasePainter.prototype.CanZoomIn = function(/* axis, left, right */) {
    }
 
    // ==============================================================================
@@ -2983,7 +2981,7 @@
    /** @summary Method called when interactively changes attribute in given class
     * @abstract
     * @private */
-   TObjectPainter.prototype.AttributeChange = function(class_name, member_name, new_value) {
+   TObjectPainter.prototype.AttributeChange = function(/* class_name, member_name, new_value */) {
       // only for objects in web canvas make sense to handle attributes changes from GED
       // console.log("Changed attribute class = " + class_name + " member = " + member_name + " value = " + new_value);
    }
@@ -4433,9 +4431,7 @@
       this.AddColorMenuEntry(menu, "color", obj.fTextColor,
          function(arg) { this.GetObject().fTextColor = parseInt(arg); this.InteractiveRedraw(true, this.GetColorExec(parseInt(arg), "SetTextColor")); }.bind(this));
 
-      let align = [11, 12, 13, 21, 22, 23, 31, 32, 33],
-         hnames = ['left', 'centered', 'right'],
-         vnames = ['bottom', 'centered', 'top'];
+      let align = [11, 12, 13, 21, 22, 23, 31, 32, 33];
 
       menu.add("sub:align");
       for (let n = 0; n < align.length; ++n) {
@@ -4462,15 +4458,16 @@
          rect = this.get_visible_rect(main),
          w = Math.round(rect.width * 0.05) + "px",
          h = Math.round(rect.height * 0.05) + "px",
-         id = "root_inspector_" + JSROOT.id_counter++,
-         cont = main.append("div")
-            .attr("id", id)
-            .attr("class", "jsroot_inspector")
-            .style('position', 'absolute')
-            .style('top', h)
-            .style('bottom', h)
-            .style('left', w)
-            .style('right', w);
+         id = "root_inspector_" + JSROOT.id_counter++;
+
+      main.append("div")
+         .attr("id", id)
+         .attr("class", "jsroot_inspector")
+         .style('position', 'absolute')
+         .style('top', h)
+         .style('bottom', h)
+         .style('left', w)
+         .style('right', w);
 
       if (!obj || (typeof obj !== 'object') || !obj._typename)
          obj = this.GetObject();
@@ -4676,7 +4673,7 @@
     * @abstract
     */
 
-   TObjectPainter.prototype.Redraw = function(reason) {
+   TObjectPainter.prototype.Redraw = function(/*reason*/) {
    }
 
    /** @summary Start text drawing
@@ -5390,8 +5387,8 @@
                // creating cap for square root
                // while overline symbol does not match with square root, use empty text with overline
                let len = 2, sqrt_dy = 0, yscale = 1,
-                   bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
-                   be = get_boundary(this, subnode1, subpos.rect);
+                  bs = get_boundary(this, subpos.square_root, subpos.sqrt_rect),
+                  be = get_boundary(this, subnode1, subpos.rect);
 
                // we can compare y coordinates while both nodes (root and element) on the same level
                if ((be.height > bs.height) && (bs.height > 0)) {
@@ -5730,7 +5727,7 @@
     * @private
     */
 
-   TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, id) {
+   TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g) {
 
       if (fo_g.node().parentNode !== draw_g.node()) return;
 
@@ -6014,7 +6011,7 @@
             continue;
          }
 
-         let was_empty = group.empty(), dx = 0, dy = 0;
+         let was_empty = group.empty();
 
          if (was_empty)
             group = hintsg.append("svg:svg")
@@ -6080,7 +6077,7 @@
          function translateFn() {
             // We only use 'd', but list d,i,a as params just to show can have them as params.
             // Code only really uses d and t.
-            return function(d, i, a) {
+            return function(/*d, i, a*/) {
                return function(t) {
                   return t < 0.8 ? "0" : (t - 0.8) * 5;
                };
@@ -6158,7 +6155,7 @@
    // ================= painter of raw text ========================================
 
 
-   Painter.drawRawText = function(divid, txt, opt) {
+   Painter.drawRawText = function(divid, txt /*, opt*/) {
 
       let painter = new TBasePainter();
       painter.txt = txt;
@@ -6475,7 +6472,7 @@
    JSROOT.getDrawSettings = function(kind, selector) {
       let res = { opts: null, inspect: false, expand: false, draw: false, handle: null };
       if (typeof kind != 'string') return res;
-      let allopts = null, isany = false, noinspect = false, canexpand = false;
+      let isany = false, noinspect = false, canexpand = false;
       if (typeof selector !== 'string') selector = "";
 
       for (let cnt = 0; cnt < 1000; ++cnt) {
@@ -6517,7 +6514,7 @@
 
    /** Returns array with supported draw options for the specified kind
     * @private */
-   JSROOT.getDrawOptions = function(kind, selector) {
+   JSROOT.getDrawOptions = function(kind /*, selector*/) {
       return JSROOT.getDrawSettings(kind).opts;
    }
 
