@@ -1816,6 +1816,7 @@
       if (histo._typename.match(/^TH2/)) return 2;
       if (histo._typename.match(/^TProfile2D/)) return 2;
       if (histo._typename.match(/^TH3/)) return 3;
+      if (this.IsTH2Poly()) return 2;
       return 1;
    }
 
