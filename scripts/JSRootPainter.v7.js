@@ -596,7 +596,7 @@
       if (!JSROOT.gStyle.MoveResize) return;
 
       let pthis = this,  drag_rect = null,
-          acc_x, acc_y, new_x, new_y, sign_0, center_0, alt_pos,
+          acc_x, acc_y, new_x, new_y, sign_0, alt_pos,
           drag_move = d3.drag().subject(Object);
 
       drag_move
@@ -718,9 +718,9 @@
           optionPlus = (chOpt.indexOf("+")>=0),
           optionMinus = (chOpt.indexOf("-")>=0),
           optionSize = (chOpt.indexOf("S")>=0),
-          optionY = (chOpt.indexOf("Y")>=0),
-          optionUp = (chOpt.indexOf("0")>=0),
-          optionDown = (chOpt.indexOf("O")>=0),
+          // optionY = (chOpt.indexOf("Y")>=0),
+          // optionUp = (chOpt.indexOf("0")>=0),
+          // optionDown = (chOpt.indexOf("O")>=0),
           optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
           optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
@@ -1060,7 +1060,7 @@
 
    /** @summary Set active flag for frame - can block some events
     * @private */
-   RFramePainter.prototype.SetActive = function(on) {
+   RFramePainter.prototype.SetActive = function(/*on*/) {
       // do nothing here - key handler is handled differently
    }
 
@@ -1086,8 +1086,6 @@
    }
 
    RFramePainter.prototype.UpdateAttributes = function(force) {
-      let tframe = this.GetObject();
-
       if ((this.fX1NDC === undefined) || (force && !this.modified_NDC)) {
 
          let padw = this.pad_width(), padh = this.pad_height();
@@ -1683,7 +1681,7 @@
    }
 
    /** Returns palette associated with frame. Either from existing palette painter or just default palette */
-   RFramePainter.prototype.GetPalette = function(force) {
+   RFramePainter.prototype.GetPalette = function() {
       let pp = this.FindPainterFor(undefined, undefined, "ROOT::Experimental::RPaletteDrawable");
 
       if (pp) return pp.GetPalette();
@@ -2312,7 +2310,7 @@
       // here should be all axes attributes in offline
    }
 
-   RFramePainter.prototype.FillContextMenu = function(menu, kind, obj) {
+   RFramePainter.prototype.FillContextMenu = function(menu, kind /*, obj*/) {
 
       // when fill and show context menu, remove all zooming
       this.clearInteractiveElements();
@@ -2786,7 +2784,7 @@
    }
 
    /** Set selected range back to TPad object */
-   RFramePainter.prototype.SetRootPadRange = function(pad, is3d) {
+   RFramePainter.prototype.SetRootPadRange = function(/* pad, is3d */) {
       // TODO: change of pad range and send back to root application
 /*
       if (!pad || this.options.Same) return;
@@ -3078,7 +3076,7 @@
 
       this._fast_drawing = JSROOT.gStyle.SmallPad && ((rect.width < JSROOT.gStyle.SmallPad.width) || (rect.height < JSROOT.gStyle.SmallPad.height));
 
-      this.AlignBtns(btns, rect.width, rect.height, svg);
+      this.AlignBtns(btns, rect.width, rect.height);
 
       return true;
    }
@@ -3769,9 +3767,7 @@
          a.download = filename;
          a.href = (kind != "svg") ? imgdata : "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(imgdata);
          document.body.appendChild(a);
-         a.addEventListener("click", function(e) {
-            a.parentNode.removeChild(a);
-         });
+         a.addEventListener("click", () => a.parentNode.removeChild(a));
          a.click();
       });
    }
@@ -4123,7 +4119,7 @@
       else if (!group.property('leftside')) ctrl.attr("x", x);
    }
 
-   RPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
+   RPadPainter.prototype.AlignBtns = function(btns, width, height) {
       let sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
       if (btns.property('vertical')) {
           btns_x = btns.property('leftside') ? 2 : (width - sz0);
@@ -4436,11 +4432,11 @@
       this.CloseWebsocket(true);
    }
 
-   RCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
+   RCanvasPainter.prototype.OnWebsocketOpened = function(/*handle*/) {
       // indicate that we are ready to recieve any following commands
    }
 
-   RCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
+   RCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
       JSROOT.CloseCurrentWindow();
    }
 
@@ -4493,7 +4489,7 @@
                conn.SetReceiver({
                   cpainter: this,
 
-                  OnWebsocketOpened: function(hhh) {
+                  OnWebsocketOpened: function() {
                      console.log('Panel socket connected');
                   },
 
@@ -4507,12 +4503,12 @@
                      });
                   },
 
-                  OnWebsocketClosed: function(hhh) {
+                  OnWebsocketClosed: function() {
                      // if connection failed,
                      handle.Send(reply + "false");
                   },
 
-                  OnWebsocketError: function(hhh) {
+                  OnWebsocketError: function() {
                      // if connection failed,
                      handle.Send(reply + "false");
                   }
@@ -4605,7 +4601,7 @@
       }, painter, call_back);
    }
 
-   RCanvasPainter.prototype.SubmitExec = function(painter, exec, snapid) {
+   RCanvasPainter.prototype.SubmitExec = function(painter, exec /*, snapid */) {
       console.log('SubmitExec', exec, painter.snapid);
 
       // snapid is intentionally ignored - only painter.snapid has to be used
@@ -4682,7 +4678,7 @@
       return this.has_event_status;
    }
 
-   function drawCanvas(divid, can, opt) {
+   function drawCanvas(divid, can /*, opt */) {
       let nocanvas = !can;
       if (nocanvas) {
          console.log("No canvas specified");
@@ -4714,7 +4710,7 @@
       return painter;
    }
 
-   function drawPadSnapshot(divid, snap, opt) {
+   function drawPadSnapshot(divid, snap /*, opt*/) {
       let painter = new RCanvasPainter(null);
       painter.normal_canvas = false;
       painter.batch_mode = true;
@@ -4746,19 +4742,19 @@
 
       let pw = this.pad_width(),
           ph = this.pad_height(),
-          fx, fy, fw, fh;
+          fx, fy, fw;
 
       if (this.frame_painter()) {
          fx = this.frame_x();
          fy = this.frame_y();
          fw = this.frame_width();
-         fh = this.frame_height();
+         // fh = this.frame_height();
       } else {
          let st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin*pw);
          fy = Math.round(st.fPadTopMargin*ph);
          fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
-         fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
       }
 
       let visible       = this.v7EvalAttr("visible", true),
@@ -4822,19 +4818,19 @@
           pave_y = parseInt(this.draw_g.attr("y")),
           pw     = this.pad_width(),
           ph     = this.pad_height(),
-          fx, fy, fw, fh;
+          fx, fy, fw;
 
       if (this.frame_painter()) {
          fx = this.frame_x();
          fy = this.frame_y();
          fw = this.frame_width();
-         fh = this.frame_height();
+         // fh = this.frame_height();
       } else {
          let st = JSROOT.gStyle;
          fx = Math.round(st.fPadLeftMargin*pw);
          fy = Math.round(st.fPadTopMargin*ph);
          fw = Math.round((1-st.fPadLeftMargin-st.fPadRightMargin)*pw);
-         fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
+         // fh = Math.round((1-st.fPadTopMargin-st.fPadBottomMargin)*ph);
       }
 
       let changes = {};
@@ -4851,7 +4847,7 @@
       this.DrawContent();
    }
 
-   RPavePainter.prototype.Redraw = function(reason) {
+   RPavePainter.prototype.Redraw = function(/*reason*/) {
       this.DrawPave();
    }
 
@@ -4876,16 +4872,15 @@
       let fx           = this.frame_x(),
           fy           = this.frame_y(),
           fw           = this.frame_width(),
-          fh           = this.frame_height(),
+          // fh           = this.frame_height(),
           ph           = this.pad_height(),
           title        = this.GetObject(),
-          pp           = this.pad_painter(),
           title_margin = this.v7EvalLength("margin", ph, 0.02),
           title_width  = fw,
           title_height = this.v7EvalLength("height", ph, 0.05),
           text_size    = this.v7EvalAttr("text_size", 20),
           text_angle   = -1 * this.v7EvalAttr("text_angle", 0),
-          text_align   = this.v7EvalAttr("text_align", 22),
+          // text_align   = this.v7EvalAttr("text_align", 22),
           text_color   = this.v7EvalColor("text_color", "black"),
           text_font    = this.v7EvalAttr("text_font", 41);
 
@@ -5076,8 +5071,6 @@
 
       let zmin         = contour[0],
           zmax         = contour[contour.length-1],
-          obj          = this.GetObject(),
-          pp           = this.pad_painter(),
           fx           = this.frame_x(),
           fy           = this.frame_y(),
           fw           = this.frame_width(),
@@ -5175,7 +5168,7 @@
 
       if (!JSROOT.gStyle.Zooming) return;
 
-      let evnt = null, doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
+      let doing_zoom = false, sel1 = 0, sel2 = 0, zoom_rect = null;
 
       function moveRectSel(evnt) {
 

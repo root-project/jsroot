@@ -506,9 +506,9 @@
           optionPlus = (chOpt.indexOf("+")>=0),
           optionMinus = (chOpt.indexOf("-")>=0),
           optionSize = (chOpt.indexOf("S")>=0),
-          optionY = (chOpt.indexOf("Y")>=0),
-          optionUp = (chOpt.indexOf("0")>=0),
-          optionDown = (chOpt.indexOf("O")>=0),
+          // optionY = (chOpt.indexOf("Y")>=0),
+          // optionUp = (chOpt.indexOf("0")>=0),
+          // optionDown = (chOpt.indexOf("O")>=0),
           optionUnlab = (chOpt.indexOf("U")>=0),  // no labels
           optionNoopt = (chOpt.indexOf("N")>=0),  // no ticks position optimization
           optionInt = (chOpt.indexOf("I")>=0),    // integer labels
@@ -822,7 +822,7 @@
       this.DrawAxis(vertical, this.draw_g, w, h, "translate(" + x1 + "," + y2 +")", reverse);
    }
 
-   JSROOT.Painter.drawGaxis = function(divid, obj, opt) {
+   JSROOT.Painter.drawGaxis = function(divid, obj /*, opt*/) {
       let painter = new JSROOT.TAxisPainter(obj, false);
 
       painter.SetDivId(divid);
@@ -871,7 +871,7 @@
 
    /** @summary Set active flag for frame - can block some events
     * @private */
-   TFramePainter.prototype.SetActive = function(on) {
+   TFramePainter.prototype.SetActive = function(/* on */) {
       // do nothing here - key handler is handled differently
    }
 
@@ -1590,7 +1590,7 @@
       JSROOT.TooltipHandler.prototype.Cleanup.call(this);
    }
 
-   TFramePainter.prototype.Redraw = function(reason) {
+   TFramePainter.prototype.Redraw = function(/*reason*/) {
 
       let pp = this.pad_painter();
       if (pp) pp.frame_painter_ref = this; // keep direct reference to the frame painter
@@ -2821,8 +2821,7 @@
     * @private
     */
    TPadPainter.prototype.CreateAutoColor = function() {
-      let pp = this.canv_painter(),
-          pad = this.root_pad(),
+      let pad = this.root_pad(),
           numprimitives = pad && pad.fPrimitves ? pad.fPrimitves.arr.length : 5;
 
       let pal = this.get_palette(true);
@@ -2843,10 +2842,10 @@
       return indx+2;
    }
 
-   /** Call function for each painter in pad
-     * kind == "all" for all objects (default)
-     * kind == "pads" only pads and subpads
-     * kind == "objects" only for object in current pad */
+   /** @summary Call function for each painter in pad
+     * @param {function} userfunc - function to call
+     * @param {string} kind - "all" for all objects (default), "pads" only pads and subpads, "objects" only for object in current pad
+     * @private */
    TPadPainter.prototype.ForEachPainterInPad = function(userfunc, kind) {
       if (!kind) kind = "all";
       if (kind!="objects") userfunc(this);
@@ -3040,7 +3039,7 @@
 
       this.DrawActiveBorder(fill_rect);
 
-      this.AlignBtns(btns, rect.width, rect.height, svg);
+      this.AlignBtns(btns, rect.width, rect.height);
 
       return true;
    }
@@ -4351,7 +4350,7 @@
       else if (!group.property('leftside')) ctrl.attr("x", x);
    }
 
-   TPadPainter.prototype.AlignBtns = function(btns, width, height, svg) {
+   TPadPainter.prototype.AlignBtns = function(btns, width, height) {
       let sz0 = this.ButtonSize(1.25), nextx = (btns.property('nextx') || 0) + sz0, btns_x, btns_y;
 
       if (btns.property('vertical')) {
@@ -4661,11 +4660,11 @@
       this._websocket.Connect(href);
    }
 
-   TCanvasPainter.prototype.OnWebsocketOpened = function(handle) {
+   TCanvasPainter.prototype.OnWebsocketOpened = function(/*handle*/) {
       // indicate that we are ready to recieve any following commands
    }
 
-   TCanvasPainter.prototype.OnWebsocketClosed = function(handle) {
+   TCanvasPainter.prototype.OnWebsocketClosed = function(/*handle*/) {
       JSROOT.CloseCurrentWindow();
    }
 
@@ -5053,7 +5052,7 @@
       return painter;
    }
 
-   function drawPadSnapshot(divid, snap, opt) {
+   function drawPadSnapshot(divid, snap /*, opt*/) {
       // just for debugging without running web canvas
 
       let can = JSROOT.Create("TCanvas");
