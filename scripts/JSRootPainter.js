@@ -1474,9 +1474,9 @@
       //                .replace(/\(/g, '{')
       //                .replace(/\)/g, '}');
       // TODO: repair colors
-      // return "\\(\\color{" + color + '}{' + str + "}\\)";
+      return "\\(\\color{" + color + '}{' + str + "}\\)";
 
-      return "\\(" + str + "\\)";
+      // return "\\(" + str + "\\)";
    }
 
    /** Function used to provide svg:path for the smoothed curves.
@@ -5708,16 +5708,14 @@
 
       // mtext = "x = {-b \pm \sqrt{b^2-4ac} \over 2a}.";
 
-      console.log('converting', mtext);
-
       //mtext="\\(a \\ne 0\\)";
 
       //mtext = "\\({K_{S}}\\)";
 
       d3.select(element)
-         //.style('visibility', "hidden")
-         //.style('overflow', "hidden")
-         //.style('position', "absolute")
+         .style('visibility', "hidden")
+         .style('overflow', "hidden")
+         .style('position', "absolute")
          .style("font-size", font.size + 'px').style("font-family", font.name)
          //.html('<mtext>' + mtext + '</mtext>');
          .html(mtext);
@@ -5730,11 +5728,8 @@
       let painter = this;
 
       JSROOT.load('mathjax').then(() => {
-
-         console.log("converting text", mtext);
-
+         // console.log("converting text", mtext);
          MathJax.typesetPromise([element]).then(() => {
-            console.log("did converting text", mtext);
             painter.FinishMathjax(arg.draw_g, fo_g);
          });
 
