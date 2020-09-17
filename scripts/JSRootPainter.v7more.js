@@ -15,7 +15,7 @@
          throw new Error('JSROOT.Painter not defined', 'JSRootPainter.v7hist.js');
       factory(JSROOT, d3);
    }
-} (function(JSROOT, d3) {
+} (function(JSROOT /* , d3 */) {
 
    "use strict";
 
@@ -134,7 +134,7 @@
 
    function drawLegendContent() {
       let legend     = this.GetObject(),
-          text_size  = this.v7EvalAttr( "legend_text_size", 20),
+          // text_size  = this.v7EvalAttr( "legend_text_size", 20),
           text_angle = -1 * this.v7EvalAttr( "legend_text_angle", 0),
           text_align = this.v7EvalAttr( "legend_text_align", 12),
           text_color = this.v7EvalColor( "legend_text_color", "black"),
@@ -148,8 +148,7 @@
 
       if (!nlines || !pp) return;
 
-      let arg = { align: text_align, rotate: text_angle, color: text_color, latex: 1 },
-          stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
+      let stepy = height / nlines, posy = 0, margin_x = 0.02 * width;
 
       this.StartTextDrawing(text_font, height/(nlines * 1.2));
 
@@ -219,7 +218,7 @@
 
    function drawPaveTextContent() {
       let pavetext   = this.GetObject(),
-          text_size  = this.v7EvalAttr( "pavetext_text_size", 20),
+          // text_size  = this.v7EvalAttr( "pavetext_text_size", 20),
           text_angle = -1 * this.v7EvalAttr( "pavetext_text_angle", 0),
           text_align = this.v7EvalAttr( "pavetext_text_align", 12),
           text_color = this.v7EvalColor( "pavetext_text_color", "black"),

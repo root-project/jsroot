@@ -78,7 +78,7 @@
     * @abstract
     * @param {number} progress - current value between 0 and 1
     */
-   TSelector.prototype.ShowProgress = function(progress) {
+   TSelector.prototype.ShowProgress = function(/* progress */) {
    }
 
    /** @summary call this function to abort processing */
@@ -90,21 +90,21 @@
     * @abstract
     * @param {object} tree - tree object
     */
-   TSelector.prototype.Begin = function(tree) {
+   TSelector.prototype.Begin = function(/* tree */) {
    }
 
    /** @summary function called when next entry extracted from the tree
     * @abstract
     * @param {number} entry - read entry number
     */
-   TSelector.prototype.Process = function(entry) {
+   TSelector.prototype.Process = function(/* entry */) {
    }
 
    /** @summary function called at the very end of processing
     * @abstract
     * @param {boolean} res - true if all data were correctly processed
     */
-   TSelector.prototype.Terminate = function(res) {
+   TSelector.prototype.Terminate = function(/* res */) {
    }
 
    // =================================================================

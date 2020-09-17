@@ -508,7 +508,7 @@
       return mesh;
    }
 
-   ThreeBSP.Polygon = function( vertices, normal, w ) {
+   ThreeBSP.Polygon = function( vertices /* , normal, w */) {
       if ( !( vertices instanceof Array ) ) {
          vertices = [];
       }
