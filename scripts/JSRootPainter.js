@@ -5663,49 +5663,83 @@
 
       arg.draw_g.property('mathjax_use', true);  // one need to know that mathjax is used
 
+      let painter = this;
+
+      let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
+
       if (JSROOT.nodejs) {
          // special handling for Node.js
 
          if (!JSROOT.nodejs_mathjax) {
-            JSROOT.nodejs_mathjax = require("mathjax-node");
-            JSROOT.nodejs_mathjax.config({
-               TeX: { extensions: ["color.js"] },
-               SVG: { mtextFontInherit: true, minScaleAdjust: 100, matchFontHeight: true, useFontCache: false }
+            JSROOT.nodejs_mathjax = 1; // try only once
+
+            require("mathjax").init({
+               loader: {
+                  paths: {jsdom: `${__dirname}`},
+                  load: [ 'input/tex',  'output/svg', '[tex]/color' /*, '[jsdom]/jsdomAdapter'*/ ]
+                },
+                tex: {
+                   packages: {'[+]': ['color']}
+                   // packages: [ 'base', 'autoload', 'require', 'ams', 'newcommand' ]
+                },
+                svg: {
+                   scale: 1,                      // global scaling factor for all expressions
+                   minScale: .5,                  // smallest scaling factor to use
+                   mtextInheritFont: false,       // true to make mtext elements use surrounding font
+                   merrorInheritFont: true,       // true to make merror text use surrounding font
+                   mathmlSpacing: false,          // true for MathML spacing rules, false for TeX rules
+                   skipAttributes: {},            // RFDa and other attributes NOT to copy to the output
+                   exFactor: .5,                  // default size of ex in em units
+                   displayAlign: 'center',        // default for indentalign when set to 'auto'
+                   displayIndent: '0',            // default for indentshift when set to 'auto'
+                   fontCache: 'local',            // or 'global' or 'none'
+                   localID: null,                 // ID to use for local font cache (for single equation processing)
+                   internalSpeechTitles: true,    // insert <title> tags with speech content
+                   titleID: 0                     // initial id number to use for aria-labeledby titles
+                },
+                config: {
+                   JSDOM: require('jsdom').JSDOM
+                },
+                startup: {
+                   typeset: false,
+                   // adaptor: 'jsdomAdapter',
+                   ready: function() {
+                         MathJax.startup.registerConstructor('jsdomAdaptor', () => {
+                            console.log('!!!!!!!!!!!!! Create JSDOM adapter !!!!!!!!!!!!', typeof MathJax);
+                            return new MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor(new MathJax.config.config.JSDOM().window);
+                         });
+                         MathJax.startup.useAdaptor('jsdomAdaptor', true);
+
+                         console.log('Mathjax ready');
+                         MathJax.startup.defaultReady();
+                  }
+                }
+            }).then(() => {
+
+               console.log('HTML adaptor', MathJax._.adaptors.HTMLAdaptor.HTMLAdaptor);
+
+               JSROOT.nodejs_mathjax = MathJax;
+
+               console.log('Doing convertion', mtext, 'func', typeof MathJax.tex2svg);
+
+               MathJax.tex2svgPromise(mtext, options).then(elem => {
+
+                   console.log('Did convertion', mtext);
+
+                   painter.FinishMathjax(arg.draw_g, fo_g, elem);
+               });
             });
-            JSROOT.nodejs_mathjax.start();
+         } else {
+            console.log('Ignore ', mtext);
+            //JSROOT.nodejs_mathjax.tex2svgPromise(mtext, options).then(elem => {
+            //    painter.FinishMathjax(arg.draw_g, fo_g, elem);
+            //});
          }
-
-         if ((mtext.indexOf("\\(") == 0) && (mtext.lastIndexOf("\\)") == mtext.length - 2))
-            mtext = mtext.substr(2, mtext.length - 4);
-
-         JSROOT.nodejs_mathjax.typeset({
-            jsroot_painter: this,
-            jsroot_drawg: arg.draw_g,
-            jsroot_fog: fo_g,
-            ex: font.size,
-            math: mtext,
-            useFontCache: false,
-            useGlobalCache: false,
-            format: "TeX", // "TeX", "inline-TeX", "MathML"
-            svg: true //  svg:true,
-         }, function(data, opt) {
-            if (!data.errors) {
-               opt.jsroot_fog.html(data.svg);
-            } else {
-               console.log('MathJax error', opt.math);
-               opt.jsroot_fog.html("<svg></svg>");
-            }
-            opt.jsroot_painter.FinishTextDrawing(opt.jsroot_drawg);
-         });
 
          return 0;
       }
 
-      let painter = this;
-
       JSROOT.load('mathjax').then(() => {
-
-           let options = { em: font.size, ex: font.size/2, family: font.name, scale: 1, containerWidth: -1, lineWidth: 100000 };
 
            MathJax.tex2svgPromise(mtext, options).then(elem => {
               painter.FinishMathjax(arg.draw_g, fo_g, elem);

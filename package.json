@@ -2,7 +2,7 @@
   "name": "jsroot",
   "version": "5.9.0",
   "engines": {
-    "node": ">=0.8"
+    "node": ">=0.12"
   },
   "description": "JavaScript ROOT",
   "homepage": "https://root.cern/js/",
@@ -25,10 +25,11 @@
     "d3": "^6.1.1",
     "gl": "^4.6.1",
     "jsdom": "^12.2.0",
-    "mathjax-node": "^2.1.0",
+    "mathjax": "^3.1.2",
     "request": "^2.34",
     "three": "^0.120.0",
     "xhr2": "^0.1.4",
+    "yargs": "^16.0.3",
     "zlib": "^1.0.5"
   },
   "repository": {

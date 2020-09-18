@@ -1331,7 +1331,7 @@
                   load: ['[tex]/color']
                },
                tex: {
-                  inlineMath: [['$', '$'], ['\\(', '\\)']],
+                  // inlineMath: [['$', '$'], ['\\(', '\\)']],
                   packages: {'[+]': ['color']}
                },
                svg: {
