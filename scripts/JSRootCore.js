@@ -15,7 +15,7 @@
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate.min',
-            'MathJax'              : 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured',
+            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
             'threejs_all'          : dir+'three.extra.min',
@@ -42,8 +42,6 @@
 
       if (norjs) {
          // just define locations
-         paths['MathJax'] = 'https://root.cern/js/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG&amp;delayStartupUntil=configured';
-
          require({ paths: paths });
       } else {
          let cfg_paths;
@@ -74,8 +72,8 @@
      if (norjs || !require.specified("jsroot"))
         define('jsroot', [], jsroot);
 
-   } else if (typeof exports === 'object' /*&& typeof module !== 'undefined'*/) {
-      // processing with Node.js or CommonJS
+   } else if (typeof exports === 'object' && typeof module !== 'undefined') {
+      // processing with Node.js
 
       //  mark JSROOT as used with Node.js
       exports.BatchMode = exports.nodejs = (typeof global==='object') && global.process && (Object.prototype.toString.call(global.process) === '[object process]');

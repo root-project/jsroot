@@ -5,8 +5,10 @@
       define( ['JSRootCore', 'threejs'], factory );
    } else
    if (typeof exports === 'object' && typeof module !== 'undefined') {
-      var jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("three"), jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
+      let jsroot = require("./JSRootCore.js");
+      let threejs = require("three");
+      factory(jsroot, threejs, jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
+      module.exports = threejs;
    } else {
 
       if (typeof JSROOT == 'undefined')
@@ -6369,5 +6371,6 @@ THREE.SimplexNoise.prototype.noise4d = function ( x, y, z, w ) {
 
 };
 
+return THREE;
 
 }));

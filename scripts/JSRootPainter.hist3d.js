@@ -3,10 +3,10 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootCore', 'd3', 'JSRootPainter.hist', 'threejs', 'threejs_all'], factory );
+      define( [ 'JSRootCore', 'd3', 'JSRootPainter.hist', 'threejs_all'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("d3"), require("./JSRootPainter.hist.js"), require("three"), require("./three.extra.min.js"),
+      factory(jsroot, require("d3"), require("./JSRootPainter.hist.js"), require("./three.extra.min.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
       if (typeof JSROOT == 'undefined')
@@ -17,7 +17,7 @@
          throw new Error('THREE is not defined', 'JSRootPainter.hist3d.js');
       factory(JSROOT, d3, JSROOT, THREE, THREE);
    }
-} (function(JSROOT, d3, __DUMMY__, THREE, THREE_MORE, document) {
+} (function(JSROOT, d3, __DUMMY__, THREE, document) {
 
    "use strict";
 

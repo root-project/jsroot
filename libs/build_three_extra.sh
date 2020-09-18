@@ -12,7 +12,7 @@ rm -rf $tgt
 touch $tgt
 
 echo Producing $tgt from $src
-echo Using tail -n+2 __src__ to exclude useless warnings
+echo !! Using tail -n+2 __src__ to exclude useless warnings !!
 
 cat ./three.extra_head.js >> $tgt
 cat $src/examples/fonts/helvetiker_regular.typeface.json >> $tgt
@@ -73,6 +73,7 @@ echo "// Content of examples/js/math/SimplexNoise.js" >> $tgt
 tail -n+2 $src/examples/js/math/SimplexNoise.js >> $tgt
 echo "" >> $tgt
 
+echo "return THREE;" >> $tgt
 echo "" >> $tgt
 echo "}));" >> $tgt
 
@@ -80,4 +81,4 @@ echo Producing three.extra.min.js
 
 java -jar /home/linev/d/closure-compiler-v20200830.jar --js $tgt --js_output_file ../scripts/three.extra.min.js
 
-# java -jar /d/yuicompressor-2.4.8.jar $tgt -o ../scripts/three.extra.min.js
+echo Done three.extra.min.js
