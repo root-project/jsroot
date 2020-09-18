@@ -838,6 +838,9 @@
 
    /** Display control GUI */
    TGeoPainter.prototype.showControlOptions = function(on) {
+      // while complete geo drawing can be removed until dat is loaded - just check and ignore callback
+      if (!this.ctrl) return;
+
       let usedat = _dat;
       if (!usedat && (typeof dat == 'object'))
          usedat = dat;

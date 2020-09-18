@@ -984,10 +984,12 @@
       let pnts = new THREE.Points(this.geom, material);
       pnts.nvertex = 1;
 
-      if (!this.callback)
-         return pnts;
+      let cb = this.callback;
+      delete this.callback;
 
-      JSROOT.CallBack(this.callback, pnts);
+      if (cb) JSROOT.CallBack(cb, pnts);
+
+      return pnts;
    }
 
    PointsCreator.prototype.CreatePoints = function(args) {
