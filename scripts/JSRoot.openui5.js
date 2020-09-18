@@ -4,8 +4,11 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( ['jquery', 'jquery-ui', 'JSRootCore' ], factory );
+      define( ['JSRootCore', 'jquery', 'jquery-ui' ], factory );
    } else {
+
+      if (typeof JSROOT == 'undefined')
+         throw new Error('JSROOT is not defined', 'JSRoot.openui5.js');
 
       if (typeof jQuery == 'undefined')
          throw new Error('jQuery not defined', 'JSRoot.openui5.js');
@@ -13,12 +16,9 @@
       if (typeof jQuery.ui == 'undefined')
          throw new Error('jQuery-ui not defined','JSRoot.openui5.js');
 
-      if (typeof JSROOT == 'undefined')
-         throw new Error('JSROOT is not defined', 'JSRoot.openui5.js');
-
-      factory(jQuery, jQuery.ui, JSROOT);
+      factory(JSROOT);
    }
-} (function($, myui, JSROOT) {
+} (function(JSROOT) {
 
    "use strict";
 
