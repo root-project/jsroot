@@ -5,7 +5,9 @@
    if ( typeof define === "function" && define.amd ) {
       define( [ 'JSRootCore', 'threejs', 'ThreeCSG' ], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"), require("three"), require("./ThreeCSG.js"));
+      let jsroot = require("./JSRootCore.js");
+      factory(jsroot, require("three"), require("./ThreeCSG.js"));
+      module.exports = jsroot;
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootGeoBase.js');
@@ -3713,7 +3715,6 @@
 
       return box3;
    }
-
 
    return JSROOT;
 

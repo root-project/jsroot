@@ -5,8 +5,8 @@
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootPainter', 'd3', 'threejs_jsroot'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootCore.js");
-      let threejs = require("./three.extra.min.js");
+      let jsroot = require("./JSRootPainter.js"),
+          threejs = require("./three.extra.min.js");
       factory(jsroot, require("d3"), threejs,
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
       module.exports = threejs;

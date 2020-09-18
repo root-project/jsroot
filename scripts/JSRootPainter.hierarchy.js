@@ -3,9 +3,11 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootCore', 'd3', 'JSRootPainter'], factory );
+      define( ['JSRootPainter', 'd3'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-       factory(require("./JSRootCore.js"), require("d3"), require("./JSRootPainter.js"));
+      let jsroot = require("./JSRootPainter.js");
+      factory(jsroot, require("d3"));
+      module.exports = jsroot;
    } else {
       if (typeof d3 != 'object')
          throw new Error('This extension requires d3.js', 'JSRootPainter.hierarchy.js');

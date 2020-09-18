@@ -5,8 +5,7 @@
    if (typeof define === "function" && define.amd) {
       define(['JSRootCore', 'rawinflate'], factory);
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      require("./rawinflate.min.js");
-      factory(require("./JSRootCore.js"));
+      factory(require("./JSRootCore.js"), require("./rawinflate.min.js"));
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error("JSROOT I/O requires JSRootCore.js", "JSRootIOEvolution.js");

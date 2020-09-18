@@ -5,6 +5,7 @@
       let jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"));
       if (jsroot.nodejs) jsroot.Painter.readStyleFromURL("?interactive=0&tooltip=0&nomenu&noprogress&notouch&toolbar=0&webgl=0");
+      module.exports = jsroot;
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRootPainter.js');

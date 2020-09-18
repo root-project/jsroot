@@ -2,23 +2,23 @@
    if ( typeof define === "function" && define.amd ) {
       define( [ 'threejs' ], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("three"), exports);
+      module.exports = factory(require("three"));
    } else {
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'ThreeCSG.js');
       ThreeBSP = factory(THREE);
    }
-} (function(THREE, ThreeBSP) {
+} (function(THREE) {
 
    "use strict";
 
-   if (!ThreeBSP) ThreeBSP = {};
+   let ThreeBSP = {};
 
-   let EPSILON = 1e-5,
-       COPLANAR = 0,
-       FRONT = 1,
-       BACK = 2,
-       SPANNING = 3;
+   const EPSILON = 1e-5,
+         COPLANAR = 0,
+         FRONT = 1,
+         BACK = 2,
+         SPANNING = 3;
 
    ThreeBSP.Geometry = function( geometry, transfer_matrix, nodeid, flippedMesh ) {
       // Convert THREE.Geometry to ThreeBSP

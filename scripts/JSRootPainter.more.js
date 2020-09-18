@@ -6,7 +6,7 @@
    if ( typeof define === "function" && define.amd ) {
       define( ['JSRootPainter', 'd3', 'JSRootMath'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      factory(require("./JSRootCore.js"), require("d3"), require("./JSRootMath.js"));
+      factory(require("./JSRootPainter.js"), require("d3"), require("./JSRootMath.js"));
    } else {
       if (typeof d3 != 'object')
          throw new Error('This extension requires d3.js', 'JSRootPainter.more.js');

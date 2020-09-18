@@ -3,10 +3,10 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootCore', 'd3', 'JSRootPainter.v7hist', 'JSRoot3DPainter'], factory );
+      define( [ 'JSRootPainter.v7hist', 'd3', 'JSRoot3DPainter'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
-      let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("d3"), require("./JSRootPainter.v7hist.js"), require("./JSRoot3DPainter.js"),
+      let jsroot = require("./JSRootPainter.v7hist.js");
+      factory(jsroot, require("d3"), require("./JSRoot3DPainter.js"),
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
       if (typeof JSROOT == 'undefined')
@@ -15,9 +15,9 @@
          throw new Error('This extension requires d3.js', 'JSRootPainter.v7hist3d.js');
       if (typeof THREE == 'undefined')
          throw new Error('THREE is not defined', 'JSRootPainter.v7hist3d.js');
-      factory(JSROOT, d3, JSROOT, THREE);
+      factory(JSROOT, d3, THREE);
    }
-} (function(JSROOT, d3, __jsroothist__, THREE, document) {
+} (function(JSROOT, d3, THREE, document) {
 
    "use strict";
 

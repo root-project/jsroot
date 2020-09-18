@@ -3,7 +3,7 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( ['jquery', 'jquery-ui', 'd3', 'JSRootPainter', 'JSRootPainter.hierarchy'], factory );
+      define( ['JSRootPainter.hierarchy', 'd3', 'jquery', 'jquery-ui'], factory );
    } else {
 
       if (typeof jQuery == 'undefined')
@@ -21,9 +21,9 @@
       if (typeof JSROOT.Painter != 'object')
          throw new Error('JSROOT.Painter not defined', 'JSRootPainter.jquery.js');
 
-      factory(jQuery, jQuery.ui, d3, JSROOT);
+      factory(JSROOT, d3, jQuery);
    }
-} (function($, myui, d3, JSROOT) {
+} (function(JSROOT, d3, $) {
 
    "use strict";
 

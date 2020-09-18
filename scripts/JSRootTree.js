@@ -33,7 +33,6 @@
       kDoNotUseBufferMap: JSROOT.BIT(22) // If set, at least one of the entry in the branch will use the buffer's map of classname and objects.
    }
 
-
    /**
     * @summary class to read data from TTree
     *
@@ -2582,7 +2581,6 @@
 
       TestNextBranch();
    }
-
 
    JSROOT.TSelector = TSelector;
    JSROOT.TDrawVariable = TDrawVariable;
