@@ -15,10 +15,10 @@
             'jqueryui-mousewheel'  : dir+'jquery.mousewheel.min',
             'jqueryui-touch-punch' : dir+'touch-punch.min',
             'rawinflate'           : dir+'rawinflate.min',
-            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js',
+            'MathJax'              : 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg',
             'dat.gui'              : dir+'dat.gui.min',
             'threejs'              : dir+'three.min',
-            'threejs_all'          : dir+'three.extra.min',
+            'threejs_jsroot'       : dir+'three.extra.min',
             'JSRootCore'           : dir+'JSRootCore'+ext,
             'JSRootMath'           : dir+'JSRootMath'+ext,
             'JSRootIOEvolution'    : dir+'JSRootIOEvolution'+ext,
@@ -1286,9 +1286,8 @@
       }
 
       if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
-         mainfiles += "&&&scripts/three.min.js;&&&scripts/three.extra.min.js;";
-         modules.push("threejs", "threejs_all");
-         mainfiles += "$$$scripts/JSRoot3DPainter" + ext + ".js;";
+         mainfiles += "&&&scripts/three.min.js;&&&scripts/three.extra.min.js;" +
+                      "$$$scripts/JSRoot3DPainter" + ext + ".js;";
          modules.push('JSRoot3DPainter');
       }
 

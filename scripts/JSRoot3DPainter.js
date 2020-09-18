@@ -3,7 +3,7 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( ['JSRootPainter', 'd3', 'threejs_all'], factory );
+      define( ['JSRootPainter', 'd3', 'threejs_jsroot'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       let jsroot = require("./JSRootCore.js");
       factory(jsroot, require("d3"), require("./three.extra.min.js"),
@@ -1070,7 +1070,7 @@
          // fOption = line.fOption;
       }
 
-      for (let n=3;n<3*fN;n+=3)
+      for (let n = 3; n < 3*fN; n += 3)
          pnts.push(main.grx(fP[n-3]), main.gry(fP[n-2]), main.grz(fP[n-1]),
                    main.grx(fP[n]), main.gry(fP[n+1]), main.grz(fP[n+2]));
 
@@ -1080,7 +1080,6 @@
    }
 
    // ==============================================================================================
-
 
 
    JSROOT.Painter.PointsCreator = PointsCreator;
