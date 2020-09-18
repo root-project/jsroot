@@ -3,10 +3,10 @@
 
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
-      define( [ 'JSRootPainter', 'd3', 'threejs_jsroot', 'JSRoot3DPainter', 'JSRootGeoBase', 'dat.gui' ], factory );
+      define( [ 'JSRootPainter', 'd3', 'JSRoot3DPainter', 'JSRootGeoBase', 'dat.gui' ], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("d3"), require("./three.extra.min.js"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
+      factory(jsroot, require("d3"), require("./JSRoot3DPainter.js"), require("./JSRootGeoBase.js"),
               undefined, jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
    } else {
       if (typeof JSROOT == 'undefined')
@@ -19,7 +19,7 @@
          throw new Error('THREE is not defined', 'JSRootGeoPainter.js');
       factory( JSROOT, d3, THREE );
    }
-} (function( JSROOT, d3, THREE, _3d, _geo, _dat, document ) {
+} (function( JSROOT, d3, THREE, _geo, _dat, document ) {
 
    "use strict";
 

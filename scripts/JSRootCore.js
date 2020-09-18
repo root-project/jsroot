@@ -1286,9 +1286,9 @@
       }
 
       if (((kind.indexOf("3d;")>=0) || (kind.indexOf("geom;")>=0)) && (jsroot.sources.indexOf("3d")<0)) {
-         mainfiles += "&&&scripts/three.min.js;&&&scripts/three.extra.min.js;" +
+         mainfiles += "&&&scripts/three.min.js;"+
+                      "&&&scripts/three.extra.min.js;" +
                       "$$$scripts/JSRoot3DPainter" + ext + ".js;";
-         modules.push('JSRoot3DPainter');
       }
 
       if (kind.indexOf('v7hist3d;')>=0) {

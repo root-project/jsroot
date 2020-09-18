@@ -6,8 +6,10 @@
       define( ['JSRootPainter', 'd3', 'threejs_jsroot'], factory );
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       let jsroot = require("./JSRootCore.js");
-      factory(jsroot, require("d3"), require("./three.extra.min.js"),
+      let threejs = require("./three.extra.min.js");
+      factory(jsroot, require("d3"), threejs,
               jsroot.nodejs || (typeof document=='undefined') ? jsroot.nodejs_document : document);
+      module.exports = threejs;
    } else {
       if (typeof JSROOT == 'undefined')
          throw new Error('JSROOT is not defined', 'JSRoot3DPainter.js');
@@ -187,7 +189,6 @@
       JSROOT.svg_workaround = undefined;
       return svg;
    }
-
 
    JSROOT.Painter.TooltipFor3D = function(prnt, canvas) {
       this.tt = null;
@@ -1090,7 +1091,7 @@
 
    JSROOT.Painter.Create3DLineMaterial = Create3DLineMaterial;
 
-   return JSROOT;
+   return THREE;
 
 }));
 
