@@ -3201,22 +3201,24 @@
       mesh.tip_name = this.GetTipName();
       mesh.tooltip = this.Graph2DTooltip;
 
-      mesh.painter.toplevel.add(mesh);
+      if (mesh.painter && mesh.painter.toplevel)
+         mesh.painter.toplevel.add(mesh);
+      else
+         console.error('3d scene already disappeared before points were ready')
 
-      this.points_callback_cnt--;
-
-      this.CheckCallbacks();
+      this.CheckCallbacks(1);
    }
 
-   TGraph2DPainter.prototype.CheckCallbacks = function() {
-      if (this.points_callback_cnt > 0) return;
+   TGraph2DPainter.prototype.CheckCallbacks = function(v) {
+
+      if ((this.points_callback_cnt -= v) > 0) return;
 
       let fp = this.frame_painter();
       if (fp) fp.Render3D(100);
 
       if (!this._drawing_ready) {
-         this.DrawingReady();
          this._drawing_ready = true;
+         this.DrawingReady();
       }
    }
 
@@ -3267,17 +3269,14 @@
       }
 
       // how many callbacks are expected
-      this.points_callback_cnt = levels.length-1;
+      this.points_callback_cnt = 0;
 
       for (let lvl=0;lvl<levels.length-1;++lvl) {
 
          let lvl_zmin = Math.max(levels[lvl], fp.scale_zmin),
              lvl_zmax = Math.min(levels[lvl+1], fp.scale_zmax);
 
-         if (lvl_zmin >= lvl_zmax) {
-            this.points_callback_cnt--;
-            continue;
-         }
+         if (lvl_zmin >= lvl_zmax) continue;
 
          let size = Math.floor(CountSelected(lvl_zmin, lvl_zmax) / step),
              pnts = null, select = 0,
@@ -3384,9 +3383,8 @@
             errmesh.tooltip = this.Graph2DTooltip;
          }
 
-         if (!pnts) {
-            this.points_callback_cnt--;
-         } else {
+         if (pnts) {
+            this.points_callback_cnt++;
 
             let fcolor = 'blue';
 
@@ -3406,11 +3404,10 @@
          }
       }
 
-      this.CheckCallbacks();
+      this.CheckCallbacks(0);
    }
 
    JSROOT.Painter.drawGraph2D = function(divid, gr, opt) {
-
       let painter = new JSROOT.TGraph2DPainter(gr);
 
       painter.SetDivId(divid, -1); // just to get access to existing elements
@@ -3426,12 +3423,13 @@
       if (!gr.fHistogram)
          gr.fHistogram = painter.CreateHistogram();
 
-      return JSROOT.draw(divid, gr.fHistogram, "lego;axis")
-                  .then(() => {
-         painter.ownhisto = true;
-         painter.SetDivId(divid);
-         painter.Redraw();
-         return painter; // result of promise
+      return JSROOT.draw(divid, gr.fHistogram, "lego;axis").then(() => {
+         return new Promise(function(resolveFunc, rejectFunc) {
+            painter.ownhisto = true;
+            painter.SetDivId(divid);
+            painter.WhenReady(resolveFunc, rejectFunc);
+            painter.Redraw();
+         });
       });
    }
 
