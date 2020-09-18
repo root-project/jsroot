@@ -4728,19 +4728,18 @@
     *
     * @desc Should be called to complete all text drawing operations
     */
-   TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready) {
+   TObjectPainter.prototype.FinishTextDrawing = function(draw_g, call_ready, checking_mathjax) {
       if (!draw_g) draw_g = this.draw_g;
 
-      if (draw_g.property('draw_text_completed')) {
-         JSROOT.CallBack(call_ready);
-         return draw_g.property('max_text_width');
+      if (checking_mathjax) {
+         if (!draw_g.property('draw_text_completed')) return;
+      } else {
+         draw_g.property('draw_text_completed', true); // mark that text drawing is completed
       }
-
-      if (call_ready) draw_g.node().text_callback = call_ready;
 
       let svgs = null;
 
-      if (draw_g.property('mathjax_use')) {
+      if (checking_mathjax || draw_g.property('mathjax_use')) {
 
          let missing = 0;
          svgs = draw_g.selectAll(".math_svg");
@@ -4752,19 +4751,11 @@
          });
 
          // is any svg missing we should wait until drawing is really finished
-         if (missing) return;
+         if (missing) {
+            if (call_ready) draw_g.node().text_callback = call_ready;
+            return 0;
+         }
       }
-
-      //if (!svgs) svgs = draw_g.selectAll(".math_svg");
-
-      //let missing = 0;
-      //svgs.each(function() {
-      //   let fo_g = d3.select(this);
-      //   if (fo_g.node().parentNode !== draw_g.node()) return;
-      //   let entry = fo_g.property('_element');
-      //   if (d3.select(entry).select("svg").empty()) missing++;
-      //});
-      //if (missing) console.warn('STILL SVG MISSING', missing);
 
       // adjust font size (if there are normal text)
       let painter = this,
@@ -4839,9 +4830,9 @@
             if (fo_g.node().parentNode !== draw_g.node()) return;
 
             let arg = fo_g.property("_arg"),
-               m = fo_g.select("svg"), // MathJax svg
-               mw = parseInt(m.attr("width")),
-               mh = parseInt(m.attr("height"));
+                m = fo_g.select("svg"), // MathJax svg
+                mw = parseInt(m.attr("width")),
+                mh = parseInt(m.attr("height"));
 
             if (!isNaN(mh) && !isNaN(mw)) {
                if (svg_factor > 0.) {
@@ -4951,12 +4942,8 @@
       if (!call_ready) call_ready = draw_g.node().text_callback;
       draw_g.node().text_callback = null;
 
-      draw_g.property('draw_text_completed', true);
-
       // if specified, call ready function
       JSROOT.CallBack(call_ready);
-
-      return draw_g.property('max_text_width');
    }
 
    /** @ummary draw TLatex inside element
@@ -5669,30 +5656,14 @@
 
       JSROOT.load('mathjax').then(() => {
          MathJax.tex2svgPromise(mtext, options).then(elem => {
-            painter.FinishMathjax(arg.draw_g, fo_g, elem);
+            let svg = d3.select(elem).select("svg");
+            svg.remove();
+            fo_g.append(function() { return svg.node(); });
+            painter.FinishTextDrawing(arg.draw_g, null, true); // check if all other elements are completed
          });
       });
 
       return 0;
-   }
-
-   /** @summary Finish MathJax drawing
-    * @desc function should be called when processing of element is completed
-    * @private
-    */
-
-   TObjectPainter.prototype.FinishMathjax = function(draw_g, fo_g, entry) {
-
-      let vvv = d3.select(entry).select("svg");
-
-      if (vvv.empty()) {
-         console.log('Not found any mathjax', entry);
-      } else {
-         vvv.remove(); // remove from parent
-         fo_g.append(function() { return vvv.node(); });
-      }
-
-      this.FinishTextDrawing(draw_g); // check if all other elements are completed
    }
 
    // ===========================================================
