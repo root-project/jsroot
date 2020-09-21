@@ -13,7 +13,7 @@ JSROOT.require([], function() {
  */
 
 /* constant parameters */
-var zip_WSIZE = 32768,       // Sliding Window size
+const zip_WSIZE = 32768;       // Sliding Window size
 //    zip_STORED_BLOCK = 0,
 //    zip_STATIC_TREES = 1,
 //    zip_DYN_TREES    = 2,
@@ -25,7 +25,7 @@ var zip_WSIZE = 32768,       // Sliding Window size
 //    zip_INBUF_EXTRA = 64,     // Extra buffer
 
 /* variables (inflate) */
-    zip_slide = null,
+let zip_slide = null,
     zip_wp,                   // current position in slide
     zip_fixed_tl = null,      // inflate static
     zip_fixed_td,             // inflate static
@@ -40,10 +40,10 @@ var zip_WSIZE = 32768,       // Sliding Window size
     zip_bl, zip_bd,           // number of bits decoded by tl and td
     zip_inflate_data,
     zip_inflate_datalen,
-    zip_inflate_pos,
+    zip_inflate_pos;
 
 /* constant tables (inflate) */
-   zip_MASK_BITS = new Array(
+const zip_MASK_BITS = new Array(
    0x0000,
    0x0001, 0x0003, 0x0007, 0x000f, 0x001f, 0x003f, 0x007f, 0x00ff,
    0x01ff, 0x03ff, 0x07ff, 0x0fff, 0x1fff, 0x3fff, 0x7fff, 0xffff),
@@ -72,12 +72,12 @@ var zip_WSIZE = 32768,       // Sliding Window size
    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15);
 /* objects (inflate) */
 
-var zip_HuftList = function() {
+function zip_HuftList() {
    this.next = null;
    this.list = null;
 }
 
-var zip_HuftNode = function() {
+function zip_HuftNode() {
    this.e = 0; // number of extra bits or operation
    this.b = 0; // number of bits in this code or subcode
 
@@ -86,12 +86,12 @@ var zip_HuftNode = function() {
    this.t = null; // (zip_HuftNode) pointer to next level of table
 }
 
-var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX)
-                             n,     // number of codes (assumed <= N_MAX)
-                             s,     // number of simple-valued codes (0..s-1)
-                             d,     // list of base values for non-simple codes
-                             e,     // list of extra bits for non-simple codes
-                             mm ) { // maximum lookup bits
+function zip_HuftBuild(b,     // code lengths in bits (all assumed <= BMAX)
+                       n,     // number of codes (assumed <= N_MAX)
+                       s,     // number of simple-valued codes (0..s-1)
+                       d,     // list of base values for non-simple codes
+                       e,     // list of extra bits for non-simple codes
+                       mm ) { // maximum lookup bits
 
    this.status = 0;     // 0: success, 1: incomplete table, 2: bad input
    this.root = null;    // (zip_HuftList) starting table
@@ -106,9 +106,9 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
    so that no bits beyond that code are fetched when that code is
    decoded. */
 
-   var BMAX = 16,      // maximum bit length of any code
-       N_MAX = 288,    // maximum number of codes in any set
-       c = new Array(BMAX+1),  // bit length count table
+   const BMAX = 16,      // maximum bit length of any code
+         N_MAX = 288;    // maximum number of codes in any set
+   let c = new Array(BMAX+1),  // bit length count table
        lx = new Array(BMAX+1), // stack of bits per table
        u = new Array(BMAX), // zip_HuftNode[BMAX][]  table stack
        v = new Array(N_MAX), // values in order of bit length
@@ -306,7 +306,7 @@ var zip_HuftBuild = function(b,     // code lengths in bits (all assumed <= BMAX
 
 /* routines (inflate) */
 
-var zip_NEEDBITS = function(n) {
+function zip_NEEDBITS(n) {
    while (zip_bit_len < n) {
       if (zip_inflate_pos < zip_inflate_datalen)
          zip_bit_buf |= zip_inflate_data[zip_inflate_pos++] << zip_bit_len;
@@ -314,22 +314,22 @@ var zip_NEEDBITS = function(n) {
    }
 }
 
-var zip_GETBITS = function(n) {
+function zip_GETBITS(n) {
    return zip_bit_buf & zip_MASK_BITS[n];
 }
 
-var zip_DUMPBITS = function(n) {
+function zip_DUMPBITS(n) {
    zip_bit_buf >>= n;
    zip_bit_len -= n;
 }
 
-var zip_inflate_codes = function(buff, off, size) {
+function zip_inflate_codes(buff, off, size) {
    if (size == 0) return 0;
 
    /* inflate (decompress) the codes in a deflated (compressed) block.
       Return an error code or zero if it all goes ok. */
 
-   var e,     // table entry flag/number of extra bits
+   let e,     // table entry flag/number of extra bits
        t,     // (zip_HuftNode) pointer to table entry
        n = 0;
 
@@ -403,11 +403,11 @@ var zip_inflate_codes = function(buff, off, size) {
    return n;
 }
 
-var zip_inflate_stored = function(buff, off, size) {
+function zip_inflate_stored(buff, off, size) {
    /* "decompress" an inflated type 0 (stored) block. */
 
    // go to byte boundary
-   var n = zip_bit_len & 7;
+   let n = zip_bit_len & 7;
    zip_DUMPBITS(n);
 
    // get the length and its complement
@@ -436,14 +436,14 @@ var zip_inflate_stored = function(buff, off, size) {
    return n;
 }
 
-var zip_inflate_fixed = function(buff, off, size) {
+function zip_inflate_fixed(buff, off, size) {
    /* decompress an inflated type 1 (fixed Huffman codes) block.  We should
       either replace this with a custom decoder, or at least precompute the
       Huffman tables. */
 
    // if first time, set up tables for fixed blocks
    if (zip_fixed_tl == null) {
-      var i = 0,      // temporary variable
+      let i = 0,      // temporary variable
           l = new Array(288); // length list for huft_build
 
       // literal table
@@ -453,11 +453,9 @@ var zip_inflate_fixed = function(buff, off, size) {
       while (i < 288) l[i++] = 8; // make a complete, but wrong code set
       zip_fixed_bl = 7;
 
-      var h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
-      if (h.status != 0) {
+      let h = new zip_HuftBuild(l, 288, 257, zip_cplens, zip_cplext, zip_fixed_bl);
+      if (h.status != 0)
          throw new Error("HufBuild error: "+h.status,"rawinflate.js");
-         return -1;
-      }
       zip_fixed_tl = h.root;
       zip_fixed_bl = h.m;
 
@@ -469,7 +467,6 @@ var zip_inflate_fixed = function(buff, off, size) {
       if (h.status > 1) {
          zip_fixed_tl = null;
          throw new Error("HufBuild error: "+h.status,"rawinflate.js");
-         return -1;
       }
       zip_fixed_td = h.root;
       zip_fixed_bd = h.m;
@@ -482,9 +479,9 @@ var zip_inflate_fixed = function(buff, off, size) {
    return zip_inflate_codes(buff, off, size);
 }
 
-var zip_inflate_dynamic = function(buff, off, size) {
+function zip_inflate_dynamic(buff, off, size) {
    // decompress an inflated type 2 (dynamic Huffman codes) block.
-   var i,j,    // temporary variables
+   let i,j,    // temporary variables
        l,     // last length
        n,     // number of lengths to get
        t,     // (zip_HuftNode) literal/length code table
@@ -496,13 +493,13 @@ var zip_inflate_dynamic = function(buff, off, size) {
 
    // read in table lengths
    zip_NEEDBITS(5);
-   var nl = 257 + zip_GETBITS(5);   // number of literal/length codes
+   const nl = 257 + zip_GETBITS(5);   // number of literal/length codes
    zip_DUMPBITS(5);
    zip_NEEDBITS(5);
-   var nd = 1 + zip_GETBITS(5);  // number of distance codes
+   const nd = 1 + zip_GETBITS(5);  // number of distance codes
    zip_DUMPBITS(5);
    zip_NEEDBITS(4);
-   var nb = 4 + zip_GETBITS(4);  // number of bit length codes
+   const nb = 4 + zip_GETBITS(4);  // number of bit length codes
    zip_DUMPBITS(4);
    if (nl > 286 || nd > 30)
       return -1;     // bad lengths
@@ -598,9 +595,9 @@ var zip_inflate_dynamic = function(buff, off, size) {
    return zip_inflate_codes(buff, off, size);
 }
 
-var zip_inflate_internal = function(buff, off, size) {
+function zip_inflate_internal(buff, off, size) {
    // decompress an inflated entry
-   var n = 0, i;
+   let n = 0, i;
 
    while (n < size) {
       if (zip_eof && zip_method == -1)
@@ -698,7 +695,7 @@ JSROOT.ZIP.inflate = function(arr, tgt)
    zip_inflate_datalen = arr.byteLength;
    zip_inflate_pos = 0;
 
-   var i, cnt = 0;
+   let i, cnt = 0;
    while ((i = zip_inflate_internal(tgt, cnt, Math.min(1024, tgt.byteLength-cnt))) > 0) {
       cnt += i;
    }
@@ -728,52 +725,54 @@ JSROOT.LZ4 = {};
  * @private
  */
 JSROOT.LZ4.uncompress = function (input, output, sIdx, eIdx) {
-   sIdx = sIdx || 0
-   eIdx = eIdx || (input.length - sIdx)
+   sIdx = sIdx || 0;
+   eIdx = eIdx || (input.length - sIdx);
    // Process each sequence in the incoming data
-   for (var i = sIdx, n = eIdx, j = 0; i < n;) {
-      var token = input[i++]
+   for (let i = sIdx, n = eIdx, j = 0; i < n;) {
+      let token = input[i++];
 
       // Literals
-      var literals_length = (token >> 4)
+      let literals_length = (token >> 4);
       if (literals_length > 0) {
          // length of literals
-         var l = literals_length + 240
+         let l = literals_length + 240;
          while (l === 255) {
-            l = input[i++]
-            literals_length += l
+            l = input[i++];
+            literals_length += l;
          }
 
          // Copy the literals
-         var end = i + literals_length
-         while (i < end) output[j++] = input[i++]
+         let end = i + literals_length;
+         while (i < end) output[j++] = input[i++];
 
          // End of buffer?
-         if (i === n) return j
+         if (i === n) return j;
       }
 
       // Match copy
       // 2 bytes offset (little endian)
-      var offset = input[i++] | (input[i++] << 8)
+      const offset = input[i++] | (input[i++] << 8);
 
       // 0 is an invalid offset value
-      if (offset === 0 || offset > j) return -(i-2)
+      if (offset === 0 || offset > j) return -(i-2);
 
       // length of match copy
-      var match_length = (token & 0xf)
-      var l = match_length + 240
+      let match_length = (token & 0xf),
+          l = match_length + 240;
       while (l === 255) {
-         l = input[i++]
-         match_length += l
+         l = input[i++];
+         match_length += l;
       }
 
       // Copy the match
-      var pos = j - offset // position of the match copy in the current output
-      var end = j + match_length + 4 // minmatch = 4
+      let pos = j - offset; // position of the match copy in the current output
+      const end = j + match_length + 4 // minmatch = 4;
       while (j < end) output[j++] = output[pos++]
    }
 
-   return j
+   return j;
 }
+
+return JSROOT;
 
 });

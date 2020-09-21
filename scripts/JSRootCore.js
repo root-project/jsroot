@@ -4,14 +4,17 @@
 (function( factory ) {
    if ( typeof define === "function" && define.amd ) {
 
+      console.log('Loading JSROOT inside require.js');
+
       let jsroot = factory({}),
           norjs = (typeof requirejs=='undefined'),
-          paths = [];
+          paths = {};
 
       jsroot._.amd = true; // inidcation that require will be used for loading of functionality
 
       for (let module in jsroot._.sources)
-         paths.push(jsroot._.get_module_src(jsroot._.sources[module]));
+         if (module != 'JSRootCore')
+            paths[module] = jsroot._.get_module_src(jsroot._.sources[module]);
 
       if (norjs) {
          // just define locations
@@ -37,15 +40,17 @@
          });
       }
 
-      define( jsroot );
+      // define( jsroot );
 
       if (norjs || !require.specified("JSRootCore"))
          define('JSRootCore', [], jsroot);
 
-     if (norjs || !require.specified("jsroot"))
+      if (norjs || !require.specified("jsroot"))
         define('jsroot', [], jsroot);
 
-     globalThis.JSROOT = jsroot;
+      globalThis.JSROOT = jsroot;
+
+      jsroot.Initialize();
 
    } else if (typeof exports === 'object' && typeof module !== 'undefined') {
       // processing with Node.js
@@ -65,6 +70,8 @@
       globalThis.JSROOT = {};
 
       factory(globalThis.JSROOT);
+
+      JSROOT.Initialize();
    }
 } (function(JSROOT) {
 
@@ -86,7 +93,7 @@
 
    //openuicfg // DO NOT DELETE, used to configure openui5 usage like JSROOT.openui5src = "nojsroot";
 
-   JSROOT.use_full_libs = true;
+   // JSROOT.use_full_libs = true;
 
    JSROOT.touches = false;
    JSROOT.key_handling = true;  // enable/disable key press handling in JSROOT
@@ -319,8 +326,21 @@
 
       need = need.filter(elem => !!elem);
 
-      if (_.amd)
-         return define(need, factoryFunc);
+      if (_.amd) {
+         if (!factoryFunc)
+            return new Promise(function(resolve) {
+               if (need.length > 0)
+                  require(need, resolve);
+               else
+                  resolve();
+            });
+
+         if (need.length > 0)
+            define(need, factoryFunc);
+         else
+            factoryFunc();
+         return;
+      }
 
       function getModuleName(src) {
          for (let mod in _.sources)
@@ -2636,7 +2656,7 @@
       return this;
    }
 
-   return JSROOT.Initialize();
+   return JSROOT;
 
 }));
 

@@ -1,7 +1,5 @@
 JSROOT.require(['d3'], function(d3) {
 
-   console.log('Loading painter');
-
    "use strict";
 
    JSROOT.sources.push("2d");
